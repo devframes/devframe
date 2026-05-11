@@ -1,9 +1,9 @@
 {
-  "name": "devframe",
+  "name": "devframe-monorepo",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.1.22",
+  "private": true,
   "packageManager": "pnpm@10.33.4",
-  "description": "_description_",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "funding": "https://github.com/sponsors/antfu",
@@ -13,49 +13,41 @@
     "url": "git+https://github.com/devframes/devframe.git"
   },
   "bugs": "https://github.com/devframes/devframe/issues",
-  "keywords": [],
-  "sideEffects": false,
-  "exports": {
-    ".": "./dist/index.mjs",
-    "./package.json": "./package.json"
-  },
-  "types": "./dist/index.d.mts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
-    "lint": "eslint",
-    "prepublishOnly": "nr build",
-    "release": "bumpp",
-    "start": "tsx src/index.ts",
-    "test": "pnpm run build && vitest",
-    "typecheck": "tsc",
-    "prepare": "simple-git-hooks"
+    "build": "turbo run build",
+    "watch": "pnpm -r run watch",
+    "docs": "pnpm -C docs run docs",
+    "docs:build": "pnpm -C docs run docs:build",
+    "docs:serve": "pnpm -C docs run docs:serve",
+    "lint": "eslint --cache",
+    "test": "turbo run build && vitest",
+    "release": "bumpp -r",
+    "typecheck": "tsc -b",
+    "postinstall": "npx simple-git-hooks && skills-npm"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "catalog:cli",
-    "@antfu/ni": "catalog:cli",
+    "@antfu/eslint-config": "catalog:devtools",
+    "@antfu/ni": "catalog:build",
     "@antfu/utils": "catalog:inlined",
     "@types/node": "catalog:types",
-    "bumpp": "catalog:cli",
-    "eslint": "catalog:cli",
-    "lint-staged": "catalog:cli",
-    "publint": "catalog:cli",
-    "simple-git-hooks": "catalog:cli",
-    "tsdown": "catalog:cli",
-    "tsdown-stale-guard": "catalog:testing",
+    "@types/ws": "catalog:types",
+    "bumpp": "catalog:devtools",
+    "eslint": "catalog:devtools",
+    "nano-staged": "catalog:devtools",
+    "simple-git-hooks": "catalog:devtools",
+    "skills-npm": "catalog:devtools",
+    "tsdown": "catalog:build",
     "tsnapi": "catalog:testing",
-    "tsx": "catalog:cli",
-    "typescript": "catalog:cli",
-    "vite": "catalog:cli",
+    "tsx": "catalog:build",
+    "turbo": "catalog:build",
+    "typescript": "catalog:devtools",
+    "vite": "catalog:build",
     "vitest": "catalog:testing"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm i --frozen-lockfile --ignore-scripts --offline && pnpm run build && npx lint-staged"
+    "pre-commit": "pnpm i --frozen-lockfile --ignore-scripts --offline && npx nano-staged"
   },
-  "lint-staged": {
+  "nano-staged": {
     "*": "eslint --fix"
   }
 }

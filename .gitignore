@@ -1,11 +1,17 @@
 .cache
 .DS_Store
+.eslintcache
 .idea
 *.log
 *.tgz
+*.tsbuildinfo
 coverage
 dist
 lib-cov
 logs
 node_modules
 temp
+.turbo
+.vitepress/cache
+.vitepress/dist
+packages/devframe/skills

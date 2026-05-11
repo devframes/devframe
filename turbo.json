@@ -1,0 +1,24 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["pnpm-lock.yaml"],
+  "tasks": {
+    "devframe#build": {
+      "outputLogs": "new-only",
+      "outputs": ["dist/**"]
+    },
+    "@devframes/nuxt#build": {
+      "outputLogs": "new-only",
+      "outputs": ["dist/**"]
+    },
+    "devframe-files-inspector-example#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe#build"],
+      "outputs": ["dist/**"]
+    },
+    "devframe-streaming-chat-example#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe#build"],
+      "outputs": ["dist/**"]
+    }
+  }
+}

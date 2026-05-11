@@ -1,0 +1,42 @@
+{
+  "name": "@devframes/nuxt",
+  "type": "module",
+  "version": "0.1.22",
+  "description": "Nuxt module for Devframe — wires a Nuxt-built SPA up as a devframe client",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/devframes/devframe#readme",
+  "repository": {
+    "directory": "packages/nuxt",
+    "type": "git",
+    "url": "git+https://github.com/devframes/devframe.git"
+  },
+  "bugs": "https://github.com/devframes/devframe/issues",
+  "keywords": [
+    "devframe",
+    "nuxt",
+    "devtools"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./runtime/plugin.client": "./dist/runtime/plugin.client.mjs",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "peerDependencies": {
+    "@nuxt/kit": "^3.0.0 || ^4.0.0",
+    "devframe": "workspace:*"
+  },
+  "devDependencies": {
+    "@nuxt/kit": "catalog:build",
+    "tsdown": "catalog:build"
+  }
+}

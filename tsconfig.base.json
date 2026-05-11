@@ -1,0 +1,121 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "target": "esnext",
+    "lib": [
+      "esnext"
+    ],
+    "rootDir": ".",
+    "module": "esnext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "devframe/rpc/transports/ws-server": [
+        "./packages/devframe/src/rpc/transports/ws-server.ts"
+      ],
+      "devframe/rpc/transports/ws-client": [
+        "./packages/devframe/src/rpc/transports/ws-client.ts"
+      ],
+      "devframe/rpc/client": [
+        "./packages/devframe/src/rpc/client.ts"
+      ],
+      "devframe/rpc/server": [
+        "./packages/devframe/src/rpc/server.ts"
+      ],
+      "devframe/rpc": [
+        "./packages/devframe/src/rpc"
+      ],
+      "devframe/types": [
+        "./packages/devframe/src/types/index.ts"
+      ],
+      "devframe/node/auth": [
+        "./packages/devframe/src/node/auth/index.ts"
+      ],
+      "devframe/node/internal": [
+        "./packages/devframe/src/node/internal/index.ts"
+      ],
+      "devframe/node": [
+        "./packages/devframe/src/node/index.ts"
+      ],
+      "devframe/constants": [
+        "./packages/devframe/src/constants.ts"
+      ],
+      "devframe/utils/colors": [
+        "./packages/devframe/src/utils/colors.ts"
+      ],
+      "devframe/utils/events": [
+        "./packages/devframe/src/utils/events.ts"
+      ],
+      "devframe/utils/hash": [
+        "./packages/devframe/src/utils/hash.ts"
+      ],
+      "devframe/utils/human-id": [
+        "./packages/devframe/src/utils/human-id.ts"
+      ],
+      "devframe/utils/launch-editor": [
+        "./packages/devframe/src/utils/launch-editor.ts"
+      ],
+      "devframe/utils/nanoid": [
+        "./packages/devframe/src/utils/nanoid.ts"
+      ],
+      "devframe/utils/open": [
+        "./packages/devframe/src/utils/open.ts"
+      ],
+      "devframe/utils/promise": [
+        "./packages/devframe/src/utils/promise.ts"
+      ],
+      "devframe/utils/serve-static": [
+        "./packages/devframe/src/utils/serve-static.ts"
+      ],
+      "devframe/utils/shared-state": [
+        "./packages/devframe/src/utils/shared-state.ts"
+      ],
+      "devframe/utils/streaming-channel": [
+        "./packages/devframe/src/utils/streaming-channel.ts"
+      ],
+      "devframe/utils/structured-clone": [
+        "./packages/devframe/src/utils/structured-clone.ts"
+      ],
+      "devframe/utils/when": [
+        "./packages/devframe/src/utils/when.ts"
+      ],
+      "devframe/adapters/cli": [
+        "./packages/devframe/src/adapters/cli.ts"
+      ],
+      "devframe/adapters/dev": [
+        "./packages/devframe/src/adapters/dev.ts"
+      ],
+      "devframe/adapters/build": [
+        "./packages/devframe/src/adapters/build.ts"
+      ],
+      "devframe/adapters/vite": [
+        "./packages/devframe/src/adapters/vite.ts"
+      ],
+      "devframe/adapters/embedded": [
+        "./packages/devframe/src/adapters/embedded.ts"
+      ],
+      "devframe/adapters/mcp": [
+        "./packages/devframe/src/adapters/mcp.ts"
+      ],
+      "@devframes/nuxt/runtime/plugin.client": [
+        "./packages/nuxt/src/runtime/plugin.client.ts"
+      ],
+      "@devframes/nuxt": [
+        "./packages/nuxt/src/index.ts"
+      ],
+      "devframe/recipes/open-helpers": [
+        "./packages/devframe/src/recipes/open-helpers.ts"
+      ],
+      "devframe/client": [
+        "./packages/devframe/src/client/index.ts"
+      ],
+      "devframe": [
+        "./packages/devframe/src"
+      ]
+    },
+    "resolveJsonModule": true,
+    "strict": true,
+    "noEmit": true,
+    "isolatedDeclarations": false,
+    "skipLibCheck": true
+  }
+}

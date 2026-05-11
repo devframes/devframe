@@ -1,9 +1,12 @@
 // @ts-check
 import antfu from '@antfu/eslint-config'
 
-export default antfu(
-  {
-    type: 'lib',
-    pnpm: true,
-  },
-)
+export default antfu({
+  pnpm: true,
+  ignores: [
+    'skills',
+    '**/dist',
+    '**/.vitepress/cache',
+    '**/.vitepress/dist',
+  ],
+})
