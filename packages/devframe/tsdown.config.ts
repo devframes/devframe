@@ -1,6 +1,19 @@
+import { fileURLToPath } from 'node:url'
+import { resolveSync } from 'mlly'
 import { defineConfig } from 'tsdown'
 
+// Resolve `ohash/crypto` without the `node` condition so the pure-JS digest
+// is bundled. The default resolution honours `node`, which inlines
+// `node:crypto.createHash` into outputs that are later shipped to the
+// browser via the `client` entry.
+const ohashCryptoAgnostic = fileURLToPath(
+  resolveSync('ohash/crypto', { url: import.meta.url, conditions: ['import'] }),
+)
+
 export default defineConfig({
+  alias: {
+    'ohash/crypto': ohashCryptoAgnostic,
+  },
   entry: {
     'index': 'src/index.ts',
     'rpc/index': 'src/rpc/index.ts',

@@ -15,6 +15,9 @@ catalogs:
     '@preact/preset-vite':
       specifier: ^2.10.5
       version: 2.10.5
+    mlly:
+      specifier: ^1.8.2
+      version: 1.8.2
     tsdown:
       specifier: ^0.22.0
       version: 0.22.0
@@ -345,6 +348,9 @@ importers:
       launch-editor:
         specifier: catalog:deps
         version: 2.13.2
+      mlly:
+        specifier: catalog:build
+        version: 1.8.2
       obug:
         specifier: catalog:deps
         version: 2.1.1
