@@ -89,6 +89,7 @@
     "human-id": "catalog:inlined",
     "immer": "catalog:deps",
     "launch-editor": "catalog:deps",
+    "mlly": "catalog:build",
     "obug": "catalog:deps",
     "ohash": "catalog:deps",
     "open": "catalog:deps",
@@ -100,7 +101,7 @@
     "whenexpr": "catalog:deps"
   },
   "inlinedDependencies": {
-    "ansis": "4.2.0",
+    "ansis": "4.3.0",
     "bundle-name": "4.1.0",
     "default-browser": "5.5.0",
     "default-browser-id": "5.0.1",
