@@ -1,16 +1,15 @@
-import type { App } from 'h3'
 import type { StartedServer } from '../node/server'
 import type { DevframeDefinition, DevframeSetupInfo } from '../types/devframe'
 import process from 'node:process'
 import { getPort } from 'get-port-please'
-import { createApp, eventHandler } from 'h3'
+import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import { DEVTOOLS_CONNECTION_META_FILENAME } from '../constants'
 import { createHostContext } from '../node/context'
 import { createH3DevToolsHost } from '../node/host-h3'
 import { startHttpAndWs } from '../node/server'
 import { open } from '../utils/open'
-import { serveStaticHandler } from '../utils/serve-static'
+import { mountStaticHandler } from '../utils/serve-static'
 import { normalizeBasePath, resolveBasePath } from './_shared'
 
 const DEFAULT_PORT = 9999
@@ -49,7 +48,7 @@ export interface CreateDevServerOptions {
    * middleware (auth, logging, extra static assets) before devframe's
    * own handlers.
    */
-  app?: App
+  app?: H3
   /**
    * Auto-open the browser. When `undefined` the resolution falls
    * through to `flags.open` (incl. string path) and finally
@@ -61,7 +60,7 @@ export interface CreateDevServerOptions {
    * Called once the WS server is bound. Devframe stays headless
    * otherwise — wire this if you want a startup banner.
    */
-  onReady?: (info: { origin: string, port: number, app: App }) => void | Promise<void>
+  onReady?: (info: { origin: string, port: number, app: H3 }) => void | Promise<void>
 }
 
 export interface ResolveDevServerPortOptions {
@@ -123,14 +122,14 @@ export async function createDevServer(
   const port = options.port ?? await resolveDevServerPort(def, { host })
   const flags = options.flags ?? {}
   const basePath = options.basePath ? normalizeBasePath(options.basePath) : resolveBasePath(def, 'standalone')
-  const app = options.app ?? createApp()
+  const app = options.app ?? new H3()
   const origin = `http://${host}:${port}`
 
   const h3Host = createH3DevToolsHost({
     origin,
     appName: def.id,
     mount: (base, dir) => {
-      app.use(base, serveStaticHandler(dir))
+      mountStaticHandler(app, base, dir)
     },
   })
 
@@ -148,13 +147,10 @@ export async function createDevServer(
   // sits at the SPA root (next to index.html) so the deployed SPA can
   // discover it via a relative `./__connection.json` fetch.
   const connectionMetaPath = `${basePath}${DEVTOOLS_CONNECTION_META_FILENAME}`
-  app.use(connectionMetaPath, eventHandler((event) => {
-    event.node.res.setHeader('Content-Type', 'application/json')
-    return event.node.res.end(JSON.stringify({ backend: 'websocket', websocket: port }))
-  }))
+  app.use(connectionMetaPath, () => ({ backend: 'websocket', websocket: port }))
 
   if (distDir)
-    app.use(basePath, serveStaticHandler(resolve(distDir)))
+    mountStaticHandler(app, basePath, resolve(distDir))
 
   return startHttpAndWs({
     context: ctx,

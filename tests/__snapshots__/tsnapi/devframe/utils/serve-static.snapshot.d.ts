@@ -9,6 +9,7 @@ export interface ServeStaticOptions {
 // #endregion
 
 // #region Functions
-export declare function serveStaticHandler(_: string, _?: ServeStaticOptions): EventHandler<EventHandlerRequest>;
+export declare function mountStaticHandler(_: H3, _: string, _: string, _?: ServeStaticOptions): void;
+export declare function serveStaticHandler(_: string, _?: ServeStaticOptions): EventHandler;
 export declare function serveStaticNodeMiddleware(_: string, _?: ServeStaticOptions): (_: IncomingMessage, _: ServerResponse, _?: (_?: Error) => void) => void;
 // #endregion

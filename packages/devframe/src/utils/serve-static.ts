@@ -1,8 +1,9 @@
-import type { EventHandler, EventHandlerRequest } from 'h3'
+import type { EventHandler, H3 } from 'h3'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createReadStream } from 'node:fs'
 import { stat } from 'node:fs/promises'
-import { defineEventHandler, sendStream, setResponseHeader, setResponseStatus } from 'h3'
+import { Readable } from 'node:stream'
+import { defineHandler, withBase } from 'h3'
 import { lookup } from 'mrmime'
 import { extname, join, normalize, resolve, sep } from 'pathe'
 
@@ -105,11 +106,18 @@ function contentTypeFor(abs: string): string {
   return type
 }
 
-function setStaticHeaders(res: ServerResponse, file: ResolvedFile): void {
-  res.setHeader('Content-Type', contentTypeFor(file.abs))
-  res.setHeader('Content-Length', file.size)
-  res.setHeader('Last-Modified', file.mtime.toUTCString())
-  res.setHeader('Cache-Control', 'no-store')
+function staticHeadersFor(file: ResolvedFile): Record<string, string> {
+  return {
+    'Content-Type': contentTypeFor(file.abs),
+    'Content-Length': String(file.size),
+    'Last-Modified': file.mtime.toUTCString(),
+    'Cache-Control': 'no-store',
+  }
+}
+
+function applyStaticHeadersToNode(res: ServerResponse, file: ResolvedFile): void {
+  for (const [k, v] of Object.entries(staticHeadersFor(file)))
+    res.setHeader(k, v)
 }
 
 interface NormalizedOptions {
@@ -136,29 +144,51 @@ function normalizeOptions(options: ServeStaticOptions | undefined): NormalizedOp
 export function serveStaticHandler(
   dir: string,
   options?: ServeStaticOptions,
-): EventHandler<EventHandlerRequest> {
+): EventHandler {
   const absDir = resolve(dir)
   const opts = normalizeOptions(options)
-  return defineEventHandler(async (event) => {
-    const method = event.node.req.method
+  return defineHandler(async (event) => {
+    const method = event.req.method
     if (method !== 'GET' && method !== 'HEAD') {
-      setResponseStatus(event, 405)
-      setResponseHeader(event, 'Allow', 'GET, HEAD')
+      event.res.status = 405
+      event.res.headers.set('Allow', 'GET, HEAD')
       return ''
     }
-    const url = event.node.req.url ?? '/'
-    const file = await resolveTarget(absDir, url, opts.indexNames, opts.single)
+    const file = await resolveTarget(absDir, event.url.pathname, opts.indexNames, opts.single)
     if (!file) {
-      setResponseStatus(event, 404)
+      event.res.status = 404
       return ''
     }
-    setStaticHeaders(event.node.res, file)
-    if (method === 'HEAD') {
-      event.node.res.end()
+    for (const [k, v] of Object.entries(staticHeadersFor(file)))
+      event.res.headers.set(k, v)
+    if (method === 'HEAD')
       return ''
-    }
-    return sendStream(event, createReadStream(file.abs))
+    return Readable.toWeb(createReadStream(file.abs)) as ReadableStream
   })
+}
+
+/**
+ * Mount {@link serveStaticHandler} on an h3 app at `base`, handling the
+ * route pattern and prefix-stripping required by h3 v2.
+ *
+ * h3 v2's `app.use(base, handler)` only matches the exact `base` path and
+ * does not strip the prefix from `event.url.pathname`. Static serving
+ * needs both subpath matching (`/base/**`) and the URL stripped so the
+ * file resolver sees paths relative to `dir` — this helper bundles both.
+ */
+export function mountStaticHandler(
+  app: H3,
+  base: string,
+  dir: string,
+  options?: ServeStaticOptions,
+): void {
+  const trimmed = base.replace(/\/$/, '')
+  const handler = serveStaticHandler(dir, options)
+  if (trimmed === '') {
+    app.use('/**', handler)
+    return
+  }
+  app.use(`${trimmed}/**`, withBase(trimmed, handler))
 }
 
 /**
@@ -198,7 +228,7 @@ export function serveStaticNodeMiddleware(
         res.end()
         return
       }
-      setStaticHeaders(res, file)
+      applyStaticHeadersToNode(res, file)
       if (method === 'HEAD') {
         res.end()
         return

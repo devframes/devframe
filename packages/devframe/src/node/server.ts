@@ -1,13 +1,12 @@
 import type { BirpcGroup } from 'birpc'
 import type { DevToolsNodeContext, DevToolsNodeRpcSession, DevToolsRpcClientFunctions, DevToolsRpcServerFunctions } from 'devframe/types'
-import type { App } from 'h3'
 import type { WebSocketServer } from 'ws'
 import type { RpcFunctionsHost } from './host-functions'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { createServer } from 'node:http'
 import { createRpcServer } from 'devframe/rpc/server'
 import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
-import { createApp, toNodeListener } from 'h3'
+import { H3, toNodeHandler } from 'h3'
 import { WebSocketServer as WSServer } from 'ws'
 
 export interface StartHttpAndWsOptions {
@@ -19,7 +18,7 @@ export interface StartHttpAndWsOptions {
    * when provided, callers can add their own routes (static handlers,
    * auth middleware, etc.) first.
    */
-  app?: App
+  app?: H3
   /**
    * When `false`, the RPC server is started without a trust handshake.
    * Intended for single-user localhost tools where an auth round-trip
@@ -36,14 +35,14 @@ export interface StartHttpAndWsOptions {
    * handlers whose origin depends on the resolved port, or print their
    * own startup banner. Devframe does not print one itself.
    */
-  onReady?: (info: { origin: string, port: number, app: App }) => void | Promise<void>
+  onReady?: (info: { origin: string, port: number, app: H3 }) => void | Promise<void>
 }
 
 export interface StartedServer {
   /** Listening origin, e.g. `http://localhost:9999`. */
   origin: string
   port: number
-  app: App
+  app: H3
   wss: WebSocketServer
   rpcGroup: BirpcGroup<DevToolsRpcClientFunctions, DevToolsRpcServerFunctions, false>
   close: () => Promise<void>
@@ -57,8 +56,8 @@ export interface StartedServer {
 export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<StartedServer> {
   const { context, port } = options
   const bindHost = options.host ?? 'localhost'
-  const app = options.app ?? createApp()
-  const httpServer = createServer(toNodeListener(app))
+  const app = options.app ?? new H3()
+  const httpServer = createServer(toNodeHandler(app))
   const wss = new WSServer({ server: httpServer })
   const rpcHost = context.rpc as unknown as RpcFunctionsHost
 

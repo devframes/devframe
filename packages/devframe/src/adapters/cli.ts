@@ -1,5 +1,5 @@
 import type { CAC } from 'cac'
-import type { App } from 'h3'
+import type { H3 } from 'h3'
 import type { DevframeDefinition } from '../types/devframe'
 import process from 'node:process'
 import cac from 'cac'
@@ -24,7 +24,7 @@ export interface CreateCliOptions {
    * Called once the dev server is listening. Use this to print a
    * startup banner or trigger side-effects that depend on the live URL.
    */
-  onReady?: (info: { origin: string, port: number, app: App }) => void | Promise<void>
+  onReady?: (info: { origin: string, port: number, app: H3 }) => void | Promise<void>
 }
 
 export interface CliHandle {

@@ -12,9 +12,9 @@ import {
   createHostContext,
   startHttpAndWs,
 } from 'devframe/node'
-import { serveStaticHandler } from 'devframe/utils/serve-static'
+import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
-import { createApp, eventHandler } from 'h3'
+import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import devframe from '../src/devframe'
 
@@ -66,13 +66,13 @@ export async function startInspectorServer(
   const host = '127.0.0.1'
   const port = await getPort({ host, random: true })
 
-  const app = createApp()
+  const app = new H3()
   const origin = `http://${host}:${port}`
   const h3Host = createH3DevToolsHost({
     origin,
     appName: devframe.id,
     mount: (base, dir) => {
-      app.use(base, serveStaticHandler(dir))
+      mountStaticHandler(app, base, dir)
     },
   })
 
@@ -80,16 +80,8 @@ export async function startInspectorServer(
   await devframe.setup(ctx)
 
   const metaPath = `${basePath}${DEVTOOLS_CONNECTION_META_FILENAME}`
-  app.use(
-    metaPath,
-    eventHandler((event) => {
-      event.node.res.setHeader('Content-Type', 'application/json')
-      return event.node.res.end(
-        JSON.stringify({ backend: 'websocket', websocket: port }),
-      )
-    }),
-  )
-  app.use(basePath, serveStaticHandler(resolve(distDir)))
+  app.use(metaPath, () => ({ backend: 'websocket', websocket: port }))
+  mountStaticHandler(app, basePath, resolve(distDir))
 
   const server = await startHttpAndWs({
     context: ctx,

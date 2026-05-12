@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { createApp, toNodeListener } from 'h3'
+import { H3, toNodeHandler } from 'h3'
 import { afterEach, describe, expect, it } from 'vitest'
 import { serveStaticHandler, serveStaticNodeMiddleware } from './serve-static'
 
@@ -19,9 +19,9 @@ function makeTmp(prefix = 'devframe-serve-'): string {
 }
 
 async function startH3(dir: string, options?: ServeStaticOptions): Promise<Fixture> {
-  const app = createApp()
+  const app = new H3()
   app.use(serveStaticHandler(dir, options))
-  const server = createServer(toNodeListener(app))
+  const server = createServer(toNodeHandler(app))
   await new Promise<void>(r => server.listen(0, '127.0.0.1', r))
   const port = (server.address() as AddressInfo).port
   return {

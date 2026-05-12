@@ -8,12 +8,12 @@ export interface CreateDevServerOptions {
   flags?: Record<string, unknown>;
   distDir?: string;
   basePath?: string;
-  app?: App;
+  app?: H3;
   openBrowser?: boolean | string;
   onReady?: (_: {
     origin: string;
     port: number;
-    app: App;
+    app: H3;
   }) => void | Promise<void>;
 }
 export interface ResolveDevServerPortOptions {

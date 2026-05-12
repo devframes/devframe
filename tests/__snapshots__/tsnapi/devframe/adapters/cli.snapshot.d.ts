@@ -12,7 +12,7 @@ export interface CreateCliOptions {
   onReady?: (_: {
     origin: string;
     port: number;
-    app: App;
+    app: H3;
   }) => void | Promise<void>;
 }
 // #endregion
