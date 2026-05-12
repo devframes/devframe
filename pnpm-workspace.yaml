@@ -26,11 +26,11 @@ catalogs:
     tsdown: ^0.22.0
     tsx: ^4.21.0
     turbo: ^2.9.12
-    vite: ^8.0.11
+    vite: ^8.0.12
   deps:
     '@modelcontextprotocol/sdk': ^1.29.0
     '@valibot/to-json-schema': ^1.7.0
-    ansis: ^4.2.0
+    ansis: ^4.3.0
     birpc: ^4.0.0
     cac: ^7.0.0
     get-port-please: ^3.2.0
@@ -51,7 +51,7 @@ catalogs:
     whenexpr: ^0.1.2
     ws: ^8.20.0
   devtools:
-    '@antfu/eslint-config': ^8.2.0
+    '@antfu/eslint-config': ^9.0.0
     bumpp: ^11.1.0
     eslint: ^10.3.0
     nano-staged: ^1.0.2
@@ -59,7 +59,7 @@ catalogs:
     skills-npm: ^1.1.1
     typescript: ^6.0.3
   docs:
-    mermaid: ^11.14.0
+    mermaid: ^11.15.0
     vitepress: ^2.0.0-alpha.17
     vitepress-plugin-mermaid: ^2.0.17
   frontend:
@@ -69,8 +69,8 @@ catalogs:
     human-id: ^4.1.3
     ua-parser-modern: ^0.1.1
   testing:
-    tsnapi: ^0.3.2
-    vitest: ^4.1.5
+    tsnapi: ^0.3.3
+    vitest: ^4.1.6
   types:
-    '@types/node': ^25.6.0
+    '@types/node': ^25.7.0
     '@types/ws': ^8.18.1
