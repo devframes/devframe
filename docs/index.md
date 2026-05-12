@@ -43,17 +43,3 @@ features:
     details: Surface RPC functions, tools, and resources to coding agents over MCP with a single `agent` field on each function.
     link: /guide/agent-native
 ---
-
-## Built with Devframe
-
-Real-world devtools shipping on Devframe:
-
-- [**Vite DevTools**](https://devtools.vite.dev/) — the host that bundles multiple devframes into one UI (docks, command palette, terminals). Mount your own definition into it via the [`vite` adapter](/adapters/vite).
-- [**ESLint Config Inspector**](https://github.com/eslint/config-inspector) — official ESLint tool for inspecting flat configs.
-- [**node-modules-inspector**](https://github.com/antfu/node-modules-inspector) — interactive visualizer for your `node_modules` dependency graph.
-
-End-to-end examples in this repo, exercising the full adapter surface:
-
-- [**devframe-counter**](https://github.com/devframes/devframe/tree/main/examples/devframe-counter) — smallest possible demo, exercises all adapters.
-- [**devframe-files-inspector**](https://github.com/devframes/devframe/tree/main/examples/devframe-files-inspector) — lists files in cwd via RPC; exercises CLI dev/build/spa surfaces.
-- [**devframe-streaming-chat**](https://github.com/devframes/devframe/tree/main/examples/devframe-streaming-chat) — streams synthetic chat tokens from server to client via `ctx.rpc.streaming`.

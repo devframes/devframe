@@ -36,36 +36,6 @@ Devframe keeps its surface focused on one tool, so the same definition stays por
 | **[Client](./client)** | Browser-side RPC client (`connectDevframe`) with auto-auth and WebSocket / static modes. |
 | **[Agent-Native](./agent-native)** | Opt-in exposure of your tool's surface to coding agents over MCP. |
 
-## Architecture
-
-```mermaid
-flowchart TB
-  Definition["DevframeDefinition<br/>(defineDevframe)"]
-  Definition --> Adapters
-
-  subgraph Adapters["Adapters (choose one per deployment)"]
-    CLI["cli"]
-    Vite["vite"]
-    Build["build"]
-    Embedded["embedded"]
-    MCP["mcp"]
-  end
-
-  Adapters --> Ctx["DevToolsNodeContext"]
-
-  subgraph Ctx["DevToolsNodeContext"]
-    direction TB
-    RPC["rpc"]
-    Views["views (hostStatic)"]
-    Diagnostics["diagnostics"]
-    Agent["agent"]
-  end
-
-  Ctx <-->|WebSocket or static| Client["DevToolsRpcClient<br/>(browser)"]
-```
-
-Hosts (Vite DevTools is one) can wrap the same definition with their own adapter to augment `ctx` with extras like docks, terminals, and a command palette.
-
 ## Install
 
 ```sh
@@ -138,3 +108,17 @@ Devframe has zero dependencies on Vite or any `@vitejs/*` package — the same d
 - [Adapters](/adapters/) — pick the right deployment target for your tool
 - [RPC](./rpc) — define type-safe server functions your client can call
 - [Agent-Native](./agent-native) — expose your devframe to Claude Desktop, Cursor, or any MCP client
+
+## Built with Devframe
+
+Real-world devtools shipping on Devframe:
+
+- [**Vite DevTools**](https://devtools.vite.dev/) — the host that bundles multiple devframes into one UI (docks, command palette, terminals). Mount your own definition into it via the [`vite` adapter](/adapters/vite).
+- [**ESLint Config Inspector**](https://github.com/eslint/config-inspector) — official ESLint tool for inspecting flat configs.
+- [**node-modules-inspector**](https://github.com/antfu/node-modules-inspector) — interactive visualizer for your `node_modules` dependency graph.
+
+End-to-end examples in this repo, exercising the full adapter surface:
+
+- [**devframe-counter**](https://github.com/devframes/devframe/tree/main/examples/devframe-counter) — smallest possible demo, exercises all adapters.
+- [**devframe-files-inspector**](https://github.com/devframes/devframe/tree/main/examples/devframe-files-inspector) — lists files in cwd via RPC; exercises CLI dev/build/spa surfaces.
+- [**devframe-streaming-chat**](https://github.com/devframes/devframe/tree/main/examples/devframe-streaming-chat) — streams synthetic chat tokens from server to client via `ctx.rpc.streaming`.
