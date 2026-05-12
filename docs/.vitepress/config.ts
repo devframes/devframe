@@ -58,7 +58,11 @@ export function devframeNav(prefix = ''): DefaultTheme.NavItemWithLink[] {
 export default withMermaid(defineConfig({
   title: 'Devframe',
   description: 'Framework-neutral foundation for building generic DevTools — RPC layer, hosts, and adapters.',
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
+  ],
   themeConfig: {
+    logo: { light: '/logo.svg', dark: '/logo.svg' },
     nav: [
       { text: 'Guide', items: guideItems('') },
       { text: 'Error Reference', link: '/errors/' },

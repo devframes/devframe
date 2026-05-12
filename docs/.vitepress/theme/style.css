@@ -1,0 +1,30 @@
+:root {
+  --vp-c-brand-1: #517158;
+  --vp-c-brand-2: #486954;
+  --vp-c-brand-3: #3e5c4a;
+  --vp-c-brand-soft: rgba(81, 113, 88, 0.14);
+
+  --vp-button-brand-border: transparent;
+  --vp-button-brand-text: #ffffff;
+  --vp-button-brand-bg: #517158;
+  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-hover-text: #ffffff;
+  --vp-button-brand-hover-bg: #486954;
+  --vp-button-brand-active-border: transparent;
+  --vp-button-brand-active-text: #ffffff;
+  --vp-button-brand-active-bg: #3e5c4a;
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #adc77f, #517158);
+
+  --vp-local-search-highlight-bg: #517158;
+}
+
+.dark {
+  --vp-c-brand-1: #adc77f;
+  --vp-c-brand-2: #93b062;
+  --vp-c-brand-3: #7f9c4e;
+  --vp-c-brand-soft: rgba(173, 199, 127, 0.16);
+
+  --vp-local-search-highlight-bg: #adc77f;
+}

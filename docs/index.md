@@ -5,6 +5,10 @@ hero:
   name: Devframe
   text: Framework-neutral foundation for DevTools
   tagline: One devframe definition. Seven adapters. RPC, hosts, shared state, and agent-native — independent of Vite and any UI framework.
+  image:
+    src: /logo.svg
+    alt: Devframe
+    width: 240
   actions:
     - theme: brand
       text: Get Started
