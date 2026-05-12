@@ -6,7 +6,7 @@ outline: deep
 
 **Devframe is an asset: define your devtool once, serve it anywhere.** You describe a single tool — its RPC surface, its data model, its SPA, its CLI shape — and the same definition deploys through any of the runtime adapters: a standalone CLI, a self-contained static report, an embedded SPA, an MCP server, and more. Devframe is framework- and build-tool-agnostic — it has no Vite dependency and no opinion on what UI framework your SPA uses.
 
-[Vite DevTools](https://devtools.vite.dev/) is built on top of devframe. If you need an integrated multi-tool host (docks, command palette, terminals, cross-tool toasts), mount your devframe into Vite DevTools via the [`vite` adapter](./adapters#vite) — or build your own host adapter targeting any environment you like.
+[Vite DevTools](https://devtools.vite.dev/) is built on top of devframe. If you need an integrated multi-tool host (docks, command palette, terminals, cross-tool toasts), mount your devframe into Vite DevTools via the [`vite` adapter](/adapters/vite) — or build your own host adapter targeting any environment you like.
 
 > [!WARNING] Experimental
 > The Devframe API is still in development and may change between versions. The agent-native surface (`agent` on `defineRpcFunction`, `ctx.agent`, and the MCP adapter) is additionally flagged as experimental.
@@ -32,39 +32,9 @@ Devframe keeps its surface focused on one tool, so the same definition stays por
 | **[Diagnostics](./diagnostics)** | Coded warnings/errors via `logs-sdk` — registered into the host logger so adapters and consumers share the same surface. |
 | **[Streaming](./streaming)** | One-way (RPC streaming) and two-way (uploads) channel primitives for long-running data. |
 | **[When Clauses](./when-clauses)** | VS Code-style conditional expressions for docks, commands, and custom UI. |
-| **[Utilities](./utilities)** | Bundled helpers under `devframe/utils/*` — terminal colors, hashing, editor launch, structured-clone serialization, and more. |
+| **[Utilities](/helpers/utilities)** | Bundled helpers under `devframe/utils/*` — terminal colors, hashing, editor launch, structured-clone serialization, and more. |
 | **[Client](./client)** | Browser-side RPC client (`connectDevframe`) with auto-auth and WebSocket / static modes. |
 | **[Agent-Native](./agent-native)** | Opt-in exposure of your tool's surface to coding agents over MCP. |
-
-## Architecture
-
-```mermaid
-flowchart TB
-  Definition["DevframeDefinition<br/>(defineDevframe)"]
-  Definition --> Adapters
-
-  subgraph Adapters["Adapters (choose one per deployment)"]
-    CLI["cli"]
-    Vite["vite"]
-    Build["build"]
-    Embedded["embedded"]
-    MCP["mcp"]
-  end
-
-  Adapters --> Ctx["DevToolsNodeContext"]
-
-  subgraph Ctx["DevToolsNodeContext"]
-    direction TB
-    RPC["rpc"]
-    Views["views (hostStatic)"]
-    Diagnostics["diagnostics"]
-    Agent["agent"]
-  end
-
-  Ctx <-->|WebSocket or static| Client["DevToolsRpcClient<br/>(browser)"]
-```
-
-Hosts (Vite DevTools is one) can wrap the same definition with their own adapter to augment `ctx` with extras like docks, terminals, and a command palette.
 
 ## Install
 
@@ -102,7 +72,7 @@ const devframe = defineDevframe({
 await createCli(devframe).parse()
 ```
 
-The same definition can also be deployed through any of the other adapters — for example, mounted into Vite DevTools via the [`vite` adapter](./adapters#vite).
+The same definition can also be deployed through any of the other adapters — for example, mounted into Vite DevTools via the [`vite` adapter](/adapters/vite).
 
 Run it:
 
@@ -126,15 +96,29 @@ Devframe deploys the same `DevframeDefinition` through one of these adapters:
 | `embedded` | `createEmbedded(d, { ctx })` | Runtime registration into an existing host |
 | `mcp` | `createMcpServer(d, opts)` | Model Context Protocol server |
 
-See [Adapters](./adapters) for the full reference.
+See [Adapters](/adapters/) for the full reference.
 
 ## Framework- and build-tool-agnostic
 
-Devframe has zero dependencies on Vite or any `@vitejs/*` package — the same definition runs in any Node environment, with any UI framework, against any build tool. Vite DevTools is one host built on top of devframe; mount your definition there with the [`vite` adapter](./adapters#vite), or write adapters for any other host.
+Devframe has zero dependencies on Vite or any `@vitejs/*` package — the same definition runs in any Node environment, with any UI framework, against any build tool. Vite DevTools is one host built on top of devframe; mount your definition there with the [`vite` adapter](/adapters/vite), or write adapters for any other host.
 
 ## What's next
 
 - [Devframe Definition](./devframe-definition) — understand `defineDevframe` and the `DevToolsNodeContext`
-- [Adapters](./adapters) — pick the right deployment target for your tool
+- [Adapters](/adapters/) — pick the right deployment target for your tool
 - [RPC](./rpc) — define type-safe server functions your client can call
 - [Agent-Native](./agent-native) — expose your devframe to Claude Desktop, Cursor, or any MCP client
+
+## Built with Devframe
+
+Real-world devtools shipping on Devframe:
+
+- [**Vite DevTools**](https://devtools.vite.dev/) — the host that bundles multiple devframes into one UI (docks, command palette, terminals). Mount your own definition into it via the [`vite` adapter](/adapters/vite).
+- [**ESLint Config Inspector**](https://github.com/eslint/config-inspector) — official ESLint tool for inspecting flat configs.
+- [**node-modules-inspector**](https://github.com/antfu/node-modules-inspector) — interactive visualizer for your `node_modules` dependency graph.
+
+End-to-end examples in this repo, exercising the full adapter surface:
+
+- [**devframe-counter**](https://github.com/devframes/devframe/tree/main/examples/devframe-counter) — smallest possible demo, exercises all adapters.
+- [**devframe-files-inspector**](https://github.com/devframes/devframe/tree/main/examples/devframe-files-inspector) — lists files in cwd via RPC; exercises CLI dev/build/spa surfaces.
+- [**devframe-streaming-chat**](https://github.com/devframes/devframe/tree/main/examples/devframe-streaming-chat) — streams synthetic chat tokens from server to client via `ctx.rpc.streaming`.

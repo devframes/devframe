@@ -4,7 +4,7 @@ outline: deep
 
 # Devframe Definition
 
-Every Devframe tool starts with a single `defineDevframe` call. The returned `DevframeDefinition` is a portable value that any of the [adapters](./adapters) can consume — the same definition runs under `createCli`, `createBuild`, `createMcpServer`, the `vite` adapter's `createPluginFromDevframe`, and so on.
+Every Devframe tool starts with a single `defineDevframe` call. The returned `DevframeDefinition` is a portable value that any of the [adapters](/adapters/) can consume — the same definition runs under `createCli`, `createBuild`, `createMcpServer`, the `vite` adapter's `createPluginFromDevframe`, and so on.
 
 ## Minimal definition
 
@@ -28,7 +28,7 @@ export default defineDevframe({
 })
 ```
 
-Host adapters (such as the [`vite` adapter](./adapters#vite) for Vite DevTools) derive their mount entry from `id`, `name`, `icon`, and `basePath` automatically.
+Host adapters (such as the [`vite` adapter](/adapters/vite) for Vite DevTools) derive their mount entry from `id`, `name`, `icon`, and `basePath` automatically.
 
 ## Definition fields
 
@@ -84,7 +84,7 @@ interface DevToolsNodeContext {
 }
 ```
 
-Host adapters can augment `ctx` with additional surfaces. For example, the [`vite` adapter](./adapters#vite) exposes Vite DevTools' dock, command, message, and terminal hosts via an optional `setup` hook on `createPluginFromDevframe` — consult the host's docs for those extras.
+Host adapters can augment `ctx` with additional surfaces. For example, the [`vite` adapter](/adapters/vite) exposes Vite DevTools' dock, command, message, and terminal hosts via an optional `setup` hook on `createPluginFromDevframe` — consult the host's docs for those extras.
 
 Each devframe-level host has a dedicated page:
 - [RPC](./rpc) — `ctx.rpc`
@@ -165,7 +165,7 @@ defineDevframe({
 })
 ```
 
-See [Adapters](./adapters) for how each adapter consumes these.
+See [Adapters](/adapters/) for how each adapter consumes these.
 
 ## Multiple runtimes, one definition
 
@@ -190,6 +190,6 @@ export const myPlugin = () => createPluginFromDevframe(devframe)
 
 ## What's next
 
-- [Adapters](./adapters) — pick a deployment target
+- [Adapters](/adapters/) — pick a deployment target
 - [RPC](./rpc) — register server functions
-- [`vite` adapter](./adapters#vite) — mount your devframe into Vite DevTools or another compatible host
+- [`vite` adapter](/adapters/vite) — mount your devframe into Vite DevTools or another compatible host

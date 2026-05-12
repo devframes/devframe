@@ -1,84 +1,28 @@
 # devframe
 
-Framework- and build-tool-agnostic foundation for building generic DevTools. Define your devtool once — its RPC, its data, its SPA, its CLI shape — and deploy the same definition anywhere through a set of pluggable adapters.
+[![npm version][npm-version-src]][npm-version-href]
+[![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![bundle][bundle-src]][bundle-href]
+[![JSDocs][jsdocs-src]][jsdocs-href]
+[![License][license-src]][license-href]
 
-Full documentation: [https://devfra.me/](https://devfra.me/).
+Framework-neutral foundation for building generic DevTools.
 
-## Install
-
-```sh
-pnpm add devframe
-```
-
-## Hello, Devframe
-
-```ts
-import { defineDevframe, defineRpcFunction } from 'devframe'
-import { createCli } from 'devframe/adapters/cli'
-
-const devframe = defineDevframe({
-  id: 'my-devframe',
-  name: 'My Devframe',
-  setup(ctx) {
-    ctx.rpc.register(defineRpcFunction({
-      name: 'my-devframe:hello',
-      type: 'static',
-      jsonSerializable: true,
-      handler: () => ({ message: 'hello' }),
-    }))
-  },
-})
-
-await createCli(devframe).parse()
-```
-
-## Adapters
-
-| Adapter | Use case |
-|---------|----------|
-| `cli` | Standalone CLI tool with `dev` / `build` / `mcp` subcommands. |
-| `build` | Generates a static, self-contained SPA snapshot. |
-| `vite` | Mounts the devframe into Vite DevTools (or any compatible host) via `@vitejs/devtools-kit`. |
-| `embedded` | Overlays inside another devtool's UI. |
-| `mcp` | Surfaces the devframe's RPC to coding agents over MCP. |
-
-## Agent-Native (experimental)
-
-> [!WARNING]
-> The agent-native surface — the `agent` field on `defineRpcFunction`, `DevToolsAgentHost`, and the `devframe/adapters/mcp` adapter — may change without a major version bump until it stabilizes.
-
-Devframe surfaces a devframe's RPC functions, tools, and resources to coding agents over [MCP](https://modelcontextprotocol.io). Flag an RPC function with `agent: { description }` to expose it, then spin up an MCP server:
-
-```ts
-import { defineDevframe, defineRpcFunction } from 'devframe'
-import { createMcpServer } from 'devframe/adapters/mcp'
-
-const getSummary = defineRpcFunction({
-  name: 'my-plugin:get-summary',
-  type: 'query',
-  agent: {
-    description: 'Return a short summary of the current build state.',
-  },
-  setup: ctx => ({ handler: async () => buildSummary() }),
-})
-
-const devframe = defineDevframe({
-  id: 'my-plugin',
-  setup(ctx) {
-    ctx.rpc.register(getSummary)
-    ctx.agent.registerResource({
-      id: 'latest-build',
-      name: 'Latest build',
-      read: () => ({ text: renderMarkdown(latestBuild) }),
-    })
-  },
-})
-
-await createMcpServer(devframe, { transport: 'stdio' })
-```
-
-Or via the CLI: `devframe mcp`. `@modelcontextprotocol/sdk` is a peer dependency — add it when you want MCP support. See the [Agent-Native guide](https://devfra.me/guide/agent-native) for the full API and Claude Desktop integration example.
+Documentation: [https://devfra.me/](https://devfra.me/).
 
 ## License
 
-[MIT](./LICENSE.md)
+[MIT](../../LICENSE.md) License © [Anthony Fu](https://github.com/antfu)
+
+<!-- Badges -->
+
+[npm-version-src]: https://img.shields.io/npm/v/devframe?style=flat&colorA=080f12&colorB=517158
+[npm-version-href]: https://npmx.dev/package/devframe
+[npm-downloads-src]: https://img.shields.io/npm/dm/devframe?style=flat&colorA=080f12&colorB=517158
+[npm-downloads-href]: https://npmx.dev/package/devframe
+[bundle-src]: https://img.shields.io/bundlephobia/minzip/devframe?style=flat&colorA=080f12&colorB=517158&label=minzip
+[bundle-href]: https://bundlephobia.com/result?p=devframe
+[license-src]: https://img.shields.io/github/license/devframes/devframe.svg?style=flat&colorA=080f12&colorB=517158
+[license-href]: https://github.com/devframes/devframe/blob/main/LICENSE.md
+[jsdocs-src]: https://img.shields.io/badge/jsdocs-reference-080f12?style=flat&colorA=080f12&colorB=517158
+[jsdocs-href]: https://www.jsdocs.io/package/devframe

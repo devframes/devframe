@@ -6,63 +6,21 @@
 
 <h1 align="center">Devframe</h1>
 
-[![npm version][npm-version-src]][npm-version-href]
-[![npm downloads][npm-downloads-src]][npm-downloads-href]
-[![bundle][bundle-src]][bundle-href]
-[![JSDocs][jsdocs-src]][jsdocs-href]
-[![License][license-src]][license-href]
+<p align="center">
+<a href="https://npmx.dev/package/devframe"><img src="https://img.shields.io/npm/v/devframe?style=flat&colorA=080f12&colorB=517158" alt="npm version" /></a>
+<a href="https://npmx.dev/package/devframe"><img src="https://img.shields.io/npm/dm/devframe?style=flat&colorA=080f12&colorB=517158" alt="npm downloads" /></a>
+<a href="https://bundlephobia.com/result?p=devframe"><img src="https://img.shields.io/bundlephobia/minzip/devframe?style=flat&colorA=080f12&colorB=517158&label=minzip" alt="bundle" /></a>
+<a href="https://www.jsdocs.io/package/devframe"><img src="https://img.shields.io/badge/jsdocs-reference-080f12?style=flat&colorA=080f12&colorB=517158" alt="JSDocs" /></a>
+<a href="https://github.com/devframes/devframe/blob/main/LICENSE.md"><img src="https://img.shields.io/github/license/devframes/devframe.svg?style=flat&colorA=080f12&colorB=517158" alt="License" /></a>
+</p>
 
-Framework-neutral foundation for building generic DevTools. Describe one devframe — its RPC, its data, its SPA, its CLI shape — and deploy the same definition through any of seven adapters.
+<p align="center">
+Framework-neutral foundation for building generic DevTools.
+</p>
 
-Documentation: [https://devfra.me/](https://devfra.me/).
-
-## Install
-
-```sh
-pnpm add devframe
-```
-
-## Hello, Devframe
-
-```ts
-import { defineDevframe, defineRpcFunction } from 'devframe'
-import { createCli } from 'devframe/adapters/cli'
-
-const devframe = defineDevframe({
-  id: 'my-devframe',
-  name: 'My Devframe',
-  setup(ctx) {
-    ctx.rpc.register(defineRpcFunction({
-      name: 'my-devframe:hello',
-      type: 'static',
-      jsonSerializable: true,
-      handler: () => ({ message: 'hello' }),
-    }))
-  },
-})
-
-await createCli(devframe).parse()
-```
-
-## Adapters
-
-| Adapter | Use case |
-|---------|----------|
-| `cli` | Standalone CLI tool with `dev` / `build` / `mcp` subcommands. |
-| `build` | Generates a static, self-contained SPA snapshot. |
-| `vite` | Mounts the devframe into Vite DevTools (or any compatible host) via `@vitejs/devtools-kit`. |
-| `embedded` | Overlays inside another devframe's UI. |
-| `mcp` | Surfaces the devframe's RPC to coding agents over MCP. |
-
-## Repo layout
-
-| Path | Description |
-|------|-------------|
-| [`packages/devframe`](./packages/devframe) | The published [`devframe`](https://www.npmjs.com/package/devframe) npm package. |
-| [`packages/nuxt`](./packages/nuxt) | The [`@devframes/nuxt`](https://www.npmjs.com/package/@devframes/nuxt) Nuxt module adapter. |
-| [`docs`](./docs) | VitePress documentation site, deployed at https://devfra.me/. |
-| [`examples`](./examples) | End-to-end demos: [`devframe-counter`](./examples/devframe-counter), [`devframe-files-inspector`](./examples/devframe-files-inspector), and [`devframe-streaming-chat`](./examples/devframe-streaming-chat). |
-| [`tests`](./tests) | Public-API snapshot tests via [`tsnapi`](https://github.com/posva/tsnapi). |
+<p align="center">
+<b>Documentation:</b> <a href="https://devfra.me/">https://devfra.me/</a>
+</p>
 
 ## Sponsors
 
@@ -75,16 +33,3 @@ await createCli(devframe).parse()
 ## License
 
 [MIT](./LICENSE.md) License © [Anthony Fu](https://github.com/antfu)
-
-<!-- Badges -->
-
-[npm-version-src]: https://img.shields.io/npm/v/devframe?style=flat&colorA=080f12&colorB=517158
-[npm-version-href]: https://npmx.dev/package/devframe
-[npm-downloads-src]: https://img.shields.io/npm/dm/devframe?style=flat&colorA=080f12&colorB=517158
-[npm-downloads-href]: https://npmx.dev/package/devframe
-[bundle-src]: https://img.shields.io/bundlephobia/minzip/devframe?style=flat&colorA=080f12&colorB=517158&label=minzip
-[bundle-href]: https://bundlephobia.com/result?p=devframe
-[license-src]: https://img.shields.io/github/license/devframes/devframe.svg?style=flat&colorA=080f12&colorB=517158
-[license-href]: https://github.com/devframes/devframe/blob/main/LICENSE.md
-[jsdocs-src]: https://img.shields.io/badge/jsdocs-reference-080f12?style=flat&colorA=080f12&colorB=517158
-[jsdocs-href]: https://www.jsdocs.io/package/devframe
