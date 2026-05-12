@@ -9,7 +9,7 @@ The `@devframes/nuxt` module wires a Nuxt-built SPA as a devframe client, and op
 It handles the four things every Nuxt-powered standalone devtool needs:
 
 1. **Base-agnostic assets.** Sets `app.baseURL: './'` and `vite.base: './'` so the same production build works at `/`, `/tool/`, and any other deployment path without build-time URL rewriting.
-2. **Runtime RPC connection.** Adds a client plugin that calls [`connectDevframe()`](./client) once on page load and provides the result as `$rpc` on the Nuxt app.
+2. **Runtime RPC connection.** Adds a client plugin that calls [`connectDevframe()`](/guide/client) once on page load and provides the result as `$rpc` on the Nuxt app.
 3. **Dev-time RPC bridge.** When you pass `devframe`, `nuxt dev` spins up a separate WebSocket RPC server and serves `__connection.json` so the SPA can reach it — no hand-rolled Vite plugin required.
 4. **TypeScript augmentation.** `useNuxtApp().$rpc` is typed as `DevToolsRpcClient` out of the box.
 
@@ -130,6 +130,6 @@ At runtime the built SPA fetches `./__connection.json` (resolved against `docume
 
 ## See also
 
-- [Standalone CLI recipe](./standalone-cli) — end-to-end walk-through
-- [Client](./client) — `connectDevframe` reference
-- [Adapters](./adapters) — CLI / Vite / Build / SPA / Kit / Embedded / MCP
+- [Standalone CLI recipe](/guide/standalone-cli) — end-to-end walk-through
+- [Client](/guide/client) — `connectDevframe` reference
+- [Adapters](/adapters/) — CLI / Vite / Build / Embedded / MCP

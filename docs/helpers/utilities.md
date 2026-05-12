@@ -46,7 +46,7 @@ launchEditor('src/main.ts:42:7')
 launchEditor('src/main.ts:42:7', 'code')
 ```
 
-The auto-detection reads the `LAUNCH_EDITOR` environment variable and falls back to common defaults. Most devframes consume this through the prebuilt `openInEditor` recipe — see [Open helpers](./standalone-cli#open-helpers).
+The auto-detection reads the `LAUNCH_EDITOR` environment variable and falls back to common defaults. Most devframes consume this through the prebuilt `openInEditor` recipe — see [Open helpers](./open-helpers).
 
 ### `devframe/utils/hash`
 
@@ -120,7 +120,7 @@ off()
 
 ### `devframe/utils/shared-state`
 
-Underlying immutable state container used by `ctx.rpc.sharedState`. Most devframes interact with it indirectly — see [Shared State](./shared-state). Available directly when you need a state hub outside the RPC host.
+Underlying immutable state container used by `ctx.rpc.sharedState`. Most devframes interact with it indirectly — see [Shared State](/guide/shared-state). Available directly when you need a state hub outside the RPC host.
 
 ```ts
 import { createSharedState } from 'devframe/utils/shared-state'
@@ -134,11 +134,11 @@ state.value() // { count: 1 }
 
 ### `devframe/utils/streaming-channel`
 
-Low-level sink/reader primitives for streamed RPC payloads. Most devframes consume these through `ctx.rpc.streaming` — see [Streaming](./streaming).
+Low-level sink/reader primitives for streamed RPC payloads. Most devframes consume these through `ctx.rpc.streaming` — see [Streaming](/guide/streaming).
 
 ### `devframe/utils/when`
 
-Statically-validated when-clause expressions for conditional UI visibility. The runtime + types ship from here; the consumer fields (`when` on docks and commands) are kit-side. See [When Clauses](./when-clauses).
+Statically-validated when-clause expressions for conditional UI visibility. The runtime + types ship from here; the consumer fields (`when` on docks and commands) are kit-side. See [When Clauses](/guide/when-clauses).
 
 ## Why a `utils/*` subpath
 

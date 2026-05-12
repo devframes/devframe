@@ -98,7 +98,7 @@ export default defineNuxtConfig({
 })
 ```
 
-Build with `nuxt build` and point `cli.distDir` at `./dist/public`. The SPA discovers its effective base at runtime — no `--base` rewrite needed. See the [Nuxt helper docs](./nuxt) for the full reference.
+Build with `nuxt build` and point `cli.distDir` at `./dist/public`. The SPA discovers its effective base at runtime — no `--base` rewrite needed. See the [Nuxt helper docs](/helpers/nuxt) for the full reference.
 
 ## Connecting from the client
 
@@ -157,21 +157,7 @@ The adapter derives each flag's CAC option from its schema — booleans become `
 
 ## Open helpers
 
-For the two actions every CLI devtool needs — open a file in the editor, reveal a path in the OS file explorer — use the prebuilt recipes instead of re-implementing them:
-
-```ts
-import { openHelpers } from 'devframe/recipes/open-helpers'
-
-defineDevframe({
-  id: 'my-tool',
-  name: 'My Tool',
-  setup(ctx) {
-    openHelpers.forEach(fn => ctx.rpc.register(fn))
-  },
-})
-```
-
-This registers `devframe:open-in-editor` and `devframe:open-in-finder`. Both helpers reuse the bundled [`launchEditor`](./utilities#devframe-utils-launch-editor) and [`open`](./utilities#devframe-utils-open) utilities, so there's nothing extra to install.
+For the two actions every CLI devtool needs — open a file in the editor, reveal a path in the OS file explorer — use the prebuilt recipes from `devframe/recipes/open-helpers` instead of re-implementing them. See [Helpers → Open Helpers](/helpers/open-helpers) for the full reference.
 
 ## Snapshot queries for static builds
 
@@ -320,7 +306,7 @@ For typed flag schemas, `parseCliFlags(schema, rawBag)` (from `devframe/adapters
 ## See also
 
 - [Devframe Definition](./devframe-definition) — field reference
-- [Adapters → CLI](./adapters#cli) — full CLI adapter reference including `configureCli` and mount-path rules
-- [Adapters → Dev](./adapters#dev) — `createDevServer` reference for bring-your-own-CLI integration
+- [Adapters → CLI](/adapters/cli) — full CLI adapter reference including `configureCli` and mount-path rules
+- [Adapters → Dev](/adapters/dev) — `createDevServer` reference for bring-your-own-CLI integration
 - [Client](./client) — `connectDevframe`, shared state, caching
 - [Agent-Native](./agent-native) — exposing your tool to Claude Desktop, Cursor, etc.
