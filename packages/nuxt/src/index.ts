@@ -113,8 +113,14 @@ export default defineNuxtModule<DevframeNuxtModuleOptions>({
       baseURL: options.baseURL,
     }
 
+    const runtimeDir = resolve('./runtime')
+
+    nuxt.hook('prepare:types', ({ references }) => {
+      references.push({ path: resolve(runtimeDir, 'types') })
+    })
+
     addPlugin({
-      src: resolve('./runtime/plugin.client'),
+      src: resolve(runtimeDir, 'plugin.client'),
       mode: 'client',
     })
 
