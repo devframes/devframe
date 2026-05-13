@@ -1,3 +1,5 @@
+import type { RpcDumpRecordError } from '../rpc/types'
+import { reviveDumpError } from '../rpc/dump-error'
 import { hash } from '../utils/hash'
 import { structuredCloneDeserialize } from '../utils/structured-clone'
 
@@ -16,6 +18,15 @@ export interface StaticRpcManifestQueryEntry {
   fallback?: string
   /** Encoder used when each record/fallback file was written. Default: `'json'`. */
   serialization?: StaticRpcSerialization
+  /**
+   * Per-record encoder override. When a record file was written with a
+   * different serializer than {@link serialization} (e.g. an error-bearing
+   * record promoted to `'structured-clone'` for a `jsonSerializable: true`
+   * function), the override is recorded here.
+   */
+  recordSerializations?: Record<string, StaticRpcSerialization>
+  /** Encoder override for the fallback shard. */
+  fallbackSerialization?: StaticRpcSerialization
 }
 
 export type StaticRpcManifestEntry
@@ -28,10 +39,7 @@ export type StaticRpcManifest = Record<string, StaticRpcManifestEntry>
 export interface StaticRpcRecord {
   inputs?: any[]
   output?: any
-  error?: {
-    message: string
-    name: string
-  }
+  error?: RpcDumpRecordError
 }
 
 function isStaticEntry(value: unknown): value is StaticRpcManifestStaticEntry {
@@ -56,11 +64,8 @@ function isRecord(value: unknown): value is StaticRpcRecord {
 }
 
 function resolveRecordOutput(record: StaticRpcRecord): any {
-  if (record.error) {
-    const error = new Error(record.error.message)
-    error.name = record.error.name
-    throw error
-  }
+  if (record.error)
+    throw reviveDumpError(record.error)
   return record.output
 }
 
@@ -124,12 +129,14 @@ export function createStaticRpcCaller(
       const recordPath = entry.records[argsHash]
 
       if (recordPath) {
-        const record = await loadQueryRecord(recordPath, entry.serialization)
+        const recordSerialization = entry.recordSerializations?.[argsHash] ?? entry.serialization
+        const record = await loadQueryRecord(recordPath, recordSerialization)
         return resolveRecordOutput(record)
       }
 
       if (entry.fallback) {
-        const fallback = await loadQueryRecord(entry.fallback, entry.serialization)
+        const fallbackSerialization = entry.fallbackSerialization ?? entry.serialization
+        const fallback = await loadQueryRecord(entry.fallback, fallbackSerialization)
         return resolveRecordOutput(fallback)
       }
 

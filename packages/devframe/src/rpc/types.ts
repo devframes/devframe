@@ -99,6 +99,26 @@ export type RpcArgsSchema = readonly GenericSchema[]
 export type RpcReturnSchema = GenericSchema
 
 /**
+ * Serialized representation of a thrown value in a dump record.
+ *
+ * Errors are stored as plain objects so they round-trip through both the
+ * strict-JSON and structured-clone codecs. `message` and `name` are always
+ * present; `cause` and any own enumerable properties of the original
+ * `Error` are preserved on a best-effort basis. Non-`Error` throws are
+ * normalized to `{ name: 'Error', message: String(thrown) }`.
+ */
+export interface RpcDumpRecordError {
+  /** Error message (mirrors `Error.message`). */
+  message: string
+  /** Error type name (e.g., "Error", "TypeError"). */
+  name: string
+  /** `Error.cause`, recursively serialized when it is itself an `Error`. */
+  cause?: unknown
+  /** Own enumerable properties of the original error (excluding `message`/`name`/`cause`). */
+  [key: string]: unknown
+}
+
+/**
  * Single record in a dump store with pre-computed results.
  */
 export interface RpcDumpRecord<ARGS extends any[] = any[], RETURN = any> {
@@ -107,12 +127,7 @@ export interface RpcDumpRecord<ARGS extends any[] = any[], RETURN = any> {
   /** Result (value or lazy function) */
   output?: RETURN
   /** Error if execution failed */
-  error?: {
-    /** Error message */
-    message: string
-    /** Error type name (e.g., "Error", "TypeError") */
-    name: string
-  }
+  error?: RpcDumpRecordError
 }
 
 /**

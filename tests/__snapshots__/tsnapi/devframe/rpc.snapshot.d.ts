@@ -23,6 +23,7 @@ export { RpcDumpCollectionOptions }
 export { RpcDumpDefinition }
 export { RpcDumpGetter }
 export { RpcDumpRecord }
+export { RpcDumpRecordError }
 export { RpcDumpStore }
 export { RpcFunctionAgentOptions }
 export { RpcFunctionDefinition }

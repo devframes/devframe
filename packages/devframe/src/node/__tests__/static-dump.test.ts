@@ -216,4 +216,111 @@ describe('collectStaticRpcDump', () => {
         .toThrowError(/jsonSerializable: true.*is a Map/)
     })
   })
+
+  describe('error-bearing records', () => {
+    it('promotes error-bearing query records to structured-clone for jsonSerializable: true', async () => {
+      const flaky = defineRpcFunction({
+        name: 'test:flaky',
+        type: 'query',
+        jsonSerializable: true,
+        handler: (id: string) => {
+          if (id === 'bad')
+            throw new Error('boom')
+          return { id }
+        },
+        dump: {
+          inputs: [['good'], ['bad']],
+        },
+      })
+
+      const result = await collectStaticRpcDump([flaky], {})
+      const entry = result.manifest['test:flaky'] as {
+        type: 'query'
+        records: Record<string, string>
+        serialization: 'json'
+        recordSerializations?: Record<string, 'json' | 'structured-clone'>
+      }
+
+      expect(entry.serialization).toBe('json')
+      expect(entry.recordSerializations).toBeDefined()
+
+      const erroredKeys = Object.keys(entry.recordSerializations!)
+      expect(erroredKeys).toHaveLength(1)
+
+      const erroredPath = entry.records[erroredKeys[0]!]!
+      expect(result.files[erroredPath]!.serialization).toBe('structured-clone')
+
+      const goodPath = entry.records[Object.keys(entry.records).find(k => k !== erroredKeys[0])!]!
+      expect(result.files[goodPath]!.serialization).toBe('json')
+    })
+
+    it('keeps the entry serialization on error-bearing records when default is structured-clone', async () => {
+      const flaky = defineRpcFunction({
+        name: 'test:flaky-sc',
+        type: 'query',
+        // default jsonSerializable: false → structured-clone shards
+        handler: (id: string) => {
+          if (id === 'bad')
+            throw new Error('boom')
+          return { id }
+        },
+        dump: {
+          inputs: [['good'], ['bad']],
+        },
+      })
+
+      const result = await collectStaticRpcDump([flaky], {})
+      const entry = result.manifest['test:flaky-sc'] as {
+        serialization: 'json' | 'structured-clone'
+        recordSerializations?: Record<string, 'json' | 'structured-clone'>
+      }
+
+      expect(entry.serialization).toBe('structured-clone')
+      // No overrides — everything is already SC.
+      expect(entry.recordSerializations).toBeUndefined()
+    })
+
+    it('preserves rich error info (cause + custom props) through a full read round-trip', async () => {
+      const tags = new Map<string, number>([['a', 1]])
+      const flaky = defineRpcFunction({
+        name: 'test:flaky-roundtrip',
+        type: 'query',
+        jsonSerializable: true,
+        handler: (id: string) => {
+          if (id === 'bad') {
+            const err = new TypeError('boom', { cause: new Error('inner') }) as Error & { tags?: unknown }
+            err.tags = tags
+            throw err
+          }
+          return { id }
+        },
+        dump: {
+          inputs: [['bad']],
+        },
+      })
+
+      const result = await collectStaticRpcDump([flaky], {})
+      const entry = result.manifest['test:flaky-roundtrip'] as {
+        records: Record<string, string>
+        recordSerializations?: Record<string, 'json' | 'structured-clone'>
+      }
+
+      const recordKey = Object.keys(entry.records)[0]!
+      const recordPath = entry.records[recordKey]!
+      const file = result.files[recordPath]!
+
+      // The shard was promoted to structured-clone — verify the Error
+      // (and its Map property) round-trips losslessly through the wire format.
+      expect(file.serialization).toBe('structured-clone')
+      const wireText = structuredCloneStringify(file.data)
+      const revived = structuredCloneDeserialize(JSON.parse(wireText)) as {
+        error: { name: string, message: string, cause: { message: string }, tags: Map<string, number> }
+      }
+      expect(revived.error.name).toBe('TypeError')
+      expect(revived.error.message).toBe('boom')
+      expect(revived.error.cause.message).toBe('inner')
+      expect(revived.error.tags).toBeInstanceOf(Map)
+      expect(revived.error.tags.get('a')).toBe(1)
+    })
+  })
 })

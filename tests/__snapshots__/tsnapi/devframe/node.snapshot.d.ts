@@ -36,6 +36,8 @@ export interface StaticRpcDumpManifestQueryEntry {
   records: Record<string, string>;
   fallback?: string;
   serialization?: StaticRpcDumpSerialization;
+  recordSerializations?: Record<string, StaticRpcDumpSerialization>;
+  fallbackSerialization?: StaticRpcDumpSerialization;
 }
 export interface StaticRpcDumpManifestStaticEntry {
   type: 'static';

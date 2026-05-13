@@ -111,6 +111,64 @@ describe('dumps', () => {
     await expect(client.divide(10, 0)).rejects.toThrow('Division by zero')
   })
 
+  it('should preserve error name, cause, and custom properties', async () => {
+    const tags = new Map<string, number>([['a', 1], ['b', 2]])
+    const flaky = defineRpcFunction({
+      name: 'flaky',
+      dump: {
+        inputs: [[]] as [][],
+      },
+      handler: () => {
+        const err = new TypeError('boom', { cause: new Error('inner') }) as Error & { tags?: unknown }
+        err.tags = tags
+        throw err
+      },
+    })
+
+    const store = await dumpFunctions([flaky])
+    const record = Object.entries(store.records)
+      .filter(([key]) => key.startsWith('flaky---') && !key.endsWith('---fallback'))
+      .map(([, r]) => r as RpcDumpRecord)[0]!
+
+    expect(record.error?.name).toBe('TypeError')
+    expect(record.error?.message).toBe('boom')
+    const cause = record.error?.cause as { name: string, message: string }
+    expect(cause.name).toBe('Error')
+    expect(cause.message).toBe('inner')
+    expect(record.error?.tags).toBe(tags)
+
+    const client = createClientFromDump(store)
+    await expect(client.flaky()).rejects.toMatchObject({
+      name: 'TypeError',
+      message: 'boom',
+      cause: { name: 'Error', message: 'inner' },
+      tags,
+    })
+  })
+
+  it('should normalize non-Error throws to { name: "Error", message }', async () => {
+    const odd = defineRpcFunction({
+      name: 'odd',
+      dump: {
+        inputs: [[]] as [][],
+      },
+      handler: () => {
+        // eslint-disable-next-line no-throw-literal
+        throw 'just a string'
+      },
+    })
+
+    const store = await dumpFunctions([odd])
+    const record = Object.entries(store.records)
+      .filter(([key]) => key.startsWith('odd---') && !key.endsWith('---fallback'))
+      .map(([, r]) => r as RpcDumpRecord)[0]!
+
+    expect(record.error).toEqual({ name: 'Error', message: 'just a string' })
+
+    const client = createClientFromDump(store)
+    await expect(client.odd()).rejects.toThrow('just a string')
+  })
+
   it('should collect dumps from setup result', async () => {
     const defineWithContext = createDefineWrapperWithContext<{ balance: number }>()
 

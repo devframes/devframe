@@ -10,6 +10,7 @@ import type {
 import pLimit from 'p-limit'
 import { hash } from '../utils/hash'
 import { logger } from './diagnostics'
+import { reviveDumpError, serializeDumpError } from './dump-error'
 import { validateDefinitions } from './validation'
 
 function getDumpRecordKey(functionName: string, args: any[]): string {
@@ -166,13 +167,10 @@ export async function dumpFunctions<
               output,
             }
           }
-          catch (error: any) {
+          catch (error: unknown) {
             store.records[recordKey] = {
               inputs: input,
-              error: {
-                message: error.message,
-                name: error.name,
-              },
+              error: serializeDumpError(error),
             }
           }
         })
@@ -225,9 +223,7 @@ export function createClientFromDump<T extends Record<string, any>>(
           const record = await resolveGetter(recordOrGetter)
 
           if (record.error) {
-            const error = new Error(record.error.message)
-            error.name = record.error.name
-            throw error
+            throw reviveDumpError(record.error)
           }
 
           if (typeof record.output === 'function') {

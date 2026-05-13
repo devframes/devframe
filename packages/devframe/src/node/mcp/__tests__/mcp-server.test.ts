@@ -80,6 +80,47 @@ describe('mcp adapter (in-memory)', () => {
     }
   })
 
+  it('coerces non-JSON values returned from a tool', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.agent.registerTool({
+        id: 'rich',
+        description: 'Returns BigInt + Date.',
+        handler: () => ({ count: 42n, when: new Date(0) }),
+      })
+
+      const result = await client.callTool({ name: 'rich', arguments: {} })
+      const content = result.content as Array<{ type: string, text: string }>
+      expect(content[0]!.text).toContain('"42n"')
+      expect(content[0]!.text).toContain('1970-01-01T00:00:00.000Z')
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('surfaces Error name and cause when a tool throws', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.agent.registerTool({
+        id: 'crash',
+        description: 'Throws.',
+        handler: () => {
+          throw new TypeError('boom', { cause: new Error('inner') })
+        },
+      })
+
+      const result = await client.callTool({ name: 'crash', arguments: {} })
+      expect(result.isError).toBe(true)
+      const content = result.content as Array<{ type: string, text: string }>
+      expect(content[0]!.text).toContain('TypeError: boom')
+      expect(content[0]!.text).toContain('cause: inner')
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
   it('lists and reads registered resources', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {

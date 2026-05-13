@@ -13,6 +13,7 @@ import {
 import { join } from 'pathe'
 import { createHostContext } from '../context'
 import { logger } from '../diagnostics'
+import { formatMcpError, stringifyForMcp } from './stringify'
 import { valibotArgsToJsonSchema, valibotReturnToJsonSchema } from './to-json-schema'
 
 export interface CreateMcpServerOptions {
@@ -158,7 +159,7 @@ function registerToolHandlers(server: Server, ctx: DevToolsNodeContext): void {
         content: [
           {
             type: 'text',
-            text: stringify(result),
+            text: stringifyForMcp(result),
           },
         ],
       }
@@ -169,7 +170,7 @@ function registerToolHandlers(server: Server, ctx: DevToolsNodeContext): void {
         content: [
           {
             type: 'text',
-            text: `Error invoking "${name}": ${error instanceof Error ? error.message : String(error)}`,
+            text: `Error invoking "${name}": ${formatMcpError(error)}`,
           },
         ],
       }
@@ -218,7 +219,7 @@ function registerResourceHandlers(
           {
             uri,
             mimeType: content.mimeType ?? 'application/json',
-            text: content.text ?? stringify(content.json),
+            text: content.text ?? stringifyForMcp(content.json),
           },
         ],
       }
@@ -231,7 +232,7 @@ function registerResourceHandlers(
           {
             uri,
             mimeType: 'application/json',
-            text: stringify(state.value()),
+            text: stringifyForMcp(state.value()),
           },
         ],
       }
@@ -286,17 +287,4 @@ function parseResourceUri(uri: string): { kind: 'resource', id: string } | { kin
   if (kind === 'resource')
     return { kind: 'resource', id: decoded }
   return { kind: 'state', key: decoded }
-}
-
-function stringify(value: unknown): string {
-  if (value === undefined)
-    return 'undefined'
-  if (typeof value === 'string')
-    return value
-  try {
-    return JSON.stringify(value, null, 2)
-  }
-  catch {
-    return String(value)
-  }
 }
