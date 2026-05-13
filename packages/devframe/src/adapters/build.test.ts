@@ -26,8 +26,15 @@ describe('createBuild', () => {
   })
 
   afterEach(async () => {
-    await fs.rm(outDir, { recursive: true, force: true })
-    await fs.rm(distDir, { recursive: true, force: true })
+    const rmOpts = { recursive: true, force: true, maxRetries: 3, retryDelay: 100 } as const
+    await Promise.allSettled([
+      fs.rm(outDir, rmOpts).catch((err) => {
+        console.error(`Failed to cleanup outDir at ${outDir}:`, err)
+      }),
+      fs.rm(distDir, rmOpts).catch((err) => {
+        console.error(`Failed to cleanup distDir at ${distDir}:`, err)
+      }),
+    ])
   })
 
   it('throws when no distDir is provided', async () => {
