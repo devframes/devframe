@@ -4,8 +4,8 @@ import type { ServerOptions as HttpsServerOptions } from 'node:https'
 import type { WebSocket } from 'ws'
 import type { RpcFunctionDefinitionAny } from '../types'
 import { createServer as createHttpsServer } from 'node:https'
+import { structuredCloneParse, structuredCloneStringify } from 'devframe/utils/structured-clone'
 import { WebSocketServer } from 'ws'
-import { structuredCloneParse, structuredCloneStringify } from '../../utils/structured-clone'
 import { strictJsonStringify, STRUCTURED_CLONE_PREFIX } from '../serialization'
 
 export interface DevToolsNodeRpcSessionMeta {

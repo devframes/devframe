@@ -1,10 +1,10 @@
 import type { DevframeDefinition } from '../types/devframe'
+import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { resolve } from 'pathe'
 import { resolveBasePath } from '../adapters/_shared'
 import { createDevServer, resolveDevServerPort } from '../adapters/dev'
 import { DEVTOOLS_CONNECTION_META_FILENAME } from '../constants'
 import { logger } from '../node/diagnostics'
-import { serveStaticNodeMiddleware } from '../utils/serve-static'
 
 export interface ViteDevBridgeOptions {
   /**

@@ -1,7 +1,7 @@
 import type { RpcDumpRecordError } from '../rpc/types'
-import { reviveDumpError } from '../rpc/dump-error'
-import { hash } from '../utils/hash'
-import { structuredCloneDeserialize } from '../utils/structured-clone'
+import { hash } from 'devframe/utils/hash'
+import { structuredCloneDeserialize } from 'devframe/utils/structured-clone'
+import { reviveDumpError } from '../rpc/dump/error'
 
 export type StaticRpcSerialization = 'json' | 'structured-clone'
 

@@ -3,6 +3,8 @@ import type { DevframeDefinition } from '../types/devframe'
 import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import process from 'node:process'
+import { colors as c } from 'devframe/utils/colors'
+import { structuredCloneStringify } from 'devframe/utils/structured-clone'
 import { dirname, resolve } from 'pathe'
 import {
   DEVTOOLS_CONNECTION_META_FILENAME,
@@ -11,10 +13,8 @@ import {
 } from '../constants'
 import { createHostContext } from '../node/context'
 import { createH3DevToolsHost } from '../node/host-h3'
-import { collectStaticRpcDump } from '../node/static-dump'
+import { collectStaticRpcDump } from '../rpc/dump/static'
 import { strictJsonStringify } from '../rpc/serialization'
-import { colors as c } from '../utils/colors'
-import { structuredCloneStringify } from '../utils/structured-clone'
 import { resolveBasePath } from './_shared'
 
 export interface CreateBuildOptions {

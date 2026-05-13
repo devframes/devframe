@@ -22,32 +22,6 @@ export interface CreateStorageOptions<T extends object> {
   mergeInitialValue?: false | ((_: T, _: T) => T);
   debounce?: number;
 }
-export interface StaticRpcDumpCollection {
-  manifest: StaticRpcDumpManifest;
-  files: Record<string, StaticRpcDumpFile>;
-}
-export interface StaticRpcDumpFile {
-  serialization: StaticRpcDumpSerialization;
-  fnName: string;
-  data: unknown;
-}
-export interface StaticRpcDumpManifestQueryEntry {
-  type: 'query';
-  records: Record<string, string>;
-  fallback?: string;
-  serialization?: StaticRpcDumpSerialization;
-}
-export interface StaticRpcDumpManifestStaticEntry {
-  type: 'static';
-  path: string;
-  serialization?: StaticRpcDumpSerialization;
-}
-// #endregion
-
-// #region Types
-export type StaticRpcDumpManifest = Record<string, StaticRpcDumpManifestValue>;
-export type StaticRpcDumpManifestValue = StaticRpcDumpManifestStaticEntry | StaticRpcDumpManifestQueryEntry | any;
-export type StaticRpcDumpSerialization = 'json' | 'structured-clone';
 // #endregion
 
 // #region Classes
@@ -108,7 +82,6 @@ export declare class RpcFunctionsHost extends RpcFunctionsCollectorBase<DevTools
 // #endregion
 
 // #region Functions
-export declare function collectStaticRpcDump(_: Iterable<RpcFunctionDefinitionAny>, _: any): Promise<StaticRpcDumpCollection>;
 export declare function createH3DevToolsHost(_: CreateH3DevToolsHostOptions): DevToolsHost;
 export declare function createHostContext(_: CreateHostContextOptions): Promise<DevToolsNodeContext>;
 export declare function createRpcSharedStateServerHost(_: RpcFunctionsHost$1): RpcSharedStateHost;

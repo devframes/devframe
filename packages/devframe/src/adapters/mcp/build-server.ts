@@ -10,9 +10,9 @@ import {
   ListToolsRequestSchema,
   ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
+import { createHostContext } from 'devframe/node'
 import { join } from 'pathe'
-import { createHostContext } from '../context'
-import { logger } from '../diagnostics'
+import { logger } from '../../node/diagnostics'
 import { formatMcpError, stringifyForMcp } from './stringify'
 import { valibotArgsToJsonSchema, valibotReturnToJsonSchema } from './to-json-schema'
 

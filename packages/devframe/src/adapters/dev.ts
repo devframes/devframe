@@ -1,6 +1,8 @@
 import type { StartedServer } from '../node/server'
 import type { DevframeDefinition, DevframeSetupInfo } from '../types/devframe'
 import process from 'node:process'
+import { open } from 'devframe/utils/open'
+import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
@@ -8,8 +10,6 @@ import { DEVTOOLS_CONNECTION_META_FILENAME } from '../constants'
 import { createHostContext } from '../node/context'
 import { createH3DevToolsHost } from '../node/host-h3'
 import { startHttpAndWs } from '../node/server'
-import { open } from '../utils/open'
-import { mountStaticHandler } from '../utils/serve-static'
 import { normalizeBasePath, resolveBasePath } from './_shared'
 
 const DEFAULT_PORT = 9999

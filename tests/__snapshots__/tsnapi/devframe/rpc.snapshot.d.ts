@@ -4,6 +4,7 @@
 // #region Other
 export { BirpcFn }
 export { BirpcReturn }
+export { collectStaticRpcDump }
 export { createClientFromDump }
 export { createDefineWrapperWithContext }
 export { defineRpcFunction }
@@ -12,6 +13,7 @@ export { EntriesToObject }
 export { getDefinitionsWithDumps }
 export { getRpcHandler }
 export { getRpcResolvedSetupResult }
+export { reviveDumpError }
 export { RpcArgsSchema }
 export { RpcCacheManager }
 export { RpcCacheOptions }
@@ -36,6 +38,14 @@ export { RpcFunctionsCollectorBase }
 export { RpcFunctionSetupResult }
 export { RpcFunctionType }
 export { RpcReturnSchema }
+export { serializeDumpError }
+export { StaticRpcDumpCollection }
+export { StaticRpcDumpFile }
+export { StaticRpcDumpManifest }
+export { StaticRpcDumpManifestQueryEntry }
+export { StaticRpcDumpManifestStaticEntry }
+export { StaticRpcDumpManifestValue }
+export { StaticRpcDumpSerialization }
 export { strictJsonStringify }
 export { STRUCTURED_CLONE_PREFIX }
 export { Thenable }

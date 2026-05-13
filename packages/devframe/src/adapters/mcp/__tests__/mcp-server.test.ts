@@ -1,8 +1,8 @@
 import type { DevToolsHost } from '../../../types/host'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
+import { createHostContext } from 'devframe/node'
 import { describe, expect, it } from 'vitest'
-import { createHostContext } from '../../context'
 import { buildMcpServerFromContext } from '../build-server'
 
 function nullHost(): DevToolsHost {
