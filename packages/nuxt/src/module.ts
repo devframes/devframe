@@ -49,6 +49,8 @@ export interface DevframeNuxtModuleOptions {
   }
 }
 
+export type ModuleOptions = DevframeNuxtModuleOptions
+
 /**
  * Nuxt module that wires a Nuxt-built SPA up as a devframe client, and
  * (optionally) serves the dev-time RPC bridge alongside `nuxt dev`.
@@ -80,9 +82,9 @@ export interface DevframeNuxtModuleOptions {
  * }
  * ```
  */
-export default defineNuxtModule<DevframeNuxtModuleOptions>({
+export default defineNuxtModule<ModuleOptions>({
   meta: {
-    name: 'devframe',
+    name: '@devframes/nuxt',
     configKey: 'devframe',
   },
   defaults: {
@@ -108,10 +110,12 @@ export default defineNuxtModule<DevframeNuxtModuleOptions>({
     nuxt.options.runtimeConfig ??= {} as any
     nuxt.options.runtimeConfig.public ??= {} as any
     const publicConfig = nuxt.options.runtimeConfig.public as Record<string, any>
-    publicConfig.devframe = {
-      ...(publicConfig.devframe ?? {}),
+
+    // override baseURL
+    publicConfig.devframe ??= {}
+    Object.assign(publicConfig.devframe, publicConfig.devframe ?? {}, {
       baseURL: options.baseURL,
-    }
+    })
 
     const runtimeDir = resolve('./runtime')
 

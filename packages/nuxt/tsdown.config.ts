@@ -1,12 +1,15 @@
 import fs from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { defineConfig } from 'tsdown'
 
+const require = createRequire(import.meta.url)
+
 export default defineConfig([{
-  entry: './src/index.ts',
+  entry: './src/module.ts',
   // tsconfig: '../../tsconfig.base.json',
   clean: true,
   dts: true,
-  exports: true,
+  exports: false,
   // Keep transitive Nuxt/Vite type graphs out of dts bundling. Consumers
   // resolve these via their own node_modules at install time.
   deps: {
@@ -39,7 +42,8 @@ export default defineConfig([{
   },
   hooks: {
     'build:done': async () => {
-      // copy types and generate plugin dts
+      const { name, version, devDependencies } = require('./package.json')
+      // copy types and generate plugin d.ts, module types.d.mts and module.json files
       await Promise.all([
         fs.cp('src/runtime/types.d.ts', 'dist/runtime/types.d.ts'),
         fs.writeFile('dist/runtime/plugin.client.d.ts', `import type { Plugin } from '#app';
@@ -48,6 +52,19 @@ declare const plugin: Plugin<{
   rpc: DevToolsRpcClient;
 }>;
 export default plugin;
+`, 'utf-8'),
+        fs.writeFile('dist/types.d.mts', `export { default } from './module.mjs'
+
+export { type ModuleOptions, type DevframeNuxtModuleOptions } from './module.mjs'
+`, 'utf-8'),
+        fs.writeFile('dist/module.json', `{
+  "name": "${name}",
+  "configKey": "devframe",
+  "version": "${version}",
+  "builder": {
+    "tsdown": "${devDependencies.tsdown}"
+  }        
+}
 `, 'utf-8'),
       ])
     },

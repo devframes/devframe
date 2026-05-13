@@ -7,8 +7,7 @@ import { defineNuxtPlugin, useRuntimeConfig } from '#imports'
  */
 export default defineNuxtPlugin({
   async setup() {
-    const config = useRuntimeConfig()
-    const baseURL = (config.public as any)?.devframe?.baseURL ?? './'
+    const baseURL = useRuntimeConfig().public.devframe.baseURL ?? './'
     const rpc = await connectDevframe({ baseURL })
     return {
       provide: {
