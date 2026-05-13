@@ -18,15 +18,6 @@ export interface StaticRpcManifestQueryEntry {
   fallback?: string
   /** Encoder used when each record/fallback file was written. Default: `'json'`. */
   serialization?: StaticRpcSerialization
-  /**
-   * Per-record encoder override. When a record file was written with a
-   * different serializer than {@link serialization} (e.g. an error-bearing
-   * record promoted to `'structured-clone'` for a `jsonSerializable: true`
-   * function), the override is recorded here.
-   */
-  recordSerializations?: Record<string, StaticRpcSerialization>
-  /** Encoder override for the fallback shard. */
-  fallbackSerialization?: StaticRpcSerialization
 }
 
 export type StaticRpcManifestEntry
@@ -129,14 +120,12 @@ export function createStaticRpcCaller(
       const recordPath = entry.records[argsHash]
 
       if (recordPath) {
-        const recordSerialization = entry.recordSerializations?.[argsHash] ?? entry.serialization
-        const record = await loadQueryRecord(recordPath, recordSerialization)
+        const record = await loadQueryRecord(recordPath, entry.serialization)
         return resolveRecordOutput(record)
       }
 
       if (entry.fallback) {
-        const fallbackSerialization = entry.fallbackSerialization ?? entry.serialization
-        const fallback = await loadQueryRecord(entry.fallback, fallbackSerialization)
+        const fallback = await loadQueryRecord(entry.fallback, entry.serialization)
         return resolveRecordOutput(fallback)
       }
 

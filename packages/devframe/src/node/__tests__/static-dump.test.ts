@@ -218,102 +218,69 @@ describe('collectStaticRpcDump', () => {
   })
 
   describe('error-bearing records', () => {
-    it('promotes error-bearing query records to structured-clone for jsonSerializable: true', async () => {
+    it('writes JSON-safe error shape (message + name + cause) for jsonSerializable: true', async () => {
       const flaky = defineRpcFunction({
         name: 'test:flaky',
         type: 'query',
         jsonSerializable: true,
-        handler: (id: string) => {
-          if (id === 'bad')
-            throw new Error('boom')
-          return { id }
+        handler: () => {
+          throw new TypeError('boom', { cause: new Error('inner') })
         },
         dump: {
-          inputs: [['good'], ['bad']],
+          inputs: [[]] as [][],
         },
       })
 
       const result = await collectStaticRpcDump([flaky], {})
       const entry = result.manifest['test:flaky'] as {
-        type: 'query'
         records: Record<string, string>
         serialization: 'json'
-        recordSerializations?: Record<string, 'json' | 'structured-clone'>
       }
 
       expect(entry.serialization).toBe('json')
-      expect(entry.recordSerializations).toBeDefined()
 
-      const erroredKeys = Object.keys(entry.recordSerializations!)
-      expect(erroredKeys).toHaveLength(1)
+      const recordPath = Object.values(entry.records)[0]!
+      const file = result.files[recordPath]!
+      expect(file.serialization).toBe('json')
 
-      const erroredPath = entry.records[erroredKeys[0]!]!
-      expect(result.files[erroredPath]!.serialization).toBe('structured-clone')
-
-      const goodPath = entry.records[Object.keys(entry.records).find(k => k !== erroredKeys[0])!]!
-      expect(result.files[goodPath]!.serialization).toBe('json')
-    })
-
-    it('keeps the entry serialization on error-bearing records when default is structured-clone', async () => {
-      const flaky = defineRpcFunction({
-        name: 'test:flaky-sc',
-        type: 'query',
-        // default jsonSerializable: false → structured-clone shards
-        handler: (id: string) => {
-          if (id === 'bad')
-            throw new Error('boom')
-          return { id }
-        },
-        dump: {
-          inputs: [['good'], ['bad']],
-        },
-      })
-
-      const result = await collectStaticRpcDump([flaky], {})
-      const entry = result.manifest['test:flaky-sc'] as {
-        serialization: 'json' | 'structured-clone'
-        recordSerializations?: Record<string, 'json' | 'structured-clone'>
+      // serializeDumpError flattens Error.cause into a plain object, so
+      // strict-JSON encoding succeeds without any per-record promotion.
+      const wireText = strictJsonStringify(file.data, file.fnName)
+      const parsed = JSON.parse(wireText) as {
+        error: { name: string, message: string, cause: { name: string, message: string } }
       }
-
-      expect(entry.serialization).toBe('structured-clone')
-      // No overrides — everything is already SC.
-      expect(entry.recordSerializations).toBeUndefined()
+      expect(parsed.error.name).toBe('TypeError')
+      expect(parsed.error.message).toBe('boom')
+      expect(parsed.error.cause.name).toBe('Error')
+      expect(parsed.error.cause.message).toBe('inner')
     })
 
-    it('preserves rich error info (cause + custom props) through a full read round-trip', async () => {
+    it('preserves rich error info end-to-end for default (structured-clone) entries', async () => {
       const tags = new Map<string, number>([['a', 1]])
       const flaky = defineRpcFunction({
         name: 'test:flaky-roundtrip',
         type: 'query',
-        jsonSerializable: true,
-        handler: (id: string) => {
-          if (id === 'bad') {
-            const err = new TypeError('boom', { cause: new Error('inner') }) as Error & { tags?: unknown }
-            err.tags = tags
-            throw err
-          }
-          return { id }
+        // default jsonSerializable: false → structured-clone shards
+        handler: () => {
+          const err = new TypeError('boom', { cause: new Error('inner') }) as Error & { tags?: unknown }
+          err.tags = tags
+          throw err
         },
         dump: {
-          inputs: [['bad']],
+          inputs: [[]] as [][],
         },
       })
 
       const result = await collectStaticRpcDump([flaky], {})
       const entry = result.manifest['test:flaky-roundtrip'] as {
         records: Record<string, string>
-        recordSerializations?: Record<string, 'json' | 'structured-clone'>
+        serialization: 'structured-clone'
       }
+      expect(entry.serialization).toBe('structured-clone')
 
-      const recordKey = Object.keys(entry.records)[0]!
-      const recordPath = entry.records[recordKey]!
+      const recordPath = Object.values(entry.records)[0]!
       const file = result.files[recordPath]!
-
-      // The shard was promoted to structured-clone — verify the Error
-      // (and its Map property) round-trips losslessly through the wire format.
-      expect(file.serialization).toBe('structured-clone')
-      const wireText = structuredCloneStringify(file.data)
-      const revived = structuredCloneDeserialize(JSON.parse(wireText)) as {
+      const revived = structuredCloneDeserialize(JSON.parse(structuredCloneStringify(file.data))) as {
         error: { name: string, message: string, cause: { message: string }, tags: Map<string, number> }
       }
       expect(revived.error.name).toBe('TypeError')
@@ -321,6 +288,34 @@ describe('collectStaticRpcDump', () => {
       expect(revived.error.cause.message).toBe('inner')
       expect(revived.error.tags).toBeInstanceOf(Map)
       expect(revived.error.tags.get('a')).toBe(1)
+    })
+
+    it('throws DF0020 when a jsonSerializable: true function attaches non-JSON to an error', async () => {
+      const flaky = defineRpcFunction({
+        name: 'test:flaky-non-json',
+        type: 'query',
+        jsonSerializable: true,
+        handler: () => {
+          const err = new Error('boom') as Error & { tags?: unknown }
+          err.tags = new Map([['a', 1]])
+          throw err
+        },
+        dump: {
+          inputs: [[]] as [][],
+        },
+      })
+
+      const result = await collectStaticRpcDump([flaky], {})
+      const recordPath = Object.values(
+        (result.manifest['test:flaky-non-json'] as { records: Record<string, string> }).records,
+      )[0]!
+      const file = result.files[recordPath]!
+
+      // Attaching a Map to the thrown Error violates the `jsonSerializable: true`
+      // contract; the strict serializer surfaces this at build time, same as
+      // if the function had returned a Map.
+      expect(() => strictJsonStringify(file.data, file.fnName))
+        .toThrowError(/jsonSerializable: true.*is a Map/)
     })
   })
 })

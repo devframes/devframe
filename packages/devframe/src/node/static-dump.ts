@@ -19,16 +19,6 @@ export interface StaticRpcDumpManifestQueryEntry {
   fallback?: string
   /** Encoder used when each record/fallback file was written. Default: `'json'`. */
   serialization?: StaticRpcDumpSerialization
-  /**
-   * Per-record encoder override. When a record file is written with a
-   * different serializer than {@link serialization} (e.g. an error-bearing
-   * record promoted to `'structured-clone'` for a `jsonSerializable: true`
-   * function), the override is recorded here so the client picks the
-   * right decoder.
-   */
-  recordSerializations?: Record<string, StaticRpcDumpSerialization>
-  /** Encoder override for the fallback shard, with the same semantics as {@link recordSerializations}. */
-  fallbackSerialization?: StaticRpcDumpSerialization
 }
 
 export type StaticRpcDumpManifestValue
@@ -125,29 +115,15 @@ export async function collectStaticRpcDump(
       const key = recordKey.slice(prefix.length)
       const record = await resolveRecord(recordOrGetter)
 
-      // Error-bearing records can contain non-JSON values (e.g. an
-      // `Error.cause` chain, or a `Map` attached to the thrown error).
-      // For `jsonSerializable: true` functions, promote just this one
-      // file to structured-clone so the rich error round-trips losslessly.
-      const recordSerialization: StaticRpcDumpSerialization
-        = record.error !== undefined && serialization === 'json'
-          ? 'structured-clone'
-          : serialization
-
       if (key === 'fallback') {
         const path = makeQueryFallbackPath(definition.name)
-        files[path] = { serialization: recordSerialization, fnName: definition.name, data: record }
+        files[path] = { serialization, fnName: definition.name, data: record }
         queryEntry.fallback = path
-        if (recordSerialization !== serialization)
-          queryEntry.fallbackSerialization = recordSerialization
       }
       else {
         const path = makeQueryRecordPath(definition.name, key)
-        files[path] = { serialization: recordSerialization, fnName: definition.name, data: record }
+        files[path] = { serialization, fnName: definition.name, data: record }
         queryEntry.records[key] = path
-        if (recordSerialization !== serialization) {
-          ;(queryEntry.recordSerializations ??= {})[key] = recordSerialization
-        }
       }
     }
 
