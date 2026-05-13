@@ -15,6 +15,6 @@ export interface DevframeNuxtModuleOptions {
 // #endregion
 
 // #region Default Export
-declare const _default: NuxtModule<TOptions, TOptions, false>;
+declare const _default: _$_nuxt_schema0.NuxtModule<DevframeNuxtModuleOptions, DevframeNuxtModuleOptions, false>;
 export default _default
 // #endregion

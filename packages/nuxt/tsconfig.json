@@ -3,7 +3,7 @@
   "compilerOptions": {
     "composite": true,
     "lib": ["esnext", "dom"],
-    "types": ["node"],
+    "types": ["node"]
   },
-  "include": ["nuxt.d.ts", "src/**/*.ts", "../devframe/src/**/*.ts"],
+  "include": ["nuxt.d.ts", "src/**/*.ts", "../devframe/src/**/*.ts"]
 }
