@@ -29,10 +29,10 @@ describe('createBuild', () => {
     const rmOpts = { recursive: true, force: true, maxRetries: 3, retryDelay: 100 } as const
     await Promise.allSettled([
       fs.rm(outDir, rmOpts).catch((err) => {
-        console.error(`Failed to cleanup outDir at ${outDir}:`, err)
+        console.warn(`Failed to cleanup outDir at ${outDir}, manual deletion required:`, err)
       }),
       fs.rm(distDir, rmOpts).catch((err) => {
-        console.error(`Failed to cleanup distDir at ${distDir}:`, err)
+        console.warn(`Failed to cleanup distDir at ${distDir}, manual deletion required:`, err)
       }),
     ])
   })
