@@ -1,12 +1,12 @@
 {
-  "name": "devframe-files-inspector-example",
+  "name": "files-inspector-example",
   "type": "module",
   "version": "0.2.0",
   "private": true,
   "description": "End-to-end devframe demo — lists files in cwd via RPC, exercises CLI dev/build/spa surfaces.",
   "main": "src/devframe.ts",
   "bin": {
-    "devframe-files-inspector": "./bin.mjs"
+    "files-inspector": "./bin.mjs"
   },
   "scripts": {
     "build": "vite build --config src/client/vite.config.ts",

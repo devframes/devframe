@@ -26,8 +26,8 @@ client (re)joins mid-stream.
 ## Run it
 
 ```sh
-pnpm -C devframe/examples/devframe-streaming-chat run build
-pnpm -C devframe/examples/devframe-streaming-chat run dev
+pnpm -C examples/streaming-chat run build
+pnpm -C examples/streaming-chat run dev
 ```
 
 Then open http://localhost:9897/ — type a prompt, watch tokens stream
@@ -37,7 +37,7 @@ in, refresh the page mid-conversation, cancel a long answer, click
 ## Run the tests
 
 ```sh
-pnpm -C devframe/examples/devframe-streaming-chat run test
+pnpm -C examples/streaming-chat run test
 ```
 
 Tests boot the server in-process and exercise the full WS round-trip:

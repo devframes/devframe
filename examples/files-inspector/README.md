@@ -14,11 +14,11 @@ The Preact client showcases two patterns relevant to devframe authors:
 
 ```sh
 pnpm install
-pnpm -C examples/devframe-files-inspector run build       # build the Preact client
-pnpm -C examples/devframe-files-inspector run dev         # http://127.0.0.1:9876/__devframe-files-inspector/
-pnpm -C examples/devframe-files-inspector run cli:build   # static deploy in ./dist/static
-serve examples/devframe-files-inspector/dist/static       # any static host works (relative paths)
-pnpm -C examples/devframe-files-inspector run test        # E2E tests
+pnpm -C examples/files-inspector run build       # build the Preact client
+pnpm -C examples/files-inspector run dev         # http://127.0.0.1:9876/__devframe-files-inspector/
+pnpm -C examples/files-inspector run cli:build   # static deploy in ./dist/static
+serve examples/files-inspector/dist/static                # any static host works (relative paths)
+pnpm -C examples/files-inspector run test        # E2E tests
 ```
 
 ## File map

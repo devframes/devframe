@@ -235,13 +235,13 @@ importers:
         specifier: catalog:docs
         version: 2.0.17(mermaid@11.15.0)(vitepress@2.0.0-alpha.17(@types/node@25.7.0)(change-case@5.4.4)(jiti@2.7.0)(lightningcss@1.32.0)(postcss@8.5.14)(tsx@4.21.0)(typescript@6.0.3)(yaml@2.8.4))
 
-  examples/devframe-counter:
+  examples/counter:
     dependencies:
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
 
-  examples/devframe-files-inspector:
+  examples/files-inspector:
     dependencies:
       devframe:
         specifier: workspace:*
@@ -272,7 +272,7 @@ importers:
         specifier: catalog:deps
         version: 8.20.0
 
-  examples/devframe-streaming-chat:
+  examples/streaming-chat:
     dependencies:
       devframe:
         specifier: workspace:*

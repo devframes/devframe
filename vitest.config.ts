@@ -4,8 +4,8 @@ export default defineConfig({
   test: {
     projects: [
       'packages/devframe',
-      'examples/devframe-files-inspector',
-      'examples/devframe-streaming-chat',
+      'examples/files-inspector',
+      'examples/streaming-chat',
       'tests',
     ],
     testTimeout: 10000,

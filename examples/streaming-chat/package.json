@@ -1,12 +1,12 @@
 {
-  "name": "devframe-streaming-chat-example",
+  "name": "streaming-chat-example",
   "type": "module",
   "version": "0.2.0",
   "private": true,
   "description": "End-to-end devframe demo — streams synthetic chat tokens from server to client via `ctx.rpc.streaming`. Mirrors the AI-deltas use case from issue #306.",
   "main": "src/devframe.ts",
   "bin": {
-    "devframe-streaming-chat": "./bin.mjs"
+    "streaming-chat": "./bin.mjs"
   },
   "scripts": {
     "build": "vite build --config src/client/vite.config.ts",

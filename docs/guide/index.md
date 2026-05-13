@@ -109,16 +109,3 @@ Devframe has zero dependencies on Vite or any `@vitejs/*` package — the same d
 - [RPC](./rpc) — define type-safe server functions your client can call
 - [Agent-Native](./agent-native) — expose your devframe to Claude Desktop, Cursor, or any MCP client
 
-## Built with Devframe
-
-Real-world devtools shipping on Devframe:
-
-- [**Vite DevTools**](https://devtools.vite.dev/) — the host that bundles multiple devframes into one UI (docks, command palette, terminals). Mount your own definition into it via the [`vite` adapter](/adapters/vite).
-- [**ESLint Config Inspector**](https://github.com/eslint/config-inspector) — official ESLint tool for inspecting flat configs.
-- [**node-modules-inspector**](https://github.com/antfu/node-modules-inspector) — interactive visualizer for your `node_modules` dependency graph.
-
-End-to-end examples in this repo, exercising the full adapter surface:
-
-- [**devframe-counter**](https://github.com/devframes/devframe/tree/main/examples/devframe-counter) — smallest possible demo, exercises all adapters.
-- [**devframe-files-inspector**](https://github.com/devframes/devframe/tree/main/examples/devframe-files-inspector) — lists files in cwd via RPC; exercises CLI dev/build/spa surfaces.
-- [**devframe-streaming-chat**](https://github.com/devframes/devframe/tree/main/examples/devframe-streaming-chat) — streams synthetic chat tokens from server to client via `ctx.rpc.streaming`.

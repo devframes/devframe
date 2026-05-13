@@ -29,7 +29,7 @@ export const CLIENT_DIST = resolve(HERE, '../dist/client')
 export function assertClientBuilt(): void {
   if (!existsSync(path.join(CLIENT_DIST, 'index.html'))) {
     throw new Error(
-      `[devframe-files-inspector] dist/client missing — run \`pnpm -C examples/devframe-files-inspector run build\` first.`,
+      `[devframe-files-inspector] dist/client missing — run \`pnpm -C examples/files-inspector run build\` first.`,
     )
   }
 }

@@ -239,7 +239,7 @@ Readable.fromWeb(reader.readable).pipe(targetNodeWritable)
 | Per-call lifecycles with cancellation | Cross-cutting fire-and-forget signals | Diff-based sync between clients |
 | Replay on reconnect | | |
 
-For chat-style UIs that combine both: keep the **conversation log** in shared state (survives reconnects), and use a streaming channel for **active responses**. The action that starts a response appends a placeholder to shared state; on producer close, commit the joined content back to shared state. Working example: [`devframe/examples/devframe-streaming-chat`](https://github.com/vitejs/devtools/tree/main/devframe/examples/devframe-streaming-chat).
+For chat-style UIs that combine both: keep the **conversation log** in shared state (survives reconnects), and use a streaming channel for **active responses**. The action that starts a response appends a placeholder to shared state; on producer close, commit the joined content back to shared state. Working example: [`examples/streaming-chat`](https://github.com/devframes/devframe/tree/main/examples/streaming-chat).
 
 ## Mounting into a host (Vite DevTools example)
 
