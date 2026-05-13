@@ -1,6 +1,6 @@
+import { colors as c } from 'devframe/utils/colors'
 import { consoleReporter, createLogger, defineDiagnostics } from 'logs-sdk'
 import { ansiFormatter } from 'logs-sdk/formatters/ansi'
-import { colors as c } from '../utils/colors'
 
 export const diagnostics = defineDiagnostics({
   docsBase: 'https://devfra.me/errors',

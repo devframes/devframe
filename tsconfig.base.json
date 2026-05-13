@@ -94,7 +94,7 @@
         "./packages/devframe/src/adapters/embedded.ts"
       ],
       "devframe/adapters/mcp": [
-        "./packages/devframe/src/adapters/mcp.ts"
+        "./packages/devframe/src/adapters/mcp/index.ts"
       ],
       "@devframes/nuxt/runtime/plugin.client": [
         "./packages/nuxt/src/runtime/plugin.client.ts"

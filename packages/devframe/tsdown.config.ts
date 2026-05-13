@@ -44,7 +44,7 @@ export default defineConfig({
     'adapters/build': 'src/adapters/build.ts',
     'helpers/vite': 'src/helpers/vite.ts',
     'adapters/embedded': 'src/adapters/embedded.ts',
-    'adapters/mcp': 'src/adapters/mcp.ts',
+    'adapters/mcp': 'src/adapters/mcp/index.ts',
     'client/index': 'src/client/index.ts',
     'recipes/open-helpers': 'src/recipes/open-helpers.ts',
   },

@@ -1,7 +1,7 @@
+import { launchEditor } from 'devframe/utils/launch-editor'
+import { open } from 'devframe/utils/open'
 import * as v from 'valibot'
 import { defineRpcFunction } from '../rpc/define'
-import { launchEditor } from '../utils/launch-editor'
-import { open } from '../utils/open'
 
 /**
  * Prebuilt RPC action that opens a file in the user's configured editor.

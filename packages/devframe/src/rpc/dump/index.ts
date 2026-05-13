@@ -6,12 +6,12 @@ import type {
   RpcDumpDefinition,
   RpcDumpStore,
   RpcFunctionDefinitionAny,
-} from './types'
+} from '../types'
+import { hash } from 'devframe/utils/hash'
 import pLimit from 'p-limit'
-import { hash } from '../utils/hash'
-import { logger } from './diagnostics'
-import { reviveDumpError, serializeDumpError } from './dump-error'
-import { validateDefinitions } from './validation'
+import { logger } from '../diagnostics'
+import { validateDefinitions } from '../validation'
+import { reviveDumpError, serializeDumpError } from './error'
 
 function getDumpRecordKey(functionName: string, args: any[]): string {
   const argsHash = hash(args)

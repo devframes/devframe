@@ -1,4 +1,4 @@
-import type { RpcDumpRecordError } from './types'
+import type { RpcDumpRecordError } from '../types'
 
 /**
  * Normalize a thrown value into a plain object suitable for storage in

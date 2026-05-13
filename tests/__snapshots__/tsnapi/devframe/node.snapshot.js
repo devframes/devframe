@@ -7,7 +7,6 @@ export function normalizeHttpServerUrl(_, _) {}
 // #endregion
 
 // #region Other
-export { collectStaticRpcDump }
 export { createH3DevToolsHost }
 export { createHostContext }
 export { createRpcSharedStateServerHost }

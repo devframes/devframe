@@ -3,7 +3,7 @@ import { DEVTOOLS_RPC_DUMP_DIRNAME } from 'devframe/constants'
 import { strictJsonStringify } from 'devframe/rpc'
 import { structuredCloneDeserialize, structuredCloneStringify } from 'devframe/utils/structured-clone'
 import { describe, expect, it } from 'vitest'
-import { collectStaticRpcDump } from '../static-dump'
+import { collectStaticRpcDump } from '../static'
 
 describe('collectStaticRpcDump', () => {
   it('tags entries as JSON when jsonSerializable: true is declared', async () => {

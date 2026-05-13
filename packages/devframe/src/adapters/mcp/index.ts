@@ -16,4 +16,4 @@ export {
   createMcpServer,
   type CreateMcpServerOptions,
   type McpServerHandle,
-} from '../node/mcp/build-server'
+} from './build-server'

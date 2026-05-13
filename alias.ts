@@ -34,7 +34,7 @@ export const alias = {
   'devframe/adapters/build': r('devframe/src/adapters/build.ts'),
   'devframe/helpers/vite': r('devframe/src/helpers/vite.ts'),
   'devframe/adapters/embedded': r('devframe/src/adapters/embedded.ts'),
-  'devframe/adapters/mcp': r('devframe/src/adapters/mcp.ts'),
+  'devframe/adapters/mcp': r('devframe/src/adapters/mcp/index.ts'),
   '@devframes/nuxt/runtime/plugin.client': r('nuxt/src/runtime/plugin.client.ts'),
   '@devframes/nuxt': r('nuxt/src/index.ts'),
   'devframe/recipes/open-helpers': r('devframe/src/recipes/open-helpers.ts'),
