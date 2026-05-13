@@ -53,9 +53,9 @@ declare const plugin: Plugin<{
 }>;
 export default plugin;
 `, 'utf-8'),
-        fs.writeFile('dist/types.d.mts', `export { default } from './module.mjs'
+        fs.writeFile('dist/types.d.mts', `export { default } from './module.mjs';
 
-export { type ModuleOptions, type DevframeNuxtModuleOptions } from './module.mjs'
+export { type ModuleOptions, type DevframeNuxtModuleOptions } from './module.mjs';
 `, 'utf-8'),
         fs.writeFile('dist/module.json', `{
   "name": "${name}",
