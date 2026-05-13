@@ -1,3 +1,4 @@
+import { getPort } from 'get-port-please'
 import { describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 import { createRpcClient } from '../client'
@@ -57,8 +58,8 @@ describe('devtools rpc', () => {
   // WS serializer with DF0020 because the error envelope was strict-JSON-encoded
   // alongside the result path.
   it('returns a rejection (not a serialization crash) when a jsonSerializable RPC throws', async () => {
-    const PORT = 3334
     const HOST = '127.0.0.1'
+    const PORT = await getPort({ port: 3334, host: HOST })
     const WS_URL = `ws://${HOST}:${PORT}`
 
     const serverFunctions = {
@@ -72,11 +73,11 @@ describe('devtools rpc', () => {
     ])
 
     const server = createRpcServer<Record<string, never>, typeof serverFunctions>(serverFunctions)
-    const { wss } = attachWsRpcTransport(server, { port: PORT, host: HOST, definitions: definitions as any })
+    const { wss } = attachWsRpcTransport(server, { port: PORT, host: HOST, definitions })
 
     try {
       const client = createRpcClient<typeof serverFunctions, Record<string, never>>({}, {
-        channel: createWsRpcChannel({ url: WS_URL, definitions: definitions as any }),
+        channel: createWsRpcChannel({ url: WS_URL, definitions }),
       })
 
       await expect(client.$call('explode')).rejects.toThrow(/boom/)
