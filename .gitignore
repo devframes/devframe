@@ -15,3 +15,7 @@ temp
 **/.vitepress/cache
 **/.vitepress/dist
 packages/devframe/skills
+test-results
+playwright-report
+playwright/.cache
+blob-report

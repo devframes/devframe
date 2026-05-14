@@ -21,6 +21,8 @@
     "docs:serve": "pnpm -C docs run docs:serve",
     "lint": "eslint --cache",
     "test": "turbo run build && vitest",
+    "test:e2e": "turbo run build && playwright test",
+    "test:e2e:ui": "turbo run build && playwright test --ui",
     "release": "bumpp -r",
     "typecheck": "tsc -b",
     "postinstall": "npx simple-git-hooks && skills-npm"
@@ -29,6 +31,7 @@
     "@antfu/eslint-config": "catalog:devtools",
     "@antfu/ni": "catalog:build",
     "@antfu/utils": "catalog:inlined",
+    "@playwright/test": "catalog:testing",
     "@types/node": "catalog:types",
     "@types/ws": "catalog:types",
     "bumpp": "catalog:devtools",

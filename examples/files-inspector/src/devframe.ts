@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { defineRpcFunction } from 'devframe'
 import { defineDevframe } from 'devframe/types'
@@ -18,11 +19,13 @@ export default defineDevframe({
   },
   spa: { loader: 'none' },
   async setup(ctx) {
+    const targetCwd = process.env.DEVFRAME_E2E_CWD || ctx.cwd
+
     ctx.rpc.register(defineRpcFunction({
       name: 'devframe-files-inspector:get-cwd',
       type: 'static',
       jsonSerializable: true,
-      handler: () => ({ cwd: ctx.cwd }),
+      handler: () => ({ cwd: targetCwd }),
     }))
 
     ctx.rpc.register(defineRpcFunction({
@@ -30,7 +33,7 @@ export default defineDevframe({
       type: 'query',
       jsonSerializable: true,
       handler: async () => {
-        const files = await glob(['*'], { cwd: ctx.cwd, onlyFiles: true, dot: false })
+        const files = await glob(['*'], { cwd: targetCwd, onlyFiles: true, dot: false })
         return files.map(f => f.replace(/\\/g, '/')).sort()
       },
       snapshot: true,

@@ -6,7 +6,13 @@ export default defineConfig({
       'packages/devframe',
       'examples/files-inspector',
       'examples/streaming-chat',
-      'tests',
+      {
+        test: {
+          name: 'tests',
+          root: './tests',
+          exclude: ['e2e/**', '**/node_modules/**', '**/dist/**'],
+        },
+      },
     ],
     testTimeout: 10000,
   },
