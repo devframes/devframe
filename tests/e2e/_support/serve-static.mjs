@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { createReadStream, statSync } from 'node:fs'
 import { createServer } from 'node:http'
-import { extname, join, normalize, resolve } from 'node:path'
+import { extname, isAbsolute, join, normalize, relative, resolve } from 'node:path'
 import process from 'node:process'
 
 const [, , dirArg, portArg] = process.argv
@@ -31,9 +31,10 @@ function resolveAsset(urlPath) {
   const clean = urlPath.split('?')[0].split('#')[0]
   const decoded = decodeURIComponent(clean)
   // Treat trailing-slash URLs as index.html.
-  const relative = decoded.endsWith('/') ? `${decoded}index.html` : decoded
-  const target = normalize(join(root, relative))
-  if (!target.startsWith(root))
+  const requestPath = decoded.endsWith('/') ? `${decoded}index.html` : decoded
+  const target = normalize(join(root, requestPath))
+  const fromRoot = relative(root, target)
+  if (fromRoot.startsWith('..') || isAbsolute(fromRoot))
     return null
   try {
     const st = statSync(target)
