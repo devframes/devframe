@@ -70,13 +70,11 @@ export default defineConfig({
     ],
     onlyBundle: [
       'acorn',
-      'ansis',
       'bundle-name',
       'default-browser',
       'default-browser-id',
       'define-lazy-prop',
       'get-port-please',
-      'human-id',
       'immer',
       'is-docker',
       'is-in-ssh',
