@@ -12,6 +12,5 @@ Real-world devtools shipping on Devframe:
 
 End-to-end examples in this repo, exercising the full adapter surface:
 
-- [**counter**](https://github.com/devframes/devframe/tree/main/examples/counter) — smallest possible demo, exercises all adapters.
 - [**files-inspector**](https://github.com/devframes/devframe/tree/main/examples/files-inspector) — lists files in cwd via RPC; exercises CLI dev/build/spa surfaces.
 - [**streaming-chat**](https://github.com/devframes/devframe/tree/main/examples/streaming-chat) — streams synthetic chat tokens from server to client via `ctx.rpc.streaming`.

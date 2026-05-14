@@ -7,7 +7,7 @@ const BASE = 'http://localhost:9897/__devframe-streaming-chat/'
 // `clear()` and exits with its stream settled.
 test.describe.configure({ mode: 'serial' })
 
-test.describe('streaming-chat', () => {
+test.describe('streaming-chat (dev)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(BASE)
     await expect(page.locator('h1')).toHaveText('Streaming Chat')

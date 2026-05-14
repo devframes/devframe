@@ -1,15 +1,14 @@
 import { expect, test } from '@playwright/test'
 
-const BASE = 'http://localhost:9876/__devframe-files-inspector/'
+const BASE = 'http://127.0.0.1:9886/'
 
-test.describe('files-inspector', () => {
+test.describe('files-inspector (static build)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(BASE)
     await expect(page.locator('h1')).toHaveText('Files Inspector')
   })
 
-  test('lists fixture files on home', async ({ page }) => {
-    await expect(page.locator('section h2')).toContainText('Files')
+  test('renders the file list from the static RPC dump', async ({ page }) => {
     await expect(page.locator('section h2 small')).toHaveText('(3)')
     await expect(page.locator('section ul li')).toHaveText([
       'README.md',
@@ -18,11 +17,15 @@ test.describe('files-inspector', () => {
     ])
   })
 
-  test('navigates to about and shows cwd', async ({ page }) => {
+  test('reports static backend on the About page', async ({ page }) => {
     await page.click('a:has-text("About")')
     await expect(page.locator('section h2')).toHaveText('About')
 
-    const cwdValue = page.locator('dt:has-text("Server cwd") + dd code')
-    await expect(cwdValue).toContainText(/fixtures$/)
+    await expect(
+      page.locator('dt:has-text("RPC backend") + dd code'),
+    ).toHaveText('static')
+    await expect(
+      page.locator('dt:has-text("Server cwd") + dd code'),
+    ).toContainText(/fixtures$/)
   })
 })

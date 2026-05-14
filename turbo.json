@@ -19,6 +19,17 @@
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
+    },
+    "files-inspector-example#cli:build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["files-inspector-example#build"],
+      "env": ["DEVFRAME_E2E_CWD"],
+      "outputs": ["dist/static/**"]
+    },
+    "streaming-chat-example#cli:build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["streaming-chat-example#build"],
+      "outputs": ["dist/static/**"]
     }
   }
 }

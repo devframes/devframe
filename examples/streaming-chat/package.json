@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "vite build --config src/client/vite.config.ts",
+    "cli:build": "node bin.mjs build --out-dir dist/static",
     "dev": "node bin.mjs",
     "test": "vitest run"
   },
