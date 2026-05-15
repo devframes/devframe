@@ -34,6 +34,7 @@
     "./recipes/open-helpers": "./dist/recipes/open-helpers.mjs",
     "./rpc": "./dist/rpc/index.mjs",
     "./rpc/client": "./dist/rpc/client.mjs",
+    "./rpc/dump": "./dist/rpc/dump.mjs",
     "./rpc/server": "./dist/rpc/server.mjs",
     "./rpc/transports/ws-client": "./dist/rpc/transports/ws-client.mjs",
     "./rpc/transports/ws-server": "./dist/rpc/transports/ws-server.mjs",

@@ -13,6 +13,9 @@ import { logger } from '../diagnostics'
 import { validateDefinitions } from '../validation'
 import { reviveDumpError, serializeDumpError } from './error'
 
+export * from './error'
+export * from './static'
+
 function getDumpRecordKey(functionName: string, args: any[]): string {
   const argsHash = hash(args)
   return `${functionName}---${argsHash}`
