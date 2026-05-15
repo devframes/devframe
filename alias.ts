@@ -9,6 +9,7 @@ export const alias = {
   'devframe/rpc/transports/ws-server': r('devframe/src/rpc/transports/ws-server.ts'),
   'devframe/rpc/transports/ws-client': r('devframe/src/rpc/transports/ws-client.ts'),
   'devframe/rpc/client': r('devframe/src/rpc/client.ts'),
+  'devframe/rpc/dump': r('devframe/src/rpc/dump/index.ts'),
   'devframe/rpc/server': r('devframe/src/rpc/server.ts'),
   'devframe/rpc': r('devframe/src/rpc'),
   'devframe/types': r('devframe/src/types/index.ts'),
