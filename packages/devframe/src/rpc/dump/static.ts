@@ -3,7 +3,7 @@ import {
   DEVTOOLS_RPC_DUMP_DIRNAME,
 } from 'devframe/constants'
 import { getRpcHandler } from '../handler'
-import { dumpFunctions } from './index'
+import { dumpFunctions } from './collect'
 
 export type StaticRpcDumpSerialization = 'json' | 'structured-clone'
 
