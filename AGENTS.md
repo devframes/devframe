@@ -16,7 +16,7 @@ Source layout:
 ## Development
 
 ```sh
-pnpm install      # requires pnpm@10.x
+pnpm install      # requires pnpm@11.x
 pnpm build        # tsdown
 pnpm dev          # tsdown --watch
 pnpm test         # pnpm build && vitest (api snapshot guards against stale dist)
