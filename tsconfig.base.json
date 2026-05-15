@@ -18,6 +18,9 @@
       "devframe/rpc/client": [
         "./packages/devframe/src/rpc/client.ts"
       ],
+      "devframe/rpc/dump": [
+        "./packages/devframe/src/rpc/dump/index.ts"
+      ],
       "devframe/rpc/server": [
         "./packages/devframe/src/rpc/server.ts"
       ],

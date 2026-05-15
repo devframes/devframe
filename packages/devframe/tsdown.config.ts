@@ -121,6 +121,7 @@ export default defineConfig([
       'types/index': 'src/types/index.ts',
       'rpc/index': 'src/rpc/index.ts',
       'rpc/client': 'src/rpc/client.ts',
+      'rpc/dump': 'src/rpc/dump/index.ts',
       'rpc/server': 'src/rpc/server.ts',
       'rpc/transports/ws-client': 'src/rpc/transports/ws-client.ts',
       'rpc/transports/ws-server': 'src/rpc/transports/ws-server.ts',

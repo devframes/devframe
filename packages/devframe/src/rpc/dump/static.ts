@@ -1,8 +1,9 @@
-import type { RpcDumpRecord, RpcFunctionDefinitionAny } from 'devframe/rpc'
+import type { RpcDumpRecord, RpcFunctionDefinitionAny } from '../types'
 import {
   DEVTOOLS_RPC_DUMP_DIRNAME,
 } from 'devframe/constants'
-import { dumpFunctions, getRpcHandler } from 'devframe/rpc'
+import { getRpcHandler } from '../handler'
+import { dumpFunctions } from './collect'
 
 export type StaticRpcDumpSerialization = 'json' | 'structured-clone'
 
