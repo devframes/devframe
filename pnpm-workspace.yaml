@@ -1,4 +1,5 @@
 allowBuilds:
+  '@parcel/watcher': false
   esbuild: true
   simple-git-hooks: true
   unrs-resolver: true
