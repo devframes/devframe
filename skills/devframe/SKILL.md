@@ -84,7 +84,7 @@ See `templates/counter-devframe.ts` for a runnable counter example, `templates/s
 |------|---------|
 | `ctx.rpc` | Register RPC functions, broadcast, shared state, streaming channels |
 | `ctx.views` | Serve static files via `hostStatic(base, distDir)` |
-| `ctx.diagnostics` | Structured diagnostics host (logs-sdk) — register custom error codes |
+| `ctx.diagnostics` | Structured diagnostics host (nostics) — register custom error codes |
 | `ctx.agent` | Expose tools + resources to coding agents (experimental) |
 | `ctx.host` | Runtime abstraction — `mountStatic`, `resolveOrigin`, `getStorageDir` |
 | `ctx.mode` | `'dev'` or `'build'` — gate setup work per runtime |

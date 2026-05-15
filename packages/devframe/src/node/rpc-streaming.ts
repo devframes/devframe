@@ -8,7 +8,7 @@ import type {
 import type { StreamErrorPayload, StreamReader, StreamSink } from 'devframe/utils/streaming-channel'
 import { createStreamReader, createStreamSink } from 'devframe/utils/streaming-channel'
 import { createDebug } from 'obug'
-import { logger } from './diagnostics'
+import { diagnostics } from './diagnostics'
 
 const debug = createDebug('vite:devtools:rpc:streaming')
 
@@ -97,12 +97,12 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
     handler(channelName: string, id: string, opts?: { afterSeq?: number }) {
       const state = channels.get(channelName)
       if (!state) {
-        logger.DF0030({ channel: channelName, id }).log()
+        diagnostics.DF0030.report({ channel: channelName, id }, { method: 'error' })
         return
       }
       const record = state.streams.get(id)
       if (!record) {
-        logger.DF0030({ channel: channelName, id }).log()
+        diagnostics.DF0030.report({ channel: channelName, id }, { method: 'error' })
         return
       }
       const session = rpc.getCurrentRpcSession()
@@ -181,7 +181,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
       const state = channels.get(channelName)
       const record = state?.inbound.get(id)
       if (!record) {
-        logger.DF0030({ channel: channelName, id }).log()
+        diagnostics.DF0030.report({ channel: channelName, id }, { method: 'error' })
         return
       }
       // Lock the inbound to the first session that writes; subsequent
@@ -218,7 +218,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
 
   function createChannel<T>(name: string, opts: RpcStreamingChannelOptions = {}): RpcStreamingChannel<T> {
     if (channels.has(name))
-      throw logger.DF0032({ channel: name }).throw()
+      throw diagnostics.DF0032.throw({ channel: name })
 
     const replayWindow = opts.replayWindow ?? 0
     const state: ChannelState<T> = {

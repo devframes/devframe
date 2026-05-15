@@ -14,7 +14,7 @@ import type {
   RpcFunctionAgentOptions,
 } from 'devframe/types'
 import { createEventEmitter } from 'devframe/utils/events'
-import { logger } from './diagnostics'
+import { diagnostics } from './diagnostics'
 
 interface RegisteredTool {
   readonly tool: AgentTool
@@ -74,7 +74,7 @@ export class DevToolsAgentHost implements DevToolsAgentHostType {
 
   registerResource(input: AgentResourceInput): AgentHandle {
     if (this.resources.has(input.id))
-      throw logger.DF0016({ id: input.id }).throw()
+      throw diagnostics.DF0016.throw({ id: input.id })
 
     const resource: AgentResource = {
       id: input.id,
@@ -154,16 +154,16 @@ export class DevToolsAgentHost implements DevToolsAgentHostType {
 
   private _validateToolId(id: string): void {
     if (this.tools.has(id))
-      throw logger.DF0015({ id }).throw()
+      throw diagnostics.DF0015.throw({ id })
     // Collision with an RPC function that already carries an `agent` field.
     const rpcDef = this.context.rpc.definitions.get(id)
     if (rpcDef?.agent)
-      throw logger.DF0015({ id }).throw()
+      throw diagnostics.DF0015.throw({ id })
   }
 
   private _projectTool(input: AgentToolInput): AgentTool {
     if (!input.description || typeof input.description !== 'string')
-      throw logger.DF0014({ name: input.id }).throw()
+      throw diagnostics.DF0014.throw({ name: input.id })
 
     return {
       id: input.id,
@@ -185,7 +185,7 @@ export class DevToolsAgentHost implements DevToolsAgentHostType {
       if (!agent)
         continue
       if (!agent.description || typeof agent.description !== 'string')
-        throw logger.DF0014({ name }).throw()
+        throw diagnostics.DF0014.throw({ name })
 
       const type: RpcFunctionType = def.type ?? 'query'
       const safety = agent.safety ?? inferSafety(type)

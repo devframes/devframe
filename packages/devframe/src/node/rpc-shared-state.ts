@@ -2,7 +2,7 @@ import type { DevToolsRpcSharedStates, RpcFunctionsHost, RpcSharedStateGetOption
 import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { createDebug } from 'obug'
-import { logger } from './diagnostics'
+import { diagnostics } from './diagnostics'
 
 const debug = createDebug('vite:devtools:rpc:state:changed')
 const debugSubscribe = createDebug('vite:devtools:rpc:state:subscribe')
@@ -50,7 +50,7 @@ export function createRpcSharedStateServerHost(
         return sharedState.get(key)!
       }
       if (options?.initialValue === undefined && options?.sharedState === undefined) {
-        throw logger.DF0013({ key }).throw()
+        throw diagnostics.DF0013.throw({ key })
       }
       debug('new-state', key)
       const state = options.sharedState ?? createSharedState<T>({

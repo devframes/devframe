@@ -3,7 +3,7 @@ import type { DevToolsNodeContext, DevToolsNodeRpcSession, DevToolsNodeRpcSessio
 import type { AsyncLocalStorage } from 'node:async_hooks'
 import { RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createDebug } from 'obug'
-import { logger } from './diagnostics'
+import { diagnostics } from './diagnostics'
 import { createRpcSharedStateServerHost } from './rpc-shared-state'
 import { createRpcStreamingServerHost } from './rpc-streaming'
 
@@ -45,7 +45,7 @@ export class RpcFunctionsHost extends RpcFunctionsCollectorBase<DevToolsRpcServe
     ...args: Args
   ): Promise<Awaited<ReturnType<DevToolsRpcServerFunctions[T]>>> {
     if (!this.definitions.has(method as string)) {
-      throw logger.DF0006({ name: String(method) }).throw()
+      throw diagnostics.DF0006.throw({ name: String(method) })
     }
 
     const handler = await this.getHandler(method)
@@ -80,7 +80,7 @@ export class RpcFunctionsHost extends RpcFunctionsCollectorBase<DevToolsRpcServe
 
   getCurrentRpcSession(): DevToolsNodeRpcSession | undefined {
     if (!this._asyncStorage)
-      throw logger.DF0007().throw()
+      throw diagnostics.DF0007.throw()
     return this._asyncStorage.getStore()
   }
 }

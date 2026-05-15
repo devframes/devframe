@@ -1,5 +1,5 @@
 import type { RpcFunctionDefinition, RpcFunctionSetupResult, RpcFunctionType } from './types'
-import { logger } from './diagnostics'
+import { diagnostics } from './diagnostics'
 
 export async function getRpcResolvedSetupResult<
   NAME extends string,
@@ -42,7 +42,7 @@ export async function getRpcHandler<
   }
   const result = await getRpcResolvedSetupResult(definition, context)
   if (!result.handler) {
-    throw logger.DF0024({ name: definition.name }).throw()
+    throw diagnostics.DF0024.throw({ name: definition.name })
   }
   return result.handler
 }

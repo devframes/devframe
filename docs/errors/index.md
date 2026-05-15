@@ -10,7 +10,7 @@ Devframe uses structured diagnostics to surface actionable warnings and errors a
 
 - Codes follow the pattern **`DF` + 4-digit number** (e.g., `DF0001`).
 - Every error page includes the cause, recommended fix, and a reference to the source file that emits it.
-- The diagnostics system is powered by [`logs-sdk`](https://github.com/vercel-labs/logs-sdk), which provides structured logging with docs URLs, ANSI-formatted console output, and level-based filtering.
+- The diagnostics system is powered by [`nostics`](https://www.npmjs.com/package/nostics), which provides structured diagnostic codes with docs URLs, ANSI-formatted console output, and pluggable reporters.
 
 ## Devframe (DF)
 

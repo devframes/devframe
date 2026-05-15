@@ -21,6 +21,7 @@ export { DevframeSpaOptions }
 export { DevToolsAgentHost }
 export { DevToolsAgentHostEvents }
 export { DevToolsCapabilities }
+export { DevToolsDefineDiagnosticsOptions }
 export { DevToolsDiagnosticsDefinition }
 export { DevToolsDiagnosticsHost }
 export { DevToolsDiagnosticsLogger }

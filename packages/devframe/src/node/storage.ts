@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { dirname } from 'pathe'
 import { debounce } from 'perfect-debounce'
-import { logger } from './diagnostics'
+import { diagnostics } from './diagnostics'
 
 export interface CreateStorageOptions<T extends object> {
   filepath: string
@@ -24,7 +24,7 @@ export function createStorage<T extends object>(options: CreateStorageOptions<T>
       initialValue = mergeInitialValue ? mergeInitialValue(options.initialValue, savedValue) : savedValue
     }
     catch (error) {
-      logger.DF0012({ filepath: options.filepath }, { cause: error }).log()
+      diagnostics.DF0012.report({ filepath: options.filepath, cause: error }, { method: 'warn' })
       initialValue = options.initialValue
     }
   }

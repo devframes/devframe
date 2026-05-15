@@ -1,6 +1,6 @@
 import type { DevToolsNodeContext, DevToolsViewHost as DevToolsViewHostType } from 'devframe/types'
 import { existsSync } from 'node:fs'
-import { logger } from './diagnostics'
+import { diagnostics } from './diagnostics'
 
 export class DevToolsViewHost implements DevToolsViewHostType {
   /**
@@ -15,7 +15,7 @@ export class DevToolsViewHost implements DevToolsViewHostType {
 
   hostStatic(baseUrl: string, distDir: string) {
     if (!existsSync(distDir)) {
-      throw logger.DF0008({ distDir }).throw()
+      throw diagnostics.DF0008.throw({ distDir })
     }
 
     this.buildStaticDirs.push({ baseUrl, distDir })

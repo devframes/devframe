@@ -4,7 +4,7 @@ import { resolve } from 'pathe'
 import { resolveBasePath } from '../adapters/_shared'
 import { createDevServer, resolveDevServerPort } from '../adapters/dev'
 import { DEVTOOLS_CONNECTION_META_FILENAME } from '../constants'
-import { logger } from '../node/diagnostics'
+import { diagnostics } from '../node/diagnostics'
 
 export interface ViteDevBridgeOptions {
   /**
@@ -106,7 +106,7 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
         })
       }
       catch (e) {
-        logger.DF0033({ id: d.id, reason: String(e) }, { cause: e as Error }).log()
+        diagnostics.DF0033.report({ id: d.id, reason: String(e), cause: e as Error }, { method: 'warn' })
         return
       }
 

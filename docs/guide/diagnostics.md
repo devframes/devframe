@@ -4,7 +4,7 @@ outline: deep
 
 # Structured Diagnostics
 
-`ctx.diagnostics` is a thin layer over [`logs-sdk`](https://github.com/vercel-labs/logs-sdk) that lets integrations register coded errors and warnings into a shared logger without depending on `logs-sdk` directly. Use it for author-defined coded diagnostics — errors, warnings, deprecations — with a stable code, a documentation URL, and a structured payload. For free-form runtime output that should appear in the DevTools UI, use [`ctx.messages`](https://devtools.vite.dev/kit/messages).
+`ctx.diagnostics` is a thin layer over [`nostics`](https://www.npmjs.com/package/nostics) that lets integrations register coded errors and warnings into a shared lookup without depending on `nostics` directly. Use it for author-defined coded diagnostics — errors, warnings, deprecations — with a stable code, a documentation URL, and a structured payload. For free-form runtime output that should appear in the DevTools UI, use [`ctx.messages`](https://devtools.vite.dev/kit/messages).
 
 | Surface | Purpose | Example |
 |---------|---------|---------|
@@ -15,17 +15,14 @@ outline: deep
 
 ```ts
 interface DevToolsDiagnosticsHost {
-  /** Combined logs-sdk Logger across all registered diagnostics. */
-  readonly logger: Logger
+  /** Proxy-backed lookup over every registered code. */
+  readonly logger: Record<string, DiagnosticHandle>
 
   /** Register additional diagnostic definitions. */
-  register: (definitions: DiagnosticsResult) => void
+  register: (definitions: Record<string, unknown>) => void
 
-  /** Re-export of logs-sdk's `defineDiagnostics`. */
+  /** Build a typed diagnostics object with the host's ANSI reporter pre-wired. */
   defineDiagnostics: typeof defineDiagnostics
-
-  /** Re-export of logs-sdk's `createLogger`. */
-  createLogger: typeof createLogger
 }
 ```
 
@@ -43,20 +40,19 @@ export function MyPlugin(): PluginWithDevTools {
           docsBase: 'https://example.com/errors',
           codes: {
             MYP0001: {
-              message: (p: { name: string }) => `Plugin "${p.name}" is not configured`,
-              hint: 'Add the plugin to your `vite.config.ts` and pass an options object.',
+              why: (p: { name: string }) => `Plugin "${p.name}" is not configured`,
+              fix: 'Add the plugin to your `vite.config.ts` and pass an options object.',
             },
             MYP0002: {
-              message: 'Cache directory missing — running cold.',
-              level: 'warn',
+              why: 'Cache directory missing — running cold.',
             },
           },
         })
 
         ctx.diagnostics.register(myDiagnostics)
 
-        // Now you can emit codes through the shared logger:
-        ctx.diagnostics.logger.MYP0002().log()
+        // Emit through the host's shared reporter:
+        myDiagnostics.MYP0002.report()
       },
     },
   }
@@ -76,68 +72,52 @@ Prefixes already in use in this monorepo:
 | `RDDT` | `@vitejs/devtools-rolldown` |
 | `VDT` | `@vitejs/devtools-vite` (reserved) |
 
-Each definition supports a `message` (string or function), an optional `hint`, an optional `level` (`'error'` / `'warn'` / `'suggestion'` / `'deprecation'` — defaults to `'error'`), and a `docsBase` for generating documentation URLs. See [`logs-sdk`](https://github.com/vercel-labs/logs-sdk) for the full schema.
+Each definition supports a `why` (string or function — the message) and an optional `fix` (string or function — the suggested resolution). The `docsBase` on `defineDiagnostics({...})` auto-attaches the URL to every emitted diagnostic. See [`nostics`](https://www.npmjs.com/package/nostics) for the full schema.
 
 ## Emit a diagnostic
 
-Each registered code becomes a callable factory on `ctx.diagnostics.logger`. The factory returns an object with `.throw()`, `.warn()`, `.error()`, `.log()`, and `.format()`.
+Each registered code becomes a `DiagnosticHandle` on the typed result of `defineDiagnostics()` (and through the shared `ctx.diagnostics.logger` lookup). Handles expose `.report()` and `.throw()`.
 
 ```ts
 // Throw — control flow stops here
-throw ctx.diagnostics.logger.MYP0001({ name: 'foo' }).throw()
+throw myDiagnostics.MYP0001.throw({ name: 'foo' })
 
-// Log without throwing
-ctx.diagnostics.logger.MYP0002().log()
+// Report without throwing (default console method: `warn`)
+myDiagnostics.MYP0002.report()
 
-// Override level per call
-ctx.diagnostics.logger.MYP0002().warn()
+// Override the console method per call
+myDiagnostics.MYP0002.report({}, { method: 'error' })
 
-// Attach a `cause`
-ctx.diagnostics.logger.MYP0001({ name: 'foo' }, { cause: error }).log()
+// Attach a `cause` — merged into the params object
+myDiagnostics.MYP0001.throw({ name: 'foo', cause: error })
 ```
 
 `.throw()` is typed `never`, so TypeScript treats the line after as unreachable. Prefix the call with `throw` for control-flow narrowing:
 
 ```ts
-throw ctx.diagnostics.logger.MYP0001({ name }).throw()
+throw myDiagnostics.MYP0001.throw({ name })
 ```
 
-## Typed logger reference
+## Typed handle reference
 
-`ctx.diagnostics.logger` is loosely typed — it covers an unbounded set of registered codes, beyond what TypeScript can narrow. For autocompletion on your plugin's specific codes, keep a typed reference returned from `createLogger`:
+`ctx.diagnostics.logger` is loosely typed — it covers an unbounded set of registered codes, beyond what TypeScript can narrow. For autocompletion on your plugin's specific codes, keep the typed result of `defineDiagnostics()`:
 
 ```ts
 const myDiagnostics = ctx.diagnostics.defineDiagnostics({
   docsBase: 'https://example.com/errors',
   codes: {
-    MYP0001: { message: (p: { name: string }) => `…${p.name}` },
+    MYP0001: { why: (p: { name: string }) => `…${p.name}` },
   },
 })
 
-// Register so the shared logger can also see it
+// Register so the shared lookup can also see it
 ctx.diagnostics.register(myDiagnostics)
 
-// Keep a typed reference for your own emit sites
-const logger = ctx.diagnostics.createLogger({ diagnostics: [myDiagnostics] })
-logger.MYP0001({ name: 'foo' }).warn()
+// Use the typed handle directly for autocompletion
+myDiagnostics.MYP0001.report({ name: 'foo' })
 ```
 
-Both loggers share the formatter and reporter defaults set by the host (ANSI console output).
-
-## Updating the combined logger
-
-`ctx.diagnostics.logger` is a getter — it returns the freshest combined logger, rebuilt each time `register()` is called. Don't cache it:
-
-```ts
-// ❌ Stale after a later register() call
-const log = ctx.diagnostics.logger
-log.MYP0001({ name: 'foo' }).log()
-
-// ✅ Always fresh
-ctx.diagnostics.logger.MYP0001({ name: 'foo' }).log()
-```
-
-For a stable reference, use `ctx.diagnostics.createLogger({ diagnostics: [myDiagnostics] })` — that one stays bound to your definitions.
+The host's `defineDiagnostics()` pre-wires its ANSI console reporter, so both the typed handle and the shared lookup produce the same output.
 
 ## Document your codes
 

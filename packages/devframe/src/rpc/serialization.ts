@@ -1,4 +1,4 @@
-import { logger } from './diagnostics'
+import { diagnostics } from './diagnostics'
 
 /**
  * Wire format used by the WS RPC transport.
@@ -84,7 +84,7 @@ export function strictJsonStringify(value: unknown, fnName: string = ''): string
 
 function nonJsonAt(fnName: string, type: string, parent: unknown, key: string): Error {
   const path = formatPath(parent, key)
-  return logger.DF0020({ name: fnName || '<anonymous>', type, path }).throw()
+  return diagnostics.DF0020.throw({ name: fnName || '<anonymous>', type, path })
 }
 
 function formatPath(parent: unknown, key: string): string {

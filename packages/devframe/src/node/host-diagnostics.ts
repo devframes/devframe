@@ -1,37 +1,31 @@
 import type { DevToolsDiagnosticsHost as DevToolsDiagnosticsHostType, DevToolsDiagnosticsLogger, DevToolsNodeContext } from 'devframe/types'
-import { colors as c } from 'devframe/utils/colors'
-import { consoleReporter, createLogger, defineDiagnostics } from 'logs-sdk'
-import { ansiFormatter } from 'logs-sdk/formatters/ansi'
+import { defineDiagnostics } from 'nostics'
+import { devframeReporter } from '../utils/diagnostics-reporter'
 
 export class DevToolsDiagnosticsHost implements DevToolsDiagnosticsHostType {
-  private _definitions: unknown[] = []
-  private _logger!: DevToolsDiagnosticsLogger
+  private _registry: Record<string, unknown> = {}
 
-  readonly defineDiagnostics: typeof defineDiagnostics = defineDiagnostics
-  readonly createLogger: typeof createLogger = createLogger
+  readonly logger: DevToolsDiagnosticsLogger = new Proxy({} as DevToolsDiagnosticsLogger, {
+    get: (_, code: string) => this._registry[code],
+  })
+
+  readonly defineDiagnostics: DevToolsDiagnosticsHostType['defineDiagnostics'] = (opts) => {
+    const merged = {
+      ...opts,
+      reporters: [devframeReporter, ...(opts.reporters ?? [])],
+    } as Parameters<typeof defineDiagnostics>[0]
+    return defineDiagnostics(merged) as ReturnType<DevToolsDiagnosticsHostType['defineDiagnostics']>
+  }
 
   constructor(
     public readonly context: DevToolsNodeContext,
-    initialDefinitions: unknown[] = [],
+    initialDefinitions: Array<Record<string, unknown>> = [],
   ) {
-    this._definitions = [...initialDefinitions]
-    this._rebuild()
+    for (const d of initialDefinitions)
+      this.register(d)
   }
 
-  get logger(): DevToolsDiagnosticsLogger {
-    return this._logger
-  }
-
-  register(definitions: unknown): void {
-    this._definitions.push(definitions)
-    this._rebuild()
-  }
-
-  private _rebuild(): void {
-    this._logger = createLogger({
-      diagnostics: this._definitions as any[],
-      formatter: ansiFormatter(c),
-      reporters: consoleReporter,
-    }) as DevToolsDiagnosticsLogger
+  register(diagnostics: Record<string, unknown>): void {
+    Object.assign(this._registry, diagnostics)
   }
 }

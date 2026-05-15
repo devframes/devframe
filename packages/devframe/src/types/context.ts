@@ -41,8 +41,8 @@ export interface DevToolsNodeContext {
   rpc: import('./rpc').RpcFunctionsHost
   views: DevToolsViewHost
   /**
-   * Structured diagnostics host — wraps `logs-sdk` and lets integrations
-   * register their own coded errors/warnings into the shared logger.
+   * Structured diagnostics host — wraps `nostics` and lets integrations
+   * register their own coded errors/warnings into the shared lookup.
    */
   diagnostics: DevToolsDiagnosticsHost
   /**

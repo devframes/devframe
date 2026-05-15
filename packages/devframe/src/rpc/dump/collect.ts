@@ -9,7 +9,7 @@ import type {
 } from '../types'
 import { hash } from 'devframe/utils/hash'
 import pLimit from 'p-limit'
-import { logger } from '../diagnostics'
+import { diagnostics } from '../diagnostics'
 import { validateDefinitions } from '../validation'
 import { reviveDumpError, serializeDumpError } from './error'
 
@@ -75,7 +75,7 @@ export async function dumpFunctions<
 
     const handler = setupResult.handler || definition.handler
     if (!handler) {
-      throw logger.DF0024({ name: definition.name }).throw()
+      throw diagnostics.DF0024.throw({ name: definition.name })
     }
 
     let dump = setupResult.dump ?? definition.dump
@@ -211,7 +211,7 @@ export function createClientFromDump<T extends Record<string, any>>(
   const client = new Proxy({} as T, {
     get(_, functionName: string) {
       if (!(functionName in store.definitions)) {
-        throw logger.DF0025({ name: functionName }).throw()
+        throw diagnostics.DF0025.throw({ name: functionName })
       }
 
       return async (...args: any[]) => {
@@ -248,7 +248,7 @@ export function createClientFromDump<T extends Record<string, any>>(
             return fallbackRecord.output
         }
 
-        throw logger.DF0026({ name: functionName, args: JSON.stringify(args) }).throw()
+        throw diagnostics.DF0026.throw({ name: functionName, args: JSON.stringify(args) })
       }
     },
     has(_, functionName: string) {

@@ -50,14 +50,11 @@ export declare class DevToolsAgentHost implements DevToolsAgentHost$1 {
 }
 export declare class DevToolsDiagnosticsHost implements DevToolsDiagnosticsHost$1 {
   readonly context: DevToolsNodeContext;
-  private _definitions;
-  private _logger;
-  readonly defineDiagnostics: typeof defineDiagnostics;
-  readonly createLogger: typeof createLogger;
-  constructor(_: DevToolsNodeContext, _?: unknown[]);
-  get logger(): DevToolsDiagnosticsLogger;
-  register(_: unknown): void;
-  private _rebuild;
+  private _registry;
+  readonly logger: DevToolsDiagnosticsLogger;
+  readonly defineDiagnostics: DevToolsDiagnosticsHost$1['defineDiagnostics'];
+  constructor(_: DevToolsNodeContext, _?: Array<Record<string, unknown>>);
+  register(_: Record<string, unknown>): void;
 }
 export declare class DevToolsViewHost implements DevToolsViewHost$1 {
   readonly context: DevToolsNodeContext;

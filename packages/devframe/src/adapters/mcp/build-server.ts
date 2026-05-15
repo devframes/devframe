@@ -12,7 +12,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import { createHostContext } from 'devframe/node'
 import { join } from 'pathe'
-import { logger } from '../../node/diagnostics'
+import { diagnostics } from '../../node/diagnostics'
 import { formatMcpError, stringifyForMcp } from './stringify'
 import { valibotArgsToJsonSchema, valibotReturnToJsonSchema } from './to-json-schema'
 
@@ -102,7 +102,7 @@ export async function createMcpServer(
 ): Promise<McpServerHandle> {
   const transport = options.transport ?? 'stdio'
   if (transport !== 'stdio')
-    throw logger.DF0017({ transport, reason: 'Only stdio transport is supported in this release.' }).throw()
+    throw diagnostics.DF0017.throw({ transport, reason: 'Only stdio transport is supported in this release.' })
 
   const host: DevToolsHost = {
     mountStatic: () => { /* MCP has no static surface */ },
@@ -132,7 +132,7 @@ export async function createMcpServer(
   }
   catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
-    throw logger.DF0017({ transport, reason }, { cause: error }).throw()
+    throw diagnostics.DF0017.throw({ transport, reason, cause: error })
   }
 
   options.onReady?.({ transport: 'stdio' })

@@ -94,7 +94,7 @@ await createCli(devframe, {
 }).parse()
 ```
 
-Structured diagnostics (via `logs-sdk`) continue to surface through their normal reporters.
+Structured diagnostics (via `nostics`) continue to surface through their normal reporters.
 
 ## Use your own CLI framework
 
