@@ -15,7 +15,7 @@ export class DevToolsViewHost implements DevToolsViewHostType {
 
   hostStatic(baseUrl: string, distDir: string) {
     if (!existsSync(distDir)) {
-      throw diagnostics.DF0008.throw({ distDir })
+      throw diagnostics.DF0008({ distDir })
     }
 
     this.buildStaticDirs.push({ baseUrl, distDir })

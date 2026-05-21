@@ -45,7 +45,7 @@ export class RpcFunctionsHost extends RpcFunctionsCollectorBase<DevToolsRpcServe
     ...args: Args
   ): Promise<Awaited<ReturnType<DevToolsRpcServerFunctions[T]>>> {
     if (!this.definitions.has(method as string)) {
-      throw diagnostics.DF0006.throw({ name: String(method) })
+      throw diagnostics.DF0006({ name: String(method) })
     }
 
     const handler = await this.getHandler(method)
@@ -80,7 +80,7 @@ export class RpcFunctionsHost extends RpcFunctionsCollectorBase<DevToolsRpcServe
 
   getCurrentRpcSession(): DevToolsNodeRpcSession | undefined {
     if (!this._asyncStorage)
-      throw diagnostics.DF0007.throw()
+      throw diagnostics.DF0007()
     return this._asyncStorage.getStore()
   }
 }

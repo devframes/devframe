@@ -102,7 +102,7 @@ export async function createMcpServer(
 ): Promise<McpServerHandle> {
   const transport = options.transport ?? 'stdio'
   if (transport !== 'stdio')
-    throw diagnostics.DF0017.throw({ transport, reason: 'Only stdio transport is supported in this release.' })
+    throw diagnostics.DF0017({ transport, reason: 'Only stdio transport is supported in this release.' })
 
   const host: DevToolsHost = {
     mountStatic: () => { /* MCP has no static surface */ },
@@ -132,7 +132,7 @@ export async function createMcpServer(
   }
   catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
-    throw diagnostics.DF0017.throw({ transport, reason, cause: error })
+    throw diagnostics.DF0017({ transport, reason, cause: error })
   }
 
   options.onReady?.({ transport: 'stdio' })

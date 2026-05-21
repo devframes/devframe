@@ -66,13 +66,13 @@ Prefix: **`DF`**. Codes are sequential 4-digit numbers (e.g. `DF0033`). Check th
    import { diagnostics } from './diagnostics'
 
    // For thrown errors — always prefix with `throw` for TypeScript control flow:
-   throw diagnostics.DF0033.throw({ name })
+   throw diagnostics.DF0033({ id, reason })
 
    // For reported warnings/errors (not thrown). The default console method is `warn`;
    // override with the 2nd-arg reporter options when needed:
-   diagnostics.DF0033.report({ name }) // console.warn
-   diagnostics.DF0033.report({ name }, { method: 'error' }) // console.error
-   diagnostics.DF0033.report({ name, cause: error }, { method: 'warn' }) // attach cause
+   diagnostics.DF0033({ id, reason }) // console.warn
+   diagnostics.DF0033({ id, reason }, { method: 'error' }) // console.error
+   diagnostics.DF0033({ id, reason, cause: error }, { method: 'warn' }) // attach cause
    ```
 
 3. **Create a docs page** at `docs/errors/DF0033.md` (when `docs/` lands):

@@ -11,9 +11,10 @@ export type DevToolsDiagnosticsDefinition = ReturnType<typeof defineDiagnostics<
 
 /**
  * The shared diagnostics lookup exposed by the host. A `Proxy` that resolves
- * any registered code name to its `nostics` handle (with `.report()` and
- * `.throw()` methods). Typed loosely because it spans heterogeneous
- * definitions registered by different integrations.
+ * any registered code name to its `nostics` handle (a callable that builds
+ * a diagnostic and routes it through registered reporters). Typed loosely
+ * because it spans heterogeneous definitions registered by different
+ * integrations.
  */
 export type DevToolsDiagnosticsLogger = Record<string, any>
 
@@ -45,18 +46,19 @@ export interface DevToolsDefineDiagnosticsOptions<Codes extends Record<string, D
  * ctx.diagnostics.register(myDiagnostics)
  *
  * // Through the shared lookup (loose typing):
- * ctx.diagnostics.logger.MYP0001.throw()
+ * throw ctx.diagnostics.logger.MYP0001()
  *
  * // Or directly on the typed handle returned from `defineDiagnostics`:
- * myDiagnostics.MYP0001.throw()
+ * throw myDiagnostics.MYP0001()
  * ```
  */
 export interface DevToolsDiagnosticsHost {
   /**
    * Proxy-backed lookup of every registered diagnostic handle by code name.
-   * Resolves to a `nostics` `DiagnosticHandle` with `.report()` / `.throw()`.
-   * Loosely typed — for autocompletion, keep a reference to the typed
-   * result of `defineDiagnostics()` instead.
+   * Resolves to a `nostics` `DiagnosticHandle` — a callable that builds a
+   * diagnostic and routes it through registered reporters; prefix with
+   * `throw` to raise. Loosely typed — for autocompletion, keep a reference
+   * to the typed result of `defineDiagnostics()` instead.
    */
   readonly logger: DevToolsDiagnosticsLogger
 

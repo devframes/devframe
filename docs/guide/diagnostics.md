@@ -52,7 +52,7 @@ export function MyPlugin(): PluginWithDevTools {
         ctx.diagnostics.register(myDiagnostics)
 
         // Emit through the host's shared reporter:
-        myDiagnostics.MYP0002.report()
+        myDiagnostics.MYP0002()
       },
     },
   }
@@ -76,26 +76,26 @@ Each definition supports a `why` (string or function — the message) and an opt
 
 ## Emit a diagnostic
 
-Each registered code becomes a `DiagnosticHandle` on the typed result of `defineDiagnostics()` (and through the shared `ctx.diagnostics.logger` lookup). Handles expose `.report()` and `.throw()`.
+Each registered code becomes a `DiagnosticHandle` on the typed result of `defineDiagnostics()` (and through the shared `ctx.diagnostics.logger` lookup). Each handle is a callable — invoke it to report (returns the `Diagnostic`), or prefix with `throw` to raise.
 
 ```ts
 // Throw — control flow stops here
-throw myDiagnostics.MYP0001.throw({ name: 'foo' })
+throw myDiagnostics.MYP0001({ name: 'foo' })
 
 // Report without throwing (default console method: `warn`)
-myDiagnostics.MYP0002.report()
+myDiagnostics.MYP0002()
 
 // Override the console method per call
-myDiagnostics.MYP0002.report({}, { method: 'error' })
+myDiagnostics.MYP0002({}, { method: 'error' })
 
 // Attach a `cause` — merged into the params object
-myDiagnostics.MYP0001.throw({ name: 'foo', cause: error })
+throw myDiagnostics.MYP0001({ name: 'foo', cause: error })
 ```
 
-`.throw()` is typed `never`, so TypeScript treats the line after as unreachable. Prefix the call with `throw` for control-flow narrowing:
+The callable returns a `Diagnostic` (which extends `Error`). Prefix with `throw` so TypeScript narrows the lines after as unreachable:
 
 ```ts
-throw myDiagnostics.MYP0001.throw({ name })
+throw myDiagnostics.MYP0001({ name })
 ```
 
 ## Typed handle reference
@@ -114,7 +114,7 @@ const myDiagnostics = ctx.diagnostics.defineDiagnostics({
 ctx.diagnostics.register(myDiagnostics)
 
 // Use the typed handle directly for autocompletion
-myDiagnostics.MYP0001.report({ name: 'foo' })
+myDiagnostics.MYP0001({ name: 'foo' })
 ```
 
 The host's `defineDiagnostics()` pre-wires its ANSI console reporter, so both the typed handle and the shared lookup produce the same output.
@@ -134,7 +134,7 @@ Each page covers the message, cause, example, and fix — see any [DF code page]
 
 ## When to use what
 
-- **`ctx.diagnostics`** — coded conditions worth looking up: misconfiguration, deprecations, validation failures, internal invariants. Always docs-backed. Often `.throw()`.
+- **`ctx.diagnostics`** — coded conditions worth looking up: misconfiguration, deprecations, validation failures, internal invariants. Always docs-backed. Often thrown.
 - **`ctx.messages`** — user-facing activity surfaces in the DevTools UI: progress indicators, audit results, "URL copied" toasts. Just a message and a level.
 
 Diagnostics target tool authors and CI; messages target the human in front of the DevTools panel.

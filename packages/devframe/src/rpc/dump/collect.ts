@@ -75,7 +75,7 @@ export async function dumpFunctions<
 
     const handler = setupResult.handler || definition.handler
     if (!handler) {
-      throw diagnostics.DF0024.throw({ name: definition.name })
+      throw diagnostics.DF0024({ name: definition.name })
     }
 
     let dump = setupResult.dump ?? definition.dump
@@ -211,7 +211,7 @@ export function createClientFromDump<T extends Record<string, any>>(
   const client = new Proxy({} as T, {
     get(_, functionName: string) {
       if (!(functionName in store.definitions)) {
-        throw diagnostics.DF0025.throw({ name: functionName })
+        throw diagnostics.DF0025({ name: functionName })
       }
 
       return async (...args: any[]) => {
@@ -248,7 +248,7 @@ export function createClientFromDump<T extends Record<string, any>>(
             return fallbackRecord.output
         }
 
-        throw diagnostics.DF0026.throw({ name: functionName, args: JSON.stringify(args) })
+        throw diagnostics.DF0026({ name: functionName, args: JSON.stringify(args) })
       }
     },
     has(_, functionName: string) {

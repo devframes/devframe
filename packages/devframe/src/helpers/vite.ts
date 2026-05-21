@@ -106,7 +106,7 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
         })
       }
       catch (e) {
-        diagnostics.DF0033.report({ id: d.id, reason: String(e), cause: e as Error }, { method: 'warn' })
+        diagnostics.DF0033({ id: d.id, reason: String(e), cause: e as Error }, { method: 'warn' })
         return
       }
 
