@@ -177,6 +177,48 @@ const modules = await rpc.call('my-devframe:get-modules', { limit: 10 })
 
 Client-side registration (for server→client calls) goes through `rpc.client.register()` — the mirror API of `ctx.rpc.register()`.
 
+## Type-safe client registry
+
+Devframe exposes two augmentable interfaces — `DevToolsRpcServerFunctions` (client→server calls) and `DevToolsRpcClientFunctions` (server→client calls) — so each registered RPC name shows up on the typed client. Augment them once per devframe via `declare module 'devframe'`.
+
+The recommended pattern collects every server-side definition into a const array and feeds it through `RpcDefinitionsToFunctions`:
+
+```ts
+import type { RpcDefinitionsToFunctions } from 'devframe/rpc'
+import { getFile, getModules } from './rpc'
+
+const serverFunctions = [getModules, getFile] as const
+
+declare module 'devframe' {
+  interface DevToolsRpcServerFunctions
+    extends RpcDefinitionsToFunctions<typeof serverFunctions> {}
+}
+```
+
+Now `connectDevframe()` returns a client where every registered name is autocompletable and argument-typed:
+
+```ts
+import { connectDevframe } from 'devframe/client'
+
+const rpc = await connectDevframe()
+const modules = await rpc.call('my-devframe:get-modules', { limit: 10 })
+//                       ^? typed from the augmentation above
+```
+
+For one-off augmentations, declare a single key with `RpcFunctionDefinitionToFunction`:
+
+```ts
+import type { RpcFunctionDefinitionToFunction } from 'devframe/rpc'
+
+declare module 'devframe' {
+  interface DevToolsRpcServerFunctions {
+    'my-devframe:get-modules': RpcFunctionDefinitionToFunction<typeof getModules>
+  }
+}
+```
+
+For server→client calls invoked via `ctx.rpc.broadcast`, augment `DevToolsRpcClientFunctions` the same way.
+
 ## Static dumps
 
 For `static` functions, Devframe records the handler's output during `createBuild` and bakes it into the build:

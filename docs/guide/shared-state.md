@@ -137,6 +137,23 @@ const unsubscribe = ctx.rpc.sharedState.onKeyAdded((key) => {
 
 Protocol adapters (the [MCP adapter](./agent-native), for example) use this to surface shared state as dynamic resources.
 
+## Type-safe keys
+
+Augment `DevToolsRpcSharedStates` to type each shared-state key once, then both server and client lookups stay typed without per-call generics:
+
+```ts
+declare module 'devframe' {
+  interface DevToolsRpcSharedStates {
+    'my-devframe:state': {
+      count: number
+      items: { id: string, name: string }[]
+    }
+  }
+}
+```
+
+After this declaration, `ctx.rpc.sharedState.get('my-devframe:state')` and `rpc.sharedState.get('my-devframe:state')` both return a host typed to the declared shape.
+
 ## When to use shared state vs RPC
 
 | Use shared state for | Use RPC for |

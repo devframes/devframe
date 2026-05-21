@@ -361,6 +361,9 @@ importers:
       structured-clone-es:
         specifier: catalog:deps
         version: 2.0.0
+      tinyglobby:
+        specifier: catalog:deps
+        version: 0.2.16
       tsdown:
         specifier: catalog:build
         version: 0.22.0(tsx@4.21.0)(typescript@6.0.3)

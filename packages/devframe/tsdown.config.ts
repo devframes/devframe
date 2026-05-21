@@ -55,37 +55,72 @@ const deps = {
   ],
 }
 
-// Split into two configs so client/agnostic and server entries live in
-// independent rolldown chunk graphs. A single combined build lets rolldown
-// hoist shared helpers into chunks that mix server-only imports like
-// `devframe/rpc/transports/ws-server` or `node:crypto`, which then leak into
-// browser-loaded outputs (e.g. `client/index.mjs`, `utils/hash.mjs`).
+// Shared by the runtime client build and the combined dts build below.
+const clientEntries = {
+  'client/index': 'src/client/index.ts',
+  'utils/colors': 'src/utils/colors.ts',
+  'utils/events': 'src/utils/events.ts',
+  'utils/hash': 'src/utils/hash.ts',
+  'utils/human-id': 'src/utils/human-id.ts',
+  'utils/nanoid': 'src/utils/nanoid.ts',
+  'utils/promise': 'src/utils/promise.ts',
+  'utils/shared-state': 'src/utils/shared-state.ts',
+  'utils/streaming-channel': 'src/utils/streaming-channel.ts',
+  'utils/structured-clone': 'src/utils/structured-clone.ts',
+  'utils/when': 'src/utils/when.ts',
+}
+
+// Shared by the runtime server build and the combined dts build below.
+const serverEntries = {
+  'index': 'src/index.ts',
+  'constants': 'src/constants.ts',
+  'types/index': 'src/types/index.ts',
+  'rpc/index': 'src/rpc/index.ts',
+  'rpc/client': 'src/rpc/client.ts',
+  'rpc/dump': 'src/rpc/dump/index.ts',
+  'rpc/server': 'src/rpc/server.ts',
+  'rpc/transports/ws-client': 'src/rpc/transports/ws-client.ts',
+  'rpc/transports/ws-server': 'src/rpc/transports/ws-server.ts',
+  'node/index': 'src/node/index.ts',
+  'node/auth': 'src/node/auth/index.ts',
+  'node/internal': 'src/node/internal/index.ts',
+  'utils/launch-editor': 'src/utils/launch-editor.ts',
+  'utils/open': 'src/utils/open.ts',
+  'utils/serve-static': 'src/utils/serve-static.ts',
+  'adapters/cli': 'src/adapters/cli.ts',
+  'adapters/dev': 'src/adapters/dev.ts',
+  'adapters/build': 'src/adapters/build.ts',
+  'adapters/embedded': 'src/adapters/embedded.ts',
+  'adapters/mcp': 'src/adapters/mcp/index.ts',
+  'helpers/vite': 'src/helpers/vite.ts',
+  'recipes/open-helpers': 'src/recipes/open-helpers.ts',
+}
+
+// Three configs:
+//
+// 1. Runtime client/agnostic build (`dts: false`). Independent rolldown
+//    chunk graph so server-only imports like `devframe/rpc/transports/ws-server`
+//    or `node:crypto` can't leak into browser-loaded outputs
+//    (`client/index.mjs`, `utils/hash.mjs`, …). `clean: true` clears
+//    dist/ before the server build appends.
+// 2. Runtime server/node build (`dts: false`). `clean: false` appends to
+//    the client output.
+// 3. Combined dts build (`emitDtsOnly: true`). All entries live in a
+//    single rolldown graph so shared modules — notably
+//    `src/types/rpc-augments.ts` — produce exactly one declaration site.
+//    This is what lets consumer `declare module 'devframe'` augmentations
+//    propagate across every import chain.
 export default defineConfig([
-  // Client / agnostic build — runs first; `clean: true` clears dist/ before
-  // the server build appends to it. Keep this first in the array.
   {
     clean: true,
     platform: 'browser',
     tsconfig,
     deps,
-    dts: true,
-    // Force `.mjs` / `.d.mts` extensions to match the server config and the
-    // `packages/devframe/package.json` `exports` map. `platform: 'browser'`
-    // defaults to `.js`, which would break those entry paths.
-    outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),
-    entry: {
-      'client/index': 'src/client/index.ts',
-      'utils/colors': 'src/utils/colors.ts',
-      'utils/events': 'src/utils/events.ts',
-      'utils/hash': 'src/utils/hash.ts',
-      'utils/human-id': 'src/utils/human-id.ts',
-      'utils/nanoid': 'src/utils/nanoid.ts',
-      'utils/promise': 'src/utils/promise.ts',
-      'utils/shared-state': 'src/utils/shared-state.ts',
-      'utils/streaming-channel': 'src/utils/streaming-channel.ts',
-      'utils/structured-clone': 'src/utils/structured-clone.ts',
-      'utils/when': 'src/utils/when.ts',
-    },
+    dts: false,
+    // `platform: 'browser'` defaults to `.js`; force `.mjs` to match the
+    // `packages/devframe/package.json` `exports` map.
+    outExtensions: () => ({ js: '.mjs' }),
+    entry: clientEntries,
     hooks: {
       'build:done': async () => {
         const { checkClientDist } = await import('./scripts/check-client-dist.ts')
@@ -108,36 +143,21 @@ export default defineConfig([
       },
     },
   },
-  // Server / node build — `clean: false` so it appends to the client output.
   {
     clean: false,
     platform: 'node',
     tsconfig,
     deps,
-    dts: true,
-    entry: {
-      'index': 'src/index.ts',
-      'constants': 'src/constants.ts',
-      'types/index': 'src/types/index.ts',
-      'rpc/index': 'src/rpc/index.ts',
-      'rpc/client': 'src/rpc/client.ts',
-      'rpc/dump': 'src/rpc/dump/index.ts',
-      'rpc/server': 'src/rpc/server.ts',
-      'rpc/transports/ws-client': 'src/rpc/transports/ws-client.ts',
-      'rpc/transports/ws-server': 'src/rpc/transports/ws-server.ts',
-      'node/index': 'src/node/index.ts',
-      'node/auth': 'src/node/auth/index.ts',
-      'node/internal': 'src/node/internal/index.ts',
-      'utils/launch-editor': 'src/utils/launch-editor.ts',
-      'utils/open': 'src/utils/open.ts',
-      'utils/serve-static': 'src/utils/serve-static.ts',
-      'adapters/cli': 'src/adapters/cli.ts',
-      'adapters/dev': 'src/adapters/dev.ts',
-      'adapters/build': 'src/adapters/build.ts',
-      'adapters/embedded': 'src/adapters/embedded.ts',
-      'adapters/mcp': 'src/adapters/mcp/index.ts',
-      'helpers/vite': 'src/helpers/vite.ts',
-      'recipes/open-helpers': 'src/recipes/open-helpers.ts',
-    },
+    dts: false,
+    entry: serverEntries,
+  },
+  {
+    clean: false,
+    platform: 'neutral',
+    tsconfig,
+    deps,
+    dts: { emitDtsOnly: true },
+    outExtensions: () => ({ dts: '.d.mts' }),
+    entry: { ...clientEntries, ...serverEntries },
   },
 ])

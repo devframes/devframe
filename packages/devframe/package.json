@@ -95,6 +95,7 @@
     "p-limit": "catalog:deps",
     "perfect-debounce": "catalog:deps",
     "structured-clone-es": "catalog:deps",
+    "tinyglobby": "catalog:deps",
     "tsdown": "catalog:build",
     "ua-parser-modern": "catalog:inlined",
     "whenexpr": "catalog:deps"
