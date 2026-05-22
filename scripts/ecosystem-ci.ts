@@ -87,7 +87,13 @@ function prepareClone(ref: string): void {
   if (existsSync(devtoolsDir))
     rmSync(devtoolsDir, { recursive: true, force: true })
 
-  run('git', ['clone', '--depth', '1', '--branch', ref, REPO_URL, devtoolsDir])
+  // Use init + fetch instead of `clone --branch` so any ref works — tag,
+  // branch, or commit SHA. GitHub allows fetching reachable SHAs by default.
+  mkdirSync(devtoolsDir, { recursive: true })
+  run('git', ['init', '--quiet'], devtoolsDir)
+  run('git', ['remote', 'add', 'origin', REPO_URL], devtoolsDir)
+  run('git', ['fetch', '--depth', '1', 'origin', ref], devtoolsDir)
+  run('git', ['checkout', '--quiet', 'FETCH_HEAD'], devtoolsDir)
 }
 
 function patchPackageJson(repoDir: string, tarball: string): void {
@@ -106,11 +112,12 @@ function readManifest(file: string): PackageManifest {
 function run(cmd: string, args: string[], cwd: string = rootDir): void {
   log(`$ ${cmd} ${args.join(' ')}  (in ${cwd})`)
   const result = spawnSync(cmd, args, { cwd, stdio: 'inherit', shell: false })
-  if (result.status !== 0) {
-    throw new Error(
-      `Command failed (exit ${result.status ?? 'unknown'}): ${cmd} ${args.join(' ')}`,
-    )
-  }
+  if (result.error)
+    throw new Error(`Command failed to spawn: ${cmd} ${args.join(' ')}: ${result.error.message}`)
+  if (result.signal)
+    throw new Error(`Command terminated by signal ${result.signal}: ${cmd} ${args.join(' ')}`)
+  if (result.status !== 0)
+    throw new Error(`Command failed (exit ${result.status ?? 'unknown'}): ${cmd} ${args.join(' ')}`)
 }
 
 function log(msg: string): void {
