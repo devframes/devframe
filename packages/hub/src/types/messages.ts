@@ -1,9 +1,9 @@
 import type { EventEmitter } from 'devframe/types'
 
-export type DevToolsMessageLevel = 'info' | 'warn' | 'error' | 'success' | 'debug'
-export type DevToolsMessageEntryFrom = 'server' | 'browser'
+export type DevframeMessageLevel = 'info' | 'warn' | 'error' | 'success' | 'debug'
+export type DevframeMessageEntryFrom = 'server' | 'browser'
 
-export interface DevToolsMessageElementPosition {
+export interface DevframeMessageElementPosition {
   /** CSS selector for the element */
   selector?: string
   /** Bounding box of the element */
@@ -12,7 +12,7 @@ export interface DevToolsMessageElementPosition {
   description?: string
 }
 
-export interface DevToolsMessageFilePosition {
+export interface DevframeMessageFilePosition {
   /** Absolute or relative file path */
   file: string
   /** Line number (1-based) */
@@ -21,7 +21,7 @@ export interface DevToolsMessageFilePosition {
   column?: number
 }
 
-export interface DevToolsMessageEntry {
+export interface DevframeMessageEntry {
   /**
    * Unique identifier for this message entry (auto-generated if not provided)
    */
@@ -37,7 +37,7 @@ export interface DevToolsMessageEntry {
   /**
    * Severity level, determines color and icon
    */
-  level: DevToolsMessageLevel
+  level: DevframeMessageLevel
   /**
    * Optional stack trace string
    */
@@ -45,11 +45,11 @@ export interface DevToolsMessageEntry {
   /**
    * Optional DOM element position info (e.g., for a11y issues)
    */
-  elementPosition?: DevToolsMessageElementPosition
+  elementPosition?: DevframeMessageElementPosition
   /**
    * Optional source file position info (e.g., for lint errors)
    */
-  filePosition?: DevToolsMessageFilePosition
+  filePosition?: DevframeMessageFilePosition
   /**
    * Whether this message should also appear as a toast notification
    */
@@ -57,7 +57,7 @@ export interface DevToolsMessageEntry {
   /**
    * Origin of the message entry, automatically set by the context
    */
-  from: DevToolsMessageEntryFrom
+  from: DevframeMessageEntryFrom
   /**
    * Grouping category (e.g., 'a11y', 'lint', 'runtime', 'test')
    */
@@ -89,39 +89,39 @@ export interface DevToolsMessageEntry {
  * Input type for creating a message entry.
  * `id`, `timestamp`, and `from` are auto-filled by the host.
  */
-export type DevToolsMessageEntryInput = Omit<DevToolsMessageEntry, 'id' | 'timestamp' | 'from'> & {
+export type DevframeMessageEntryInput = Omit<DevframeMessageEntry, 'id' | 'timestamp' | 'from'> & {
   id?: string
   timestamp?: number
 }
 
-export interface DevToolsMessageHandle {
+export interface DevframeMessageHandle {
   /** The underlying message entry data */
-  readonly entry: DevToolsMessageEntry
+  readonly entry: DevframeMessageEntry
   /** Shortcut to entry.id */
   readonly id: string
   /** Partial update of this message entry */
-  update: (patch: Partial<DevToolsMessageEntryInput>) => Promise<DevToolsMessageEntry | undefined>
+  update: (patch: Partial<DevframeMessageEntryInput>) => Promise<DevframeMessageEntry | undefined>
   /** Remove this message entry */
   dismiss: () => Promise<void>
 }
 
-export interface DevToolsMessagesClient {
+export interface DevframeMessagesClient {
   /**
    * Add a message entry. Returns a Promise resolving to a handle for subsequent updates/dismissal.
    * Can be used without `await` for fire-and-forget usage.
    */
-  add: (input: DevToolsMessageEntryInput) => Promise<DevToolsMessageHandle>
+  add: (input: DevframeMessageEntryInput) => Promise<DevframeMessageHandle>
   /** Remove a message entry by id */
   remove: (id: string) => Promise<void>
   /** Clear all message entries */
   clear: () => Promise<void>
 }
 
-export interface DevToolsMessagesHost {
-  readonly entries: Map<string, DevToolsMessageEntry>
+export interface DevframeMessagesHost {
+  readonly entries: Map<string, DevframeMessageEntry>
   readonly events: EventEmitter<{
-    'message:added': (entry: DevToolsMessageEntry) => void
-    'message:updated': (entry: DevToolsMessageEntry) => void
+    'message:added': (entry: DevframeMessageEntry) => void
+    'message:updated': (entry: DevframeMessageEntry) => void
     'message:removed': (id: string) => void
     'message:cleared': () => void
   }>
@@ -130,11 +130,11 @@ export interface DevToolsMessagesHost {
    * Add a new message entry. If an entry with the same `id` already exists, it will be updated instead.
    * Returns a handle for subsequent updates/dismissal. Can be used without `await` for fire-and-forget.
    */
-  add: (entry: DevToolsMessageEntryInput) => Promise<DevToolsMessageHandle>
+  add: (entry: DevframeMessageEntryInput) => Promise<DevframeMessageHandle>
   /**
    * Update an existing message entry by id (partial update)
    */
-  update: (id: string, patch: Partial<DevToolsMessageEntryInput>) => Promise<DevToolsMessageEntry | undefined>
+  update: (id: string, patch: Partial<DevframeMessageEntryInput>) => Promise<DevframeMessageEntry | undefined>
   /**
    * Remove a message entry by id
    */

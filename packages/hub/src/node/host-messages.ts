@@ -1,8 +1,8 @@
 import type {
-  DevToolsMessageEntry,
-  DevToolsMessageEntryInput,
-  DevToolsMessageHandle,
-  DevToolsMessagesHost as DevToolsMessagesHostType,
+  DevframeMessageEntry,
+  DevframeMessageEntryInput,
+  DevframeMessageHandle,
+  DevframeMessagesHost as DevframeMessagesHostType,
 } from '../types/messages'
 import type { HubNodeContext } from './context'
 import { createEventEmitter } from 'devframe/utils/events'
@@ -21,9 +21,9 @@ function recordRemoval(
     removals.splice(0, removals.length - MAX_REMOVALS)
 }
 
-export class DevToolsMessagesHost implements DevToolsMessagesHostType {
-  public readonly entries: DevToolsMessagesHostType['entries'] = new Map()
-  public readonly events: DevToolsMessagesHostType['events'] = createEventEmitter()
+export class DevframeMessagesHost implements DevframeMessagesHostType {
+  public readonly entries: DevframeMessagesHostType['entries'] = new Map()
+  public readonly events: DevframeMessagesHostType['events'] = createEventEmitter()
 
   /** Tracks when each entry was last added or updated (monotonic) */
   readonly lastModified = new Map<string, number>()
@@ -41,14 +41,14 @@ export class DevToolsMessagesHost implements DevToolsMessagesHostType {
     public readonly context: HubNodeContext,
   ) {}
 
-  async add(input: DevToolsMessageEntryInput): Promise<DevToolsMessageHandle> {
+  async add(input: DevframeMessageEntryInput): Promise<DevframeMessageHandle> {
     // Dedupe: if an entry with the same explicit id exists, update it instead
     if (input.id && this.entries.has(input.id)) {
       await this.update(input.id, input)
       return this._createHandle(input.id)
     }
 
-    const entry: DevToolsMessageEntry = {
+    const entry: DevframeMessageEntry = {
       ...input,
       id: input.id ?? nanoid(),
       timestamp: input.timestamp ?? Date.now(),
@@ -74,12 +74,12 @@ export class DevToolsMessagesHost implements DevToolsMessagesHostType {
     return this._createHandle(entry.id)
   }
 
-  async update(id: string, patch: Partial<DevToolsMessageEntryInput>): Promise<DevToolsMessageEntry | undefined> {
+  async update(id: string, patch: Partial<DevframeMessageEntryInput>): Promise<DevframeMessageEntry | undefined> {
     const existing = this.entries.get(id)
     if (!existing)
       return undefined
 
-    const updated: DevToolsMessageEntry = {
+    const updated: DevframeMessageEntry = {
       ...existing,
       ...patch,
       id: existing.id,
@@ -132,7 +132,7 @@ export class DevToolsMessagesHost implements DevToolsMessagesHostType {
     this.events.emit('message:cleared')
   }
 
-  private _createHandle(id: string): DevToolsMessageHandle {
+  private _createHandle(id: string): DevframeMessageHandle {
     // eslint-disable-next-line ts/no-this-alias
     const host = this
     return {

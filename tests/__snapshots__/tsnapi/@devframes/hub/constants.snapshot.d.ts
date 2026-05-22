@@ -3,7 +3,7 @@
  */
 // #region Variables
 export declare const DEFAULT_CATEGORIES_ORDER: Record<string, number>;
-export declare const DEFAULT_STATE_USER_SETTINGS: () => DevToolsDocksUserSettings;
+export declare const DEFAULT_STATE_USER_SETTINGS: () => DevframeDocksUserSettings;
 // #endregion
 
 // #region Re-exports

@@ -5,10 +5,10 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
-  DEVTOOLS_CONNECTION_META_FILENAME,
+  DEVFRAME_CONNECTION_META_FILENAME,
 } from 'devframe/constants'
 import {
-  createH3DevToolsHost,
+  createH3DevframeHost,
   createHostContext,
   startHttpAndWs,
 } from 'devframe/node'
@@ -68,7 +68,7 @@ export async function startInspectorServer(
 
   const app = new H3()
   const origin = `http://${host}:${port}`
-  const h3Host = createH3DevToolsHost({
+  const h3Host = createH3DevframeHost({
     origin,
     appName: devframe.id,
     mount: (base, dir) => {
@@ -79,7 +79,7 @@ export async function startInspectorServer(
   const ctx = await createHostContext({ cwd, mode: 'dev', host: h3Host })
   await devframe.setup(ctx)
 
-  const metaPath = `${basePath}${DEVTOOLS_CONNECTION_META_FILENAME}`
+  const metaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`
   app.use(metaPath, () => ({ backend: 'websocket', websocket: port }))
   mountStaticHandler(app, basePath, resolve(distDir))
 

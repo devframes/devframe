@@ -6,9 +6,9 @@ import { describe, expect, it } from 'vitest'
 const distRoot = fileURLToPath(new URL('../dist/', import.meta.url))
 
 const AUGMENTABLE_INTERFACES = [
-  'DevToolsRpcClientFunctions',
-  'DevToolsRpcServerFunctions',
-  'DevToolsRpcSharedStates',
+  'DevframeRpcClientFunctions',
+  'DevframeRpcServerFunctions',
+  'DevframeRpcSharedStates',
 ] as const
 
 describe('rpc-augments dedupe', () => {

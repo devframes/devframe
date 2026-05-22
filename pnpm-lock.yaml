@@ -100,28 +100,6 @@ catalogs:
     ws:
       specifier: ^8.20.0
       version: 8.20.0
-  devtools:
-    '@antfu/eslint-config':
-      specifier: ^9.0.0
-      version: 9.0.0
-    bumpp:
-      specifier: ^11.1.0
-      version: 11.1.0
-    eslint:
-      specifier: ^10.3.0
-      version: 10.3.0
-    nano-staged:
-      specifier: ^1.0.2
-      version: 1.0.2
-    simple-git-hooks:
-      specifier: ^2.13.1
-      version: 2.13.1
-    skills-npm:
-      specifier: ^1.1.1
-      version: 1.1.1
-    typescript:
-      specifier: ^6.0.3
-      version: 6.0.3
   docs:
     mermaid:
       specifier: ^11.15.0
@@ -162,6 +140,28 @@ catalogs:
     vitest:
       specifier: ^4.1.6
       version: 4.1.6
+  tooling:
+    '@antfu/eslint-config':
+      specifier: ^9.0.0
+      version: 9.0.0
+    bumpp:
+      specifier: ^11.1.0
+      version: 11.1.0
+    eslint:
+      specifier: ^10.3.0
+      version: 10.3.0
+    nano-staged:
+      specifier: ^1.0.2
+      version: 1.0.2
+    simple-git-hooks:
+      specifier: ^2.13.1
+      version: 2.13.1
+    skills-npm:
+      specifier: ^1.1.1
+      version: 1.1.1
+    typescript:
+      specifier: ^6.0.3
+      version: 6.0.3
   types:
     '@types/node':
       specifier: ^25.7.0
@@ -185,7 +185,7 @@ importers:
   .:
     devDependencies:
       '@antfu/eslint-config':
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 9.0.0(@typescript-eslint/rule-tester@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(@typescript-eslint/typescript-estree@8.59.2(typescript@6.0.3))(@typescript-eslint/utils@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(@vue/compiler-sfc@3.5.34)(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)(vitest@4.1.6(@types/node@25.7.0)(vite@8.0.12(@types/node@25.7.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.8.4)))
       '@antfu/ni':
         specifier: catalog:build
@@ -203,19 +203,19 @@ importers:
         specifier: catalog:types
         version: 8.18.1
       bumpp:
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 11.1.0
       eslint:
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 10.3.0(jiti@2.7.0)
       nano-staged:
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 1.0.2
       simple-git-hooks:
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 2.13.1
       skills-npm:
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 1.1.1
       tsdown:
         specifier: catalog:build
@@ -230,7 +230,7 @@ importers:
         specifier: catalog:build
         version: 2.9.12
       typescript:
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 6.0.3
       vite:
         specifier: catalog:build
@@ -288,7 +288,7 @@ importers:
         specifier: catalog:deps
         version: 8.20.0
 
-  examples/minimal-next-devtools-hub:
+  examples/minimal-next-devframe-hub:
     dependencies:
       '@devframes/hub':
         specifier: workspace:*
@@ -325,7 +325,7 @@ importers:
         specifier: catalog:deps
         version: 8.20.0
 
-  examples/minimal-vite-devtools-hub:
+  examples/minimal-vite-devframe-hub:
     dependencies:
       '@devframes/hub':
         specifier: workspace:*
@@ -7049,7 +7049,7 @@ snapshots:
       '@typescript-eslint/eslint-plugin': 8.59.2(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)
       '@typescript-eslint/parser': 8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)
       '@vitest/eslint-plugin': 1.6.17(@typescript-eslint/eslint-plugin@8.59.2(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)(vitest@4.1.6(@types/node@25.7.0)(vite@8.0.12(@types/node@25.7.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.8.4)))
-      ansis: 4.2.0
+      ansis: 4.3.0
       cac: 7.0.0
       eslint: 10.3.0(jiti@2.7.0)
       eslint-config-flat-gitignore: 2.3.0(eslint@10.3.0(jiti@2.7.0))

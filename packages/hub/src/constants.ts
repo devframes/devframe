@@ -1,5 +1,5 @@
-import type { DevToolsDockEntryCategory } from './types/docks'
-import type { DevToolsDocksUserSettings } from './types/settings'
+import type { DevframeDockEntryCategory } from './types/docks'
+import type { DevframeDocksUserSettings } from './types/settings'
 
 export * from 'devframe/constants'
 
@@ -11,9 +11,9 @@ export const DEFAULT_CATEGORIES_ORDER: Record<string, number> = {
   'web': 300,
   'advanced': 400,
   '~builtin': 1000,
-} satisfies Record<DevToolsDockEntryCategory, number>
+} satisfies Record<DevframeDockEntryCategory, number>
 
-export const DEFAULT_STATE_USER_SETTINGS: () => DevToolsDocksUserSettings = () => ({
+export const DEFAULT_STATE_USER_SETTINGS: () => DevframeDocksUserSettings = () => ({
   docksHidden: [],
   docksCategoriesHidden: [],
   docksPinned: [],

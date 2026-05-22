@@ -1,5 +1,5 @@
 import type { DevframeDefinition } from 'devframe/types'
-import type { DevToolsViewIframe } from '../types/docks'
+import type { DevframeViewIframe } from '../types/docks'
 import type { HubNodeContext } from './context'
 import { resolveBasePath } from 'devframe/node/internal'
 import { resolve } from 'pathe'
@@ -15,7 +15,7 @@ export interface MountDevframeOptions {
    * `when`, etc. Cannot change `id`, `type`, or `url` — those are
    * derived from the devframe definition.
    */
-  dock?: Partial<Omit<DevToolsViewIframe, 'id' | 'type' | 'url'>>
+  dock?: Partial<Omit<DevframeViewIframe, 'id' | 'type' | 'url'>>
 }
 
 /**
@@ -46,7 +46,7 @@ export async function mountDevframe(
     ...options.dock,
     type: 'iframe',
     url: base,
-  } as DevToolsViewIframe)
+  } as DevframeViewIframe)
 
   await d.setup(ctx)
 }

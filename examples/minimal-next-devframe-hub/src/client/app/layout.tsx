@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Minimal Next DevTools Hub',
+  title: 'Minimal Next Devframe Hub',
   description: 'A Next.js host for the @devframes/hub protocol.',
 }
 

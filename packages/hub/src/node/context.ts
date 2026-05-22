@@ -1,16 +1,16 @@
 import type { CreateHostContextOptions } from 'devframe/node'
-import type { DevToolsHost, DevToolsNodeContext } from 'devframe/types'
-import type { DevToolsCommandsHost } from '../types/commands'
-import type { DevToolsDockHost } from '../types/docks'
+import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
+import type { DevframeCommandsHost } from '../types/commands'
+import type { DevframeDockHost } from '../types/docks'
 import type { JsonRenderer, JsonRenderSpec } from '../types/json-render'
-import type { DevToolsMessagesHost } from '../types/messages'
-import type { DevToolsTerminalHost } from '../types/terminals'
+import type { DevframeMessagesHost } from '../types/messages'
+import type { DevframeTerminalHost } from '../types/terminals'
 import { createHostContext } from 'devframe/node'
 import { debounce } from 'perfect-debounce'
-import { DevToolsCommandsHost as CommandsHostImpl } from './host-commands'
-import { DevToolsDockHost as DocksHostImpl } from './host-docks'
-import { DevToolsMessagesHost as MessagesHostImpl } from './host-messages'
-import { DevToolsTerminalHost as TerminalsHostImpl } from './host-terminals'
+import { DevframeCommandsHost as CommandsHostImpl } from './host-commands'
+import { DevframeDockHost as DocksHostImpl } from './host-docks'
+import { DevframeMessagesHost as MessagesHostImpl } from './host-messages'
+import { DevframeTerminalHost as TerminalsHostImpl } from './host-terminals'
 import { registerHubBuiltins } from './hub-builtins'
 import { builtinHubRpcDeclarations } from './rpc-builtins'
 
@@ -39,19 +39,19 @@ export interface HubHostCapabilities {
 
 /**
  * Hub-augmented node context — extends devframe's framework-neutral
- * `DevToolsNodeContext` with the hub-level subsystems (`docks`,
+ * `DevframeNodeContext` with the hub-level subsystems (`docks`,
  * `terminals`, `messages`, `commands`) and the `createJsonRenderer`
  * factory.
  *
  * Framework kits further extend this with their own slots (e.g.
  * `viteConfig`, `viteServer`).
  */
-export interface HubNodeContext extends DevToolsNodeContext {
-  readonly host: DevToolsHost & HubHostCapabilities
-  docks: DevToolsDockHost
-  terminals: DevToolsTerminalHost
-  messages: DevToolsMessagesHost
-  commands: DevToolsCommandsHost
+export interface HubNodeContext extends DevframeNodeContext {
+  readonly host: DevframeHost & HubHostCapabilities
+  docks: DevframeDockHost
+  terminals: DevframeTerminalHost
+  messages: DevframeMessagesHost
+  commands: DevframeCommandsHost
   /**
    * Create a JsonRenderer handle for building json-render powered UIs.
    */

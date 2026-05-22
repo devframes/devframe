@@ -1,11 +1,11 @@
 import type { RpcStreamingChannel } from 'devframe/types'
 import type { Result as TinyExecResult } from 'tinyexec'
 import type {
-  DevToolsChildProcessExecuteOptions,
-  DevToolsChildProcessTerminalSession,
-  DevToolsTerminalHost as DevToolsTerminalHostType,
-  DevToolsTerminalSession,
-  DevToolsTerminalSessionBase,
+  DevframeChildProcessExecuteOptions,
+  DevframeChildProcessTerminalSession,
+  DevframeTerminalHost as DevframeTerminalHostType,
+  DevframeTerminalSession,
+  DevframeTerminalSessionBase,
 } from '../types/terminals'
 import type { HubNodeContext } from './context'
 import process from 'node:process'
@@ -21,9 +21,9 @@ type PartialWithoutId<T extends { id: string }> = Partial<T> & { id: string }
 const TERMINAL_STREAM_CHANNEL = 'devframe:terminals' as const
 const TERMINAL_REPLAY_WINDOW = 1000
 
-export class DevToolsTerminalHost implements DevToolsTerminalHostType {
-  public readonly sessions: DevToolsTerminalHostType['sessions'] = new Map()
-  public readonly events: DevToolsTerminalHostType['events'] = createEventEmitter()
+export class DevframeTerminalHost implements DevframeTerminalHostType {
+  public readonly sessions: DevframeTerminalHostType['sessions'] = new Map()
+  public readonly events: DevframeTerminalHostType['events'] = createEventEmitter()
 
   private _boundStreams = new Map<string, {
     dispose: () => void
@@ -54,7 +54,7 @@ export class DevToolsTerminalHost implements DevToolsTerminalHostType {
     return this._channel
   }
 
-  register(session: DevToolsTerminalSession): DevToolsTerminalSession {
+  register(session: DevframeTerminalSession): DevframeTerminalSession {
     if (this.sessions.has(session.id)) {
       throw diagnostics.DF8200({ id: session.id })
     }
@@ -64,7 +64,7 @@ export class DevToolsTerminalHost implements DevToolsTerminalHostType {
     return session
   }
 
-  update(patch: PartialWithoutId<DevToolsTerminalSession>): void {
+  update(patch: PartialWithoutId<DevframeTerminalSession>): void {
     if (!this.sessions.has(patch.id)) {
       throw diagnostics.DF8201({ id: patch.id })
     }
@@ -75,14 +75,14 @@ export class DevToolsTerminalHost implements DevToolsTerminalHostType {
     this.events.emit('terminal:session:updated', session)
   }
 
-  remove(session: DevToolsTerminalSession): void {
+  remove(session: DevframeTerminalSession): void {
     this._boundStreams.get(session.id)?.dispose()
     this.sessions.delete(session.id)
     this.events.emit('terminal:session:updated', session)
     this._boundStreams.delete(session.id)
   }
 
-  private bindStream(session: DevToolsTerminalSession) {
+  private bindStream(session: DevframeTerminalSession) {
     // Skip when the same stream is already bound
     if (this._boundStreams.has(session.id) && this._boundStreams.get(session.id)?.stream === session.stream)
       return
@@ -149,9 +149,9 @@ export class DevToolsTerminalHost implements DevToolsTerminalHostType {
   }
 
   async startChildProcess(
-    executeOptions: DevToolsChildProcessExecuteOptions,
-    terminal: Omit<DevToolsTerminalSessionBase, 'status'>,
-  ): Promise<DevToolsChildProcessTerminalSession> {
+    executeOptions: DevframeChildProcessExecuteOptions,
+    terminal: Omit<DevframeTerminalSessionBase, 'status'>,
+  ): Promise<DevframeChildProcessTerminalSession> {
     if (this.sessions.has(terminal.id)) {
       throw diagnostics.DF8200({ id: terminal.id })
     }
@@ -246,7 +246,7 @@ export class DevToolsTerminalHost implements DevToolsTerminalHostType {
       closeStream()
     }
 
-    const session: DevToolsChildProcessTerminalSession = {
+    const session: DevframeChildProcessTerminalSession = {
       ...terminal,
       status: 'running',
       stream,

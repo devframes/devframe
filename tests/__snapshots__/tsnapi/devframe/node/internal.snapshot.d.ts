@@ -7,7 +7,7 @@ export declare function resolveBasePath(_: DevframeDefinition, _: DevframeDeploy
 // #endregion
 
 // #region Other
-export { DevToolsInternalContext }
+export { DevframeInternalContext }
 export { getInternalContext }
 export { InternalAnonymousAuthStorage }
 export { internalContextMap }

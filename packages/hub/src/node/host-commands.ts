@@ -1,14 +1,14 @@
 import type {
-  DevToolsCommandHandle,
-  DevToolsCommandsHost as DevToolsCommandsHostType,
-  DevToolsServerCommandEntry,
-  DevToolsServerCommandInput,
+  DevframeCommandHandle,
+  DevframeCommandsHost as DevframeCommandsHostType,
+  DevframeServerCommandEntry,
+  DevframeServerCommandInput,
 } from '../types/commands'
 import type { HubNodeContext } from './context'
 import { createEventEmitter } from 'devframe/utils/events'
 import { diagnostics } from './diagnostics'
 
-function findChildCommand(command: DevToolsServerCommandInput, id: string): DevToolsServerCommandInput | undefined {
+function findChildCommand(command: DevframeServerCommandInput, id: string): DevframeServerCommandInput | undefined {
   for (const child of command.children ?? []) {
     if (child.id === id)
       return child
@@ -19,7 +19,7 @@ function findChildCommand(command: DevToolsServerCommandInput, id: string): DevT
   return undefined
 }
 
-function collectCommandIds(command: DevToolsServerCommandInput, ids: string[] = []): string[] {
+function collectCommandIds(command: DevframeServerCommandInput, ids: string[] = []): string[] {
   ids.push(command.id)
   for (const child of command.children ?? [])
     collectCommandIds(child, ids)
@@ -27,8 +27,8 @@ function collectCommandIds(command: DevToolsServerCommandInput, ids: string[] = 
 }
 
 function validateCommandIds(
-  commands: Map<string, DevToolsServerCommandInput>,
-  command: DevToolsServerCommandInput,
+  commands: Map<string, DevframeServerCommandInput>,
+  command: DevframeServerCommandInput,
   ignoreTopLevelId?: string,
 ): void {
   const ids = collectCommandIds(command)
@@ -50,15 +50,15 @@ function validateCommandIds(
   }
 }
 
-export class DevToolsCommandsHost implements DevToolsCommandsHostType {
-  public readonly commands: DevToolsCommandsHostType['commands'] = new Map()
-  public readonly events: DevToolsCommandsHostType['events'] = createEventEmitter()
+export class DevframeCommandsHost implements DevframeCommandsHostType {
+  public readonly commands: DevframeCommandsHostType['commands'] = new Map()
+  public readonly events: DevframeCommandsHostType['events'] = createEventEmitter()
 
   constructor(
     public readonly context: HubNodeContext,
   ) {}
 
-  register(command: DevToolsServerCommandInput): DevToolsCommandHandle {
+  register(command: DevframeServerCommandInput): DevframeCommandHandle {
     if (this.commands.has(command.id)) {
       throw diagnostics.DF8400({ id: command.id })
     }
@@ -68,7 +68,7 @@ export class DevToolsCommandsHost implements DevToolsCommandsHostType {
 
     return {
       id: command.id,
-      update: (patch: Partial<Omit<DevToolsServerCommandInput, 'id'>>) => {
+      update: (patch: Partial<Omit<DevframeServerCommandInput, 'id'>>) => {
         if ('id' in patch) {
           throw diagnostics.DF8401()
         }
@@ -108,11 +108,11 @@ export class DevToolsCommandsHost implements DevToolsCommandsHostType {
     return found.handler(...args)
   }
 
-  list(): DevToolsServerCommandEntry[] {
+  list(): DevframeServerCommandEntry[] {
     return Array.from(this.commands.values()).map(cmd => this.toSerializable(cmd))
   }
 
-  private findCommand(id: string): DevToolsServerCommandInput | undefined {
+  private findCommand(id: string): DevframeServerCommandInput | undefined {
     // Check top-level
     const topLevel = this.commands.get(id)
     if (topLevel)
@@ -128,13 +128,13 @@ export class DevToolsCommandsHost implements DevToolsCommandsHostType {
     return undefined
   }
 
-  private toSerializable(cmd: DevToolsServerCommandInput): DevToolsServerCommandEntry {
+  private toSerializable(cmd: DevframeServerCommandInput): DevframeServerCommandEntry {
     const { handler: _, children, ...rest } = cmd
     return {
       ...rest,
       source: 'server',
       ...(children
-        ? { children: children.map((c: DevToolsServerCommandInput) => this.toSerializable(c)) }
+        ? { children: children.map((c: DevframeServerCommandInput) => this.toSerializable(c)) }
         : {}
       ),
     }

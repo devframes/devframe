@@ -1,6 +1,6 @@
 import type { HubHostCapabilities, HubNodeContext } from '@devframes/hub/node'
 import type { StartedServer } from 'devframe/node'
-import type { ConnectionMeta, DevframeDefinition, DevToolsHost } from 'devframe/types'
+import type { ConnectionMeta, DevframeDefinition, DevframeHost } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { defineRpcFunction } from '@devframes/hub'
@@ -11,7 +11,7 @@ import { getPort } from 'get-port-please'
 import { join } from 'pathe'
 import demoDevframe from './demo-devframe'
 
-export interface MinimalNextDevToolsHubOptions {
+export interface MinimalNextDevframeHubOptions {
   /** Preferred port for the side-car RPC/WS server. Default: a free port near 9877. */
   port?: number
   /** Hostname for the side-car server. Default: `localhost`. */
@@ -22,13 +22,13 @@ export interface MinimalNextDevToolsHubOptions {
   devframes?: DevframeDefinition[]
 }
 
-export interface StartedMinimalNextDevToolsHub extends StartedServer {
+export interface StartedMinimalNextDevframeHub extends StartedServer {
   context: HubNodeContext
   connectionMeta: ConnectionMeta & { backend: 'websocket', websocket: number }
 }
 
 const minimalNextHubMessagesList = defineRpcFunction({
-  name: 'minimal-next-devtools-hub:messages:list',
+  name: 'minimal-next-devframe-hub:messages:list',
   type: 'static',
   jsonSerializable: true,
   setup: (ctx: HubNodeContext) => ({
@@ -39,7 +39,7 @@ const minimalNextHubMessagesList = defineRpcFunction({
 })
 
 const minimalNextHubTerminalsList = defineRpcFunction({
-  name: 'minimal-next-devtools-hub:terminals:list',
+  name: 'minimal-next-devframe-hub:terminals:list',
   type: 'static',
   jsonSerializable: true,
   setup: (ctx: HubNodeContext) => ({
@@ -54,13 +54,13 @@ const minimalNextHubTerminalsList = defineRpcFunction({
   }),
 })
 
-export async function minimalNextDevToolsHub(
-  options: MinimalNextDevToolsHubOptions = {},
-): Promise<StartedMinimalNextDevToolsHub> {
+export async function minimalNextDevframeHub(
+  options: MinimalNextDevframeHubOptions = {},
+): Promise<StartedMinimalNextDevframeHub> {
   const cwd = options.cwd ?? process.cwd()
   const hostName = options.host ?? 'localhost'
 
-  const host: DevToolsHost & HubHostCapabilities = {
+  const host: DevframeHost & HubHostCapabilities = {
     mountStatic() {
       // Static mounting for devframe SPAs would route through Next middleware
       // in a fuller host. This minimal example keeps mounted devframes headless.
@@ -70,8 +70,8 @@ export async function minimalNextDevToolsHub(
     },
     getStorageDir(scope) {
       return scope === 'workspace'
-        ? join(cwd, 'node_modules/.minimal-next-devtools-hub')
-        : join(homedir(), '.minimal-next-devtools-hub')
+        ? join(cwd, 'node_modules/.minimal-next-devframe-hub')
+        : join(homedir(), '.minimal-next-devframe-hub')
     },
     async openPath(filepath, line, column) {
       const absolute = join(cwd, filepath)
@@ -97,7 +97,7 @@ export async function minimalNextDevToolsHub(
   })
 
   context.commands.register({
-    id: 'minimal-next-devtools-hub:ping',
+    id: 'minimal-next-devframe-hub:ping',
     title: 'Next Hub: Ping',
     icon: 'ph:bell-duotone',
     category: 'hub',
@@ -106,7 +106,7 @@ export async function minimalNextDevToolsHub(
 
   await context.messages.add({
     level: 'success',
-    message: 'Minimal Next DevTools Hub started',
+    message: 'Minimal Next Devframe Hub started',
     description: `Side-car WS on port ${port}. ${options.devframes?.length ?? 1} devframe(s) registered.`,
   })
 
@@ -130,16 +130,16 @@ export async function minimalNextDevToolsHub(
   })
 }
 
-const GLOBAL_KEY = '__minimalNextDevToolsHub'
+const GLOBAL_KEY = '__minimalNextDevframeHub'
 
 type GlobalWithHub = typeof globalThis & {
-  [GLOBAL_KEY]?: Promise<StartedMinimalNextDevToolsHub>
+  [GLOBAL_KEY]?: Promise<StartedMinimalNextDevframeHub>
 }
 
-export function ensureMinimalNextDevToolsHub(
-  options: MinimalNextDevToolsHubOptions = {},
-): Promise<StartedMinimalNextDevToolsHub> {
+export function ensureMinimalNextDevframeHub(
+  options: MinimalNextDevframeHubOptions = {},
+): Promise<StartedMinimalNextDevframeHub> {
   const globalHub = globalThis as GlobalWithHub
-  globalHub[GLOBAL_KEY] ??= minimalNextDevToolsHub(options)
+  globalHub[GLOBAL_KEY] ??= minimalNextDevframeHub(options)
   return globalHub[GLOBAL_KEY]
 }

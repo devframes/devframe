@@ -26,11 +26,11 @@ Running the resulting binary:
 my-devframe                     # dev server at http://localhost:9999/
 my-devframe --port 8080
 my-devframe build --out-dir dist-static
-my-devframe build --out-dir dist-static --base /devtools/
+my-devframe build --out-dir dist-static --base /devframe/
 my-devframe mcp                 # stdio MCP server (experimental)
 ```
 
-Standalone CLI serves the SPA at `/` by default. The `/__devtools/` prefix is for *hosted* adapters where devframe mounts alongside an existing app — see [Mount paths](./#mount-paths).
+Standalone CLI serves the SPA at `/` by default. The `/__devframe/` prefix is for *hosted* adapters where devframe mounts alongside an existing app — see [Mount paths](./#mount-paths).
 
 ## Options
 

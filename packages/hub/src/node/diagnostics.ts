@@ -46,7 +46,7 @@ export const diagnostics = defineDiagnostics({
     },
     DF8500: {
       why: (p: { id: string }) => `Built-in command "${p.id}" requires a host capability that this host does not implement.`,
-      fix: 'Implement the matching capability on the `DevToolsHost` returned to `createHubContext`. For `hub:open-path`, implement `host.openPath(filepath, line?, column?)`.',
+      fix: 'Implement the matching capability on the `DevframeHost` returned to `createHubContext`. For `hub:open-path`, implement `host.openPath(filepath, line?, column?)`.',
     },
   },
 })

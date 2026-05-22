@@ -8,7 +8,7 @@ import { attachWsRpcTransport } from './ws-server'
 
 vi.stubGlobal('WebSocket', WebSocket)
 
-describe('devtools rpc', () => {
+describe('devframe rpc', () => {
   it('should work w/ ws transport', async () => {
     const PORT = 3333
     // Use 127.0.0.1 on both client and server so they agree on the

@@ -11,7 +11,7 @@ outline: deep
 
 ## What the hub adds
 
-A hub-aware node context (`HubNodeContext`) extends `DevToolsNodeContext` with four subsystems:
+A hub-aware node context (`HubNodeContext`) extends `DevframeNodeContext` with four subsystems:
 
 | Subsystem | Surface | Purpose |
 |---|---|---|
@@ -31,7 +31,7 @@ Every hub context auto-registers these RPC functions so framework kits don't rei
 
 ## Host capabilities
 
-A hub host implements the same `DevToolsHost` interface as devframe, plus optional capabilities the hub knows how to delegate to:
+A hub host implements the same `DevframeHost` interface as devframe, plus optional capabilities the hub knows how to delegate to:
 
 ```ts
 interface HubHostCapabilities {
@@ -44,10 +44,10 @@ A framework kit's host implementation looks like this:
 
 ```ts
 import type { HubHostCapabilities } from '@devframes/hub/node'
-import type { DevToolsHost } from 'devframe/types'
+import type { DevframeHost } from 'devframe/types'
 import { launchEditor } from 'devframe/utils/launch-editor'
 
-const host: DevToolsHost & HubHostCapabilities = {
+const host: DevframeHost & HubHostCapabilities = {
   mountStatic(base, distDir) { /* … */ },
   resolveOrigin() { /* … */ },
   getStorageDir(scope) { /* … */ },
@@ -80,16 +80,16 @@ A hub-aware UI doesn't import any hub classes; it reads three shared-state keys 
 
 | Channel | Type | What it carries |
 |---|---|---|
-| `devframe:docks` shared state | `DevToolsDockEntry[]` | The full dock list, including the hub's `~terminals` / `~messages` / `~settings` builtins. |
-| `devframe:commands` shared state | `DevToolsServerCommandEntry[]` | Serializable command list (handlers stripped). |
-| `devframe:user-settings` shared state | `DevToolsDocksUserSettings` | Persisted per-workspace hub settings. |
+| `devframe:docks` shared state | `DevframeDockEntry[]` | The full dock list, including the hub's `~terminals` / `~messages` / `~settings` builtins. |
+| `devframe:commands` shared state | `DevframeServerCommandEntry[]` | Serializable command list (handlers stripped). |
+| `devframe:user-settings` shared state | `DevframeDocksUserSettings` | Persisted per-workspace hub settings. |
 | `hub:commands:execute` RPC | `(id, ...args) => unknown` | Server-side command dispatch. |
 
 Plus broadcast notifications (`devframe:terminals:updated`, `devframe:messages:updated`) that a UI can subscribe to via `rpc.client.register(...)`.
 
 ## Example
 
-See [`examples/minimal-vite-devtools-hub/`](https://github.com/devframes/devframe/tree/main/examples/minimal-vite-devtools-hub) for a ~120-line Vite plugin that wires the hub end to end with a vanilla DOM UI. Every framework's hub host follows the same shape: a thin layer that adapts the framework's dev server to the hub.
+See [`examples/minimal-vite-devframe-hub/`](https://github.com/devframes/devframe/tree/main/examples/minimal-vite-devframe-hub) for a ~120-line Vite plugin that wires the hub end to end with a vanilla DOM UI. Every framework's hub host follows the same shape: a thin layer that adapts the framework's dev server to the hub.
 
 ## Diagnostics
 

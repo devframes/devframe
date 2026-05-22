@@ -5,7 +5,7 @@ outline: deep
 # Agent-Native Devframe
 
 ::: warning Experimental
-The agent-native surface (`agent` field on `defineRpcFunction`, `DevToolsAgentHost`, and the `devframe/adapters/mcp` adapter) is experimental and may change without a major version bump until it stabilizes.
+The agent-native surface (`agent` field on `defineRpcFunction`, `DevframeAgentHost`, and the `devframe/adapters/mcp` adapter) is experimental and may change without a major version bump until it stabilizes.
 :::
 
 Devframe can expose the same surface a browser UI consumes — RPC functions, resources, and shared state — to coding agents (Claude Desktop / Cursor / Zed / Claude Code, or any MCP-speaking client). Agent exposure is opt-in per function; functions stay private by default.
@@ -15,7 +15,7 @@ Devframe can expose the same surface a browser UI consumes — RPC functions, re
 Three building blocks:
 
 1. **An `agent` field on `defineRpcFunction`.** Add `agent: { description, ... }` to opt a function in. Functions without the field stay private.
-2. **`ctx.agent`** — a host exposed on `DevToolsNodeContext`. Plugins register tools that aren't backed by an RPC, and expose readable resources (e.g. a Markdown build summary).
+2. **`ctx.agent`** — a host exposed on `DevframeNodeContext`. Plugins register tools that aren't backed by an RPC, and expose readable resources (e.g. a Markdown build summary).
 3. **The MCP adapter** (`devframe/adapters/mcp`) — translates the agent host into a [Model Context Protocol](https://modelcontextprotocol.io) server, currently over `stdio`.
 
 ## Exposing an RPC function

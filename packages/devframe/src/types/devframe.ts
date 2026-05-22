@@ -1,6 +1,6 @@
 import type { CAC } from 'cac'
 import type { CliFlagsSchema } from '../adapters/flags'
-import type { DevToolsNodeContext } from './context'
+import type { DevframeNodeContext } from './context'
 
 export type DevframeRuntime = 'cli' | 'build' | 'spa' | 'vite' | 'embedded'
 
@@ -120,7 +120,7 @@ export interface DevframeDefinition {
     spa?: boolean | Record<string, boolean>
   }
   /** Server-side setup — the primary entrypoint. Runs in every runtime. */
-  setup: (ctx: DevToolsNodeContext, info?: DevframeSetupInfo) => void | Promise<void>
+  setup: (ctx: DevframeNodeContext, info?: DevframeSetupInfo) => void | Promise<void>
   /** Browser-only setup for the SPA adapter (bundled into the client). */
   setupBrowser?: (ctx: DevframeBrowserContext) => void | Promise<void>
   cli?: DevframeCliOptions

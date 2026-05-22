@@ -1,15 +1,15 @@
-import type { DevToolsNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type {
-  DevToolsDockEntry,
-  DevToolsDockHost as DevToolsDockHostType,
-  DevToolsDockUserEntry,
-  DevToolsViewBuiltin,
-  DevToolsViewIframe,
+  DevframeDockEntry,
+  DevframeDockHost as DevframeDockHostType,
+  DevframeDockUserEntry,
+  DevframeViewBuiltin,
+  DevframeViewIframe,
   RemoteConnectionInfo,
   RemoteDockOptions,
 } from '../types/docks'
-import type { DevToolsDocksUserSettings } from '../types/settings'
+import type { DevframeDocksUserSettings } from '../types/settings'
 import type { HubNodeContext } from './context'
 import { REMOTE_CONNECTION_KEY } from 'devframe/constants'
 import { createStorage } from 'devframe/node'
@@ -82,10 +82,10 @@ function buildRemoteUrl(baseUrl: string, payload: RemoteConnectionInfo, transpor
   return `${beforeHash}${sep}${param}${hash}`
 }
 
-export class DevToolsDockHost implements DevToolsDockHostType {
-  public readonly views: DevToolsDockHostType['views'] = new Map()
-  public readonly events: DevToolsDockHostType['events'] = createEventEmitter()
-  public userSettings: SharedState<DevToolsDocksUserSettings> = undefined!
+export class DevframeDockHost implements DevframeDockHostType {
+  public readonly views: DevframeDockHostType['views'] = new Map()
+  public readonly events: DevframeDockHostType['events'] = createEventEmitter()
+  public userSettings: SharedState<DevframeDocksUserSettings> = undefined!
 
   /** Dock-id → allocated remote token + resolved options. */
   private readonly remoteDocks = new Map<string, RemoteDockRecord>()
@@ -109,9 +109,9 @@ export class DevToolsDockHost implements DevToolsDockHostType {
     includeBuiltin = true,
   }: {
     includeBuiltin?: boolean
-  } = {}): DevToolsDockEntry[] {
+  } = {}): DevframeDockEntry[] {
     const context = this.context
-    const builtinDocksEntries: DevToolsViewBuiltin[] = [
+    const builtinDocksEntries: DevframeViewBuiltin[] = [
       {
         type: '~builtin',
         id: '~terminals',
@@ -148,11 +148,11 @@ export class DevToolsDockHost implements DevToolsDockHostType {
     ]
   }
 
-  private projectView(view: DevToolsDockUserEntry): DevToolsDockUserEntry {
+  private projectView(view: DevframeDockUserEntry): DevframeDockUserEntry {
     if (view.type !== 'iframe' || !view.remote)
       return view
     const record = this.remoteDocks.get(view.id)
-    const endpoint = getInternalContext(this.context as DevToolsNodeContext).wsEndpoint
+    const endpoint = getInternalContext(this.context as DevframeNodeContext).wsEndpoint
     if (!record || !endpoint)
       return view
 
@@ -166,14 +166,14 @@ export class DevToolsDockHost implements DevToolsDockHostType {
     return {
       ...view,
       url: buildRemoteUrl(view.url, payload, record.options.transport),
-    } satisfies DevToolsViewIframe
+    } satisfies DevframeViewIframe
   }
 
   private resolveDevServerOrigin(): string {
     return this.context.host.resolveOrigin()
   }
 
-  register<T extends DevToolsDockUserEntry>(view: T, force?: boolean): {
+  register<T extends DevframeDockUserEntry>(view: T, force?: boolean): {
     update: (patch: Partial<T>) => void
   } {
     if (this.views.has(view.id) && !force) {
@@ -193,7 +193,7 @@ export class DevToolsDockHost implements DevToolsDockHostType {
     }
   }
 
-  update(view: DevToolsDockUserEntry): void {
+  update(view: DevframeDockUserEntry): void {
     if (!this.views.has(view.id)) {
       throw diagnostics.DF8102({ id: view.id })
     }
@@ -202,8 +202,8 @@ export class DevToolsDockHost implements DevToolsDockHostType {
     this.events.emit('dock:entry:updated', view)
   }
 
-  private prepareRemoteRegistration(view: DevToolsDockUserEntry): void {
-    const internal = getInternalContext(this.context as DevToolsNodeContext)
+  private prepareRemoteRegistration(view: DevframeDockUserEntry): void {
+    const internal = getInternalContext(this.context as DevframeNodeContext)
     // Always revoke any previously allocated token for this dock id — covers
     // force re-registration and update() paths.
     internal.revokeRemoteTokensForDock(view.id)

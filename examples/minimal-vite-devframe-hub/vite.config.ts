@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite'
 import { alias } from '../../alias'
 import demoDevframe from './src/devframe'
-import { minimalViteDevToolsHub } from './src/minimal-vite-devtools-hub'
+import { minimalViteDevframeHub } from './src/minimal-vite-devframe-hub'
 
 export default defineConfig({
   resolve: { alias },
   plugins: [
-    minimalViteDevToolsHub({
+    minimalViteDevframeHub({
       devframes: [demoDevframe],
     }),
   ],

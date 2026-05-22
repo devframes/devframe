@@ -1,4 +1,4 @@
-import type { DevToolsNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe/types'
 import { defineRpcFunction } from 'devframe'
 import { describe, expect, it } from 'vitest'
 import { RpcFunctionsHost } from '../host-functions'
@@ -11,7 +11,7 @@ const returnV2 = async () => 'v2'
 const setupWith = <T>(handler: () => Promise<T>) => async () => ({ handler })
 
 describe('rpcFunctionsHost', () => {
-  const mockContext = {} as DevToolsNodeContext
+  const mockContext = {} as DevframeNodeContext
 
   describe('register() collision detection', () => {
     it('should register a new RPC function successfully', () => {
@@ -131,7 +131,7 @@ describe('rpcFunctionsHost', () => {
 
   describe('broadcast() without rpc group', () => {
     it('should not throw in build mode', async () => {
-      const host = new RpcFunctionsHost({ mode: 'build' } as DevToolsNodeContext)
+      const host = new RpcFunctionsHost({ mode: 'build' } as DevframeNodeContext)
       await expect(host.broadcast({
         method: 'devframe:terminals:updated',
         args: [],
@@ -139,7 +139,7 @@ describe('rpcFunctionsHost', () => {
     })
 
     it('should not throw in dev mode when rpc group is not yet set', async () => {
-      const host = new RpcFunctionsHost({ mode: 'dev' } as DevToolsNodeContext)
+      const host = new RpcFunctionsHost({ mode: 'dev' } as DevframeNodeContext)
       await expect(host.broadcast({
         method: 'devframe:terminals:updated',
         args: [],

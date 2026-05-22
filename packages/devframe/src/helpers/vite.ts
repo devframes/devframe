@@ -3,7 +3,7 @@ import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { resolve } from 'pathe'
 import { resolveBasePath } from '../adapters/_shared'
 import { createDevServer, resolveDevServerPort } from '../adapters/dev'
-import { DEVTOOLS_CONNECTION_META_FILENAME } from '../constants'
+import { DEVFRAME_CONNECTION_META_FILENAME } from '../constants'
 import { diagnostics } from '../node/diagnostics'
 
 export interface ViteDevBridgeOptions {
@@ -110,7 +110,7 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
         return
       }
 
-      const metaPath = `${base}${DEVTOOLS_CONNECTION_META_FILENAME}`
+      const metaPath = `${base}${DEVFRAME_CONNECTION_META_FILENAME}`
       server.middlewares.use(metaPath, (_req: unknown, res: any) => {
         res.setHeader('Content-Type', 'application/json')
         res.end(JSON.stringify({ backend: 'websocket', websocket: port }))

@@ -1,16 +1,16 @@
 import type { HubHostCapabilities, HubNodeContext } from '@devframes/hub/node'
-import type { DevframeDefinition, DevToolsHost } from 'devframe/types'
+import type { DevframeDefinition, DevframeHost } from 'devframe/types'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { homedir } from 'node:os'
 import { defineRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
-import { DEVTOOLS_CONNECTION_META_FILENAME } from 'devframe/constants'
+import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { startHttpAndWs } from 'devframe/node'
 import { launchEditor } from 'devframe/utils/launch-editor'
 import { getPort } from 'get-port-please'
 import { join } from 'pathe'
 
-export interface MinimalViteDevToolsHubOptions {
+export interface MinimalViteDevframeHubOptions {
   /** Mount path for the hub's connection-meta endpoint. Default: `/__hub/`. */
   base?: string
   /** Preferred port for the side-car RPC/WS server. Default: a free port near 9777. */
@@ -22,7 +22,7 @@ export interface MinimalViteDevToolsHubOptions {
 // Minimal hub-local RPCs — used by the UI for read-side data. A more
 // ambitious hub host might hoist these into `@devframes/hub` itself.
 const minimalViteHubMessagesList = defineRpcFunction({
-  name: 'minimal-vite-devtools-hub:messages:list',
+  name: 'minimal-vite-devframe-hub:messages:list',
   type: 'static',
   jsonSerializable: true,
   setup: (ctx: HubNodeContext) => ({
@@ -33,7 +33,7 @@ const minimalViteHubMessagesList = defineRpcFunction({
 })
 
 const minimalViteHubTerminalsList = defineRpcFunction({
-  name: 'minimal-vite-devtools-hub:terminals:list',
+  name: 'minimal-vite-devframe-hub:terminals:list',
   type: 'static',
   jsonSerializable: true,
   setup: (ctx: HubNodeContext) => ({
@@ -57,13 +57,13 @@ const minimalViteHubTerminalsList = defineRpcFunction({
  * This file is the entire Vite host — every other framework's hub host is
  * the same shape: a thin layer that adapts a framework's dev server to the hub.
  */
-export function minimalViteDevToolsHub(options: MinimalViteDevToolsHubOptions = {}): Plugin {
+export function minimalViteDevframeHub(options: MinimalViteDevframeHubOptions = {}): Plugin {
   const base = normalizeBase(options.base ?? '/__hub/')
   let viteConfig: ResolvedConfig | undefined
   let started: { close: () => Promise<void> } | undefined
 
   return {
-    name: 'minimal-vite-devtools-hub',
+    name: 'minimal-vite-devframe-hub',
     apply: 'serve',
 
     configResolved(config) {
@@ -78,7 +78,7 @@ export function minimalViteDevToolsHub(options: MinimalViteDevToolsHubOptions = 
 
       const cwd = viteConfig!.root
 
-      const host: DevToolsHost & HubHostCapabilities = {
+      const host: DevframeHost & HubHostCapabilities = {
         mountStatic() {
           // Static mounting for devframe SPAs would route through Vite's
           // middleware in a fuller kit. This minimal example doesn't
@@ -90,8 +90,8 @@ export function minimalViteDevToolsHub(options: MinimalViteDevToolsHubOptions = 
         },
         getStorageDir(scope) {
           return scope === 'workspace'
-            ? join(cwd, 'node_modules/.minimal-vite-devtools-hub')
-            : join(homedir(), '.minimal-vite-devtools-hub')
+            ? join(cwd, 'node_modules/.minimal-vite-devframe-hub')
+            : join(homedir(), '.minimal-vite-devframe-hub')
         },
         async openPath(filepath, line, column) {
           const absolute = join(cwd, filepath)
@@ -124,7 +124,7 @@ export function minimalViteDevToolsHub(options: MinimalViteDevToolsHubOptions = 
       // Seed a sample command directly on the hub so the UI
       // shows something even without any plugged-in devframes.
       context.commands.register({
-        id: 'minimal-vite-devtools-hub:ping',
+        id: 'minimal-vite-devframe-hub:ping',
         title: 'Vite Hub · Ping',
         icon: 'ph:bell-duotone',
         category: 'kit',
@@ -132,7 +132,7 @@ export function minimalViteDevToolsHub(options: MinimalViteDevToolsHubOptions = 
       })
       await context.messages.add({
         level: 'success',
-        message: 'Minimal Vite DevTools Hub started',
+        message: 'Minimal Vite Devframe Hub started',
         description: `Side-car WS on port ${port}. ${options.devframes?.length ?? 0} devframe(s) registered.`,
       })
 
@@ -148,7 +148,7 @@ export function minimalViteDevToolsHub(options: MinimalViteDevToolsHubOptions = 
 
       // Tell the browser where to find the WS endpoint. `connectDevframe`
       // resolves this URL relative to its `baseURL` option.
-      const metaPath = `${base}${DEVTOOLS_CONNECTION_META_FILENAME}`
+      const metaPath = `${base}${DEVFRAME_CONNECTION_META_FILENAME}`
       server.middlewares.use(metaPath, (_req, res) => {
         res.setHeader('Content-Type', 'application/json')
         res.end(JSON.stringify({ backend: 'websocket', websocket: port }))

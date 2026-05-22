@@ -1,11 +1,11 @@
-import type { DevToolsRpcSharedStates, RpcFunctionsHost, RpcSharedStateGetOptions, RpcSharedStateHost } from 'devframe/types'
+import type { DevframeRpcSharedStates, RpcFunctionsHost, RpcSharedStateGetOptions, RpcSharedStateHost } from 'devframe/types'
 import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { createDebug } from 'obug'
 import { diagnostics } from './diagnostics'
 
-const debug = createDebug('vite:devtools:rpc:state:changed')
-const debugSubscribe = createDebug('vite:devtools:rpc:state:subscribe')
+const debug = createDebug('devframe:rpc:state:changed')
+const debugSubscribe = createDebug('devframe:rpc:state:subscribe')
 
 export function createRpcSharedStateServerHost(
   rpc: RpcFunctionsHost,
@@ -97,7 +97,7 @@ export function createRpcSharedStateServerHost(
     handler: async (key: string) => {
       if (!sharedState.has(key))
         return undefined
-      const state = await host.get(key as keyof DevToolsRpcSharedStates)
+      const state = await host.get(key as keyof DevframeRpcSharedStates)
       return state.value()
     },
     // Pre-compute snapshots for the build-mode static dump so the SPA
@@ -111,7 +111,7 @@ export function createRpcSharedStateServerHost(
     name: 'devframe:rpc:server-state:set',
     type: 'query',
     handler: async (key: string, value: any, syncId: string) => {
-      const state = await host.get(key as keyof DevToolsRpcSharedStates, {
+      const state = await host.get(key as keyof DevframeRpcSharedStates, {
         initialValue: value,
       })
       state.mutate(() => value, syncId)
@@ -124,7 +124,7 @@ export function createRpcSharedStateServerHost(
     handler: async (key: string, patches: SharedStatePatch[], syncId: string) => {
       if (!sharedState.has(key))
         return
-      const state = await host.get(key as keyof DevToolsRpcSharedStates)
+      const state = await host.get(key as keyof DevframeRpcSharedStates)
       state.patch(patches, syncId)
     },
   })

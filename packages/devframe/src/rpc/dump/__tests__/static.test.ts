@@ -1,5 +1,5 @@
 import { defineRpcFunction } from 'devframe'
-import { DEVTOOLS_RPC_DUMP_DIRNAME } from 'devframe/constants'
+import { DEVFRAME_RPC_DUMP_DIRNAME } from 'devframe/constants'
 import { strictJsonStringify } from 'devframe/rpc'
 import { structuredCloneDeserialize, structuredCloneStringify } from 'devframe/utils/structured-clone'
 import { describe, expect, it } from 'vitest'
@@ -15,7 +15,7 @@ describe('collectStaticRpcDump', () => {
     })
 
     const result = await collectStaticRpcDump([getVersion], {})
-    const expectedPath = `${DEVTOOLS_RPC_DUMP_DIRNAME}/test~json-version.static.json`
+    const expectedPath = `${DEVFRAME_RPC_DUMP_DIRNAME}/test~json-version.static.json`
 
     expect(result.manifest['test:json-version']).toEqual({
       type: 'static',
@@ -33,7 +33,7 @@ describe('collectStaticRpcDump', () => {
     })
 
     const result = await collectStaticRpcDump([getVersion], {})
-    const expectedPath = `${DEVTOOLS_RPC_DUMP_DIRNAME}/test~get-version.static.json`
+    const expectedPath = `${DEVFRAME_RPC_DUMP_DIRNAME}/test~get-version.static.json`
 
     expect(result.manifest['test:get-version']).toEqual({
       type: 'static',
@@ -63,7 +63,7 @@ describe('collectStaticRpcDump', () => {
     })
 
     const result = await collectStaticRpcDump([getItem], {})
-    const basePath = `${DEVTOOLS_RPC_DUMP_DIRNAME}/test~get-item`
+    const basePath = `${DEVFRAME_RPC_DUMP_DIRNAME}/test~get-item`
     const manifest = result.manifest['test:get-item'] as {
       type: 'query'
       records: Record<string, string>
@@ -114,7 +114,7 @@ describe('collectStaticRpcDump', () => {
       })
 
       const result = await collectStaticRpcDump([getGraph], {})
-      const path = `${DEVTOOLS_RPC_DUMP_DIRNAME}/test~graph.static.json`
+      const path = `${DEVFRAME_RPC_DUMP_DIRNAME}/test~graph.static.json`
       const file = result.files[path]!
 
       expect(file.serialization).toBe('structured-clone')
@@ -136,7 +136,7 @@ describe('collectStaticRpcDump', () => {
       })
 
       const result = await collectStaticRpcDump([getMap], {})
-      const path = `${DEVTOOLS_RPC_DUMP_DIRNAME}/test~roundtrip-map.static.json`
+      const path = `${DEVFRAME_RPC_DUMP_DIRNAME}/test~roundtrip-map.static.json`
       const file = result.files[path]!
 
       // Server side: write to disk as sc-encoded text.
@@ -160,7 +160,7 @@ describe('collectStaticRpcDump', () => {
       })
 
       const result = await collectStaticRpcDump([getEntries], {})
-      const fallbackPath = `${DEVTOOLS_RPC_DUMP_DIRNAME}/test~entries.fallback.json`
+      const fallbackPath = `${DEVFRAME_RPC_DUMP_DIRNAME}/test~entries.fallback.json`
       const fallback = result.files[fallbackPath]!
       expect(fallback.serialization).toBe('structured-clone')
 
@@ -188,7 +188,7 @@ describe('collectStaticRpcDump', () => {
       })
 
       const result = await collectStaticRpcDump([getList], {})
-      const path = `${DEVTOOLS_RPC_DUMP_DIRNAME}/test~json-list.static.json`
+      const path = `${DEVFRAME_RPC_DUMP_DIRNAME}/test~json-list.static.json`
       const file = result.files[path]!
 
       expect(file.serialization).toBe('json')
@@ -207,7 +207,7 @@ describe('collectStaticRpcDump', () => {
       })
 
       const result = await collectStaticRpcDump([getMapJson], {})
-      const path = `${DEVTOOLS_RPC_DUMP_DIRNAME}/test~bad-json.static.json`
+      const path = `${DEVFRAME_RPC_DUMP_DIRNAME}/test~bad-json.static.json`
       const file = result.files[path]!
 
       // collectStaticRpcDump records the value as-is; the strict

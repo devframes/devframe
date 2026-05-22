@@ -1,5 +1,5 @@
-import type { ConnectionMeta, DevToolsRpcClientFunctions, DevToolsRpcServerFunctions, EventEmitter } from 'devframe/types'
-import type { DevToolsClientRpcHost, DevToolsRpcClientMode, DevToolsRpcClientOptions, RpcClientEvents } from './rpc'
+import type { ConnectionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, EventEmitter } from 'devframe/types'
+import type { DevframeClientRpcHost, DevframeRpcClientMode, DevframeRpcClientOptions, RpcClientEvents } from './rpc'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { promiseWithResolver } from 'devframe/utils/promise'
@@ -9,9 +9,9 @@ export interface CreateWsRpcClientModeOptions {
   authToken: string
   connectionMeta: ConnectionMeta
   events: EventEmitter<RpcClientEvents>
-  clientRpc: DevToolsClientRpcHost
-  rpcOptions?: DevToolsRpcClientOptions['rpcOptions']
-  wsOptions?: DevToolsRpcClientOptions['wsOptions']
+  clientRpc: DevframeClientRpcHost
+  rpcOptions?: DevframeRpcClientOptions['rpcOptions']
+  wsOptions?: DevframeRpcClientOptions['wsOptions']
 }
 
 function isNumeric(str: string | number | undefined) {
@@ -22,7 +22,7 @@ function isNumeric(str: string | number | undefined) {
 
 export function createWsRpcClientMode(
   options: CreateWsRpcClientModeOptions,
-): DevToolsRpcClientMode {
+): DevframeRpcClientMode {
   const {
     authToken,
     connectionMeta,
@@ -46,7 +46,7 @@ export function createWsRpcClientMode(
   for (const name of connectionMeta.jsonSerializableMethods ?? [])
     definitions.set(name, { jsonSerializable: true })
 
-  const serverRpc = createRpcClient<DevToolsRpcServerFunctions, DevToolsRpcClientFunctions>(
+  const serverRpc = createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>(
     clientRpc.functions,
     {
       channel: createWsRpcChannel({
@@ -84,7 +84,7 @@ export function createWsRpcClientMode(
       info.device.type,
     ].filter(i => i).join(' ')
 
-    const result = await serverRpc.$call('vite:anonymous:auth', {
+    const result = await serverRpc.$call('devframe:anonymous:auth', {
       authToken: token,
       ua,
       origin: location.origin,

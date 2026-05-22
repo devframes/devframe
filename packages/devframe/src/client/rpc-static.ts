@@ -1,5 +1,5 @@
-import type { DevToolsRpcClientMode } from './rpc'
-import { DEVTOOLS_RPC_DUMP_MANIFEST_FILENAME } from 'devframe/constants'
+import type { DevframeRpcClientMode } from './rpc'
+import { DEVFRAME_RPC_DUMP_MANIFEST_FILENAME } from 'devframe/constants'
 import { createStaticRpcCaller } from './static-rpc'
 
 export interface CreateStaticRpcClientModeOptions {
@@ -8,8 +8,8 @@ export interface CreateStaticRpcClientModeOptions {
 
 export async function createStaticRpcClientMode(
   options: CreateStaticRpcClientModeOptions,
-): Promise<DevToolsRpcClientMode> {
-  const manifest = await options.fetchJsonFromBases(DEVTOOLS_RPC_DUMP_MANIFEST_FILENAME)
+): Promise<DevframeRpcClientMode> {
+  const manifest = await options.fetchJsonFromBases(DEVFRAME_RPC_DUMP_MANIFEST_FILENAME)
   const staticCaller = createStaticRpcCaller(manifest, options.fetchJsonFromBases)
 
   return {

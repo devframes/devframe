@@ -1,10 +1,10 @@
 import type { BirpcOptions, BirpcReturn } from 'birpc'
 import type { RpcCacheOptions, RpcFunctionsCollector } from 'devframe/rpc'
 import type { WsRpcChannelOptions } from 'devframe/rpc/transports/ws-client'
-import type { ConnectionMeta, DevToolsRpcClientFunctions, DevToolsRpcServerFunctions, EventEmitter, RpcSharedStateHost } from 'devframe/types'
+import type { ConnectionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, EventEmitter, RpcSharedStateHost } from 'devframe/types'
 import type { RpcStreamingClientHost } from './rpc-streaming'
 import {
-  DEVTOOLS_CONNECTION_META_FILENAME,
+  DEVFRAME_CONNECTION_META_FILENAME,
 } from 'devframe/constants'
 import { RpcCacheManager, RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createEventEmitter } from 'devframe/utils/events'
@@ -14,23 +14,23 @@ import { createStaticRpcClientMode } from './rpc-static'
 import { createRpcStreamingClientHost } from './rpc-streaming'
 import { createWsRpcClientMode } from './rpc-ws'
 
-export interface DevToolsRpcContext {
+export interface DevframeRpcContext {
   /**
    * The RPC client to interact with the server
    */
-  readonly rpc: DevToolsRpcClient
+  readonly rpc: DevframeRpcClient
 }
 
-export type DevToolsClientRpcHost = RpcFunctionsCollector<DevToolsRpcClientFunctions, DevToolsRpcContext>
+export type DevframeClientRpcHost = RpcFunctionsCollector<DevframeRpcClientFunctions, DevframeRpcContext>
 
 export interface RpcClientEvents {
   'rpc:is-trusted:updated': (isTrusted: boolean) => void
 }
 
-const CONNECTION_META_KEY = '__VITE_DEVTOOLS_CONNECTION_META__'
-const CONNECTION_AUTH_TOKEN_KEY = '__VITE_DEVTOOLS_CONNECTION_AUTH_TOKEN__'
+const CONNECTION_META_KEY = '__DEVFRAME_CONNECTION_META__'
+const CONNECTION_AUTH_TOKEN_KEY = '__DEVFRAME_CONNECTION_AUTH_TOKEN__'
 
-export interface DevToolsRpcClientOptions {
+export interface DevframeRpcClientOptions {
   connectionMeta?: ConnectionMeta
   baseURL?: string | string[]
   /**
@@ -38,15 +38,15 @@ export interface DevToolsRpcClientOptions {
    */
   authToken?: string
   wsOptions?: Partial<WsRpcChannelOptions>
-  rpcOptions?: Partial<BirpcOptions<DevToolsRpcServerFunctions, DevToolsRpcClientFunctions, boolean>>
+  rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>
   cacheOptions?: boolean | Partial<RpcCacheOptions>
 }
 
-export type DevToolsRpcClientCall = BirpcReturn<DevToolsRpcServerFunctions, DevToolsRpcClientFunctions>['$call']
-export type DevToolsRpcClientCallEvent = BirpcReturn<DevToolsRpcServerFunctions, DevToolsRpcClientFunctions>['$callEvent']
-export type DevToolsRpcClientCallOptional = BirpcReturn<DevToolsRpcServerFunctions, DevToolsRpcClientFunctions>['$callOptional']
+export type DevframeRpcClientCall = BirpcReturn<DevframeRpcServerFunctions, DevframeRpcClientFunctions>['$call']
+export type DevframeRpcClientCallEvent = BirpcReturn<DevframeRpcServerFunctions, DevframeRpcClientFunctions>['$callEvent']
+export type DevframeRpcClientCallOptional = BirpcReturn<DevframeRpcServerFunctions, DevframeRpcClientFunctions>['$callOptional']
 
-export interface DevToolsRpcClient {
+export interface DevframeRpcClient {
   /**
    * The events of the client
    */
@@ -83,19 +83,19 @@ export interface DevToolsRpcClient {
   /**
    * Call a RPC function on the server
    */
-  call: DevToolsRpcClientCall
+  call: DevframeRpcClientCall
   /**
    * Call a RPC event on the server, and does not expect a response
    */
-  callEvent: DevToolsRpcClientCallEvent
+  callEvent: DevframeRpcClientCallEvent
   /**
    * Call a RPC optional function on the server
    */
-  callOptional: DevToolsRpcClientCallOptional
+  callOptional: DevframeRpcClientCallOptional
   /**
    * The client RPC host
    */
-  client: DevToolsClientRpcHost
+  client: DevframeClientRpcHost
 
   /**
    * The shared state host
@@ -113,14 +113,14 @@ export interface DevToolsRpcClient {
   cacheManager: RpcCacheManager
 }
 
-export interface DevToolsRpcClientMode {
+export interface DevframeRpcClientMode {
   readonly isTrusted: boolean
-  ensureTrusted: DevToolsRpcClient['ensureTrusted']
-  requestTrust: DevToolsRpcClient['requestTrust']
-  requestTrustWithToken: DevToolsRpcClient['requestTrustWithToken']
-  call: DevToolsRpcClient['call']
-  callEvent: DevToolsRpcClient['callEvent']
-  callOptional: DevToolsRpcClient['callOptional']
+  ensureTrusted: DevframeRpcClient['ensureTrusted']
+  requestTrust: DevframeRpcClient['requestTrust']
+  requestTrustWithToken: DevframeRpcClient['requestTrustWithToken']
+  call: DevframeRpcClient['call']
+  callEvent: DevframeRpcClient['callEvent']
+  callOptional: DevframeRpcClient['callOptional']
 }
 
 function getConnectionAuthTokenFromWindows(userAuthToken?: string): string {
@@ -168,9 +168,9 @@ function findConnectionMetaFromWindows(): ConnectionMeta | undefined {
   }
 }
 
-export async function getDevToolsRpcClient(
-  options: DevToolsRpcClientOptions = {},
-): Promise<DevToolsRpcClient> {
+export async function getDevframeRpcClient(
+  options: DevframeRpcClientOptions = {},
+): Promise<DevframeRpcClient> {
   // Default to a relative base — the SPA owns its mount path at runtime,
   // so the connection meta and dump shards live alongside `index.html`.
   // Embedded surfaces that run inside a host page (e.g. a webcomponent
@@ -202,7 +202,7 @@ export async function getDevToolsRpcClient(
     const errors: Error[] = []
     for (const base of bases) {
       try {
-        connectionMeta = await fetch(resolveBasePath(base, DEVTOOLS_CONNECTION_META_FILENAME))
+        connectionMeta = await fetch(resolveBasePath(base, DEVFRAME_CONNECTION_META_FILENAME))
           .then(r => r.json()) as ConnectionMeta
         resolvedBaseURL = base
         ;(globalThis as any)[CONNECTION_META_KEY] = connectionMeta
@@ -220,11 +220,11 @@ export async function getDevToolsRpcClient(
   }
 
   const cacheManager = new RpcCacheManager({ functions: [], ...(typeof options.cacheOptions === 'object' ? options.cacheOptions : {}) })
-  const context: DevToolsRpcContext = {
+  const context: DevframeRpcContext = {
     rpc: undefined!,
   }
   const authToken = getConnectionAuthTokenFromWindows(options.authToken)
-  const clientRpc: DevToolsClientRpcHost = new RpcFunctionsCollectorBase<DevToolsRpcClientFunctions, DevToolsRpcContext>(context)
+  const clientRpc: DevframeClientRpcHost = new RpcFunctionsCollectorBase<DevframeRpcClientFunctions, DevframeRpcContext>(context)
 
   async function fetchJsonFromBases(path: string): Promise<any> {
     const candidates = [
@@ -283,7 +283,7 @@ export async function getDevToolsRpcClient(
         wsOptions: options.wsOptions,
       })
 
-  const rpc: DevToolsRpcClient = {
+  const rpc: DevframeRpcClient = {
     events,
     get isTrusted() {
       return mode.isTrusted
@@ -316,7 +316,7 @@ export async function getDevToolsRpcClient(
   // Listen for auth updates from other tabs (e.g., auth URL page).
   // Channel name kept for cross-tab interop with the Vite DevTools auth page.
   try {
-    const bc = new BroadcastChannel('vite-devtools-auth')
+    const bc = new BroadcastChannel('devframe-auth')
     bc.onmessage = (event) => {
       if (event.data?.type === 'auth-update' && event.data.authToken) {
         rpc.requestTrustWithToken(event.data.authToken)

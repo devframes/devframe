@@ -55,14 +55,6 @@ catalogs:
     valibot: ^1.4.0
     whenexpr: ^0.1.2
     ws: ^8.20.0
-  devtools:
-    '@antfu/eslint-config': ^9.0.0
-    bumpp: ^11.1.0
-    eslint: ^10.3.0
-    nano-staged: ^1.0.2
-    simple-git-hooks: ^2.13.1
-    skills-npm: ^1.1.1
-    typescript: ^6.0.3
   docs:
     mermaid: ^11.15.0
     vitepress: ^2.0.0-alpha.17
@@ -79,6 +71,14 @@ catalogs:
     '@playwright/test': ^1.50.0
     tsnapi: ^0.3.3
     vitest: ^4.1.6
+  tooling:
+    '@antfu/eslint-config': ^9.0.0
+    bumpp: ^11.1.0
+    eslint: ^10.3.0
+    nano-staged: ^1.0.2
+    simple-git-hooks: ^2.13.1
+    skills-npm: ^1.1.1
+    typescript: ^6.0.3
   types:
     '@types/node': ^25.7.0
     '@types/react': ^19.2.15

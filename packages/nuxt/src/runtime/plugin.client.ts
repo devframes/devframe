@@ -11,7 +11,7 @@ export default defineNuxtPlugin({
     const rpc = await connectDevframe({ baseURL })
     return {
       provide: {
-        rpc: rpc as import('devframe/client').DevToolsRpcClient,
+        rpc: rpc as import('devframe/client').DevframeRpcClient,
       },
     }
   },

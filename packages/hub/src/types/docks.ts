@@ -1,28 +1,28 @@
 import type { ConnectionMeta, EventEmitter } from 'devframe/types'
 import type { JsonRenderer } from './json-render'
 
-export interface DevToolsDockHost {
-  readonly views: Map<string, DevToolsDockUserEntry>
+export interface DevframeDockHost {
+  readonly views: Map<string, DevframeDockUserEntry>
   readonly events: EventEmitter<{
-    'dock:entry:updated': (entry: DevToolsDockUserEntry) => void
+    'dock:entry:updated': (entry: DevframeDockUserEntry) => void
   }>
 
-  register: <T extends DevToolsDockUserEntry>(entry: T, force?: boolean) => {
+  register: <T extends DevframeDockUserEntry>(entry: T, force?: boolean) => {
     update: (patch: Partial<T>) => void
   }
-  update: (entry: DevToolsDockUserEntry) => void
-  values: (options?: { includeBuiltin?: boolean }) => DevToolsDockEntry[]
+  update: (entry: DevframeDockUserEntry) => void
+  values: (options?: { includeBuiltin?: boolean }) => DevframeDockEntry[]
 }
 
 // TODO: refine categories more clearly
-export type DevToolsDockEntryCategory = 'app' | 'framework' | 'web' | 'advanced' | 'default' | '~viteplus' | '~builtin'
+export type DevframeDockEntryCategory = 'app' | 'framework' | 'web' | 'advanced' | 'default' | '~viteplus' | '~builtin'
 
-export type DevToolsDockEntryIcon = string | { light: string, dark: string }
+export type DevframeDockEntryIcon = string | { light: string, dark: string }
 
-export interface DevToolsDockEntryBase {
+export interface DevframeDockEntryBase {
   id: string
   title: string
-  icon: DevToolsDockEntryIcon
+  icon: DevframeDockEntryIcon
   /**
    * The default order of the entry in the dock.
    * The higher the number the earlier it appears.
@@ -33,7 +33,7 @@ export interface DevToolsDockEntryBase {
    * The category of the entry
    * @default 'default'
    */
-  category?: DevToolsDockEntryCategory
+  category?: DevframeDockEntryCategory
   /**
    * Conditional visibility expression.
    * When set, the dock entry is only visible when the expression evaluates to true.
@@ -64,7 +64,7 @@ export interface ClientScriptEntry {
   importName?: string
 }
 
-export interface DevToolsViewIframe extends DevToolsDockEntryBase {
+export interface DevframeViewIframe extends DevframeDockEntryBase {
   type: 'iframe'
   url: string
   /**
@@ -80,7 +80,7 @@ export interface DevToolsViewIframe extends DevToolsDockEntryBase {
   /**
    * Enable remote-UI mode: the hub injects a connection descriptor
    * (WS URL + pre-approved auth token) into the iframe URL so a hosted
-   * page can connect back via `connectRemoteDevTools()` from
+   * page can connect back via `connectRemoteDevframe()` from
    * `@devframes/hub/client` — without needing to ship a dist with the
    * plugin.
    *
@@ -123,14 +123,14 @@ export interface RemoteConnectionInfo extends ConnectionMeta {
   origin: string
 }
 
-export type DevToolsViewLauncherStatus = 'idle' | 'loading' | 'success' | 'error'
+export type DevframeViewLauncherStatus = 'idle' | 'loading' | 'success' | 'error'
 
-export interface DevToolsViewLauncher extends DevToolsDockEntryBase {
+export interface DevframeViewLauncher extends DevframeDockEntryBase {
   type: 'launcher'
   launcher: {
-    icon?: DevToolsDockEntryIcon
+    icon?: DevframeDockEntryIcon
     title: string
-    status?: DevToolsViewLauncherStatus
+    status?: DevframeViewLauncherStatus
     error?: string
     description?: string
     buttonStart?: string
@@ -139,29 +139,29 @@ export interface DevToolsViewLauncher extends DevToolsDockEntryBase {
   }
 }
 
-export interface DevToolsViewAction extends DevToolsDockEntryBase {
+export interface DevframeViewAction extends DevframeDockEntryBase {
   type: 'action'
   action: ClientScriptEntry
 }
 
-export interface DevToolsViewCustomRender extends DevToolsDockEntryBase {
+export interface DevframeViewCustomRender extends DevframeDockEntryBase {
   type: 'custom-render'
   renderer: ClientScriptEntry
 }
 
-export interface DevToolsViewBuiltin extends DevToolsDockEntryBase {
+export interface DevframeViewBuiltin extends DevframeDockEntryBase {
   type: '~builtin'
   id: '~terminals' | '~messages' | '~client-auth-notice' | '~settings' | '~popup'
 }
 
-export interface DevToolsViewJsonRender extends DevToolsDockEntryBase {
+export interface DevframeViewJsonRender extends DevframeDockEntryBase {
   type: 'json-render'
   /** JsonRenderer handle created by ctx.createJsonRenderer() */
   ui: JsonRenderer
 }
 
-export type DevToolsDockUserEntry = DevToolsViewIframe | DevToolsViewAction | DevToolsViewCustomRender | DevToolsViewLauncher | DevToolsViewJsonRender
+export type DevframeDockUserEntry = DevframeViewIframe | DevframeViewAction | DevframeViewCustomRender | DevframeViewLauncher | DevframeViewJsonRender
 
-export type DevToolsDockEntry = DevToolsDockUserEntry | DevToolsViewBuiltin
+export type DevframeDockEntry = DevframeDockUserEntry | DevframeViewBuiltin
 
-export type DevToolsDockEntriesGrouped = [category: string, entries: DevToolsDockEntry[]][]
+export type DevframeDockEntriesGrouped = [category: string, entries: DevframeDockEntry[]][]

@@ -1,5 +1,5 @@
 import type { StreamErrorPayload, StreamReader, StreamSink } from 'devframe/utils/streaming-channel'
-import type { DevToolsRpcClient } from './rpc'
+import type { DevframeRpcClient } from './rpc'
 import { createStreamReader, createStreamSink } from 'devframe/utils/streaming-channel'
 
 const STREAM_KEY_SEPARATOR = '\x1F'
@@ -41,7 +41,7 @@ export interface RpcStreamingClientHost {
  * registers the two `:chunk` / `:end` event handlers once, then per-stream
  * state lives in a `Map<streamKey, StreamReader>`.
  */
-export function createRpcStreamingClientHost(rpc: DevToolsRpcClient): RpcStreamingClientHost {
+export function createRpcStreamingClientHost(rpc: DevframeRpcClient): RpcStreamingClientHost {
   const readers = new Map<string, StreamReader<any>>()
   const uploads = new Map<string, StreamSink<any>>()
 

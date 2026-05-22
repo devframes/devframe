@@ -1,9 +1,9 @@
-import type { DevToolsRpcClient, DevToolsRpcClientOptions } from 'devframe/client'
+import type { DevframeRpcClient, DevframeRpcClientOptions } from 'devframe/client'
 import type { RemoteConnectionInfo } from '../types'
-import { getDevToolsRpcClient } from 'devframe/client'
+import { getDevframeRpcClient } from 'devframe/client'
 import { REMOTE_CONNECTION_KEY } from 'devframe/constants'
 
-export type ConnectRemoteDevToolsOptions = Omit<DevToolsRpcClientOptions, 'connectionMeta' | 'authToken'>
+export type ConnectRemoteDevframeOptions = Omit<DevframeRpcClientOptions, 'connectionMeta' | 'authToken'>
 
 function base64UrlDecode(value: string): string {
   const padLen = (4 - value.length % 4) % 4
@@ -104,17 +104,17 @@ export function parseRemoteConnection(input?: string): RemoteConnectionInfo | nu
 }
 
 /**
- * One-liner for a hosted DevTools page: reads the connection descriptor from
- * the current URL and returns a connected {@link DevToolsRpcClient}.
+ * One-liner for a hosted Devframe page: reads the connection descriptor from
+ * the current URL and returns a connected {@link DevframeRpcClient}.
  *
- * Pairs with `remote: true` on a `DevToolsViewIframe` registered on the node
+ * Pairs with `remote: true` on a `DevframeViewIframe` registered on the node
  * side — the hub injects the descriptor into the iframe URL.
  *
  * @throws if no descriptor is present in the URL.
  */
-export async function connectRemoteDevTools(
-  options: ConnectRemoteDevToolsOptions = {},
-): Promise<DevToolsRpcClient> {
+export async function connectRemoteDevframe(
+  options: ConnectRemoteDevframeOptions = {},
+): Promise<DevframeRpcClient> {
   const info = parseRemoteConnection()
   if (!info) {
     throw new Error(
@@ -122,7 +122,7 @@ export async function connectRemoteDevTools(
       + `Open this page through a hub-registered dock with \`remote: true\`.`,
     )
   }
-  return getDevToolsRpcClient({
+  return getDevframeRpcClient({
     ...options,
     connectionMeta: info,
     authToken: info.authToken,

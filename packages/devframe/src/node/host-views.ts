@@ -1,15 +1,15 @@
-import type { DevToolsNodeContext, DevToolsViewHost as DevToolsViewHostType } from 'devframe/types'
+import type { DevframeNodeContext, DevframeViewHost as DevframeViewHostType } from 'devframe/types'
 import { existsSync } from 'node:fs'
 import { diagnostics } from './diagnostics'
 
-export class DevToolsViewHost implements DevToolsViewHostType {
+export class DevframeViewHost implements DevframeViewHostType {
   /**
    * @internal
    */
   public buildStaticDirs: { baseUrl: string, distDir: string }[] = []
 
   constructor(
-    public readonly context: DevToolsNodeContext,
+    public readonly context: DevframeNodeContext,
   ) {
   }
 

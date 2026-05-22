@@ -1,11 +1,11 @@
-import type { DevToolsCommandShortcutOverrides } from './commands'
+import type { DevframeCommandShortcutOverrides } from './commands'
 
-export interface DevToolsDocksUserSettings {
+export interface DevframeDocksUserSettings {
   docksHidden: string[]
   docksCategoriesHidden: string[]
   docksPinned: string[]
   docksCustomOrder: Record<string, number>
   showIframeAddressBar: boolean
   closeOnOutsideClick: boolean
-  commandShortcuts: DevToolsCommandShortcutOverrides
+  commandShortcuts: DevframeCommandShortcutOverrides
 }

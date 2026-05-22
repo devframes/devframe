@@ -1,47 +1,47 @@
 import type { EventEmitter } from 'devframe/types'
 import type { ChildProcess } from 'node:child_process'
-import type { DevToolsDockEntryIcon } from './docks'
+import type { DevframeDockEntryIcon } from './docks'
 
-export interface DevToolsTerminalHost {
-  readonly sessions: Map<string, DevToolsTerminalSession>
+export interface DevframeTerminalHost {
+  readonly sessions: Map<string, DevframeTerminalSession>
   readonly events: EventEmitter<{
-    'terminal:session:updated': (session: DevToolsTerminalSession) => void
+    'terminal:session:updated': (session: DevframeTerminalSession) => void
   }>
 
-  register: (session: DevToolsTerminalSession) => DevToolsTerminalSession
-  update: (session: DevToolsTerminalSession) => void
+  register: (session: DevframeTerminalSession) => DevframeTerminalSession
+  update: (session: DevframeTerminalSession) => void
 
   startChildProcess: (
-    executeOptions: DevToolsChildProcessExecuteOptions,
-    terminal: Omit<DevToolsTerminalSessionBase, 'status'>,
-  ) => Promise<DevToolsChildProcessTerminalSession>
+    executeOptions: DevframeChildProcessExecuteOptions,
+    terminal: Omit<DevframeTerminalSessionBase, 'status'>,
+  ) => Promise<DevframeChildProcessTerminalSession>
 }
 
-export type DevToolsTerminalStatus = 'running' | 'stopped' | 'error'
+export type DevframeTerminalStatus = 'running' | 'stopped' | 'error'
 
-export interface DevToolsTerminalSessionBase {
+export interface DevframeTerminalSessionBase {
   id: string
   title: string
   description?: string
-  status: DevToolsTerminalStatus
-  icon?: DevToolsDockEntryIcon
+  status: DevframeTerminalStatus
+  icon?: DevframeDockEntryIcon
 }
 
-export interface DevToolsTerminalSession extends DevToolsTerminalSessionBase {
+export interface DevframeTerminalSession extends DevframeTerminalSessionBase {
   buffer?: string[]
   stream?: ReadableStream<string>
 }
 
-export interface DevToolsChildProcessExecuteOptions {
+export interface DevframeChildProcessExecuteOptions {
   command: string
   args: string[]
   cwd?: string
   env?: Record<string, string>
 }
 
-export interface DevToolsChildProcessTerminalSession extends DevToolsTerminalSession {
+export interface DevframeChildProcessTerminalSession extends DevframeTerminalSession {
   type: 'child-process'
-  executeOptions: DevToolsChildProcessExecuteOptions
+  executeOptions: DevframeChildProcessExecuteOptions
   getChildProcess: () => ChildProcess | undefined
   terminate: () => Promise<void>
   restart: () => Promise<void>

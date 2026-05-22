@@ -3,20 +3,20 @@
  */
 // #region Interfaces
 export interface CommandsContext {
-  readonly commands: DevToolsCommandEntry[];
-  readonly paletteCommands: DevToolsCommandEntry[];
-  register: (_: DevToolsClientCommand | DevToolsClientCommand[]) => () => void;
+  readonly commands: DevframeCommandEntry[];
+  readonly paletteCommands: DevframeCommandEntry[];
+  register: (_: DevframeClientCommand | DevframeClientCommand[]) => () => void;
   execute: (_: string, ..._: any[]) => Promise<unknown>;
-  getKeybindings: (_: string) => DevToolsCommandKeybinding[];
-  settings: SharedState<DevToolsDocksUserSettings>;
+  getKeybindings: (_: string) => DevframeCommandKeybinding[];
+  settings: SharedState<DevframeDocksUserSettings>;
   paletteOpen: boolean;
 }
 export interface DockClientScriptContext extends DocksContext {
   current: DockEntryState;
-  messages: DevToolsMessagesClient;
+  messages: DevframeMessagesClient;
 }
 export interface DockEntryState {
-  entryMeta: DevToolsDockEntry;
+  entryMeta: DevframeDockEntry;
   readonly isActive: boolean;
   domElements: {
     iframe?: HTMLIFrameElement | null;
@@ -27,7 +27,7 @@ export interface DockEntryState {
 export interface DockEntryStateEvents {
   'entry:activated': () => void;
   'entry:deactivated': () => void;
-  'entry:updated': (_: DevToolsDockUserEntry) => void;
+  'entry:updated': (_: DevframeDockUserEntry) => void;
   'dom:panel:mounted': (_: HTMLDivElement) => void;
   'dom:iframe:mounted': (_: HTMLIFrameElement) => void;
 }
@@ -41,7 +41,7 @@ export interface DockPanelStorage {
   open: boolean;
   inactiveTimeout: number;
 }
-export interface DocksContext extends DevToolsRpcContext {
+export interface DocksContext extends DevframeRpcContext {
   readonly clientType: 'embedded' | 'standalone';
   readonly panel: DocksPanelContext;
   readonly docks: DocksEntriesContext;
@@ -50,11 +50,11 @@ export interface DocksContext extends DevToolsRpcContext {
 }
 export interface DocksEntriesContext {
   selectedId: string | null;
-  readonly selected: DevToolsDockEntry | null;
-  entries: DevToolsDockEntry[];
+  readonly selected: DevframeDockEntry | null;
+  entries: DevframeDockEntry[];
   entryToStateMap: Map<string, DockEntryState>;
-  groupedEntries: DevToolsDockEntriesGrouped;
-  settings: SharedState<DevToolsDocksUserSettings>;
+  groupedEntries: DevframeDockEntriesGrouped;
+  settings: SharedState<DevframeDocksUserSettings>;
   getStateById: (_: string) => DockEntryState | undefined;
   switchEntry: (_?: string | null) => Promise<boolean>;
   toggleEntry: (_: string) => Promise<boolean>;
@@ -71,14 +71,14 @@ export interface WhenClauseContext {
 // #endregion
 
 // #region Types
-export type ConnectRemoteDevToolsOptions = Omit<DevToolsRpcClientOptions, 'connectionMeta' | 'authToken'>;
-export type DevToolsClientContext = DocksContext;
+export type ConnectRemoteDevframeOptions = Omit<DevframeRpcClientOptions, 'connectionMeta' | 'authToken'>;
+export type DevframeClientContext = DocksContext;
 export type DockClientType = 'embedded' | 'standalone';
 // #endregion
 
 // #region Functions
-export declare function connectRemoteDevTools(_?: ConnectRemoteDevToolsOptions): Promise<DevToolsRpcClient>;
-export declare function getDevToolsClientContext(): DevToolsClientContext | undefined;
+export declare function connectRemoteDevframe(_?: ConnectRemoteDevframeOptions): Promise<DevframeRpcClient>;
+export declare function getDevframeClientContext(): DevframeClientContext | undefined;
 export declare function parseRemoteConnection(_?: string): RemoteConnectionInfo | null;
 // #endregion
 
@@ -91,6 +91,6 @@ export * from "devframe/client";
 // #endregion
 
 // #region Other
-export { DevToolsClientRpcHost }
+export { DevframeClientRpcHost }
 export { RpcClientEvents }
 // #endregion

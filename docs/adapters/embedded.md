@@ -15,6 +15,6 @@ await createEmbedded(devframe, { ctx: existingCtx })
 
 | Option | Required | Description |
 |--------|----------|-------------|
-| `ctx` | ✓ | Target `DevToolsNodeContext` the devframe is registered into. |
+| `ctx` | ✓ | Target `DevframeNodeContext` the devframe is registered into. |
 
 Useful when a host loads devframes based on runtime conditions (feature flags, user opt-in, dynamic discovery) rather than static config.

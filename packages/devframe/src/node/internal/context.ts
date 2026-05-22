@@ -1,4 +1,4 @@
-import type { DevToolsNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import { humanId } from 'devframe/utils/human-id'
 import { join } from 'pathe'
@@ -21,7 +21,7 @@ export interface RemoteTokenRecord {
   originLock: boolean
 }
 
-export interface DevToolsInternalContext {
+export interface DevframeInternalContext {
   storage: {
     auth: SharedState<InternalAnonymousAuthStorage>
   }
@@ -55,9 +55,9 @@ export interface DevToolsInternalContext {
   }
 }
 
-export const internalContextMap = new WeakMap<DevToolsNodeContext, DevToolsInternalContext>()
+export const internalContextMap = new WeakMap<DevframeNodeContext, DevframeInternalContext>()
 
-export function getInternalContext(context: DevToolsNodeContext): DevToolsInternalContext {
+export function getInternalContext(context: DevframeNodeContext): DevframeInternalContext {
   if (!internalContextMap.has(context)) {
     const storage = createStorage<InternalAnonymousAuthStorage>({
       filepath: join(context.host.getStorageDir('global'), 'auth.json'),
@@ -73,7 +73,7 @@ export function getInternalContext(context: DevToolsNodeContext): DevToolsIntern
       void revokeActiveConnectionsForToken(context, token)
     }
 
-    const internalContext: DevToolsInternalContext = {
+    const internalContext: DevframeInternalContext = {
       storage: {
         auth: storage,
       },

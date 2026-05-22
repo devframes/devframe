@@ -1,16 +1,16 @@
 import type { BirpcReturn } from 'birpc'
 import type { RpcFunctionsCollectorBase } from 'devframe/rpc'
-import type { DevToolsNodeRpcSessionMeta } from 'devframe/rpc/transports/ws-server'
+import type { DevframeNodeRpcSessionMeta } from 'devframe/rpc/transports/ws-server'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { StreamReader, StreamSink } from 'devframe/utils/streaming-channel'
-import type { DevToolsNodeContext } from './context'
-import type { DevToolsRpcClientFunctions, DevToolsRpcServerFunctions, DevToolsRpcSharedStates } from './rpc-augments'
+import type { DevframeNodeContext } from './context'
+import type { DevframeRpcClientFunctions, DevframeRpcServerFunctions, DevframeRpcSharedStates } from './rpc-augments'
 
-export type { DevToolsNodeRpcSessionMeta }
+export type { DevframeNodeRpcSessionMeta }
 
-export interface DevToolsNodeRpcSession {
-  meta: DevToolsNodeRpcSessionMeta
-  rpc: BirpcReturn<DevToolsRpcClientFunctions, DevToolsRpcServerFunctions, false>
+export interface DevframeNodeRpcSession {
+  meta: DevframeNodeRpcSessionMeta
+  rpc: BirpcReturn<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>
 }
 
 export interface RpcBroadcastOptions<METHOD, Args extends any[]> {
@@ -18,29 +18,29 @@ export interface RpcBroadcastOptions<METHOD, Args extends any[]> {
   args: Args
   optional?: boolean
   event?: boolean
-  filter?: (client: BirpcReturn<DevToolsRpcClientFunctions, DevToolsRpcServerFunctions, false>) => boolean | void
+  filter?: (client: BirpcReturn<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>) => boolean | void
 }
 
-export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevToolsRpcServerFunctions, DevToolsNodeContext> & {
+export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> & {
   /**
    * Invoke a locally registered server RPC function directly.
    *
    * This bypasses transport and is useful for server-side cross-function calls.
    */
   invokeLocal: <
-    T extends keyof DevToolsRpcServerFunctions,
-    Args extends Parameters<DevToolsRpcServerFunctions[T]>,
+    T extends keyof DevframeRpcServerFunctions,
+    Args extends Parameters<DevframeRpcServerFunctions[T]>,
   >(
     method: T,
     ...args: Args
-  ) => Promise<Awaited<ReturnType<DevToolsRpcServerFunctions[T]>>>
+  ) => Promise<Awaited<ReturnType<DevframeRpcServerFunctions[T]>>>
 
   /**
    * Broadcast a message to all connected clients
    */
   broadcast: <
-    T extends keyof DevToolsRpcClientFunctions,
-    Args extends Parameters<DevToolsRpcClientFunctions[T]>,
+    T extends keyof DevframeRpcClientFunctions,
+    Args extends Parameters<DevframeRpcClientFunctions[T]>,
   >(
     options: RpcBroadcastOptions<T, Args>,
   ) => Promise<void>
@@ -50,7 +50,7 @@ export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevToolsRpcServerFuncti
    *
    * Available in RPC functions to get the current RPC client
    */
-  getCurrentRpcSession: () => DevToolsNodeRpcSession | undefined
+  getCurrentRpcSession: () => DevframeNodeRpcSession | undefined
 
   /**
    * The shared state host
@@ -72,7 +72,7 @@ export interface RpcSharedStateGetOptions<T> {
 }
 
 export interface RpcSharedStateHost {
-  get: <T extends keyof DevToolsRpcSharedStates>(key: T, options?: RpcSharedStateGetOptions<DevToolsRpcSharedStates[T]>) => Promise<SharedState<DevToolsRpcSharedStates[T]>>
+  get: <T extends keyof DevframeRpcSharedStates>(key: T, options?: RpcSharedStateGetOptions<DevframeRpcSharedStates[T]>) => Promise<SharedState<DevframeRpcSharedStates[T]>>
   keys: () => string[]
   /**
    * Subscribe to new shared-state keys becoming available. Fires when
@@ -180,5 +180,5 @@ export interface RpcStreamingHost {
    *
    * @internal
    */
-  _onSessionDisconnected: (meta: DevToolsNodeRpcSessionMeta) => void
+  _onSessionDisconnected: (meta: DevframeNodeRpcSessionMeta) => void
 }

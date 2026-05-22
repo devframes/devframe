@@ -10,7 +10,7 @@ function wait(ms: number) {
 
 describe('createStorage', () => {
   it('falls back to initial value when persisted JSON is invalid', async () => {
-    const dir = fs.mkdtempSync(join(os.tmpdir(), 'vite-devtools-storage-'))
+    const dir = fs.mkdtempSync(join(os.tmpdir(), 'devframe-storage-'))
     const filepath = join(dir, 'state.json')
     fs.writeFileSync(filepath, '{invalid json', 'utf-8')
 

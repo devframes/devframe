@@ -40,7 +40,7 @@ async function main(): Promise<void> {
 }
 
 async function resolveRef(): Promise<string> {
-  const override = process.env.ECOSYSTEM_DEVTOOLS_REF
+  const override = process.env.ECOSYSTEM_DEVFRAME_REF
   if (override)
     return override
 

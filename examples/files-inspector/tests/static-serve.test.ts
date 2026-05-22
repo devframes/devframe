@@ -88,8 +88,8 @@ describe('static serve (deployed SPA contract)', () => {
       // This is the path the SPA fetches via relative `./__connection.json`
       // resolved against `document.baseURI`. The 404 the user originally
       // reported with `serve dist-static` was caused by the old layout
-      // putting this file under `/__devtools/__connection.json`, which a
-      // SPA at any non-`/__devtools/` mount could not discover.
+      // putting this file under `/__devframe/__connection.json`, which a
+      // SPA at any non-`/__devframe/` mount could not discover.
       const res = await fetch(`${server.origin}${mountBase}__connection.json`)
       expect(res.status).toBe(200)
       const meta = await res.json() as { backend: string }
@@ -120,11 +120,11 @@ describe('static serve (deployed SPA contract)', () => {
       expect(record.output).toEqual(['README.md', 'package.json', 'sample.txt'])
     })
 
-    it('does not expose a stray `__devtools/` directory at the SPA root', async () => {
+    it('does not expose a stray `__devframe/` directory at the SPA root', async () => {
       // Regression guard: the build output is intentionally flat —
-      // re-introducing a `__devtools/` subdir would create a nested
+      // re-introducing a `__devframe/` subdir would create a nested
       // path the relative-base discovery in the SPA cannot reach.
-      const res = await fetch(`${server.origin}${mountBase}__devtools/__connection.json`)
+      const res = await fetch(`${server.origin}${mountBase}__devframe/__connection.json`)
       expect(res.status).toBe(404)
     })
   })

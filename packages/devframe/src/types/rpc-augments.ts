@@ -1,7 +1,7 @@
 /**
  * To be extended
  */
-export interface DevToolsRpcClientFunctions {
+export interface DevframeRpcClientFunctions {
   /**
    * Streaming chunk pushed from server to subscribed clients. Wired by
    * `RpcStreamingHost`; do not register manually.
@@ -28,7 +28,7 @@ export interface DevToolsRpcClientFunctions {
 /**
  * To be extended
  */
-export interface DevToolsRpcServerFunctions {
+export interface DevframeRpcServerFunctions {
   /**
    * Subscribe a client to a shared-state key. Wired by
    * `RpcSharedStateHost`; do not register manually.
@@ -97,4 +97,4 @@ export interface DevToolsRpcServerFunctions {
 /**
  * To be extended
  */
-export interface DevToolsRpcSharedStates {}
+export interface DevframeRpcSharedStates {}

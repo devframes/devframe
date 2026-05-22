@@ -4,28 +4,28 @@
 // #region Interfaces
 export interface MountDevframeOptions {
   base?: string;
-  dock?: Partial<Omit<DevToolsViewIframe, 'id' | 'type' | 'url'>>;
+  dock?: Partial<Omit<DevframeViewIframe, 'id' | 'type' | 'url'>>;
 }
 // #endregion
 
 // #region Classes
-export declare class DevToolsCommandsHost implements DevToolsCommandsHost$1 {
+export declare class DevframeCommandsHost implements DevframeCommandsHost$1 {
   readonly context: HubNodeContext;
-  readonly commands: DevToolsCommandsHost$1['commands'];
-  readonly events: DevToolsCommandsHost$1['events'];
+  readonly commands: DevframeCommandsHost$1['commands'];
+  readonly events: DevframeCommandsHost$1['events'];
   constructor(_: HubNodeContext);
-  register(_: DevToolsServerCommandInput): DevToolsCommandHandle;
+  register(_: DevframeServerCommandInput): DevframeCommandHandle;
   unregister(_: string): boolean;
   execute(_: string, ..._: any[]): Promise<unknown>;
-  list(): DevToolsServerCommandEntry[];
+  list(): DevframeServerCommandEntry[];
   private findCommand;
   private toSerializable;
 }
-export declare class DevToolsDockHost implements DevToolsDockHost$1 {
+export declare class DevframeDockHost implements DevframeDockHost$1 {
   readonly context: HubNodeContext;
-  readonly views: DevToolsDockHost$1['views'];
-  readonly events: DevToolsDockHost$1['events'];
-  userSettings: SharedState<DevToolsDocksUserSettings>;
+  readonly views: DevframeDockHost$1['views'];
+  readonly events: DevframeDockHost$1['events'];
+  userSettings: SharedState<DevframeDocksUserSettings>;
   private readonly remoteDocks;
   constructor(_: HubNodeContext);
   init(): Promise<void>;
@@ -33,19 +33,19 @@ export declare class DevToolsDockHost implements DevToolsDockHost$1 {
     includeBuiltin
   }?: {
     includeBuiltin?: boolean;
-  }): DevToolsDockEntry[];
+  }): DevframeDockEntry[];
   private projectView;
   private resolveDevServerOrigin;
-  register<T extends DevToolsDockUserEntry>(_: T, _?: boolean): {
+  register<T extends DevframeDockUserEntry>(_: T, _?: boolean): {
     update: (_: Partial<T>) => void;
   };
-  update(_: DevToolsDockUserEntry): void;
+  update(_: DevframeDockUserEntry): void;
   private prepareRemoteRegistration;
 }
-export declare class DevToolsMessagesHost implements DevToolsMessagesHost$1 {
+export declare class DevframeMessagesHost implements DevframeMessagesHost$1 {
   readonly context: HubNodeContext;
-  readonly entries: DevToolsMessagesHost$1['entries'];
-  readonly events: DevToolsMessagesHost$1['events'];
+  readonly entries: DevframeMessagesHost$1['entries'];
+  readonly events: DevframeMessagesHost$1['events'];
   readonly lastModified: Map<string, number>;
   readonly removals: Array<{
     id: string;
@@ -55,25 +55,25 @@ export declare class DevToolsMessagesHost implements DevToolsMessagesHost$1 {
   private _clock;
   private _tick;
   constructor(_: HubNodeContext);
-  add(_: DevToolsMessageEntryInput): Promise<DevToolsMessageHandle>;
-  update(_: string, _: Partial<DevToolsMessageEntryInput>): Promise<DevToolsMessageEntry | undefined>;
+  add(_: DevframeMessageEntryInput): Promise<DevframeMessageHandle>;
+  update(_: string, _: Partial<DevframeMessageEntryInput>): Promise<DevframeMessageEntry | undefined>;
   remove(_: string): Promise<void>;
   clear(): Promise<void>;
   private _createHandle;
 }
-export declare class DevToolsTerminalHost implements DevToolsTerminalHost$1 {
+export declare class DevframeTerminalHost implements DevframeTerminalHost$1 {
   readonly context: HubNodeContext;
-  readonly sessions: DevToolsTerminalHost$1['sessions'];
-  readonly events: DevToolsTerminalHost$1['events'];
+  readonly sessions: DevframeTerminalHost$1['sessions'];
+  readonly events: DevframeTerminalHost$1['events'];
   private _boundStreams;
   private _channel?;
   constructor(_: HubNodeContext);
   private getStreamingChannel;
-  register(_: DevToolsTerminalSession): DevToolsTerminalSession;
-  update(_: PartialWithoutId<DevToolsTerminalSession>): void;
-  remove(_: DevToolsTerminalSession): void;
+  register(_: DevframeTerminalSession): DevframeTerminalSession;
+  update(_: PartialWithoutId<DevframeTerminalSession>): void;
+  remove(_: DevframeTerminalSession): void;
   private bindStream;
-  startChildProcess(_: DevToolsChildProcessExecuteOptions, _: Omit<DevToolsTerminalSessionBase, 'status'>): Promise<DevToolsChildProcessTerminalSession>;
+  startChildProcess(_: DevframeChildProcessExecuteOptions, _: Omit<DevframeTerminalSessionBase, 'status'>): Promise<DevframeChildProcessTerminalSession>;
 }
 // #endregion
 

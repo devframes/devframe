@@ -1,11 +1,11 @@
-import type { DevToolsNodeRpcSession } from 'devframe/types'
+import type { DevframeNodeRpcSession } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { InternalAnonymousAuthStorage } from '../internal/context'
 import { humanId } from 'devframe/utils/human-id'
 
 export interface PendingAuthRequest {
   clientAuthToken: string
-  session: DevToolsNodeRpcSession
+  session: DevframeNodeRpcSession
   ua: string
   origin: string
   resolve: (result: { isTrusted: boolean }) => void

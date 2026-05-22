@@ -1,8 +1,8 @@
 import type {
-  DevToolsCommandEntry,
-  DevToolsDockEntry,
-  DevToolsMessageEntry,
-  DevToolsTerminalSession,
+  DevframeCommandEntry,
+  DevframeDockEntry,
+  DevframeMessageEntry,
+  DevframeTerminalSession,
 } from '@devframes/hub/types'
 import { connectDevframe } from '@devframes/hub/client'
 
@@ -36,7 +36,7 @@ async function main() {
   setStatus(`Connected · backend=${rpc.connectionMeta.backend}`, 'ready')
 
   // 1. Docks — read from `devframe:docks` shared state.
-  const docks = await rpc.sharedState.get<DevToolsDockEntry[]>(
+  const docks = await rpc.sharedState.get<DevframeDockEntry[]>(
     'devframe:docks',
     { initialValue: [] },
   )
@@ -48,7 +48,7 @@ async function main() {
   renderDocks()
 
   // 2. Commands — read from `devframe:commands` shared state.
-  const commands = await rpc.sharedState.get<DevToolsCommandEntry[]>(
+  const commands = await rpc.sharedState.get<DevframeCommandEntry[]>(
     'devframe:commands',
     { initialValue: [] },
   )
@@ -62,8 +62,8 @@ async function main() {
   //    to refresh on broadcast; this minimal example polls instead.
   const refreshMessages = async () => {
     const entries = await rpc.call(
-      'minimal-vite-devtools-hub:messages:list' as any,
-    ) as DevToolsMessageEntry[]
+      'minimal-vite-devframe-hub:messages:list' as any,
+    ) as DevframeMessageEntry[]
     renderList(messagesEl, entries, m =>
       `<li><strong>[${m.level}]</strong> ${m.message}</li>`)
   }
@@ -72,8 +72,8 @@ async function main() {
   // 4. Terminals — same pattern as messages.
   const refreshTerminals = async () => {
     const sessions = await rpc.call(
-      'minimal-vite-devtools-hub:terminals:list' as any,
-    ) as Pick<DevToolsTerminalSession, 'id' | 'title' | 'status' | 'description'>[]
+      'minimal-vite-devframe-hub:terminals:list' as any,
+    ) as Pick<DevframeTerminalSession, 'id' | 'title' | 'status' | 'description'>[]
     renderList(terminalsEl, sessions, t =>
       `<li><strong>${t.title}</strong> <code>${t.id}</code> · ${t.status}</li>`)
   }

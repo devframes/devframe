@@ -20,7 +20,7 @@ export {
 } from './context'
 
 export type {
-  DevToolsInternalContext,
+  DevframeInternalContext,
   InternalAnonymousAuthStorage,
   RemoteTokenRecord,
 } from './context'

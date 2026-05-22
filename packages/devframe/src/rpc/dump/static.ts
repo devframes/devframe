@@ -1,6 +1,6 @@
 import type { RpcDumpRecord, RpcFunctionDefinitionAny } from '../types'
 import {
-  DEVTOOLS_RPC_DUMP_DIRNAME,
+  DEVFRAME_RPC_DUMP_DIRNAME,
 } from 'devframe/constants'
 import { getRpcHandler } from '../handler'
 import { dumpFunctions } from './collect'
@@ -48,15 +48,15 @@ function makeDumpKey(name: string): string {
 }
 
 function makeStaticPath(name: string): string {
-  return `${DEVTOOLS_RPC_DUMP_DIRNAME}/${makeDumpKey(name)}.static.json`
+  return `${DEVFRAME_RPC_DUMP_DIRNAME}/${makeDumpKey(name)}.static.json`
 }
 
 function makeQueryRecordPath(name: string, hash: string): string {
-  return `${DEVTOOLS_RPC_DUMP_DIRNAME}/${makeDumpKey(name)}.record.${hash}.json`
+  return `${DEVFRAME_RPC_DUMP_DIRNAME}/${makeDumpKey(name)}.record.${hash}.json`
 }
 
 function makeQueryFallbackPath(name: string): string {
-  return `${DEVTOOLS_RPC_DUMP_DIRNAME}/${makeDumpKey(name)}.fallback.json`
+  return `${DEVFRAME_RPC_DUMP_DIRNAME}/${makeDumpKey(name)}.fallback.json`
 }
 
 async function resolveRecord(record: RpcDumpRecord | (() => Promise<RpcDumpRecord>)): Promise<RpcDumpRecord> {

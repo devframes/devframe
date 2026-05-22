@@ -99,7 +99,7 @@ export function devframeNav(prefix = ''): DefaultTheme.NavItem[] {
 
 export default withMermaid(defineConfig({
   title: 'Devframe',
-  description: 'Framework-neutral foundation for building generic DevTools — RPC layer, hosts, and adapters.',
+  description: 'Framework-neutral foundation for building generic devframes — RPC layer, hosts, and adapters.',
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
     ['link', { rel: 'apple-touch-icon', href: '/logo.svg' }],

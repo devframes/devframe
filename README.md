@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-Framework-neutral foundation for building generic DevTools.
+Framework-neutral foundation for building devframes.
 </p>
 
 <p align="center">

@@ -1,5 +1,5 @@
 import type { RpcFunctionDefinitionAnyWithContext } from 'devframe/rpc'
-import type { AgentTool, DevframeDefinition, DevToolsHost, DevToolsNodeContext } from 'devframe/types'
+import type { AgentTool, DevframeDefinition, DevframeHost, DevframeNodeContext } from 'devframe/types'
 import type { GenericSchema } from 'valibot'
 import { homedir } from 'node:os'
 import process from 'node:process'
@@ -50,7 +50,7 @@ export interface McpServerHandle {
  * @internal
  */
 export function buildMcpServerFromContext(
-  ctx: DevToolsNodeContext,
+  ctx: DevframeNodeContext,
   options: { serverName: string, serverVersion: string, exposeSharedState: boolean | ((k: string) => boolean) },
 ): { server: Server, dispose: () => void } {
   const server = new Server(
@@ -104,12 +104,12 @@ export async function createMcpServer(
   if (transport !== 'stdio')
     throw diagnostics.DF0017({ transport, reason: 'Only stdio transport is supported in this release.' })
 
-  const host: DevToolsHost = {
+  const host: DevframeHost = {
     mountStatic: () => { /* MCP has no static surface */ },
     resolveOrigin: () => 'mcp://devframe',
     getStorageDir: scope => scope === 'workspace'
-      ? join(process.cwd(), `node_modules/.${definition.id}/devtools`)
-      : join(homedir(), `.${definition.id}/devtools`),
+      ? join(process.cwd(), `node_modules/.${definition.id}/devframe`)
+      : join(homedir(), `.${definition.id}/devframe`),
   }
 
   const ctx = await createHostContext({
@@ -145,7 +145,7 @@ export async function createMcpServer(
   }
 }
 
-function registerToolHandlers(server: Server, ctx: DevToolsNodeContext): void {
+function registerToolHandlers(server: Server, ctx: DevframeNodeContext): void {
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     const tools = ctx.agent.list().tools.map(tool => projectTool(tool, ctx))
     return { tools }
@@ -180,7 +180,7 @@ function registerToolHandlers(server: Server, ctx: DevToolsNodeContext): void {
 
 function registerResourceHandlers(
   server: Server,
-  ctx: DevToolsNodeContext,
+  ctx: DevframeNodeContext,
   exposeSharedState: boolean | ((key: string) => boolean),
 ): void {
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
@@ -242,7 +242,7 @@ function registerResourceHandlers(
   })
 }
 
-function projectTool(tool: AgentTool, ctx: DevToolsNodeContext): Record<string, unknown> {
+function projectTool(tool: AgentTool, ctx: DevframeNodeContext): Record<string, unknown> {
   const inputSchema = tool.inputSchema ?? computeInputSchema(tool, ctx)
   const outputSchema = tool.outputSchema ?? computeOutputSchema(tool, ctx)
   return {
@@ -259,20 +259,20 @@ function projectTool(tool: AgentTool, ctx: DevToolsNodeContext): Record<string, 
   }
 }
 
-function computeInputSchema(tool: AgentTool, ctx: DevToolsNodeContext): unknown {
+function computeInputSchema(tool: AgentTool, ctx: DevframeNodeContext): unknown {
   if (tool.kind !== 'rpc' || !tool.rpcName)
     return { type: 'object', properties: {} }
-  const def = ctx.rpc.definitions.get(tool.rpcName) as RpcFunctionDefinitionAnyWithContext<DevToolsNodeContext> | undefined
+  const def = ctx.rpc.definitions.get(tool.rpcName) as RpcFunctionDefinitionAnyWithContext<DevframeNodeContext> | undefined
   if (!def)
     return { type: 'object', properties: {} }
   const args = def.args as readonly GenericSchema[] | undefined
   return valibotArgsToJsonSchema(args).schema
 }
 
-function computeOutputSchema(tool: AgentTool, ctx: DevToolsNodeContext): unknown {
+function computeOutputSchema(tool: AgentTool, ctx: DevframeNodeContext): unknown {
   if (tool.kind !== 'rpc' || !tool.rpcName)
     return undefined
-  const def = ctx.rpc.definitions.get(tool.rpcName) as RpcFunctionDefinitionAnyWithContext<DevToolsNodeContext> | undefined
+  const def = ctx.rpc.definitions.get(tool.rpcName) as RpcFunctionDefinitionAnyWithContext<DevframeNodeContext> | undefined
   if (!def)
     return undefined
   return valibotReturnToJsonSchema(def.returns as GenericSchema | undefined)

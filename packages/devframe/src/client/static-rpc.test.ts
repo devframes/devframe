@@ -1,11 +1,11 @@
-import { DEVTOOLS_RPC_DUMP_DIRNAME } from 'devframe/constants'
+import { DEVFRAME_RPC_DUMP_DIRNAME } from 'devframe/constants'
 import { hash } from 'devframe/utils/hash'
 import { structuredCloneStringify } from 'devframe/utils/structured-clone'
 import { describe, expect, it } from 'vitest'
 import { createStaticRpcCaller } from './static-rpc'
 
-const DEMO_STATIC_VERSION_PATH = `${DEVTOOLS_RPC_DUMP_DIRNAME}/demo~version.static.json`
-const DEMO_QUERY_BASE_PATH = `${DEVTOOLS_RPC_DUMP_DIRNAME}/demo~get-item`
+const DEMO_STATIC_VERSION_PATH = `${DEVFRAME_RPC_DUMP_DIRNAME}/demo~version.static.json`
+const DEMO_QUERY_BASE_PATH = `${DEVFRAME_RPC_DUMP_DIRNAME}/demo~get-item`
 const DEMO_QUERY_RECORDS_PATH = `${DEMO_QUERY_BASE_PATH}.record`
 const DEMO_QUERY_FALLBACK_PATH = `${DEMO_QUERY_BASE_PATH}.fallback.json`
 
@@ -80,7 +80,7 @@ describe('createStaticRpcCaller', () => {
 
     await expect(caller.callOptional('demo:missing', [])).resolves.toBeUndefined()
     await expect(caller.callEvent('demo:missing', [])).resolves.toBeUndefined()
-    await expect(caller.call('demo:missing', [])).rejects.toThrow('[devtools-rpc] Function "demo:missing" not found in dump store')
+    await expect(caller.call('demo:missing', [])).rejects.toThrow('[devframe-rpc] Function "demo:missing" not found in dump store')
   })
 
   it('treats callEvent as no-op in static mode even for known methods', async () => {
@@ -117,7 +117,7 @@ describe('createStaticRpcCaller', () => {
       {
         'demo:graph': {
           type: 'static',
-          path: `${DEVTOOLS_RPC_DUMP_DIRNAME}/demo~graph.static.json`,
+          path: `${DEVFRAME_RPC_DUMP_DIRNAME}/demo~graph.static.json`,
           serialization: 'structured-clone',
         },
       },
@@ -161,7 +161,7 @@ describe('createStaticRpcCaller', () => {
       {
         'demo:legacy-static': {
           type: 'static',
-          path: `${DEVTOOLS_RPC_DUMP_DIRNAME}/demo~legacy.static.json`,
+          path: `${DEVFRAME_RPC_DUMP_DIRNAME}/demo~legacy.static.json`,
           // no `serialization` field — must default to JSON parsing
         },
       },

@@ -7,9 +7,9 @@ import type {
   AgentResourceInput,
   AgentTool,
   AgentToolInput,
-  DevToolsAgentHostEvents,
-  DevToolsAgentHost as DevToolsAgentHostType,
-  DevToolsNodeContext,
+  DevframeAgentHostEvents,
+  DevframeAgentHost as DevframeAgentHostType,
+  DevframeNodeContext,
   EventEmitter,
   RpcFunctionAgentOptions,
 } from 'devframe/types'
@@ -34,15 +34,15 @@ interface RegisteredResource {
  *
  * @experimental
  */
-export class DevToolsAgentHost implements DevToolsAgentHostType {
-  public readonly events: EventEmitter<DevToolsAgentHostEvents> = createEventEmitter()
+export class DevframeAgentHost implements DevframeAgentHostType {
+  public readonly events: EventEmitter<DevframeAgentHostEvents> = createEventEmitter()
 
   private readonly tools = new Map<string, RegisteredTool>()
   private readonly resources = new Map<string, RegisteredResource>()
   private _rpcUnsubscribe: (() => void) | undefined
 
   constructor(
-    public readonly context: DevToolsNodeContext,
+    public readonly context: DevframeNodeContext,
   ) {
     // Watch the RPC host for new `agent`-flagged definitions.
     this._rpcUnsubscribe = context.rpc.onChanged(() => {
@@ -205,7 +205,7 @@ export class DevToolsAgentHost implements DevToolsAgentHostType {
     return out
   }
 
-  private _findRpcDefinition(id: string): RpcFunctionDefinitionAnyWithContext<DevToolsNodeContext> | undefined {
+  private _findRpcDefinition(id: string): RpcFunctionDefinitionAnyWithContext<DevframeNodeContext> | undefined {
     const def = this.context.rpc.definitions.get(id)
     if (def?.agent)
       return def
@@ -214,7 +214,7 @@ export class DevToolsAgentHost implements DevToolsAgentHostType {
 
   private _coercePositionalArgs(
     args: unknown,
-    def: RpcFunctionDefinitionAnyWithContext<DevToolsNodeContext>,
+    def: RpcFunctionDefinitionAnyWithContext<DevframeNodeContext>,
   ): unknown[] {
     if (Array.isArray(args))
       return args

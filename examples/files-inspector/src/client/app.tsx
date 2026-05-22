@@ -1,4 +1,4 @@
-import type { DevToolsRpcClient } from 'devframe/client'
+import type { DevframeRpcClient } from 'devframe/client'
 import { connectDevframe } from 'devframe/client'
 import { useEffect, useState } from 'preact/hooks'
 import { About } from './routes/about'
@@ -19,7 +19,7 @@ function getRoute(basePath: string): string {
 export function App() {
   const basePath = getBasePath()
   const [route, setRoute] = useState(getRoute(basePath))
-  const [rpc, setRpc] = useState<DevToolsRpcClient | null>(null)
+  const [rpc, setRpc] = useState<DevframeRpcClient | null>(null)
 
   useEffect(() => {
     let cancelled = false

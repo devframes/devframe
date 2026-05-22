@@ -1,11 +1,11 @@
-import type { DevToolsClientContext } from './docks'
+import type { DevframeClientContext } from './docks'
 
 const CLIENT_CONTEXT_KEY = '__DEVFRAME_HUB_CLIENT_CONTEXT__'
 
 /**
- * Get the global DevTools client context, or `undefined` if not yet initialized.
+ * Get the global Devframe client context, or `undefined` if not yet initialized.
  */
-export function getDevToolsClientContext(): DevToolsClientContext | undefined {
+export function getDevframeClientContext(): DevframeClientContext | undefined {
   return (globalThis as any)[CLIENT_CONTEXT_KEY]
 }
 

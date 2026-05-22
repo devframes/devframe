@@ -7,7 +7,7 @@ import type { defineDiagnostics, Diagnostic, DiagnosticDefinition } from 'nostic
  * types don't allow assigning a narrow-keyed result to a generically-keyed
  * one. The host stores them in a heterogeneous registry.
  */
-export type DevToolsDiagnosticsDefinition = ReturnType<typeof defineDiagnostics<any, any>>
+export type DevframeDiagnosticsDefinition = ReturnType<typeof defineDiagnostics<any, any>>
 
 /**
  * The shared diagnostics lookup exposed by the host. A `Proxy` that resolves
@@ -16,14 +16,14 @@ export type DevToolsDiagnosticsDefinition = ReturnType<typeof defineDiagnostics<
  * because it spans heterogeneous definitions registered by different
  * integrations.
  */
-export type DevToolsDiagnosticsLogger = Record<string, any>
+export type DevframeDiagnosticsLogger = Record<string, any>
 
 /**
  * Options accepted by the host's `defineDiagnostics()` factory — mirrors
  * `nostics`'s shape but the host pre-wires its ANSI console reporter, so
  * plugins typically omit `reporters`.
  */
-export interface DevToolsDefineDiagnosticsOptions<Codes extends Record<string, DiagnosticDefinition>> {
+export interface DevframeDefineDiagnosticsOptions<Codes extends Record<string, DiagnosticDefinition>> {
   docsBase?: string | ((code: keyof Codes) => string | undefined)
   codes: Codes
   reporters?: ReadonlyArray<(d: Diagnostic, o?: any) => void>
@@ -52,7 +52,7 @@ export interface DevToolsDefineDiagnosticsOptions<Codes extends Record<string, D
  * throw myDiagnostics.MYP0001()
  * ```
  */
-export interface DevToolsDiagnosticsHost {
+export interface DevframeDiagnosticsHost {
   /**
    * Proxy-backed lookup of every registered diagnostic handle by code name.
    * Resolves to a `nostics` `DiagnosticHandle` — a callable that builds a
@@ -60,7 +60,7 @@ export interface DevToolsDiagnosticsHost {
    * `throw` to raise. Loosely typed — for autocompletion, keep a reference
    * to the typed result of `defineDiagnostics()` instead.
    */
-  readonly logger: DevToolsDiagnosticsLogger
+  readonly logger: DevframeDiagnosticsLogger
 
   /**
    * Register additional diagnostic definitions with this host. After
@@ -77,6 +77,6 @@ export interface DevToolsDiagnosticsHost {
    * need to take a direct dependency on `nostics`.
    */
   defineDiagnostics: <const Codes extends Record<string, DiagnosticDefinition>>(
-    options: DevToolsDefineDiagnosticsOptions<Codes>,
+    options: DevframeDefineDiagnosticsOptions<Codes>,
   ) => ReturnType<typeof defineDiagnostics<Codes, any>>
 }

@@ -1,6 +1,6 @@
 import type { EventEmitter } from 'devframe/types'
 
-export interface DevToolsCommandKeybinding {
+export interface DevframeCommandKeybinding {
   /**
    * Keyboard shortcut string.
    * Use "Mod" for platform-aware modifier (Cmd on macOS, Ctrl elsewhere).
@@ -9,7 +9,7 @@ export interface DevToolsCommandKeybinding {
   key: string
 }
 
-export interface DevToolsCommandBase {
+export interface DevframeCommandBase {
   /**
    * Unique namespaced ID, e.g. "vite:open-in-editor"
    */
@@ -38,13 +38,13 @@ export interface DevToolsCommandBase {
   /**
    * Default keyboard shortcut(s) for this command
    */
-  keybindings?: DevToolsCommandKeybinding[]
+  keybindings?: DevframeCommandKeybinding[]
 }
 
 /**
  * Server command input — what plugins pass to `ctx.commands.register()`.
  */
-export interface DevToolsServerCommandInput extends DevToolsCommandBase {
+export interface DevframeServerCommandInput extends DevframeCommandBase {
   /**
    * Handler for this command. Optional if the command only serves as a group for children.
    */
@@ -53,57 +53,57 @@ export interface DevToolsServerCommandInput extends DevToolsCommandBase {
    * Static sub-commands. Two levels max (parent → children).
    * Each child must have a globally unique `id`.
    */
-  children?: DevToolsServerCommandInput[]
+  children?: DevframeServerCommandInput[]
 }
 
 /**
  * Serializable server command entry — sent over RPC (no handler).
  */
-export interface DevToolsServerCommandEntry extends DevToolsCommandBase {
+export interface DevframeServerCommandEntry extends DevframeCommandBase {
   source: 'server'
-  children?: DevToolsServerCommandEntry[]
+  children?: DevframeServerCommandEntry[]
 }
 
 /**
  * Client command — registered in the webcomponent context.
  */
-export interface DevToolsClientCommand extends DevToolsCommandBase {
+export interface DevframeClientCommand extends DevframeCommandBase {
   source: 'client'
   /**
    * Action for this command. Optional if the command only serves as a group for children.
    * Return sub-commands for dynamic nested palette menus (runtime submenus).
    */
-  action?: (...args: any[]) => void | DevToolsClientCommand[] | Promise<void | DevToolsClientCommand[]>
+  action?: (...args: any[]) => void | DevframeClientCommand[] | Promise<void | DevframeClientCommand[]>
   /**
    * Static sub-commands. Two levels max (parent → children).
    */
-  children?: DevToolsClientCommand[]
+  children?: DevframeClientCommand[]
 }
 
 /**
  * Union of command entries visible in the palette.
  */
-export type DevToolsCommandEntry = DevToolsServerCommandEntry | DevToolsClientCommand
+export type DevframeCommandEntry = DevframeServerCommandEntry | DevframeClientCommand
 
-export interface DevToolsCommandHandle {
+export interface DevframeCommandHandle {
   readonly id: string
-  update: (patch: Partial<Omit<DevToolsServerCommandInput, 'id'>>) => void
+  update: (patch: Partial<Omit<DevframeServerCommandInput, 'id'>>) => void
   unregister: () => void
 }
 
-export interface DevToolsCommandsHostEvents {
-  'command:registered': (command: DevToolsServerCommandEntry) => void
+export interface DevframeCommandsHostEvents {
+  'command:registered': (command: DevframeServerCommandEntry) => void
   'command:unregistered': (id: string) => void
 }
 
-export interface DevToolsCommandsHost {
-  readonly commands: Map<string, DevToolsServerCommandInput>
-  readonly events: EventEmitter<DevToolsCommandsHostEvents>
+export interface DevframeCommandsHost {
+  readonly commands: Map<string, DevframeServerCommandInput>
+  readonly events: EventEmitter<DevframeCommandsHostEvents>
 
   /**
    * Register a command (with optional children).
    */
-  register: (command: DevToolsServerCommandInput) => DevToolsCommandHandle
+  register: (command: DevframeServerCommandInput) => DevframeCommandHandle
 
   /**
    * Unregister a command by ID (removes parent and all children).
@@ -119,12 +119,12 @@ export interface DevToolsCommandsHost {
   /**
    * Returns serializable list (no handlers), preserving tree structure.
    */
-  list: () => DevToolsServerCommandEntry[]
+  list: () => DevframeServerCommandEntry[]
 }
 
-export interface DevToolsCommandShortcutOverrides {
+export interface DevframeCommandShortcutOverrides {
   /**
    * Command ID → keybinding overrides. Empty array = shortcut disabled.
    */
-  [commandId: string]: DevToolsCommandKeybinding[]
+  [commandId: string]: DevframeCommandKeybinding[]
 }

@@ -1,4 +1,4 @@
-import type { DevToolsNodeContext, DevToolsRpcClientFunctions, DevToolsRpcServerFunctions } from 'devframe/types'
+import type { DevframeNodeContext, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { createRpcStreamingClientHost } from 'devframe/client'
 import { createRpcClient } from 'devframe/rpc/client'
@@ -24,12 +24,12 @@ interface Harness {
 
 async function bootHost(): Promise<Harness> {
   const port = allocatePort()
-  const mockContext = {} as DevToolsNodeContext
+  const mockContext = {} as DevframeNodeContext
   const rpcHost = new RpcFunctionsHost(mockContext)
 
   const asyncStorage = new AsyncLocalStorage<any>()
 
-  const rpcGroup = createRpcServer<DevToolsRpcClientFunctions, DevToolsRpcServerFunctions>(
+  const rpcGroup = createRpcServer<DevframeRpcClientFunctions, DevframeRpcServerFunctions>(
     rpcHost.functions,
     {
       rpcOptions: {
@@ -70,13 +70,13 @@ async function bootHost(): Promise<Harness> {
 }
 
 interface FakeClient {
-  rpc: ReturnType<typeof createRpcClient<DevToolsRpcServerFunctions, DevToolsRpcClientFunctions>>
+  rpc: ReturnType<typeof createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>>
   streaming: ReturnType<typeof createRpcStreamingClientHost>
   close: () => void
 }
 
 function bootClient(port: number): FakeClient {
-  // Mimic the minimal `DevToolsRpcClient` surface that
+  // Mimic the minimal `DevframeRpcClient` surface that
   // `createRpcStreamingClientHost` uses (events, isTrusted, callEvent,
   // client.register).
   const listeners = new Set<(trusted: boolean) => void>()
@@ -97,7 +97,7 @@ function bootClient(port: number): FakeClient {
     },
   }
 
-  const rpc = createRpcClient<DevToolsRpcServerFunctions, DevToolsRpcClientFunctions>(
+  const rpc = createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>(
     clientFns,
     {
       channel: createWsRpcChannel({ url: `ws://127.0.0.1:${port}` }),

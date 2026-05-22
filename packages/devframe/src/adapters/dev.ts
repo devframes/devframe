@@ -6,9 +6,9 @@ import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
-import { DEVTOOLS_CONNECTION_META_FILENAME } from '../constants'
+import { DEVFRAME_CONNECTION_META_FILENAME } from '../constants'
 import { createHostContext } from '../node/context'
-import { createH3DevToolsHost } from '../node/host-h3'
+import { createH3DevframeHost } from '../node/host-h3'
 import { startHttpAndWs } from '../node/server'
 import { normalizeBasePath, resolveBasePath } from './_shared'
 
@@ -125,7 +125,7 @@ export async function createDevServer(
   const app = options.app ?? new H3()
   const origin = `http://${host}:${port}`
 
-  const h3Host = createH3DevToolsHost({
+  const h3Host = createH3DevframeHost({
     origin,
     appName: def.id,
     mount: (base, dir) => {
@@ -146,7 +146,7 @@ export async function createDevServer(
   // to know it's a websocket backend bound to that same port. The path
   // sits at the SPA root (next to index.html) so the deployed SPA can
   // discover it via a relative `./__connection.json` fetch.
-  const connectionMetaPath = `${basePath}${DEVTOOLS_CONNECTION_META_FILENAME}`
+  const connectionMetaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`
   app.use(connectionMetaPath, () => ({ backend: 'websocket', websocket: port }))
 
   if (distDir)

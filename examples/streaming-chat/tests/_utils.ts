@@ -1,13 +1,13 @@
-import type { DevToolsNodeContext, StartedServer } from 'devframe/node'
+import type { DevframeNodeContext, StartedServer } from 'devframe/node'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import {
-  DEVTOOLS_CONNECTION_META_FILENAME,
+  DEVFRAME_CONNECTION_META_FILENAME,
 } from 'devframe/constants'
 import {
-  createH3DevToolsHost,
+  createH3DevframeHost,
   createHostContext,
   startHttpAndWs,
 } from 'devframe/node'
@@ -29,7 +29,7 @@ export const CLIENT_DIST = resolve(HERE, '../dist/client')
  */
 export async function startStreamingChatServer(): Promise<StartedServer & {
   basePath: string
-  ctx: DevToolsNodeContext
+  ctx: DevframeNodeContext
 }> {
   // Build the client only if a test exercises the served HTML — RPC-only
   // tests don't need the dist (we don't call assertClientBuilt unless the
@@ -41,7 +41,7 @@ export async function startStreamingChatServer(): Promise<StartedServer & {
 
   const app = new H3()
   const origin = `http://${host}:${port}`
-  const h3Host = createH3DevToolsHost({
+  const h3Host = createH3DevframeHost({
     origin,
     appName: devframe.id,
     mount: (base, dir) => mountStaticHandler(app, base, dir),
@@ -50,7 +50,7 @@ export async function startStreamingChatServer(): Promise<StartedServer & {
   const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
   await devframe.setup(ctx)
 
-  const metaPath = `${basePath}${DEVTOOLS_CONNECTION_META_FILENAME}`
+  const metaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`
   app.use(metaPath, () => ({ backend: 'websocket', websocket: port }))
   if (existsSync(path.join(resolve(distDir), 'index.html'))) {
     mountStaticHandler(app, basePath, resolve(distDir))

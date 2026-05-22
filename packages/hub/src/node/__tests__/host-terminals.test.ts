@@ -1,8 +1,8 @@
-import type { DevToolsTerminalSession } from '../../types/terminals'
+import type { DevframeTerminalSession } from '../../types/terminals'
 import type { HubNodeContext } from '../context'
 import process from 'node:process'
 import { describe, expect, it, vi } from 'vitest'
-import { DevToolsTerminalHost } from '../host-terminals'
+import { DevframeTerminalHost } from '../host-terminals'
 
 interface FakeSink {
   write: ReturnType<typeof vi.fn>
@@ -40,7 +40,7 @@ function createTerminalHost() {
   } as unknown as HubNodeContext
 
   return {
-    host: new DevToolsTerminalHost(context),
+    host: new DevframeTerminalHost(context),
     sinks,
   }
 }
@@ -74,7 +74,7 @@ describe('devToolsTerminalHost stream lifecycle', () => {
         cancelled = true
       },
     })
-    const session: DevToolsTerminalSession = {
+    const session: DevframeTerminalSession = {
       id: 'terminal',
       title: 'Terminal',
       status: 'running',

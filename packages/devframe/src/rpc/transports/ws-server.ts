@@ -8,7 +8,7 @@ import { structuredCloneParse, structuredCloneStringify } from 'devframe/utils/s
 import { WebSocketServer } from 'ws'
 import { strictJsonStringify, STRUCTURED_CLONE_PREFIX } from '../serialization'
 
-export interface DevToolsNodeRpcSessionMeta {
+export interface DevframeNodeRpcSessionMeta {
   id: number
   ws?: WebSocket
   clientAuthToken?: string
@@ -46,8 +46,8 @@ export interface WsRpcTransportOptions {
    * loses dev-time validation for `jsonSerializable: true` declarations.
    */
   definitions?: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>>
-  onConnected?: (ws: WebSocket, req: IncomingMessage, meta: DevToolsNodeRpcSessionMeta) => void
-  onDisconnected?: (ws: WebSocket, meta: DevToolsNodeRpcSessionMeta) => void
+  onConnected?: (ws: WebSocket, req: IncomingMessage, meta: DevframeNodeRpcSessionMeta) => void
+  onDisconnected?: (ws: WebSocket, meta: DevframeNodeRpcSessionMeta) => void
   /** Override the default per-call serializer. Most callers should leave this unset. */
   serialize?: ChannelOptions['serialize']
   /** Override the default per-call deserializer. Most callers should leave this unset. */
@@ -98,7 +98,7 @@ export function attachWsRpcTransport<
   }
 
   wss.on('connection', (ws, req) => {
-    const meta: DevToolsNodeRpcSessionMeta = {
+    const meta: DevframeNodeRpcSessionMeta = {
       id: sessionId++,
       ws,
       subscribedStates: new Set(),

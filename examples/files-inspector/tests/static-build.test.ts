@@ -4,8 +4,8 @@ import os from 'node:os'
 import path from 'node:path'
 import { createBuild } from 'devframe/adapters/build'
 import {
-  DEVTOOLS_CONNECTION_META_FILENAME,
-  DEVTOOLS_RPC_DUMP_MANIFEST_FILENAME,
+  DEVFRAME_CONNECTION_META_FILENAME,
+  DEVFRAME_RPC_DUMP_MANIFEST_FILENAME,
 } from 'devframe/constants'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import devframe from '../src/devframe'
@@ -53,24 +53,24 @@ describe('static build (CLI build surface)', () => {
   })
 
   it('writes a static-backend connection meta next to index.html', async () => {
-    // The meta sits at the SPA root (not under `__devtools/`) so any
+    // The meta sits at the SPA root (not under `__devframe/`) so any
     // generic static file server (`serve`, `nginx`, `python -m http.server`)
     // can serve it as a flat tree without nested-dir exclusions.
     const meta = JSON.parse(
       await readFile(
-        path.join(outBuild, DEVTOOLS_CONNECTION_META_FILENAME),
+        path.join(outBuild, DEVFRAME_CONNECTION_META_FILENAME),
         'utf-8',
       ),
     ) as { backend: string }
     expect(meta).toMatchObject({ backend: 'static' })
-    // Guard the design: nothing should land under a `__devtools/` subdir.
-    expect(existsSync(path.join(outBuild, '__devtools'))).toBe(false)
+    // Guard the design: nothing should land under a `__devframe/` subdir.
+    expect(existsSync(path.join(outBuild, '__devframe'))).toBe(false)
   })
 
   it('dumps both RPC functions into the manifest', async () => {
     const manifest = JSON.parse(
       await readFile(
-        path.join(outBuild, DEVTOOLS_RPC_DUMP_MANIFEST_FILENAME),
+        path.join(outBuild, DEVFRAME_RPC_DUMP_MANIFEST_FILENAME),
         'utf-8',
       ),
     ) as DumpManifest

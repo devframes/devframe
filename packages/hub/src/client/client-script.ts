@@ -1,4 +1,4 @@
-import type { DevToolsMessagesClient } from '../types/messages'
+import type { DevframeMessagesClient } from '../types/messages'
 import type { DockEntryState, DocksContext } from './docks'
 
 /**
@@ -12,5 +12,5 @@ export interface DockClientScriptContext extends DocksContext {
   /**
    * Messages client scoped to this dock entry's source
    */
-  messages: DevToolsMessagesClient
+  messages: DevframeMessagesClient
 }

@@ -1,12 +1,12 @@
-import type { DevToolsRpcContext } from 'devframe/client'
+import type { DevframeRpcContext } from 'devframe/client'
 import type { EventEmitter } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
-import type { DevToolsClientCommand, DevToolsCommandEntry, DevToolsCommandKeybinding } from '../types/commands'
-import type { DevToolsDockEntriesGrouped, DevToolsDockEntry, DevToolsDockUserEntry } from '../types/docks'
-import type { DevToolsDocksUserSettings } from '../types/settings'
+import type { DevframeClientCommand, DevframeCommandEntry, DevframeCommandKeybinding } from '../types/commands'
+import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeDockUserEntry } from '../types/docks'
+import type { DevframeDocksUserSettings } from '../types/settings'
 
-export type { DevToolsClientRpcHost, RpcClientEvents } from 'devframe/client'
+export type { DevframeClientRpcHost, RpcClientEvents } from 'devframe/client'
 
 export interface DockPanelStorage {
   mode: 'float' | 'edge'
@@ -21,7 +21,7 @@ export interface DockPanelStorage {
 
 export type DockClientType = 'embedded' | 'standalone'
 
-export interface DocksContext extends DevToolsRpcContext {
+export interface DocksContext extends DevframeRpcContext {
   /**
    * Type of the client environment
    *
@@ -55,7 +55,7 @@ export interface WhenClauseContext {
   readonly context: WhenContext
 }
 
-export type DevToolsClientContext = DocksContext
+export type DevframeClientContext = DocksContext
 
 export interface DocksPanelContext {
   store: DockPanelStorage
@@ -66,11 +66,11 @@ export interface DocksPanelContext {
 
 export interface DocksEntriesContext {
   selectedId: string | null
-  readonly selected: DevToolsDockEntry | null
-  entries: DevToolsDockEntry[]
+  readonly selected: DevframeDockEntry | null
+  entries: DevframeDockEntry[]
   entryToStateMap: Map<string, DockEntryState>
-  groupedEntries: DevToolsDockEntriesGrouped
-  settings: SharedState<DevToolsDocksUserSettings>
+  groupedEntries: DevframeDockEntriesGrouped
+  settings: SharedState<DevframeDocksUserSettings>
   /**
    * Get the state of a dock entry by its ID
    */
@@ -90,7 +90,7 @@ export interface DocksEntriesContext {
 }
 
 export interface DockEntryState {
-  entryMeta: DevToolsDockEntry
+  entryMeta: DevframeDockEntry
   readonly isActive: boolean
   domElements: {
     iframe?: HTMLIFrameElement | null
@@ -102,7 +102,7 @@ export interface DockEntryState {
 export interface DockEntryStateEvents {
   'entry:activated': () => void
   'entry:deactivated': () => void
-  'entry:updated': (newMeta: DevToolsDockUserEntry) => void
+  'entry:updated': (newMeta: DevframeDockUserEntry) => void
   'dom:panel:mounted': (panel: HTMLDivElement) => void
   'dom:iframe:mounted': (iframe: HTMLIFrameElement) => void
 }
@@ -111,15 +111,15 @@ export interface CommandsContext {
   /**
    * All commands (server + client)
    */
-  readonly commands: DevToolsCommandEntry[]
+  readonly commands: DevframeCommandEntry[]
   /**
    * Palette-visible commands only (filtered by `showInPalette !== false`)
    */
-  readonly paletteCommands: DevToolsCommandEntry[]
+  readonly paletteCommands: DevframeCommandEntry[]
   /**
    * Register client-side command(s). Returns cleanup function.
    */
-  register: (cmd: DevToolsClientCommand | DevToolsClientCommand[]) => () => void
+  register: (cmd: DevframeClientCommand | DevframeClientCommand[]) => () => void
   /**
    * Execute a command by ID. Delegates to RPC for server commands.
    */
@@ -127,11 +127,11 @@ export interface CommandsContext {
   /**
    * Get effective keybindings for a command (defaults merged with overrides)
    */
-  getKeybindings: (id: string) => DevToolsCommandKeybinding[]
+  getKeybindings: (id: string) => DevframeCommandKeybinding[]
   /**
    * User settings store (persisted, includes command shortcuts)
    */
-  settings: SharedState<DevToolsDocksUserSettings>
+  settings: SharedState<DevframeDocksUserSettings>
   /**
    * Whether the command palette is open
    */

@@ -1,11 +1,11 @@
 'use client'
 
-import type { DevToolsRpcClient } from '@devframes/hub/client'
+import type { DevframeRpcClient } from '@devframes/hub/client'
 import type {
-  DevToolsCommandEntry,
-  DevToolsDockEntry,
-  DevToolsMessageEntry,
-  DevToolsTerminalSession,
+  DevframeCommandEntry,
+  DevframeDockEntry,
+  DevframeMessageEntry,
+  DevframeTerminalSession,
 } from '@devframes/hub/types'
 import type { ReactNode } from 'react'
 import { connectDevframe } from '@devframes/hub/client'
@@ -18,17 +18,17 @@ interface Status {
   kind?: 'ready' | 'error'
 }
 
-type TerminalSummary = Pick<DevToolsTerminalSession, 'id' | 'title' | 'status' | 'description'>
+type TerminalSummary = Pick<DevframeTerminalSession, 'id' | 'title' | 'status' | 'description'>
 
 export default function Page() {
   const [status, setStatus] = useState<Status>({ text: 'Connecting...' })
-  const [docks, setDocks] = useState<DevToolsDockEntry[]>([])
-  const [commands, setCommands] = useState<DevToolsCommandEntry[]>([])
-  const [messages, setMessages] = useState<DevToolsMessageEntry[]>([])
+  const [docks, setDocks] = useState<DevframeDockEntry[]>([])
+  const [commands, setCommands] = useState<DevframeCommandEntry[]>([])
+  const [messages, setMessages] = useState<DevframeMessageEntry[]>([])
   const [terminals, setTerminals] = useState<TerminalSummary[]>([])
   const [openPathResult, setOpenPathResult] = useState('Test hub:open-path on this README')
   const [pingResult, setPingResult] = useState('Run ping')
-  const rpcRef = useRef<DevToolsRpcClient | null>(null)
+  const rpcRef = useRef<DevframeRpcClient | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -43,11 +43,11 @@ export default function Page() {
         rpcRef.current = rpc
         setStatus({ text: `Connected: backend=${rpc.connectionMeta.backend}`, kind: 'ready' })
 
-        const docksState = await rpc.sharedState.get<DevToolsDockEntry[]>(
+        const docksState = await rpc.sharedState.get<DevframeDockEntry[]>(
           'devframe:docks',
           { initialValue: [] },
         )
-        const commandsState = await rpc.sharedState.get<DevToolsCommandEntry[]>(
+        const commandsState = await rpc.sharedState.get<DevframeCommandEntry[]>(
           'devframe:commands',
           { initialValue: [] },
         )
@@ -61,15 +61,15 @@ export default function Page() {
 
         const refreshMessages = async () => {
           const entries = await rpc.call(
-            'minimal-next-devtools-hub:messages:list' as any,
-          ) as DevToolsMessageEntry[]
+            'minimal-next-devframe-hub:messages:list' as any,
+          ) as DevframeMessageEntry[]
           if (!cancelled)
             setMessages(entries)
         }
 
         const refreshTerminals = async () => {
           const sessions = await rpc.call(
-            'minimal-next-devtools-hub:terminals:list' as any,
+            'minimal-next-devframe-hub:terminals:list' as any,
           ) as TerminalSummary[]
           if (!cancelled)
             setTerminals(sessions)
@@ -122,7 +122,7 @@ export default function Page() {
     try {
       const result = await rpcRef.current.call(
         'hub:commands:execute' as any,
-        'minimal-next-devtools-hub:ping',
+        'minimal-next-devframe-hub:ping',
       )
       setPingResult(`Ping returned ${JSON.stringify(result)}`)
     }
@@ -134,7 +134,7 @@ export default function Page() {
   return (
     <main>
       <header>
-        <h1>Minimal Next DevTools Hub</h1>
+        <h1>Minimal Next Devframe Hub</h1>
         <p>
           Protocol witness: verifies
           {' '}

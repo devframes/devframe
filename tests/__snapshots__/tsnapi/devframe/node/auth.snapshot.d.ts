@@ -4,7 +4,7 @@
 // #region Interfaces
 export interface PendingAuthRequest {
   clientAuthToken: string;
-  session: DevToolsNodeRpcSession;
+  session: DevframeNodeRpcSession;
   ua: string;
   origin: string;
   resolve: (_: {
@@ -21,7 +21,7 @@ export declare function consumeTempAuthToken(_: string, _: SharedState<InternalA
 export declare function getPendingAuth(): PendingAuthRequest | null;
 export declare function getTempAuthToken(): string;
 export declare function refreshTempAuthToken(): string;
-export declare function revokeActiveConnectionsForToken(_: DevToolsNodeContext, _: string): Promise<void>;
-export declare function revokeAuthToken(_: DevToolsNodeContext, _: SharedState<InternalAnonymousAuthStorage>, _: string): Promise<void>;
+export declare function revokeActiveConnectionsForToken(_: DevframeNodeContext, _: string): Promise<void>;
+export declare function revokeAuthToken(_: DevframeNodeContext, _: SharedState<InternalAnonymousAuthStorage>, _: string): Promise<void>;
 export declare function setPendingAuth(_: PendingAuthRequest | null): void;
 // #endregion
