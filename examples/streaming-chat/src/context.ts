@@ -1,6 +1,6 @@
 import type { DevToolsNodeContext, RpcStreamingChannel } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
-import type { ChatHistory } from './types'
+import type { ChatHistory } from './types.ts'
 
 export interface StreamingChatContext {
   channel: RpcStreamingChannel<string>

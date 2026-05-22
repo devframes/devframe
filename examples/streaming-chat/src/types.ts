@@ -1,4 +1,4 @@
-import type { HISTORY_KEY } from './constants'
+import type { HISTORY_KEY } from './constants.ts'
 
 export interface ChatMessage {
   id: string

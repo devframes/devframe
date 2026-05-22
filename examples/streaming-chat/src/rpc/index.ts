@@ -1,7 +1,7 @@
 import type { RpcDefinitionsToFunctions } from 'devframe/rpc'
-import { clear } from './functions/clear'
-import { demoPrompts } from './functions/demo-prompts'
-import { send } from './functions/send'
+import { clear } from './functions/clear.ts'
+import { demoPrompts } from './functions/demo-prompts.ts'
+import { send } from './functions/send.ts'
 
 export const serverFunctions = [demoPrompts, send, clear] as const
 

@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
-import { serverFunctions } from './rpc'
+import { serverFunctions } from './rpc/index.ts'
 
 const BASE_PATH = '/__devframe-files-inspector/'
 const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))

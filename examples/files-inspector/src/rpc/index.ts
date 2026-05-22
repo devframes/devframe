@@ -1,6 +1,6 @@
 import type { RpcDefinitionsToFunctions } from 'devframe/rpc'
-import { getCwd } from './functions/get-cwd'
-import { listFiles } from './functions/list-files'
+import { getCwd } from './functions/get-cwd.ts'
+import { listFiles } from './functions/list-files.ts'
 
 export const serverFunctions = [getCwd, listFiles] as const
 

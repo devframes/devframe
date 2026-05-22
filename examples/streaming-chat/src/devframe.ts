@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
-import { CHANNEL_NAME, HISTORY_KEY, MAX_HISTORY } from './constants'
-import { setStreamingChatContext } from './context'
-import { serverFunctions } from './rpc'
+import { CHANNEL_NAME, HISTORY_KEY, MAX_HISTORY } from './constants.ts'
+import { setStreamingChatContext } from './context.ts'
+import { serverFunctions } from './rpc/index.ts'
 
-export type { ChatHistory, ChatMessage } from './types'
+export type { ChatHistory, ChatMessage } from './types.ts'
 
 const BASE_PATH = '/__devframe-streaming-chat/'
 const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))
