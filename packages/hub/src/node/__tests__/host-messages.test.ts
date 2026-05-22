@@ -2,7 +2,7 @@ import type { HubNodeContext } from '../context'
 import { describe, expect, it } from 'vitest'
 import { DevframeMessagesHost } from '../host-messages'
 
-describe('devToolsMessagesHost', () => {
+describe('devframeMessagesHost', () => {
   it('caps removal history', async () => {
     const host = new DevframeMessagesHost({} as HubNodeContext)
 

@@ -2,7 +2,7 @@ import type { HubNodeContext } from '../context'
 import { describe, expect, it } from 'vitest'
 import { DevframeCommandsHost } from '../host-commands'
 
-describe('devToolsCommandsHost command id validation', () => {
+describe('devframeCommandsHost command id validation', () => {
   it('rejects duplicate ids inside one command tree', () => {
     const host = new DevframeCommandsHost({} as HubNodeContext)
 

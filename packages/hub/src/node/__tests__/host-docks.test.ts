@@ -19,7 +19,7 @@ function createContext(): HubNodeContext {
   } as unknown as HubNodeContext
 }
 
-describe('devToolsDockHost remote URL enrichment', () => {
+describe('devframeDockHost remote URL enrichment', () => {
   it('preserves hash routes and replaces existing remote descriptors', () => {
     const context = createContext()
     getInternalContext(context).wsEndpoint = { url: 'ws://localhost:4173' }

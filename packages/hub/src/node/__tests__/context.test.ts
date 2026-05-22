@@ -1,9 +1,9 @@
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { createHostContext, startHttpAndWs } from 'devframe/node'
+import { getInternalContext } from 'devframe/node/internal'
 import { describe, expect, it } from 'vitest'
-import { createHostContext, startHttpAndWs } from '../../../../devframe/src/node'
-import { getInternalContext } from '../../../../devframe/src/node/internal'
 import { createHubContext } from '../context'
 
 function createHost(storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-context-'))) {

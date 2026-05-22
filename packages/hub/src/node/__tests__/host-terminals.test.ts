@@ -61,7 +61,7 @@ async function waitUntil(assertion: () => void): Promise<void> {
   throw lastError
 }
 
-describe('devToolsTerminalHost stream lifecycle', () => {
+describe('devframeTerminalHost stream lifecycle', () => {
   it('cancels a bound stream when a session is removed', async () => {
     const { host, sinks } = createTerminalHost()
     let controller: ReadableStreamDefaultController<string>
