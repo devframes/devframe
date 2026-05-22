@@ -1,11 +1,9 @@
 import type { DevToolsRpcClient } from 'devframe/client'
 import type { StreamReader } from 'devframe/utils/streaming-channel'
-import type { ChatHistory, ChatMessage } from '../devframe'
+import type { ChatHistory, ChatMessage } from '../types'
 import { connectDevframe } from 'devframe/client'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
-
-const CHANNEL_NAME = 'devframe-streaming-chat:tokens'
-const HISTORY_KEY = 'devframe-streaming-chat:history'
+import { CHANNEL_NAME, HISTORY_KEY } from '../constants'
 
 export function App() {
   const [rpc, setRpc] = useState<DevToolsRpcClient | null>(null)
@@ -26,9 +24,7 @@ export function App() {
         return
       setRpc(r)
       try {
-        const result = await r.call(
-          'devframe-streaming-chat:demo-prompts' as any,
-        ) as { prompts: string[] }
+        const result = await r.call('devframe-streaming-chat:demo-prompts')
         if (!cancelled)
           setDemoPrompts(result.prompts)
       }
@@ -138,7 +134,7 @@ export function App() {
     setError(null)
     setPrompt('')
     try {
-      await rpc.call('devframe-streaming-chat:send' as any, {
+      await rpc.call('devframe-streaming-chat:send', {
         prompt: text.trim(),
       })
     }
@@ -158,7 +154,7 @@ export function App() {
     if (!rpc || isStreaming)
       return
     try {
-      await rpc.call('devframe-streaming-chat:clear' as any)
+      await rpc.call('devframe-streaming-chat:clear')
     }
     catch (err) {
       setError(err instanceof Error ? err.message : String(err))

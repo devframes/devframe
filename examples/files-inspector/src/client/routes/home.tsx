@@ -8,7 +8,7 @@ export function Home({ rpc }: { rpc: DevToolsRpcClient }) {
   async function refresh() {
     setLoading(true)
     try {
-      const result = await rpc.call('devframe-files-inspector:list-files' as any) as string[]
+      const result = await rpc.call('devframe-files-inspector:list-files')
       setFiles(result)
     }
     finally {

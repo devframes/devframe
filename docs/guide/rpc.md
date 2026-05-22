@@ -53,6 +53,8 @@ export default defineDevframe({
 })
 ```
 
+Place each function in its own file under `src/rpc/`, and barrel them in `src/rpc/index.ts` as `const serverFunctions = [...] as const`. The same array feeds the [type-safe client registry](#type-safe-client-registry) and keeps registration order explicit. When per-file functions need to share setup-time state (channels, shared state handles, loaders), expose it through a `WeakMap<DevToolsNodeContext, T>` in a sibling `src/context.ts`.
+
 ### Naming convention
 
 Scope with your devframe id and use kebab-case for the action: `my-devframe:get-modules`, `my-devframe:read-file`, `my-devframe:trigger-rebuild`.
