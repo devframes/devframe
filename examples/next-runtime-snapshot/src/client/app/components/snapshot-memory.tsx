@@ -31,7 +31,7 @@ export function SnapshotMemory() {
       return
     setLoading(true)
     try {
-      const r = await rpc.call('next-runtime-snapshot:memory' as any) as MemorySnapshot
+      const r = await rpc.call('next-runtime-snapshot:memory')
       setSnap(r)
     }
     finally {

@@ -96,7 +96,7 @@ export declare const hubCommandsExecute: {
   handler?: ((id: string, ...args: any[]) => Promise<unknown>) | undefined;
   dump?: _$devframe_rpc0.RpcDump<[id: string, ...args: any[]], Promise<unknown>, DevframeHubContext> | undefined;
   snapshot?: boolean;
-  __resolved?: _$devframe_rpc0.RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>> | undefined;
+  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>>>> | undefined;
   __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>>> | undefined;
 };
 // #endregion

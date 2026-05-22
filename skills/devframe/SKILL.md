@@ -66,6 +66,83 @@ export default defineDevframe({
 
 See `templates/counter-devframe.ts` for a runnable counter example, `templates/spa-devframe.ts` for an SPA-ready shape, and `templates/vite-client.ts` for the author's client entry.
 
+## Project layout
+
+Once a devframe grows past a handful of RPC functions, split them out — one file per function under `src/rpc/functions/`, with `src/rpc/index.ts` as the barrel. The `functions/` subdirectory leaves room for sibling files like `src/rpc/utils.ts` (helpers, type aliases) as the surface grows. Each function file exports a named const; the barrel collects them into a `const serverFunctions = [...] as const` that feeds the type-safe client registry recipe (`RpcDefinitionsToFunctions<typeof serverFunctions>`).
+
+```ts
+// src/rpc/functions/list-files.ts
+import { defineRpcFunction } from 'devframe'
+import { getMyToolContext } from '../../context'
+
+export const listFiles = defineRpcFunction({
+  name: 'my-tool:list-files',
+  type: 'query',
+  jsonSerializable: true,
+  setup: (ctx) => {
+    const { loaders } = getMyToolContext(ctx)
+    return { handler: () => loaders.list() }
+  },
+})
+```
+
+```ts
+// src/rpc/index.ts
+import { getCwd } from './functions/get-cwd'
+import { listFiles } from './functions/list-files'
+
+export const serverFunctions = [getCwd, listFiles] as const
+
+declare module 'devframe' {
+  interface DevframeRpcServerFunctions
+    extends import('devframe/rpc').RpcDefinitionsToFunctions<typeof serverFunctions> {}
+}
+```
+
+```ts
+// src/devframe.ts
+import { defineDevframe } from 'devframe/types'
+import { setMyToolContext } from './context'
+import { serverFunctions } from './rpc'
+
+export default defineDevframe({
+  id: 'my-tool',
+  setup(ctx) {
+    setMyToolContext(ctx, { loaders: createLoaders() })
+    serverFunctions.forEach(fn => ctx.rpc.register(fn))
+  },
+})
+```
+
+### Sharing setup-time state via `src/context.ts`
+
+When per-file RPCs need access to runtime values that `setup(ctx)` constructs once — streaming channels, shared state handles, watchers, loaders, caches — expose them through a `WeakMap<DevframeNodeContext, T>` in a sibling `src/context.ts`. This mirrors the framework's own `internalContextMap` in `packages/devframe/src/node/hub-internals/context.ts`. The WeakMap keys off the existing `DevframeNodeContext` so contexts are garbage-collected automatically when the host tears down.
+
+```ts
+// src/context.ts
+import type { DevframeNodeContext } from 'devframe/types'
+
+export interface MyToolContext {
+  loaders: { list: () => Promise<string[]> }
+  // …channels, shared state handles, watchers, etc.
+}
+
+const map = new WeakMap<DevframeNodeContext, MyToolContext>()
+
+export function setMyToolContext(ctx: DevframeNodeContext, value: MyToolContext): void {
+  map.set(ctx, value)
+}
+
+export function getMyToolContext(ctx: DevframeNodeContext): MyToolContext {
+  const value = map.get(ctx)
+  if (!value)
+    throw new Error('my-tool context not initialised — call setMyToolContext in devframe.setup')
+  return value
+}
+```
+
+Stateless RPCs and tiny demos can keep the inline shorthand inside `setup(ctx)` — reach for `src/rpc/functions/` and `src/context.ts` once you have more than one or two functions, or any shared setup state.
+
 ## Namespacing
 
 **Always prefix** RPC names, dock IDs, command IDs, shared-state keys, and agent tool IDs with the devframe `id`:

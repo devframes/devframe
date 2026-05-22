@@ -16,9 +16,9 @@ export function SnapshotSystem() {
     if (!rpc)
       return
     let active = true
-    rpc.call('next-runtime-snapshot:system' as any).then((r: unknown) => {
+    rpc.call('next-runtime-snapshot:system').then((r) => {
       if (active)
-        setInfo(r as SystemInfo)
+        setInfo(r)
     })
     return () => {
       active = false

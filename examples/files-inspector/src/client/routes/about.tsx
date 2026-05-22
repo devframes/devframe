@@ -5,7 +5,7 @@ export function About({ rpc, basePath }: { rpc: DevframeRpcClient, basePath: str
   const [cwd, setCwd] = useState<string>('')
 
   useEffect(() => {
-    rpc.call('devframe-files-inspector:get-cwd' as any).then((r: any) => {
+    rpc.call('devframe-files-inspector:get-cwd').then((r) => {
       setCwd(r.cwd)
     })
   }, [rpc])

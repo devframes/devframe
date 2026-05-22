@@ -15,7 +15,7 @@ export function SnapshotEnv() {
       return
     setLoading(true)
     try {
-      const r = await rpc.call('next-runtime-snapshot:env' as any, { pattern: p }) as EnvSnapshot
+      const r = await rpc.call('next-runtime-snapshot:env', { pattern: p })
       setSnap(r)
     }
     finally {

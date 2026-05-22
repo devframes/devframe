@@ -11,20 +11,27 @@ export async function getRpcResolvedSetupResult<
   definition: RpcFunctionDefinition<NAME, TYPE, ARGS, RETURN, any, any, CONTEXT>,
   context: CONTEXT,
 ): Promise<RpcFunctionSetupResult<ARGS, RETURN>> {
-  if (definition.__resolved) {
-    return definition.__resolved
-  }
   if (!definition.setup) {
     return {}
   }
+
+  // Cache the setup result per-context so a single module-level definition
+  // can serve multiple contexts in the same process (multi-server tests,
+  // hot-reload teardown/replay, etc.) without leaking a handler that
+  // closed over a prior context's state.
+  if (typeof context === 'object' && context !== null) {
+    definition.__cache ??= new WeakMap()
+    let promise = definition.__cache.get(context as object)
+    if (!promise) {
+      promise = Promise.resolve(definition.setup(context))
+      definition.__cache.set(context as object, promise)
+    }
+    return await promise
+  }
+
+  // Primitive / undefined context — fall back to a single-slot cache.
   definition.__promise ??= Promise.resolve(definition.setup(context))
-    .then((r) => {
-      definition.__resolved = r
-      definition.__promise = undefined
-      return r
-    })
-  const result = definition.__resolved ??= await definition.__promise
-  return result
+  return await definition.__promise
 }
 
 export async function getRpcHandler<
