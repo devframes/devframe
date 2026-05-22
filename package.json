@@ -23,6 +23,7 @@
     "test": "turbo run build && vitest",
     "test:e2e": "turbo run build && playwright test",
     "test:e2e:ui": "turbo run build && playwright test --ui",
+    "test:ecosystem": "tsx scripts/ecosystem-ci.ts",
     "release": "bumpp -r",
     "typecheck": "tsc -b",
     "postinstall": "npx simple-git-hooks && skills-npm"
