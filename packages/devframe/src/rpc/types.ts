@@ -269,7 +269,9 @@ export type RpcFunctionDefinition<
          * functions — `static` already has equivalent default behavior.
          */
         snapshot?: boolean
-        __resolved?: RpcFunctionSetupResult<ARGS, RETURN>
+        /** Per-context setup-result cache, populated by `getRpcResolvedSetupResult`. @internal */
+        __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<ARGS, RETURN>>>
+        /** Single-slot fallback for primitive contexts. @internal */
         __promise?: Thenable<RpcFunctionSetupResult<ARGS, RETURN>>
       }
     : {
@@ -315,7 +317,9 @@ export type RpcFunctionDefinition<
          * functions — `static` already has equivalent default behavior.
          */
         snapshot?: boolean
-        __resolved?: RpcFunctionSetupResult<InferArgsType<AS>, InferReturnType<RS>>
+        /** Per-context setup-result cache, populated by `getRpcResolvedSetupResult`. @internal */
+        __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<InferArgsType<AS>, InferReturnType<RS>>>>
+        /** Single-slot fallback for primitive contexts. @internal */
         __promise?: Thenable<RpcFunctionSetupResult<InferArgsType<AS>, InferReturnType<RS>>>
       }
 

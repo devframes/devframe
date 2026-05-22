@@ -14,7 +14,7 @@ export declare const openHelpers: readonly [{
   handler?: ((args_0: string) => void) | undefined;
   dump?: RpcDump<[string], void, undefined> | undefined;
   snapshot?: boolean;
-  __resolved?: RpcFunctionSetupResult<[string], void> | undefined;
+  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], void>>> | undefined;
   __promise?: Thenable<RpcFunctionSetupResult<[string], void>> | undefined;
 }, {
   name: "devframe:open-in-finder";
@@ -28,7 +28,7 @@ export declare const openHelpers: readonly [{
   handler?: ((args_0: string) => void) | undefined;
   dump?: RpcDump<[string], void, undefined> | undefined;
   snapshot?: boolean;
-  __resolved?: RpcFunctionSetupResult<[string], void> | undefined;
+  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], void>>> | undefined;
   __promise?: Thenable<RpcFunctionSetupResult<[string], void>> | undefined;
 }];
 export declare const openInEditor: {
@@ -43,7 +43,7 @@ export declare const openInEditor: {
   handler?: ((args_0: string) => void) | undefined;
   dump?: RpcDump<[string], void, undefined> | undefined;
   snapshot?: boolean;
-  __resolved?: RpcFunctionSetupResult<[string], void> | undefined;
+  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], void>>> | undefined;
   __promise?: Thenable<RpcFunctionSetupResult<[string], void>> | undefined;
 };
 export declare const openInFinder: {
@@ -58,7 +58,7 @@ export declare const openInFinder: {
   handler?: ((args_0: string) => void) | undefined;
   dump?: RpcDump<[string], void, undefined> | undefined;
   snapshot?: boolean;
-  __resolved?: RpcFunctionSetupResult<[string], void> | undefined;
+  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], void>>> | undefined;
   __promise?: Thenable<RpcFunctionSetupResult<[string], void>> | undefined;
 };
 // #endregion
