@@ -1,5 +1,5 @@
 import { defineRpcFunction } from 'devframe'
-import { getStreamingChatContext } from '../context'
+import { getStreamingChatContext } from '../../context'
 
 export const clear = defineRpcFunction({
   name: 'devframe-streaming-chat:clear',

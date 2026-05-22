@@ -2,9 +2,9 @@ import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
 import { serverFunctions } from './rpc'
 
-export type { EnvEntry, EnvSnapshot } from './rpc/env'
-export type { MemorySnapshot } from './rpc/memory'
-export type { SystemInfo } from './rpc/system'
+export type { EnvEntry, EnvSnapshot } from './rpc/functions/env'
+export type { MemorySnapshot } from './rpc/functions/memory'
+export type { SystemInfo } from './rpc/functions/system'
 
 const BASE_PATH = '/__next-runtime-snapshot/'
 const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))

@@ -68,12 +68,12 @@ See `templates/counter-devframe.ts` for a runnable counter example, `templates/s
 
 ## Project layout
 
-Once a devframe grows past a handful of RPC functions, split them out — one file per function under `src/rpc/`, mirroring the framework's own internal layout (`packages/devframe/src/node/rpc/agent-*.ts`). Each file exports a named const; `src/rpc/index.ts` barrels them into a `const serverFunctions = [...] as const` that feeds directly into the type-safe client registry recipe (`RpcDefinitionsToFunctions<typeof serverFunctions>`).
+Once a devframe grows past a handful of RPC functions, split them out — one file per function under `src/rpc/functions/`, with `src/rpc/index.ts` as the barrel. The `functions/` subdirectory leaves room for sibling files like `src/rpc/utils.ts` (helpers, type aliases) as the surface grows. Each function file exports a named const; the barrel collects them into a `const serverFunctions = [...] as const` that feeds the type-safe client registry recipe (`RpcDefinitionsToFunctions<typeof serverFunctions>`).
 
 ```ts
-// src/rpc/list-files.ts
+// src/rpc/functions/list-files.ts
 import { defineRpcFunction } from 'devframe'
-import { getMyToolContext } from '../context'
+import { getMyToolContext } from '../../context'
 
 export const listFiles = defineRpcFunction({
   name: 'my-tool:list-files',
@@ -88,8 +88,8 @@ export const listFiles = defineRpcFunction({
 
 ```ts
 // src/rpc/index.ts
-import { getCwd } from './get-cwd'
-import { listFiles } from './list-files'
+import { getCwd } from './functions/get-cwd'
+import { listFiles } from './functions/list-files'
 
 export const serverFunctions = [getCwd, listFiles] as const
 
@@ -141,7 +141,7 @@ export function getMyToolContext(ctx: DevToolsNodeContext): MyToolContext {
 }
 ```
 
-Stateless RPCs and tiny demos can keep the inline shorthand inside `setup(ctx)` — reach for `src/rpc/` and `src/context.ts` once you have more than one or two functions, or any shared setup state.
+Stateless RPCs and tiny demos can keep the inline shorthand inside `setup(ctx)` — reach for `src/rpc/functions/` and `src/context.ts` once you have more than one or two functions, or any shared setup state.
 
 ## Namespacing
 

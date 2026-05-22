@@ -1,5 +1,5 @@
 import { defineRpcFunction } from 'devframe'
-import { DEMO_PROMPTS } from '../constants'
+import { DEMO_PROMPTS } from '../../constants'
 
 export const demoPrompts = defineRpcFunction({
   name: 'devframe-streaming-chat:demo-prompts',

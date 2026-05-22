@@ -1,8 +1,8 @@
 import { defineRpcFunction } from 'devframe'
 import { nanoid } from 'devframe/utils/nanoid'
 import * as v from 'valibot'
-import { HISTORY_KEY } from '../constants'
-import { getStreamingChatContext } from '../context'
+import { HISTORY_KEY } from '../../constants'
+import { getStreamingChatContext } from '../../context'
 
 /**
  * Synthetic "AI" — splits a canned response into tokens and emits them

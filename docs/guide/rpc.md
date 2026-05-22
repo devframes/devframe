@@ -42,7 +42,7 @@ Register it in `setup`:
 
 ```ts
 import { defineDevframe } from 'devframe'
-import { getModules } from './rpc/get-modules'
+import { getModules } from './rpc/functions/get-modules'
 
 export default defineDevframe({
   id: 'my-devframe',
@@ -53,7 +53,7 @@ export default defineDevframe({
 })
 ```
 
-Place each function in its own file under `src/rpc/`, and barrel them in `src/rpc/index.ts` as `const serverFunctions = [...] as const`. The same array feeds the [type-safe client registry](#type-safe-client-registry) and keeps registration order explicit. When per-file functions need to share setup-time state (channels, shared state handles, loaders), expose it through a `WeakMap<DevToolsNodeContext, T>` in a sibling `src/context.ts`.
+Place each function in its own file under `src/rpc/functions/`, and barrel them in `src/rpc/index.ts` as `const serverFunctions = [...] as const`. The same array feeds the [type-safe client registry](#type-safe-client-registry) and keeps registration order explicit. When per-file functions need to share setup-time state (channels, shared state handles, loaders), expose it through a `WeakMap<DevToolsNodeContext, T>` in a sibling `src/context.ts`.
 
 ### Naming convention
 

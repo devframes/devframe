@@ -1,7 +1,7 @@
 import type { RpcDefinitionsToFunctions } from 'devframe/rpc'
-import { env } from './env'
-import { memory } from './memory'
-import { system } from './system'
+import { env } from './functions/env'
+import { memory } from './functions/memory'
+import { system } from './functions/system'
 
 export const serverFunctions = [system, memory, env] as const
 
