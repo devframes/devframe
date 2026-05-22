@@ -1,0 +1,39 @@
+name: Ecosystem CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'vitejs/devtools ref to test against (tag, branch, or commit). Defaults to latest released tag.'
+        required: false
+        type: string
+  schedule:
+    - cron: '0 4 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  vitejs-devtools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:ecosystem
+        env:
+          ECOSYSTEM_DEVTOOLS_REF: ${{ inputs.ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecosystem-devtools-logs
+          path: |
+            .ecosystem/devtools/**/*.log
+            .ecosystem/devtools/packages/**/test-results/**
+          retention-days: 7

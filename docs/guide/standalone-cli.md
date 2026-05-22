@@ -100,6 +100,50 @@ export default defineNuxtConfig({
 
 Build with `nuxt build` and point `cli.distDir` at `./dist/public`. The SPA discovers its effective base at runtime — no `--base` rewrite needed. See the [Nuxt helper docs](/helpers/nuxt) for the full reference.
 
+## Next.js SPA setup
+
+For a Next.js App Router SPA, the integration is plain Next.js static export — devframe owns the HTTP and RPC server, Next.js produces the static bundle and stops there. Three config settings cover the integration:
+
+```js [next.config.mjs]
+/** @type {import('next').NextConfig} */
+export default {
+  output: 'export',
+  assetPrefix: '.',
+  trailingSlash: true,
+  images: { unoptimized: true },
+}
+```
+
+- **`output: 'export'`** emits the SPA as static HTML/JS/CSS — no Next.js runtime is needed at serve time. Server Components are pre-rendered at build; Client Components hydrate against the devframe RPC connection.
+- **`assetPrefix: '.'`** is the setting that makes the build base-agnostic. Assets are referenced as `./_next/...` so the same bundle works at `/`, `/__my-tool/`, and any other mount path the host adapter chooses. Without it, Next.js bakes in `/_next/...` and the build only works at the root.
+- **`trailingSlash: true`** emits `foo/index.html` rather than `foo.html`, which composes cleanly with devframe's static-handler directory-with-index resolution.
+
+`next build` writes the export to `<project>/out/` next to `next.config.mjs`. Copy or move that to wherever you point `cli.distDir`:
+
+```json [package.json]
+{
+  "scripts": {
+    "build": "next build src/client && rm -rf dist/client && mkdir -p dist && cp -r src/client/out dist/client"
+  }
+}
+```
+
+```ts [src/cli.ts]
+import { fileURLToPath } from 'node:url'
+
+defineDevframe({
+  id: 'my-tool',
+  cli: {
+    distDir: fileURLToPath(new URL('../dist/client', import.meta.url)),
+  },
+  // …
+})
+```
+
+Inside Client Components, call `connectDevframe()` once and share the result via React context. See [Client](./client) for the full reference — the Next.js side is plain React, with no devframe-specific wrapper.
+
+End-to-end example: [`examples/next-runtime-snapshot`](https://github.com/devframes/devframe/tree/main/examples/next-runtime-snapshot).
+
 ## Connecting from the client
 
 With the Nuxt helper installed, use `$rpc` directly:

@@ -6,6 +6,9 @@ export default antfu({
   ignores: [
     'skills',
     '**/dist',
+    '**/.next',
+    '**/out',
+    '**/next-env.d.ts',
     '**/.vitepress/cache',
     '**/.vitepress/dist',
   ],

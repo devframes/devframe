@@ -60,5 +60,23 @@ export default defineConfig({
       stdout: 'pipe',
       stderr: 'pipe',
     },
+    {
+      command: 'node bin.mjs',
+      cwd: 'examples/next-runtime-snapshot',
+      url: 'http://localhost:9899/__next-runtime-snapshot/',
+      timeout: 60_000,
+      reuseExistingServer: !process.env.CI,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    },
+    {
+      command: `node bin.mjs build --out-dir dist/static && node ${JSON.stringify(serveStatic)} dist/static 9889`,
+      cwd: 'examples/next-runtime-snapshot',
+      url: 'http://127.0.0.1:9889/',
+      timeout: 60_000,
+      reuseExistingServer: !process.env.CI,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    },
   ],
 })

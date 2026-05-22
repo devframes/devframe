@@ -1,0 +1,32 @@
+{
+  "name": "next-runtime-snapshot-example",
+  "type": "module",
+  "version": "0.4.1",
+  "private": true,
+  "description": "End-to-end devframe demo — Next.js App Router SPA over RPC, exposing the host Node runtime snapshot (system info, memory, env).",
+  "main": "src/devframe.ts",
+  "bin": {
+    "next-runtime-snapshot": "./bin.mjs"
+  },
+  "scripts": {
+    "build": "next build src/client && rm -rf dist/client && mkdir -p dist && cp -r src/client/out dist/client",
+    "cli:build": "node bin.mjs build --out-dir dist/static",
+    "dev": "node bin.mjs",
+    "next:dev": "next dev src/client",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "devframe": "workspace:*",
+    "next": "catalog:frontend",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:types",
+    "@types/react-dom": "catalog:types",
+    "get-port-please": "catalog:deps",
+    "h3": "catalog:deps",
+    "vitest": "catalog:testing",
+    "ws": "catalog:deps"
+  }
+}
