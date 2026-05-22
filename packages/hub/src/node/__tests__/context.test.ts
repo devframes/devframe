@@ -2,7 +2,7 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createHostContext, startHttpAndWs } from 'devframe/node'
-import { getInternalContext } from 'devframe/node/internal'
+import { getInternalContext } from 'devframe/node/hub-internals'
 import { describe, expect, it } from 'vitest'
 import { createHubContext } from '../context'
 

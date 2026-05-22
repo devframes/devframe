@@ -1,7 +1,7 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { RpcFunctionsHost } from '../host-functions'
-import type { InternalAnonymousAuthStorage } from '../internal/context'
+import type { InternalAnonymousAuthStorage } from '../hub-internals/context'
 
 /**
  * Flip `isTrusted` to false on any live WS clients connected with `token`

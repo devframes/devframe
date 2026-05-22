@@ -30,7 +30,7 @@
     "./helpers/vite": "./dist/helpers/vite.mjs",
     "./node": "./dist/node/index.mjs",
     "./node/auth": "./dist/node/auth.mjs",
-    "./node/internal": "./dist/node/internal.mjs",
+    "./node/hub-internals": "./dist/node/hub-internals.mjs",
     "./recipes/open-helpers": "./dist/recipes/open-helpers.mjs",
     "./rpc": "./dist/rpc/index.mjs",
     "./rpc/client": "./dist/rpc/client.mjs",

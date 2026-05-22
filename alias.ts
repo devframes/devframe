@@ -14,7 +14,7 @@ export const alias = {
   'devframe/rpc': r('devframe/src/rpc'),
   'devframe/types': r('devframe/src/types/index.ts'),
   'devframe/node/auth': r('devframe/src/node/auth/index.ts'),
-  'devframe/node/internal': r('devframe/src/node/internal/index.ts'),
+  'devframe/node/hub-internals': r('devframe/src/node/hub-internals/index.ts'),
   'devframe/node': r('devframe/src/node/index.ts'),
   'devframe/constants': r('devframe/src/constants.ts'),
   'devframe/utils/colors': r('devframe/src/utils/colors.ts'),

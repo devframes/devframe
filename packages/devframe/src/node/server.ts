@@ -8,7 +8,7 @@ import { createRpcServer } from 'devframe/rpc/server'
 import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
 import { H3, toNodeHandler } from 'h3'
 import { WebSocketServer as WSServer } from 'ws'
-import { getInternalContext } from './internal/context'
+import { getInternalContext } from './hub-internals/context'
 
 export interface StartHttpAndWsOptions {
   context: DevframeNodeContext

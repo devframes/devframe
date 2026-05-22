@@ -83,7 +83,7 @@ const serverEntries = {
   'rpc/transports/ws-server': 'src/rpc/transports/ws-server.ts',
   'node/index': 'src/node/index.ts',
   'node/auth': 'src/node/auth/index.ts',
-  'node/internal': 'src/node/internal/index.ts',
+  'node/hub-internals': 'src/node/hub-internals/index.ts',
   'utils/launch-editor': 'src/utils/launch-editor.ts',
   'utils/open': 'src/utils/open.ts',
   'utils/serve-static': 'src/utils/serve-static.ts',

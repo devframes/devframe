@@ -1,7 +1,7 @@
 import type { DevframeDefinition } from 'devframe/types'
 import type { DevframeViewIframe } from '../types/docks'
 import type { DevframeHubContext } from './context'
-import { resolveBasePath } from 'devframe/node/internal'
+import { resolveBasePath } from 'devframe/node/hub-internals'
 import { resolve } from 'pathe'
 
 export interface MountDevframeOptions {
