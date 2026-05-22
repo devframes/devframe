@@ -6,6 +6,7 @@ export default defineConfig({
       'packages/devframe',
       'examples/files-inspector',
       'examples/streaming-chat',
+      'examples/next-runtime-snapshot',
       {
         test: {
           name: 'tests',

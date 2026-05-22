@@ -1,0 +1,177 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #0e1014;
+  color: #e6e8eb;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+main {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+header h1 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+header small {
+  color: #8b95a3;
+}
+
+.status {
+  font-size: 12px;
+  color: #8b95a3;
+  border-top: 1px solid #232730;
+  padding-top: 12px;
+}
+
+.status code {
+  color: #c5cdd9;
+  background: #1a1d24;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.status .err {
+  color: #ff7a7a;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.card {
+  background: #15181f;
+  border: 1px solid #232730;
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #c5cdd9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card .actions button {
+  background: #232730;
+  border: 1px solid #2e333d;
+  color: #c5cdd9;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.card .actions button:hover {
+  background: #2e333d;
+}
+
+.card .actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: minmax(120px, max-content) 1fr;
+  gap: 4px 16px;
+  font-family: ui-monospace, SFMono-Regular, 'Cascadia Code', monospace;
+  font-size: 12px;
+}
+
+.kv .k {
+  color: #8b95a3;
+}
+
+.kv .v {
+  color: #e6e8eb;
+  word-break: break-all;
+}
+
+.env-filter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.env-filter input {
+  flex: 1;
+  background: #0e1014;
+  border: 1px solid #2e333d;
+  color: #e6e8eb;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 12px;
+}
+
+.env-filter input:focus {
+  outline: none;
+  border-color: #5b8def;
+}
+
+.env-list {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.env-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 200px) 1fr;
+  gap: 12px;
+  padding: 2px 0;
+}
+
+.env-row .k {
+  color: #8b95a3;
+}
+
+.env-row .v {
+  color: #e6e8eb;
+  word-break: break-all;
+}
+
+.env-row.redacted .v {
+  color: #8b95a3;
+  font-style: italic;
+}
+
+.empty {
+  color: #8b95a3;
+  font-size: 12px;
+}
+
+.loading {
+  color: #8b95a3;
+  font-size: 12px;
+}

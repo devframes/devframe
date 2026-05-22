@@ -20,6 +20,11 @@
       "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
     },
+    "next-runtime-snapshot-example#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe#build"],
+      "outputs": ["dist/**"]
+    },
     "files-inspector-example#cli:build": {
       "outputLogs": "new-only",
       "dependsOn": ["files-inspector-example#build"],
@@ -29,6 +34,11 @@
     "streaming-chat-example#cli:build": {
       "outputLogs": "new-only",
       "dependsOn": ["streaming-chat-example#build"],
+      "outputs": ["dist/static/**"]
+    },
+    "next-runtime-snapshot-example#cli:build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["next-runtime-snapshot-example#build"],
       "outputs": ["dist/static/**"]
     }
   }

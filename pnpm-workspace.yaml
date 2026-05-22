@@ -1,6 +1,7 @@
 allowBuilds:
   '@parcel/watcher': false
   esbuild: true
+  sharp: false
   simple-git-hooks: true
   unrs-resolver: true
 
@@ -66,7 +67,10 @@ catalogs:
     vitepress: ^2.0.0-alpha.17
     vitepress-plugin-mermaid: ^2.0.17
   frontend:
+    next: ^16.2.6
     preact: ^10.29.1
+    react: ^19.2.6
+    react-dom: ^19.2.6
   inlined:
     '@antfu/utils': ^9.3.0
     ua-parser-modern: ^0.1.1
@@ -76,4 +80,6 @@ catalogs:
     vitest: ^4.1.6
   types:
     '@types/node': ^25.7.0
+    '@types/react': ^19.2.15
+    '@types/react-dom': ^19.2.3
     '@types/ws': ^8.18.1
