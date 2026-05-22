@@ -49,6 +49,7 @@ catalogs:
     pathe: ^2.0.3
     perfect-debounce: ^2.1.0
     structured-clone-es: ^2.0.0
+    tinyexec: ^1.1.2
     tinyglobby: ^0.2.16
     valibot: ^1.4.0
     whenexpr: ^0.1.2

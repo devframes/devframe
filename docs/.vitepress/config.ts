@@ -28,6 +28,7 @@ function guideItems(prefix: string): DefaultTheme.NavItemWithLink[] {
     { text: 'Structured Diagnostics', link: `${prefix}/guide/diagnostics` },
     { text: 'Client', link: `${prefix}/guide/client` },
     { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
+    { text: 'Hub (multi-tool)', link: `${prefix}/guide/hub` },
     { text: 'Agent-Native (experimental)', link: `${prefix}/guide/agent-native` },
   ]
 }

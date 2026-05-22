@@ -4,6 +4,8 @@
 
 **`devframe`** is the framework-neutral container for one devtool integration, portable across viewers. Build a single tool (its RPC, its SPA, its diagnostics, its CLI/build/spa/embedded outputs) without caring how it'll be displayed. A devframe app runs standalone (CLI, static deploy, embedded SPA) just as well as it mounts inside a hub.
 
+**`@devframes/hub`** is the framework-neutral hub layer that sits on top of devframe and provides the multi-integration orchestration (docks, terminals, messages, commands). It does not ship UI — implementers (e.g. `@vitejs/devtools-kit`) provide their own UI on top of the hub's RPC + shared-state protocol. See `examples/minimal-vite-devtools-kit/` for a working ~120-line kit demonstrating the protocol end to end.
+
 ## Stack & Structure
 
 ESM TypeScript library. Bundled with `tsdown`. Tested with `vitest`. pnpm workspaces with catalog dependencies (`pnpm-workspace.yaml`); workspace globs reserve `playground`, `docs`, `packages/*`, `examples/*` for future additions.
@@ -49,6 +51,16 @@ These reinforce devframe's positioning as "the container for one devtool integra
 All node-side warnings and errors use structured diagnostics via [`nostics`](https://www.npmjs.com/package/nostics). Never use raw `console.warn`, `console.error`, or `throw new Error` with ad-hoc messages in node-side code — always define a coded diagnostic.
 
 Prefix: **`DF`**. Codes are sequential 4-digit numbers (e.g. `DF0033`). Check the existing diagnostics file to find the next available number.
+
+Range allocation:
+- `DF00xx–DF07xx` — `devframe` core (RPC, host, storage, streams, …)
+- `DF80xx–DF89xx` — `@devframes/hub`. Sub-ranges:
+  - `DF80xx` — hub context / lifecycle
+  - `DF81xx` — docks
+  - `DF82xx` — terminals
+  - `DF83xx` — messages
+  - `DF84xx` — commands
+  - `DF85xx` — built-in RPC commands
 
 ### Adding a new error
 
