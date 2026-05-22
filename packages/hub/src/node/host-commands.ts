@@ -4,7 +4,7 @@ import type {
   DevframeServerCommandEntry,
   DevframeServerCommandInput,
 } from '../types/commands'
-import type { HubNodeContext } from './context'
+import type { DevframeHubContext } from './context'
 import { createEventEmitter } from 'devframe/utils/events'
 import { diagnostics } from './diagnostics'
 
@@ -55,7 +55,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
   public readonly events: DevframeCommandsHostType['events'] = createEventEmitter()
 
   constructor(
-    public readonly context: HubNodeContext,
+    public readonly context: DevframeHubContext,
   ) {}
 
   register(command: DevframeServerCommandInput): DevframeCommandHandle {

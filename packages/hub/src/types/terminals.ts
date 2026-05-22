@@ -2,7 +2,7 @@ import type { EventEmitter } from 'devframe/types'
 import type { ChildProcess } from 'node:child_process'
 import type { DevframeDockEntryIcon } from './docks'
 
-export interface DevframeTerminalHost {
+export interface DevframeTerminalsHost {
   readonly sessions: Map<string, DevframeTerminalSession>
   readonly events: EventEmitter<{
     'terminal:session:updated': (session: DevframeTerminalSession) => void

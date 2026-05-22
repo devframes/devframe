@@ -24,10 +24,11 @@ export { DevframeDockEntry }
 export { DevframeDockEntryBase }
 export { DevframeDockEntryCategory }
 export { DevframeDockEntryIcon }
-export { DevframeDockHost }
+export { DevframeDocksHost }
 export { DevframeDocksUserSettings }
 export { DevframeDockUserEntry }
 export { DevframeHost }
+export { DevframeHubContext }
 export { DevframeMessageElementPosition }
 export { DevframeMessageEntry }
 export { DevframeMessageEntryFrom }
@@ -43,9 +44,9 @@ export { DevframeRpcServerFunctions }
 export { DevframeRpcSharedStates }
 export { DevframeServerCommandEntry }
 export { DevframeServerCommandInput }
-export { DevframeTerminalHost }
 export { DevframeTerminalSession }
 export { DevframeTerminalSessionBase }
+export { DevframeTerminalsHost }
 export { DevframeTerminalStatus }
 export { DevframeViewAction }
 export { DevframeViewBuiltin }
@@ -59,7 +60,6 @@ export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }
 export { EventUnsubscribe }
-export { HubNodeContext }
 export { JsonRenderElement }
 export { JsonRenderer }
 export { JsonRenderSpec }

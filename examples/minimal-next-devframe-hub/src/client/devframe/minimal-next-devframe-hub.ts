@@ -1,9 +1,9 @@
-import type { HubNodeContext } from '@devframes/hub/node'
+import type { DevframeHubContext } from '@devframes/hub/node'
 import type { StartedServer } from 'devframe/node'
 import type { ConnectionMeta, DevframeDefinition, DevframeHost } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
-import { defineRpcFunction } from '@devframes/hub'
+import { defineHubRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { startHttpAndWs } from 'devframe/node'
 import { getPort } from 'get-port-please'
@@ -22,26 +22,26 @@ export interface MinimalNextDevframeHubOptions {
 }
 
 export interface StartedMinimalNextDevframeHub extends StartedServer {
-  context: HubNodeContext
+  context: DevframeHubContext
   connectionMeta: ConnectionMeta & { backend: 'websocket', websocket: number }
 }
 
-const minimalNextHubMessagesList = defineRpcFunction({
+const minimalNextHubMessagesList = defineHubRpcFunction({
   name: 'minimal-next-devframe-hub:messages:list',
   type: 'static',
   jsonSerializable: true,
-  setup: (ctx: HubNodeContext) => ({
+  setup: (ctx: DevframeHubContext) => ({
     async handler() {
       return Array.from(ctx.messages.entries.values())
     },
   }),
 })
 
-const minimalNextHubTerminalsList = defineRpcFunction({
+const minimalNextHubTerminalsList = defineHubRpcFunction({
   name: 'minimal-next-devframe-hub:terminals:list',
   type: 'static',
   jsonSerializable: true,
-  setup: (ctx: HubNodeContext) => ({
+  setup: (ctx: DevframeHubContext) => ({
     async handler() {
       return Array.from(ctx.terminals.sessions.values()).map(s => ({
         id: s.id,

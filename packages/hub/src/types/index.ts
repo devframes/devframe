@@ -1,6 +1,6 @@
 // Re-export the hub-augmented context type so consumers can import it
 // from the hub's main `types` barrel.
-export type { CreateHubContextOptions, HubNodeContext } from '../node/context'
+export type { CreateHubContextOptions, DevframeHubContext } from '../node/context'
 
 export * from './commands'
 export * from './docks'

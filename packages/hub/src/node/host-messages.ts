@@ -4,7 +4,7 @@ import type {
   DevframeMessageHandle,
   DevframeMessagesHost as DevframeMessagesHostType,
 } from '../types/messages'
-import type { HubNodeContext } from './context'
+import type { DevframeHubContext } from './context'
 import { createEventEmitter } from 'devframe/utils/events'
 import { nanoid } from 'devframe/utils/nanoid'
 
@@ -38,7 +38,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
   }
 
   constructor(
-    public readonly context: HubNodeContext,
+    public readonly context: DevframeHubContext,
   ) {}
 
   async add(input: DevframeMessageEntryInput): Promise<DevframeMessageHandle> {

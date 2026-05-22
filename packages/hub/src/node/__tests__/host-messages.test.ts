@@ -1,10 +1,10 @@
-import type { HubNodeContext } from '../context'
+import type { DevframeHubContext } from '../context'
 import { describe, expect, it } from 'vitest'
 import { DevframeMessagesHost } from '../host-messages'
 
 describe('devframeMessagesHost', () => {
   it('caps removal history', async () => {
-    const host = new DevframeMessagesHost({} as HubNodeContext)
+    const host = new DevframeMessagesHost({} as DevframeHubContext)
 
     for (let i = 0; i < 1005; i++) {
       const id = `message:${i}`

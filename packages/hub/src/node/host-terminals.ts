@@ -3,11 +3,11 @@ import type { Result as TinyExecResult } from 'tinyexec'
 import type {
   DevframeChildProcessExecuteOptions,
   DevframeChildProcessTerminalSession,
-  DevframeTerminalHost as DevframeTerminalHostType,
   DevframeTerminalSession,
   DevframeTerminalSessionBase,
+  DevframeTerminalsHost as DevframeTerminalsHostType,
 } from '../types/terminals'
-import type { HubNodeContext } from './context'
+import type { DevframeHubContext } from './context'
 import process from 'node:process'
 import { createEventEmitter } from 'devframe/utils/events'
 import { diagnostics } from './diagnostics'
@@ -21,9 +21,9 @@ type PartialWithoutId<T extends { id: string }> = Partial<T> & { id: string }
 const TERMINAL_STREAM_CHANNEL = 'devframe:terminals' as const
 const TERMINAL_REPLAY_WINDOW = 1000
 
-export class DevframeTerminalHost implements DevframeTerminalHostType {
-  public readonly sessions: DevframeTerminalHostType['sessions'] = new Map()
-  public readonly events: DevframeTerminalHostType['events'] = createEventEmitter()
+export class DevframeTerminalsHost implements DevframeTerminalsHostType {
+  public readonly sessions: DevframeTerminalsHostType['sessions'] = new Map()
+  public readonly events: DevframeTerminalsHostType['events'] = createEventEmitter()
 
   private _boundStreams = new Map<string, {
     dispose: () => void
@@ -33,7 +33,7 @@ export class DevframeTerminalHost implements DevframeTerminalHostType {
   private _channel?: RpcStreamingChannel<string>
 
   constructor(
-    public readonly context: HubNodeContext,
+    public readonly context: DevframeHubContext,
   ) {
   }
 

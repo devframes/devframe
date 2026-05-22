@@ -1,6 +1,6 @@
 import type { DevframeDefinition } from 'devframe/types'
 import type { DevframeViewIframe } from '../types/docks'
-import type { HubNodeContext } from './context'
+import type { DevframeHubContext } from './context'
 import { resolveBasePath } from 'devframe/node/internal'
 import { resolve } from 'pathe'
 
@@ -29,7 +29,7 @@ export interface MountDevframeOptions {
  * Vite `Plugin` whose `devtools.setup` ultimately delegates here.
  */
 export async function mountDevframe(
-  ctx: HubNodeContext,
+  ctx: DevframeHubContext,
   d: DevframeDefinition,
   options: MountDevframeOptions = {},
 ): Promise<void> {

@@ -1,7 +1,7 @@
 import type { ConnectionMeta, EventEmitter } from 'devframe/types'
 import type { JsonRenderer } from './json-render'
 
-export interface DevframeDockHost {
+export interface DevframeDocksHost {
   readonly views: Map<string, DevframeDockUserEntry>
   readonly events: EventEmitter<{
     'dock:entry:updated': (entry: DevframeDockUserEntry) => void
@@ -14,8 +14,17 @@ export interface DevframeDockHost {
   values: (options?: { includeBuiltin?: boolean }) => DevframeDockEntry[]
 }
 
-// TODO: refine categories more clearly
-export type DevframeDockEntryCategory = 'app' | 'framework' | 'web' | 'advanced' | 'default' | '~viteplus' | '~builtin'
+// Known categories the hub orders by default. Kits may pass their own
+// category ids; `(string & {})` keeps autocomplete on the known set while
+// allowing arbitrary string values.
+export type DevframeDockEntryCategory
+  = | 'app'
+    | 'framework'
+    | 'web'
+    | 'advanced'
+    | 'default'
+    | '~builtin'
+    | (string & {})
 
 export type DevframeDockEntryIcon = string | { light: string, dark: string }
 

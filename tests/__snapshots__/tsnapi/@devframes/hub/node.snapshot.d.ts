@@ -10,10 +10,10 @@ export interface MountDevframeOptions {
 
 // #region Classes
 export declare class DevframeCommandsHost implements DevframeCommandsHost$1 {
-  readonly context: HubNodeContext;
+  readonly context: DevframeHubContext;
   readonly commands: DevframeCommandsHost$1['commands'];
   readonly events: DevframeCommandsHost$1['events'];
-  constructor(_: HubNodeContext);
+  constructor(_: DevframeHubContext);
   register(_: DevframeServerCommandInput): DevframeCommandHandle;
   unregister(_: string): boolean;
   execute(_: string, ..._: any[]): Promise<unknown>;
@@ -21,13 +21,13 @@ export declare class DevframeCommandsHost implements DevframeCommandsHost$1 {
   private findCommand;
   private toSerializable;
 }
-export declare class DevframeDockHost implements DevframeDockHost$1 {
-  readonly context: HubNodeContext;
-  readonly views: DevframeDockHost$1['views'];
-  readonly events: DevframeDockHost$1['events'];
+export declare class DevframeDocksHost implements DevframeDocksHost$1 {
+  readonly context: DevframeHubContext;
+  readonly views: DevframeDocksHost$1['views'];
+  readonly events: DevframeDocksHost$1['events'];
   userSettings: SharedState<DevframeDocksUserSettings>;
   private readonly remoteDocks;
-  constructor(_: HubNodeContext);
+  constructor(_: DevframeHubContext);
   init(): Promise<void>;
   values({
     includeBuiltin
@@ -43,7 +43,7 @@ export declare class DevframeDockHost implements DevframeDockHost$1 {
   private prepareRemoteRegistration;
 }
 export declare class DevframeMessagesHost implements DevframeMessagesHost$1 {
-  readonly context: HubNodeContext;
+  readonly context: DevframeHubContext;
   readonly entries: DevframeMessagesHost$1['entries'];
   readonly events: DevframeMessagesHost$1['events'];
   readonly lastModified: Map<string, number>;
@@ -54,20 +54,20 @@ export declare class DevframeMessagesHost implements DevframeMessagesHost$1 {
   private _autoDeleteTimers;
   private _clock;
   private _tick;
-  constructor(_: HubNodeContext);
+  constructor(_: DevframeHubContext);
   add(_: DevframeMessageEntryInput): Promise<DevframeMessageHandle>;
   update(_: string, _: Partial<DevframeMessageEntryInput>): Promise<DevframeMessageEntry | undefined>;
   remove(_: string): Promise<void>;
   clear(): Promise<void>;
   private _createHandle;
 }
-export declare class DevframeTerminalHost implements DevframeTerminalHost$1 {
-  readonly context: HubNodeContext;
-  readonly sessions: DevframeTerminalHost$1['sessions'];
-  readonly events: DevframeTerminalHost$1['events'];
+export declare class DevframeTerminalsHost implements DevframeTerminalsHost$1 {
+  readonly context: DevframeHubContext;
+  readonly sessions: DevframeTerminalsHost$1['sessions'];
+  readonly events: DevframeTerminalsHost$1['events'];
   private _boundStreams;
   private _channel?;
-  constructor(_: HubNodeContext);
+  constructor(_: DevframeHubContext);
   private getStreamingChannel;
   register(_: DevframeTerminalSession): DevframeTerminalSession;
   update(_: PartialWithoutId<DevframeTerminalSession>): void;
@@ -79,7 +79,7 @@ export declare class DevframeTerminalHost implements DevframeTerminalHost$1 {
 
 // #region Functions
 export declare function createSimpleClientScript(_: string | ((_: any) => void)): ClientScriptEntry;
-export declare function mountDevframe(_: HubNodeContext, _: DevframeDefinition, _?: MountDevframeOptions): Promise<void>;
+export declare function mountDevframe(_: DevframeHubContext, _: DevframeDefinition, _?: MountDevframeOptions): Promise<void>;
 // #endregion
 
 // #region Variables
@@ -92,9 +92,9 @@ export declare const hubCommandsExecute: {
   returns?: undefined;
   jsonSerializable?: boolean;
   agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: HubNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>>>) | undefined;
+  setup?: ((context: DevframeHubContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>>>) | undefined;
   handler?: ((id: string, ...args: any[]) => Promise<unknown>) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[id: string, ...args: any[]], Promise<unknown>, HubNodeContext> | undefined;
+  dump?: _$devframe_rpc0.RpcDump<[id: string, ...args: any[]], Promise<unknown>, DevframeHubContext> | undefined;
   snapshot?: boolean;
   __resolved?: _$devframe_rpc0.RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>> | undefined;
   __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>>> | undefined;
@@ -104,5 +104,5 @@ export declare const hubCommandsExecute: {
 // #region Other
 export { createHubContext }
 export { CreateHubContextOptions }
-export { HubNodeContext }
+export { DevframeHubContext }
 // #endregion

@@ -1,8 +1,8 @@
 import type { DevframeTerminalSession } from '../../types/terminals'
-import type { HubNodeContext } from '../context'
+import type { DevframeHubContext } from '../context'
 import process from 'node:process'
 import { describe, expect, it, vi } from 'vitest'
-import { DevframeTerminalHost } from '../host-terminals'
+import { DevframeTerminalsHost } from '../host-terminals'
 
 interface FakeSink {
   write: ReturnType<typeof vi.fn>
@@ -37,10 +37,10 @@ function createTerminalHost() {
         }),
       },
     },
-  } as unknown as HubNodeContext
+  } as unknown as DevframeHubContext
 
   return {
-    host: new DevframeTerminalHost(context),
+    host: new DevframeTerminalsHost(context),
     sinks,
   }
 }

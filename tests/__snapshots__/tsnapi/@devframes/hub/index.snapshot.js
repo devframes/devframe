@@ -4,6 +4,6 @@
 // #region Other
 export { defineCommand }
 export { defineDockEntry }
+export { defineHubRpcFunction }
 export { defineJsonRenderSpec }
-export { defineRpcFunction }
 // #endregion

@@ -14,7 +14,7 @@ export class DevframeCommandsHost {
   findCommand(_) {}
   toSerializable(_) {}
 }
-export class DevframeDockHost {
+export class DevframeDocksHost {
   context
   views
   events
@@ -45,7 +45,7 @@ export class DevframeMessagesHost {
   async clear() {}
   _createHandle(_) {}
 }
-export class DevframeTerminalHost {
+export class DevframeTerminalsHost {
   context
   sessions
   events

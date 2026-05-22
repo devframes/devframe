@@ -1,10 +1,10 @@
-import type { HubNodeContext } from '../context'
+import type { DevframeHubContext } from '../context'
 import { describe, expect, it } from 'vitest'
 import { DevframeCommandsHost } from '../host-commands'
 
 describe('devframeCommandsHost command id validation', () => {
   it('rejects duplicate ids inside one command tree', () => {
-    const host = new DevframeCommandsHost({} as HubNodeContext)
+    const host = new DevframeCommandsHost({} as DevframeHubContext)
 
     expect(() => host.register({
       id: 'tool:parent',
@@ -17,7 +17,7 @@ describe('devframeCommandsHost command id validation', () => {
   })
 
   it('rejects child ids that collide with existing command trees', () => {
-    const host = new DevframeCommandsHost({} as HubNodeContext)
+    const host = new DevframeCommandsHost({} as DevframeHubContext)
     host.register({
       id: 'tool:parent',
       title: 'Parent',
@@ -41,7 +41,7 @@ describe('devframeCommandsHost command id validation', () => {
   })
 
   it('validates updated children against other command trees', () => {
-    const host = new DevframeCommandsHost({} as HubNodeContext)
+    const host = new DevframeCommandsHost({} as DevframeHubContext)
     host.register({
       id: 'other:parent',
       title: 'Other parent',

@@ -1,16 +1,16 @@
 import type { CreateHostContextOptions } from 'devframe/node'
 import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
 import type { DevframeCommandsHost } from '../types/commands'
-import type { DevframeDockHost } from '../types/docks'
+import type { DevframeDocksHost } from '../types/docks'
 import type { JsonRenderer, JsonRenderSpec } from '../types/json-render'
 import type { DevframeMessagesHost } from '../types/messages'
-import type { DevframeTerminalHost } from '../types/terminals'
+import type { DevframeTerminalsHost } from '../types/terminals'
 import { createHostContext } from 'devframe/node'
 import { debounce } from 'perfect-debounce'
 import { DevframeCommandsHost as CommandsHostImpl } from './host-commands'
-import { DevframeDockHost as DocksHostImpl } from './host-docks'
+import { DevframeDocksHost as DocksHostImpl } from './host-docks'
 import { DevframeMessagesHost as MessagesHostImpl } from './host-messages'
-import { DevframeTerminalHost as TerminalsHostImpl } from './host-terminals'
+import { DevframeTerminalsHost as TerminalsHostImpl } from './host-terminals'
 import { builtinHubRpcDeclarations } from './rpc-builtins'
 
 /**
@@ -24,10 +24,10 @@ import { builtinHubRpcDeclarations } from './rpc-builtins'
  * filesystem reveal, etc.) ship as kit-registered RPC functions rather
  * than as part of this surface.
  */
-export interface HubNodeContext extends DevframeNodeContext {
+export interface DevframeHubContext extends DevframeNodeContext {
   readonly host: DevframeHost
-  docks: DevframeDockHost
-  terminals: DevframeTerminalHost
+  docks: DevframeDocksHost
+  terminals: DevframeTerminalsHost
   messages: DevframeMessagesHost
   commands: DevframeCommandsHost
   /**
@@ -44,7 +44,7 @@ export interface CreateHubContextOptions extends CreateHostContextOptions {}
  * registers the hub's built-in RPC commands, and wires the shared-state
  * synchronization that powers a hub-aware client UI.
  */
-export async function createHubContext(options: CreateHubContextOptions): Promise<HubNodeContext> {
+export async function createHubContext(options: CreateHubContextOptions): Promise<DevframeHubContext> {
   const baseContext = await createHostContext({
     ...options,
     builtinRpcDeclarations: [
@@ -52,7 +52,7 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
       ...(options.builtinRpcDeclarations ?? []),
     ],
   })
-  const context = baseContext as HubNodeContext
+  const context = baseContext as DevframeHubContext
 
   const docks = new DocksHostImpl(context)
   const terminals = new TerminalsHostImpl(context)

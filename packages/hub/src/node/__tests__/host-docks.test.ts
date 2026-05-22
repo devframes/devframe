@@ -1,4 +1,4 @@
-import type { HubNodeContext } from '../context'
+import type { DevframeHubContext } from '../context'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -6,9 +6,9 @@ import { REMOTE_CONNECTION_KEY } from 'devframe/constants'
 import { getInternalContext } from 'devframe/node/internal'
 import { describe, expect, it } from 'vitest'
 import { parseRemoteConnection } from '../../client/remote'
-import { DevframeDockHost } from '../host-docks'
+import { DevframeDocksHost } from '../host-docks'
 
-function createContext(): HubNodeContext {
+function createContext(): DevframeHubContext {
   const storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-docks-'))
   return {
     host: {
@@ -16,14 +16,14 @@ function createContext(): HubNodeContext {
       resolveOrigin: () => 'http://localhost:5173',
       getStorageDir: () => storageDir,
     },
-  } as unknown as HubNodeContext
+  } as unknown as DevframeHubContext
 }
 
 describe('devframeDockHost remote URL enrichment', () => {
   it('preserves hash routes and replaces existing remote descriptors', () => {
     const context = createContext()
     getInternalContext(context).wsEndpoint = { url: 'ws://localhost:4173' }
-    const host = new DevframeDockHost(context)
+    const host = new DevframeDocksHost(context)
 
     host.register({
       type: 'iframe',
@@ -60,7 +60,7 @@ describe('devframeDockHost remote URL enrichment', () => {
   it('preserves non-route fragments with the ampersand descriptor form', () => {
     const context = createContext()
     getInternalContext(context).wsEndpoint = { url: 'ws://localhost:4173' }
-    const host = new DevframeDockHost(context)
+    const host = new DevframeDocksHost(context)
 
     host.register({
       type: 'iframe',

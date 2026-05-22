@@ -2,7 +2,7 @@ import type { DevframeNodeContext } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type {
   DevframeDockEntry,
-  DevframeDockHost as DevframeDockHostType,
+  DevframeDocksHost as DevframeDocksHostType,
   DevframeDockUserEntry,
   DevframeViewBuiltin,
   DevframeViewIframe,
@@ -10,7 +10,7 @@ import type {
   RemoteDockOptions,
 } from '../types/docks'
 import type { DevframeDocksUserSettings } from '../types/settings'
-import type { HubNodeContext } from './context'
+import type { DevframeHubContext } from './context'
 import { REMOTE_CONNECTION_KEY } from 'devframe/constants'
 import { createStorage } from 'devframe/node'
 import { getInternalContext } from 'devframe/node/internal'
@@ -82,16 +82,16 @@ function buildRemoteUrl(baseUrl: string, payload: RemoteConnectionInfo, transpor
   return `${beforeHash}${sep}${param}${hash}`
 }
 
-export class DevframeDockHost implements DevframeDockHostType {
-  public readonly views: DevframeDockHostType['views'] = new Map()
-  public readonly events: DevframeDockHostType['events'] = createEventEmitter()
+export class DevframeDocksHost implements DevframeDocksHostType {
+  public readonly views: DevframeDocksHostType['views'] = new Map()
+  public readonly events: DevframeDocksHostType['events'] = createEventEmitter()
   public userSettings: SharedState<DevframeDocksUserSettings> = undefined!
 
   /** Dock-id → allocated remote token + resolved options. */
   private readonly remoteDocks = new Map<string, RemoteDockRecord>()
 
   constructor(
-    public readonly context: HubNodeContext,
+    public readonly context: DevframeHubContext,
   ) {
 
   }

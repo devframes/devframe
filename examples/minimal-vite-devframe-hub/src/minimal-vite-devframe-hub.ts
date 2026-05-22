@@ -1,8 +1,8 @@
-import type { HubNodeContext } from '@devframes/hub/node'
+import type { DevframeHubContext } from '@devframes/hub/node'
 import type { DevframeDefinition, DevframeHost } from 'devframe/types'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { homedir } from 'node:os'
-import { defineRpcFunction } from '@devframes/hub'
+import { defineHubRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { startHttpAndWs } from 'devframe/node'
@@ -20,22 +20,22 @@ export interface MinimalViteDevframeHubOptions {
 
 // Minimal hub-local RPCs — used by the UI for read-side data. A more
 // ambitious hub host might hoist these into `@devframes/hub` itself.
-const minimalViteHubMessagesList = defineRpcFunction({
+const minimalViteHubMessagesList = defineHubRpcFunction({
   name: 'minimal-vite-devframe-hub:messages:list',
   type: 'static',
   jsonSerializable: true,
-  setup: (ctx: HubNodeContext) => ({
+  setup: (ctx: DevframeHubContext) => ({
     async handler() {
       return Array.from(ctx.messages.entries.values())
     },
   }),
 })
 
-const minimalViteHubTerminalsList = defineRpcFunction({
+const minimalViteHubTerminalsList = defineHubRpcFunction({
   name: 'minimal-vite-devframe-hub:terminals:list',
   type: 'static',
   jsonSerializable: true,
-  setup: (ctx: HubNodeContext) => ({
+  setup: (ctx: DevframeHubContext) => ({
     async handler() {
       return Array.from(ctx.terminals.sessions.values()).map(s => ({
         id: s.id,

@@ -1,4 +1,4 @@
-import type { HubNodeContext } from '@devframes/hub/node'
+import type { DevframeHubContext } from '@devframes/hub/node'
 import { defineDevframe } from 'devframe/types'
 
 /**
@@ -16,7 +16,7 @@ export default defineDevframe({
   icon: 'ph:rocket-duotone',
   basePath: '/__demo-tool/',
   async setup(rawCtx) {
-    const ctx = rawCtx as unknown as HubNodeContext
+    const ctx = rawCtx as unknown as DevframeHubContext
 
     ctx.commands.register({
       id: 'demo-tool:say-hello',

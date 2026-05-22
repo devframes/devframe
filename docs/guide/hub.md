@@ -11,7 +11,7 @@ outline: deep
 
 ## What the hub adds
 
-A hub-aware node context (`HubNodeContext`) extends `DevframeNodeContext` with four subsystems:
+A hub-aware node context (`DevframeHubContext`) extends `DevframeNodeContext` with four subsystems:
 
 | Subsystem | Surface | Purpose |
 |---|---|---|
