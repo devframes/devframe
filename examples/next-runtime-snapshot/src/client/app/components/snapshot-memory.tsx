@@ -55,7 +55,7 @@ export function SnapshotMemory() {
       </h2>
       {snap
         ? (
-            <dl className="kv">
+            <div className="kv">
               <span className="k">uptime</span>
               <span className="v">{fmtUptime(snap.uptimeSeconds)}</span>
               <span className="k">rss</span>
@@ -68,7 +68,7 @@ export function SnapshotMemory() {
               <span className="v">{fmtBytes(snap.memory.external)}</span>
               <span className="k">array buffers</span>
               <span className="v">{fmtBytes(snap.memory.arrayBuffers)}</span>
-            </dl>
+            </div>
           )
         : <p className="loading">Loading…</p>}
     </section>

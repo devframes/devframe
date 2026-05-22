@@ -48,6 +48,7 @@ export function SnapshotEnv() {
           value={pattern}
           onChange={e => setPattern(e.target.value)}
           placeholder="Regex filter (case-insensitive) — e.g. NODE | PATH | HOME"
+          aria-label="Environment variable filter (case-insensitive regex)"
         />
       </div>
       {snap === null && <p className="loading">Loading…</p>}

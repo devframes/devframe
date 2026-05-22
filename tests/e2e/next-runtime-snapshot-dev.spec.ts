@@ -19,7 +19,7 @@ test.describe('next-runtime-snapshot (dev)', () => {
     const memCard = page.locator('.card').filter({ hasText: 'Memory & Uptime' })
     await expect(memCard).toContainText(/heap used/i, { timeout: 10_000 })
 
-    const initialRss = await memCard.locator('.kv .v').nth(1).textContent()
+    const initialRss = (await memCard.locator('.kv .v').nth(1).textContent()) ?? ''
     expect(initialRss).toMatch(/\d+(?:\.\d+)?\s*MB/)
 
     await memCard.locator('button:has-text("Refresh")').click()

@@ -30,7 +30,7 @@ export function SnapshotSystem() {
       <h2>System</h2>
       {info
         ? (
-            <dl className="kv">
+            <div className="kv">
               <span className="k">node</span>
               <span className="v">{info.node}</span>
               <span className="k">platform</span>
@@ -41,7 +41,7 @@ export function SnapshotSystem() {
               <span className="v">{info.cwd}</span>
               <span className="k">started</span>
               <span className="v">{formatStartedAt(info.startedAt)}</span>
-            </dl>
+            </div>
           )
         : <p className="loading">Loading…</p>}
     </section>

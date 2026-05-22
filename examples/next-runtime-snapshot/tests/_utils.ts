@@ -47,14 +47,10 @@ export async function startSnapshotServer(): Promise<SnapshotServer> {
 
   const metaPath = `${basePath}${DEVTOOLS_CONNECTION_META_FILENAME}`
   app.use(metaPath, () => ({ backend: 'websocket', websocket: port }))
-  // SPA mount is conditional — RPC-only tests don't need the built dist.
-  // Tests that fetch HTML should run `pnpm run build` first.
-  try {
-    mountStaticHandler(app, basePath, resolve(distDir))
-  }
-  catch {
-    // No dist yet; that's fine for RPC-only tests.
-  }
+  // Mount the static handler unconditionally — it only stat()s on
+  // request, so a missing dist just produces 404s for HTML routes.
+  // RPC-only tests don't fetch the SPA, so they're unaffected.
+  mountStaticHandler(app, basePath, resolve(distDir))
 
   const server = await startHttpAndWs({
     context: ctx,

@@ -107,6 +107,15 @@ describe('next-runtime-snapshot (example)', () => {
     expect(snap.total).toBeGreaterThanOrEqual(snap.entries.length)
   })
 
+  it('matches nothing on an invalid regex pattern', async () => {
+    const rpc = bootRpc(server.port)
+    // '[' is unterminated — `new RegExp('[', 'i')` throws SyntaxError.
+    const snap = await rpc.$call('next-runtime-snapshot:env', { pattern: '[' }) as EnvSnapshot
+    expect(snap.entries).toEqual([])
+    expect(snap.total).toBe(0)
+    expect(snap.pattern).toBe('[')
+  })
+
   it('respects the limit cap on the entries slice', async () => {
     const rpc = bootRpc(server.port)
     const small = await rpc.$call('next-runtime-snapshot:env', { pattern: '', limit: 2 }) as EnvSnapshot

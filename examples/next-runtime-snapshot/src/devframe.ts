@@ -117,17 +117,22 @@ export default defineDevframe({
         pattern: v.string(),
       }),
       handler: ({ pattern, limit }): EnvSnapshot => {
-        let regex: RegExp | null = null
-        if (pattern) {
+        const keys = Object.keys(process.env).sort()
+        let matched: string[]
+        if (!pattern) {
+          matched = keys
+        }
+        else {
           try {
-            regex = new RegExp(pattern, 'i')
+            const regex = new RegExp(pattern, 'i')
+            matched = keys.filter(k => regex.test(k))
           }
+          // Invalid regex: match nothing rather than silently widening to all
+          // keys (which could leak vars the redaction heuristic doesn't catch).
           catch {
-            regex = null
+            matched = []
           }
         }
-        const keys = Object.keys(process.env).sort()
-        const matched = regex ? keys.filter(k => regex.test(k)) : keys
         const entries = matched.slice(0, limit).map(k => redact(k, process.env[k] ?? ''))
         return {
           entries,

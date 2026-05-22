@@ -123,7 +123,7 @@ export default {
 ```json [package.json]
 {
   "scripts": {
-    "build": "next build src/client && rm -rf dist/client && cp -r src/client/out dist/client"
+    "build": "next build src/client && rm -rf dist/client && mkdir -p dist && cp -r src/client/out dist/client"
   }
 }
 ```
