@@ -15,7 +15,7 @@ function createHost(storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-contex
 }
 
 describe('createHubContext shared state', () => {
-  it('seeds built-in docks and commands immediately', async () => {
+  it('seeds built-in docks immediately', async () => {
     const context = await createHubContext({
       cwd: process.cwd(),
       mode: 'build',
@@ -28,9 +28,6 @@ describe('createHubContext shared state', () => {
       '~messages',
       '~settings',
     ])
-
-    const commands = await context.rpc.sharedState.get('devframe:commands')
-    expect(commands.value().map(command => command.id)).toContain('hub:open-path')
   })
 })
 

@@ -1,4 +1,4 @@
-import type { HubHostCapabilities, HubNodeContext } from '@devframes/hub/node'
+import type { HubNodeContext } from '@devframes/hub/node'
 import type { StartedServer } from 'devframe/node'
 import type { ConnectionMeta, DevframeDefinition, DevframeHost } from 'devframe/types'
 import { homedir } from 'node:os'
@@ -6,7 +6,6 @@ import process from 'node:process'
 import { defineRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { startHttpAndWs } from 'devframe/node'
-import { launchEditor } from 'devframe/utils/launch-editor'
 import { getPort } from 'get-port-please'
 import { join } from 'pathe'
 import demoDevframe from './demo-devframe'
@@ -60,7 +59,7 @@ export async function minimalNextDevframeHub(
   const cwd = options.cwd ?? process.cwd()
   const hostName = options.host ?? 'localhost'
 
-  const host: DevframeHost & HubHostCapabilities = {
+  const host: DevframeHost = {
     mountStatic() {
       // Static mounting for devframe SPAs would route through Next middleware
       // in a fuller host. This minimal example keeps mounted devframes headless.
@@ -72,14 +71,6 @@ export async function minimalNextDevframeHub(
       return scope === 'workspace'
         ? join(cwd, 'node_modules/.minimal-next-devframe-hub')
         : join(homedir(), '.minimal-next-devframe-hub')
-    },
-    async openPath(filepath, line, column) {
-      const absolute = join(cwd, filepath)
-      const target = line
-        ? `${absolute}:${line}${column ? `:${column}` : ''}`
-        : absolute
-      launchEditor(target)
-      return true
     },
   }
 

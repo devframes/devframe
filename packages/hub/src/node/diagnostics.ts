@@ -1,16 +1,15 @@
 import { defineDiagnostics } from 'nostics'
 import { hubReporter } from '../utils/diagnostics-reporter'
 
-// Hub-side diagnostics for docks, terminals, messages, commands, and the
-// built-in RPC commands. Shares the `DF` prefix with devframe core; the
-// hub reserves the `DF8xxx` range so the unified surface stays
-// collision-free. Sub-ranges:
+// Hub-side diagnostics for docks, terminals, messages, and commands.
+// Shares the `DF` prefix with devframe core; the hub reserves the
+// `DF8xxx` range so the unified surface stays collision-free.
+// Sub-ranges:
 //   DF8000-DF8099 — hub context / lifecycle
 //   DF8100-DF8199 — docks
 //   DF8200-DF8299 — terminals
 //   DF8300-DF8399 — messages
 //   DF8400-DF8499 — commands
-//   DF8500-DF8599 — built-in RPC commands
 export const diagnostics = defineDiagnostics({
   docsBase: 'https://devfra.me/errors',
   reporters: [hubReporter],
@@ -43,10 +42,6 @@ export const diagnostics = defineDiagnostics({
     DF8403: {
       why: (p: { id: string }) => `Command id "${p.id}" is already used by another command or child command`,
       fix: 'Use globally unique command ids for top-level commands and all child commands.',
-    },
-    DF8500: {
-      why: (p: { id: string }) => `Built-in command "${p.id}" requires a host capability that this host does not implement.`,
-      fix: 'Implement the matching capability on the `DevframeHost` returned to `createHubContext`. For `hub:open-path`, implement `host.openPath(filepath, line?, column?)`.',
     },
   },
 })

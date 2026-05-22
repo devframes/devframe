@@ -14,7 +14,7 @@ const docksEl = document.querySelector<HTMLElement>('#docks')!
 const commandsEl = document.querySelector<HTMLElement>('#commands')!
 const messagesEl = document.querySelector<HTMLElement>('#messages')!
 const terminalsEl = document.querySelector<HTMLElement>('#terminals')!
-const openPathBtn = document.querySelector<HTMLButtonElement>('#open-path')!
+const pingBtn = document.querySelector<HTMLButtonElement>('#ping')!
 
 function setStatus(text: string, klass?: 'ready' | 'error') {
   connEl.textContent = text
@@ -84,21 +84,18 @@ async function main() {
     void refreshTerminals()
   }, 2000)
 
-  // 5. Test the hub:open-path built-in via hub:commands:execute.
-  openPathBtn.addEventListener('click', async () => {
-    const target = `${location.origin}/README.md`
-      .replace(/^https?:\/\/[^/]+/, '') // strip origin, leave path
+  // 5. Exercise the hub:commands:execute built-in by dispatching the
+  //    sample ping command registered server-side.
+  pingBtn.addEventListener('click', async () => {
     try {
-      // Use the project README — server has the actual filesystem path.
       const result = await rpc.call(
         'hub:commands:execute' as any,
-        'hub:open-path',
-        target.startsWith('/') ? target.slice(1) : target,
+        'minimal-vite-devframe-hub:ping',
       )
-      openPathBtn.textContent = `Opened (returned ${JSON.stringify(result)})`
+      pingBtn.textContent = `Ping returned ${JSON.stringify(result)}`
     }
     catch (err) {
-      openPathBtn.textContent = `Error: ${(err as Error).message}`
+      pingBtn.textContent = `Error: ${(err as Error).message}`
     }
   })
 }

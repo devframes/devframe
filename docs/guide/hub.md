@@ -24,42 +24,11 @@ Plus a `createJsonRenderer(spec)` factory for building remote-UI panels via the 
 
 ## Built-in RPC
 
-Every hub context auto-registers these RPC functions so framework kits don't reimplement them:
+Every hub context auto-registers this RPC function so framework kits don't reimplement it:
 
 - `hub:commands:execute` — invoke a registered server command by id. `await rpc.call('hub:commands:execute', 'my-tool:do-thing', ...args)`.
-- `hub:open-path` — registered as a command, delegates to `host.openPath()` (see [Host capabilities](#host-capabilities)).
 
-## Host capabilities
-
-A hub host implements the same `DevframeHost` interface as devframe, plus optional capabilities the hub knows how to delegate to:
-
-```ts
-interface HubHostCapabilities {
-  /** Open a file in the user's editor. Backs the built-in `hub:open-path` command. */
-  openPath?: (filepath: string, line?: number, column?: number) => boolean | Promise<boolean>
-}
-```
-
-A framework kit's host implementation looks like this:
-
-```ts
-import type { HubHostCapabilities } from '@devframes/hub/node'
-import type { DevframeHost } from 'devframe/types'
-import { launchEditor } from 'devframe/utils/launch-editor'
-
-const host: DevframeHost & HubHostCapabilities = {
-  mountStatic(base, distDir) { /* … */ },
-  resolveOrigin() { /* … */ },
-  getStorageDir(scope) { /* … */ },
-  async openPath(filepath, line, column) {
-    const target = line ? `${filepath}:${line}${column ? `:${column}` : ''}` : filepath
-    launchEditor(target)
-    return true
-  },
-}
-```
-
-When a framework kit omits `openPath`, the `hub:open-path` command throws [`DF8500`](/errors/DF8500) instead of silently failing.
+Host-specific capabilities (open in editor, reveal in finder, …) ship as kit-registered RPC functions rather than as part of the hub surface.
 
 ## Mounting a devframe into a hub
 

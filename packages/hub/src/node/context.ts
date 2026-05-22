@@ -11,31 +11,7 @@ import { DevframeCommandsHost as CommandsHostImpl } from './host-commands'
 import { DevframeDockHost as DocksHostImpl } from './host-docks'
 import { DevframeMessagesHost as MessagesHostImpl } from './host-messages'
 import { DevframeTerminalHost as TerminalsHostImpl } from './host-terminals'
-import { registerHubBuiltins } from './hub-builtins'
 import { builtinHubRpcDeclarations } from './rpc-builtins'
-
-/**
- * Optional capabilities a host can implement to unlock hub built-ins.
- * These are not required to construct a {@link HubNodeContext} — the
- * built-in RPC commands gate themselves on whether the capability is
- * present.
- *
- * Framework kits (`@vitejs/devtools-kit`, future `@next/devtools-kit`,
- * etc.) implement these as part of their host so authors get a uniform
- * surface — e.g. `hub:open-path` works the same way regardless of which
- * framework hosts the hub.
- */
-export interface HubHostCapabilities {
-  /**
-   * Open a file in the user's editor. Returns `false` when the host
-   * has no editor binding for the current environment; throws when the
-   * launch attempt fails.
-   *
-   * Backs the built-in `hub:open-path` RPC command and command-palette
-   * entry.
-   */
-  openPath?: (filepath: string, line?: number, column?: number) => boolean | Promise<boolean>
-}
 
 /**
  * Hub-augmented node context — extends devframe's framework-neutral
@@ -44,10 +20,12 @@ export interface HubHostCapabilities {
  * factory.
  *
  * Framework kits further extend this with their own slots (e.g.
- * `viteConfig`, `viteServer`).
+ * `viteConfig`, `viteServer`). Host-specific capabilities (editor open,
+ * filesystem reveal, etc.) ship as kit-registered RPC functions rather
+ * than as part of this surface.
  */
 export interface HubNodeContext extends DevframeNodeContext {
-  readonly host: DevframeHost & HubHostCapabilities
+  readonly host: DevframeHost
   docks: DevframeDockHost
   terminals: DevframeTerminalHost
   messages: DevframeMessagesHost
@@ -147,7 +125,6 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
   commands.events.on('command:registered', syncCommands)
   commands.events.on('command:unregistered', syncCommands)
 
-  registerHubBuiltins(context)
   commandsSharedState.mutate(() => commands.list())
 
   return context

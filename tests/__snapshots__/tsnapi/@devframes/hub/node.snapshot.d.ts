@@ -80,7 +80,6 @@ export declare class DevframeTerminalHost implements DevframeTerminalHost$1 {
 // #region Functions
 export declare function createSimpleClientScript(_: string | ((_: any) => void)): ClientScriptEntry;
 export declare function mountDevframe(_: HubNodeContext, _: DevframeDefinition, _?: MountDevframeOptions): Promise<void>;
-export declare function registerHubBuiltins(_: HubNodeContext): void;
 // #endregion
 
 // #region Variables
@@ -105,6 +104,5 @@ export declare const hubCommandsExecute: {
 // #region Other
 export { createHubContext }
 export { CreateHubContextOptions }
-export { HubHostCapabilities }
 export { HubNodeContext }
 // #endregion

@@ -26,7 +26,6 @@ export default function Page() {
   const [commands, setCommands] = useState<DevframeCommandEntry[]>([])
   const [messages, setMessages] = useState<DevframeMessageEntry[]>([])
   const [terminals, setTerminals] = useState<TerminalSummary[]>([])
-  const [openPathResult, setOpenPathResult] = useState('Test hub:open-path on this README')
   const [pingResult, setPingResult] = useState('Run ping')
   const rpcRef = useRef<DevframeRpcClient | null>(null)
 
@@ -100,22 +99,6 @@ export default function Page() {
     }
   }, [])
 
-  async function openReadme() {
-    if (!rpcRef.current)
-      return
-    try {
-      const result = await rpcRef.current.call(
-        'hub:commands:execute' as any,
-        'hub:open-path',
-        'README.md',
-      )
-      setOpenPathResult(`Opened: ${JSON.stringify(result)}`)
-    }
-    catch (err) {
-      setOpenPathResult(`Error: ${(err as Error).message}`)
-    }
-  }
-
   async function ping() {
     if (!rpcRef.current)
       return
@@ -172,9 +155,6 @@ export default function Page() {
       </Panel>
 
       <div className="actions">
-        <button type="button" onClick={() => void openReadme()}>
-          {openPathResult}
-        </button>
         <button type="button" onClick={() => void ping()}>
           {pingResult}
         </button>

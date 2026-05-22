@@ -16,14 +16,14 @@ Open the printed URL. You should see:
 - A **Commands** list — one entry per `commands.register()`
 - A **Messages** list — populated via `messages.add()` on the server
 - A **Terminals** list — empty unless a devframe registers one
-- A button that exercises `hub:open-path` (opens this README in your editor)
+- A button that exercises `hub:commands:execute` by dispatching the sample ping command
 
 ## What the example proves
 
 - `createHubContext()` boots a hub without any Vite-specific code path
-- A `DevframeHost & HubHostCapabilities` impl plugs framework specifics (`openPath`, storage paths) into the hub uniformly
+- A `DevframeHost` impl plugs framework specifics (storage paths, origin resolution) into the hub uniformly
 - `mountDevframe(ctx, def)` registers any `DevframeDefinition` as a dock
-- Hub built-in RPCs (`hub:open-path`, `hub:commands:execute`) work regardless of how the host was constructed
+- The built-in `hub:commands:execute` RPC dispatches any registered server command, regardless of how the host was constructed
 - The browser-side `connectDevframe({ baseURL: '/__hub/' })` discovers the WS endpoint via the kit's `__connection.json` middleware
 
 ## Files

@@ -1,4 +1,4 @@
-import type { HubHostCapabilities, HubNodeContext } from '@devframes/hub/node'
+import type { HubNodeContext } from '@devframes/hub/node'
 import type { DevframeDefinition, DevframeHost } from 'devframe/types'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { homedir } from 'node:os'
@@ -6,7 +6,6 @@ import { defineRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { startHttpAndWs } from 'devframe/node'
-import { launchEditor } from 'devframe/utils/launch-editor'
 import { getPort } from 'get-port-please'
 import { join } from 'pathe'
 
@@ -50,9 +49,9 @@ const minimalViteHubTerminalsList = defineRpcFunction({
 
 /**
  * A deliberately tiny Vite plugin that wires `@devframes/hub` into a Vite
- * dev server: creates a hub context, implements the host capabilities
- * (`openPath` via launch-editor), and exposes the side-car WS endpoint
- * to the browser via Vite middleware at `<base>__connection.json`.
+ * dev server: creates a hub context, implements the framework-neutral
+ * `DevframeHost` surface, and exposes the side-car WS endpoint to the
+ * browser via Vite middleware at `<base>__connection.json`.
  *
  * This file is the entire Vite host — every other framework's hub host is
  * the same shape: a thin layer that adapts a framework's dev server to the hub.
@@ -78,7 +77,7 @@ export function minimalViteDevframeHub(options: MinimalViteDevframeHubOptions = 
 
       const cwd = viteConfig!.root
 
-      const host: DevframeHost & HubHostCapabilities = {
+      const host: DevframeHost = {
         mountStatic() {
           // Static mounting for devframe SPAs would route through Vite's
           // middleware in a fuller kit. This minimal example doesn't
@@ -93,14 +92,6 @@ export function minimalViteDevframeHub(options: MinimalViteDevframeHubOptions = 
             ? join(cwd, 'node_modules/.minimal-vite-devframe-hub')
             : join(homedir(), '.minimal-vite-devframe-hub')
         },
-        async openPath(filepath, line, column) {
-          const absolute = join(cwd, filepath)
-          const target = line
-            ? `${absolute}:${line}${column ? `:${column}` : ''}`
-            : absolute
-          launchEditor(target)
-          return true
-        },
       }
 
       const port = options.port ?? await getPort({ port: 9777, random: false })
@@ -113,9 +104,8 @@ export function minimalViteDevframeHub(options: MinimalViteDevframeHubOptions = 
         builtinRpcDeclarations: [
           // The minimal hub ships its own `messages:list` and `terminals:list`
           // RPCs so the UI has something to read. A full hub kit would
-          // likely standardise these (this is why hub-level RPC built-ins
-          // exist — see hub:open-path / hub:commands:execute) but for the
-          // demo we keep them kit-local.
+          // likely standardise these (alongside the built-in
+          // `hub:commands:execute`) but for the demo we keep them kit-local.
           minimalViteHubMessagesList,
           minimalViteHubTerminalsList,
         ],
