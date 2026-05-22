@@ -12,6 +12,7 @@ logs
 node_modules
 temp
 .turbo
+.ghfs
 **/.vitepress/cache
 **/.vitepress/dist
 packages/devframe/skills
