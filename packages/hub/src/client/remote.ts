@@ -19,6 +19,14 @@ function extractKeyFromFragment(hash: string): string | null {
   if (!hash)
     return null
   const raw = hash.startsWith('#') ? hash.slice(1) : hash
+  const queryIdx = raw.indexOf('?')
+  if (queryIdx !== -1) {
+    const params = new URLSearchParams(raw.slice(queryIdx + 1))
+    const value = params.get(REMOTE_CONNECTION_KEY)
+    if (value)
+      return value
+  }
+
   for (const part of raw.split('&')) {
     const [k, v = ''] = part.split('=')
     if (k === REMOTE_CONNECTION_KEY)

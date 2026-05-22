@@ -10,8 +10,8 @@ import { launchEditor } from 'devframe/utils/launch-editor'
 import { getPort } from 'get-port-please'
 import { join } from 'pathe'
 
-export interface MinimalHubKitOptions {
-  /** Mount path for the kit's connection-meta endpoint. Default: `/__hub/`. */
+export interface MinimalViteDevToolsHubOptions {
+  /** Mount path for the hub's connection-meta endpoint. Default: `/__hub/`. */
   base?: string
   /** Preferred port for the side-car RPC/WS server. Default: a free port near 9777. */
   port?: number
@@ -19,10 +19,10 @@ export interface MinimalHubKitOptions {
   devframes?: DevframeDefinition[]
 }
 
-// Minimal kit-local RPCs — used by the UI for read-side data. A more
-// ambitious kit might hoist these into `@devframes/hub` itself.
-const minimalKitMessagesList = defineRpcFunction({
-  name: 'minimal-hub-kit:messages:list',
+// Minimal hub-local RPCs — used by the UI for read-side data. A more
+// ambitious hub host might hoist these into `@devframes/hub` itself.
+const minimalViteHubMessagesList = defineRpcFunction({
+  name: 'minimal-vite-devtools-hub:messages:list',
   type: 'static',
   jsonSerializable: true,
   setup: (ctx: HubNodeContext) => ({
@@ -32,8 +32,8 @@ const minimalKitMessagesList = defineRpcFunction({
   }),
 })
 
-const minimalKitTerminalsList = defineRpcFunction({
-  name: 'minimal-hub-kit:terminals:list',
+const minimalViteHubTerminalsList = defineRpcFunction({
+  name: 'minimal-vite-devtools-hub:terminals:list',
   type: 'static',
   jsonSerializable: true,
   setup: (ctx: HubNodeContext) => ({
@@ -54,17 +54,16 @@ const minimalKitTerminalsList = defineRpcFunction({
  * (`openPath` via launch-editor), and exposes the side-car WS endpoint
  * to the browser via Vite middleware at `<base>__connection.json`.
  *
- * This file is the entire "kit" — every other framework's hub kit
- * (`@vitejs/devtools-kit`, future `@next/devtools-kit`, …) is the same
- * shape: a thin layer that adapts a framework's dev server to the hub.
+ * This file is the entire Vite host — every other framework's hub host is
+ * the same shape: a thin layer that adapts a framework's dev server to the hub.
  */
-export function minimalHubKit(options: MinimalHubKitOptions = {}): Plugin {
+export function minimalViteDevToolsHub(options: MinimalViteDevToolsHubOptions = {}): Plugin {
   const base = normalizeBase(options.base ?? '/__hub/')
   let viteConfig: ResolvedConfig | undefined
   let started: { close: () => Promise<void> } | undefined
 
   return {
-    name: 'minimal-vite-devtools-kit',
+    name: 'minimal-vite-devtools-hub',
     apply: 'serve',
 
     configResolved(config) {
@@ -91,8 +90,8 @@ export function minimalHubKit(options: MinimalHubKitOptions = {}): Plugin {
         },
         getStorageDir(scope) {
           return scope === 'workspace'
-            ? join(cwd, 'node_modules/.minimal-hub-kit')
-            : join(homedir(), '.minimal-hub-kit')
+            ? join(cwd, 'node_modules/.minimal-vite-devtools-hub')
+            : join(homedir(), '.minimal-vite-devtools-hub')
         },
         async openPath(filepath, line, column) {
           const absolute = join(cwd, filepath)
@@ -112,28 +111,28 @@ export function minimalHubKit(options: MinimalHubKitOptions = {}): Plugin {
         mode: 'dev',
         host,
         builtinRpcDeclarations: [
-          // The minimal kit ships its own `messages:list` and `terminals:list`
+          // The minimal hub ships its own `messages:list` and `terminals:list`
           // RPCs so the UI has something to read. A full hub kit would
           // likely standardise these (this is why hub-level RPC built-ins
           // exist — see hub:open-path / hub:commands:execute) but for the
           // demo we keep them kit-local.
-          minimalKitMessagesList,
-          minimalKitTerminalsList,
+          minimalViteHubMessagesList,
+          minimalViteHubTerminalsList,
         ],
       })
 
-      // Seed a sample terminal + command directly on the kit so the UI
+      // Seed a sample command directly on the hub so the UI
       // shows something even without any plugged-in devframes.
       context.commands.register({
-        id: 'minimal-hub-kit:ping',
-        title: 'Kit · Ping',
+        id: 'minimal-vite-devtools-hub:ping',
+        title: 'Vite Hub · Ping',
         icon: 'ph:bell-duotone',
         category: 'kit',
         handler: () => 'pong',
       })
       await context.messages.add({
         level: 'success',
-        message: 'Minimal hub kit started',
+        message: 'Minimal Vite DevTools Hub started',
         description: `Side-car WS on port ${port}. ${options.devframes?.length ?? 0} devframe(s) registered.`,
       })
 

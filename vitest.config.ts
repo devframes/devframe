@@ -1,12 +1,18 @@
 import { defineConfig } from 'vitest/config'
+import { alias } from './alias'
 
 export default defineConfig({
+  resolve: {
+    alias,
+  },
   test: {
     projects: [
       'packages/devframe',
+      'packages/hub',
       'examples/files-inspector',
       'examples/streaming-chat',
       'examples/next-runtime-snapshot',
+      'examples/minimal-next-devtools-hub',
       {
         test: {
           name: 'tests',

@@ -104,25 +104,43 @@ export class DevToolsTerminalHost implements DevToolsTerminalHostType {
     // `devframe:terminals:list`.
     const sink = channel?.start({ id: session.id })
 
-    const writer = new WritableStream<string>({
-      write(chunk) {
-        // Mirror to the legacy session.buffer used by `terminals:read` —
-        // unbounded history kept for the snapshot endpoint.
-        sessionBuffer.push(chunk)
-        sink?.write(chunk)
-      },
-      close() {
-        sink?.close()
-      },
-      abort(reason) {
-        sink?.error(reason)
-      },
-    })
-    session.stream.pipeTo(writer).catch(() => {
-      // pipeTo rejection surfaces via writer.abort -> sink.error already.
-    })
+    const reader = session.stream.getReader()
+    let disposed = false
+    ;(async () => {
+      try {
+        while (true) {
+          if (disposed)
+            break
+          const result = await reader.read()
+          if (disposed)
+            break
+          if (result.done)
+            break
+          // Mirror to the legacy session.buffer used by `terminals:read` —
+          // unbounded history kept for the snapshot endpoint.
+          sessionBuffer.push(result.value)
+          sink?.write(result.value)
+        }
+        if (!disposed && sink && !sink.closed)
+          sink.close()
+      }
+      catch (error) {
+        if (!disposed && sink && !sink.closed)
+          sink.error(error)
+      }
+      finally {
+        try {
+          reader.releaseLock()
+        }
+        catch {
+          // Already released by the stream implementation.
+        }
+      }
+    })()
     this._boundStreams.set(session.id, {
       dispose: () => {
+        disposed = true
+        reader.cancel('terminal stream disposed').catch(() => {})
         if (sink && !sink.closed)
           sink.close()
       },
@@ -140,13 +158,47 @@ export class DevToolsTerminalHost implements DevToolsTerminalHostType {
     const { exec } = await import('tinyexec')
 
     let controller: ReadableStreamDefaultController<string> | undefined
+    let cp: TinyExecResult | undefined
+    let runId = 0
+    let streamClosed = false
+
+    const closeStream = () => {
+      if (streamClosed)
+        return
+      streamClosed = true
+      try {
+        controller?.close()
+      }
+      catch {
+        // The stream may already be closed by cancellation.
+      }
+    }
+
+    const errorStream = (error: unknown) => {
+      if (streamClosed)
+        return
+      streamClosed = true
+      try {
+        controller?.error(error)
+      }
+      catch {
+        // The stream may already be closed by cancellation.
+      }
+    }
+
     const stream = new ReadableStream<string>({
       start(_controller) {
         controller = _controller
       },
+      cancel() {
+        cp?.kill()
+        cp = undefined
+        closeStream()
+      },
     })
 
     function createChildProcess() {
+      const currentRun = ++runId
       const cp = exec(
         executeOptions.command,
         executeOptions.args || [],
@@ -164,15 +216,25 @@ export class DevToolsTerminalHost implements DevToolsTerminalHostType {
       )
 
       ;(async () => {
-        for await (const chunk of cp) {
-          controller?.enqueue(chunk)
+        try {
+          for await (const chunk of cp) {
+            if (streamClosed || currentRun !== runId)
+              return
+            controller?.enqueue(chunk)
+          }
+          if (currentRun === runId)
+            closeStream()
+        }
+        catch (error) {
+          if (currentRun === runId)
+            errorStream(error)
         }
       })()
 
       return cp
     }
 
-    let cp: TinyExecResult | undefined = createChildProcess()
+    cp = createChildProcess()
 
     const restart = async () => {
       cp?.kill()
@@ -181,6 +243,7 @@ export class DevToolsTerminalHost implements DevToolsTerminalHostType {
     const terminate = async () => {
       cp?.kill()
       cp = undefined
+      closeStream()
     }
 
     const session: DevToolsChildProcessTerminalSession = {

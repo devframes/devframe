@@ -1,0 +1,100 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+  padding: 1.5rem 2rem;
+}
+
+main {
+  max-width: 800px;
+  margin-inline: auto;
+}
+
+header h1 {
+  margin-bottom: 0.25rem;
+}
+
+header p {
+  margin-top: 0;
+  opacity: 0.7;
+}
+
+section {
+  margin-block: 1.5rem;
+}
+
+h2 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+  border-bottom: 1px solid currentcolor;
+  padding-bottom: 0.25rem;
+}
+
+ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+li {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid color-mix(in srgb, currentcolor 15%, transparent);
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.9rem;
+}
+
+li.muted {
+  opacity: 0.5;
+  font-style: italic;
+}
+
+code {
+  font-family: ui-monospace, monospace;
+  background: color-mix(in srgb, currentcolor 10%, transparent);
+  padding: 0.1em 0.35em;
+  border-radius: 0.25em;
+}
+
+button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid currentcolor;
+  background: transparent;
+  cursor: pointer;
+}
+
+button:hover {
+  background: color-mix(in srgb, currentcolor 10%, transparent);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+#status {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+#status.error span {
+  color: #c33;
+}
+
+#status.ready span {
+  color: #2a7;
+}
+
+.badge {
+  margin-left: 0.35rem;
+}

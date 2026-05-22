@@ -288,7 +288,44 @@ importers:
         specifier: catalog:deps
         version: 8.20.0
 
-  examples/minimal-vite-devtools-kit:
+  examples/minimal-next-devtools-hub:
+    dependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      next:
+        specifier: catalog:frontend
+        version: 16.2.6(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      react:
+        specifier: catalog:frontend
+        version: 19.2.6
+      react-dom:
+        specifier: catalog:frontend
+        version: 19.2.6(react@19.2.6)
+    devDependencies:
+      '@types/react':
+        specifier: catalog:types
+        version: 19.2.15
+      '@types/react-dom':
+        specifier: catalog:types
+        version: 19.2.3(@types/react@19.2.15)
+      get-port-please:
+        specifier: catalog:deps
+        version: 3.2.0
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
+      vitest:
+        specifier: catalog:testing
+        version: 4.1.6(@types/node@25.7.0)(vite@8.0.12(@types/node@25.7.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.8.4))
+      ws:
+        specifier: catalog:deps
+        version: 8.20.0
+
+  examples/minimal-vite-devtools-hub:
     dependencies:
       '@devframes/hub':
         specifier: workspace:*

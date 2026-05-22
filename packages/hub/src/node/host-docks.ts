@@ -46,12 +46,32 @@ function buildRemoteUrl(baseUrl: string, payload: RemoteConnectionInfo, transpor
   const encoded = base64UrlEncode(JSON.stringify(payload))
   const param = `${REMOTE_CONNECTION_KEY}=${encoded}`
   if (transport === 'fragment') {
-    // Replace any existing fragment bearing our key; otherwise append.
+    // Replace any existing fragment/query descriptor bearing our key; otherwise append.
     const hashIdx = baseUrl.indexOf('#')
     if (hashIdx === -1)
       return `${baseUrl}#${param}`
     const before = baseUrl.slice(0, hashIdx)
-    return `${before}#${param}`
+    const rawHash = baseUrl.slice(hashIdx + 1)
+    if (!rawHash)
+      return `${before}#${param}`
+    const routeQueryIdx = rawHash.indexOf('?')
+    if (routeQueryIdx !== -1) {
+      const beforeQuery = rawHash.slice(0, routeQueryIdx + 1)
+      const params = new URLSearchParams(rawHash.slice(routeQueryIdx + 1))
+      params.set(REMOTE_CONNECTION_KEY, encoded)
+      return `${before}#${beforeQuery}${params.toString()}`
+    }
+
+    const parts = rawHash.split('&')
+    const existingIdx = parts.findIndex((part) => {
+      const [key] = part.split('=')
+      return key === REMOTE_CONNECTION_KEY
+    })
+    if (existingIdx >= 0) {
+      parts[existingIdx] = param
+      return `${before}#${parts.join('&')}`
+    }
+    return `${before}#${rawHash}&${param}`
   }
   // query
   const qIdx = baseUrl.indexOf('?')

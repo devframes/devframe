@@ -62,7 +62,7 @@ async function main() {
   //    to refresh on broadcast; this minimal example polls instead.
   const refreshMessages = async () => {
     const entries = await rpc.call(
-      'minimal-hub-kit:messages:list' as any,
+      'minimal-vite-devtools-hub:messages:list' as any,
     ) as DevToolsMessageEntry[]
     renderList(messagesEl, entries, m =>
       `<li><strong>[${m.level}]</strong> ${m.message}</li>`)
@@ -72,7 +72,7 @@ async function main() {
   // 4. Terminals — same pattern as messages.
   const refreshTerminals = async () => {
     const sessions = await rpc.call(
-      'minimal-hub-kit:terminals:list' as any,
+      'minimal-vite-devtools-hub:terminals:list' as any,
     ) as Pick<DevToolsTerminalSession, 'id' | 'title' | 'status' | 'description'>[]
     renderList(terminalsEl, sessions, t =>
       `<li><strong>${t.title}</strong> <code>${t.id}</code> · ${t.status}</li>`)

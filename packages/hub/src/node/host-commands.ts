@@ -8,6 +8,48 @@ import type { HubNodeContext } from './context'
 import { createEventEmitter } from 'devframe/utils/events'
 import { diagnostics } from './diagnostics'
 
+function findChildCommand(command: DevToolsServerCommandInput, id: string): DevToolsServerCommandInput | undefined {
+  for (const child of command.children ?? []) {
+    if (child.id === id)
+      return child
+    const nested = findChildCommand(child, id)
+    if (nested)
+      return nested
+  }
+  return undefined
+}
+
+function collectCommandIds(command: DevToolsServerCommandInput, ids: string[] = []): string[] {
+  ids.push(command.id)
+  for (const child of command.children ?? [])
+    collectCommandIds(child, ids)
+  return ids
+}
+
+function validateCommandIds(
+  commands: Map<string, DevToolsServerCommandInput>,
+  command: DevToolsServerCommandInput,
+  ignoreTopLevelId?: string,
+): void {
+  const ids = collectCommandIds(command)
+  const seen = new Set<string>()
+  for (const id of ids) {
+    if (seen.has(id))
+      throw diagnostics.DF8403({ id })
+    seen.add(id)
+  }
+
+  for (const [registeredId, registered] of commands) {
+    if (registeredId === ignoreTopLevelId)
+      continue
+    const registeredIds = new Set(collectCommandIds(registered))
+    for (const id of ids) {
+      if (registeredIds.has(id))
+        throw diagnostics.DF8403({ id })
+    }
+  }
+}
+
 export class DevToolsCommandsHost implements DevToolsCommandsHostType {
   public readonly commands: DevToolsCommandsHostType['commands'] = new Map()
   public readonly events: DevToolsCommandsHostType['events'] = createEventEmitter()
@@ -20,6 +62,7 @@ export class DevToolsCommandsHost implements DevToolsCommandsHostType {
     if (this.commands.has(command.id)) {
       throw diagnostics.DF8400({ id: command.id })
     }
+    validateCommandIds(this.commands, command)
     this.commands.set(command.id, command)
     this.events.emit('command:registered', this.toSerializable(command))
 
@@ -33,6 +76,12 @@ export class DevToolsCommandsHost implements DevToolsCommandsHostType {
         if (!existing) {
           throw diagnostics.DF8402({ id: command.id })
         }
+        const next = {
+          ...existing,
+          ...patch,
+          id: existing.id,
+        }
+        validateCommandIds(this.commands, next, existing.id)
         Object.assign(existing, patch)
         this.events.emit('command:registered', this.toSerializable(existing))
       },
@@ -71,11 +120,9 @@ export class DevToolsCommandsHost implements DevToolsCommandsHostType {
 
     // Search children
     for (const cmd of this.commands.values()) {
-      if (cmd.children) {
-        const child = cmd.children.find((c: DevToolsServerCommandInput) => c.id === id)
-        if (child)
-          return child
-      }
+      const child = findChildCommand(cmd, id)
+      if (child)
+        return child
     }
 
     return undefined

@@ -9,6 +9,17 @@ import { createEventEmitter } from 'devframe/utils/events'
 import { nanoid } from 'devframe/utils/nanoid'
 
 const MAX_ENTRIES = 1000
+const MAX_REMOVALS = 1000
+
+function recordRemoval(
+  removals: Array<{ id: string, time: number }>,
+  id: string,
+  time: number,
+): void {
+  removals.push({ id, time })
+  if (removals.length > MAX_REMOVALS)
+    removals.splice(0, removals.length - MAX_REMOVALS)
+}
 
 export class DevToolsMessagesHost implements DevToolsMessagesHostType {
   public readonly entries: DevToolsMessagesHostType['entries'] = new Map()
@@ -105,7 +116,7 @@ export class DevToolsMessagesHost implements DevToolsMessagesHostType {
     }
     this.entries.delete(id)
     this.lastModified.delete(id)
-    this.removals.push({ id, time: this._tick() })
+    recordRemoval(this.removals, id, this._tick())
     this.events.emit('message:removed', id)
   }
 
@@ -115,7 +126,7 @@ export class DevToolsMessagesHost implements DevToolsMessagesHostType {
     this._autoDeleteTimers.clear()
     const tick = this._tick()
     for (const id of this.entries.keys())
-      this.removals.push({ id, time: tick })
+      recordRemoval(this.removals, id, tick)
     this.entries.clear()
     this.lastModified.clear()
     this.events.emit('message:cleared')

@@ -117,6 +117,7 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
     docksSharedState.mutate(() => docks.values())
   }, debounceMs)
   docks.events.on('dock:entry:updated', refreshDocks)
+  docksSharedState.mutate(() => docks.values())
 
   const broadcastTerminals = debounce(() => {
     context.rpc.broadcast({
@@ -147,6 +148,7 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
   commands.events.on('command:unregistered', syncCommands)
 
   registerHubBuiltins(context)
+  commandsSharedState.mutate(() => commands.list())
 
   return context
 }

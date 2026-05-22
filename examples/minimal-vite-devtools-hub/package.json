@@ -1,9 +1,9 @@
 {
-  "name": "minimal-vite-devtools-kit-example",
+  "name": "minimal-vite-devtools-hub",
   "type": "module",
   "version": "0.4.1",
   "private": true,
-  "description": "Protocol-witness example — a tiny Vite plugin built on @devframes/hub that exercises every hub subsystem end-to-end.",
+  "description": "Protocol-witness example — a tiny Vite DevTools Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
   "scripts": {
     "dev": "vite",
     "build": "vite build"

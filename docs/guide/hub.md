@@ -89,7 +89,7 @@ Plus broadcast notifications (`devframe:terminals:updated`, `devframe:messages:u
 
 ## Example
 
-See [`examples/minimal-vite-devtools-kit/`](https://github.com/devframes/devframe/tree/main/examples/minimal-vite-devtools-kit) for a ~120-line Vite plugin that wires the hub end to end with a vanilla DOM UI. Every framework's hub kit follows the same shape: a thin layer that adapts the framework's dev server to the hub.
+See [`examples/minimal-vite-devtools-hub/`](https://github.com/devframes/devframe/tree/main/examples/minimal-vite-devtools-hub) for a ~120-line Vite plugin that wires the hub end to end with a vanilla DOM UI. Every framework's hub host follows the same shape: a thin layer that adapts the framework's dev server to the hub.
 
 ## Diagnostics
 

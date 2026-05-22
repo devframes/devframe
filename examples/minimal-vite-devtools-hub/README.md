@@ -1,12 +1,12 @@
-# Minimal Vite DevTools Kit
+# Minimal Vite DevTools Hub
 
-A protocol-witness example. The `src/minimal-hub-kit.ts` file is the entire "kit" — about 120 lines of Vite plugin code that wires `@devframes/hub` into a Vite dev server. Every framework's hub kit (`@vitejs/devtools-kit`, future `@next/devtools-kit`, etc.) is the same shape.
+A protocol-witness example. The `src/minimal-vite-devtools-hub.ts` file is the entire Vite host — about 120 lines of Vite plugin code that wires `@devframes/hub` into a Vite dev server. Every framework's DevTools Hub host follows the same shape.
 
 ## Run it
 
 ```sh
 pnpm install
-pnpm --filter minimal-vite-devtools-kit-example dev
+pnpm --filter minimal-vite-devtools-hub dev
 ```
 
 Open the printed URL. You should see:
@@ -30,7 +30,7 @@ Open the printed URL. You should see:
 
 | File | Role |
 |---|---|
-| `src/minimal-hub-kit.ts` | The Vite plugin — creates hub context, mounts middleware, side-car WS |
+| `src/minimal-vite-devtools-hub.ts` | The Vite plugin — creates hub context, mounts middleware, side-car WS |
 | `src/devframe.ts` | A sample `DevframeDefinition` that plugs into the kit |
 | `src/client/main.ts` | The browser-side UI that consumes the hub protocol |
 | `index.html` | The UI shell |

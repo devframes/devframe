@@ -8,6 +8,7 @@ import { createRpcServer } from 'devframe/rpc/server'
 import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
 import { H3, toNodeHandler } from 'h3'
 import { WebSocketServer as WSServer } from 'ws'
+import { getInternalContext } from './internal/context'
 
 export interface StartHttpAndWsOptions {
   context: DevToolsNodeContext
@@ -125,14 +126,21 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
     httpServer.listen(port, bindHost, () => resolveListen())
   })
 
-  const origin = `http://${bindHost}:${port}`
+  const address = httpServer.address()
+  const resolvedPort = typeof address === 'object' && address ? address.port : port
+  const origin = `http://${bindHost}:${resolvedPort}`
+  const internal = getInternalContext(context)
+  const wsUrl = origin.replace(/^http/, 'ws')
+  internal.wsEndpoint = {
+    url: wsUrl,
+  }
 
   if (options.onReady)
-    await options.onReady({ origin, port, app })
+    await options.onReady({ origin, port: resolvedPort, app })
 
   return {
     origin,
-    port,
+    port: resolvedPort,
     app,
     wss,
     rpcGroup,
@@ -144,6 +152,8 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
       for (const ws of wss.clients) ws.terminate()
       await new Promise<void>(r => wss.close(() => r()))
       await new Promise<void>(r => httpServer.close(() => r()))
+      if (getInternalContext(context).wsEndpoint?.url === wsUrl)
+        getInternalContext(context).wsEndpoint = undefined
     },
   }
 }

@@ -15,7 +15,12 @@
       "outputLogs": "new-only",
       "outputs": ["dist/**"]
     },
-    "minimal-vite-devtools-kit-example#build": {
+    "minimal-vite-devtools-hub#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["@devframes/hub#build", "devframe#build"],
+      "outputs": ["dist/**"]
+    },
+    "minimal-next-devtools-hub#build": {
       "outputLogs": "new-only",
       "dependsOn": ["@devframes/hub#build", "devframe#build"],
       "outputs": ["dist/**"]

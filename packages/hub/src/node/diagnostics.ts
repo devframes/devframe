@@ -40,6 +40,10 @@ export const diagnostics = defineDiagnostics({
     DF8402: {
       why: (p: { id: string }) => `Command "${p.id}" is not registered`,
     },
+    DF8403: {
+      why: (p: { id: string }) => `Command id "${p.id}" is already used by another command or child command`,
+      fix: 'Use globally unique command ids for top-level commands and all child commands.',
+    },
     DF8500: {
       why: (p: { id: string }) => `Built-in command "${p.id}" requires a host capability that this host does not implement.`,
       fix: 'Implement the matching capability on the `DevToolsHost` returned to `createHubContext`. For `hub:open-path`, implement `host.openPath(filepath, line?, column?)`.',
