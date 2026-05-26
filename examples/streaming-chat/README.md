@@ -2,7 +2,7 @@
 
 End-to-end demo of devframe's streaming-channel API combined with shared
 state for persistent chat history. Mirrors the AI-deltas use case from
-[vitejs/devframe#306](https://github.com/vitejs/devframe/issues/306):
+[vitejs/devtools#306](https://github.com/vitejs/devtools/issues/306):
 the server emits synthesized "tokens" one at a time over a streaming
 channel, while the conversation log lives in a devframe `sharedState` so
 it survives reloads, syncs across panels, and replays cleanly when a
