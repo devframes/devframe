@@ -34,7 +34,8 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "watch": "tsdown --watch"
+    "watch": "tsdown --watch",
+    "prepack": "pnpm run build"
   },
   "peerDependencies": {
     "devframe": "workspace:*"
