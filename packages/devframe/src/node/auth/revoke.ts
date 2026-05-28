@@ -1,7 +1,7 @@
-import type { DevToolsNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { RpcFunctionsHost } from '../host-functions'
-import type { InternalAnonymousAuthStorage } from '../internal/context'
+import type { InternalAnonymousAuthStorage } from '../hub-internals/context'
 
 /**
  * Flip `isTrusted` to false on any live WS clients connected with `token`
@@ -10,7 +10,7 @@ import type { InternalAnonymousAuthStorage } from '../internal/context'
  * Shared between persisted-auth revocation and remote-dock token revocation.
  */
 export async function revokeActiveConnectionsForToken(
-  context: DevToolsNodeContext,
+  context: DevframeNodeContext,
   token: string,
 ): Promise<void> {
   const rpcHost = context.rpc as unknown as RpcFunctionsHost | undefined
@@ -41,7 +41,7 @@ export async function revokeActiveConnectionsForToken(
  * using this token that they are no longer trusted.
  */
 export async function revokeAuthToken(
-  context: DevToolsNodeContext,
+  context: DevframeNodeContext,
   storage: SharedState<InternalAnonymousAuthStorage>,
   token: string,
 ): Promise<void> {

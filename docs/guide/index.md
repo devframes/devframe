@@ -104,7 +104,7 @@ Devframe has zero dependencies on Vite or any `@vitejs/*` package — the same d
 
 ## What's next
 
-- [Devframe Definition](./devframe-definition) — understand `defineDevframe` and the `DevToolsNodeContext`
+- [Devframe Definition](./devframe-definition) — understand `defineDevframe` and the `DevframeNodeContext`
 - [Adapters](/adapters/) — pick the right deployment target for your tool
 - [RPC](./rpc) — define type-safe server functions your client can call
 - [Agent-Native](./agent-native) — expose your devframe to Claude Desktop, Cursor, or any MCP client

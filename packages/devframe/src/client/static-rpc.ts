@@ -102,14 +102,14 @@ export function createStaticRpcCaller(
 
   async function call(functionName: string, args: any[]) {
     if (!(functionName in manifest)) {
-      throw new Error(`[devtools-rpc] Function "${functionName}" not found in dump store`)
+      throw new Error(`[devframe-rpc] Function "${functionName}" not found in dump store`)
     }
 
     const entry = manifest[functionName]
     if (isStaticEntry(entry)) {
       if (args.length > 0) {
         throw new Error(
-          `[devtools-rpc] No dump match for "${functionName}" with args: ${JSON.stringify(args)}`,
+          `[devframe-rpc] No dump match for "${functionName}" with args: ${JSON.stringify(args)}`,
         )
       }
       return await loadStatic(entry)
@@ -130,7 +130,7 @@ export function createStaticRpcCaller(
       }
 
       throw new Error(
-        `[devtools-rpc] No dump match for "${functionName}" with args: ${JSON.stringify(args)}`,
+        `[devframe-rpc] No dump match for "${functionName}" with args: ${JSON.stringify(args)}`,
       )
     }
 
@@ -139,7 +139,7 @@ export function createStaticRpcCaller(
     }
 
     throw new Error(
-      `[devtools-rpc] No dump match for "${functionName}" with args: ${JSON.stringify(args)}`,
+      `[devframe-rpc] No dump match for "${functionName}" with args: ${JSON.stringify(args)}`,
     )
   }
 

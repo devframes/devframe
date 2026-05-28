@@ -1,9 +1,9 @@
-import type { DevToolsNodeContext } from '../types/context'
+import type { DevframeNodeContext } from '../types/context'
 import type { DevframeDefinition } from '../types/devframe'
 
 export interface CreateEmbeddedOptions {
   /** Target context the devframe is registered into. Required. */
-  ctx: DevToolsNodeContext
+  ctx: DevframeNodeContext
 }
 
 /**

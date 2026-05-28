@@ -31,7 +31,7 @@ export const getModules = defineRpcFunction({
   returns: v.array(v.object({ id: v.string(), size: v.number() })),
   setup: ctx => ({
     handler: async ({ limit }) => {
-      // `ctx` is the DevToolsNodeContext.
+      // `ctx` is the DevframeNodeContext.
       return loadModules().slice(0, limit)
     },
   }),
@@ -53,7 +53,7 @@ export default defineDevframe({
 })
 ```
 
-Place each function in its own file under `src/rpc/functions/`, and barrel them in `src/rpc/index.ts` as `const serverFunctions = [...] as const`. The same array feeds the [type-safe client registry](#type-safe-client-registry) and keeps registration order explicit. When per-file functions need to share setup-time state (channels, shared state handles, loaders), expose it through a `WeakMap<DevToolsNodeContext, T>` in a sibling `src/context.ts`.
+Place each function in its own file under `src/rpc/functions/`, and barrel them in `src/rpc/index.ts` as `const serverFunctions = [...] as const`. The same array feeds the [type-safe client registry](#type-safe-client-registry) and keeps registration order explicit. When per-file functions need to share setup-time state (channels, shared state handles, loaders), expose it through a `WeakMap<DevframeNodeContext, T>` in a sibling `src/context.ts`.
 
 ### Naming convention
 
@@ -95,7 +95,7 @@ Prefer a single object argument (`args: [v.object({ ... })]`) over positional ar
 
 Two ways to wire a handler:
 
-- **`setup(ctx)`** — receives the `DevToolsNodeContext` and returns `{ handler, dump? }`. Use this when you need the context (shared state, logs, `ctx.mode`, etc.).
+- **`setup(ctx)`** — receives the `DevframeNodeContext` and returns `{ handler, dump? }`. Use this when you need the context (shared state, logs, `ctx.mode`, etc.).
 - **`handler(...)`** — shorthand when the handler is pure and doesn't touch the context.
 
 ```ts
@@ -167,7 +167,7 @@ const modules = await ctx.rpc.invokeLocal('my-devframe:get-modules', { limit: 10
 
 ## Client-side calls
 
-From the browser, [`connectDevframe`](./client) (or `getDevToolsRpcClient`) returns a client for calling registered functions:
+From the browser, [`connectDevframe`](./client) (or `getDevframeRpcClient`) returns a client for calling registered functions:
 
 ```ts
 import { connectDevframe } from 'devframe/client'
@@ -181,7 +181,7 @@ Client-side registration (for server→client calls) goes through `rpc.client.re
 
 ## Type-safe client registry
 
-Devframe exposes two augmentable interfaces — `DevToolsRpcServerFunctions` (client→server calls) and `DevToolsRpcClientFunctions` (server→client calls) — so each registered RPC name shows up on the typed client. Augment them once per devframe via `declare module 'devframe'`.
+Devframe exposes two augmentable interfaces — `DevframeRpcServerFunctions` (client→server calls) and `DevframeRpcClientFunctions` (server→client calls) — so each registered RPC name shows up on the typed client. Augment them once per devframe via `declare module 'devframe'`.
 
 The recommended pattern collects every server-side definition into a const array and feeds it through `RpcDefinitionsToFunctions`:
 
@@ -192,7 +192,7 @@ import { getFile, getModules } from './rpc'
 const serverFunctions = [getModules, getFile] as const
 
 declare module 'devframe' {
-  interface DevToolsRpcServerFunctions
+  interface DevframeRpcServerFunctions
     extends RpcDefinitionsToFunctions<typeof serverFunctions> {}
 }
 ```
@@ -213,13 +213,13 @@ For one-off augmentations, declare a single key with `RpcFunctionDefinitionToFun
 import type { RpcFunctionDefinitionToFunction } from 'devframe/rpc'
 
 declare module 'devframe' {
-  interface DevToolsRpcServerFunctions {
+  interface DevframeRpcServerFunctions {
     'my-devframe:get-modules': RpcFunctionDefinitionToFunction<typeof getModules>
   }
 }
 ```
 
-For server→client calls invoked via `ctx.rpc.broadcast`, augment `DevToolsRpcClientFunctions` the same way.
+For server→client calls invoked via `ctx.rpc.broadcast`, augment `DevframeRpcClientFunctions` the same way.
 
 ## Static dumps
 
@@ -264,7 +264,7 @@ Devframe's WS transport ships payloads using one of two encoders, picked per RPC
 | `false` (default) | `structured-clone-es` | `s:` | `Map`, `Set`, `Date`, `BigInt`, cycles, class instances |
 | `true` (opt-in) | strict `JSON.stringify` | _(unprefixed)_ | JSON-only |
 
-The wire stays plain JSON when every participating function is JSON-flagged — debuggable in DevTools, friendly to MCP, and a good default for tools that already speak JSON.
+The wire stays plain JSON when every participating function is JSON-flagged — debuggable in Devframe, friendly to MCP, and a good default for tools that already speak JSON.
 
 ### Discovering shape errors during dev
 

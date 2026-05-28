@@ -47,9 +47,9 @@ export default defineConfig([{
       await Promise.all([
         fs.cp('src/runtime/types.d.ts', 'dist/runtime/types.d.ts'),
         fs.writeFile('dist/runtime/plugin.client.d.ts', `import type { Plugin } from '#app';
-import type { DevToolsRpcClient } from 'devframe/client';
+import type { DevframeRpcClient } from 'devframe/client';
 declare const plugin: Plugin<{
-  rpc: DevToolsRpcClient;
+  rpc: DevframeRpcClient;
 }>;
 export default plugin;
 `, 'utf-8'),

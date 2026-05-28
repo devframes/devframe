@@ -1,8 +1,8 @@
-import type { DevToolsHost } from '../../types/host'
+import type { DevframeHost } from '../../types/host'
 import { describe, expect, it } from 'vitest'
 import { createHostContext } from '../context'
 
-function nullHost(): DevToolsHost {
+function nullHost(): DevframeHost {
   return {
     mountStatic: () => { /* no-op */ },
     resolveOrigin: () => 'http://localhost:0',

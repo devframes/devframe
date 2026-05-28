@@ -1,7 +1,7 @@
-import type { DevToolsRpcClient } from 'devframe/client'
+import type { DevframeRpcClient } from 'devframe/client'
 import { useEffect, useState } from 'preact/hooks'
 
-export function Home({ rpc }: { rpc: DevToolsRpcClient }) {
+export function Home({ rpc }: { rpc: DevframeRpcClient }) {
   const [files, setFiles] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
 

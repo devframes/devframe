@@ -139,11 +139,11 @@ Protocol adapters (the [MCP adapter](./agent-native), for example) use this to s
 
 ## Type-safe keys
 
-Augment `DevToolsRpcSharedStates` to type each shared-state key once, then both server and client lookups stay typed without per-call generics:
+Augment `DevframeRpcSharedStates` to type each shared-state key once, then both server and client lookups stay typed without per-call generics:
 
 ```ts
 declare module 'devframe' {
-  interface DevToolsRpcSharedStates {
+  interface DevframeRpcSharedStates {
     'my-devframe:state': {
       count: number
       items: { id: string, name: string }[]

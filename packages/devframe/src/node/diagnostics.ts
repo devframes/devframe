@@ -9,7 +9,7 @@ export const diagnostics = defineDiagnostics({
       why: (p: { name: string }) => `RPC function "${p.name}" is not registered`,
     },
     DF0007: {
-      why: 'AsyncLocalStorage is not set, it likely to be an internal bug of the DevTools foundation',
+      why: 'AsyncLocalStorage is not set, it likely to be an internal bug of the Devframe foundation',
     },
     DF0008: {
       why: (p: { distDir: string }) => `distDir ${p.distDir} does not exist`,

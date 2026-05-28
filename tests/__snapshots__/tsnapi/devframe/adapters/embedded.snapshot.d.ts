@@ -3,7 +3,7 @@
  */
 // #region Interfaces
 export interface CreateEmbeddedOptions {
-  ctx: DevToolsNodeContext;
+  ctx: DevframeNodeContext;
 }
 // #endregion
 

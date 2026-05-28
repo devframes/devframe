@@ -1,11 +1,11 @@
-import type { DevToolsHost } from '../../../types/host'
+import type { DevframeHost } from '../../../types/host'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { createHostContext } from 'devframe/node'
 import { describe, expect, it } from 'vitest'
 import { buildMcpServerFromContext } from '../build-server'
 
-function nullHost(): DevToolsHost {
+function nullHost(): DevframeHost {
   return {
     mountStatic: () => { /* no-op */ },
     resolveOrigin: () => 'mcp://test',

@@ -1,5 +1,5 @@
 import type {
-  DevToolsNodeRpcSessionMeta,
+  DevframeNodeRpcSessionMeta,
   RpcFunctionsHost,
   RpcStreamingChannel,
   RpcStreamingChannelOptions,
@@ -10,7 +10,7 @@ import { createStreamReader, createStreamSink } from 'devframe/utils/streaming-c
 import { createDebug } from 'obug'
 import { diagnostics } from './diagnostics'
 
-const debug = createDebug('vite:devtools:rpc:streaming')
+const debug = createDebug('devframe:rpc:streaming')
 
 const STREAM_KEY_SEPARATOR = '\x1F'
 
@@ -20,7 +20,7 @@ function streamKey(channel: string, id: string): string {
 
 interface ServerStreamRecord<T = any> {
   sink: StreamSink<T>
-  subscribers: Set<DevToolsNodeRpcSessionMeta>
+  subscribers: Set<DevframeNodeRpcSessionMeta>
   unbinders: (() => void)[]
   /** Timer scheduled when stream closes with no subscribers; cleared on resubscribe. */
   retentionTimer?: ReturnType<typeof setTimeout>
@@ -29,7 +29,7 @@ interface ServerStreamRecord<T = any> {
 interface ServerInboundRecord<T = any> {
   reader: StreamReader<T>
   /** First session that wrote to this inbound — locks ownership for cleanup. */
-  uploaderMeta?: DevToolsNodeRpcSessionMeta
+  uploaderMeta?: DevframeNodeRpcSessionMeta
 }
 
 interface ChannelState<T = any> {
@@ -254,7 +254,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
             args: [name, sink.id, seq, chunk],
             event: true,
             optional: true,
-            filter: client => record.subscribers.has(client.$meta as DevToolsNodeRpcSessionMeta),
+            filter: client => record.subscribers.has(client.$meta as DevframeNodeRpcSessionMeta),
           })
         }),
       )
@@ -265,7 +265,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
             args: [name, sink.id, error],
             event: true,
             optional: true,
-            filter: client => record.subscribers.has(client.$meta as DevToolsNodeRpcSessionMeta),
+            filter: client => record.subscribers.has(client.$meta as DevframeNodeRpcSessionMeta),
           })
           maybeFreeStream(state, sink.id)
         }),
@@ -332,7 +332,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
 
   return {
     create: createChannel,
-    _onSessionDisconnected(meta: DevToolsNodeRpcSessionMeta) {
+    _onSessionDisconnected(meta: DevframeNodeRpcSessionMeta) {
       // Outbound: drop subscriber, abort if last one drops.
       if (meta.subscribedStreams) {
         for (const key of meta.subscribedStreams) {

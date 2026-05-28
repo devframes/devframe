@@ -33,7 +33,7 @@ export interface AgentTool {
 }
 
 /**
- * Input accepted by `DevToolsAgentHost.registerTool()`. Handler is
+ * Input accepted by `DevframeAgentHost.registerTool()`. Handler is
  * stripped from the serializable `AgentTool` projection.
  *
  * @experimental
@@ -53,7 +53,7 @@ export interface AgentToolInput {
 
 /**
  * Serializable description of an agent-readable resource. Resources
- * surface structured or textual snapshots of devtools state.
+ * surface structured or textual snapshots of devframe state.
  *
  * @experimental
  */
@@ -68,7 +68,7 @@ export interface AgentResource {
 }
 
 /**
- * Input accepted by `DevToolsAgentHost.registerResource()`.
+ * Input accepted by `DevframeAgentHost.registerResource()`.
  *
  * @experimental
  */
@@ -115,11 +115,11 @@ export interface AgentHandle {
 }
 
 /**
- * Events emitted by `DevToolsAgentHost`.
+ * Events emitted by `DevframeAgentHost`.
  *
  * @experimental
  */
-export interface DevToolsAgentHostEvents {
+export interface DevframeAgentHostEvents {
   'agent:tool:registered': (tool: AgentTool) => void
   'agent:tool:unregistered': (id: string) => void
   'agent:resource:registered': (resource: AgentResource) => void
@@ -140,8 +140,8 @@ export interface DevToolsAgentHostEvents {
  * @experimental The agent-native surface is experimental and may change
  * without a major version bump until it stabilizes.
  */
-export interface DevToolsAgentHost {
-  readonly events: EventEmitter<DevToolsAgentHostEvents>
+export interface DevframeAgentHost {
+  readonly events: EventEmitter<DevframeAgentHostEvents>
 
   /**
    * Register a tool not backed by an RPC function. Use this when you

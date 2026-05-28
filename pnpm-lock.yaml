@@ -85,6 +85,9 @@ catalogs:
     structured-clone-es:
       specifier: ^2.0.0
       version: 2.0.0
+    tinyexec:
+      specifier: ^1.1.2
+      version: 1.1.2
     tinyglobby:
       specifier: ^0.2.16
       version: 0.2.16
@@ -97,28 +100,6 @@ catalogs:
     ws:
       specifier: ^8.20.0
       version: 8.20.0
-  devtools:
-    '@antfu/eslint-config':
-      specifier: ^9.0.0
-      version: 9.0.0
-    bumpp:
-      specifier: ^11.1.0
-      version: 11.1.0
-    eslint:
-      specifier: ^10.3.0
-      version: 10.3.0
-    nano-staged:
-      specifier: ^1.0.2
-      version: 1.0.2
-    simple-git-hooks:
-      specifier: ^2.13.1
-      version: 2.13.1
-    skills-npm:
-      specifier: ^1.1.1
-      version: 1.1.1
-    typescript:
-      specifier: ^6.0.3
-      version: 6.0.3
   docs:
     mermaid:
       specifier: ^11.15.0
@@ -159,6 +140,28 @@ catalogs:
     vitest:
       specifier: ^4.1.6
       version: 4.1.6
+  tooling:
+    '@antfu/eslint-config':
+      specifier: ^9.0.0
+      version: 9.0.0
+    bumpp:
+      specifier: ^11.1.0
+      version: 11.1.0
+    eslint:
+      specifier: ^10.3.0
+      version: 10.3.0
+    nano-staged:
+      specifier: ^1.0.2
+      version: 1.0.2
+    simple-git-hooks:
+      specifier: ^2.13.1
+      version: 2.13.1
+    skills-npm:
+      specifier: ^1.1.1
+      version: 1.1.1
+    typescript:
+      specifier: ^6.0.3
+      version: 6.0.3
   types:
     '@types/node':
       specifier: ^25.7.0
@@ -182,7 +185,7 @@ importers:
   .:
     devDependencies:
       '@antfu/eslint-config':
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 9.0.0(@typescript-eslint/rule-tester@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(@typescript-eslint/typescript-estree@8.59.2(typescript@6.0.3))(@typescript-eslint/utils@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(@vue/compiler-sfc@3.5.34)(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)(vitest@4.1.6(@types/node@25.7.0)(vite@8.0.12(@types/node@25.7.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.8.4)))
       '@antfu/ni':
         specifier: catalog:build
@@ -200,19 +203,19 @@ importers:
         specifier: catalog:types
         version: 8.18.1
       bumpp:
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 11.1.0
       eslint:
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 10.3.0(jiti@2.7.0)
       nano-staged:
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 1.0.2
       simple-git-hooks:
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 2.13.1
       skills-npm:
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 1.1.1
       tsdown:
         specifier: catalog:build
@@ -227,7 +230,7 @@ importers:
         specifier: catalog:build
         version: 2.9.12
       typescript:
-        specifier: catalog:devtools
+        specifier: catalog:tooling
         version: 6.0.3
       vite:
         specifier: catalog:build
@@ -284,6 +287,62 @@ importers:
       ws:
         specifier: catalog:deps
         version: 8.20.0
+
+  examples/minimal-next-devframe-hub:
+    dependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      next:
+        specifier: catalog:frontend
+        version: 16.2.6(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      react:
+        specifier: catalog:frontend
+        version: 19.2.6
+      react-dom:
+        specifier: catalog:frontend
+        version: 19.2.6(react@19.2.6)
+    devDependencies:
+      '@types/react':
+        specifier: catalog:types
+        version: 19.2.15
+      '@types/react-dom':
+        specifier: catalog:types
+        version: 19.2.3(@types/react@19.2.15)
+      get-port-please:
+        specifier: catalog:deps
+        version: 3.2.0
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
+      vitest:
+        specifier: catalog:testing
+        version: 4.1.6(@types/node@25.7.0)(vite@8.0.12(@types/node@25.7.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.8.4))
+      ws:
+        specifier: catalog:deps
+        version: 8.20.0
+
+  examples/minimal-vite-devframe-hub:
+    dependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+    devDependencies:
+      get-port-please:
+        specifier: catalog:deps
+        version: 3.2.0
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
+      vite:
+        specifier: catalog:build
+        version: 8.0.12(@types/node@25.7.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.8.4)
 
   examples/next-runtime-snapshot:
     dependencies:
@@ -422,6 +481,34 @@ importers:
       whenexpr:
         specifier: catalog:deps
         version: 0.1.2
+
+  packages/hub:
+    dependencies:
+      birpc:
+        specifier: catalog:deps
+        version: 4.0.0
+      nostics:
+        specifier: catalog:deps
+        version: 0.2.0
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
+      perfect-debounce:
+        specifier: catalog:deps
+        version: 2.1.0
+      tinyexec:
+        specifier: catalog:deps
+        version: 1.1.2
+    devDependencies:
+      devframe:
+        specifier: workspace:*
+        version: link:../devframe
+      mlly:
+        specifier: catalog:build
+        version: 1.8.2
+      tsdown:
+        specifier: catalog:build
+        version: 0.22.0(tsx@4.21.0)(typescript@6.0.3)
 
   packages/nuxt:
     devDependencies:
@@ -6962,7 +7049,7 @@ snapshots:
       '@typescript-eslint/eslint-plugin': 8.59.2(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)
       '@typescript-eslint/parser': 8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)
       '@vitest/eslint-plugin': 1.6.17(@typescript-eslint/eslint-plugin@8.59.2(@typescript-eslint/parser@8.59.2(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.3.0(jiti@2.7.0))(typescript@6.0.3)(vitest@4.1.6(@types/node@25.7.0)(vite@8.0.12(@types/node@25.7.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.8.4)))
-      ansis: 4.2.0
+      ansis: 4.3.0
       cac: 7.0.0
       eslint: 10.3.0(jiti@2.7.0)
       eslint-config-flat-gitignore: 2.3.0(eslint@10.3.0(jiti@2.7.0))

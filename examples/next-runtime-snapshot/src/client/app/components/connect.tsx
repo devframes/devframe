@@ -1,12 +1,12 @@
 'use client'
 
-import type { DevToolsRpcClient } from 'devframe/client'
+import type { DevframeRpcClient } from 'devframe/client'
 import type { ReactNode } from 'react'
 import { connectDevframe } from 'devframe/client'
 import { createContext, useContext, useEffect, useState } from 'react'
 
 interface ConnectionState {
-  rpc: DevToolsRpcClient | null
+  rpc: DevframeRpcClient | null
   error: string | null
 }
 

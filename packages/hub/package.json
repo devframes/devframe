@@ -1,0 +1,54 @@
+{
+  "name": "@devframes/hub",
+  "type": "module",
+  "version": "0.4.1",
+  "description": "Framework-neutral hub layer for devframe — docks, terminals, messages, commands.",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/devframes/devframe#readme",
+  "repository": {
+    "directory": "packages/hub",
+    "type": "git",
+    "url": "git+https://github.com/devframes/devframe.git"
+  },
+  "bugs": "https://github.com/devframes/devframe/issues",
+  "keywords": [
+    "devtools",
+    "devframe",
+    "hub",
+    "docks",
+    "terminals"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./client": "./dist/client/index.mjs",
+    "./constants": "./dist/constants.mjs",
+    "./node": "./dist/node/index.mjs",
+    "./types": "./dist/types/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "peerDependencies": {
+    "devframe": "workspace:*"
+  },
+  "dependencies": {
+    "birpc": "catalog:deps",
+    "nostics": "catalog:deps",
+    "pathe": "catalog:deps",
+    "perfect-debounce": "catalog:deps",
+    "tinyexec": "catalog:deps"
+  },
+  "devDependencies": {
+    "devframe": "workspace:*",
+    "mlly": "catalog:build",
+    "tsdown": "catalog:build"
+  }
+}

@@ -6,5 +6,5 @@ import { send } from './functions/send.ts'
 export const serverFunctions = [demoPrompts, send, clear] as const
 
 declare module 'devframe' {
-  interface DevToolsRpcServerFunctions extends RpcDefinitionsToFunctions<typeof serverFunctions> {}
+  interface DevframeRpcServerFunctions extends RpcDefinitionsToFunctions<typeof serverFunctions> {}
 }

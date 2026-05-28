@@ -1,4 +1,4 @@
-export interface DevToolsViewHost {
+export interface DevframeViewHost {
   /**
    * @internal
    */

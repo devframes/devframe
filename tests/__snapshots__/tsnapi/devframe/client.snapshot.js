@@ -3,7 +3,7 @@
  */
 // #region Functions
 export function createRpcStreamingClientHost(_) {}
-export async function getDevToolsRpcClient(_) {}
+export async function getDevframeRpcClient(_) {}
 // #endregion
 
 // #region Variables

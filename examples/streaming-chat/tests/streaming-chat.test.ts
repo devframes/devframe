@@ -1,4 +1,4 @@
-import type { DevToolsNodeContext, StartedServer } from 'devframe/node'
+import type { DevframeNodeContext, StartedServer } from 'devframe/node'
 import type { ChatHistory } from '../src/devframe'
 import { createRpcStreamingClientHost } from 'devframe/client'
 import { createRpcClient } from 'devframe/rpc/client'
@@ -78,13 +78,13 @@ async function readAll(reader: AsyncIterable<string>): Promise<string[]> {
   return out
 }
 
-async function getHistory(ctx: DevToolsNodeContext): Promise<ChatHistory> {
+async function getHistory(ctx: DevframeNodeContext): Promise<ChatHistory> {
   const state = await ctx.rpc.sharedState.get(HISTORY_KEY)
   return state.value() as ChatHistory
 }
 
 describe('devframe-streaming-chat (example)', () => {
-  let server: StartedServer & { basePath: string, ctx: DevToolsNodeContext }
+  let server: StartedServer & { basePath: string, ctx: DevframeNodeContext }
 
   beforeEach(async () => {
     server = await startStreamingChatServer()

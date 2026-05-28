@@ -1,4 +1,4 @@
-import type { DevToolsRpcClient } from 'devframe/client'
+import type { DevframeRpcClient } from 'devframe/client'
 import type { StreamReader } from 'devframe/utils/streaming-channel'
 import type { ChatHistory, ChatMessage } from '../types'
 import { connectDevframe } from 'devframe/client'
@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { CHANNEL_NAME, HISTORY_KEY } from '../constants'
 
 export function App() {
-  const [rpc, setRpc] = useState<DevToolsRpcClient | null>(null)
+  const [rpc, setRpc] = useState<DevframeRpcClient | null>(null)
   const [demoPrompts, setDemoPrompts] = useState<string[]>([])
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [liveTokens, setLiveTokens] = useState<Record<string, string>>({})

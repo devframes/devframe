@@ -1,6 +1,6 @@
-import { getDevToolsRpcClient } from './rpc'
+import { getDevframeRpcClient } from './rpc'
 
 export * from './rpc'
 export * from './rpc-streaming'
 
-export const connectDevframe = getDevToolsRpcClient
+export const connectDevframe = getDevframeRpcClient

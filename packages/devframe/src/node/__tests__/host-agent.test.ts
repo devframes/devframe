@@ -1,17 +1,17 @@
 import type { RpcFunctionDefinitionAnyWithContext } from '../../rpc/types'
-import type { DevToolsNodeContext } from '../../types/context'
+import type { DevframeNodeContext } from '../../types/context'
 import { describe, expect, it, vi } from 'vitest'
-import { DevToolsAgentHost } from '../host-agent'
+import { DevframeAgentHost } from '../host-agent'
 import { RpcFunctionsHost } from '../host-functions'
 
-function createContext(): DevToolsNodeContext {
-  const ctx = {} as DevToolsNodeContext
+function createContext(): DevframeNodeContext {
+  const ctx = {} as DevframeNodeContext
   ctx.rpc = new RpcFunctionsHost(ctx)
-  ctx.agent = new DevToolsAgentHost(ctx)
+  ctx.agent = new DevframeAgentHost(ctx)
   return ctx
 }
 
-function rpcDef(def: RpcFunctionDefinitionAnyWithContext<DevToolsNodeContext>): RpcFunctionDefinitionAnyWithContext<DevToolsNodeContext> {
+function rpcDef(def: RpcFunctionDefinitionAnyWithContext<DevframeNodeContext>): RpcFunctionDefinitionAnyWithContext<DevframeNodeContext> {
   return def
 }
 

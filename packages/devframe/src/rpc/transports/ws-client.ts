@@ -30,7 +30,7 @@ const EMPTY_DEFS: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerial
 export function createWsRpcChannel(options: WsRpcChannelOptions): ChannelOptions {
   let url = options.url
   if (options.authToken) {
-    url = `${url}?vite_devtools_auth_token=${encodeURIComponent(options.authToken)}`
+    url = `${url}?devframe_auth_token=${encodeURIComponent(options.authToken)}`
   }
   const ws = new WebSocket(url)
   const {

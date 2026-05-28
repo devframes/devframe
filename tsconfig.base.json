@@ -33,8 +33,8 @@
       "devframe/node/auth": [
         "./packages/devframe/src/node/auth/index.ts"
       ],
-      "devframe/node/internal": [
-        "./packages/devframe/src/node/internal/index.ts"
+      "devframe/node/hub-internals": [
+        "./packages/devframe/src/node/hub-internals/index.ts"
       ],
       "devframe/node": [
         "./packages/devframe/src/node/index.ts"
@@ -98,6 +98,21 @@
       ],
       "devframe/adapters/mcp": [
         "./packages/devframe/src/adapters/mcp/index.ts"
+      ],
+      "@devframes/hub/client": [
+        "./packages/hub/src/client/index.ts"
+      ],
+      "@devframes/hub/constants": [
+        "./packages/hub/src/constants.ts"
+      ],
+      "@devframes/hub/node": [
+        "./packages/hub/src/node/index.ts"
+      ],
+      "@devframes/hub/types": [
+        "./packages/hub/src/types/index.ts"
+      ],
+      "@devframes/hub": [
+        "./packages/hub/src/index.ts"
       ],
       "@devframes/nuxt/runtime/plugin.client": [
         "./packages/nuxt/src/runtime/plugin.client.ts"

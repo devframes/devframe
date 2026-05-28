@@ -1,9 +1,9 @@
-import type { DevToolsHost } from '../types/host'
+import type { DevframeHost } from '../types/host'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { join } from 'pathe'
 
-export interface CreateH3DevToolsHostOptions {
+export interface CreateH3DevframeHostOptions {
   /** The h3 app instance — registered once the CLI adapter lands. */
   app?: unknown
   /**
@@ -19,8 +19,8 @@ export interface CreateH3DevToolsHostOptions {
   mount?: (base: string, distDir: string) => void | Promise<void>
   /**
    * Namespace for storage paths returned by `getStorageDir`. Workspace
-   * state lives under `${workspaceRoot}/node_modules/.<appName>/devtools/`
-   * and global state under `${homedir()}/.<appName>/devtools/`. Pick the
+   * state lives under `${workspaceRoot}/node_modules/.<appName>/devframe/`
+   * and global state under `${homedir()}/.<appName>/devframe/`. Pick the
    * devtool's id (or another stable, filesystem-safe identifier) so the
    * standalone host doesn't collide with other tools' storage.
    */
@@ -33,9 +33,9 @@ export interface CreateH3DevToolsHostOptions {
 }
 
 /**
- * h3-backed {@link DevToolsHost} — used by the standalone CLI adapter.
+ * h3-backed {@link DevframeHost} — used by the standalone CLI adapter.
  */
-export function createH3DevToolsHost(options: CreateH3DevToolsHostOptions): DevToolsHost {
+export function createH3DevframeHost(options: CreateH3DevframeHostOptions): DevframeHost {
   const workspaceRoot = options.workspaceRoot ?? process.cwd()
   return {
     mountStatic(base, distDir) {
@@ -45,7 +45,7 @@ export function createH3DevToolsHost(options: CreateH3DevToolsHostOptions): DevT
       return options.origin
     },
     getStorageDir(scope) {
-      const namespace = `.${options.appName}/devtools`
+      const namespace = `.${options.appName}/devframe`
       return scope === 'workspace'
         ? join(workspaceRoot, 'node_modules', namespace)
         : join(homedir(), namespace)

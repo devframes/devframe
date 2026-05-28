@@ -1,0 +1,20 @@
+{
+  "name": "minimal-vite-devframe-hub",
+  "type": "module",
+  "version": "0.4.1",
+  "private": true,
+  "description": "Protocol-witness example — a tiny Vite Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@devframes/hub": "workspace:*",
+    "devframe": "workspace:*"
+  },
+  "devDependencies": {
+    "get-port-please": "catalog:deps",
+    "pathe": "catalog:deps",
+    "vite": "catalog:build"
+  }
+}

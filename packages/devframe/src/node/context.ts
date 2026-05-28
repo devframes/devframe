@@ -1,18 +1,18 @@
 import type { RpcFunctionDefinitionAny } from 'devframe/rpc'
-import type { DevToolsHost, DevToolsNodeContext } from 'devframe/types'
+import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
 import { diagnostics as rpcDiagnostics } from '../rpc/diagnostics'
 import { diagnostics as devframeDiagnostics } from './diagnostics'
-import { DevToolsAgentHost } from './host-agent'
-import { DevToolsDiagnosticsHost } from './host-diagnostics'
+import { DevframeAgentHost } from './host-agent'
+import { DevframeDiagnosticsHost } from './host-diagnostics'
 import { RpcFunctionsHost } from './host-functions'
-import { DevToolsViewHost } from './host-views'
+import { DevframeViewHost } from './host-views'
 import { BUILTIN_AGENT_RPC } from './rpc'
 
 export interface CreateHostContextOptions {
   cwd: string
   workspaceRoot?: string
   mode: 'dev' | 'build'
-  host: DevToolsHost
+  host: DevframeHost
   /**
    * Built-in RPC declarations to register on the host. Framework
    * adapters (vite, rolldown, cli) can pass the ones they need; the
@@ -22,17 +22,17 @@ export interface CreateHostContextOptions {
 }
 
 /**
- * Framework- and build-tool-agnostic core of the DevTools node context.
+ * Framework- and build-tool-agnostic core of the Devframe node context.
  * Wires the RPC host, view (HTTP file-serving) host, diagnostics, and
  * agent subsystems. Host adapters can wrap this to augment `ctx` with
  * extra surfaces — for example, `@vitejs/devtools-kit`'s
  * `createKitContext` attaches `docks`, `terminals`, `messages`,
  * `commands`, and `createJsonRenderer` when mounted into Vite DevTools.
  */
-export async function createHostContext(options: CreateHostContextOptions): Promise<DevToolsNodeContext> {
+export async function createHostContext(options: CreateHostContextOptions): Promise<DevframeNodeContext> {
   const { cwd, workspaceRoot = cwd, mode, host, builtinRpcDeclarations = [] } = options
 
-  const context: DevToolsNodeContext = {
+  const context: DevframeNodeContext = {
     cwd,
     workspaceRoot,
     mode,
@@ -41,11 +41,11 @@ export async function createHostContext(options: CreateHostContextOptions): Prom
     views: undefined!,
     diagnostics: undefined!,
     agent: undefined!,
-  } as unknown as DevToolsNodeContext
+  } as unknown as DevframeNodeContext
 
   const rpcHost = new RpcFunctionsHost(context)
-  const viewsHost = new DevToolsViewHost(context)
-  const diagnosticsHost = new DevToolsDiagnosticsHost(context, [devframeDiagnostics, rpcDiagnostics])
+  const viewsHost = new DevframeViewHost(context)
+  const diagnosticsHost = new DevframeDiagnosticsHost(context, [devframeDiagnostics, rpcDiagnostics])
   context.rpc = rpcHost
   context.views = viewsHost
   context.diagnostics = diagnosticsHost
@@ -53,7 +53,7 @@ export async function createHostContext(options: CreateHostContextOptions): Prom
   // Agent host must be constructed after `rpcHost` so it can subscribe
   // to `onChanged` — it auto-discovers RPC functions flagged with
   // the `agent` field.
-  const agentHost = new DevToolsAgentHost(context)
+  const agentHost = new DevframeAgentHost(context)
   context.agent = agentHost
 
   // Auto-register devframe's own agent introspection RPCs. These power

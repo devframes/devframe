@@ -4,7 +4,7 @@ outline: deep
 
 # Structured Diagnostics
 
-`ctx.diagnostics` is a thin layer over [`nostics`](https://www.npmjs.com/package/nostics) that lets integrations register coded errors and warnings into a shared lookup without depending on `nostics` directly. Use it for author-defined coded diagnostics — errors, warnings, deprecations — with a stable code, a documentation URL, and a structured payload. For free-form runtime output that should appear in the DevTools UI, use [`ctx.messages`](https://devtools.vite.dev/kit/messages).
+`ctx.diagnostics` is a thin layer over [`nostics`](https://www.npmjs.com/package/nostics) that lets integrations register coded errors and warnings into a shared lookup without depending on `nostics` directly. Use it for author-defined coded diagnostics — errors, warnings, deprecations — with a stable code, a documentation URL, and a structured payload. For free-form runtime output that should appear in the Devframe UI, use [`ctx.messages`](https://devtools.vite.dev/kit/messages).
 
 | Surface | Purpose | Example |
 |---------|---------|---------|
@@ -14,7 +14,7 @@ outline: deep
 ## Shape
 
 ```ts
-interface DevToolsDiagnosticsHost {
+interface DevframeDiagnosticsHost {
   /** Proxy-backed lookup over every registered code. */
   readonly logger: Record<string, DiagnosticHandle>
 
@@ -135,6 +135,6 @@ Each page covers the message, cause, example, and fix — see any [DF code page]
 ## When to use what
 
 - **`ctx.diagnostics`** — coded conditions worth looking up: misconfiguration, deprecations, validation failures, internal invariants. Always docs-backed. Often thrown.
-- **`ctx.messages`** — user-facing activity surfaces in the DevTools UI: progress indicators, audit results, "URL copied" toasts. Just a message and a level.
+- **`ctx.messages`** — user-facing activity surfaces in the Devframe UI: progress indicators, audit results, "URL copied" toasts. Just a message and a level.
 
-Diagnostics target tool authors and CI; messages target the human in front of the DevTools panel.
+Diagnostics target tool authors and CI; messages target the human in front of the Devframe panel.

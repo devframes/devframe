@@ -6,5 +6,5 @@ import { system } from './functions/system.ts'
 export const serverFunctions = [system, memory, env] as const
 
 declare module 'devframe' {
-  interface DevToolsRpcServerFunctions extends RpcDefinitionsToFunctions<typeof serverFunctions> {}
+  interface DevframeRpcServerFunctions extends RpcDefinitionsToFunctions<typeof serverFunctions> {}
 }

@@ -1,5 +1,5 @@
 import type { BirpcGroup } from 'birpc'
-import type { DevToolsNodeContext, DevToolsNodeRpcSession, DevToolsNodeRpcSessionMeta, DevToolsRpcClientFunctions, DevToolsRpcServerFunctions, RpcBroadcastOptions, RpcFunctionsHost as RpcFunctionsHostType, RpcSharedStateHost, RpcStreamingHost } from 'devframe/types'
+import type { DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, RpcBroadcastOptions, RpcFunctionsHost as RpcFunctionsHostType, RpcSharedStateHost, RpcStreamingHost } from 'devframe/types'
 import type { AsyncLocalStorage } from 'node:async_hooks'
 import { RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createDebug } from 'obug'
@@ -7,16 +7,16 @@ import { diagnostics } from './diagnostics'
 import { createRpcSharedStateServerHost } from './rpc-shared-state'
 import { createRpcStreamingServerHost } from './rpc-streaming'
 
-const debugBroadcast = createDebug('vite:devtools:rpc:broadcast')
+const debugBroadcast = createDebug('devframe:rpc:broadcast')
 
-export class RpcFunctionsHost extends RpcFunctionsCollectorBase<DevToolsRpcServerFunctions, DevToolsNodeContext> implements RpcFunctionsHostType {
+export class RpcFunctionsHost extends RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> implements RpcFunctionsHostType {
   /**
    * @internal
    */
-  _rpcGroup: BirpcGroup<DevToolsRpcClientFunctions, DevToolsRpcServerFunctions, false> = undefined!
-  _asyncStorage: AsyncLocalStorage<DevToolsNodeRpcSession> = undefined!
+  _rpcGroup: BirpcGroup<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false> = undefined!
+  _asyncStorage: AsyncLocalStorage<DevframeNodeRpcSession> = undefined!
 
-  constructor(context: DevToolsNodeContext) {
+  constructor(context: DevframeNodeContext) {
     super(context)
 
     this.sharedState = createRpcSharedStateServerHost(this)
@@ -33,30 +33,30 @@ export class RpcFunctionsHost extends RpcFunctionsCollectorBase<DevToolsRpcServe
    *
    * @internal
    */
-  _emitSessionDisconnected(meta: DevToolsNodeRpcSessionMeta): void {
+  _emitSessionDisconnected(meta: DevframeNodeRpcSessionMeta): void {
     this.streaming._onSessionDisconnected(meta)
   }
 
   async invokeLocal<
-    T extends keyof DevToolsRpcServerFunctions,
-    Args extends Parameters<DevToolsRpcServerFunctions[T]>,
+    T extends keyof DevframeRpcServerFunctions,
+    Args extends Parameters<DevframeRpcServerFunctions[T]>,
   >(
     method: T,
     ...args: Args
-  ): Promise<Awaited<ReturnType<DevToolsRpcServerFunctions[T]>>> {
+  ): Promise<Awaited<ReturnType<DevframeRpcServerFunctions[T]>>> {
     if (!this.definitions.has(method as string)) {
       throw diagnostics.DF0006({ name: String(method) })
     }
 
     const handler = await this.getHandler(method)
     return await Promise.resolve(
-      (handler as (...args: Args) => ReturnType<DevToolsRpcServerFunctions[T]>)(...args),
-    ) as Awaited<ReturnType<DevToolsRpcServerFunctions[T]>>
+      (handler as (...args: Args) => ReturnType<DevframeRpcServerFunctions[T]>)(...args),
+    ) as Awaited<ReturnType<DevframeRpcServerFunctions[T]>>
   }
 
   async broadcast<
-    T extends keyof DevToolsRpcClientFunctions,
-    Args extends Parameters<DevToolsRpcClientFunctions[T]>,
+    T extends keyof DevframeRpcClientFunctions,
+    Args extends Parameters<DevframeRpcClientFunctions[T]>,
   >(
     options: RpcBroadcastOptions<T, Args>,
   ): Promise<void> {
@@ -78,7 +78,7 @@ export class RpcFunctionsHost extends RpcFunctionsCollectorBase<DevToolsRpcServe
     )
   }
 
-  getCurrentRpcSession(): DevToolsNodeRpcSession | undefined {
+  getCurrentRpcSession(): DevframeNodeRpcSession | undefined {
     if (!this._asyncStorage)
       throw diagnostics.DF0007()
     return this._asyncStorage.getStore()

@@ -16,7 +16,7 @@ export interface ChatHistory {
 }
 
 declare module 'devframe/types' {
-  interface DevToolsRpcSharedStates {
+  interface DevframeRpcSharedStates {
     [HISTORY_KEY]: ChatHistory
   }
 }

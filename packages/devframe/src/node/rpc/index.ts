@@ -20,7 +20,7 @@ export const BUILTIN_AGENT_RPC = [
 ] as const
 
 declare module 'devframe/types' {
-  interface DevToolsRpcServerFunctions {
+  interface DevframeRpcServerFunctions {
     'devframe:agent:list-tools': () => Promise<readonly import('devframe/types').AgentTool[]>
     'devframe:agent:invoke-tool': (id: string, args: unknown) => Promise<unknown>
     'devframe:agent:list-resources': () => Promise<readonly import('devframe/types').AgentResource[]>

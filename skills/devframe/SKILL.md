@@ -94,7 +94,7 @@ import { listFiles } from './functions/list-files'
 export const serverFunctions = [getCwd, listFiles] as const
 
 declare module 'devframe' {
-  interface DevToolsRpcServerFunctions
+  interface DevframeRpcServerFunctions
     extends import('devframe/rpc').RpcDefinitionsToFunctions<typeof serverFunctions> {}
 }
 ```
@@ -116,24 +116,24 @@ export default defineDevframe({
 
 ### Sharing setup-time state via `src/context.ts`
 
-When per-file RPCs need access to runtime values that `setup(ctx)` constructs once — streaming channels, shared state handles, watchers, loaders, caches — expose them through a `WeakMap<DevToolsNodeContext, T>` in a sibling `src/context.ts`. This mirrors the framework's own `internalContextMap` in `packages/devframe/src/node/internal/context.ts`. The WeakMap keys off the existing `DevToolsNodeContext` so contexts are garbage-collected automatically when the host tears down.
+When per-file RPCs need access to runtime values that `setup(ctx)` constructs once — streaming channels, shared state handles, watchers, loaders, caches — expose them through a `WeakMap<DevframeNodeContext, T>` in a sibling `src/context.ts`. This mirrors the framework's own `internalContextMap` in `packages/devframe/src/node/hub-internals/context.ts`. The WeakMap keys off the existing `DevframeNodeContext` so contexts are garbage-collected automatically when the host tears down.
 
 ```ts
 // src/context.ts
-import type { DevToolsNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe/types'
 
 export interface MyToolContext {
   loaders: { list: () => Promise<string[]> }
   // …channels, shared state handles, watchers, etc.
 }
 
-const map = new WeakMap<DevToolsNodeContext, MyToolContext>()
+const map = new WeakMap<DevframeNodeContext, MyToolContext>()
 
-export function setMyToolContext(ctx: DevToolsNodeContext, value: MyToolContext): void {
+export function setMyToolContext(ctx: DevframeNodeContext, value: MyToolContext): void {
   map.set(ctx, value)
 }
 
-export function getMyToolContext(ctx: DevToolsNodeContext): MyToolContext {
+export function getMyToolContext(ctx: DevframeNodeContext): MyToolContext {
   const value = map.get(ctx)
   if (!value)
     throw new Error('my-tool context not initialised — call setMyToolContext in devframe.setup')
@@ -153,7 +153,7 @@ Stateless RPCs and tiny demos can keep the inline shorthand inside `setup(ctx)` 
 'get-modules' // ✗ — may collide with other devframes sharing the host
 ```
 
-## DevToolsNodeContext at a glance
+## DevframeNodeContext at a glance
 
 `setup(ctx)` receives the framework-neutral server-side surface. Each host corresponds to a [docs](https://devfra.me/) page:
 
@@ -417,9 +417,9 @@ const rpc = await connectDevframe()
 const data = await rpc.call('my-inspector:get-stats', { limit: 10 })
 ```
 
-`connectDevframe` auto-detects the backend via `/.devtools/.connection.json`:
+`connectDevframe` auto-detects the backend via `/.devframe/.connection.json`:
 
-- **websocket** (dev mode) — full read/write, requires auth handshake. Listen for token updates on the `vite-devtools-auth` BroadcastChannel.
+- **websocket** (dev mode) — full read/write, requires auth handshake. Listen for token updates on the `devframe-auth` BroadcastChannel.
 - **static** (build / spa output) — read-only, resolves calls from the baked RPC dump.
 
 Use `rpc.sharedState.get(key)` for observable state, `rpc.client.register(defineRpcFunction(...))` to receive server broadcasts, and `rpc.callOptional(...)` when a missing handler should resolve to `undefined` instead of throwing.
@@ -450,7 +450,7 @@ At runtime, static clients look up the argument hash in the dump; misses resolve
 
 | Subcommand | Action |
 |------------|--------|
-| *(default)* | Dev server on port 9999 (or `--port`) — WebSocket RPC, `cli.distDir` served at `/.devtools/` |
+| *(default)* | Dev server on port 9999 (or `--port`) — WebSocket RPC, `cli.distDir` served at `/.devframe/` |
 | `build` | Static snapshot → `./dist-static/` (configurable via `--out-dir`) |
 | `spa` | Deployable SPA → `./dist-spa/` |
 | `mcp` | stdio MCP server (experimental) |
@@ -482,7 +482,7 @@ For "open file in editor" + "reveal in finder", prefer the prebuilt `openHelpers
 
 - Unit-test host classes with fake contexts.
 - Run `templates/counter-devframe.ts` under each adapter for integration coverage.
-- Snapshot the build-static RPC dump (`<outDir>/.devtools/.rpc-dump/index.json`) to catch accidental drift in `static` function outputs.
+- Snapshot the build-static RPC dump (`<outDir>/.devframe/.rpc-dump/index.json`) to catch accidental drift in `static` function outputs.
 
 ## Further reading
 

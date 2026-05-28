@@ -1,5 +1,5 @@
 import type { BirpcGroup } from 'birpc'
-import type { DevToolsNodeContext, DevToolsNodeRpcSession, DevToolsRpcClientFunctions, DevToolsRpcServerFunctions } from 'devframe/types'
+import type { DevframeNodeContext, DevframeNodeRpcSession, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
 import type { WebSocketServer } from 'ws'
 import type { RpcFunctionsHost } from './host-functions'
 import { AsyncLocalStorage } from 'node:async_hooks'
@@ -8,9 +8,10 @@ import { createRpcServer } from 'devframe/rpc/server'
 import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
 import { H3, toNodeHandler } from 'h3'
 import { WebSocketServer as WSServer } from 'ws'
+import { getInternalContext } from './hub-internals/context'
 
 export interface StartHttpAndWsOptions {
-  context: DevToolsNodeContext
+  context: DevframeNodeContext
   host?: string
   port: number
   /**
@@ -44,7 +45,7 @@ export interface StartedServer {
   port: number
   app: H3
   wss: WebSocketServer
-  rpcGroup: BirpcGroup<DevToolsRpcClientFunctions, DevToolsRpcServerFunctions, false>
+  rpcGroup: BirpcGroup<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>
   close: () => Promise<void>
 }
 
@@ -61,9 +62,9 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
   const wss = new WSServer({ server: httpServer })
   const rpcHost = context.rpc as unknown as RpcFunctionsHost
 
-  const asyncStorage = new AsyncLocalStorage<DevToolsNodeRpcSession>()
+  const asyncStorage = new AsyncLocalStorage<DevframeNodeRpcSession>()
 
-  const rpcGroup = createRpcServer<DevToolsRpcClientFunctions, DevToolsRpcServerFunctions>(
+  const rpcGroup = createRpcServer<DevframeRpcClientFunctions, DevframeRpcServerFunctions>(
     rpcHost.functions,
     {
       rpcOptions: {
@@ -102,15 +103,15 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
   ;(rpcHost as any)._asyncStorage = asyncStorage
   ;(rpcHost as any)._authDisabled = options.auth === false
 
-  // The browser client unconditionally calls `vite:anonymous:auth` on
+  // The browser client unconditionally calls `devframe:anonymous:auth` on
   // connect (see `client/rpc-ws.ts`). When `auth: false` is set on the
   // standalone server, register a noop handler that auto-trusts so the
   // client's hardcoded handshake succeeds. The Vite-side adapter
   // registers the real handler with the same name; the two paths never
   // overlap because Vite consumers never opt into `auth: false`.
-  if (options.auth === false && !rpcHost.definitions.has('vite:anonymous:auth')) {
+  if (options.auth === false && !rpcHost.definitions.has('devframe:anonymous:auth')) {
     rpcHost.register({
-      name: 'vite:anonymous:auth',
+      name: 'devframe:anonymous:auth',
       type: 'action',
       handler: () => {
         const session = rpcHost.getCurrentRpcSession()
@@ -125,14 +126,21 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
     httpServer.listen(port, bindHost, () => resolveListen())
   })
 
-  const origin = `http://${bindHost}:${port}`
+  const address = httpServer.address()
+  const resolvedPort = typeof address === 'object' && address ? address.port : port
+  const origin = `http://${bindHost}:${resolvedPort}`
+  const internal = getInternalContext(context)
+  const wsUrl = origin.replace(/^http/, 'ws')
+  internal.wsEndpoint = {
+    url: wsUrl,
+  }
 
   if (options.onReady)
-    await options.onReady({ origin, port, app })
+    await options.onReady({ origin, port: resolvedPort, app })
 
   return {
     origin,
-    port,
+    port: resolvedPort,
     app,
     wss,
     rpcGroup,
@@ -144,6 +152,8 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
       for (const ws of wss.clients) ws.terminate()
       await new Promise<void>(r => wss.close(() => r()))
       await new Promise<void>(r => httpServer.close(() => r()))
+      if (getInternalContext(context).wsEndpoint?.url === wsUrl)
+        getInternalContext(context).wsEndpoint = undefined
     },
   }
 }

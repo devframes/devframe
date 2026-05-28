@@ -1,9 +1,9 @@
-import type { DevToolsAgentHost } from './agent'
-import type { DevToolsDiagnosticsHost } from './diagnostics'
-import type { DevToolsHost } from './host'
-import type { DevToolsViewHost } from './views'
+import type { DevframeAgentHost } from './agent'
+import type { DevframeDiagnosticsHost } from './diagnostics'
+import type { DevframeHost } from './host'
+import type { DevframeViewHost } from './views'
 
-export interface DevToolsCapabilities {
+export interface DevframeCapabilities {
   rpc?: boolean
   views?: boolean
 }
@@ -15,7 +15,7 @@ export interface DevToolsCapabilities {
  * `createKitContext` adds `docks`, `terminals`, `messages`, and
  * `commands` when mounted into Vite DevTools.
  */
-export interface DevToolsNodeContext {
+export interface DevframeNodeContext {
   readonly workspaceRoot: string
   readonly cwd: string
   /**
@@ -37,20 +37,20 @@ export interface DevToolsNodeContext {
    * Host runtime abstraction — exposes `mountStatic` / `resolveOrigin` /
    * `getStorageDir`.
    */
-  host: DevToolsHost
+  host: DevframeHost
   rpc: import('./rpc').RpcFunctionsHost
-  views: DevToolsViewHost
+  views: DevframeViewHost
   /**
    * Structured diagnostics host — wraps `nostics` and lets integrations
    * register their own coded errors/warnings into the shared lookup.
    */
-  diagnostics: DevToolsDiagnosticsHost
+  diagnostics: DevframeDiagnosticsHost
   /**
    * Agent host — aggregates the agent-exposed surface of this devtool.
    *
    * @experimental
    */
-  agent: DevToolsAgentHost
+  agent: DevframeAgentHost
 }
 
 export interface ConnectionMeta {

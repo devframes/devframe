@@ -4,7 +4,7 @@ outline: deep
 
 # Built with Devframe
 
-Real-world devtools shipping on Devframe:
+Real-world devframes:
 
 - [**Vite DevTools**](https://devtools.vite.dev/) — the host that bundles multiple devframes into one UI (docks, command palette, terminals). Mount your own definition into it via the [`vite` adapter](/adapters/vite).
 - [**ESLint Config Inspector**](https://github.com/eslint/config-inspector) — official ESLint tool for inspecting flat configs.

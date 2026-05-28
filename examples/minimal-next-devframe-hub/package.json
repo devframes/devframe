@@ -1,0 +1,27 @@
+{
+  "name": "minimal-next-devframe-hub",
+  "type": "module",
+  "version": "0.4.1",
+  "private": true,
+  "description": "Protocol-witness example — a tiny Next.js Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
+  "scripts": {
+    "dev": "next dev src/client",
+    "build": "next build src/client",
+    "test": "vitest run --config vitest.config.ts"
+  },
+  "dependencies": {
+    "@devframes/hub": "workspace:*",
+    "devframe": "workspace:*",
+    "next": "catalog:frontend",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:types",
+    "@types/react-dom": "catalog:types",
+    "get-port-please": "catalog:deps",
+    "pathe": "catalog:deps",
+    "vitest": "catalog:testing",
+    "ws": "catalog:deps"
+  }
+}

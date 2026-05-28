@@ -27,7 +27,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:ecosystem
         env:
-          ECOSYSTEM_DEVTOOLS_REF: ${{ inputs.ref }}
+          ECOSYSTEM_DEVFRAME_REF: ${{ inputs.ref }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - if: failure()
         uses: actions/upload-artifact@v4

@@ -1,0 +1,146 @@
+import type { EventEmitter } from 'devframe/types'
+
+export type DevframeMessageLevel = 'info' | 'warn' | 'error' | 'success' | 'debug'
+export type DevframeMessageEntryFrom = 'server' | 'browser'
+
+export interface DevframeMessageElementPosition {
+  /** CSS selector for the element */
+  selector?: string
+  /** Bounding box of the element */
+  boundingBox?: { x: number, y: number, width: number, height: number }
+  /** Human-readable description of the element */
+  description?: string
+}
+
+export interface DevframeMessageFilePosition {
+  /** Absolute or relative file path */
+  file: string
+  /** Line number (1-based) */
+  line?: number
+  /** Column number (1-based) */
+  column?: number
+}
+
+export interface DevframeMessageEntry {
+  /**
+   * Unique identifier for this message entry (auto-generated if not provided)
+   */
+  id: string
+  /**
+   * Short title or summary of the message
+   */
+  message: string
+  /**
+   * Optional detailed description or explanation
+   */
+  description?: string
+  /**
+   * Severity level, determines color and icon
+   */
+  level: DevframeMessageLevel
+  /**
+   * Optional stack trace string
+   */
+  stacktrace?: string
+  /**
+   * Optional DOM element position info (e.g., for a11y issues)
+   */
+  elementPosition?: DevframeMessageElementPosition
+  /**
+   * Optional source file position info (e.g., for lint errors)
+   */
+  filePosition?: DevframeMessageFilePosition
+  /**
+   * Whether this message should also appear as a toast notification
+   */
+  notify?: boolean
+  /**
+   * Origin of the message entry, automatically set by the context
+   */
+  from: DevframeMessageEntryFrom
+  /**
+   * Grouping category (e.g., 'a11y', 'lint', 'runtime', 'test')
+   */
+  category?: string
+  /**
+   * Optional tags/labels for filtering
+   */
+  labels?: string[]
+  /**
+   * Time in ms to auto-dismiss the toast notification (client-side)
+   */
+  autoDismiss?: number
+  /**
+   * Time in ms to auto-delete this message entry (server-side)
+   */
+  autoDelete?: number
+  /**
+   * Timestamp when the message was created (auto-generated if not provided)
+   */
+  timestamp: number
+  /**
+   * Status of the message entry (e.g., 'loading' while an operation is in progress).
+   * Defaults to 'idle' when not specified.
+   */
+  status?: 'loading' | 'idle'
+}
+
+/**
+ * Input type for creating a message entry.
+ * `id`, `timestamp`, and `from` are auto-filled by the host.
+ */
+export type DevframeMessageEntryInput = Omit<DevframeMessageEntry, 'id' | 'timestamp' | 'from'> & {
+  id?: string
+  timestamp?: number
+}
+
+export interface DevframeMessageHandle {
+  /** The underlying message entry data */
+  readonly entry: DevframeMessageEntry
+  /** Shortcut to entry.id */
+  readonly id: string
+  /** Partial update of this message entry */
+  update: (patch: Partial<DevframeMessageEntryInput>) => Promise<DevframeMessageEntry | undefined>
+  /** Remove this message entry */
+  dismiss: () => Promise<void>
+}
+
+export interface DevframeMessagesClient {
+  /**
+   * Add a message entry. Returns a Promise resolving to a handle for subsequent updates/dismissal.
+   * Can be used without `await` for fire-and-forget usage.
+   */
+  add: (input: DevframeMessageEntryInput) => Promise<DevframeMessageHandle>
+  /** Remove a message entry by id */
+  remove: (id: string) => Promise<void>
+  /** Clear all message entries */
+  clear: () => Promise<void>
+}
+
+export interface DevframeMessagesHost {
+  readonly entries: Map<string, DevframeMessageEntry>
+  readonly events: EventEmitter<{
+    'message:added': (entry: DevframeMessageEntry) => void
+    'message:updated': (entry: DevframeMessageEntry) => void
+    'message:removed': (id: string) => void
+    'message:cleared': () => void
+  }>
+
+  /**
+   * Add a new message entry. If an entry with the same `id` already exists, it will be updated instead.
+   * Returns a handle for subsequent updates/dismissal. Can be used without `await` for fire-and-forget.
+   */
+  add: (entry: DevframeMessageEntryInput) => Promise<DevframeMessageHandle>
+  /**
+   * Update an existing message entry by id (partial update)
+   */
+  update: (id: string, patch: Partial<DevframeMessageEntryInput>) => Promise<DevframeMessageEntry | undefined>
+  /**
+   * Remove a message entry by id
+   */
+  remove: (id: string) => Promise<void>
+  /**
+   * Clear all message entries
+   */
+  clear: () => Promise<void>
+}

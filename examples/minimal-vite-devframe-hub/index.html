@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minimal Vite Devframe Hub</title>
+    <link rel="stylesheet" href="/src/client/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Minimal Vite Devframe Hub</h1>
+      <p>Protocol witness — verifies <code>@devframes/hub</code> end to end.</p>
+    </header>
+    <main>
+      <section id="status">
+        <span id="conn">Connecting…</span>
+      </section>
+
+      <section>
+        <h2>Docks</h2>
+        <ul id="docks"><li class="muted">Waiting for snapshot…</li></ul>
+      </section>
+
+      <section>
+        <h2>Commands</h2>
+        <ul id="commands"><li class="muted">Waiting for snapshot…</li></ul>
+        <p>
+          <button id="ping">Dispatch <code>minimal-vite-devframe-hub:ping</code> via <code>hub:commands:execute</code></button>
+        </p>
+      </section>
+
+      <section>
+        <h2>Messages</h2>
+        <ul id="messages"><li class="muted">No messages yet.</li></ul>
+      </section>
+
+      <section>
+        <h2>Terminals</h2>
+        <ul id="terminals"><li class="muted">No terminal sessions.</li></ul>
+      </section>
+    </main>
+    <script type="module" src="/src/client/main.ts"></script>
+  </body>
+</html>

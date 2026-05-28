@@ -1,4 +1,4 @@
-import type { DevToolsRpcClient } from 'devframe/client'
+import type { DevframeRpcClient } from 'devframe/client'
 
 declare module '#app' {
   interface NuxtApp {
@@ -6,14 +6,14 @@ declare module '#app' {
      * Devframe RPC client, provided by the `@devframes/nuxt` module's
      * client plugin.
      */
-    $rpc: DevToolsRpcClient
+    $rpc: DevframeRpcClient
   }
 }
 
 declare module 'vue' {
   interface ComponentCustomProperties {
     /** Devframe RPC client (see `NuxtApp['$rpc']`). */
-    $rpc: DevToolsRpcClient
+    $rpc: DevframeRpcClient
   }
 }
 

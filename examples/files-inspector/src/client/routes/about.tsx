@@ -1,7 +1,7 @@
-import type { DevToolsRpcClient } from 'devframe/client'
+import type { DevframeRpcClient } from 'devframe/client'
 import { useEffect, useState } from 'preact/hooks'
 
-export function About({ rpc, basePath }: { rpc: DevToolsRpcClient, basePath: string }) {
+export function About({ rpc, basePath }: { rpc: DevframeRpcClient, basePath: string }) {
   const [cwd, setCwd] = useState<string>('')
 
   useEffect(() => {

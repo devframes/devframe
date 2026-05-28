@@ -28,6 +28,7 @@ function guideItems(prefix: string): DefaultTheme.NavItemWithLink[] {
     { text: 'Structured Diagnostics', link: `${prefix}/guide/diagnostics` },
     { text: 'Client', link: `${prefix}/guide/client` },
     { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
+    { text: 'Hub (multi-tool)', link: `${prefix}/guide/hub` },
     { text: 'Agent-Native (experimental)', link: `${prefix}/guide/agent-native` },
   ]
 }
@@ -98,7 +99,7 @@ export function devframeNav(prefix = ''): DefaultTheme.NavItem[] {
 
 export default withMermaid(defineConfig({
   title: 'Devframe',
-  description: 'Framework-neutral foundation for building generic DevTools — RPC layer, hosts, and adapters.',
+  description: 'Framework-neutral foundation for building generic devframes — RPC layer, hosts, and adapters.',
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
     ['link', { rel: 'apple-touch-icon', href: '/logo.svg' }],

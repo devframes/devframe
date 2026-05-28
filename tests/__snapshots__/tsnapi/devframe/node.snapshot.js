@@ -7,14 +7,14 @@ export function normalizeHttpServerUrl(_, _) {}
 // #endregion
 
 // #region Other
-export { createH3DevToolsHost }
+export { createH3DevframeHost }
 export { createHostContext }
 export { createRpcSharedStateServerHost }
 export { createRpcStreamingServerHost }
 export { createStorage }
-export { DevToolsAgentHost }
-export { DevToolsDiagnosticsHost }
-export { DevToolsViewHost }
+export { DevframeAgentHost }
+export { DevframeDiagnosticsHost }
+export { DevframeViewHost }
 export { RpcFunctionsHost }
 export { startHttpAndWs }
 // #endregion

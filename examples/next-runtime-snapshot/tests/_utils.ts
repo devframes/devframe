@@ -1,9 +1,9 @@
 import type { StartedServer } from 'devframe/node'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
-import { DEVTOOLS_CONNECTION_META_FILENAME } from 'devframe/constants'
+import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import {
-  createH3DevToolsHost,
+  createH3DevframeHost,
   createHostContext,
   startHttpAndWs,
 } from 'devframe/node'
@@ -36,7 +36,7 @@ export async function startSnapshotServer(): Promise<SnapshotServer> {
 
   const app = new H3()
   const origin = `http://${host}:${port}`
-  const h3Host = createH3DevToolsHost({
+  const h3Host = createH3DevframeHost({
     origin,
     appName: devframe.id,
     mount: (base, dir) => mountStaticHandler(app, base, dir),
@@ -45,7 +45,7 @@ export async function startSnapshotServer(): Promise<SnapshotServer> {
   const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
   await devframe.setup(ctx)
 
-  const metaPath = `${basePath}${DEVTOOLS_CONNECTION_META_FILENAME}`
+  const metaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`
   app.use(metaPath, () => ({ backend: 'websocket', websocket: port }))
   // Mount the static handler unconditionally — it only stat()s on
   // request, so a missing dist just produces 404s for HTML routes.

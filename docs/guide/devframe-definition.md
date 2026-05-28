@@ -68,19 +68,19 @@ The CLI dev server sets `mode: 'dev'`; `createBuild` sets `mode: 'build'`.
 
 ## The setup context
 
-`setup(ctx)` receives a `DevToolsNodeContext`:
+`setup(ctx)` receives a `DevframeNodeContext`:
 
 ```ts
-interface DevToolsNodeContext {
+interface DevframeNodeContext {
   readonly cwd: string
   readonly workspaceRoot: string
   readonly mode: 'dev' | 'build'
 
-  host: DevToolsHost // runtime abstraction (mountStatic / resolveOrigin / getStorageDir)
+  host: DevframeHost // runtime abstraction (mountStatic / resolveOrigin / getStorageDir)
   rpc: RpcFunctionsHost // register + broadcast + sharedState
-  views: DevToolsViewHost // static file hosting (`hostStatic`)
-  diagnostics: DevToolsDiagnosticsHost
-  agent: DevToolsAgentHost // experimental
+  views: DevframeViewHost // static file hosting (`hostStatic`)
+  diagnostics: DevframeDiagnosticsHost
+  agent: DevframeAgentHost // experimental
 }
 ```
 

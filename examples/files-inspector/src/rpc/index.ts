@@ -5,5 +5,5 @@ import { listFiles } from './functions/list-files.ts'
 export const serverFunctions = [getCwd, listFiles] as const
 
 declare module 'devframe' {
-  interface DevToolsRpcServerFunctions extends RpcDefinitionsToFunctions<typeof serverFunctions> {}
+  interface DevframeRpcServerFunctions extends RpcDefinitionsToFunctions<typeof serverFunctions> {}
 }

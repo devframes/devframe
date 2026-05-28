@@ -7,12 +7,12 @@ import { colors as c } from 'devframe/utils/colors'
 import { structuredCloneStringify } from 'devframe/utils/structured-clone'
 import { dirname, resolve } from 'pathe'
 import {
-  DEVTOOLS_CONNECTION_META_FILENAME,
-  DEVTOOLS_RPC_DUMP_DIRNAME,
-  DEVTOOLS_RPC_DUMP_MANIFEST_FILENAME,
+  DEVFRAME_CONNECTION_META_FILENAME,
+  DEVFRAME_RPC_DUMP_DIRNAME,
+  DEVFRAME_RPC_DUMP_MANIFEST_FILENAME,
 } from '../constants'
 import { createHostContext } from '../node/context'
-import { createH3DevToolsHost } from '../node/host-h3'
+import { createH3DevframeHost } from '../node/host-h3'
 import { collectStaticRpcDump } from '../rpc/dump/static'
 import { strictJsonStringify } from '../rpc/serialization'
 import { resolveBasePath } from './_shared'
@@ -47,7 +47,7 @@ export interface CreateBuildOptions {
  *   - When `def.spa` is configured, also write `<outDir>/spa-loader.json`
  *     describing the SPA's data-loader mode (`'query'` / `'upload'` /
  *     `'none'`). The output is mount-path agnostic — the same bundle
- *     works at `/`, `/devtools/`, or any base, no rewriting required.
+ *     works at `/`, `/devframe/`, or any base, no rewriting required.
  */
 export async function createBuild(d: DevframeDefinition, options: CreateBuildOptions = {}): Promise<void> {
   const outDir = resolve(options.outDir ?? 'dist-static')
@@ -66,11 +66,11 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
   const ctx = await createHostContext({
     cwd: process.cwd(),
     mode: 'build',
-    host: createH3DevToolsHost({ origin: 'http://localhost', appName: d.id }),
+    host: createH3DevframeHost({ origin: 'http://localhost', appName: d.id }),
   })
   await d.setup(ctx)
 
-  await fs.mkdir(resolve(outDir, DEVTOOLS_RPC_DUMP_DIRNAME), { recursive: true })
+  await fs.mkdir(resolve(outDir, DEVFRAME_RPC_DUMP_DIRNAME), { recursive: true })
 
   const jsonSerializableMethods: string[] = []
   for (const def of ctx.rpc.definitions.values()) {
@@ -78,12 +78,12 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
       jsonSerializableMethods.push(def.name)
   }
   await fs.writeFile(
-    resolve(outDir, DEVTOOLS_CONNECTION_META_FILENAME),
+    resolve(outDir, DEVFRAME_CONNECTION_META_FILENAME),
     JSON.stringify({ backend: 'static', jsonSerializableMethods }, null, 2),
     'utf-8',
   )
 
-  console.log(c.cyan`[devframe] writing RPC dump to ${resolve(outDir, DEVTOOLS_RPC_DUMP_MANIFEST_FILENAME)}`)
+  console.log(c.cyan`[devframe] writing RPC dump to ${resolve(outDir, DEVFRAME_RPC_DUMP_MANIFEST_FILENAME)}`)
   const dump = await collectStaticRpcDump(ctx.rpc.definitions.values(), ctx)
   const indent = options.pretty ? 2 : undefined
   for (const [filepath, file] of Object.entries(dump.files)) {
@@ -102,7 +102,7 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
     )
   }
   await fs.writeFile(
-    resolve(outDir, DEVTOOLS_RPC_DUMP_MANIFEST_FILENAME),
+    resolve(outDir, DEVFRAME_RPC_DUMP_MANIFEST_FILENAME),
     JSON.stringify(dump.manifest, null, 2),
     'utf-8',
   )

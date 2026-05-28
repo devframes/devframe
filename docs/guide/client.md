@@ -8,7 +8,7 @@ The browser-side client is how a dock iframe, remote-hosted page, or standalone 
 
 ## Connecting
 
-`devframe/client` exports `connectDevframe` (an alias of `getDevToolsRpcClient`) — use either name:
+`devframe/client` exports `connectDevframe` (an alias of `getDevframeRpcClient`) — use either name:
 
 ```ts
 import { connectDevframe } from 'devframe/client'
@@ -18,7 +18,7 @@ const rpc = await connectDevframe()
 const modules = await rpc.call('my-devframe:get-modules', { limit: 10 })
 ```
 
-`connectDevframe` auto-detects the backend via `__devtools/__connection.json`, with a sequence of base URLs as fallback. No arguments are needed when the client is hosted from the default mount path.
+`connectDevframe` auto-detects the backend via `__devframe/__connection.json`, with a sequence of base URLs as fallback. No arguments are needed when the client is hosted from the default mount path.
 
 ### Runtime basePath discovery
 
@@ -46,7 +46,7 @@ await connectDevframe({
 
 | Option | Description |
 |--------|-------------|
-| `baseURL` | Mount path to probe for `__connection.json`. Accepts an array for fallback. Default: `'./'` — resolved relative to `document.baseURI` so the SPA finds its meta wherever it was deployed. Pass an explicit absolute path (e.g. `'/__devtools/'`) when calling from outside the SPA — say, an embedded webcomponent injected into a host app. |
+| `baseURL` | Mount path to probe for `__connection.json`. Accepts an array for fallback. Default: `'./'` — resolved relative to `document.baseURI` so the SPA finds its meta wherever it was deployed. Pass an explicit absolute path (e.g. `'/__devframe/'`) when calling from outside the SPA — say, an embedded webcomponent injected into a host app. |
 | `authToken` | Override the auth token. Defaults to a locally-persisted human-readable id. |
 | `cacheOptions` | `true` to enable caching with defaults, or an options object. |
 | `wsOptions` | Forwarded to the WebSocket transport (reconnect, heartbeat, etc.). |
@@ -55,7 +55,7 @@ await connectDevframe({
 
 ## Modes
 
-The client runs in one of two modes depending on the backend advertised in `__devtools/__connection.json`:
+The client runs in one of two modes depending on the backend advertised in `__devframe/__connection.json`:
 
 | Backend | When | Capabilities |
 |---------|------|--------------|
@@ -89,7 +89,7 @@ const ok = await rpc.requestTrustWithToken('another-token')
 
 ### Broadcast-channel sync
 
-`connectDevframe` listens on a shared `BroadcastChannel` (named `vite-devtools-auth` for cross-tab handshake interop with Vite DevTools' auth page) for `auth-update` messages. When an auth page in another tab announces a new token, every open client requests trust with it automatically — no reload required.
+`connectDevframe` listens on a shared `BroadcastChannel` (named `devframe-auth` for cross-tab handshake interop with Vite DevTools' auth page) for `auth-update` messages. When an auth page in another tab announces a new token, every open client requests trust with it automatically — no reload required.
 
 ## Calling functions
 
