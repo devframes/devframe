@@ -9,7 +9,7 @@ import type {
 } from '@devframes/hub/types'
 import type { ReactNode } from 'react'
 import { connectDevframe } from '@devframes/hub/client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 const HUB_BASE = '/__hub/'
 
@@ -18,7 +18,12 @@ interface Status {
   kind?: 'ready' | 'error'
 }
 
+type IframeDock = DevframeDockEntry & { type: 'iframe', url: string }
 type TerminalSummary = Pick<DevframeTerminalSession, 'id' | 'title' | 'status' | 'description'>
+
+function isIframeDock(d: DevframeDockEntry): d is IframeDock {
+  return d.type === 'iframe' && typeof (d as { url?: unknown }).url === 'string'
+}
 
 export default function Page() {
   const [status, setStatus] = useState<Status>({ text: 'Connecting...' })
@@ -27,6 +32,7 @@ export default function Page() {
   const [messages, setMessages] = useState<DevframeMessageEntry[]>([])
   const [terminals, setTerminals] = useState<TerminalSummary[]>([])
   const [pingResult, setPingResult] = useState('Run ping')
+  const [selectedDockId, setSelectedDockId] = useState<string | null>(null)
   const rpcRef = useRef<DevframeRpcClient | null>(null)
 
   useEffect(() => {
@@ -99,6 +105,19 @@ export default function Page() {
     }
   }, [])
 
+  const iframeDocks = useMemo(() => docks.filter(isIframeDock), [docks])
+
+  useEffect(() => {
+    if (selectedDockId && !iframeDocks.some(d => d.id === selectedDockId)) {
+      setSelectedDockId(null)
+      return
+    }
+    if (!selectedDockId && iframeDocks.length > 0)
+      setSelectedDockId(iframeDocks[0].id)
+  }, [iframeDocks, selectedDockId])
+
+  const selectedDock = iframeDocks.find(d => d.id === selectedDockId) ?? null
+
   async function ping() {
     if (!rpcRef.current)
       return
@@ -115,73 +134,78 @@ export default function Page() {
   }
 
   return (
-    <main>
-      <header>
+    <div className="app-shell">
+      <header className="app-header">
         <h1>Minimal Next Devframe Hub</h1>
-        <p>
-          Protocol witness: verifies
-          {' '}
-          <code>@devframes/hub</code>
-          {' '}
-          end to end from a Next.js host.
+        <p id="status" className={status.kind ?? ''}>
+          <span>{status.text}</span>
         </p>
       </header>
 
-      <section id="status" className={status.kind ?? ''}>
-        <span>{status.text}</span>
-      </section>
+      <aside className="app-sidebar">
+        <h2>Docks</h2>
+        <ul>
+          {iframeDocks.length === 0
+            ? <li className="muted">No iframe docks</li>
+            : iframeDocks.map(dock => (
+                <li key={dock.id}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDockId(dock.id)}
+                    className={dock.id === selectedDockId ? 'active' : ''}
+                  >
+                    {dock.title}
+                  </button>
+                </li>
+              ))}
+        </ul>
+      </aside>
 
-      <Panel title="Docks" empty="Waiting for snapshot...">
-        {docks.map(dock => (
-          <li key={dock.id}>
-            <strong>{dock.title}</strong>
-            {' '}
-            <code>{dock.id}</code>
-            {'badge' in dock && dock.badge
-              ? <span className="badge">{`[${dock.badge}]`}</span>
-              : null}
-          </li>
-        ))}
-      </Panel>
+      <main className="app-main">
+        <iframe
+          key={selectedDock?.id ?? 'none'}
+          src={selectedDock?.url ?? 'about:blank'}
+          title="Selected dock"
+        />
+      </main>
 
-      <Panel title="Commands" empty="Waiting for snapshot...">
-        {commands.map(command => (
-          <li key={command.id}>
-            <strong>{command.title}</strong>
-            {' '}
-            <code>{command.id}</code>
-          </li>
-        ))}
-      </Panel>
-
-      <div className="actions">
-        <button type="button" onClick={() => void ping()}>
-          {pingResult}
-        </button>
-      </div>
-
-      <Panel title="Messages" empty="No messages yet.">
-        {messages.map(message => (
-          <li key={message.id}>
-            <strong>{`[${message.level}]`}</strong>
-            {' '}
-            {message.message}
-          </li>
-        ))}
-      </Panel>
-
-      <Panel title="Terminals" empty="No terminal sessions.">
-        {terminals.map(terminal => (
-          <li key={terminal.id}>
-            <strong>{terminal.title}</strong>
-            {' '}
-            <code>{terminal.id}</code>
-            {' '}
-            {terminal.status}
-          </li>
-        ))}
-      </Panel>
-    </main>
+      <footer className="app-footer">
+        <Panel title="Commands" empty="Waiting for snapshot...">
+          {commands.map(command => (
+            <li key={command.id}>
+              <strong>{command.title}</strong>
+              {' '}
+              <code>{command.id}</code>
+            </li>
+          ))}
+        </Panel>
+        <Panel title="Messages" empty="No messages yet.">
+          {messages.map(message => (
+            <li key={message.id}>
+              <strong>{`[${message.level}]`}</strong>
+              {' '}
+              {message.message}
+            </li>
+          ))}
+        </Panel>
+        <Panel title="Terminals" empty="No terminal sessions.">
+          {terminals.map(terminal => (
+            <li key={terminal.id}>
+              <strong>{terminal.title}</strong>
+              {' '}
+              <code>{terminal.id}</code>
+              {' '}
+              {terminal.status}
+            </li>
+          ))}
+        </Panel>
+        <div className="actions">
+          <button type="button" onClick={() => void ping()}>
+            {pingResult}
+          </button>
+        </div>
+      </footer>
+    </div>
   )
 }
 

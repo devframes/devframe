@@ -6,48 +6,99 @@
 
 body {
   margin: 0;
-  padding: 1.5rem 2rem;
+  height: 100vh;
+  overflow: hidden;
 }
 
-main {
-  max-width: 800px;
-  margin-inline: auto;
+.app-shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "header header"
+    "sidebar main"
+    "footer footer";
+  height: 100vh;
 }
 
-header h1 {
-  margin-bottom: 0.25rem;
+.app-header {
+  grid-area: header;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
 }
 
-header p {
-  margin-top: 0;
+.app-header h1 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.app-header p {
+  margin: 0.25rem 0 0;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
   opacity: 0.7;
 }
 
-section {
-  margin-block: 1.5rem;
+.app-sidebar {
+  grid-area: sidebar;
+  border-right: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
+  padding: 0.75rem;
+  overflow: auto;
+}
+
+.app-main {
+  grid-area: main;
+  overflow: hidden;
+  background: color-mix(in srgb, currentcolor 3%, transparent);
+}
+
+.app-main iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.app-footer {
+  grid-area: footer;
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
+  max-height: 30vh;
+  overflow: auto;
+}
+
+.app-footer section {
+  flex: 1;
+  min-width: 0;
 }
 
 h2 {
-  font-size: 1rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   opacity: 0.8;
-  border-bottom: 1px solid currentcolor;
-  padding-bottom: 0.25rem;
+  margin: 0 0 0.5rem;
 }
 
 ul {
   list-style: none;
   padding-left: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 li {
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.6rem;
   border: 1px solid color-mix(in srgb, currentcolor 15%, transparent);
-  border-radius: 0.5rem;
-  margin-bottom: 0.5rem;
+  border-radius: 0.4rem;
   font-family: ui-monospace, monospace;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 li.muted {
@@ -62,29 +113,54 @@ code {
   border-radius: 0.25em;
 }
 
-button {
-  font: inherit;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid currentcolor;
+.app-sidebar ul li {
+  padding: 0;
+  border: 0;
   background: transparent;
-  cursor: pointer;
 }
 
-button:hover {
-  background: color-mix(in srgb, currentcolor 10%, transparent);
+.app-sidebar button {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  font: inherit;
+  font-size: 0.85rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  color: inherit;
+}
+
+.app-sidebar button:hover {
+  background: color-mix(in srgb, currentcolor 8%, transparent);
+}
+
+.app-sidebar button.active {
+  background: color-mix(in srgb, currentcolor 15%, transparent);
+  border-color: color-mix(in srgb, currentcolor 30%, transparent);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+  align-items: flex-start;
 }
 
-#status {
-  font-family: ui-monospace, monospace;
+button {
+  font: inherit;
   font-size: 0.85rem;
-  opacity: 0.7;
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.4rem;
+  border: 1px solid currentcolor;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+}
+
+button:hover {
+  background: color-mix(in srgb, currentcolor 10%, transparent);
 }
 
 #status.error span {

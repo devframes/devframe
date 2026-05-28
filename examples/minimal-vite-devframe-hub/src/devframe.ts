@@ -1,4 +1,5 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
+import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
 
 /**
@@ -15,6 +16,9 @@ export default defineDevframe({
   name: 'Demo Tool',
   icon: 'ph:rocket-duotone',
   basePath: '/__demo-tool/',
+  cli: {
+    distDir: fileURLToPath(new URL('../spa/demo-tool/', import.meta.url)),
+  },
   async setup(rawCtx) {
     const ctx = rawCtx as unknown as DevframeHubContext
 

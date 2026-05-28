@@ -7,38 +7,41 @@
     <link rel="stylesheet" href="/src/client/style.css" />
   </head>
   <body>
-    <header>
-      <h1>Minimal Vite Devframe Hub</h1>
-      <p>Protocol witness — verifies <code>@devframes/hub</code> end to end.</p>
-    </header>
-    <main>
-      <section id="status">
-        <span id="conn">Connecting…</span>
-      </section>
+    <div class="app-shell">
+      <header class="app-header">
+        <h1>Minimal Vite Devframe Hub</h1>
+        <p id="status"><span id="conn">Connecting…</span></p>
+      </header>
 
-      <section>
+      <aside class="app-sidebar">
         <h2>Docks</h2>
         <ul id="docks"><li class="muted">Waiting for snapshot…</li></ul>
-      </section>
+      </aside>
 
-      <section>
-        <h2>Commands</h2>
-        <ul id="commands"><li class="muted">Waiting for snapshot…</li></ul>
-        <p>
-          <button id="ping">Dispatch <code>minimal-vite-devframe-hub:ping</code> via <code>hub:commands:execute</code></button>
-        </p>
-      </section>
+      <main class="app-main">
+        <iframe id="dock-iframe" src="about:blank" title="Selected dock"></iframe>
+      </main>
 
-      <section>
-        <h2>Messages</h2>
-        <ul id="messages"><li class="muted">No messages yet.</li></ul>
-      </section>
+      <footer class="app-footer">
+        <section>
+          <h2>Commands</h2>
+          <ul id="commands"><li class="muted">Waiting for snapshot…</li></ul>
+          <div class="actions">
+            <button id="ping">Dispatch <code>minimal-vite-devframe-hub:ping</code></button>
+          </div>
+        </section>
 
-      <section>
-        <h2>Terminals</h2>
-        <ul id="terminals"><li class="muted">No terminal sessions.</li></ul>
-      </section>
-    </main>
+        <section>
+          <h2>Messages</h2>
+          <ul id="messages"><li class="muted">No messages yet.</li></ul>
+        </section>
+
+        <section>
+          <h2>Terminals</h2>
+          <ul id="terminals"><li class="muted">No terminal sessions.</li></ul>
+        </section>
+      </footer>
+    </div>
     <script type="module" src="/src/client/main.ts"></script>
   </body>
 </html>

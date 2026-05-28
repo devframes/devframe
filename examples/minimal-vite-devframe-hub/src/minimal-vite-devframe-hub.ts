@@ -6,6 +6,7 @@ import { defineHubRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { startHttpAndWs } from 'devframe/node'
+import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { join } from 'pathe'
 
@@ -78,10 +79,8 @@ export function minimalViteDevframeHub(options: MinimalViteDevframeHubOptions = 
       const cwd = viteConfig!.root
 
       const host: DevframeHost = {
-        mountStatic() {
-          // Static mounting for devframe SPAs would route through Vite's
-          // middleware in a fuller kit. This minimal example doesn't
-          // host any per-devframe SPA, so the no-op is honest.
+        mountStatic(base, distDir) {
+          server.middlewares.use(base, serveStaticNodeMiddleware(distDir))
         },
         resolveOrigin() {
           const resolved = server.resolvedUrls?.local?.[0]

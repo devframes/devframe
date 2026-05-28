@@ -9,6 +9,28 @@ import { startHttpAndWs } from 'devframe/node'
 import { getPort } from 'get-port-please'
 import { join } from 'pathe'
 import demoDevframe from './demo-devframe'
+import demoDevframeB from './demo-devframe-b'
+
+const STATIC_MOUNTS = new Map<string, string>()
+
+export interface StaticMountHit {
+  distDir: string
+  relative: string
+}
+
+export function getStaticMount(pathname: string): StaticMountHit | null {
+  let best: { base: string, distDir: string } | null = null
+  for (const [base, distDir] of STATIC_MOUNTS) {
+    if (pathname === base || pathname.startsWith(`${base}/`)) {
+      if (!best || base.length > best.base.length)
+        best = { base, distDir }
+    }
+  }
+  if (!best)
+    return null
+  const relative = pathname.slice(best.base.length) || '/'
+  return { distDir: best.distDir, relative }
+}
 
 export interface MinimalNextDevframeHubOptions {
   /** Preferred port for the side-car RPC/WS server. Default: a free port near 9877. */
@@ -60,9 +82,8 @@ export async function minimalNextDevframeHub(
   const hostName = options.host ?? 'localhost'
 
   const host: DevframeHost = {
-    mountStatic() {
-      // Static mounting for devframe SPAs would route through Next middleware
-      // in a fuller host. This minimal example keeps mounted devframes headless.
+    mountStatic(base, distDir) {
+      STATIC_MOUNTS.set(base.replace(/\/$/, ''), distDir)
     },
     resolveOrigin() {
       return `http://${hostName}:3000`
@@ -101,7 +122,7 @@ export async function minimalNextDevframeHub(
     description: `Side-car WS on port ${port}. ${options.devframes?.length ?? 1} devframe(s) registered.`,
   })
 
-  for (const def of options.devframes ?? [demoDevframe]) {
+  for (const def of options.devframes ?? [demoDevframe, demoDevframeB]) {
     await mountDevframe(context, def)
   }
 

@@ -15,6 +15,9 @@ const commandsEl = document.querySelector<HTMLElement>('#commands')!
 const messagesEl = document.querySelector<HTMLElement>('#messages')!
 const terminalsEl = document.querySelector<HTMLElement>('#terminals')!
 const pingBtn = document.querySelector<HTMLButtonElement>('#ping')!
+const iframeEl = document.querySelector<HTMLIFrameElement>('#dock-iframe')!
+
+let selectedDockId: string | null = null
 
 function setStatus(text: string, klass?: 'ready' | 'error') {
   connEl.textContent = text
@@ -29,6 +32,10 @@ function renderList<T>(host: HTMLElement, items: T[], render: (item: T) => strin
   host.innerHTML = items.map(render).join('')
 }
 
+function isIframeDock(d: DevframeDockEntry): d is DevframeDockEntry & { type: 'iframe', url: string } {
+  return d.type === 'iframe' && typeof (d as { url?: unknown }).url === 'string'
+}
+
 async function main() {
   setStatus('Connecting…')
 
@@ -40,10 +47,40 @@ async function main() {
     'devframe:docks',
     { initialValue: [] },
   )
-  const renderDocks = () => renderList(docksEl, docks.value() ?? [], (d) => {
-    const badge = d.badge ? ` <span class="badge">[${d.badge}]</span>` : ''
-    return `<li><strong>${d.title}</strong> <code>${d.id}</code>${badge}</li>`
+
+  const renderDocks = () => {
+    const iframeDocks = (docks.value() ?? []).filter(isIframeDock)
+
+    if (selectedDockId && !iframeDocks.some(d => d.id === selectedDockId))
+      selectedDockId = null
+    if (!selectedDockId && iframeDocks.length > 0)
+      selectedDockId = iframeDocks[0].id
+
+    if (!iframeDocks.length) {
+      docksEl.innerHTML = '<li class="muted">No iframe docks</li>'
+      iframeEl.src = 'about:blank'
+      return
+    }
+
+    renderList(docksEl, iframeDocks, d =>
+      `<li><button type="button" data-dock-id="${d.id}" class="${d.id === selectedDockId ? 'active' : ''}">${d.title}</button></li>`)
+
+    const selected = iframeDocks.find(d => d.id === selectedDockId)
+    if (selected && iframeEl.getAttribute('src') !== selected.url)
+      iframeEl.src = selected.url
+  }
+
+  docksEl.addEventListener('click', (event) => {
+    const target = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-dock-id]')
+    if (!target)
+      return
+    const id = target.dataset.dockId
+    if (!id || id === selectedDockId)
+      return
+    selectedDockId = id
+    renderDocks()
   })
+
   docks.on('updated', renderDocks)
   renderDocks()
 

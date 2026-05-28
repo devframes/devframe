@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo Tool</title>
+    <style>
+      :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+      body { margin: 0; padding: 2rem; }
+      h1 { margin-top: 0; }
+      code { font-family: ui-monospace, monospace; }
+    </style>
+  </head>
+  <body>
+    <h1>Demo Tool</h1>
+    <p>Served from <code id="loc"></code></p>
+    <p>This SPA is mounted by <code>minimal-vite-devframe-hub</code> via <code>DevframeHost.mountStatic()</code>.</p>
+    <script>
+      document.getElementById('loc').textContent = location.pathname
+    </script>
+  </body>
+</html>
