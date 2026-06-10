@@ -179,6 +179,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     if (this.views.has(view.id) && !force) {
       throw diagnostics.DF8100({ id: view.id })
     }
+    this.validateGroupMembership(view)
     this.prepareRemoteRegistration(view)
     this.views.set(view.id, view)
     this.events.emit('dock:entry:updated', view)
@@ -197,9 +198,19 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     if (!this.views.has(view.id)) {
       throw diagnostics.DF8102({ id: view.id })
     }
+    this.validateGroupMembership(view)
     this.prepareRemoteRegistration(view)
     this.views.set(view.id, view)
     this.events.emit('dock:entry:updated', view)
+  }
+
+  private validateGroupMembership(view: DevframeDockUserEntry): void {
+    if (view.groupId === undefined)
+      return
+    if (view.groupId === view.id)
+      throw diagnostics.DF8103({ id: view.id })
+    if (view.type === 'group')
+      throw diagnostics.DF8104({ id: view.id })
   }
 
   private prepareRemoteRegistration(view: DevframeDockUserEntry): void {

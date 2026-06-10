@@ -40,6 +40,7 @@ export declare class DevframeDocksHost implements DevframeDocksHost$1 {
     update: (_: Partial<T>) => void;
   };
   update(_: DevframeDockUserEntry): void;
+  private validateGroupMembership;
   private prepareRemoteRegistration;
 }
 export declare class DevframeMessagesHost implements DevframeMessagesHost$1 {
