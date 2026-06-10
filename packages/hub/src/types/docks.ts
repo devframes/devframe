@@ -58,6 +58,19 @@ export interface DevframeDockEntryBase {
    * Badge text to display on the dock icon (e.g., unread count)
    */
   badge?: string
+  /**
+   * Id of the group this entry belongs to. When set, hosts collapse this entry
+   * under the matching group's button instead of showing it directly on the
+   * dock bar.
+   *
+   * This is a flat pointer — membership, not containment. The entry stays an
+   * independently-registered, top-level entry; only its rendering is grouped
+   * downstream. If the referenced group is never registered, the entry renders
+   * as a normal top-level entry (orphan tolerance).
+   *
+   * @see {@link DevframeViewGroup}
+   */
+  groupId?: string
 }
 
 export interface ClientScriptEntry {
@@ -169,7 +182,29 @@ export interface DevframeViewJsonRender extends DevframeDockEntryBase {
   ui: JsonRenderer
 }
 
-export type DevframeDockUserEntry = DevframeViewIframe | DevframeViewAction | DevframeViewCustomRender | DevframeViewLauncher | DevframeViewJsonRender
+/**
+ * A dock group: a single dock-bar button that collapses every entry whose
+ * {@link DevframeDockEntryBase.groupId} matches this group's `id`.
+ *
+ * A group carries its own `title`/`icon`/`category`/`defaultOrder`/`when`
+ * (inherited from {@link DevframeDockEntryBase}) and has no view payload of its
+ * own — hosts render its members in a popover / sub-navigation. It flows
+ * through the same `register`/`update`/`values` machinery as every other entry,
+ * keyed by `id`.
+ *
+ * Grouping is one level deep: a group entry must not itself set `groupId`.
+ */
+export interface DevframeViewGroup extends DevframeDockEntryBase {
+  type: 'group'
+  /**
+   * Member id auto-opened when the group button is activated. When unset,
+   * activating the group only reveals its members (popover-only); no view
+   * opens until a member is chosen.
+   */
+  defaultChildId?: string
+}
+
+export type DevframeDockUserEntry = DevframeViewIframe | DevframeViewAction | DevframeViewCustomRender | DevframeViewLauncher | DevframeViewJsonRender | DevframeViewGroup
 
 export type DevframeDockEntry = DevframeDockUserEntry | DevframeViewBuiltin
 

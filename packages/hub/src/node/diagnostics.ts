@@ -24,6 +24,14 @@ export const diagnostics = defineDiagnostics({
     DF8102: {
       why: (p: { id: string }) => `Dock with id "${p.id}" is not registered. Use register() to add new docks.`,
     },
+    DF8103: {
+      why: (p: { id: string }) => `Dock entry "${p.id}" cannot set groupId to its own id`,
+      fix: 'Point groupId at a different group entry, or omit it.',
+    },
+    DF8104: {
+      why: (p: { id: string }) => `Dock group "${p.id}" cannot itself belong to a group (nested groups are unsupported)`,
+      fix: 'Remove groupId from the group entry; nest members one level only.',
+    },
     DF8200: {
       why: (p: { id: string }) => `Terminal session with id "${p.id}" already registered`,
     },
