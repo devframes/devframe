@@ -44,7 +44,7 @@ export const diagnostics = defineDiagnostics({
       why: (p: { id: string }) => `Command "${p.id}" is already registered`,
     },
     DF8401: {
-      why: 'Cannot change the id of a command. Use register() to add new commands.',
+      why: 'Cannot change the id of a command. Use register() to add new commands',
     },
     DF8402: {
       why: (p: { id: string }) => `Command "${p.id}" is not registered`,
