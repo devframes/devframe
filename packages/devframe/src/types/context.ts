@@ -58,8 +58,13 @@ export interface DevframeNodeContext {
    * key, and streaming channel with `my-plugin:`, and exposes a typed
    * top-level `settings` store. This is the preferred way to consume the
    * context from a single tool's setup code.
+   *
+   * Pass `null` or `''` to un-scope and get the base context.
    */
-  scope: <NS extends string>(namespace: NS) => DevframeScopedNodeContext<NS, SettingsForNamespace<NS>>
+  scope: {
+    <NS extends string>(namespace: NS): DevframeScopedNodeContext<NS, SettingsForNamespace<NS>>
+    (namespace?: null | ''): DevframeNodeContext
+  }
 }
 
 export interface ConnectionMeta {

@@ -120,8 +120,13 @@ export interface DevframeRpcClient {
    * shared-state key, and streaming channel with `my-plugin:`, and
    * exposes a typed top-level `settings` store. This is the preferred way
    * to consume the client from a single tool's UI code.
+   *
+   * Pass `null` or `''` to un-scope and get the base client.
    */
-  scope: <NS extends string>(namespace: NS) => DevframeScopedClientContext<NS, SettingsForNamespace<NS>>
+  scope: {
+    <NS extends string>(namespace: NS): DevframeScopedClientContext<NS, SettingsForNamespace<NS>>
+    (namespace?: null | ''): DevframeRpcClient
+  }
 }
 
 export interface DevframeRpcClientMode {
@@ -324,7 +329,9 @@ export async function getDevframeRpcClient(
   // Namespace-scoped views are memoized per namespace so repeated
   // `client.scope('my-plugin')` calls return a stable object.
   const scopedCache = new Map<string, DevframeScopedClientContext<string>>()
-  rpc.scope = ((namespace: string) => {
+  rpc.scope = ((namespace?: string | null) => {
+    if (!namespace)
+      return rpc
     let scoped = scopedCache.get(namespace)
     if (!scoped) {
       scoped = createScopedClientContext(rpc, namespace)

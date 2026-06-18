@@ -38,6 +38,15 @@ describe('ctx.scope()', () => {
     expect(ctx.scope('my-plugin')).not.toBe(ctx.scope('other'))
   })
 
+  it('un-scopes and returns the base context when passed null or empty string', async () => {
+    const { ctx } = await createCtx()
+    const scoped = ctx.scope('my-plugin')
+    expect(ctx.scope('')).toBe(ctx)
+    expect(ctx.scope(null)).toBe(ctx)
+    expect(scoped.scope('')).toBe(ctx)
+    expect(scoped.scope(null)).toBe(ctx)
+  })
+
   it('exposes the base context and read-only fields', async () => {
     const { ctx } = await createCtx()
     const scoped = ctx.scope('my-plugin')

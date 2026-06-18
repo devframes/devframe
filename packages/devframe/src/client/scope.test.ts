@@ -45,6 +45,18 @@ describe('client.scope()', () => {
     expect(scoped.rpc.namespace).toBe('my-plugin')
   })
 
+  it('un-scopes and returns the base client when passed null or empty string', () => {
+    const { rpc } = createMockClient()
+    // To properly test this, we need the `scope` method added to `rpc`, similar
+    // to what `getDevframeRpcClient` does in `rpc.ts`.
+    rpc.scope = (ns?: string | null) => (ns ? createScopedClientContext(rpc, ns) : rpc) as any
+    const scoped = rpc.scope('my-plugin')
+    expect(rpc.scope('')).toBe(rpc)
+    expect(rpc.scope(null)).toBe(rpc)
+    expect(scoped.scope('')).toBe(rpc)
+    expect(scoped.scope(null)).toBe(rpc)
+  })
+
   it('qualifies bare call/callEvent/callOptional method names', () => {
     const { rpc } = createMockClient()
     const scoped = createScopedClientContext(rpc, 'my-plugin')

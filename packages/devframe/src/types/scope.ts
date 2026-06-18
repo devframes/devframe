@@ -208,4 +208,6 @@ export interface DevframeScopedNodeContext<NS extends string = string, Settings 
   views: DevframeViewHost
   diagnostics: DevframeDiagnosticsHost
   agent: DevframeAgentHost
+  /** Derive another scope, or pass `null` / `''` to get the base context. */
+  scope: DevframeNodeContext['scope']
 }

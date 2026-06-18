@@ -16,7 +16,10 @@ export interface DevframeRpcClient {
   sharedState: RpcSharedStateHost;
   streaming: RpcStreamingClientHost;
   cacheManager: RpcCacheManager;
-  scope: <NS extends string>(_: NS) => DevframeScopedClientContext<NS, SettingsForNamespace<NS>>;
+  scope: {
+    <NS extends string>(_: NS): DevframeScopedClientContext<NS, SettingsForNamespace<NS>>;
+    (_?: null | ''): DevframeRpcClient;
+  };
 }
 export interface DevframeRpcClientMode {
   readonly isTrusted: boolean;
@@ -43,6 +46,7 @@ export interface DevframeScopedClientContext<NS extends string = string, Setting
   readonly base: DevframeRpcClient;
   rpc: DevframeScopedClientRpc<NS>;
   settings: DevframeSettings<Settings>;
+  scope: DevframeRpcClient['scope'];
 }
 export interface DevframeScopedClientRpc<NS extends string = string> {
   readonly namespace: NS;

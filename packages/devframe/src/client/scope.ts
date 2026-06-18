@@ -85,6 +85,8 @@ export interface DevframeScopedClientContext<NS extends string = string, Setting
   rpc: DevframeScopedClientRpc<NS>
   /** Persisted settings for this namespace (`global` + `project`). */
   settings: DevframeSettings<Settings>
+  /** Derive another scope, or pass `null` / `''` to get the base client. */
+  scope: DevframeRpcClient['scope']
 }
 
 /**
@@ -126,5 +128,6 @@ export function createScopedClientContext<NS extends string = string>(
     base: rpc,
     rpc: scopedRpc,
     settings: createClientSettings(rpc, namespace),
+    scope: rpc.scope,
   }
 }

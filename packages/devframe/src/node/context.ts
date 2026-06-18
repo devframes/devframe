@@ -61,7 +61,9 @@ export async function createHostContext(options: CreateHostContextOptions): Prom
   // Namespace-scoped views are memoized per namespace so repeated
   // `ctx.scope('my-plugin')` calls return a stable object.
   const scopedCache = new Map<string, DevframeScopedNodeContext<string>>()
-  context.scope = ((namespace: string) => {
+  context.scope = ((namespace?: string | null) => {
+    if (!namespace)
+      return context
     let scoped = scopedCache.get(namespace)
     if (!scoped) {
       scoped = createScopedNodeContext(context, namespace)
