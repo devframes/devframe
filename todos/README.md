@@ -18,12 +18,12 @@ The seven planned plugins:
 
 | # | Plugin | Package | Inspiration | Doc |
 |---|--------|---------|-------------|-----|
-| 1 | RPC & State self-inspector | `@devframes/plugin-rpc` | port of `vitejs/devtools` RPC/state panels | [01](./01-plugin-rpc-state-inspector.md) |
+| 1 | RPC & State self-inspector | `@devframes/plugin-inspect` | port of `vitejs/devtools` RPC/state panels | [01](./01-plugin-inspect.md) |
 | 2 | Terminals | `@devframes/plugin-terminals` | replace Vite DevTools' terminal | [02](./02-plugin-terminals.md) |
 | 3 | Git Dashboard | `@devframes/plugin-git` | GitLens | [03](./03-plugin-git-dashboard.md) |
 | 4 | OG viewer | `@devframes/plugin-og` | Nuxt DevTools' OG image viewer | [04](./04-plugin-og-viewer.md) |
 | 5 | A11y check | `@devframes/plugin-a11y` | axe-core / accessibility audits | [05](./05-plugin-a11y-check.md) |
-| 6 | MCP inspector | `@devframes/plugin-mcp` | MCP inspector + Vercel evals | [06](./06-plugin-mcp-inspector.md) |
+| 6 | MCP inspector | `@devframes/plugin-mcp-inspect` | MCP inspector + Vercel evals | [06](./06-plugin-mcp-inspect.md) |
 | 7 | Code-server | `@devframes/plugin-code-server` | code-server embed | [07](./07-plugin-code-server.md) |
 
 The numbering is the **recommended build order** (see [Sequencing](#sequencing)),
@@ -152,11 +152,11 @@ Follow `packages/devframe/package.json`:
 ## Conventions enforced per plugin
 
 - **RPC**: every function via `defineRpcFunction` (or `defineHubRpcFunction` for
-  hub-context functions), IDs namespaced `<plugin-id>:fn-name` (e.g.
-  `git:status`, `terminals:list`). Augment `DevframeRpcServerFunctions` via
+  hub-context functions), IDs namespaced `devframes-plugin-<short>:fn-name` (e.g.
+  `devframes-plugin-git:status`, `devframes-plugin-terminals:list`). Augment `DevframeRpcServerFunctions` via
   `declare module 'devframe'` from the plugin's `rpc/index.ts`, as
   `files-inspector` does.
-- **Shared state**: keys namespaced `<plugin-id>:*`, values serializable, via
+- **Shared state**: keys namespaced `devframes-plugin-<short>:*`, values serializable, via
   `devframe/utils/shared-state`.
 - **Docks / commands / terminals / messages**: registered against the
   hub-augmented context (`DevframeHubContext`) using `ctx.docks.register`,
@@ -165,29 +165,23 @@ Follow `packages/devframe/package.json`:
   autocomplete.
 - **Mount path**: never hardcode. Let `resolveBasePath` default to `/__<id>/`
   (hosted) or `/` (standalone); override only via `DevframeDefinition.basePath`.
-- **Diagnostics**: node-side only, structured via `nostics`, `DF` prefix. See
-  allocation below.
+- **Diagnostics**: node-side only, structured via `nostics`. Each plugin gets its own dedicated namespace using the format `DP_<SHORT>_00xx` (e.g., `DP_GIT_0001`, `DP_MCP_0001`).
 
 ### Diagnostics code allocation
 
-`AGENTS.md` reserves `DF00xx–DF07xx` (core) and `DF80xx–DF89xx` (hub). The
-`DF90xx–DF99xx` band is free; reserve one hundred-block per first-party plugin:
+Unlike `devframe` core (`DF00xx–DF07xx`) and `@devframes/hub` (`DF80xx–DF89xx`), which share the `DF` prefix, plugins define their own unique prefix:
 
-| Band | Plugin |
-|------|--------|
-| `DF90xx` | `@devframes/plugin-rpc` |
-| `DF91xx` | `@devframes/plugin-terminals` |
-| `DF92xx` | `@devframes/plugin-git` |
-| `DF93xx` | `@devframes/plugin-og` |
-| `DF94xx` | `@devframes/plugin-a11y` |
-| `DF95xx` | `@devframes/plugin-mcp` |
-| `DF96xx` | `@devframes/plugin-code-server` |
+| Prefix | Plugin |
+|--------|--------|
+| `DP_INSPECT_` | `@devframes/plugin-inspect` |
+| `DP_TERMINALS_` | `@devframes/plugin-terminals` |
+| `DP_GIT_` | `@devframes/plugin-git` |
+| `DP_OG_` | `@devframes/plugin-og` |
+| `DP_A11Y_` | `@devframes/plugin-a11y` |
+| `DP_MCP_` | `@devframes/plugin-mcp-inspect` |
+| `DP_CODE_SERVER_` | `@devframes/plugin-code-server` |
 
-Each plugin keeps its own `diagnostics.ts` defined with `nostics`
-`defineDiagnostics` (`docsBase: 'https://devfra.me/errors'`), like the hub.
-**Open question:** community plugins can't draw from this shared band — they
-should adopt their own prefix. We may later document a `DF<vendor>` convention
-and keep `DF9xxx` strictly for first-party. Decide before publishing #1.
+Each plugin keeps its own `diagnostics.ts` defined with `nostics` `defineDiagnostics` (`docsBase: 'https://devfra.me/errors'`). Community plugins can adopt a similar pattern (e.g., `DP_VENDOR_0001`) to avoid collisions.
 
 ## Dogfooding map — what each plugin stresses
 
@@ -222,7 +216,6 @@ Recommended order and rationale:
 
 ## Cross-cutting open questions
 
-- **Diagnostics namespace for community plugins** (see above).
 - **Shared UI kit**: inspector, git, terminals all need tables/trees/json views.
   Do we extract a `@devframes/plugin-ui` (framework-specific) or keep each SPA
   self-contained to maximize stack diversity? Leaning self-contained early, revisit

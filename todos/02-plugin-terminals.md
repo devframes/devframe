@@ -4,7 +4,7 @@
 **Inspiration:** replace Vite DevTools' built-in terminal panel with a portable,
 hub-native one.
 **SPA stack (Axis B):** Vanilla TS + Vite (+ `@xterm/xterm`).
-**Diagnostics band:** `DF91xx`.
+**Diagnostics band:** `DP_TERMINALS_00xx`.
 
 ## What it does
 
@@ -54,11 +54,11 @@ plugins/terminals/
     rpc/
       index.ts
       functions/
-        spawn.ts        # terminals:spawn   (action) → ctx.terminals.startChildProcess
-        terminate.ts    # terminals:terminate (action)
-        restart.ts      # terminals:restart (action)
-        write.ts        # terminals:write   (action) — stdin, IF host gains support
-        list.ts         # terminals:list    (query)
+        spawn.ts        # devframes-plugin-terminals:spawn   (action) → ctx.terminals.startChildProcess
+        terminate.ts    # devframes-plugin-terminals:terminate (action)
+        restart.ts      # devframes-plugin-terminals:restart (action)
+        write.ts        # devframes-plugin-terminals:write   (action) — stdin, IF host gains support
+        list.ts         # devframes-plugin-terminals:list    (query)
     spa/
   bin.mjs
   test/
@@ -68,9 +68,9 @@ plugins/terminals/
 
 - Uses `ctx.terminals` directly; control RPCs are thin wrappers that call into the
   host and return session descriptors.
-- `terminals:spawn` validates the requested command against an allow-list passed
+- `devframes-plugin-terminals:spawn` validates the requested command against an allow-list passed
   to `createTerminalsDevframe` (security: never spawn arbitrary commands from the
-  client without opt-in). Diagnostics `DF91xx` for disallowed command / unknown
+  client without opt-in). Diagnostics `DP_TERMINALS_00xx` for disallowed command / unknown
   session / spawn failure.
 - Subscribes the UI to the `devframe:terminals` streaming channel and
   `devframe:terminals:updated` broadcast.
@@ -78,16 +78,16 @@ plugins/terminals/
 ## Client side
 
 - Vanilla TS + xterm.js. One xterm instance per session, fed from the streaming
-  channel reader; tabs/list driven by `terminals:list` + the updated broadcast.
+  channel reader; tabs/list driven by `devframes-plugin-terminals:list` + the updated broadcast.
   Toolbar: spawn (from allow-list), terminate, restart, clear.
 
 ## Milestones
 
-1. Scaffold (copy from #1). Dock + `terminals:list` + render existing sessions'
+1. Scaffold (copy from #1). Dock + `devframes-plugin-terminals:list` + render existing sessions'
    buffered output.
 2. Live streaming via `devframe:terminals` channel into xterm; reconnect/replay.
-3. `terminals:spawn` / `terminate` / `restart` with allow-list.
-4. (If host extended) stdin `terminals:write` + resize/PTY.
+3. `devframes-plugin-terminals:spawn` / `terminate` / `restart` with allow-list.
+4. (If host extended) stdin `devframes-plugin-terminals:write` + resize/PTY.
 5. tsnapi snapshot + Playwright e2e (spawn → output → terminate).
 
 ## Open questions / risks

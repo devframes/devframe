@@ -1,10 +1,10 @@
 # Plugin 01 — RPC & State self-inspector
 
-**Package:** `@devframes/plugin-rpc` · **Dir:** `plugins/rpc/`
+**Package:** `@devframes/plugin-inspect` · **Dir:** `plugins/inspect/`
 **Inspiration:** port of the RPC + shared-state inspector panels from
 `vitejs/devtools`.
 **SPA stack (Axis B):** Vue + Vite (direct port).
-**Diagnostics band:** `DF90xx`.
+**Diagnostics band:** `DP_INSPECT_00xx`.
 
 ## Why first
 
@@ -35,20 +35,20 @@ APIs every other plugin produces, so it is the fastest way to discover whether:
 - the agent surface (`ctx.agent`, the `BUILTIN_AGENT_RPC`) is browsable.
 
 Expected gaps: missing introspection getters (may need a built-in
-`rpc:list-functions` style meta RPC in core), dump fidelity for non-JSON values,
+`devframe:list-functions` style meta RPC in core), dump fidelity for non-JSON values,
 and how a devframe inspects a connection it is *also* part of.
 
 ## Host integrations (Axis A)
 
-- `.` — `createRpcInspectorDevframe()` factory + default `DevframeDefinition`.
-- `/cli` — `npx @devframes/plugin-rpc` opens the inspector against a target.
+- `.` — `createInspectDevframe()` factory + default `DevframeDefinition`.
+- `/cli` — `npx @devframes/plugin-inspect` opens the inspector against a target.
 - `/vite` — mount into a Vite host to inspect that host's devframe connection.
 - `/client` — Vue mount helpers + any dock `custom-render` modules.
 
 ## Package layout
 
 ```
-plugins/rpc/
+plugins/inspect/
   src/
     index.ts            # `.`   default DevframeDefinition + factory
     node/index.ts       # `/node` setup(ctx): register introspection RPCs + docks
@@ -58,10 +58,10 @@ plugins/rpc/
     rpc/
       index.ts          # serverFunctions tuple + DevframeRpcServerFunctions augment
       functions/
-        list-functions.ts   # rpc:list-functions  (query, snapshot)
-        invoke.ts            # rpc:invoke           (action) — gated to query fns
-        list-state-keys.ts   # rpc:list-state-keys  (query)
-        describe-agent.ts    # rpc:describe-agent   (query, snapshot)
+        list-functions.ts   # devframes-plugin-inspect:list-functions  (query, snapshot)
+        invoke.ts            # devframes-plugin-inspect:invoke           (action) — gated to query fns
+        list-state-keys.ts   # devframes-plugin-inspect:list-state-keys  (query)
+        describe-agent.ts    # devframes-plugin-inspect:describe-agent   (query, snapshot)
     spa/                # Vue + Vite UI
   bin.mjs
   test/
@@ -69,18 +69,18 @@ plugins/rpc/
 
 ## Node side
 
-- RPC (namespaced `rpc:*`):
-  - `rpc:list-functions` — `query`, `snapshot: true`, `jsonSerializable: true`:
+- RPC (namespaced `devframes-plugin-inspect:*`):
+  - `devframes-plugin-inspect:list-functions` — `query`, `snapshot: true`, `jsonSerializable: true`:
     returns the registry with metadata. May need a core hook to read the registry;
     if absent, that is a tracked gap to add to `devframe` core.
-  - `rpc:invoke` — `action`: invoke a named `query` function with validated args;
+  - `devframes-plugin-inspect:invoke` — `action`: invoke a named `query` function with validated args;
     refuse `action`/mutating functions for safety.
-  - `rpc:list-state-keys` — enumerate shared-state keys + current snapshots.
-  - `rpc:describe-agent` — surface `ctx.agent` tools/resources.
-- Docks: a single `iframe` (or `custom-render`) dock `rpc:inspector` titled
+  - `devframes-plugin-inspect:list-state-keys` — enumerate shared-state keys + current snapshots.
+  - `devframes-plugin-inspect:describe-agent` — surface `ctx.agent` tools/resources.
+- Docks: a single `iframe` (or `custom-render`) dock `devframes-plugin-inspect:inspector` titled
   "RPC & State", icon e.g. `ph:plugs-duotone`.
 - Shared state observed (read-only): all keys; no new keys written except a small
-  `rpc:inspector:ui` for persisted panel UI prefs (serializable).
+  `devframes-plugin-inspect:inspector:ui` for persisted panel UI prefs (serializable).
 
 ## Client side
 
@@ -93,8 +93,8 @@ plugins/rpc/
 
 1. Scaffold package + tsdown three-config + alias/turbo/workspace wiring (this is
    the template all others copy).
-2. `rpc:list-functions` + Functions view (read-only).
-3. `rpc:invoke` for `query` functions + result rendering.
+2. `devframes-plugin-inspect:list-functions` + Functions view (read-only).
+3. `devframes-plugin-inspect:invoke` for `query` functions + result rendering.
 4. State view with live subscription + diff.
 5. Agent view; `static`/`spa` degradation; tsnapi snapshot + e2e.
 
@@ -106,5 +106,5 @@ plugins/rpc/
 - How much of the `vitejs/devtools` Vue code ports cleanly vs. needs a rewrite
   against devframe's client (`connectDevframe`, `rpc.sharedState`) rather than
   Vite DevTools' kit client.
-- Safety model for `rpc:invoke` (which function types are invokable; argument
+- Safety model for `devframes-plugin-inspect:invoke` (which function types are invokable; argument
   validation surface).

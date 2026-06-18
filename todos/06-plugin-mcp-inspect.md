@@ -1,9 +1,9 @@
 # Plugin 06 — MCP inspector
 
-**Package:** `@devframes/plugin-mcp` · **Dir:** `plugins/mcp/`
+**Package:** `@devframes/plugin-mcp-inspect` · **Dir:** `plugins/mcp-inspect/`
 **Inspiration:** the MCP inspector; optional Vercel AI SDK / evals integration.
 **SPA stack (Axis B):** Next (static export) — React + the Vercel ecosystem.
-**Diagnostics band:** `DF95xx`.
+**Diagnostics band:** `DP_MCP_00xx`.
 
 ## What it does
 
@@ -40,7 +40,7 @@ core addition), and agent-surface metadata richness.
 ## Host integrations (Axis A)
 
 - `.` — `createMcpInspectorDevframe(options)` (target server config).
-- `/cli` — `npx @devframes/plugin-mcp` → connect to an MCP server from the terminal.
+- `/cli` — `npx @devframes/plugin-mcp-inspect` → connect to an MCP server from the terminal.
 - `/next` — first-class Next integration (the SPA is Next; host integration too).
 - `/vite` — generic Vite host mount.
 - `/client` — Next-built SPA + connect glue.
@@ -48,7 +48,7 @@ core addition), and agent-surface metadata richness.
 ## Package layout
 
 ```
-plugins/mcp/
+plugins/mcp-inspect/
   src/
     index.ts
     node/index.ts
@@ -59,12 +59,12 @@ plugins/mcp/
     rpc/
       index.ts
       functions/
-        connect.ts        # mcp:connect        (action) — open a client to a server
-        list-tools.ts     # mcp:list-tools     (query, snapshot)
-        invoke-tool.ts    # mcp:invoke-tool    (action)
-        list-resources.ts # mcp:list-resources (query)
-        read-resource.ts  # mcp:read-resource  (query)
-        run-eval.ts       # mcp:run-eval       (action) — stretch, Vercel AI SDK
+        connect.ts        # devframes-plugin-mcp-inspect:connect        (action) — open a client to a server
+        list-tools.ts     # devframes-plugin-mcp-inspect:list-tools     (query, snapshot)
+        invoke-tool.ts    # devframes-plugin-mcp-inspect:invoke-tool    (action)
+        list-resources.ts # devframes-plugin-mcp-inspect:list-resources (query)
+        read-resource.ts  # devframes-plugin-mcp-inspect:read-resource  (query)
+        run-eval.ts       # devframes-plugin-mcp-inspect:run-eval       (action) — stretch, Vercel AI SDK
     spa/                  # Next, output: 'export', assetPrefix relative
   bin.mjs
   test/
@@ -73,10 +73,10 @@ plugins/mcp/
 ## Node side
 
 - MCP client via `@modelcontextprotocol/sdk` (already a catalog dep; optional peer
-  in core). Manage connections in `mcp:connections` shared state.
+  in core). Manage connections in `devframes-plugin-mcp-inspect:connections` shared state.
 - Optional: expose devframe's *own* MCP server via `createMcpServer` and let the
   inspector connect to it (self-inspection loop).
-- Diagnostics `DF95xx`: connect failure, unsupported transport, tool-invoke error,
+- Diagnostics `DP_MCP_00xx`: connect failure, unsupported transport, tool-invoke error,
   eval-provider missing.
 
 ## Client side
@@ -88,8 +88,8 @@ plugins/mcp/
 
 1. Scaffold + Next static-export SPA wired to `cli.distDir` (prove Next SPA mounts
    + connects).
-2. `mcp:connect` (stdio) + `mcp:list-tools` + Tools browser.
-3. `mcp:invoke-tool` (schema-driven form) + response viewer.
+2. `devframes-plugin-mcp-inspect:connect` (stdio) + `devframes-plugin-mcp-inspect:list-tools` + Tools browser.
+3. `devframes-plugin-mcp-inspect:invoke-tool` (schema-driven form) + response viewer.
 4. Resources/prompts browse + read.
 5. Point at devframe's own `createMcpServer` (self-inspection); request log.
 6. (Stretch) Vercel AI SDK evals tab.

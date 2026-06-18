@@ -4,14 +4,14 @@
 **Inspiration:** embed [code-server](https://github.com/coder/code-server) (VS
 Code in the browser) as a devframe panel.
 **SPA stack (Axis B):** Vanilla TS + Vite (thin shell around an `<iframe>`).
-**Diagnostics band:** `DF96xx`.
+**Diagnostics band:** `DP_CODE_SERVER_00xx`.
 
 ## What it does
 
 Run a code-server instance scoped to the workspace and surface it as a devframe
 dock: an editor panel inside the hub/host. The plugin's own UI is minimal — a
-status/launcher shell — because the real surface is code-server's own web UI
-loaded in an `iframe` dock. Lifecycle: start code-server as a managed child
+launcher UI (`DevframeViewLauncher`) to start the server lazily — because the real surface is code-server's own web UI
+loaded in an `iframe` dock once started. Lifecycle: start code-server as a managed child
 process (reuse the terminals spawn/stream primitives), wait for it to be ready,
 proxy/expose it under the devframe mount path, and render it in an `iframe` dock.
 
@@ -40,7 +40,7 @@ hand-off to code-server, and clean teardown on host restart.
   auth).
 - `/cli` — `npx @devframes/plugin-code-server` → launch + open editor.
 - `/vite`, `/embedded` — mount into a host; embedded for runtime registration.
-- `/client` — launcher/status shell + the iframe dock.
+- `/client` — launcher UI + the iframe dock.
 
 ## Package layout
 
@@ -54,13 +54,13 @@ plugins/code-server/
       proxy.ts             # reverse-proxy + WS pass-through under the mount base
     cli.ts
     vite.ts
-    client/index.ts        # status shell; the editor itself is an iframe dock
+    client/index.ts        # launcher UI; the editor itself is an iframe dock
     rpc/
       index.ts
       functions/
-        start.ts           # code-server:start  (action)
-        stop.ts            # code-server:stop   (action)
-        status.ts          # code-server:status (query)
+        start.ts           # devframes-plugin-code-server:start  (action)
+        stop.ts            # devframes-plugin-code-server:stop   (action)
+        status.ts          # devframes-plugin-code-server:status (query)
     spa/
   bin.mjs
   test/
@@ -70,22 +70,22 @@ plugins/code-server/
 
 - `supervisor.ts` spawns code-server (prefer reusing the hub `terminals`
   `startChildProcess` so output streams into the terminals panel too), probes
-  readiness, and tracks state in `code-server:state` shared state.
+  readiness, and tracks state in `devframes-plugin-code-server:state` shared state.
 - `proxy.ts` exposes code-server under the devframe mount base via `ctx.views` /
   the host's HTTP+WS server (`startHttpAndWs`), passing through WebSocket upgrades.
   Alternatively use the `remote` iframe dock so the browser talks to code-server's
   own origin directly (simpler, but requires that origin be reachable).
-- Diagnostics `DF96xx`: binary not found, start timeout, port conflict, proxy
+- Diagnostics `DP_CODE_SERVER_00xx`: binary not found, start timeout, port conflict, proxy
   failure.
 
 ## Client side
 
-- Vanilla shell: a Start/Stop/Open control bar bound to `code-server:status`, and
-  an `iframe` dock pointing at the mounted/remote code-server URL once ready.
+- Vanilla shell: a launcher UI (`DevframeViewLauncher`) to lazily start the server bound to `devframes-plugin-code-server:status`,
+  which transitions to an `iframe` dock pointing at the mounted/remote code-server URL once ready.
 
 ## Milestones
 
-1. Scaffold. `supervisor.ts` start/stop + `code-server:status` + readiness probe
+1. Scaffold. `supervisor.ts` start/stop + `devframes-plugin-code-server:status` + readiness probe
    (no UI embed yet; verify via curl).
 2. `iframe` dock pointing at code-server (direct origin / `remote` first — least
    proxy work).

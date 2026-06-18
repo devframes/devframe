@@ -4,7 +4,7 @@
 **Inspiration:** GitLens — repository insight surfaced inline.
 **SPA stack (Axis B):** Vue + Vite (reuses inspector UI primitives), vanilla
 fallback acceptable.
-**Diagnostics band:** `DF92xx`.
+**Diagnostics band:** `DP_GIT_00xx`.
 
 ## What it does
 
@@ -25,7 +25,7 @@ watching + `json-render` + commands/docks**. Stresses:
   and the debounce behavior `createHubContext` applies in `dev` mode;
 - `json-render` driven docks (`ctx.createJsonRenderer`) as an alternative to a
   full custom SPA for some panels;
-- command-palette entries (`git:checkout`, `git:fetch`) via `ctx.commands`.
+- command-palette entries (`devframes-plugin-git:checkout`, `devframes-plugin-git:fetch`) via `ctx.commands`.
 
 Expected gaps: efficient diffing of large repos over RPC, incremental updates vs.
 full snapshots, and error diagnostics for non-repo / detached-HEAD states.
@@ -51,14 +51,14 @@ plugins/git/
     rpc/
       index.ts
       functions/
-        status.ts           # git:status        (query, snapshot)
-        log.ts              # git:log            (query) — paginated
-        diff.ts             # git:diff           (query)
-        blame.ts            # git:blame          (query)
-        branches.ts         # git:branches       (query)
-        stage.ts            # git:stage          (action, write-gated)
-        commit.ts           # git:commit         (action, write-gated)
-        checkout.ts         # git:checkout       (action, write-gated)
+        status.ts           # devframes-plugin-git:status        (query, snapshot)
+        log.ts              # devframes-plugin-git:log            (query) — paginated
+        diff.ts             # devframes-plugin-git:diff           (query)
+        blame.ts            # devframes-plugin-git:blame          (query)
+        branches.ts         # devframes-plugin-git:branches       (query)
+        stage.ts            # devframes-plugin-git:stage          (action, write-gated)
+        commit.ts           # devframes-plugin-git:commit         (action, write-gated)
+        checkout.ts         # devframes-plugin-git:checkout       (action, write-gated)
     watcher.ts              # HEAD/index watcher → shared-state push
     spa/
   bin.mjs
@@ -70,10 +70,10 @@ plugins/git/
 - Git access via `simple-git` (or `isomorphic-git` for zero-binary portability —
   decide in milestone 0; add to the `deps` catalog). Run commands relative to
   `ctx.workspaceRoot` / `ctx.cwd`.
-- Watcher updates `git:state` shared state (branch, ahead/behind, dirty counts) on
+- Watcher updates `devframes-plugin-git:state` shared state (branch, ahead/behind, dirty counts) on
   `.git/HEAD` / index changes; debounced.
 - Write RPCs only registered when `createGitDevframe({ write: true })`; otherwise
-  omitted from the registry entirely (not just hidden). Diagnostics `DF92xx`:
+  omitted from the registry entirely (not just hidden). Diagnostics `DP_GIT_00xx`:
   not-a-repo, dirty-tree-conflict, write-disabled.
 
 ## Client side
@@ -83,10 +83,10 @@ plugins/git/
 
 ## Milestones
 
-1. Scaffold. `git:status` + Status view (read-only).
-2. `git:log` (paginated) + History; `git:diff` + Diff viewer.
-3. Live `git:state` watcher → shared state.
-4. `git:branches` + `git:blame`.
+1. Scaffold. `devframes-plugin-git:status` + Status view (read-only).
+2. `devframes-plugin-git:log` (paginated) + History; `devframes-plugin-git:diff` + Diff viewer.
+3. Live `devframes-plugin-git:state` watcher → shared state.
+4. `devframes-plugin-git:branches` + `devframes-plugin-git:blame`.
 5. Opt-in write actions + command-palette entries.
 6. tsnapi snapshot + e2e against a temp-repo fixture.
 

@@ -4,7 +4,7 @@
 **Inspiration:** axe-core powered accessibility auditing, surfaced as a devtool.
 **SPA stack (Axis B):** React via **rspack** — the proof that an rspack build
 produces a valid static devframe SPA.
-**Diagnostics band:** `DF94xx`.
+**Diagnostics band:** `DP_A11Y_00xx`.
 
 ## What it does
 
@@ -55,9 +55,9 @@ plugins/a11y/
     rpc/
       index.ts
       functions/
-        report.ts         # a11y:report        (action) — client posts results
-        scan-headless.ts  # a11y:scan-headless (action) — node+Playwright run
-        list-results.ts   # a11y:list-results  (query, snapshot)
+        report.ts         # devframes-plugin-a11y:report        (action) — client posts results
+        scan-headless.ts  # devframes-plugin-a11y:scan-headless (action) — node+Playwright run
+        list-results.ts   # devframes-plugin-a11y:list-results  (query, snapshot)
     spa/                  # React, built with rspack
   bin.mjs
   test/
@@ -65,11 +65,11 @@ plugins/a11y/
 
 ## Node side
 
-- `a11y:report` receives results from the in-page `clientScript`, stores them in
-  `a11y:results` shared state, and fans violations into `ctx.messages` (one entry
-  per violation, deduped by rule+target). Diagnostics `DF94xx`: scan failure,
+- `devframes-plugin-a11y:report` receives results from the in-page `clientScript`, stores them in
+  `devframes-plugin-a11y:results` shared state, and fans violations into `ctx.messages` (one entry
+  per violation, deduped by rule+target). Diagnostics `DP_A11Y_00xx`: scan failure,
   Playwright unavailable, invalid rule config.
-- `a11y:scan-headless` runs axe via Playwright against a URL (node-side), for the
+- `devframes-plugin-a11y:scan-headless` runs axe via Playwright against a URL (node-side), for the
   CLI/CI path.
 
 ## Client side
@@ -83,10 +83,10 @@ plugins/a11y/
 
 1. Scaffold + rspack SPA build wired to `cli.distDir` (prove rspack static SPA
    mounts + connects).
-2. In-page `clientScript` scan → `a11y:report` → `a11y:results` shared state +
+2. In-page `clientScript` scan → `devframes-plugin-a11y:report` → `devframes-plugin-a11y:results` shared state +
    results dashboard.
 3. Violations → `ctx.messages` feed; node highlighting.
-4. `a11y:scan-headless` (Playwright) + CLI/CI report.
+4. `devframes-plugin-a11y:scan-headless` (Playwright) + CLI/CI report.
 5. `when`-clause-driven actions; tsnapi snapshot + e2e.
 
 ## Open questions / risks
