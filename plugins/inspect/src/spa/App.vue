@@ -3,10 +3,11 @@ import { onMounted, ref } from 'vue'
 import AgentView from './components/AgentView.vue'
 import FunctionsView from './components/FunctionsView.vue'
 import StateView from './components/StateView.vue'
-import { useRefresh } from './composables/refresh'
+import HistoryView from './components/HistoryView.vue'
 import { connect, connection } from './composables/rpc'
+import { useRefresh } from './composables/refresh'
 
-type Tab = 'functions' | 'state' | 'agent'
+type Tab = 'functions' | 'state' | 'agent' | 'history'
 
 const tab = ref<Tab>('functions')
 const { refresh, loading } = useRefresh()
@@ -15,6 +16,7 @@ const tabs: { id: Tab, label: string }[] = [
   { id: 'functions', label: 'Functions' },
   { id: 'state', label: 'State' },
   { id: 'agent', label: 'Agent' },
+  { id: 'history', label: 'History' },
 ]
 
 onMounted(connect)
@@ -78,6 +80,7 @@ onMounted(connect)
         <FunctionsView v-if="tab === 'functions'" />
         <StateView v-else-if="tab === 'state'" />
         <AgentView v-else-if="tab === 'agent'" />
+        <HistoryView v-else-if="tab === 'history'" />
       </template>
     </main>
   </div>

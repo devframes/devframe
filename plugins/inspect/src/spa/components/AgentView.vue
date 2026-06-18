@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import type { AgentManifest } from '@devframes/plugin-inspect/client'
-import { onMounted, ref, shallowRef } from 'vue'
+import type { AgentManifest, InvokeResult } from '@devframes/plugin-inspect/client'
+import { onMounted, reactive, ref, shallowRef } from 'vue'
+import { isStatic, useRpc } from '../composables/rpc'
 import { useRefreshProvider } from '../composables/refresh'
-import { useRpc } from '../composables/rpc'
 import JsonView from './JsonView.vue'
 
 const rpc = useRpc()
 const manifest = shallowRef<AgentManifest | null>(null)
 const expanded = ref<string | null>(null)
+const argsInput = reactive<Record<string, string>>({})
+const results = reactive<Record<string, InvokeResult | { ok: false, error: { name: string, message: string } }>>({})
+const pending = reactive<Record<string, boolean>>({})
 
 async function fetchData(): Promise<void> {
   if (!rpc.value)
@@ -20,6 +23,43 @@ onMounted(fetchData)
 
 function toggle(id: string): void {
   expanded.value = expanded.value === id ? null : id
+  if (argsInput[id] === undefined) {
+    argsInput[id] = '{}'
+  }
+}
+
+async function invokeTool(id: string) {
+  if (!rpc.value) return
+  let parsed: unknown
+  try {
+    const raw = JSON.parse(argsInput[id] || '{}')
+    parsed = raw
+  } catch (e) {
+    results[id] = { ok: false, error: { name: 'SyntaxError', message: `Invalid JSON args: ${(e as Error).message}` } }
+    return
+  }
+  pending[id] = true
+  try {
+    results[id] = await rpc.value.call('devframes-plugin-inspect:invoke-agent-tool', id, parsed)
+  } catch (e) {
+    const err = e as Error
+    results[id] = { ok: false, error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) } }
+  } finally {
+    pending[id] = false
+  }
+}
+
+async function readResource(id: string) {
+  if (!rpc.value) return
+  pending[id] = true
+  try {
+    results[id] = await rpc.value.call('devframes-plugin-inspect:read-agent-resource', id)
+  } catch (e) {
+    const err = e as Error
+    results[id] = { ok: false, error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) } }
+  } finally {
+    pending[id] = false
+  }
 }
 </script>
 
@@ -37,7 +77,8 @@ function toggle(id: string): void {
       </div>
       <div v-else class="cards">
         <div v-for="tool in manifest.tools" :key="tool.id" class="card">
-          <div class="card-head">
+          <div class="card-head" style="cursor: pointer; user-select: none;" @click="toggle(tool.id)">
+            <svg class="chev" :class="{ open: expanded === tool.id }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6" /></svg>
             <span class="card-title">{{ tool.title }}</span>
             <span class="badge flag">{{ tool.kind }}</span>
             <span class="badge" :class="`safety-${tool.safety}`">{{ tool.safety }}</span>
@@ -51,33 +92,42 @@ function toggle(id: string): void {
           <div v-if="tool.tags && tool.tags.length" class="tags">
             <span v-for="tag in tool.tags" :key="tag" class="badge flag">{{ tag }}</span>
           </div>
-          <button
-            v-if="tool.inputSchema || tool.outputSchema || (tool.examples && tool.examples.length)"
-            class="btn ghost"
-            style="margin-top: 8px;"
-            @click="toggle(tool.id)"
-          >
-            {{ expanded === tool.id ? 'Hide' : 'Show' }} schema
-          </button>
           <template v-if="expanded === tool.id">
             <template v-if="tool.inputSchema">
-              <div class="label">
-                Input schema
-              </div>
+              <div class="label">Input schema</div>
               <JsonView :value="tool.inputSchema" :expand-depth="1" />
             </template>
             <template v-if="tool.outputSchema">
-              <div class="label">
-                Output schema
-              </div>
+              <div class="label">Output schema</div>
               <JsonView :value="tool.outputSchema" :expand-depth="1" />
             </template>
             <template v-if="tool.examples && tool.examples.length">
-              <div class="label">
-                Examples
-              </div>
+              <div class="label">Examples</div>
               <JsonView :value="tool.examples" :expand-depth="1" />
             </template>
+
+            <div class="label">Invoke (JSON object)</div>
+            <textarea v-model="argsInput[tool.id]" class="args" spellcheck="false" placeholder="{}" />
+            <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
+              <button class="btn" :disabled="pending[tool.id] || isStatic()" @click="invokeTool(tool.id)">
+                {{ pending[tool.id] ? 'Invoking…' : 'Invoke' }}
+              </button>
+              <span v-if="isStatic()" class="note">read-only static backend</span>
+            </div>
+            
+            <div v-if="results[tool.id]" class="result">
+              <div class="result-head">
+                <span v-if="results[tool.id].ok" class="ok">✓ resolved</span>
+                <span v-else class="fail">✕ threw</span>
+                <span v-if="'durationMs' in results[tool.id]" class="muted">{{ (results[tool.id] as InvokeResult).durationMs }}ms</span>
+              </div>
+              <JsonView
+                v-if="results[tool.id].ok"
+                :value="(results[tool.id] as InvokeResult).result"
+                :expand-depth="2"
+              />
+              <JsonView v-else :value="(results[tool.id] as InvokeResult).error" :expand-depth="2" />
+            </div>
           </template>
         </div>
       </div>
@@ -90,7 +140,8 @@ function toggle(id: string): void {
       </div>
       <div v-else class="cards">
         <div v-for="res in manifest.resources" :key="res.id" class="card">
-          <div class="card-head">
+          <div class="card-head" style="cursor: pointer; user-select: none;" @click="toggle(res.id)">
+            <svg class="chev" :class="{ open: expanded === res.id }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6" /></svg>
             <span class="card-title">{{ res.name }}</span>
             <span v-if="res.mimeType" class="badge flag">{{ res.mimeType }}</span>
           </div>
@@ -100,6 +151,29 @@ function toggle(id: string): void {
           <p v-if="res.description" class="desc">
             {{ res.description }}
           </p>
+
+          <template v-if="expanded === res.id">
+            <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
+              <button class="btn" :disabled="pending[res.id] || isStatic()" @click="readResource(res.id)">
+                {{ pending[res.id] ? 'Reading…' : 'Read Resource' }}
+              </button>
+              <span v-if="isStatic()" class="note">read-only static backend</span>
+            </div>
+            
+            <div v-if="results[res.id]" class="result">
+              <div class="result-head">
+                <span v-if="results[res.id].ok" class="ok">✓ resolved</span>
+                <span v-else class="fail">✕ threw</span>
+                <span v-if="'durationMs' in results[res.id]" class="muted">{{ (results[res.id] as InvokeResult).durationMs }}ms</span>
+              </div>
+              <JsonView
+                v-if="results[res.id].ok"
+                :value="(results[res.id] as InvokeResult).result"
+                :expand-depth="2"
+              />
+              <JsonView v-else :value="(results[res.id] as InvokeResult).error" :expand-depth="2" />
+            </div>
+          </template>
         </div>
       </div>
     </template>

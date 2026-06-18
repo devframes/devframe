@@ -3,6 +3,8 @@ import { describeAgent } from './functions/describe-agent'
 import { invoke } from './functions/invoke'
 import { listFunctions } from './functions/list-functions'
 import { listStateKeys } from './functions/list-state-keys'
+import { invokeAgentTool } from './functions/invoke-agent-tool'
+import { readAgentResource } from './functions/read-agent-resource'
 
 /**
  * The introspection RPC functions registered by the inspector plugin.
@@ -13,6 +15,8 @@ export const serverFunctions = [
   invoke,
   listStateKeys,
   describeAgent,
+  invokeAgentTool,
+  readAgentResource,
 ] as const
 
 declare module 'devframe' {
