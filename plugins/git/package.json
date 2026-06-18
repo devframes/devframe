@@ -36,8 +36,9 @@
     "build": "tsdown && pnpm run build:spa",
     "build:spa": "next build src/client && rm -rf dist/client && cp -r src/client/out dist/client",
     "cli:build": "node bin.mjs build --out-dir dist/static",
-    "dev": "node src/cli.ts",
-    "next:dev": "next dev src/client",
+    "dev": "node scripts/dev.mjs",
+    "dev:server": "node src/cli.ts",
+    "dev:client": "next dev src/client",
     "watch": "tsdown --watch",
     "prepack": "pnpm run build",
     "test": "vitest run"

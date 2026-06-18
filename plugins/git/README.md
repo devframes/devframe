@@ -57,10 +57,16 @@ degrades to an empty, `isRepo: false` result outside a git repository.
 ## Develop
 
 ```sh
-pnpm -C plugins/git build       # tsdown (node) + next build (SPA) → dist/
-pnpm -C plugins/git next:dev    # Next.js HMR for the SPA
-pnpm -C plugins/git dev         # run the CLI dev server from source
+pnpm -C plugins/git dev     # client (Next.js HMR) + RPC backend together
+pnpm -C plugins/git build   # tsdown (node) + next build (SPA) → dist/
 ```
+
+`pnpm dev` starts the Next.js dev server (with hot-reload) and the devframe
+RPC/WebSocket backend at the same time, then prints both URLs — open the UI one.
+The SPA connects to the backend over the WebSocket port carried in
+`NEXT_PUBLIC_DEVFRAME_WS`. Override ports with `PORT` (UI) and
+`DEVFRAME_GIT_PORT` (backend). Run a single side with `dev:client` or
+`dev:server`.
 
 The SPA is a standard shadcn/ui setup (Tailwind v4, `components/ui/*`). Three
 Next.js settings in `src/client/next.config.mjs` keep it portable: `output:

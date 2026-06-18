@@ -21,7 +21,17 @@ export function RpcProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false
-    connectDevframe().then(
+    // In combined dev (`pnpm dev`) the SPA is served by Next for HMR while
+    // the RPC backend runs as a separate devframe server. This env var points
+    // the client straight at that WebSocket; unset in production, where the
+    // client discovers `./__connection.json` next to index.html.
+    // Next.js statically inlines `process.env.NEXT_PUBLIC_*` at build time.
+    // eslint-disable-next-line node/prefer-global/process
+    const devWs = process.env.NEXT_PUBLIC_DEVFRAME_WS
+    const options = devWs
+      ? { connectionMeta: { backend: 'websocket' as const, websocket: devWs } }
+      : undefined
+    connectDevframe(options).then(
       (rpc) => {
         if (!cancelled)
           setState({ rpc, error: null })
