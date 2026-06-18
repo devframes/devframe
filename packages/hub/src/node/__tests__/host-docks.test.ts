@@ -172,6 +172,17 @@ describe('devframeDockHost grouping', () => {
     expect(entry.type).toBe('group')
     expect(entry.title).toBe('Nuxt DevTools')
 
-    expect(() => handle.update({ id: 'other' })).toThrow('Cannot change the id of a dock')
+    expect(() => handle.update({ id: 'other' })).toThrow('Cannot change the id of dock "nuxt" to "other"')
+  })
+
+  it('rejects updating a dock that is not registered (DF8102)', () => {
+    const host = new DevframeDocksHost(createContext())
+    expect(() => host.update({
+      type: 'iframe',
+      id: 'ghost',
+      title: 'Ghost',
+      icon: 'ph:ghost-duotone',
+      url: '/__ghost/',
+    })).toThrow('Dock with id "ghost" is not registered and cannot be updated')
   })
 })
