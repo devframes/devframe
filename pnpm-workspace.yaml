@@ -13,6 +13,8 @@ strictPeerDependencies: false
 trustPolicy: no-downgrade
 trustPolicyExclude:
   - tinyexec@1.2.2
+minimumReleaseAgeExclude:
+  - nostics@1.1.4
 packages:
   - packages/*
   - examples/*
