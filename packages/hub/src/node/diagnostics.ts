@@ -24,6 +24,10 @@ export const diagnostics = defineDiagnostics({
     DF8102: {
       why: (p: { id: string }) => `Dock with id "${p.id}" is not registered. Use register() to add new docks.`,
     },
+    DF8103: {
+      why: (p: { id: string, name: string }) => `Devframe "${p.name}" (id "${p.id}") is already mounted on this hub`,
+      fix: 'Each devframe is deduplicated by id. Set `duplicationStrategy: "duplicate"` on the definition to let instances coexist, `"silent"` to drop duplicates quietly, or `"throw"` to surface them as errors.',
+    },
     DF8200: {
       why: (p: { id: string }) => `Terminal session with id "${p.id}" already registered`,
     },

@@ -2,12 +2,17 @@ import type { DevframeHubContext } from '@devframes/hub/node'
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
 import { dirname, resolve } from 'pathe'
+import pkg from '../../../package.json' with { type: 'json' }
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
 export default defineDevframe({
   id: 'next-demo-tool',
   name: 'Next Demo Tool',
+  version: pkg.version,
+  packageName: pkg.name,
+  homepage: pkg.homepage,
+  description: 'A tiny demo devframe mounted into the Next.js hub via mountDevframe().',
   icon: 'ph:rocket-duotone',
   basePath: '/__next-demo-tool/',
   cli: {

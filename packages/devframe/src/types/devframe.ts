@@ -12,6 +12,19 @@ export type DevframeRuntime = 'cli' | 'build' | 'spa' | 'vite' | 'embedded'
  */
 export type DevframeDeploymentKind = 'standalone' | 'hosted'
 
+/**
+ * How a hub deduplicates devframes that share an `id` when more than one
+ * is mounted onto the same hub. See {@link DevframeDefinition.duplicationStrategy}.
+ *
+ * - `'warn'` (default) — keep the first registration, drop later
+ *   duplicates, and emit a warning diagnostic (`DF8103`).
+ * - `'silent'` — drop later duplicates without warning.
+ * - `'throw'` — throw when a duplicate is mounted.
+ * - `'duplicate'` — let every instance coexist under a disambiguated
+ *   dock id.
+ */
+export type DevframeDuplicationStrategy = 'warn' | 'silent' | 'throw' | 'duplicate'
+
 export interface DevframeCliOptions {
   /** Binary name; default: the devframe's `id`. */
   command?: string
@@ -106,14 +119,30 @@ export interface DevframeSetupInfo {
 export interface DevframeDefinition {
   id: string
   name: string
+  /** Semver of the tool, surfaced in hub UIs and diagnostics. */
+  version: string
+  /** npm package name the devframe ships in (e.g. `@scope/my-tool`). */
+  packageName: string
+  /** Project homepage or documentation URL. */
+  homepage: string
+  /** One-line summary of what the tool does. */
+  description: string
   icon?: string | { light: string, dark: string }
-  version?: string
   /**
    * Mount path override. Defaults depend on the adapter:
    * `/` for standalone (`cli` / `spa` / `build`), `/__<id>/` for hosted
    * (`vite` / `embedded`).
    */
   basePath?: string
+  /**
+   * How a hub reacts when another devframe sharing this one's `id` is
+   * mounted onto the same hub. Consulted only by hub adapters
+   * (`mountDevframe`); standalone adapters (`cli` / `spa` / `build`)
+   * ignore it.
+   *
+   * @default 'warn'
+   */
+  duplicationStrategy?: DevframeDuplicationStrategy
   capabilities?: {
     dev?: boolean | Record<string, boolean>
     build?: boolean | Record<string, boolean>

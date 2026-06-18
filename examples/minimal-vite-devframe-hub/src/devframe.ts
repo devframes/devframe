@@ -1,6 +1,7 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
+import pkg from '../package.json' with { type: 'json' }
 
 /**
  * A tiny demo devframe — proves a portable devframe can plug into the
@@ -14,6 +15,10 @@ import { defineDevframe } from 'devframe/types'
 export default defineDevframe({
   id: 'demo-tool',
   name: 'Demo Tool',
+  version: pkg.version,
+  packageName: pkg.name,
+  homepage: pkg.homepage,
+  description: 'A tiny demo devframe that plugs into the hub via mountDevframe().',
   icon: 'ph:rocket-duotone',
   basePath: '/__demo-tool/',
   cli: {
