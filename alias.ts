@@ -63,6 +63,11 @@ export const alias = {
   'devframe/recipes/open-helpers': r('devframe/src/recipes/open-helpers.ts'),
   'devframe/client': r('devframe/src/client/index.ts'),
   'devframe': r('devframe/src'),
+  '@devframes/plugin-inspect/client': p('inspect/src/client/index.ts'),
+  '@devframes/plugin-inspect/node': p('inspect/src/node/index.ts'),
+  '@devframes/plugin-inspect/cli': p('inspect/src/cli.ts'),
+  '@devframes/plugin-inspect/vite': p('inspect/src/vite.ts'),
+  '@devframes/plugin-inspect': p('inspect/src/index.ts'),
 }
 
 // update tsconfig.base.json

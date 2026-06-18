@@ -15,6 +15,9 @@ catalogs:
     '@preact/preset-vite':
       specifier: ^2.10.5
       version: 2.10.5
+    '@vitejs/plugin-vue':
+      specifier: ^6.0.7
+      version: 6.0.7
     mlly:
       specifier: ^1.8.2
       version: 1.8.2
@@ -201,6 +204,9 @@ catalogs:
     vite-plugin-css-injected-by-js:
       specifier: ^3.5.0
       version: 3.5.2
+    vue:
+      specifier: ^3.5.34
+      version: 3.5.34
   inlined:
     '@antfu/utils':
       specifier: ^9.3.0
@@ -780,6 +786,43 @@ importers:
       vitest:
         specifier: catalog:testing
         version: 4.1.7(@types/node@25.9.1)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      ws:
+        specifier: catalog:deps
+        version: 8.21.0
+
+  plugins/inspect:
+    dependencies:
+      '@valibot/to-json-schema':
+        specifier: catalog:deps
+        version: 1.7.0(valibot@1.4.1(typescript@6.0.3))
+      nostics:
+        specifier: catalog:deps
+        version: 1.1.4
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: catalog:build
+        version: 6.0.7(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))(vue@3.5.34(typescript@6.0.3))
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      get-port-please:
+        specifier: catalog:deps
+        version: 3.2.0
+      h3:
+        specifier: catalog:deps
+        version: 2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
+      tsdown:
+        specifier: catalog:build
+        version: 0.22.0(oxc-resolver@11.21.3)(tsx@4.22.3)(typescript@6.0.3)
+      vite:
+        specifier: catalog:build
+        version: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)
+      vitest:
+        specifier: catalog:testing
+        version: 4.1.7(@types/node@25.9.1)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      vue:
+        specifier: catalog:frontend
+        version: 3.5.34(typescript@6.0.3)
       ws:
         specifier: catalog:deps
         version: 8.21.0
@@ -11320,6 +11363,12 @@ snapshots:
     dependencies:
       '@rolldown/pluginutils': 1.0.1
       vite: 7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)
+      vue: 3.5.34(typescript@6.0.3)
+
+  '@vitejs/plugin-vue@6.0.7(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))(vue@3.5.34(typescript@6.0.3))':
+    dependencies:
+      '@rolldown/pluginutils': 1.0.1
+      vite: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)
       vue: 3.5.34(typescript@6.0.3)
 
   '@vitest/eslint-plugin@1.6.17(@typescript-eslint/eslint-plugin@8.59.2(@typescript-eslint/parser@8.59.2(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3)(vitest@4.1.7(@types/node@25.9.1)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))':
