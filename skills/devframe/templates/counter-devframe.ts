@@ -10,13 +10,15 @@ export default defineDevframe({
   name: 'Counter',
   icon: 'ph:counter-duotone',
   setup(ctx) {
-    ctx.rpc.register(defineRpcFunction({
-      name: 'counter:get',
+    // Scoped context — auto-namespaces ids with `counter:`.
+    const my = ctx.scope('counter')
+    my.rpc.register(defineRpcFunction({
+      name: 'get', // -> counter:get
       type: 'static',
       handler: () => ({ count: counter }),
     }))
-    ctx.rpc.register(defineRpcFunction({
-      name: 'counter:bump',
+    my.rpc.register(defineRpcFunction({
+      name: 'bump', // -> counter:bump
       type: 'action',
       handler: () => ({ count: ++counter }),
     }))

@@ -9,11 +9,13 @@ export default defineDevframe({
   name: 'My Inspector',
   icon: 'ph:magnifying-glass-duotone',
   setup(ctx) {
-    ctx.rpc.register(defineRpcFunction({
-      name: 'my-inspector:analyze',
+    const my = ctx.scope('my-inspector')
+    my.rpc.register(defineRpcFunction({
+      name: 'analyze', // -> my-inspector:analyze
       type: 'query',
       args: [v.object({ url: v.string() })],
-      handler: async ({ url }: { url: string }) => {
+      returns: v.object({ url: v.string(), verdict: v.literal('ok') }),
+      handler: ({ url }: { url: string }) => {
         // Server-side implementation (used by CLI/build adapters).
         return { url, verdict: 'ok' as const }
       },

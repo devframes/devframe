@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
-import { serverFunctions } from './rpc/index.ts'
+import { NAMESPACE, serverFunctions } from './rpc/index.ts'
 
 const BASE_PATH = '/__devframe-files-inspector/'
 const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))
@@ -17,7 +17,9 @@ export default defineDevframe({
   },
   spa: { loader: 'none' },
   setup(ctx) {
+    // A scoped context auto-namespaces every registered id with `NAMESPACE:`.
+    const my = ctx.scope(NAMESPACE)
     for (const fn of serverFunctions)
-      ctx.rpc.register(fn)
+      my.rpc.register(fn)
   },
 })

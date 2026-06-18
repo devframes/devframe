@@ -66,6 +66,9 @@
       "devframe/utils/promise": [
         "./packages/devframe/src/utils/promise.ts"
       ],
+      "devframe/utils/scope": [
+        "./packages/devframe/src/utils/scope.ts"
+      ],
       "devframe/utils/serve-static": [
         "./packages/devframe/src/utils/serve-static.ts"
       ],

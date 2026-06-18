@@ -9,21 +9,21 @@ function formatStartedAt(epoch: number): string {
 }
 
 export function SnapshotSystem() {
-  const { rpc } = useRpc()
+  const { ctx } = useRpc()
   const [info, setInfo] = useState<SystemInfo | null>(null)
 
   useEffect(() => {
-    if (!rpc)
+    if (!ctx)
       return
     let active = true
-    rpc.call('next-runtime-snapshot:system').then((r) => {
+    ctx.rpc.call('system').then((r) => {
       if (active)
         setInfo(r)
     })
     return () => {
       active = false
     }
-  }, [rpc])
+  }, [ctx])
 
   return (
     <section className="card">

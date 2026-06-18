@@ -1,12 +1,14 @@
-import type { DevframeRpcClient } from 'devframe/client'
+import type { DevframeScopedClientContext } from 'devframe/client'
 import type { StreamReader } from 'devframe/utils/streaming-channel'
 import type { ChatHistory, ChatMessage } from '../types'
 import { connectDevframe } from 'devframe/client'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
-import { CHANNEL_NAME, HISTORY_KEY } from '../constants'
+import { CHANNEL, HISTORY, NAMESPACE } from '../constants'
+
+type ChatCtx = DevframeScopedClientContext<typeof NAMESPACE>
 
 export function App() {
-  const [rpc, setRpc] = useState<DevframeRpcClient | null>(null)
+  const [ctx, setCtx] = useState<ChatCtx | null>(null)
   const [demoPrompts, setDemoPrompts] = useState<string[]>([])
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [liveTokens, setLiveTokens] = useState<Record<string, string>>({})
@@ -22,9 +24,10 @@ export function App() {
     connectDevframe().then(async (r) => {
       if (cancelled)
         return
-      setRpc(r)
+      const scoped = r.scope(NAMESPACE)
+      setCtx(scoped)
       try {
-        const result = await r.call('devframe-streaming-chat:demo-prompts')
+        const result = await scoped.rpc.call('demo-prompts')
         if (!cancelled)
           setDemoPrompts(result.prompts)
       }
@@ -42,12 +45,12 @@ export function App() {
 
   // Bind to the server-side chat history shared state.
   useEffect(() => {
-    if (!rpc)
+    if (!ctx)
       return
     let off: (() => void) | undefined
     let active = true
-    rpc.sharedState
-      .get(HISTORY_KEY, { initialValue: { messages: [] } })
+    ctx.rpc
+      .sharedState(HISTORY, { initialValue: { messages: [] } })
       .then((state) => {
         if (!active)
           return
@@ -60,13 +63,13 @@ export function App() {
       active = false
       off?.()
     }
-  }, [rpc])
+  }, [ctx])
 
   // For each assistant message that's currently streaming, subscribe to the
   // tokens channel and accumulate into `liveTokens`. When the server commits
   // the final content (`streamId` cleared), we drop the live overlay.
   useEffect(() => {
-    if (!rpc)
+    if (!ctx)
       return
     for (const msg of messages) {
       if (msg.role !== 'assistant' || !msg.streamId)
@@ -74,7 +77,7 @@ export function App() {
       if (readersRef.current.has(msg.id))
         continue
 
-      const reader = rpc.streaming.subscribe<string>(CHANNEL_NAME, msg.streamId)
+      const reader = ctx.rpc.streaming.subscribe<string>(CHANNEL, msg.streamId)
       readersRef.current.set(msg.id, reader)
       setLiveTokens(prev => ({ ...prev, [msg.id]: '' }))
 
@@ -107,7 +110,7 @@ export function App() {
       }
       return changed ? next : prev
     })
-  }, [rpc, messages])
+  }, [ctx, messages])
 
   // Auto-scroll on new messages / live tokens.
   useEffect(() => {
@@ -129,19 +132,19 @@ export function App() {
   const isStreaming = !!activeAssistantId
 
   const send = useCallback(async (text: string) => {
-    if (!rpc || isStreaming || !text.trim())
+    if (!ctx || isStreaming || !text.trim())
       return
     setError(null)
     setPrompt('')
     try {
-      await rpc.call('devframe-streaming-chat:send', {
+      await ctx.rpc.call('send', {
         prompt: text.trim(),
       })
     }
     catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
-  }, [rpc, isStreaming])
+  }, [ctx, isStreaming])
 
   const cancel = useCallback(() => {
     if (!activeAssistantId)
@@ -151,17 +154,17 @@ export function App() {
   }, [activeAssistantId])
 
   const clear = useCallback(async () => {
-    if (!rpc || isStreaming)
+    if (!ctx || isStreaming)
       return
     try {
-      await rpc.call('devframe-streaming-chat:clear')
+      await ctx.rpc.call('clear')
     }
     catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
-  }, [rpc, isStreaming])
+  }, [ctx, isStreaming])
 
-  if (!rpc)
+  if (!ctx)
     return <main><p>Connecting to devframe…</p></main>
 
   return (
@@ -228,7 +231,7 @@ export function App() {
       <div class="status">
         backend:
         {' '}
-        <code>{rpc.connectionMeta.backend}</code>
+        <code>{ctx.base.connectionMeta.backend}</code>
         {' · '}
         {messages.length}
         {' '}

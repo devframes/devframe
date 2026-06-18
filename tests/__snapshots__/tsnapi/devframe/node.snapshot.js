@@ -9,8 +9,10 @@ export function normalizeHttpServerUrl(_, _) {}
 // #region Other
 export { createH3DevframeHost }
 export { createHostContext }
+export { createNodeSettings }
 export { createRpcSharedStateServerHost }
 export { createRpcStreamingServerHost }
+export { createScopedNodeContext }
 export { createStorage }
 export { DevframeAgentHost }
 export { DevframeDiagnosticsHost }

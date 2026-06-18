@@ -35,12 +35,14 @@ export default defineDevframe({
   id: 'my-devframe',
   name: 'My Devframe',
   async setup(ctx) {
-    const channel = ctx.rpc.streaming.create<string>('my-devframe:chat', {
+    const my = ctx.scope('my-devframe')
+
+    const channel = my.rpc.streaming.create<string>('chat', { // -> my-devframe:chat
       replayWindow: 256,
     })
 
-    ctx.rpc.register(defineRpcFunction({
-      name: 'my-devframe:start-chat',
+    my.rpc.register(defineRpcFunction({
+      name: 'start-chat', // -> my-devframe:start-chat
       type: 'action',
       jsonSerializable: true,
       args: [v.object({ prompt: v.string() })],
@@ -60,7 +62,7 @@ export default defineDevframe({
 })
 ```
 
-The channel name follows the same `<plugin-id>:<name>` convention as RPC functions.
+The channel name follows the same `<plugin-id>:<name>` convention as RPC functions — the scoped `my.rpc.streaming.create('chat')` applies the prefix for you.
 
 ## Producing — three surfaces, one stream
 
@@ -115,12 +117,12 @@ The client returns a reader that's both an `AsyncIterable<T>` and exposes a `Rea
 ```ts
 import { connectDevframe } from 'devframe/client'
 
-const rpc = await connectDevframe()
-const { streamId } = await rpc.call('my-devframe:start-chat', {
+const my = (await connectDevframe()).scope('my-devframe')
+const { streamId } = await my.rpc.call('start-chat', {
   prompt: 'Hello',
 })
 
-const reader = rpc.streaming.subscribe<string>('my-devframe:chat', streamId)
+const reader = my.rpc.streaming.subscribe<string>('chat', streamId) // -> my-devframe:chat
 
 // Async iterable — the simplest consumer pattern
 for await (const token of reader)
@@ -175,10 +177,10 @@ ctx.rpc.register(defineRpcFunction({
 
 ```ts
 // Client
-const { uploadId } = await rpc.call('my-devframe:upload-file', {
+const { uploadId } = await my.rpc.call('upload-file', {
   name: 'capture.bin',
 })
-const upload = rpc.streaming.upload<Uint8Array>('my-devframe:files', uploadId)
+const upload = my.rpc.streaming.upload<Uint8Array>('files', uploadId) // -> my-devframe:files
 
 // Imperative
 upload.write(chunk1)
@@ -202,7 +204,7 @@ Each `openInbound()` allocates a fresh server-side id owned by exactly one uploa
 With `replayWindow: N`, the server keeps a rolling buffer of the last `N` chunks per stream. On (re)subscribe, the client passes the highest sequence number it has seen, and the server replays anything newer before resuming live.
 
 ```ts
-ctx.rpc.streaming.create<string>('my-devframe:chat', {
+my.rpc.streaming.create<string>('chat', { // -> my-devframe:chat
   replayWindow: 256, // chunks to retain per stream id
   closedStreamRetention: 30_000, // ms to hold closed streams for late subscribers
 })
@@ -215,7 +217,7 @@ ctx.rpc.streaming.create<string>('my-devframe:chat', {
 The client maintains a bounded queue per subscription (`highWaterMark`, default 256). When the consumer falls behind, the oldest queued chunk drops and a [`DF0029`](../errors/DF0029) warning is logged. This is best-effort — sufficient for current streaming use cases without threading transport-level backpressure through birpc.
 
 ```ts
-const reader = rpc.streaming.subscribe('my-devframe:chat', id, {
+const reader = my.rpc.streaming.subscribe('chat', id, { // -> my-devframe:chat
   highWaterMark: 1024, // raise if you expect bursts the consumer can recover from
 })
 ```

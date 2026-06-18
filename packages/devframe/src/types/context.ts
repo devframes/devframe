@@ -1,6 +1,7 @@
 import type { DevframeAgentHost } from './agent'
 import type { DevframeDiagnosticsHost } from './diagnostics'
 import type { DevframeHost } from './host'
+import type { DevframeScopedNodeContext, SettingsForNamespace } from './scope'
 import type { DevframeViewHost } from './views'
 
 export interface DevframeCapabilities {
@@ -51,6 +52,14 @@ export interface DevframeNodeContext {
    * @experimental
    */
   agent: DevframeAgentHost
+  /**
+   * Create a namespace-scoped view of this context. The returned
+   * `ctx.scope('my-plugin')` auto-namespaces every RPC id, shared-state
+   * key, and streaming channel with `my-plugin:`, and exposes a typed
+   * top-level `settings` store. This is the preferred way to consume the
+   * context from a single tool's setup code.
+   */
+  scope: <NS extends string>(namespace: NS) => DevframeScopedNodeContext<NS, SettingsForNamespace<NS>>
 }
 
 export interface ConnectionMeta {

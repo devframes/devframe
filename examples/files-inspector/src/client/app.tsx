@@ -1,8 +1,11 @@
-import type { DevframeRpcClient } from 'devframe/client'
+import type { DevframeScopedClientContext } from 'devframe/client'
 import { connectDevframe } from 'devframe/client'
 import { useEffect, useState } from 'preact/hooks'
 import { About } from './routes/about'
 import { Home } from './routes/home'
+
+const NAMESPACE = 'devframe-files-inspector'
+export type InspectorCtx = DevframeScopedClientContext<typeof NAMESPACE>
 
 function getBasePath(): string {
   return new URL(document.baseURI).pathname
@@ -19,13 +22,13 @@ function getRoute(basePath: string): string {
 export function App() {
   const basePath = getBasePath()
   const [route, setRoute] = useState(getRoute(basePath))
-  const [rpc, setRpc] = useState<DevframeRpcClient | null>(null)
+  const [ctx, setCtx] = useState<InspectorCtx | null>(null)
 
   useEffect(() => {
     let cancelled = false
     connectDevframe().then((r) => {
       if (!cancelled)
-        setRpc(r)
+        setCtx(r.scope(NAMESPACE))
     })
     const onPop = () => setRoute(getRoute(basePath))
     window.addEventListener('popstate', onPop)
@@ -41,7 +44,7 @@ export function App() {
     setRoute(to)
   }
 
-  if (!rpc)
+  if (!ctx)
     return <p>Connecting to devframe…</p>
 
   return (
@@ -76,13 +79,13 @@ export function App() {
           {' | '}
           backend:
           {' '}
-          <code>{rpc.connectionMeta.backend}</code>
+          <code>{ctx.base.connectionMeta.backend}</code>
         </small>
       </header>
       <hr />
       {route === '/about'
-        ? <About rpc={rpc} basePath={basePath} />
-        : <Home rpc={rpc} />}
+        ? <About ctx={ctx} basePath={basePath} />
+        : <Home ctx={ctx} />}
     </main>
   )
 }

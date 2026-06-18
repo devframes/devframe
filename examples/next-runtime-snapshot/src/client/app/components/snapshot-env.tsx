@@ -5,23 +5,23 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRpc } from './connect'
 
 export function SnapshotEnv() {
-  const { rpc } = useRpc()
+  const { ctx } = useRpc()
   const [pattern, setPattern] = useState('NODE')
   const [snap, setSnap] = useState<EnvSnapshot | null>(null)
   const [loading, setLoading] = useState(false)
 
   const fetchEnv = useCallback(async (p: string) => {
-    if (!rpc)
+    if (!ctx)
       return
     setLoading(true)
     try {
-      const r = await rpc.call('next-runtime-snapshot:env', { pattern: p })
+      const r = await ctx.rpc.call('env', { pattern: p })
       setSnap(r)
     }
     finally {
       setLoading(false)
     }
-  }, [rpc])
+  }, [ctx])
 
   useEffect(() => {
     const t = setTimeout(() => void fetchEnv(pattern), 200)

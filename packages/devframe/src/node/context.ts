@@ -1,5 +1,5 @@
 import type { RpcFunctionDefinitionAny } from 'devframe/rpc'
-import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
+import type { DevframeHost, DevframeNodeContext, DevframeScopedNodeContext } from 'devframe/types'
 import { diagnostics as rpcDiagnostics } from '../rpc/diagnostics'
 import { diagnostics as devframeDiagnostics } from './diagnostics'
 import { DevframeAgentHost } from './host-agent'
@@ -7,6 +7,7 @@ import { DevframeDiagnosticsHost } from './host-diagnostics'
 import { RpcFunctionsHost } from './host-functions'
 import { DevframeViewHost } from './host-views'
 import { BUILTIN_AGENT_RPC } from './rpc'
+import { createScopedNodeContext } from './scope'
 
 export interface CreateHostContextOptions {
   cwd: string
@@ -41,6 +42,7 @@ export async function createHostContext(options: CreateHostContextOptions): Prom
     views: undefined!,
     diagnostics: undefined!,
     agent: undefined!,
+    scope: undefined!,
   } as unknown as DevframeNodeContext
 
   const rpcHost = new RpcFunctionsHost(context)
@@ -55,6 +57,18 @@ export async function createHostContext(options: CreateHostContextOptions): Prom
   // the `agent` field.
   const agentHost = new DevframeAgentHost(context)
   context.agent = agentHost
+
+  // Namespace-scoped views are memoized per namespace so repeated
+  // `ctx.scope('my-plugin')` calls return a stable object.
+  const scopedCache = new Map<string, DevframeScopedNodeContext<string>>()
+  context.scope = ((namespace: string) => {
+    let scoped = scopedCache.get(namespace)
+    if (!scoped) {
+      scoped = createScopedNodeContext(context, namespace)
+      scopedCache.set(namespace, scoped)
+    }
+    return scoped
+  }) as DevframeNodeContext['scope']
 
   // Auto-register devframe's own agent introspection RPCs. These power
   // the MCP adapter and any future agent CLI. They are not themselves

@@ -10,9 +10,12 @@ client (re)joins mid-stream.
 
 ## What it shows
 
-- `ctx.rpc.streaming.create(name, opts)` registers a streaming channel.
-- `ctx.rpc.sharedState.get('devframe-streaming-chat:history', …)` keeps
-  the message log on the server. Each `send` action appends a user +
+- A scoped context (`ctx.scope('devframe-streaming-chat')`) is the
+  preferred entry point — it auto-namespaces every id.
+- `my.rpc.streaming.create('tokens', opts)` registers a streaming channel
+  (`devframe-streaming-chat:tokens`).
+- `my.rpc.sharedState('history', …)` keeps the message log on the server
+  (`devframe-streaming-chat:history`). Each `send` action appends a user +
   assistant pair atomically.
 - The producer streams tokens via the channel for low-latency rendering,
   then commits the joined content back to the shared state when it's

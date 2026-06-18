@@ -16,6 +16,7 @@ export interface DevframeRpcClient {
   sharedState: RpcSharedStateHost;
   streaming: RpcStreamingClientHost;
   cacheManager: RpcCacheManager;
+  scope: <NS extends string>(_: NS) => DevframeScopedClientContext<NS, SettingsForNamespace<NS>>;
 }
 export interface DevframeRpcClientMode {
   readonly isTrusted: boolean;
@@ -37,6 +38,40 @@ export interface DevframeRpcClientOptions {
 export interface DevframeRpcContext {
   readonly rpc: DevframeRpcClient;
 }
+export interface DevframeScopedClientContext<NS extends string = string, Settings extends Record<string, any> = Record<string, any>> {
+  readonly namespace: NS;
+  readonly base: DevframeRpcClient;
+  rpc: DevframeScopedClientRpc<NS>;
+  settings: DevframeSettings<Settings>;
+}
+export interface DevframeScopedClientRpc<NS extends string = string> {
+  readonly namespace: NS;
+  register: (_: RpcFunctionDefinition<string, any, any, any, any, any, DevframeRpcContext>) => void;
+  call: {
+    <T extends keyof ScopedServerFunctions<NS> & string>(_: T, ..._: Parameters<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>>>;
+    <T extends keyof DevframeRpcServerFunctions & string>(_: T, ..._: Parameters<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>>>;
+    (_: string, ..._: any[]): Promise<any>;
+  };
+  callEvent: {
+    <T extends keyof ScopedServerFunctions<NS> & string>(_: T, ..._: Parameters<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>): void;
+    <T extends keyof DevframeRpcServerFunctions & string>(_: T, ..._: Parameters<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>): void;
+    (_: string, ..._: any[]): void;
+  };
+  callOptional: {
+    <T extends keyof ScopedServerFunctions<NS> & string>(_: T, ..._: Parameters<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>> | undefined>;
+    <T extends keyof DevframeRpcServerFunctions & string>(_: T, ..._: Parameters<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>> | undefined>;
+    (_: string, ..._: any[]): Promise<any>;
+  };
+  sharedState: {
+    <T extends keyof ScopedSharedStates<NS> & string>(_: T, _?: RpcSharedStateGetOptions<ScopedSharedStates<NS>[T]>): Promise<SharedState<ScopedSharedStates<NS>[T]>>;
+    <T extends Record<string, any> = Record<string, any>>(_: string, _?: RpcSharedStateGetOptions<T>): Promise<SharedState<T>>;
+  };
+  streaming: DevframeScopedClientStreamingHost;
+}
+export interface DevframeScopedClientStreamingHost {
+  subscribe: <T = unknown>(_: string, _: string, _?: StreamingSubscribeOptions) => StreamReader<T>;
+  upload: <T = unknown>(_: string, _: string) => StreamSink<T>;
+}
 export interface RpcClientEvents {
   'rpc:is-trusted:updated': (_: boolean) => void;
 }
@@ -57,7 +92,9 @@ export type DevframeRpcClientCallOptional = BirpcReturn<DevframeRpcServerFunctio
 // #endregion
 
 // #region Functions
+export declare function createClientSettings<T extends Record<string, any> = Record<string, any>>(_: DevframeRpcClient, _: string): DevframeSettings<T>;
 export declare function createRpcStreamingClientHost(_: DevframeRpcClient): RpcStreamingClientHost;
+export declare function createScopedClientContext<NS extends string = string>(_: DevframeRpcClient, _: NS): DevframeScopedClientContext<NS>;
 export declare function getDevframeRpcClient(_?: DevframeRpcClientOptions): Promise<DevframeRpcClient>;
 // #endregion
 

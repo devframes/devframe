@@ -19,6 +19,7 @@ export { RpcCacheManager }
 export { RpcCacheOptions }
 export { RpcDefinitionsFilter }
 export { RpcDefinitionsToFunctions }
+export { RpcDefinitionsToFunctionsWithNamespace }
 export { RpcDump }
 export { RpcDumpClientOptions }
 export { RpcDumpCollectionOptions }

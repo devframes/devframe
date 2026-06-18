@@ -22,22 +22,22 @@ function fmtUptime(seconds: number): string {
 }
 
 export function SnapshotMemory() {
-  const { rpc } = useRpc()
+  const { ctx } = useRpc()
   const [snap, setSnap] = useState<MemorySnapshot | null>(null)
   const [loading, setLoading] = useState(false)
 
   const refresh = useCallback(async () => {
-    if (!rpc)
+    if (!ctx)
       return
     setLoading(true)
     try {
-      const r = await rpc.call('next-runtime-snapshot:memory')
+      const r = await ctx.rpc.call('memory')
       setSnap(r)
     }
     finally {
       setLoading(false)
     }
-  }, [rpc])
+  }, [ctx])
 
   useEffect(() => {
     void refresh()
@@ -48,7 +48,7 @@ export function SnapshotMemory() {
       <h2>
         <span>Memory & Uptime</span>
         <span className="actions">
-          <button type="button" onClick={refresh} disabled={!rpc || loading}>
+          <button type="button" onClick={refresh} disabled={!ctx || loading}>
             {loading ? 'Refreshing…' : 'Refresh'}
           </button>
         </span>

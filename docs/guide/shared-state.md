@@ -27,7 +27,7 @@ flowchart LR
 
 ## Creating state
 
-Use `ctx.rpc.sharedState.get(key, options)` in your `setup`:
+Use a [scoped context](./scoped-context) in your `setup` — `rpc.sharedState(key, options)` namespaces the key for you:
 
 ```ts
 import { defineDevframe } from 'devframe'
@@ -36,7 +36,9 @@ export default defineDevframe({
   id: 'my-devframe',
   name: 'My Devframe',
   async setup(ctx) {
-    const state = await ctx.rpc.sharedState.get('my-devframe:state', {
+    const my = ctx.scope('my-devframe')
+
+    const state = await my.rpc.sharedState('state', { // -> my-devframe:state
       initialValue: {
         count: 0,
         items: [] as { id: string, name: string }[],
@@ -48,7 +50,7 @@ export default defineDevframe({
 })
 ```
 
-Namespace keys with `<devframe-id>:<key>` to avoid collisions when multiple devframes share a host.
+This wraps `ctx.rpc.sharedState.get('my-devframe:state', options)`. Keys are namespaced as `<devframe-id>:<key>` to avoid collisions when multiple devframes share a host; the scope applies that prefix so you pass a bare key.
 
 ## Reading
 
@@ -103,14 +105,14 @@ state.on('updated', (fullState, patches, syncId) => {
 
 ## Client-side access
 
-The same key is available on the RPC client in the browser:
+The same key is available on the RPC client in the browser — scope it the same way:
 
 ```ts
 import { connectDevframe } from 'devframe/client'
 
-const rpc = await connectDevframe()
+const my = (await connectDevframe()).scope('my-devframe')
 
-const state = await rpc.sharedState.get('my-devframe:state')
+const state = await my.rpc.sharedState('state') // -> my-devframe:state
 
 console.log(state.value().count)
 
@@ -152,7 +154,7 @@ declare module 'devframe' {
 }
 ```
 
-After this declaration, `ctx.rpc.sharedState.get('my-devframe:state')` and `rpc.sharedState.get('my-devframe:state')` both return a host typed to the declared shape.
+After this declaration, `ctx.rpc.sharedState.get('my-devframe:state')` and the scoped `my.rpc.sharedState('state')` both return a state typed to the declared shape, on the server and the client.
 
 ## When to use shared state vs RPC
 

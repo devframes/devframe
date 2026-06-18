@@ -6,7 +6,7 @@ import { SnapshotMemory } from './components/snapshot-memory'
 import { SnapshotSystem } from './components/snapshot-system'
 
 function StatusBar() {
-  const { rpc, error } = useRpc()
+  const { ctx, error } = useRpc()
   if (error) {
     return (
       <div className="status">
@@ -18,14 +18,14 @@ function StatusBar() {
       </div>
     )
   }
-  if (!rpc) {
+  if (!ctx) {
     return <div className="status">connecting…</div>
   }
   return (
     <div className="status">
       backend:
       {' '}
-      <code>{rpc.connectionMeta.backend}</code>
+      <code>{ctx.base.connectionMeta.backend}</code>
     </div>
   )
 }
