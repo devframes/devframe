@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
+import pkg from '../package.json' with { type: 'json' }
 import { serverFunctions } from './rpc/index.ts'
 
 const BASE_PATH = '/__devframe-files-inspector/'
@@ -8,6 +9,10 @@ const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))
 export default defineDevframe({
   id: 'devframe-files-inspector',
   name: 'Files Inspector',
+  version: pkg.version,
+  packageName: pkg.name,
+  homepage: pkg.homepage,
+  description: pkg.description,
   icon: 'ph:folder-open-duotone',
   basePath: BASE_PATH,
   cli: {

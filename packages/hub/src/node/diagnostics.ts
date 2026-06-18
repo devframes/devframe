@@ -34,6 +34,10 @@ export const diagnostics = defineDiagnostics({
       why: (p: { id: string }) => `Dock group "${p.id}" cannot itself belong to a group (nested groups are unsupported)`,
       fix: 'Remove groupId from the group entry; nest members one level only.',
     },
+    DF8105: {
+      why: (p: { id: string, name: string }) => `Devframe "${p.name}" (id "${p.id}") is already mounted on this hub`,
+      fix: 'Each devframe is deduplicated by id. Set `duplicationStrategy: "duplicate"` on the definition to let instances coexist, `"silent"` to drop duplicates quietly, or `"throw"` to surface them as errors.',
+    },
     DF8200: {
       why: (p: { id: string }) => `Terminal session with id "${p.id}" already registered`,
     },

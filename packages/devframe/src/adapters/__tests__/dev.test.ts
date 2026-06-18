@@ -18,6 +18,10 @@ describe('adapters/dev', () => {
     const devframe = defineDevframe({
       id: 'devframe-test',
       name: 'Devframe Test',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
       setup: () => {},
     })
 
@@ -48,6 +52,10 @@ describe('adapters/dev', () => {
     const devframe = defineDevframe({
       id: 'devframe-test-nodist',
       name: 'No Dist',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
       setup: () => {},
     })
     const host = '127.0.0.1'
@@ -82,6 +90,10 @@ describe('adapters/dev', () => {
     const devframe = defineDevframe({
       id: 'devframe-test-port',
       name: 'Port Test',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
       setup: () => {},
       cli: { port: preferred },
     })
@@ -94,6 +106,10 @@ describe('adapters/dev', () => {
     const devframe = defineDevframe({
       id: 'devframe-test-port-override',
       name: 'Port Override',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
       setup: () => {},
       cli: { port: 9999 },
     })

@@ -43,6 +43,25 @@ await mountDevframe(ctx, myDevframe)
 
 Framework kits typically wrap this in a plugin shell. `@vitejs/devtools-kit`'s `createPluginFromDevframe` returns a Vite `Plugin` whose `devtools.setup` calls into `mountDevframe`.
 
+### Duplicate devframes
+
+When a devframe sharing an already-mounted `id` is mounted onto the same hub, its `duplicationStrategy` decides what happens. By default the first registration wins:
+
+| Strategy | Behavior |
+|---|---|
+| `'warn'` (default) | Keep the first registration, drop the later one, and emit `DF8105`. |
+| `'silent'` | Drop the later one without warning. |
+| `'throw'` | Throw `DF8105`. |
+| `'duplicate'` | Let every instance coexist under a disambiguated dock id (`my-tool`, `my-tool-2`, …). |
+
+```ts
+defineDevframe({
+  id: 'my-tool',
+  // …
+  duplicationStrategy: 'duplicate',
+})
+```
+
 ## Grouping dock entries
 
 When a hub combines many integrations, related dock entries can collapse under a single dock-bar button. A `type: 'group'` entry is that button; any entry pointing its `groupId` at the group's `id` becomes a member.
