@@ -38,7 +38,8 @@
   ],
   "scripts": {
     "build": "tsdown && vite build --config src/spa/vite.config.ts",
-    "dev": "node bin.mjs",
+    "dev": "vite --config src/spa/vite.config.ts --host 0.0.0.0",
+    "watch": "tsdown --watch",
     "cli:build": "node bin.mjs build --out-dir dist/static",
     "prepack": "pnpm build",
     "test": "vitest run"
