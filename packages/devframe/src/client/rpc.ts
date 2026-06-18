@@ -7,8 +7,8 @@ import {
   DEVFRAME_CONNECTION_META_FILENAME,
 } from 'devframe/constants'
 import { RpcCacheManager, RpcFunctionsCollectorBase } from 'devframe/rpc'
+import { randomToken } from 'devframe/utils/crypto-token'
 import { createEventEmitter } from 'devframe/utils/events'
-import { humanId } from 'devframe/utils/human-id'
 import { createRpcSharedStateClientHost } from './rpc-shared-state'
 import { createStaticRpcClientMode } from './rpc-static'
 import { createRpcStreamingClientHost } from './rpc-streaming'
@@ -144,7 +144,7 @@ function getConnectionAuthTokenFromWindows(userAuthToken?: string): string {
   }
 
   if (!value)
-    value = humanId()
+    value = randomToken()
 
   localStorage.setItem(CONNECTION_AUTH_TOKEN_KEY, value)
   ;(globalThis as any)[CONNECTION_AUTH_TOKEN_KEY] = value

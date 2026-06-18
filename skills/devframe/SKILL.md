@@ -468,8 +468,8 @@ Devframe re-exports a curated set of helpers under `devframe/utils/*`. They are 
 | `launchEditor` from `devframe/utils/launch-editor` | `launch-editor` | Open `file:line:column` in the user's editor (optional `editor` arg) |
 | `hash` from `devframe/utils/hash` | `ohash` | Stable structural hash — cache keys, dedup |
 | `structuredClone{Serialize,Deserialize,Stringify,Parse}` from `devframe/utils/structured-clone` | `structured-clone-es` | JSON-safe round-trip of `Map` / `Set` / `Date` / `BigInt` / cycles |
-| `humanId` from `devframe/utils/human-id` | `human-id` | Human-readable IDs (`bright-orange-tiger`) |
 | `nanoid` from `devframe/utils/nanoid` | (vendored) | URL-safe random IDs |
+| `randomToken` / `randomDigits` / `timingSafeEqual` from `devframe/utils/crypto-token` | (native WebCrypto) | CSPRNG bearer tokens, one-time codes, constant-time compare |
 | `promiseWithResolver` from `devframe/utils/promise` | — | Externally-controlled `Promise` |
 | `createEventEmitter` from `devframe/utils/events` | — | Typed event bus |
 | `createSharedState` from `devframe/utils/shared-state` | (immer internal) | Immutable state container (see `ctx.rpc.sharedState`) |

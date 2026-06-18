@@ -74,16 +74,6 @@ const wire = structuredCloneStringify(new Map([['a', 1]]))
 const value = structuredCloneParse<Map<string, number>>(wire)
 ```
 
-### `devframe/utils/human-id`
-
-Generate a human-readable, lowercase, dash-separated random ID.
-
-```ts
-import { humanId } from 'devframe/utils/human-id'
-
-humanId() // 'bright-orange-tiger'
-```
-
 ### `devframe/utils/nanoid`
 
 Tiny URL-safe random ID generator (vendored, no runtime dependency).
@@ -93,6 +83,18 @@ import { nanoid } from 'devframe/utils/nanoid'
 
 nanoid() // 21 chars
 nanoid(10) // 10 chars
+```
+
+### `devframe/utils/crypto-token`
+
+Cryptographically-secure token helpers built on the WebCrypto global, so they run in browsers and Node alike. Use these for bearer credentials and human-typed one-time codes.
+
+```ts
+import { randomDigits, randomToken, timingSafeEqual } from 'devframe/utils/crypto-token'
+
+randomToken() // 32-char hex, 128 bits of entropy — use as a bearer token
+randomDigits(6) // '047204' — uniform, leading zeros preserved
+timingSafeEqual(input, secret) // constant-time string comparison
 ```
 
 ### `devframe/utils/promise`

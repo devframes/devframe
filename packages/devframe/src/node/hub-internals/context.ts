@@ -1,6 +1,6 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
-import { humanId } from 'devframe/utils/human-id'
+import { randomToken } from 'devframe/utils/crypto-token'
 import { join } from 'pathe'
 import { revokeActiveConnectionsForToken, revokeAuthToken } from '../auth/revoke'
 import { createStorage } from '../storage'
@@ -80,7 +80,7 @@ export function getInternalContext(context: DevframeNodeContext): DevframeIntern
       revokeAuthToken: (token: string) => revokeAuthToken(context, storage, token),
       remoteTokens,
       allocateRemoteToken(dockId, origin, originLock) {
-        const token = humanId()
+        const token = randomToken()
         remoteTokens.set(token, { dockId, origin, originLock })
         return token
       },

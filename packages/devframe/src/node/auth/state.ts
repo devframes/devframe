@@ -1,7 +1,18 @@
 import type { DevframeNodeRpcSession } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { InternalAnonymousAuthStorage } from '../hub-internals/context'
-import { humanId } from 'devframe/utils/human-id'
+import { randomDigits, timingSafeEqual } from 'devframe/utils/crypto-token'
+
+/** Number of decimal digits in a human-typed one-time pairing code. */
+const TEMP_AUTH_TOKEN_LENGTH = 6
+/**
+ * How long a pairing code stays valid after it is (re)generated. A 6-digit
+ * code only has ~20 bits of entropy, so a short lifetime plus the attempt cap
+ * below are what keep it brute-force resistant.
+ */
+const TEMP_AUTH_TOKEN_TTL = 5 * 60_000
+/** Failed attempts allowed against a single code before it is rotated. */
+const TEMP_AUTH_MAX_ATTEMPTS = 5
 
 export interface PendingAuthRequest {
   clientAuthToken: string
@@ -15,17 +26,26 @@ export interface PendingAuthRequest {
 
 let pendingAuth: PendingAuthRequest | null = null
 let tempAuthToken: string = generateTempId()
+let tempAuthExpiresAt: number = Date.now() + TEMP_AUTH_TOKEN_TTL
+let tempAuthFailedAttempts = 0
 
 function generateTempId(): string {
-  return humanId()
+  return randomDigits(TEMP_AUTH_TOKEN_LENGTH)
 }
 
 export function getTempAuthToken(): string {
   return tempAuthToken
 }
 
+/**
+ * Rotate the pairing code, resetting its expiry window and failed-attempt
+ * counter. Adapters call this when a new pairing flow begins so the displayed
+ * code is freshly valid.
+ */
 export function refreshTempAuthToken(): string {
   tempAuthToken = generateTempId()
+  tempAuthExpiresAt = Date.now() + TEMP_AUTH_TOKEN_TTL
+  tempAuthFailedAttempts = 0
   return tempAuthToken
 }
 
@@ -49,14 +69,34 @@ export function abortPendingAuth(): void {
 }
 
 /**
- * Consume the temp auth ID: verify it matches, trust the pending client, and clean up.
- * Returns the client's authToken if successful, null otherwise.
+ * Consume the temp auth code: verify it matches an active, unexpired pairing
+ * code, trust the pending client, and clean up. Returns the client's authToken
+ * on success, `null` otherwise.
+ *
+ * Because the code is short and human-typed, verification is hardened against
+ * brute force: it requires a live pending request, enforces a time-to-live,
+ * compares in constant time, and rotates the code after
+ * {@link TEMP_AUTH_MAX_ATTEMPTS} failed attempts so an attacker cannot keep
+ * guessing against the same code.
  */
 export function consumeTempAuthToken(
   id: string,
   storage: SharedState<InternalAnonymousAuthStorage>,
 ): string | null {
-  if (id !== tempAuthToken || !pendingAuth) {
+  if (!pendingAuth)
+    return null
+
+  // Expired code: rotate so a stale code can never be redeemed.
+  if (Date.now() > tempAuthExpiresAt) {
+    refreshTempAuthToken()
+    return null
+  }
+
+  if (!timingSafeEqual(id, tempAuthToken)) {
+    tempAuthFailedAttempts += 1
+    // Too many wrong guesses — invalidate this code entirely.
+    if (tempAuthFailedAttempts >= TEMP_AUTH_MAX_ATTEMPTS)
+      refreshTempAuthToken()
     return null
   }
 

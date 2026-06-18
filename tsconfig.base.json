@@ -45,14 +45,14 @@
       "devframe/utils/colors": [
         "./packages/devframe/src/utils/colors.ts"
       ],
+      "devframe/utils/crypto-token": [
+        "./packages/devframe/src/utils/crypto-token.ts"
+      ],
       "devframe/utils/events": [
         "./packages/devframe/src/utils/events.ts"
       ],
       "devframe/utils/hash": [
         "./packages/devframe/src/utils/hash.ts"
-      ],
-      "devframe/utils/human-id": [
-        "./packages/devframe/src/utils/human-id.ts"
       ],
       "devframe/utils/launch-editor": [
         "./packages/devframe/src/utils/launch-editor.ts"
