@@ -14,6 +14,7 @@ export default defineConfig({
       'examples/files-inspector',
       'examples/streaming-chat',
       'examples/next-runtime-snapshot',
+      'plugins/git',
       'examples/minimal-next-devframe-hub',
       {
         test: {
