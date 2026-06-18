@@ -54,9 +54,9 @@ export async function mountDevframe(
 
   if (isDuplicate && strategy !== 'duplicate') {
     if (strategy === 'throw')
-      throw diagnostics.DF8103({ id: d.id, name: d.name })
+      throw diagnostics.DF8105({ id: d.id, name: d.name })
     if (strategy === 'warn')
-      diagnostics.DF8103({ id: d.id, name: d.name })
+      diagnostics.DF8105({ id: d.id, name: d.name })
     // 'warn' and 'silent' both deduplicate: keep the first registration
     // and drop this later one.
     return

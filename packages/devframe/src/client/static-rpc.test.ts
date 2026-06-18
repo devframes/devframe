@@ -170,4 +170,77 @@ describe('createStaticRpcCaller', () => {
 
     await expect(caller.call('demo:legacy-static', [])).resolves.toEqual({ items: [1, 2, 3] })
   })
+
+  it('treats placeholder args on static entries as a no-arg call', async () => {
+    const caller = createStaticRpcCaller(
+      {
+        'demo:messages': {
+          type: 'static',
+          path: DEMO_STATIC_VERSION_PATH,
+        },
+      },
+      async () => ({ output: ['ok'] }),
+    )
+
+    await expect(caller.call('demo:messages', [null])).resolves.toEqual(['ok'])
+    await expect(caller.call('demo:messages', [undefined])).resolves.toEqual(['ok'])
+    await expect(caller.call('demo:messages', ['real'])).rejects.toThrow('No dump match')
+  })
+
+  it('treats placeholder args on legacy inline entries as a no-arg call', async () => {
+    const caller = createStaticRpcCaller(
+      {
+        'demo:legacy': { ok: true },
+      },
+      async () => {
+        throw new Error('Should not fetch')
+      },
+    )
+
+    await expect(caller.call('demo:legacy', [null])).resolves.toEqual({ ok: true })
+    await expect(caller.call('demo:legacy', ['real'])).rejects.toThrow('No dump match')
+  })
+
+  it('unwraps enveloped static files written as the full StaticRpcDumpFile', async () => {
+    const caller = createStaticRpcCaller(
+      {
+        'demo:graph': {
+          type: 'static',
+          path: `${DEVFRAME_RPC_DUMP_DIRNAME}/demo~graph.static.json`,
+          serialization: 'structured-clone',
+        },
+      },
+      async () => ({
+        serialization: 'structured-clone',
+        fnName: 'demo:graph',
+        data: JSON.parse(structuredCloneStringify({ output: new Map([['a', 1]]) })),
+      }),
+    )
+
+    const result = await caller.call('demo:graph', []) as Map<string, number>
+    expect(result).toBeInstanceOf(Map)
+    expect(result.get('a')).toBe(1)
+  })
+
+  it('unwraps enveloped query records written as the full StaticRpcDumpFile', async () => {
+    const recordPath = `${DEMO_QUERY_BASE_PATH}.record.${hash(['k'])}.json`
+    const caller = createStaticRpcCaller(
+      {
+        'demo:query-set': {
+          type: 'query',
+          serialization: 'structured-clone',
+          records: { [hash(['k'])]: recordPath },
+        },
+      },
+      async () => ({
+        serialization: 'structured-clone',
+        fnName: 'demo:query-set',
+        data: JSON.parse(structuredCloneStringify({ inputs: ['k'], output: new Set(['x']) })),
+      }),
+    )
+
+    const result = await caller.call('demo:query-set', ['k']) as Set<string>
+    expect(result).toBeInstanceOf(Set)
+    expect(result.has('x')).toBe(true)
+  })
 })

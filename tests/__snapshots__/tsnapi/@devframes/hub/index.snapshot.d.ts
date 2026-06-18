@@ -65,6 +65,7 @@ export { DevframeTerminalStatus }
 export { DevframeViewAction }
 export { DevframeViewBuiltin }
 export { DevframeViewCustomRender }
+export { DevframeViewGroup }
 export { DevframeViewHost }
 export { DevframeViewIframe }
 export { DevframeViewJsonRender }

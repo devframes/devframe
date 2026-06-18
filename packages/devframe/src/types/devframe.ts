@@ -17,7 +17,7 @@ export type DevframeDeploymentKind = 'standalone' | 'hosted'
  * is mounted onto the same hub. See {@link DevframeDefinition.duplicationStrategy}.
  *
  * - `'warn'` (default) — keep the first registration, drop later
- *   duplicates, and emit a warning diagnostic (`DF8103`).
+ *   duplicates, and emit a warning diagnostic (`DF8105`).
  * - `'silent'` — drop later duplicates without warning.
  * - `'throw'` — throw when a duplicate is mounted.
  * - `'duplicate'` — let every instance coexist under a disambiguated

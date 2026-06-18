@@ -60,6 +60,26 @@ function resolveRecordOutput(record: StaticRpcRecord): any {
   return record.output
 }
 
+// Placeholder args (`[null]`/`[undefined]`) from framework setup hooks carry no
+// addressing info and must be treated as a no-arg call.
+function hasMeaningfulArgs(args: any[]): boolean {
+  return args.some(arg => arg !== null && arg !== undefined)
+}
+
+// `collectStaticRpcDump`/`StaticRpcDumpFile` are public, so consumers may persist
+// the whole `{ serialization, fnName, data }` envelope instead of just `data`.
+function unwrapEnvelope(raw: unknown): unknown {
+  if (
+    raw !== null
+    && typeof raw === 'object'
+    && 'serialization' in raw
+    && 'data' in raw
+  ) {
+    return (raw as { data: unknown }).data
+  }
+  return raw
+}
+
 export function createStaticRpcCaller(
   manifest: StaticRpcManifest,
   fetchJson: (path: string) => Promise<any>,
@@ -68,16 +88,22 @@ export function createStaticRpcCaller(
   const queryRecordCache = new Map<string, Promise<StaticRpcRecord>>()
 
   function reviveIfStructuredClone(value: unknown, serialization: StaticRpcSerialization | undefined): any {
-    if (serialization === 'structured-clone')
-      return structuredCloneDeserialize(value as any)
+    // structured-clone-es always encodes to a records array; a non-array here
+    // means the payload was not SC-encoded, so pass it through untouched.
+    if (serialization === 'structured-clone' && Array.isArray(value))
+      return structuredCloneDeserialize(value)
     return value
+  }
+
+  function decode(raw: unknown, serialization: StaticRpcSerialization | undefined): any {
+    return reviveIfStructuredClone(unwrapEnvelope(raw), serialization)
   }
 
   async function loadStatic(entry: StaticRpcManifestStaticEntry): Promise<any> {
     if (!staticCache.has(entry.path)) {
       staticCache.set(
         entry.path,
-        fetchJson(entry.path).then(raw => reviveIfStructuredClone(raw, entry.serialization)),
+        fetchJson(entry.path).then(raw => decode(raw, entry.serialization)),
       )
     }
     const data = await staticCache.get(entry.path)!
@@ -94,7 +120,7 @@ export function createStaticRpcCaller(
     if (!queryRecordCache.has(path)) {
       queryRecordCache.set(
         path,
-        fetchJson(path).then(raw => reviveIfStructuredClone(raw, serialization)),
+        fetchJson(path).then(raw => decode(raw, serialization)),
       )
     }
     return await queryRecordCache.get(path)!
@@ -107,7 +133,7 @@ export function createStaticRpcCaller(
 
     const entry = manifest[functionName]
     if (isStaticEntry(entry)) {
-      if (args.length > 0) {
+      if (hasMeaningfulArgs(args)) {
         throw new Error(
           `[devframe-rpc] No dump match for "${functionName}" with args: ${JSON.stringify(args)}`,
         )
@@ -134,7 +160,7 @@ export function createStaticRpcCaller(
       )
     }
 
-    if (args.length === 0) {
+    if (!hasMeaningfulArgs(args)) {
       return entry
     }
 
