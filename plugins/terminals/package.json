@@ -1,0 +1,76 @@
+{
+  "name": "@devframes/plugin-terminals",
+  "type": "module",
+  "version": "0.5.2",
+  "description": "Portable, hub-native terminal panel for devframe — readonly output streaming and fully interactive PTY shells (TUI-capable).",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/devframes/devframe#readme",
+  "repository": {
+    "directory": "plugins/terminals",
+    "type": "git",
+    "url": "git+https://github.com/devframes/devframe.git"
+  },
+  "bugs": "https://github.com/devframes/devframe/issues",
+  "keywords": [
+    "devframe",
+    "devtools",
+    "terminal",
+    "pty",
+    "xterm"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./cli": "./dist/cli.mjs",
+    "./client": "./dist/client/index.mjs",
+    "./constants": "./dist/constants.mjs",
+    "./node": "./dist/node/index.mjs",
+    "./rpc": "./dist/rpc/index.mjs",
+    "./types": "./dist/types.mjs",
+    "./vite": "./dist/vite.mjs",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.mts",
+  "bin": {
+    "devframe-terminals": "./bin.mjs"
+  },
+  "files": [
+    "bin.mjs",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown && vite build --config src/spa/vite.config.ts",
+    "watch": "tsdown --watch",
+    "dev": "node bin.mjs",
+    "test": "vitest run",
+    "prepack": "pnpm run build"
+  },
+  "peerDependencies": {
+    "devframe": "workspace:*",
+    "vite": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@homebridge/node-pty-prebuilt-multiarch": "catalog:deps",
+    "@xterm/addon-fit": "catalog:frontend",
+    "@xterm/xterm": "catalog:frontend",
+    "nostics": "catalog:deps",
+    "pathe": "catalog:deps",
+    "valibot": "catalog:deps"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:types",
+    "devframe": "workspace:*",
+    "get-port-please": "catalog:deps",
+    "h3": "catalog:deps",
+    "tsdown": "catalog:build",
+    "vite": "catalog:build",
+    "vitest": "catalog:testing",
+    "ws": "catalog:deps"
+  }
+}

@@ -145,6 +145,27 @@
       "@devframes/plugin-code-server": [
         "./plugins/code-server/src/index.ts"
       ],
+      "@devframes/plugin-terminals/client": [
+        "./plugins/terminals/src/client/index.ts"
+      ],
+      "@devframes/plugin-terminals/node": [
+        "./plugins/terminals/src/node/index.ts"
+      ],
+      "@devframes/plugin-terminals/constants": [
+        "./plugins/terminals/src/constants.ts"
+      ],
+      "@devframes/plugin-terminals/types": [
+        "./plugins/terminals/src/types.ts"
+      ],
+      "@devframes/plugin-terminals/cli": [
+        "./plugins/terminals/src/cli.ts"
+      ],
+      "@devframes/plugin-terminals/vite": [
+        "./plugins/terminals/src/vite.ts"
+      ],
+      "@devframes/plugin-terminals": [
+        "./plugins/terminals/src/index.ts"
+      ],
       "devframe/recipes/open-helpers": [
         "./packages/devframe/src/recipes/open-helpers.ts"
       ],
