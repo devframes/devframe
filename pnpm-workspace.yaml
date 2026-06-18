@@ -7,14 +7,14 @@ allowBuilds:
 catalogMode: prefer
 cleanupUnusedCatalogs: true
 ignoreWorkspaceRootCheck: true
+minimumReleaseAgeExclude:
+  - nostics@1.1.4
 shamefullyHoist: true
 shellEmulator: true
 strictPeerDependencies: false
 trustPolicy: no-downgrade
 trustPolicyExclude:
   - tinyexec@1.2.2
-minimumReleaseAgeExclude:
-  - nostics@1.1.4
 packages:
   - packages/*
   - examples/*
