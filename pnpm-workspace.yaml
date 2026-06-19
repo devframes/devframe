@@ -101,10 +101,13 @@ catalogs:
   storybook:
     '@storybook/addon-a11y': ^10.4.6
     '@storybook/addon-docs': ^10.4.6
-    '@storybook/html-vite': ^10.4.6
+    '@storybook/addon-essentials': ^8.6.14
+    '@storybook/html-vite': ^8.6.14
     '@storybook/react-vite': ^10.4.6
+    '@storybook/vue3': ^8.6.14
+    '@storybook/vue3-vite': ^8.6.14
     '@vitejs/plugin-react-oxc': ^0.4.3
-    storybook: ^10.4.6
+    storybook: ^8.6.14
   testing:
     '@playwright/test': ^1.60.0
     tsnapi: ^0.3.3

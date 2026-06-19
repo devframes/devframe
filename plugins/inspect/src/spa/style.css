@@ -7,8 +7,8 @@
   --df-fg: #e5e5e5;
   --df-fg-dim: #a3a3a3;
   --df-fg-faint: #525252;
-  --df-accent: #ff8454;
-  --df-accent-dim: rgba(255, 132, 84, 0.25);
+  --df-accent: #517158;
+  --df-accent-dim: rgba(81, 113, 88, 0.25);
   --df-query: #6ea8fe;
   --df-static: #c792ea;
   --df-action: #ffb08f;
@@ -34,8 +34,8 @@
     --df-fg: #262626;
     --df-fg-dim: #525252;
     --df-fg-faint: #a3a3a3;
-    --df-accent: #ff4100;
-    --df-accent-dim: rgba(255, 65, 0, 0.25);
+    --df-accent: #37533d;
+    --df-accent-dim: rgba(81, 113, 88, 0.25);
     --df-query: #2563c9;
     --df-static: #8a45c9;
     --df-action: #b9701f;

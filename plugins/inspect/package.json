@@ -42,6 +42,8 @@
     "watch": "tsdown --watch",
     "cli:build": "node bin.mjs build --out-dir dist/static",
     "prepack": "pnpm build",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
     "test": "vitest run"
   },
   "peerDependencies": {
@@ -58,11 +60,18 @@
     "nostics": "catalog:deps"
   },
   "devDependencies": {
+    "@iconify-json/ph": "catalog:frontend",
+    "@storybook/addon-essentials": "catalog:storybook",
+    "@storybook/vue3": "catalog:storybook",
+    "@storybook/vue3-vite": "catalog:storybook",
+    "@unocss/preset-icons": "catalog:frontend",
     "@vitejs/plugin-vue": "catalog:build",
     "devframe": "workspace:*",
     "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
+    "storybook": "catalog:storybook",
     "tsdown": "catalog:build",
+    "unocss": "catalog:frontend",
     "vite": "catalog:build",
     "vitest": "catalog:testing",
     "vue": "catalog:frontend",

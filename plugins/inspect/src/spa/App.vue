@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import AgentView from './components/AgentView.vue'
-import FunctionsView from './components/FunctionsView.vue'
-import StateView from './components/StateView.vue'
-import HistoryView from './components/HistoryView.vue'
+import AgentSmart from './components/AgentSmart.vue'
+import FunctionsSmart from './components/FunctionsSmart.vue'
+import StateSmart from './components/StateSmart.vue'
+import HistorySmart from './components/HistorySmart.vue'
 import { connect, connection } from './composables/rpc'
 import { useRefresh } from './composables/refresh'
 
@@ -62,9 +62,7 @@ onMounted(connect)
         :disabled="loading || !connection.connected"
         @click="refresh"
       >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" />
-        </svg>
+        <div class="i-ph-arrows-clockwise-duotone" />
       </button>
     </header>
 
@@ -77,10 +75,10 @@ onMounted(connect)
         Connecting to devframe…
       </div>
       <template v-else>
-        <FunctionsView v-if="tab === 'functions'" />
-        <StateView v-else-if="tab === 'state'" />
-        <AgentView v-else-if="tab === 'agent'" />
-        <HistoryView v-else-if="tab === 'history'" />
+        <FunctionsSmart v-if="tab === 'functions'" />
+        <StateSmart v-else-if="tab === 'state'" />
+        <AgentSmart v-else-if="tab === 'agent'" />
+        <HistorySmart v-else-if="tab === 'history'" />
       </template>
     </main>
   </div>

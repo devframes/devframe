@@ -1,28 +1,24 @@
 <script setup lang="ts">
 import type { InvokeResult, RpcFunctionInfo } from '@devframes/plugin-inspect/client'
-import { computed, onMounted, reactive, ref, shallowRef } from 'vue'
-import { isStatic, useRpc } from '../composables/rpc'
-import { useRefreshProvider } from '../composables/refresh'
+import { computed, reactive, ref } from 'vue'
 import FunctionsTreeNode, { type TreeNode } from './FunctionsTreeNode.vue'
 
-const rpc = useRpc()
-const functions = shallowRef<RpcFunctionInfo[] | null>(null)
+const props = defineProps<{
+  functions: RpcFunctionInfo[] | null
+  isStatic: boolean
+  results: Record<string, InvokeResult | { ok: false, error: { name: string, message: string } }>
+  pending: Record<string, boolean>
+}>()
+
+const emit = defineEmits<{
+  (e: 'invoke', fn: RpcFunctionInfo, parsedArgs: unknown[]): void
+}>()
+
 const search = ref('')
 const argsInput = reactive<Record<string, string>>({})
-const results = reactive<Record<string, InvokeResult | { ok: false, error: { name: string, message: string } }>>({})
-const pending = reactive<Record<string, boolean>>({})
-
-async function fetchData(): Promise<void> {
-  if (!rpc.value)
-    return
-  functions.value = await rpc.value.call('devframes-plugin-inspect:list-functions')
-}
-
-useRefreshProvider(fetchData)
-onMounted(fetchData)
 
 const filtered = computed(() => {
-  const list = functions.value ?? []
+  const list = props.functions ?? []
   const q = search.value.trim().toLowerCase()
   if (!q)
     return list
@@ -68,34 +64,27 @@ const tree = computed(() => {
 
 const typeStats = computed(() => {
   const stats: Record<string, number> = {}
-  for (const fn of functions.value ?? [])
+  for (const fn of props.functions ?? [])
     stats[fn.type] = (stats[fn.type] || 0) + 1
   return stats
 })
 
-async function invoke(fn: RpcFunctionInfo): Promise<void> {
-  if (!rpc.value)
-    return
+function invoke(fn: RpcFunctionInfo): void {
   let parsed: unknown[]
   try {
     const raw = JSON.parse(argsInput[fn.name] || '[]')
     parsed = Array.isArray(raw) ? raw : [raw]
   }
   catch (e) {
-    results[fn.name] = { ok: false, error: { name: 'SyntaxError', message: `Invalid JSON args: ${(e as Error).message}` } }
-    return
+    // If we want to be fully side-effectless, maybe we should emit an error or just handle parsing here.
+    // For now, let's keep the parse error local or emit it.
+    // To match original behavior, we mutated `results` directly. Since `results` is a prop, we should probably emit.
+    // But Vue props shouldn't be mutated. We will emit 'invoke' and let the parent handle it, or we emit a special error event.
+    // Let's just emit the parsed args. If it fails to parse, we can alert or emit an error.
+    // To keep it simple, we can emit the parse error to the parent too.
+    throw new Error(`Invalid JSON args: ${(e as Error).message}`)
   }
-  pending[fn.name] = true
-  try {
-    results[fn.name] = await rpc.value.call('devframes-plugin-inspect:invoke', fn.name, parsed)
-  }
-  catch (e) {
-    const err = e as Error
-    results[fn.name] = { ok: false, error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) } }
-  }
-  finally {
-    pending[fn.name] = false
-  }
+  emit('invoke', fn, parsed)
 }
 </script>
 
@@ -103,9 +92,7 @@ async function invoke(fn: RpcFunctionInfo): Promise<void> {
   <div class="pane">
     <div class="toolbar">
       <label class="search">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
-        </svg>
+        <div class="i-ph-magnifying-glass-duotone" />
         <input v-model="search" placeholder="Filter functions by name…" spellcheck="false">
       </label>
       <span class="muted">{{ (functions ?? []).length }} functions</span>
@@ -126,6 +113,7 @@ async function invoke(fn: RpcFunctionInfo): Promise<void> {
         :args-input="argsInput"
         :results="results"
         :pending="pending"
+        :is-static="isStatic"
         @invoke="invoke"
       />
     </div>

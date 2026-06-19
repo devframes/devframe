@@ -1,22 +1,30 @@
 <script setup lang="ts">
-import { historyRecords, isRecording, clearHistory } from '../composables/history'
 import JsonView from './JsonView.vue'
-import { computed } from 'vue'
+import type { HistoryRecord } from '../composables/history'
+
+const props = defineProps<{
+  historyRecords: HistoryRecord[]
+  isRecording: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:isRecording', value: boolean): void
+  (e: 'clear'): void
+}>()
 
 function formatTime(ms: number) {
   const date = new Date(ms)
   return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}.${date.getMilliseconds().toString().padStart(3, '0')}`
 }
-
 </script>
 
 <template>
   <div class="pane flex-col">
     <div class="toolbar">
-      <button class="btn" :class="{ ghost: !isRecording }" @click="isRecording = !isRecording">
+      <button class="btn" :class="{ ghost: !isRecording }" @click="emit('update:isRecording', !isRecording)">
         {{ isRecording ? 'Recording (click to pause)' : 'Paused (click to record)' }}
       </button>
-      <button class="btn ghost" @click="clearHistory">Clear</button>
+      <button class="btn ghost" @click="emit('clear')">Clear</button>
       <span class="muted">{{ historyRecords.length }} records</span>
     </div>
     <div v-if="historyRecords.length === 0" class="center">No history yet.</div>

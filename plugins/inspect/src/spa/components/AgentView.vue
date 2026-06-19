@@ -1,25 +1,22 @@
 <script setup lang="ts">
 import type { AgentManifest, InvokeResult } from '@devframes/plugin-inspect/client'
-import { onMounted, reactive, ref, shallowRef } from 'vue'
-import { isStatic, useRpc } from '../composables/rpc'
-import { useRefreshProvider } from '../composables/refresh'
+import { ref, reactive } from 'vue'
 import JsonView from './JsonView.vue'
 
-const rpc = useRpc()
-const manifest = shallowRef<AgentManifest | null>(null)
+const props = defineProps<{
+  manifest: AgentManifest | null
+  isStatic: boolean
+  results: Record<string, InvokeResult | { ok: false, error: { name: string, message: string } }>
+  pending: Record<string, boolean>
+}>()
+
+const emit = defineEmits<{
+  (e: 'invoke', id: string, parsedArgs: unknown): void
+  (e: 'read', id: string): void
+}>()
+
 const expanded = ref<string | null>(null)
 const argsInput = reactive<Record<string, string>>({})
-const results = reactive<Record<string, InvokeResult | { ok: false, error: { name: string, message: string } }>>({})
-const pending = reactive<Record<string, boolean>>({})
-
-async function fetchData(): Promise<void> {
-  if (!rpc.value)
-    return
-  manifest.value = await rpc.value.call('devframes-plugin-inspect:describe-agent')
-}
-
-useRefreshProvider(fetchData)
-onMounted(fetchData)
 
 function toggle(id: string): void {
   expanded.value = expanded.value === id ? null : id
@@ -28,38 +25,20 @@ function toggle(id: string): void {
   }
 }
 
-async function invokeTool(id: string) {
-  if (!rpc.value) return
+function invokeTool(id: string) {
   let parsed: unknown
   try {
     const raw = JSON.parse(argsInput[id] || '{}')
     parsed = raw
-  } catch (e) {
-    results[id] = { ok: false, error: { name: 'SyntaxError', message: `Invalid JSON args: ${(e as Error).message}` } }
-    return
+  } catch (err) {
+    // Emitting error would be cleaner, for now we will throw to stop execution
+    throw new Error(`Invalid JSON args: ${(err as Error).message}`)
   }
-  pending[id] = true
-  try {
-    results[id] = await rpc.value.call('devframes-plugin-inspect:invoke-agent-tool', id, parsed)
-  } catch (e) {
-    const err = e as Error
-    results[id] = { ok: false, error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) } }
-  } finally {
-    pending[id] = false
-  }
+  emit('invoke', id, parsed)
 }
 
-async function readResource(id: string) {
-  if (!rpc.value) return
-  pending[id] = true
-  try {
-    results[id] = await rpc.value.call('devframes-plugin-inspect:read-agent-resource', id)
-  } catch (e) {
-    const err = e as Error
-    results[id] = { ok: false, error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) } }
-  } finally {
-    pending[id] = false
-  }
+function readResource(id: string) {
+  emit('read', id)
 }
 </script>
 
@@ -78,7 +57,7 @@ async function readResource(id: string) {
       <div v-else class="cards">
         <div v-for="tool in manifest.tools" :key="tool.id" class="card">
           <div class="card-head" style="cursor: pointer; user-select: none;" @click="toggle(tool.id)">
-            <svg class="chev" :class="{ open: expanded === tool.id }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6" /></svg>
+            <div class="chev i-ph-caret-right" :class="{ open: expanded === tool.id }" />
             <span class="card-title">{{ tool.title }}</span>
             <span class="badge flag">{{ tool.kind }}</span>
             <span class="badge" :class="`safety-${tool.safety}`">{{ tool.safety }}</span>
@@ -106,13 +85,13 @@ async function readResource(id: string) {
               <JsonView :value="tool.examples" :expand-depth="1" />
             </template>
 
-            <div class="label">Invoke (JSON object)</div>
+            <div class="label">Invoke (MCP format)</div>
             <textarea v-model="argsInput[tool.id]" class="args" spellcheck="false" placeholder="{}" />
             <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-              <button class="btn" :disabled="pending[tool.id] || isStatic()" @click="invokeTool(tool.id)">
+              <button class="btn" :disabled="pending[tool.id] || isStatic" @click="invokeTool(tool.id)">
                 {{ pending[tool.id] ? 'Invoking…' : 'Invoke' }}
               </button>
-              <span v-if="isStatic()" class="note">read-only static backend</span>
+              <span v-if="isStatic" class="note">read-only static backend</span>
             </div>
             
             <div v-if="results[tool.id]" class="result">
@@ -141,7 +120,7 @@ async function readResource(id: string) {
       <div v-else class="cards">
         <div v-for="res in manifest.resources" :key="res.id" class="card">
           <div class="card-head" style="cursor: pointer; user-select: none;" @click="toggle(res.id)">
-            <svg class="chev" :class="{ open: expanded === res.id }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6" /></svg>
+            <div class="chev i-ph-caret-right" :class="{ open: expanded === res.id }" />
             <span class="card-title">{{ res.name }}</span>
             <span v-if="res.mimeType" class="badge flag">{{ res.mimeType }}</span>
           </div>
@@ -154,10 +133,10 @@ async function readResource(id: string) {
 
           <template v-if="expanded === res.id">
             <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-              <button class="btn" :disabled="pending[res.id] || isStatic()" @click="readResource(res.id)">
+              <button class="btn" :disabled="pending[res.id] || isStatic" @click="readResource(res.id)">
                 {{ pending[res.id] ? 'Reading…' : 'Read Resource' }}
               </button>
-              <span v-if="isStatic()" class="note">read-only static backend</span>
+              <span v-if="isStatic" class="note">read-only static backend</span>
             </div>
             
             <div v-if="results[res.id]" class="result">

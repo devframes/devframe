@@ -3,7 +3,6 @@ import type { RpcFunctionInfo, InvokeResult } from '@devframes/plugin-inspect/cl
 import { getHashColorFromString } from '../utils/color'
 import { ref } from 'vue'
 import JsonView from './JsonView.vue'
-import { isStatic } from '../composables/rpc'
 
 export type TreeNode = {
   name: string
@@ -19,6 +18,7 @@ const props = defineProps<{
   argsInput: Record<string, string>
   results: Record<string, any>
   pending: Record<string, boolean>
+  isStatic: boolean
 }>()
 
 const emit = defineEmits<{
@@ -47,13 +47,13 @@ const color = getHashColorFromString(props.node.fullPath)
 <template>
   <div class="tree-node">
     <div v-if="!node.isLeaf" class="group-head" @click="toggle" style="cursor: pointer; user-select: none;">
-      <svg class="chev" :class="{ open: expandedNode }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6" /></svg>
+      <div class="chev i-ph-caret-right" :class="{ open: expandedNode }" />
       <span class="ns" :style="{ color }">{{ node.name }}</span>
     </div>
     
     <div v-if="node.isLeaf && node.fn" class="fn-row">
       <div class="fn-head" :class="{ clickable: node.fn.invokable || !!node.fn.agent || node.fn.hasArgs || node.fn.hasReturns }" @click="toggle">
-        <svg class="chev" :class="{ open: expandedFn }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6" /></svg>
+        <div class="chev i-ph-caret-right" :class="{ open: expandedFn }" />
         <span class="fn-name" :title="node.fn.name">{{ node.name }}</span>
         <span class="fn-flags">
           <span class="badge" :class="node.fn.type">{{ node.fn.type }}</span>
@@ -116,6 +116,7 @@ const color = getHashColorFromString(props.node.fullPath)
         :args-input="argsInput"
         :results="results"
         :pending="pending"
+        :is-static="isStatic"
         @invoke="emit('invoke', $event)"
       />
     </div>

@@ -1,7 +1,9 @@
 import { fileURLToPath } from 'node:url'
 import vue from '@vitejs/plugin-vue'
+import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
 import { alias } from '../../../../alias'
+import { inspectVitePlugin } from '../vite'
 
 // The inspector SPA. `base: './'` keeps every asset URL relative so the
 // bundle is mount-path portable — it discovers its runtime base from
@@ -11,7 +13,11 @@ export default defineConfig({
   base: './',
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    UnoCSS(),
+    inspectVitePlugin({ devMiddleware: true, base: '/' })
+  ],
   build: {
     outDir: fileURLToPath(new URL('../../dist/spa', import.meta.url)),
     emptyOutDir: true,

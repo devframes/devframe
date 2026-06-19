@@ -1,4 +1,5 @@
 import type { DevframeDefinition } from 'devframe/types'
+import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
 import { setupInspect } from './node/index'
@@ -48,7 +49,7 @@ export function createInspectDevframe(options: InspectDevframeOptions = {}): Dev
     cli: {
       command: id,
       port: options.port ?? 9012,
-      distDir,
+      distDir: existsSync(distDir) ? distDir : undefined,
       // A single-user localhost inspector: skip the trust handshake so
       // the SPA's shared-state subscription initializes without a manual
       // auth round-trip. Hosted adapters (Vite/hub) supply their own
