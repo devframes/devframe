@@ -13,6 +13,27 @@ import { DevframeMessagesHost as MessagesHostImpl } from './host-messages'
 import { DevframeTerminalsHost as TerminalsHostImpl } from './host-terminals'
 import { builtinHubRpcDeclarations } from './rpc-builtins'
 
+declare module 'devframe/types' {
+  interface DevframeRpcClientFunctions {
+    /**
+     * Server→client notification that terminal sessions changed. Broadcast
+     * by the hub context; a hub-aware client re-reads terminal state in
+     * response. Do not register manually.
+     *
+     * @internal
+     */
+    'devframe:terminals:updated': () => Promise<void>
+    /**
+     * Server→client notification that the message list changed. Broadcast
+     * by the hub context; a hub-aware client re-reads message state in
+     * response. Do not register manually.
+     *
+     * @internal
+     */
+    'devframe:messages:updated': () => Promise<void>
+  }
+}
+
 /**
  * Hub-augmented node context — extends devframe's framework-neutral
  * `DevframeNodeContext` with the hub-level subsystems (`docks`,

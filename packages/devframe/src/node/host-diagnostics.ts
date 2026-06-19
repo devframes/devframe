@@ -14,7 +14,10 @@ export class DevframeDiagnosticsHost implements DevframeDiagnosticsHostType {
       ...opts,
       reporters: [devframeReporter, ...(opts.reporters ?? [])],
     } as Parameters<typeof defineDiagnostics>[0]
-    return defineDiagnostics(merged) as ReturnType<DevframeDiagnosticsHostType['defineDiagnostics']>
+    // Runtime passthrough: the per-call `Codes` generic can't be threaded
+    // through this assigned arrow, so the narrow return type is restored by
+    // the property's declared signature at every call site.
+    return defineDiagnostics(merged) as any
   }
 
   constructor(

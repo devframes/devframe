@@ -1,9 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
     "lib": ["esnext", "dom"],
     "types": ["node"]
   },
-  "include": ["nuxt.d.ts", "src/**/*.ts", "../devframe/src/**/*.ts"]
+  "include": ["nuxt.d.ts", "src", "tsdown.config.ts"],
+  "exclude": ["dist", "node_modules"]
 }

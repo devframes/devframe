@@ -29,6 +29,7 @@ describe('devframeDockHost remote URL enrichment', () => {
       type: 'iframe',
       id: 'remote',
       title: 'Remote',
+      icon: 'ph:cube-duotone',
       url: 'https://remote.test/app#/inspect?tab=state',
       remote: true,
     })
@@ -47,6 +48,7 @@ describe('devframeDockHost remote URL enrichment', () => {
       type: 'iframe',
       id: 'remote',
       title: 'Remote',
+      icon: 'ph:cube-duotone',
       url: firstUrl,
       remote: true,
     })
@@ -66,6 +68,7 @@ describe('devframeDockHost remote URL enrichment', () => {
       type: 'iframe',
       id: 'remote',
       title: 'Remote',
+      icon: 'ph:cube-duotone',
       url: 'https://remote.test/app#section',
       remote: true,
     })

@@ -4,7 +4,7 @@ import type { DevframeNodeRpcSessionMeta } from 'devframe/rpc/transports/ws-serv
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { StreamReader, StreamSink } from 'devframe/utils/streaming-channel'
 import type { DevframeNodeContext } from './context'
-import type { DevframeRpcClientFunctions, DevframeRpcServerFunctions, DevframeRpcSharedStates } from './rpc-augments'
+import type { DevframeRpcClientFunctions, DevframeRpcServerFunctions } from './rpc-augments'
 
 export type { DevframeNodeRpcSessionMeta }
 
@@ -72,7 +72,7 @@ export interface RpcSharedStateGetOptions<T> {
 }
 
 export interface RpcSharedStateHost {
-  get: <T extends keyof DevframeRpcSharedStates>(key: T, options?: RpcSharedStateGetOptions<DevframeRpcSharedStates[T]>) => Promise<SharedState<DevframeRpcSharedStates[T]>>
+  get: <T extends object = any>(key: string, options?: RpcSharedStateGetOptions<T>) => Promise<SharedState<T>>
   keys: () => string[]
   /**
    * Subscribe to new shared-state keys becoming available. Fires when
