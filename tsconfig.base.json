@@ -121,6 +121,30 @@
       "@devframes/nuxt": [
         "./packages/nuxt/src/index.ts"
       ],
+      "@devframes/plugin-code-server/client": [
+        "./plugins/code-server/src/client/index.ts"
+      ],
+      "@devframes/plugin-code-server/node": [
+        "./plugins/code-server/src/node/index.ts"
+      ],
+      "@devframes/plugin-code-server/constants": [
+        "./plugins/code-server/src/constants.ts"
+      ],
+      "@devframes/plugin-code-server/types": [
+        "./plugins/code-server/src/types.ts"
+      ],
+      "@devframes/plugin-code-server/rpc": [
+        "./plugins/code-server/src/rpc/index.ts"
+      ],
+      "@devframes/plugin-code-server/cli": [
+        "./plugins/code-server/src/cli.ts"
+      ],
+      "@devframes/plugin-code-server/vite": [
+        "./plugins/code-server/src/vite.ts"
+      ],
+      "@devframes/plugin-code-server": [
+        "./plugins/code-server/src/index.ts"
+      ],
       "devframe/recipes/open-helpers": [
         "./packages/devframe/src/recipes/open-helpers.ts"
       ],
