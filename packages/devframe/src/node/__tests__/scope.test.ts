@@ -47,6 +47,13 @@ describe('ctx.scope()', () => {
     expect(scoped.scope(null)).toBe(ctx)
   })
 
+  it('replaces the scope instead of chaining when calling scope() on a scoped context', async () => {
+    const { ctx } = await createCtx()
+    const scope1 = ctx.scope('first')
+    const scope2 = scope1.scope('second')
+    expect(scope2.namespace).toBe('second')
+  })
+
   it('exposes the base context and read-only fields', async () => {
     const { ctx } = await createCtx()
     const scoped = ctx.scope('my-plugin')

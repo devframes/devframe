@@ -57,6 +57,14 @@ describe('client.scope()', () => {
     expect(scoped.scope(null)).toBe(rpc)
   })
 
+  it('replaces the scope instead of chaining when calling scope() on a scoped client', () => {
+    const { rpc } = createMockClient()
+    rpc.scope = (ns?: string | null) => (ns ? createScopedClientContext(rpc, ns) : rpc) as any
+    const scope1 = rpc.scope('first')
+    const scope2 = scope1.scope('second')
+    expect(scope2.namespace).toBe('second')
+  })
+
   it('qualifies bare call/callEvent/callOptional method names', () => {
     const { rpc } = createMockClient()
     const scoped = createScopedClientContext(rpc, 'my-plugin')
