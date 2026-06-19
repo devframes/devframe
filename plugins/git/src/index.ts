@@ -46,6 +46,10 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
   return defineDevframe({
     id: 'git',
     name: 'Git',
+    version: '0.5.2',
+    packageName: '@devframes/plugin-git',
+    homepage: 'https://github.com/devframes/devframe/tree/main/plugins/git#readme',
+    description: 'Git dashboard for devframe',
     icon: 'ph:git-branch-duotone',
     basePath: options.basePath,
     cli: {
