@@ -66,7 +66,7 @@ The client picks a mode automatically from the backend field. Mode-specific code
 
 ## Trust & auth (WebSocket mode)
 
-Dev-mode connections require trust before the server accepts calls. The client handles this automatically: on first connect it submits the locally-stored auth token, and `ensureTrusted()` resolves once the server accepts.
+Dev-mode connections become trusted by pairing. A client that has paired before presents its stored token automatically on reconnect, and `ensureTrusted()` resolves once the server accepts it:
 
 ```ts
 const rpc = await connectDevframe()
@@ -75,21 +75,31 @@ const rpc = await connectDevframe()
 const trusted = await rpc.ensureTrusted()
 
 if (!trusted) {
-  console.warn('Auth denied')
+  console.warn('Not paired yet')
 }
 ```
 
-### Replacing the token
+### Pairing with a one-time code
 
-For tokens supplied from a different source (e.g. copy-pasted from CLI output), swap one in without reloading:
+A fresh client holds no token. The dev server prints a 6-digit one-time code; pass it to `requestTrustWithCode` to exchange it for a node-issued token. The token is persisted for future reconnections and shared with sibling tabs, which become trusted without re-entering the code:
 
 ```ts
-const ok = await rpc.requestTrustWithToken('another-token')
+const ok = await rpc.requestTrustWithCode('047204')
+```
+
+The code is single-use, expires after five minutes, and is rotated after repeated wrong attempts, so re-display the current code if an exchange fails.
+
+### Re-using an existing token
+
+Authenticate with a token obtained elsewhere (e.g. another surface) without reloading:
+
+```ts
+const ok = await rpc.requestTrustWithToken('a1b2c3…')
 ```
 
 ### Broadcast-channel sync
 
-`connectDevframe` listens on a shared `BroadcastChannel` (named `devframe-auth` for cross-tab handshake interop with Vite DevTools' auth page) for `auth-update` messages. When an auth page in another tab announces a new token, every open client requests trust with it automatically — no reload required.
+`connectDevframe` listens on a shared `BroadcastChannel` (named `devframe-auth` for cross-tab handshake interop with Vite DevTools' auth page) for `auth-update` messages. When another tab completes a pairing — or an auth page announces a token — every open client trusts it automatically, no reload required.
 
 ## Calling functions
 

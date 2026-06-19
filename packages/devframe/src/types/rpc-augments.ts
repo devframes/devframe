@@ -3,6 +3,14 @@
  */
 export interface DevframeRpcClientFunctions {
   /**
+   * Server→client notification that this connection's auth token has been
+   * revoked. The client drops to untrusted on receipt. Broadcast by
+   * `revokeActiveConnectionsForToken`.
+   *
+   * @internal
+   */
+  'devframe:auth:revoked': () => Promise<void>
+  /**
    * Streaming chunk pushed from server to subscribed clients. Wired by
    * `RpcStreamingHost`; do not register manually.
    *
@@ -29,6 +37,23 @@ export interface DevframeRpcClientFunctions {
  * To be extended
  */
 export interface DevframeRpcServerFunctions {
+  /**
+   * Authenticate a connection with a previously-issued bearer token; resolves
+   * whether the connection is now trusted. The interactive handler is provided
+   * by the host adapter (e.g. Vite DevTools); the standalone server registers
+   * an auto-trust noop when `auth: false`.
+   *
+   * @internal
+   */
+  'devframe:anonymous:auth': (params: { authToken: string, ua: string, origin: string }) => Promise<{ isTrusted: boolean }>
+  /**
+   * Exchange a one-time pairing code (shown by the dev server) for a fresh,
+   * node-issued bearer token, returning the token on success or `null`. The
+   * handler is provided by the host adapter on top of `exchangeTempAuthCode`.
+   *
+   * @internal
+   */
+  'devframe:auth:exchange': (params: { code: string, ua: string, origin: string }) => Promise<{ authToken: string | null }>
   /**
    * Subscribe a client to a shared-state key. Wired by
    * `RpcSharedStateHost`; do not register manually.

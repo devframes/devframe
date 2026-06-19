@@ -7,7 +7,6 @@ import {
   DEVFRAME_CONNECTION_META_FILENAME,
 } from 'devframe/constants'
 import { RpcCacheManager, RpcFunctionsCollectorBase } from 'devframe/rpc'
-import { randomToken } from 'devframe/utils/crypto-token'
 import { createEventEmitter } from 'devframe/utils/events'
 import { createRpcSharedStateClientHost } from './rpc-shared-state'
 import { createStaticRpcClientMode } from './rpc-static'
@@ -75,10 +74,17 @@ export interface DevframeRpcClient {
   requestTrust: () => Promise<boolean>
 
   /**
-   * Request trust from the server using a specific auth token.
+   * Request trust from the server using a previously-issued auth token.
    * Updates the stored token and re-requests trust without reloading the page.
    */
   requestTrustWithToken: (token: string) => Promise<boolean>
+
+  /**
+   * Pair this client by exchanging a one-time code (shown by the dev server)
+   * for a node-issued auth token. On success the token is persisted for future
+   * reconnections and shared with sibling tabs. Resolves `true` when paired.
+   */
+  requestTrustWithCode: (code: string) => Promise<boolean>
 
   /**
    * Call a RPC function on the server
@@ -118,37 +124,45 @@ export interface DevframeRpcClientMode {
   ensureTrusted: DevframeRpcClient['ensureTrusted']
   requestTrust: DevframeRpcClient['requestTrust']
   requestTrustWithToken: DevframeRpcClient['requestTrustWithToken']
+  /**
+   * Exchange a one-time code for a node-issued token. Resolves the minted
+   * token on success (for the caller to persist), or `null` on failure.
+   */
+  requestTrustWithCode: (code: string) => Promise<string | null>
   call: DevframeRpcClient['call']
   callEvent: DevframeRpcClient['callEvent']
   callOptional: DevframeRpcClient['callOptional']
 }
 
-function getConnectionAuthTokenFromWindows(userAuthToken?: string): string {
+function getStoredAuthToken(userAuthToken?: string): string | undefined {
   const getters = [
     () => userAuthToken,
-    () => localStorage.getItem(CONNECTION_AUTH_TOKEN_KEY),
+    () => localStorage.getItem(CONNECTION_AUTH_TOKEN_KEY) ?? undefined,
     () => (window as any)?.[CONNECTION_AUTH_TOKEN_KEY],
     () => (globalThis as any)?.[CONNECTION_AUTH_TOKEN_KEY],
     () => (parent.window as any)?.[CONNECTION_AUTH_TOKEN_KEY],
   ]
 
-  let value: string | undefined
-
   for (const getter of getters) {
     try {
-      value = getter()
+      const value = getter()
       if (value)
-        break
+        return value
     }
     catch {}
   }
 
-  if (!value)
-    value = randomToken()
+  // No token yet — the client is unpaired and must exchange a one-time code
+  // (see `requestTrustWithCode`) to obtain a node-issued token.
+  return undefined
+}
 
-  localStorage.setItem(CONNECTION_AUTH_TOKEN_KEY, value)
-  ;(globalThis as any)[CONNECTION_AUTH_TOKEN_KEY] = value
-  return value
+function persistAuthToken(token: string): void {
+  try {
+    localStorage.setItem(CONNECTION_AUTH_TOKEN_KEY, token)
+  }
+  catch {}
+  ;(globalThis as any)[CONNECTION_AUTH_TOKEN_KEY] = token
 }
 
 function findConnectionMetaFromWindows(): ConnectionMeta | undefined {
@@ -223,7 +237,7 @@ export async function getDevframeRpcClient(
   const context: DevframeRpcContext = {
     rpc: undefined!,
   }
-  const authToken = getConnectionAuthTokenFromWindows(options.authToken)
+  const authToken = getStoredAuthToken(options.authToken)
   const clientRpc: DevframeClientRpcHost = new RpcFunctionsCollectorBase<DevframeRpcClientFunctions, DevframeRpcContext>(context)
 
   async function fetchJsonFromBases(path: string): Promise<any> {
@@ -283,6 +297,13 @@ export async function getDevframeRpcClient(
         wsOptions: options.wsOptions,
       })
 
+  // Channel name kept for cross-tab interop with the Vite DevTools auth page.
+  let authChannel: BroadcastChannel | undefined
+  try {
+    authChannel = new BroadcastChannel('devframe-auth')
+  }
+  catch {}
+
   const rpc: DevframeRpcClient = {
     events,
     get isTrusted() {
@@ -293,9 +314,21 @@ export async function getDevframeRpcClient(
     requestTrust: mode.requestTrust,
     requestTrustWithToken: async (token: string) => {
       // Update stored token for future reconnections
-      localStorage.setItem(CONNECTION_AUTH_TOKEN_KEY, token)
-      ;(globalThis as any)[CONNECTION_AUTH_TOKEN_KEY] = token
+      persistAuthToken(token)
       return mode.requestTrustWithToken(token)
+    },
+    requestTrustWithCode: async (code: string) => {
+      const token = await mode.requestTrustWithCode(code)
+      if (!token)
+        return false
+      // Persist the node-issued token and share it with sibling tabs so they
+      // become trusted without re-entering the code.
+      persistAuthToken(token)
+      try {
+        authChannel?.postMessage({ type: 'auth-update', authToken: token })
+      }
+      catch {}
+      return true
     },
     call: mode.call,
     callEvent: mode.callEvent,
@@ -313,17 +346,15 @@ export async function getDevframeRpcClient(
   context.rpc = rpc
   void mode.requestTrust()
 
-  // Listen for auth updates from other tabs (e.g., auth URL page).
-  // Channel name kept for cross-tab interop with the Vite DevTools auth page.
-  try {
-    const bc = new BroadcastChannel('devframe-auth')
-    bc.onmessage = (event) => {
+  // Listen for auth updates from other tabs (e.g., the auth page, or another
+  // tab that just completed a code exchange).
+  if (authChannel) {
+    authChannel.onmessage = (event) => {
       if (event.data?.type === 'auth-update' && event.data.authToken) {
         rpc.requestTrustWithToken(event.data.authToken)
       }
     }
   }
-  catch {}
 
   return rpc
 }

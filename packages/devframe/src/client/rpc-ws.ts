@@ -6,7 +6,7 @@ import { promiseWithResolver } from 'devframe/utils/promise'
 import { parseUA } from 'ua-parser-modern'
 
 export interface CreateWsRpcClientModeOptions {
-  authToken: string
+  authToken?: string
   connectionMeta: ConnectionMeta
   events: EventEmitter<RpcClientEvents>
   clientRpc: DevframeClientRpcHost
@@ -69,13 +69,11 @@ export function createWsRpcClientMode(
     },
   })
 
-  let currentAuthToken = authToken
+  let currentAuthToken: string | undefined = authToken
 
-  async function requestTrustWithToken(token: string) {
-    currentAuthToken = token
-
+  function describeUA(): string {
     const info = parseUA(navigator.userAgent)
-    const ua = [
+    return [
       info.browser.name,
       info.browser.version,
       '|',
@@ -83,23 +81,51 @@ export function createWsRpcClientMode(
       info.os.version,
       info.device.type,
     ].filter(i => i).join(' ')
+  }
+
+  async function requestTrustWithToken(token: string) {
+    currentAuthToken = token
 
     const result = await serverRpc.$call('devframe:anonymous:auth', {
       authToken: token,
-      ua,
+      ua: describeUA(),
       origin: location.origin,
     })
 
     isTrusted = result.isTrusted
-    trustedPromise.resolve(isTrusted)
+    // Only settle the trust gate on success; on failure the client can still
+    // pair via `requestTrustWithCode`, so leave `ensureTrusted` waiting.
+    if (isTrusted)
+      trustedPromise.resolve(true)
     events.emit('rpc:is-trusted:updated', isTrusted)
     return result.isTrusted
+  }
+
+  async function requestTrustWithCode(code: string): Promise<string | null> {
+    const result = await serverRpc.$call('devframe:auth:exchange', {
+      code,
+      ua: describeUA(),
+      origin: location.origin,
+    })
+
+    const token = result?.authToken ?? null
+    if (token) {
+      currentAuthToken = token
+      isTrusted = true
+      trustedPromise.resolve(true)
+      events.emit('rpc:is-trusted:updated', true)
+    }
+    return token
   }
 
   async function requestTrust() {
     if (isTrusted)
       return true
-    return requestTrustWithToken(currentAuthToken)
+    // Always announce on connect. The standalone (`auth: false`) noop handler
+    // auto-trusts regardless of token; the host adapter looks the token up and
+    // returns `false` for an unpaired client (empty/unknown token), which then
+    // pairs via `requestTrustWithCode`. The trust gate stays open until then.
+    return requestTrustWithToken(currentAuthToken ?? '')
   }
 
   async function ensureTrusted(timeout = 60_000): Promise<boolean> {
@@ -129,6 +155,7 @@ export function createWsRpcClientMode(
     },
     requestTrust,
     requestTrustWithToken,
+    requestTrustWithCode,
     ensureTrusted,
     call: (...args: any): any => {
       return serverRpc.$call(
