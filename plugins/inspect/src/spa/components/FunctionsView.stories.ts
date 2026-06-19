@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
-import FunctionsView from './FunctionsView.vue';
+import type { Meta, StoryObj } from '@storybook/vue3'
+import FunctionsView from './FunctionsView.vue'
 
 const meta = {
   title: 'Inspector/FunctionsView',
@@ -8,10 +8,10 @@ const meta = {
   argTypes: {
     onInvoke: { action: 'invoked' },
   },
-} satisfies Meta<typeof FunctionsView>;
+} satisfies Meta<typeof FunctionsView>
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
@@ -58,20 +58,20 @@ export const Default: Story = {
         hasSetup: true,
         hasHandler: true,
         invokable: true,
-      }
+      },
     ],
     isStatic: false,
     results: {},
     pending: {},
   },
-};
+}
 
 export const StaticMode: Story = {
   args: {
     ...Default.args,
     isStatic: true,
   },
-};
+}
 
 export const WithResultsAndPending: Story = {
   args: {
@@ -86,10 +86,10 @@ export const WithResultsAndPending: Story = {
         ok: false,
         error: { name: 'Error', message: 'Failed to invoke' },
         durationMs: 12,
-      }
+      },
     },
     pending: {
       'vite:rolldown:list-sessions': true,
     },
   },
-};
+}

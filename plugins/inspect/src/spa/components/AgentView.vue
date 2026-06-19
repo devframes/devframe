@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { AgentManifest, InvokeResult } from '@devframes/plugin-inspect/client'
-import { ref, reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import JsonView from './JsonView.vue'
 
-const props = defineProps<{
+defineProps<{
   manifest: AgentManifest | null
   isStatic: boolean
   results: Record<string, InvokeResult | { ok: false, error: { name: string, message: string } }>
@@ -30,7 +30,8 @@ function invokeTool(id: string) {
   try {
     const raw = JSON.parse(argsInput[id] || '{}')
     parsed = raw
-  } catch (err) {
+  }
+  catch (err) {
     // Emitting error would be cleaner, for now we will throw to stop execution
     throw new Error(`Invalid JSON args: ${(err as Error).message}`)
   }
@@ -73,19 +74,27 @@ function readResource(id: string) {
           </div>
           <template v-if="expanded === tool.id">
             <template v-if="tool.inputSchema">
-              <div class="label">Input schema</div>
+              <div class="label">
+                Input schema
+              </div>
               <JsonView :value="tool.inputSchema" :expand-depth="1" />
             </template>
             <template v-if="tool.outputSchema">
-              <div class="label">Output schema</div>
+              <div class="label">
+                Output schema
+              </div>
               <JsonView :value="tool.outputSchema" :expand-depth="1" />
             </template>
             <template v-if="tool.examples && tool.examples.length">
-              <div class="label">Examples</div>
+              <div class="label">
+                Examples
+              </div>
               <JsonView :value="tool.examples" :expand-depth="1" />
             </template>
 
-            <div class="label">Invoke (MCP format)</div>
+            <div class="label">
+              Invoke (MCP format)
+            </div>
             <textarea v-model="argsInput[tool.id]" class="args" spellcheck="false" placeholder="{}" />
             <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
               <button class="btn" :disabled="pending[tool.id] || isStatic" @click="invokeTool(tool.id)">
@@ -93,7 +102,7 @@ function readResource(id: string) {
               </button>
               <span v-if="isStatic" class="note">read-only static backend</span>
             </div>
-            
+
             <div v-if="results[tool.id]" class="result">
               <div class="result-head">
                 <span v-if="results[tool.id].ok" class="ok">✓ resolved</span>
@@ -138,7 +147,7 @@ function readResource(id: string) {
               </button>
               <span v-if="isStatic" class="note">read-only static backend</span>
             </div>
-            
+
             <div v-if="results[res.id]" class="result">
               <div class="result-head">
                 <span v-if="results[res.id].ok" class="ok">✓ resolved</span>

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { RpcFunctionInfo, InvokeResult } from '@devframes/plugin-inspect/client'
-import { getHashColorFromString } from '../utils/color'
+import type { RpcFunctionInfo } from '@devframes/plugin-inspect/client'
 import { ref } from 'vue'
+import { getHashColorFromString } from '../utils/color'
 import JsonView from './JsonView.vue'
 
-export type TreeNode = {
+export interface TreeNode {
   name: string
   fullPath: string
   isLeaf: boolean
@@ -23,6 +23,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'invoke', fn: RpcFunctionInfo): void
+  (e: 'updateArgs', name: string, value: string): void
 }>()
 
 const expandedNode = ref(props.depth < 1)
@@ -33,24 +34,30 @@ function toggle() {
     expandedFn.value = !expandedFn.value
     if (props.node.fn && props.argsInput[props.node.fn.name] === undefined) {
       // Initialize if empty
-      // Emitting an event just to set default isn't necessary because we mutate props.argsInput
+      // Emitting an event just to set default isn't necessary because it's v-model bound
     }
-  } else {
+  }
+  else {
     expandedNode.value = !expandedNode.value
   }
 }
 
 const color = getHashColorFromString(props.node.fullPath)
+</script>
 
+<script lang="ts">
+export default {
+  name: 'FunctionsTreeNode',
+}
 </script>
 
 <template>
   <div class="tree-node">
-    <div v-if="!node.isLeaf" class="group-head" @click="toggle" style="cursor: pointer; user-select: none;">
+    <div v-if="!node.isLeaf" class="group-head" style="cursor: pointer; user-select: none;" @click="toggle">
       <div class="chev i-ph-caret-right" :class="{ open: expandedNode }" />
       <span class="ns" :style="{ color }">{{ node.name }}</span>
     </div>
-    
+
     <div v-if="node.isLeaf && node.fn" class="fn-row">
       <div class="fn-head" :class="{ clickable: node.fn.invokable || !!node.fn.agent || node.fn.hasArgs || node.fn.hasReturns }" @click="toggle">
         <div class="chev i-ph-caret-right" :class="{ open: expandedFn }" />
@@ -67,20 +74,28 @@ const color = getHashColorFromString(props.node.fullPath)
       </div>
 
       <div v-if="expandedFn" class="fn-detail">
-        <p v-if="node.fn.agent" class="desc">{{ node.fn.agent.description }}</p>
+        <p v-if="node.fn.agent" class="desc">
+          {{ node.fn.agent.description }}
+        </p>
 
         <template v-if="node.fn.argsSchema">
-          <div class="label">Args schema</div>
+          <div class="label">
+            Args schema
+          </div>
           <JsonView :value="node.fn.argsSchema" :expand-depth="0" />
         </template>
         <template v-if="node.fn.returnsSchema">
-          <div class="label">Returns schema</div>
+          <div class="label">
+            Returns schema
+          </div>
           <JsonView :value="node.fn.returnsSchema" :expand-depth="0" />
         </template>
 
         <template v-if="node.fn.invokable">
-          <div class="label">Invoke — positional args as a JSON array</div>
-          <textarea v-model="argsInput[node.fn.name]" class="args" spellcheck="false" placeholder="[]" />
+          <div class="label">
+            Invoke — positional args as a JSON array
+          </div>
+          <textarea :value="argsInput[node.fn.name]" class="args" spellcheck="false" placeholder="[]" @input="emit('updateArgs', node.fn.name, ($event.target as HTMLTextAreaElement).value)" />
           <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
             <button class="btn" :disabled="pending[node.fn.name] || isStatic()" @click.stop="emit('invoke', node.fn!)">
               {{ pending[node.fn.name] ? 'Invoking…' : 'Invoke' }}
@@ -109,7 +124,7 @@ const color = getHashColorFromString(props.node.fullPath)
 
     <div v-if="!node.isLeaf && expandedNode" class="children" style="padding-left: 14px; border-left: 1px solid var(--df-border-soft); margin-left: 6px;">
       <FunctionsTreeNode
-        v-for="child in Object.values(node.children || {}).sort((a,b) => { if(a.isLeaf !== b.isLeaf) return a.isLeaf ? 1 : -1; return a.name.localeCompare(b.name) })"
+        v-for="child in Object.values(node.children || {}).sort((a, b) => { if (a.isLeaf !== b.isLeaf) return a.isLeaf ? 1 : -1; return a.name.localeCompare(b.name) })"
         :key="child.name"
         :node="child"
         :depth="depth + 1"
@@ -118,13 +133,8 @@ const color = getHashColorFromString(props.node.fullPath)
         :pending="pending"
         :is-static="isStatic"
         @invoke="emit('invoke', $event)"
+        @update-args="(n, v) => emit('updateArgs', n, v)"
       />
     </div>
   </div>
 </template>
-
-<script lang="ts">
-export default {
-  name: 'FunctionsTreeNode'
-}
-</script>

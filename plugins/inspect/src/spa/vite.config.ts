@@ -16,7 +16,7 @@ export default defineConfig({
   plugins: [
     vue(),
     UnoCSS(),
-    inspectVitePlugin({ devMiddleware: true, base: '/' })
+    inspectVitePlugin({ devMiddleware: true, base: '/' }),
   ],
   build: {
     outDir: fileURLToPath(new URL('../../dist/spa', import.meta.url)),

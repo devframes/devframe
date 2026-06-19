@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { InvokeResult, RpcFunctionInfo } from '@devframes/plugin-inspect/client'
 import { onMounted, reactive, shallowRef } from 'vue'
-import { isStatic, useRpc } from '../composables/rpc'
 import { useRefreshProvider } from '../composables/refresh'
+import { isStatic, useRpc } from '../composables/rpc'
 import FunctionsView from './FunctionsView.vue'
 
 const rpc = useRpc()

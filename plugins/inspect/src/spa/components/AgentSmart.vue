@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { AgentManifest, InvokeResult } from '@devframes/plugin-inspect/client'
 import { onMounted, reactive, shallowRef } from 'vue'
-import { isStatic, useRpc } from '../composables/rpc'
 import { useRefreshProvider } from '../composables/refresh'
+import { isStatic, useRpc } from '../composables/rpc'
 import AgentView from './AgentView.vue'
 
 const rpc = useRpc()
@@ -20,27 +20,33 @@ useRefreshProvider(fetchData)
 onMounted(fetchData)
 
 async function onInvoke(id: string, parsedArgs: unknown) {
-  if (!rpc.value) return
+  if (!rpc.value)
+    return
   pending[id] = true
   try {
     results[id] = await rpc.value.call('devframes-plugin-inspect:invoke-agent-tool', id, parsedArgs)
-  } catch (e) {
+  }
+  catch (e) {
     const err = e as Error
     results[id] = { ok: false, error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) } }
-  } finally {
+  }
+  finally {
     pending[id] = false
   }
 }
 
 async function onRead(id: string) {
-  if (!rpc.value) return
+  if (!rpc.value)
+    return
   pending[id] = true
   try {
     results[id] = await rpc.value.call('devframes-plugin-inspect:read-agent-resource', id)
-  } catch (e) {
+  }
+  catch (e) {
     const err = e as Error
     results[id] = { ok: false, error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) } }
-  } finally {
+  }
+  finally {
     pending[id] = false
   }
 }

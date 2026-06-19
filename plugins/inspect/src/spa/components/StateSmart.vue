@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onScopeDispose, ref, shallowRef, watch } from 'vue'
-import { isStatic, useRpc } from '../composables/rpc'
 import { useRefreshProvider } from '../composables/refresh'
+import { isStatic, useRpc } from '../composables/rpc'
 import StateView from './StateView.vue'
 
 const rpc = useRpc()

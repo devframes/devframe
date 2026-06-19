@@ -1,8 +1,8 @@
-import type { StorybookConfig } from '@storybook/vue3-vite';
-import { mergeConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import UnoCSS from 'unocss/vite';
-import { alias } from '../../../alias';
+import type { StorybookConfig } from '@storybook/vue3-vite'
+import vue from '@vitejs/plugin-vue'
+import UnoCSS from 'unocss/vite'
+import { mergeConfig } from 'vite'
+import { alias } from '../../../alias'
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
@@ -16,7 +16,7 @@ const config: StorybookConfig = {
     return mergeConfig(config, {
       resolve: { alias },
       plugins: [vue(), UnoCSS()],
-    });
+    })
   },
-};
-export default config;
+}
+export default config

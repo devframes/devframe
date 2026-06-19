@@ -26,7 +26,8 @@ function setupHistoryHooks(client: DevframeRpcClient) {
         addHistoryRecord({ type: 'call', method, args, result: res, duration: Date.now() - start, time: start })
       }
       return res
-    } catch (e) {
+    }
+    catch (e) {
       if (!method.includes('list-functions') && !method.includes('list-state-keys') && method !== 'devframe:rpc:server-state:get') {
         addHistoryRecord({ type: 'call', method, args, error: e, duration: Date.now() - start, time: start })
       }

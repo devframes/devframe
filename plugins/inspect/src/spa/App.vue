@@ -2,10 +2,10 @@
 import { onMounted, ref } from 'vue'
 import AgentSmart from './components/AgentSmart.vue'
 import FunctionsSmart from './components/FunctionsSmart.vue'
-import StateSmart from './components/StateSmart.vue'
 import HistorySmart from './components/HistorySmart.vue'
-import { connect, connection } from './composables/rpc'
+import StateSmart from './components/StateSmart.vue'
 import { useRefresh } from './composables/refresh'
+import { connect, connection } from './composables/rpc'
 
 type Tab = 'functions' | 'state' | 'agent' | 'history'
 

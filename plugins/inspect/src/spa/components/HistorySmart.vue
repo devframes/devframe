@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { historyRecords, isRecording, clearHistory } from '../composables/history'
+import { clearHistory, historyRecords, isRecording } from '../composables/history'
 import HistoryView from './HistoryView.vue'
 
 function setRecording(value: boolean) {

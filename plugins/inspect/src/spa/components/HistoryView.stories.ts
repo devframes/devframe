@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
-import HistoryView from './HistoryView.vue';
+import type { Meta, StoryObj } from '@storybook/vue3'
+import HistoryView from './HistoryView.vue'
 
 const meta = {
   title: 'Inspector/HistoryView',
@@ -7,12 +7,12 @@ const meta = {
   tags: ['autodocs'],
   argTypes: {
     'onUpdate:isRecording': { action: 'update:isRecording' },
-    onClear: { action: 'clear' },
+    'onClear': { action: 'clear' },
   },
-} satisfies Meta<typeof HistoryView>;
+} satisfies Meta<typeof HistoryView>
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
@@ -42,22 +42,22 @@ export const Default: Story = {
         error: { name: 'Error', message: 'Failed' },
         duration: 12,
         time: Date.now() - 1000,
-      }
+      },
     ],
     isRecording: true,
   },
-};
+}
 
 export const Empty: Story = {
   args: {
     historyRecords: [],
     isRecording: true,
   },
-};
+}
 
 export const Paused: Story = {
   args: {
     ...Default.args,
     isRecording: false,
   },
-};
+}

@@ -1,4 +1,4 @@
-import type { Preview } from '@storybook/vue3';
+import type { Preview } from '@storybook/vue3'
 import 'virtual:uno.css'
 import '../src/spa/style.css'
 
@@ -24,6 +24,6 @@ const preview: Preview = {
       ],
     },
   },
-};
+}
 
-export default preview;
+export default preview

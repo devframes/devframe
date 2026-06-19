@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
-import AgentView from './AgentView.vue';
+import type { Meta, StoryObj } from '@storybook/vue3'
+import AgentView from './AgentView.vue'
 
 const meta = {
   title: 'Inspector/AgentView',
@@ -9,10 +9,10 @@ const meta = {
     onInvoke: { action: 'invoked' },
     onRead: { action: 'read' },
   },
-} satisfies Meta<typeof AgentView>;
+} satisfies Meta<typeof AgentView>
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
@@ -34,7 +34,7 @@ export const Default: Story = {
           title: 'Tool 2',
           description: 'A destructive tool',
           safety: 'destructive',
-        }
+        },
       ],
       resources: [
         {
@@ -43,7 +43,7 @@ export const Default: Story = {
           name: 'Resource 1',
           description: 'A sample resource',
           mimeType: 'application/json',
-        }
+        },
       ],
     },
     isStatic: false,
@@ -55,11 +55,11 @@ export const Default: Story = {
       tool2: true,
     },
   },
-};
+}
 
 export const StaticMode: Story = {
   args: {
     ...Default.args,
     isStatic: true,
   },
-};
+}

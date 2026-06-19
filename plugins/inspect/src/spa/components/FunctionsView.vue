@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { InvokeResult, RpcFunctionInfo } from '@devframes/plugin-inspect/client'
+import type { TreeNode } from './FunctionsTreeNode.vue'
 import { computed, reactive, ref } from 'vue'
-import FunctionsTreeNode, { type TreeNode } from './FunctionsTreeNode.vue'
+import FunctionsTreeNode from './FunctionsTreeNode.vue'
 
 const props = defineProps<{
   functions: RpcFunctionInfo[] | null
@@ -30,35 +31,35 @@ const tree = computed(() => {
     name: 'root',
     fullPath: '',
     isLeaf: false,
-    children: {}
+    children: {},
   }
-  
+
   for (const fn of filtered.value) {
     const parts = fn.name.split(':')
     let current = root
     let currentPath = ''
-    
+
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i]
       currentPath = currentPath ? `${currentPath}:${part}` : part
-      
+
       if (!current.children) {
         current.children = {}
       }
-      
+
       if (!current.children[part]) {
         current.children[part] = {
           name: part,
           fullPath: currentPath,
           isLeaf: i === parts.length - 1,
           fn: i === parts.length - 1 ? fn : undefined,
-          children: {}
+          children: {},
         }
       }
       current = current.children[part]
     }
   }
-  
+
   return root
 })
 
@@ -101,12 +102,16 @@ function invoke(fn: RpcFunctionInfo): void {
       </span>
     </div>
 
-    <div v-if="!functions" class="center">Loading functions…</div>
-    <div v-else-if="filtered.length === 0" class="empty">No functions match “{{ search }}”.</div>
+    <div v-if="!functions" class="center">
+      Loading functions…
+    </div>
+    <div v-else-if="filtered.length === 0" class="empty">
+      No functions match “{{ search }}”.
+    </div>
 
     <div v-else class="group">
       <FunctionsTreeNode
-        v-for="child in Object.values(tree.children || {}).sort((a,b) => { if(a.isLeaf !== b.isLeaf) return a.isLeaf ? 1 : -1; return a.name.localeCompare(b.name) })"
+        v-for="child in Object.values(tree.children || {}).sort((a, b) => { if (a.isLeaf !== b.isLeaf) return a.isLeaf ? 1 : -1; return a.name.localeCompare(b.name) })"
         :key="child.name"
         :node="child"
         :depth="0"
@@ -115,6 +120,7 @@ function invoke(fn: RpcFunctionInfo): void {
         :pending="pending"
         :is-static="isStatic"
         @invoke="invoke"
+        @update-args="(n, v) => argsInput[n] = v"
       />
     </div>
   </div>

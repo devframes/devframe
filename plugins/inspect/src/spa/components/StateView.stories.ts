@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
-import StateView from './StateView.vue';
+import type { Meta, StoryObj } from '@storybook/vue3'
+import StateView from './StateView.vue'
 
 const meta = {
   title: 'Inspector/StateView',
@@ -8,10 +8,10 @@ const meta = {
   argTypes: {
     onSelect: { action: 'selected' },
   },
-} satisfies Meta<typeof StateView>;
+} satisfies Meta<typeof StateView>
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
@@ -28,14 +28,14 @@ export const Default: Story = {
     updates: 5,
     highlightPaths: new Set(['theme']),
   },
-};
+}
 
 export const Loading: Story = {
   args: {
     ...Default.args,
     loading: true,
   },
-};
+}
 
 export const StaticSnapshot: Story = {
   args: {
@@ -43,7 +43,7 @@ export const StaticSnapshot: Story = {
     isStatic: true,
     updates: 0,
   },
-};
+}
 
 export const Empty: Story = {
   args: {
@@ -55,4 +55,4 @@ export const Empty: Story = {
     updates: 0,
     highlightPaths: new Set(),
   },
-};
+}

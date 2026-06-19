@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import JsonView from './JsonView.vue'
 
 const props = defineProps<{
@@ -36,7 +36,9 @@ const filteredKeys = computed(() => {
         </label>
       </div>
       <div class="keys-list">
-        <div v-if="!keys" class="empty">Loading…</div>
+        <div v-if="!keys" class="empty">
+          Loading…
+        </div>
         <div v-else-if="filteredKeys.length === 0" class="empty">
           No shared state{{ keys.length ? ' (toggle internal)' : '' }}.
         </div>
@@ -54,8 +56,12 @@ const filteredKeys = computed(() => {
     </aside>
 
     <section class="state-main">
-      <div v-if="!selectedKey" class="center">Select a shared-state key to inspect its live value.</div>
-      <div v-else-if="loading" class="center">Loading state…</div>
+      <div v-if="!selectedKey" class="center">
+        Select a shared-state key to inspect its live value.
+      </div>
+      <div v-else-if="loading" class="center">
+        Loading state…
+      </div>
       <template v-else>
         <div class="state-meta">
           <span class="state-key">{{ selectedKey }}</span>
