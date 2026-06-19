@@ -536,8 +536,24 @@ export async function mountTerminals(
     syncSessions(full.sessions ?? [])
   })
 
-  // Each page load spawns a fresh interactive session and selects it.
-  if (options.autostart !== false)
+  // Reconcile from the authoritative `list` RPC. The shared state resolves
+  // with its (empty) initial value and backfills the server's sessions
+  // asynchronously, so reading it synchronously here can both miss existing
+  // sessions (leaving the panel blank on refresh) and make every reload look
+  // empty enough to spawn another shell. Seeding from `list` renders the
+  // restored sessions immediately; syncSessions then reselects the URL-hashed
+  // one. A new session is started only when none exist.
+  let existing: TerminalSessionInfo[] | null = null
+  try {
+    existing = await rpc.call('devframes-plugin-terminals:list') as TerminalSessionInfo[]
+  }
+  catch {
+    existing = null
+  }
+  if (existing)
+    syncSessions(existing)
+  const hasSessions = existing ? existing.length > 0 : views.size > 0
+  if (options.autostart !== false && !hasSessions)
     void spawnAndSelect({ mode: 'interactive' })
 
   const resizeObserver = typeof ResizeObserver !== 'undefined'
