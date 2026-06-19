@@ -1,12 +1,14 @@
 'use client'
 
-import { FileDiff, GitBranch, GitCommitHorizontal, GitGraph, ListTree } from 'lucide-react'
+import { FileDiff, GitBranch, GitCommitHorizontal, GitGraph, ListTree, Moon, Sun } from 'lucide-react'
 import { BranchesPanel } from './branches-panel'
 import { DiffPanel } from './diff-panel'
 import { LogPanel } from './log-panel'
 import { RpcProvider, useRpc } from './rpc-provider'
 import { StatusPanel } from './status-panel'
+import { useTheme } from './theme'
 import { Badge } from './ui/badge'
+import { Button } from './ui/button'
 import { Card, CardContent } from './ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 
@@ -24,6 +26,15 @@ function ConnectionBadge() {
   )
 }
 
+function ThemeToggle() {
+  const { theme, toggle } = useTheme()
+  return (
+    <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle light/dark theme">
+      {theme === 'dark' ? <Sun /> : <Moon />}
+    </Button>
+  )
+}
+
 export function Dashboard() {
   return (
     <RpcProvider>
@@ -38,7 +49,10 @@ export function Dashboard() {
               </p>
             </div>
           </div>
-          <ConnectionBadge />
+          <div className="flex items-center gap-2">
+            <ConnectionBadge />
+            <ThemeToggle />
+          </div>
         </header>
 
         <Tabs defaultValue="status">

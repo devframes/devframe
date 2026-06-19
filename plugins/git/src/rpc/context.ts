@@ -4,11 +4,15 @@ import { resolveRepoRoot } from '../node/git.ts'
 export interface GitConfig {
   /** Directory the dashboard inspects. */
   cwd: string
+  /** Whether staging / unstaging / committing actions are enabled. */
+  write?: boolean
 }
 
 export interface GitContext {
   /** Directory the dashboard inspects. */
   readonly cwd: string
+  /** Whether write actions (stage / unstage / commit) are enabled. */
+  readonly write: boolean
   /**
    * Resolve the repository root, memoized for the lifetime of the context.
    * Resolves to `null` when `cwd` is not inside a git repository.
@@ -38,11 +42,14 @@ export function getGitContext(ctx: DevframeNodeContext): GitContext {
   if (existing)
     return existing
 
-  const cwd = configs.get(ctx)?.cwd ?? ctx.cwd
+  const config = configs.get(ctx)
+  const cwd = config?.cwd ?? ctx.cwd
+  const write = config?.write ?? false
   let rootPromise: Promise<string | null> | undefined
 
   existing = {
     cwd,
+    write,
     resolveRoot: () => {
       rootPromise ??= resolveRepoRoot(cwd)
       return rootPromise

@@ -21,6 +21,16 @@ export interface Commit {
   subject: string;
   body: string;
   refs: string[];
+  parents: string[];
+}
+export interface CommitArgs {
+  message: string;
+}
+export interface CommitResult {
+  ok: boolean;
+  hash: string | null;
+  message: string;
+  status: GitStatus;
 }
 export interface DiffArgs {
   path?: string;
@@ -42,6 +52,7 @@ export interface GitDevframeOptions {
   basePath?: string;
   distDir?: string;
   port?: number;
+  write?: boolean;
 }
 export interface GitDiff {
   isRepo: boolean;
@@ -73,15 +84,22 @@ export interface GitStatus {
   unstaged: StatusFileEntry[];
   untracked: string[];
   clean: boolean;
+  canWrite: boolean;
 }
 export interface LogArgs {
   limit?: number;
   skip?: number;
 }
+export interface StageArgs {
+  paths: string[];
+}
 export interface StatusFileEntry {
   path: string;
   from?: string;
   status: FileStatusCode;
+}
+export interface UnstageArgs {
+  paths: string[];
 }
 // #endregion
 

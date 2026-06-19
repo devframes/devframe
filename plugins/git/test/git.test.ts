@@ -1,4 +1,4 @@
-import type { GitBranches, GitDiff, GitLog, GitStatus } from '../src/index'
+import type { CommitResult, GitBranches, GitDiff, GitLog, GitStatus } from '../src/index'
 import { createRpcClient } from 'devframe/rpc/client'
 import { collectStaticRpcDump } from 'devframe/rpc/dump'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
@@ -61,6 +61,9 @@ describe('@devframes/plugin-git', () => {
     expect(log.commits[0].email).toBe('test@example.com')
     expect(typeof log.commits[0].date).toBe('number')
     expect(log.hasMore).toBe(false)
+    // Parents drive the commit graph: the tip points at the root, which has none.
+    expect(log.commits[1].parents).toEqual([])
+    expect(log.commits[0].parents).toEqual([log.commits[1].hash])
   })
 
   it('paginates the log and flags more history', async () => {
@@ -164,6 +167,72 @@ describe('@devframes/plugin-git (build snapshot)', () => {
       expect(status.branch).toBe('main')
     }
     finally {
+      repo.cleanup()
+    }
+  })
+})
+
+describe('@devframes/plugin-git (write actions)', () => {
+  it('stages, unstages, and commits when write is enabled', async () => {
+    const repo = createTempRepo()
+    const server = await startDashboardServer(repo.dir, { write: true })
+    try {
+      const rpc = bootRpc(server.port)
+
+      const initial = await rpc.$call('git:status') as GitStatus
+      expect(initial.canWrite).toBe(true)
+
+      // Stage the unstaged + untracked files.
+      let status = await rpc.$call('git:stage', { paths: ['README.md', 'untracked.txt'] }) as GitStatus
+      expect(status.staged.map(f => f.path)).toEqual(
+        expect.arrayContaining(['staged.txt', 'README.md', 'untracked.txt']),
+      )
+      expect(status.untracked).not.toContain('untracked.txt')
+
+      // Unstage one of them again.
+      status = await rpc.$call('git:unstage', { paths: ['staged.txt'] }) as GitStatus
+      expect(status.staged.map(f => f.path)).not.toContain('staged.txt')
+
+      // Commit what's left staged.
+      const result = await rpc.$call('git:commit', { message: 'test: commit from ui' }) as CommitResult
+      expect(result.ok).toBe(true)
+      expect(result.hash).toMatch(/^[0-9a-f]+$/)
+
+      const log = await rpc.$call('git:log', {}) as GitLog
+      expect(log.commits[0].subject).toBe('test: commit from ui')
+    }
+    finally {
+      await server.close()
+      repo.cleanup()
+    }
+  })
+
+  it('rejects an empty commit message', async () => {
+    const repo = createTempRepo()
+    const server = await startDashboardServer(repo.dir, { write: true })
+    try {
+      const rpc = bootRpc(server.port)
+      const result = await rpc.$call('git:commit', { message: '   ' }) as CommitResult
+      expect(result.ok).toBe(false)
+      expect(result.hash).toBeNull()
+    }
+    finally {
+      await server.close()
+      repo.cleanup()
+    }
+  })
+
+  it('omits write actions when write is disabled', async () => {
+    const repo = createTempRepo()
+    const server = await startDashboardServer(repo.dir)
+    try {
+      const rpc = bootRpc(server.port)
+      const status = await rpc.$call('git:status') as GitStatus
+      expect(status.canWrite).toBe(false)
+      await expect(rpc.$call('git:stage', { paths: ['README.md'] })).rejects.toBeDefined()
+    }
+    finally {
+      await server.close()
       repo.cleanup()
     }
   })

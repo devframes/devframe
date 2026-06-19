@@ -1,6 +1,7 @@
 'use client'
 
 import type { DevframeRpcClient } from 'devframe/client'
+import type { Dispatch, SetStateAction } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { useRpc } from './rpc-provider'
 
@@ -9,6 +10,8 @@ export interface RpcResource<T> {
   loading: boolean
   error: string | null
   refresh: () => Promise<void>
+  /** Replace the data directly — e.g. with the result of a mutation. */
+  setData: Dispatch<SetStateAction<T | null>>
 }
 
 /**
@@ -42,5 +45,5 @@ export function useRpcResource<T>(loader: (rpc: DevframeRpcClient) => Promise<T>
     void refresh()
   }, [refresh])
 
-  return { data, loading, error, refresh }
+  return { data, loading, error, refresh, setData }
 }

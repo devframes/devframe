@@ -2,8 +2,10 @@
 
 import type { DevframeRpcClient } from 'devframe/client'
 import type { Commit } from '../../index'
+import type { GraphRow } from '../lib/commit-graph'
 import { RefreshCw } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { computeGraph } from '../lib/commit-graph'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import { ScrollArea } from './ui/scroll-area'
@@ -11,6 +13,9 @@ import { Skeleton } from './ui/skeleton'
 import { useRpcResource } from './use-rpc-resource'
 
 const PAGE = 30
+const ROW_H = 54
+const COL_W = 14
+const NODE_R = 4.5
 
 function relativeTime(epoch: number): string {
   const diff = Date.now() - epoch
@@ -28,20 +33,65 @@ function relativeTime(epoch: number): string {
   return new Date(epoch).toLocaleDateString()
 }
 
-function CommitRow({ commit }: { commit: Commit }) {
+function cx(col: number): number {
+  return col * COL_W + COL_W / 2
+}
+
+function linkPath(fromCol: number, fromY: number, toCol: number, toY: number): string {
+  const x1 = cx(fromCol)
+  const x2 = cx(toCol)
+  if (fromCol === toCol)
+    return `M ${x1} ${fromY} L ${x2} ${toY}`
+  const midY = (fromY + toY) / 2
+  return `M ${x1} ${fromY} C ${x1} ${midY} ${x2} ${midY} ${x2} ${toY}`
+}
+
+function GraphCell({ row, width }: { row: GraphRow, width: number }) {
+  const mid = ROW_H / 2
   return (
-    <li className="border-border/60 flex flex-col gap-1 border-b py-2 last:border-0">
-      <div className="flex items-baseline gap-2">
-        <code className="text-muted-foreground shrink-0 text-xs">{commit.shortHash}</code>
-        <span className="truncate text-sm font-medium">{commit.subject}</span>
-      </div>
-      <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-        <span>{commit.author}</span>
-        <span aria-hidden>·</span>
-        <span title={new Date(commit.date).toLocaleString()}>{relativeTime(commit.date)}</span>
-        {commit.refs.map(ref => (
-          <Badge key={ref} variant="outline" className="px-1.5 py-0 font-mono text-[10px]">{ref}</Badge>
-        ))}
+    <svg width={width} height={ROW_H} className="block shrink-0" style={{ overflow: 'visible' }} aria-hidden>
+      {row.topLinks.map((link, i) => (
+        <path
+          key={`t${i}`}
+          d={linkPath(link.from, 0, link.to, mid)}
+          fill="none"
+          stroke={link.color}
+          strokeWidth={1.6}
+          strokeLinecap="round"
+        />
+      ))}
+      {row.bottomLinks.map((link, i) => (
+        <path
+          key={`b${i}`}
+          d={linkPath(link.from, mid, link.to, ROW_H)}
+          fill="none"
+          stroke={link.color}
+          strokeWidth={1.6}
+          strokeLinecap="round"
+        />
+      ))}
+      <circle cx={cx(row.col)} cy={mid} r={NODE_R} fill={row.color} stroke="var(--color-card)" strokeWidth={2} />
+    </svg>
+  )
+}
+
+function CommitRow({ commit, row, gutter }: { commit: Commit, row: GraphRow, gutter: number }) {
+  return (
+    <li className="flex items-stretch" style={{ height: ROW_H }}>
+      <GraphCell row={row} width={gutter} />
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5 pl-2">
+        <div className="flex items-center gap-2">
+          <span className="truncate text-sm font-medium">{commit.subject}</span>
+          {commit.refs.map(ref => (
+            <Badge key={ref} variant="outline" className="shrink-0 px-1.5 py-0 font-mono text-[10px]">{ref}</Badge>
+          ))}
+        </div>
+        <div className="text-muted-foreground flex items-center gap-2 text-xs">
+          <code className="shrink-0">{commit.shortHash}</code>
+          <span className="truncate">{commit.author}</span>
+          <span aria-hidden>·</span>
+          <span className="shrink-0" title={new Date(commit.date).toLocaleString()}>{relativeTime(commit.date)}</span>
+        </div>
       </div>
     </li>
   )
@@ -54,6 +104,12 @@ export function LogPanel() {
     [limit],
   )
   const { data, loading, refresh } = useRpcResource(loader)
+
+  const graph = useMemo(
+    () => computeGraph(data?.commits ?? []),
+    [data?.commits],
+  )
+  const gutter = Math.max(graph.columns, 1) * COL_W + COL_W / 2
 
   return (
     <div className="space-y-3">
@@ -81,9 +137,11 @@ export function LogPanel() {
       )}
 
       {data?.isRepo && data.commits.length > 0 && (
-        <ScrollArea className="h-80 pr-3">
+        <ScrollArea className="h-96 pr-3">
           <ul>
-            {data.commits.map(commit => <CommitRow key={commit.hash} commit={commit} />)}
+            {data.commits.map((commit, i) => (
+              <CommitRow key={commit.hash} commit={commit} row={graph.rows[i]} gutter={gutter} />
+            ))}
           </ul>
         </ScrollArea>
       )}

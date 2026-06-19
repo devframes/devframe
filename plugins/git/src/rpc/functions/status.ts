@@ -1,3 +1,4 @@
+import type { GitContext } from '../context.ts'
 import { defineRpcFunction } from 'devframe'
 import { runGit } from '../../node/git.ts'
 import { getGitContext } from '../context.ts'
@@ -36,9 +37,11 @@ export interface GitStatus {
   untracked: string[]
   /** `true` when there are no staged, unstaged, or untracked changes. */
   clean: boolean
+  /** `true` when stage / unstage / commit actions are available. */
+  canWrite: boolean
 }
 
-const EMPTY_STATUS: GitStatus = {
+export const EMPTY_STATUS: GitStatus = {
   isRepo: false,
   root: null,
   branch: null,
@@ -51,6 +54,7 @@ const EMPTY_STATUS: GitStatus = {
   unstaged: [],
   untracked: [],
   clean: true,
+  canWrite: false,
 }
 
 function mapCode(code: string): FileStatusCode {
@@ -145,6 +149,20 @@ function parseStatus(root: string, raw: string): GitStatus {
   return status
 }
 
+/**
+ * Read the working-tree status for a git context. Shared by the `git:status`
+ * query and the write actions (which return fresh status after mutating).
+ */
+export async function readStatus(git: GitContext): Promise<GitStatus> {
+  const root = await git.resolveRoot()
+  if (!root)
+    return { ...EMPTY_STATUS, canWrite: false }
+  const { stdout } = await runGit(git.cwd, ['status', '--porcelain=v2', '--branch', '-z'])
+  const status = parseStatus(root, stdout)
+  status.canWrite = git.write
+  return status
+}
+
 export const status = defineRpcFunction({
   name: 'git:status',
   type: 'query',
@@ -153,13 +171,7 @@ export const status = defineRpcFunction({
   setup: (ctx) => {
     const git = getGitContext(ctx)
     return {
-      handler: async (): Promise<GitStatus> => {
-        const root = await git.resolveRoot()
-        if (!root)
-          return EMPTY_STATUS
-        const { stdout } = await runGit(git.cwd, ['status', '--porcelain=v2', '--branch', '-z'])
-        return parseStatus(root, stdout)
-      },
+      handler: (): Promise<GitStatus> => readStatus(git),
     }
   },
 })

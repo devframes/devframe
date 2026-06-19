@@ -50,3 +50,13 @@ export async function resolveRepoRoot(cwd: string): Promise<string | null> {
 export function splitClean(input: string, separator: string): string[] {
   return input.split(separator).filter(part => part.length > 0)
 }
+
+/**
+ * Extract a concise, single-line message from a failed `execFile` error.
+ * git writes useful text (e.g. "nothing to commit") to stdout/stderr.
+ */
+export function gitErrorMessage(error: unknown): string {
+  const e = error as { stderr?: string, stdout?: string, message?: string }
+  const text = (e?.stderr || e?.stdout || e?.message || 'git command failed').trim()
+  return text.split('\n')[0]
+}

@@ -1,10 +1,13 @@
 # @devframes/plugin-git
 
 Git integration for [devframe](https://github.com/devframes/devframe) — a
-read-only repository dashboard (status, log, branches, diff) with a **Next.js
-App Router + shadcn/ui** SPA over type-safe RPC. The host process shells out to
-`git` and exposes the repository; the same bundle runs as a live dev server or
-a fully static deployment.
+repository dashboard with a **Next.js App Router + shadcn/ui** SPA over
+type-safe RPC. The host process shells out to `git` and exposes the repository;
+the same bundle runs as a live dev server or a fully static deployment.
+
+Status, a SourceTree-style **commit graph**, branches, and diffs are read-only;
+staging, unstaging, and committing are available when write mode is enabled. The
+UI follows the system **light/dark** preference with a manual toggle.
 
 ## Install
 
@@ -18,6 +21,7 @@ Run the dashboard against the current repository:
 
 ```sh
 npx devframe-git              # dev server (live RPC over WebSocket)
+npx devframe-git --write      # also enable staging / committing from the UI
 npx devframe-git build        # static deploy → dist-static/
 npx devframe-git --port 4000
 ```
@@ -40,19 +44,30 @@ await createCli(createGitDevframe({ repoRoot: process.cwd() })).parse()
 | `basePath` | adapter-resolved | Mount path (`/` standalone, `/__git/` hosted). |
 | `distDir` | bundled SPA | Override the served SPA directory. |
 | `port` | `9710` | Preferred dev-server port. |
+| `write` | `false` | Enable staging, unstaging, and committing from the UI. |
 
 ## RPC surface
 
-Every function is a `query` with `snapshot: true`: resolved live over WebSocket
-in dev, and served from a snapshot baked at build time for static deploys. Each
-degrades to an empty, `isRepo: false` result outside a git repository.
+The read functions are each a `query` with `snapshot: true`: resolved live over
+WebSocket in dev, and served from a snapshot baked at build time for static
+deploys. Each degrades to an empty, `isRepo: false` result outside a git
+repository.
 
 - `git:status` — branch, upstream tracking (ahead/behind), staged / unstaged /
-  untracked files, parsed from `git status --porcelain=v2`.
-- `git:log` — paginated commit history (`limit` / `skip`).
+  untracked files, parsed from `git status --porcelain=v2`. Reports `canWrite`.
+- `git:log` — paginated commit history (`limit` / `skip`) including parent
+  hashes, which drive the commit graph.
 - `git:branches` — local branches with SHA, upstream, ahead/behind, tip subject.
 - `git:diff` — per-file added/deleted counts for the working tree or index, plus
   a unified patch for a selected file.
+
+Write actions are `action` functions, registered only when write mode is enabled
+(`createGitDevframe({ write: true })` or the `--write` flag) and gated behind
+`status.canWrite` in the UI. Each returns fresh status (commit returns a result):
+
+- `git:stage` — `git add` the given paths.
+- `git:unstage` — `git restore --staged` the given paths.
+- `git:commit` — commit the staged changes with a message.
 
 ## Develop
 

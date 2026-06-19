@@ -3,12 +3,15 @@ import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
 import { dirname, resolve } from 'pathe'
 import { configureGit } from './rpc/context.ts'
-import { serverFunctions } from './rpc/index.ts'
+import { readFunctions, writeFunctions } from './rpc/index.ts'
 
 export type { Branch, GitBranches } from './rpc/functions/branches.ts'
+export type { CommitArgs, CommitResult } from './rpc/functions/commit.ts'
 export type { DiffArgs, DiffFile, GitDiff } from './rpc/functions/diff.ts'
 export type { Commit, GitLog, LogArgs } from './rpc/functions/log.ts'
+export type { StageArgs } from './rpc/functions/stage.ts'
 export type { FileStatusCode, GitStatus, StatusFileEntry } from './rpc/functions/status.ts'
+export type { UnstageArgs } from './rpc/functions/unstage.ts'
 
 // Package root, resolved one level up from this module — which sits at
 // `<root>/src/index.ts` in dev and `<root>/dist/index.mjs` once built, so
@@ -27,6 +30,11 @@ export interface GitDevframeOptions {
   distDir?: string
   /** Preferred dev-server port (default 9710). */
   port?: number
+  /**
+   * Enable staging, unstaging, and committing from the UI. Read-only by
+   * default; the standalone CLI also accepts a `--write` flag.
+   */
+  write?: boolean
 }
 
 /**
@@ -45,12 +53,23 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
       port: options.port ?? 9710,
       distDir,
       auth: false,
+      configure(cli) {
+        cli.option('--write', 'Enable staging, unstaging, and committing from the UI')
+      },
     },
     spa: { loader: 'none' },
-    setup(ctx) {
-      configureGit(ctx, { cwd: options.repoRoot ? resolve(options.repoRoot) : ctx.cwd })
-      for (const fn of serverFunctions)
+    setup(ctx, info) {
+      const write = options.write ?? info?.flags?.write === true
+      configureGit(ctx, {
+        cwd: options.repoRoot ? resolve(options.repoRoot) : ctx.cwd,
+        write,
+      })
+      for (const fn of readFunctions)
         ctx.rpc.register(fn)
+      if (write) {
+        for (const fn of writeFunctions)
+          ctx.rpc.register(fn)
+      }
     },
   })
 }

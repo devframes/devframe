@@ -13,6 +13,8 @@ export interface Commit {
   body: string
   /** Ref names pointing at this commit (branches, tags, HEAD). */
   refs: string[]
+  /** Full parent hashes — drives the commit graph. */
+  parents: string[]
 }
 
 export interface GitLog {
@@ -35,6 +37,7 @@ export interface LogArgs {
 const FORMAT = [
   '%H', // full hash
   '%h', // short hash
+  '%P', // parent hashes (space-separated)
   '%an', // author name
   '%ae', // author email
   '%aI', // author date, strict ISO 8601
@@ -49,7 +52,7 @@ function clamp(value: number, min: number, max: number): number {
 
 function parseLog(raw: string): Commit[] {
   return splitClean(raw, RECORD).map((record) => {
-    const [hash, shortHash, author, email, isoDate, refs, subject, body] = record
+    const [hash, shortHash, parents, author, email, isoDate, refs, subject, body] = record
       .replace(/^\n/, '')
       .split(UNIT)
     return {
@@ -61,6 +64,7 @@ function parseLog(raw: string): Commit[] {
       subject,
       body: (body ?? '').trim(),
       refs: refs ? refs.split(', ').map(r => r.trim()).filter(Boolean) : [],
+      parents: parents ? parents.split(' ').filter(Boolean) : [],
     }
   })
 }
@@ -82,6 +86,7 @@ export const log = defineRpcFunction({
 
         const raw = await tryGit(git.cwd, [
           'log',
+          '--topo-order',
           `--max-count=${limit}`,
           `--skip=${skip}`,
           `--pretty=format:${FORMAT}`,
