@@ -16,6 +16,11 @@ export interface TerminalProcess {
   kill: (signal?: string) => void
   onData: (cb: (data: string) => void) => void
   onExit: (cb: (exitCode: number) => void) => void
+  /**
+   * Current foreground process name of the controlling TTY, when the
+   * backend can resolve it (PTY only). Polled by the manager.
+   */
+  getProcessName?: () => string | undefined
 }
 
 export interface SpawnBackendOptions {
@@ -41,6 +46,8 @@ interface PtyModule {
 
 interface PtyProcess {
   pid: number
+  /** Foreground process title; updated by node-pty as the foreground changes. */
+  readonly process?: string
   onData: (cb: (data: string) => void) => void
   onExit: (cb: (e: { exitCode: number, signal?: number }) => void) => void
   write: (data: string) => void
@@ -127,6 +134,14 @@ export async function spawnPty(options: SpawnBackendOptions): Promise<TerminalPr
     },
     onData: cb => proc.onData(cb),
     onExit: cb => proc.onExit(e => cb(e.exitCode ?? 0)),
+    getProcessName: () => {
+      try {
+        return proc.process || undefined
+      }
+      catch {
+        return undefined
+      }
+    },
   }
 }
 

@@ -22,7 +22,16 @@ export type TerminalBackend = 'pty' | 'pipe'
  */
 export interface TerminalSessionInfo {
   id: string
+  /** Base label derived from the spawn request (command / preset / "Shell"). */
   title: string
+  /**
+   * Live foreground process name of the controlling TTY (e.g. `vim`,
+   * `node`), tracked for PTY-backed sessions. Undefined for piped sessions
+   * and once the process has exited.
+   */
+  processName?: string
+  /** User-assigned name; takes precedence over `processName`/`title` in the UI. */
+  customTitle?: string
   mode: TerminalMode
   status: TerminalStatus
   backend: TerminalBackend

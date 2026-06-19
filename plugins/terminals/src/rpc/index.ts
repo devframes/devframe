@@ -3,6 +3,7 @@ import type { TerminalPreset, TerminalsSharedState } from '../types'
 import { list } from './functions/list'
 import { presets } from './functions/presets'
 import { remove } from './functions/remove'
+import { rename } from './functions/rename'
 import { resize } from './functions/resize'
 import { restart } from './functions/restart'
 import { spawn } from './functions/spawn'
@@ -17,6 +18,7 @@ export const serverFunctions = [
   resize,
   terminate,
   restart,
+  rename,
   remove,
 ] as const
 

@@ -23,9 +23,12 @@ export declare class TerminalManager {
   private resolveSpawn;
   spawn(_?: SpawnRequest): TerminalSessionInfo;
   private launch;
+  private startProcessPoll;
+  private stopProcessPoll;
   write(_: string, _: string): void;
   resize(_: string, _: number, _: number): void;
   terminate(_: string): void;
+  rename(_: string, _: string): void;
   restart(_: string): TerminalSessionInfo;
   remove(_: string): void;
   dispose(): void;

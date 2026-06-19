@@ -23,9 +23,12 @@ export class TerminalManager {
   resolveSpawn(_) {}
   spawn(_) {}
   async launch(_) {}
+  startProcessPoll(_) {}
+  stopProcessPoll(_) {}
   write(_, _) {}
   resize(_, _, _) {}
   terminate(_) {}
+  rename(_, _) {}
   restart(_) {}
   remove(_) {}
   dispose() {}

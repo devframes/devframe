@@ -26,6 +26,8 @@ export interface TerminalPreset {
 export interface TerminalSessionInfo {
   id: string;
   title: string;
+  processName?: string;
+  customTitle?: string;
   mode: TerminalMode;
   status: TerminalStatus;
   backend: TerminalBackend;

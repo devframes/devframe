@@ -17,6 +17,8 @@ export const spawnRequestSchema = v.object({
 export const sessionInfoSchema = v.object({
   id: v.string(),
   title: v.string(),
+  processName: v.optional(v.string()),
+  customTitle: v.optional(v.string()),
   mode: terminalModeSchema,
   status: v.picklist(['running', 'exited', 'error']),
   backend: v.picklist(['pty', 'pipe']),

@@ -10,6 +10,8 @@ export declare const serverFunctions: readonly [{
   returns: _$valibot.ArraySchema<_$valibot.ObjectSchema<{
     readonly id: _$valibot.StringSchema<undefined>;
     readonly title: _$valibot.StringSchema<undefined>;
+    readonly processName: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
+    readonly customTitle: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
     readonly mode: _$valibot.PicklistSchema<["interactive", "readonly"], undefined>;
     readonly status: _$valibot.PicklistSchema<["running", "exited", "error"], undefined>;
     readonly backend: _$valibot.PicklistSchema<["pty", "pipe"], undefined>;
@@ -28,6 +30,8 @@ export declare const serverFunctions: readonly [{
   setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -44,6 +48,8 @@ export declare const serverFunctions: readonly [{
   handler?: (() => {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -60,6 +66,8 @@ export declare const serverFunctions: readonly [{
   dump?: _$devframe_rpc0.RpcDump<[], {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -77,6 +85,8 @@ export declare const serverFunctions: readonly [{
   __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -93,6 +103,8 @@ export declare const serverFunctions: readonly [{
   __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -180,6 +192,8 @@ export declare const serverFunctions: readonly [{
   returns: _$valibot.ObjectSchema<{
     readonly id: _$valibot.StringSchema<undefined>;
     readonly title: _$valibot.StringSchema<undefined>;
+    readonly processName: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
+    readonly customTitle: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
     readonly mode: _$valibot.PicklistSchema<["interactive", "readonly"], undefined>;
     readonly status: _$valibot.PicklistSchema<["running", "exited", "error"], undefined>;
     readonly backend: _$valibot.PicklistSchema<["pty", "pipe"], undefined>;
@@ -210,6 +224,8 @@ export declare const serverFunctions: readonly [{
   }], {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -238,6 +254,8 @@ export declare const serverFunctions: readonly [{
   }) => {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -266,6 +284,8 @@ export declare const serverFunctions: readonly [{
   }], {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -295,6 +315,8 @@ export declare const serverFunctions: readonly [{
   }], {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -323,6 +345,8 @@ export declare const serverFunctions: readonly [{
   }], {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -442,6 +466,8 @@ export declare const serverFunctions: readonly [{
   returns: _$valibot.ObjectSchema<{
     readonly id: _$valibot.StringSchema<undefined>;
     readonly title: _$valibot.StringSchema<undefined>;
+    readonly processName: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
+    readonly customTitle: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
     readonly mode: _$valibot.PicklistSchema<["interactive", "readonly"], undefined>;
     readonly status: _$valibot.PicklistSchema<["running", "exited", "error"], undefined>;
     readonly backend: _$valibot.PicklistSchema<["pty", "pipe"], undefined>;
@@ -462,6 +488,8 @@ export declare const serverFunctions: readonly [{
   }], {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -480,6 +508,8 @@ export declare const serverFunctions: readonly [{
   }) => {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -498,6 +528,8 @@ export declare const serverFunctions: readonly [{
   }], {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -517,6 +549,8 @@ export declare const serverFunctions: readonly [{
   }], {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -535,6 +569,8 @@ export declare const serverFunctions: readonly [{
   }], {
     id: string;
     title: string;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -548,6 +584,38 @@ export declare const serverFunctions: readonly [{
     presetId?: string | undefined;
     createdAt: number;
   }>> | undefined;
+}, {
+  name: "devframes-plugin-terminals:rename";
+  type?: "action" | undefined;
+  cacheable?: boolean;
+  args: readonly [_$valibot.ObjectSchema<{
+    readonly id: _$valibot.StringSchema<undefined>;
+    readonly title: _$valibot.StringSchema<undefined>;
+  }, undefined>];
+  returns: _$valibot.VoidSchema<undefined>;
+  jsonSerializable?: boolean;
+  agent?: _$devframe.RpcFunctionAgentOptions;
+  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+    id: string;
+    title: string;
+  }], void>>) | undefined;
+  handler?: ((args_0: {
+    id: string;
+    title: string;
+  }) => void) | undefined;
+  dump?: _$devframe_rpc0.RpcDump<[{
+    id: string;
+    title: string;
+  }], void, _$devframe.DevframeNodeContext> | undefined;
+  snapshot?: boolean;
+  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+    id: string;
+    title: string;
+  }], void>>> | undefined;
+  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+    id: string;
+    title: string;
+  }], void>> | undefined;
 }, {
   name: "devframes-plugin-terminals:remove";
   type?: "action" | undefined;

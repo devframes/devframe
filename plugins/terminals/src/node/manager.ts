@@ -40,7 +40,11 @@ interface ManagedSession {
   sink: StreamSink<string>
   spawn: ResolvedSpawn
   proc?: TerminalProcess
+  pollTimer?: ReturnType<typeof setInterval>
 }
+
+/** How often a PTY session's foreground process name is polled. */
+const PROCESS_POLL_INTERVAL = 1000
 
 function defaultShell(): string {
   if (process.platform === 'win32')
@@ -253,15 +257,46 @@ export class TerminalManager {
       // Ignore the exit of a process replaced by restart().
       if (session.proc !== proc)
         return
+      this.stopProcessPoll(session)
       session.info.status = code === 0 ? 'exited' : 'error'
       session.info.exitCode = code
       session.info.pid = undefined
+      session.info.processName = undefined
       if (!sink.closed)
         sink.write(`\r\n\x1B[2m[process exited with code ${code}]\x1B[0m\r\n`)
       this.publish()
     })
 
+    this.startProcessPoll(session)
     this.publish()
+  }
+
+  /**
+   * Poll the PTY foreground process name and reflect changes (e.g. `bash`
+   * → `vim` → `bash`) into the session info. The interval is `unref`'d so
+   * it never keeps the process alive on its own.
+   */
+  private startProcessPoll(session: ManagedSession): void {
+    const read = session.proc?.getProcessName
+    if (!read)
+      return
+    const poll = (): void => {
+      const name = session.proc?.getProcessName?.()
+      if (name && name !== session.info.processName) {
+        session.info.processName = name
+        this.publish()
+      }
+    }
+    poll()
+    session.pollTimer = setInterval(poll, PROCESS_POLL_INTERVAL)
+    session.pollTimer.unref?.()
+  }
+
+  private stopProcessPoll(session: ManagedSession): void {
+    if (session.pollTimer) {
+      clearInterval(session.pollTimer)
+      session.pollTimer = undefined
+    }
   }
 
   write(id: string, data: string): void {
@@ -294,6 +329,16 @@ export class TerminalManager {
     session.proc?.kill()
   }
 
+  /** Set a custom display name. Pass an empty string to clear it. */
+  rename(id: string, title: string): void {
+    const session = this.sessions.get(id)
+    if (!session)
+      throw diagnostics.DP_TERMINALS_0001({ id })
+    const trimmed = title.trim()
+    session.info.customTitle = trimmed.length ? trimmed : undefined
+    this.publish()
+  }
+
   /** Restart the session's command in place, reusing the same stream id. */
   restart(id: string): TerminalSessionInfo {
     const session = this.sessions.get(id)
@@ -301,6 +346,7 @@ export class TerminalManager {
       throw diagnostics.DP_TERMINALS_0001({ id })
     const previous = session.proc
     session.proc = undefined
+    this.stopProcessPoll(session)
     previous?.kill()
     if (!session.sink.closed)
       session.sink.write('\r\n\x1B[2m[restarting…]\x1B[0m\r\n')
@@ -318,6 +364,7 @@ export class TerminalManager {
       throw diagnostics.DP_TERMINALS_0001({ id })
     const proc = session.proc
     session.proc = undefined
+    this.stopProcessPoll(session)
     proc?.kill()
     if (!session.sink.closed)
       session.sink.close()
@@ -328,6 +375,7 @@ export class TerminalManager {
   /** Tear everything down — used on server shutdown and in tests. */
   dispose(): void {
     for (const session of this.sessions.values()) {
+      this.stopProcessPoll(session)
       session.proc?.kill()
       if (!session.sink.closed)
         session.sink.close()

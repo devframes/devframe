@@ -1,3 +1,4 @@
+import type { ITheme } from '@xterm/xterm'
 import type { DevframeRpcClient } from 'devframe/client'
 import type { StreamReader } from 'devframe/utils/streaming-channel'
 import type { TerminalPreset, TerminalSessionInfo, TerminalsSharedState } from '../types'
@@ -33,46 +34,85 @@ interface SessionView {
 
 const UI_CSS = `
 .dft-root { position: absolute; inset: 0; display: flex; flex-direction: column;
-  font-family: system-ui, sans-serif; background: #0b0e14; color: #c9d1d9; }
+  font-family: system-ui, sans-serif; background: var(--dft-bg); color: var(--dft-fg); }
+.dft-root.dft-dark {
+  --dft-bg: #0d1117; --dft-fg: #c9d1d9; --dft-muted: #8b949e;
+  --dft-border: #1c2128; --dft-surface: #161b22; --dft-surface-hover: #30363d;
+  --dft-surface-active: #21262d; --dft-term-bg: #000000; --dft-accent: #58a6ff;
+}
+.dft-root.dft-light {
+  --dft-bg: #f6f8fa; --dft-fg: #1f2328; --dft-muted: #59636e;
+  --dft-border: #d0d7de; --dft-surface: #ffffff; --dft-surface-hover: #eaeef2;
+  --dft-surface-active: #ffffff; --dft-term-bg: #ffffff; --dft-accent: #0969da;
+}
 .dft-header { display: flex; align-items: stretch; gap: 4px; padding: 6px 8px;
-  border-bottom: 1px solid #1c2128; background: #0d1117; }
+  border-bottom: 1px solid var(--dft-border); background: var(--dft-bg); }
 .dft-tabs { display: flex; gap: 4px; overflow-x: auto; flex: 1; align-items: center; }
 .dft-tab { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
-  padding: 4px 10px; border-radius: 6px; border: 1px solid transparent; background: #161b22;
-  color: #8b949e; font-size: 12px; cursor: pointer; }
-.dft-tab:hover { color: #c9d1d9; }
-.dft-tab.active { background: #21262d; color: #fff; border-color: #30363d; }
+  padding: 4px 10px; border-radius: 6px; border: 1px solid transparent; background: var(--dft-surface);
+  color: var(--dft-muted); font-size: 12px; cursor: pointer; }
+.dft-tab:hover { color: var(--dft-fg); }
+.dft-tab.active { background: var(--dft-surface-active); color: var(--dft-fg); border-color: var(--dft-border); }
 .dft-dot { width: 7px; height: 7px; border-radius: 50%; background: #3fb950; flex: none; }
 .dft-dot.exited { background: #6e7681; }
 .dft-dot.error { background: #f85149; }
 .dft-actions { display: flex; gap: 6px; align-items: center; }
-.dft-btn { padding: 4px 10px; border-radius: 6px; border: 1px solid #30363d;
-  background: #21262d; color: #c9d1d9; font-size: 12px; cursor: pointer; }
-.dft-btn:hover { background: #30363d; }
+.dft-btn { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--dft-border);
+  background: var(--dft-surface); color: var(--dft-fg); font-size: 12px; cursor: pointer; }
+.dft-btn:hover { background: var(--dft-surface-hover); }
 .dft-btn:disabled { opacity: 0.45; cursor: default; }
-.dft-select { padding: 4px 8px; border-radius: 6px; border: 1px solid #30363d;
-  background: #21262d; color: #c9d1d9; font-size: 12px; }
+.dft-select { padding: 4px 8px; border-radius: 6px; border: 1px solid var(--dft-border);
+  background: var(--dft-surface); color: var(--dft-fg); font-size: 12px; }
+.dft-rename { font: inherit; font-size: 12px; width: 10ch; min-width: 64px; padding: 1px 5px;
+  border: 1px solid var(--dft-accent); border-radius: 4px; background: var(--dft-bg);
+  color: var(--dft-fg); outline: none; }
 .dft-toolbar { display: flex; align-items: center; gap: 8px; padding: 4px 10px;
-  border-bottom: 1px solid #1c2128; font-size: 12px; color: #8b949e; min-height: 20px; }
+  border-bottom: 1px solid var(--dft-border); font-size: 12px; color: var(--dft-muted); min-height: 20px; }
 .dft-badge { padding: 1px 7px; border-radius: 10px; font-size: 10px; text-transform: uppercase;
-  letter-spacing: 0.03em; border: 1px solid #30363d; }
-.dft-badge.interactive { color: #58a6ff; border-color: #1f6feb55; }
-.dft-badge.readonly { color: #d29922; border-color: #9e6a0355; }
+  letter-spacing: 0.03em; border: 1px solid var(--dft-border); }
+.dft-badge.interactive { color: var(--dft-accent); border-color: #1f6feb55; }
+.dft-badge.readonly { color: #bb8009; border-color: #9e6a0355; }
 .dft-spacer { flex: 1; }
-.dft-body { position: relative; flex: 1; overflow: hidden; background: #000; }
+.dft-body { position: relative; flex: 1; overflow: hidden; background: var(--dft-term-bg); }
 .dft-view { position: absolute; inset: 0; padding: 4px; display: none; }
 .dft-view.active { display: block; }
 .dft-empty { position: absolute; inset: 0; display: flex; align-items: center;
-  justify-content: center; color: #6e7681; font-size: 13px; pointer-events: none; }
+  justify-content: center; color: var(--dft-muted); font-size: 13px; pointer-events: none; }
 .dft-view .xterm, .dft-view .xterm-viewport, .dft-view .xterm-screen { height: 100%; }
-.dft-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #c9d1d9; }
+.dft-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--dft-fg); }
 `
 
-const THEME = {
+const DARK_THEME: ITheme = {
   background: '#000000',
   foreground: '#c9d1d9',
   cursor: '#58a6ff',
+  cursorAccent: '#000000',
   selectionBackground: '#234876',
+}
+
+// GitHub-light palette so the default-bright ANSI colors stay legible on white.
+const LIGHT_THEME: ITheme = {
+  background: '#ffffff',
+  foreground: '#1f2328',
+  cursor: '#0969da',
+  cursorAccent: '#ffffff',
+  selectionBackground: '#b6d7ff',
+  black: '#24292f',
+  red: '#cf222e',
+  green: '#116329',
+  yellow: '#7d4e00',
+  blue: '#0969da',
+  magenta: '#8250df',
+  cyan: '#1b7c83',
+  white: '#6e7781',
+  brightBlack: '#57606a',
+  brightRed: '#a40e26',
+  brightGreen: '#1a7f37',
+  brightYellow: '#633c01',
+  brightBlue: '#218bff',
+  brightMagenta: '#a475f9',
+  brightCyan: '#3192aa',
+  brightWhite: '#8c959f',
 }
 
 let stylesInjected = false
@@ -133,6 +173,37 @@ export async function mountTerminals(
   let activeId: string | null = null
   let presets: TerminalPreset[] = []
   let disposed = false
+  let renamingId: string | null = null
+
+  // Follow the system color mode and react to changes at runtime, switching
+  // both the UI chrome (via CSS classes) and every xterm instance's theme.
+  const colorScheme = typeof window !== 'undefined' && window.matchMedia
+    ? window.matchMedia('(prefers-color-scheme: dark)')
+    : null
+  let isDark = colorScheme ? colorScheme.matches : true
+
+  function activeTheme(): ITheme {
+    return isDark ? DARK_THEME : LIGHT_THEME
+  }
+
+  function applyColorScheme(): void {
+    root.classList.toggle('dft-dark', isDark)
+    root.classList.toggle('dft-light', !isDark)
+    for (const view of views.values())
+      view.term.options.theme = activeTheme()
+  }
+
+  const onColorScheme = (e: MediaQueryListEvent): void => {
+    isDark = e.matches
+    applyColorScheme()
+  }
+  colorScheme?.addEventListener('change', onColorScheme)
+  applyColorScheme()
+
+  /** Tab/toolbar label: custom name wins, then the live process, then the base title. */
+  function displayName(info: TerminalSessionInfo): string {
+    return info.customTitle || info.processName || info.title
+  }
 
   function spawn(req: Parameters<DevframeRpcClient['call']>[1]): void {
     rpc.call('devframes-plugin-terminals:spawn', req as any).catch(() => {})
@@ -202,7 +273,9 @@ export async function mountTerminals(
     const badge = el('span', `dft-badge ${info.mode}`)
     badge.textContent = info.mode
     const label = el('span', 'dft-mono')
-    label.textContent = `${info.command}${info.args.length ? ` ${info.args.join(' ')}` : ''}`
+    label.textContent = info.processName && info.processName !== info.command
+      ? `${info.processName} · ${info.command}`
+      : `${info.command}${info.args.length ? ` ${info.args.join(' ')}` : ''}`
     const status = el('span')
     status.textContent = info.status === 'running'
       ? `running · ${info.backend}${info.pid ? ` · pid ${info.pid}` : ''}`
@@ -234,7 +307,7 @@ export async function mountTerminals(
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
       fontSize: 13,
       scrollback: 10000,
-      theme: THEME,
+      theme: activeTheme(),
       disableStdin: info.mode !== 'interactive',
       allowProposedApi: false,
     })
@@ -264,6 +337,13 @@ export async function mountTerminals(
 
     const tab = el('button', 'dft-tab')
     tab.onclick = () => setActive(info.id)
+    tab.ondblclick = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const view = views.get(info.id)
+      if (view)
+        startRename(view)
+    }
 
     requestAnimationFrame(() => {
       try {
@@ -284,14 +364,55 @@ export async function mountTerminals(
 
   function renderTabs(): void {
     for (const view of views.values()) {
+      if (view.tab.parentElement !== tabs)
+        tabs.append(view.tab)
+      // Leave the tab being renamed untouched so its input survives
+      // concurrent shared-state updates.
+      if (view.info.id === renamingId)
+        continue
       view.tab.replaceChildren()
       const dot = el('span', `dft-dot ${view.info.status === 'running' ? '' : view.info.status}`)
       const label = el('span')
-      label.textContent = view.info.title
+      label.textContent = displayName(view.info)
+      view.tab.title = 'Double-click to rename'
       view.tab.append(dot, label)
-      if (view.tab.parentElement !== tabs)
-        tabs.append(view.tab)
     }
+  }
+
+  /** Inline-edit a tab name; commits via the rename RPC on Enter/blur. */
+  function startRename(view: SessionView): void {
+    renamingId = view.info.id
+    const input = el('input', 'dft-rename')
+    input.value = displayName(view.info)
+    input.spellcheck = false
+    view.tab.replaceChildren(input)
+    input.focus()
+    input.select()
+
+    let settled = false
+    const finish = (commit: boolean): void => {
+      if (settled)
+        return
+      settled = true
+      renamingId = null
+      if (commit) {
+        rpc.call('devframes-plugin-terminals:rename', { id: view.info.id, title: input.value.trim() })
+          .catch(() => {})
+      }
+      renderTabs()
+    }
+    input.onclick = e => e.stopPropagation()
+    input.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        finish(true)
+      }
+      else if (e.key === 'Escape') {
+        e.preventDefault()
+        finish(false)
+      }
+    }
+    input.onblur = () => finish(true)
   }
 
   function syncSessions(sessions: TerminalSessionInfo[]): void {
@@ -362,6 +483,7 @@ export async function mountTerminals(
       disposed = true
       offSessions?.()
       offPresets?.()
+      colorScheme?.removeEventListener('change', onColorScheme)
       resizeObserver?.disconnect()
       for (const view of views.values())
         disposeView(view)

@@ -135,6 +135,47 @@ describe('@devframes/plugin-terminals', () => {
     expect(restarted.status).toBe('running')
   })
 
+  it('tracks the foreground process name for PTY sessions', async () => {
+    const client = bootClient(server.port)
+    await new Promise(r => setTimeout(r, 50))
+
+    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+      command: NODE,
+      args: ['-e', 'setInterval(() => {}, 4000)'],
+      mode: 'interactive',
+    })
+
+    await vi.waitFor(async () => {
+      const list = await sessions(server)
+      const s = list.find(x => x.id === info.id)
+      expect(s?.processName?.toLowerCase()).toContain('node')
+    }, { timeout: 4000 })
+
+    await call(client, 'devframes-plugin-terminals:remove', { id: info.id })
+  })
+
+  it('supports custom renaming via the rename RPC', async () => {
+    const client = bootClient(server.port)
+    await new Promise(r => setTimeout(r, 50))
+
+    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+      command: NODE,
+      args: ['-e', 'setInterval(() => {}, 4000)'],
+      mode: 'readonly',
+    })
+
+    await call(client, 'devframes-plugin-terminals:rename', { id: info.id, title: 'My Build' })
+    let list = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
+    expect(list.find(s => s.id === info.id)?.customTitle).toBe('My Build')
+
+    // Empty string clears the custom name.
+    await call(client, 'devframes-plugin-terminals:rename', { id: info.id, title: '   ' })
+    list = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
+    expect(list.find(s => s.id === info.id)?.customTitle).toBeUndefined()
+
+    await call(client, 'devframes-plugin-terminals:remove', { id: info.id })
+  })
+
   it('lists sessions and removes them', async () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
