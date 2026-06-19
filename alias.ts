@@ -4,6 +4,7 @@ import { join, relative } from 'pathe'
 
 const root = fileURLToPath(new URL('.', import.meta.url))
 const r = (path: string) => fileURLToPath(new URL(`./packages/${path}`, import.meta.url))
+const p = (path: string) => fileURLToPath(new URL(`./plugins/${path}`, import.meta.url))
 
 export const alias = {
   'devframe/rpc/transports/ws-server': r('devframe/src/rpc/transports/ws-server.ts'),
@@ -44,6 +45,14 @@ export const alias = {
   '@devframes/hub': r('hub/src/index.ts'),
   '@devframes/nuxt/runtime/plugin.client': r('nuxt/src/runtime/plugin.client.ts'),
   '@devframes/nuxt': r('nuxt/src/index.ts'),
+  '@devframes/plugin-code-server/client': p('code-server/src/client/index.ts'),
+  '@devframes/plugin-code-server/node': p('code-server/src/node/index.ts'),
+  '@devframes/plugin-code-server/constants': p('code-server/src/constants.ts'),
+  '@devframes/plugin-code-server/types': p('code-server/src/types.ts'),
+  '@devframes/plugin-code-server/rpc': p('code-server/src/rpc/index.ts'),
+  '@devframes/plugin-code-server/cli': p('code-server/src/cli.ts'),
+  '@devframes/plugin-code-server/vite': p('code-server/src/vite.ts'),
+  '@devframes/plugin-code-server': p('code-server/src/index.ts'),
   'devframe/recipes/open-helpers': r('devframe/src/recipes/open-helpers.ts'),
   'devframe/client': r('devframe/src/client/index.ts'),
   'devframe': r('devframe/src'),

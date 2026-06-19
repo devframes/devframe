@@ -9,6 +9,7 @@ export default defineConfig({
     projects: [
       'packages/devframe',
       'packages/hub',
+      'plugins/code-server',
       'examples/files-inspector',
       'examples/streaming-chat',
       'examples/next-runtime-snapshot',

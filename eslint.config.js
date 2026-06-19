@@ -6,6 +6,7 @@ export default antfu({
   ignores: [
     'skills',
     '**/dist',
+    '**/storybook-static',
     '**/.next',
     '**/out',
     '**/next-env.d.ts',

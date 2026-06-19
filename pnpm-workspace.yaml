@@ -69,6 +69,9 @@ catalogs:
   inlined:
     '@antfu/utils': ^9.3.0
     ua-parser-modern: ^0.1.1
+  storybook:
+    '@storybook/html-vite': ^10.4.6
+    storybook: ^10.4.6
   testing:
     '@playwright/test': ^1.60.0
     tsnapi: ^0.3.3
