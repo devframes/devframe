@@ -3,6 +3,14 @@
  */
 export interface DevframeRpcClientFunctions {
   /**
+   * Server→client notification that this connection's auth token has been
+   * revoked. The client drops to untrusted on receipt. Broadcast by
+   * `revokeActiveConnectionsForToken`.
+   *
+   * @internal
+   */
+  'devframe:auth:revoked': () => Promise<void>
+  /**
    * Streaming chunk pushed from server to subscribed clients. Wired by
    * `RpcStreamingHost`; do not register manually.
    *
@@ -37,19 +45,29 @@ export interface DevframeRpcClientFunctions {
    * @internal
    */
   'devframe:rpc:client-state:patch': (key: string, patches: any[], syncId: string) => Promise<void>
-  /**
-   * Server→client notification that the client's auth token was revoked.
-   * Broadcast by `revokeActiveConnectionsForToken`; do not register manually.
-   *
-   * @internal
-   */
-  'devframe:auth:revoked': () => Promise<void>
 }
 
 /**
  * To be extended
  */
 export interface DevframeRpcServerFunctions {
+  /**
+   * Authenticate a connection with a previously-issued bearer token; resolves
+   * whether the connection is now trusted. The interactive handler is provided
+   * by the host adapter (e.g. Vite DevTools); the standalone server registers
+   * an auto-trust noop when `auth: false`.
+   *
+   * @internal
+   */
+  'devframe:anonymous:auth': (params: { authToken: string, ua: string, origin: string }) => Promise<{ isTrusted: boolean }>
+  /**
+   * Exchange a one-time authentication code (shown by the dev server) for a fresh,
+   * node-issued bearer token, returning the token on success or `null`. The
+   * handler is provided by the host adapter on top of `exchangeTempAuthCode`.
+   *
+   * @internal
+   */
+  'devframe:auth:exchange': (params: { code: string, ua: string, origin: string }) => Promise<{ authToken: string | null }>
   /**
    * Subscribe a client to a shared-state key. Wired by
    * `RpcSharedStateHost`; do not register manually.
@@ -113,14 +131,6 @@ export interface DevframeRpcServerFunctions {
    * @internal
    */
   'devframe:streaming:upload-end': (channel: string, id: string, error?: { name: string, message: string }) => Promise<void>
-  /**
-   * Anonymous-auth handshake the browser client issues on connect. The
-   * standalone server registers a noop auto-trust handler when `auth: false`;
-   * hosted adapters register the real handler. Do not register manually.
-   *
-   * @internal
-   */
-  'devframe:anonymous:auth': (payload: { authToken: string, ua: string, origin: string }) => Promise<{ isTrusted: boolean }>
 }
 
 /**

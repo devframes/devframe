@@ -10,9 +10,9 @@ import { describe, expect, it } from 'vitest'
 const AGNOSTIC_ENTRIES = [
   'client/index.mjs',
   'utils/colors.mjs',
+  'utils/crypto-token.mjs',
   'utils/events.mjs',
   'utils/hash.mjs',
-  'utils/human-id.mjs',
   'utils/nanoid.mjs',
   'utils/promise.mjs',
   'utils/scope.mjs',

@@ -552,8 +552,8 @@ Devframe re-exports a curated set of helpers under `devframe/utils/*`. They are 
 | `launchEditor` from `devframe/utils/launch-editor` | `launch-editor` | Open `file:line:column` in the user's editor (optional `editor` arg) |
 | `hash` from `devframe/utils/hash` | `ohash` | Stable structural hash — cache keys, dedup |
 | `structuredClone{Serialize,Deserialize,Stringify,Parse}` from `devframe/utils/structured-clone` | `structured-clone-es` | JSON-safe round-trip of `Map` / `Set` / `Date` / `BigInt` / cycles |
-| `humanId` from `devframe/utils/human-id` | `human-id` | Human-readable IDs (`bright-orange-tiger`) |
 | `nanoid` from `devframe/utils/nanoid` | (vendored) | URL-safe random IDs |
+| `randomToken` / `randomDigits` / `timingSafeEqual` from `devframe/utils/crypto-token` | (native WebCrypto) | CSPRNG bearer tokens, one-time codes, constant-time compare |
 | `promiseWithResolver` from `devframe/utils/promise` | — | Externally-controlled `Promise` |
 | `createEventEmitter` from `devframe/utils/events` | — | Typed event bus |
 | `createSharedState` from `devframe/utils/shared-state` | (immer internal) | Immutable state container (see `ctx.rpc.sharedState`) |
@@ -561,6 +561,20 @@ Devframe re-exports a curated set of helpers under `devframe/utils/*`. They are 
 | `evaluateWhen` / `WhenExpression` from `devframe/utils/when` | `whenexpr` | When-clause expressions |
 
 For "open file in editor" + "reveal in finder", prefer the prebuilt `openHelpers` RPC recipe — it wires the two utilities into named RPC functions ready to register.
+
+## Security (secure by default)
+
+RPC handlers run with the full privileges of the host process, so the boundary that matters is who may connect. Keep that boundary tight:
+
+- **`auth` defaults to `true`** — dev-mode connections must authenticate before calls are accepted. Devframe ships the node primitives (`exchangeTempAuthCode`, `verifyAuthToken` in `devframe/node/auth`); the host adapter (e.g. Vite DevTools) provides the interactive `devframe:anonymous:auth` + `devframe:auth:exchange` handlers and auth UI.
+- **`auth: false` trusts every reachable connection.** Use it only for single-user `localhost` tools. Never combine it with a non-loopback bind host, a tunnel, or a shared/CI environment. The default bind host is already `localhost`.
+- **Authentication** exchanges a 6-digit one-time code (shown in the developer's terminal) for a node-issued bearer token via `requestTrustWithCode(code)`. The code is single-use, expires in 5 min, compared in constant time, and rotates after repeated failures — show it only in the terminal, never over the network.
+- **Magic-link (optional):** print `buildOtpAuthUrl(origin)` — `<origin>/?devframe_otp=<code>`. `connectDevframe` reads the code, exchanges it, and strips it from the URL. Integrations can opt out (`otpParam: false`) and drive it via the exposed `authenticateWithUrlOtp(rpc)` / `consumeOtpFromUrl()` client utilities. Only the single-use code rides the URL, never the bearer; treat the printed link like the code itself.
+- **Tokens are secrets.** The bearer token rides the WS URL (`?devframe_auth_token=…`) — serve over `wss://`/`https://` beyond loopback. Never log the token or code, never bake them into build output. Revoke via `revokeAuthToken(...)`; clients drop to untrusted on `devframe:auth:revoked`.
+- **Authorize handlers.** Any trusted client can call any registered function — validate inputs, and mark state-changing functions `type: 'destructive'` so MCP/agent clients prompt first.
+- **Origin-lock remote docks** (`originLock`) so a dock token is honored only from its expected origin.
+
+See [Security](https://devfra.me/security) for the full reference.
 
 ## Testing
 
@@ -582,6 +596,7 @@ Devframe-level pages (one-tool, portable surface):
 - [Structured Diagnostics](https://devfra.me/diagnostics) — coded errors via `ctx.diagnostics`, register custom codes
 - [Utilities](https://devfra.me/utilities) — bundled `devframe/utils/*` helpers (colors, hash, launchEditor, structured-clone, …)
 - [Client](https://devfra.me/client) — auth handshake, modes, discovery
+- [Security](https://devfra.me/security) — trust model, authentication, secure-by-default practices
 - [Agent-Native](https://devfra.me/agent-native) — agent field, tools/resources, MCP + Claude Desktop
 
 Host-specific extras (when mounting into Vite DevTools — other hosts have their own equivalents):

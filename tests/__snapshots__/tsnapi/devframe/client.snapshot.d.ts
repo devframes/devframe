@@ -9,6 +9,7 @@ export interface DevframeRpcClient {
   ensureTrusted: (_?: number) => Promise<boolean>;
   requestTrust: () => Promise<boolean>;
   requestTrustWithToken: (_: string) => Promise<boolean>;
+  requestTrustWithCode: (_: string) => Promise<boolean>;
   call: DevframeRpcClientCall;
   callEvent: DevframeRpcClientCallEvent;
   callOptional: DevframeRpcClientCallOptional;
@@ -26,6 +27,7 @@ export interface DevframeRpcClientMode {
   ensureTrusted: DevframeRpcClient['ensureTrusted'];
   requestTrust: DevframeRpcClient['requestTrust'];
   requestTrustWithToken: DevframeRpcClient['requestTrustWithToken'];
+  requestTrustWithCode: (_: string) => Promise<string | null>;
   call: DevframeRpcClient['call'];
   callEvent: DevframeRpcClient['callEvent'];
   callOptional: DevframeRpcClient['callOptional'];
@@ -34,6 +36,7 @@ export interface DevframeRpcClientOptions {
   connectionMeta?: ConnectionMeta;
   baseURL?: string | string[];
   authToken?: string;
+  otpParam?: string | false;
   wsOptions?: Partial<WsRpcChannelOptions>;
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>;
   cacheOptions?: boolean | Partial<RpcCacheOptions>;
@@ -96,10 +99,15 @@ export type DevframeRpcClientCallOptional = BirpcReturn<DevframeRpcServerFunctio
 // #endregion
 
 // #region Functions
+export declare function authenticateWithUrlOtp(_: Pick<DevframeRpcClient, 'isTrusted' | 'requestTrustWithCode'>, _?: {
+  param?: string;
+}): Promise<boolean>;
+export declare function consumeOtpFromUrl(_?: string): string | undefined;
 export declare function createClientSettings<T extends Record<string, any> = Record<string, any>>(_: DevframeRpcClient, _: string): DevframeSettings<T>;
 export declare function createRpcStreamingClientHost(_: DevframeRpcClient): RpcStreamingClientHost;
 export declare function createScopedClientContext<NS extends string = string>(_: DevframeRpcClient, _: NS): DevframeScopedClientContext<NS>;
 export declare function getDevframeRpcClient(_?: DevframeRpcClientOptions): Promise<DevframeRpcClient>;
+export declare function readOtpFromUrl(_?: string): string | undefined;
 // #endregion
 
 // #region Variables

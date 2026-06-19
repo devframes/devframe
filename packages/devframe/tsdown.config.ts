@@ -59,9 +59,9 @@ const deps = {
 const clientEntries = {
   'client/index': 'src/client/index.ts',
   'utils/colors': 'src/utils/colors.ts',
+  'utils/crypto-token': 'src/utils/crypto-token.ts',
   'utils/events': 'src/utils/events.ts',
   'utils/hash': 'src/utils/hash.ts',
-  'utils/human-id': 'src/utils/human-id.ts',
   'utils/nanoid': 'src/utils/nanoid.ts',
   'utils/promise': 'src/utils/promise.ts',
   'utils/scope': 'src/utils/scope.ts',
@@ -129,9 +129,9 @@ export default defineConfig([
           entries: [
             resolve(distDir, 'client/index.mjs'),
             resolve(distDir, 'utils/colors.mjs'),
+            resolve(distDir, 'utils/crypto-token.mjs'),
             resolve(distDir, 'utils/events.mjs'),
             resolve(distDir, 'utils/hash.mjs'),
-            resolve(distDir, 'utils/human-id.mjs'),
             resolve(distDir, 'utils/nanoid.mjs'),
             resolve(distDir, 'utils/promise.mjs'),
             resolve(distDir, 'utils/scope.mjs'),

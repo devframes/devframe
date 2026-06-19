@@ -8,6 +8,7 @@ export declare const DEVFRAME_DOCK_IMPORTS_FILENAME: string;
 export declare const DEVFRAME_DOCK_IMPORTS_VIRTUAL_ID: string;
 export declare const DEVFRAME_MOUNT_PATH: string;
 export declare const DEVFRAME_MOUNT_PATH_NO_TRAILING_SLASH: string;
+export declare const DEVFRAME_OTP_URL_PARAM: string;
 export declare const DEVFRAME_RPC_DUMP_DIRNAME: string;
 export declare const DEVFRAME_RPC_DUMP_MANIFEST_FILENAME: string;
 export declare const REMOTE_CONNECTION_KEY: string;

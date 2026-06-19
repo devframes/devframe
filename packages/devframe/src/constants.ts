@@ -15,3 +15,12 @@ export const DEVFRAME_RPC_DUMP_DIRNAME = '__rpc-dump'
  * `@vitejs/devtools-kit`) injected into remote-UI iframe dock URLs.
  */
 export const REMOTE_CONNECTION_KEY = 'devframe-remote-connection'
+
+/**
+ * Page-URL query parameter carrying a one-time authentication code (OTP) for
+ * "magic link" auth. A host can print a link like `<origin>/?devframe_otp=<code>`;
+ * the client reads the code, exchanges it for a token, and strips the parameter
+ * from the URL. See `buildOtpAuthUrl` (node) and the `authenticateWithUrlOtp` /
+ * `consumeOtpFromUrl` client utilities (or `connectDevframe`'s `otpParam`).
+ */
+export const DEVFRAME_OTP_URL_PARAM = 'devframe_otp'
