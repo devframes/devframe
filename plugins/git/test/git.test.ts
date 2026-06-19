@@ -72,6 +72,15 @@ describe('@devframes/plugin-git', () => {
     expect(page.commits).toHaveLength(1)
     expect(page.commits[0].subject).toBe('feat: add a.txt')
     expect(page.hasMore).toBe(true)
+
+    const next = await rpc.$call('git:log', { limit: 1, skip: 1 }) as GitLog
+    expect(next.commits).toHaveLength(1)
+    expect(next.commits[0].subject).toBe('init: add readme')
+    expect(next.hasMore).toBe(true)
+
+    const tail = await rpc.$call('git:log', { limit: 1, skip: 2 }) as GitLog
+    expect(tail.commits).toHaveLength(0)
+    expect(tail.hasMore).toBe(false)
   })
 
   it('lists local branches with the current one first', async () => {
