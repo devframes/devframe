@@ -53,6 +53,7 @@ const UI_CSS = `
   color: var(--dft-muted); font-size: 12px; cursor: pointer; }
 .dft-tab:hover { color: var(--dft-fg); }
 .dft-tab.active { background: var(--dft-surface-active); color: var(--dft-fg); border-color: var(--dft-border); }
+.dft-newtab { min-width: 28px; justify-content: center; font-weight: 600; font-size: 14px; flex: none; }
 .dft-dot { width: 7px; height: 7px; border-radius: 50%; background: #3fb950; flex: none; }
 .dft-dot.exited { background: #6e7681; }
 .dft-dot.error { background: #f85149; }
@@ -155,15 +156,18 @@ export async function mountTerminals(
   const tabs = el('div', 'dft-tabs')
   const actions = el('div', 'dft-actions')
   const presetSelect = el('select', 'dft-select')
-  const newShellBtn = el('button', 'dft-btn')
-  newShellBtn.textContent = '+ Shell'
-  actions.append(presetSelect, newShellBtn)
+  actions.append(presetSelect)
   header.append(tabs, actions)
+
+  // The "new terminal" affordance sits at the end of the tab strip.
+  const newTabBtn = el('button', 'dft-tab dft-newtab')
+  newTabBtn.textContent = '+'
+  newTabBtn.title = 'New terminal'
 
   const toolbar = el('div', 'dft-toolbar')
   const body = el('div', 'dft-body')
   const empty = el('div', 'dft-empty')
-  empty.textContent = 'No terminal sessions — start one above.'
+  empty.textContent = 'No terminal sessions — click + to start one.'
   body.append(empty)
 
   root.append(header, toolbar, body)
@@ -174,6 +178,9 @@ export async function mountTerminals(
   let presets: TerminalPreset[] = []
   let disposed = false
   let renamingId: string | null = null
+  // Session to select once it shows up in the shared-state list (set when
+  // we spawn one and want to focus it on arrival).
+  let pendingSelectId: string | null = null
 
   // Follow the system color mode and react to changes at runtime, switching
   // both the UI chrome (via CSS classes) and every xterm instance's theme.
@@ -205,17 +212,54 @@ export async function mountTerminals(
     return info.customTitle || info.processName || info.title
   }
 
-  function spawn(req: Parameters<DevframeRpcClient['call']>[1]): void {
-    rpc.call('devframes-plugin-terminals:spawn', req as any).catch(() => {})
+  // Selection is mirrored to the URL hash (e.g. `#id=<sessionId>`) so it
+  // survives links and reacts to back/forward + manual edits.
+  function readHashId(): string | null {
+    if (typeof location === 'undefined')
+      return null
+    return new URLSearchParams(location.hash.replace(/^#/, '')).get('id')
   }
 
-  newShellBtn.onclick = () => spawn({ mode: 'interactive' })
+  function writeHashId(id: string): void {
+    if (typeof location === 'undefined' || typeof history === 'undefined')
+      return
+    const target = `#id=${id}`
+    if (location.hash !== target)
+      history.replaceState(history.state, '', target)
+  }
+
+  const onHashChange = (): void => {
+    const id = readHashId()
+    if (id && views.has(id) && id !== activeId)
+      setActive(id, { updateHash: false })
+  }
+  if (typeof window !== 'undefined')
+    window.addEventListener('hashchange', onHashChange)
+
+  /** Spawn a session and select it as soon as it appears in the list. */
+  async function spawnAndSelect(req: Parameters<DevframeRpcClient['call']>[1]): Promise<void> {
+    try {
+      const info = await rpc.call('devframes-plugin-terminals:spawn', req as any) as { id?: string }
+      if (info?.id) {
+        pendingSelectId = info.id
+        if (views.has(info.id)) {
+          pendingSelectId = null
+          setActive(info.id)
+        }
+      }
+    }
+    catch {
+      // Spawn failures surface via server-side diagnostics.
+    }
+  }
+
+  newTabBtn.onclick = () => void spawnAndSelect({ mode: 'interactive' })
 
   presetSelect.onchange = () => {
     const id = presetSelect.value
     presetSelect.value = ''
     if (id)
-      spawn({ presetId: id })
+      void spawnAndSelect({ presetId: id })
   }
 
   function renderPresets(): void {
@@ -247,17 +291,28 @@ export async function mountTerminals(
     }
   }
 
-  function setActive(id: string | null): void {
+  function setActive(id: string | null, opts: { updateHash?: boolean } = {}): void {
+    const changed = activeId !== id
     activeId = id
     for (const [vid, view] of views) {
       const active = vid === id
       view.el.classList.toggle('active', active)
       view.tab.classList.toggle('active', active)
-      if (active) {
-        requestAnimationFrame(() => {
-          fitActive()
-          view.term.focus()
-        })
+    }
+    if (id) {
+      if (opts.updateHash !== false)
+        writeHashId(id)
+      // Only fit + steal focus when the active session actually changed,
+      // so background shared-state updates (e.g. process-name polling)
+      // don't refocus the terminal every tick.
+      if (changed) {
+        const view = views.get(id)
+        if (view) {
+          requestAnimationFrame(() => {
+            fitActive()
+            view.term.focus()
+          })
+        }
       }
     }
     renderToolbar()
@@ -377,6 +432,8 @@ export async function mountTerminals(
       view.tab.title = 'Double-click to rename'
       view.tab.append(dot, label)
     }
+    // Keep the "+" affordance pinned to the end of the strip.
+    tabs.append(newTabBtn)
   }
 
   /** Inline-edit a tab name; commits via the rename RPC on Enter/blur. */
@@ -440,8 +497,19 @@ export async function mountTerminals(
 
     if (activeId && !views.has(activeId))
       activeId = null
-    if (!activeId && views.size)
-      activeId = sessions[sessions.length - 1]?.id ?? views.keys().next().value ?? null
+
+    if (pendingSelectId && views.has(pendingSelectId)) {
+      // A freshly spawned session has arrived — select it.
+      activeId = pendingSelectId
+      pendingSelectId = null
+    }
+    else if (!activeId && views.size) {
+      // Otherwise honour the URL hash, else fall back to the newest session.
+      const hashId = readHashId()
+      activeId = (hashId && views.has(hashId))
+        ? hashId
+        : sessions[sessions.length - 1]?.id ?? views.keys().next().value ?? null
+    }
 
     renderTabs()
     setActive(activeId)
@@ -468,9 +536,9 @@ export async function mountTerminals(
     syncSessions(full.sessions ?? [])
   })
 
-  // Auto-create an interactive shell when nothing is running yet.
-  if (options.autostart !== false && views.size === 0)
-    spawn({ mode: 'interactive' })
+  // Each page load spawns a fresh interactive session and selects it.
+  if (options.autostart !== false)
+    void spawnAndSelect({ mode: 'interactive' })
 
   const resizeObserver = typeof ResizeObserver !== 'undefined'
     ? new ResizeObserver(() => fitActive())
@@ -484,6 +552,8 @@ export async function mountTerminals(
       offSessions?.()
       offPresets?.()
       colorScheme?.removeEventListener('change', onColorScheme)
+      if (typeof window !== 'undefined')
+        window.removeEventListener('hashchange', onHashChange)
       resizeObserver?.disconnect()
       for (const view of views.values())
         disposeView(view)
