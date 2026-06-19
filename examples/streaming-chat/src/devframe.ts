@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
+import pkg from '../package.json' with { type: 'json' }
 import { CHANNEL, HISTORY, MAX_HISTORY, NAMESPACE } from './constants.ts'
 import { setStreamingChatContext } from './context.ts'
 import { serverFunctions } from './rpc/index.ts'
@@ -12,6 +13,10 @@ const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))
 export default defineDevframe({
   id: 'devframe-streaming-chat',
   name: 'Streaming Chat',
+  version: pkg.version,
+  packageName: pkg.name,
+  homepage: pkg.homepage,
+  description: pkg.description,
   icon: 'ph:chat-circle-dots-duotone',
   basePath: BASE_PATH,
   cli: {

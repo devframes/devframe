@@ -27,6 +27,7 @@ export class DevframeDocksHost {
   resolveDevServerOrigin() {}
   register(_, _) {}
   update(_) {}
+  validateGroupMembership(_) {}
   prepareRemoteRegistration(_) {}
 }
 export class DevframeMessagesHost {

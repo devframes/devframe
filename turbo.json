@@ -1,7 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["pnpm-lock.yaml"],
+  "globalDependencies": ["pnpm-lock.yaml", "tsconfig.base.json"],
   "tasks": {
+    "typecheck": {
+      "dependsOn": ["^typecheck"]
+    },
     "devframe#build": {
       "outputLogs": "new-only",
       "outputs": ["dist/**"]

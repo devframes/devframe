@@ -1,7 +1,7 @@
 {
   "name": "devframe",
   "type": "module",
-  "version": "0.5.2",
+  "version": "0.5.4",
   "description": "Framework for building generic devframes",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
@@ -63,6 +63,7 @@
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
     "prepack": "pnpm build && mkdir -p ./skills && cp -r ../../skills/devframe ./skills/devframe"
   },
   "peerDependencies": {

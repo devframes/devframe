@@ -2,11 +2,19 @@
 // Host adapters (e.g. the `vite` adapter for Vite DevTools) auto-derive their
 // mount entry from `id` / `name` / `icon`.
 import { defineDevframe, defineRpcFunction } from 'devframe'
+// Recommended: source version/packageName/homepage/description from your
+// package.json so the published metadata stays in sync. The import-attribute
+// form resolves under both bundlers and Node's native TypeScript execution.
+import pkg from '../package.json' with { type: 'json' }
 import * as v from 'valibot'
 
 export default defineDevframe({
   id: 'my-inspector',
   name: 'My Inspector',
+  version: pkg.version,
+  packageName: pkg.name,
+  homepage: pkg.homepage,
+  description: pkg.description,
   icon: 'ph:magnifying-glass-duotone',
   setup(ctx) {
     const my = ctx.scope('my-inspector')

@@ -1,9 +1,10 @@
 {
   "name": "minimal-next-devframe-hub",
   "type": "module",
-  "version": "0.5.2",
+  "version": "0.5.4",
   "private": true,
   "description": "Protocol-witness example — a tiny Next.js Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/minimal-next-devframe-hub",
   "scripts": {
     "dev": "next dev src/client",
     "build": "next build src/client",

@@ -55,6 +55,10 @@ import { createCli } from 'devframe/adapters/cli'
 const devframe = defineDevframe({
   id: 'my-devframe',
   name: 'My Devframe',
+  version: '1.0.0',
+  packageName: 'my-devframe',
+  homepage: 'https://github.com/me/my-devframe',
+  description: 'A one-line summary of what the tool does.',
   icon: 'ph:gauge-duotone',
   cli: {
     distDir: 'client/dist',

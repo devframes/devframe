@@ -50,6 +50,10 @@ import { defineDevframe, defineRpcFunction } from 'devframe'
 export default defineDevframe({
   id: 'my-inspector',
   name: 'My Inspector',
+  version: '1.0.0',
+  packageName: 'my-inspector',
+  homepage: 'https://github.com/me/my-inspector',
+  description: 'Inspects things and reports stats.',
   icon: 'ph:magnifying-glass-duotone',
   cli: { distDir: './client/dist' },
   setup(ctx) {
@@ -60,6 +64,22 @@ export default defineDevframe({
       handler: () => ({ count: 42 }),
     }))
   },
+})
+```
+
+**Recommended:** keep `version` / `packageName` / `homepage` / `description` in sync with your published package by sourcing them from `package.json` rather than hardcoding. The package's `name` maps to `packageName`; the devframe `name` is a separate display label. Use the JSON import-attribute form so it resolves under both bundlers and Node's native TypeScript execution:
+
+```ts
+import pkg from '../package.json' with { type: 'json' }
+
+export default defineDevframe({
+  id: 'my-inspector',
+  name: 'My Inspector',
+  version: pkg.version,
+  packageName: pkg.name,
+  homepage: pkg.homepage,
+  description: pkg.description,
+  // …
 })
 ```
 
@@ -151,11 +171,17 @@ declare module 'devframe' {
 ```ts
 // src/devframe.ts
 import { defineDevframe } from 'devframe/types'
+import pkg from '../package.json' with { type: 'json' }
 import { setMyToolContext } from './context'
 import { serverFunctions } from './rpc'
 
 export default defineDevframe({
   id: 'my-tool',
+  name: 'My Tool',
+  version: pkg.version,
+  packageName: pkg.name,
+  homepage: pkg.homepage,
+  description: pkg.description,
   setup(ctx) {
     const my = ctx.scope('my-tool')
     setMyToolContext(ctx, { loaders: createLoaders() })

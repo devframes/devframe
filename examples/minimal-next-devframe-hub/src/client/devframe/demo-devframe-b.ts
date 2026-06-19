@@ -2,12 +2,17 @@ import type { DevframeHubContext } from '@devframes/hub/node'
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
 import { dirname, resolve } from 'pathe'
+import pkg from '../../../package.json' with { type: 'json' }
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
 export default defineDevframe({
   id: 'next-demo-tool-b',
   name: 'Next Demo Tool B',
+  version: pkg.version,
+  packageName: pkg.name,
+  homepage: pkg.homepage,
+  description: 'A second demo devframe — proves the dock switcher has more than one option.',
   icon: 'ph:wrench-duotone',
   basePath: '/__next-demo-tool-b/',
   cli: {

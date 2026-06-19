@@ -19,10 +19,24 @@ export const diagnostics = defineDiagnostics({
       fix: 'Use the `force` parameter to overwrite an existing registration.',
     },
     DF8101: {
-      why: 'Cannot change the id of a dock. Use register() to add new docks.',
+      why: (p: { id: string, attempted: string }) => `Cannot change the id of dock "${p.id}" to "${p.attempted}". Dock ids are immutable once registered`,
+      fix: (p: { id: string, attempted: string }) => `Remove \`id\` from the patch to keep updating "${p.id}", or call register() with the full entry to add "${p.attempted}" as a new dock.`,
     },
     DF8102: {
-      why: (p: { id: string }) => `Dock with id "${p.id}" is not registered. Use register() to add new docks.`,
+      why: (p: { id: string }) => `Dock with id "${p.id}" is not registered and cannot be updated`,
+      fix: (p: { id: string }) => `Call register() to add "${p.id}" as a new dock, or check the id for typos.`,
+    },
+    DF8103: {
+      why: (p: { id: string }) => `Dock entry "${p.id}" cannot set groupId to its own id`,
+      fix: 'Point groupId at a different group entry, or omit it.',
+    },
+    DF8104: {
+      why: (p: { id: string }) => `Dock group "${p.id}" cannot itself belong to a group (nested groups are unsupported)`,
+      fix: 'Remove groupId from the group entry; nest members one level only.',
+    },
+    DF8105: {
+      why: (p: { id: string, name: string }) => `Devframe "${p.name}" (id "${p.id}") is already mounted on this hub`,
+      fix: 'Each devframe is deduplicated by id. Set `duplicationStrategy: "duplicate"` on the definition to let instances coexist, `"silent"` to drop duplicates quietly, or `"throw"` to surface them as errors.',
     },
     DF8200: {
       why: (p: { id: string }) => `Terminal session with id "${p.id}" already registered`,
@@ -34,7 +48,7 @@ export const diagnostics = defineDiagnostics({
       why: (p: { id: string }) => `Command "${p.id}" is already registered`,
     },
     DF8401: {
-      why: 'Cannot change the id of a command. Use register() to add new commands.',
+      why: 'Cannot change the id of a command. Use register() to add new commands',
     },
     DF8402: {
       why: (p: { id: string }) => `Command "${p.id}" is not registered`,

@@ -42,7 +42,8 @@ export default defineConfig([{
   },
   hooks: {
     'build:done': async () => {
-      const { name, version, devDependencies } = require('./package.json')
+      const tsdownPkg = require('tsdown/package.json')
+      const { name, version } = require('./package.json')
       // copy types and generate plugin d.ts, module types.d.mts and module.json files
       await Promise.all([
         fs.cp('src/runtime/types.d.ts', 'dist/runtime/types.d.ts'),
@@ -62,7 +63,7 @@ export { type ModuleOptions, type DevframeNuxtModuleOptions } from './module.mjs
   "configKey": "devframe",
   "version": "${version}",
   "builder": {
-    "tsdown": "${devDependencies.tsdown}"
+    "tsdown": "${tsdownPkg.version}"
   }        
 }
 `, 'utf-8'),

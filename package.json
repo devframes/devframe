@@ -1,7 +1,7 @@
 {
   "name": "devframe-monorepo",
   "type": "module",
-  "version": "0.5.2",
+  "version": "0.5.4",
   "private": true,
   "packageManager": "pnpm@11.4.0",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
@@ -25,7 +25,7 @@
     "test:e2e:ui": "turbo run build && playwright test --ui",
     "test:ecosystem": "tsx scripts/ecosystem-ci.ts",
     "release": "bumpp -r",
-    "typecheck": "tsc -b",
+    "typecheck": "turbo run typecheck",
     "postinstall": "npx simple-git-hooks && skills-npm"
   },
   "devDependencies": {

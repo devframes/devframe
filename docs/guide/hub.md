@@ -15,7 +15,7 @@ A hub-aware node context (`DevframeHubContext`) extends `DevframeNodeContext` wi
 
 | Subsystem | Surface | Purpose |
 |---|---|---|
-| `ctx.docks` | `register / update / values` | Multi-tool dock entries (iframes, launchers, json-render, custom-render). |
+| `ctx.docks` | `register / update / values` | Multi-tool dock entries (iframes, launchers, json-render, custom-render) and groups that collapse them under one button. |
 | `ctx.terminals` | `register / startChildProcess` | Aggregate terminal sessions, stream output over a well-known channel. |
 | `ctx.messages` | `add / update / remove / clear` | Server-side toast/notification queue (FIFO, capped at 1000). |
 | `ctx.commands` | `register / execute / list` | Hierarchical command palette with keybindings and `when` clauses. |
@@ -42,6 +42,53 @@ await mountDevframe(ctx, myDevframe)
 ```
 
 Framework kits typically wrap this in a plugin shell. `@vitejs/devtools-kit`'s `createPluginFromDevframe` returns a Vite `Plugin` whose `devtools.setup` calls into `mountDevframe`.
+
+### Duplicate devframes
+
+When a devframe sharing an already-mounted `id` is mounted onto the same hub, its `duplicationStrategy` decides what happens. By default the first registration wins:
+
+| Strategy | Behavior |
+|---|---|
+| `'warn'` (default) | Keep the first registration, drop the later one, and emit `DF8105`. |
+| `'silent'` | Drop the later one without warning. |
+| `'throw'` | Throw `DF8105`. |
+| `'duplicate'` | Let every instance coexist under a disambiguated dock id (`my-tool`, `my-tool-2`, …). |
+
+```ts
+defineDevframe({
+  id: 'my-tool',
+  // …
+  duplicationStrategy: 'duplicate',
+})
+```
+
+## Grouping dock entries
+
+When a hub combines many integrations, related dock entries can collapse under a single dock-bar button. A `type: 'group'` entry is that button; any entry pointing its `groupId` at the group's `id` becomes a member.
+
+```ts
+ctx.docks.register({
+  type: 'group',
+  id: 'nuxt',
+  title: 'Nuxt',
+  icon: 'logos:nuxt-icon',
+  category: 'framework',
+  defaultChildId: 'nuxt:overview', // optional; popover-only when omitted
+})
+
+ctx.docks.register({
+  type: 'iframe',
+  id: 'nuxt:overview',
+  title: 'Overview',
+  icon: 'ph:gauge-duotone',
+  url: '/__nuxt-overview/',
+  groupId: 'nuxt', // joins the group above
+})
+```
+
+`groupId` lives on every entry kind, so iframes, launchers, json-render panels, and custom-render views all join groups the same way. The group and its members stay independent top-level entries in `devframe:docks`; a downstream UI derives the visual collapse by matching each member's `groupId` to the group's `id` and renders members in a popover or sub-navigation. `defaultChildId` names the member opened when the group button is activated.
+
+Grouping is one level deep: members join a group, and a group is always a top-level button. A member whose group is never registered renders as a normal top-level entry, so registration order is free.
 
 ## The protocol — what the UI sees
 

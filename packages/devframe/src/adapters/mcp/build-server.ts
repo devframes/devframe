@@ -226,7 +226,7 @@ function registerResourceHandlers(
     }
 
     if (parsed.kind === 'state') {
-      const state = await ctx.rpc.sharedState.get(parsed.key as any)
+      const state = await ctx.rpc.sharedState.get(parsed.key)
       return {
         contents: [
           {
