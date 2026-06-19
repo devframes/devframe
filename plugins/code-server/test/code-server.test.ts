@@ -88,4 +88,16 @@ describe('@devframes/plugin-code-server', () => {
     const second = await supervisor.start()
     expect(second.server.port).toBe(first.server.port)
   })
+
+  it('allocates a dynamic port when serverPort is 0', async () => {
+    const bin = writeFakeCodeServer({ version: '4.99.0' })
+    const ctx = await createTestContext()
+    const supervisor = await setupCodeServer(ctx, { bin, serverPort: 0 })
+    supervisors.push(supervisor)
+
+    const result = await supervisor.start()
+    expect(result.server.status).toBe('running')
+    expect(result.server.port).toBeGreaterThan(0)
+    expect(result.server.port).not.toBe(8080)
+  })
 })

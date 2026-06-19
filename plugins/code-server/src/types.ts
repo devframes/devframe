@@ -97,4 +97,8 @@ export interface CodeServerOptions {
   command?: string
   /** Preferred dev-server port for the launcher SPA. */
   port?: number
+  /** Port range for the launcher SPA dev server (e.g. `[9000, 9100]`). */
+  portRange?: [number, number]
+  /** Prefer a random port for the launcher SPA. */
+  random?: boolean
 }

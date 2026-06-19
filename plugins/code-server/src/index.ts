@@ -37,6 +37,10 @@ export function createCodeServerDevframe(options: CodeServerOptions = {}): Devfr
   return defineDevframe({
     id: PLUGIN_ID,
     name: 'Code Server',
+    version: '0.5.2',
+    packageName: '@devframes/plugin-code-server',
+    homepage: 'https://github.com/devframes/devframe/tree/main/plugins/code-server#readme',
+    description: 'Run code-server (VS Code in the browser) as a devframe panel',
     icon: 'ph:code-duotone',
     // Leave undefined so `resolveBasePath` picks `/` standalone and
     // `/__<id>/` when hosted. Authors override via `options.basePath`.
@@ -44,6 +48,8 @@ export function createCodeServerDevframe(options: CodeServerOptions = {}): Devfr
     cli: {
       command: options.command ?? 'devframe-code-server',
       port: options.port ?? DEFAULT_PORT,
+      portRange: options.portRange,
+      random: options.random,
       distDir: existsSync(resolvedDist) ? resolvedDist : undefined,
       // Single-user localhost tool: auto-trust the connection so the launcher's
       // shared-state subscription and the auth handoff work without a manual

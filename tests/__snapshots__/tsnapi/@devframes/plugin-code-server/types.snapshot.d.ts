@@ -25,6 +25,8 @@ export interface CodeServerOptions {
   distDir?: string;
   command?: string;
   port?: number;
+  portRange?: [number, number];
+  random?: boolean;
 }
 export interface CodeServerServerInfo {
   status: CodeServerStatus;

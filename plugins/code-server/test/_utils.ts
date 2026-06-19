@@ -53,7 +53,9 @@ const server = http.createServer((req, res) => {
   res.statusCode = 200
   res.end(req.url && req.url.startsWith('/healthz') ? '{"status":"alive"}' : 'ok')
 })
-server.listen(port, '0.0.0.0')
+server.listen(port, '0.0.0.0', () => {
+  console.log(\`[info] HTTP server listening on http://0.0.0.0:\${server.address().port}/\`)
+})
 process.on('SIGTERM', () => process.exit(0))
 process.on('SIGINT', () => process.exit(0))
 `

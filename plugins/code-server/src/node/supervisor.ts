@@ -118,7 +118,9 @@ export class CodeServerSupervisor {
     if (!this.detection.installed)
       throw diagnostics.DP_CODE_SERVER_0001({ bin: this.bin })
 
-    const port = this.forcedPort ?? (await getPort({ host: '127.0.0.1', port: DEFAULT_CODE_SERVER_PORT }))
+    const initialPort = this.forcedPort !== undefined && this.forcedPort !== 0
+      ? this.forcedPort
+      : (this.forcedPort === 0 ? 0 : await getPort({ host: '127.0.0.1', port: DEFAULT_CODE_SERVER_PORT }))
     const token = randomBytes(32).toString('hex')
     this.cookieValue = createHash('sha256').update(token).digest('hex')
 
@@ -127,7 +129,7 @@ export class CodeServerSupervisor {
       '--auth',
       'password',
       '--bind-addr',
-      `${this.host}:${port}`,
+      `${this.host}:${initialPort}`,
       '--disable-telemetry',
       '--disable-update-check',
       ...(this.cookieSuffix ? ['--cookie-suffix', this.cookieSuffix] : []),
@@ -145,6 +147,16 @@ export class CodeServerSupervisor {
     Object.assign(env, this.extraEnv)
 
     this.logBuffer = []
+
+    let actualPort = initialPort
+    let portResolver: ((port: number) => void) | undefined
+    let portRejecter: ((err: Error) => void) | undefined
+    const portPromise = initialPort === 0
+      ? new Promise<number>((resolve, reject) => {
+          portResolver = resolve
+          portRejecter = reject
+        })
+      : Promise.resolve(initialPort)
 
     let child: ChildProcess
     try {
@@ -164,10 +176,25 @@ export class CodeServerSupervisor {
     }
 
     this.proc = child
-    this.server = { status: 'starting', port, pid: child.pid, startedAt: Date.now() }
+    this.server = { status: 'starting', port: actualPort || undefined, pid: child.pid, startedAt: Date.now() }
     this.publish()
 
-    const capture = (chunk: Buffer): void => this.appendLog(chunk.toString('utf8'))
+    const capture = (chunk: Buffer): void => {
+      const text = chunk.toString('utf8')
+      this.appendLog(text)
+      if (actualPort === 0 && portResolver) {
+        for (const line of text.split('\n')) {
+          const match = line.match(/HTTP server listening on https?:\/\/(?:[^:]+|\[[^\]]+\]):(\d+)/)
+          if (match) {
+            actualPort = Number.parseInt(match[1], 10)
+            this.server.port = actualPort
+            this.publish()
+            portResolver?.(actualPort)
+            portResolver = undefined
+          }
+        }
+      }
+    }
     child.stdout?.on('data', capture)
     child.stderr?.on('data', capture)
 
@@ -177,6 +204,8 @@ export class CodeServerSupervisor {
       this.server = { status: 'error', error: error.message }
       this.proc = undefined
       this.cookieValue = undefined
+      if (portRejecter)
+        portRejecter?.(error)
       this.publish()
     })
     child.on('exit', (code) => {
@@ -191,26 +220,39 @@ export class CodeServerSupervisor {
         : { status: 'stopped' }
       if (unexpected && exitCode !== 0)
         diagnostics.DP_CODE_SERVER_0005({ code: exitCode }, { method: 'warn' })
+      if (portRejecter)
+        portRejecter?.(new Error(`code-server exited before binding (code ${exitCode})`))
       this.publish()
     })
 
-    const ready = await this.waitForReady(port)
-    if (!ready) {
-      this.terminate(child)
-      this.server = { status: 'error', error: this.lastLog() || 'startup timed out' }
-      this.proc = undefined
-      this.cookieValue = undefined
+    try {
+      const port = await Promise.race([
+        portPromise,
+        new Promise<number>((_, reject) => setTimeout(() => reject(new Error('timeout waiting for dynamic port allocation')), this.startTimeout)),
+      ])
+
+      const ready = await this.waitForReady(port)
+      if (!ready) {
+        throw new Error(this.lastLog() || 'startup timed out')
+      }
+
+      if (this.proc !== child)
+        return this.status()
+
+      this.server = { status: 'running', port, pid: child.pid, startedAt: this.server.startedAt }
       this.publish()
-      throw diagnostics.DP_CODE_SERVER_0002({ port, timeout: this.startTimeout })
-    }
-
-    // The exit handler may have fired during the probe window.
-    if (this.proc !== child)
       return this.status()
-
-    this.server = { status: 'running', port, pid: child.pid, startedAt: this.server.startedAt }
-    this.publish()
-    return this.status()
+    }
+    catch (error) {
+      if (this.proc === child) {
+        this.terminate(child)
+        this.server = { status: 'error', error: error instanceof Error ? error.message : String(error) }
+        this.proc = undefined
+        this.cookieValue = undefined
+        this.publish()
+      }
+      throw diagnostics.DP_CODE_SERVER_0002({ port: actualPort, timeout: this.startTimeout })
+    }
   }
 
   /** Stop the code-server process and reset to `stopped`. */
