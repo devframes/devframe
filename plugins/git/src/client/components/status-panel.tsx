@@ -155,7 +155,7 @@ export function StatusPanel() {
   )
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           {data?.isRepo
@@ -194,8 +194,8 @@ export function StatusPanel() {
               )
             : <Skeleton className="h-5 w-40" />}
         </div>
-        <Button variant="ghost" size="icon" onClick={refresh} disabled={loading || busy} aria-label="Refresh status">
-          <RefreshCw className={loading ? 'animate-spin' : ''} />
+        <Button variant="ghost" size="icon" className="size-7" onClick={refresh} disabled={loading || busy} aria-label="Refresh status">
+          <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 

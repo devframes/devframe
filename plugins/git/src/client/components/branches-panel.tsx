@@ -12,11 +12,11 @@ import { useRpcResource } from './use-rpc-resource'
 
 function BranchRow({ branch }: { branch: Branch }) {
   return (
-    <li className="border-border/60 flex items-center gap-2 border-b py-2 last:border-0">
+    <li className="border-border/60 flex items-center gap-2 border-b py-1.5 last:border-0">
       <GitBranch className={`size-4 shrink-0 ${branch.current ? 'text-primary' : 'text-muted-foreground'}`} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className={`truncate font-mono text-sm ${branch.current ? 'font-semibold' : ''}`}>
+          <span className={`truncate font-mono text-xs ${branch.current ? 'font-semibold' : ''}`}>
             {branch.name}
           </span>
           {branch.current && (
@@ -58,8 +58,8 @@ export function BranchesPanel() {
         <span className="text-muted-foreground text-xs">
           {data?.isRepo ? `${data.branches.length} branches` : ' '}
         </span>
-        <Button variant="ghost" size="icon" onClick={refresh} disabled={loading} aria-label="Refresh branches">
-          <RefreshCw className={loading ? 'animate-spin' : ''} />
+        <Button variant="ghost" size="icon" className="size-7" onClick={refresh} disabled={loading} aria-label="Refresh branches">
+          <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 

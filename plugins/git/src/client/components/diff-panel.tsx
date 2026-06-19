@@ -93,8 +93,8 @@ export function DiffPanel() {
               </span>
             </span>
           )}
-          <Button variant="ghost" size="icon" onClick={refresh} disabled={loading} aria-label="Refresh diff">
-            <RefreshCw className={loading ? 'animate-spin' : ''} />
+          <Button variant="ghost" size="icon" className="size-7" onClick={refresh} disabled={loading} aria-label="Refresh diff">
+            <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>

@@ -29,8 +29,8 @@ function ConnectionBadge() {
 function ThemeToggle() {
   const { theme, toggle } = useTheme()
   return (
-    <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle light/dark theme">
-      {theme === 'dark' ? <Sun /> : <Moon />}
+    <Button variant="ghost" size="icon" className="size-7" onClick={toggle} aria-label="Toggle light/dark theme">
+      {theme === 'dark' ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
     </Button>
   )
 }
@@ -38,13 +38,13 @@ function ThemeToggle() {
 export function Dashboard() {
   return (
     <RpcProvider>
-      <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-10">
+      <main className="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-6">
         <header className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <GitGraph className="text-primary size-6" />
             <div>
-              <h1 className="text-lg leading-none font-semibold">Git Dashboard</h1>
-              <p className="text-muted-foreground text-xs">
+              <h1 className="text-base leading-none font-semibold">Git Dashboard</h1>
+              <p className="text-muted-foreground text-[11px]">
                 devframe + Next.js · type-safe RPC into the host repository
               </p>
             </div>
@@ -75,8 +75,8 @@ export function Dashboard() {
             </TabsTrigger>
           </TabsList>
 
-          <Card className="mt-2">
-            <CardContent>
+          <Card className="mt-1">
+            <CardContent className="px-4">
               <TabsContent value="status"><StatusPanel /></TabsContent>
               <TabsContent value="commits"><LogPanel /></TabsContent>
               <TabsContent value="branches"><BranchesPanel /></TabsContent>

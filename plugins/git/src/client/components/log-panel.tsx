@@ -4,18 +4,18 @@ import type { DevframeRpcClient } from 'devframe/client'
 import type { Commit } from '../../index'
 import type { GraphRow } from '../lib/commit-graph'
 import { RefreshCw } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { computeGraph } from '../lib/commit-graph'
+import { useRpc } from './rpc-provider'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import { ScrollArea } from './ui/scroll-area'
 import { Skeleton } from './ui/skeleton'
-import { useRpcResource } from './use-rpc-resource'
 
 const PAGE = 30
-const ROW_H = 54
-const COL_W = 14
-const NODE_R = 4.5
+const ROW_H = 42
+const COL_W = 12
+const NODE_R = 4
 
 function relativeTime(epoch: number): string {
   const diff = Date.now() - epoch
@@ -98,58 +98,131 @@ function CommitRow({ commit, row, gutter }: { commit: Commit, row: GraphRow, gut
 }
 
 export function LogPanel() {
-  const [limit, setLimit] = useState(PAGE)
-  const loader = useCallback(
-    (rpc: DevframeRpcClient) => rpc.call('git:log', { limit }),
-    [limit],
-  )
-  const { data, loading, refresh } = useRpcResource(loader)
+  const { rpc } = useRpc()
+  const [isRepo, setIsRepo] = useState<boolean | null>(null)
+  const [commits, setCommits] = useState<Commit[]>([])
+  const [skip, setSkip] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const commitsRef = useRef<Commit[]>([])
+
+  useEffect(() => {
+    commitsRef.current = commits
+  }, [commits])
+
+  const loadPage = useCallback(async (
+    client: DevframeRpcClient,
+    nextSkip: number,
+    mode: 'replace' | 'append',
+  ) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const page = await client.call('git:log', { limit: PAGE, skip: nextSkip })
+      setIsRepo(page.isRepo)
+      if (mode === 'replace') {
+        setCommits(page.commits)
+        setSkip(page.commits.length)
+      }
+      else {
+        const seen = new Set(commitsRef.current.map(c => c.hash))
+        const unique = page.commits.filter((c) => {
+          if (seen.has(c.hash))
+            return false
+          seen.add(c.hash)
+          return true
+        })
+        if (unique.length === 0) {
+          // Static fallback snapshots can return the same page for any args.
+          setHasMore(false)
+          return
+        }
+        setCommits(prev => [...prev, ...unique])
+        setSkip(prev => prev + unique.length)
+      }
+      setHasMore(page.hasMore)
+    }
+    catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+    finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!rpc)
+      return
+    void loadPage(rpc, 0, 'replace')
+  }, [rpc, loadPage])
+
+  const refresh = useCallback(async () => {
+    if (!rpc)
+      return
+    await loadPage(rpc, 0, 'replace')
+  }, [rpc, loadPage])
+
+  const loadMore = useCallback(async () => {
+    if (!rpc)
+      return
+    await loadPage(rpc, skip, 'append')
+  }, [rpc, skip, loadPage])
 
   const graph = useMemo(
-    () => computeGraph(data?.commits ?? []),
-    [data?.commits],
+    () => computeGraph(commits),
+    [commits],
   )
   const gutter = Math.max(graph.columns, 1) * COL_W + COL_W / 2
+  const liveBackend = rpc?.connectionMeta.backend === 'websocket'
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-muted-foreground text-xs">
-          {data?.isRepo ? `${data.commits.length} commits` : ' '}
+          {isRepo ? `${commits.length} commits` : ' '}
         </span>
-        <Button variant="ghost" size="icon" onClick={refresh} disabled={loading} aria-label="Refresh log">
-          <RefreshCw className={loading ? 'animate-spin' : ''} />
+        <Button variant="ghost" size="icon" className="size-7" onClick={refresh} disabled={loading} aria-label="Refresh log">
+          <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 
-      {!data && (
+      {!rpc && (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
         </div>
       )}
 
-      {data && !data.isRepo && (
+      {error && (
+        <p className="text-destructive text-sm">{error}</p>
+      )}
+
+      {isRepo === false && (
         <p className="text-muted-foreground text-sm">The working directory is not a git repository.</p>
       )}
 
-      {data?.isRepo && data.commits.length === 0 && (
+      {isRepo === true && commits.length === 0 && (
         <p className="text-muted-foreground text-sm">No commits yet.</p>
       )}
 
-      {data?.isRepo && data.commits.length > 0 && (
-        <ScrollArea className="h-96 pr-3">
+      {isRepo === true && commits.length > 0 && (
+        <ScrollArea className="h-80 pr-3">
           <ul>
-            {data.commits.map((commit, i) => (
+            {commits.map((commit, i) => (
               <CommitRow key={commit.hash} commit={commit} row={graph.rows[i]} gutter={gutter} />
             ))}
           </ul>
         </ScrollArea>
       )}
 
-      {data?.hasMore && (
-        <Button variant="outline" size="sm" className="w-full" onClick={() => setLimit(l => l + PAGE)} disabled={loading}>
+      {isRepo === true && hasMore && (
+        <Button variant="outline" size="sm" className="w-full" onClick={loadMore} disabled={loading || !liveBackend}>
           Load more
         </Button>
+      )}
+
+      {isRepo === true && hasMore && !liveBackend && (
+        <p className="text-muted-foreground text-xs">Load more is available in live mode.</p>
       )}
     </div>
   )
