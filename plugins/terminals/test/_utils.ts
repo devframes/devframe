@@ -13,6 +13,7 @@ import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { createTerminalsDevframe } from '../src/index'
+import { getTerminalManager } from '../src/node/index'
 
 export type TerminalsServer = StartedServer & {
   ctx: DevframeNodeContext
@@ -40,6 +41,20 @@ export async function startTerminalsServer(options: TerminalsOptions = {}): Prom
   await definition.setup(ctx)
 
   const server = await startHttpAndWs({ context: ctx, host, port, app, auth: false })
+
+  // Tear down spawned terminal processes (PTYs / piped children) alongside
+  // the HTTP+WS server so tests don't leak `node`/shell processes.
+  const closeServer = server.close.bind(server)
+  server.close = async () => {
+    try {
+      getTerminalManager(ctx).dispose()
+    }
+    catch {
+      // Manager may not be initialised if setup failed.
+    }
+    await closeServer()
+  }
+
   return Object.assign(server, { ctx, port })
 }
 

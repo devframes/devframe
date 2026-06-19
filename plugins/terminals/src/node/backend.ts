@@ -55,6 +55,9 @@ interface PtyProcess {
   kill: (signal?: string) => void
 }
 
+/** TERM name handed to the PTY; also used to reject the Windows fallback. */
+const PTY_TERM_NAME = 'xterm-256color'
+
 let ptyModulePromise: Promise<PtyModule | undefined> | undefined
 
 /**
@@ -90,7 +93,7 @@ export async function spawnPty(options: SpawnBackendOptions): Promise<TerminalPr
   let proc: PtyProcess
   try {
     proc = pty.spawn(options.command, options.args, {
-      name: 'xterm-256color',
+      name: PTY_TERM_NAME,
       cols: options.cols,
       rows: options.rows,
       cwd: options.cwd,
@@ -136,7 +139,10 @@ export async function spawnPty(options: SpawnBackendOptions): Promise<TerminalPr
     onExit: cb => proc.onExit(e => cb(e.exitCode ?? 0)),
     getProcessName: () => {
       try {
-        return proc.process || undefined
+        const name = proc.process
+        // On Windows node-pty falls back to the TERM name rather than the
+        // foreground process — don't surface that as a session label.
+        return name && name !== PTY_TERM_NAME ? name : undefined
       }
       catch {
         return undefined

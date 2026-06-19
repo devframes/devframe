@@ -9,6 +9,11 @@ import { bootClient, call, collectUntil, startTerminalsServer } from './_utils'
 vi.stubGlobal('WebSocket', WebSocket)
 
 const NODE = process.execPath
+// PTY semantics differ on Windows (conpty): no SIGWINCH, the foreground
+// process name resolves to the TERM name, and stdin round-trips are slow to
+// render. These behaviours are exercised on POSIX; Windows keeps the
+// `isTTY` interactive coverage below.
+const itPosix = process.platform === 'win32' ? it.skip : it
 
 function subscribe(client: TestClient, id: string) {
   return client.streaming.subscribe<string>(TERMINAL_STREAM_CHANNEL, id)
@@ -66,7 +71,7 @@ describe('@devframes/plugin-terminals', () => {
     ).rejects.toThrow(/read-only/i)
   })
 
-  it('runs an interactive PTY session that accepts input', async () => {
+  itPosix('runs an interactive PTY session that accepts input', async () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
@@ -100,7 +105,7 @@ describe('@devframes/plugin-terminals', () => {
     expect(output).toContain('isTTY=true')
   })
 
-  it('propagates resize to the PTY (SIGWINCH) for TUI layout', async () => {
+  itPosix('propagates resize to the PTY (SIGWINCH) for TUI layout', async () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
@@ -135,7 +140,7 @@ describe('@devframes/plugin-terminals', () => {
     expect(restarted.status).toBe('running')
   })
 
-  it('tracks the foreground process name for PTY sessions', async () => {
+  itPosix('tracks the foreground process name for PTY sessions', async () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
