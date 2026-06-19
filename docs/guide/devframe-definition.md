@@ -15,11 +15,18 @@ import * as v from 'valibot'
 export default defineDevframe({
   id: 'my-devframe',
   name: 'My Devframe',
+  version: '1.0.0',
+  packageName: 'my-devframe',
+  homepage: 'https://github.com/me/my-devframe',
+  description: 'A one-line summary of what the tool does.',
   icon: 'ph:gauge-duotone',
   setup(ctx) {
+    // A scoped context auto-namespaces ids with your devframe `id`.
+    const my = ctx.scope('my-devframe')
+
     // Register your RPC functions, shared state, etc. here.
-    ctx.rpc.register(defineRpcFunction({
-      name: 'my-devframe:hello',
+    my.rpc.register(defineRpcFunction({
+      name: 'hello', // stored as `my-devframe:hello`
       type: 'static',
       jsonSerializable: true,
       handler: () => ({ message: 'hello' }),
@@ -28,7 +35,7 @@ export default defineDevframe({
 })
 ```
 
-Host adapters (such as the [`vite` adapter](/adapters/vite) for Vite DevTools) derive their mount entry from `id`, `name`, `icon`, and `basePath` automatically.
+`ctx.scope(id)` is the preferred way to consume the context — see [Scoped Context](./scoped-context). Host adapters (such as the [`vite` adapter](/adapters/vite) for Vite DevTools) derive their mount entry from `id`, `name`, `icon`, and `basePath` automatically.
 
 ## Definition fields
 
@@ -36,14 +43,38 @@ Host adapters (such as the [`vite` adapter](/adapters/vite) for Vite DevTools) d
 |-------|------|-------------|
 | `id` | `string` | **Required.** Unique, namespaced identifier (kebab-case). Used as a prefix for RPC names, dock IDs, and MCP tool names. |
 | `name` | `string` | **Required.** Display name shown in the dock and agent manifests. |
+| `version` | `string` | **Required.** Semver of the tool, surfaced in hub UIs and diagnostics. |
+| `packageName` | `string` | **Required.** npm package name the devframe ships in (e.g. `@scope/my-tool`). |
+| `homepage` | `string` | **Required.** Project homepage or documentation URL. |
+| `description` | `string` | **Required.** One-line summary of what the tool does. |
 | `icon` | `string \| { light, dark }` | Optional Iconify name or URL; supports light/dark pairs. |
-| `version` | `string` | Optional version string surfaced to clients. |
 | `basePath` | `string` | Optional mount path override. Defaults depend on the adapter: `/` for standalone (`cli` / `spa` / `build`), `/.<id>/` for hosted (`vite` / `embedded`). |
+| `duplicationStrategy` | `'warn' \| 'silent' \| 'throw' \| 'duplicate'` | How a hub reacts when another devframe sharing this `id` is mounted onto the same hub. Defaults to `'warn'`. See [Hub](./hub). Hub adapters consult it; standalone adapters ignore it. |
 | `capabilities` | `{ dev?, build?, spa? }` | Per-runtime feature flags. A `boolean` applies to the runtime as a whole; an object enables individual features. |
 | `setup` | `(ctx, info?) => void \| Promise<void>` | **Required.** Server-side entry point. Runs in every runtime. The optional second argument carries runtime metadata — most notably the parsed CLI `flags` when running under `createCli`. |
 | `setupBrowser` | `(ctx) => void \| Promise<void>` | Browser-only entry used by the SPA adapter. |
 | `cli` | `DevframeCliOptions` | Defaults for the CLI adapter. See [CLI options](#cli-options) below. |
 | `spa` | `DevframeSpaOptions` | Defaults for the SPA adapter (`base`, `loader`). |
+
+### Sourcing metadata from `package.json`
+
+Keep `version`, `packageName`, `homepage`, and `description` in sync with the package you publish by importing them straight from its `package.json`. Note that the package's `name` field maps to `packageName` — the devframe `name` is a separate display label.
+
+```ts
+import pkg from '../package.json' with { type: 'json' }
+
+export default defineDevframe({
+  id: 'my-devframe',
+  name: 'My Devframe', // display label
+  version: pkg.version,
+  packageName: pkg.name,
+  homepage: pkg.homepage,
+  description: pkg.description,
+  setup(ctx) { /* … */ },
+})
+```
+
+The default import with a `with { type: 'json' }` attribute resolves under both bundlers and Node's native TypeScript execution. Bundlers also support the destructured `import { version } from '../package.json'` form when the devframe is always bundled before it runs.
 
 ### Runtime flags
 
@@ -81,12 +112,17 @@ interface DevframeNodeContext {
   views: DevframeViewHost // static file hosting (`hostStatic`)
   diagnostics: DevframeDiagnosticsHost
   agent: DevframeAgentHost // experimental
+
+  scope: (id) => DevframeScopedNodeContext // namespaced view (preferred)
 }
 ```
+
+`ctx.scope(id)` returns a namespace-scoped view that auto-prefixes every RPC id, shared-state key, and streaming channel and adds a persisted top-level `settings` store. It's the recommended entry point from a single tool's setup code — see [Scoped Context](./scoped-context).
 
 Host adapters can augment `ctx` with additional surfaces. For example, the [`vite` adapter](/adapters/vite) exposes Vite DevTools' dock, command, message, and terminal hosts via an optional `setup` hook on `createPluginFromDevframe` — consult the host's docs for those extras.
 
 Each devframe-level host has a dedicated page:
+- [Scoped Context](./scoped-context) — `ctx.scope(id)`, `settings`
 - [RPC](./rpc) — `ctx.rpc`
 - [Shared State](./shared-state) — `ctx.rpc.sharedState`
 - [Diagnostics](./diagnostics) — `ctx.diagnostics`

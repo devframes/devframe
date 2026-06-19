@@ -22,6 +22,7 @@ export { DevframeDeploymentKind }
 export { DevframeDiagnosticsDefinition }
 export { DevframeDiagnosticsHost }
 export { DevframeDiagnosticsLogger }
+export { DevframeDuplicationStrategy }
 export { DevframeHost }
 export { DevframeNodeContext }
 export { DevframeNodeRpcSession }
@@ -30,6 +31,12 @@ export { DevframeRpcClientFunctions }
 export { DevframeRpcServerFunctions }
 export { DevframeRpcSharedStates }
 export { DevframeRuntime }
+export { DevframeScopedNodeContext }
+export { DevframeScopedNodeRpc }
+export { DevframeScopedStreamingHost }
+export { DevframeSettings }
+export { DevframeSettingsRegistry }
+export { DevframeSettingsStore }
 export { DevframeSetupInfo }
 export { DevframeSpaOptions }
 export { DevframeViewHost }
@@ -46,5 +53,10 @@ export { RpcSharedStateHost }
 export { RpcStreamingChannel }
 export { RpcStreamingChannelOptions }
 export { RpcStreamingHost }
+export { ScopedBroadcastOptions }
+export { ScopedClientFunctions }
+export { ScopedServerFunctions }
+export { ScopedSharedStates }
+export { SettingsForNamespace }
 export { Thenable }
 // #endregion

@@ -3,7 +3,9 @@
  */
 // #region Functions
 export function consumeOtpFromUrl(_) {}
+export function createClientSettings(_, _) {}
 export function createRpcStreamingClientHost(_) {}
+export function createScopedClientContext(_, _) {}
 export async function getDevframeRpcClient(_) {}
 export async function pairWithUrlOtp(_, _) {}
 export function readOtpFromUrl(_) {}

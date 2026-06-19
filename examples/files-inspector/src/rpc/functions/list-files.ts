@@ -3,7 +3,7 @@ import { defineRpcFunction } from 'devframe'
 import { glob } from 'tinyglobby'
 
 export const listFiles = defineRpcFunction({
-  name: 'devframe-files-inspector:list-files',
+  name: 'list-files', // scoped registration namespaces it to `devframe-files-inspector:list-files`
   type: 'query',
   jsonSerializable: true,
   snapshot: true,

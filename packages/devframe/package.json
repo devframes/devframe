@@ -47,6 +47,7 @@
     "./utils/nanoid": "./dist/utils/nanoid.mjs",
     "./utils/open": "./dist/utils/open.mjs",
     "./utils/promise": "./dist/utils/promise.mjs",
+    "./utils/scope": "./dist/utils/scope.mjs",
     "./utils/serve-static": "./dist/utils/serve-static.mjs",
     "./utils/shared-state": "./dist/utils/shared-state.mjs",
     "./utils/streaming-channel": "./dist/utils/streaming-channel.mjs",
@@ -62,6 +63,7 @@
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
     "prepack": "pnpm build && mkdir -p ./skills && cp -r ../../skills/devframe ./skills/devframe"
   },
   "peerDependencies": {

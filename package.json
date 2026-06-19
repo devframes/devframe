@@ -25,7 +25,7 @@
     "test:e2e:ui": "turbo run build && playwright test --ui",
     "test:ecosystem": "tsx scripts/ecosystem-ci.ts",
     "release": "bumpp -r",
-    "typecheck": "tsc -b",
+    "typecheck": "turbo run typecheck",
     "postinstall": "npx simple-git-hooks && skills-npm"
   },
   "devDependencies": {

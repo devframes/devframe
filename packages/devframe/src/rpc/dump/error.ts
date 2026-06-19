@@ -30,7 +30,7 @@ function serializeWithSeen(error: unknown, seen: WeakSet<object>): RpcDumpRecord
   for (const key of Object.keys(error)) {
     if (key === 'name' || key === 'message' || key === 'cause')
       continue
-    out[key] = (error as Record<string, unknown>)[key]
+    out[key] = (error as unknown as Record<string, unknown>)[key]
   }
   return out
 }

@@ -29,7 +29,7 @@ const EnvEntrySchema = v.object({
 })
 
 export const env = defineRpcFunction({
-  name: 'next-runtime-snapshot:env',
+  name: 'env',
   type: 'query',
   jsonSerializable: true,
   args: [v.object({

@@ -31,6 +31,20 @@ export interface DevframeRpcClientFunctions {
    * @internal
    */
   'devframe:streaming:upload-cancel': (channel: string, id: string) => Promise<void>
+  /**
+   * Full shared-state snapshot pushed from server to subscribed clients.
+   * Wired by `RpcSharedStateHost`; do not register manually.
+   *
+   * @internal
+   */
+  'devframe:rpc:client-state:updated': (key: string, fullState: any, syncId: string) => Promise<void>
+  /**
+   * Incremental shared-state patch pushed from server to subscribed clients.
+   * Wired by `RpcSharedStateHost`; do not register manually.
+   *
+   * @internal
+   */
+  'devframe:rpc:client-state:patch': (key: string, patches: any[], syncId: string) => Promise<void>
 }
 
 /**

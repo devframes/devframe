@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
-import { serverFunctions } from './rpc/index.ts'
+import pkg from '../package.json' with { type: 'json' }
+import { NAMESPACE, serverFunctions } from './rpc/index.ts'
 
 export type { EnvEntry, EnvSnapshot } from './rpc/functions/env.ts'
 export type { MemorySnapshot } from './rpc/functions/memory.ts'
@@ -12,6 +13,10 @@ const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))
 export default defineDevframe({
   id: 'next-runtime-snapshot',
   name: 'Next Runtime Snapshot',
+  version: pkg.version,
+  packageName: pkg.name,
+  homepage: pkg.homepage,
+  description: pkg.description,
   icon: 'ph:gauge-duotone',
   basePath: BASE_PATH,
   cli: {
@@ -22,7 +27,9 @@ export default defineDevframe({
   },
   spa: { loader: 'none' },
   setup(ctx) {
+    // A scoped context auto-namespaces every registered id with `NAMESPACE:`.
+    const my = ctx.scope(NAMESPACE)
     for (const fn of serverFunctions)
-      ctx.rpc.register(fn)
+      my.rpc.register(fn)
   },
 })

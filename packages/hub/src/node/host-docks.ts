@@ -187,7 +187,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     return {
       update: (patch) => {
         if (patch.id && patch.id !== view.id) {
-          throw diagnostics.DF8101()
+          throw diagnostics.DF8101({ id: view.id, attempted: patch.id })
         }
         this.update(Object.assign(this.views.get(view.id)!, patch))
       },

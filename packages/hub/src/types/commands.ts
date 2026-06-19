@@ -1,4 +1,5 @@
 import type { EventEmitter } from 'devframe/types'
+import type { DevframeDockEntryIcon } from './docks'
 
 export interface DevframeCommandKeybinding {
   /**
@@ -17,9 +18,10 @@ export interface DevframeCommandBase {
   title: string
   description?: string
   /**
-   * Iconify icon string, e.g. "ph:pencil-duotone"
+   * Icon for the command. Either an Iconify icon string (e.g. "ph:pencil-duotone")
+   * or a theme-specific pair `{ light, dark }` — the same shape as dock icons.
    */
-  icon?: string
+  icon?: DevframeDockEntryIcon
   category?: string
   /**
    * Whether to show in command palette. Default: true

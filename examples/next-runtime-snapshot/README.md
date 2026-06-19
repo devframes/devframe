@@ -16,7 +16,8 @@ type-safe RPC.
   args (`pattern`, `limit`). Lists environment variables matching a regex,
   redacting keys that look secret.
 - Next.js App Router with `'use client'` components calling
-  `connectDevframe()` once and passing the RPC client through React context.
+  `connectDevframe()` once, then sharing the scoped client
+  (`client.scope('next-runtime-snapshot')`) through React context.
 
 ## Run it
 

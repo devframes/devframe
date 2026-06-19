@@ -1,11 +1,9 @@
 {
   "compilerOptions": {
-    "composite": true,
     "target": "esnext",
     "lib": [
       "esnext"
     ],
-    "rootDir": ".",
     "module": "esnext",
     "moduleResolution": "Bundler",
     "paths": {
@@ -65,6 +63,9 @@
       ],
       "devframe/utils/promise": [
         "./packages/devframe/src/utils/promise.ts"
+      ],
+      "devframe/utils/scope": [
+        "./packages/devframe/src/utils/scope.ts"
       ],
       "devframe/utils/serve-static": [
         "./packages/devframe/src/utils/serve-static.ts"
@@ -131,6 +132,7 @@
       ]
     },
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
     "strict": true,
     "noEmit": true,
     "isolatedDeclarations": false,

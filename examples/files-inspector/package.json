@@ -4,6 +4,7 @@
   "version": "0.5.4",
   "private": true,
   "description": "End-to-end devframe demo — lists files in cwd via RPC, exercises CLI dev/build/spa surfaces.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/files-inspector",
   "main": "src/devframe.ts",
   "bin": {
     "files-inspector": "./bin.mjs"

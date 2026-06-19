@@ -2,7 +2,7 @@ import { defineRpcFunction } from 'devframe'
 import { getStreamingChatContext } from '../../context.ts'
 
 export const clear = defineRpcFunction({
-  name: 'devframe-streaming-chat:clear',
+  name: 'clear',
   type: 'action',
   jsonSerializable: true,
   setup: (ctx) => {

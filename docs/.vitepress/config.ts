@@ -21,6 +21,7 @@ function guideItems(prefix: string): DefaultTheme.NavItemWithLink[] {
     { text: 'Introduction', link: `${prefix}/guide/` },
     { text: 'Built with Devframe', link: `${prefix}/guide/built-with` },
     { text: 'Devframe Definition', link: `${prefix}/guide/devframe-definition` },
+    { text: 'Scoped Context', link: `${prefix}/guide/scoped-context` },
     { text: 'RPC', link: `${prefix}/guide/rpc` },
     { text: 'Shared State', link: `${prefix}/guide/shared-state` },
     { text: 'Streaming', link: `${prefix}/guide/streaming` },

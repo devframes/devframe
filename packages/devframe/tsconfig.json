@@ -1,7 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
     "lib": ["esnext", "dom"]
-  }
+  },
+  "include": ["src", "test", "scripts", "tsdown.config.ts"],
+  "exclude": ["dist", "node_modules"]
 }

@@ -118,7 +118,7 @@ describe('dumps', () => {
       dump: {
         inputs: [[]] as [][],
       },
-      handler: () => {
+      handler: (): void => {
         const err = new TypeError('boom', { cause: new Error('inner') }) as Error & { tags?: unknown }
         err.tags = tags
         throw err
@@ -152,7 +152,7 @@ describe('dumps', () => {
       dump: {
         inputs: [[]] as [][],
       },
-      handler: () => {
+      handler: (): void => {
         // eslint-disable-next-line no-throw-literal
         throw 'just a string'
       },

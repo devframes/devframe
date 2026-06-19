@@ -81,8 +81,10 @@ export declare class RpcFunctionsHost extends RpcFunctionsCollectorBase<Devframe
 // #region Functions
 export declare function createH3DevframeHost(_: CreateH3DevframeHostOptions): DevframeHost;
 export declare function createHostContext(_: CreateHostContextOptions): Promise<DevframeNodeContext>;
+export declare function createNodeSettings<T extends Record<string, any> = Record<string, any>>(_: DevframeNodeContext, _: string): DevframeSettings<T>;
 export declare function createRpcSharedStateServerHost(_: RpcFunctionsHost$1): RpcSharedStateHost;
 export declare function createRpcStreamingServerHost(_: RpcFunctionsHost$1): RpcStreamingHost;
+export declare function createScopedNodeContext<NS extends string = string>(_: DevframeNodeContext, _: NS): DevframeScopedNodeContext<NS>;
 export declare function createStorage<T extends object>(_: CreateStorageOptions<T>): SharedState<T>;
 export declare function isObject(_: unknown): value is Record<string, any>;
 export declare function normalizeHttpServerUrl(_: string, _: number | string): string;

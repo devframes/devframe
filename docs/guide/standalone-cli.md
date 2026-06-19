@@ -52,8 +52,9 @@ const devframe = defineDevframe({
     },
   },
   async setup(ctx, { flags }) {
-    ctx.rpc.register(defineRpcFunction({
-      name: 'my-tool:get-payload',
+    const my = ctx.scope('my-tool')
+    my.rpc.register(defineRpcFunction({
+      name: 'get-payload', // -> my-tool:get-payload
       type: 'query',
       async handler() {
         return await loadPayload({
@@ -160,8 +161,8 @@ For non-Nuxt frontends (Vite + Vue, React, plain HTML, etc.), call `connectDevfr
 ```ts
 import { connectDevframe } from 'devframe/client'
 
-const rpc = await connectDevframe()
-const payload = await rpc.call('my-tool:get-payload')
+const my = (await connectDevframe()).scope('my-tool')
+const payload = await my.rpc.call('get-payload')
 ```
 
 `connectDevframe` auto-resolves the connection descriptor relative to the current page — it works both in dev (WebSocket backend) and in the built static snapshot (`static` backend reads the baked RPC dump).
@@ -239,8 +240,8 @@ defineDevframe({
   id: 'my-tool',
   name: 'My Tool',
   async setup(ctx) {
-    ctx.rpc.register(defineRpcFunction({
-      name: 'my-tool:get-npm-meta',
+    ctx.scope('my-tool').rpc.register(defineRpcFunction({
+      name: 'get-npm-meta', // -> my-tool:get-npm-meta
       type: 'query',
       async handler(spec: string) {
         return (await cache.getItem(spec))
@@ -260,19 +261,22 @@ defineDevframe({
   id: 'my-tool',
   name: 'My Tool',
   async setup(ctx, { flags }) {
-    const payload = defineRpcFunction({
-      name: 'my-tool:get-payload',
+    const my = ctx.scope('my-tool')
+    my.rpc.register(defineRpcFunction({
+      name: 'get-payload', // -> my-tool:get-payload
       type: 'query',
       cacheable: true,
       handler: () => loadPayload({ configPath: flags.config }),
-    })
-    ctx.rpc.register(payload)
+    }))
 
     if (ctx.mode === 'dev') {
+      const version = await my.rpc.sharedState('version', { initialValue: { ts: 0 } })
       const { default: chokidar } = await import('chokidar')
       const watcher = chokidar.watch(flags.config ?? [], { ignoreInitial: true })
       watcher.on('change', () => {
-        ctx.rpc.sharedState.set('my-tool:version', Date.now())
+        version.mutate((draft) => {
+          draft.ts = Date.now()
+        })
       })
     }
   },
@@ -282,8 +286,9 @@ defineDevframe({
 On the client, subscribe to the version key and refetch:
 
 ```ts
-const state = await rpc.sharedState.get('my-tool:version')
-state.on('updated', () => fetchPayload().then(setData))
+const my = (await connectDevframe()).scope('my-tool')
+const version = await my.rpc.sharedState('version')
+version.on('updated', () => fetchPayload().then(setData))
 ```
 
 ## Use your own CLI framework

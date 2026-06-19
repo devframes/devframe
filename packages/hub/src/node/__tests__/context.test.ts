@@ -1,3 +1,4 @@
+import type { DevframeDockEntry } from '../../types/docks'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -22,7 +23,7 @@ describe('createHubContext shared state', () => {
       host: createHost(),
     })
 
-    const docks = await context.rpc.sharedState.get('devframe:docks')
+    const docks = await context.rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks')
     expect(docks.value().map(dock => dock.id)).toEqual([
       '~terminals',
       '~messages',

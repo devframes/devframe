@@ -22,12 +22,14 @@ pnpm install      # requires pnpm@11.x
 pnpm build        # tsdown
 pnpm dev          # tsdown --watch
 pnpm test         # pnpm build && vitest (api snapshot guards against stale dist)
-pnpm typecheck    # tsc --noEmit
+pnpm typecheck    # turbo run typecheck (per-package tsc --noEmit)
 pnpm lint --fix   # ESLint via @antfu/eslint-config
 pnpm start        # tsx src/index.ts
 ```
 
 The `pnpm test` script intentionally runs `build` first so `tsnapi` snapshots compare against fresh `dist/`. `tsdown-stale-guard` enforces this in `test/api-snapshot.test.ts`.
+
+`pnpm typecheck` fans out through Turbo: every workspace package owns a `"typecheck": "tsc --noEmit"` script and its own `tsconfig.json` (extending `tsconfig.base.json` with an explicit `include`). Cross-package imports resolve to source through the `paths` aliases in `tsconfig.base.json`, so no prior build is needed. Any package added under `packages/*` or `plugins/*` is typechecked automatically once it ships that `typecheck` script — add one to every new package so it can't silently skip type errors.
 
 ## Conventions
 

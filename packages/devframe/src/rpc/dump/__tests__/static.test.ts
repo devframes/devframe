@@ -223,7 +223,7 @@ describe('collectStaticRpcDump', () => {
         name: 'test:flaky',
         type: 'query',
         jsonSerializable: true,
-        handler: () => {
+        handler: (): void => {
           throw new TypeError('boom', { cause: new Error('inner') })
         },
         dump: {
@@ -261,7 +261,7 @@ describe('collectStaticRpcDump', () => {
         name: 'test:flaky-roundtrip',
         type: 'query',
         // default jsonSerializable: false → structured-clone shards
-        handler: () => {
+        handler: (): void => {
           const err = new TypeError('boom', { cause: new Error('inner') }) as Error & { tags?: unknown }
           err.tags = tags
           throw err
@@ -295,7 +295,7 @@ describe('collectStaticRpcDump', () => {
         name: 'test:flaky-non-json',
         type: 'query',
         jsonSerializable: true,
-        handler: () => {
+        handler: (): void => {
           const err = new Error('boom') as Error & { tags?: unknown }
           err.tags = new Map([['a', 1]])
           throw err

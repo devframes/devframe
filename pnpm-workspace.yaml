@@ -7,6 +7,8 @@ allowBuilds:
 catalogMode: prefer
 cleanupUnusedCatalogs: true
 ignoreWorkspaceRootCheck: true
+minimumReleaseAgeExclude:
+  - nostics@1.1.4
 shamefullyHoist: true
 shellEmulator: true
 strictPeerDependencies: false
@@ -15,6 +17,7 @@ trustPolicyExclude:
   - tinyexec@1.2.2
 packages:
   - packages/*
+  - plugins/*
   - examples/*
   - docs
 overrides:
@@ -41,7 +44,7 @@ catalogs:
     immer: ^11.1.8
     launch-editor: ^2.13.2
     mrmime: ^2.0.1
-    nostics: ^0.2.0
+    nostics: ^1.1.4
     obug: ^2.1.1
     ohash: ^2.0.11
     open: ^11.0.0

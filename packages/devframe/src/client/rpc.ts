@@ -1,8 +1,9 @@
 import type { BirpcOptions, BirpcReturn } from 'birpc'
 import type { RpcCacheOptions, RpcFunctionsCollector } from 'devframe/rpc'
 import type { WsRpcChannelOptions } from 'devframe/rpc/transports/ws-client'
-import type { ConnectionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, EventEmitter, RpcSharedStateHost } from 'devframe/types'
+import type { ConnectionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, EventEmitter, RpcSharedStateHost, SettingsForNamespace } from 'devframe/types'
 import type { RpcStreamingClientHost } from './rpc-streaming'
+import type { DevframeScopedClientContext } from './scope'
 import {
   DEVFRAME_CONNECTION_META_FILENAME,
   DEVFRAME_OTP_URL_PARAM,
@@ -14,6 +15,7 @@ import { createRpcSharedStateClientHost } from './rpc-shared-state'
 import { createStaticRpcClientMode } from './rpc-static'
 import { createRpcStreamingClientHost } from './rpc-streaming'
 import { createWsRpcClientMode } from './rpc-ws'
+import { createScopedClientContext } from './scope'
 
 export interface DevframeRpcContext {
   /**
@@ -127,6 +129,20 @@ export interface DevframeRpcClient {
    * The RPC cache manager
    */
   cacheManager: RpcCacheManager
+
+  /**
+   * Create a namespace-scoped view of this client. The returned
+   * `client.scope('my-plugin')` auto-namespaces every RPC id,
+   * shared-state key, and streaming channel with `my-plugin:`, and
+   * exposes a typed top-level `settings` store. This is the preferred way
+   * to consume the client from a single tool's UI code.
+   *
+   * Pass `null` or `''` to un-scope and get the base client.
+   */
+  scope: {
+    <NS extends string>(namespace: NS): DevframeScopedClientContext<NS, SettingsForNamespace<NS>>
+    (namespace?: null | ''): DevframeRpcClient
+  }
 }
 
 export interface DevframeRpcClientMode {
@@ -353,10 +369,25 @@ export async function getDevframeRpcClient(
     sharedState: undefined!,
     streaming: undefined!,
     cacheManager,
+    scope: undefined!,
   }
 
   rpc.sharedState = createRpcSharedStateClientHost(rpc)
   rpc.streaming = createRpcStreamingClientHost(rpc)
+
+  // Namespace-scoped views are memoized per namespace so repeated
+  // `client.scope('my-plugin')` calls return a stable object.
+  const scopedCache = new Map<string, DevframeScopedClientContext<string>>()
+  rpc.scope = ((namespace?: string | null) => {
+    if (!namespace)
+      return rpc
+    let scoped = scopedCache.get(namespace)
+    if (!scoped) {
+      scoped = createScopedClientContext(rpc, namespace)
+      scopedCache.set(namespace, scoped)
+    }
+    return scoped
+  }) as DevframeRpcClient['scope']
 
   // @ts-expect-error assign to readonly property
   context.rpc = rpc

@@ -25,6 +25,7 @@ export const alias = {
   'devframe/utils/nanoid': r('devframe/src/utils/nanoid.ts'),
   'devframe/utils/open': r('devframe/src/utils/open.ts'),
   'devframe/utils/promise': r('devframe/src/utils/promise.ts'),
+  'devframe/utils/scope': r('devframe/src/utils/scope.ts'),
   'devframe/utils/serve-static': r('devframe/src/utils/serve-static.ts'),
   'devframe/utils/shared-state': r('devframe/src/utils/shared-state.ts'),
   'devframe/utils/streaming-channel': r('devframe/src/utils/streaming-channel.ts'),

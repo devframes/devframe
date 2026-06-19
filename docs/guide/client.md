@@ -105,30 +105,32 @@ const ok = await rpc.requestTrustWithToken('a1b2c3…')
 
 ## Calling functions
 
+Derive a [scoped client](./scoped-context) so ids are namespaced for you:
+
 ```ts
-const rpc = await connectDevframe()
+const my = (await connectDevframe()).scope('my-devframe')
 
 // Standard call — awaits a response or throws.
-const modules = await rpc.call('my-devframe:get-modules', { limit: 10 })
+const modules = await my.rpc.call('get-modules', { limit: 10 })
 
 // Optional — returns undefined when no handler responds (useful while HMR is restarting).
-const maybe = await rpc.callOptional('my-devframe:get-modules', { limit: 10 })
+const maybe = await my.rpc.callOptional('get-modules', { limit: 10 })
 
 // Event — fire-and-forget, no response expected.
-rpc.callEvent('my-devframe:notify', { message: 'hello' })
+my.rpc.callEvent('notify', { message: 'hello' })
 ```
 
-TypeScript types flow through from the server's `defineRpcFunction` definitions, so argument and return shapes are known at the call site.
+The unscoped `rpc.call('my-devframe:get-modules', ...)` works too. Either way, TypeScript types flow through from the server's `defineRpcFunction` definitions, so argument and return shapes are known at the call site.
 
 ## Registering client functions
 
-The client can register functions that the server calls via `ctx.rpc.broadcast`:
+The client can register functions that the server calls via `rpc.broadcast`:
 
 ```ts
 import { defineRpcFunction } from 'devframe'
 
-rpc.client.register(defineRpcFunction({
-  name: 'my-devframe:on-file-changed',
+my.rpc.register(defineRpcFunction({
+  name: 'on-file-changed', // -> my-devframe:on-file-changed
   type: 'event',
   setup: () => ({
     handler: async ({ file }: { file: string }) => {
@@ -143,7 +145,7 @@ That's how the server pushes live updates into the UI — file-watcher events, s
 ## Shared state
 
 ```ts
-const state = await rpc.sharedState.get('my-devframe:state')
+const state = await my.rpc.sharedState('state') // -> my-devframe:state
 
 console.log(state.value())
 
@@ -157,6 +159,17 @@ state.on('updated', (next) => {
 ```
 
 Client-side mutations round-trip through the server before reappearing locally. See [Shared State](./shared-state) for the full API.
+
+## Settings
+
+A scoped client also exposes a top-level persisted `settings` store, synced from the server. Read and write per-user (`global`) or per-workspace (`project`) values:
+
+```ts
+await my.settings.project.set('theme', 'dark')
+const theme = await my.settings.project.get('theme')
+```
+
+See [Scoped Context](./scoped-context#settings) for the full API.
 
 ## Caching
 

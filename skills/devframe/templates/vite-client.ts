@@ -2,9 +2,10 @@
 import { connectDevframe } from 'devframe/client'
 
 async function main() {
-  const rpc = await connectDevframe()
+  // Scope the client to your devframe id — calls are namespaced for you.
+  const my = (await connectDevframe()).scope('my-inspector')
   // The method names below are just examples — replace with your own.
-  const data = await rpc.call('my-inspector:getStats' as any)
+  const data = await my.rpc.call('getStats' as any)
   document.getElementById('root')!.textContent = JSON.stringify(data)
 }
 
