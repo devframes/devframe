@@ -4,12 +4,12 @@ import type { InternalAnonymousAuthStorage } from '../hub-internals/context'
 import { DEVFRAME_OTP_URL_PARAM } from 'devframe/constants'
 import { randomDigits, randomToken, timingSafeEqual } from 'devframe/utils/crypto-token'
 
-/** Number of decimal digits in a human-typed one-time pairing code. */
+/** Number of decimal digits in a human-typed one-time authentication code. */
 const TEMP_AUTH_CODE_LENGTH = 6
 /**
- * How long a pairing code stays valid after it is (re)generated. A 6-digit
- * code only has ~20 bits of entropy, so a short lifetime plus the attempt cap
- * below are what keep it brute-force resistant.
+ * How long an authentication code stays valid after it is (re)generated. A
+ * 6-digit code only has ~20 bits of entropy, so a short lifetime plus the
+ * attempt cap below are what keep it brute-force resistant.
  */
 const TEMP_AUTH_CODE_TTL = 5 * 60_000
 /** Failed attempts allowed against a single code before it is rotated. */
@@ -24,19 +24,20 @@ function generateTempCode(): string {
 }
 
 /**
- * The current one-time pairing code. Display this to the user (e.g. in the
- * dev-server terminal) so they can type it into the browser to pair.
+ * The current one-time authentication code. Display this to the user (e.g. in
+ * the dev-server terminal) so they can type it into the browser to authenticate.
  */
-export function getTempAuthToken(): string {
+export function getTempAuthCode(): string {
   return tempAuthCode
 }
 
 /**
- * Rotate the pairing code, resetting its expiry window and failed-attempt
- * counter. Call this when a new pairing flow begins (e.g. when an untrusted
- * client asks to pair) so the displayed code is freshly valid for its full TTL.
+ * Rotate the authentication code, resetting its expiry window and failed-attempt
+ * counter. Call this when a new authentication flow begins (e.g. when an
+ * untrusted client starts authenticating) so the displayed code is freshly
+ * valid for its full TTL.
  */
-export function refreshTempAuthToken(): string {
+export function refreshTempAuthCode(): string {
   tempAuthCode = generateTempCode()
   tempAuthCodeExpiresAt = Date.now() + TEMP_AUTH_CODE_TTL
   tempAuthFailedAttempts = 0
@@ -44,12 +45,12 @@ export function refreshTempAuthToken(): string {
 }
 
 /**
- * Build a "magic link" pairing URL that embeds a one-time code (OTP) as a query
- * parameter. Opening it lets the client pair without typing — print it on
- * startup (devframe stays headless, so the host prints its own banner).
+ * Build a "magic link" authentication URL that embeds a one-time code (OTP) as
+ * a query parameter. Opening it authenticates the client without typing — print
+ * it on startup (devframe stays headless, so the host prints its own banner).
  * Defaults to the current code; the link is subject to the same TTL.
  */
-export function buildOtpPairingUrl(baseUrl: string, code: string = tempAuthCode): string {
+export function buildOtpAuthUrl(baseUrl: string, code: string = tempAuthCode): string {
   const url = new URL(baseUrl)
   url.searchParams.set(DEVFRAME_OTP_URL_PARAM, code)
   return url.href
@@ -60,8 +61,8 @@ export function buildOtpPairingUrl(baseUrl: string, code: string = tempAuthCode)
  * Returns `true` and marks the session trusted when the token is known.
  *
  * Used by the `devframe:anonymous:auth` handler so a client that already
- * completed pairing (token persisted in the browser) is trusted on reconnect
- * without typing the code again.
+ * authenticated (token persisted in the browser) is trusted on reconnect
+ * without entering the code again.
  */
 export function verifyAuthToken(
   token: string,
@@ -77,7 +78,7 @@ export function verifyAuthToken(
 }
 
 /**
- * Exchange a one-time pairing code for a fresh, node-issued bearer token.
+ * Exchange a one-time authentication code for a fresh, node-issued bearer token.
  *
  * On success this mints a high-entropy token, records it in the trusted store,
  * marks the calling session trusted, rotates the code, and returns the token
@@ -96,7 +97,7 @@ export function exchangeTempAuthCode(
 ): string | null {
   // Expired code: rotate so a stale code can never be redeemed.
   if (Date.now() > tempAuthCodeExpiresAt) {
-    refreshTempAuthToken()
+    refreshTempAuthCode()
     return null
   }
 
@@ -104,7 +105,7 @@ export function exchangeTempAuthCode(
     tempAuthFailedAttempts += 1
     // Too many wrong guesses — invalidate this code entirely.
     if (tempAuthFailedAttempts >= TEMP_AUTH_MAX_ATTEMPTS)
-      refreshTempAuthToken()
+      refreshTempAuthCode()
     return null
   }
 
@@ -122,7 +123,7 @@ export function exchangeTempAuthCode(
   session.meta.isTrusted = true
 
   // Rotate the code so it can never be replayed.
-  refreshTempAuthToken()
+  refreshTempAuthCode()
 
   return authToken
 }

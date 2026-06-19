@@ -10,7 +10,7 @@ import {
 } from 'devframe/constants'
 import { RpcCacheManager, RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createEventEmitter } from 'devframe/utils/events'
-import { pairWithUrlOtp } from './otp'
+import { authenticateWithUrlOtp } from './otp'
 import { createRpcSharedStateClientHost } from './rpc-shared-state'
 import { createStaticRpcClientMode } from './rpc-static'
 import { createRpcStreamingClientHost } from './rpc-streaming'
@@ -41,11 +41,11 @@ export interface DevframeRpcClientOptions {
    */
   authToken?: string
   /**
-   * Query-param name on the page URL carrying a one-time pairing code (OTP) for
-   * "magic link" auth (e.g. a link the dev server prints). When present, the
-   * client exchanges the code for a token and removes the parameter from the
-   * URL. Set `false` to disable — e.g. integrations that drive their own
-   * pairing via `pairWithUrlOtp`. Default: `'devframe_otp'`.
+   * Query-param name on the page URL carrying a one-time authentication code
+   * (OTP) for "magic link" auth (e.g. a link the dev server prints). When
+   * present, the client exchanges the code for a token and removes the parameter
+   * from the URL. Set `false` to disable — e.g. integrations that drive their
+   * own authentication via `authenticateWithUrlOtp`. Default: `'devframe_otp'`.
    */
   otpParam?: string | false
   wsOptions?: Partial<WsRpcChannelOptions>
@@ -92,9 +92,10 @@ export interface DevframeRpcClient {
   requestTrustWithToken: (token: string) => Promise<boolean>
 
   /**
-   * Pair this client by exchanging a one-time code (shown by the dev server)
-   * for a node-issued auth token. On success the token is persisted for future
-   * reconnections and shared with sibling tabs. Resolves `true` when paired.
+   * Authenticate this client by exchanging a one-time code (shown by the dev
+   * server) for a node-issued auth token. On success the token is persisted for
+   * future reconnections and shared with sibling tabs. Resolves `true` when
+   * authenticated.
    */
   requestTrustWithCode: (code: string) => Promise<boolean>
 
@@ -178,8 +179,8 @@ function getStoredAuthToken(userAuthToken?: string): string | undefined {
     catch {}
   }
 
-  // No token yet — the client is unpaired and must exchange a one-time code
-  // (see `requestTrustWithCode`) to obtain a node-issued token.
+  // No token yet — the client is unauthenticated and must exchange a one-time
+  // code (see `requestTrustWithCode`) to obtain a node-issued token.
   return undefined
 }
 
@@ -393,14 +394,14 @@ export async function getDevframeRpcClient(
   context.rpc = rpc
   void mode.requestTrust()
 
-  // Magic-link pairing: if the page URL carries a one-time code, exchange it
-  // and strip it from the URL. The code is single-use and short-lived; the
+  // Magic-link authentication: if the page URL carries a one-time code, exchange
+  // it and strip it from the URL. The code is single-use and short-lived; the
   // resulting bearer token is persisted (never written back to the URL).
-  // Integrations that drive their own pairing UI opt out with `otpParam: false`
-  // and call `pairWithUrlOtp` / `consumeOtpFromUrl` directly.
+  // Integrations that drive their own auth UI opt out with `otpParam: false`
+  // and call `authenticateWithUrlOtp` / `consumeOtpFromUrl` directly.
   const otpParam = options.otpParam ?? DEVFRAME_OTP_URL_PARAM
   if (otpParam)
-    void pairWithUrlOtp(rpc, { param: otpParam })
+    void authenticateWithUrlOtp(rpc, { param: otpParam })
 
   // Listen for auth updates from other tabs (e.g., the auth page, or another
   // tab that just completed a code exchange).

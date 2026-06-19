@@ -1,14 +1,14 @@
 import type { DevframeRpcClient } from './rpc'
 import { DEVFRAME_OTP_URL_PARAM } from 'devframe/constants'
 
-// Browser-only helpers for "magic link" pairing: a host prints a URL carrying a
-// one-time pairing code (OTP), and the client reads it, exchanges it for a
-// token, and removes it from the address bar. Only the short-lived, single-use
-// OTP ever rides the URL — never the resulting bearer token.
+// Browser-only helpers for "magic link" authentication: a host prints a URL
+// carrying a one-time authentication code (OTP), and the client reads it,
+// exchanges it for a token, and removes it from the address bar. Only the
+// short-lived, single-use OTP ever rides the URL — never the resulting token.
 
 /**
- * Read a one-time pairing code from the current page URL's query string,
- * without side effects. Returns `undefined` when the parameter is absent.
+ * Read a one-time authentication code (OTP) from the current page URL's query
+ * string, without side effects. Returns `undefined` when the parameter is absent.
  */
 export function readOtpFromUrl(param: string = DEVFRAME_OTP_URL_PARAM): string | undefined {
   try {
@@ -46,14 +46,14 @@ export function consumeOtpFromUrl(param: string = DEVFRAME_OTP_URL_PARAM): strin
 /**
  * Consume a one-time code from the page URL (see {@link consumeOtpFromUrl}) and
  * exchange it for a token via the client. Resolves `true` when the client is
- * paired (already trusted, or the exchange succeeded), and `false` when no code
- * is present or the exchange failed.
+ * authenticated (already trusted, or the exchange succeeded), and `false` when
+ * no code is present or the exchange failed.
  *
  * Higher-level integrations (e.g. Vite DevTools) that want to drive their own
- * pairing UI can disable `connectDevframe`'s built-in handling with
+ * authentication UI can disable `connectDevframe`'s built-in handling with
  * `otpParam: false` and call this — or {@link consumeOtpFromUrl} — themselves.
  */
-export async function pairWithUrlOtp(
+export async function authenticateWithUrlOtp(
   rpc: Pick<DevframeRpcClient, 'isTrusted' | 'requestTrustWithCode'>,
   options: { param?: string } = {},
 ): Promise<boolean> {

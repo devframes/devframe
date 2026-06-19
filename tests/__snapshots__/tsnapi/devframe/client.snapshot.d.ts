@@ -99,14 +99,14 @@ export type DevframeRpcClientCallOptional = BirpcReturn<DevframeRpcServerFunctio
 // #endregion
 
 // #region Functions
+export declare function authenticateWithUrlOtp(_: Pick<DevframeRpcClient, 'isTrusted' | 'requestTrustWithCode'>, _?: {
+  param?: string;
+}): Promise<boolean>;
 export declare function consumeOtpFromUrl(_?: string): string | undefined;
 export declare function createClientSettings<T extends Record<string, any> = Record<string, any>>(_: DevframeRpcClient, _: string): DevframeSettings<T>;
 export declare function createRpcStreamingClientHost(_: DevframeRpcClient): RpcStreamingClientHost;
 export declare function createScopedClientContext<NS extends string = string>(_: DevframeRpcClient, _: NS): DevframeScopedClientContext<NS>;
 export declare function getDevframeRpcClient(_?: DevframeRpcClientOptions): Promise<DevframeRpcClient>;
-export declare function pairWithUrlOtp(_: Pick<DevframeRpcClient, 'isTrusted' | 'requestTrustWithCode'>, _?: {
-  param?: string;
-}): Promise<boolean>;
 export declare function readOtpFromUrl(_?: string): string | undefined;
 // #endregion
 

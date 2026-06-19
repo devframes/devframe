@@ -26,7 +26,7 @@ export function randomToken(byteLength = 16): string {
 /**
  * Generate a uniformly-distributed string of decimal digits using rejection
  * sampling to avoid modulo bias. Intended for short, human-typed one-time
- * codes (e.g. a 6-digit pairing code). Leading zeros are preserved.
+ * codes (e.g. a 6-digit authentication code). Leading zeros are preserved.
  */
 export function randomDigits(length: number): string {
   // Largest multiple of 10 that fits in a byte; reject values at/above it so

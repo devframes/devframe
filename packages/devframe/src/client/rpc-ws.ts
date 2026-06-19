@@ -94,7 +94,7 @@ export function createWsRpcClientMode(
 
     isTrusted = result.isTrusted
     // Only settle the trust gate on success; on failure the client can still
-    // pair via `requestTrustWithCode`, so leave `ensureTrusted` waiting.
+    // authenticate via `requestTrustWithCode`, so leave `ensureTrusted` waiting.
     if (isTrusted)
       trustedPromise.resolve(true)
     events.emit('rpc:is-trusted:updated', isTrusted)
@@ -123,8 +123,9 @@ export function createWsRpcClientMode(
       return true
     // Always announce on connect. The standalone (`auth: false`) noop handler
     // auto-trusts regardless of token; the host adapter looks the token up and
-    // returns `false` for an unpaired client (empty/unknown token), which then
-    // pairs via `requestTrustWithCode`. The trust gate stays open until then.
+    // returns `false` for an unauthenticated client (empty/unknown token), which
+    // then authenticates via `requestTrustWithCode`. The trust gate stays open
+    // until then.
     return requestTrustWithToken(currentAuthToken ?? '')
   }
 

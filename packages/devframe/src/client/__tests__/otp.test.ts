@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { consumeOtpFromUrl, pairWithUrlOtp, readOtpFromUrl } from '../otp'
+import { authenticateWithUrlOtp, consumeOtpFromUrl, readOtpFromUrl } from '../otp'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -46,13 +46,13 @@ describe('otp url helpers', () => {
   })
 })
 
-describe('pairWithUrlOtp', () => {
+describe('authenticateWithUrlOtp', () => {
   it('exchanges the OTP via the client and resolves true on success', async () => {
     vi.stubGlobal('location', { search: '?devframe_otp=123456', href: 'http://localhost:3000/?devframe_otp=123456' })
     vi.stubGlobal('history', { state: null, replaceState: vi.fn() })
     const requestTrustWithCode = vi.fn().mockResolvedValue(true)
 
-    const ok = await pairWithUrlOtp({ isTrusted: false, requestTrustWithCode })
+    const ok = await authenticateWithUrlOtp({ isTrusted: false, requestTrustWithCode })
 
     expect(requestTrustWithCode).toHaveBeenCalledWith('123456')
     expect(ok).toBe(true)
@@ -62,7 +62,7 @@ describe('pairWithUrlOtp', () => {
     vi.stubGlobal('location', { search: '', href: 'http://localhost:3000/' })
     const requestTrustWithCode = vi.fn()
 
-    const ok = await pairWithUrlOtp({ isTrusted: false, requestTrustWithCode })
+    const ok = await authenticateWithUrlOtp({ isTrusted: false, requestTrustWithCode })
 
     expect(requestTrustWithCode).not.toHaveBeenCalled()
     expect(ok).toBe(false)
@@ -74,7 +74,7 @@ describe('pairWithUrlOtp', () => {
     vi.stubGlobal('history', { state: null, replaceState })
     const requestTrustWithCode = vi.fn()
 
-    const ok = await pairWithUrlOtp({ isTrusted: true, requestTrustWithCode })
+    const ok = await authenticateWithUrlOtp({ isTrusted: true, requestTrustWithCode })
 
     expect(ok).toBe(true)
     expect(requestTrustWithCode).not.toHaveBeenCalled()

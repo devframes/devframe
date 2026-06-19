@@ -61,7 +61,7 @@ export interface DevframeRpcServerFunctions {
    */
   'devframe:anonymous:auth': (params: { authToken: string, ua: string, origin: string }) => Promise<{ isTrusted: boolean }>
   /**
-   * Exchange a one-time pairing code (shown by the dev server) for a fresh,
+   * Exchange a one-time authentication code (shown by the dev server) for a fresh,
    * node-issued bearer token, returning the token on success or `null`. The
    * handler is provided by the host adapter on top of `exchangeTempAuthCode`.
    *

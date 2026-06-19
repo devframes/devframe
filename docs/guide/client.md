@@ -66,7 +66,7 @@ The client picks a mode automatically from the backend field. Mode-specific code
 
 ## Trust & auth (WebSocket mode)
 
-Dev-mode connections become trusted by pairing. A client that has paired before presents its stored token automatically on reconnect, and `ensureTrusted()` resolves once the server accepts it:
+Dev-mode connections become trusted by authenticating. A client that authenticated before presents its stored token automatically on reconnect, and `ensureTrusted()` resolves once the server accepts it:
 
 ```ts
 const rpc = await connectDevframe()
@@ -75,11 +75,11 @@ const rpc = await connectDevframe()
 const trusted = await rpc.ensureTrusted()
 
 if (!trusted) {
-  console.warn('Not paired yet')
+  console.warn('Not authenticated yet')
 }
 ```
 
-### Pairing with a one-time code
+### Authenticating with a one-time code
 
 A fresh client holds no token. The dev server prints a 6-digit one-time code; pass it to `requestTrustWithCode` to exchange it for a node-issued token. The token is persisted for future reconnections and shared with sibling tabs, which become trusted without re-entering the code:
 
@@ -89,7 +89,7 @@ const ok = await rpc.requestTrustWithCode('047204')
 
 The code is single-use, expires after five minutes, and is rotated after repeated wrong attempts, so re-display the current code if an exchange fails.
 
-To pair without typing, a host can print a link embedding the code (`buildOtpPairingUrl(origin)`); `connectDevframe` reads the `devframe_otp` query parameter, exchanges it, and strips it from the URL. Rename it with the `otpParam` option, or set `otpParam: false` and drive pairing yourself with the exposed `pairWithUrlOtp(rpc)` / `consumeOtpFromUrl()` utilities.
+To authenticate without typing, a host can print a link embedding the code (`buildOtpAuthUrl(origin)`); `connectDevframe` reads the `devframe_otp` query parameter, exchanges it, and strips it from the URL. Rename it with the `otpParam` option, or set `otpParam: false` and drive authentication yourself with the exposed `authenticateWithUrlOtp(rpc)` / `consumeOtpFromUrl()` utilities.
 
 ### Re-using an existing token
 
@@ -101,7 +101,7 @@ const ok = await rpc.requestTrustWithToken('a1b2c3…')
 
 ### Broadcast-channel sync
 
-`connectDevframe` listens on a shared `BroadcastChannel` (named `devframe-auth` for cross-tab handshake interop with Vite DevTools' auth page) for `auth-update` messages. When another tab completes a pairing — or an auth page announces a token — every open client trusts it automatically, no reload required.
+`connectDevframe` listens on a shared `BroadcastChannel` (named `devframe-auth` for cross-tab handshake interop with Vite DevTools' auth page) for `auth-update` messages. When another tab authenticates — or an auth page announces a token — every open client trusts it automatically, no reload required.
 
 ## Calling functions
 
