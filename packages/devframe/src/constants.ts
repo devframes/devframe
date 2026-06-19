@@ -17,10 +17,10 @@ export const DEVFRAME_RPC_DUMP_DIRNAME = '__rpc-dump'
 export const REMOTE_CONNECTION_KEY = 'devframe-remote-connection'
 
 /**
- * Page-URL query parameter carrying a one-time pairing code for "magic link"
- * auth. A host can print a link like `<origin>/?devframe_auth=<code>`; the
+ * Page-URL query parameter carrying a one-time pairing code (OTP) for "magic
+ * link" auth. A host can print a link like `<origin>/?devframe_otp=<code>`; the
  * client reads the code, exchanges it for a token, and strips the parameter
- * from the URL. See `buildAuthPairingUrl` (node) and `connectDevframe`'s
- * `autoPairParam` option (client).
+ * from the URL. See `buildOtpPairingUrl` (node) and the `pairWithUrlOtp` /
+ * `consumeOtpFromUrl` client utilities (or `connectDevframe`'s `otpParam`).
  */
-export const DEVFRAME_AUTH_URL_PARAM = 'devframe_auth'
+export const DEVFRAME_OTP_URL_PARAM = 'devframe_otp'

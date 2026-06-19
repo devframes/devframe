@@ -32,7 +32,7 @@ export interface DevframeRpcClientOptions {
   connectionMeta?: ConnectionMeta;
   baseURL?: string | string[];
   authToken?: string;
-  autoPairParam?: string | false;
+  otpParam?: string | false;
   wsOptions?: Partial<WsRpcChannelOptions>;
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>;
   cacheOptions?: boolean | Partial<RpcCacheOptions>;
@@ -60,8 +60,13 @@ export type DevframeRpcClientCallOptional = BirpcReturn<DevframeRpcServerFunctio
 // #endregion
 
 // #region Functions
+export declare function consumeOtpFromUrl(_?: string): string | undefined;
 export declare function createRpcStreamingClientHost(_: DevframeRpcClient): RpcStreamingClientHost;
 export declare function getDevframeRpcClient(_?: DevframeRpcClientOptions): Promise<DevframeRpcClient>;
+export declare function pairWithUrlOtp(_: Pick<DevframeRpcClient, 'isTrusted' | 'requestTrustWithCode'>, _?: {
+  param?: string;
+}): Promise<boolean>;
+export declare function readOtpFromUrl(_?: string): string | undefined;
 // #endregion
 
 // #region Variables

@@ -33,13 +33,15 @@ The bearer token is a secret. It travels to the server on the WebSocket URL (`?d
 
 ### Magic-link pairing
 
-To skip typing, a host can print a link that embeds the code and open the browser straight into a paired session. Build it from the current code with `buildAuthPairingUrl(origin)` (devframe stays headless, so the host prints its own banner):
+To skip typing, a host can print a link that embeds the code and open the browser straight into a paired session. Build it from the current code with `buildOtpPairingUrl(origin)` (devframe stays headless, so the host prints its own banner):
 
 ```
-Devtools ready — pair this browser: http://localhost:3000/?devframe_auth=123456
+Devtools ready — pair this browser: http://localhost:3000/?devframe_otp=123456
 ```
 
-`connectDevframe` reads the `devframe_auth` parameter, exchanges it, and removes it from the URL before anything else (configurable via the `autoPairParam` client option). Only the short-lived, single-use **code** ever rides the URL — the resulting bearer token is stored, never written back to it. Because the link grants trust to whoever opens it within the code's lifetime, print it only to a trusted channel (the terminal), exactly as you would the bare code.
+`connectDevframe` reads the `devframe_otp` parameter, exchanges it, and removes it from the URL before anything else. Only the short-lived, single-use **code** ever rides the URL — the resulting bearer token is stored, never written back to it. Because the link grants trust to whoever opens it within the code's lifetime, print it only to a trusted channel (the terminal), exactly as you would the bare code.
+
+Higher-level integrations can drive their own pairing UI instead: disable the built-in handling with the `otpParam: false` client option, then call the exposed `pairWithUrlOtp(rpc)` (consume the code from the URL and exchange it) or `consumeOtpFromUrl()` (read and strip the code) from `devframe/client`.
 
 ## Practices for tools built on devframe
 
