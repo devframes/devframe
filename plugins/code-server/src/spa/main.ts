@@ -1,4 +1,5 @@
 import { mountCodeServer } from '../client/index'
+import '../client/style.css'
 
 const app = document.getElementById('app')
 if (!app)

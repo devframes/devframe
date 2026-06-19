@@ -1,0 +1,240 @@
+/* code-server launcher UI. Loaded by the SPA entry and by Storybook; the
+   library `mountCodeServer` assumes this stylesheet is present on the page. */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+#app {
+  position: relative;
+  height: 100%;
+}
+
+.dcs-root {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--dcs-bg);
+  color: var(--dcs-fg);
+
+  --dcs-bg: #ffffff;
+  --dcs-fg: #1f2328;
+  --dcs-muted: #59636e;
+  --dcs-border: #d0d7de;
+  --dcs-surface: #f6f8fa;
+  --dcs-surface-hover: #eaeef2;
+  --dcs-accent: #0969da;
+  --dcs-accent-fg: #ffffff;
+  --dcs-ok: #1a7f37;
+  --dcs-err: #cf222e;
+  --dcs-code-bg: #f6f8fa;
+}
+
+@media (prefers-color-scheme: dark) {
+  .dcs-root {
+    --dcs-bg: #0d1117;
+    --dcs-fg: #e6edf3;
+    --dcs-muted: #8b949e;
+    --dcs-border: #30363d;
+    --dcs-surface: #161b22;
+    --dcs-surface-hover: #21262d;
+    --dcs-accent: #2f81f7;
+    --dcs-accent-fg: #ffffff;
+    --dcs-ok: #3fb950;
+    --dcs-err: #f85149;
+    --dcs-code-bg: #161b22;
+  }
+}
+
+.dcs-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.dcs-card {
+  width: 100%;
+  max-width: 560px;
+}
+
+.dcs-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--dcs-muted);
+}
+
+.dcs-title {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 650;
+}
+
+.dcs-lead {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--dcs-muted);
+}
+
+.dcs-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0 0 20px;
+  font-size: 12.5px;
+  color: var(--dcs-muted);
+}
+
+.dcs-meta code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--dcs-fg);
+}
+
+.dcs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.dcs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--dcs-border);
+  border-radius: 7px;
+  background: var(--dcs-surface);
+  color: var(--dcs-fg);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.dcs-btn:hover {
+  background: var(--dcs-surface-hover);
+}
+
+.dcs-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.dcs-btn.primary {
+  border-color: transparent;
+  background: var(--dcs-accent);
+  color: var(--dcs-accent-fg);
+}
+
+.dcs-btn.primary:hover {
+  background: var(--dcs-accent);
+  filter: brightness(1.07);
+}
+
+.dcs-link {
+  color: var(--dcs-accent);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.dcs-link:hover {
+  text-decoration: underline;
+}
+
+.dcs-install {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+.dcs-install-row label {
+  display: block;
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--dcs-muted);
+}
+
+.dcs-cmd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--dcs-border);
+  border-radius: 7px;
+  background: var(--dcs-code-bg);
+}
+
+.dcs-cmd code {
+  flex: 1;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  color: var(--dcs-fg);
+}
+
+.dcs-copy {
+  flex: none;
+  padding: 3px 9px;
+  border: 1px solid var(--dcs-border);
+  border-radius: 5px;
+  background: var(--dcs-surface);
+  color: var(--dcs-muted);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.dcs-copy:hover {
+  color: var(--dcs-fg);
+}
+
+.dcs-error {
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--dcs-err) 35%, transparent);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--dcs-err) 9%, transparent);
+  color: var(--dcs-err);
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.dcs-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--dcs-border);
+  border-top-color: var(--dcs-accent);
+  border-radius: 50%;
+  animation: dcs-spin 0.7s linear infinite;
+}
+
+@keyframes dcs-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Running: the editor fills the whole surface — no chrome over the iframe. */
+.dcs-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: var(--dcs-bg);
+}

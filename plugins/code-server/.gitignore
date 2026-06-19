@@ -1,3 +1,4 @@
 dist
+storybook-static
 .turbo
 *.tsbuildinfo

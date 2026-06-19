@@ -43,6 +43,8 @@
     "build": "tsdown && vite build --config src/spa/vite.config.ts",
     "watch": "tsdown --watch",
     "dev": "vite --config src/spa/vite.config.ts --host 0.0.0.0",
+    "storybook": "storybook dev -p 6006 --host 0.0.0.0",
+    "build-storybook": "storybook build",
     "test": "vitest run",
     "prepack": "pnpm run build"
   },
@@ -60,9 +62,11 @@
     "nostics": "catalog:deps"
   },
   "devDependencies": {
+    "@storybook/html-vite": "catalog:storybook",
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "h3": "catalog:deps",
+    "storybook": "catalog:storybook",
     "tsdown": "catalog:build",
     "vite": "catalog:build",
     "vitest": "catalog:testing",

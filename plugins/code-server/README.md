@@ -64,3 +64,17 @@ export default {
 
 Status (minus the auth cookie) is mirrored into the
 `devframes-plugin-code-server:state` shared state for reactive UIs.
+
+## UI
+
+The launcher UI is a pure, state-driven view (`src/client/view.ts`) decoupled
+from RPC, so every state renders in isolation. `mountCodeServer` wires the live
+connection to it. Each UI state has a Storybook story:
+
+```sh
+pnpm storybook         # dev
+pnpm build-storybook   # static build
+```
+
+Stories: connecting, not-installed, launch, launch-error, starting, running
+(the running story mounts a mock editor instead of a live server).
