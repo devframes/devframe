@@ -12,7 +12,7 @@ import type {
   CodeServerStartResult,
   CodeServerStatusResult,
 } from '../types'
-import { spawn } from 'node:child_process'
+import { execSync, spawn } from 'node:child_process'
 import { createHash, randomBytes } from 'node:crypto'
 import { request as httpRequest } from 'node:http'
 import process from 'node:process'
@@ -153,6 +153,7 @@ export class CodeServerSupervisor {
         env,
         windowsHide: true,
         stdio: ['ignore', 'pipe', 'pipe'],
+        shell: process.platform === 'win32' && this.bin.endsWith('.cmd'),
       })
     }
     catch (error) {
@@ -240,7 +241,12 @@ export class CodeServerSupervisor {
 
   private terminate(child: ChildProcess): void {
     try {
-      child.kill('SIGTERM')
+      if (process.platform === 'win32' && this.bin.endsWith('.cmd') && child.pid) {
+        execSync(`taskkill /pid ${child.pid} /t /f`, { stdio: 'ignore' })
+      }
+      else {
+        child.kill('SIGTERM')
+      }
     }
     catch {
       // Already gone.

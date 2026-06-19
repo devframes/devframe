@@ -1,5 +1,6 @@
 import type { Buffer } from 'node:buffer'
 import { spawn } from 'node:child_process'
+import process from 'node:process'
 
 export interface DetectCodeServerResult {
   installed: boolean
@@ -30,7 +31,11 @@ export function detectCodeServer(bin = 'code-server', timeoutMs = 5000): Promise
 
     let child
     try {
-      child = spawn(bin, ['--version'], { windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] })
+      child = spawn(bin, ['--version'], {
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'ignore'],
+        shell: process.platform === 'win32' && bin.endsWith('.cmd'),
+      })
     }
     catch {
       finish({ installed: false, bin })

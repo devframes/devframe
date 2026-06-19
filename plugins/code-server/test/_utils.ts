@@ -59,5 +59,12 @@ process.on('SIGINT', () => process.exit(0))
 `
   writeFileSync(binPath, script)
   chmodSync(binPath, 0o755)
+
+  if (process.platform === 'win32') {
+    const cmdPath = `${binPath}.cmd`
+    writeFileSync(cmdPath, `@node "${binPath}" %*`)
+    return cmdPath
+  }
+
   return binPath
 }
