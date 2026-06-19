@@ -44,38 +44,43 @@ export declare function setupTerminals(_: DevframeNodeContext, _?: TerminalsOpti
 // #endregion
 
 // #region Variables
-export declare const diagnostics: {
-  readonly DP_TERMINALS_0001: _$nostics.DiagnosticHandle<{
-    id: string;
-  }, {
-    method?: "log" | "warn" | "error" | undefined;
-  }>;
-  readonly DP_TERMINALS_0002: _$nostics.DiagnosticHandle<{
-    command: string;
-  }, {
-    method?: "log" | "warn" | "error" | undefined;
-  }>;
-  readonly DP_TERMINALS_0003: _$nostics.DiagnosticHandle<{
-    id: string;
-  }, {
-    method?: "log" | "warn" | "error" | undefined;
-  }>;
-  readonly DP_TERMINALS_0004: _$nostics.DiagnosticHandle<{
-    command: string;
-    reason: string;
-  }, {
-    method?: "log" | "warn" | "error" | undefined;
-  }>;
-  readonly DP_TERMINALS_0005: _$nostics.DiagnosticHandle<{}, {
-    method?: "log" | "warn" | "error" | undefined;
-  }>;
-  readonly DP_TERMINALS_0006: _$nostics.DiagnosticHandle<{
-    id: string;
-  }, {
-    method?: "log" | "warn" | "error" | undefined;
-  }>;
-  readonly DP_TERMINALS_0007: _$nostics.DiagnosticHandle<{}, {
-    method?: "log" | "warn" | "error" | undefined;
-  }>;
-};
+export declare const diagnostics: _$nostics.Diagnostics<{
+  readonly DP_TERMINALS_0001: {
+    readonly why: (p: {
+      id: string;
+    }) => string;
+    readonly fix: "Spawn a session first, or refresh the session list.";
+  };
+  readonly DP_TERMINALS_0002: {
+    readonly why: (p: {
+      command: string;
+    }) => string;
+    readonly fix: "Add it to `presets`, or pass `allowArbitraryCommands: true` to createTerminalsDevframe().";
+  };
+  readonly DP_TERMINALS_0003: {
+    readonly why: (p: {
+      id: string;
+    }) => string;
+    readonly fix: "Spawn the session with `mode: \"interactive\"` to accept input.";
+  };
+  readonly DP_TERMINALS_0004: {
+    readonly why: (p: {
+      command: string;
+      reason: string;
+    }) => string;
+  };
+  readonly DP_TERMINALS_0005: {
+    readonly why: "PTY backend (@homebridge/node-pty-prebuilt-multiarch) is unavailable; interactive sessions fall back to a piped child process. Full-screen TUIs may not render correctly.";
+    readonly fix: "Install @homebridge/node-pty-prebuilt-multiarch to enable real pseudo-terminals.";
+  };
+  readonly DP_TERMINALS_0006: {
+    readonly why: (p: {
+      id: string;
+    }) => string;
+  };
+  readonly DP_TERMINALS_0007: {
+    readonly why: "Terminals manager is not initialised on this context";
+    readonly fix: "Call setupTerminals(ctx) (or use createTerminalsDevframe) before invoking terminal RPCs.";
+  };
+}, readonly [typeof reporter]>;
 // #endregion

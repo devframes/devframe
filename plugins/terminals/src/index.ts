@@ -2,6 +2,7 @@ import type { DevframeDefinition } from 'devframe/types'
 import type { TerminalsOptions } from './types'
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
+import pkg from '../package.json' with { type: 'json' }
 import {
   DEFAULT_PORT,
   PLUGIN_ID,
@@ -40,6 +41,10 @@ export function createTerminalsDevframe(options: TerminalsOptions = {}): Devfram
   return defineDevframe({
     id: PLUGIN_ID,
     name: 'Terminals',
+    version: pkg.version,
+    packageName: pkg.name,
+    homepage: pkg.homepage,
+    description: pkg.description,
     icon: 'ph:terminal-window-duotone',
     // Leave undefined so `resolveBasePath` picks `/` standalone and
     // `/__<id>/` when hosted. Authors override via `options.basePath`.
