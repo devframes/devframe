@@ -31,6 +31,16 @@ The 6-digit code is single-use, expires after five minutes, is compared in const
 
 The bearer token is a secret. It travels to the server on the WebSocket URL (`?devframe_auth_token=…`), so serve over `wss://`/`https://` whenever the surface is reachable beyond loopback. Revoke a token with `revokeAuthToken(context, storage, token)`; affected clients drop to untrusted via the `devframe:auth:revoked` event.
 
+### Magic-link pairing
+
+To skip typing, a host can print a link that embeds the code and open the browser straight into a paired session. Build it from the current code with `buildAuthPairingUrl(origin)` (devframe stays headless, so the host prints its own banner):
+
+```
+Devtools ready — pair this browser: http://localhost:3000/?devframe_auth=123456
+```
+
+`connectDevframe` reads the `devframe_auth` parameter, exchanges it, and removes it from the URL before anything else (configurable via the `autoPairParam` client option). Only the short-lived, single-use **code** ever rides the URL — the resulting bearer token is stored, never written back to it. Because the link grants trust to whoever opens it within the code's lifetime, print it only to a trusted channel (the terminal), exactly as you would the bare code.
+
 ## Practices for tools built on devframe
 
 - **Stay on loopback.** The default bind host is `localhost`. Bind to a routable address only when you intend to, and require authentication when you do.

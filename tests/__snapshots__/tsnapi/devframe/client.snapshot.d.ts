@@ -32,6 +32,7 @@ export interface DevframeRpcClientOptions {
   connectionMeta?: ConnectionMeta;
   baseURL?: string | string[];
   authToken?: string;
+  autoPairParam?: string | false;
   wsOptions?: Partial<WsRpcChannelOptions>;
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>;
   cacheOptions?: boolean | Partial<RpcCacheOptions>;

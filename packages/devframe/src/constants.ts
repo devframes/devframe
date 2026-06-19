@@ -15,3 +15,12 @@ export const DEVFRAME_RPC_DUMP_DIRNAME = '__rpc-dump'
  * `@vitejs/devtools-kit`) injected into remote-UI iframe dock URLs.
  */
 export const REMOTE_CONNECTION_KEY = 'devframe-remote-connection'
+
+/**
+ * Page-URL query parameter carrying a one-time pairing code for "magic link"
+ * auth. A host can print a link like `<origin>/?devframe_auth=<code>`; the
+ * client reads the code, exchanges it for a token, and strips the parameter
+ * from the URL. See `buildAuthPairingUrl` (node) and `connectDevframe`'s
+ * `autoPairParam` option (client).
+ */
+export const DEVFRAME_AUTH_URL_PARAM = 'devframe_auth'

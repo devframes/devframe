@@ -4,10 +4,12 @@ import type { WsRpcChannelOptions } from 'devframe/rpc/transports/ws-client'
 import type { ConnectionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, EventEmitter, RpcSharedStateHost } from 'devframe/types'
 import type { RpcStreamingClientHost } from './rpc-streaming'
 import {
+  DEVFRAME_AUTH_URL_PARAM,
   DEVFRAME_CONNECTION_META_FILENAME,
 } from 'devframe/constants'
 import { RpcCacheManager, RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createEventEmitter } from 'devframe/utils/events'
+import { clearAuthCodeFromUrl, readAuthCodeFromUrl } from './auth-url'
 import { createRpcSharedStateClientHost } from './rpc-shared-state'
 import { createStaticRpcClientMode } from './rpc-static'
 import { createRpcStreamingClientHost } from './rpc-streaming'
@@ -36,6 +38,13 @@ export interface DevframeRpcClientOptions {
    * The auth token to use for the client
    */
   authToken?: string
+  /**
+   * Query-param name on the page URL carrying a one-time pairing code for
+   * "magic link" auth (e.g. a link the dev server prints). When present, the
+   * client exchanges the code for a token and removes the parameter from the
+   * URL. Set `false` to disable. Default: `'devframe_auth'`.
+   */
+  autoPairParam?: string | false
   wsOptions?: Partial<WsRpcChannelOptions>
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>
   cacheOptions?: boolean | Partial<RpcCacheOptions>
@@ -351,6 +360,19 @@ export async function getDevframeRpcClient(
   // @ts-expect-error assign to readonly property
   context.rpc = rpc
   void mode.requestTrust()
+
+  // Magic-link pairing: if the page URL carries a one-time code, exchange it
+  // and strip it from the URL. The code is single-use and short-lived; the
+  // resulting bearer token is persisted (never written back to the URL).
+  const autoPairParam = options.autoPairParam ?? DEVFRAME_AUTH_URL_PARAM
+  if (autoPairParam) {
+    const code = readAuthCodeFromUrl(autoPairParam)
+    if (code) {
+      clearAuthCodeFromUrl(autoPairParam)
+      if (!rpc.isTrusted)
+        void rpc.requestTrustWithCode(code)
+    }
+  }
 
   // Listen for auth updates from other tabs (e.g., the auth page, or another
   // tab that just completed a code exchange).

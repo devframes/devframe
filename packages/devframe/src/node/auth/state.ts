@@ -1,6 +1,7 @@
 import type { DevframeNodeRpcSession } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { InternalAnonymousAuthStorage } from '../hub-internals/context'
+import { DEVFRAME_AUTH_URL_PARAM } from 'devframe/constants'
 import { randomDigits, randomToken, timingSafeEqual } from 'devframe/utils/crypto-token'
 
 /** Number of decimal digits in a human-typed one-time pairing code. */
@@ -40,6 +41,18 @@ export function refreshTempAuthToken(): string {
   tempAuthCodeExpiresAt = Date.now() + TEMP_AUTH_CODE_TTL
   tempAuthFailedAttempts = 0
   return tempAuthCode
+}
+
+/**
+ * Build a "magic link" pairing URL that embeds a one-time code as a query
+ * parameter. Opening it lets the client pair without typing — print it on
+ * startup (devframe stays headless, so the host prints its own banner).
+ * Defaults to the current code; the link is subject to the same TTL.
+ */
+export function buildAuthPairingUrl(baseUrl: string, code: string = tempAuthCode): string {
+  const url = new URL(baseUrl)
+  url.searchParams.set(DEVFRAME_AUTH_URL_PARAM, code)
+  return url.href
 }
 
 /**

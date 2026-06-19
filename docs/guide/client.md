@@ -89,6 +89,8 @@ const ok = await rpc.requestTrustWithCode('047204')
 
 The code is single-use, expires after five minutes, and is rotated after repeated wrong attempts, so re-display the current code if an exchange fails.
 
+To pair without typing, a host can print a link embedding the code (`buildAuthPairingUrl(origin)`); `connectDevframe` reads the `devframe_auth` query parameter, exchanges it, and strips it from the URL. Disable or rename it with the `autoPairParam` option.
+
 ### Re-using an existing token
 
 Authenticate with a token obtained elsewhere (e.g. another surface) without reloading:
