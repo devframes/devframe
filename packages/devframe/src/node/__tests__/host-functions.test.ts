@@ -133,7 +133,7 @@ describe('rpcFunctionsHost', () => {
     it('should not throw in build mode', async () => {
       const host = new RpcFunctionsHost({ mode: 'build' } as DevframeNodeContext)
       await expect(host.broadcast({
-        method: 'devframe:terminals:updated',
+        method: 'devframe:auth:revoked',
         args: [],
       })).resolves.toBeUndefined()
     })
@@ -141,7 +141,7 @@ describe('rpcFunctionsHost', () => {
     it('should not throw in dev mode when rpc group is not yet set', async () => {
       const host = new RpcFunctionsHost({ mode: 'dev' } as DevframeNodeContext)
       await expect(host.broadcast({
-        method: 'devframe:terminals:updated',
+        method: 'devframe:auth:revoked',
         args: [],
       })).resolves.toBeUndefined()
     })

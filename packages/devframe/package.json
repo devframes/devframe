@@ -62,6 +62,7 @@
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
     "prepack": "pnpm build && mkdir -p ./skills && cp -r ../../skills/devframe ./skills/devframe"
   },
   "peerDependencies": {

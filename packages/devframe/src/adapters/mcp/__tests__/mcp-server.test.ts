@@ -149,7 +149,7 @@ describe('mcp adapter (in-memory)', () => {
   it('surfaces shared-state keys as MCP resources', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {
-      const state = await ctx.rpc.sharedState.get('my-plugin:counter' as any, {
+      const state = await ctx.rpc.sharedState.get('my-plugin:counter', {
         initialValue: { count: 7 },
       })
 

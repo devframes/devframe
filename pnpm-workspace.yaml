@@ -15,6 +15,7 @@ trustPolicyExclude:
   - tinyexec@1.2.2
 packages:
   - packages/*
+  - plugins/*
   - examples/*
   - docs
 overrides:

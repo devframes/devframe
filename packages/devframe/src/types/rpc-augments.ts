@@ -23,6 +23,27 @@ export interface DevframeRpcClientFunctions {
    * @internal
    */
   'devframe:streaming:upload-cancel': (channel: string, id: string) => Promise<void>
+  /**
+   * Full shared-state snapshot pushed from server to subscribed clients.
+   * Wired by `RpcSharedStateHost`; do not register manually.
+   *
+   * @internal
+   */
+  'devframe:rpc:client-state:updated': (key: string, fullState: any, syncId: string) => Promise<void>
+  /**
+   * Incremental shared-state patch pushed from server to subscribed clients.
+   * Wired by `RpcSharedStateHost`; do not register manually.
+   *
+   * @internal
+   */
+  'devframe:rpc:client-state:patch': (key: string, patches: any[], syncId: string) => Promise<void>
+  /**
+   * Server→client notification that the client's auth token was revoked.
+   * Broadcast by `revokeActiveConnectionsForToken`; do not register manually.
+   *
+   * @internal
+   */
+  'devframe:auth:revoked': () => Promise<void>
 }
 
 /**
@@ -92,6 +113,14 @@ export interface DevframeRpcServerFunctions {
    * @internal
    */
   'devframe:streaming:upload-end': (channel: string, id: string, error?: { name: string, message: string }) => Promise<void>
+  /**
+   * Anonymous-auth handshake the browser client issues on connect. The
+   * standalone server registers a noop auto-trust handler when `auth: false`;
+   * hosted adapters register the real handler. Do not register manually.
+   *
+   * @internal
+   */
+  'devframe:anonymous:auth': (payload: { authToken: string, ua: string, origin: string }) => Promise<{ isTrusted: boolean }>
 }
 
 /**
