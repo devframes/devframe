@@ -238,6 +238,12 @@ export async function getDevframeRpcClient(
     rpc: undefined!,
   }
   const authToken = getStoredAuthToken(options.authToken)
+  // Persist a resolved token so one supplied out-of-band — e.g. a host that
+  // bootstraps trust by passing `authToken` (read from its own page URL query)
+  // — survives reconnects. The token is still sent to the server via the WS
+  // URL query param (`?devframe_auth_token=`) by the transport.
+  if (authToken)
+    persistAuthToken(authToken)
   const clientRpc: DevframeClientRpcHost = new RpcFunctionsCollectorBase<DevframeRpcClientFunctions, DevframeRpcContext>(context)
 
   async function fetchJsonFromBases(path: string): Promise<any> {

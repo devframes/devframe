@@ -8,6 +8,35 @@ import { attachWsRpcTransport } from './ws-server'
 
 vi.stubGlobal('WebSocket', WebSocket)
 
+describe('ws auth token in URL', () => {
+  it('appends the auth token as a URL query param, url-encoded, and omits it when absent', () => {
+    const urls: string[] = []
+    class CapturingWS {
+      constructor(public url: string) {
+        urls.push(url)
+      }
+
+      addEventListener() {}
+      removeEventListener() {}
+      send() {}
+      readyState = 0
+    }
+
+    try {
+      vi.stubGlobal('WebSocket', CapturingWS)
+      createWsRpcChannel({ url: 'ws://127.0.0.1:1234' })
+      createWsRpcChannel({ url: 'ws://127.0.0.1:1234', authToken: 'a b/c+d' })
+
+      expect(urls[0]).toBe('ws://127.0.0.1:1234')
+      expect(urls[1]).toBe('ws://127.0.0.1:1234?devframe_auth_token=a%20b%2Fc%2Bd')
+    }
+    finally {
+      // Restore the real ws implementation for the connection tests below.
+      vi.stubGlobal('WebSocket', WebSocket)
+    }
+  })
+})
+
 describe('devframe rpc', () => {
   it('should work w/ ws transport', async () => {
     const PORT = 3333

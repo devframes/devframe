@@ -478,6 +478,19 @@ Devframe re-exports a curated set of helpers under `devframe/utils/*`. They are 
 
 For "open file in editor" + "reveal in finder", prefer the prebuilt `openHelpers` RPC recipe — it wires the two utilities into named RPC functions ready to register.
 
+## Security (secure by default)
+
+RPC handlers run with the full privileges of the host process, so the boundary that matters is who may connect. Keep that boundary tight:
+
+- **`auth` defaults to `true`** — dev-mode connections must pair before calls are accepted. Devframe ships the node primitives (`exchangeTempAuthCode`, `verifyAuthToken` in `devframe/node/auth`); the host adapter (e.g. Vite DevTools) provides the interactive `devframe:anonymous:auth` + `devframe:auth:exchange` handlers and pairing UI.
+- **`auth: false` trusts every reachable connection.** Use it only for single-user `localhost` tools. Never pair it with a non-loopback bind host, a tunnel, or a shared/CI environment. The default bind host is already `localhost`.
+- **Pairing** exchanges a 6-digit one-time code (shown in the developer's terminal) for a node-issued bearer token via `requestTrustWithCode(code)`. The code is single-use, expires in 5 min, compared in constant time, and rotates after repeated failures — show it only in the terminal, never over the network.
+- **Tokens are secrets.** The bearer token rides the WS URL (`?devframe_auth_token=…`) — serve over `wss://`/`https://` beyond loopback. Never log the token or code, never bake them into build output. Revoke via `revokeAuthToken(...)`; clients drop to untrusted on `devframe:auth:revoked`.
+- **Authorize handlers.** Any trusted client can call any registered function — validate inputs, and mark state-changing functions `type: 'destructive'` so MCP/agent clients prompt first.
+- **Origin-lock remote docks** (`originLock`) so a dock token is honored only from its expected origin.
+
+See [Security](https://devfra.me/security) for the full reference.
+
 ## Testing
 
 - Unit-test host classes with fake contexts.
@@ -497,6 +510,7 @@ Devframe-level pages (one-tool, portable surface):
 - [Structured Diagnostics](https://devfra.me/diagnostics) — coded errors via `ctx.diagnostics`, register custom codes
 - [Utilities](https://devfra.me/utilities) — bundled `devframe/utils/*` helpers (colors, hash, launchEditor, structured-clone, …)
 - [Client](https://devfra.me/client) — auth handshake, modes, discovery
+- [Security](https://devfra.me/security) — trust model, pairing, secure-by-default practices
 - [Agent-Native](https://devfra.me/agent-native) — agent field, tools/resources, MCP + Claude Desktop
 
 Host-specific extras (when mounting into Vite DevTools — other hosts have their own equivalents):

@@ -27,6 +27,7 @@ function guideItems(prefix: string): DefaultTheme.NavItemWithLink[] {
     { text: 'When Clauses', link: `${prefix}/guide/when-clauses` },
     { text: 'Structured Diagnostics', link: `${prefix}/guide/diagnostics` },
     { text: 'Client', link: `${prefix}/guide/client` },
+    { text: 'Security', link: `${prefix}/guide/security` },
     { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
     { text: 'Hub (multi-tool)', link: `${prefix}/guide/hub` },
     { text: 'Agent-Native (experimental)', link: `${prefix}/guide/agent-native` },
