@@ -45,31 +45,35 @@ export declare function setupCodeServer(_: DevframeNodeContext, _?: CodeServerOp
 // #endregion
 
 // #region Variables
-export declare const diagnostics: {
-  readonly DP_CODE_SERVER_0001: _$nostics.DiagnosticHandle<{
-    bin: string;
-  }, {
-    method?: "log" | "warn" | "error" | undefined;
-  }>;
-  readonly DP_CODE_SERVER_0002: _$nostics.DiagnosticHandle<{
-    port: number;
-    timeout: number;
-  }, {
-    method?: "log" | "warn" | "error" | undefined;
-  }>;
-  readonly DP_CODE_SERVER_0003: _$nostics.DiagnosticHandle<{
-    bin: string;
-    reason: string;
-  }, {
-    method?: "log" | "warn" | "error" | undefined;
-  }>;
-  readonly DP_CODE_SERVER_0004: _$nostics.DiagnosticHandle<{}, {
-    method?: "log" | "warn" | "error" | undefined;
-  }>;
-  readonly DP_CODE_SERVER_0005: _$nostics.DiagnosticHandle<{
-    code: number;
-  }, {
-    method?: "log" | "warn" | "error" | undefined;
-  }>;
-};
+export declare const diagnostics: _$nostics.Diagnostics<{
+  readonly DP_CODE_SERVER_0001: {
+    readonly why: (p: {
+      bin: string;
+    }) => string;
+    readonly fix: "Install code-server — e.g. `curl -fsSL https://code-server.dev/install.sh | sh` — or set the `bin` option to its path. See https://coder.com/docs/code-server/latest/install";
+  };
+  readonly DP_CODE_SERVER_0002: {
+    readonly why: (p: {
+      port: number;
+      timeout: number;
+    }) => string;
+    readonly fix: "Check the code-server logs for startup errors, raise `startTimeout`, or free the port.";
+  };
+  readonly DP_CODE_SERVER_0003: {
+    readonly why: (p: {
+      bin: string;
+      reason: string;
+    }) => string;
+  };
+  readonly DP_CODE_SERVER_0004: {
+    readonly why: "code-server supervisor is not initialised on this context";
+    readonly fix: "Call setupCodeServer(ctx) (or use createCodeServerDevframe) before invoking the code-server RPCs.";
+  };
+  readonly DP_CODE_SERVER_0005: {
+    readonly why: (p: {
+      code: number;
+    }) => string;
+    readonly fix: "Inspect the captured output in the launcher and re-launch.";
+  };
+}, readonly [typeof reporter]>;
 // #endregion
