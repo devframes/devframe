@@ -57,12 +57,14 @@
     }
   },
   "dependencies": {
-    "@homebridge/node-pty-prebuilt-multiarch": "catalog:deps",
     "@xterm/addon-fit": "catalog:frontend",
     "@xterm/xterm": "catalog:frontend",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
     "valibot": "catalog:deps"
+  },
+  "optionalDependencies": {
+    "@homebridge/node-pty-prebuilt-multiarch": "catalog:deps"
   },
   "devDependencies": {
     "@types/node": "catalog:types",

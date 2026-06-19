@@ -4,16 +4,22 @@ import process from 'node:process'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 import { SESSIONS_STATE_KEY, TERMINAL_STREAM_CHANNEL } from '../src/constants'
+import { isPtyAvailable } from '../src/node/index'
 import { bootClient, call, collectUntil, startTerminalsServer } from './_utils'
 
 vi.stubGlobal('WebSocket', WebSocket)
 
 const NODE = process.execPath
-// PTY semantics differ on Windows (conpty): no SIGWINCH, the foreground
-// process name resolves to the TERM name, and stdin round-trips are slow to
-// render. These behaviours are exercised on POSIX; Windows keeps the
-// `isTTY` interactive coverage below.
-const itPosix = process.platform === 'win32' ? it.skip : it
+const ptyAvailable = await isPtyAvailable()
+const isWindows = process.platform === 'win32'
+
+// A real pseudo-terminal works wherever the PTY backend is installed
+// (including Windows conpty); skip when the optional native module is absent.
+const itPty = ptyAvailable ? it : it.skip
+
+// These rely on POSIX PTY semantics that conpty doesn't provide: SIGWINCH,
+// foreground-process-name resolution, and prompt stdin echo timing.
+const itPosixPty = (!isWindows && ptyAvailable) ? it : it.skip
 
 function subscribe(client: TestClient, id: string) {
   return client.streaming.subscribe<string>(TERMINAL_STREAM_CHANNEL, id)
@@ -71,7 +77,7 @@ describe('@devframes/plugin-terminals', () => {
     ).rejects.toThrow(/read-only/i)
   })
 
-  itPosix('runs an interactive PTY session that accepts input', async () => {
+  itPosixPty('runs an interactive PTY session that accepts input', async () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
@@ -90,7 +96,7 @@ describe('@devframes/plugin-terminals', () => {
     expect(output).toContain('echo:ping')
   })
 
-  it('gives interactive sessions a real TTY (TUI support)', async () => {
+  itPty('gives interactive sessions a real TTY (TUI support)', async () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
@@ -105,7 +111,7 @@ describe('@devframes/plugin-terminals', () => {
     expect(output).toContain('isTTY=true')
   })
 
-  itPosix('propagates resize to the PTY (SIGWINCH) for TUI layout', async () => {
+  itPosixPty('propagates resize to the PTY (SIGWINCH) for TUI layout', async () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
@@ -140,7 +146,7 @@ describe('@devframes/plugin-terminals', () => {
     expect(restarted.status).toBe('running')
   })
 
-  itPosix('tracks the foreground process name for PTY sessions', async () => {
+  itPosixPty('tracks the foreground process name for PTY sessions', async () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
