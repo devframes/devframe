@@ -1,14 +1,15 @@
-import type { DevframeRpcClient } from 'devframe/client'
+import type { InspectorCtx } from '../app'
 import { useEffect, useState } from 'preact/hooks'
 
-export function Home({ rpc }: { rpc: DevframeRpcClient }) {
+export function Home({ ctx }: { ctx: InspectorCtx }) {
   const [files, setFiles] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
 
   async function refresh() {
     setLoading(true)
     try {
-      const result = await rpc.call('devframe-files-inspector:list-files')
+      // Scoped call — `list-files` resolves to `devframe-files-inspector:list-files`.
+      const result = await ctx.rpc.call('list-files')
       setFiles(result)
     }
     finally {

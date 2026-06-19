@@ -15,6 +15,7 @@ const AGNOSTIC_ENTRIES = [
   'utils/human-id.mjs',
   'utils/nanoid.mjs',
   'utils/promise.mjs',
+  'utils/scope.mjs',
   'utils/shared-state.mjs',
   'utils/streaming-channel.mjs',
   'utils/structured-clone.mjs',

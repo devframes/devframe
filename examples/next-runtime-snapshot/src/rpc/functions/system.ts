@@ -13,7 +13,7 @@ export interface SystemInfo {
 const startedAt = Date.now()
 
 export const system = defineRpcFunction({
-  name: 'next-runtime-snapshot:system',
+  name: 'system',
   type: 'static',
   jsonSerializable: true,
   handler: (): SystemInfo => ({

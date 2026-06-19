@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
 import pkg from '../package.json' with { type: 'json' }
-import { CHANNEL_NAME, HISTORY_KEY, MAX_HISTORY } from './constants.ts'
+import { CHANNEL, HISTORY, MAX_HISTORY, NAMESPACE } from './constants.ts'
 import { setStreamingChatContext } from './context.ts'
 import { serverFunctions } from './rpc/index.ts'
 
@@ -29,10 +29,13 @@ export default defineDevframe({
   },
   spa: { loader: 'none' },
   async setup(ctx) {
-    const channel = ctx.rpc.streaming.create<string>(CHANNEL_NAME, {
+    // A scoped context auto-namespaces channel + state ids with `NAMESPACE:`.
+    const my = ctx.scope(NAMESPACE)
+
+    const channel = my.rpc.streaming.create<string>(CHANNEL, { // -> devframe-streaming-chat:tokens
       replayWindow: 1024,
     })
-    const history = await ctx.rpc.sharedState.get(HISTORY_KEY, {
+    const history = await my.rpc.sharedState(HISTORY, { // -> devframe-streaming-chat:history
       initialValue: { messages: [] },
     })
 
@@ -47,6 +50,6 @@ export default defineDevframe({
     setStreamingChatContext(ctx, { channel, history, pruneIfTooLarge })
 
     for (const fn of serverFunctions)
-      ctx.rpc.register(fn)
+      my.rpc.register(fn)
   },
 })

@@ -25,20 +25,20 @@ import { defineRpcFunction } from 'devframe'
 import * as v from 'valibot'
 
 export const getModules = defineRpcFunction({
-  name: 'my-devframe:get-modules',
+  name: 'get-modules', // bare — the scope namespaces it to `my-devframe:get-modules`
   type: 'query',
   args: [v.object({ limit: v.number() })],
   returns: v.array(v.object({ id: v.string(), size: v.number() })),
   setup: ctx => ({
     handler: async ({ limit }) => {
-      // `ctx` is the DevframeNodeContext.
+      // `ctx` is the full DevframeNodeContext.
       return loadModules().slice(0, limit)
     },
   }),
 })
 ```
 
-Register it in `setup`:
+Register it in `setup` through a [scoped context](./scoped-context) — `ctx.scope(id)` auto-namespaces ids, so you register and call by bare name:
 
 ```ts
 import { defineDevframe } from 'devframe'
@@ -48,16 +48,19 @@ export default defineDevframe({
   id: 'my-devframe',
   name: 'My Devframe',
   setup(ctx) {
-    ctx.rpc.register(getModules)
+    const my = ctx.scope('my-devframe')
+    my.rpc.register(getModules)
   },
 })
 ```
+
+The unscoped `ctx.rpc.register(getModules)` works too — it's the underlying primitive the scoped surface wraps.
 
 Place each function in its own file under `src/rpc/functions/`, and barrel them in `src/rpc/index.ts` as `const serverFunctions = [...] as const`. The same array feeds the [type-safe client registry](#type-safe-client-registry) and keeps registration order explicit. When per-file functions need to share setup-time state (channels, shared state handles, loaders), expose it through a `WeakMap<DevframeNodeContext, T>` in a sibling `src/context.ts`.
 
 ### Naming convention
 
-Scope with your devframe id and use kebab-case for the action: `my-devframe:get-modules`, `my-devframe:read-file`, `my-devframe:trigger-rebuild`.
+Scope with your devframe id and use kebab-case for the action: `my-devframe:get-modules`, `my-devframe:read-file`, `my-devframe:trigger-rebuild`. A scoped context applies this prefix for you: `ctx.scope('my-devframe').rpc.register({ name: 'get-modules' })` stores `my-devframe:get-modules`. Define each function with a bare name and let the scope namespace it.
 
 ### Function types
 
@@ -76,7 +79,7 @@ Handlers accept any serializable arguments. With `args` valibot schemas, argumen
 
 ```ts
 defineRpcFunction({
-  name: 'my-devframe:get-file',
+  name: 'get-file',
   type: 'query',
   args: [v.object({ path: v.string(), includeSource: v.optional(v.boolean()) })],
   returns: v.object({ path: v.string(), source: v.optional(v.string()) }),
@@ -101,7 +104,7 @@ Two ways to wire a handler:
 ```ts
 // With setup:
 defineRpcFunction({
-  name: 'my-devframe:count',
+  name: 'count',
   type: 'query',
   setup: ctx => ({
     handler: async () => ctx.rpc.sharedState.keys().length,
@@ -110,7 +113,7 @@ defineRpcFunction({
 
 // Shorthand:
 defineRpcFunction({
-  name: 'my-devframe:echo',
+  name: 'echo',
   type: 'query',
   handler: (msg: string) => msg,
 })
@@ -118,16 +121,17 @@ defineRpcFunction({
 
 ## Broadcasting
 
-`ctx.rpc.broadcast` sends a message from the server to every connected client:
+`rpc.broadcast` sends a message from the server to every connected client. Through a scoped context the client method name is namespaced for you:
 
 ```ts
 defineDevframe({
   id: 'my-devframe',
   name: 'My Devframe',
   setup(ctx) {
+    const my = ctx.scope('my-devframe')
     watcher.on('change', (file) => {
-      void ctx.rpc.broadcast({
-        method: 'my-devframe:on-file-changed',
+      void my.rpc.broadcast({
+        method: 'on-file-changed', // -> my-devframe:on-file-changed
         args: [{ file }],
       })
     })
@@ -159,52 +163,58 @@ See the [Streaming guide](./streaming) for the full API.
 
 ## Local invocation
 
-`ctx.rpc.invokeLocal` calls a registered server function directly, skipping the transport — useful for cross-function composition on the server side:
+A scoped `rpc.call` invokes a registered server function directly, skipping the transport — useful for cross-function composition on the server side. Bare names resolve within the namespace:
 
 ```ts
-const modules = await ctx.rpc.invokeLocal('my-devframe:get-modules', { limit: 10 })
+const my = ctx.scope('my-devframe')
+const modules = await my.rpc.call('get-modules', { limit: 10 })
 ```
+
+This wraps `ctx.rpc.invokeLocal('my-devframe:get-modules', { limit: 10 })`. Pass a fully-qualified name (containing `:`) to call another tool's function.
 
 ## Client-side calls
 
-From the browser, [`connectDevframe`](./client) (or `getDevframeRpcClient`) returns a client for calling registered functions:
+From the browser, [`connectDevframe`](./client) (or `getDevframeRpcClient`) returns a client. Scope it the same way to call registered functions by bare name:
 
 ```ts
 import { connectDevframe } from 'devframe/client'
 
-const rpc = await connectDevframe()
+const client = await connectDevframe()
+const my = client.scope('my-devframe')
 
-const modules = await rpc.call('my-devframe:get-modules', { limit: 10 })
+const modules = await my.rpc.call('get-modules', { limit: 10 })
 ```
 
-Client-side registration (for server→client calls) goes through `rpc.client.register()` — the mirror API of `ctx.rpc.register()`.
+Client-side registration (for server→client calls) goes through `my.rpc.register()` — the mirror API of the server-side scoped `rpc.register()`.
 
 ## Type-safe client registry
 
 Devframe exposes two augmentable interfaces — `DevframeRpcServerFunctions` (client→server calls) and `DevframeRpcClientFunctions` (server→client calls) — so each registered RPC name shows up on the typed client. Augment them once per devframe via `declare module 'devframe'`.
 
-The recommended pattern collects every server-side definition into a const array and feeds it through `RpcDefinitionsToFunctions`:
+The recommended pattern collects every server-side definition into a const array and feeds it through `RpcDefinitionsToFunctionsWithNamespace` — it prefixes each bare definition name with your devframe id, matching the ids the scoped `register` stores at runtime:
 
 ```ts
-import type { RpcDefinitionsToFunctions } from 'devframe/rpc'
+import type { RpcDefinitionsToFunctionsWithNamespace } from 'devframe/rpc'
 import { getFile, getModules } from './rpc'
 
 const serverFunctions = [getModules, getFile] as const
 
 declare module 'devframe' {
   interface DevframeRpcServerFunctions
-    extends RpcDefinitionsToFunctions<typeof serverFunctions> {}
+    extends RpcDefinitionsToFunctionsWithNamespace<'my-devframe', typeof serverFunctions> {}
 }
 ```
+
+If you define functions with full namespaced names instead, use `RpcDefinitionsToFunctions<typeof serverFunctions>` (no namespace argument) and register them through the unscoped `ctx.rpc.register`.
 
 Now `connectDevframe()` returns a client where every registered name is autocompletable and argument-typed:
 
 ```ts
 import { connectDevframe } from 'devframe/client'
 
-const rpc = await connectDevframe()
-const modules = await rpc.call('my-devframe:get-modules', { limit: 10 })
-//                       ^? typed from the augmentation above
+const my = (await connectDevframe()).scope('my-devframe')
+const modules = await my.rpc.call('get-modules', { limit: 10 })
+//                          ^? typed from the augmentation above
 ```
 
 For one-off augmentations, declare a single key with `RpcFunctionDefinitionToFunction`:
@@ -227,7 +237,7 @@ For `static` functions, Devframe records the handler's output during `createBuil
 
 ```ts
 defineRpcFunction({
-  name: 'my-devframe:build-meta',
+  name: 'build-meta',
   type: 'static',
   args: [],
   returns: v.object({ version: v.string(), builtAt: v.number() }),
@@ -241,7 +251,7 @@ For `query` functions, provide an explicit `dump` to enumerate which argument se
 
 ```ts
 defineRpcFunction({
-  name: 'my-devframe:get-session',
+  name: 'get-session',
   type: 'query',
   setup: ctx => ({
     handler: async (id: string) => loadSession(id),
@@ -253,7 +263,7 @@ defineRpcFunction({
 })
 ```
 
-At runtime, static clients resolve `rpc.call('my-devframe:get-session', 'session-a')` from the baked dump; unmatched arguments resolve to `dump.fallback` (or throw without one).
+At runtime, static clients resolve `my.rpc.call('get-session', 'session-a')` from the baked dump; unmatched arguments resolve to `dump.fallback` (or throw without one).
 
 ## JSON-serializable declaration
 
@@ -272,7 +282,7 @@ The wire stays plain JSON when every participating function is JSON-flagged — 
 
 ```ts
 defineRpcFunction({
-  name: 'my-devframe:graph',
+  name: 'graph',
   jsonSerializable: true,
   // ⚠ throws DF0020 because Map cannot round-trip through JSON
   handler: () => ({ nodes: new Map([['a', 1]]) }),
@@ -291,7 +301,7 @@ Add an `agent` field to surface the function to coding agents over MCP. Agent ex
 
 ```ts
 defineRpcFunction({
-  name: 'my-devframe:get-modules',
+  name: 'get-modules',
   type: 'query',
   jsonSerializable: true,
   args: [v.object({ limit: v.number() })],

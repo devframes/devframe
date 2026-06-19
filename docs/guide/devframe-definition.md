@@ -21,9 +21,12 @@ export default defineDevframe({
   description: 'A one-line summary of what the tool does.',
   icon: 'ph:gauge-duotone',
   setup(ctx) {
+    // A scoped context auto-namespaces ids with your devframe `id`.
+    const my = ctx.scope('my-devframe')
+
     // Register your RPC functions, shared state, etc. here.
-    ctx.rpc.register(defineRpcFunction({
-      name: 'my-devframe:hello',
+    my.rpc.register(defineRpcFunction({
+      name: 'hello', // stored as `my-devframe:hello`
       type: 'static',
       jsonSerializable: true,
       handler: () => ({ message: 'hello' }),
@@ -32,7 +35,7 @@ export default defineDevframe({
 })
 ```
 
-Host adapters (such as the [`vite` adapter](/adapters/vite) for Vite DevTools) derive their mount entry from `id`, `name`, `icon`, and `basePath` automatically.
+`ctx.scope(id)` is the preferred way to consume the context — see [Scoped Context](./scoped-context). Host adapters (such as the [`vite` adapter](/adapters/vite) for Vite DevTools) derive their mount entry from `id`, `name`, `icon`, and `basePath` automatically.
 
 ## Definition fields
 
@@ -109,12 +112,17 @@ interface DevframeNodeContext {
   views: DevframeViewHost // static file hosting (`hostStatic`)
   diagnostics: DevframeDiagnosticsHost
   agent: DevframeAgentHost // experimental
+
+  scope: (id) => DevframeScopedNodeContext // namespaced view (preferred)
 }
 ```
+
+`ctx.scope(id)` returns a namespace-scoped view that auto-prefixes every RPC id, shared-state key, and streaming channel and adds a persisted top-level `settings` store. It's the recommended entry point from a single tool's setup code — see [Scoped Context](./scoped-context).
 
 Host adapters can augment `ctx` with additional surfaces. For example, the [`vite` adapter](/adapters/vite) exposes Vite DevTools' dock, command, message, and terminal hosts via an optional `setup` hook on `createPluginFromDevframe` — consult the host's docs for those extras.
 
 Each devframe-level host has a dedicated page:
+- [Scoped Context](./scoped-context) — `ctx.scope(id)`, `settings`
 - [RPC](./rpc) — `ctx.rpc`
 - [Shared State](./shared-state) — `ctx.rpc.sharedState`
 - [Diagnostics](./diagnostics) — `ctx.diagnostics`

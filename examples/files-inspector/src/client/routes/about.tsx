@@ -1,14 +1,14 @@
-import type { DevframeRpcClient } from 'devframe/client'
+import type { InspectorCtx } from '../app'
 import { useEffect, useState } from 'preact/hooks'
 
-export function About({ rpc, basePath }: { rpc: DevframeRpcClient, basePath: string }) {
+export function About({ ctx, basePath }: { ctx: InspectorCtx, basePath: string }) {
   const [cwd, setCwd] = useState<string>('')
 
   useEffect(() => {
-    rpc.call('devframe-files-inspector:get-cwd').then((r) => {
+    ctx.rpc.call('get-cwd').then((r) => {
       setCwd(r.cwd)
     })
-  }, [rpc])
+  }, [ctx])
 
   return (
     <section>
@@ -23,7 +23,7 @@ export function About({ rpc, basePath }: { rpc: DevframeRpcClient, basePath: str
         <dt>Server cwd</dt>
         <dd><code>{cwd || '…'}</code></dd>
         <dt>RPC backend</dt>
-        <dd><code>{rpc.connectionMeta.backend}</code></dd>
+        <dd><code>{ctx.base.connectionMeta.backend}</code></dd>
       </dl>
     </section>
   )

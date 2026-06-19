@@ -341,6 +341,20 @@ export type RpcDefinitionsToFunctions<T extends readonly RpcFunctionDefinitionAn
   [K in keyof T]: [T[K]['name'], RpcFunctionDefinitionToFunction<T[K]>]
 }>
 
+/**
+ * Like {@link RpcDefinitionsToFunctions}, but prefixes every (bare)
+ * definition name with `<NS>:`. Use this when functions are defined with
+ * bare names and registered through a scoped context
+ * (`ctx.scope(NS).rpc.register(...)`), so the augmented registry keys
+ * match the namespaced ids stored at runtime.
+ */
+export type RpcDefinitionsToFunctionsWithNamespace<
+  NS extends string,
+  T extends readonly RpcFunctionDefinitionAny[],
+> = EntriesToObject<{
+  [K in keyof T]: [`${NS}:${T[K]['name'] & string}`, RpcFunctionDefinitionToFunction<T[K]>]
+}>
+
 export type RpcDefinitionsFilter<
   T extends readonly RpcFunctionDefinitionAny[],
   Type extends RpcFunctionType,

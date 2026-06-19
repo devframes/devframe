@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
 import pkg from '../package.json' with { type: 'json' }
-import { serverFunctions } from './rpc/index.ts'
+import { NAMESPACE, serverFunctions } from './rpc/index.ts'
 
 export type { EnvEntry, EnvSnapshot } from './rpc/functions/env.ts'
 export type { MemorySnapshot } from './rpc/functions/memory.ts'
@@ -27,7 +27,9 @@ export default defineDevframe({
   },
   spa: { loader: 'none' },
   setup(ctx) {
+    // A scoped context auto-namespaces every registered id with `NAMESPACE:`.
+    const my = ctx.scope(NAMESPACE)
     for (const fn of serverFunctions)
-      ctx.rpc.register(fn)
+      my.rpc.register(fn)
   },
 })

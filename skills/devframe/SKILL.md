@@ -57,8 +57,9 @@ export default defineDevframe({
   icon: 'ph:magnifying-glass-duotone',
   cli: { distDir: './client/dist' },
   setup(ctx) {
-    ctx.rpc.register(defineRpcFunction({
-      name: 'my-inspector:get-stats',
+    const my = ctx.scope('my-inspector') // preferred — auto-namespaces ids
+    my.rpc.register(defineRpcFunction({
+      name: 'get-stats', // stored as `my-inspector:get-stats`
       type: 'static',
       handler: () => ({ count: 42 }),
     }))
@@ -86,9 +87,57 @@ export default defineDevframe({
 
 See `templates/counter-devframe.ts` for a runnable counter example, `templates/spa-devframe.ts` for an SPA-ready shape, and `templates/vite-client.ts` for the author's client entry.
 
+## Scoped context (preferred)
+
+`ctx.scope(id)` (server) and `client.scope(id)` (browser) return a namespace-scoped view that auto-prefixes every RPC id, shared-state key, and streaming channel with `id:`, and adds a top-level persisted `settings` store. Prefer it over the raw `ctx.rpc` / client — you name the namespace once and register / call by bare name.
+
+```ts
+// server — setup(ctx)
+const my = ctx.scope('my-inspector')
+my.rpc.register(getStats) //              -> my-inspector:get-stats
+await my.rpc.call('get-stats') //         invokeLocal, namespaced
+const state = await my.rpc.sharedState('view') // -> my-inspector:view
+await my.settings.project.set('theme', 'dark')
+
+// browser — connectDevframe()
+const my = (await connectDevframe()).scope('my-inspector')
+const stats = await my.rpc.call('get-stats')
+```
+
+- **Auto-namespacing.** Bare names get `id:` prepended; a name already containing `:` is treated as fully-qualified and passed through (so `my.rpc.call('other-tool:fn')` works). `register` only accepts bare names — passing a namespaced one throws `DF0034`.
+- **Typed bare calls.** Define functions with bare names and augment the registry with `RpcDefinitionsToFunctionsWithNamespace<'my-inspector', typeof serverFunctions>` so the registry keys match the namespaced runtime ids; scoped `call('get-stats')` then stays typed.
+- **`base`.** The scoped context keeps the raw context as `my.base` (and re-exposes `views` / `diagnostics` / `agent` / `host` / `cwd` / `mode` on the server).
+
+### Settings
+
+`my.settings` is a persisted key-value store at the **top level** of the scoped context (a sibling of `my.rpc`, not under it). Two scopes:
+
+- `project` — per-workspace, persisted under the host's `workspace` storage dir.
+- `global` — per-user, persisted under the host's `global` storage dir.
+
+Both are file-backed on the server and synced to clients over the shared-state protocol, so a `set` on either side propagates everywhere and survives restarts. All methods are async.
+
+```ts
+await my.settings.project.set('theme', 'dark')
+await my.settings.project.get('theme') // 'dark'
+await my.settings.global.all()
+await my.settings.project.delete('theme')
+const off = await my.settings.global.onChange(value => apply(value))
+```
+
+Type a namespace's settings shape by augmenting `DevframeSettingsRegistry`:
+
+```ts
+declare module 'devframe' {
+  interface DevframeSettingsRegistry {
+    'my-inspector': { theme: 'light' | 'dark', recentFiles: string[] }
+  }
+}
+```
+
 ## Project layout
 
-Once a devframe grows past a handful of RPC functions, split them out — one file per function under `src/rpc/functions/`, with `src/rpc/index.ts` as the barrel. The `functions/` subdirectory leaves room for sibling files like `src/rpc/utils.ts` (helpers, type aliases) as the surface grows. Each function file exports a named const; the barrel collects them into a `const serverFunctions = [...] as const` that feeds the type-safe client registry recipe (`RpcDefinitionsToFunctions<typeof serverFunctions>`).
+Once a devframe grows past a handful of RPC functions, split them out — one file per function under `src/rpc/functions/`, with `src/rpc/index.ts` as the barrel. The `functions/` subdirectory leaves room for sibling files like `src/rpc/utils.ts` (helpers, type aliases) as the surface grows. Each function file exports a named const with a **bare** name; the barrel collects them into a `const serverFunctions = [...] as const` and feeds the type-safe client registry recipe with the namespace-aware helper `RpcDefinitionsToFunctionsWithNamespace<'my-tool', typeof serverFunctions>` (it prefixes each bare name to match the namespaced runtime id the scope registers).
 
 ```ts
 // src/rpc/functions/list-files.ts
@@ -96,7 +145,7 @@ import { defineRpcFunction } from 'devframe'
 import { getMyToolContext } from '../../context'
 
 export const listFiles = defineRpcFunction({
-  name: 'my-tool:list-files',
+  name: 'list-files', // bare — the scope namespaces it to `my-tool:list-files`
   type: 'query',
   jsonSerializable: true,
   setup: (ctx) => {
@@ -115,7 +164,7 @@ export const serverFunctions = [getCwd, listFiles] as const
 
 declare module 'devframe' {
   interface DevframeRpcServerFunctions
-    extends import('devframe/rpc').RpcDefinitionsToFunctions<typeof serverFunctions> {}
+    extends import('devframe/rpc').RpcDefinitionsToFunctionsWithNamespace<'my-tool', typeof serverFunctions> {}
 }
 ```
 
@@ -134,11 +183,14 @@ export default defineDevframe({
   homepage: pkg.homepage,
   description: pkg.description,
   setup(ctx) {
+    const my = ctx.scope('my-tool')
     setMyToolContext(ctx, { loaders: createLoaders() })
-    serverFunctions.forEach(fn => ctx.rpc.register(fn))
+    serverFunctions.forEach(fn => my.rpc.register(fn))
   },
 })
 ```
+
+Note `setMyToolContext(ctx, …)` keys off the raw `ctx` (the same object the function `setup(ctx)` receives) — store the per-tool context on `ctx`, register through `my.rpc`.
 
 ### Sharing setup-time state via `src/context.ts`
 
@@ -179,12 +231,15 @@ Stateless RPCs and tiny demos can keep the inline shorthand inside `setup(ctx)` 
 'get-modules' // ✗ — may collide with other devframes sharing the host
 ```
 
+A [scoped context](#scoped-context-preferred) applies this prefix for you — `ctx.scope('my-inspector').rpc.register({ name: 'get-modules' })` registers `my-inspector:get-modules`. Define and call by bare name through the scope; reach for full ids only via `ctx.base` or when targeting another tool. Dock / command IDs are host-level (not part of the scoped `rpc` surface) — prefix those by hand.
+
 ## DevframeNodeContext at a glance
 
 `setup(ctx)` receives the framework-neutral server-side surface. Each host corresponds to a [docs](https://devfra.me/) page:
 
 | Host | Purpose |
 |------|---------|
+| `ctx.scope(id)` | **Preferred** namespace-scoped view — auto-prefixed `rpc` + top-level `settings` store |
 | `ctx.rpc` | Register RPC functions, broadcast, shared state, streaming channels |
 | `ctx.views` | Serve static files via `hostStatic(base, distDir)` |
 | `ctx.diagnostics` | Structured diagnostics host (nostics) — register custom error codes |
@@ -201,7 +256,7 @@ import { defineRpcFunction } from 'devframe'
 import * as v from 'valibot'
 
 const getModules = defineRpcFunction({
-  name: 'my-inspector:get-modules',
+  name: 'get-modules', // bare — registered via `ctx.scope('my-inspector').rpc.register`
   type: 'query',
   jsonSerializable: true,
   args: [v.object({ limit: v.number() })],
@@ -234,12 +289,13 @@ Set `jsonSerializable: true` when your handler returns plain JSON shapes — the
 
 `agent: {...}` requires `jsonSerializable: true` (registration throws `DF0019` otherwise). MCP tools speak JSON — opting into the agent surface is also opting into JSON-only data.
 
-`ctx.rpc.broadcast({ method, args, optional?, event?, filter? })` pushes to every connected client. `ctx.rpc.invokeLocal(name, ...args)` calls a server function without going through transport (useful for cross-function composition).
+Through the scope, `my.rpc.broadcast({ method, args, optional?, event?, filter? })` pushes to every connected client (method name namespaced), and `my.rpc.call(name, ...args)` invokes a server function locally without going through transport (the scoped form of `ctx.rpc.invokeLocal`, useful for cross-function composition).
 
 ## Shared state
 
 ```ts
-const state = await ctx.rpc.sharedState.get('my-inspector:state', {
+const my = ctx.scope('my-inspector')
+const state = await my.rpc.sharedState('state', { // -> my-inspector:state
   initialValue: { count: 0, items: [] as string[] },
 })
 
@@ -258,7 +314,8 @@ state.mutate((draft) => {
 For chunk-style data flowing in either direction — LLM deltas, log tails, build progress, file uploads, mic / screen-share frames — use a streaming channel instead of inventing `action + delta/end` events. The same `channel` object handles both directions:
 
 ```ts
-const channel = ctx.rpc.streaming.create<string>('my-inspector:tokens', {
+const my = ctx.scope('my-inspector')
+const channel = my.rpc.streaming.create<string>('tokens', { // -> my-inspector:tokens
   replayWindow: 256, // server keeps last N chunks per stream id
   closedStreamRetention: 30_000, // ms to hold finished streams for late subscribers
 })
@@ -278,8 +335,8 @@ stream.writable // WritableStream<T> for `pipeTo`-style consumption
 // Convenience — start + pipe in one call:
 await channel.pipeFrom(sourceReadable, { id: 'optional' })
 
-// Client
-const reader = rpc.streaming.subscribe<string>('my-inspector:tokens', streamId)
+// Client — my = (await connectDevframe()).scope('my-inspector')
+const reader = my.rpc.streaming.subscribe<string>('tokens', streamId) // -> my-inspector:tokens
 for await (const token of reader) renderToken(token)
 // Or: reader.readable.pipeTo(domWritable)
 reader.cancel() // server `stream.signal` aborts
@@ -290,9 +347,9 @@ reader.cancel() // server `stream.signal` aborts
 The same channel exposes `openInbound()` for the server side of a client→server upload. Pair it with a normal action that returns the id:
 
 ```ts
-// Server
-ctx.rpc.register(defineRpcFunction({
-  name: 'my-inspector:upload-file',
+// Server — my = ctx.scope('my-inspector')
+my.rpc.register(defineRpcFunction({
+  name: 'upload-file', // -> my-inspector:upload-file
   type: 'action',
   args: [v.object({ name: v.string() })],
   returns: v.object({ uploadId: v.string() }),
@@ -305,9 +362,9 @@ ctx.rpc.register(defineRpcFunction({
   },
 }))
 
-// Client
-const { uploadId } = await rpc.call('my-inspector:upload-file', { name: 'foo' })
-const upload = rpc.streaming.upload<Uint8Array>('my-inspector:files', uploadId)
+// Client — my = (await connectDevframe()).scope('my-inspector')
+const { uploadId } = await my.rpc.call('upload-file', { name: 'foo' })
+const upload = my.rpc.streaming.upload<Uint8Array>('files', uploadId) // -> my-inspector:files
 fileReadable.pipeTo(upload.writable, { signal: upload.signal })
 ```
 
@@ -437,10 +494,11 @@ Authors bring their own SPA (any framework or plain HTML). Client entry:
 ```ts
 import { connectDevframe } from 'devframe/client'
 
-const rpc = await connectDevframe()
-// await rpc.ensureTrusted() // WS mode only — blocks until server accepts
+const client = await connectDevframe()
+// await client.ensureTrusted() // WS mode only — blocks until server accepts
+const my = client.scope('my-inspector') // preferred — namespaced calls
 
-const data = await rpc.call('my-inspector:get-stats', { limit: 10 })
+const data = await my.rpc.call('get-stats', { limit: 10 })
 ```
 
 `connectDevframe` auto-detects the backend via `/.devframe/.connection.json`:
@@ -448,7 +506,7 @@ const data = await rpc.call('my-inspector:get-stats', { limit: 10 })
 - **websocket** (dev mode) — full read/write, requires auth handshake. Listen for token updates on the `devframe-auth` BroadcastChannel.
 - **static** (build / spa output) — read-only, resolves calls from the baked RPC dump.
 
-Use `rpc.sharedState.get(key)` for observable state, `rpc.client.register(defineRpcFunction(...))` to receive server broadcasts, and `rpc.callOptional(...)` when a missing handler should resolve to `undefined` instead of throwing.
+Use `my.rpc.sharedState(key)` for observable state, `my.rpc.register(defineRpcFunction(...))` to receive server broadcasts, `my.rpc.callOptional(...)` when a missing handler should resolve to `undefined` instead of throwing, and `my.settings.{project,global}` for persisted per-workspace / per-user settings synced from the server.
 
 ## Build dumps
 
@@ -515,6 +573,7 @@ For "open file in editor" + "reveal in finder", prefer the prebuilt `openHelpers
 Devframe-level pages (one-tool, portable surface):
 
 - [Devframe Definition](https://devfra.me/devframe-definition) — fields, runtime flags, multi-adapter wiring
+- [Scoped Context](https://devfra.me/scoped-context) — `ctx.scope(id)`, auto-namespacing, the `settings` store
 - [Adapters](https://devfra.me/adapters) — full reference for all deployment adapters
 - [RPC](https://devfra.me/rpc) — types, schema, broadcasts, dumps
 - [Shared State](https://devfra.me/shared-state) — patches, events, client-side mutation

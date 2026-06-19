@@ -59,5 +59,10 @@ export const diagnostics = defineDiagnostics({
         `Failed to start dev RPC bridge for "${p.id}": ${p.reason}`,
       fix: 'Verify the bridge port is free and the devframe setup function does not throw. Pin a port via `cli.port` / `cli.portRange` on the definition, or via `devMiddleware.port` on `viteDevBridge`.',
     },
+    DF0034: {
+      why: (p: { namespace: string, name: string }) =>
+        `Scoped RPC registration for namespace "${p.namespace}" received an already-namespaced function name "${p.name}".`,
+      fix: 'A scoped context auto-namespaces ids. Pass a bare name without a ":" separator (e.g. `register({ name: "get-cwd" })`), or use the unscoped `ctx.base.rpc.register` for a fully-qualified name.',
+    },
   },
 })

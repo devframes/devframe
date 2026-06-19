@@ -2,7 +2,7 @@ import process from 'node:process'
 import { defineRpcFunction } from 'devframe'
 
 export const getCwd = defineRpcFunction({
-  name: 'devframe-files-inspector:get-cwd',
+  name: 'get-cwd', // scoped registration namespaces it to `devframe-files-inspector:get-cwd`
   type: 'static',
   jsonSerializable: true,
   setup: ctx => ({

@@ -14,7 +14,7 @@ export interface MemorySnapshot {
 }
 
 export const memory = defineRpcFunction({
-  name: 'next-runtime-snapshot:memory',
+  name: 'memory',
   type: 'query',
   jsonSerializable: true,
   handler: (): MemorySnapshot => {

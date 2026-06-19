@@ -46,7 +46,7 @@ function* fakeTokens(prompt: string): Generator<string> {
 }
 
 export const send = defineRpcFunction({
-  name: 'devframe-streaming-chat:send',
+  name: 'send',
   type: 'action',
   jsonSerializable: true,
   args: [v.object({
