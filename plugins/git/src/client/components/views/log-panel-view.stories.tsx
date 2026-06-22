@@ -35,7 +35,6 @@ const meta = {
     hasMore: false,
     loading: false,
     error: null,
-    liveBackend: true,
     currentBranch: 'main',
     workingChanges: 0,
     onRefresh: () => undefined,
@@ -52,5 +51,5 @@ export const Connecting: Story = { args: { rpcConnected: false } }
 export const Empty: Story = { args: { commits: [] } }
 export const NotARepo: Story = { args: { isRepo: false, commits: [] } }
 export const HasMore: Story = { args: { hasMore: true } }
-export const StaticMode: Story = { args: { hasMore: true, liveBackend: false } }
+export const Loading: Story = { args: { hasMore: true, loading: true } }
 export const Error: Story = { args: { error: 'fatal: bad revision' } }

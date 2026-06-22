@@ -97,8 +97,6 @@ export function LogPanel() {
     await loadPage(rpc, skip, 'append')
   }, [rpc, skip, loadPage])
 
-  const liveBackend = rpc?.connectionMeta.backend === 'websocket'
-
   return (
     <LogPanelView
       rpcConnected={!!rpc}
@@ -107,7 +105,6 @@ export function LogPanel() {
       hasMore={hasMore}
       loading={loading}
       error={error}
-      liveBackend={!!liveBackend}
       currentBranch={currentBranch}
       workingChanges={workingChanges}
       onRefresh={refresh}

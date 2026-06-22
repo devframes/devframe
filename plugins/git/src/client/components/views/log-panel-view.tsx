@@ -27,7 +27,6 @@ export interface LogPanelViewProps {
   hasMore: boolean
   loading: boolean
   error: string | null
-  liveBackend: boolean
   /** Active branch name, used to flag the checked-out ref. */
   currentBranch?: string | null
   /** Number of changed working-tree files; drives the "Work In Progress" row. */
@@ -254,7 +253,6 @@ export function LogPanelView(props: LogPanelViewProps) {
     hasMore,
     loading,
     error,
-    liveBackend,
     currentBranch,
     workingChanges,
     onRefresh,
@@ -321,13 +319,9 @@ export function LogPanelView(props: LogPanelViewProps) {
       )}
 
       {isRepo === true && hasMore && (
-        <Button variant="outline" size="sm" className="w-full" onClick={onLoadMore} disabled={loading || !liveBackend}>
+        <Button variant="outline" size="sm" className="w-full" onClick={onLoadMore} disabled={loading}>
           Load more
         </Button>
-      )}
-
-      {isRepo === true && hasMore && !liveBackend && (
-        <p className="text-muted-foreground text-xs">Load more is available in live mode.</p>
       )}
     </div>
   )

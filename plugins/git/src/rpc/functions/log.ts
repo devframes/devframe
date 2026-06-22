@@ -69,11 +69,25 @@ function parseLog(raw: string): Commit[] {
   })
 }
 
+// Largest page git's handler will return (`limit` is clamped to 1–200). Static
+// builds bake this many commits so the dashboard shows real history offline.
+const SNAPSHOT_LIMIT = 200
+
 export const log = defineRpcFunction({
   name: 'git:log',
   type: 'query',
-  snapshot: true,
   jsonSerializable: true,
+  // A static build can't run git on demand, so bake the head of history (up to
+  // `SNAPSHOT_LIMIT`) as the snapshot. Every client call resolves to this baked
+  // page via the fallback; since a static bundle has no further page to fetch,
+  // it reports `hasMore: false` so the UI shows everything it has in one shot.
+  dump: async (_ctx, handler: (args?: LogArgs) => Promise<GitLog>) => {
+    const output = await handler({ limit: SNAPSHOT_LIMIT, skip: 0 })
+    const baked: GitLog = { ...output, hasMore: false }
+    // `RETURN` carries the handler's `Promise<GitLog>`, while dump records hold
+    // the already-resolved value — assert past that wrapper mismatch.
+    return { records: [{ inputs: [], output: baked }], fallback: baked } as any
+  },
   setup: (ctx) => {
     const git = getGitContext(ctx)
     return {
