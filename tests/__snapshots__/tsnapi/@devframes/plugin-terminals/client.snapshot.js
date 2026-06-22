@@ -6,5 +6,5 @@ export async function mountTerminals(_, _) {}
 // #endregion
 
 // #region Variables
-export var TERMINAL_STREAM_CHANNEL /* const */
+export var TERMINAL_STREAM_CHANNEL
 // #endregion
