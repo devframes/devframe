@@ -129,15 +129,6 @@ catalogs:
     '@radix-ui/react-tabs':
       specifier: ^1.1.15
       version: 1.1.15
-    '@storybook/addon-a11y':
-      specifier: ^10.4.6
-      version: 10.4.6
-    '@storybook/addon-docs':
-      specifier: ^10.4.6
-      version: 10.4.6
-    '@storybook/react-vite':
-      specifier: ^10.4.6
-      version: 10.4.6
     '@sveltejs/vite-plugin-svelte':
       specifier: ^5.0.0
       version: 5.1.1
@@ -183,9 +174,6 @@ catalogs:
     react-dom:
       specifier: ^19.2.6
       version: 19.2.6
-    storybook:
-      specifier: ^10.4.6
-      version: 10.4.6
     svelte:
       specifier: ^5.0.0
       version: 5.56.3
@@ -212,9 +200,21 @@ catalogs:
       specifier: ^0.1.1
       version: 0.1.1
   storybook:
+    '@storybook/addon-a11y':
+      specifier: ^10.4.6
+      version: 10.4.6
+    '@storybook/addon-docs':
+      specifier: ^10.4.6
+      version: 10.4.6
     '@storybook/html-vite':
       specifier: ^10.4.6
       version: 10.4.6
+    '@storybook/react-vite':
+      specifier: ^10.4.6
+      version: 10.4.6
+    '@vitejs/plugin-react-oxc':
+      specifier: ^0.4.3
+      version: 0.4.3
     storybook:
       specifier: ^10.4.6
       version: 10.4.6
@@ -675,13 +675,13 @@ importers:
         specifier: catalog:frontend
         version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@storybook/addon-a11y':
-        specifier: catalog:frontend
+        specifier: catalog:storybook
         version: 10.4.6(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))
       '@storybook/addon-docs':
-        specifier: catalog:frontend
+        specifier: catalog:storybook
         version: 10.4.6(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(esbuild@0.28.0)(rollup@4.60.3)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
       '@storybook/react-vite':
-        specifier: catalog:frontend
+        specifier: catalog:storybook
         version: 10.4.6(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(esbuild@0.28.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(rollup@4.60.3)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(typescript@6.0.3)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
       '@tailwindcss/postcss':
         specifier: catalog:frontend
@@ -695,6 +695,9 @@ importers:
       '@types/react-dom':
         specifier: catalog:types
         version: 19.2.3(@types/react@19.2.15)
+      '@vitejs/plugin-react-oxc':
+        specifier: catalog:storybook
+        version: 0.4.3(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
       class-variance-authority:
         specifier: catalog:frontend
         version: 0.7.1
@@ -720,7 +723,7 @@ importers:
         specifier: catalog:frontend
         version: 19.2.6(react@19.2.6)
       storybook:
-        specifier: catalog:frontend
+        specifier: catalog:storybook
         version: 10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       tailwind-merge:
         specifier: catalog:frontend
@@ -3117,6 +3120,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@rolldown/pluginutils@1.0.0-beta.47':
+    resolution: {integrity: sha512-8QagwMH3kNCuzD8EWL8R2YPW5e4OrHNSAHRFDdmFqEwEaD/KcNKjVoumo+gP2vW5eKB2UPbM6vTYiGZX0ixLnw==}
+
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
@@ -3992,6 +3998,12 @@ packages:
     resolution: {integrity: sha512-IWTDeIoWhQ7ZtRO/JRKH+jhmeQvZYhtGPmzw/QGDY+wDCQqfm25P9yIdoAFagu4fWsK4IwZXDFIjrmp5rRm/sA==}
     engines: {node: '>=20'}
     hasBin: true
+
+  '@vitejs/plugin-react-oxc@0.4.3':
+    resolution: {integrity: sha512-eJv6hHOIOVXzA4b2lZwccu/7VNmk9372fGOqsx5tNxiJHLtFBokyCTQUhlgjjXxl7guLPauHp0TqGTVyn1HvQA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    peerDependencies:
+      vite: ^6.3.0 || ^7.0.0
 
   '@vitejs/plugin-vue-jsx@5.1.5':
     resolution: {integrity: sha512-jIAsvHOEtWpslLOI2MeElGFxH7M8pM83BU/Tor4RLyiwH0FM4nUW3xdvbw20EeU9wc5IspQwMq225K3CMnJEpA==}
@@ -10219,6 +10231,8 @@ snapshots:
   '@rolldown/binding-win32-x64-msvc@1.0.2':
     optional: true
 
+  '@rolldown/pluginutils@1.0.0-beta.47': {}
+
   '@rolldown/pluginutils@1.0.1': {}
 
   '@rollup/plugin-alias@6.0.0(rollup@4.60.3)':
@@ -11180,6 +11194,11 @@ snapshots:
       - encoding
       - rollup
       - supports-color
+
+  '@vitejs/plugin-react-oxc@0.4.3(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))':
+    dependencies:
+      '@rolldown/pluginutils': 1.0.0-beta.47
+      vite: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)
 
   '@vitejs/plugin-vue-jsx@5.1.5(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))(vue@3.5.34(typescript@6.0.3))':
     dependencies:

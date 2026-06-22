@@ -16,6 +16,8 @@ export function LogPanel() {
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [currentBranch, setCurrentBranch] = useState<string | null>(null)
+  const [workingChanges, setWorkingChanges] = useState<number | null>(null)
   const commitsRef = useRef<Commit[]>([])
 
   useEffect(() => {
@@ -62,17 +64,32 @@ export function LogPanel() {
     }
   }, [])
 
+  const loadStatus = useCallback(async (client: DevframeRpcClient) => {
+    try {
+      const status = await client.call('git:status')
+      setCurrentBranch(status.branch)
+      setWorkingChanges(
+        status.staged.length + status.unstaged.length + status.untracked.length,
+      )
+    }
+    catch {
+      // Status is decorative here (current-branch flag + WIP row); the log
+      // itself drives the panel, so a status failure stays silent.
+    }
+  }, [])
+
   useEffect(() => {
     if (!rpc)
       return
     void loadPage(rpc, 0, 'replace')
-  }, [rpc, loadPage])
+    void loadStatus(rpc)
+  }, [rpc, loadPage, loadStatus])
 
   const refresh = useCallback(async () => {
     if (!rpc)
       return
-    await loadPage(rpc, 0, 'replace')
-  }, [rpc, loadPage])
+    await Promise.all([loadPage(rpc, 0, 'replace'), loadStatus(rpc)])
+  }, [rpc, loadPage, loadStatus])
 
   const loadMore = useCallback(async () => {
     if (!rpc)
@@ -91,6 +108,8 @@ export function LogPanel() {
       loading={loading}
       error={error}
       liveBackend={!!liveBackend}
+      currentBranch={currentBranch}
+      workingChanges={workingChanges}
       onRefresh={refresh}
       onLoadMore={loadMore}
     />

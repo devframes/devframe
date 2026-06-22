@@ -33,15 +33,19 @@ export interface CommitGraph {
   columns: number
 }
 
+// Lane palette tuned to read clearly on the dark dashboard, à la GitLens'
+// commit graph: a vivid violet leads (the mainline / current branch tends to
+// land in lane 0), then warm/cool tones alternate so adjacent lanes stay
+// distinct.
 export const GRAPH_COLORS = [
-  '#3b82f6', // blue
-  '#22c55e', // green
-  '#ef4444', // red
-  '#a855f7', // purple
-  '#f59e0b', // amber
-  '#06b6d4', // cyan
+  '#a78bfa', // violet
   '#ec4899', // pink
-  '#84cc16', // lime
+  '#f5b14c', // amber
+  '#34d399', // emerald
+  '#38bdf8', // sky
+  '#22d3ee', // cyan
+  '#f87171', // red
+  '#a3e635', // lime
 ]
 
 interface Lane {
