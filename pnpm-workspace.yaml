@@ -70,6 +70,14 @@ catalogs:
     preact: ^10.29.2
     react: ^19.2.6
     react-dom: ^19.2.6
+    svelte: ^5.0.0
+    unocss: ^66.0.0
+    '@sveltejs/vite-plugin-svelte': ^5.0.0
+    '@unocss/vite': ^66.0.0
+    '@unocss/preset-icons': ^66.0.0
+    '@unocss/preset-uno': ^66.0.0
+    '@iconify-json/ph': ^1.2.0
+    'vite-plugin-css-injected-by-js': ^3.5.0
   inlined:
     '@antfu/utils': ^9.3.0
     ua-parser-modern: ^0.1.1

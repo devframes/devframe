@@ -29,23 +29,12 @@ const serverEntries = {
   'types': 'src/types.ts',
 }
 
-// Three configs, mirroring `packages/devframe/tsdown.config.ts`:
-//   1. browser client build (independent graph, `.mjs`),
-//   2. node server build (appends to the same dist/),
-//   3. combined dts so `declare module 'devframe'` augmentations resolve
-//      across every entry.
+// Three configs:
+//   1. node server build (clean: true, outputs dist/node, dist/rpc, etc.)
+//   2. combined dts so augmentations resolve
 export default defineConfig([
   {
     clean: true,
-    platform: 'browser',
-    tsconfig,
-    deps,
-    dts: false,
-    outExtensions: () => ({ js: '.mjs' }),
-    entry: clientEntries,
-  },
-  {
-    clean: false,
     platform: 'node',
     tsconfig,
     deps,
