@@ -31,6 +31,8 @@ export interface LogArgs {
   limit?: number
   /** Commits to skip from the tip, for pagination (default 0). */
   skip?: number
+  /** Optional ref/branch to read history from (default: current HEAD). */
+  ref?: string
 }
 
 // Stable, parseable format: unit-separated fields, record-separated commits.
@@ -94,17 +96,22 @@ export const log = defineRpcFunction({
       handler: async (args: LogArgs = {}): Promise<GitLog> => {
         const limit = clamp(Math.trunc(args.limit ?? 30), 1, 200)
         const skip = Math.max(0, Math.trunc(args.skip ?? 0))
+        const ref = args.ref?.trim() || undefined
         const root = await git.resolveRoot()
         if (!root)
           return { isRepo: false, commits: [], limit, skip, hasMore: false }
 
-        const raw = await tryGit(git.cwd, [
+        const command = [
           'log',
           '--topo-order',
           `--max-count=${limit}`,
           `--skip=${skip}`,
           `--pretty=format:${FORMAT}`,
-        ])
+        ]
+        if (ref)
+          command.push(ref)
+
+        const raw = await tryGit(git.cwd, command)
         // `null` happens on a repo with no commits yet — treat as empty.
         const commits = raw ? parseLog(raw) : []
         return { isRepo: true, commits, limit, skip, hasMore: commits.length === limit }

@@ -8,7 +8,11 @@ import { LogPanelView } from './views/log-panel-view'
 
 const PAGE = 30
 
-export function LogPanel() {
+export interface LogPanelProps {
+  branch?: string | null
+}
+
+export function LogPanel({ branch }: LogPanelProps) {
   const { rpc } = useRpc()
   const [isRepo, setIsRepo] = useState<boolean | null>(null)
   const [commits, setCommits] = useState<Commit[]>([])
@@ -32,7 +36,11 @@ export function LogPanel() {
     setLoading(true)
     setError(null)
     try {
-      const page = await client.call('git:log', { limit: PAGE, skip: nextSkip })
+      const page = await client.call('git:log', {
+        limit: PAGE,
+        skip: nextSkip,
+        ref: branch ?? undefined,
+      })
       setIsRepo(page.isRepo)
       if (mode === 'replace') {
         setCommits(page.commits)
@@ -62,7 +70,7 @@ export function LogPanel() {
     finally {
       setLoading(false)
     }
-  }, [])
+  }, [branch])
 
   const loadStatus = useCallback(async (client: DevframeRpcClient) => {
     try {
@@ -105,6 +113,7 @@ export function LogPanel() {
       hasMore={hasMore}
       loading={loading}
       error={error}
+      selectedRef={branch ?? null}
       currentBranch={currentBranch}
       workingChanges={workingChanges}
       onRefresh={refresh}

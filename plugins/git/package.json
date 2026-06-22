@@ -34,7 +34,7 @@
   ],
   "scripts": {
     "build": "tsdown && pnpm run build:spa",
-    "build:spa": "next build src/client && node -e \"const fs=require('fs'); fs.rmSync('dist/client',{recursive:true,force:true}); fs.cpSync('src/client/out','dist/client',{recursive:true});\"",
+    "build:spa": "next build src/client && node scripts/build-spa.mjs",
     "cli:build": "node bin.mjs build --out-dir dist/static",
     "dev": "node scripts/dev.mjs",
     "dev:server": "node src/cli.ts",

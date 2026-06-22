@@ -89,6 +89,7 @@ export interface GitStatus {
 export interface LogArgs {
   limit?: number;
   skip?: number;
+  ref?: string;
 }
 export interface StageArgs {
   paths: string[];

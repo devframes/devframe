@@ -27,6 +27,8 @@ export interface LogPanelViewProps {
   hasMore: boolean
   loading: boolean
   error: string | null
+  /** Optional ref currently used for this log query. */
+  selectedRef?: string | null
   /** Active branch name, used to flag the checked-out ref. */
   currentBranch?: string | null
   /** Number of changed working-tree files; drives the "Work In Progress" row. */
@@ -253,6 +255,7 @@ export function LogPanelView(props: LogPanelViewProps) {
     hasMore,
     loading,
     error,
+    selectedRef,
     currentBranch,
     workingChanges,
     onRefresh,
@@ -265,14 +268,18 @@ export function LogPanelView(props: LogPanelViewProps) {
   )
   const gutter = Math.max(graph.columns, 1) * COL_W + COL_W / 2 + PAD_L
 
-  const showWip = (workingChanges ?? 0) > 0 && commits.length > 0
+  const showWip = (workingChanges ?? 0) > 0
+    && commits.length > 0
+    && (!selectedRef || selectedRef === currentBranch)
   const headRow = graph.rows[0]
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-muted-foreground text-xs">
-          {isRepo ? `${commits.length} commits` : ' '}
+          {isRepo
+            ? `${commits.length} commits${selectedRef ? ` · ${selectedRef}` : ''}`
+            : ' '}
         </span>
         <Button variant="ghost" size="icon" className="size-7" onClick={onRefresh} disabled={loading} aria-label="Refresh log">
           <RefreshCw className={cn('size-3.5', loading && 'animate-spin')} />
