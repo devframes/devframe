@@ -97,10 +97,10 @@ export default {
           </div>
           <textarea :value="argsInput[node.fn.name]" class="args" spellcheck="false" placeholder="[]" @input="emit('updateArgs', node.fn.name, ($event.target as HTMLTextAreaElement).value)" />
           <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-            <button class="btn" :disabled="pending[node.fn.name] || isStatic()" @click.stop="emit('invoke', node.fn!)">
+            <button class="btn" :disabled="pending[node.fn.name] || isStatic" @click.stop="emit('invoke', node.fn!)">
               {{ pending[node.fn.name] ? 'Invoking…' : 'Invoke' }}
             </button>
-            <span v-if="isStatic()" class="note">read-only static backend — invocation disabled</span>
+            <span v-if="isStatic" class="note">read-only static backend — invocation disabled</span>
           </div>
           <div v-if="results[node.fn.name]" class="result">
             <div class="result-head">
