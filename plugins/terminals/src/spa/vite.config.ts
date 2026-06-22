@@ -10,7 +10,7 @@ export default defineConfig({
   resolve: { alias },
   plugins: [
     svelte(),
-    UnoCSS()
+    UnoCSS(),
   ],
   build: {
     outDir: fileURLToPath(new URL('../../dist/spa', import.meta.url)),

@@ -34,7 +34,11 @@
   onMount(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     isDark = mq.matches
-    const onMq = (e: MediaQueryListEvent) => isDark = e.matches
+    document.documentElement.classList.toggle('dark', isDark)
+    const onMq = (e: MediaQueryListEvent) => {
+      isDark = e.matches
+      document.documentElement.classList.toggle('dark', isDark)
+    }
     mq.addEventListener('change', onMq)
 
     const onHashChange = () => {
@@ -138,13 +142,13 @@
   }
 </script>
 
-<div class="absolute inset-0 flex flex-col font-sans {isDark ? 'bg-[#0d1117] text-[#c9d1d9]' : 'bg-[#f6f8fa] text-[#1f2328]'}">
-  <div class="flex items-stretch gap-1 p-1.5 border-b {isDark ? 'border-[#1c2128] bg-[#0d1117]' : 'border-[#d0d7de] bg-[#ffffff]'}">
+<div class="absolute inset-0 flex flex-col font-sans bg-base color-base">
+  <div class="flex items-stretch gap-1 p-1.5 border-b border-base bg-base">
     <div class="flex gap-1 overflow-x-auto flex-1 items-center">
       {#each sessions as s (s.id)}
         {#if renamingId === s.id}
           <input
-            class="font-inherit text-xs w-[10ch] min-w-[64px] px-1 py-0.5 border rounded outline-none {isDark ? 'border-[#58a6ff] bg-[#0d1117] text-[#c9d1d9]' : 'border-[#0969da] bg-[#ffffff] text-[#1f2328]'}"
+            class="font-mono text-xs w-[10ch] min-w-[64px] px-1 py-0.5 border rounded outline-none border-active bg-base color-base"
             value={displayName(s)}
             spellcheck={false}
             onkeydown={(e) => {
@@ -157,24 +161,20 @@
           />
         {:else}
           <button
-            class="inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-md border text-xs cursor-pointer transition-colors
-              {activeId === s.id 
-                ? (isDark ? 'bg-[#21262d] text-white border-[#30363d]' : 'bg-[#ffffff] text-[#1f2328] border-[#d0d7de]')
-                : (isDark ? 'bg-[#161b22] text-[#8b949e] border-transparent hover:text-[#c9d1d9]' : 'bg-[#ffffff] text-[#59636e] border-transparent hover:text-[#1f2328]')}"
+            class="tab-btn {activeId === s.id ? 'tab-btn-active' : ''}"
             title="Double-click to rename"
             onclick={() => activeId = s.id}
             ondblclick={(e) => { e.preventDefault(); e.stopPropagation(); renamingId = s.id }}
           >
             <span class="w-1.5 h-1.5 rounded-full shrink-0
-              {s.status === 'running' ? 'bg-[#3fb950]' : s.status === 'exited' ? 'bg-[#6e7681]' : 'bg-[#f85149]'}">
+              {s.status === 'running' ? 'bg-green-500' : s.status === 'exited' ? 'bg-gray-500' : 'bg-red-500'}">
             </span>
             <span>{displayName(s)}</span>
           </button>
         {/if}
       {/each}
       <button 
-        class="min-w-[28px] justify-center font-semibold text-sm flex-none inline-flex items-center whitespace-nowrap px-2 py-1 rounded-md border border-transparent cursor-pointer transition-colors
-          {isDark ? 'bg-[#161b22] text-[#8b949e] hover:text-[#c9d1d9]' : 'bg-[#ffffff] text-[#59636e] hover:text-[#1f2328]'}"
+        class="tab-btn px-2 min-w-[28px] justify-center"
         title="New terminal"
         onclick={() => spawn({ mode: 'interactive' })}
       >
@@ -184,8 +184,7 @@
     
     <div class="flex gap-1.5 items-center">
       <select 
-        class="px-2 py-1 rounded-md border text-xs outline-none
-          {isDark ? 'border-[#30363d] bg-[#21262d] text-[#c9d1d9]' : 'border-[#d0d7de] bg-[#ffffff] text-[#1f2328]'}"
+        class="px-2 py-1 rounded-md border text-xs outline-none border-base bg-secondary color-base"
         disabled={presets.length === 0}
         onchange={handleSelectPreset}
       >
@@ -197,15 +196,14 @@
     </div>
   </div>
 
-  <div class="flex items-center gap-2 px-2.5 py-1 border-b text-xs min-h-[20px] {isDark ? 'border-[#1c2128] text-[#8b949e]' : 'border-[#d0d7de] text-[#59636e]'}">
+  <div class="flex items-center gap-2 px-2.5 py-1 border-b text-xs min-h-[20px] border-base text-gray-500 dark:text-gray-400">
     {#if activeId}
       {@const activeSession = sessions.find(s => s.id === activeId)}
       {#if activeSession}
-        <span class="px-1.5 py-0.5 rounded-full text-[10px] uppercase tracking-wide border
-          {activeSession.mode === 'interactive' ? (isDark ? 'text-[#58a6ff] border-[#1f6feb55]' : 'text-[#0969da] border-[#0969da55]') : (isDark ? 'text-[#d29922] border-[#9e6a0355]' : 'text-[#bb8009] border-[#9e6a0355]')}">
+        <span class="px-1.5 py-0.5 rounded-full text-[10px] uppercase tracking-wide border {activeSession.mode === 'interactive' ? 'color-active border-active bg-active' : 'text-amber-600 dark:text-amber-500 border-amber-500/25 bg-amber-500/10'}">
           {activeSession.mode}
         </span>
-        <span class="font-mono {isDark ? 'text-[#c9d1d9]' : 'text-[#1f2328]'}">
+        <span class="font-mono color-base">
           {activeSession.command}{activeSession.args.length ? ` ${activeSession.args.join(' ')}` : ''}
         </span>
         <span>
@@ -214,11 +212,11 @@
             : `${activeSession.status}${activeSession.exitCode != null ? ` (${activeSession.exitCode})` : ''}`}
         </span>
         <div class="flex-1"></div>
-        <button class="px-2.5 py-1 rounded-md border text-xs cursor-pointer {isDark ? 'border-[#30363d] bg-[#21262d] text-[#c9d1d9] hover:bg-[#30363d]' : 'border-[#d0d7de] bg-[#ffffff] text-[#1f2328] hover:bg-[#eaeef2]'}" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: activeSession.id }).catch(() => {})}>
-          <div class="i-ph:arrows-clockwise mr-1 inline-block align-text-bottom"></div> Restart
+        <button class="btn-action" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: activeSession.id }).catch(() => {})}>
+          <div class="i-ph:arrows-clockwise"></div> Restart
         </button>
-        <button class="px-2.5 py-1 rounded-md border text-xs cursor-pointer {isDark ? 'border-[#30363d] bg-[#21262d] text-[#c9d1d9] hover:bg-[#30363d]' : 'border-[#d0d7de] bg-[#ffffff] text-[#1f2328] hover:bg-[#eaeef2]'}" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: activeSession.id }).catch(() => {})}>
-          <div class="i-ph:trash mr-1 inline-block align-text-bottom"></div> Kill
+        <button class="btn-action" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: activeSession.id }).catch(() => {})}>
+          <div class="i-ph:trash"></div> Kill
         </button>
       {/if}
     {/if}
@@ -226,7 +224,7 @@
 
   <div class="relative flex-1 overflow-hidden {isDark ? 'bg-black' : 'bg-white'}">
     {#if sessions.length === 0}
-      <div class="absolute inset-0 flex items-center justify-center text-[13px] pointer-events-none {isDark ? 'text-[#6e7681]' : 'text-[#59636e]'}">
+      <div class="absolute inset-0 flex items-center justify-center text-[13px] pointer-events-none text-gray-400 dark:text-gray-500">
         No terminal sessions — click + to start one.
       </div>
     {/if}
