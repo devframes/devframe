@@ -1,5 +1,5 @@
 {
-  "name": "a11y-inspector-example",
+  "name": "@devframes/a11y",
   "type": "module",
   "version": "0.5.2",
   "private": true,

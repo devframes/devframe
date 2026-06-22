@@ -36,11 +36,11 @@ The demo serves an intentionally-broken host page and the panel from **one
 origin** so they share the channel.
 
 ```sh
-pnpm -C examples/a11y-inspector build       # build the panel + the agent bundle
-pnpm -C examples/a11y-inspector demo        # dev: live WebSocket RPC → http://localhost:4477/
+pnpm -C plugins/a11y build       # build the panel + the agent bundle
+pnpm -C plugins/a11y demo        # dev: live WebSocket RPC → http://localhost:4477/
 
-pnpm -C examples/a11y-inspector cli:build   # bake the static deploy (dist/static)
-pnpm -C examples/a11y-inspector demo:build  # static: baked RPC dump, no server
+pnpm -C plugins/a11y cli:build   # bake the static deploy (dist/static)
+pnpm -C plugins/a11y demo:build  # static: baked RPC dump, no server
 ```
 
 Open the URL, then hover any row in the panel — the matching element in the page
@@ -50,7 +50,7 @@ behave identically; the panel's `websocket` / `static` tag is the only tell.
 Standalone, without a host app:
 
 ```sh
-pnpm -C examples/a11y-inspector dev         # panel only, at /__devframe-a11y-inspector/
+pnpm -C plugins/a11y dev         # panel only, at /__devframe-a11y-inspector/
 ```
 
 ## File map

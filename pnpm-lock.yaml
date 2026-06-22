@@ -354,37 +354,6 @@ importers:
         specifier: catalog:docs
         version: 2.0.17(mermaid@11.15.0)(vitepress@2.0.0-alpha.17(@types/node@25.9.1)(change-case@5.4.4)(fuse.js@7.3.0)(jiti@2.7.0)(lightningcss@1.32.0)(oxc-minify@0.131.0)(postcss@8.5.15)(terser@5.47.1)(tsx@4.22.3)(typescript@6.0.3)(yaml@2.8.4))
 
-  examples/a11y-inspector:
-    dependencies:
-      axe-core:
-        specifier: catalog:frontend
-        version: 4.12.1
-      devframe:
-        specifier: workspace:*
-        version: link:../../packages/devframe
-      solid-js:
-        specifier: catalog:frontend
-        version: 1.9.13
-    devDependencies:
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
-      h3:
-        specifier: catalog:deps
-        version: 2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
-      vite:
-        specifier: catalog:build
-        version: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)
-      vite-plugin-solid:
-        specifier: catalog:build
-        version: 2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
-      vitest:
-        specifier: catalog:testing
-        version: 4.1.7(@types/node@25.9.1)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
-      ws:
-        specifier: catalog:deps
-        version: 8.21.0
-
   examples/files-inspector:
     dependencies:
       devframe:
@@ -655,6 +624,37 @@ importers:
       tsdown:
         specifier: catalog:build
         version: 0.22.0(oxc-resolver@11.21.3)(tsx@4.22.3)(typescript@6.0.3)
+
+  plugins/a11y:
+    dependencies:
+      axe-core:
+        specifier: catalog:frontend
+        version: 4.12.1
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      solid-js:
+        specifier: catalog:frontend
+        version: 1.9.13
+    devDependencies:
+      get-port-please:
+        specifier: catalog:deps
+        version: 3.2.0
+      h3:
+        specifier: catalog:deps
+        version: 2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
+      vite:
+        specifier: catalog:build
+        version: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)
+      vite-plugin-solid:
+        specifier: catalog:build
+        version: 2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      vitest:
+        specifier: catalog:testing
+        version: 4.1.7(@types/node@25.9.1)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      ws:
+        specifier: catalog:deps
+        version: 8.21.0
 
   plugins/code-server:
     dependencies:

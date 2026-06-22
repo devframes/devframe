@@ -56,12 +56,12 @@ function banner(origin) {
 }
 
 async function main() {
-  requireBuilt(resolve(injectDir, 'inject.js'), 'pnpm -C examples/a11y-inspector build')
+  requireBuilt(resolve(injectDir, 'inject.js'), 'pnpm -C plugins/a11y build')
   requireBuilt(
     resolve(panelDir, 'index.html'),
     mode === 'build'
-      ? 'pnpm -C examples/a11y-inspector build && pnpm -C examples/a11y-inspector cli:build'
-      : 'pnpm -C examples/a11y-inspector build',
+      ? 'pnpm -C plugins/a11y build && pnpm -C plugins/a11y cli:build'
+      : 'pnpm -C plugins/a11y build',
   )
 
   const bindHost = '0.0.0.0'

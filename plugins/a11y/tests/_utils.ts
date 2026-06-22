@@ -18,7 +18,7 @@ export const CLIENT_DIST = resolve(HERE, '../dist/client')
 export function assertClientBuilt(): void {
   if (!existsSync(path.join(CLIENT_DIST, 'index.html'))) {
     throw new Error(
-      '[devframe-a11y-inspector] dist/client missing — run `pnpm -C examples/a11y-inspector run build` first.',
+      '[devframe-a11y-inspector] dist/client missing — run `pnpm -C plugins/a11y run build` first.',
     )
   }
 }
