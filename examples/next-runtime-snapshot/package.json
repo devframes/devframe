@@ -10,7 +10,7 @@
     "next-runtime-snapshot": "./bin.mjs"
   },
   "scripts": {
-    "build": "next build src/client && rm -rf dist/client && mkdir -p dist && cp -r src/client/out dist/client",
+    "build": "next build src/client && node -e \"const fs=require('fs'); fs.rmSync('dist/client',{recursive:true,force:true}); fs.mkdirSync('dist',{recursive:true}); fs.cpSync('src/client/out','dist/client',{recursive:true});\"",
     "cli:build": "node bin.mjs build --out-dir dist/static",
     "dev": "node bin.mjs",
     "next:dev": "next dev src/client",
