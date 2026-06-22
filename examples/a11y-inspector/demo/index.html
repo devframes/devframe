@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sunny Beans — demo host app</title>
+    <style>
+      :root {
+        --cream: #fbf6ec;
+        --espresso: #2c2118;
+        --bean: #6f4e37;
+        --crema: #c98b54;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--espresso);
+        background: var(--cream);
+        /* leave room for the docked inspector on the right */
+        padding-right: 440px;
+      }
+      .wrap { max-width: 760px; margin: 0 auto; padding: 0 28px; }
+      nav {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 28px;
+        border-bottom: 1px solid #e7dcc8;
+      }
+      .logo { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+      .nav-spacer { flex: 1; }
+      .icon-btn {
+        width: 40px; height: 40px;
+        display: grid; place-items: center;
+        background: var(--espresso); color: var(--cream);
+        border: 0; border-radius: 10px; cursor: pointer;
+      }
+      .hero { padding: 56px 0 40px; }
+      .hero h1 { font-size: 44px; line-height: 1.05; margin: 0 0 14px; }
+      .hero .cup {
+        width: 100%; height: 260px; border-radius: 16px; display: block;
+        margin: 22px 0;
+      }
+      /* deliberately low contrast helper copy */
+      .muted { color: #cdbfa8; font-size: 15px; }
+      .section { padding: 36px 0; border-top: 1px solid #e7dcc8; }
+      .section h2 { font-size: 26px; margin: 0 0 16px; }
+      form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      input[type="email"] {
+        flex: 1; min-width: 240px;
+        padding: 12px 14px; font-size: 16px;
+        border: 1px solid var(--bean); border-radius: 10px; background: #fff;
+      }
+      .btn {
+        padding: 12px 20px; font-size: 16px; font-weight: 700;
+        background: var(--crema); color: var(--espresso);
+        border: 0; border-radius: 10px; cursor: pointer;
+      }
+      .roasts { list-style: none; padding: 0; display: grid; gap: 12px; }
+      .roasts li {
+        display: flex; align-items: center; gap: 14px;
+        padding: 14px; background: #fff; border-radius: 12px;
+        border: 1px solid #ece2cf;
+      }
+      .swatch { width: 46px; height: 46px; border-radius: 8px; }
+      footer {
+        padding: 40px 0 80px; margin-top: 24px;
+        border-top: 1px solid #e7dcc8;
+      }
+      footer a { color: var(--bean); }
+      .fineprint { color: #d7cbb4; font-size: 13px; }
+
+      /* docked inspector — this chrome is intentionally accessible so it
+         doesn't show up in its own report */
+      .df-dock {
+        position: fixed;
+        top: 0; right: 0; bottom: 0;
+        width: 420px;
+        border-left: 1px solid #d8cbb4;
+        box-shadow: -16px 0 40px rgb(44 33 24 / 12%);
+        background: #0d1017;
+        z-index: 5;
+      }
+      .df-dock__frame { width: 100%; height: 100%; border: 0; display: block; }
+      @media (max-width: 900px) {
+        body { padding-right: 0; padding-bottom: 50vh; }
+        .df-dock { top: auto; width: auto; height: 50vh; border-left: 0; border-top: 1px solid #d8cbb4; }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <span class="logo">Sunny Beans</span>
+      <span class="nav-spacer"></span>
+      <!-- a11y bug: icon-only button with no accessible name -->
+      <button class="icon-btn" type="button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </nav>
+
+    <div class="wrap">
+      <section class="hero">
+        <h1>Small-batch coffee, roasted the morning it ships.</h1>
+        <!-- a11y bug: image without alt text -->
+        <img
+          class="cup"
+          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='760' height='260'%3E%3Crect width='760' height='260' fill='%236f4e37'/%3E%3Ccircle cx='380' cy='130' r='70' fill='%23c98b54'/%3E%3C/svg%3E"
+        />
+        <!-- a11y bug: low-contrast text -->
+        <p class="muted">
+          Sourced from a dozen farms, roasted in tiny drums, and sent the same day.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>Get the first-Friday drop</h2>
+        <form onsubmit="return false">
+          <!-- a11y bug: input with no associated label -->
+          <input type="email" placeholder="you@example.com" />
+          <button class="btn" type="submit">Notify me</button>
+        </form>
+        <p class="fineprint">We email once a month. Unsubscribe anytime.</p>
+      </section>
+
+      <section class="section">
+        <h2>This week's roasts</h2>
+        <ul class="roasts">
+          <li>
+            <span class="swatch" style="background:#3b2317"></span>
+            <span><strong>Midnight Drum</strong> — dark, cocoa, molasses</span>
+          </li>
+          <li>
+            <span class="swatch" style="background:#8a5a32"></span>
+            <span><strong>Sunrise House</strong> — balanced, caramel, citrus</span>
+          </li>
+          <li>
+            <span class="swatch" style="background:#c98b54"></span>
+            <span><strong>Golden Hour</strong> — light, floral, stone fruit</span>
+          </li>
+        </ul>
+      </section>
+
+      <footer>
+        <p>Questions? Visit our help center or follow along:</p>
+        <!-- a11y bug: link with no discernible text (icon only, no label) -->
+        <a href="https://example.com/social">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z" />
+          </svg>
+        </a>
+        <p class="fineprint">© Sunny Beans Coffee Co. All rights reserved.</p>
+      </footer>
+    </div>
+
+    <!-- Docked A11y Inspector panel (same origin → shares the BroadcastChannel). -->
+    <aside class="df-dock" aria-label="A11y Inspector">
+      <iframe class="df-dock__frame" title="A11y Inspector panel" src="/__devframe-a11y-inspector/"></iframe>
+    </aside>
+
+    <!-- The injected a11y agent: scans this page and answers the panel. -->
+    <script type="module" src="/__df-inject/inject.js"></script>
+  </body>
+</html>
