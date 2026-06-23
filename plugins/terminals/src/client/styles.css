@@ -1,0 +1,49 @@
+html,
+body,
+#app {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  --uno: bg-base color-base font-sans;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+:root {
+  --term-scrollbar: #8884;
+  --term-scrollbar-hover: #8887;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--term-scrollbar);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--term-scrollbar-hover);
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.xterm {
+  height: 100%;
+  padding: 0 0.25rem;
+}
+
+.xterm .xterm-viewport {
+  background: transparent !important;
+}

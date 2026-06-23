@@ -15,19 +15,19 @@
   }>()
 
   const DARK_THEME: ITheme = {
-    background: '#000000',
+    background: '#111111',
     foreground: '#c9d1d9',
-    cursor: '#58a6ff',
-    cursorAccent: '#000000',
-    selectionBackground: '#234876',
+    cursor: '#7cbc71',
+    cursorAccent: '#111111',
+    selectionBackground: '#ffffff20',
   }
 
   const LIGHT_THEME: ITheme = {
     background: '#ffffff',
     foreground: '#1f2328',
-    cursor: '#0969da',
+    cursor: '#396831',
     cursorAccent: '#ffffff',
-    selectionBackground: '#b6d7ff',
+    selectionBackground: '#00000018',
     black: '#24292f',
     red: '#cf222e',
     green: '#116329',
@@ -76,13 +76,14 @@
       rpc.call('devframes-plugin-terminals:resize', { id: info.id, cols, rows }).catch(() => {})
     })
 
-    reader = rpc.streaming.subscribe<string>(TERMINAL_STREAM_CHANNEL, info.id)
+    reader = rpc.streaming.subscribe(TERMINAL_STREAM_CHANNEL, info.id)
     ;(async () => {
       try {
         for await (const chunk of reader) {
-          term.write(chunk)
+          term.write(chunk as string)
         }
-      } catch {}
+      }
+      catch {}
     })()
 
     requestAnimationFrame(() => {
@@ -121,4 +122,4 @@
   })
 </script>
 
-<div class="absolute inset-0 p-1 {active ? 'block' : 'hidden'}" bind:this={container}></div>
+<div class="absolute inset-0 px-2 py-1 {active ? 'block' : 'hidden'}" bind:this={container}></div>

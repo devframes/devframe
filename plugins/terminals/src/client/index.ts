@@ -4,6 +4,7 @@ import { mount, unmount } from 'svelte'
 import App from './App.svelte'
 
 import 'virtual:uno.css'
+import './styles.css'
 
 export interface MountTerminalsOptions {
   rpc?: DevframeRpcClient
