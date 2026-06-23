@@ -37,8 +37,10 @@ const meta = {
     error: null,
     currentBranch: 'main',
     workingChanges: 0,
+    selectedHash: null,
     onRefresh: () => undefined,
     onLoadMore: () => undefined,
+    onSelectCommit: () => undefined,
   },
 } satisfies Meta<typeof LogPanelView>
 
@@ -46,10 +48,10 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
+export const Selected: Story = { args: { selectedHash: 'c03' } }
 export const WorkInProgress: Story = { args: { workingChanges: 4 } }
 export const Connecting: Story = { args: { rpcConnected: false } }
 export const Empty: Story = { args: { commits: [] } }
 export const NotARepo: Story = { args: { isRepo: false, commits: [] } }
-export const HasMore: Story = { args: { hasMore: true } }
-export const Loading: Story = { args: { hasMore: true, loading: true } }
+export const AutoLoadMore: Story = { args: { hasMore: true, loading: true } }
 export const Error: Story = { args: { error: 'fatal: bad revision' } }

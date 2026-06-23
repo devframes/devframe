@@ -5,6 +5,7 @@ import type { Branch, GitBranches } from '../../index'
 import { FileDiff, GitBranch, GitCommitHorizontal, GitGraph, ListTree, Moon, RefreshCw, Sun } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { cn } from '../lib/utils'
+import { CommitDetailsPanel } from './commit-details-panel'
 import { DiffPanel } from './diff-panel'
 import { LogPanel } from './log-panel'
 import { RpcProvider, useRpc } from './rpc-provider'
@@ -93,6 +94,7 @@ function BranchRow({
 function DashboardBody() {
   const [pane, setPane] = useState<DashboardPane>('commits')
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null)
+  const [selectedCommit, setSelectedCommit] = useState<string | null>(null)
 
   const branchesLoader = useCallback((rpc: DevframeRpcClient) => rpc.call('git:branches'), [])
   const {
@@ -116,8 +118,12 @@ function DashboardBody() {
 
   const selectBranch = (name: string) => {
     setSelectedBranch(name)
+    setSelectedCommit(null)
     setPane('commits')
   }
+
+  // The detail panel only makes sense alongside the commit list.
+  const showCommitDetails = pane === 'commits' && selectedCommit !== null
 
   return (
     <main className="flex min-h-svh w-full flex-col gap-4 px-4 py-5 md:px-6">
@@ -184,61 +190,79 @@ function DashboardBody() {
           </Card>
         </aside>
 
-        <section className="min-w-0">
-          <Card className="h-full">
-            <CardContent className="p-4">
+        <section className="flex min-w-0 flex-col">
+          <Card className="flex h-full min-h-0 flex-col py-4">
+            <CardContent className="flex min-h-0 flex-1 flex-col px-4">
               {pane === 'status' && <StatusPanel />}
-              {pane === 'commits' && <LogPanel branch={selectedBranch} />}
+              {pane === 'commits' && (
+                <LogPanel
+                  branch={selectedBranch}
+                  selectedHash={selectedCommit}
+                  onSelectCommit={setSelectedCommit}
+                />
+              )}
               {pane === 'diff' && <DiffPanel />}
             </CardContent>
           </Card>
         </section>
 
         <aside className="hidden min-w-0 xl:block">
-          <Card className="h-full">
-            <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-              <div>
-                <CardTitle className="text-sm">Branches</CardTitle>
-                <CardDescription>
-                  {branches?.isRepo ? `${branches.branches.length} branches` : ' '}
-                </CardDescription>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-7"
-                onClick={refreshBranches}
-                disabled={branchesLoading}
-                aria-label="Refresh branches"
-              >
-                <RefreshCw className={cn('size-3.5', branchesLoading && 'animate-spin')} />
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {!branches && (
-                <div className="space-y-2">
-                  {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-9 w-full" />)}
-                </div>
-              )}
+          <Card className="h-full py-4">
+            <CardContent className="px-4">
+              {showCommitDetails && selectedCommit
+                ? (
+                    <CommitDetailsPanel
+                      hash={selectedCommit}
+                      onClose={() => setSelectedCommit(null)}
+                    />
+                  )
+                : (
+                    <>
+                      <div className="flex items-center justify-between pb-2">
+                        <div>
+                          <CardTitle className="text-sm">Branches</CardTitle>
+                          <CardDescription>
+                            {branches?.isRepo ? `${branches.branches.length} branches` : ' '}
+                          </CardDescription>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-7"
+                          onClick={refreshBranches}
+                          disabled={branchesLoading}
+                          aria-label="Refresh branches"
+                        >
+                          <RefreshCw className={cn('size-3.5', branchesLoading && 'animate-spin')} />
+                        </Button>
+                      </div>
 
-              {branches && !branches.isRepo && (
-                <p className="text-muted-foreground text-sm">The working directory is not a git repository.</p>
-              )}
+                      {!branches && (
+                        <div className="space-y-2">
+                          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-9 w-full" />)}
+                        </div>
+                      )}
 
-              {branches?.isRepo && (
-                <ScrollArea className="h-[calc(100vh-16rem)] pr-2">
-                  <ul className="space-y-1">
-                    {branches.branches.map(branch => (
-                      <BranchRow
-                        key={branch.name}
-                        branch={branch}
-                        selected={branch.name === selectedBranch}
-                        onSelect={selectBranch}
-                      />
-                    ))}
-                  </ul>
-                </ScrollArea>
-              )}
+                      {branches && !branches.isRepo && (
+                        <p className="text-muted-foreground text-sm">The working directory is not a git repository.</p>
+                      )}
+
+                      {branches?.isRepo && (
+                        <ScrollArea className="h-[calc(100vh-16rem)] pr-2">
+                          <ul className="space-y-1">
+                            {branches.branches.map(branch => (
+                              <BranchRow
+                                key={branch.name}
+                                branch={branch}
+                                selected={branch.name === selectedBranch}
+                                onSelect={selectBranch}
+                              />
+                            ))}
+                          </ul>
+                        </ScrollArea>
+                      )}
+                    </>
+                  )}
             </CardContent>
           </Card>
         </aside>

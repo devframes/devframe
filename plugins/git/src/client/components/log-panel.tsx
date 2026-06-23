@@ -10,9 +10,13 @@ const PAGE = 30
 
 export interface LogPanelProps {
   branch?: string | null
+  /** Hash of the currently selected commit (drives row highlight). */
+  selectedHash?: string | null
+  /** Called when a commit row is activated. */
+  onSelectCommit?: (hash: string) => void
 }
 
-export function LogPanel({ branch }: LogPanelProps) {
+export function LogPanel({ branch, selectedHash, onSelectCommit }: LogPanelProps) {
   const { rpc } = useRpc()
   const [isRepo, setIsRepo] = useState<boolean | null>(null)
   const [commits, setCommits] = useState<Commit[]>([])
@@ -116,8 +120,10 @@ export function LogPanel({ branch }: LogPanelProps) {
       selectedRef={branch ?? null}
       currentBranch={currentBranch}
       workingChanges={workingChanges}
+      selectedHash={selectedHash}
       onRefresh={refresh}
       onLoadMore={loadMore}
+      onSelectCommit={onSelectCommit}
     />
   )
 }

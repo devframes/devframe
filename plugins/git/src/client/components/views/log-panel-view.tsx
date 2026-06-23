@@ -3,13 +3,12 @@
 import type { Commit } from '../../../index'
 import type { GraphRow } from '../../lib/commit-graph'
 import type { GitRef } from '../../lib/refs'
-import { Check, GitBranch, Pencil, RefreshCw, Tag } from 'lucide-react'
-import { useMemo } from 'react'
+import { Check, GitBranch, Loader2, Pencil, RefreshCw, Tag } from 'lucide-react'
+import { useEffect, useMemo, useRef } from 'react'
 import { computeGraph } from '../../lib/commit-graph'
 import { parseRefs } from '../../lib/refs'
 import { cn } from '../../lib/utils'
 import { Button } from '../ui/button'
-import { ScrollArea } from '../ui/scroll-area'
 import { Skeleton } from '../ui/skeleton'
 
 const ROW_H = 46
@@ -33,8 +32,12 @@ export interface LogPanelViewProps {
   currentBranch?: string | null
   /** Number of changed working-tree files; drives the "Work In Progress" row. */
   workingChanges?: number | null
+  /** Hash of the currently selected commit, highlighted in the list. */
+  selectedHash?: string | null
   onRefresh: () => void | Promise<void>
   onLoadMore: () => void | Promise<void>
+  /** Called when a commit row is activated. */
+  onSelectCommit?: (hash: string) => void
 }
 
 function relativeTime(epoch: number): string {
@@ -162,47 +165,61 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
   )
 }
 
-function CommitRow({ commit, row, gutter, currentBranch, isHead, topStub }: {
+function CommitRow({ commit, row, gutter, currentBranch, isHead, topStub, selected, onSelect }: {
   commit: Commit
   row: GraphRow
   gutter: number
   currentBranch?: string | null
   isHead: boolean
   topStub: boolean
+  selected: boolean
+  onSelect?: (hash: string) => void
 }) {
   const refs = useMemo(() => parseRefs(commit.refs, currentBranch), [commit.refs, currentBranch])
   const hasCurrent = refs.some(r => r.kind === 'branch' && r.current)
 
   return (
-    <li className="relative flex items-stretch" style={{ height: ROW_H }}>
-      {/* Lane-tinted row highlight, fading toward the message. */}
-      <div
-        className="pointer-events-none absolute inset-y-[5px] left-0 rounded-full"
-        style={{
-          width: REFS_W + gutter + 12,
-          background: `linear-gradient(90deg, ${withAlpha(row.color, hasCurrent ? 0.34 : 0.2)} 0%, ${withAlpha(row.color, 0.04)} 100%)`,
-        }}
-      />
+    <li>
+      <button
+        type="button"
+        onClick={() => onSelect?.(commit.hash)}
+        aria-current={selected ? 'true' : undefined}
+        className={cn(
+          'relative flex w-full items-stretch rounded-md text-left transition-colors',
+          'focus-visible:ring-ring/60 outline-none focus-visible:ring-2',
+          selected ? 'ring-primary/60 bg-accent/40 ring-1' : 'hover:bg-accent/25',
+        )}
+        style={{ height: ROW_H }}
+      >
+        {/* Lane-tinted row highlight, fading toward the message. */}
+        <div
+          className="pointer-events-none absolute inset-y-[5px] left-0 rounded-full"
+          style={{
+            width: REFS_W + gutter + 12,
+            background: `linear-gradient(90deg, ${withAlpha(row.color, hasCurrent ? 0.34 : 0.2)} 0%, ${withAlpha(row.color, 0.04)} 100%)`,
+          }}
+        />
 
-      <div className="relative z-10 flex items-center justify-end gap-1 overflow-hidden pr-1.5" style={{ width: REFS_W }}>
-        {refs.map((refToken, i) => (
-          <RefLabel key={i} refToken={refToken} color={row.color} />
-        ))}
-      </div>
-
-      <div className="relative z-10">
-        <GraphCell row={row} width={gutter} isHead={isHead} topStub={topStub} />
-      </div>
-
-      <div className="relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-0.5 pl-4">
-        <span className="truncate text-sm font-medium">{commit.subject}</span>
-        <div className="text-muted-foreground flex items-center gap-2 text-xs">
-          <code className="shrink-0">{commit.shortHash}</code>
-          <span className="truncate">{commit.author}</span>
-          <span aria-hidden>·</span>
-          <span className="shrink-0" title={new Date(commit.date).toLocaleString()}>{relativeTime(commit.date)}</span>
+        <div className="relative z-10 flex items-center justify-end gap-1 overflow-hidden pr-1.5" style={{ width: REFS_W }}>
+          {refs.map((refToken, i) => (
+            <RefLabel key={i} refToken={refToken} color={row.color} />
+          ))}
         </div>
-      </div>
+
+        <div className="relative z-10">
+          <GraphCell row={row} width={gutter} isHead={isHead} topStub={topStub} />
+        </div>
+
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-0.5 pl-4">
+          <span className="truncate text-sm font-medium">{commit.subject}</span>
+          <div className="text-muted-foreground flex items-center gap-2 text-xs">
+            <code className="shrink-0">{commit.shortHash}</code>
+            <span className="truncate">{commit.author}</span>
+            <span aria-hidden>·</span>
+            <span className="shrink-0" title={new Date(commit.date).toLocaleString()}>{relativeTime(commit.date)}</span>
+          </div>
+        </div>
+      </button>
     </li>
   )
 }
@@ -258,8 +275,10 @@ export function LogPanelView(props: LogPanelViewProps) {
     selectedRef,
     currentBranch,
     workingChanges,
+    selectedHash,
     onRefresh,
     onLoadMore,
+    onSelectCommit,
   } = props
 
   const graph = useMemo(
@@ -273,12 +292,45 @@ export function LogPanelView(props: LogPanelViewProps) {
     && (!selectedRef || selectedRef === currentBranch)
   const headRow = graph.rows[0]
 
+  // Auto-load the next page when the bottom sentinel scrolls into view, instead
+  // of a manual "Load more" button. `busyRef` debounces the observer so one
+  // page is requested per visibility change.
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const busyRef = useRef(false)
+  const onLoadMoreRef = useRef(onLoadMore)
+  onLoadMoreRef.current = onLoadMore
+
+  useEffect(() => {
+    if (!loading)
+      busyRef.current = false
+  }, [loading])
+
+  useEffect(() => {
+    const root = scrollRef.current
+    const sentinel = sentinelRef.current
+    if (!root || !sentinel || !hasMore)
+      return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && !busyRef.current && !loading) {
+          busyRef.current = true
+          void onLoadMoreRef.current()
+        }
+      },
+      { root, rootMargin: '120px' },
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [hasMore, loading, commits.length])
+
   return (
-    <div className="space-y-3">
+    <div className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex items-center justify-between">
         <span className="text-muted-foreground text-xs">
           {isRepo
-            ? `${commits.length} commits${selectedRef ? ` · ${selectedRef}` : ''}`
+            ? `${commits.length}${hasMore ? '+' : ''} commits${selectedRef ? ` · ${selectedRef}` : ''}`
             : ' '}
         </span>
         <Button variant="ghost" size="icon" className="size-7" onClick={onRefresh} disabled={loading} aria-label="Refresh log">
@@ -305,7 +357,7 @@ export function LogPanelView(props: LogPanelViewProps) {
       )}
 
       {isRepo === true && commits.length > 0 && (
-        <ScrollArea className="h-80 pr-3">
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto pr-2">
           <ul>
             {showWip && headRow && (
               <WipRow col={headRow.col} color={headRow.color} gutter={gutter} changes={workingChanges ?? 0} />
@@ -319,16 +371,19 @@ export function LogPanelView(props: LogPanelViewProps) {
                 currentBranch={currentBranch}
                 isHead={i === 0}
                 topStub={i === 0 && showWip}
+                selected={commit.hash === selectedHash}
+                onSelect={onSelectCommit}
               />
             ))}
           </ul>
-        </ScrollArea>
-      )}
 
-      {isRepo === true && hasMore && (
-        <Button variant="outline" size="sm" className="w-full" onClick={onLoadMore} disabled={loading}>
-          Load more
-        </Button>
+          {hasMore && (
+            <div ref={sentinelRef} className="text-muted-foreground flex items-center justify-center gap-2 py-3 text-xs">
+              <Loader2 className="size-3.5 animate-spin" />
+              Loading more…
+            </div>
+          )}
+        </div>
       )}
     </div>
   )

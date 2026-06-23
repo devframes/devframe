@@ -26,6 +26,33 @@ export interface Commit {
 export interface CommitArgs {
   message: string;
 }
+export interface CommitDetail {
+  isRepo: boolean;
+  found: boolean;
+  hash: string;
+  shortHash: string;
+  author: string;
+  email: string;
+  date: number;
+  committer: string;
+  committerEmail: string;
+  commitDate: number;
+  subject: string;
+  body: string;
+  parents: string[];
+  refs: string[];
+  files: CommitFile[];
+  totalAdditions: number;
+  totalDeletions: number;
+  patch: string | null;
+  truncated: boolean;
+}
+export interface CommitFile {
+  path: string;
+  additions: number;
+  deletions: number;
+  binary: boolean;
+}
 export interface CommitResult {
   ok: boolean;
   hash: string | null;
@@ -90,6 +117,10 @@ export interface LogArgs {
   limit?: number;
   skip?: number;
   ref?: string;
+}
+export interface ShowArgs {
+  hash: string;
+  patch?: boolean;
 }
 export interface StageArgs {
   paths: string[];
