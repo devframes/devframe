@@ -132,7 +132,7 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
         style={{ color, borderColor: withAlpha(color, 0.5), backgroundColor: withAlpha(color, 0.12) }}
       >
         <Tag className="size-3 shrink-0" />
-        <span className="truncate">{refToken.name}</span>
+        <span className="truncate" title={refToken.name}>{refToken.name}</span>
       </span>
     )
   }
@@ -160,7 +160,7 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
       {current
         ? <Check className="size-3 shrink-0" />
         : <GitBranch className="size-3 shrink-0 opacity-70" />}
-      <span className="truncate">{name}</span>
+      <span className="truncate" title={name}>{name}</span>
     </span>
   )
 }
@@ -211,12 +211,12 @@ function CommitRow({ commit, row, gutter, currentBranch, isHead, topStub, select
         </div>
 
         <div className="relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-0.5 pl-4">
-          <span className="truncate text-sm font-medium">{commit.subject}</span>
+          <span className="truncate text-sm font-medium" title={commit.subject}>{commit.subject}</span>
           <div className="text-muted-foreground flex items-center gap-2 text-xs">
-            <code className="shrink-0">{commit.shortHash}</code>
+            <code className="shrink-0 tabular-nums">{commit.shortHash}</code>
             <span className="truncate">{commit.author}</span>
             <span aria-hidden>·</span>
-            <span className="shrink-0" title={new Date(commit.date).toLocaleString()}>{relativeTime(commit.date)}</span>
+            <span className="shrink-0 tabular-nums" title={new Date(commit.date).toLocaleString()}>{relativeTime(commit.date)}</span>
           </div>
         </div>
       </button>
@@ -328,7 +328,7 @@ export function LogPanelView(props: LogPanelViewProps) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex items-center justify-between">
-        <span className="text-muted-foreground text-xs">
+        <span className="text-muted-foreground text-xs tabular-nums">
           {isRepo
             ? `${commits.length}${hasMore ? '+' : ''} commits${selectedRef ? ` · ${selectedRef}` : ''}`
             : ' '}
@@ -357,7 +357,7 @@ export function LogPanelView(props: LogPanelViewProps) {
       )}
 
       {isRepo === true && commits.length > 0 && (
-        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto pr-2">
+        <div ref={scrollRef} className="scrollbar-slim min-h-0 flex-1 overflow-y-auto pr-2">
           <ul>
             {showWip && headRow && (
               <WipRow col={headRow.col} color={headRow.color} gutter={gutter} changes={workingChanges ?? 0} />

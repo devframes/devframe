@@ -73,7 +73,7 @@ export function DiffPanelView(props: DiffPanelViewProps) {
         </div>
         <div className="flex items-center gap-2">
           {data?.isRepo && (
-            <span className="text-xs">
+            <span className="text-xs tabular-nums">
               <span className="text-success">
                 +
                 {data.totalAdditions}
@@ -124,11 +124,11 @@ export function DiffPanelView(props: DiffPanelViewProps) {
                       selected === file.path ? 'bg-accent' : 'hover:bg-accent/50',
                     )}
                   >
-                    <span className="flex-1 truncate">{file.path}</span>
+                    <span className="flex-1 truncate" title={file.path}>{file.path}</span>
                     {file.binary
                       ? <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">bin</Badge>
                       : (
-                          <span className="shrink-0">
+                          <span className="shrink-0 tabular-nums">
                             <span className="text-success">
                               +
                               {file.additions}

@@ -76,7 +76,7 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
 
             <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-xs">
               <dt className="text-muted-foreground">Commit</dt>
-              <dd className="truncate font-mono" title={data.hash}>{data.shortHash}</dd>
+              <dd className="truncate font-mono tabular-nums" title={data.hash}>{data.shortHash}</dd>
 
               <dt className="text-muted-foreground">Author</dt>
               <dd className="truncate">
@@ -99,7 +99,7 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
                   <dt className="text-muted-foreground">
                     {data.parents.length > 1 ? 'Parents' : 'Parent'}
                   </dt>
-                  <dd className="truncate font-mono">
+                  <dd className="truncate font-mono tabular-nums">
                     {data.parents.map(p => p.slice(0, 7)).join(', ')}
                   </dd>
                 </>
@@ -107,7 +107,7 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
             </dl>
 
             {data.body && (
-              <pre className="bg-muted/40 max-h-48 overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
+              <pre className="bg-muted/40 scrollbar-slim max-h-48 overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
                 {data.body}
               </pre>
             )}
@@ -117,7 +117,7 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
                 <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                   {`${data.files.length} ${data.files.length === 1 ? 'file' : 'files'} changed`}
                 </span>
-                <span className="text-xs">
+                <span className="text-xs tabular-nums">
                   <span className="text-success">{`+${data.totalAdditions}`}</span>
                   {' '}
                   <span className="text-destructive">{`−${data.totalDeletions}`}</span>
@@ -130,7 +130,7 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
                     {file.binary
                       ? <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">bin</Badge>
                       : (
-                          <span className="shrink-0">
+                          <span className="shrink-0 tabular-nums">
                             <span className="text-success">{`+${file.additions}`}</span>
                             {' '}
                             <span className="text-destructive">{`−${file.deletions}`}</span>

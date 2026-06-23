@@ -45,13 +45,14 @@ function statusColor(code: FileStatusCode): string {
 }
 
 function FileRow({ entry, action }: { entry: StatusFileEntry, action?: ReactNode }) {
+  const label = entry.from ? `${entry.from} → ${entry.path}` : entry.path
   return (
-    <li className="flex items-center gap-2 py-0.5 font-mono text-xs">
+    <li className="hover:bg-accent/40 flex items-center gap-2 rounded py-0.5 pl-1 font-mono text-xs transition-colors">
       <span className={`w-3 shrink-0 text-center font-semibold ${statusColor(entry.status)}`}>
         {STATUS_LABEL[entry.status]}
       </span>
-      <span className="flex-1 truncate">
-        {entry.from ? `${entry.from} → ${entry.path}` : entry.path}
+      <span className="flex-1 truncate" title={label}>
+        {label}
       </span>
       {action}
     </li>
@@ -76,7 +77,7 @@ function Section({
       <div className="flex items-center justify-between">
         <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium tracking-wide uppercase">
           {title}
-          <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">{count}</Badge>
+          <Badge variant="secondary" className="px-1.5 py-0 text-[10px] tabular-nums">{count}</Badge>
         </div>
         {headerAction}
       </div>
@@ -114,13 +115,13 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                     <Badge variant="secondary" className="gap-1 font-mono">
                       {data.upstream}
                       {data.ahead > 0 && (
-                        <span className="text-success inline-flex items-center">
+                        <span className="text-success inline-flex items-center tabular-nums">
                           <ArrowUp className="size-3" />
                           {data.ahead}
                         </span>
                       )}
                       {data.behind > 0 && (
-                        <span className="text-warning inline-flex items-center">
+                        <span className="text-warning inline-flex items-center tabular-nums">
                           <ArrowDown className="size-3" />
                           {data.behind}
                         </span>
@@ -149,7 +150,7 @@ export function StatusPanelView(props: StatusPanelViewProps) {
       )}
 
       {data?.isRepo && data.clean && (
-        <p className="text-muted-foreground text-sm">Nothing to commit — the working tree is clean.</p>
+        <p className="text-muted-foreground text-sm">Nothing to commit. The working tree is clean.</p>
       )}
 
       {data?.isRepo && !data.clean && (
@@ -217,7 +218,7 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                 aria-label="Commit message"
               />
               {note && <p className="text-destructive text-xs">{note}</p>}
-              <Button size="sm" onClick={onCommit} disabled={busy || message.trim().length === 0}>
+              <Button size="sm" className="tabular-nums" onClick={onCommit} disabled={busy || message.trim().length === 0}>
                 {`Commit ${data.staged.length} file${data.staged.length === 1 ? '' : 's'}`}
               </Button>
             </div>

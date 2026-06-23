@@ -19,7 +19,7 @@ function BranchRow({ branch }: { branch: Branch }) {
       <GitBranch className={`size-4 shrink-0 ${branch.current ? 'text-primary' : 'text-muted-foreground'}`} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className={`truncate font-mono text-xs ${branch.current ? 'font-semibold' : ''}`}>
+          <span className={`truncate font-mono text-xs ${branch.current ? 'font-semibold' : ''}`} title={branch.name}>
             {branch.name}
           </span>
           {branch.current && (
@@ -30,22 +30,22 @@ function BranchRow({ branch }: { branch: Branch }) {
           )}
           {branch.gone && <Badge variant="destructive" className="px-1.5 py-0 text-[10px]">upstream gone</Badge>}
         </div>
-        {branch.subject && <p className="text-muted-foreground truncate text-xs">{branch.subject}</p>}
+        {branch.subject && <p className="text-muted-foreground truncate text-xs" title={branch.subject}>{branch.subject}</p>}
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {branch.ahead > 0 && (
-          <span className="text-success inline-flex items-center text-xs">
+          <span className="text-success inline-flex items-center text-xs tabular-nums">
             <ArrowUp className="size-3" />
             {branch.ahead}
           </span>
         )}
         {branch.behind > 0 && (
-          <span className="text-warning inline-flex items-center text-xs">
+          <span className="text-warning inline-flex items-center text-xs tabular-nums">
             <ArrowDown className="size-3" />
             {branch.behind}
           </span>
         )}
-        <code className="text-muted-foreground text-xs">{branch.sha}</code>
+        <code className="text-muted-foreground text-xs tabular-nums">{branch.sha}</code>
       </div>
     </li>
   )
@@ -55,7 +55,7 @@ export function BranchesPanelView({ data, loading, onRefresh }: BranchesPanelVie
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-muted-foreground text-xs">
+        <span className="text-muted-foreground text-xs tabular-nums">
           {data?.isRepo ? `${data.branches.length} branches` : ' '}
         </span>
         <Button variant="ghost" size="icon" className="size-7" onClick={onRefresh} disabled={loading} aria-label="Refresh branches">

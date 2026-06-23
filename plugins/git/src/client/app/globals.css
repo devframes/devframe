@@ -14,18 +14,18 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.54 0.2 283);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
+  --accent: oklch(0.96 0.012 283);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.54 0.2 283);
   --success: oklch(0.6 0.13 160);
   --warning: oklch(0.75 0.15 80);
 }
@@ -37,18 +37,18 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.72 0.16 285);
+  --primary-foreground: oklch(0.18 0.03 285);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.27 0.018 285);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.62 0.17 285);
   --success: oklch(0.7 0.14 160);
   --warning: oklch(0.8 0.15 80);
 }
@@ -92,5 +92,30 @@
     color: var(--color-foreground);
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-primary) 30%, transparent);
+  }
+}
+
+/* Slim, theme-aware scrollbars for native overflow regions (the commit log,
+   commit-details patch, etc.) so dense panels read like a real devtool. */
+@utility scrollbar-slim {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--color-foreground) 22%, transparent) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background-color: color-mix(in oklab, var(--color-foreground) 22%, transparent);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in oklab, var(--color-foreground) 36%, transparent);
   }
 }

@@ -76,11 +76,11 @@ function BranchRow({
       >
         <div className="flex items-center gap-2">
           <GitBranch className={cn('size-3.5 shrink-0', branch.current ? 'text-primary' : 'text-muted-foreground')} />
-          <span className="truncate font-mono text-xs">{branch.name}</span>
+          <span className="truncate font-mono text-xs" title={branch.name}>{branch.name}</span>
           {branch.current && <Badge variant="success" className="px-1 py-0 text-[10px]">current</Badge>}
         </div>
         {(branch.ahead > 0 || branch.behind > 0) && (
-          <p className="text-muted-foreground mt-0.5 text-[11px]">
+          <p className="text-muted-foreground mt-0.5 text-[11px] tabular-nums">
             {branch.ahead > 0 && `ahead ${branch.ahead}`}
             {branch.ahead > 0 && branch.behind > 0 && ' · '}
             {branch.behind > 0 && `behind ${branch.behind}`}
@@ -126,14 +126,16 @@ function DashboardBody() {
   const showCommitDetails = pane === 'commits' && selectedCommit !== null
 
   return (
-    <main className="flex min-h-svh w-full flex-col gap-4 px-4 py-5 md:px-6">
-      <header className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <GitGraph className="text-primary size-6" />
+    <main className="flex min-h-svh w-full flex-col">
+      <header className="bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-20 flex items-center justify-between gap-3 border-b px-4 py-3 backdrop-blur md:px-6">
+        <div className="flex items-center gap-2.5">
+          <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
+            <GitGraph className="size-5" />
+          </div>
           <div>
-            <h1 className="text-base leading-none font-semibold">Git Dashboard</h1>
-            <p className="text-muted-foreground text-[11px]">
-              devframe + Next.js · type-safe RPC into the host repository
+            <h1 className="text-sm leading-none font-semibold">Git Dashboard</h1>
+            <p className="text-muted-foreground mt-1 text-[11px] leading-none">
+              devframe · type-safe RPC into the host repository
             </p>
           </div>
         </div>
@@ -143,7 +145,7 @@ function DashboardBody() {
         </div>
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[250px_minmax(0,1fr)_320px]">
+      <div className="grid min-h-0 flex-1 gap-4 px-4 py-4 md:px-6 xl:grid-cols-[250px_minmax(0,1fr)_320px]">
         <aside className="space-y-4">
           <Card>
             <CardHeader className="pb-2">
