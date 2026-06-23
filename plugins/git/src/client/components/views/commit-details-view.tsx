@@ -63,7 +63,7 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
       )}
 
       {!error && data && data.found && (
-        <ScrollArea className="h-[calc(100vh-13rem)] pr-2">
+        <ScrollArea className="scrollbar-slim min-h-0 flex-1 pr-2">
           <div className="space-y-4">
             <div className="space-y-1.5">
               <p className="text-sm leading-snug font-medium break-words">{data.subject}</p>
@@ -144,7 +144,7 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
             <div className={cn('overflow-hidden rounded-md border')}>
               <div className="bg-muted/50 border-b px-3 py-1 text-xs font-medium">Patch</div>
               {data.patch !== null
-                ? <DiffPatchView patch={data.patch} loading={false} truncated={data.truncated} />
+                ? <DiffPatchView patch={data.patch} loading={false} truncated={data.truncated} scroll={false} />
                 : <p className="text-muted-foreground p-3 text-xs">Patch is not available in static builds.</p>}
             </div>
           </div>

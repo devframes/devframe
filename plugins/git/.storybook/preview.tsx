@@ -8,8 +8,8 @@ const withTheme: Decorator = (Story, context) => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
   }, [theme])
   return (
-    <div className="bg-background text-foreground min-h-svh p-6">
-      <div className="mx-auto max-w-2xl">
+    <div className="bg-background text-foreground flex h-svh justify-center p-6">
+      <div className="flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border p-3">
         <Story />
       </div>
     </div>

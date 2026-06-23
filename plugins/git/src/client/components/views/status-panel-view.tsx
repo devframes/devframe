@@ -101,8 +101,8 @@ export function StatusPanelView(props: StatusPanelViewProps) {
   )
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <div className="flex shrink-0 items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           {data?.isRepo
             ? (
@@ -154,8 +154,8 @@ export function StatusPanelView(props: StatusPanelViewProps) {
       )}
 
       {data?.isRepo && !data.clean && (
-        <>
-          <ScrollArea className="h-64 pr-3">
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
+          <ScrollArea className="scrollbar-slim min-h-0 flex-1 pr-3">
             <div className="space-y-4">
               <Section
                 title="Staged"
@@ -208,7 +208,7 @@ export function StatusPanelView(props: StatusPanelViewProps) {
           </ScrollArea>
 
           {canWrite && data.staged.length > 0 && (
-            <div className="space-y-2 border-t pt-3">
+            <div className="shrink-0 space-y-2 border-t pt-3">
               <Textarea
                 value={message}
                 onChange={e => onMessageChange(e.target.value)}
@@ -223,7 +223,7 @@ export function StatusPanelView(props: StatusPanelViewProps) {
               </Button>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   )

@@ -33,22 +33,28 @@ function patchLineClass(line: string): string {
   return 'text-foreground'
 }
 
-/** Pure renderer for a unified patch. */
-export function DiffPatchView({ patch, loading, truncated }: { patch: string | null, loading: boolean, truncated: boolean }) {
+/**
+ * Pure renderer for a unified patch. Set `scroll={false}` to render inline
+ * (no inner scroll area) when the patch already sits in a scrolling parent.
+ */
+export function DiffPatchView({ patch, loading, truncated, scroll = true }: { patch: string | null, loading: boolean, truncated: boolean, scroll?: boolean }) {
   if (loading)
     return <Skeleton className="h-40 w-full" />
   if (!patch)
     return <p className="text-muted-foreground p-3 text-sm">No textual diff available (binary or unchanged).</p>
-  return (
-    <ScrollArea className="h-72 w-full">
+  const body = (
+    <>
       <pre className="font-mono text-xs leading-relaxed">
         {patch.split('\n').map((line, i) => (
           <div key={i} className={cn('px-3 whitespace-pre', patchLineClass(line))}>{line || ' '}</div>
         ))}
       </pre>
       {truncated && <p className="text-warning px-3 py-1 text-xs">Patch truncated.</p>}
-    </ScrollArea>
+    </>
   )
+  if (!scroll)
+    return <div className="scrollbar-slim overflow-x-auto py-1">{body}</div>
+  return <ScrollArea className="scrollbar-slim h-72 w-full">{body}</ScrollArea>
 }
 
 export function DiffPanelView(props: DiffPanelViewProps) {

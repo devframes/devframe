@@ -1,9 +1,10 @@
 'use client'
 
 import type { DevframeRpcClient } from 'devframe/client'
+import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { Branch, GitBranches } from '../../index'
 import { FileDiff, GitBranch, GitCommitHorizontal, GitGraph, ListTree, Moon, RefreshCw, Sun } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '../lib/utils'
 import { CommitDetailsPanel } from './commit-details-panel'
 import { DiffPanel } from './diff-panel'
@@ -13,8 +14,6 @@ import { StatusPanel } from './status-panel'
 import { useTheme } from './theme'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { ScrollArea } from './ui/scroll-area'
 import { Skeleton } from './ui/skeleton'
 import { useRpcResource } from './use-rpc-resource'
 
@@ -31,6 +30,68 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'commits', label: 'Commits', icon: GitCommitHorizontal },
   { id: 'diff', label: 'Diff', icon: FileDiff },
 ]
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}
+
+/**
+ * A draggable rail width, persisted to localStorage. `dir` is +1 for a
+ * left-edge rail (drag right widens) and -1 for a right-edge rail (drag left
+ * widens), matching the resizer's position relative to the panel it sizes.
+ */
+function useRailWidth(key: string, initial: number, min: number, max: number, dir: 1 | -1) {
+  const [width, setWidth] = useState(initial)
+  const widthRef = useRef(initial)
+  widthRef.current = width
+
+  useEffect(() => {
+    try {
+      const saved = Number(localStorage.getItem(key))
+      if (Number.isFinite(saved) && saved > 0)
+        setWidth(clamp(saved, min, max))
+    }
+    catch {}
+  }, [key, min, max])
+
+  const onPointerDown = useCallback((event: ReactPointerEvent) => {
+    event.preventDefault()
+    const startX = event.clientX
+    const startW = widthRef.current
+    const move = (ev: PointerEvent) => setWidth(clamp(startW + dir * (ev.clientX - startX), min, max))
+    const up = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+      try {
+        localStorage.setItem(key, String(Math.round(widthRef.current)))
+      }
+      catch {}
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+  }, [key, min, max, dir])
+
+  return { width, onPointerDown }
+}
+
+/** The single 1px border between two panels, doubling as a drag handle. */
+function Resizer({ onPointerDown, label }: { onPointerDown: (e: ReactPointerEvent) => void, label: string }) {
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label={label}
+      onPointerDown={onPointerDown}
+      className="group bg-border relative w-px shrink-0 cursor-col-resize"
+    >
+      <div className="group-hover:bg-primary/40 group-active:bg-primary/60 absolute inset-y-0 -left-1 -right-1 z-10 transition-colors" />
+    </div>
+  )
+}
 
 function ConnectionBadge() {
   const { rpc, error } = useRpc()
@@ -91,10 +152,21 @@ function BranchRow({
   )
 }
 
+function PanelHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-9 shrink-0 items-center justify-between gap-2 border-b px-3">
+      {children}
+    </div>
+  )
+}
+
 function DashboardBody() {
   const [pane, setPane] = useState<DashboardPane>('commits')
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null)
   const [selectedCommit, setSelectedCommit] = useState<string | null>(null)
+
+  const leftRail = useRailWidth('devframe-git:rail-left', 264, 200, 420, 1)
+  const rightRail = useRailWidth('devframe-git:rail-right', 360, 280, 560, -1)
 
   const branchesLoader = useCallback((rpc: DevframeRpcClient) => rpc.call('git:branches'), [])
   const {
@@ -122,12 +194,11 @@ function DashboardBody() {
     setPane('commits')
   }
 
-  // The detail panel only makes sense alongside the commit list.
   const showCommitDetails = pane === 'commits' && selectedCommit !== null
 
   return (
-    <main className="flex min-h-svh w-full flex-col">
-      <header className="bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-20 flex items-center justify-between gap-3 border-b px-4 py-3 backdrop-blur md:px-6">
+    <div className="bg-background flex h-svh w-full flex-col overflow-hidden">
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3">
         <div className="flex items-center gap-2.5">
           <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
             <GitGraph className="size-5" />
@@ -145,131 +216,132 @@ function DashboardBody() {
         </div>
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-4 px-4 py-4 md:px-6 xl:grid-cols-[250px_minmax(0,1fr)_320px]">
-        <aside className="space-y-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Workspace</CardTitle>
-              <CardDescription>Switch views and choose the log branch.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-1.5">
-                <label htmlFor="branch-select" className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
-                  Branch
-                </label>
-                <select
-                  id="branch-select"
-                  value={selectedBranch ?? ''}
-                  onChange={event => selectBranch(event.target.value)}
-                  disabled={branchesLoading || !branches?.isRepo || branches.branches.length === 0}
-                  className="bg-background border-input focus:ring-ring h-9 w-full rounded-md border px-2 text-sm outline-none focus:ring-2"
-                >
-                  {!branches?.isRepo && <option value="">Not a repository</option>}
-                  {branches?.isRepo && branches.branches.length === 0 && <option value="">No branches</option>}
-                  {branches?.isRepo && branches.branches.map(branch => (
-                    <option key={branch.name} value={branch.name}>{branch.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <nav className="space-y-1">
-                {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
-                  <Button
-                    key={id}
-                    type="button"
-                    variant={pane === id ? 'secondary' : 'ghost'}
-                    className="w-full justify-start"
-                    onClick={() => setPane(id)}
-                  >
-                    <Icon className="size-4" />
-                    {label}
-                  </Button>
+      <div className="flex min-h-0 flex-1">
+        {/* Left rail: views + branch picker, then the branch list. */}
+        <aside className="flex min-h-0 flex-col" style={{ width: leftRail.width }}>
+          <div className="shrink-0 space-y-3 border-b p-3">
+            <div className="space-y-1.5">
+              <label htmlFor="branch-select" className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
+                Branch
+              </label>
+              <select
+                id="branch-select"
+                value={selectedBranch ?? ''}
+                onChange={event => selectBranch(event.target.value)}
+                disabled={branchesLoading || !branches?.isRepo || branches.branches.length === 0}
+                className="bg-background border-input focus:ring-ring h-9 w-full rounded-md border px-2 text-sm outline-none focus:ring-2"
+              >
+                {!branches?.isRepo && <option value="">Not a repository</option>}
+                {branches?.isRepo && branches.branches.length === 0 && <option value="">No branches</option>}
+                {branches?.isRepo && branches.branches.map(branch => (
+                  <option key={branch.name} value={branch.name}>{branch.name}</option>
                 ))}
-              </nav>
+              </select>
+            </div>
 
-              {branchesError && <p className="text-destructive text-xs">{branchesError}</p>}
-            </CardContent>
-          </Card>
+            <nav className="space-y-1">
+              {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+                <Button
+                  key={id}
+                  type="button"
+                  variant={pane === id ? 'secondary' : 'ghost'}
+                  className="w-full justify-start"
+                  onClick={() => setPane(id)}
+                >
+                  <Icon className="size-4" />
+                  {label}
+                </Button>
+              ))}
+            </nav>
+
+            {branchesError && <p className="text-destructive text-xs">{branchesError}</p>}
+          </div>
+
+          <div className="flex min-h-0 flex-1 flex-col">
+            <PanelHeading>
+              <span className="text-xs font-medium">Branches</span>
+              <div className="flex items-center gap-1">
+                <span className="text-muted-foreground text-[11px] tabular-nums">
+                  {branches?.isRepo ? branches.branches.length : ''}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-6"
+                  onClick={refreshBranches}
+                  disabled={branchesLoading}
+                  aria-label="Refresh branches"
+                >
+                  <RefreshCw className={cn('size-3.5', branchesLoading && 'animate-spin')} />
+                </Button>
+              </div>
+            </PanelHeading>
+
+            <div className="scrollbar-slim min-h-0 flex-1 overflow-y-auto p-2">
+              {!branches && (
+                <div className="space-y-2">
+                  {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-9 w-full" />)}
+                </div>
+              )}
+
+              {branches && !branches.isRepo && (
+                <p className="text-muted-foreground p-2 text-sm">The working directory is not a git repository.</p>
+              )}
+
+              {branches?.isRepo && (
+                <ul className="space-y-0.5">
+                  {branches.branches.map(branch => (
+                    <BranchRow
+                      key={branch.name}
+                      branch={branch}
+                      selected={branch.name === selectedBranch}
+                      onSelect={selectBranch}
+                    />
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </aside>
 
-        <section className="flex min-w-0 flex-col">
-          <Card className="flex h-full min-h-0 flex-col py-4">
-            <CardContent className="flex min-h-0 flex-1 flex-col px-4">
-              {pane === 'status' && <StatusPanel />}
-              {pane === 'commits' && (
-                <LogPanel
-                  branch={selectedBranch}
-                  selectedHash={selectedCommit}
-                  onSelectCommit={setSelectedCommit}
-                />
-              )}
-              {pane === 'diff' && <DiffPanel />}
-            </CardContent>
-          </Card>
+        <Resizer onPointerDown={leftRail.onPointerDown} label="Resize sidebar" />
+
+        {/* Center: the active pane, scrolling inside its own region. */}
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {pane === 'commits' && (
+            <div className="flex min-h-0 flex-1 flex-col p-3">
+              <LogPanel
+                branch={selectedBranch}
+                selectedHash={selectedCommit}
+                onSelectCommit={setSelectedCommit}
+              />
+            </div>
+          )}
+          {pane === 'status' && (
+            <div className="flex min-h-0 flex-1 flex-col p-3">
+              <StatusPanel />
+            </div>
+          )}
+          {pane === 'diff' && (
+            <div className="scrollbar-slim min-h-0 flex-1 overflow-y-auto p-3">
+              <DiffPanel />
+            </div>
+          )}
         </section>
 
-        <aside className="hidden min-w-0 xl:block">
-          <Card className="h-full py-4">
-            <CardContent className="px-4">
-              {showCommitDetails && selectedCommit
-                ? (
-                    <CommitDetailsPanel
-                      hash={selectedCommit}
-                      onClose={() => setSelectedCommit(null)}
-                    />
-                  )
-                : (
-                    <>
-                      <div className="flex items-center justify-between pb-2">
-                        <div>
-                          <CardTitle className="text-sm">Branches</CardTitle>
-                          <CardDescription>
-                            {branches?.isRepo ? `${branches.branches.length} branches` : ' '}
-                          </CardDescription>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7"
-                          onClick={refreshBranches}
-                          disabled={branchesLoading}
-                          aria-label="Refresh branches"
-                        >
-                          <RefreshCw className={cn('size-3.5', branchesLoading && 'animate-spin')} />
-                        </Button>
-                      </div>
-
-                      {!branches && (
-                        <div className="space-y-2">
-                          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-9 w-full" />)}
-                        </div>
-                      )}
-
-                      {branches && !branches.isRepo && (
-                        <p className="text-muted-foreground text-sm">The working directory is not a git repository.</p>
-                      )}
-
-                      {branches?.isRepo && (
-                        <ScrollArea className="h-[calc(100vh-16rem)] pr-2">
-                          <ul className="space-y-1">
-                            {branches.branches.map(branch => (
-                              <BranchRow
-                                key={branch.name}
-                                branch={branch}
-                                selected={branch.name === selectedBranch}
-                                onSelect={selectBranch}
-                              />
-                            ))}
-                          </ul>
-                        </ScrollArea>
-                      )}
-                    </>
-                  )}
-            </CardContent>
-          </Card>
-        </aside>
+        {showCommitDetails && selectedCommit && (
+          <>
+            <Resizer onPointerDown={rightRail.onPointerDown} label="Resize commit details" />
+            <aside className="flex min-h-0 flex-col p-3" style={{ width: rightRail.width }}>
+              <CommitDetailsPanel
+                hash={selectedCommit}
+                onClose={() => setSelectedCommit(null)}
+              />
+            </aside>
+          </>
+        )}
       </div>
-    </main>
+    </div>
   )
 }
 
