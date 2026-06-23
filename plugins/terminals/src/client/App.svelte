@@ -1,0 +1,290 @@
+<script lang="ts">
+  import type { DevframeRpcClient } from 'devframe/client'
+  import type { TerminalPreset, TerminalSessionInfo } from '../types'
+  import { onMount } from 'svelte'
+  import { PRESETS_STATE_KEY, SESSIONS_STATE_KEY } from '../constants'
+  import TerminalView from './TerminalView.svelte'
+
+  const { rpc, autostart } = $props<{
+    rpc: DevframeRpcClient
+    autostart: boolean
+  }>()
+
+  let isDark = $state(true)
+  let sessions = $state<TerminalSessionInfo[]>([])
+  let presets = $state<TerminalPreset[]>([])
+  let activeId = $state<string | null>(null)
+  let renamingId = $state<string | null>(null)
+  let presetsOpen = $state(false)
+
+  const activeSession = $derived(sessions.find(s => s.id === activeId) ?? null)
+
+  function readHashId(): string | null {
+    if (typeof location === 'undefined')
+      return null
+    return new URLSearchParams(location.hash.replace(/^#/, '')).get('id')
+  }
+
+  function writeHashId(id: string): void {
+    if (typeof location === 'undefined' || typeof history === 'undefined')
+      return
+    const target = `#id=${id}`
+    if (location.hash !== target)
+      history.replaceState(history.state, '', target)
+  }
+
+  function displayName(info: TerminalSessionInfo): string {
+    return info.customTitle || info.processName || info.title
+  }
+
+  function pickActive(list: TerminalSessionInfo[]): void {
+    if (activeId && !list.some(x => x.id === activeId))
+      activeId = null
+    if (!activeId && list.length) {
+      const hashId = readHashId()
+      activeId = (hashId && list.some(x => x.id === hashId)) ? hashId : list[list.length - 1].id
+    }
+  }
+
+  onMount(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const applyScheme = (dark: boolean): void => {
+      isDark = dark
+      document.documentElement.classList.toggle('dark', dark)
+      document.documentElement.classList.toggle('light', !dark)
+    }
+    applyScheme(mq.matches)
+    const onMq = (e: MediaQueryListEvent): void => applyScheme(e.matches)
+    mq.addEventListener('change', onMq)
+
+    const onHashChange = (): void => {
+      const id = readHashId()
+      if (id && sessions.some(s => s.id === id))
+        activeId = id
+    }
+    window.addEventListener('hashchange', onHashChange)
+
+    return () => {
+      mq.removeEventListener('change', onMq)
+      window.removeEventListener('hashchange', onHashChange)
+    }
+  })
+
+  onMount(() => {
+    let offSessions: (() => void) | undefined
+    let offPresets: (() => void) | undefined
+
+    rpc.sharedState.get(PRESETS_STATE_KEY, { initialValue: { presets: [] } }).then((state: any) => {
+      presets = state.value().presets || []
+      offPresets = state.on('updated', (full: any) => { presets = full.presets || [] })
+    })
+
+    rpc.sharedState.get(SESSIONS_STATE_KEY, { initialValue: { sessions: [] } }).then((state: any) => {
+      const sync = (list: TerminalSessionInfo[]): void => {
+        sessions = list
+        pickActive(list)
+      }
+      sync(state.value().sessions || [])
+      offSessions = state.on('updated', (full: any) => sync(full.sessions || []))
+    })
+
+    return () => {
+      offSessions?.()
+      offPresets?.()
+    }
+  })
+
+  onMount(async () => {
+    let existing: TerminalSessionInfo[] | null = null
+    try {
+      existing = await rpc.call('devframes-plugin-terminals:list') as TerminalSessionInfo[]
+    }
+    catch {
+      existing = null
+    }
+    if (existing) {
+      sessions = existing
+      pickActive(existing)
+    }
+    const hasSessions = existing ? existing.length > 0 : sessions.length > 0
+    if (autostart && !hasSessions)
+      spawn({ mode: 'interactive' })
+  })
+
+  $effect(() => {
+    if (activeId)
+      writeHashId(activeId)
+  })
+
+  async function spawn(req: any): Promise<void> {
+    try {
+      const info = await rpc.call('devframes-plugin-terminals:spawn', req) as any
+      if (info?.id)
+        activeId = info.id
+    }
+    catch {}
+  }
+
+  function runPreset(id: string): void {
+    presetsOpen = false
+    spawn({ presetId: id })
+  }
+
+  function commitRename(id: string, title: string): void {
+    renamingId = null
+    rpc.call('devframes-plugin-terminals:rename', { id, title: title.trim() }).catch(() => {})
+  }
+
+  function focusSelect(node: HTMLInputElement) {
+    node.focus()
+    node.select()
+  }
+
+  function statusDot(status: string): string {
+    if (status === 'running')
+      return 'dot-running'
+    return status === 'exited' ? 'dot-exited' : 'dot-error'
+  }
+</script>
+
+<div class="absolute inset-0 flex flex-col bg-base color-base font-sans of-hidden">
+  <!-- Top navigation: brand + session tabs + actions -->
+  <nav class="z-nav h-9 shrink-0 flex items-center gap-1 px-2 border-b border-base bg-base">
+    <div class="flex items-center gap-1.5 pr-2 mr-1 border-r border-base shrink-0">
+      <div class="i-ph-terminal-window-duotone text-base color-active"></div>
+      <span class="text-sm font-500 op-fade hidden sm:inline">Terminals</span>
+    </div>
+
+    <div class="flex-1 flex items-center gap-1 of-x-auto of-y-hidden py-1">
+      {#each sessions as s (s.id)}
+        {#if renamingId === s.id}
+          <input
+            class="text-sm w-44 px2 py1 rounded border border-active bg-secondary color-base outline-none font-mono"
+            value={displayName(s)}
+            spellcheck={false}
+            use:focusSelect
+            onkeydown={(e) => {
+              if (e.key === 'Enter') { e.preventDefault(); commitRename(s.id, e.currentTarget.value) }
+              else if (e.key === 'Escape') { e.preventDefault(); renamingId = null }
+            }}
+            onblur={e => commitRename(s.id, e.currentTarget.value)}
+            onclick={e => e.stopPropagation()}
+          />
+        {:else}
+          <button
+            type="button"
+            class="group tab-item {activeId === s.id ? 'tab-item-active' : ''}"
+            title={`${displayName(s)} — double-click to rename`}
+            onclick={() => (activeId = s.id)}
+            ondblclick={(e) => { e.preventDefault(); e.stopPropagation(); renamingId = s.id }}
+          >
+            <span class="h-1.5 w-1.5 rounded-full shrink-0 {statusDot(s.status)}"></span>
+            <span class="truncate">{displayName(s)}</span>
+            <span
+              role="button"
+              tabindex="-1"
+              aria-label="Close terminal"
+              class="i-ph-x op0 group-hover:op60 hover:op100! transition-opacity shrink-0"
+              onclick={(e) => { e.stopPropagation(); rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {}) }}
+              onkeydown={() => {}}
+            ></span>
+          </button>
+        {/if}
+      {/each}
+
+      <button
+        type="button"
+        class="btn-icon shrink-0"
+        title="New terminal"
+        onclick={() => spawn({ mode: 'interactive' })}
+      >
+        <div class="i-ph-plus"></div>
+      </button>
+    </div>
+
+    {#if presets.length}
+      <div class="relative shrink-0">
+        <button
+          type="button"
+          class="btn-action-sm {presetsOpen ? 'btn-action-active' : ''}"
+          title="Run a preset command"
+          onclick={() => (presetsOpen = !presetsOpen)}
+        >
+          <div class="i-ph-play-duotone"></div>
+          <span class="hidden sm:inline">Presets</span>
+          <div class="i-ph-caret-down text-xs op-fade"></div>
+        </button>
+        {#if presetsOpen}
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            class="fixed inset-0 z-nav"
+            onclick={() => (presetsOpen = false)}
+            onkeydown={() => {}}
+          ></div>
+          <div class="absolute right-0 mt-1 min-w-52 z-nav flex flex-col gap-0.5 p-1 rounded-lg border border-base bg-base shadow-lg">
+            {#each presets as p (p.id)}
+              <button
+                type="button"
+                class="flex items-center gap-2 px2 py1.5 rounded text-sm text-left op-fade hover:(op100 bg-active) transition-colors"
+                onclick={() => runPreset(p.id)}
+              >
+                <div class="{p.icon || 'i-ph-terminal-duotone'} shrink-0 op-fade"></div>
+                <span class="truncate flex-1">{p.title}</span>
+                <span class="font-mono text-xs op-mute">{p.mode === 'interactive' ? 'tty' : 'log'}</span>
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    {/if}
+  </nav>
+
+  <!-- Toolbar: details of the active session -->
+  {#if activeSession}
+    {@const s = activeSession}
+    <div class="z-toolbar h-8 shrink-0 flex items-center gap-2 px-2.5 border-b border-base bg-secondary text-sm">
+      <span class="px1.5 rounded text-xs font-500 {s.mode === 'interactive' ? 'badge-blue' : 'badge-amber'}">
+        {s.mode === 'interactive' ? 'interactive' : 'readonly'}
+      </span>
+      <span class="font-mono truncate op-fade" title={`${s.command} ${s.args.join(' ')}`}>
+        {s.command}{s.args.length ? ` ${s.args.join(' ')}` : ''}
+      </span>
+      <span class="flex items-center gap-1.5 op-mute font-mono text-xs tabular-nums shrink-0">
+        {#if s.status === 'running'}
+          <span class="h-1.5 w-1.5 rounded-full dot-running"></span>
+          {s.backend}{s.pid ? ` · ${s.pid}` : ''}
+        {:else}
+          {s.status}{s.exitCode != null ? ` (${s.exitCode})` : ''}
+        {/if}
+      </span>
+
+      <div class="flex-1"></div>
+
+      <button type="button" class="btn-icon" title="Restart" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: s.id }).catch(() => {})}>
+        <div class="i-ph-arrow-clockwise-duotone"></div>
+      </button>
+      <button type="button" class="btn-icon" title="Kill" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {})}>
+        <div class="i-ph-trash-duotone"></div>
+      </button>
+    </div>
+  {/if}
+
+  <!-- Terminal surface -->
+  <div class="relative flex-1 min-h-0 bg-base">
+    {#if sessions.length === 0}
+      <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 op-mute select-none">
+        <div class="i-ph-terminal-window-duotone text-5xl"></div>
+        <div class="flex items-center gap-1.5 text-sm">
+          <span>No sessions.</span>
+          <button type="button" class="btn-action-sm" onclick={() => spawn({ mode: 'interactive' })}>
+            <div class="i-ph-plus"></div>
+            New terminal
+          </button>
+        </div>
+      </div>
+    {/if}
+    {#each sessions as s (s.id)}
+      <TerminalView {rpc} info={s} active={activeId === s.id} {isDark} />
+    {/each}
+  </div>
+</div>

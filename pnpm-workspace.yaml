@@ -1,4 +1,5 @@
 allowBuilds:
+  '@homebridge/node-pty-prebuilt-multiarch': true
   '@parcel/watcher': false
   esbuild: true
   sharp: false
@@ -35,6 +36,7 @@ catalogs:
     turbo: ^2.9.15
     vite: ^8.0.14
   deps:
+    '@homebridge/node-pty-prebuilt-multiarch': ^0.13.1
     '@modelcontextprotocol/sdk': ^1.29.0
     '@valibot/to-json-schema': ^1.7.0
     birpc: ^4.0.0
@@ -62,10 +64,20 @@ catalogs:
     vitepress: ^2.0.0-alpha.17
     vitepress-plugin-mermaid: ^2.0.17
   frontend:
+    '@iconify-json/ph': ^1.2.0
+    '@sveltejs/vite-plugin-svelte': ^5.0.0
+    '@unocss/preset-icons': ^66.0.0
+    '@unocss/preset-uno': ^66.0.0
+    '@unocss/vite': ^66.0.0
+    '@xterm/addon-fit': ^0.11.0
+    '@xterm/xterm': ^6.0.0
     next: ^16.2.6
     preact: ^10.29.2
     react: ^19.2.6
     react-dom: ^19.2.6
+    svelte: ^5.0.0
+    unocss: ^66.0.0
+    vite-plugin-css-injected-by-js: ^3.5.0
   inlined:
     '@antfu/utils': ^9.3.0
     ua-parser-modern: ^0.1.1

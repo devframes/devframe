@@ -10,6 +10,7 @@ export default defineConfig({
       'packages/devframe',
       'packages/hub',
       'plugins/code-server',
+      'plugins/terminals',
       'examples/files-inspector',
       'examples/streaming-chat',
       'examples/next-runtime-snapshot',

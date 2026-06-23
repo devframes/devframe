@@ -23,6 +23,11 @@
       "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
     },
+    "@devframes/plugin-terminals#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe#build"],
+      "outputs": ["dist/**"]
+    },
     "minimal-vite-devframe-hub#build": {
       "outputLogs": "new-only",
       "dependsOn": ["@devframes/hub#build", "devframe#build"],
