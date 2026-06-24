@@ -60,6 +60,7 @@ export const alias = {
   '@devframes/plugin-terminals/cli': p('terminals/src/cli.ts'),
   '@devframes/plugin-terminals/vite': p('terminals/src/vite.ts'),
   '@devframes/plugin-terminals': p('terminals/src/index.ts'),
+  '@devframes/plugin-git': p('git/src/index.ts'),
   'devframe/recipes/open-helpers': r('devframe/src/recipes/open-helpers.ts'),
   'devframe/client': r('devframe/src/client/index.ts'),
   'devframe': r('devframe/src'),

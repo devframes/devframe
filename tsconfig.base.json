@@ -166,6 +166,9 @@
       "@devframes/plugin-terminals": [
         "./plugins/terminals/src/index.ts"
       ],
+      "@devframes/plugin-git": [
+        "./plugins/git/src/index.ts"
+      ],
       "devframe/recipes/open-helpers": [
         "./packages/devframe/src/recipes/open-helpers.ts"
       ],

@@ -6,12 +6,15 @@
   "description": "Protocol-witness example — a tiny Next.js Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/minimal-next-devframe-hub",
   "scripts": {
-    "dev": "next dev src/client",
+    "dev": "next dev src/client -H 0.0.0.0",
     "build": "next build src/client",
     "test": "vitest run --config vitest.config.ts"
   },
   "dependencies": {
     "@devframes/hub": "workspace:*",
+    "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-git": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
     "devframe": "workspace:*",
     "next": "catalog:frontend",
     "react": "catalog:frontend",

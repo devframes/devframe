@@ -6,11 +6,14 @@
   "description": "Protocol-witness example — a tiny Vite Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/minimal-vite-devframe-hub",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build"
   },
   "dependencies": {
     "@devframes/hub": "workspace:*",
+    "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-git": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
     "devframe": "workspace:*"
   },
   "devDependencies": {

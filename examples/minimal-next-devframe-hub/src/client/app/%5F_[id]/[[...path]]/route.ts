@@ -2,7 +2,7 @@ import { createReadStream } from 'node:fs'
 import { stat } from 'node:fs/promises'
 import { Readable } from 'node:stream'
 import { extname, join, normalize, resolve, sep } from 'pathe'
-import { ensureMinimalNextDevframeHub, getStaticMount } from '../../../devframe/minimal-next-devframe-hub'
+import { ensureMinimalNextDevframeHub, getStaticMount, isConnectionMetaPath } from '../../../devframe/minimal-next-devframe-hub'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -80,9 +80,15 @@ async function resolveTarget(absDir: string, urlPath: string): Promise<ResolvedF
 }
 
 export async function GET(request: Request): Promise<Response> {
-  await ensureMinimalNextDevframeHub()
+  const hub = await ensureMinimalNextDevframeHub()
 
   const pathname = new URL(request.url).pathname
+
+  // A mounted devframe SPA fetches `<base>/__connection.json` to discover the
+  // side-car WS endpoint. Answer it with the hub's connection meta.
+  if (isConnectionMetaPath(pathname))
+    return Response.json(hub.connectionMeta)
+
   const hit = getStaticMount(pathname)
   if (!hit)
     return new Response(null, { status: 404 })

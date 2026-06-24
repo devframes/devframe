@@ -77,10 +77,28 @@ export function minimalViteDevframeHub(options: MinimalViteDevframeHubOptions = 
       started = undefined
 
       const cwd = viteConfig!.root
+      const port = options.port ?? await getPort({ port: 9777, random: false })
+
+      // Serve the side-car's connection meta (`__connection.json`) at a URL
+      // base so a browser loaded there can discover the WS endpoint via
+      // `connectDevframe()`'s relative `./__connection.json` fetch.
+      const serveConnectionMeta = (metaBase: string): void => {
+        const metaPath = `${metaBase}${DEVFRAME_CONNECTION_META_FILENAME}`
+        server.middlewares.use(metaPath, (_req, res) => {
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ backend: 'websocket', websocket: port }))
+        })
+      }
 
       const host: DevframeHost = {
         mountStatic(base, distDir) {
           server.middlewares.use(base, serveStaticNodeMiddleware(distDir))
+        },
+        // Serve `<base>__connection.json` for each mounted devframe so its
+        // SPA connects to the hub without relying on same-origin parent-window
+        // inheritance — which breaks for cross-origin / sandboxed iframes.
+        mountConnectionMeta(base) {
+          serveConnectionMeta(base)
         },
         resolveOrigin() {
           const resolved = server.resolvedUrls?.local?.[0]
@@ -92,8 +110,6 @@ export function minimalViteDevframeHub(options: MinimalViteDevframeHubOptions = 
             : join(homedir(), '.minimal-vite-devframe-hub')
         },
       }
-
-      const port = options.port ?? await getPort({ port: 9777, random: false })
 
       const context = await createHubContext({
         cwd,
@@ -135,13 +151,8 @@ export function minimalViteDevframeHub(options: MinimalViteDevframeHubOptions = 
         auth: false,
       })
 
-      // Tell the browser where to find the WS endpoint. `connectDevframe`
-      // resolves this URL relative to its `baseURL` option.
-      const metaPath = `${base}${DEVFRAME_CONNECTION_META_FILENAME}`
-      server.middlewares.use(metaPath, (_req, res) => {
-        res.setHeader('Content-Type', 'application/json')
-        res.end(JSON.stringify({ backend: 'websocket', websocket: port }))
-      })
+      // Tell the hub UI (served at `base`) where to find the WS endpoint.
+      serveConnectionMeta(base)
 
       server.httpServer?.once('close', () => {
         void started?.close().catch(() => {})
