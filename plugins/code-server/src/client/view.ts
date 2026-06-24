@@ -3,6 +3,7 @@ import type {
   CodeServerDetection,
   CodeServerServerInfo,
 } from '../types'
+import { button, link as linkClass, spinner } from '@internal/design/components'
 
 /** The data the view renders from. Pure — no RPC, no process knowledge. */
 export interface CodeServerViewState {
@@ -117,7 +118,7 @@ export function createCodeServerView(
 
   function renderConnecting(): void {
     const wrap = el('div', 'flex items-center gap-2.5')
-    wrap.append(el('div', 'df-spinner text-muted-foreground'), el('span', 'text-sm text-muted-foreground', 'Connecting to devframe…'))
+    wrap.append(el('div', spinner('text-muted-foreground')), el('span', 'text-sm text-muted-foreground', 'Connecting to devframe…'))
     shell(wrap)
   }
 
@@ -133,7 +134,7 @@ export function createCodeServerView(
       row.append(el('label', 'block mb-1 text-xs text-muted-foreground', label))
       const cmd = el('div', 'flex items-center gap-2 px-2.5 py-2 rounded-md border border-border bg-muted')
       cmd.append(el('code', 'flex-1 of-x-auto whitespace-nowrap font-mono text-xs text-foreground', command))
-      const copy = el('button', 'df-btn df-btn-outline df-btn-sm shrink-0 text-[11px]', 'Copy')
+      const copy = el('button', button({ variant: 'outline', size: 'sm', class: 'shrink-0 text-[11px]' }), 'Copy')
       copy.onclick = () => {
         navigator.clipboard?.writeText(command).then(() => {
           copy.textContent = 'Copied'
@@ -149,7 +150,7 @@ export function createCodeServerView(
     nodes.push(install)
 
     const actions = el('div', 'flex flex-wrap items-center gap-2.5')
-    const recheckBtn = el('button', 'df-btn df-btn-primary', busy ? 'Checking…' : 'Re-check')
+    const recheckBtn = el('button', button({ variant: 'primary' }), busy ? 'Checking…' : 'Re-check')
     recheckBtn.disabled = busy
     recheckBtn.onclick = recheck
     actions.append(recheckBtn)
@@ -181,9 +182,9 @@ export function createCodeServerView(
     nodes.push(meta)
 
     const actions = el('div', 'flex flex-wrap items-center gap-2.5')
-    const launchBtn = el('button', 'df-btn df-btn-primary')
+    const launchBtn = el('button', button({ variant: 'primary' }))
     if (busy)
-      launchBtn.append(el('span', 'df-spinner'), document.createTextNode('Starting…'))
+      launchBtn.append(el('span', spinner()), document.createTextNode('Starting…'))
     else
       launchBtn.textContent = 'Launch code-server'
     launchBtn.disabled = busy ?? false
@@ -195,7 +196,7 @@ export function createCodeServerView(
 
   function renderStarting(): void {
     const wrap = el('div', 'flex items-center gap-2.5')
-    wrap.append(el('div', 'df-spinner text-muted-foreground'), el('span', 'text-sm text-muted-foreground', 'Starting code-server…'))
+    wrap.append(el('div', spinner('text-muted-foreground')), el('span', 'text-sm text-muted-foreground', 'Starting code-server…'))
     shell(wrap)
   }
 
@@ -217,7 +218,7 @@ export function createCodeServerView(
   }
 
   function link(text: string, href: string): HTMLAnchorElement {
-    const a = el('a', 'df-link text-sm', text) as HTMLAnchorElement
+    const a = el('a', linkClass('text-sm'), text) as HTMLAnchorElement
     a.href = href
     a.target = '_blank'
     a.rel = 'noreferrer'

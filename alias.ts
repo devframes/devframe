@@ -46,6 +46,7 @@ export const alias = {
   '@devframes/nuxt/runtime/plugin.client': r('nuxt/src/runtime/plugin.client.ts'),
   '@devframes/nuxt': r('nuxt/src/index.ts'),
   '@internal/design/preset': r('design/src/preset.ts'),
+  '@internal/design/components': r('design/src/components.ts'),
   '@internal/design/tokens': r('design/src/tokens.ts'),
   '@internal/design/theme.css': r('design/src/theme.css'),
   '@internal/design': r('design/src/index.ts'),

@@ -4,6 +4,7 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     preset: 'src/preset.ts',
+    components: 'src/components.ts',
     tokens: 'src/tokens.ts',
   },
   outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),

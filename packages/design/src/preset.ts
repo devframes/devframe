@@ -6,6 +6,7 @@ import {
   transformerDirectives,
   transformerVariantGroup,
 } from 'unocss'
+import { DF_SAFELIST } from './components'
 import { radius, tokenColors } from './tokens'
 
 export interface PresetDevframeOptions {
@@ -76,6 +77,10 @@ export const shortcuts = [
     'df-card': 'flex flex-col rounded-xl border border-border bg-card text-card-foreground shadow-sm',
     'df-panel': 'rounded-lg border border-border bg-card text-card-foreground',
 
+    // Bars — a top navigation strip and a secondary toolbar.
+    'df-nav': 'z-nav flex items-center gap-1 shrink-0 h-9 px-2 border-b border-base bg-base',
+    'df-toolbar': 'z-toolbar flex items-center gap-2 shrink-0 h-8 px-2.5 border-b border-base bg-secondary text-sm',
+
     // Form controls.
     'df-input': 'flex w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none transition-colors placeholder:text-muted-foreground disabled:(cursor-not-allowed op50) focus-visible:(border-ring ring-[3px] ring-ring/50)',
 
@@ -127,6 +132,9 @@ export function presetDevframe(options: PresetDevframeOptions = {}): Preset {
       radius,
     },
     shortcuts,
+    // The `df-*` vocabulary is assembled at runtime by the component builders,
+    // so it can't be statically extracted — always emit it.
+    safelist: DF_SAFELIST,
     presets: [
       presetWind4(),
       presetIcons({ scale: 1.1, ...options.icons }),

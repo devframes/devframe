@@ -124,6 +124,9 @@
       "@internal/design/preset": [
         "./packages/design/src/preset.ts"
       ],
+      "@internal/design/components": [
+        "./packages/design/src/components.ts"
+      ],
       "@internal/design/tokens": [
         "./packages/design/src/tokens.ts"
       ],

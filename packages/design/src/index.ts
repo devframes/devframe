@@ -1,3 +1,4 @@
+export * from './components'
 export { presetDevframe, shortcuts } from './preset'
 export type { PresetDevframeOptions } from './preset'
 export { presetDevframe as default } from './preset'

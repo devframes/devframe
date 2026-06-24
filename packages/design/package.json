@@ -12,6 +12,7 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./preset": "./dist/preset.mjs",
+    "./components": "./dist/components.mjs",
     "./tokens": "./dist/tokens.mjs",
     "./theme.css": "./dist/theme.css",
     "./style.css": "./dist/style.css",
