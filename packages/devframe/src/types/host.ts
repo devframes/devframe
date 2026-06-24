@@ -18,6 +18,20 @@ export interface DevframeHost {
   mountStatic: (base: string, distDir: string) => void | Promise<void>
 
   /**
+   * Serve the host's connection meta (`__connection.json`) at the given URL
+   * base, so a devframe SPA mounted there can discover the RPC/WS endpoint
+   * via `connectDevframe()`'s relative `./__connection.json` fetch.
+   *
+   * Called by `mountDevframe` for each mounted devframe (alongside
+   * `mountStatic`). Without it, an embedded SPA can only discover the
+   * endpoint by inheriting it from a same-origin parent window — which fails
+   * for cross-origin or sandboxed iframes. Implementations serve the same
+   * meta they expose at the hub's own base. Optional: hosts that can't serve
+   * a dynamic route (e.g. static-snapshot builds) may omit it.
+   */
+  mountConnectionMeta?: (base: string) => void | Promise<void>
+
+  /**
    * Return the public origin the host is reachable at, e.g.
    * `http://localhost:5173`. Used by the dock host to enrich remote
    * iframe URLs with a full `origin`. Called only when a dock needs an
