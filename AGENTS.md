@@ -38,6 +38,15 @@ The `pnpm test` script intentionally runs `build` first so `tsnapi` snapshots co
 - Utility imports use the package-path form `devframe/utils/*`, never relative `../utils/*`.
 - Dependencies go through the pnpm catalogs in `pnpm-workspace.yaml` (`cli`, `inlined`, `testing`, `types`) — add to a catalog and reference as `catalog:<name>`, don't pin versions in `package.json`.
 
+### Design system
+
+The built-in plugins share one design system, `@internal/design`, so they look and feel like one product across frameworks (the Git dashboard is React/Next, terminals is Svelte, code-server is vanilla DOM). It's an optional package plugins opt into — devframe core stays headless and ships no styling.
+
+- **One preset to extend.** Each plugin's `uno.config.ts` is just `presets: [presetDevframe()]` (imported from `@internal/design/preset`). The preset bundles `presetWind4` + `presetIcons` + the directive/variant-group transformers, the semantic token theme, and the shared `df-*` component shortcuts. Don't re-declare presets, palettes, or shortcuts per plugin.
+- **One token source.** Import `@internal/design/theme.css` once on the page (after the generated UnoCSS stylesheet so its base layer wins). Token *values* (the `--df-*` custom properties, light + dark via the `.dark` class) live only there — never hardcode a palette in a plugin.
+- **Shared component vocabulary.** Build UI from the `df-*` classes (`df-btn`, `df-badge`, `df-tab`, `df-navtab`, `df-card`, `df-input`, `df-dot`, `df-tag-*`, …) and the semantic token utilities (`bg-primary`, `text-muted-foreground`, `bg-card`, `border-border`, …). Markup differs per framework; the classes resolve identically, which is what keeps the surfaces consistent. Non-UnoCSS consumers can link the prebuilt `@internal/design/style.css`.
+- **Plain `.ts`/vanilla views** must opt `.ts` into UnoCSS extraction (`content.pipeline.include`), since UnoCSS only scans framework files by default.
+
 ### Devframe design principles
 
 These reinforce devframe's positioning as "the container for one devtool integration, portable to multiple viewers". When in doubt, err on the side of "devframe provides primitives, the hub provides UX".

@@ -1,18 +1,12 @@
+/* Terminal-specific surface tweaks. Tokens, base element styling, and the
+   `color-scheme` light/dark switch come from `@internal/design/theme.css`. */
+
 html,
 body,
 #app {
   height: 100vh;
   margin: 0;
   padding: 0;
-}
-
-html {
-  --uno: bg-base color-base font-sans;
-  color-scheme: light;
-}
-
-html.dark {
-  color-scheme: dark;
 }
 
 :root {

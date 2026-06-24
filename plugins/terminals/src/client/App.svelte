@@ -142,8 +142,8 @@
 
   function statusDot(status: string): string {
     if (status === 'running')
-      return 'dot-running'
-    return status === 'exited' ? 'dot-exited' : 'dot-error'
+      return 'df-dot-running'
+    return status === 'exited' ? 'df-dot-idle' : 'df-dot-error'
   }
 </script>
 
@@ -173,12 +173,12 @@
         {:else}
           <button
             type="button"
-            class="group tab-item {activeId === s.id ? 'tab-item-active' : ''}"
+            class="group df-navtab {activeId === s.id ? 'df-navtab-active' : ''}"
             title={`${displayName(s)} — double-click to rename`}
             onclick={() => (activeId = s.id)}
             ondblclick={(e) => { e.preventDefault(); e.stopPropagation(); renamingId = s.id }}
           >
-            <span class="h-1.5 w-1.5 rounded-full shrink-0 {statusDot(s.status)}"></span>
+            <span class="df-dot {statusDot(s.status)}"></span>
             <span class="truncate">{displayName(s)}</span>
             <span
               role="button"
@@ -194,7 +194,7 @@
 
       <button
         type="button"
-        class="btn-icon shrink-0"
+        class="df-btn df-btn-ghost df-btn-icon-sm shrink-0"
         title="New terminal"
         onclick={() => spawn({ mode: 'interactive' })}
       >
@@ -206,7 +206,7 @@
       <div class="relative shrink-0">
         <button
           type="button"
-          class="btn-action-sm {presetsOpen ? 'btn-action-active' : ''}"
+          class="df-btn df-btn-outline df-btn-sm {presetsOpen ? 'bg-accent! color-active border-active!' : ''}"
           title="Run a preset command"
           onclick={() => (presetsOpen = !presetsOpen)}
         >
@@ -243,7 +243,7 @@
   {#if activeSession}
     {@const s = activeSession}
     <div class="z-toolbar h-8 shrink-0 flex items-center gap-2 px-2.5 border-b border-base bg-secondary text-sm">
-      <span class="px1.5 rounded text-xs font-500 {s.mode === 'interactive' ? 'badge-blue' : 'badge-amber'}">
+      <span class={s.mode === 'interactive' ? 'df-tag-blue' : 'df-tag-amber'}>
         {s.mode === 'interactive' ? 'interactive' : 'readonly'}
       </span>
       <span class="font-mono truncate op-fade" title={`${s.command} ${s.args.join(' ')}`}>
@@ -251,7 +251,7 @@
       </span>
       <span class="flex items-center gap-1.5 op-mute font-mono text-xs tabular-nums shrink-0">
         {#if s.status === 'running'}
-          <span class="h-1.5 w-1.5 rounded-full dot-running"></span>
+          <span class="df-dot df-dot-running"></span>
           {s.backend}{s.pid ? ` · ${s.pid}` : ''}
         {:else}
           {s.status}{s.exitCode != null ? ` (${s.exitCode})` : ''}
@@ -260,10 +260,10 @@
 
       <div class="flex-1"></div>
 
-      <button type="button" class="btn-icon" title="Restart" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: s.id }).catch(() => {})}>
+      <button type="button" class="df-btn df-btn-ghost df-btn-icon-sm" title="Restart" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: s.id }).catch(() => {})}>
         <div class="i-ph-arrow-clockwise-duotone"></div>
       </button>
-      <button type="button" class="btn-icon" title="Kill" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {})}>
+      <button type="button" class="df-btn df-btn-ghost df-btn-icon-sm" title="Kill" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {})}>
         <div class="i-ph-trash-duotone"></div>
       </button>
     </div>
@@ -276,7 +276,7 @@
         <div class="i-ph-terminal-window-duotone text-5xl"></div>
         <div class="flex items-center gap-1.5 text-sm">
           <span>No sessions.</span>
-          <button type="button" class="btn-action-sm" onclick={() => spawn({ mode: 'interactive' })}>
+          <button type="button" class="df-btn df-btn-outline df-btn-sm" onclick={() => spawn({ mode: 'interactive' })}>
             <div class="i-ph-plus"></div>
             New terminal
           </button>

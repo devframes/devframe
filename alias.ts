@@ -45,6 +45,10 @@ export const alias = {
   '@devframes/hub': r('hub/src/index.ts'),
   '@devframes/nuxt/runtime/plugin.client': r('nuxt/src/runtime/plugin.client.ts'),
   '@devframes/nuxt': r('nuxt/src/index.ts'),
+  '@internal/design/preset': r('design/src/preset.ts'),
+  '@internal/design/tokens': r('design/src/tokens.ts'),
+  '@internal/design/theme.css': r('design/src/theme.css'),
+  '@internal/design': r('design/src/index.ts'),
   '@devframes/plugin-code-server/client': p('code-server/src/client/index.ts'),
   '@devframes/plugin-code-server/node': p('code-server/src/node/index.ts'),
   '@devframes/plugin-code-server/constants': p('code-server/src/constants.ts'),
@@ -70,11 +74,14 @@ export const alias = {
   '@devframes/plugin-inspect': p('inspect/src/index.ts'),
 }
 
-// update tsconfig.base.json
+// update tsconfig.base.json — CSS aliases exist for Vite resolution only;
+// TypeScript resolves `*.css` side-effect imports through ambient shims.
 const raw = fs.readFileSync(join(root, 'tsconfig.base.json'), 'utf-8').trim()
 const tsconfig = JSON.parse(raw)
 tsconfig.compilerOptions.paths = Object.fromEntries(
-  Object.entries(alias).map(([key, value]) => [key, [`./${relative(root, value)}`]]),
+  Object.entries(alias)
+    .filter(([key]) => !key.endsWith('.css'))
+    .map(([key, value]) => [key, [`./${relative(root, value)}`]]),
 )
 const newRaw = JSON.stringify(tsconfig, null, 2)
 if (newRaw !== raw)

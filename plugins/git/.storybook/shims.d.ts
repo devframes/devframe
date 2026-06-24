@@ -1,3 +1,3 @@
-// Storybook config files live outside the app's tsconfig, so declare the CSS
-// side-effect import used by `preview.tsx`.
-declare module '*.css'
+// Side-effect style imports used by the Storybook preview.
+declare module '*.css' {}
+declare module 'virtual:uno.css' {}

@@ -1,0 +1,42 @@
+{
+  "name": "@internal/design",
+  "type": "module",
+  "version": "0.5.4",
+  "private": true,
+  "description": "Internal, unpublished design system for devframe's built-in plugins — one UnoCSS preset, one token set, one shared component vocabulary, portable across frameworks.",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "license": "MIT",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./preset": "./dist/preset.mjs",
+    "./tokens": "./dist/tokens.mjs",
+    "./theme.css": "./dist/theme.css",
+    "./style.css": "./dist/style.css",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown && tsx scripts/build-css.ts",
+    "watch": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
+    "prepack": "pnpm run build"
+  },
+  "peerDependencies": {
+    "unocss": "^66.0.0"
+  },
+  "dependencies": {
+    "@iconify-json/ph": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:types",
+    "tsdown": "catalog:build",
+    "tsx": "catalog:build",
+    "unocss": "catalog:frontend"
+  }
+}

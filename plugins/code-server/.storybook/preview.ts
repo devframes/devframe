@@ -1,4 +1,6 @@
 import type { Preview } from '@storybook/html-vite'
+import 'virtual:uno.css'
+import '@internal/design/theme.css'
 import '../src/client/style.css'
 
 const preview: Preview = {
