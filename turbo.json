@@ -58,6 +58,11 @@
       "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
     },
+    "@devframes/a11y#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe#build"],
+      "outputs": ["dist/**"]
+    },
     "files-inspector-example#cli:build": {
       "outputLogs": "new-only",
       "dependsOn": ["files-inspector-example#build"],
@@ -77,6 +82,11 @@
     "@devframes/plugin-git#cli:build": {
       "outputLogs": "new-only",
       "dependsOn": ["@devframes/plugin-git#build"],
+      "outputs": ["dist/static/**"]
+    },
+    "@devframes/a11y#cli:build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["@devframes/a11y#build"],
       "outputs": ["dist/static/**"]
     }
   }
