@@ -8,6 +8,7 @@ import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
 import { getPort } from 'get-port-please'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
+
 import { RpcFunctionsHost } from '../host-functions'
 
 vi.stubGlobal('WebSocket', WebSocket)
