@@ -8,6 +8,7 @@ import type {
   TerminalSessionInfo,
   TerminalsOptions,
   TerminalsSharedState,
+  TerminalStatus,
 } from '../types'
 import type { TerminalProcess } from './backend'
 import process from 'node:process'
@@ -46,6 +47,33 @@ interface ManagedSession {
 /** How often a PTY session's foreground process name is polled. */
 const PROCESS_POLL_INTERVAL = 1000
 
+/**
+ * Minimal shape of the hub's terminals subsystem (`DevframeHubContext.terminals`)
+ * that this manager reflects sessions into. Declared locally and accessed by
+ * duck-typing so the plugin keeps no build/runtime dependency on
+ * `@devframes/hub` and works unchanged outside a hub.
+ */
+interface HubTerminalEntry {
+  id: string
+  title: string
+  description?: string
+  status: 'running' | 'stopped' | 'error'
+  icon?: string
+}
+interface HubTerminalsBridge {
+  sessions: Map<string, { id: string }>
+  register: (session: HubTerminalEntry) => unknown
+  update: (session: HubTerminalEntry) => void
+  remove?: (session: { id: string }) => void
+}
+
+/** Map the plugin's session status onto the hub's coarser status set. */
+const HUB_STATUS: Record<TerminalStatus, HubTerminalEntry['status']> = {
+  running: 'running',
+  exited: 'stopped',
+  error: 'error',
+}
+
 function defaultShell(): string {
   if (process.platform === 'win32')
     return process.env.COMSPEC || 'powershell.exe'
@@ -70,6 +98,8 @@ export class TerminalManager {
   private sessionsState?: SharedState<TerminalsSharedState>
   private sessions = new Map<string, ManagedSession>()
   private ptyAvailable = false
+  /** Session ids this manager has registered into the hub (when hubbed). */
+  private hubOwned = new Set<string>()
 
   constructor(
     private ctx: DevframeNodeContext,
@@ -388,5 +418,46 @@ export class TerminalManager {
     this.sessionsState?.mutate((draft) => {
       draft.sessions = this.list()
     })
+    this.syncHub()
+  }
+
+  /**
+   * Reflect the live session list into the hub's terminals subsystem when this
+   * devframe is mounted in a hub. `ctx.terminals` only exists on a
+   * `DevframeHubContext`, so it's accessed by duck-typing — standalone runtimes
+   * (CLI / Vite / build) have no such property and skip silently. This is what
+   * surfaces the plugin's sessions in the hub's own terminals panel.
+   */
+  private syncHub(): void {
+    const hub = (this.ctx as { terminals?: HubTerminalsBridge }).terminals
+    if (!hub?.register)
+      return
+
+    const live = new Set<string>()
+    for (const { info } of this.sessions.values()) {
+      live.add(info.id)
+      const entry: HubTerminalEntry = {
+        id: info.id,
+        title: info.customTitle || info.processName || info.title,
+        description: `${info.mode} · ${info.backend}${info.pid ? ` · pid ${info.pid}` : ''}`,
+        status: HUB_STATUS[info.status] ?? 'stopped',
+        icon: 'ph:terminal-window-duotone',
+      }
+      if (hub.sessions.has(info.id)) {
+        hub.update(entry)
+      }
+      else {
+        hub.register(entry)
+        this.hubOwned.add(info.id)
+      }
+    }
+
+    // Drop hub entries this manager owns once their session is gone.
+    for (const id of [...this.hubOwned]) {
+      if (!live.has(id)) {
+        hub.remove?.({ id })
+        this.hubOwned.delete(id)
+      }
+    }
   }
 }

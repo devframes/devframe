@@ -15,6 +15,7 @@ export class TerminalManager {
   sessionsState
   sessions
   ptyAvailable
+  hubOwned
   constructor(_, _) {}
   async init() {}
   list() {}
@@ -33,6 +34,7 @@ export class TerminalManager {
   remove(_) {}
   dispose() {}
   publish() {}
+  syncHub() {}
 }
 // #endregion
 
