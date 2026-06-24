@@ -15,7 +15,10 @@ export interface DetectCodeServerResult {
  * launcher can fall back to install instructions.
  *
  * `code-server --version` prints e.g. `4.96.4 abc123 with Code 1.96.4`; the
- * leading token is taken as the version.
+ * first semver-looking token is taken as the version. Matching a semver
+ * pattern (rather than the leading whitespace token) keeps cold-start i18n
+ * noise — e.g. an `i18next: …` initialization line printed before the version
+ * — from leaking into the reported version.
  */
 export function detectCodeServer(bin = 'code-server', timeoutMs = 5000): Promise<DetectCodeServerResult> {
   return new Promise((resolve) => {
@@ -58,7 +61,8 @@ export function detectCodeServer(bin = 'code-server', timeoutMs = 5000): Promise
     child.on('exit', (code) => {
       clearTimeout(timer)
       if (code === 0) {
-        const version = stdout.trim().split(/\s+/)[0] || undefined
+        const version = stdout.match(/\d+\.\d+\.\d\S*/)?.[0]
+          ?? (stdout.trim().split(/\s+/)[0] || undefined)
         finish({ installed: true, version, bin })
       }
       else {
