@@ -5,16 +5,12 @@ import { createRpcClient } from 'devframe/rpc/client'
 import { createRpcServer } from 'devframe/rpc/server'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
+import { getPort } from 'get-port-please'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 import { RpcFunctionsHost } from '../host-functions'
 
 vi.stubGlobal('WebSocket', WebSocket)
-
-let nextPort = 41000
-function allocatePort(): number {
-  return nextPort++
-}
 
 interface Harness {
   port: number
@@ -23,7 +19,7 @@ interface Harness {
 }
 
 async function bootHost(): Promise<Harness> {
-  const port = allocatePort()
+  const port = await getPort({ host: '127.0.0.1', random: true })
   const mockContext = {} as DevframeNodeContext
   const rpcHost = new RpcFunctionsHost(mockContext)
 
