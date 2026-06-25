@@ -15,6 +15,7 @@ export declare class TerminalManager {
   private sessionsState?;
   private sessions;
   private ptyAvailable;
+  private hubOwned;
   constructor(_: DevframeNodeContext, _?: TerminalsOptions);
   init(): Promise<void>;
   list(): TerminalSessionInfo[];
@@ -33,6 +34,7 @@ export declare class TerminalManager {
   remove(_: string): void;
   dispose(): void;
   private publish;
+  private syncHub;
 }
 // #endregion
 

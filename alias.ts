@@ -65,6 +65,7 @@ export const alias = {
   '@devframes/plugin-terminals/cli': p('terminals/src/cli.ts'),
   '@devframes/plugin-terminals/vite': p('terminals/src/vite.ts'),
   '@devframes/plugin-terminals': p('terminals/src/index.ts'),
+  '@devframes/plugin-git': p('git/src/index.ts'),
   'devframe/recipes/open-helpers': r('devframe/src/recipes/open-helpers.ts'),
   'devframe/client': r('devframe/src/client/index.ts'),
   'devframe': r('devframe/src'),
@@ -73,6 +74,7 @@ export const alias = {
   '@devframes/plugin-inspect/cli': p('inspect/src/cli.ts'),
   '@devframes/plugin-inspect/vite': p('inspect/src/vite.ts'),
   '@devframes/plugin-inspect': p('inspect/src/index.ts'),
+  '@devframes/a11y': p('a11y/src/devframe.ts'),
 }
 
 // update tsconfig.base.json — CSS aliases exist for Vite resolution only;

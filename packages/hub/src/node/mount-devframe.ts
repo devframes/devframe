@@ -73,6 +73,12 @@ export async function mountDevframe(
 
   if (d.cli?.distDir) {
     ctx.views.hostStatic(base, resolve(d.cli.distDir))
+    // Serve the hub's connection meta under the devframe's base so its SPA
+    // discovers the RPC/WS endpoint via `connectDevframe()`'s relative
+    // `./__connection.json` fetch — instead of relying on inheriting it from a
+    // same-origin parent window (which breaks for cross-origin / sandboxed
+    // iframes). Hosts that can't serve a dynamic route simply omit the hook.
+    await ctx.host.mountConnectionMeta?.(base)
   }
 
   ctx.docks.register({

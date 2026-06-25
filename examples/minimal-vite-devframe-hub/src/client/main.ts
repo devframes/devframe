@@ -5,10 +5,12 @@ import type {
   DevframeTerminalSession,
 } from '@devframes/hub/types'
 import { connectDevframe } from '@devframes/hub/client'
+import { iconClass } from './icons'
+import 'virtual:uno.css'
+import '@internal/design/theme.css'
 
 const HUB_BASE = '/__hub/'
 
-const statusEl = document.querySelector<HTMLElement>('#status')!
 const connEl = document.querySelector<HTMLElement>('#conn')!
 const docksEl = document.querySelector<HTMLElement>('#docks')!
 const commandsEl = document.querySelector<HTMLElement>('#commands')!
@@ -19,17 +21,26 @@ const iframeEl = document.querySelector<HTMLIFrameElement>('#dock-iframe')!
 
 let selectedDockId: string | null = null
 
-function setStatus(text: string, klass?: 'ready' | 'error') {
-  connEl.textContent = text
-  statusEl.className = klass ?? ''
+function setStatus(text: string, kind?: 'ready' | 'error') {
+  const dot = kind === 'ready' ? 'df-dot-running' : kind === 'error' ? 'df-dot-error' : 'df-dot-idle'
+  connEl.innerHTML = `<span class="df-dot ${dot} mr-1.5 align-middle"></span>${text}`
 }
 
-function renderList<T>(host: HTMLElement, items: T[], render: (item: T) => string) {
+function renderList<T>(host: HTMLElement, items: readonly T[], render: (item: T) => string) {
   if (!items.length) {
-    host.innerHTML = '<li class="muted">empty</li>'
+    host.innerHTML = '<li class="df-panel border-dashed px2.5 py1.5 text-xs font-mono op-mute">empty</li>'
     return
   }
   host.innerHTML = items.map(render).join('')
+}
+
+/** Render a dock icon, falling back to the title's initial when unknown. */
+function dockIcon(entry: DevframeDockEntry): string {
+  const cls = iconClass(entry.icon)
+  if (cls)
+    return `<span class="${cls} shrink-0 text-lg"></span>`
+  const initial = (entry.title?.[0] ?? '?').toUpperCase()
+  return `<span class="grid h-5 w-5 shrink-0 place-items-center rounded bg-accent text-[0.7rem] font-bold">${initial}</span>`
 }
 
 function isIframeDock(d: DevframeDockEntry): d is DevframeDockEntry & { type: 'iframe', url: string } {
@@ -57,13 +68,13 @@ async function main() {
       selectedDockId = iframeDocks[0].id
 
     if (!iframeDocks.length) {
-      docksEl.innerHTML = '<li class="muted">No iframe docks</li>'
+      docksEl.innerHTML = '<li class="op-mute px2 text-sm">No iframe docks</li>'
       iframeEl.src = 'about:blank'
       return
     }
 
     renderList(docksEl, iframeDocks, d =>
-      `<li><button type="button" data-dock-id="${d.id}" class="${d.id === selectedDockId ? 'active' : ''}">${d.title}</button></li>`)
+      `<li><button type="button" data-dock-id="${d.id}" class="df-navtab w-full! max-w-none! gap-2.5!${d.id === selectedDockId ? ' df-navtab-active' : ''}" title="${d.title}">${dockIcon(d)}<span class="truncate">${d.title}</span></button></li>`)
 
     const selected = iframeDocks.find(d => d.id === selectedDockId)
     if (selected && iframeEl.getAttribute('src') !== selected.url)
@@ -90,7 +101,7 @@ async function main() {
     { initialValue: [] },
   )
   const renderCommands = () => renderList(commandsEl, commands.value() ?? [], c =>
-    `<li><strong>${c.title}</strong> <code>${c.id}</code></li>`)
+    `<li class="df-panel px2.5 py1.5 text-xs font-mono">${c.title} <code class="op-fade">${c.id}</code></li>`)
   commands.on('updated', renderCommands)
   renderCommands()
 
@@ -102,7 +113,7 @@ async function main() {
       'minimal-vite-devframe-hub:messages:list' as any,
     ) as DevframeMessageEntry[]
     renderList(messagesEl, entries, m =>
-      `<li><strong>[${m.level}]</strong> ${m.message}</li>`)
+      `<li class="df-panel px2.5 py1.5 text-xs font-mono"><span class="op-fade">[${m.level}]</span> ${m.message}</li>`)
   }
   await refreshMessages()
 
@@ -112,7 +123,7 @@ async function main() {
       'minimal-vite-devframe-hub:terminals:list' as any,
     ) as Pick<DevframeTerminalSession, 'id' | 'title' | 'status' | 'description'>[]
     renderList(terminalsEl, sessions, t =>
-      `<li><strong>${t.title}</strong> <code>${t.id}</code> · ${t.status}</li>`)
+      `<li class="df-panel px2.5 py1.5 text-xs font-mono">${t.title} <code class="op-fade">${t.id}</code> · ${t.status}</li>`)
   }
   await refreshTerminals()
 

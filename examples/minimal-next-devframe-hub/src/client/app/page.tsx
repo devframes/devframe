@@ -7,9 +7,9 @@ import type {
   DevframeMessageEntry,
   DevframeTerminalSession,
 } from '@devframes/hub/types'
-import type { ReactNode } from 'react'
 import { connectDevframe } from '@devframes/hub/client'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { iconClass } from './icons'
 
 const HUB_BASE = '/__hub/'
 
@@ -23,6 +23,15 @@ type TerminalSummary = Pick<DevframeTerminalSession, 'id' | 'title' | 'status' |
 
 function isIframeDock(d: DevframeDockEntry): d is IframeDock {
   return d.type === 'iframe' && typeof (d as { url?: unknown }).url === 'string'
+}
+
+/** Render a dock icon, falling back to the title's initial when unmapped. */
+function DockIcon({ entry }: { entry: DevframeDockEntry }) {
+  const cls = iconClass(entry.icon)
+  if (cls)
+    return <span className={`${cls} shrink-0 text-lg`} />
+  const initial = (entry.title?.[0] ?? '?').toUpperCase()
+  return <span className="grid h-5 w-5 shrink-0 place-items-center rounded bg-accent text-[0.7rem] font-bold">{initial}</span>
 }
 
 export default function Page() {
@@ -57,8 +66,8 @@ export default function Page() {
           { initialValue: [] },
         )
 
-        const renderDocks = () => setDocks(docksState.value() ?? [])
-        const renderCommands = () => setCommands(commandsState.value() ?? [])
+        const renderDocks = () => setDocks([...(docksState.value() ?? [])] as DevframeDockEntry[])
+        const renderCommands = () => setCommands([...(commandsState.value() ?? [])] as DevframeCommandEntry[])
         docksState.on('updated', renderDocks)
         commandsState.on('updated', renderCommands)
         renderDocks()
@@ -133,92 +142,112 @@ export default function Page() {
     }
   }
 
+  const statusDot = status.kind === 'ready' ? 'df-dot-running' : status.kind === 'error' ? 'df-dot-error' : 'df-dot-idle'
+  const titleClass = 'mb2 text-[0.68rem] uppercase tracking-wider text-muted-foreground'
+  const rowClass = 'df-panel px2.5 py1.5 text-xs font-mono'
+
   return (
-    <div className="app-shell">
-      <header className="app-header">
-        <h1>Minimal Next Devframe Hub</h1>
-        <p id="status" className={status.kind ?? ''}>
-          <span>{status.text}</span>
+    <div className="h-full flex flex-col bg-base color-base">
+      <header className="shrink-0 flex items-baseline gap-3 border-b border-base bg-base px4 py2.5">
+        <h1 className="m0 text-sm font-semibold">Minimal Next Devframe Hub</h1>
+        <p className="m0 text-xs font-mono op-fade">
+          <span className={`df-dot ${statusDot} mr-1.5 align-middle`} />
+          {status.text}
         </p>
+        <p className="m0 ml-auto text-xs font-mono italic text-muted-foreground">a vite-devtools-style hub on Next.js you can copy</p>
       </header>
 
-      <aside className="app-sidebar">
-        <h2>Docks</h2>
-        <ul>
-          {iframeDocks.length === 0
-            ? <li className="muted">No iframe docks</li>
-            : iframeDocks.map(dock => (
-                <li key={dock.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedDockId(dock.id)}
-                    className={dock.id === selectedDockId ? 'active' : ''}
-                  >
-                    {dock.title}
-                  </button>
-                </li>
-              ))}
-        </ul>
-      </aside>
+      <div className="grid grid-cols-[244px_1fr] min-h-0 flex-1">
+        <aside className="flex flex-col gap-0.5 of-auto scrollbar-slim border-r border-base bg-muted p2">
+          <h2 className="px2 py1 text-[0.68rem] uppercase tracking-wider text-muted-foreground">Docks</h2>
+          <ul className="m0 flex flex-col list-none gap-0.5 p0">
+            {iframeDocks.length === 0
+              ? <li className="op-mute px2 text-sm">No iframe docks</li>
+              : iframeDocks.map(dock => (
+                  <li key={dock.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDockId(dock.id)}
+                      className={`df-navtab w-full! max-w-none! gap-2.5!${dock.id === selectedDockId ? ' df-navtab-active' : ''}`}
+                      title={dock.title}
+                    >
+                      <DockIcon entry={dock} />
+                      <span className="truncate">{dock.title}</span>
+                    </button>
+                  </li>
+                ))}
+          </ul>
+        </aside>
 
-      <main className="app-main">
-        <iframe
-          key={selectedDock?.id ?? 'none'}
-          src={selectedDock?.url ?? 'about:blank'}
-          title="Selected dock"
-        />
-      </main>
+        <main className="min-w-0 of-hidden bg-muted">
+          <iframe
+            key={selectedDock?.id ?? 'none'}
+            src={selectedDock?.url ?? 'about:blank'}
+            title="Selected dock"
+            className="block h-full w-full border-0 bg-base"
+          />
+        </main>
+      </div>
 
-      <footer className="app-footer">
-        <Panel title="Commands" empty="Waiting for snapshot...">
-          {commands.map(command => (
-            <li key={command.id}>
-              <strong>{command.title}</strong>
-              {' '}
-              <code>{command.id}</code>
-            </li>
-          ))}
-        </Panel>
-        <Panel title="Messages" empty="No messages yet.">
-          {messages.map(message => (
-            <li key={message.id}>
-              <strong>{`[${message.level}]`}</strong>
-              {' '}
-              {message.message}
-            </li>
-          ))}
-        </Panel>
-        <Panel title="Terminals" empty="No terminal sessions.">
-          {terminals.map(terminal => (
-            <li key={terminal.id}>
-              <strong>{terminal.title}</strong>
-              {' '}
-              <code>{terminal.id}</code>
-              {' '}
-              {terminal.status}
-            </li>
-          ))}
-        </Panel>
-        <div className="actions">
-          <button type="button" onClick={() => void ping()}>
-            {pingResult}
-          </button>
-        </div>
+      <footer className="grid grid-cols-3 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto scrollbar-slim">
+        <section className="min-w-0">
+          <h2 className={titleClass}>Commands</h2>
+          <ul className="m0 flex flex-col list-none gap-1.5 p0">
+            {commands.length === 0
+              ? <li className="df-panel border-dashed px2.5 py1.5 text-xs font-mono op-mute">Waiting for snapshot…</li>
+              : commands.map(command => (
+                  <li key={command.id} className={rowClass}>
+                    {command.title}
+                    {' '}
+                    <code className="op-fade">{command.id}</code>
+                  </li>
+                ))}
+          </ul>
+          <div className="mt2.5">
+            <button type="button" onClick={() => void ping()} className="df-btn df-btn-outline df-btn-sm">
+              {pingResult}
+            </button>
+          </div>
+        </section>
+
+        <section className="min-w-0">
+          <h2 className={titleClass}>Messages</h2>
+          <ul className="m0 flex flex-col list-none gap-1.5 p0">
+            {messages.length === 0
+              ? <li className="df-panel border-dashed px2.5 py1.5 text-xs font-mono op-mute">No messages yet.</li>
+              : messages.map(message => (
+                  <li key={message.id} className={rowClass}>
+                    <span className="op-fade">
+                      [
+                      {message.level}
+                      ]
+                    </span>
+                    {' '}
+                    {message.message}
+                  </li>
+                ))}
+          </ul>
+        </section>
+
+        <section className="min-w-0">
+          <h2 className={titleClass}>Terminals</h2>
+          <ul className="m0 flex flex-col list-none gap-1.5 p0">
+            {terminals.length === 0
+              ? <li className="df-panel border-dashed px2.5 py1.5 text-xs font-mono op-mute">No terminal sessions.</li>
+              : terminals.map(terminal => (
+                  <li key={terminal.id} className={rowClass}>
+                    {terminal.title}
+                    {' '}
+                    <code className="op-fade">{terminal.id}</code>
+                    {' '}
+                    ·
+                    {' '}
+                    {terminal.status}
+                  </li>
+                ))}
+          </ul>
+        </section>
       </footer>
     </div>
-  )
-}
-
-function Panel({ title, empty, children }: {
-  title: string
-  empty: string
-  children: ReactNode
-}) {
-  const items = Array.isArray(children) ? children : [children]
-  return (
-    <section>
-      <h2>{title}</h2>
-      <ul>{items.length ? children : <li className="muted">{empty}</li>}</ul>
-    </section>
   )
 }
