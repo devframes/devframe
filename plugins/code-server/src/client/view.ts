@@ -3,7 +3,7 @@ import type {
   CodeServerDetection,
   CodeServerServerInfo,
 } from '../types'
-import { button, link as linkClass, spinner } from '@internal/design/components'
+import { button, cx, link as linkClass, spinner } from '@internal/design/components'
 
 /** The data the view renders from. Pure — no RPC, no process knowledge. */
 export interface CodeServerViewState {
@@ -78,6 +78,18 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, t
   return node
 }
 
+/** A Phosphor icon (UnoCSS presetIcons), matching the other devframe plugins. */
+function icon(name: string, cls = ''): HTMLSpanElement {
+  return el('span', cx(name, 'shrink-0', cls))
+}
+
+/** The uppercase "code-server" eyebrow, prefixed with the brand icon. */
+function eyebrow(): HTMLParagraphElement {
+  const p = el('p', 'flex items-center gap-1.5 mb-2.5 text-xs tracking-wider uppercase text-muted-foreground')
+  p.append(icon('i-ph-code-duotone', 'text-sm'), document.createTextNode('code-server'))
+  return p
+}
+
 function defaultEditorUrl(port: number): string {
   return `${location.protocol}//${location.hostname}:${port}/`
 }
@@ -124,7 +136,7 @@ export function createCodeServerView(
 
   function renderNotInstalled(busy: boolean): void {
     const nodes: Node[] = []
-    nodes.push(el('p', 'flex items-center gap-2 mb-2.5 text-xs tracking-wider uppercase text-muted-foreground', 'code-server'))
+    nodes.push(eyebrow())
     nodes.push(el('h1', 'mb-2 text-[1.35rem] font-semibold', 'code-server is not installed'))
     nodes.push(el('p', 'mb-5 text-sm leading-relaxed text-muted-foreground', 'Install code-server (VS Code in the browser) to open the editor here. Pick whichever fits your setup, then re-check.'))
 
@@ -150,12 +162,13 @@ export function createCodeServerView(
     nodes.push(install)
 
     const actions = el('div', 'flex flex-wrap items-center gap-2.5')
-    const recheckBtn = el('button', button({ variant: 'primary' }), busy ? 'Checking…' : 'Re-check')
+    const recheckBtn = el('button', button({ variant: 'primary' }))
+    recheckBtn.append(icon('i-ph-arrows-clockwise', cx('size-4', busy && 'animate-spin')), document.createTextNode(busy ? 'Checking…' : 'Re-check'))
     recheckBtn.disabled = busy
     recheckBtn.onclick = recheck
     actions.append(recheckBtn)
-    actions.append(link('Installation docs ↗', DOCS_URL))
-    actions.append(link('GitHub ↗', REPO_URL))
+    actions.append(link('Installation docs', DOCS_URL))
+    actions.append(link('GitHub', REPO_URL))
     nodes.push(actions)
     shell(...nodes)
   }
@@ -163,7 +176,7 @@ export function createCodeServerView(
   function renderLaunch(state: CodeServerViewState): void {
     const { detection, server, busy } = state
     const nodes: Node[] = []
-    nodes.push(el('p', 'flex items-center gap-2 mb-2.5 text-xs tracking-wider uppercase text-muted-foreground', 'code-server'))
+    nodes.push(eyebrow())
     nodes.push(el('h1', 'mb-2 text-[1.35rem] font-semibold', 'Launch the editor'))
     nodes.push(el('p', 'mb-5 text-sm leading-relaxed text-muted-foreground', 'Start a code-server instance scoped to this workspace and open VS Code right here. The server runs with a generated password and the editor is signed in automatically.'))
 
@@ -186,7 +199,7 @@ export function createCodeServerView(
     if (busy)
       launchBtn.append(el('span', spinner()), document.createTextNode('Starting…'))
     else
-      launchBtn.textContent = 'Launch code-server'
+      launchBtn.append(icon('i-ph-rocket-launch-duotone', 'size-4'), document.createTextNode('Launch code-server'))
     launchBtn.disabled = busy ?? false
     launchBtn.onclick = launch
     actions.append(launchBtn)
@@ -218,7 +231,8 @@ export function createCodeServerView(
   }
 
   function link(text: string, href: string): HTMLAnchorElement {
-    const a = el('a', linkClass('text-sm'), text) as HTMLAnchorElement
+    const a = el('a', linkClass('inline-flex items-center gap-1 text-sm')) as HTMLAnchorElement
+    a.append(document.createTextNode(text), icon('i-ph-arrow-square-out', 'size-3.5'))
     a.href = href
     a.target = '_blank'
     a.rel = 'noreferrer'

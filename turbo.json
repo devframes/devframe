@@ -18,18 +18,14 @@
       "outputLogs": "new-only",
       "outputs": ["dist/**"]
     },
-    "@internal/design#build": {
-      "outputLogs": "new-only",
-      "outputs": ["dist/**"]
-    },
     "@devframes/plugin-code-server#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@internal/design#build"],
+      "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
     },
     "@devframes/plugin-terminals#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@internal/design#build"],
+      "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
     },
     "@devframes/plugin-inspect#build": {
@@ -64,7 +60,7 @@
     },
     "@devframes/plugin-git#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@internal/design#build"],
+      "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
     },
     "@devframes/a11y#build": {

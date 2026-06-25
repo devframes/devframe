@@ -3,30 +3,23 @@
   "type": "module",
   "version": "0.5.4",
   "private": true,
-  "description": "Internal, unpublished design system for devframe's built-in plugins — one UnoCSS preset, one token set, one shared component vocabulary, portable across frameworks.",
+  "description": "Internal, unpublished design system for devframe's built-in plugins — one UnoCSS preset, one token set, one shared component vocabulary, portable across frameworks. Consumed directly from source.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "sideEffects": [
     "**/*.css"
   ],
   "exports": {
-    ".": "./dist/index.mjs",
-    "./preset": "./dist/preset.mjs",
-    "./components": "./dist/components.mjs",
-    "./tokens": "./dist/tokens.mjs",
-    "./theme.css": "./dist/theme.css",
-    "./style.css": "./dist/style.css",
+    ".": "./src/index.ts",
+    "./preset": "./src/preset.ts",
+    "./components": "./src/components.ts",
+    "./tokens": "./src/tokens.ts",
+    "./theme.css": "./src/theme.css",
     "./package.json": "./package.json"
   },
-  "types": "./dist/index.d.mts",
-  "files": [
-    "dist"
-  ],
+  "types": "./src/index.ts",
   "scripts": {
-    "build": "tsdown && tsx scripts/build-css.ts",
-    "watch": "tsdown --watch",
-    "typecheck": "tsc --noEmit",
-    "prepack": "pnpm run build"
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "unocss": "^66.0.0"
@@ -35,9 +28,6 @@
     "@iconify-json/ph": "catalog:frontend"
   },
   "devDependencies": {
-    "@types/node": "catalog:types",
-    "tsdown": "catalog:build",
-    "tsx": "catalog:build",
     "unocss": "catalog:frontend"
   }
 }

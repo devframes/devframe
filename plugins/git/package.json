@@ -67,7 +67,6 @@
     "clsx": "catalog:frontend",
     "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
-    "lucide-react": "catalog:frontend",
     "next": "catalog:frontend",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",

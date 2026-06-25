@@ -2,8 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["esnext", "dom"],
-    "types": ["node"]
+    "types": []
   },
-  "include": ["src", "scripts", "tsdown.config.ts"],
+  "include": ["src"],
   "exclude": ["dist", "node_modules"]
 }

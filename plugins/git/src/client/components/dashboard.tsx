@@ -3,7 +3,6 @@
 import type { DevframeRpcClient } from 'devframe/client'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { Branch, GitBranches } from '../../index'
-import { FileDiff, GitBranch, GitCommitHorizontal, GitGraph, ListTree, Moon, RefreshCw, Sun } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '../lib/utils'
 import { CommitDetailsPanel } from './commit-details-panel'
@@ -14,6 +13,7 @@ import { StatusPanel } from './status-panel'
 import { useTheme } from './theme'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
+import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 import { useRpcResource } from './use-rpc-resource'
 
@@ -22,13 +22,13 @@ type DashboardPane = 'status' | 'commits' | 'diff'
 interface NavItem {
   id: DashboardPane
   label: string
-  icon: typeof ListTree
+  icon: string
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'status', label: 'Status', icon: ListTree },
-  { id: 'commits', label: 'Commits', icon: GitCommitHorizontal },
-  { id: 'diff', label: 'Diff', icon: FileDiff },
+  { id: 'status', label: 'Status', icon: 'i-ph-tree-view-duotone' },
+  { id: 'commits', label: 'Commits', icon: 'i-ph-git-commit-duotone' },
+  { id: 'diff', label: 'Diff', icon: 'i-ph-git-diff-duotone' },
 ]
 
 function clamp(value: number, min: number, max: number): number {
@@ -111,7 +111,7 @@ function ThemeToggle() {
   const { theme, toggle } = useTheme()
   return (
     <Button variant="ghost" size="icon" className="size-7" onClick={toggle} aria-label="Toggle light/dark theme">
-      {theme === 'dark' ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
+      {theme === 'dark' ? <Icon name="i-ph-sun-duotone" className="size-3.5" /> : <Icon name="i-ph-moon-duotone" className="size-3.5" />}
     </Button>
   )
 }
@@ -136,7 +136,7 @@ function BranchRow({
         )}
       >
         <div className="flex items-center gap-2">
-          <GitBranch className={cn('size-3.5 shrink-0', branch.current ? 'text-primary' : 'text-muted-foreground')} />
+          <Icon name="i-ph-git-branch-duotone" className={cn('size-3.5', branch.current ? 'text-primary' : 'text-muted-foreground')} />
           <span className="truncate font-mono text-xs" title={branch.name}>{branch.name}</span>
           {branch.current && <Badge variant="success" className="px-1 py-0 text-[10px]">current</Badge>}
         </div>
@@ -201,7 +201,7 @@ function DashboardBody() {
       <header className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3">
         <div className="flex items-center gap-2.5">
           <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
-            <GitGraph className="size-5" />
+            <Icon name="i-ph-graph-duotone" className="size-5" />
           </div>
           <div>
             <h1 className="text-sm leading-none font-semibold">Git Dashboard</h1>
@@ -240,7 +240,7 @@ function DashboardBody() {
             </div>
 
             <nav className="space-y-1">
-              {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+              {NAV_ITEMS.map(({ id, label, icon }) => (
                 <Button
                   key={id}
                   type="button"
@@ -248,7 +248,7 @@ function DashboardBody() {
                   className="w-full justify-start"
                   onClick={() => setPane(id)}
                 >
-                  <Icon className="size-4" />
+                  <Icon name={icon} className="size-4" />
                   {label}
                 </Button>
               ))}
@@ -272,7 +272,7 @@ function DashboardBody() {
                   disabled={branchesLoading}
                   aria-label="Refresh branches"
                 >
-                  <RefreshCw className={cn('size-3.5', branchesLoading && 'animate-spin')} />
+                  <Icon name="i-ph-arrows-clockwise" className={cn('size-3.5', branchesLoading && 'animate-spin')} />
                 </Button>
               </div>
             </PanelHeading>
