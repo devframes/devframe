@@ -27,8 +27,7 @@ onMounted(connect)
     <header class="app-header">
       <div class="brand">
         <span class="dot" />
-        <span>Inspector</span>
-        <small>RPC &amp; State</small>
+        <span>Devframe Inspector</span>
       </div>
 
       <nav class="tabs">

@@ -57,6 +57,28 @@ function helpersItems(prefix: string): DefaultTheme.NavItemWithLink[] {
   ]
 }
 
+function pluginsItems(prefix: string): DefaultTheme.NavItemWithLink[] {
+  return [
+    { text: 'Overview', link: `${prefix}/plugins/` },
+    { text: 'Devframe Inspector', link: `${prefix}/plugins/inspect` },
+    { text: 'Accessibility Inspector', link: `${prefix}/plugins/a11y` },
+    { text: 'Git', link: `${prefix}/plugins/git` },
+    { text: 'Terminals', link: `${prefix}/plugins/terminals` },
+    { text: 'Code Server', link: `${prefix}/plugins/code-server` },
+  ]
+}
+
+function examplesItems(prefix: string): DefaultTheme.NavItemWithLink[] {
+  return [
+    { text: 'Overview', link: `${prefix}/examples/` },
+    { text: 'files-inspector', link: `${prefix}/examples/files-inspector` },
+    { text: 'streaming-chat', link: `${prefix}/examples/streaming-chat` },
+    { text: 'next-runtime-snapshot', link: `${prefix}/examples/next-runtime-snapshot` },
+    { text: 'minimal-vite-devframe-hub', link: `${prefix}/examples/minimal-vite-devframe-hub` },
+    { text: 'minimal-next-devframe-hub', link: `${prefix}/examples/minimal-next-devframe-hub` },
+  ]
+}
+
 export function devframeSidebar(prefix = ''): DefaultTheme.SidebarItem[] {
   return [
     {
@@ -70,6 +92,14 @@ export function devframeSidebar(prefix = ''): DefaultTheme.SidebarItem[] {
     {
       text: 'Helpers',
       items: helpersItems(prefix),
+    },
+    {
+      text: 'Plugins',
+      items: pluginsItems(prefix),
+    },
+    {
+      text: 'Examples',
+      items: examplesItems(prefix),
     },
     {
       text: 'Error Reference',
@@ -88,6 +118,8 @@ export function devframeNav(prefix = ''): DefaultTheme.NavItem[] {
     { text: 'Guide', items: guideItems(prefix) },
     { text: 'Adapters', items: adaptersItems(prefix) },
     { text: 'Helpers', items: helpersItems(prefix) },
+    { text: 'Plugins', items: pluginsItems(prefix) },
+    { text: 'Examples', items: examplesItems(prefix) },
     { text: 'Errors', link: `${prefix}/errors/` },
     {
       text: `v${pkg.version}`,
