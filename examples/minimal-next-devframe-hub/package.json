@@ -17,16 +17,20 @@
     "@devframes/plugin-git": "workspace:*",
     "@devframes/plugin-inspect": "workspace:*",
     "@devframes/plugin-terminals": "workspace:*",
+    "@internal/design": "workspace:*",
     "devframe": "workspace:*",
     "next": "catalog:frontend",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend"
   },
   "devDependencies": {
+    "@iconify-json/ph": "catalog:frontend",
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
+    "@unocss/postcss": "catalog:frontend",
     "get-port-please": "catalog:deps",
     "pathe": "catalog:deps",
+    "unocss": "catalog:frontend",
     "vitest": "catalog:testing",
     "ws": "catalog:deps"
   }

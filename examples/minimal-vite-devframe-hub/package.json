@@ -16,11 +16,11 @@
     "@devframes/plugin-git": "workspace:*",
     "@devframes/plugin-inspect": "workspace:*",
     "@devframes/plugin-terminals": "workspace:*",
+    "@internal/design": "workspace:*",
     "devframe": "workspace:*"
   },
   "devDependencies": {
     "@iconify-json/ph": "catalog:frontend",
-    "@unocss/vite": "catalog:frontend",
     "get-port-please": "catalog:deps",
     "pathe": "catalog:deps",
     "unocss": "catalog:frontend",

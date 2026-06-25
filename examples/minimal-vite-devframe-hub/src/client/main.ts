@@ -7,6 +7,7 @@ import type {
 import { connectDevframe } from '@devframes/hub/client'
 import { iconClass } from './icons'
 import 'virtual:uno.css'
+import '@internal/design/theme.css'
 
 const HUB_BASE = '/__hub/'
 
@@ -21,13 +22,13 @@ const iframeEl = document.querySelector<HTMLIFrameElement>('#dock-iframe')!
 let selectedDockId: string | null = null
 
 function setStatus(text: string, kind?: 'ready' | 'error') {
-  const color = kind === 'ready' ? 'color-primary-500' : kind === 'error' ? 'color-red-500' : 'op-mute'
-  connEl.innerHTML = `<span class="dot ${color} mr-1.5 align-middle"></span>${text}`
+  const dot = kind === 'ready' ? 'df-dot-running' : kind === 'error' ? 'df-dot-error' : 'df-dot-idle'
+  connEl.innerHTML = `<span class="df-dot ${dot} mr-1.5 align-middle"></span>${text}`
 }
 
 function renderList<T>(host: HTMLElement, items: readonly T[], render: (item: T) => string) {
   if (!items.length) {
-    host.innerHTML = '<li class="op-mute panel-row border-dashed">empty</li>'
+    host.innerHTML = '<li class="df-panel border-dashed px2.5 py1.5 text-xs font-mono op-mute">empty</li>'
     return
   }
   host.innerHTML = items.map(render).join('')
@@ -37,9 +38,9 @@ function renderList<T>(host: HTMLElement, items: readonly T[], render: (item: T)
 function dockIcon(entry: DevframeDockEntry): string {
   const cls = iconClass(entry.icon)
   if (cls)
-    return `<span class="dock-ico ${cls}"></span>`
+    return `<span class="${cls} shrink-0 text-lg"></span>`
   const initial = (entry.title?.[0] ?? '?').toUpperCase()
-  return `<span class="dock-ico"><span class="grid h-5 w-5 place-items-center rounded bg-active text-2.5 font-700">${initial}</span></span>`
+  return `<span class="grid h-5 w-5 shrink-0 place-items-center rounded bg-accent text-[0.7rem] font-bold">${initial}</span>`
 }
 
 function isIframeDock(d: DevframeDockEntry): d is DevframeDockEntry & { type: 'iframe', url: string } {
@@ -73,7 +74,7 @@ async function main() {
     }
 
     renderList(docksEl, iframeDocks, d =>
-      `<li><button type="button" data-dock-id="${d.id}" class="dock-item${d.id === selectedDockId ? ' dock-item-active' : ''}" title="${d.title}">${dockIcon(d)}<span class="truncate">${d.title}</span></button></li>`)
+      `<li><button type="button" data-dock-id="${d.id}" class="df-navtab w-full! max-w-none! gap-2.5!${d.id === selectedDockId ? ' df-navtab-active' : ''}" title="${d.title}">${dockIcon(d)}<span class="truncate">${d.title}</span></button></li>`)
 
     const selected = iframeDocks.find(d => d.id === selectedDockId)
     if (selected && iframeEl.getAttribute('src') !== selected.url)
@@ -100,7 +101,7 @@ async function main() {
     { initialValue: [] },
   )
   const renderCommands = () => renderList(commandsEl, commands.value() ?? [], c =>
-    `<li class="panel-row">${c.title} <code class="op-fade">${c.id}</code></li>`)
+    `<li class="df-panel px2.5 py1.5 text-xs font-mono">${c.title} <code class="op-fade">${c.id}</code></li>`)
   commands.on('updated', renderCommands)
   renderCommands()
 
@@ -112,7 +113,7 @@ async function main() {
       'minimal-vite-devframe-hub:messages:list' as any,
     ) as DevframeMessageEntry[]
     renderList(messagesEl, entries, m =>
-      `<li class="panel-row"><span class="op-fade">[${m.level}]</span> ${m.message}</li>`)
+      `<li class="df-panel px2.5 py1.5 text-xs font-mono"><span class="op-fade">[${m.level}]</span> ${m.message}</li>`)
   }
   await refreshMessages()
 
@@ -122,7 +123,7 @@ async function main() {
       'minimal-vite-devframe-hub:terminals:list' as any,
     ) as Pick<DevframeTerminalSession, 'id' | 'title' | 'status' | 'description'>[]
     renderList(terminalsEl, sessions, t =>
-      `<li class="panel-row">${t.title} <code class="op-fade">${t.id}</code> · ${t.status}</li>`)
+      `<li class="df-panel px2.5 py1.5 text-xs font-mono">${t.title} <code class="op-fade">${t.id}</code> · ${t.status}</li>`)
   }
   await refreshTerminals()
 
