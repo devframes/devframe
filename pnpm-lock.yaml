@@ -402,6 +402,9 @@ importers:
 
   examples/minimal-next-devframe-hub:
     dependencies:
+      '@devframes/a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
@@ -411,6 +414,9 @@ importers:
       '@devframes/plugin-git':
         specifier: workspace:*
         version: link:../../plugins/git
+      '@devframes/plugin-inspect':
+        specifier: workspace:*
+        version: link:../../plugins/inspect
       '@devframes/plugin-terminals':
         specifier: workspace:*
         version: link:../../plugins/terminals
@@ -448,6 +454,9 @@ importers:
 
   examples/minimal-vite-devframe-hub:
     dependencies:
+      '@devframes/a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
@@ -457,6 +466,9 @@ importers:
       '@devframes/plugin-git':
         specifier: workspace:*
         version: link:../../plugins/git
+      '@devframes/plugin-inspect':
+        specifier: workspace:*
+        version: link:../../plugins/inspect
       '@devframes/plugin-terminals':
         specifier: workspace:*
         version: link:../../plugins/terminals

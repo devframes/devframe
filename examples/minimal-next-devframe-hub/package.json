@@ -11,9 +11,11 @@
     "test": "vitest run --config vitest.config.ts"
   },
   "dependencies": {
+    "@devframes/a11y": "workspace:*",
     "@devframes/hub": "workspace:*",
     "@devframes/plugin-code-server": "workspace:*",
     "@devframes/plugin-git": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
     "@devframes/plugin-terminals": "workspace:*",
     "devframe": "workspace:*",
     "next": "catalog:frontend",

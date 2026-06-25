@@ -192,6 +192,9 @@
       ],
       "@devframes/plugin-inspect": [
         "./plugins/inspect/src/index.ts"
+      ],
+      "@devframes/a11y": [
+        "./plugins/a11y/src/devframe.ts"
       ]
     },
     "resolveJsonModule": true,

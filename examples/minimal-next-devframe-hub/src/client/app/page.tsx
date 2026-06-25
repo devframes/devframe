@@ -10,6 +10,7 @@ import type {
 import type { ReactNode } from 'react'
 import { connectDevframe } from '@devframes/hub/client'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { iconSvg } from './icons'
 
 const HUB_BASE = '/__hub/'
 
@@ -23,6 +24,15 @@ type TerminalSummary = Pick<DevframeTerminalSession, 'id' | 'title' | 'status' |
 
 function isIframeDock(d: DevframeDockEntry): d is IframeDock {
   return d.type === 'iframe' && typeof (d as { url?: unknown }).url === 'string'
+}
+
+/** Render a dock icon, falling back to the title's initial when unknown. */
+function dockIcon(entry: DevframeDockEntry): string {
+  const svg = iconSvg(entry.icon, 20)
+  if (svg)
+    return svg
+  const initial = (entry.title?.[0] ?? '?').toUpperCase()
+  return `<span class="dock-initial">${initial}</span>`
 }
 
 export default function Page() {
@@ -57,8 +67,8 @@ export default function Page() {
           { initialValue: [] },
         )
 
-        const renderDocks = () => setDocks(docksState.value() ?? [])
-        const renderCommands = () => setCommands(commandsState.value() ?? [])
+        const renderDocks = () => setDocks([...(docksState.value() ?? [])] as DevframeDockEntry[])
+        const renderCommands = () => setCommands([...(commandsState.value() ?? [])] as DevframeCommandEntry[])
         docksState.on('updated', renderDocks)
         commandsState.on('updated', renderCommands)
         renderDocks()
@@ -140,6 +150,7 @@ export default function Page() {
         <p id="status" className={status.kind ?? ''}>
           <span>{status.text}</span>
         </p>
+        <p className="app-tagline">a vite-devtools-style hub on Next.js you can copy</p>
       </header>
 
       <aside className="app-sidebar">
@@ -152,9 +163,11 @@ export default function Page() {
                   <button
                     type="button"
                     onClick={() => setSelectedDockId(dock.id)}
-                    className={dock.id === selectedDockId ? 'active' : ''}
+                    className={`dock-btn${dock.id === selectedDockId ? ' active' : ''}`}
+                    title={dock.title}
                   >
-                    {dock.title}
+                    <span className="dock-ico" dangerouslySetInnerHTML={{ __html: dockIcon(dock) }} />
+                    <span className="dock-label">{dock.title}</span>
                   </button>
                 </li>
               ))}

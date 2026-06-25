@@ -1,18 +1,56 @@
+/*
+ * A deliberately small "minimal vite-devtools" skin: an icon dock on the left,
+ * the selected tool's iframe filling the stage, and a drawer of hub subsystems
+ * (commands / messages / terminals) along the bottom. The look borrows
+ * vite-devtools' calm neutral surfaces + a single accent; the markup is plain
+ * DOM so the protocol — not the framework — stays the star.
+ */
 :root {
   color-scheme: light dark;
-  font-family: system-ui, sans-serif;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
   line-height: 1.5;
+
+  --accent: #845eee;
+  --bg: #ffffff;
+  --bg-sunken: #f6f6f8;
+  --bg-raised: #ffffff;
+  --fg: #1c1c22;
+  --fg-muted: #6b6b78;
+  --border: #e6e6ec;
+  --border-strong: #d6d6e0;
+  --ok: #16a34a;
+  --err: #e1326a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e0e12;
+    --bg-sunken: #131318;
+    --bg-raised: #1a1a22;
+    --fg: #e9e9f0;
+    --fg-muted: #9b9bac;
+    --border: #26262f;
+    --border-strong: #34343f;
+    --ok: #4ade80;
+    --err: #ff6b9d;
+  }
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   height: 100vh;
   overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
 }
 
 .app-shell {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 248px 1fr;
   grid-template-rows: auto 1fr auto;
   grid-template-areas:
     "header header"
@@ -21,37 +59,157 @@ body {
   height: 100vh;
 }
 
+/* ── Header ───────────────────────────────────────────────── */
 .app-header {
   grid-area: header;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.7rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-raised);
 }
 
 .app-header h1 {
   margin: 0;
-  font-size: 1rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-size: 0.92rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
 }
 
 .app-header p {
-  margin: 0.25rem 0 0;
+  margin: 0;
   font-family: ui-monospace, monospace;
-  font-size: 0.8rem;
-  opacity: 0.7;
+  font-size: 0.74rem;
+  color: var(--fg-muted);
 }
 
+.app-tagline {
+  margin-left: auto !important;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+#status #conn::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 0.4em;
+  border-radius: 50%;
+  background: var(--fg-muted);
+  vertical-align: middle;
+}
+
+#status.ready #conn { color: var(--ok); }
+#status.ready #conn::before { background: var(--ok); }
+#status.error #conn { color: var(--err); }
+#status.error #conn::before { background: var(--err); }
+
+/* ── Dock (sidebar) ───────────────────────────────────────── */
 .app-sidebar {
   grid-area: sidebar;
-  border-right: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
-  padding: 0.75rem;
+  border-right: 1px solid var(--border);
+  padding: 0.6rem;
   overflow: auto;
+  background: var(--bg-sunken);
 }
 
+.app-sidebar h2 {
+  padding: 0 0.5rem;
+}
+
+.app-sidebar ul {
+  gap: 0.15rem;
+}
+
+.app-sidebar li {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.dock-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.dock-btn:hover {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.dock-btn.active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: color-mix(in srgb, var(--accent) 65%, var(--fg));
+  font-weight: 550;
+}
+
+.dock-btn.active::before {
+  content: "";
+  position: absolute;
+  left: -0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 1.1rem;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+
+.dock-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: var(--fg-muted);
+}
+
+.dock-btn.active .dock-ico {
+  color: var(--accent);
+}
+
+.dock-ico svg {
+  width: 20px;
+  height: 20px;
+}
+
+.dock-initial {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 0.35rem;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.dock-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Stage ────────────────────────────────────────────────── */
 .app-main {
   grid-area: main;
   overflow: hidden;
-  background: color-mix(in srgb, currentcolor 3%, transparent);
+  background: var(--bg-sunken);
 }
 
 .app-main iframe {
@@ -59,14 +217,17 @@ body {
   height: 100%;
   border: 0;
   display: block;
+  background: var(--bg);
 }
 
+/* ── Drawer (footer) ──────────────────────────────────────── */
 .app-footer {
   grid-area: footer;
   display: flex;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  border-top: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
+  gap: 1.25rem;
+  padding: 0.8rem 1.1rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg-raised);
   max-height: 30vh;
   overflow: auto;
 }
@@ -77,11 +238,11 @@ body {
 }
 
 h2 {
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.8;
-  margin: 0 0 0.5rem;
+  letter-spacing: 0.07em;
+  color: var(--fg-muted);
+  margin: 0 0 0.55rem;
 }
 
 ul {
@@ -90,80 +251,50 @@ ul {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.3rem;
 }
 
-li {
+.app-footer li {
   padding: 0.4rem 0.6rem;
-  border: 1px solid color-mix(in srgb, currentcolor 15%, transparent);
-  border-radius: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 0.45rem;
+  background: var(--bg-sunken);
   font-family: ui-monospace, monospace;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
 }
 
 li.muted {
-  opacity: 0.5;
+  opacity: 0.55;
   font-style: italic;
+  border-style: dashed;
 }
 
 code {
   font-family: ui-monospace, monospace;
-  background: color-mix(in srgb, currentcolor 10%, transparent);
+  font-size: 0.92em;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
   padding: 0.1em 0.35em;
   border-radius: 0.25em;
-}
-
-.app-sidebar ul li {
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-
-.app-sidebar button {
-  width: 100%;
-  text-align: left;
-  padding: 0.5rem 0.6rem;
-  font: inherit;
-  font-size: 0.85rem;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 0.4rem;
-  cursor: pointer;
-  color: inherit;
-}
-
-.app-sidebar button:hover {
-  background: color-mix(in srgb, currentcolor 8%, transparent);
-}
-
-.app-sidebar button.active {
-  background: color-mix(in srgb, currentcolor 15%, transparent);
-  border-color: color-mix(in srgb, currentcolor 30%, transparent);
+  color: var(--fg-muted);
 }
 
 .actions {
-  margin-top: 0.5rem;
+  margin-top: 0.6rem;
 }
 
 button {
   font: inherit;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   padding: 0.4rem 0.8rem;
-  border-radius: 0.4rem;
-  border: 1px solid currentcolor;
-  background: transparent;
+  border-radius: 0.45rem;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-raised);
   cursor: pointer;
-  color: inherit;
+  color: var(--fg);
+  transition: background 0.12s ease, border-color 0.12s ease;
 }
 
 button:hover {
-  background: color-mix(in srgb, currentcolor 10%, transparent);
-}
-
-#status.error #conn {
-  color: #c33;
-}
-
-#status.ready #conn {
-  color: #2a7;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }

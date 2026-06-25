@@ -5,6 +5,7 @@ import type {
   DevframeTerminalSession,
 } from '@devframes/hub/types'
 import { connectDevframe } from '@devframes/hub/client'
+import { iconSvg } from './icons'
 
 const HUB_BASE = '/__hub/'
 
@@ -24,12 +25,21 @@ function setStatus(text: string, klass?: 'ready' | 'error') {
   statusEl.className = klass ?? ''
 }
 
-function renderList<T>(host: HTMLElement, items: T[], render: (item: T) => string) {
+function renderList<T>(host: HTMLElement, items: readonly T[], render: (item: T) => string) {
   if (!items.length) {
     host.innerHTML = '<li class="muted">empty</li>'
     return
   }
   host.innerHTML = items.map(render).join('')
+}
+
+/** Render a dock icon, falling back to the title's initial when unknown. */
+function dockIcon(entry: DevframeDockEntry): string {
+  const svg = iconSvg(entry.icon, 20)
+  if (svg)
+    return svg
+  const initial = (entry.title?.[0] ?? '?').toUpperCase()
+  return `<span class="dock-initial">${initial}</span>`
 }
 
 function isIframeDock(d: DevframeDockEntry): d is DevframeDockEntry & { type: 'iframe', url: string } {
@@ -63,7 +73,7 @@ async function main() {
     }
 
     renderList(docksEl, iframeDocks, d =>
-      `<li><button type="button" data-dock-id="${d.id}" class="${d.id === selectedDockId ? 'active' : ''}">${d.title}</button></li>`)
+      `<li><button type="button" data-dock-id="${d.id}" class="dock-btn${d.id === selectedDockId ? ' active' : ''}" title="${d.title}"><span class="dock-ico">${dockIcon(d)}</span><span class="dock-label">${d.title}</span></button></li>`)
 
     const selected = iframeDocks.find(d => d.id === selectedDockId)
     if (selected && iframeEl.getAttribute('src') !== selected.url)

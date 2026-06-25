@@ -1,5 +1,7 @@
+import a11yDevframe from '@devframes/a11y'
 import codeServerDevframe from '@devframes/plugin-code-server'
 import gitDevframe from '@devframes/plugin-git'
+import inspectDevframe from '@devframes/plugin-inspect'
 import terminalsDevframe from '@devframes/plugin-terminals'
 import { defineConfig } from 'vite'
 import { alias } from '../../alias'
@@ -14,10 +16,13 @@ export default defineConfig({
       devframes: [
         demoDevframe,
         demoDevframeB,
-        // Built-in plugins, dogfooded end-to-end through the hub mount path.
+        // Every built-in plugin, dogfooded end-to-end through the hub mount
+        // path — the same set a full viewer like vite-devtools would surface.
         gitDevframe,
         terminalsDevframe,
         codeServerDevframe,
+        inspectDevframe,
+        a11yDevframe,
       ],
     }),
   ],

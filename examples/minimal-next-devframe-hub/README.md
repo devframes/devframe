@@ -1,6 +1,8 @@
 # Minimal Next Devframe Hub
 
-A protocol-witness example. The `src/client/devframe/minimal-next-devframe-hub.ts` file wires `@devframes/hub` into a Next.js App Router app by lazily starting a side-car RPC/WS server from a Node route handler.
+A tiny, copyable **vite-devtools-style hub on Next.js**. [vite-devtools](https://github.com/vitejs/devtools) is the full Vite viewer built on `@devframes/hub`; this example wears the same shape — an icon dock, an iframe stage, a subsystem drawer — but hosts it from a Next.js App Router app, lazily starting a side-car RPC/WS server from a Node route handler. It's the reference for bringing the same integrations to any non-Vite host.
+
+`src/client/devframe/minimal-next-devframe-hub.ts` is the entire host.
 
 ## Run it
 
@@ -9,28 +11,29 @@ pnpm install
 pnpm --filter minimal-next-devframe-hub dev
 ```
 
-Open the printed URL. You should see:
+Open the printed URL. The dock on the left lists every mounted tool with its icon:
 
-- A status line showing the RPC backend
-- A **Docks** list with hub built-ins and the mounted demo devframe
-- A **Commands** list populated from server-side registrations
-- A **Messages** list populated via `messages.add()` on the server
-- A **Terminals** list, empty unless a devframe registers one
-- A button that exercises `hub:commands:execute` by dispatching the sample ping command
+- **Git**, **Terminals**, **Code Server**, **RPC & State Inspector**, **A11y Inspector** — the built-in plugins, each mounted with `mountDevframe`
+- **Next Demo Tool** / **Next Demo Tool B** — two trivial static SPAs that show the bare mount path
+
+Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`.
 
 ## What the example proves
 
-- `createHubContext()` boots a hub without any Vite-specific code path
-- A `DevframeHost` impl plugs Next host specifics into the hub uniformly
-- `mountDevframe(ctx, def)` registers any `DevframeDefinition` as a dock
-- The built-in `hub:commands:execute` RPC dispatches any registered server command, regardless of how the host was constructed
-- The browser-side `connectDevframe({ baseURL: '/__hub/' })` discovers the WS endpoint via the Next route handler at `/__hub/__connection.json`
+- `createHubContext()` boots a hub with no Vite-specific code path; a `DevframeHost` impl plugs Next specifics (static mounts, connection meta, storage, origin) in uniformly
+- `mountDevframe(ctx, def)` registers any `DevframeDefinition` as a dock and serves both its SPA and its `__connection.json`, so the embedded SPA connects straight back to the hub
+- The browser reads `devframe:docks` / `devframe:commands` shared state and dispatches commands over RPC — byte-for-byte the same protocol the Vite host speaks
+
+## Hosting built-in plugins in a bundler
+
+The plugins run node-side (child processes, the native `node-pty` PTY backend) and resolve their SPA dist via `new URL(..., import.meta.url)`. Next's bundler would try to inline that, so the host loads them through a bundler-ignored dynamic `import()` and sets `skipTrailingSlashRedirect` (see `next.config.mjs`) so each SPA's relative assets resolve under `/__<id>/`. This is the recipe for any bundled (webpack/Turbopack) host.
 
 ## Files
 
 | File | Role |
 |---|---|
-| `src/client/devframe/minimal-next-devframe-hub.ts` | The Next host — creates hub context and side-car WS |
-| `src/client/app/%5F_hub/%5F_connection.json/route.ts` | Connection-meta endpoint for `/__hub/__connection.json` that starts the singleton host |
-| `src/client/devframe/demo-devframe.ts` | A sample `DevframeDefinition` that plugs into the host |
-| `src/client/app/page.tsx` | The browser-side UI that consumes the hub protocol |
+| `src/client/devframe/minimal-next-devframe-hub.ts` | The Next host — hub context, static-mount registry, side-car WS |
+| `src/client/app/%5F_hub/%5F_connection.json/route.ts` | Boots the singleton host and serves `/__hub/__connection.json` |
+| `src/client/app/%5F_[id]/[[...path]]/route.ts` | Serves each mounted SPA and its connection meta under `/__<id>/` |
+| `src/client/app/page.tsx` | The browser UI that consumes the hub protocol |
+| `src/client/app/icons.ts` | Offline Phosphor icons for the dock |
