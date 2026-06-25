@@ -17,6 +17,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@internal/design": "workspace:*",
     "devframe": "workspace:*",
     "next": "catalog:frontend",
     "react": "catalog:frontend",
@@ -25,8 +26,10 @@
   "devDependencies": {
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
+    "@unocss/postcss": "catalog:frontend",
     "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
+    "unocss": "catalog:frontend",
     "vitest": "catalog:testing",
     "ws": "catalog:deps"
   }

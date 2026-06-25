@@ -1,6 +1,7 @@
 import type { DevframeScopedClientContext } from 'devframe/client'
 import type { StreamReader } from 'devframe/utils/streaming-channel'
 import type { ChatHistory, ChatMessage } from '../types'
+import { button, cx, input, nav, navBrand, spinner } from '@internal/design/components'
 import { connectDevframe } from 'devframe/client'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { CHANNEL, HISTORY, NAMESPACE } from '../constants'
@@ -164,85 +165,121 @@ export function App() {
     }
   }, [ctx, isStreaming])
 
-  if (!ctx)
-    return <main><p>Connecting to devframe…</p></main>
+  if (!ctx) {
+    return (
+      <main class="grid h-dvh place-items-center bg-background text-foreground">
+        <p class="flex items-center gap-2 text-sm text-muted-foreground">
+          <span class={spinner()} />
+          Connecting to devframe…
+        </p>
+      </main>
+    )
+  }
 
   return (
-    <main>
-      <header>
-        <div>
-          <h1>Streaming Chat</h1>
-          <small>history persists in shared state · tokens stream over a channel</small>
-        </div>
-        <div class="toolbar">
-          <button
-            type="button"
-            onClick={clear}
-            disabled={isStreaming || messages.length === 0}
-          >
-            Clear
-          </button>
-        </div>
+    <main class="flex flex-col h-dvh w-full max-w-3xl mx-auto bg-background text-foreground">
+      <header class={nav()}>
+        <span class={navBrand()}>
+          <span class="i-ph-chat-circle-dots-duotone text-base color-active" />
+          <span>Streaming Chat</span>
+        </span>
+        <span class="hidden text-xs text-muted-foreground sm:inline">
+          history persists in shared state · tokens stream over a channel
+        </span>
+        <span class="flex-1" />
+        <button
+          type="button"
+          class={button({ variant: 'ghost', size: 'sm' })}
+          onClick={clear}
+          disabled={isStreaming || messages.length === 0}
+        >
+          <span class="i-ph-trash" />
+          Clear
+        </button>
       </header>
 
-      <div class="messages" ref={messagesRef}>
-        {messages.length === 0
-          ? (
-              <div class="empty">
-                <p>No messages yet.</p>
-                <p>
-                  Type a prompt and hit
-                  {' '}
-                  <kbd>Enter</kbd>
-                  {' '}
-                  — or pick a demo prompt below.
-                </p>
-              </div>
-            )
-          : messages.map(msg => <Message key={msg.id} msg={msg} live={liveTokens[msg.id]} />)}
-      </div>
-
-      {!isStreaming && demoPrompts.length > 0 && (
-        <div class="demo-prompts">
-          {demoPrompts.map(p => (
-            <button key={p} type="button" onClick={() => send(p)}>{p}</button>
-          ))}
+      <div class="flex flex-1 min-h-0 flex-col gap-3 p-4">
+        <div
+          class="flex flex-1 min-h-0 flex-col gap-2 overflow-y-auto rounded-lg border border-border bg-card p-3 scrollbar-slim"
+          ref={messagesRef}
+        >
+          {messages.length === 0
+            ? (
+                <div class="m-auto max-w-xs text-center text-sm text-muted-foreground leading-relaxed">
+                  <p class="mb-1 font-medium text-foreground">No messages yet.</p>
+                  <p>
+                    Type a prompt and hit
+                    {' '}
+                    <kbd class="rounded border border-border bg-muted px-1.5 py-0.5 text-xs font-mono">Enter</kbd>
+                    {' '}
+                    — or pick a demo prompt below.
+                  </p>
+                </div>
+              )
+            : messages.map(msg => <Message key={msg.id} msg={msg} live={liveTokens[msg.id]} />)}
         </div>
-      )}
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          send(prompt)
-        }}
-      >
-        <input
-          type="text"
-          value={prompt}
-          onInput={e => setPrompt((e.target as HTMLInputElement).value)}
-          placeholder={isStreaming ? 'Streaming reply… cancel to send another' : 'Ask anything…'}
-          disabled={isStreaming}
-        />
-        {isStreaming
-          ? <button type="button" class="cancel" onClick={cancel}>Cancel</button>
-          : <button type="submit" class="send" disabled={!prompt.trim()}>Send</button>}
-      </form>
-
-      <div class="status">
-        backend:
-        {' '}
-        <code>{ctx.base.connectionMeta.backend}</code>
-        {' · '}
-        {messages.length}
-        {' '}
-        message
-        {messages.length === 1 ? '' : 's'}
-        {error && (
-          <span class="err">
-            {' · error: '}
-            {error}
-          </span>
+        {!isStreaming && demoPrompts.length > 0 && (
+          <div class="flex flex-wrap gap-2">
+            {demoPrompts.map(p => (
+              <button
+                key={p}
+                type="button"
+                class={button({ variant: 'outline', size: 'sm' })}
+                onClick={() => send(p)}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         )}
+
+        <form
+          class="flex gap-2"
+          onSubmit={(e) => {
+            e.preventDefault()
+            send(prompt)
+          }}
+        >
+          <input
+            type="text"
+            class={input('flex-1')}
+            value={prompt}
+            onInput={e => setPrompt((e.target as HTMLInputElement).value)}
+            placeholder={isStreaming ? 'Streaming reply… cancel to send another' : 'Ask anything…'}
+            disabled={isStreaming}
+          />
+          {isStreaming
+            ? (
+                <button type="button" class={button({ variant: 'destructive' })} onClick={cancel}>
+                  <span class="i-ph-stop-circle-duotone" />
+                  Cancel
+                </button>
+              )
+            : (
+                <button type="submit" class={button({ variant: 'primary' })} disabled={!prompt.trim()}>
+                  <span class="i-ph-paper-plane-tilt" />
+                  Send
+                </button>
+              )}
+        </form>
+
+        <div class="text-xs text-muted-foreground">
+          backend:
+          {' '}
+          <code class="font-mono text-foreground">{ctx.base.connectionMeta.backend}</code>
+          {' · '}
+          {messages.length}
+          {' '}
+          message
+          {messages.length === 1 ? '' : 's'}
+          {error && (
+            <span class="text-destructive">
+              {' · error: '}
+              {error}
+            </span>
+          )}
+        </div>
       </div>
     </main>
   )
@@ -254,17 +291,19 @@ function Message({ msg, live }: { msg: ChatMessage, live: string | undefined }) 
   const displayed = msg.streamId !== undefined && live !== undefined
     ? live
     : msg.content
-  const cls = [
-    'msg',
-    `msg-${msg.role}`,
-    msg.streamId ? 'streaming' : '',
-    msg.cancelled ? 'cancelled' : '',
-  ].filter(Boolean).join(' ')
+  const cls = cx(
+    'max-w-[85%] whitespace-pre-wrap break-words rounded-lg px-3 py-2 leading-relaxed',
+    msg.role === 'user'
+      ? 'self-end rounded-br-sm bg-primary text-primary-foreground'
+      : 'self-start rounded-bl-sm bg-muted text-foreground font-mono text-sm',
+  )
 
   return (
     <div class={cls}>
       {displayed || (msg.streamId ? '' : '(empty)')}
-      {msg.cancelled && <div class="msg-meta">cancelled</div>}
+      {/* Live "typing" indicator while the producer is still streaming tokens. */}
+      {msg.streamId && <span class={spinner('ml-1 size-3! align-[-0.2em]')} />}
+      {msg.cancelled && <div class="mt-1 text-xs text-destructive">cancelled</div>}
     </div>
   )
 }

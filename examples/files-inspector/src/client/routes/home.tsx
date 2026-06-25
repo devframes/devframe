@@ -1,4 +1,5 @@
 import type { InspectorCtx } from '../app'
+import { badge, button } from '@internal/design/components'
 import { useEffect, useState } from 'preact/hooks'
 
 export function Home({ ctx }: { ctx: InspectorCtx }) {
@@ -22,22 +23,46 @@ export function Home({ ctx }: { ctx: InspectorCtx }) {
   }, [])
 
   return (
-    <section>
-      <h2>
-        Files
-        {' '}
-        <small>
-          (
+    <section class="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4">
+      <div class="flex items-center gap-2">
+        <span class="i-ph-files-duotone text-lg color-active" />
+        <h2 class="text-base font-semibold">Files</h2>
+        <span class={badge({ variant: 'secondary', class: 'font-mono tabular-nums' })}>
           {files.length}
-          )
-        </small>
-      </h2>
-      <button onClick={refresh} disabled={loading}>
-        {loading ? 'Loading…' : 'Refresh'}
-      </button>
-      <ul>
-        {files.map(f => <li key={f}>{f}</li>)}
-      </ul>
+        </span>
+        <span class="flex-1" />
+        <button
+          type="button"
+          class={button({ variant: 'outline', size: 'sm' })}
+          onClick={refresh}
+          disabled={loading}
+        >
+          <span class={loading ? 'i-ph-arrows-clockwise animate-spin' : 'i-ph-arrows-clockwise'} />
+          {loading ? 'Loading…' : 'Refresh'}
+        </button>
+      </div>
+
+      <div class="overflow-hidden rounded-md border border-border bg-card text-card-foreground">
+        {files.length === 0
+          ? (
+              <p class="px-3 py-10 text-center text-sm text-muted-foreground">
+                {loading ? 'Loading files…' : 'No files in the working directory.'}
+              </p>
+            )
+          : (
+              <ul>
+                {files.map(f => (
+                  <li
+                    key={f}
+                    class="flex items-center gap-2 border-b border-border px-3 py-1.5 text-sm transition-colors last:border-b-0 hover:bg-accent"
+                  >
+                    <span class="i-ph-file-duotone shrink-0 text-muted-foreground" />
+                    <span class="truncate font-mono">{f}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+      </div>
     </section>
   )
 }

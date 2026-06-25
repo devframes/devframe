@@ -1,9 +1,9 @@
 import type { Accessor } from 'solid-js'
 import type { Impact, ScanReport } from '../../shared/protocol.ts'
+import { button, nav, navBrand } from '@internal/design/components'
 import { For, Show } from 'solid-js'
 import { IMPACT_ORDER } from '../../shared/protocol.ts'
 import { IMPACT_COLOR, IMPACT_LABEL } from '../lib/impact.ts'
-import { BrandGlyph } from './icons.tsx'
 
 interface HeaderProps {
   agentReady: boolean
@@ -22,26 +22,23 @@ export function Header(props: HeaderProps) {
         : 'status__dot status__dot--live'
 
   return (
-    <header class="topbar">
-      <span class="brand">
-        <BrandGlyph />
-        <span class="brand__name">
-          A11y
-          {' '}
-          <b>Inspector</b>
-        </span>
+    <header class={nav()}>
+      <span class={navBrand()}>
+        <span class="i-ph-person-arms-spread-duotone text-base color-active" />
+        <span>A11y Inspector</span>
       </span>
-      <span class="topbar__spacer" />
+      <span class="flex-1" />
       <span class="status">
         <span class={dotClass()} />
         {statusLabel()}
       </span>
       <button
         type="button"
-        class="rescan"
+        class={button({ variant: 'primary', size: 'sm' })}
         onClick={() => props.onRescan()}
         disabled={!props.agentReady || props.scanning}
       >
+        <span class="i-ph-arrows-clockwise" classList={{ 'animate-spin': props.scanning }} />
         Rescan
       </button>
     </header>

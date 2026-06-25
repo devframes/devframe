@@ -15,9 +15,6 @@ function makeIcon(iconClass: string) {
   }
 }
 
-/** Focus-reticle brand mark — echoes the highlight ring painted in the page. */
-export const BrandGlyph = makeIcon('i-ph-scan-duotone size-5')
-
 /** Disclosure chevron for a violation row. */
 export const Chevron = makeIcon('i-ph-caret-right size-3.5')
 

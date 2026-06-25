@@ -16,8 +16,20 @@ export function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(' ')
 }
 
+/**
+ * Buttons come in exactly three forms, and every plugin and example sticks to
+ * them so controls read the same across frameworks:
+ *
+ * 1. **Text button** — a label (optionally with a leading icon). {@link button}.
+ * 2. **Icon button** — a square, icon-only control with a border. `iconButton()`.
+ * 3. **Borderless icon button** — the same square control without the border,
+ *    for dense toolbars. `iconButton({ variant: 'ghost' })`.
+ *
+ * Text buttons carry a color variant; icon buttons are deliberately limited to
+ * the bordered/borderless pair (color via a class when truly needed).
+ */
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'link'
-export type ButtonSize = 'md' | 'sm' | 'lg' | 'icon' | 'icon-sm'
+export type ButtonSize = 'md' | 'sm' | 'lg'
 
 export interface ButtonProps {
   variant?: ButtonVariant
@@ -26,9 +38,25 @@ export interface ButtonProps {
   class?: string
 }
 
-/** A button. `df-btn` + a variant, optionally a non-default size. */
+/** A text button — `df-btn` + a color variant, optionally a non-default size. */
 export function button({ variant = 'primary', size = 'md', class: extra }: ButtonProps = {}): string {
   return cx('df-btn', `df-btn-${variant}`, size !== 'md' && `df-btn-${size}`, extra)
+}
+
+/** The two icon-only forms: `outline` (bordered) and `ghost` (borderless). */
+export type IconButtonVariant = 'outline' | 'ghost'
+export type IconButtonSize = 'md' | 'sm'
+
+export interface IconButtonProps {
+  /** `outline` (default) = icon button; `ghost` = borderless icon button. */
+  variant?: IconButtonVariant
+  size?: IconButtonSize
+  class?: string
+}
+
+/** A square, icon-only button — bordered by default, borderless when `ghost`. */
+export function iconButton({ variant = 'outline', size = 'md', class: extra }: IconButtonProps = {}): string {
+  return cx('df-btn', `df-btn-${variant}`, size === 'sm' ? 'df-btn-icon-sm' : 'df-btn-icon', extra)
 }
 
 export type BadgeVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'destructive' | 'outline'
@@ -48,12 +76,16 @@ export function tag(color: string, extra?: string): string {
   return cx(`df-tag-${color}`, extra)
 }
 
-/** The container for a set of segmented tabs. */
+/** The container for the segmented view switcher (sits inside the top `df-nav`). */
 export function tabsList(extra?: string): string {
   return cx('df-tabs-list', extra)
 }
 
-/** A segmented tab (active state is driven by `data-state="active"` on the element). */
+/**
+ * A segmented tab. Active state is driven by `data-state="active"` on the
+ * element, so it works with Radix and with plain buttons alike. Each tab pairs
+ * a leading `i-ph-*` icon with its label.
+ */
 export function tab(extra?: string): string {
   return cx('df-tab', extra)
 }
@@ -71,6 +103,11 @@ export function navTab({ active = false, class: extra }: NavTabProps = {}): stri
 /** A top navigation bar. */
 export function nav(extra?: string): string {
   return cx('df-nav', extra)
+}
+
+/** The leading brand block inside a `nav` — a primary-tinted icon + the name. */
+export function navBrand(extra?: string): string {
+  return cx('df-nav-brand', extra)
 }
 
 /** A secondary toolbar bar. */
@@ -143,6 +180,7 @@ export const DF_SAFELIST: string[] = [
   'df-navtab',
   'df-navtab-active',
   'df-nav',
+  'df-nav-brand',
   'df-toolbar',
   // surfaces + controls
   'df-card',

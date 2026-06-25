@@ -57,41 +57,9 @@ body {
   min-height: 0;
 }
 
-/* ── top bar ───────────────────────────────────────────────────────────── */
-
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 16px;
-  background: linear-gradient(180deg, var(--surface) 0%, var(--ink) 100%);
-  border-bottom: 1px solid var(--line);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-}
-
-.brand__glyph {
-  display: block;
-  color: var(--ring);
-}
-
-.brand__name {
-  font-size: 14px;
-}
-
-.brand__name b {
-  font-weight: 700;
-}
-
-.topbar__spacer {
-  flex: 1;
-}
+/* ── top bar: nav, brand and the Rescan button come from the shared
+   @internal/design `df-*` vocabulary; only the connection status pill below
+   stays bespoke. ───────────────────────────────────────────────────────── */
 
 .status {
   display: inline-flex;
@@ -126,29 +94,6 @@ body {
   50% {
     box-shadow: 0 0 0 5px transparent;
   }
-}
-
-.rescan {
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text);
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 6px 12px;
-  cursor: pointer;
-  transition: border-color 0.12s, background 0.12s;
-}
-
-.rescan:hover {
-  border-color: var(--ring);
-  background: var(--df-accent);
-}
-
-.rescan:disabled {
-  opacity: 0.55;
-  cursor: progress;
 }
 
 /* ── meta line ─────────────────────────────────────────────────────────── */

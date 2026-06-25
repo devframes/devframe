@@ -3,6 +3,7 @@
 import type { DevframeRpcClient } from 'devframe/client'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { Branch, GitBranches } from '../../index'
+import { nav as navBar, navBrand, tab as tabClass, tabsList } from '@internal/design/components'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '../lib/utils'
 import { CommitDetailsPanel } from './commit-details-panel'
@@ -12,7 +13,7 @@ import { RpcProvider, useRpc } from './rpc-provider'
 import { StatusPanel } from './status-panel'
 import { useTheme } from './theme'
 import { Badge } from './ui/badge'
-import { Button } from './ui/button'
+import { IconButton } from './ui/button'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 import { useRpcResource } from './use-rpc-resource'
@@ -110,9 +111,9 @@ function ConnectionBadge() {
 function ThemeToggle() {
   const { theme, toggle } = useTheme()
   return (
-    <Button variant="ghost" size="icon" className="size-7" onClick={toggle} aria-label="Toggle light/dark theme">
-      {theme === 'dark' ? <Icon name="i-ph-sun-duotone" className="size-3.5" /> : <Icon name="i-ph-moon-duotone" className="size-3.5" />}
-    </Button>
+    <IconButton variant="ghost" size="sm" onClick={toggle} aria-label="Toggle light/dark theme">
+      <Icon name={theme === 'dark' ? 'i-ph-sun-duotone' : 'i-ph-moon-duotone'} className="size-4" />
+    </IconButton>
   )
 }
 
@@ -198,22 +199,32 @@ function DashboardBody() {
 
   return (
     <div className="bg-background flex h-svh w-full flex-col overflow-hidden">
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3">
-        <div className="flex items-center gap-2.5">
-          <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
-            <Icon name="i-ph-graph-duotone" className="size-5" />
-          </div>
-          <div>
-            <h1 className="text-sm leading-none font-semibold">Git Dashboard</h1>
-            <p className="text-muted-foreground mt-1 text-[11px] leading-none">
-              devframe · type-safe RPC into the host repository
-            </p>
-          </div>
+      <header className={navBar()}>
+        <div className={navBrand()}>
+          <Icon name="i-ph-git-fork-duotone" className="text-base text-primary" />
+          <span>Git Dashboard</span>
         </div>
-        <div className="flex items-center gap-2">
-          <ConnectionBadge />
-          <ThemeToggle />
-        </div>
+
+        <nav className={tabsList()} role="tablist" aria-label="Git views">
+          {NAV_ITEMS.map(({ id, label, icon }) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={pane === id}
+              data-state={pane === id ? 'active' : 'inactive'}
+              className={tabClass()}
+              onClick={() => setPane(id)}
+            >
+              <Icon name={icon} className="size-4" />
+              {label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="flex-1" />
+        <ConnectionBadge />
+        <ThemeToggle />
       </header>
 
       <div className="flex min-h-0 flex-1">
@@ -239,21 +250,6 @@ function DashboardBody() {
               </select>
             </div>
 
-            <nav className="space-y-1">
-              {NAV_ITEMS.map(({ id, label, icon }) => (
-                <Button
-                  key={id}
-                  type="button"
-                  variant={pane === id ? 'secondary' : 'ghost'}
-                  className="w-full justify-start"
-                  onClick={() => setPane(id)}
-                >
-                  <Icon name={icon} className="size-4" />
-                  {label}
-                </Button>
-              ))}
-            </nav>
-
             {branchesError && <p className="text-destructive text-xs">{branchesError}</p>}
           </div>
 
@@ -264,16 +260,15 @@ function DashboardBody() {
                 <span className="text-muted-foreground text-[11px] tabular-nums">
                   {branches?.isRepo ? branches.branches.length : ''}
                 </span>
-                <Button
+                <IconButton
                   variant="ghost"
-                  size="icon"
-                  className="size-6"
+                  size="sm"
                   onClick={refreshBranches}
                   disabled={branchesLoading}
                   aria-label="Refresh branches"
                 >
-                  <Icon name="i-ph-arrows-clockwise" className={cn('size-3.5', branchesLoading && 'animate-spin')} />
-                </Button>
+                  <Icon name="i-ph-arrows-clockwise" className={cn('size-4', branchesLoading && 'animate-spin')} />
+                </IconButton>
               </div>
             </PanelHeading>
 

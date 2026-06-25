@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AgentManifest, InvokeResult } from '@devframes/plugin-inspect/client'
+import { button } from '@internal/design/components'
 import { reactive, ref } from 'vue'
 import JsonView from './JsonView.vue'
 
@@ -97,7 +98,8 @@ function readResource(id: string) {
             </div>
             <textarea v-model="argsInput[tool.id]" class="args" spellcheck="false" placeholder="{}" />
             <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-              <button class="btn" :disabled="pending[tool.id] || isStatic" @click="invokeTool(tool.id)">
+              <button :class="button({ variant: 'primary', size: 'sm' })" :disabled="pending[tool.id] || isStatic" @click="invokeTool(tool.id)">
+                <span class="i-ph-play-duotone" />
                 {{ pending[tool.id] ? 'Invoking…' : 'Invoke' }}
               </button>
               <span v-if="isStatic" class="note">read-only static backend</span>
@@ -142,7 +144,8 @@ function readResource(id: string) {
 
           <template v-if="expanded === res.id">
             <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-              <button class="btn" :disabled="pending[res.id] || isStatic" @click="readResource(res.id)">
+              <button :class="button({ variant: 'primary', size: 'sm' })" :disabled="pending[res.id] || isStatic" @click="readResource(res.id)">
+                <span class="i-ph-book-open-duotone" />
                 {{ pending[res.id] ? 'Reading…' : 'Read Resource' }}
               </button>
               <span v-if="isStatic" class="note">read-only static backend</span>

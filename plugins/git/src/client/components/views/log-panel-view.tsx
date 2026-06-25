@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { computeGraph } from '../../lib/commit-graph'
 import { parseRefs } from '../../lib/refs'
 import { cn } from '../../lib/utils'
-import { Button } from '../ui/button'
+import { IconButton } from '../ui/button'
 import { Icon } from '../ui/icon'
 import { Skeleton } from '../ui/skeleton'
 
@@ -333,9 +333,9 @@ export function LogPanelView(props: LogPanelViewProps) {
             ? `${commits.length}${hasMore ? '+' : ''} commits${selectedRef ? ` · ${selectedRef}` : ''}`
             : ' '}
         </span>
-        <Button variant="ghost" size="icon" className="size-7" onClick={onRefresh} disabled={loading} aria-label="Refresh log">
-          <Icon name="i-ph-arrows-clockwise" className={cn('size-3.5', loading && 'animate-spin')} />
-        </Button>
+        <IconButton variant="ghost" size="sm" onClick={onRefresh} disabled={loading} aria-label="Refresh log">
+          <Icon name="i-ph-arrows-clockwise" className={cn('size-4', loading && 'animate-spin')} />
+        </IconButton>
       </div>
 
       {!rpcConnected && (

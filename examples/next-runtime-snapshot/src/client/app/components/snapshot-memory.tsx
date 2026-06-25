@@ -1,6 +1,7 @@
 'use client'
 
 import type { MemorySnapshot } from '../../../devframe'
+import { button, card } from '@internal/design/components'
 import { useCallback, useEffect, useState } from 'react'
 import { useRpc } from './connect'
 
@@ -44,33 +45,39 @@ export function SnapshotMemory() {
   }, [refresh])
 
   return (
-    <section className="card">
-      <h2>
+    <section className={card('p-4')}>
+      <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+        <span className="i-ph-gauge-duotone color-active" />
         <span>Memory & Uptime</span>
-        <span className="actions">
-          <button type="button" onClick={refresh} disabled={!ctx || loading}>
-            {loading ? 'Refreshing…' : 'Refresh'}
-          </button>
-        </span>
+        <span className="flex-1" />
+        <button
+          type="button"
+          className={button({ variant: 'outline', size: 'sm' })}
+          onClick={refresh}
+          disabled={!ctx || loading}
+        >
+          <span className={loading ? 'i-ph-arrows-clockwise animate-spin' : 'i-ph-arrows-clockwise'} />
+          {loading ? 'Refreshing…' : 'Refresh'}
+        </button>
       </h2>
       {snap
         ? (
-            <div className="kv">
-              <span className="k">uptime</span>
-              <span className="v">{fmtUptime(snap.uptimeSeconds)}</span>
-              <span className="k">rss</span>
-              <span className="v">{fmtBytes(snap.memory.rss)}</span>
-              <span className="k">heap used</span>
-              <span className="v">{fmtBytes(snap.memory.heapUsed)}</span>
-              <span className="k">heap total</span>
-              <span className="v">{fmtBytes(snap.memory.heapTotal)}</span>
-              <span className="k">external</span>
-              <span className="v">{fmtBytes(snap.memory.external)}</span>
-              <span className="k">array buffers</span>
-              <span className="v">{fmtBytes(snap.memory.arrayBuffers)}</span>
+            <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+              <span className="text-muted-foreground">uptime</span>
+              <span className="font-mono tabular-nums">{fmtUptime(snap.uptimeSeconds)}</span>
+              <span className="text-muted-foreground">rss</span>
+              <span className="font-mono tabular-nums">{fmtBytes(snap.memory.rss)}</span>
+              <span className="text-muted-foreground">heap used</span>
+              <span className="font-mono tabular-nums">{fmtBytes(snap.memory.heapUsed)}</span>
+              <span className="text-muted-foreground">heap total</span>
+              <span className="font-mono tabular-nums">{fmtBytes(snap.memory.heapTotal)}</span>
+              <span className="text-muted-foreground">external</span>
+              <span className="font-mono tabular-nums">{fmtBytes(snap.memory.external)}</span>
+              <span className="text-muted-foreground">array buffers</span>
+              <span className="font-mono tabular-nums">{fmtBytes(snap.memory.arrayBuffers)}</span>
             </div>
           )
-        : <p className="loading">Loading…</p>}
+        : <p className="text-sm text-muted-foreground">Loading…</p>}
     </section>
   )
 }

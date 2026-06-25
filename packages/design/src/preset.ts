@@ -65,9 +65,11 @@ export const shortcuts = [
     'df-badge-destructive': 'df-badge border-transparent bg-destructive text-white',
     'df-badge-outline': 'df-badge text-foreground',
 
-    // Segmented tabs (mirror the shadcn segmented control).
-    'df-tabs-list': 'inline-flex items-center justify-center w-fit h-9 p-[3px] rounded-lg bg-muted text-muted-foreground',
-    'df-tab': 'inline-flex flex-1 items-center justify-center gap-1.5 h-[calc(100%-1px)] px-2 py-1 rounded-md border border-transparent text-sm font-medium whitespace-nowrap select-none cursor-pointer outline-none transition-colors disabled:(pointer-events-none op50) focus-visible:(ring-[3px] ring-ring/50) data-[state=active]:(bg-background text-foreground shadow-sm)',
+    // Segmented view switcher (mirrors the shadcn segmented control). Sized to
+    // nest inside the `df-nav` bar; tabs are content-width — add `flex-1` for an
+    // equal-width strip.
+    'df-tabs-list': 'inline-flex items-center justify-center w-fit h-8 gap-0.5 p-[3px] rounded-lg bg-muted text-muted-foreground',
+    'df-tab': 'inline-flex items-center justify-center gap-1.5 h-[calc(100%-1px)] px-3 py-1 rounded-md border border-transparent text-sm font-medium whitespace-nowrap select-none cursor-pointer outline-none transition-colors hover:text-foreground disabled:(pointer-events-none op50) focus-visible:(ring-[3px] ring-ring/50) data-[state=active]:(bg-background text-foreground shadow-sm)',
 
     // Closeable navigation tabs (e.g. terminal sessions, open documents).
     'df-navtab': 'relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition-colors hover:(op100 bg-accent)',
@@ -77,9 +79,13 @@ export const shortcuts = [
     'df-card': 'flex flex-col rounded-xl border border-border bg-card text-card-foreground shadow-sm',
     'df-panel': 'rounded-lg border border-border bg-card text-card-foreground',
 
-    // Bars — a top navigation strip and a secondary toolbar.
-    'df-nav': 'z-nav flex items-center gap-1 shrink-0 h-9 px-2 border-b border-base bg-base',
+    // Bars — one canonical top navigation strip (same height everywhere) and a
+    // secondary toolbar that sits beneath it.
+    'df-nav': 'z-nav flex items-center gap-2 shrink-0 h-10 px-2 border-b border-base bg-base',
     'df-toolbar': 'z-toolbar flex items-center gap-2 shrink-0 h-8 px-2.5 border-b border-base bg-secondary text-sm',
+    // The leading brand block — a primary-tinted icon followed by the name —
+    // so every plugin's nav opens the same way.
+    'df-nav-brand': 'flex items-center gap-1.5 shrink-0 px-1 font-semibold text-sm select-none',
 
     // Form controls.
     'df-input': 'flex w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none transition-colors placeholder:text-muted-foreground disabled:(cursor-not-allowed op50) focus-visible:(border-ring ring-[3px] ring-ring/50)',
