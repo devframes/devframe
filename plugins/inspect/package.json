@@ -61,6 +61,7 @@
   },
   "devDependencies": {
     "@iconify-json/ph": "catalog:frontend",
+    "@internal/design": "workspace:*",
     "@storybook/addon-essentials": "catalog:storybook",
     "@storybook/vue3": "catalog:storybook",
     "@storybook/vue3-vite": "catalog:storybook",

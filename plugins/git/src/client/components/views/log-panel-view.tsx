@@ -3,12 +3,12 @@
 import type { Commit } from '../../../index'
 import type { GraphRow } from '../../lib/commit-graph'
 import type { GitRef } from '../../lib/refs'
-import { Check, GitBranch, Loader2, Pencil, RefreshCw, Tag } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import { computeGraph } from '../../lib/commit-graph'
 import { parseRefs } from '../../lib/refs'
 import { cn } from '../../lib/utils'
 import { Button } from '../ui/button'
+import { Icon } from '../ui/icon'
 import { Skeleton } from '../ui/skeleton'
 
 const ROW_H = 46
@@ -131,7 +131,7 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
         className="inline-flex max-w-[140px] items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-none font-medium"
         style={{ color, borderColor: withAlpha(color, 0.5), backgroundColor: withAlpha(color, 0.12) }}
       >
-        <Tag className="size-3 shrink-0" />
+        <Icon name="i-ph-tag-duotone" className="size-3 shrink-0" />
         <span className="truncate" title={refToken.name}>{refToken.name}</span>
       </span>
     )
@@ -158,8 +158,8 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
       }
     >
       {current
-        ? <Check className="size-3 shrink-0" />
-        : <GitBranch className="size-3 shrink-0 opacity-70" />}
+        ? <Icon name="i-ph-check" className="size-3 shrink-0" />
+        : <Icon name="i-ph-git-branch-duotone" className="size-3 shrink-0 opacity-70" />}
       <span className="truncate" title={name}>{name}</span>
     </span>
   )
@@ -252,7 +252,7 @@ function WipRow({ col, color, gutter, changes }: {
         </svg>
       </div>
       <div className="relative z-10 flex min-w-0 flex-1 items-center gap-2 pl-4">
-        <Pencil className="text-muted-foreground size-3.5 shrink-0" />
+        <Icon name="i-ph-pencil-simple-duotone" className="text-muted-foreground size-3.5 shrink-0" />
         <span className="text-sm font-medium">Work in Progress</span>
         <span className="text-muted-foreground text-xs">
           {changes}
@@ -334,7 +334,7 @@ export function LogPanelView(props: LogPanelViewProps) {
             : ' '}
         </span>
         <Button variant="ghost" size="icon" className="size-7" onClick={onRefresh} disabled={loading} aria-label="Refresh log">
-          <RefreshCw className={cn('size-3.5', loading && 'animate-spin')} />
+          <Icon name="i-ph-arrows-clockwise" className={cn('size-3.5', loading && 'animate-spin')} />
         </Button>
       </div>
 
@@ -379,7 +379,7 @@ export function LogPanelView(props: LogPanelViewProps) {
 
           {hasMore && (
             <div ref={sentinelRef} className="text-muted-foreground flex items-center justify-center gap-2 py-3 text-xs">
-              <Loader2 className="size-3.5 animate-spin" />
+              <Icon name="i-ph-spinner-gap" className="size-3.5 animate-spin" />
               Loading more…
             </div>
           )}

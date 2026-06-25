@@ -63,12 +63,15 @@
     "nostics": "catalog:deps"
   },
   "devDependencies": {
+    "@iconify-json/ph": "catalog:frontend",
+    "@internal/design": "workspace:*",
     "@storybook/html-vite": "catalog:storybook",
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "h3": "catalog:deps",
     "storybook": "catalog:storybook",
     "tsdown": "catalog:build",
+    "unocss": "catalog:frontend",
     "vite": "catalog:build",
     "vitest": "catalog:testing",
     "ws": "catalog:deps"

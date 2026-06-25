@@ -2,9 +2,9 @@
 
 import type { ReactNode } from 'react'
 import type { FileStatusCode, GitStatus, StatusFileEntry } from '../../../index'
-import { ArrowDown, ArrowUp, Check, GitBranch, Minus, Plus, RefreshCw } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
+import { Icon } from '../ui/icon'
 import { ScrollArea } from '../ui/scroll-area'
 import { Skeleton } from '../ui/skeleton'
 import { Textarea } from '../ui/textarea'
@@ -91,12 +91,12 @@ export function StatusPanelView(props: StatusPanelViewProps) {
 
   const stageBtn = (paths: string[], label: string) => (
     <Button variant="ghost" size="icon" className="size-6" disabled={busy} aria-label={label} onClick={() => onStage(paths)}>
-      <Plus className="size-3.5" />
+      <Icon name="i-ph-plus" className="size-3.5" />
     </Button>
   )
   const unstageBtn = (paths: string[], label: string) => (
     <Button variant="ghost" size="icon" className="size-6" disabled={busy} aria-label={label} onClick={() => onUnstage(paths)}>
-      <Minus className="size-3.5" />
+      <Icon name="i-ph-minus" className="size-3.5" />
     </Button>
   )
 
@@ -108,7 +108,7 @@ export function StatusPanelView(props: StatusPanelViewProps) {
             ? (
                 <>
                   <Badge variant="outline" className="gap-1 font-mono">
-                    <GitBranch className="size-3" />
+                    <Icon name="i-ph-git-branch-duotone" className="size-3" />
                     {data.detached ? `detached @ ${data.head}` : data.branch}
                   </Badge>
                   {data.upstream && (
@@ -116,13 +116,13 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                       {data.upstream}
                       {data.ahead > 0 && (
                         <span className="text-success inline-flex items-center tabular-nums">
-                          <ArrowUp className="size-3" />
+                          <Icon name="i-ph-arrow-up" className="size-3" />
                           {data.ahead}
                         </span>
                       )}
                       {data.behind > 0 && (
                         <span className="text-warning inline-flex items-center tabular-nums">
-                          <ArrowDown className="size-3" />
+                          <Icon name="i-ph-arrow-down" className="size-3" />
                           {data.behind}
                         </span>
                       )}
@@ -131,7 +131,7 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                   {data.clean
                     ? (
                         <Badge variant="success" className="gap-1">
-                          <Check className="size-3" />
+                          <Icon name="i-ph-check" className="size-3" />
                           clean
                         </Badge>
                       )
@@ -141,7 +141,7 @@ export function StatusPanelView(props: StatusPanelViewProps) {
             : <Skeleton className="h-5 w-40" />}
         </div>
         <Button variant="ghost" size="icon" className="size-7" onClick={onRefresh} disabled={loading || busy} aria-label="Refresh status">
-          <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <Icon name="i-ph-arrows-clockwise" className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 

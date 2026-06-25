@@ -24,8 +24,10 @@
     "solid-js": "catalog:frontend"
   },
   "devDependencies": {
+    "@internal/design": "workspace:*",
     "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
+    "unocss": "catalog:frontend",
     "vite": "catalog:build",
     "vite-plugin-solid": "catalog:build",
     "vitest": "catalog:testing",

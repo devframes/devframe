@@ -1,10 +1,10 @@
 'use client'
 
 import type { CommitDetail } from '../../../index'
-import { GitCommitHorizontal, Tag, X } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
+import { Icon } from '../ui/icon'
 import { ScrollArea } from '../ui/scroll-area'
 import { Skeleton } from '../ui/skeleton'
 import { DiffPatchView } from './diff-panel-view'
@@ -27,7 +27,7 @@ function RefBadge({ label }: { label: string }) {
   const text = isTag ? label.slice(5) : label
   return (
     <Badge variant="secondary" className="gap-1 font-mono text-[10px]">
-      {isTag && <Tag className="size-3" />}
+      {isTag && <Icon name="i-ph-tag-duotone" className="size-3" />}
       {text}
     </Badge>
   )
@@ -38,12 +38,12 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
     <div className="flex h-full flex-col">
       <div className="flex items-start justify-between gap-2 pb-2">
         <div className="flex min-w-0 items-center gap-2">
-          <GitCommitHorizontal className="text-primary size-4 shrink-0" />
+          <Icon name="i-ph-git-commit-duotone" className="text-primary size-4" />
           <h2 className="text-sm leading-none font-semibold">Commit details</h2>
         </div>
         {onClose && (
           <Button variant="ghost" size="icon" className="size-7" onClick={onClose} aria-label="Close commit details">
-            <X className="size-3.5" />
+            <Icon name="i-ph-x" className="size-3.5" />
           </Button>
         )}
       </div>

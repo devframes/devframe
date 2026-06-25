@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url'
+import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
 import solid from 'vite-plugin-solid'
 import { alias } from '../../../../alias'
@@ -11,7 +12,7 @@ export default defineConfig({
   base: './',
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
-  plugins: [solid()],
+  plugins: [solid(), UnoCSS()],
   build: {
     outDir: fileURLToPath(new URL('../../dist/client', import.meta.url)),
     emptyOutDir: true,
