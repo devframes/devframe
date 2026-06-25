@@ -353,6 +353,9 @@ importers:
 
   examples/files-inspector:
     dependencies:
+      '@internal/design':
+        specifier: workspace:*
+        version: link:../../packages/design
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -372,6 +375,9 @@ importers:
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
+      unocss:
+        specifier: catalog:frontend
+        version: 66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
       vite:
         specifier: catalog:build
         version: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)
@@ -491,6 +497,9 @@ importers:
 
   examples/next-runtime-snapshot:
     dependencies:
+      '@internal/design':
+        specifier: workspace:*
+        version: link:../../packages/design
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -510,12 +519,18 @@ importers:
       '@types/react-dom':
         specifier: catalog:types
         version: 19.2.3(@types/react@19.2.15)
+      '@unocss/postcss':
+        specifier: catalog:frontend
+        version: 66.7.2(postcss@8.5.15)
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
+      unocss:
+        specifier: catalog:frontend
+        version: 66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
       vitest:
         specifier: catalog:testing
         version: 4.1.7(@types/node@25.9.1)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
@@ -525,6 +540,9 @@ importers:
 
   examples/streaming-chat:
     dependencies:
+      '@internal/design':
+        specifier: workspace:*
+        version: link:../../packages/design
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -541,6 +559,9 @@ importers:
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
+      unocss:
+        specifier: catalog:frontend
+        version: 66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
       vite:
         specifier: catalog:build
         version: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)

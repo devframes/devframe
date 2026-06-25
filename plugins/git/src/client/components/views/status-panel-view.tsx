@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react'
 import type { FileStatusCode, GitStatus, StatusFileEntry } from '../../../index'
 import { Badge } from '../ui/badge'
-import { Button } from '../ui/button'
+import { Button, IconButton } from '../ui/button'
 import { Icon } from '../ui/icon'
 import { ScrollArea } from '../ui/scroll-area'
 import { Skeleton } from '../ui/skeleton'
@@ -90,14 +90,14 @@ export function StatusPanelView(props: StatusPanelViewProps) {
   const { data, loading, busy, canWrite, message, note, onRefresh, onStage, onUnstage, onCommit, onMessageChange } = props
 
   const stageBtn = (paths: string[], label: string) => (
-    <Button variant="ghost" size="icon" className="size-6" disabled={busy} aria-label={label} onClick={() => onStage(paths)}>
-      <Icon name="i-ph-plus" className="size-3.5" />
-    </Button>
+    <IconButton variant="ghost" size="sm" disabled={busy} aria-label={label} onClick={() => onStage(paths)}>
+      <Icon name="i-ph-plus" className="size-4" />
+    </IconButton>
   )
   const unstageBtn = (paths: string[], label: string) => (
-    <Button variant="ghost" size="icon" className="size-6" disabled={busy} aria-label={label} onClick={() => onUnstage(paths)}>
-      <Icon name="i-ph-minus" className="size-3.5" />
-    </Button>
+    <IconButton variant="ghost" size="sm" disabled={busy} aria-label={label} onClick={() => onUnstage(paths)}>
+      <Icon name="i-ph-minus" className="size-4" />
+    </IconButton>
   )
 
   return (
@@ -140,9 +140,9 @@ export function StatusPanelView(props: StatusPanelViewProps) {
               )
             : <Skeleton className="h-5 w-40" />}
         </div>
-        <Button variant="ghost" size="icon" className="size-7" onClick={onRefresh} disabled={loading || busy} aria-label="Refresh status">
-          <Icon name="i-ph-arrows-clockwise" className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
-        </Button>
+        <IconButton variant="ghost" size="sm" onClick={onRefresh} disabled={loading || busy} aria-label="Refresh status">
+          <Icon name="i-ph-arrows-clockwise" className={`size-4 ${loading ? 'animate-spin' : ''}`} />
+        </IconButton>
       </div>
 
       {data && !data.isRepo && (
@@ -161,7 +161,7 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                 title="Staged"
                 count={data.staged.length}
                 headerAction={canWrite && data.staged.length > 0
-                  ? <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" disabled={busy} onClick={() => onUnstage(data.staged.map(f => f.path))}>Unstage all</Button>
+                  ? <Button variant="ghost" size="sm" disabled={busy} onClick={() => onUnstage(data.staged.map(f => f.path))}>Unstage all</Button>
                   : undefined}
               >
                 {data.staged.map(entry => (
@@ -177,7 +177,7 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                 title="Unstaged"
                 count={data.unstaged.length}
                 headerAction={canWrite && data.unstaged.length > 0
-                  ? <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" disabled={busy} onClick={() => onStage(data.unstaged.map(f => f.path))}>Stage all</Button>
+                  ? <Button variant="ghost" size="sm" disabled={busy} onClick={() => onStage(data.unstaged.map(f => f.path))}>Stage all</Button>
                   : undefined}
               >
                 {data.unstaged.map(entry => (
@@ -193,7 +193,7 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                 title="Untracked"
                 count={data.untracked.length}
                 headerAction={canWrite && data.untracked.length > 0
-                  ? <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" disabled={busy} onClick={() => onStage(data.untracked)}>Stage all</Button>
+                  ? <Button variant="ghost" size="sm" disabled={busy} onClick={() => onStage(data.untracked)}>Stage all</Button>
                   : undefined}
               >
                 {data.untracked.map(path => (

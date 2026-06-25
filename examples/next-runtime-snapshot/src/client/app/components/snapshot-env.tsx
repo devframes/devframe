@@ -1,6 +1,7 @@
 'use client'
 
 import type { EnvSnapshot } from '../../../devframe'
+import { card, input as inputClass } from '@internal/design/components'
 import { useCallback, useEffect, useState } from 'react'
 import { useRpc } from './connect'
 
@@ -29,43 +30,42 @@ export function SnapshotEnv() {
   }, [pattern, fetchEnv])
 
   return (
-    <section className="card">
-      <h2>
+    <section className={card('p-4 md:col-span-2')}>
+      <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+        <span className="i-ph-list-bullets-duotone color-active" />
         <span>Environment</span>
+        <span className="flex-1" />
         {snap && (
-          <span className="actions">
-            <span style={{ fontSize: 12, color: '#8b95a3' }}>
-              {snap.entries.length}
-              {' / '}
-              {snap.total}
-            </span>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {snap.entries.length}
+            {' / '}
+            {snap.total}
           </span>
         )}
       </h2>
-      <div className="env-filter">
-        <input
-          type="text"
-          value={pattern}
-          onChange={e => setPattern(e.target.value)}
-          placeholder="Regex filter (case-insensitive) — e.g. NODE | PATH | HOME"
-          aria-label="Environment variable filter (case-insensitive regex)"
-        />
-      </div>
-      {snap === null && <p className="loading">Loading…</p>}
+      <input
+        type="text"
+        className={inputClass('mb-3')}
+        value={pattern}
+        onChange={e => setPattern(e.target.value)}
+        placeholder="Regex filter (case-insensitive) — e.g. NODE | PATH | HOME"
+        aria-label="Environment variable filter (case-insensitive regex)"
+      />
+      {snap === null && <p className="text-sm text-muted-foreground">Loading…</p>}
       {snap && snap.entries.length === 0 && (
-        <p className="empty">
+        <p className="text-sm text-muted-foreground">
           {loading ? 'Searching…' : 'No environment variables match this pattern.'}
         </p>
       )}
       {snap && snap.entries.length > 0 && (
-        <div className="env-list">
+        <div className="scrollbar-slim flex max-h-80 flex-col gap-1 overflow-y-auto text-sm">
           {snap.entries.map(entry => (
             <div
               key={entry.key}
-              className={entry.redacted ? 'env-row redacted' : 'env-row'}
+              className="grid grid-cols-[minmax(0,12rem)_1fr] gap-x-3 border-b border-border py-1 last:border-b-0"
             >
-              <span className="k">{entry.key}</span>
-              <span className="v">{entry.value}</span>
+              <span className="truncate font-mono text-muted-foreground">{entry.key}</span>
+              <span className={`break-all font-mono ${entry.redacted ? 'text-muted-foreground italic' : 'text-foreground'}`}>{entry.value}</span>
             </div>
           ))}
         </div>

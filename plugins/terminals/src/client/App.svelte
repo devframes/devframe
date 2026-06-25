@@ -2,7 +2,7 @@
   import type { DevframeRpcClient } from 'devframe/client'
   import type { DotState } from '@internal/design/components'
   import type { TerminalPreset, TerminalSessionInfo } from '../types'
-  import { button, dot, nav, navTab, tag, toolbar } from '@internal/design/components'
+  import { button, dot, iconButton, nav, navBrand, navTab, tag, toolbar } from '@internal/design/components'
   import { onMount } from 'svelte'
   import { PRESETS_STATE_KEY, SESSIONS_STATE_KEY } from '../constants'
   import TerminalView from './TerminalView.svelte'
@@ -152,9 +152,9 @@
 <div class="absolute inset-0 flex flex-col bg-base color-base font-sans of-hidden">
   <!-- Top navigation: brand + session tabs + actions -->
   <nav class={nav()}>
-    <div class="flex items-center gap-1.5 pr-2 mr-1 border-r border-base shrink-0">
+    <div class={navBrand('pr-2 mr-1 border-r border-base')}>
       <div class="i-ph-terminal-window-duotone text-base color-active"></div>
-      <span class="text-sm font-500 op-fade hidden sm:inline">Terminals</span>
+      <span class="hidden sm:inline">Terminals</span>
     </div>
 
     <div class="flex-1 flex items-center gap-1 of-x-auto of-y-hidden py-1">
@@ -196,7 +196,7 @@
 
       <button
         type="button"
-        class={button({ variant: 'ghost', size: 'icon-sm', class: 'shrink-0' })}
+        class={iconButton({ variant: 'ghost', size: 'sm', class: 'shrink-0' })}
         title="New terminal"
         onclick={() => spawn({ mode: 'interactive' })}
       >
@@ -262,10 +262,10 @@
 
       <div class="flex-1"></div>
 
-      <button type="button" class={button({ variant: 'ghost', size: 'icon-sm' })} title="Restart" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: s.id }).catch(() => {})}>
+      <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: s.id }).catch(() => {})}>
         <div class="i-ph-arrow-clockwise-duotone"></div>
       </button>
-      <button type="button" class={button({ variant: 'ghost', size: 'icon-sm' })} title="Kill" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {})}>
+      <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {})}>
         <div class="i-ph-trash-duotone"></div>
       </button>
     </div>

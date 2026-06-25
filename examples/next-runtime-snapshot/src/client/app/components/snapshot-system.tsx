@@ -1,6 +1,7 @@
 'use client'
 
 import type { SystemInfo } from '../../../devframe'
+import { card } from '@internal/design/components'
 import { useEffect, useState } from 'react'
 import { useRpc } from './connect'
 
@@ -26,24 +27,27 @@ export function SnapshotSystem() {
   }, [ctx])
 
   return (
-    <section className="card">
-      <h2>System</h2>
+    <section className={card('p-4')}>
+      <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+        <span className="i-ph-cpu-duotone color-active" />
+        System
+      </h2>
       {info
         ? (
-            <div className="kv">
-              <span className="k">node</span>
-              <span className="v">{info.node}</span>
-              <span className="k">platform</span>
-              <span className="v">{`${info.platform} (${info.arch})`}</span>
-              <span className="k">pid</span>
-              <span className="v">{info.pid}</span>
-              <span className="k">cwd</span>
-              <span className="v">{info.cwd}</span>
-              <span className="k">started</span>
-              <span className="v">{formatStartedAt(info.startedAt)}</span>
+            <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+              <span className="text-muted-foreground">node</span>
+              <span className="font-mono break-all">{info.node}</span>
+              <span className="text-muted-foreground">platform</span>
+              <span className="font-mono break-all">{`${info.platform} (${info.arch})`}</span>
+              <span className="text-muted-foreground">pid</span>
+              <span className="font-mono break-all tabular-nums">{info.pid}</span>
+              <span className="text-muted-foreground">cwd</span>
+              <span className="font-mono break-all">{info.cwd}</span>
+              <span className="text-muted-foreground">started</span>
+              <span className="font-mono break-all">{formatStartedAt(info.startedAt)}</span>
             </div>
           )
-        : <p className="loading">Loading…</p>}
+        : <p className="text-sm text-muted-foreground">Loading…</p>}
     </section>
   )
 }

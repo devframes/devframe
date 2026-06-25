@@ -2,7 +2,7 @@
 
 import type { Branch, GitBranches } from '../../../index'
 import { Badge } from '../ui/badge'
-import { Button } from '../ui/button'
+import { IconButton } from '../ui/button'
 import { Icon } from '../ui/icon'
 import { ScrollArea } from '../ui/scroll-area'
 import { Skeleton } from '../ui/skeleton'
@@ -58,9 +58,9 @@ export function BranchesPanelView({ data, loading, onRefresh }: BranchesPanelVie
         <span className="text-muted-foreground text-xs tabular-nums">
           {data?.isRepo ? `${data.branches.length} branches` : ' '}
         </span>
-        <Button variant="ghost" size="icon" className="size-7" onClick={onRefresh} disabled={loading} aria-label="Refresh branches">
-          <Icon name="i-ph-arrows-clockwise" className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
-        </Button>
+        <IconButton variant="ghost" size="sm" onClick={onRefresh} disabled={loading} aria-label="Refresh branches">
+          <Icon name="i-ph-arrows-clockwise" className={`size-4 ${loading ? 'animate-spin' : ''}`} />
+        </IconButton>
       </div>
 
       {!data && (

@@ -85,72 +85,9 @@ textarea {
   overflow: hidden;
 }
 
-/* ---- header ---- */
-.app-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 0 14px;
-  height: 46px;
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--df-border);
-  background: transparent;
-}
-
-.brand {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-.brand .dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--df-accent);
-  box-shadow: 0 0 0 3px var(--df-accent-dim);
-  align-self: center;
-}
-
-.brand small {
-  color: var(--df-fg-faint);
-  font-weight: 400;
-  font-size: 11px;
-}
-
-.tabs {
-  display: flex;
-  gap: 2px;
-  margin-left: 6px;
-}
-
-.tab {
-  border: none;
-  background: transparent;
-  color: var(--df-fg-dim);
-  padding: 6px 12px;
-  border-radius: var(--df-radius);
-  font-size: 12.5px;
-  font-weight: 500;
-  transition: background 0.12s, color 0.12s;
-}
-
-.tab:hover {
-  color: var(--df-fg);
-  background: var(--df-bg-active);
-}
-
-.tab.active {
-  color: var(--df-accent);
-  background: var(--df-accent-dim);
-}
-
-.header-spacer {
-  flex: 1;
-}
-
+/* ---- header: nav, brand, tab selector and the refresh button come from the
+   shared @internal/design `df-*` vocabulary; only the connection status pill
+   below stays bespoke. ---- */
 .conn {
   display: flex;
   align-items: center;
@@ -173,40 +110,6 @@ textarea {
 
 .conn.err .led {
   background: var(--df-danger);
-}
-
-.icon-btn {
-  border: 1px solid var(--df-border);
-  background: transparent;
-  color: var(--df-fg-dim);
-  width: 30px;
-  height: 30px;
-  border-radius: var(--df-radius);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.12s, border-color 0.12s, background 0.12s;
-}
-
-.icon-btn:hover:not(:disabled) {
-  color: var(--df-fg);
-  border-color: var(--df-fg-faint);
-  background: var(--df-bg-active);
-}
-
-.icon-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.icon-btn.spin > * {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* ---- body ---- */
@@ -440,46 +343,6 @@ textarea.args {
 
 textarea.args:focus {
   border-color: var(--df-accent);
-}
-
-.btn {
-  border: 1px solid var(--df-border);
-  background: transparent;
-  color: var(--df-fg-dim);
-  padding: 4px 12px;
-  border-radius: var(--df-radius);
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.12s ease;
-  opacity: 0.85;
-}
-
-.btn:hover:not(:disabled) {
-  opacity: 1;
-  background: var(--df-bg-active);
-  color: var(--df-fg);
-}
-
-.btn.primary {
-  background: var(--df-accent);
-  color: #fff;
-  border-color: var(--df-accent);
-  opacity: 1;
-}
-
-.btn.primary:hover:not(:disabled) {
-  filter: brightness(1.1);
-}
-
-.btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.btn.ghost {
-  border-color: transparent;
 }
 
 .result {

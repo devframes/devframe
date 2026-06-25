@@ -3,7 +3,7 @@
 import type { CommitDetail } from '../../../index'
 import { cn } from '../../lib/utils'
 import { Badge } from '../ui/badge'
-import { Button } from '../ui/button'
+import { IconButton } from '../ui/button'
 import { Icon } from '../ui/icon'
 import { ScrollArea } from '../ui/scroll-area'
 import { Skeleton } from '../ui/skeleton'
@@ -42,9 +42,9 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
           <h2 className="text-sm leading-none font-semibold">Commit details</h2>
         </div>
         {onClose && (
-          <Button variant="ghost" size="icon" className="size-7" onClick={onClose} aria-label="Close commit details">
-            <Icon name="i-ph-x" className="size-3.5" />
-          </Button>
+          <IconButton variant="ghost" size="sm" onClick={onClose} aria-label="Close commit details">
+            <Icon name="i-ph-x" className="size-4" />
+          </IconButton>
         )}
       </div>
 
