@@ -347,22 +347,9 @@ textarea {
   color: var(--df-danger);
 }
 
-/* ---- function groups ---- */
-.group {
-  padding: 8px 14px 0;
-}
-
-.group-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 10px 0 4px;
-}
-
-.group-head .ns {
-  font-family: var(--df-mono);
-  font-size: 11px;
-  color: var(--df-fg-faint);
+/* ---- function list ---- */
+.fn-list {
+  padding: 8px 14px 14px;
 }
 
 .fn-row {
@@ -393,6 +380,17 @@ textarea {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Colored namespace segments of a function name (split on `:` / `/`).
+   Namespace segments receive an inline hash color; the trailing leaf falls
+   back to the default foreground, and separators stay faint. */
+.fn-name .ns-seg {
+  color: var(--df-fg);
+}
+
+.fn-name .ns-sep {
+  color: var(--df-fg-faint);
 }
 
 .fn-flags {
