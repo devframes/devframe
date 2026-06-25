@@ -35,7 +35,7 @@ export interface InspectDevframeOptions {
 }
 
 /**
- * Build a {@link DevframeDefinition} for the RPC & State inspector. The
+ * Build a {@link DevframeDefinition} for the Devframe Inspector. The
  * same definition runs standalone (`/cli`, `/spa`, `/build`) and mounts
  * into a host (`/vite`, hub).
  */
@@ -43,7 +43,7 @@ export function createInspectDevframe(options: InspectDevframeOptions = {}): Dev
   const id = options.id ?? DEFAULT_ID
   return defineDevframe({
     id,
-    name: options.name ?? 'RPC & State Inspector',
+    name: options.name ?? 'Devframe Inspector',
     icon: options.icon ?? 'ph:stethoscope-duotone',
     basePath: options.basePath,
     cli: {
