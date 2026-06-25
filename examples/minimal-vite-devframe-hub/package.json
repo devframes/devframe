@@ -10,8 +10,8 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@devframes/a11y": "workspace:*",
     "@devframes/hub": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
     "@devframes/plugin-code-server": "workspace:*",
     "@devframes/plugin-git": "workspace:*",
     "@devframes/plugin-inspect": "workspace:*",

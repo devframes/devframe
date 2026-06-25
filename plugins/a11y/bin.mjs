@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 import process from 'node:process'
-import { createCli } from 'devframe/adapters/cli'
-import devframe from './src/devframe.ts'
+import { createA11yCli } from './dist/cli.mjs'
 
 async function main() {
-  const cli = createCli(devframe)
+  const cli = createA11yCli()
   await cli.parse()
 }
 

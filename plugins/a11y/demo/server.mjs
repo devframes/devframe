@@ -11,7 +11,7 @@
  *
  * Two modes prove the plugin works either way:
  *
- *   node demo/server.mjs          dev    — live WebSocket RPC (`dist/client`)
+ *   node demo/server.mjs          dev    — live WebSocket RPC (`dist/spa`)
  *   node demo/server.mjs build    static — baked RPC dump,    (`dist/static`)
  *
  * The scan/highlight loop is identical in both: it rides the BroadcastChannel,
@@ -28,7 +28,7 @@ import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3, toNodeHandler } from 'h3'
 import { resolve } from 'pathe'
-import devframe from '../src/devframe.ts'
+import devframe from '../src/index.ts'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
 const ROOT = resolve(HERE, '..')
@@ -36,7 +36,7 @@ const ROOT = resolve(HERE, '..')
 const mode = process.argv[2] === 'build' ? 'build' : 'dev'
 const basePath = devframe.basePath
 const injectDir = resolve(ROOT, 'dist/inject')
-const panelDir = mode === 'build' ? resolve(ROOT, 'dist/static') : resolve(ROOT, 'dist/client')
+const panelDir = mode === 'build' ? resolve(ROOT, 'dist/static') : resolve(ROOT, 'dist/spa')
 
 function requireBuilt(file, hint) {
   if (!existsSync(file)) {

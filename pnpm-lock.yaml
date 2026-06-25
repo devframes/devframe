@@ -384,12 +384,12 @@ importers:
 
   examples/minimal-next-devframe-hub:
     dependencies:
-      '@devframes/a11y':
-        specifier: workspace:*
-        version: link:../../plugins/a11y
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
       '@devframes/plugin-code-server':
         specifier: workspace:*
         version: link:../../plugins/code-server
@@ -448,12 +448,12 @@ importers:
 
   examples/minimal-vite-devframe-hub:
     dependencies:
-      '@devframes/a11y':
-        specifier: workspace:*
-        version: link:../../plugins/a11y
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
       '@devframes/plugin-code-server':
         specifier: workspace:*
         version: link:../../plugins/code-server
@@ -688,9 +688,6 @@ importers:
       axe-core:
         specifier: catalog:frontend
         version: 4.12.1
-      devframe:
-        specifier: workspace:*
-        version: link:../../packages/devframe
       solid-js:
         specifier: catalog:frontend
         version: 1.9.13
@@ -698,12 +695,18 @@ importers:
       '@internal/design':
         specifier: workspace:*
         version: link:../../packages/design
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
+      tsdown:
+        specifier: catalog:build
+        version: 0.22.0(tsx@4.22.3)(typescript@6.0.3)
       unocss:
         specifier: catalog:frontend
         version: 66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))

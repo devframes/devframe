@@ -1,32 +1,74 @@
 {
-  "name": "@devframes/a11y",
+  "name": "@devframes/plugin-a11y",
   "type": "module",
   "version": "0.5.2",
-  "private": true,
-  "description": "Devframe a11y inspector — runs axe-core against the host app, surfaces the violations through a Solid SPA, and highlights the offending element in the page on hover. Works in dev (WebSocket) and static build modes.",
-  "main": "src/devframe.ts",
+  "description": "Devframe a11y inspector — runs axe-core against the host app, surfaces the violations through a Solid panel, and highlights the offending element in the page on hover. Works in dev (WebSocket) and static build modes.",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/devframes/devframe#readme",
+  "repository": {
+    "directory": "plugins/a11y",
+    "type": "git",
+    "url": "git+https://github.com/devframes/devframe.git"
+  },
+  "bugs": "https://github.com/devframes/devframe/issues",
+  "keywords": [
+    "devframe",
+    "devframe-plugin",
+    "devtools",
+    "a11y",
+    "accessibility",
+    "axe-core"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./client": "./dist/client/index.mjs",
+    "./cli": "./dist/cli.mjs",
+    "./node": "./dist/node/index.mjs",
+    "./vite": "./dist/vite.mjs",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.mts",
   "bin": {
     "devframe-a11y-inspector": "./bin.mjs"
   },
+  "files": [
+    "bin.mjs",
+    "dist"
+  ],
   "scripts": {
-    "build": "vite build --config src/client/vite.config.ts && vite build --config src/inject/vite.config.ts",
-    "build:client": "vite build --config src/client/vite.config.ts",
+    "build": "tsdown && vite build --config src/spa/vite.config.ts && vite build --config src/inject/vite.config.ts",
+    "build:spa": "vite build --config src/spa/vite.config.ts",
     "build:inject": "vite build --config src/inject/vite.config.ts",
+    "watch": "tsdown --watch",
     "dev": "node bin.mjs",
     "cli:build": "node bin.mjs build --out-dir dist/static",
     "demo": "node demo/server.mjs",
     "demo:build": "node demo/server.mjs build",
+    "typecheck": "tsc --noEmit",
+    "prepack": "pnpm run build",
     "test": "vitest run"
+  },
+  "peerDependencies": {
+    "devframe": "workspace:*",
+    "vite": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
   },
   "dependencies": {
     "axe-core": "catalog:frontend",
-    "devframe": "workspace:*",
     "solid-js": "catalog:frontend"
   },
   "devDependencies": {
     "@internal/design": "workspace:*",
+    "devframe": "workspace:*",
     "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
+    "tsdown": "catalog:build",
     "unocss": "catalog:frontend",
     "vite": "catalog:build",
     "vite-plugin-solid": "catalog:build",

@@ -205,8 +205,20 @@
       "@devframes/plugin-inspect": [
         "./plugins/inspect/src/index.ts"
       ],
-      "@devframes/a11y": [
-        "./plugins/a11y/src/devframe.ts"
+      "@devframes/plugin-a11y/client": [
+        "./plugins/a11y/src/client/index.ts"
+      ],
+      "@devframes/plugin-a11y/node": [
+        "./plugins/a11y/src/node/index.ts"
+      ],
+      "@devframes/plugin-a11y/cli": [
+        "./plugins/a11y/src/cli.ts"
+      ],
+      "@devframes/plugin-a11y/vite": [
+        "./plugins/a11y/src/vite.ts"
+      ],
+      "@devframes/plugin-a11y": [
+        "./plugins/a11y/src/index.ts"
       ]
     },
     "resolveJsonModule": true,
