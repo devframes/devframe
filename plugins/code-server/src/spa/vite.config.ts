@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { viteDevBridge } from 'devframe/helpers/vite'
+import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
 import { alias } from '../../../../alias'
 import { createCodeServerDevframe } from '../index'
@@ -17,6 +18,7 @@ export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
   plugins: [
+    UnoCSS(),
     viteDevBridge(createCodeServerDevframe(), { devMiddleware: true, base: '/' }),
   ],
   build: {

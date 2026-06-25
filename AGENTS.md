@@ -38,6 +38,18 @@ The `pnpm test` script intentionally runs `build` first so `tsnapi` snapshots co
 - Utility imports use the package-path form `devframe/utils/*`, never relative `../utils/*`.
 - Dependencies go through the pnpm catalogs in `pnpm-workspace.yaml` (`cli`, `inlined`, `testing`, `types`) — add to a catalog and reference as `catalog:<name>`, don't pin versions in `package.json`.
 
+### Design system
+
+All five built-in plugins share one design system, `@internal/design`, so they look and feel like one product across frameworks (Git is React/Next, terminals is Svelte, code-server is vanilla DOM, inspect is Vue, a11y is Solid). It's a private, source-only package — never built or published; consumers import its TypeScript/CSS directly (resolved through `alias.ts` for bundlers and the package `exports` for config loaders), so editing it needs no rebuild.
+
+- **One preset to extend.** Each plugin's `uno.config.ts` is just `presets: [presetDevframe()]` (imported from `@internal/design/preset`). The preset bundles `presetWind4` + `presetIcons` (Phosphor) + the directive/variant-group transformers, the semantic token theme, and the shared `df-*` component shortcuts (which it safelists). Don't re-declare presets, palettes, or shortcuts per plugin.
+- **One token source.** Import `@internal/design/theme.css` once on the page (after the generated UnoCSS stylesheet so its base layer wins). Token *values* (the `--df-*` custom properties, light + dark via the `.dark` class) live only there — never hardcode a palette in a plugin. The brand primary is devframe's sage green; flip the OS preference onto `<html class="dark">` from the SPA entry.
+- **Shared component vocabulary.** Build UI from the `df-*` classes (`df-btn`, `df-badge`, `df-tab`, `df-navtab`, `df-nav`, `df-toolbar`, `df-card`, `df-input`, `df-dot`, `df-tag-*`, …) and the semantic token utilities (`bg-primary`, `text-muted-foreground`, `bg-card`, `border-border`, …). Markup differs per framework; the classes resolve identically, which is what keeps the surfaces consistent.
+- **Component builders.** Prefer the framework-neutral recipes from `@internal/design/components` (`button`, `badge`, `tab`, `navTab`, `nav`, `toolbar`, `card`, `panel`, `input`, `link`, `dot`, `spinner`, `tag`) over hand-written class strings — they return the canonical `df-*` classes and read the same in React (`className=`), Svelte (`class=`), vanilla DOM and Solid. Because these classes are assembled at runtime, the preset safelists the `df-*` vocabulary so UnoCSS always emits it; add new component classes to `DF_SAFELIST` when you extend the set.
+- **Icons** come from the shared Phosphor set (`i-ph-*`, duotone preferred) via `presetIcons` — use them across every plugin instead of per-plugin icon libraries or bespoke SVG.
+- **A plugin keeping its own component CSS** (inspect, a11y) re-bases its color/radius tokens onto the `--df-*` variables rather than hardcoding a palette, so it tracks the shared theme.
+- **Plain `.ts`/vanilla views** must opt `.ts` into UnoCSS extraction (`content.pipeline.include`), since UnoCSS only scans framework files by default.
+
 ### Devframe design principles
 
 These reinforce devframe's positioning as "the container for one devtool integration, portable to multiple viewers". When in doubt, err on the side of "devframe provides primitives, the hub provides UX".

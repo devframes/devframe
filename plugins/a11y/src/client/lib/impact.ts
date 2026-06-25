@@ -1,16 +1,8 @@
 import type { Impact } from '../../shared/protocol.ts'
 
-/**
- * Severity palette — the only expressive color in the panel. Mirrors the
- *  ring colors the injected agent draws, so a row and its in-page highlight
- *  read as the same object.
- */
-export const IMPACT_COLOR: Record<Impact, string> = {
-  critical: '#ff5c7a',
-  serious: '#ff9b52',
-  moderate: '#f2d14e',
-  minor: '#6fb1fc',
-}
+// The severity palette is shared with the in-page agent — single source in the
+// protocol module so the panel and the highlight ring never drift.
+export { IMPACT_COLOR } from '../../shared/protocol.ts'
 
 export const IMPACT_LABEL: Record<Impact, string> = {
   critical: 'Critical',

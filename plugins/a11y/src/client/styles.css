@@ -8,21 +8,24 @@
  * page — so a row and its highlighted element read as one object.
  */
 
+/* The inspector keeps its bespoke "audit console" CSS but sources every
+   color from the shared @internal/design tokens (imported before this file),
+   so it matches the other devframe plugins and follows the `.dark` class.
+   Severity is the one domain-specific palette, set inline from IMPACT_COLOR. */
 :root {
-  --ink: #0d1017;
-  --surface: #141a23;
-  --surface-2: #1a212c;
-  --line: #262e3b;
-  --line-soft: #1e2531;
-  --text: #e8edf4;
-  --muted: #94a1b5;
-  --faint: #5c6779;
-  --ring: #4c9fff;
+  --ink: var(--df-background);
+  --surface: var(--df-card);
+  --surface-2: var(--df-secondary);
+  --line: var(--df-border);
+  --line-soft: color-mix(in srgb, var(--df-foreground) 8%, transparent);
+  --text: var(--df-foreground);
+  --muted: var(--df-muted-foreground);
+  --faint: color-mix(in srgb, var(--df-muted-foreground) 60%, transparent);
+  --ring: var(--df-primary);
+  --ok: var(--df-success);
 
-  --font-ui: system-ui, -apple-system, "Segoe UI", roboto, sans-serif;
+  --font-ui: var(--font-sans, system-ui, -apple-system, "Segoe UI", roboto, sans-serif);
   --font-mono: ui-monospace, sfmono-regular, "SF Mono", menlo, consolas, monospace;
-
-  color-scheme: dark;
 }
 
 * {
@@ -107,7 +110,7 @@ body {
 }
 
 .status__dot--live {
-  background: #46d39a;
+  background: var(--ok);
 }
 
 .status__dot--scanning {
@@ -118,10 +121,10 @@ body {
 @keyframes pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgb(76 159 255 / 50%);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ring) 50%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 5px rgb(76 159 255 / 0%);
+    box-shadow: 0 0 0 5px transparent;
   }
 }
 
@@ -140,7 +143,7 @@ body {
 
 .rescan:hover {
   border-color: var(--ring);
-  background: #1f2733;
+  background: var(--df-accent);
 }
 
 .rescan:disabled {
@@ -396,7 +399,7 @@ body {
 
 .node__btn:hover {
   border-color: color-mix(in srgb, var(--impact) 50%, var(--line));
-  background: #10151d;
+  background: var(--df-accent);
 }
 
 .node__btn:focus-visible {
@@ -408,7 +411,7 @@ body {
   display: block;
   font-family: var(--font-mono);
   font-size: 11.5px;
-  color: #c7d3e6;
+  color: var(--text);
   white-space: pre-wrap;
   word-break: break-word;
   margin-bottom: 6px;
@@ -419,7 +422,7 @@ body {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--ring);
-  background: rgb(76 159 255 / 10%);
+  background: color-mix(in srgb, var(--ring) 12%, transparent);
   border-radius: 4px;
   padding: 1px 6px;
 }
@@ -465,7 +468,7 @@ body {
 }
 
 .state--clean .state__glyph {
-  color: #46d39a;
+  color: var(--ok);
 }
 
 .state__title {
@@ -516,7 +519,7 @@ body {
   border-radius: 8px;
 }
 .scroll::-webkit-scrollbar-thumb:hover {
-  background: #313b4b;
+  background: color-mix(in srgb, var(--df-foreground) 30%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

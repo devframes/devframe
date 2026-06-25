@@ -68,11 +68,9 @@
   },
   "devDependencies": {
     "@iconify-json/ph": "catalog:frontend",
+    "@internal/design": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "catalog:frontend",
     "@types/node": "catalog:types",
-    "@unocss/preset-icons": "catalog:frontend",
-    "@unocss/preset-uno": "catalog:frontend",
-    "@unocss/vite": "catalog:frontend",
     "devframe": "workspace:*",
     "get-port-please": "catalog:deps",
     "h3": "catalog:deps",

@@ -1,6 +1,6 @@
 import type { StorybookConfig } from '@storybook/react-vite'
-import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react-oxc'
+import UnoCSS from 'unocss/vite'
 
 const config: StorybookConfig = {
   stories: ['../src/client/**/*.stories.@(ts|tsx)'],
@@ -14,7 +14,7 @@ const config: StorybookConfig = {
     // Vite 8 bundles with rolldown/oxc, which doesn't transform JSX on its
     // own; the React plugin wires up the automatic runtime so `.tsx` stories
     // and views parse.
-    viteConfig.plugins.push(react(), tailwindcss())
+    viteConfig.plugins.push(react(), UnoCSS())
     return viteConfig
   },
 }

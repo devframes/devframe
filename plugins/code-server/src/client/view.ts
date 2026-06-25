@@ -3,6 +3,7 @@ import type {
   CodeServerDetection,
   CodeServerServerInfo,
 } from '../types'
+import { button, cx, link as linkClass, spinner } from '@internal/design/components'
 
 /** The data the view renders from. Pure — no RPC, no process knowledge. */
 export interface CodeServerViewState {
@@ -77,6 +78,18 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, t
   return node
 }
 
+/** A Phosphor icon (UnoCSS presetIcons), matching the other devframe plugins. */
+function icon(name: string, cls = ''): HTMLSpanElement {
+  return el('span', cx(name, 'shrink-0', cls))
+}
+
+/** The uppercase "code-server" eyebrow, prefixed with the brand icon. */
+function eyebrow(): HTMLParagraphElement {
+  const p = el('p', 'flex items-center gap-1.5 mb-2.5 text-xs tracking-wider uppercase text-muted-foreground')
+  p.append(icon('i-ph-code-duotone', 'text-sm'), document.createTextNode('code-server'))
+  return p
+}
+
 function defaultEditorUrl(port: number): string {
   return `${location.protocol}//${location.hostname}:${port}/`
 }
@@ -101,39 +114,39 @@ export function createCodeServerView(
   const launch = (): void => options.actions?.launch?.()
   const recheck = (): void => options.actions?.recheck?.()
 
-  const root = el('div', 'dcs-root')
+  const root = el('div', 'absolute inset-0 flex flex-col of-hidden bg-background text-foreground font-sans')
   container.append(root)
 
   let frameSrc: string | null = null
 
   function shell(...children: Node[]): void {
     frameSrc = null
-    const center = el('div', 'dcs-center')
-    const card = el('div', 'dcs-card')
+    const center = el('div', 'flex-1 flex items-center justify-center p-6')
+    const card = el('div', 'w-full max-w-[560px]')
     card.append(...children)
     center.append(card)
     root.replaceChildren(center)
   }
 
   function renderConnecting(): void {
-    const wrap = el('div', 'dcs-actions')
-    wrap.append(el('div', 'dcs-spinner'), el('span', 'dcs-lead', 'Connecting to devframe…'))
+    const wrap = el('div', 'flex items-center gap-2.5')
+    wrap.append(el('div', spinner('text-muted-foreground')), el('span', 'text-sm text-muted-foreground', 'Connecting to devframe…'))
     shell(wrap)
   }
 
   function renderNotInstalled(busy: boolean): void {
     const nodes: Node[] = []
-    nodes.push(el('p', 'dcs-eyebrow', 'code-server'))
-    nodes.push(el('h1', 'dcs-title', 'code-server is not installed'))
-    nodes.push(el('p', 'dcs-lead', 'Install code-server (VS Code in the browser) to open the editor here. Pick whichever fits your setup, then re-check.'))
+    nodes.push(eyebrow())
+    nodes.push(el('h1', 'mb-2 text-[1.35rem] font-semibold', 'code-server is not installed'))
+    nodes.push(el('p', 'mb-5 text-sm leading-relaxed text-muted-foreground', 'Install code-server (VS Code in the browser) to open the editor here. Pick whichever fits your setup, then re-check.'))
 
-    const install = el('div', 'dcs-install')
+    const install = el('div', 'flex flex-col gap-3 mb-5')
     for (const { label, command } of INSTALL_COMMANDS) {
-      const row = el('div', 'dcs-install-row')
-      row.append(el('label', undefined, label))
-      const cmd = el('div', 'dcs-cmd')
-      cmd.append(el('code', undefined, command))
-      const copy = el('button', 'dcs-copy', 'Copy')
+      const row = el('div')
+      row.append(el('label', 'block mb-1 text-xs text-muted-foreground', label))
+      const cmd = el('div', 'flex items-center gap-2 px-2.5 py-2 rounded-md border border-border bg-muted')
+      cmd.append(el('code', 'flex-1 of-x-auto whitespace-nowrap font-mono text-xs text-foreground', command))
+      const copy = el('button', button({ variant: 'outline', size: 'sm', class: 'shrink-0 text-[11px]' }), 'Copy')
       copy.onclick = () => {
         navigator.clipboard?.writeText(command).then(() => {
           copy.textContent = 'Copied'
@@ -148,13 +161,14 @@ export function createCodeServerView(
     }
     nodes.push(install)
 
-    const actions = el('div', 'dcs-actions')
-    const recheckBtn = el('button', 'dcs-btn primary', busy ? 'Checking…' : 'Re-check')
+    const actions = el('div', 'flex flex-wrap items-center gap-2.5')
+    const recheckBtn = el('button', button({ variant: 'primary' }))
+    recheckBtn.append(icon('i-ph-arrows-clockwise', cx('size-4', busy && 'animate-spin')), document.createTextNode(busy ? 'Checking…' : 'Re-check'))
     recheckBtn.disabled = busy
     recheckBtn.onclick = recheck
     actions.append(recheckBtn)
-    actions.append(link('Installation docs ↗', DOCS_URL))
-    actions.append(link('GitHub ↗', REPO_URL))
+    actions.append(link('Installation docs', DOCS_URL))
+    actions.append(link('GitHub', REPO_URL))
     nodes.push(actions)
     shell(...nodes)
   }
@@ -162,30 +176,30 @@ export function createCodeServerView(
   function renderLaunch(state: CodeServerViewState): void {
     const { detection, server, busy } = state
     const nodes: Node[] = []
-    nodes.push(el('p', 'dcs-eyebrow', 'code-server'))
-    nodes.push(el('h1', 'dcs-title', 'Launch the editor'))
-    nodes.push(el('p', 'dcs-lead', 'Start a code-server instance scoped to this workspace and open VS Code right here. The server runs with a generated password and the editor is signed in automatically.'))
+    nodes.push(eyebrow())
+    nodes.push(el('h1', 'mb-2 text-[1.35rem] font-semibold', 'Launch the editor'))
+    nodes.push(el('p', 'mb-5 text-sm leading-relaxed text-muted-foreground', 'Start a code-server instance scoped to this workspace and open VS Code right here. The server runs with a generated password and the editor is signed in automatically.'))
 
     if (server.status === 'error' && server.error)
-      nodes.push(el('div', 'dcs-error', server.error))
+      nodes.push(el('div', 'mb-4 px-3 py-2.5 rounded-md border border-destructive/35 bg-destructive/10 text-destructive text-sm whitespace-pre-wrap break-words', server.error))
 
-    const meta = el('div', 'dcs-meta')
+    const meta = el('div', 'flex flex-wrap gap-x-4 gap-y-1.5 mb-5 text-xs text-muted-foreground')
     if (detection.version) {
       const v = el('span')
-      v.append(document.createTextNode('version '), el('code', undefined, detection.version))
+      v.append(document.createTextNode('version '), el('code', 'font-mono text-foreground', detection.version))
       meta.append(v)
     }
     const b = el('span')
-    b.append(document.createTextNode('binary '), el('code', undefined, detection.bin))
+    b.append(document.createTextNode('binary '), el('code', 'font-mono text-foreground', detection.bin))
     meta.append(b)
     nodes.push(meta)
 
-    const actions = el('div', 'dcs-actions')
-    const launchBtn = el('button', 'dcs-btn primary')
+    const actions = el('div', 'flex flex-wrap items-center gap-2.5')
+    const launchBtn = el('button', button({ variant: 'primary' }))
     if (busy)
-      launchBtn.append(el('span', 'dcs-spinner'), document.createTextNode('Starting…'))
+      launchBtn.append(el('span', spinner()), document.createTextNode('Starting…'))
     else
-      launchBtn.textContent = 'Launch code-server'
+      launchBtn.append(icon('i-ph-rocket-launch-duotone', 'size-4'), document.createTextNode('Launch code-server'))
     launchBtn.disabled = busy ?? false
     launchBtn.onclick = launch
     actions.append(launchBtn)
@@ -194,8 +208,8 @@ export function createCodeServerView(
   }
 
   function renderStarting(): void {
-    const wrap = el('div', 'dcs-actions')
-    wrap.append(el('div', 'dcs-spinner'), el('span', 'dcs-lead', 'Starting code-server…'))
+    const wrap = el('div', 'flex items-center gap-2.5')
+    wrap.append(el('div', spinner('text-muted-foreground')), el('span', 'text-sm text-muted-foreground', 'Starting code-server…'))
     shell(wrap)
   }
 
@@ -207,7 +221,9 @@ export function createCodeServerView(
       return
     if (state.auth)
       applyAuth(state.auth)
-    const frame = el('iframe', 'dcs-frame') as HTMLIFrameElement
+    // The editor fills the whole surface — no chrome over the iframe. The
+    // `dcs-frame` class is a stable JS hook for the reuse check above.
+    const frame = el('iframe', 'dcs-frame flex-1 w-full border-0 bg-background') as HTMLIFrameElement
     frame.setAttribute('allow', 'clipboard-read; clipboard-write; cross-origin-isolated')
     frame.src = url
     frameSrc = url
@@ -215,7 +231,8 @@ export function createCodeServerView(
   }
 
   function link(text: string, href: string): HTMLAnchorElement {
-    const a = el('a', 'dcs-link', text) as HTMLAnchorElement
+    const a = el('a', linkClass('inline-flex items-center gap-1 text-sm')) as HTMLAnchorElement
+    a.append(document.createTextNode(text), icon('i-ph-arrow-square-out', 'size-3.5'))
     a.href = href
     a.target = '_blank'
     a.rel = 'noreferrer'

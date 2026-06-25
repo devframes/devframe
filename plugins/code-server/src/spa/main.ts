@@ -1,4 +1,6 @@
 import { mountCodeServer } from '../client/index'
+import 'virtual:uno.css'
+import '@internal/design/theme.css'
 import '../client/style.css'
 
 const app = document.getElementById('app')
