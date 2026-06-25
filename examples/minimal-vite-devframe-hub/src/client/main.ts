@@ -5,11 +5,11 @@ import type {
   DevframeTerminalSession,
 } from '@devframes/hub/types'
 import { connectDevframe } from '@devframes/hub/client'
-import { iconSvg } from './icons'
+import { iconClass } from './icons'
+import 'virtual:uno.css'
 
 const HUB_BASE = '/__hub/'
 
-const statusEl = document.querySelector<HTMLElement>('#status')!
 const connEl = document.querySelector<HTMLElement>('#conn')!
 const docksEl = document.querySelector<HTMLElement>('#docks')!
 const commandsEl = document.querySelector<HTMLElement>('#commands')!
@@ -20,14 +20,14 @@ const iframeEl = document.querySelector<HTMLIFrameElement>('#dock-iframe')!
 
 let selectedDockId: string | null = null
 
-function setStatus(text: string, klass?: 'ready' | 'error') {
-  connEl.textContent = text
-  statusEl.className = klass ?? ''
+function setStatus(text: string, kind?: 'ready' | 'error') {
+  const color = kind === 'ready' ? 'color-primary-500' : kind === 'error' ? 'color-red-500' : 'op-mute'
+  connEl.innerHTML = `<span class="dot ${color} mr-1.5 align-middle"></span>${text}`
 }
 
 function renderList<T>(host: HTMLElement, items: readonly T[], render: (item: T) => string) {
   if (!items.length) {
-    host.innerHTML = '<li class="muted">empty</li>'
+    host.innerHTML = '<li class="op-mute panel-row border-dashed">empty</li>'
     return
   }
   host.innerHTML = items.map(render).join('')
@@ -35,11 +35,11 @@ function renderList<T>(host: HTMLElement, items: readonly T[], render: (item: T)
 
 /** Render a dock icon, falling back to the title's initial when unknown. */
 function dockIcon(entry: DevframeDockEntry): string {
-  const svg = iconSvg(entry.icon, 20)
-  if (svg)
-    return svg
+  const cls = iconClass(entry.icon)
+  if (cls)
+    return `<span class="dock-ico ${cls}"></span>`
   const initial = (entry.title?.[0] ?? '?').toUpperCase()
-  return `<span class="dock-initial">${initial}</span>`
+  return `<span class="dock-ico"><span class="grid h-5 w-5 place-items-center rounded bg-active text-2.5 font-700">${initial}</span></span>`
 }
 
 function isIframeDock(d: DevframeDockEntry): d is DevframeDockEntry & { type: 'iframe', url: string } {
@@ -67,13 +67,13 @@ async function main() {
       selectedDockId = iframeDocks[0].id
 
     if (!iframeDocks.length) {
-      docksEl.innerHTML = '<li class="muted">No iframe docks</li>'
+      docksEl.innerHTML = '<li class="op-mute px2 text-sm">No iframe docks</li>'
       iframeEl.src = 'about:blank'
       return
     }
 
     renderList(docksEl, iframeDocks, d =>
-      `<li><button type="button" data-dock-id="${d.id}" class="dock-btn${d.id === selectedDockId ? ' active' : ''}" title="${d.title}"><span class="dock-ico">${dockIcon(d)}</span><span class="dock-label">${d.title}</span></button></li>`)
+      `<li><button type="button" data-dock-id="${d.id}" class="dock-item${d.id === selectedDockId ? ' dock-item-active' : ''}" title="${d.title}">${dockIcon(d)}<span class="truncate">${d.title}</span></button></li>`)
 
     const selected = iframeDocks.find(d => d.id === selectedDockId)
     if (selected && iframeEl.getAttribute('src') !== selected.url)
@@ -100,7 +100,7 @@ async function main() {
     { initialValue: [] },
   )
   const renderCommands = () => renderList(commandsEl, commands.value() ?? [], c =>
-    `<li><strong>${c.title}</strong> <code>${c.id}</code></li>`)
+    `<li class="panel-row">${c.title} <code class="op-fade">${c.id}</code></li>`)
   commands.on('updated', renderCommands)
   renderCommands()
 
@@ -112,7 +112,7 @@ async function main() {
       'minimal-vite-devframe-hub:messages:list' as any,
     ) as DevframeMessageEntry[]
     renderList(messagesEl, entries, m =>
-      `<li><strong>[${m.level}]</strong> ${m.message}</li>`)
+      `<li class="panel-row"><span class="op-fade">[${m.level}]</span> ${m.message}</li>`)
   }
   await refreshMessages()
 
@@ -122,7 +122,7 @@ async function main() {
       'minimal-vite-devframe-hub:terminals:list' as any,
     ) as Pick<DevframeTerminalSession, 'id' | 'title' | 'status' | 'description'>[]
     renderList(terminalsEl, sessions, t =>
-      `<li><strong>${t.title}</strong> <code>${t.id}</code> · ${t.status}</li>`)
+      `<li class="panel-row">${t.title} <code class="op-fade">${t.id}</code> · ${t.status}</li>`)
   }
   await refreshTerminals()
 

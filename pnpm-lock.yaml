@@ -476,12 +476,21 @@ importers:
         specifier: workspace:*
         version: link:../../packages/devframe
     devDependencies:
+      '@iconify-json/ph':
+        specifier: catalog:frontend
+        version: 1.2.2
+      '@unocss/vite':
+        specifier: catalog:frontend
+        version: 66.7.2(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0
       pathe:
         specifier: catalog:deps
         version: 2.0.3
+      unocss:
+        specifier: catalog:frontend
+        version: 66.7.2(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
       vite:
         specifier: catalog:build
         version: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)

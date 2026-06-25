@@ -3,6 +3,7 @@ import codeServerDevframe from '@devframes/plugin-code-server'
 import gitDevframe from '@devframes/plugin-git'
 import inspectDevframe from '@devframes/plugin-inspect'
 import terminalsDevframe from '@devframes/plugin-terminals'
+import UnoCSS from '@unocss/vite'
 import { defineConfig } from 'vite'
 import { alias } from '../../alias'
 import demoDevframe from './src/devframe'
@@ -12,6 +13,7 @@ import { minimalViteDevframeHub } from './src/minimal-vite-devframe-hub'
 export default defineConfig({
   resolve: { alias },
   plugins: [
+    UnoCSS(),
     minimalViteDevframeHub({
       devframes: [
         demoDevframe,

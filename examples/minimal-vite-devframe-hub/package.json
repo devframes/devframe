@@ -19,8 +19,11 @@
     "devframe": "workspace:*"
   },
   "devDependencies": {
+    "@iconify-json/ph": "catalog:frontend",
+    "@unocss/vite": "catalog:frontend",
     "get-port-please": "catalog:deps",
     "pathe": "catalog:deps",
+    "unocss": "catalog:frontend",
     "vite": "catalog:build"
   }
 }
