@@ -1,4 +1,4 @@
-# devframe-a11y-inspector
+# @devframes/plugin-a11y
 
 An accessibility inspector built on [devframe](../../packages/devframe). It runs
 [axe-core](https://github.com/dequelabs/axe-core) against a host application,
@@ -15,8 +15,8 @@ Three pieces, two of them browser-side:
 | Piece | Runs in | Role |
 |-------|---------|------|
 | **Agent** (`src/inject`) | the host app's page | runs axe-core, broadcasts the report, draws the highlight ring |
-| **Panel** (`src/client`) | the devtools iframe | Solid SPA: lists violations, fires highlight/clear on hover |
-| **Node** (`src/devframe.ts`, `src/rpc`) | the devframe backend | `get-config` RPC (impact taxonomy) — live in dev, baked in a static build |
+| **Panel** (`src/spa`) | the devtools iframe | Solid SPA: lists violations, fires highlight/clear on hover |
+| **Node** (`src/index.ts`, `src/node`, `src/rpc`) | the devframe backend | `get-config` RPC (impact taxonomy) — live in dev, baked in a static build |
 
 The agent and panel talk over a same-origin
 [`BroadcastChannel`](src/shared/protocol.ts), not the devframe RPC backend. That
@@ -55,12 +55,16 @@ pnpm -C plugins/a11y dev         # panel only, at /__devframe-a11y-inspector/
 
 ## File map
 
-| Path | Purpose |
-|------|---------|
-| `src/devframe.ts` | the `DevframeDefinition` consumed by every adapter |
-| `src/rpc/` | `get-config` static RPC + the type-safe client registry |
-| `src/shared/protocol.ts` | the agent ↔ panel `BroadcastChannel` contract |
-| `src/inject/` | the host-page agent (axe scan, highlight overlay) → `dist/inject/inject.js` |
-| `src/client/` | the Solid panel SPA → `dist/client` |
-| `demo/` | same-origin host page + server (dev + static modes) |
-| `tests/` | dev-server RPC + static-build dump |
+| Path | Export | Purpose |
+|------|--------|---------|
+| `src/index.ts` | `.` | `createA11yDevframe()` + the default `DevframeDefinition` |
+| `src/node/index.ts` | `/node` | `setupA11y(ctx)` — registers the RPC functions |
+| `src/cli.ts` | `/cli` | `createA11yCli()` — backs the `devframe-a11y-inspector` bin |
+| `src/vite.ts` | `/vite` | `a11yVitePlugin()` — mounts the panel into a Vite host |
+| `src/client/index.ts` | `/client` | `connectA11y()` — typed browser RPC client wrapper |
+| `src/rpc/` | — | `get-config` static RPC + the type-safe client registry |
+| `src/shared/protocol.ts` | — | the agent ↔ panel `BroadcastChannel` contract |
+| `src/inject/` | — | the host-page agent (axe scan, highlight overlay) → `dist/inject/inject.js` |
+| `src/spa/` | — | the Solid panel SPA → `dist/spa` |
+| `demo/` | — | same-origin host page + server (dev + static modes) |
+| `tests/` | — | dev-server RPC + static-build dump |

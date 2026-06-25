@@ -28,7 +28,7 @@ const BUILTIN_PLUGIN_PACKAGES = [
   '@devframes/plugin-terminals',
   '@devframes/plugin-code-server',
   '@devframes/plugin-inspect',
-  '@devframes/a11y',
+  '@devframes/plugin-a11y',
 ] as const
 
 async function loadBuiltinPlugins(): Promise<DevframeDefinition[]> {

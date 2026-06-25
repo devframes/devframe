@@ -9,16 +9,16 @@ import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
-import devframe from '../src/devframe'
+import devframe from '../src/index'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
-export const CLIENT_DIST = resolve(HERE, '../dist/client')
+export const SPA_DIST = resolve(HERE, '../dist/spa')
 
-/** Loud failure if the Solid client hasn't been built — tests serve `dist/client`. */
+/** Loud failure if the Solid panel hasn't been built — tests serve `dist/spa`. */
 export function assertClientBuilt(): void {
-  if (!existsSync(path.join(CLIENT_DIST, 'index.html'))) {
+  if (!existsSync(path.join(SPA_DIST, 'index.html'))) {
     throw new Error(
-      '[devframe-a11y-inspector] dist/client missing — run `pnpm -C plugins/a11y run build` first.',
+      '[devframe-a11y-inspector] dist/spa missing — run `pnpm -C plugins/a11y run build` first.',
     )
   }
 }

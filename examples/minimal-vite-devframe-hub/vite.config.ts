@@ -1,4 +1,4 @@
-import a11yDevframe from '@devframes/a11y'
+import a11yDevframe from '@devframes/plugin-a11y'
 import codeServerDevframe from '@devframes/plugin-code-server'
 import gitDevframe from '@devframes/plugin-git'
 import inspectDevframe from '@devframes/plugin-inspect'
