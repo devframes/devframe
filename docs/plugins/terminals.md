@@ -19,7 +19,7 @@ Interactive shells require the optional `node-pty` peer; without it the panel st
 ## Standalone
 
 ```sh
-npx devframe-terminals
+npx @devframes/plugin-terminals
 ```
 
 ## Mount into a Vite host

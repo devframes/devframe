@@ -15,9 +15,9 @@ Status, a SourceTree-style commit graph, branches, and diffs are read-only. Stag
 ## Standalone
 
 ```sh
-npx devframe-git              # dev server (live RPC over WebSocket)
-npx devframe-git --write      # also enable staging / committing from the UI
-npx devframe-git build        # static deploy → dist-static/
+npx @devframes/plugin-git              # dev server (live RPC over WebSocket)
+npx @devframes/plugin-git --write      # also enable staging / committing from the UI
+npx @devframes/plugin-git build        # static deploy → dist-static/
 ```
 
 ## Programmatic
