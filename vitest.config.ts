@@ -11,10 +11,12 @@ export default defineConfig({
       'packages/hub',
       'plugins/code-server',
       'plugins/terminals',
+      'plugins/inspect',
       'examples/files-inspector',
       'examples/streaming-chat',
       'examples/next-runtime-snapshot',
       'plugins/git',
+      'plugins/a11y',
       'examples/minimal-next-devframe-hub',
       {
         test: {

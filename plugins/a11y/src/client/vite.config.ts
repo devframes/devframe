@@ -1,0 +1,19 @@
+import { fileURLToPath } from 'node:url'
+import { defineConfig } from 'vite'
+import solid from 'vite-plugin-solid'
+import { alias } from '../../../../alias'
+
+// `base: './'` + `<base href="./" />` keeps the bundle mount-path portable:
+// the same `dist/client` works whether devframe serves it at `/` (standalone)
+// or `/__devframe-a11y-inspector/` (mounted in a hub). `connectDevframe`
+// resolves its connection meta relative to `document.baseURI` to match.
+export default defineConfig({
+  base: './',
+  root: fileURLToPath(new URL('.', import.meta.url)),
+  resolve: { alias },
+  plugins: [solid()],
+  build: {
+    outDir: fileURLToPath(new URL('../../dist/client', import.meta.url)),
+    emptyOutDir: true,
+  },
+})
