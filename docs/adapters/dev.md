@@ -30,7 +30,33 @@ process.on('SIGINT', () => handle.close().then(() => process.exit(0)))
 | `basePath` | `resolveBasePath(def, 'standalone')` | Mount path override. |
 | `app` | fresh h3 app | Pre-configured h3 app to mount onto (custom middleware, auth, extra static assets). |
 | `openBrowser` | resolves from `flags.open` / `def.cli?.open` | Explicit on/off override. `false` disables; a string opens that relative path. |
+| `ws` | `def.cli?.ws` | How the browser reaches the RPC WebSocket — see below. |
 | `onReady` | — | Callback when the WS server is bound. |
+
+## WebSocket endpoint
+
+By default the RPC socket shares the HTTP server's port and binds to the `__devframe_ws` route next to `__connection.json`. The descriptor advertises a *relative* path, so the client connects to its own origin — the link follows the page through a reverse proxy that rewrites the domain, port, or subpath. Configure the three connection scenarios via `def.cli.ws` (or the `ws` call-site option):
+
+```ts
+defineDevframe({
+  // 1. Same server, a custom route (default route is `__devframe_ws`):
+  cli: { ws: { route: '__sockets' } },
+
+  // 2. A dedicated port on the same host:
+  cli: { ws: { port: 9788 } },
+
+  // 3. A remote, fully-qualified endpoint (e.g. a tunnel/relay):
+  cli: { ws: { url: 'wss://devtools.example.com/relay/__devframe_ws' } },
+})
+```
+
+| Field | Scenario | Advertised `websocket` |
+|-------|----------|------------------------|
+| `route` | same server, different route | `{ path: <route> }` (same origin) |
+| `port` | different port | `{ port, path: <route> }` (page host) |
+| `url` | remote, different origin | the URL string, used verbatim |
+
+Precedence is `url` > `port` > `route`. In the remote case the dev server still hosts the socket locally on `route`; point your tunnel at it.
 
 ## Port resolution
 

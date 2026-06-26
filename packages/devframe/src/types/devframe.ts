@@ -25,6 +25,40 @@ export type DevframeDeploymentKind = 'standalone' | 'hosted'
  */
 export type DevframeDuplicationStrategy = 'warn' | 'silent' | 'throw' | 'duplicate'
 
+/**
+ * Controls where the browser opens the RPC WebSocket — advertised in
+ * `__connection.json` and used to bind the dev server. The three shapes map
+ * to the three connection scenarios; precedence is `url` > `port` > `route`:
+ *
+ *   1. **Same server, different route** (default) — leave `port`/`url` unset.
+ *      The socket shares the HTTP server's port and binds to `route`
+ *      (`__devframe_ws`). The client connects to its own origin, so the link
+ *      survives a reverse proxy that rewrites the host/port/subpath.
+ *
+ *   2. **Different port** — set `port`. The socket binds on its own port on the
+ *      same host; the client targets `ws(s)://<page-host>:<port>/<route>`.
+ *
+ *   3. **Remote, different origin** — set `url` to a full `ws://`/`wss://`
+ *      endpoint (e.g. a public tunnel or relay). The client uses it verbatim.
+ */
+export interface DevframeWsOptions {
+  /**
+   * Upgrade route segment the socket binds to and is advertised at, relative
+   * to the SPA base. Default: `__devframe_ws`.
+   */
+  route?: string
+  /**
+   * Bind the socket on its own port instead of sharing the HTTP port. The
+   * browser connects to this port on the page's hostname.
+   */
+  port?: number
+  /**
+   * Advertise a fixed, fully-qualified endpoint on another origin (a full
+   * `ws://`/`wss://` URL). Takes precedence over `port`/`route` in the meta.
+   */
+  url?: string
+}
+
 export interface DevframeCliOptions {
   /** Binary name; default: the devframe's `id`. */
   command?: string
@@ -53,6 +87,12 @@ export interface DevframeCliOptions {
   auth?: boolean
   /** Author's SPA dist directory (served as the devframe's UI). */
   distDir?: string
+  /**
+   * How the browser reaches the RPC WebSocket. Defaults to sharing the HTTP
+   * port on the `__devframe_ws` route. See {@link DevframeWsOptions} for the
+   * different-port and remote-origin variants.
+   */
+  ws?: DevframeWsOptions
   /**
    * Capability-side CAC hook. Called with the CAC instance after the
    * adapter registers its built-in commands (`build` / `spa` / `mcp`)

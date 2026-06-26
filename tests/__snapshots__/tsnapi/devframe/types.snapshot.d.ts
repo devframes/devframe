@@ -41,6 +41,7 @@ export { DevframeSettingsStore }
 export { DevframeSetupInfo }
 export { DevframeSpaOptions }
 export { DevframeViewHost }
+export { DevframeWsOptions }
 export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }

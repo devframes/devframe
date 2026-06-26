@@ -29,6 +29,13 @@ export interface StartHttpAndWsOptions {
    */
   path?: string
   /**
+   * Bind the WS endpoint on its own port instead of sharing the HTTP server's.
+   * The HTTP/SPA server still listens on `port`; the socket gets a dedicated
+   * `ws` server on `wsPort` (same `host`). Use this for the "different port"
+   * connection scenario. Ignored when a `server` is supplied.
+   */
+  wsPort?: number
+  /**
    * Mount the WS endpoint onto an existing HTTP server, sharing its port,
    * rather than creating and listening on a fresh one. Use this to embed
    * devframe's RPC socket inside a host server (e.g. a Vite dev server) — pair
@@ -112,8 +119,17 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
     },
   )
 
+  // A dedicated WS port (the "different port" scenario) only applies when we
+  // own the HTTP server — a shared host server already dictates the port.
+  const separateWsPort = ownsHttpServer && options.wsPort != null && options.wsPort !== port
+    ? options.wsPort
+    : undefined
   const { wss, detach: detachWs } = attachWsRpcTransport(rpcGroup, {
-    server: httpServer,
+    // Share the HTTP server unless a separate WS port is requested, in which
+    // case bind a standalone `ws` server on that port.
+    ...(separateWsPort != null
+      ? { port: separateWsPort, host: bindHost }
+      : { server: httpServer }),
     path: options.path,
     // When we own the server nothing else handles its upgrades, so reject
     // off-route attempts promptly. A shared (caller-owned) server may host
@@ -160,8 +176,10 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
   const origin = `http://${bindHost}:${resolvedPort}`
   const internal = getInternalContext(context)
   // Record the full WS URL (including the bound route) so consumers like the
-  // hub docks host can hand remote iframes a complete endpoint.
-  const wsUrl = origin.replace(/^http/, 'ws') + (options.path ?? '')
+  // hub docks host can hand remote iframes a complete endpoint. A dedicated WS
+  // port is reflected here so the URL stays dialable.
+  const wsPortForUrl = separateWsPort ?? resolvedPort
+  const wsUrl = `ws://${bindHost}:${wsPortForUrl}${options.path ?? ''}`
   internal.wsEndpoint = {
     url: wsUrl,
   }
