@@ -11,16 +11,16 @@ const BASE = 'http://127.0.0.1:9889/'
 test.describe('next-runtime-snapshot (static build)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(BASE)
-    await expect(page.locator('h1')).toHaveText('Next Runtime Snapshot')
+    await expect(page.locator('.df-nav-brand')).toHaveText('Runtime Snapshot')
   })
 
   test('renders system info from the static RPC dump', async ({ page }) => {
-    const systemCard = page.locator('.card').filter({ hasText: 'System' })
+    const systemCard = page.locator('.df-card').filter({ hasText: 'System' })
     await expect(systemCard.locator('.kv .v').first()).toContainText(/v\d+\.\d+/, { timeout: 10_000 })
     await expect(systemCard).toContainText(/cwd/)
   })
 
   test('reports static backend in the status bar', async ({ page }) => {
-    await expect(page.locator('.status code').first()).toHaveText('static', { timeout: 10_000 })
+    await expect(page.locator('header code').first()).toHaveText('static', { timeout: 10_000 })
   })
 })

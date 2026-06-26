@@ -264,7 +264,7 @@ export function App() {
               )}
         </form>
 
-        <div class="text-xs text-muted-foreground">
+        <div class="text-xs text-muted-foreground" data-testid="status">
           backend:
           {' '}
           <code class="font-mono text-foreground">{ctx.base.connectionMeta.backend}</code>
@@ -299,7 +299,7 @@ function Message({ msg, live }: { msg: ChatMessage, live: string | undefined }) 
   )
 
   return (
-    <div class={cls}>
+    <div class={cls} data-role={msg.role} data-streaming={msg.streamId !== undefined ? 'true' : undefined}>
       {displayed || (msg.streamId ? '' : '(empty)')}
       {/* Live "typing" indicator while the producer is still streaming tokens. */}
       {msg.streamId && <span class={spinner('ml-1 size-3! align-[-0.2em]')} />}
