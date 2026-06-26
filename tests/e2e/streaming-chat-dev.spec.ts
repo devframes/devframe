@@ -13,7 +13,7 @@ test.describe('streaming-chat (dev)', () => {
     await expect(page.locator('.df-nav-brand')).toHaveText('Streaming Chat')
     await expect(page.locator('div.flex-wrap button').first()).toBeVisible()
 
-    const clearBtn = page.locator('.toolbar button:has-text("Clear")')
+    const clearBtn = page.locator('header button:has-text("Clear")')
     if (await clearBtn.isEnabled())
       await clearBtn.click()
     await expect(page.locator('div[data-role]')).toHaveCount(0)
@@ -39,7 +39,7 @@ test.describe('streaming-chat (dev)', () => {
       .toContainText('Tiny chunks arrive', { timeout: 10_000 })
     await expect(page.locator('div[data-role="assistant"][data-streaming="true"]')).toHaveCount(0)
 
-    await page.locator('.toolbar button:has-text("Clear")').click()
+    await page.locator('header button:has-text("Clear")').click()
 
     await expect(page.locator('div[data-role]')).toHaveCount(0)
     await expect(page.locator('[data-testid="status"]')).toContainText('0 messages')
