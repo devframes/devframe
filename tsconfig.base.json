@@ -121,6 +121,18 @@
       "@devframes/nuxt": [
         "./packages/nuxt/src/index.ts"
       ],
+      "@internal/design/preset": [
+        "./packages/design/src/preset.ts"
+      ],
+      "@internal/design/components": [
+        "./packages/design/src/components.ts"
+      ],
+      "@internal/design/tokens": [
+        "./packages/design/src/tokens.ts"
+      ],
+      "@internal/design": [
+        "./packages/design/src/index.ts"
+      ],
       "@devframes/plugin-code-server/client": [
         "./plugins/code-server/src/client/index.ts"
       ],
@@ -166,6 +178,9 @@
       "@devframes/plugin-terminals": [
         "./plugins/terminals/src/index.ts"
       ],
+      "@devframes/plugin-git": [
+        "./plugins/git/src/index.ts"
+      ],
       "devframe/recipes/open-helpers": [
         "./packages/devframe/src/recipes/open-helpers.ts"
       ],
@@ -189,6 +204,21 @@
       ],
       "@devframes/plugin-inspect": [
         "./plugins/inspect/src/index.ts"
+      ],
+      "@devframes/plugin-a11y/client": [
+        "./plugins/a11y/src/client/index.ts"
+      ],
+      "@devframes/plugin-a11y/node": [
+        "./plugins/a11y/src/node/index.ts"
+      ],
+      "@devframes/plugin-a11y/cli": [
+        "./plugins/a11y/src/cli.ts"
+      ],
+      "@devframes/plugin-a11y/vite": [
+        "./plugins/a11y/src/vite.ts"
+      ],
+      "@devframes/plugin-a11y": [
+        "./plugins/a11y/src/index.ts"
       ]
     },
     "resolveJsonModule": true,

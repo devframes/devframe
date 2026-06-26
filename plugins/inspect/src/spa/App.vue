@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { iconButton, nav, navBrand, tab as tabClass, tabsList } from '@internal/design/components'
 import { onMounted, ref } from 'vue'
 import AgentSmart from './components/AgentSmart.vue'
 import FunctionsSmart from './components/FunctionsSmart.vue'
@@ -12,11 +13,11 @@ type Tab = 'functions' | 'state' | 'agent' | 'history'
 const tab = ref<Tab>('functions')
 const { refresh, loading } = useRefresh()
 
-const tabs: { id: Tab, label: string }[] = [
-  { id: 'functions', label: 'Functions' },
-  { id: 'state', label: 'State' },
-  { id: 'agent', label: 'Agent' },
-  { id: 'history', label: 'History' },
+const tabs: { id: Tab, label: string, icon: string }[] = [
+  { id: 'functions', label: 'Functions', icon: 'i-ph-function-duotone' },
+  { id: 'state', label: 'State', icon: 'i-ph-database-duotone' },
+  { id: 'agent', label: 'Agent', icon: 'i-ph-robot-duotone' },
+  { id: 'history', label: 'History', icon: 'i-ph-clock-counter-clockwise-duotone' },
 ]
 
 onMounted(connect)
@@ -24,26 +25,28 @@ onMounted(connect)
 
 <template>
   <div class="app">
-    <header class="app-header">
-      <div class="brand">
-        <span class="dot" />
-        <span>Inspector</span>
-        <small>RPC &amp; State</small>
+    <header :class="nav()">
+      <div :class="navBrand()">
+        <span class="i-ph-magnifying-glass-duotone text-base color-active" />
+        <span>Devframe Inspector</span>
       </div>
 
-      <nav class="tabs">
+      <nav :class="tabsList()" role="tablist" aria-label="Inspector views">
         <button
           v-for="t in tabs"
           :key="t.id"
-          class="tab"
-          :class="{ active: tab === t.id }"
+          :class="tabClass()"
+          :data-state="tab === t.id ? 'active' : 'inactive'"
+          role="tab"
+          :aria-selected="tab === t.id"
           @click="tab = t.id"
         >
+          <span :class="t.icon" />
           {{ t.label }}
         </button>
       </nav>
 
-      <div class="header-spacer" />
+      <div class="flex-1" />
 
       <div
         class="conn"
@@ -56,13 +59,12 @@ onMounted(connect)
       </div>
 
       <button
-        class="icon-btn"
-        :class="{ spin: loading }"
-        title="Refresh"
+        :class="iconButton({ variant: 'ghost', size: 'sm' })"
+        :title="loading ? 'Refreshing…' : 'Refresh'"
         :disabled="loading || !connection.connected"
         @click="refresh"
       >
-        <div class="i-ph-arrows-clockwise-duotone" />
+        <span class="i-ph-arrows-clockwise" :class="{ 'animate-spin': loading }" />
       </button>
     </header>
 

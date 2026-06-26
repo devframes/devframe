@@ -1,6 +1,8 @@
 # Minimal Vite Devframe Hub
 
-A protocol-witness example. The `src/minimal-vite-devframe-hub.ts` file is the entire Vite host — about 120 lines of Vite plugin code that wires `@devframes/hub` into a Vite dev server. Every framework's Devframe Hub host follows the same shape.
+A tiny, copyable **vite-devtools-style hub**. [vite-devtools](https://github.com/vitejs/devtools) is the full viewer that docks many Vite integrations behind one icon rail on top of `@devframes/hub`; this example is the smallest thing shaped like it — an icon dock, an iframe stage, and a drawer of hub subsystems — so you can see the whole protocol and build your own viewer from it.
+
+`src/minimal-vite-devframe-hub.ts` is the entire host: ~120 lines of Vite plugin that wires `@devframes/hub` into a Vite dev server. Every framework's hub host follows the same shape.
 
 ## Run it
 
@@ -9,28 +11,30 @@ pnpm install
 pnpm --filter minimal-vite-devframe-hub dev
 ```
 
-Open the printed URL. You should see:
+Open the printed URL. The dock on the left lists every mounted tool with its icon:
 
-- A status line showing the RPC backend
-- A **Docks** list — one entry per `mountDevframe` call, plus the hub's built-in `~terminals` / `~messages` / `~settings` panels
-- A **Commands** list — one entry per `commands.register()`
-- A **Messages** list — populated via `messages.add()` on the server
-- A **Terminals** list — empty unless a devframe registers one
-- A button that exercises `hub:commands:execute` by dispatching the sample ping command
+- **Git**, **Terminals**, **Code Server**, **RPC & State Inspector**, **A11y Inspector** — the built-in plugins, each a published `DevframeDefinition` mounted with `mountDevframe`
+- **Demo Tool** / **Demo Tool B** — two trivial static SPAs that show the bare mount path
+
+Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`.
 
 ## What the example proves
 
-- `createHubContext()` boots a hub without any Vite-specific code path
-- A `DevframeHost` impl plugs framework specifics (storage paths, origin resolution) into the hub uniformly
-- `mountDevframe(ctx, def)` registers any `DevframeDefinition` as a dock
-- The built-in `hub:commands:execute` RPC dispatches any registered server command, regardless of how the host was constructed
-- The browser-side `connectDevframe({ baseURL: '/__hub/' })` discovers the WS endpoint via the kit's `__connection.json` middleware
+- `createHubContext()` boots a hub with no Vite-specific code path; a `DevframeHost` impl plugs framework specifics (static mounts, connection meta, storage, origin) in uniformly
+- `mountDevframe(ctx, def)` registers any `DevframeDefinition` as a dock and serves both its SPA and its `__connection.json`, so the embedded SPA connects straight back to the hub
+- Real integrations work end to end through the mount path — the inspector lists every plugin's RPC functions live, terminals stream over the hub, and code-server launches an authenticated editor
+- The browser reads `devframe:docks` / `devframe:commands` shared state and dispatches commands over RPC — no hub classes imported on the client
+
+## Build your own
+
+The dock UI is plain DOM in `src/client/`. To skin your own viewer, read the same shared-state keys and render them however you like; swap the inline `icons.ts` for your framework's icon component (UnoCSS `preset-icons`, `@iconify/vue`, …). The host file is the part worth copying verbatim.
 
 ## Files
 
 | File | Role |
 |---|---|
-| `src/minimal-vite-devframe-hub.ts` | The Vite plugin — creates hub context, mounts middleware, side-car WS |
-| `src/devframe.ts` | A sample `DevframeDefinition` that plugs into the kit |
-| `src/client/main.ts` | The browser-side UI that consumes the hub protocol |
+| `src/minimal-vite-devframe-hub.ts` | The Vite host — hub context, static + connection-meta mounts, side-car WS |
+| `vite.config.ts` | Mounts the built-in plugins via the host's `devframes` option |
+| `src/client/main.ts` | The browser UI that consumes the hub protocol |
+| `src/client/icons.ts` | Offline Phosphor icons for the dock |
 | `index.html` | The UI shell |

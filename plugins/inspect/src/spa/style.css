@@ -1,14 +1,36 @@
+/* The inspector keeps its bespoke component CSS but sources every color/radius
+   from the shared @internal/design tokens (imported before this file). The
+   inspector's own token names are mapped onto the design tokens, which flip via
+   the `.dark` class; only the domain-specific JSON/RPC syntax palette is
+   defined per-theme here. */
 :root {
-  --df-bg: #111111;
-  --df-bg-soft: #222222;
-  --df-bg-active: rgba(136, 136, 136, 0.1);
-  --df-border: rgba(136, 136, 136, 0.2);
-  --df-border-soft: rgba(136, 136, 136, 0.1);
-  --df-fg: #e5e5e5;
-  --df-fg-dim: #a3a3a3;
-  --df-fg-faint: #525252;
-  --df-accent: #517158;
-  --df-accent-dim: rgba(81, 113, 88, 0.25);
+  --df-bg: var(--df-background);
+  --df-bg-soft: var(--df-muted);
+  --df-bg-active: color-mix(in srgb, var(--df-foreground) 8%, transparent);
+  --df-border-soft: color-mix(in srgb, var(--df-foreground) 8%, transparent);
+  --df-fg: var(--df-foreground);
+  --df-fg-dim: var(--df-muted-foreground);
+  --df-fg-faint: color-mix(in srgb, var(--df-muted-foreground) 65%, transparent);
+  --df-accent: var(--df-primary);
+  --df-accent-dim: color-mix(in srgb, var(--df-primary) 22%, transparent);
+  --df-danger: var(--df-destructive);
+  --df-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+  --df-sans: var(--font-sans, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+
+  /* JSON / RPC syntax palette — light */
+  --df-query: #2563c9;
+  --df-static: #8a45c9;
+  --df-action: #b9701f;
+  --df-event: #c43d75;
+  --df-string: #1f8a52;
+  --df-number: #9a6315;
+  --df-boolean: #7a32bf;
+  --df-null: #93a0ad;
+  --df-key: #2a5fa6;
+}
+
+.dark {
+  /* JSON / RPC syntax palette — dark */
   --df-query: #6ea8fe;
   --df-static: #c792ea;
   --df-action: #ffb08f;
@@ -18,35 +40,6 @@
   --df-boolean: #d39bf0;
   --df-null: #76828f;
   --df-key: #7fb0e8;
-  --df-danger: #f2728a;
-  --df-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
-  --df-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --df-radius: 4px;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --df-bg: #ffffff;
-    --df-bg-soft: #eeeeee;
-    --df-bg-active: rgba(136, 136, 136, 0.1);
-    --df-border: rgba(136, 136, 136, 0.2);
-    --df-border-soft: rgba(136, 136, 136, 0.1);
-    --df-fg: #262626;
-    --df-fg-dim: #525252;
-    --df-fg-faint: #a3a3a3;
-    --df-accent: #37533d;
-    --df-accent-dim: rgba(81, 113, 88, 0.25);
-    --df-query: #2563c9;
-    --df-static: #8a45c9;
-    --df-action: #b9701f;
-    --df-event: #c43d75;
-    --df-string: #1f8a52;
-    --df-number: #9a6315;
-    --df-boolean: #7a32bf;
-    --df-null: #93a0ad;
-    --df-key: #2a5fa6;
-    --df-danger: #c4344c;
-  }
 }
 
 * {
@@ -92,72 +85,9 @@ textarea {
   overflow: hidden;
 }
 
-/* ---- header ---- */
-.app-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 0 14px;
-  height: 46px;
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--df-border);
-  background: transparent;
-}
-
-.brand {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-.brand .dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--df-accent);
-  box-shadow: 0 0 0 3px var(--df-accent-dim);
-  align-self: center;
-}
-
-.brand small {
-  color: var(--df-fg-faint);
-  font-weight: 400;
-  font-size: 11px;
-}
-
-.tabs {
-  display: flex;
-  gap: 2px;
-  margin-left: 6px;
-}
-
-.tab {
-  border: none;
-  background: transparent;
-  color: var(--df-fg-dim);
-  padding: 6px 12px;
-  border-radius: var(--df-radius);
-  font-size: 12.5px;
-  font-weight: 500;
-  transition: background 0.12s, color 0.12s;
-}
-
-.tab:hover {
-  color: var(--df-fg);
-  background: var(--df-bg-active);
-}
-
-.tab.active {
-  color: var(--df-accent);
-  background: var(--df-accent-dim);
-}
-
-.header-spacer {
-  flex: 1;
-}
-
+/* ---- header: nav, brand, tab selector and the refresh button come from the
+   shared @internal/design `df-*` vocabulary; only the connection status pill
+   below stays bespoke. ---- */
 .conn {
   display: flex;
   align-items: center;
@@ -180,40 +110,6 @@ textarea {
 
 .conn.err .led {
   background: var(--df-danger);
-}
-
-.icon-btn {
-  border: 1px solid var(--df-border);
-  background: transparent;
-  color: var(--df-fg-dim);
-  width: 30px;
-  height: 30px;
-  border-radius: var(--df-radius);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.12s, border-color 0.12s, background 0.12s;
-}
-
-.icon-btn:hover:not(:disabled) {
-  color: var(--df-fg);
-  border-color: var(--df-fg-faint);
-  background: var(--df-bg-active);
-}
-
-.icon-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.icon-btn.spin svg {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* ---- body ---- */
@@ -347,22 +243,9 @@ textarea {
   color: var(--df-danger);
 }
 
-/* ---- function groups ---- */
-.group {
-  padding: 8px 14px 0;
-}
-
-.group-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 10px 0 4px;
-}
-
-.group-head .ns {
-  font-family: var(--df-mono);
-  font-size: 11px;
-  color: var(--df-fg-faint);
+/* ---- function list ---- */
+.fn-list {
+  padding: 8px 14px 14px;
 }
 
 .fn-row {
@@ -393,6 +276,17 @@ textarea {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Colored namespace segments of a function name (split on `:` / `/`).
+   Namespace segments receive an inline hash color; the trailing leaf falls
+   back to the default foreground, and separators stay faint. */
+.fn-name .ns-seg {
+  color: var(--df-fg);
+}
+
+.fn-name .ns-sep {
+  color: var(--df-fg-faint);
 }
 
 .fn-flags {
@@ -449,46 +343,6 @@ textarea.args {
 
 textarea.args:focus {
   border-color: var(--df-accent);
-}
-
-.btn {
-  border: 1px solid var(--df-border);
-  background: transparent;
-  color: var(--df-fg-dim);
-  padding: 4px 12px;
-  border-radius: var(--df-radius);
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.12s ease;
-  opacity: 0.85;
-}
-
-.btn:hover:not(:disabled) {
-  opacity: 1;
-  background: var(--df-bg-active);
-  color: var(--df-fg);
-}
-
-.btn.primary {
-  background: var(--df-accent);
-  color: #fff;
-  border-color: var(--df-accent);
-  opacity: 1;
-}
-
-.btn.primary:hover:not(:disabled) {
-  filter: brightness(1.1);
-}
-
-.btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.btn.ghost {
-  border-color: transparent;
 }
 
 .result {

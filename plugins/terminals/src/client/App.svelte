@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { DevframeRpcClient } from 'devframe/client'
+  import type { DotState } from '@internal/design/components'
   import type { TerminalPreset, TerminalSessionInfo } from '../types'
+  import { button, dot, iconButton, nav, navBrand, navTab, tag, toolbar } from '@internal/design/components'
   import { onMount } from 'svelte'
   import { PRESETS_STATE_KEY, SESSIONS_STATE_KEY } from '../constants'
   import TerminalView from './TerminalView.svelte'
@@ -140,19 +142,19 @@
     node.select()
   }
 
-  function statusDot(status: string): string {
+  function statusDot(status: string): DotState {
     if (status === 'running')
-      return 'dot-running'
-    return status === 'exited' ? 'dot-exited' : 'dot-error'
+      return 'running'
+    return status === 'exited' ? 'idle' : 'error'
   }
 </script>
 
 <div class="absolute inset-0 flex flex-col bg-base color-base font-sans of-hidden">
   <!-- Top navigation: brand + session tabs + actions -->
-  <nav class="z-nav h-9 shrink-0 flex items-center gap-1 px-2 border-b border-base bg-base">
-    <div class="flex items-center gap-1.5 pr-2 mr-1 border-r border-base shrink-0">
+  <nav class={nav()}>
+    <div class={navBrand('pr-2 mr-1 border-r border-base')}>
       <div class="i-ph-terminal-window-duotone text-base color-active"></div>
-      <span class="text-sm font-500 op-fade hidden sm:inline">Terminals</span>
+      <span class="hidden sm:inline">Terminals</span>
     </div>
 
     <div class="flex-1 flex items-center gap-1 of-x-auto of-y-hidden py-1">
@@ -173,12 +175,12 @@
         {:else}
           <button
             type="button"
-            class="group tab-item {activeId === s.id ? 'tab-item-active' : ''}"
+            class={navTab({ active: activeId === s.id, class: 'group' })}
             title={`${displayName(s)} — double-click to rename`}
             onclick={() => (activeId = s.id)}
             ondblclick={(e) => { e.preventDefault(); e.stopPropagation(); renamingId = s.id }}
           >
-            <span class="h-1.5 w-1.5 rounded-full shrink-0 {statusDot(s.status)}"></span>
+            <span class={dot(statusDot(s.status))}></span>
             <span class="truncate">{displayName(s)}</span>
             <span
               role="button"
@@ -194,7 +196,7 @@
 
       <button
         type="button"
-        class="btn-icon shrink-0"
+        class={iconButton({ variant: 'ghost', size: 'sm', class: 'shrink-0' })}
         title="New terminal"
         onclick={() => spawn({ mode: 'interactive' })}
       >
@@ -206,7 +208,7 @@
       <div class="relative shrink-0">
         <button
           type="button"
-          class="btn-action-sm {presetsOpen ? 'btn-action-active' : ''}"
+          class={button({ variant: 'outline', size: 'sm', class: presetsOpen ? 'bg-accent! color-active border-active!' : '' })}
           title="Run a preset command"
           onclick={() => (presetsOpen = !presetsOpen)}
         >
@@ -242,8 +244,8 @@
   <!-- Toolbar: details of the active session -->
   {#if activeSession}
     {@const s = activeSession}
-    <div class="z-toolbar h-8 shrink-0 flex items-center gap-2 px-2.5 border-b border-base bg-secondary text-sm">
-      <span class="px1.5 rounded text-xs font-500 {s.mode === 'interactive' ? 'badge-blue' : 'badge-amber'}">
+    <div class={toolbar()}>
+      <span class={tag(s.mode === 'interactive' ? 'blue' : 'amber')}>
         {s.mode === 'interactive' ? 'interactive' : 'readonly'}
       </span>
       <span class="font-mono truncate op-fade" title={`${s.command} ${s.args.join(' ')}`}>
@@ -251,7 +253,7 @@
       </span>
       <span class="flex items-center gap-1.5 op-mute font-mono text-xs tabular-nums shrink-0">
         {#if s.status === 'running'}
-          <span class="h-1.5 w-1.5 rounded-full dot-running"></span>
+          <span class={dot('running')}></span>
           {s.backend}{s.pid ? ` · ${s.pid}` : ''}
         {:else}
           {s.status}{s.exitCode != null ? ` (${s.exitCode})` : ''}
@@ -260,10 +262,10 @@
 
       <div class="flex-1"></div>
 
-      <button type="button" class="btn-icon" title="Restart" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: s.id }).catch(() => {})}>
+      <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: s.id }).catch(() => {})}>
         <div class="i-ph-arrow-clockwise-duotone"></div>
       </button>
-      <button type="button" class="btn-icon" title="Kill" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {})}>
+      <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {})}>
         <div class="i-ph-trash-duotone"></div>
       </button>
     </div>
@@ -276,7 +278,7 @@
         <div class="i-ph-terminal-window-duotone text-5xl"></div>
         <div class="flex items-center gap-1.5 text-sm">
           <span>No sessions.</span>
-          <button type="button" class="btn-action-sm" onclick={() => spawn({ mode: 'interactive' })}>
+          <button type="button" class={button({ variant: 'outline', size: 'sm' })} onclick={() => spawn({ mode: 'interactive' })}>
             <div class="i-ph-plus"></div>
             New terminal
           </button>

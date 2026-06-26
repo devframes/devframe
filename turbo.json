@@ -35,12 +35,28 @@
     },
     "minimal-vite-devframe-hub#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["@devframes/hub#build", "devframe#build"],
+      "dependsOn": [
+        "@devframes/hub#build",
+        "devframe#build",
+        "@devframes/plugin-git#build",
+        "@devframes/plugin-terminals#build",
+        "@devframes/plugin-code-server#build",
+        "@devframes/plugin-inspect#build",
+        "@devframes/plugin-a11y#build"
+      ],
       "outputs": ["dist/**"]
     },
     "minimal-next-devframe-hub#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["@devframes/hub#build", "devframe#build"],
+      "dependsOn": [
+        "@devframes/hub#build",
+        "devframe#build",
+        "@devframes/plugin-git#build",
+        "@devframes/plugin-terminals#build",
+        "@devframes/plugin-code-server#build",
+        "@devframes/plugin-inspect#build",
+        "@devframes/plugin-a11y#build"
+      ],
       "outputs": ["dist/**"]
     },
     "files-inspector-example#build": {
@@ -63,7 +79,7 @@
       "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
     },
-    "@devframes/a11y#build": {
+    "@devframes/plugin-a11y#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
@@ -89,9 +105,9 @@
       "dependsOn": ["@devframes/plugin-git#build"],
       "outputs": ["dist/static/**"]
     },
-    "@devframes/a11y#cli:build": {
+    "@devframes/plugin-a11y#cli:build": {
       "outputLogs": "new-only",
-      "dependsOn": ["@devframes/a11y#build"],
+      "dependsOn": ["@devframes/plugin-a11y#build"],
       "outputs": ["dist/static/**"]
     }
   }

@@ -5,11 +5,40 @@ import { homedir } from 'node:os'
 import process from 'node:process'
 import { defineHubRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
+import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { startHttpAndWs } from 'devframe/node'
 import { getPort } from 'get-port-please'
 import { join } from 'pathe'
 import demoDevframe from './demo-devframe'
 import demoDevframeB from './demo-devframe-b'
+
+/**
+ * Built-in plugin packages dogfooded through the hub mount path.
+ *
+ * They are loaded with a runtime dynamic `import()` carrying
+ * `webpackIgnore` / `turbopackIgnore` magic comments so Next's bundler leaves
+ * them alone: Node resolves the published `dist` at request time, where the
+ * plugins' node-side code (git shell-outs, child-process supervisors, the
+ * native `node-pty` PTY backend) and their `new URL('../dist/...',
+ * import.meta.url)` SPA-dist lookups all work — none of which survive being
+ * statically bundled into a Next server chunk.
+ */
+const BUILTIN_PLUGIN_PACKAGES = [
+  '@devframes/plugin-git',
+  '@devframes/plugin-terminals',
+  '@devframes/plugin-code-server',
+  '@devframes/plugin-inspect',
+  '@devframes/plugin-a11y',
+] as const
+
+async function loadBuiltinPlugins(): Promise<DevframeDefinition[]> {
+  const mods = await Promise.all(
+    BUILTIN_PLUGIN_PACKAGES.map(
+      pkg => import(/* webpackIgnore: true */ /* turbopackIgnore: true */ pkg),
+    ),
+  )
+  return mods.map(mod => mod.default as DevframeDefinition)
+}
 
 const STATIC_MOUNTS = new Map<string, string>()
 
@@ -30,6 +59,23 @@ export function getStaticMount(pathname: string): StaticMountHit | null {
     return null
   const relative = pathname.slice(best.base.length) || '/'
   return { distDir: best.distDir, relative }
+}
+
+// Bases (without trailing slash, e.g. `/__git`) under which the catch-all
+// route should serve the hub's connection meta at `<base>/__connection.json`.
+const CONNECTION_META_BASES = new Set<string>()
+const META_SUFFIX = `/${DEVFRAME_CONNECTION_META_FILENAME}`
+
+/**
+ * If `pathname` is a `<base>/__connection.json` request for a base the hub
+ * registered via `DevframeHost.mountConnectionMeta`, return that base;
+ * otherwise `null`. The catch-all route uses this to answer the connection-meta
+ * fetch a mounted devframe SPA makes from inside its iframe.
+ */
+export function isConnectionMetaPath(pathname: string): boolean {
+  if (!pathname.endsWith(META_SUFFIX))
+    return false
+  return CONNECTION_META_BASES.has(pathname.slice(0, -META_SUFFIX.length))
 }
 
 export interface MinimalNextDevframeHubOptions {
@@ -85,6 +131,12 @@ export async function minimalNextDevframeHub(
     mountStatic(base, distDir) {
       STATIC_MOUNTS.set(base.replace(/\/$/, ''), distDir)
     },
+    // Record the base so the catch-all route can answer `<base>/__connection.json`
+    // with the hub's connection meta — letting the mounted SPA connect without
+    // relying on same-origin parent-window inheritance.
+    mountConnectionMeta(base) {
+      CONNECTION_META_BASES.add(base.replace(/\/$/, ''))
+    },
     resolveOrigin() {
       return `http://${hostName}:3000`
     },
@@ -116,13 +168,17 @@ export async function minimalNextDevframeHub(
     handler: () => 'pong',
   })
 
+  // Demo devframes alongside the dogfooded built-in plugin packages.
+  const devframes = options.devframes
+    ?? [demoDevframe, demoDevframeB, ...await loadBuiltinPlugins()]
+
   await context.messages.add({
     level: 'success',
     message: 'Minimal Next Devframe Hub started',
-    description: `Side-car WS on port ${port}. ${options.devframes?.length ?? 1} devframe(s) registered.`,
+    description: `Side-car WS on port ${port}. ${devframes.length} devframe(s) registered.`,
   })
 
-  for (const def of options.devframes ?? [demoDevframe, demoDevframeB]) {
+  for (const def of devframes) {
     await mountDevframe(context, def)
   }
 

@@ -1,6 +1,10 @@
 import type { Preview } from '@storybook/vue3'
 import 'virtual:uno.css'
+import '@internal/design/theme.css'
 import '../src/spa/style.css'
+
+// Stories default to the dark canvas; drive the shared tokens to match.
+document.documentElement.classList.add('dark')
 
 const preview: Preview = {
   parameters: {

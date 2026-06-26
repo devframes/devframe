@@ -1,6 +1,7 @@
 import type { Decorator, Preview } from '@storybook/react-vite'
 import { useEffect } from 'react'
-import '../src/client/app/globals.css'
+import 'virtual:uno.css'
+import '@internal/design/theme.css'
 
 const withTheme: Decorator = (Story, context) => {
   const theme = context.globals.theme ?? 'dark'

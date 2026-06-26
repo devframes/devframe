@@ -16,6 +16,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@internal/design": "workspace:*",
     "devframe": "workspace:*",
     "preact": "catalog:frontend"
   },
@@ -23,6 +24,7 @@
     "@preact/preset-vite": "catalog:build",
     "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
+    "unocss": "catalog:frontend",
     "vite": "catalog:build",
     "vitest": "catalog:testing",
     "ws": "catalog:deps"

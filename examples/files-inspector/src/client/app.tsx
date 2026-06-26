@@ -1,4 +1,5 @@
 import type { DevframeScopedClientContext } from 'devframe/client'
+import { nav, navBrand, tab as tabClass, tabsList } from '@internal/design/components'
 import { connectDevframe } from 'devframe/client'
 import { useEffect, useState } from 'preact/hooks'
 import { About } from './routes/about'
@@ -6,6 +7,11 @@ import { Home } from './routes/home'
 
 const NAMESPACE = 'devframe-files-inspector'
 export type InspectorCtx = DevframeScopedClientContext<typeof NAMESPACE>
+
+const NAV_ITEMS = [
+  { route: '/', label: 'Home', icon: 'i-ph-house-duotone' },
+  { route: '/about', label: 'About', icon: 'i-ph-info-duotone' },
+] as const
 
 function getBasePath(): string {
   return new URL(document.baseURI).pathname
@@ -44,48 +50,58 @@ export function App() {
     setRoute(to)
   }
 
-  if (!ctx)
-    return <p>Connecting to devframe…</p>
+  if (!ctx) {
+    return (
+      <div class="grid min-h-screen place-items-center bg-background text-muted-foreground font-sans text-sm">
+        Connecting to devframe…
+      </div>
+    )
+  }
+
+  // Any non-/about route resolves to Home, mirroring the route switch below.
+  const active = route === '/about' ? '/about' : '/'
 
   return (
-    <main>
-      <header>
-        <h1>Files Inspector</h1>
-        <nav>
-          <a
-            href={basePath}
-            onClick={(e) => {
-              e.preventDefault()
-              navigate('/')
-            }}
-          >
-            Home
-          </a>
-          {' · '}
-          <a
-            href={`${basePath}about`}
-            onClick={(e) => {
-              e.preventDefault()
-              navigate('/about')
-            }}
-          >
-            About
-          </a>
+    <div class="flex flex-col min-h-screen bg-background text-foreground font-sans">
+      <header class={nav()}>
+        <span class={navBrand()}>
+          <span class="i-ph-folder-duotone text-base color-active" />
+          <span>Files Inspector</span>
+        </span>
+
+        <nav class={tabsList()} role="tablist" aria-label="Views">
+          {NAV_ITEMS.map(({ route: r, label, icon }) => (
+            <button
+              key={r}
+              type="button"
+              role="tab"
+              aria-selected={active === r}
+              data-state={active === r ? 'active' : 'inactive'}
+              class={tabClass()}
+              onClick={() => navigate(r)}
+            >
+              <span class={icon} />
+              {label}
+            </button>
+          ))}
         </nav>
-        <small>
-          base:
-          {' '}
-          <code>{basePath}</code>
-          {' | '}
-          backend:
-          {' '}
-          <code>{ctx.base.connectionMeta.backend}</code>
+
+        <span class="flex-1" />
+
+        <small class="flex items-center gap-1.5 text-muted-foreground text-xs font-mono">
+          <span>base</span>
+          <code class="color-base">{basePath}</code>
+          <span class="op-mute">·</span>
+          <span>backend</span>
+          <code class="color-base">{ctx.base.connectionMeta.backend}</code>
         </small>
       </header>
-      <hr />
-      {route === '/about'
-        ? <About ctx={ctx} basePath={basePath} />
-        : <Home ctx={ctx} />}
-    </main>
+
+      <main class="scrollbar-slim min-h-0 flex-1 overflow-auto">
+        {active === '/about'
+          ? <About ctx={ctx} basePath={basePath} />
+          : <Home ctx={ctx} />}
+      </main>
+    </div>
   )
 }

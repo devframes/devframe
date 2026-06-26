@@ -1,11 +1,5 @@
 import type { Impact } from '../shared/protocol.ts'
-
-const IMPACT_COLOR: Record<Impact, string> = {
-  critical: '#ff5c7a',
-  serious: '#ff9b52',
-  moderate: '#f2d14e',
-  minor: '#6fb1fc',
-}
+import { IMPACT_COLOR } from '../shared/protocol.ts'
 
 const PREFERS_REDUCED_MOTION
   = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches

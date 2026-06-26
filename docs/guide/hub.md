@@ -43,6 +43,46 @@ await mountDevframe(ctx, myDevframe)
 
 Framework kits typically wrap this in a plugin shell. `@vitejs/devtools-kit`'s `createPluginFromDevframe` returns a Vite `Plugin` whose `devtools.setup` calls into `mountDevframe`.
 
+### Connecting embedded SPAs
+
+A mounted devframe's SPA loads in an iframe at its base (`/__<id>/`) and calls `connectDevframe()`, which fetches `./__connection.json` relative to that base. `mountDevframe` serves it there by calling the host's `mountConnectionMeta(base)` alongside `mountStatic`, so the SPA discovers the RPC/WS endpoint directly. Implement `mountConnectionMeta` on your `DevframeHost` to serve the same connection meta you expose at the hub's own base:
+
+```ts
+const host: DevframeHost = {
+  mountStatic(base, distDir) { /* serve files */ },
+  mountConnectionMeta(base) {
+    // serve `${base}__connection.json` → { backend: 'websocket', websocket: port }
+  },
+  resolveOrigin() { /* … */ },
+  getStorageDir(scope) { /* … */ },
+}
+```
+
+Hosts that omit `mountConnectionMeta` fall back to same-origin window inheritance, which connects an embedded SPA only when it shares an origin with the hub UI.
+
+### Bundled hosts (Next.js)
+
+Dev servers with a module bundler (Next's Turbopack/webpack) statically analyse server imports. Plugin packages resolve their SPA dist with `new URL('../dist/...', import.meta.url)` and lazy-load node-side code — child processes, the native `node-pty` PTY backend — that resolves at runtime, not at bundle time. Load them with a dynamic `import()` carrying ignore comments so the bundler keeps them as a runtime Node import:
+
+```ts
+const pkgs = ['@devframes/plugin-git', '@devframes/plugin-terminals']
+const defs = await Promise.all(
+  pkgs.map(p => import(/* webpackIgnore: true */ /* turbopackIgnore: true */ p)),
+).then(mods => mods.map(m => m.default))
+
+for (const def of defs)
+  await mountDevframe(ctx, def)
+```
+
+Each mounted SPA is served at `/__<id>/` and references its assets relatively (`./_next/…`, `./assets/…`). Disable the bundler's trailing-slash redirect so those paths resolve under the mount base:
+
+```js
+// next.config.mjs
+export default { skipTrailingSlashRedirect: true }
+```
+
+[`examples/minimal-next-devframe-hub/`](https://github.com/devframes/devframe/tree/main/examples/minimal-next-devframe-hub) is a working Next.js App Router host that mounts the built-in plugins this way.
+
 ### Duplicate devframes
 
 When a devframe sharing an already-mounted `id` is mounted onto the same hub, its `duplicationStrategy` decides what happens. By default the first registration wins:
@@ -105,7 +145,12 @@ Plus broadcast notifications (`devframe:terminals:updated`, `devframe:messages:u
 
 ## Example
 
-See [`examples/minimal-vite-devframe-hub/`](https://github.com/devframes/devframe/tree/main/examples/minimal-vite-devframe-hub) for a ~120-line Vite plugin that wires the hub end to end with a vanilla DOM UI. Every framework's hub host follows the same shape: a thin layer that adapts the framework's dev server to the hub.
+Two minimal, copyable hubs mount every built-in plugin (git, terminals, code-server, inspect, a11y) behind an icon dock — the same shape [vite-devtools](https://github.com/vitejs/devtools) wears as the full Vite viewer, shrunk to the smallest thing you can build your own viewer from:
+
+- [`examples/minimal-vite-devframe-hub/`](https://github.com/devframes/devframe/tree/main/examples/minimal-vite-devframe-hub) — a ~120-line Vite plugin host with a vanilla DOM UI.
+- [`examples/minimal-next-devframe-hub/`](https://github.com/devframes/devframe/tree/main/examples/minimal-next-devframe-hub) — the same protocol hosted from a Next.js App Router app.
+
+Every framework's hub host follows the same shape: a thin `DevframeHost` adapter over the framework's dev server, with the dock/commands/messages/terminals protocol unchanged above it.
 
 ## Diagnostics
 

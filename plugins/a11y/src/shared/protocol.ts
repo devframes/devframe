@@ -29,6 +29,18 @@ export const A11Y_NODE_ATTR = 'data-df-a11y-node'
 export const IMPACT_ORDER = ['critical', 'serious', 'moderate', 'minor'] as const
 export type Impact = (typeof IMPACT_ORDER)[number]
 
+/**
+ * Severity palette — the one expressive, domain-specific color in the tool.
+ * Shared by both halves so the panel chips/spines and the in-page highlight
+ * ring (drawn by the injected agent via inline styles) stay in lockstep.
+ */
+export const IMPACT_COLOR: Record<Impact, string> = {
+  critical: '#ff5c7a',
+  serious: '#ff9b52',
+  moderate: '#f2d14e',
+  minor: '#6fb1fc',
+}
+
 export interface ViolationNode {
   /** Stable id the agent assigned (mirrored to {@link A11Y_NODE_ATTR}). */
   id: string
