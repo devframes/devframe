@@ -26,6 +26,9 @@ export {
  * (`/vite`), or docks inside a hub — its `setup` only relies on the core
  * devframe RPC surface.
  *
+ * @experimental This plugin is experimental and may change without a major
+ * version bump until it stabilizes.
+ *
  * @example
  * ```ts
  * import { createTerminalsDevframe } from '@devframes/plugin-terminals'

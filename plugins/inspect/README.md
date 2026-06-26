@@ -1,5 +1,9 @@
 # @devframes/plugin-inspect
 
+> [!WARNING] Experimental
+> This plugin is experimental and may change without a major version bump until
+> it stabilizes.
+
 A devframe plugin that inspects *its own* connection (and, when mounted in a
 host, the host's): browse every registered RPC function with its metadata,
 invoke read-only `query`/`static` functions and inspect the results, watch

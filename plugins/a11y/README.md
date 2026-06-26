@@ -1,5 +1,9 @@
 # @devframes/plugin-a11y
 
+> [!WARNING] Experimental
+> This plugin is experimental and may change without a major version bump until
+> it stabilizes.
+
 An accessibility inspector built on [devframe](../../packages/devframe). It runs
 [axe-core](https://github.com/dequelabs/axe-core) against a host application,
 lists the WCAG A/AA violations in a [Solid](https://www.solidjs.com/) panel, and

@@ -25,6 +25,9 @@ const distDir = fileURLToPath(new URL('../dist/spa', import.meta.url))
  * (`/vite`), or docks inside a hub — its `setup` only relies on the core
  * devframe RPC + shared-state surface.
  *
+ * @experimental This plugin is experimental and may change without a major
+ * version bump until it stabilizes.
+ *
  * @example
  * ```ts
  * import { createCodeServerDevframe } from '@devframes/plugin-code-server'
