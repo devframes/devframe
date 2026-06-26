@@ -14,7 +14,7 @@ test.describe('streaming-chat (static build)', () => {
   })
 
   test('renders demo prompts from the static RPC dump', async ({ page }) => {
-    const prompts = page.locator('.demo-prompts button')
+    const prompts = page.locator('div.flex-wrap button')
     await expect(prompts).toHaveCount(3)
     await expect(prompts).toHaveText([
       'Tell me about devframe.',

@@ -16,7 +16,7 @@ test.describe('next-runtime-snapshot (static build)', () => {
 
   test('renders system info from the static RPC dump', async ({ page }) => {
     const systemCard = page.locator('.df-card').filter({ hasText: 'System' })
-    await expect(systemCard.locator('.kv .v').first()).toContainText(/v\d+\.\d+/, { timeout: 10_000 })
+    await expect(systemCard.locator('span.font-mono').first()).toContainText(/v\d+\.\d+/, { timeout: 10_000 })
     await expect(systemCard).toContainText(/cwd/)
   })
 
