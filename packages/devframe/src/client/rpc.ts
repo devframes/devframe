@@ -227,6 +227,19 @@ export async function getDevframeRpcClient(
   let connectionMeta: ConnectionMeta | undefined = options.connectionMeta || findConnectionMetaFromWindows()
   let resolvedBaseURL = bases[0] ?? './'
 
+  // Absolute URL of where `__connection.json` lives, used to resolve a
+  // relative WS path against the SPA's own origin (proxy-safe). Falls back to
+  // the page location when running outside a browser document.
+  function resolveMetaBaseUrl(): string {
+    const metaPath = resolveBasePath(resolvedBaseURL, DEVFRAME_CONNECTION_META_FILENAME)
+    try {
+      return new URL(metaPath, globalThis.location?.href).href
+    }
+    catch {
+      return metaPath
+    }
+  }
+
   function normalizeBase(base: string): string {
     return base.endsWith('/') ? base : `${base}/`
   }
@@ -306,6 +319,7 @@ export async function getDevframeRpcClient(
     : createWsRpcClientMode({
         authToken,
         connectionMeta,
+        metaBaseUrl: resolveMetaBaseUrl(),
         events,
         clientRpc,
         rpcOptions: {

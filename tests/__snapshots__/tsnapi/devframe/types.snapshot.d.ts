@@ -10,6 +10,7 @@ export { AgentResourceInput }
 export { AgentTool }
 export { AgentToolInput }
 export { ConnectionMeta }
+export { ConnectionMetaWebsocket }
 export { defineDevframe }
 export { DevframeAgentHost }
 export { DevframeAgentHostEvents }

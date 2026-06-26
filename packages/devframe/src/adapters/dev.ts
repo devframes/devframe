@@ -6,7 +6,7 @@ import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
-import { DEVFRAME_CONNECTION_META_FILENAME } from '../constants'
+import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_WS_ROUTE } from '../constants'
 import { createHostContext } from '../node/context'
 import { createH3DevframeHost } from '../node/host-h3'
 import { startHttpAndWs } from '../node/server'
@@ -142,12 +142,18 @@ export async function createDevServer(
   await def.setup(ctx, setupInfo)
 
   // Connection meta — the SPA fetches this to discover the RPC backend.
-  // In dev the WS endpoint shares the HTTP port, so the client only needs
-  // to know it's a websocket backend bound to that same port. The path
-  // sits at the SPA root (next to index.html) so the deployed SPA can
-  // discover it via a relative `./__connection.json` fetch.
+  // In dev the WS endpoint shares the HTTP port and is bound to a route next
+  // to `__connection.json` (`<basePath>__devframe_ws`). The meta points at it with a
+  // *relative* path so the client connects to its own origin — surviving a
+  // reverse proxy that rewrites the host/port. Both files sit at the SPA root
+  // so the deployed SPA discovers them via relative `./__connection.json` /
+  // `./__devframe_ws` fetches.
   const connectionMetaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`
-  app.use(connectionMetaPath, () => ({ backend: 'websocket', websocket: port }))
+  const wsRoute = `${basePath}${DEVFRAME_WS_ROUTE}`
+  app.use(connectionMetaPath, () => ({
+    backend: 'websocket',
+    websocket: { path: DEVFRAME_WS_ROUTE },
+  }))
 
   if (distDir)
     mountStaticHandler(app, basePath, resolve(distDir))
@@ -157,6 +163,7 @@ export async function createDevServer(
     host,
     port,
     app,
+    path: wsRoute,
     auth: def.cli?.auth,
     onReady: async (info) => {
       await options.onReady?.(info)

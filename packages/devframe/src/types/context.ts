@@ -67,9 +67,42 @@ export interface DevframeNodeContext {
   }
 }
 
+/**
+ * Describes where the browser client should open its RPC WebSocket. The
+ * object form is the proxy-flexible default: `path` is resolved relative to
+ * where `__connection.json` was loaded, and the connection is made to the
+ * page's own origin (only the `http`→`ws` / `https`→`wss` protocol swap is
+ * applied). This survives reverse proxies that change the host/port, because
+ * the client never trusts a server-baked hostname — it reuses its own.
+ *
+ * Set `port` (and/or `host`) only when the WS endpoint genuinely lives on a
+ * different origin than the page, e.g. a side-car server on its own port.
+ */
+export interface ConnectionMetaWebsocket {
+  /**
+   * Path to the WS endpoint. Relative paths (the default, e.g. `__devframe_ws`) are
+   * resolved against `__connection.json`'s location; absolute paths (`/__devframe_ws`)
+   * resolve against the page origin.
+   */
+  path?: string
+  /** Override the port. Combined with the page hostname unless `host` is set. */
+  port?: number
+  /** Override the host (`hostname[:port]`). Use for a fully cross-origin endpoint. */
+  host?: string
+}
+
 export interface ConnectionMeta {
   backend: 'websocket' | 'static'
-  websocket?: number | string
+  /**
+   * WebSocket endpoint, resolved by the client into a `ws(s)://` URL:
+   *
+   *   - {@link ConnectionMetaWebsocket} — the proxy-flexible default; a
+   *     same-origin path relative to `__connection.json`.
+   *   - `number` — a port on the page's hostname (`ws(s)://<host>:<port>`).
+   *   - `string` — a full `ws://`/`wss://` URL used verbatim, an `http(s)://`
+   *     URL with its protocol swapped, or a path resolved same-origin.
+   */
+  websocket?: number | string | ConnectionMetaWebsocket
   /**
    * Names of RPC functions that have declared `jsonSerializable: true`.
    * Used by the WS / static client to dispatch the per-call wire

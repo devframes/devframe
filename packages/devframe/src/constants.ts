@@ -4,6 +4,15 @@ export const DEVFRAME_MOUNT_PATH_NO_TRAILING_SLASH = '/__devframe'
 export const DEVFRAME_DIRNAME = '__devframe'
 
 export const DEVFRAME_CONNECTION_META_FILENAME = '__connection.json'
+
+/**
+ * Route the WebSocket RPC endpoint is bound to, relative to a devframe's
+ * base path. Sits next to `__connection.json` so the deployed SPA can reach
+ * it on the same origin it loaded from — the dev server shares one port for
+ * both HTTP and WS, and a host server (Vite, etc.) can mount the WS upgrade
+ * handler here without colliding with its own routes (HMR, asset serving).
+ */
+export const DEVFRAME_WS_ROUTE = '__devframe_ws'
 export const DEVFRAME_RPC_DUMP_MANIFEST_FILENAME = '__rpc-dump/index.json'
 export const DEVFRAME_DOCK_IMPORTS_FILENAME = '__client-imports.js'
 export const DEVFRAME_DOCK_IMPORTS_VIRTUAL_ID = '/__devframe-client-imports.js'

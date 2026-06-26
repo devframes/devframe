@@ -1,6 +1,8 @@
 import type { BirpcGroup, ChannelOptions } from 'birpc'
-import type { IncomingMessage } from 'node:http'
-import type { ServerOptions as HttpsServerOptions } from 'node:https'
+import type { Buffer } from 'node:buffer'
+import type { Server as HttpServer, IncomingMessage } from 'node:http'
+import type { Server as HttpsServer, ServerOptions as HttpsServerOptions } from 'node:https'
+import type { Duplex } from 'node:stream'
 import type { WebSocket } from 'ws'
 import type { RpcFunctionDefinitionAny } from '../types'
 import { createServer as createHttpsServer } from 'node:https'
@@ -29,12 +31,34 @@ export interface DevframeNodeRpcSessionMeta {
 }
 
 export interface WsRpcTransportOptions {
-  /** Attach to an existing WebSocketServer. When provided, `port`, `host`, and `https` are ignored. */
+  /** Attach to an existing WebSocketServer. When provided, `port`, `host`, `https`, and `server` are ignored. */
   wss?: WebSocketServer
+  /**
+   * Attach to an existing HTTP(S) server, sharing its port. Combine with
+   * `path` to bind the WS endpoint to a single route so it coexists with
+   * other upgrade handlers on the same server (e.g. a Vite dev server's HMR
+   * socket). The shared server's lifecycle is owned by the caller — closing
+   * this transport detaches the upgrade listener without closing the server.
+   */
+  server?: HttpServer | HttpsServer
   /** Port for a newly-created WebSocketServer. */
   port?: number
   /** Host for a newly-created WebSocketServer. Defaults to `localhost`. */
   host?: string
+  /**
+   * Restrict the WS endpoint to a single upgrade route (e.g. `/__devframe_ws`). When
+   * sharing a server (`server` / `wss` bound to one, or `https`), non-matching
+   * upgrade requests are left untouched for other listeners to handle, so
+   * devframe's socket can sit alongside framework sockets (Vite HMR, etc.).
+   */
+  path?: string
+  /**
+   * Destroy upgrade requests that don't match `path` instead of leaving them
+   * for other listeners. Enable this when devframe owns the server outright
+   * (nothing else handles its upgrades), so an off-route client is rejected
+   * promptly rather than left hanging. Default: `false` (coexist-friendly).
+   */
+  destroyUnmatched?: boolean
   /** When set, a new https.Server is created and the WebSocketServer is attached to it. */
   https?: HttpsServerOptions
   /**
@@ -60,10 +84,53 @@ const EMPTY_DEFS: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerial
 
 function NOOP() {}
 
+/** Compare two URL paths ignoring a trailing slash. */
+function pathMatches(a: string, b: string): boolean {
+  const strip = (p: string) => (p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p)
+  return strip(a) === strip(b)
+}
+
+/**
+ * Route `upgrade` events on a shared server to `wss`, optionally filtered to a
+ * single `path`. Non-matching requests are left untouched so other upgrade
+ * listeners (e.g. a Vite dev server's HMR socket) can claim them. Returns a
+ * detach function that removes the listener.
+ */
+function routeUpgrades(
+  server: HttpServer | HttpsServer,
+  wss: WebSocketServer,
+  path: string | undefined,
+  destroyUnmatched: boolean,
+): () => void {
+  const listener = (req: IncomingMessage, socket: Duplex, head: Buffer) => {
+    if (path) {
+      let pathname = req.url ?? '/'
+      try {
+        pathname = new URL(req.url ?? '/', 'http://localhost').pathname
+      }
+      catch {}
+      if (!pathMatches(pathname, path)) {
+        if (destroyUnmatched)
+          socket.destroy()
+        return
+      }
+    }
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      wss.emit('connection', ws, req)
+    })
+  }
+  server.on('upgrade', listener)
+  return () => server.off('upgrade', listener)
+}
+
 /**
  * Attach a WebSocket transport to an existing RPC group. Either pass an
- * existing `WebSocketServer` via `wss`, or let this helper create one from
- * `port` / `host` / `https`.
+ * existing `WebSocketServer` via `wss`, attach to an existing HTTP(S) `server`
+ * (sharing its port, optionally scoped to a `path`), or let this helper create
+ * a standalone server from `port` / `host` / `https`.
+ *
+ * Returns the `WebSocketServer` plus a `detach` function that removes any
+ * upgrade listener registered on a shared `server` (a no-op otherwise).
  */
 export function attachWsRpcTransport<
   ClientFunctions extends object,
@@ -71,11 +138,14 @@ export function attachWsRpcTransport<
 >(
   rpcGroup: BirpcGroup<ClientFunctions, ServerFunctions, false>,
   options: WsRpcTransportOptions = {},
-): { wss: WebSocketServer } {
+): { wss: WebSocketServer, detach: () => void } {
   const {
     wss: externalWss,
+    server,
     port,
     host = 'localhost',
+    path,
+    destroyUnmatched = false,
     https,
     onConnected = NOOP,
     onDisconnected = NOOP,
@@ -85,16 +155,31 @@ export function attachWsRpcTransport<
   } = options
 
   let wss: WebSocketServer
+  let detach = NOOP
   if (externalWss) {
     wss = externalWss
   }
+  else if (server) {
+    // Share an existing HTTP(S) server's port. Route upgrades ourselves so we
+    // can coexist with the host's own upgrade handlers.
+    wss = new WebSocketServer({ noServer: true })
+    detach = routeUpgrades(server, wss, path, destroyUnmatched)
+  }
   else if (https) {
     const httpsServer = createHttpsServer(https)
-    wss = new WebSocketServer({ server: httpsServer })
+    if (path) {
+      wss = new WebSocketServer({ noServer: true })
+      detach = routeUpgrades(httpsServer, wss, path, destroyUnmatched)
+    }
+    else {
+      wss = new WebSocketServer({ server: httpsServer })
+    }
     httpsServer.listen(port, host)
   }
   else {
-    wss = new WebSocketServer({ port, host })
+    // Standalone server on its own port — `ws` enforces `path` itself since
+    // nothing else shares this port.
+    wss = new WebSocketServer(path ? { port, host, path } : { port, host })
   }
 
   wss.on('connection', (ws, req) => {
@@ -163,5 +248,5 @@ export function attachWsRpcTransport<
     onConnected(ws, req, meta)
   })
 
-  return { wss }
+  return { wss, detach }
 }
