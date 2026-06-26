@@ -14,6 +14,7 @@ export { AgentResourceInput }
 export { AgentTool }
 export { AgentToolInput }
 export { ConnectionMeta }
+export { ConnectionMetaWebsocket }
 export { defineDevframe }
 export { DevframeAgentHost }
 export { DevframeAgentHostEvents }
@@ -44,6 +45,7 @@ export { DevframeSettingsStore }
 export { DevframeSetupInfo }
 export { DevframeSpaOptions }
 export { DevframeViewHost }
+export { DevframeWsOptions }
 export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }

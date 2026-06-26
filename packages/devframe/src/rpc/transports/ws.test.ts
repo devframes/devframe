@@ -1,6 +1,7 @@
+import { createServer } from 'node:http'
 import { getPort } from 'get-port-please'
 import { describe, expect, it, vi } from 'vitest'
-import { WebSocket } from 'ws'
+import { WebSocket, WebSocketServer } from 'ws'
 import { createRpcClient } from '../client'
 import { createRpcServer } from '../server'
 import { createWsRpcChannel } from './ws-client'
@@ -81,6 +82,53 @@ describe('devframe rpc', () => {
     expect(await client2.$call('hello', 2)).toBe('hello world from client 2')
 
     expect(await server.broadcast.$call('hey', 'server')).toEqual(expect.arrayContaining(['hey server, I\'m client 1', 'hey server, I\'m client 2']))
+  })
+
+  it('shares a server with another WS handler, scoped to its own path', async () => {
+    const HOST = '127.0.0.1'
+    const PORT = await getPort({ host: HOST, random: true })
+    const httpServer = createServer()
+    await new Promise<void>(r => httpServer.listen(PORT, HOST, () => r()))
+
+    // A second WS server on the same http server, simulating a framework's own
+    // socket (e.g. Vite HMR). It owns a different route and must keep working.
+    const other = new WebSocketServer({ noServer: true })
+    const otherConnections: string[] = []
+    httpServer.on('upgrade', (req, socket, head) => {
+      const { pathname } = new URL(req.url ?? '/', 'http://localhost')
+      if (pathname !== '/__hmr')
+        return
+      other.handleUpgrade(req, socket, head, (ws) => {
+        otherConnections.push('hmr')
+        ws.close()
+      })
+    })
+
+    const serverFunctions = { ping: () => 'pong' }
+    const server = createRpcServer<Record<string, never>, typeof serverFunctions>(serverFunctions)
+    const { wss, detach } = attachWsRpcTransport(server, { server: httpServer, path: '/__devframe_ws' })
+
+    try {
+      const client = createRpcClient<typeof serverFunctions, Record<string, never>>({}, {
+        channel: createWsRpcChannel({ url: `ws://${HOST}:${PORT}/__devframe_ws` }),
+      })
+      expect(await client.$call('ping')).toBe('pong')
+
+      // The co-located socket still receives its own-route connections.
+      const hmr = new WebSocket(`ws://${HOST}:${PORT}/__hmr`)
+      await new Promise<void>((resolve, reject) => {
+        hmr.on('close', () => resolve())
+        hmr.on('error', reject)
+      })
+      expect(otherConnections).toEqual(['hmr'])
+    }
+    finally {
+      detach()
+      for (const c of wss.clients) c.terminate()
+      await new Promise<void>(r => wss.close(() => r()))
+      other.close()
+      await new Promise<void>(r => httpServer.close(() => r()))
+    }
   })
 
   // Regression: a `jsonSerializable: true` RPC that throws used to crash the

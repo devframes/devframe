@@ -183,16 +183,24 @@ With caching on, `query` / `static` function responses are memoized per argument
 
 ## Discovery (`__connection.json`)
 
-Devframe writes a JSON descriptor at `<base>/__connection.json` so the client knows where to connect:
+Devframe writes a JSON descriptor at `<base>/__connection.json` so the client knows where to connect. The dev server shares one port for HTTP and the WebSocket — the socket is bound to a route (`<base>__devframe_ws`) next to the meta file — and advertises it as a relative path:
 
 ```json
 {
   "backend": "websocket",
-  "websocket": "ws://localhost:9999/__ws"
+  "websocket": { "path": "__devframe_ws" }
 }
 ```
 
-or for static mode:
+The client resolves that path against the origin it loaded from, swapping `http`→`ws` / `https`→`wss`. It never trusts a host or port baked into the descriptor, so the connection follows the page through a reverse proxy that rewrites the domain, port, or subpath.
+
+The `websocket` field also accepts:
+
+- A `number` — a port on the page's hostname (`ws(s)://<host>:<port>`).
+- A full `ws://`/`wss://` URL string — used verbatim for a fixed cross-origin endpoint.
+- `{ port }` / `{ host }` — a cross-origin endpoint (e.g. a side-car server on its own port), rooted at that host/port rather than the page origin.
+
+For static mode:
 
 ```json
 { "backend": "static" }

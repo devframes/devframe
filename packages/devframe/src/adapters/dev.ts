@@ -1,12 +1,13 @@
 import type { StartedServer } from '../node/server'
-import type { DevframeDefinition, DevframeSetupInfo } from '../types/devframe'
+import type { ConnectionMeta } from '../types/context'
+import type { DevframeDefinition, DevframeSetupInfo, DevframeWsOptions } from '../types/devframe'
 import process from 'node:process'
 import { open } from 'devframe/utils/open'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
-import { DEVFRAME_CONNECTION_META_FILENAME } from '../constants'
+import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_WS_ROUTE } from '../constants'
 import { createHostContext } from '../node/context'
 import { createH3DevframeHost } from '../node/host-h3'
 import { startHttpAndWs } from '../node/server'
@@ -42,6 +43,12 @@ export interface CreateDevServerOptions {
    * `resolveBasePath(def, 'standalone')` (i.e. `def.basePath` or `/`).
    */
   basePath?: string
+  /**
+   * Override how the browser reaches the RPC WebSocket (`def.cli?.ws`).
+   * See {@link DevframeWsOptions}: same-server route (default), a dedicated
+   * port, or a remote origin.
+   */
+  ws?: DevframeWsOptions
   /**
    * h3 app to mount the SPA + connection-meta routes on. When omitted
    * a fresh app is created. Pass a pre-configured app to attach custom
@@ -141,13 +148,17 @@ export async function createDevServer(
   const setupInfo: DevframeSetupInfo = { flags }
   await def.setup(ctx, setupInfo)
 
-  // Connection meta — the SPA fetches this to discover the RPC backend.
-  // In dev the WS endpoint shares the HTTP port, so the client only needs
-  // to know it's a websocket backend bound to that same port. The path
-  // sits at the SPA root (next to index.html) so the deployed SPA can
-  // discover it via a relative `./__connection.json` fetch.
+  // Connection meta — the SPA fetches this to discover the RPC backend. How
+  // the WS endpoint is bound and advertised follows the resolved ws config:
+  // a same-origin route (default, proxy-safe), a dedicated port, or a remote
+  // origin. Both files sit at the SPA root so the deployed SPA discovers them
+  // via relative `./__connection.json` / `./<route>` fetches.
+  const { bindPath, wsPort, meta } = resolveWsConnection(def, options, basePath)
   const connectionMetaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`
-  app.use(connectionMetaPath, () => ({ backend: 'websocket', websocket: port }))
+  app.use(connectionMetaPath, () => ({
+    backend: 'websocket',
+    websocket: meta,
+  }))
 
   if (distDir)
     mountStaticHandler(app, basePath, resolve(distDir))
@@ -157,12 +168,44 @@ export async function createDevServer(
     host,
     port,
     app,
+    path: bindPath,
+    wsPort,
     auth: def.cli?.auth,
     onReady: async (info) => {
       await options.onReady?.(info)
       await maybeOpenBrowser(def, flags, `${info.origin}${basePath}`, options.openBrowser)
     },
   })
+}
+
+/**
+ * Resolve the three WS connection scenarios from the definition / call-site
+ * config into a concrete server bind path, optional dedicated port, and the
+ * `__connection.json` descriptor the browser resolves.
+ */
+function resolveWsConnection(
+  def: DevframeDefinition,
+  options: CreateDevServerOptions,
+  basePath: string,
+): { bindPath: string, wsPort: number | undefined, meta: ConnectionMeta['websocket'] } {
+  const ws = options.ws ?? def.cli?.ws ?? {}
+  // Normalize the route to a bare segment; the meta carries it relative so the
+  // client resolves it against its own origin (proxy-safe).
+  const route = (ws.route ?? DEVFRAME_WS_ROUTE).replace(/^\/+/, '')
+
+  // (3) Remote origin — host the socket locally on the shared route, but tell
+  // the browser to dial the fully-qualified endpoint (a tunnel/relay) verbatim.
+  if (ws.url)
+    return { bindPath: `${basePath}${route}`, wsPort: undefined, meta: ws.url }
+
+  // (2) Different port — a standalone socket server on its own port, rooted at
+  // `/<route>`. The client targets `ws(s)://<page-host>:<port>/<route>`.
+  if (ws.port != null)
+    return { bindPath: `/${route}`, wsPort: ws.port, meta: { port: ws.port, path: route } }
+
+  // (1) Same server, different route (default) — share the HTTP port; advertise
+  // a relative same-origin path.
+  return { bindPath: `${basePath}${route}`, wsPort: undefined, meta: { path: route } }
 }
 
 async function maybeOpenBrowser(

@@ -3,7 +3,7 @@ import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { resolve } from 'pathe'
 import { resolveBasePath } from '../adapters/_shared'
 import { createDevServer, resolveDevServerPort } from '../adapters/dev'
-import { DEVFRAME_CONNECTION_META_FILENAME } from '../constants'
+import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_WS_ROUTE } from '../constants'
 import { diagnostics } from '../node/diagnostics'
 
 export interface ViteDevBridgeOptions {
@@ -110,10 +110,17 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
         return
       }
 
+      // The side-car listens on its own port, so the browser must target that
+      // port explicitly (it can't reach the WS on Vite's origin). The route is
+      // `/__devframe_ws` — the bridge `createDevServer` mounts the SPA at `/`, so its WS
+      // upgrade handler is bound there.
       const metaPath = `${base}${DEVFRAME_CONNECTION_META_FILENAME}`
       server.middlewares.use(metaPath, (_req: unknown, res: any) => {
         res.setHeader('Content-Type', 'application/json')
-        res.end(JSON.stringify({ backend: 'websocket', websocket: port }))
+        res.end(JSON.stringify({
+          backend: 'websocket',
+          websocket: { port, path: `/${DEVFRAME_WS_ROUTE}` },
+        }))
       })
 
       server.httpServer?.once('close', () => {

@@ -8,6 +8,7 @@ export interface CreateDevServerOptions {
   flags?: Record<string, unknown>;
   distDir?: string;
   basePath?: string;
+  ws?: DevframeWsOptions;
   app?: H3;
   openBrowser?: boolean | string;
   onReady?: (_: {

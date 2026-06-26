@@ -21,7 +21,9 @@ export default defineConfig({
 ## Modes
 
 - **Static mount** (default) — mounts `def.cli.distDir` at `options.base` (`/__<id>/` by default). No RPC server. Useful when you only need the SPA bundle served from a known path.
-- **Bridge mode** (`devMiddleware: true | {…}`) — skips the static mount; the host app owns the SPA. Devframe spawns a separate RPC + WS server and registers Vite middleware at `<base>__connection.json` so the host-served SPA can discover the WS endpoint.
+- **Bridge mode** (`devMiddleware: true | {…}`) — skips the static mount; the host app owns the SPA. Devframe spawns a separate RPC + WS server and registers Vite middleware at `<base>__connection.json` so the host-served SPA can discover the WS endpoint. The side-car listens on its own port, so the descriptor carries that port alongside the `/__devframe_ws` route.
+
+To mount the RPC socket onto the Vite server's own port instead of a side-car — so it shares the origin with the app and rides through a proxy — pass an existing HTTP server and a route to [`startHttpAndWs`](/adapters/dev) via its `server` and `path` options. Devframe routes only that upgrade path and leaves the rest (Vite's HMR socket included) untouched.
 
 ## Options
 
