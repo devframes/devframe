@@ -35,6 +35,9 @@ export interface A11yDevframeOptions {
  * (`/vite`, hub). The panel talks to the in-page agent over a same-origin
  * BroadcastChannel, so the scan/highlight loop works identically in dev
  * (live WebSocket RPC) and in a baked static build.
+ *
+ * @experimental This plugin is experimental and may change without a major
+ * version bump until it stabilizes.
  */
 export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeDefinition {
   const id = options.id ?? DEFAULT_ID

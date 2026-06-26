@@ -41,6 +41,9 @@ export interface GitDevframeOptions {
 /**
  * Create the Git dashboard devframe. Mount it into any host via devframe's
  * adapters, or run it standalone with the bundled CLI (`devframe-git`).
+ *
+ * @experimental This plugin is experimental and may change without a major
+ * version bump until it stabilizes.
  */
 export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDefinition {
   const distDir = options.distDir ?? resolve(PKG_ROOT, 'dist/client')

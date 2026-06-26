@@ -38,6 +38,9 @@ export interface InspectDevframeOptions {
  * Build a {@link DevframeDefinition} for the Devframe Inspector. The
  * same definition runs standalone (`/cli`, `/spa`, `/build`) and mounts
  * into a host (`/vite`, hub).
+ *
+ * @experimental This plugin is experimental and may change without a major
+ * version bump until it stabilizes.
  */
 export function createInspectDevframe(options: InspectDevframeOptions = {}): DevframeDefinition {
   const id = options.id ?? DEFAULT_ID

@@ -1,5 +1,9 @@
 # @devframes/plugin-code-server
 
+> [!WARNING] Experimental
+> This plugin is experimental and may change without a major version bump until
+> it stabilizes.
+
 Run [code-server](https://github.com/coder/code-server) (VS Code in the
 browser) as a devframe panel. The plugin detects a local `code-server`
 install, launches it on demand, and embeds the editor in an

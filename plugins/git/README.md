@@ -1,5 +1,9 @@
 # @devframes/plugin-git
 
+> [!WARNING] Experimental
+> This plugin is experimental and may change without a major version bump until
+> it stabilizes.
+
 Git integration for [devframe](https://github.com/devframes/devframe) — a
 repository dashboard with a **Next.js App Router + shadcn/ui** SPA over
 type-safe RPC. The host process shells out to `git` and exposes the repository;
