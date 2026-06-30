@@ -1,7 +1,7 @@
 import type { Decorator, Preview } from '@storybook/react-vite'
 import { useEffect } from 'react'
 import 'virtual:uno.css'
-import '@internal/design/theme.css'
+import '@antfu/design/styles.css'
 
 const withTheme: Decorator = (Story, context) => {
   const theme = context.globals.theme ?? 'dark'
@@ -9,8 +9,8 @@ const withTheme: Decorator = (Story, context) => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
   }, [theme])
   return (
-    <div className="bg-background text-foreground flex h-svh justify-center p-6">
-      <div className="flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border p-3">
+    <div className="bg-base color-base font-sans flex h-svh justify-center p-6">
+      <div className="flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-base p-3">
         <Story />
       </div>
     </div>

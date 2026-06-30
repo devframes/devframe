@@ -10,7 +10,7 @@ const BASE = 'http://127.0.0.1:9898/'
 test.describe('streaming-chat (static build)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(BASE)
-    await expect(page.locator('.df-nav-brand')).toHaveText('Streaming Chat')
+    await expect(page.getByText('Streaming Chat')).toBeVisible()
   })
 
   test('renders demo prompts from the static RPC dump', async ({ page }) => {

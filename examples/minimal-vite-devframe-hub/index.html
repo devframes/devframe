@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Minimal Vite Devframe Hub</title>
     <script>
-      // Follow the OS theme without a toggle (@internal/design dark: is class-based).
+      // Follow the OS theme without a toggle (@antfu/design dark: is class-based).
       document.documentElement.classList.toggle(
         'dark',
         window.matchMedia('(prefers-color-scheme: dark)').matches,
@@ -17,39 +17,39 @@
       <header class="shrink-0 flex items-baseline gap-3 border-b border-base bg-base px4 py2.5">
         <h1 class="m0 text-sm font-semibold">Minimal Vite Devframe Hub</h1>
         <p id="status" class="m0 text-xs font-mono op-fade"><span id="conn">Connecting…</span></p>
-        <p class="m0 ml-auto text-xs font-mono italic text-muted-foreground">a ~120-line, vite-devtools-style hub you can copy</p>
+        <p class="m0 ml-auto text-xs font-mono italic color-muted">a ~120-line, vite-devtools-style hub you can copy</p>
       </header>
 
       <div class="grid grid-cols-[244px_1fr] min-h-0 flex-1">
-        <aside class="flex flex-col gap-0.5 of-auto scrollbar-slim border-r border-base bg-muted p2">
-          <h2 class="px2 py1 text-[0.68rem] uppercase tracking-wider text-muted-foreground">Docks</h2>
+        <aside class="flex flex-col gap-0.5 of-auto border-r border-base bg-secondary p2">
+          <h2 class="px2 py1 text-[0.68rem] uppercase tracking-wider color-muted">Docks</h2>
           <ul id="docks" class="m0 flex flex-col list-none gap-0.5 p0">
             <li class="op-mute px2 text-sm">Waiting for snapshot…</li>
           </ul>
         </aside>
 
-        <main class="min-w-0 of-hidden bg-muted">
+        <main class="min-w-0 of-hidden bg-secondary">
           <iframe id="dock-iframe" src="about:blank" title="Selected dock" class="block h-full w-full border-0 bg-base"></iframe>
         </main>
       </div>
 
-      <footer class="grid grid-cols-3 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto scrollbar-slim">
+      <footer class="grid grid-cols-3 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto">
         <section class="min-w-0">
-          <h2 class="mb2 text-[0.68rem] uppercase tracking-wider text-muted-foreground">Commands</h2>
-          <ul id="commands" class="m0 flex flex-col list-none gap-1.5 p0"><li class="df-panel border-dashed px2.5 py1.5 text-xs font-mono op-mute">Waiting for snapshot…</li></ul>
+          <h2 class="mb2 text-[0.68rem] uppercase tracking-wider color-muted">Commands</h2>
+          <ul id="commands" class="m0 flex flex-col list-none gap-1.5 p0"><li class="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">Waiting for snapshot…</li></ul>
           <div class="mt2.5">
-            <button id="ping" class="df-btn df-btn-outline df-btn-sm">Dispatch <code class="font-mono op-fade">minimal-vite-devframe-hub:ping</code></button>
+            <button id="ping" class="btn-action text-sm">Dispatch <code class="font-mono op-fade">minimal-vite-devframe-hub:ping</code></button>
           </div>
         </section>
 
         <section class="min-w-0">
-          <h2 class="mb2 text-[0.68rem] uppercase tracking-wider text-muted-foreground">Messages</h2>
-          <ul id="messages" class="m0 flex flex-col list-none gap-1.5 p0"><li class="df-panel border-dashed px2.5 py1.5 text-xs font-mono op-mute">No messages yet.</li></ul>
+          <h2 class="mb2 text-[0.68rem] uppercase tracking-wider color-muted">Messages</h2>
+          <ul id="messages" class="m0 flex flex-col list-none gap-1.5 p0"><li class="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">No messages yet.</li></ul>
         </section>
 
         <section class="min-w-0">
-          <h2 class="mb2 text-[0.68rem] uppercase tracking-wider text-muted-foreground">Terminals</h2>
-          <ul id="terminals" class="m0 flex flex-col list-none gap-1.5 p0"><li class="df-panel border-dashed px2.5 py1.5 text-xs font-mono op-mute">No terminal sessions.</li></ul>
+          <h2 class="mb2 text-[0.68rem] uppercase tracking-wider color-muted">Terminals</h2>
+          <ul id="terminals" class="m0 flex flex-col list-none gap-1.5 p0"><li class="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">No terminal sessions.</li></ul>
         </section>
       </footer>
     </div>

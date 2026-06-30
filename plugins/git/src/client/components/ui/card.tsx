@@ -1,5 +1,5 @@
-import { card } from '@internal/design/components'
 import * as React from 'react'
+import { card } from '../../lib/design'
 import { cn } from '../../lib/utils'
 
 function Card({ className, ...props }: React.ComponentProps<'div'>) {
@@ -36,7 +36,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-description"
-      className={cn('text-muted-foreground text-sm', className)}
+      className={cn('color-muted text-sm', className)}
       {...props}
     />
   )

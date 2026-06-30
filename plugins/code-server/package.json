@@ -63,10 +63,11 @@
     "nostics": "catalog:deps"
   },
   "devDependencies": {
+    "@antfu/design": "catalog:frontend",
     "@iconify-json/ph": "catalog:frontend",
-    "@internal/design": "workspace:*",
     "@storybook/html-vite": "catalog:storybook",
     "@types/node": "catalog:types",
+    "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
     "h3": "catalog:deps",
     "storybook": "catalog:storybook",

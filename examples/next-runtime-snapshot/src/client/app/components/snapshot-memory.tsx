@@ -1,8 +1,8 @@
 'use client'
 
 import type { MemorySnapshot } from '../../../devframe'
-import { button, card } from '@internal/design/components'
 import { useCallback, useEffect, useState } from 'react'
+import { button, card } from '../design'
 import { useRpc } from './connect'
 
 function fmtBytes(bytes: number): string {
@@ -63,21 +63,21 @@ export function SnapshotMemory() {
       {snap
         ? (
             <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
-              <span className="text-muted-foreground">uptime</span>
+              <span className="color-muted">uptime</span>
               <span className="font-mono tabular-nums">{fmtUptime(snap.uptimeSeconds)}</span>
-              <span className="text-muted-foreground">rss</span>
+              <span className="color-muted">rss</span>
               <span className="font-mono tabular-nums">{fmtBytes(snap.memory.rss)}</span>
-              <span className="text-muted-foreground">heap used</span>
+              <span className="color-muted">heap used</span>
               <span className="font-mono tabular-nums">{fmtBytes(snap.memory.heapUsed)}</span>
-              <span className="text-muted-foreground">heap total</span>
+              <span className="color-muted">heap total</span>
               <span className="font-mono tabular-nums">{fmtBytes(snap.memory.heapTotal)}</span>
-              <span className="text-muted-foreground">external</span>
+              <span className="color-muted">external</span>
               <span className="font-mono tabular-nums">{fmtBytes(snap.memory.external)}</span>
-              <span className="text-muted-foreground">array buffers</span>
+              <span className="color-muted">array buffers</span>
               <span className="font-mono tabular-nums">{fmtBytes(snap.memory.arrayBuffers)}</span>
             </div>
           )
-        : <p className="text-sm text-muted-foreground">Loading…</p>}
+        : <p className="text-sm color-muted">Loading…</p>}
     </section>
   )
 }

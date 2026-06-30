@@ -38,7 +38,7 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
     <div className="flex h-full flex-col">
       <div className="flex items-start justify-between gap-2 pb-2">
         <div className="flex min-w-0 items-center gap-2">
-          <Icon name="i-ph-git-commit-duotone" className="text-primary size-4" />
+          <Icon name="i-ph-git-commit-duotone" className="color-active size-4" />
           <h2 className="text-sm leading-none font-semibold">Commit details</h2>
         </div>
         {onClose && (
@@ -48,7 +48,7 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
         )}
       </div>
 
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && <p className="text-error text-sm">{error}</p>}
 
       {!error && (loading || !data) && (
         <div className="space-y-2">
@@ -59,11 +59,11 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
       )}
 
       {!error && data && !data.found && (
-        <p className="text-muted-foreground text-sm">Commit not found.</p>
+        <p className="color-muted text-sm">Commit not found.</p>
       )}
 
       {!error && data && data.found && (
-        <ScrollArea className="scrollbar-slim min-h-0 flex-1 pr-2">
+        <ScrollArea className="min-h-0 flex-1 pr-2">
           <div className="space-y-4">
             <div className="space-y-1.5">
               <p className="text-sm leading-snug font-medium break-words">{data.subject}</p>
@@ -75,28 +75,28 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
             </div>
 
             <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-xs">
-              <dt className="text-muted-foreground">Commit</dt>
+              <dt className="color-muted">Commit</dt>
               <dd className="truncate font-mono tabular-nums" title={data.hash}>{data.shortHash}</dd>
 
-              <dt className="text-muted-foreground">Author</dt>
+              <dt className="color-muted">Author</dt>
               <dd className="truncate">
                 {data.author}
-                <span className="text-muted-foreground">{` <${data.email}>`}</span>
+                <span className="color-muted">{` <${data.email}>`}</span>
               </dd>
 
-              <dt className="text-muted-foreground">Authored</dt>
+              <dt className="color-muted">Authored</dt>
               <dd className="truncate">{formatDate(data.date)}</dd>
 
               {data.committer !== data.author && (
                 <>
-                  <dt className="text-muted-foreground">Committer</dt>
+                  <dt className="color-muted">Committer</dt>
                   <dd className="truncate">{data.committer}</dd>
                 </>
               )}
 
               {data.parents.length > 0 && (
                 <>
-                  <dt className="text-muted-foreground">
+                  <dt className="color-muted">
                     {data.parents.length > 1 ? 'Parents' : 'Parent'}
                   </dt>
                   <dd className="truncate font-mono tabular-nums">
@@ -107,20 +107,20 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
             </dl>
 
             {data.body && (
-              <pre className="bg-muted/40 scrollbar-slim max-h-48 overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
+              <pre className="bg-secondary max-h-48 overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
                 {data.body}
               </pre>
             )}
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                <span className="color-muted text-xs font-medium tracking-wide uppercase">
                   {`${data.files.length} ${data.files.length === 1 ? 'file' : 'files'} changed`}
                 </span>
                 <span className="text-xs tabular-nums">
                   <span className="text-success">{`+${data.totalAdditions}`}</span>
                   {' '}
-                  <span className="text-destructive">{`−${data.totalDeletions}`}</span>
+                  <span className="text-error">{`−${data.totalDeletions}`}</span>
                 </span>
               </div>
               <ul className="space-y-0.5">
@@ -133,7 +133,7 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
                           <span className="shrink-0 tabular-nums">
                             <span className="text-success">{`+${file.additions}`}</span>
                             {' '}
-                            <span className="text-destructive">{`−${file.deletions}`}</span>
+                            <span className="text-error">{`−${file.deletions}`}</span>
                           </span>
                         )}
                   </li>
@@ -142,10 +142,10 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
             </div>
 
             <div className={cn('overflow-hidden rounded-md border')}>
-              <div className="bg-muted/50 border-b px-3 py-1 text-xs font-medium">Patch</div>
+              <div className="bg-secondary border-b px-3 py-1 text-xs font-medium">Patch</div>
               {data.patch !== null
                 ? <DiffPatchView patch={data.patch} loading={false} truncated={data.truncated} scroll={false} />
-                : <p className="text-muted-foreground p-3 text-xs">Patch is not available in static builds.</p>}
+                : <p className="color-muted p-3 text-xs">Patch is not available in static builds.</p>}
             </div>
           </div>
         </ScrollArea>

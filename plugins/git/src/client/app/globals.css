@@ -1,6 +1,6 @@
 /* The Git dashboard's design tokens, base layer, and component vocabulary come
-   from the shared devframe design system. `@unocss` is replaced by UnoCSS with
-   the generated preflights + utilities; `@internal/design/theme.css` (imported
-   after this file in layout.tsx) supplies the `--df-*` token values + base. */
+   from `@antfu/design`. `@unocss` is replaced by UnoCSS with the generated
+   preflights + utilities; `@antfu/design/styles.css` (imported after this file
+   in layout.tsx) supplies the base surface styling. */
 
 @unocss;

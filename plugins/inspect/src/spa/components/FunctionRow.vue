@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RpcFunctionInfo } from '@devframes/plugin-inspect/client'
-import { button } from '@internal/design/components'
+import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { computed, ref } from 'vue'
 import FunctionName from './FunctionName.vue'
 import JsonView from './JsonView.vue'
@@ -69,10 +69,16 @@ function toggle(): void {
         </div>
         <textarea :value="argsInput[fn.name]" class="args" spellcheck="false" placeholder="[]" @input="emit('updateArgs', fn.name, ($event.target as HTMLTextAreaElement).value)" />
         <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-          <button :class="button({ variant: 'primary', size: 'sm' })" :disabled="pending[fn.name] || isStatic" @click.stop="emit('invoke', fn)">
-            <span class="i-ph-play-duotone" />
+          <ActionButton
+            variant="primary"
+            size="sm"
+            icon="i-ph-play-duotone"
+            :loading="pending[fn.name]"
+            :disabled="pending[fn.name] || isStatic"
+            @click.stop="emit('invoke', fn)"
+          >
             {{ pending[fn.name] ? 'Invoking…' : 'Invoke' }}
-          </button>
+          </ActionButton>
           <span v-if="isStatic" class="note">read-only static backend — invocation disabled</span>
         </div>
         <div v-if="results[fn.name]" class="result">

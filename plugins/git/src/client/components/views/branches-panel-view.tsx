@@ -15,8 +15,8 @@ export interface BranchesPanelViewProps {
 
 function BranchRow({ branch }: { branch: Branch }) {
   return (
-    <li className="border-border/60 flex items-center gap-2 border-b py-1.5 last:border-0">
-      <Icon name="i-ph-git-branch-duotone" className={`size-4 ${branch.current ? 'text-primary' : 'text-muted-foreground'}`} />
+    <li className="border-base flex items-center gap-2 border-b py-1.5 last:border-0">
+      <Icon name="i-ph-git-branch-duotone" className={`size-4 ${branch.current ? 'color-active' : 'color-muted'}`} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className={`truncate font-mono text-xs ${branch.current ? 'font-semibold' : ''}`} title={branch.name}>
@@ -30,7 +30,7 @@ function BranchRow({ branch }: { branch: Branch }) {
           )}
           {branch.gone && <Badge variant="destructive" className="px-1.5 py-0 text-[10px]">upstream gone</Badge>}
         </div>
-        {branch.subject && <p className="text-muted-foreground truncate text-xs" title={branch.subject}>{branch.subject}</p>}
+        {branch.subject && <p className="color-muted truncate text-xs" title={branch.subject}>{branch.subject}</p>}
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {branch.ahead > 0 && (
@@ -45,7 +45,7 @@ function BranchRow({ branch }: { branch: Branch }) {
             {branch.behind}
           </span>
         )}
-        <code className="text-muted-foreground text-xs tabular-nums">{branch.sha}</code>
+        <code className="color-muted text-xs tabular-nums">{branch.sha}</code>
       </div>
     </li>
   )
@@ -55,7 +55,7 @@ export function BranchesPanelView({ data, loading, onRefresh }: BranchesPanelVie
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-muted-foreground text-xs tabular-nums">
+        <span className="color-muted text-xs tabular-nums">
           {data?.isRepo ? `${data.branches.length} branches` : ' '}
         </span>
         <IconButton variant="ghost" size="sm" onClick={onRefresh} disabled={loading} aria-label="Refresh branches">
@@ -70,7 +70,7 @@ export function BranchesPanelView({ data, loading, onRefresh }: BranchesPanelVie
       )}
 
       {data && !data.isRepo && (
-        <p className="text-muted-foreground text-sm">The working directory is not a git repository.</p>
+        <p className="color-muted text-sm">The working directory is not a git repository.</p>
       )}
 
       {data?.isRepo && data.branches.length > 0 && (

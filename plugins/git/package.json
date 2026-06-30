@@ -51,7 +51,7 @@
     "pathe": "catalog:deps"
   },
   "devDependencies": {
-    "@internal/design": "workspace:*",
+    "@antfu/design": "catalog:frontend",
     "@radix-ui/react-scroll-area": "catalog:frontend",
     "@radix-ui/react-separator": "catalog:frontend",
     "@radix-ui/react-slot": "catalog:frontend",
@@ -65,6 +65,7 @@
     "@vitejs/plugin-react-oxc": "catalog:storybook",
     "class-variance-authority": "catalog:frontend",
     "clsx": "catalog:frontend",
+    "colorjs.io": "catalog:frontend",
     "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
     "next": "catalog:frontend",

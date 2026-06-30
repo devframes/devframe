@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { DevframeRpcClient } from 'devframe/client'
-  import type { DotState } from '@internal/design/components'
   import type { TerminalPreset, TerminalSessionInfo } from '../types'
-  import { button, dot, iconButton, nav, navBrand, navTab, tag, toolbar } from '@internal/design/components'
+  import type { DotState } from './design'
+  import { button, dot, iconButton, nav, navBrand, navTab, tag, toolbar } from './design'
   import { onMount } from 'svelte'
   import { PRESETS_STATE_KEY, SESSIONS_STATE_KEY } from '../constants'
   import TerminalView from './TerminalView.svelte'
@@ -208,7 +208,7 @@
       <div class="relative shrink-0">
         <button
           type="button"
-          class={button({ variant: 'outline', size: 'sm', class: presetsOpen ? 'bg-accent! color-active border-active!' : '' })}
+          class={button({ variant: 'outline', size: 'sm', class: presetsOpen ? 'bg-active! color-active border-active!' : '' })}
           title="Run a preset command"
           onclick={() => (presetsOpen = !presetsOpen)}
         >

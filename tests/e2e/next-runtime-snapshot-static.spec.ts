@@ -11,11 +11,11 @@ const BASE = 'http://127.0.0.1:9889/'
 test.describe('next-runtime-snapshot (static build)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(BASE)
-    await expect(page.locator('.df-nav-brand')).toHaveText('Runtime Snapshot')
+    await expect(page.getByText('Runtime Snapshot')).toBeVisible()
   })
 
   test('renders system info from the static RPC dump', async ({ page }) => {
-    const systemCard = page.locator('.df-card').filter({ hasText: 'System' })
+    const systemCard = page.locator('section').filter({ hasText: 'System' })
     await expect(systemCard.locator('span.font-mono').first()).toContainText(/v\d+\.\d+/, { timeout: 10_000 })
     await expect(systemCard).toContainText(/cwd/)
   })

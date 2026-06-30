@@ -1,7 +1,7 @@
 import type { DevframeScopedClientContext } from 'devframe/client'
-import { nav, navBrand, tab as tabClass, tabsList } from '@internal/design/components'
 import { connectDevframe } from 'devframe/client'
 import { useEffect, useState } from 'preact/hooks'
+import { nav, navBrand, tab as tabClass, tabsList } from './design'
 import { About } from './routes/about'
 import { Home } from './routes/home'
 
@@ -52,7 +52,7 @@ export function App() {
 
   if (!ctx) {
     return (
-      <div class="grid min-h-screen place-items-center bg-background text-muted-foreground font-sans text-sm">
+      <div class="grid min-h-screen place-items-center bg-base color-muted font-sans text-sm">
         Connecting to devframe…
       </div>
     )
@@ -62,7 +62,7 @@ export function App() {
   const active = route === '/about' ? '/about' : '/'
 
   return (
-    <div class="flex flex-col min-h-screen bg-background text-foreground font-sans">
+    <div class="flex flex-col min-h-screen bg-base color-base font-sans">
       <header class={nav()}>
         <span class={navBrand()}>
           <span class="i-ph-folder-duotone text-base color-active" />
@@ -88,7 +88,7 @@ export function App() {
 
         <span class="flex-1" />
 
-        <small class="flex items-center gap-1.5 text-muted-foreground text-xs font-mono">
+        <small class="flex items-center gap-1.5 color-muted text-xs font-mono">
           <span>base</span>
           <code class="color-base">{basePath}</code>
           <span class="op-mute">·</span>
@@ -97,7 +97,7 @@ export function App() {
         </small>
       </header>
 
-      <main class="scrollbar-slim min-h-0 flex-1 overflow-auto">
+      <main class="min-h-0 flex-1 overflow-auto">
         {active === '/about'
           ? <About ctx={ctx} basePath={basePath} />
           : <Home ctx={ctx} />}

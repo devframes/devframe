@@ -23,14 +23,14 @@ export interface DiffPanelViewProps {
 
 function patchLineClass(line: string): string {
   if (line.startsWith('@@'))
-    return 'text-primary'
+    return 'color-active'
   if (line.startsWith('+') && !line.startsWith('+++'))
     return 'text-success'
   if (line.startsWith('-') && !line.startsWith('---'))
-    return 'text-destructive'
+    return 'text-error'
   if (line.startsWith('diff ') || line.startsWith('index ') || line.startsWith('+++') || line.startsWith('---'))
-    return 'text-muted-foreground font-semibold'
-  return 'text-foreground'
+    return 'color-muted font-semibold'
+  return 'color-base'
 }
 
 /**
@@ -41,7 +41,7 @@ export function DiffPatchView({ patch, loading, truncated, scroll = true }: { pa
   if (loading)
     return <Skeleton className="h-40 w-full" />
   if (!patch)
-    return <p className="text-muted-foreground p-3 text-sm">No textual diff available (binary or unchanged).</p>
+    return <p className="color-muted p-3 text-sm">No textual diff available (binary or unchanged).</p>
   const body = (
     <>
       <pre className="font-mono text-xs leading-relaxed">
@@ -53,8 +53,8 @@ export function DiffPatchView({ patch, loading, truncated, scroll = true }: { pa
     </>
   )
   if (!scroll)
-    return <div className="scrollbar-slim overflow-x-auto py-1">{body}</div>
-  return <ScrollArea className="scrollbar-slim h-72 w-full">{body}</ScrollArea>
+    return <div className="overflow-x-auto py-1">{body}</div>
+  return <ScrollArea className="h-72 w-full">{body}</ScrollArea>
 }
 
 export function DiffPanelView(props: DiffPanelViewProps) {
@@ -62,7 +62,7 @@ export function DiffPanelView(props: DiffPanelViewProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <div className="bg-muted inline-flex rounded-lg p-[3px] text-sm">
+        <div className="bg-secondary inline-flex rounded-lg p-[3px] text-sm">
           {([['Working tree', false], ['Staged', true]] as const).map(([label, value]) => (
             <button
               key={label}
@@ -70,7 +70,7 @@ export function DiffPanelView(props: DiffPanelViewProps) {
               onClick={() => onSelectScope(value)}
               className={cn(
                 'cursor-pointer rounded-md px-3 py-1 font-medium transition-colors',
-                staged === value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground',
+                staged === value ? 'bg-base color-base shadow-sm' : 'color-muted',
               )}
             >
               {label}
@@ -85,7 +85,7 @@ export function DiffPanelView(props: DiffPanelViewProps) {
                 {data.totalAdditions}
               </span>
               {' '}
-              <span className="text-destructive">
+              <span className="text-error">
                 −
                 {data.totalDeletions}
               </span>
@@ -104,11 +104,11 @@ export function DiffPanelView(props: DiffPanelViewProps) {
       )}
 
       {data && !data.isRepo && (
-        <p className="text-muted-foreground text-sm">The working directory is not a git repository.</p>
+        <p className="color-muted text-sm">The working directory is not a git repository.</p>
       )}
 
       {data?.isRepo && data.files.length === 0 && (
-        <p className="text-muted-foreground text-sm">
+        <p className="color-muted text-sm">
           No
           {staged ? ' staged' : ' unstaged'}
           {' '}
@@ -127,7 +127,7 @@ export function DiffPanelView(props: DiffPanelViewProps) {
                     onClick={() => onSelectFile(file.path)}
                     className={cn(
                       'flex w-full items-center gap-2 rounded px-1 py-0.5 text-left font-mono text-xs',
-                      selected === file.path ? 'bg-accent' : 'hover:bg-accent/50',
+                      selected === file.path ? 'bg-active' : 'hover:bg-active',
                     )}
                   >
                     <span className="flex-1 truncate" title={file.path}>{file.path}</span>
@@ -140,7 +140,7 @@ export function DiffPanelView(props: DiffPanelViewProps) {
                               {file.additions}
                             </span>
                             {' '}
-                            <span className="text-destructive">
+                            <span className="text-error">
                               −
                               {file.deletions}
                             </span>
@@ -154,7 +154,7 @@ export function DiffPanelView(props: DiffPanelViewProps) {
 
           {selected && (
             <div className="overflow-hidden rounded-md border">
-              <div className="bg-muted/50 border-b px-3 py-1 font-mono text-xs">{selected}</div>
+              <div className="bg-secondary border-b px-3 py-1 font-mono text-xs">{selected}</div>
               {patchSlot}
             </div>
           )}

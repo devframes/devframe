@@ -1,6 +1,6 @@
-/* Design tokens, the base layer, and the `df-*` component vocabulary all come
-   from the shared devframe design system. `@unocss` is replaced by UnoCSS with
-   the generated preflights + utilities; `@internal/design/theme.css` (imported
-   after this file in layout.tsx) supplies the `--df-*` token values + base. */
+/* Design tokens, the base layer, and the semantic class vocabulary all come
+   from @antfu/design. `@unocss` is replaced by UnoCSS with the generated
+   preflights + utilities; `@antfu/design/styles.css` (imported after this file
+   in layout.tsx) supplies the token values + base element styling. */
 
 @unocss;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { HistoryRecord } from '../composables/history'
-import { button } from '@internal/design/components'
+import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import JsonView from './JsonView.vue'
 
 defineProps<{
@@ -22,18 +22,18 @@ function formatTime(ms: number) {
 <template>
   <div class="pane flex-col">
     <div class="toolbar">
-      <button
-        :class="button({ variant: isRecording ? 'outline' : 'ghost', size: 'sm' })"
+      <ActionButton
+        :variant="isRecording ? 'action' : 'text'"
+        size="sm"
+        :icon="isRecording ? 'i-ph-record-fill text-error' : 'i-ph-play-duotone'"
         :title="isRecording ? 'Click to pause recording' : 'Click to record'"
         @click="emit('update:isRecording', !isRecording)"
       >
-        <span :class="isRecording ? 'i-ph-record-fill text-destructive' : 'i-ph-play-duotone'" />
         {{ isRecording ? 'Recording' : 'Paused' }}
-      </button>
-      <button :class="button({ variant: 'ghost', size: 'sm' })" @click="emit('clear')">
-        <span class="i-ph-trash-duotone" />
+      </ActionButton>
+      <ActionButton variant="text" size="sm" icon="i-ph-trash-duotone" @click="emit('clear')">
         Clear
-      </button>
+      </ActionButton>
       <span class="muted">{{ historyRecords.length }} records</span>
     </div>
     <div v-if="historyRecords.length === 0" class="center">

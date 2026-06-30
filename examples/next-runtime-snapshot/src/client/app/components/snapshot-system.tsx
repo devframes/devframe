@@ -1,8 +1,8 @@
 'use client'
 
 import type { SystemInfo } from '../../../devframe'
-import { card } from '@internal/design/components'
 import { useEffect, useState } from 'react'
+import { card } from '../design'
 import { useRpc } from './connect'
 
 function formatStartedAt(epoch: number): string {
@@ -35,19 +35,19 @@ export function SnapshotSystem() {
       {info
         ? (
             <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
-              <span className="text-muted-foreground">node</span>
+              <span className="color-muted">node</span>
               <span className="font-mono break-all">{info.node}</span>
-              <span className="text-muted-foreground">platform</span>
+              <span className="color-muted">platform</span>
               <span className="font-mono break-all">{`${info.platform} (${info.arch})`}</span>
-              <span className="text-muted-foreground">pid</span>
+              <span className="color-muted">pid</span>
               <span className="font-mono break-all tabular-nums">{info.pid}</span>
-              <span className="text-muted-foreground">cwd</span>
+              <span className="color-muted">cwd</span>
               <span className="font-mono break-all">{info.cwd}</span>
-              <span className="text-muted-foreground">started</span>
+              <span className="color-muted">started</span>
               <span className="font-mono break-all">{formatStartedAt(info.startedAt)}</span>
             </div>
           )
-        : <p className="text-sm text-muted-foreground">Loading…</p>}
+        : <p className="text-sm color-muted">Loading…</p>}
     </section>
   )
 }

@@ -4,7 +4,7 @@ import { mount, unmount } from 'svelte'
 import App from './App.svelte'
 
 import 'virtual:uno.css'
-import '@internal/design/theme.css'
+import '@antfu/design/styles.css'
 import './styles.css'
 
 export interface MountTerminalsOptions {

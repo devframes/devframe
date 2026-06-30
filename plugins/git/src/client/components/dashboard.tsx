@@ -3,8 +3,8 @@
 import type { DevframeRpcClient } from 'devframe/client'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { Branch, GitBranches } from '../../index'
-import { nav as navBar, navBrand, tab as tabClass, tabsList } from '@internal/design/components'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { nav as navBar, navBrand, tab as tabClass, tabsList } from '../lib/design'
 import { cn } from '../lib/utils'
 import { CommitDetailsPanel } from './commit-details-panel'
 import { DiffPanel } from './diff-panel'
@@ -87,7 +87,7 @@ function Resizer({ onPointerDown, label }: { onPointerDown: (e: ReactPointerEven
       aria-orientation="vertical"
       aria-label={label}
       onPointerDown={onPointerDown}
-      className="group bg-border relative w-px shrink-0 cursor-col-resize"
+      className="group bg-[#8882] relative w-px shrink-0 cursor-col-resize"
     >
       <div className="group-hover:bg-primary/40 group-active:bg-primary/60 absolute inset-y-0 -left-1 -right-1 z-10 transition-colors" />
     </div>
@@ -132,17 +132,17 @@ function BranchRow({
         type="button"
         onClick={() => onSelect(branch.name)}
         className={cn(
-          'hover:bg-accent/60 w-full rounded-md px-2 py-1.5 text-left transition-colors',
-          selected && 'bg-accent',
+          'hover:bg-active w-full rounded-md px-2 py-1.5 text-left transition-colors',
+          selected && 'bg-active',
         )}
       >
         <div className="flex items-center gap-2">
-          <Icon name="i-ph-git-branch-duotone" className={cn('size-3.5', branch.current ? 'text-primary' : 'text-muted-foreground')} />
+          <Icon name="i-ph-git-branch-duotone" className={cn('size-3.5', branch.current ? 'color-active' : 'color-muted')} />
           <span className="truncate font-mono text-xs" title={branch.name}>{branch.name}</span>
           {branch.current && <Badge variant="success" className="px-1 py-0 text-[10px]">current</Badge>}
         </div>
         {(branch.ahead > 0 || branch.behind > 0) && (
-          <p className="text-muted-foreground mt-0.5 text-[11px] tabular-nums">
+          <p className="color-muted mt-0.5 text-[11px] tabular-nums">
             {branch.ahead > 0 && `ahead ${branch.ahead}`}
             {branch.ahead > 0 && branch.behind > 0 && ' · '}
             {branch.behind > 0 && `behind ${branch.behind}`}
@@ -198,10 +198,10 @@ function DashboardBody() {
   const showCommitDetails = pane === 'commits' && selectedCommit !== null
 
   return (
-    <div className="bg-background flex h-svh w-full flex-col overflow-hidden">
+    <div className="bg-base flex h-svh w-full flex-col overflow-hidden">
       <header className={navBar()}>
         <div className={navBrand()}>
-          <Icon name="i-ph-git-fork-duotone" className="text-base text-primary" />
+          <Icon name="i-ph-git-fork-duotone" className="text-base color-active" />
           <span>Git Dashboard</span>
         </div>
 
@@ -232,7 +232,7 @@ function DashboardBody() {
         <aside className="flex min-h-0 flex-col" style={{ width: leftRail.width }}>
           <div className="shrink-0 space-y-3 border-b p-3">
             <div className="space-y-1.5">
-              <label htmlFor="branch-select" className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
+              <label htmlFor="branch-select" className="color-muted text-[11px] font-medium tracking-wide uppercase">
                 Branch
               </label>
               <select
@@ -240,7 +240,7 @@ function DashboardBody() {
                 value={selectedBranch ?? ''}
                 onChange={event => selectBranch(event.target.value)}
                 disabled={branchesLoading || !branches?.isRepo || branches.branches.length === 0}
-                className="bg-background border-input focus:ring-ring h-9 w-full rounded-md border px-2 text-sm outline-none focus:ring-2"
+                className="bg-base border-base focus:ring-primary-500/40 h-9 w-full rounded-md border px-2 text-sm outline-none focus:ring-2"
               >
                 {!branches?.isRepo && <option value="">Not a repository</option>}
                 {branches?.isRepo && branches.branches.length === 0 && <option value="">No branches</option>}
@@ -250,14 +250,14 @@ function DashboardBody() {
               </select>
             </div>
 
-            {branchesError && <p className="text-destructive text-xs">{branchesError}</p>}
+            {branchesError && <p className="text-error text-xs">{branchesError}</p>}
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col">
             <PanelHeading>
               <span className="text-xs font-medium">Branches</span>
               <div className="flex items-center gap-1">
-                <span className="text-muted-foreground text-[11px] tabular-nums">
+                <span className="color-muted text-[11px] tabular-nums">
                   {branches?.isRepo ? branches.branches.length : ''}
                 </span>
                 <IconButton
@@ -272,7 +272,7 @@ function DashboardBody() {
               </div>
             </PanelHeading>
 
-            <div className="scrollbar-slim min-h-0 flex-1 overflow-y-auto p-2">
+            <div className="min-h-0 flex-1 overflow-y-auto p-2">
               {!branches && (
                 <div className="space-y-2">
                   {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-9 w-full" />)}
@@ -280,7 +280,7 @@ function DashboardBody() {
               )}
 
               {branches && !branches.isRepo && (
-                <p className="text-muted-foreground p-2 text-sm">The working directory is not a git repository.</p>
+                <p className="color-muted p-2 text-sm">The working directory is not a git repository.</p>
               )}
 
               {branches?.isRepo && (
@@ -318,7 +318,7 @@ function DashboardBody() {
             </div>
           )}
           {pane === 'diff' && (
-            <div className="scrollbar-slim min-h-0 flex-1 overflow-y-auto p-3">
+            <div className="min-h-0 flex-1 overflow-y-auto p-3">
               <DiffPanel />
             </div>
           )}
