@@ -42,6 +42,8 @@ export interface TerminalSessionInfo {
   rows: number
   pid?: number
   exitCode?: number
+  icon?: string
+  channel?: string
   /** Preset this session was spawned from, if any. */
   presetId?: string
   createdAt: number

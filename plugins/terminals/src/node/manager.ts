@@ -17,6 +17,7 @@ import {
   DEFAULT_COLS,
   DEFAULT_ROWS,
   DEFAULT_SCROLLBACK,
+  HUB_TERMINAL_STREAM_CHANNEL,
   PRESETS_STATE_KEY,
   SESSIONS_STATE_KEY,
   TERMINAL_STREAM_CHANNEL,
@@ -58,13 +59,16 @@ interface HubTerminalEntry {
   title: string
   description?: string
   status: 'running' | 'stopped' | 'error'
-  icon?: string
+  icon?: string | { light: string, dark: string }
 }
 interface HubTerminalsBridge {
-  sessions: Map<string, { id: string }>
+  sessions: Map<string, HubTerminalEntry>
   register: (session: HubTerminalEntry) => unknown
   update: (session: HubTerminalEntry) => void
   remove?: (session: { id: string }) => void
+  events?: {
+    on: (event: 'terminal:session:updated', cb: (session: HubTerminalEntry) => void) => void
+  }
 }
 
 /** Map the plugin's session status onto the hub's coarser status set. */
@@ -72,6 +76,19 @@ const HUB_STATUS: Record<TerminalStatus, HubTerminalEntry['status']> = {
   running: 'running',
   exited: 'stopped',
   error: 'error',
+}
+
+/**
+ * Normalize a hub dock icon (`ph:code-duotone`, or a light/dark pair) to the
+ * UnoCSS `preset-icons` class the client renders (`i-ph-code-duotone`). The
+ * client can only render icons the SPA's UnoCSS build statically emitted — see
+ * the safelist in `uno.config.ts` — so unknown icons resolve to `undefined`.
+ */
+function toIconClass(icon?: HubTerminalEntry['icon']): string | undefined {
+  const raw = typeof icon === 'string' ? icon : icon?.light
+  if (!raw)
+    return undefined
+  return raw.startsWith('i-') ? raw : `i-${raw.replace(':', '-')}`
 }
 
 function defaultShell(): string {
@@ -137,10 +154,52 @@ export class TerminalManager {
         icon: p.icon,
       }))
     })
+
+    // When mounted in a hub, refresh our session list whenever another
+    // devframe's terminal session (e.g. code-server) changes, so those
+    // aggregated sessions appear/update/disappear in this plugin's UI. Guarded
+    // to foreign ids so mirroring our *own* sessions into the hub can't loop.
+    const hub = this.hubTerminals()
+    hub?.events?.on('terminal:session:updated', (session) => {
+      if (!this.sessions.has(session.id))
+        this.refreshSessionsState()
+    })
+  }
+
+  /** The hub's terminals subsystem when mounted in a hub, else undefined. */
+  private hubTerminals(): HubTerminalsBridge | undefined {
+    return (this.ctx as { terminals?: HubTerminalsBridge }).terminals
   }
 
   list(): TerminalSessionInfo[] {
-    return Array.from(this.sessions.values()).map(s => ({ ...s.info }))
+    const own = Array.from(this.sessions.values()).map(s => ({ ...s.info }))
+    const hub = this.hubTerminals()
+    if (!hub?.sessions)
+      return own
+
+    // Surface sessions contributed by *other* devframes (aggregated in the
+    // hub) as read-only entries, reading their output from the hub's channel.
+    const foreign: TerminalSessionInfo[] = []
+    for (const session of hub.sessions.values()) {
+      if (this.sessions.has(session.id))
+        continue
+      foreign.push({
+        id: session.id,
+        title: session.title,
+        mode: 'readonly',
+        status: session.status === 'stopped' ? 'exited' : session.status,
+        backend: 'pipe',
+        command: '',
+        args: [],
+        cwd: '',
+        cols: DEFAULT_COLS,
+        rows: DEFAULT_ROWS,
+        createdAt: 0,
+        icon: toIconClass(session.icon),
+        channel: HUB_TERMINAL_STREAM_CHANNEL,
+      })
+    }
+    return [...own, ...foreign]
   }
 
   getPresets(): TerminalPreset[] {
@@ -415,10 +474,20 @@ export class TerminalManager {
   }
 
   private publish(): void {
+    this.refreshSessionsState()
+    this.syncHub()
+  }
+
+  /**
+   * Push the current session list (own + aggregated hub sessions) into shared
+   * state. Kept separate from {@link publish} so the hub-session listener can
+   * refresh without re-running {@link syncHub} (which would re-emit hub events
+   * and loop).
+   */
+  private refreshSessionsState(): void {
     this.sessionsState?.mutate((draft) => {
       draft.sessions = this.list()
     })
-    this.syncHub()
   }
 
   /**

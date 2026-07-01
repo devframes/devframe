@@ -20,6 +20,8 @@ export declare class CodeServerSupervisor {
   private cookieValue?;
   private logBuffer;
   private cleanupRegistered;
+  private readonly sessionId;
+  private session?;
   constructor(_: DevframeNodeContext, _?: CodeServerOptions);
   init(): Promise<void>;
   detect(): Promise<CodeServerDetection>;
@@ -29,6 +31,9 @@ export declare class CodeServerSupervisor {
   dispose(): void;
   private authInfo;
   private terminate;
+  private resolveHubTerminals;
+  private reflectHub;
+  private launchProcess;
   private appendLog;
   private lastLog;
   private publish;

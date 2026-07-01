@@ -8,6 +8,15 @@ export const PLUGIN_ID = 'devframes-plugin-terminals'
  */
 export const TERMINAL_STREAM_CHANNEL = 'devframes-plugin-terminals:output'
 
+/**
+ * Streaming channel the hub's own terminals subsystem (`ctx.terminals`) uses
+ * for aggregated sessions contributed by *other* devframes (e.g. code-server).
+ * Mirrors `@devframes/hub`'s internal channel name; the plugin surfaces those
+ * sessions read-only and reads their output from here. Kept as a literal so the
+ * plugin needs no build dependency on the hub.
+ */
+export const HUB_TERMINAL_STREAM_CHANNEL = 'devframe:terminals'
+
 /** Shared-state key holding the serializable session list. */
 export const SESSIONS_STATE_KEY = 'devframes-plugin-terminals:sessions'
 

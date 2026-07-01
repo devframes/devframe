@@ -29,6 +29,8 @@ export const sessionInfoSchema = v.object({
   rows: v.number(),
   pid: v.optional(v.number()),
   exitCode: v.optional(v.number()),
+  icon: v.optional(v.string()),
+  channel: v.optional(v.string()),
   presetId: v.optional(v.string()),
   createdAt: v.number(),
 })

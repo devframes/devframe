@@ -38,6 +38,8 @@ export interface TerminalSessionInfo {
   rows: number;
   pid?: number;
   exitCode?: number;
+  icon?: string;
+  channel?: string;
   presetId?: string;
   createdAt: number;
 }

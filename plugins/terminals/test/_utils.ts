@@ -10,6 +10,7 @@ import {
 } from 'devframe/node'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
+import { createEventEmitter } from 'devframe/utils/events'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { createTerminalsDevframe } from '../src/index'
@@ -20,11 +21,61 @@ export type TerminalsServer = StartedServer & {
   port: number
 }
 
+interface FakeHubEntry {
+  id: string
+  title: string
+  description?: string
+  status: 'running' | 'stopped' | 'error'
+  icon?: string | { light: string, dark: string }
+}
+
+export interface FakeHubTerminals {
+  sessions: Map<string, FakeHubEntry>
+  events: ReturnType<typeof createEventEmitter>
+  register: (entry: FakeHubEntry) => FakeHubEntry
+  update: (patch: { id: string } & Partial<FakeHubEntry>) => void
+  remove: (entry: { id: string }) => void
+}
+
+/**
+ * Minimal stand-in for the hub's `ctx.terminals` aggregation host — a sessions
+ * map plus a `terminal:session:updated` emitter — so tests can exercise how the
+ * terminals plugin surfaces sessions contributed by *other* devframes.
+ */
+export function createFakeHubTerminals(): FakeHubTerminals {
+  const sessions = new Map<string, FakeHubEntry>()
+  const events = createEventEmitter()
+  return {
+    sessions,
+    events,
+    register(entry) {
+      sessions.set(entry.id, entry)
+      events.emit('terminal:session:updated', entry)
+      return entry
+    },
+    update(patch) {
+      const cur = sessions.get(patch.id)
+      if (cur)
+        Object.assign(cur, patch)
+      events.emit('terminal:session:updated', sessions.get(patch.id) ?? patch)
+    },
+    remove(entry) {
+      const cur = sessions.get(entry.id)
+      sessions.delete(entry.id)
+      events.emit('terminal:session:updated', cur ?? entry)
+    },
+  }
+}
+
 /**
  * Boot the terminals devframe in-process over real HTTP + WebSocket so the
- * full RPC + streaming path is exercised end to end.
+ * full RPC + streaming path is exercised end to end. Pass `hub` to attach a
+ * fake `ctx.terminals` before setup (as a hub mount would).
  */
-export async function startTerminalsServer(options: TerminalsOptions = {}): Promise<TerminalsServer> {
+export async function startTerminalsServer(
+  options: TerminalsOptions = {},
+  { hub }: { hub?: FakeHubTerminals } = {},
+): Promise<TerminalsServer> {
   const definition = createTerminalsDevframe({ allowArbitraryCommands: true, ...options })
   const host = '127.0.0.1'
   const port = await getPort({ host, random: true })
@@ -38,6 +89,8 @@ export async function startTerminalsServer(options: TerminalsOptions = {}): Prom
   })
 
   const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
+  if (hub)
+    (ctx as { terminals?: FakeHubTerminals }).terminals = hub
   await definition.setup(ctx)
 
   const server = await startHttpAndWs({ context: ctx, host, port, app, auth: false })

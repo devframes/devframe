@@ -22,6 +22,18 @@ export const DEFAULT_START_TIMEOUT = 30_000
 export const SESSION_COOKIE_BASE = 'code-server-session'
 
 /**
+ * Title for the read-only terminal session surfaced when the plugin is mounted
+ * in a hub (`ctx.terminals`). Mirrors the plugin's own name.
+ */
+export const TERMINAL_SESSION_TITLE = 'Code Server'
+
+/**
+ * Icon for that terminal session. Mirrors the plugin's declared icon so the
+ * hub's terminals panel shows the same glyph as the rest of the plugin.
+ */
+export const TERMINAL_SESSION_ICON = 'ph:code-duotone'
+
+/**
  * Compute code-server's session cookie name for an optional `--cookie-suffix`.
  * Mirrors code-server's own `getCookieSessionName` so the client sets the
  * exact cookie the server reads.
