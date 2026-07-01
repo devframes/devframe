@@ -39,7 +39,7 @@
     "dev": "node scripts/dev.mjs",
     "dev:server": "node src/cli.ts",
     "dev:client": "next dev src/client",
-    "storybook": "storybook dev -p 6006",
+    "storybook": "storybook dev -p 6011 --host 0.0.0.0",
     "storybook:build": "storybook build -o storybook-static",
     "watch": "tsdown --watch",
     "typecheck": "tsc --noEmit",

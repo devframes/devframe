@@ -1,11 +1,10 @@
 import type { Decorator, Preview } from '@storybook/html-vite'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
-import '../src/client/style.css'
 
-// Drive the shared `@antfu/design` tokens off the toolbar theme toggle: dark mode
-// is the `.dark` class on `<html>`, and the canvas takes the semantic
-// `bg-base`/`color-base` surface — matching every other devframe surface.
+// The host shell tracks the same theme convention as every composed plugin: dark
+// mode is the `.dark` class on `<html>`, and the canvas takes the semantic
+// `bg-base`/`color-base` surface.
 function applyTheme(theme: string): void {
   document.documentElement.classList.toggle('dark', theme !== 'light')
   document.body.classList.add('bg-base', 'color-base', 'font-sans')

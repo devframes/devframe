@@ -1,7 +1,7 @@
-import type { Decorator, Preview } from '@storybook/html-vite'
+import type { Preview } from 'storybook-solidjs-vite'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
-import '../src/client/style.css'
+import '../src/spa/styles.css'
 
 // Drive the shared `@antfu/design` tokens off the toolbar theme toggle: dark mode
 // is the `.dark` class on `<html>`, and the canvas takes the semantic
@@ -9,11 +9,6 @@ import '../src/client/style.css'
 function applyTheme(theme: string): void {
   document.documentElement.classList.toggle('dark', theme !== 'light')
   document.body.classList.add('bg-base', 'color-base', 'font-sans')
-}
-
-const withTheme: Decorator = (story, context) => {
-  applyTheme(context.globals.theme ?? 'dark')
-  return story(context)
 }
 
 const preview: Preview = {
@@ -36,7 +31,12 @@ const preview: Preview = {
       },
     },
   },
-  decorators: [withTheme],
+  decorators: [
+    (Story, context) => {
+      applyTheme(context.globals.theme ?? 'dark')
+      return <Story />
+    },
+  ],
 }
 
 export default preview

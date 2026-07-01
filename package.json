@@ -19,6 +19,8 @@
     "docs": "pnpm -C docs run docs",
     "docs:build": "pnpm -C docs run docs:build",
     "docs:serve": "pnpm -C docs run docs:serve",
+    "storybook": "pnpm -r --parallel --if-present run storybook",
+    "storybook:build": "pnpm --filter @devframes/storybook run storybook:build",
     "lint": "eslint --cache",
     "test": "turbo run build && vitest",
     "test:e2e": "turbo run build && playwright test",
