@@ -20,6 +20,8 @@ export class CodeServerSupervisor {
   cookieValue
   logBuffer
   cleanupRegistered
+  sessionId
+  session
   constructor(_, _) {}
   async init() {}
   async detect() {}
@@ -29,6 +31,9 @@ export class CodeServerSupervisor {
   dispose() {}
   authInfo() {}
   terminate(_) {}
+  resolveHubTerminals() {}
+  reflectHub(_) {}
+  async launchProcess(_, _, _) {}
   appendLog(_) {}
   lastLog() {}
   publish() {}

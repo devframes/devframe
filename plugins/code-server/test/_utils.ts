@@ -1,4 +1,6 @@
 import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
+import type { ChildProcess } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { chmodSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -69,4 +71,69 @@ process.on('SIGINT', () => process.exit(0))
   }
 
   return binPath
+}
+
+interface FakeHubSession {
+  id: string
+  title: string
+  description?: string
+  icon?: string
+  status: 'running' | 'stopped' | 'error'
+  type: 'child-process'
+  executeOptions: { command: string, args: string[], cwd?: string, env?: Record<string, string> }
+  getChildProcess: () => ChildProcess | undefined
+  terminate: () => Promise<void>
+  restart: () => Promise<void>
+}
+
+export interface FakeHubTerminals {
+  sessions: Map<string, FakeHubSession>
+  startChildProcess: (
+    executeOptions: FakeHubSession['executeOptions'],
+    terminal: Pick<FakeHubSession, 'id' | 'title' | 'description' | 'icon'>,
+  ) => Promise<FakeHubSession>
+  update: (patch: { id: string } & Partial<FakeHubSession>) => void
+  remove: (session: { id: string }) => void
+}
+
+/**
+ * Minimal stand-in for the hub's `ctx.terminals` (`DevframeTerminalsHost`),
+ * faithful to the contract the code-server supervisor relies on: it actually
+ * spawns the child (merging `process.env` like the real hub's tinyexec-backed
+ * `startChildProcess`), exposes it via `getChildProcess()`, and tracks sessions
+ * so tests can assert the mirrored read-only session and its lifecycle.
+ */
+export function createFakeHubTerminals(): FakeHubTerminals {
+  const sessions = new Map<string, FakeHubSession>()
+  return {
+    sessions,
+    async startChildProcess(executeOptions, terminal) {
+      const child = spawn(executeOptions.command, executeOptions.args ?? [], {
+        cwd: executeOptions.cwd,
+        env: { ...process.env, ...executeOptions.env },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+      const session: FakeHubSession = {
+        ...terminal,
+        status: 'running',
+        type: 'child-process',
+        executeOptions,
+        getChildProcess: () => child,
+        terminate: async () => {
+          child.kill('SIGTERM')
+        },
+        restart: async () => {},
+      }
+      sessions.set(terminal.id, session)
+      return session
+    },
+    update(patch) {
+      const session = sessions.get(patch.id)
+      if (session)
+        Object.assign(session, patch)
+    },
+    remove(session) {
+      sessions.delete(session.id)
+    },
+  }
 }
