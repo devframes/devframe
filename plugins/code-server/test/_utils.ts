@@ -112,6 +112,8 @@ export function createFakeHubTerminals(): FakeHubTerminals {
         cwd: executeOptions.cwd,
         env: { ...process.env, ...executeOptions.env },
         stdio: ['ignore', 'pipe', 'pipe'],
+        windowsHide: true,
+        shell: process.platform === 'win32' && executeOptions.command.endsWith('.cmd'),
       })
       const session: FakeHubSession = {
         ...terminal,
