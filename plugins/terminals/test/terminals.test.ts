@@ -256,7 +256,8 @@ describe('@devframes/plugin-terminals', () => {
       const cs = list.find(s => s.id === 'devframes-plugin-code-server')
       expect(cs).toBeDefined()
       expect(cs?.title).toBe('Code Server')
-      expect(cs?.icon).toBe('ph:code-duotone')
+      // Hub dock icon normalized to the client's UnoCSS icon class.
+      expect(cs?.icon).toBe('i-ph-code-duotone')
       expect(cs?.mode).toBe('readonly')
       expect(cs?.status).toBe('running')
       // Its output is read from the hub's streaming channel, not the plugin's.

@@ -21,6 +21,15 @@ export default defineConfig({
     presetWebFonts({ provider: 'none', fonts: { sans: 'DM Sans', mono: 'DM Mono' } }),
   ],
   transformers: [transformerDirectives(), transformerVariantGroup()],
+  // Icons for terminal sessions contributed by *other* devframes through the
+  // hub (e.g. code-server) arrive as runtime strings, so UnoCSS can't extract
+  // them from source. Safelist the built-in plugins' dock icons so those
+  // aggregated sessions render with their proper glyph.
+  safelist: [
+    'i-ph-code-duotone',
+    'i-ph-terminal-window-duotone',
+    'i-ph-git-branch-duotone',
+  ],
   // Wind4 leaves bare `border`/`border-b` at currentColor; restore the subtle
   // shared border color (matching `border-base`) for unqualified borders.
   preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],

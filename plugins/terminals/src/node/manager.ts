@@ -78,6 +78,19 @@ const HUB_STATUS: Record<TerminalStatus, HubTerminalEntry['status']> = {
   error: 'error',
 }
 
+/**
+ * Normalize a hub dock icon (`ph:code-duotone`, or a light/dark pair) to the
+ * UnoCSS `preset-icons` class the client renders (`i-ph-code-duotone`). The
+ * client can only render icons the SPA's UnoCSS build statically emitted — see
+ * the safelist in `uno.config.ts` — so unknown icons resolve to `undefined`.
+ */
+function toIconClass(icon?: HubTerminalEntry['icon']): string | undefined {
+  const raw = typeof icon === 'string' ? icon : icon?.light
+  if (!raw)
+    return undefined
+  return raw.startsWith('i-') ? raw : `i-${raw.replace(':', '-')}`
+}
+
 function defaultShell(): string {
   if (process.platform === 'win32')
     return process.env.COMSPEC || 'powershell.exe'
@@ -182,7 +195,7 @@ export class TerminalManager {
         cols: DEFAULT_COLS,
         rows: DEFAULT_ROWS,
         createdAt: 0,
-        icon: typeof session.icon === 'string' ? session.icon : session.icon?.light,
+        icon: toIconClass(session.icon),
         channel: HUB_TERMINAL_STREAM_CHANNEL,
       })
     }
