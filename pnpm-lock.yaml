@@ -120,6 +120,9 @@ catalogs:
       specifier: ^2.0.17
       version: 2.0.17
   frontend:
+    '@antfu/design':
+      specifier: ^0.2.1
+      version: 0.2.1
     '@iconify-json/ph':
       specifier: ^1.2.0
       version: 1.2.2
@@ -159,6 +162,12 @@ catalogs:
     clsx:
       specifier: ^2.1.1
       version: 2.1.1
+    colorjs.io:
+      specifier: ^0.6.0
+      version: 0.6.1
+    floating-vue:
+      specifier: ^5.0.0
+      version: 5.2.2
     next:
       specifier: ^16.2.6
       version: 16.2.6
@@ -171,6 +180,9 @@ catalogs:
     react-dom:
       specifier: ^19.2.6
       version: 19.2.6
+    reka-ui:
+      specifier: ^2.0.0
+      version: 2.10.1
     solid-js:
       specifier: ^1.9.13
       version: 1.9.13
@@ -353,9 +365,12 @@ importers:
 
   examples/files-inspector:
     dependencies:
-      '@internal/design':
-        specifier: workspace:*
-        version: link:../../packages/design
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.6.1
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -390,6 +405,9 @@ importers:
 
   examples/minimal-next-devframe-hub:
     dependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
@@ -408,9 +426,9 @@ importers:
       '@devframes/plugin-terminals':
         specifier: workspace:*
         version: link:../../plugins/terminals
-      '@internal/design':
-        specifier: workspace:*
-        version: link:../../packages/design
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.6.1
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -454,6 +472,9 @@ importers:
 
   examples/minimal-vite-devframe-hub:
     dependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
@@ -472,9 +493,9 @@ importers:
       '@devframes/plugin-terminals':
         specifier: workspace:*
         version: link:../../plugins/terminals
-      '@internal/design':
-        specifier: workspace:*
-        version: link:../../packages/design
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.6.1
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -497,9 +518,12 @@ importers:
 
   examples/next-runtime-snapshot:
     dependencies:
-      '@internal/design':
-        specifier: workspace:*
-        version: link:../../packages/design
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.6.1
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -540,9 +564,12 @@ importers:
 
   examples/streaming-chat:
     dependencies:
-      '@internal/design':
-        specifier: workspace:*
-        version: link:../../packages/design
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.6.1
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -571,16 +598,6 @@ importers:
       ws:
         specifier: catalog:deps
         version: 8.21.0
-
-  packages/design:
-    dependencies:
-      '@iconify-json/ph':
-        specifier: catalog:frontend
-        version: 1.2.2
-    devDependencies:
-      unocss:
-        specifier: catalog:frontend
-        version: 66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
 
   packages/devframe:
     dependencies:
@@ -713,9 +730,12 @@ importers:
         specifier: catalog:frontend
         version: 1.9.13
     devDependencies:
-      '@internal/design':
-        specifier: workspace:*
-        version: link:../../packages/design
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.6.1
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -753,18 +773,21 @@ importers:
         specifier: catalog:deps
         version: 1.1.4
     devDependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
-      '@internal/design':
-        specifier: workspace:*
-        version: link:../../packages/design
       '@storybook/html-vite':
         specifier: catalog:storybook
         version: 8.6.18(storybook@8.6.18)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
       '@types/node':
         specifier: catalog:types
         version: 25.9.1
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.6.1
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -799,9 +822,9 @@ importers:
         specifier: catalog:deps
         version: 2.0.3
     devDependencies:
-      '@internal/design':
-        specifier: workspace:*
-        version: link:../../packages/design
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))
       '@radix-ui/react-scroll-area':
         specifier: catalog:frontend
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -841,6 +864,9 @@ importers:
       clsx:
         specifier: catalog:frontend
         version: 2.1.1
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.6.1
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0
@@ -884,12 +910,12 @@ importers:
         specifier: catalog:deps
         version: 1.1.4
     devDependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@5.9.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@5.9.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@5.9.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@5.9.3))
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
-      '@internal/design':
-        specifier: workspace:*
-        version: link:../../packages/design
       '@storybook/addon-essentials':
         specifier: catalog:storybook
         version: 8.6.14(@types/react@19.2.15)(storybook@8.6.18)
@@ -905,15 +931,24 @@ importers:
       '@vitejs/plugin-vue':
         specifier: catalog:build
         version: 6.0.7(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))(vue@3.5.34(typescript@5.9.3))
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.6.1
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
+      floating-vue:
+        specifier: catalog:frontend
+        version: 5.2.2(vue@3.5.34(typescript@5.9.3))
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
+      reka-ui:
+        specifier: catalog:frontend
+        version: 2.10.1(vue@3.5.34(typescript@5.9.3))
       storybook:
         specifier: catalog:storybook
         version: 8.6.18
@@ -954,18 +989,21 @@ importers:
         specifier: catalog:deps
         version: 1.4.1(typescript@6.0.3)
     devDependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
-      '@internal/design':
-        specifier: workspace:*
-        version: link:../../packages/design
       '@sveltejs/vite-plugin-svelte':
         specifier: catalog:frontend
         version: 5.1.1(svelte@5.56.3(@typescript-eslint/types@8.59.2))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
       '@types/node':
         specifier: catalog:types
         version: 25.9.1
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.6.1
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -1002,6 +1040,43 @@ importers:
         version: 0.13.1
 
 packages:
+
+  '@antfu/design@0.2.1':
+    resolution: {integrity: sha512-t35soHI1CNJn86aDgLb1AymekL9J+GG3DXEt/eFg9y5nf7E9ijeMGvjCsI8VZS0/Q6JxO4iTT7jbG26vqfwvUw==}
+    peerDependencies:
+      '@antfu/utils': ^9.0.0
+      '@axe-core/playwright': ^4.0.0
+      '@iconify-json/catppuccin': ^1.0.0
+      '@tanstack/vue-virtual': ^3.0.0
+      '@unocss/core': '>=66.0.0'
+      colorjs.io: ^0.6.0
+      floating-vue: ^5.0.0
+      playwright: ^1.0.0
+      reka-ui: ^2.0.0
+      splitpanes: ^4.0.0
+      unocss: '>=66.0.0'
+      vue: ^3.5.0
+    peerDependenciesMeta:
+      '@antfu/utils':
+        optional: true
+      '@axe-core/playwright':
+        optional: true
+      '@iconify-json/catppuccin':
+        optional: true
+      '@tanstack/vue-virtual':
+        optional: true
+      '@unocss/core':
+        optional: true
+      colorjs.io:
+        optional: true
+      floating-vue:
+        optional: true
+      playwright:
+        optional: true
+      reka-ui:
+        optional: true
+      splitpanes:
+        optional: true
 
   '@antfu/eslint-config@9.0.0':
     resolution: {integrity: sha512-8aQW0UWHoNMdVxTfzs1+w10t26plsc9oFs8YhCyCtST5nnANJe/VAjqvR3hYI1l3PHBeo4tjVMg8wuu6g3OLlA==}
@@ -1852,6 +1927,21 @@ packages:
     resolution: {integrity: sha512-rZAP3aVgB9ds9KOeUSL+zZ21hPmo8dh6fnIFwRQj5EAZl9gzR7wxYbYXYysAM8CTqGmUGyp2S4kUdV17MnGuWQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
+  '@floating-ui/core@1.7.5':
+    resolution: {integrity: sha512-1Ih4WTWyw0+lKyFMcBHGbb5U5FtuHJuujoyyr5zTaWS5EYMeT6Jb2AuDeftsCsEuchO+mM2ij5+q9crhydzLhQ==}
+
+  '@floating-ui/dom@1.1.1':
+    resolution: {integrity: sha512-TpIO93+DIujg3g7SykEAGZMDtbJRrmnYRCNYSjJlvIbGhBjRSNTLVbNeDQBrzy9qDgUbiWdc7KA0uZHZ2tJmiw==}
+
+  '@floating-ui/dom@1.7.6':
+    resolution: {integrity: sha512-9gZSAI5XM36880PPMm//9dfiEngYoC6Am2izES1FF406YFsjvyBMmeJ2g4SAju3xWwtuynNRFL2s9hgxpLI5SQ==}
+
+  '@floating-ui/utils@0.2.11':
+    resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
+
+  '@floating-ui/vue@1.1.11':
+    resolution: {integrity: sha512-HzHKCNVxnGS35r9fCHBc3+uCnjw9IWIlCPL683cGgM9Kgj2BiAl8x1mS7vtvP6F9S/e/q4O6MApwSHj8hNLGfw==}
+
   '@homebridge/node-pty-prebuilt-multiarch@0.13.1':
     resolution: {integrity: sha512-ccQ60nMcbEGrQh0U9E6x0ajW9qJNeazpcM/9CH6J8leyNtJgb+gu24WTBAfBUVeO486ZhscnaxLEITI2HXwhow==}
     engines: {node: '>=18.0.0 <25.0.0'}
@@ -2046,6 +2136,12 @@ packages:
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
     os: [win32]
+
+  '@internationalized/date@3.12.2':
+    resolution: {integrity: sha512-FY1Y+H64NDs+HAF6omlnWxm3mEpfgaCSWtL5l551ZZfImA+kGjPFgrnJrGjH6lfmLL0g8Z/mBu1R3kufeCp6Jw==}
+
+  '@internationalized/number@3.6.7':
+    resolution: {integrity: sha512-3ji1fcrT+FPAK86UqEhB/psHixYo6niWPJtt7+qRaYFynt/BaJG8GhAPimtWUpEiVSTq8ZM8L5psMxGquiB/Vg==}
 
   '@ioredis/commands@1.5.1':
     resolution: {integrity: sha512-JH8ZL/ywcJyR9MmJ5BNqZllXNZQqQbnVZOqpPQqE1vHiFgAw4NHbvE0FOduNU8IX9babitBT46571OnPTT0Zcw==}
@@ -3743,6 +3839,14 @@ packages:
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
 
+  '@tanstack/virtual-core@3.17.2':
+    resolution: {integrity: sha512-w43MvWvmShpb6kIC9MOoLyUkLmRTLPjt61bHWs+X29hACSpX+n8DvgZ3qM7cUfflKlRRcHR9KVJE6TmcqnQvcA==}
+
+  '@tanstack/vue-virtual@3.13.30':
+    resolution: {integrity: sha512-5IpTZf5US81z9CHaRm2imVC44WDU1V/pd8mN1OIvIerRmo6C179UN+vnzlO/dx9Fpt9X7Rjl7fyvolPhPgtfqg==}
+    peerDependencies:
+      vue: ^2.7.0 || ^3.0.0
+
   '@turbo/darwin-64@2.9.15':
     resolution: {integrity: sha512-nnDo9R1Df+s2x6jxlERtbg7xRpuicf8p4J2krcnjeaMBt3q9V41pGXa4t9YM2Y4ozozsVJ+CH405CJUrWIQK4Q==}
     cpu: [x64]
@@ -4431,6 +4535,10 @@ packages:
   args-tokenizer@0.3.0:
     resolution: {integrity: sha512-xXAd7G2Mll5W8uo37GETpQ2VrE84M181Z7ugHFGQnJZ50M2mbOv0osSZ9VsSgPfJQ+LVG0prSi0th+ELMsno7Q==}
 
+  aria-hidden@1.2.6:
+    resolution: {integrity: sha512-ik3ZgC9dY/lYVVM++OISsaYDeg1tb0VtP5uL3ouh1koGOaUMDPpbFIei4JkFimWUFPn90sbMNMXQAIVOlnYKJA==}
+    engines: {node: '>=10'}
+
   aria-query@5.3.1:
     resolution: {integrity: sha512-Z/ZeOgVl7bcSYZ/u/rh0fOpvEpq//LZmdbkXyc7syVzjPAhfOa9ebsdTSjEBDU4vs5nC98Kfduj1uFo0qyET3g==}
     engines: {node: '>= 0.4'}
@@ -4753,6 +4861,9 @@ packages:
 
   colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
+
+  colorjs.io@0.6.1:
+    resolution: {integrity: sha512-8lyR2wHzuIykCpqHKgluGsqQi5iDm3/a2IgP2GBZrasn2sBRkE4NOGsglZxWLs/jZQoNkmA/KM/8NV16rLUdBg==}
 
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
@@ -5700,6 +5811,15 @@ packages:
 
   flatted@3.4.2:
     resolution: {integrity: sha512-PjDse7RzhcPkIJwy5t7KPWQSZ9cAbzQXcafsetQoD7sOJRQlGikNbx7yZp2OotDnJyrDcbyRq3Ttb18iYOqkxA==}
+
+  floating-vue@5.2.2:
+    resolution: {integrity: sha512-afW+h2CFafo+7Y9Lvw/xsqjaQlKLdJV7h1fCHfcYQ1C4SVMlu7OAekqWgu5d4SgvkBVU0pVpLlVsrSTBURFRkg==}
+    peerDependencies:
+      '@nuxt/kit': ^3.2.0
+      vue: ^3.2.0
+    peerDependenciesMeta:
+      '@nuxt/kit':
+        optional: true
 
   focus-trap@8.2.0:
     resolution: {integrity: sha512-CaBdQ9P4fa/yCA6pDf/3aJd8bf9IOG5QGK21/E+86o2V4V8kzXaR4A9E6tNR7KkkS1+T5ZIU1tJDBDLwsucz9g==}
@@ -7372,6 +7492,11 @@ packages:
     resolution: {integrity: sha512-dLsljMd9sqwRkby8zhO1gSg3PnJIBFid8f4CQj/sXx+7cKx+E7u0PKhZ+U4wmhx7EfmtvnA318oVaIkAB1lRJw==}
     hasBin: true
 
+  reka-ui@2.10.1:
+    resolution: {integrity: sha512-drcOQ4rQtDYAcGCsyQBqQg8QQ+H3B+zDaMJU0h8KPEPMa7g9BHu3zcOi4OB39XJSWizceFoNO0Z9tctSGLOXqg==}
+    peerDependencies:
+      vue: '>= 3.4.0'
+
   require-from-string@2.0.2:
     resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
     engines: {node: '>=0.10.0'}
@@ -8470,6 +8595,17 @@ packages:
   vue-component-type-helpers@3.3.5:
     resolution: {integrity: sha512-Fe1jyPJoUGpJOYKOri44jduR7My4yYINOMJISuMAbmrs+L5LbIDUc8NTWZYY3EJLK0yPLuCmcd5zoCsE4k2/KA==}
 
+  vue-demi@0.14.10:
+    resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
+    engines: {node: '>=12'}
+    hasBin: true
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+
   vue-devtools-stub@0.1.0:
     resolution: {integrity: sha512-RutnB7X8c5hjq39NceArgXg28WZtZpGc3+J16ljMiYnFhKvd8hITxSWQSQ5bvldxMDU6gG5mkxl1MTQLXckVSQ==}
 
@@ -8488,6 +8624,11 @@ packages:
     resolution: {integrity: sha512-K3wt3iVmNGaFEOUR4JIThQRWfqokxLfnPslD41FDZB2ajXp789+wCqJyGYlIFsvEQ2P61PInw6/ph5iiqg51gg==}
     peerDependencies:
       vue: '>=2'
+
+  vue-resize@2.0.0-alpha.1:
+    resolution: {integrity: sha512-7+iqOueLU7uc9NrMfrzbG8hwMqchfVfSzpVlCMeJQe4pyibqyoifDNbKTZvwxZKDvGkB+PdFeKvnGZMoEb8esg==}
+    peerDependencies:
+      vue: ^3.0.0
 
   vue-router@5.0.7:
     resolution: {integrity: sha512-dqfk8kvRbCutmCOCj/XLDqDEYxc1wBdAOGLuVy5M93ifYMsBd5fIjfaPN4tQAbxr5IprdBDIox1gr4wYyOx/SA==}
@@ -8655,6 +8796,48 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  '@antfu/design@0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@5.9.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@5.9.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@5.9.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@5.9.3))':
+    dependencies:
+      '@vueuse/core': 14.3.0(vue@3.5.34(typescript@5.9.3))
+      unocss: 66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      vue: 3.5.34(typescript@5.9.3)
+    optionalDependencies:
+      '@antfu/utils': 9.3.0
+      '@tanstack/vue-virtual': 3.13.30(vue@3.5.34(typescript@5.9.3))
+      '@unocss/core': 66.7.2
+      colorjs.io: 0.6.1
+      floating-vue: 5.2.2(vue@3.5.34(typescript@5.9.3))
+      playwright: 1.60.0
+      reka-ui: 2.10.1(vue@3.5.34(typescript@5.9.3))
+
+  '@antfu/design@0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))':
+    dependencies:
+      '@vueuse/core': 14.3.0(vue@3.5.34(typescript@6.0.3))
+      unocss: 66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      vue: 3.5.34(typescript@6.0.3)
+    optionalDependencies:
+      '@antfu/utils': 9.3.0
+      '@tanstack/vue-virtual': 3.13.30(vue@3.5.34(typescript@6.0.3))
+      '@unocss/core': 66.7.2
+      colorjs.io: 0.6.1
+      floating-vue: 5.2.2(vue@3.5.34(typescript@6.0.3))
+      playwright: 1.60.0
+      reka-ui: 2.10.1(vue@3.5.34(typescript@6.0.3))
+
+  '@antfu/design@0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))':
+    dependencies:
+      '@vueuse/core': 14.3.0(vue@3.5.34(typescript@6.0.3))
+      unocss: 66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      vue: 3.5.34(typescript@6.0.3)
+    optionalDependencies:
+      '@antfu/utils': 9.3.0
+      '@tanstack/vue-virtual': 3.13.30(vue@3.5.34(typescript@6.0.3))
+      '@unocss/core': 66.7.2
+      colorjs.io: 0.6.1
+      floating-vue: 5.2.2(vue@3.5.34(typescript@6.0.3))
+      playwright: 1.60.0
+      reka-ui: 2.10.1(vue@3.5.34(typescript@6.0.3))
 
   '@antfu/eslint-config@9.0.0(@typescript-eslint/rule-tester@8.59.2(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(@typescript-eslint/typescript-estree@8.59.2(typescript@6.0.3))(@typescript-eslint/utils@8.59.2(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(@vue/compiler-sfc@3.5.34)(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3)(vitest@4.1.7(@types/node@25.9.1)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))':
     dependencies:
@@ -9330,6 +9513,40 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
+  '@floating-ui/core@1.7.5':
+    dependencies:
+      '@floating-ui/utils': 0.2.11
+
+  '@floating-ui/dom@1.1.1':
+    dependencies:
+      '@floating-ui/core': 1.7.5
+
+  '@floating-ui/dom@1.7.6':
+    dependencies:
+      '@floating-ui/core': 1.7.5
+      '@floating-ui/utils': 0.2.11
+
+  '@floating-ui/utils@0.2.11': {}
+
+  '@floating-ui/vue@1.1.11(vue@3.5.34(typescript@5.9.3))':
+    dependencies:
+      '@floating-ui/dom': 1.7.6
+      '@floating-ui/utils': 0.2.11
+      vue-demi: 0.14.10(vue@3.5.34(typescript@5.9.3))
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+
+  '@floating-ui/vue@1.1.11(vue@3.5.34(typescript@6.0.3))':
+    dependencies:
+      '@floating-ui/dom': 1.7.6
+      '@floating-ui/utils': 0.2.11
+      vue-demi: 0.14.10(vue@3.5.34(typescript@6.0.3))
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+    optional: true
+
   '@homebridge/node-pty-prebuilt-multiarch@0.13.1':
     dependencies:
       node-addon-api: 7.1.1
@@ -9468,6 +9685,14 @@ snapshots:
 
   '@img/sharp-win32-x64@0.34.5':
     optional: true
+
+  '@internationalized/date@3.12.2':
+    dependencies:
+      '@swc/helpers': 0.5.15
+
+  '@internationalized/number@3.6.7':
+    dependencies:
+      '@swc/helpers': 0.5.15
 
   '@ioredis/commands@1.5.1': {}
 
@@ -11042,6 +11267,19 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@tanstack/virtual-core@3.17.2': {}
+
+  '@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@5.9.3))':
+    dependencies:
+      '@tanstack/virtual-core': 3.17.2
+      vue: 3.5.34(typescript@5.9.3)
+
+  '@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3))':
+    dependencies:
+      '@tanstack/virtual-core': 3.17.2
+      vue: 3.5.34(typescript@6.0.3)
+    optional: true
+
   '@turbo/darwin-64@2.9.15':
     optional: true
 
@@ -11811,6 +12049,13 @@ snapshots:
 
   '@vue/shared@3.5.34': {}
 
+  '@vueuse/core@14.3.0(vue@3.5.34(typescript@5.9.3))':
+    dependencies:
+      '@types/web-bluetooth': 0.0.21
+      '@vueuse/metadata': 14.3.0
+      '@vueuse/shared': 14.3.0(vue@3.5.34(typescript@5.9.3))
+      vue: 3.5.34(typescript@5.9.3)
+
   '@vueuse/core@14.3.0(vue@3.5.34(typescript@6.0.3))':
     dependencies:
       '@types/web-bluetooth': 0.0.21
@@ -11829,6 +12074,10 @@ snapshots:
       fuse.js: 7.3.0
 
   '@vueuse/metadata@14.3.0': {}
+
+  '@vueuse/shared@14.3.0(vue@3.5.34(typescript@5.9.3))':
+    dependencies:
+      vue: 3.5.34(typescript@5.9.3)
 
   '@vueuse/shared@14.3.0(vue@3.5.34(typescript@6.0.3))':
     dependencies:
@@ -11931,6 +12180,10 @@ snapshots:
       sprintf-js: 1.0.3
 
   args-tokenizer@0.3.0: {}
+
+  aria-hidden@1.2.6:
+    dependencies:
+      tslib: 2.8.1
 
   aria-query@5.3.1: {}
 
@@ -12246,6 +12499,8 @@ snapshots:
   color-name@1.1.4: {}
 
   colorette@2.0.20: {}
+
+  colorjs.io@0.6.1: {}
 
   comma-separated-tokens@2.0.3: {}
 
@@ -13308,6 +13563,19 @@ snapshots:
       keyv: 4.5.4
 
   flatted@3.4.2: {}
+
+  floating-vue@5.2.2(vue@3.5.34(typescript@5.9.3)):
+    dependencies:
+      '@floating-ui/dom': 1.1.1
+      vue: 3.5.34(typescript@5.9.3)
+      vue-resize: 2.0.0-alpha.1(vue@3.5.34(typescript@5.9.3))
+
+  floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)):
+    dependencies:
+      '@floating-ui/dom': 1.1.1
+      vue: 3.5.34(typescript@6.0.3)
+      vue-resize: 2.0.0-alpha.1(vue@3.5.34(typescript@6.0.3))
+    optional: true
 
   focus-trap@8.2.0:
     dependencies:
@@ -15439,6 +15707,39 @@ snapshots:
     dependencies:
       jsesc: 3.1.0
 
+  reka-ui@2.10.1(vue@3.5.34(typescript@5.9.3)):
+    dependencies:
+      '@floating-ui/dom': 1.7.6
+      '@floating-ui/vue': 1.1.11(vue@3.5.34(typescript@5.9.3))
+      '@internationalized/date': 3.12.2
+      '@internationalized/number': 3.6.7
+      '@tanstack/vue-virtual': 3.13.30(vue@3.5.34(typescript@5.9.3))
+      '@vueuse/core': 14.3.0(vue@3.5.34(typescript@5.9.3))
+      '@vueuse/shared': 14.3.0(vue@3.5.34(typescript@5.9.3))
+      aria-hidden: 1.2.6
+      defu: 6.1.7
+      ohash: 2.0.11
+      vue: 3.5.34(typescript@5.9.3)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+
+  reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)):
+    dependencies:
+      '@floating-ui/dom': 1.7.6
+      '@floating-ui/vue': 1.1.11(vue@3.5.34(typescript@6.0.3))
+      '@internationalized/date': 3.12.2
+      '@internationalized/number': 3.6.7
+      '@tanstack/vue-virtual': 3.13.30(vue@3.5.34(typescript@6.0.3))
+      '@vueuse/core': 14.3.0(vue@3.5.34(typescript@6.0.3))
+      '@vueuse/shared': 14.3.0(vue@3.5.34(typescript@6.0.3))
+      aria-hidden: 1.2.6
+      defu: 6.1.7
+      ohash: 2.0.11
+      vue: 3.5.34(typescript@6.0.3)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+    optional: true
+
   require-from-string@2.0.2: {}
 
   reserved-identifiers@1.2.0: {}
@@ -16730,6 +17031,15 @@ snapshots:
 
   vue-component-type-helpers@3.3.5: {}
 
+  vue-demi@0.14.10(vue@3.5.34(typescript@5.9.3)):
+    dependencies:
+      vue: 3.5.34(typescript@5.9.3)
+
+  vue-demi@0.14.10(vue@3.5.34(typescript@6.0.3)):
+    dependencies:
+      vue: 3.5.34(typescript@6.0.3)
+    optional: true
+
   vue-devtools-stub@0.1.0: {}
 
   vue-docgen-api@4.79.2(vue@3.5.34(typescript@5.9.3)):
@@ -16763,6 +17073,15 @@ snapshots:
   vue-inbrowser-compiler-independent-utils@4.71.1(vue@3.5.34(typescript@5.9.3)):
     dependencies:
       vue: 3.5.34(typescript@5.9.3)
+
+  vue-resize@2.0.0-alpha.1(vue@3.5.34(typescript@5.9.3)):
+    dependencies:
+      vue: 3.5.34(typescript@5.9.3)
+
+  vue-resize@2.0.0-alpha.1(vue@3.5.34(typescript@6.0.3)):
+    dependencies:
+      vue: 3.5.34(typescript@6.0.3)
+    optional: true
 
   vue-router@5.0.7(@vue/compiler-sfc@3.5.34)(vue@3.5.34(typescript@6.0.3)):
     dependencies:

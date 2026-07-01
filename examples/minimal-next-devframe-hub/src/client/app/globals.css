@@ -1,7 +1,7 @@
-/* The hub UI's design tokens, base layer, and component vocabulary come from the
-   shared devframe design system. `@unocss` is replaced by UnoCSS (via
-   `@unocss/postcss`, see ../postcss.config.mjs) with the generated preflights +
-   utilities; `@internal/design/theme.css` (imported after this file in
-   layout.tsx) supplies the `--df-*` token values + base element styling. */
+/* The hub UI's design tokens, base layer, and semantic class vocabulary come
+   from @antfu/design. `@unocss` is replaced by UnoCSS (via `@unocss/postcss`,
+   see ../postcss.config.mjs) with the generated preflights + utilities;
+   `@antfu/design/styles.css` (imported after this file in layout.tsx) supplies
+   the token values + base element styling. */
 
 @unocss;

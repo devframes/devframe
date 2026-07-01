@@ -1,8 +1,8 @@
 'use client'
 
 import type { EnvSnapshot } from '../../../devframe'
-import { card, input as inputClass } from '@internal/design/components'
 import { useCallback, useEffect, useState } from 'react'
+import { card, input as inputClass } from '../design'
 import { useRpc } from './connect'
 
 export function SnapshotEnv() {
@@ -36,7 +36,7 @@ export function SnapshotEnv() {
         <span>Environment</span>
         <span className="flex-1" />
         {snap && (
-          <span className="text-xs text-muted-foreground tabular-nums">
+          <span className="text-xs color-muted tabular-nums">
             {snap.entries.length}
             {' / '}
             {snap.total}
@@ -51,21 +51,21 @@ export function SnapshotEnv() {
         placeholder="Regex filter (case-insensitive) — e.g. NODE | PATH | HOME"
         aria-label="Environment variable filter (case-insensitive regex)"
       />
-      {snap === null && <p className="text-sm text-muted-foreground">Loading…</p>}
+      {snap === null && <p className="text-sm color-muted">Loading…</p>}
       {snap && snap.entries.length === 0 && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm color-muted">
           {loading ? 'Searching…' : 'No environment variables match this pattern.'}
         </p>
       )}
       {snap && snap.entries.length > 0 && (
-        <div className="scrollbar-slim flex max-h-80 flex-col gap-1 overflow-y-auto text-sm">
+        <div className="flex max-h-80 flex-col gap-1 overflow-y-auto text-sm">
           {snap.entries.map(entry => (
             <div
               key={entry.key}
-              className="grid grid-cols-[minmax(0,12rem)_1fr] gap-x-3 border-b border-border py-1 last:border-b-0"
+              className="grid grid-cols-[minmax(0,12rem)_1fr] gap-x-3 border-b border-base py-1 last:border-b-0"
             >
-              <span className="truncate font-mono text-muted-foreground">{entry.key}</span>
-              <span className={`break-all font-mono ${entry.redacted ? 'text-muted-foreground italic' : 'text-foreground'}`}>{entry.value}</span>
+              <span className="truncate font-mono color-muted">{entry.key}</span>
+              <span className={`break-all font-mono ${entry.redacted ? 'color-muted italic' : 'color-base'}`}>{entry.value}</span>
             </div>
           ))}
         </div>

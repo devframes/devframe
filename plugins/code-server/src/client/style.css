@@ -1,8 +1,8 @@
-/* code-server launcher — structural layout only. Tokens, base element styling,
-   and the `df-*` component vocabulary come from the shared design system
-   (`@internal/design/theme.css` + the UnoCSS preset). The library
-   `mountCodeServer` renders `df-*` classes and assumes that CSS is on the
-   page; the SPA and Storybook generate it via UnoCSS. */
+/* code-server launcher — structural layout only. Base element styling and the
+   component vocabulary come from `@antfu/design` (`@antfu/design/styles.css` +
+   the UnoCSS preset). The library `mountCodeServer` renders `@antfu/design`
+   classes and assumes that CSS is on the page; the SPA and Storybook generate it
+   via UnoCSS. */
 
 html,
 body {

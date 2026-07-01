@@ -16,7 +16,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@internal/design": "workspace:*",
+    "@antfu/design": "catalog:frontend",
+    "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
     "preact": "catalog:frontend"
   },

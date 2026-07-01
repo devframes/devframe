@@ -5,12 +5,12 @@ const BASE = 'http://localhost:9876/__devframe-files-inspector/'
 test.describe('files-inspector (dev)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(BASE)
-    await expect(page.locator('.df-nav-brand')).toHaveText('Files Inspector')
+    await expect(page.getByText('Files Inspector')).toBeVisible()
   })
 
   test('lists fixture files on home', async ({ page }) => {
     await expect(page.locator('section h2')).toContainText('Files')
-    await expect(page.locator('section span[class*="df-badge-"]')).toHaveText('3')
+    await expect(page.locator('section span[class*="badge"]')).toHaveText('3')
     await expect(page.locator('section ul li')).toHaveText([
       'README.md',
       'package.json',

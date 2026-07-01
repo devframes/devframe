@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AgentManifest, InvokeResult } from '@devframes/plugin-inspect/client'
-import { button } from '@internal/design/components'
+import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { reactive, ref } from 'vue'
 import JsonView from './JsonView.vue'
 
@@ -98,10 +98,16 @@ function readResource(id: string) {
             </div>
             <textarea v-model="argsInput[tool.id]" class="args" spellcheck="false" placeholder="{}" />
             <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-              <button :class="button({ variant: 'primary', size: 'sm' })" :disabled="pending[tool.id] || isStatic" @click="invokeTool(tool.id)">
-                <span class="i-ph-play-duotone" />
+              <ActionButton
+                variant="primary"
+                size="sm"
+                icon="i-ph-play-duotone"
+                :loading="pending[tool.id]"
+                :disabled="pending[tool.id] || isStatic"
+                @click="invokeTool(tool.id)"
+              >
                 {{ pending[tool.id] ? 'Invoking…' : 'Invoke' }}
-              </button>
+              </ActionButton>
               <span v-if="isStatic" class="note">read-only static backend</span>
             </div>
 
@@ -144,10 +150,16 @@ function readResource(id: string) {
 
           <template v-if="expanded === res.id">
             <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-              <button :class="button({ variant: 'primary', size: 'sm' })" :disabled="pending[res.id] || isStatic" @click="readResource(res.id)">
-                <span class="i-ph-book-open-duotone" />
+              <ActionButton
+                variant="primary"
+                size="sm"
+                icon="i-ph-book-open-duotone"
+                :loading="pending[res.id]"
+                :disabled="pending[res.id] || isStatic"
+                @click="readResource(res.id)"
+              >
                 {{ pending[res.id] ? 'Reading…' : 'Read Resource' }}
-              </button>
+              </ActionButton>
               <span v-if="isStatic" class="note">read-only static backend</span>
             </div>
 

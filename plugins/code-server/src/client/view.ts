@@ -3,7 +3,7 @@ import type {
   CodeServerDetection,
   CodeServerServerInfo,
 } from '../types'
-import { button, cx, link as linkClass, spinner } from '@internal/design/components'
+import { button, cx, link as linkClass, spinner } from './design'
 
 /** The data the view renders from. Pure — no RPC, no process knowledge. */
 export interface CodeServerViewState {
@@ -85,7 +85,7 @@ function icon(name: string, cls = ''): HTMLSpanElement {
 
 /** The uppercase "code-server" eyebrow, prefixed with the brand icon. */
 function eyebrow(): HTMLParagraphElement {
-  const p = el('p', 'flex items-center gap-1.5 mb-2.5 text-xs tracking-wider uppercase text-muted-foreground')
+  const p = el('p', 'flex items-center gap-1.5 mb-2.5 text-xs tracking-wider uppercase color-muted')
   p.append(icon('i-ph-code-duotone', 'text-sm'), document.createTextNode('code-server'))
   return p
 }
@@ -114,7 +114,7 @@ export function createCodeServerView(
   const launch = (): void => options.actions?.launch?.()
   const recheck = (): void => options.actions?.recheck?.()
 
-  const root = el('div', 'absolute inset-0 flex flex-col of-hidden bg-background text-foreground font-sans')
+  const root = el('div', 'absolute inset-0 flex flex-col of-hidden bg-base color-base font-sans')
   container.append(root)
 
   let frameSrc: string | null = null
@@ -130,7 +130,7 @@ export function createCodeServerView(
 
   function renderConnecting(): void {
     const wrap = el('div', 'flex items-center gap-2.5')
-    wrap.append(el('div', spinner('text-muted-foreground')), el('span', 'text-sm text-muted-foreground', 'Connecting to devframe…'))
+    wrap.append(el('div', spinner('color-muted')), el('span', 'text-sm color-muted', 'Connecting to devframe…'))
     shell(wrap)
   }
 
@@ -138,14 +138,14 @@ export function createCodeServerView(
     const nodes: Node[] = []
     nodes.push(eyebrow())
     nodes.push(el('h1', 'mb-2 text-[1.35rem] font-semibold', 'code-server is not installed'))
-    nodes.push(el('p', 'mb-5 text-sm leading-relaxed text-muted-foreground', 'Install code-server (VS Code in the browser) to open the editor here. Pick whichever fits your setup, then re-check.'))
+    nodes.push(el('p', 'mb-5 text-sm leading-relaxed color-muted', 'Install code-server (VS Code in the browser) to open the editor here. Pick whichever fits your setup, then re-check.'))
 
     const install = el('div', 'flex flex-col gap-3 mb-5')
     for (const { label, command } of INSTALL_COMMANDS) {
       const row = el('div')
-      row.append(el('label', 'block mb-1 text-xs text-muted-foreground', label))
-      const cmd = el('div', 'flex items-center gap-2 px-2.5 py-2 rounded-md border border-border bg-muted')
-      cmd.append(el('code', 'flex-1 of-x-auto whitespace-nowrap font-mono text-xs text-foreground', command))
+      row.append(el('label', 'block mb-1 text-xs color-muted', label))
+      const cmd = el('div', 'flex items-center gap-2 px-2.5 py-2 rounded-md border border-base bg-secondary')
+      cmd.append(el('code', 'flex-1 of-x-auto whitespace-nowrap font-mono text-xs color-base', command))
       const copy = el('button', button({ variant: 'outline', size: 'sm', class: 'shrink-0 text-[11px]' }), 'Copy')
       copy.onclick = () => {
         navigator.clipboard?.writeText(command).then(() => {
@@ -178,19 +178,19 @@ export function createCodeServerView(
     const nodes: Node[] = []
     nodes.push(eyebrow())
     nodes.push(el('h1', 'mb-2 text-[1.35rem] font-semibold', 'Launch the editor'))
-    nodes.push(el('p', 'mb-5 text-sm leading-relaxed text-muted-foreground', 'Start a code-server instance scoped to this workspace and open VS Code right here. The server runs with a generated password and the editor is signed in automatically.'))
+    nodes.push(el('p', 'mb-5 text-sm leading-relaxed color-muted', 'Start a code-server instance scoped to this workspace and open VS Code right here. The server runs with a generated password and the editor is signed in automatically.'))
 
     if (server.status === 'error' && server.error)
-      nodes.push(el('div', 'mb-4 px-3 py-2.5 rounded-md border border-destructive/35 bg-destructive/10 text-destructive text-sm whitespace-pre-wrap break-words', server.error))
+      nodes.push(el('div', 'mb-4 px-3 py-2.5 rounded-md border border-error/35 bg-error/10 text-error text-sm whitespace-pre-wrap break-words', server.error))
 
-    const meta = el('div', 'flex flex-wrap gap-x-4 gap-y-1.5 mb-5 text-xs text-muted-foreground')
+    const meta = el('div', 'flex flex-wrap gap-x-4 gap-y-1.5 mb-5 text-xs color-muted')
     if (detection.version) {
       const v = el('span')
-      v.append(document.createTextNode('version '), el('code', 'font-mono text-foreground', detection.version))
+      v.append(document.createTextNode('version '), el('code', 'font-mono color-base', detection.version))
       meta.append(v)
     }
     const b = el('span')
-    b.append(document.createTextNode('binary '), el('code', 'font-mono text-foreground', detection.bin))
+    b.append(document.createTextNode('binary '), el('code', 'font-mono color-base', detection.bin))
     meta.append(b)
     nodes.push(meta)
 
@@ -209,7 +209,7 @@ export function createCodeServerView(
 
   function renderStarting(): void {
     const wrap = el('div', 'flex items-center gap-2.5')
-    wrap.append(el('div', spinner('text-muted-foreground')), el('span', 'text-sm text-muted-foreground', 'Starting code-server…'))
+    wrap.append(el('div', spinner('color-muted')), el('span', 'text-sm color-muted', 'Starting code-server…'))
     shell(wrap)
   }
 
@@ -223,7 +223,7 @@ export function createCodeServerView(
       applyAuth(state.auth)
     // The editor fills the whole surface — no chrome over the iframe. The
     // `dcs-frame` class is a stable JS hook for the reuse check above.
-    const frame = el('iframe', 'dcs-frame flex-1 w-full border-0 bg-background') as HTMLIFrameElement
+    const frame = el('iframe', 'dcs-frame flex-1 w-full border-0 bg-base') as HTMLIFrameElement
     frame.setAttribute('allow', 'clipboard-read; clipboard-write; cross-origin-isolated')
     frame.src = url
     frameSrc = url

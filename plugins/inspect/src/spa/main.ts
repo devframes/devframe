@@ -1,7 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import 'virtual:uno.css'
-import '@internal/design/theme.css'
+import 'floating-vue/dist/style.css'
+import '@antfu/design/styles.css'
 import './style.css'
 
 // The shared design tokens flip on the `.dark` class; mirror the OS preference

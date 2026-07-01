@@ -1,10 +1,10 @@
 import type { DevframeScopedClientContext } from 'devframe/client'
 import type { StreamReader } from 'devframe/utils/streaming-channel'
 import type { ChatHistory, ChatMessage } from '../types'
-import { button, cx, input, nav, navBrand, spinner } from '@internal/design/components'
 import { connectDevframe } from 'devframe/client'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { CHANNEL, HISTORY, NAMESPACE } from '../constants'
+import { button, cx, input, nav, navBrand, spinner } from './design'
 
 type ChatCtx = DevframeScopedClientContext<typeof NAMESPACE>
 
@@ -167,8 +167,8 @@ export function App() {
 
   if (!ctx) {
     return (
-      <main class="grid h-dvh place-items-center bg-background text-foreground">
-        <p class="flex items-center gap-2 text-sm text-muted-foreground">
+      <main class="grid h-dvh place-items-center bg-base color-base">
+        <p class="flex items-center gap-2 text-sm color-muted">
           <span class={spinner()} />
           Connecting to devframe…
         </p>
@@ -177,13 +177,13 @@ export function App() {
   }
 
   return (
-    <main class="flex flex-col h-dvh w-full max-w-3xl mx-auto bg-background text-foreground">
+    <main class="flex flex-col h-dvh w-full max-w-3xl mx-auto bg-base color-base">
       <header class={nav()}>
         <span class={navBrand()}>
           <span class="i-ph-chat-circle-dots-duotone text-base color-active" />
           <span>Streaming Chat</span>
         </span>
-        <span class="hidden text-xs text-muted-foreground sm:inline">
+        <span class="hidden text-xs color-muted sm:inline">
           history persists in shared state · tokens stream over a channel
         </span>
         <span class="flex-1" />
@@ -200,17 +200,17 @@ export function App() {
 
       <div class="flex flex-1 min-h-0 flex-col gap-3 p-4">
         <div
-          class="flex flex-1 min-h-0 flex-col gap-2 overflow-y-auto rounded-lg border border-border bg-card p-3 scrollbar-slim"
+          class="flex flex-1 min-h-0 flex-col gap-2 overflow-y-auto rounded-lg border border-base bg-base p-3"
           ref={messagesRef}
         >
           {messages.length === 0
             ? (
-                <div class="m-auto max-w-xs text-center text-sm text-muted-foreground leading-relaxed">
-                  <p class="mb-1 font-medium text-foreground">No messages yet.</p>
+                <div class="m-auto max-w-xs text-center text-sm color-muted leading-relaxed">
+                  <p class="mb-1 font-medium color-base">No messages yet.</p>
                   <p>
                     Type a prompt and hit
                     {' '}
-                    <kbd class="rounded border border-border bg-muted px-1.5 py-0.5 text-xs font-mono">Enter</kbd>
+                    <kbd class="rounded border border-base bg-secondary px-1.5 py-0.5 text-xs font-mono">Enter</kbd>
                     {' '}
                     — or pick a demo prompt below.
                   </p>
@@ -264,17 +264,17 @@ export function App() {
               )}
         </form>
 
-        <div class="text-xs text-muted-foreground" data-testid="status">
+        <div class="text-xs color-muted" data-testid="status">
           backend:
           {' '}
-          <code class="font-mono text-foreground">{ctx.base.connectionMeta.backend}</code>
+          <code class="font-mono color-base">{ctx.base.connectionMeta.backend}</code>
           {' · '}
           {messages.length}
           {' '}
           message
           {messages.length === 1 ? '' : 's'}
           {error && (
-            <span class="text-destructive">
+            <span class="text-error">
               {' · error: '}
               {error}
             </span>
@@ -294,8 +294,8 @@ function Message({ msg, live }: { msg: ChatMessage, live: string | undefined }) 
   const cls = cx(
     'max-w-[85%] whitespace-pre-wrap break-words rounded-lg px-3 py-2 leading-relaxed',
     msg.role === 'user'
-      ? 'self-end rounded-br-sm bg-primary text-primary-foreground'
-      : 'self-start rounded-bl-sm bg-muted text-foreground font-mono text-sm',
+      ? 'self-end rounded-br-sm bg-primary-500 text-white'
+      : 'self-start rounded-bl-sm bg-secondary color-base font-mono text-sm',
   )
 
   return (
@@ -303,7 +303,7 @@ function Message({ msg, live }: { msg: ChatMessage, live: string | undefined }) 
       {displayed || (msg.streamId ? '' : '(empty)')}
       {/* Live "typing" indicator while the producer is still streaming tokens. */}
       {msg.streamId && <span class={spinner('ml-1 size-3! align-[-0.2em]')} />}
-      {msg.cancelled && <div class="mt-1 text-xs text-destructive">cancelled</div>}
+      {msg.cancelled && <div class="mt-1 text-xs text-error">cancelled</div>}
     </div>
   )
 }

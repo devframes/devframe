@@ -1,5 +1,5 @@
-/* Terminal-specific surface tweaks. Tokens, base element styling, and the
-   `color-scheme` light/dark switch come from `@internal/design/theme.css`. */
+/* Terminal-specific surface tweaks. Base element styling and the `color-scheme`
+   light/dark switch come from `@antfu/design/styles.css`. */
 
 html,
 body,

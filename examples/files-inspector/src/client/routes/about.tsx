@@ -23,19 +23,19 @@ export function About({ ctx, basePath }: { ctx: InspectorCtx, basePath: string }
         <h2 class="text-base font-semibold">About</h2>
       </div>
 
-      <p class="text-sm text-muted-foreground">
+      <p class="text-sm color-muted">
         This page demonstrates that the SPA discovers its mount path at runtime —
         the same bundle works under any base path.
       </p>
 
-      <dl class="overflow-hidden rounded-md border border-border bg-card text-card-foreground">
+      <dl class="overflow-hidden rounded-md border border-base bg-base color-base">
         {rows.map(({ label, value, icon }) => (
           <div
             key={label}
-            class="flex items-center gap-3 border-b border-border px-3 py-2.5 last:border-b-0"
+            class="flex items-center gap-3 border-b border-base px-3 py-2.5 last:border-b-0"
           >
-            <span class={`${icon} shrink-0 text-muted-foreground`} />
-            <dt class="w-40 shrink-0 text-sm text-muted-foreground">{label}</dt>
+            <span class={`${icon} shrink-0 color-muted`} />
+            <dt class="w-40 shrink-0 text-sm color-muted">{label}</dt>
             <dd class="m-0 min-w-0 flex-1 truncate font-mono text-sm">{value}</dd>
           </div>
         ))}

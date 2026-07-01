@@ -1,8 +1,8 @@
 import type { Accessor } from 'solid-js'
 import type { Impact, ScanReport } from '../../shared/protocol.ts'
-import { button, nav, navBrand } from '@internal/design/components'
 import { For, Show } from 'solid-js'
 import { IMPACT_ORDER } from '../../shared/protocol.ts'
+import { button, nav, navBrand } from '../design'
 import { IMPACT_COLOR, IMPACT_LABEL } from '../lib/impact.ts'
 
 interface HeaderProps {

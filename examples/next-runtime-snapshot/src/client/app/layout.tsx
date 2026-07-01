@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import './globals.css'
-import '@internal/design/theme.css'
+import '@antfu/design/styles.css'
 
 export const metadata: Metadata = {
   title: 'Next Runtime Snapshot',

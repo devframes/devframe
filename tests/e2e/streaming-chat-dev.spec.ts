@@ -10,7 +10,7 @@ test.describe.configure({ mode: 'serial' })
 test.describe('streaming-chat (dev)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(BASE)
-    await expect(page.locator('.df-nav-brand')).toHaveText('Streaming Chat')
+    await expect(page.getByText('Streaming Chat')).toBeVisible()
     await expect(page.locator('div.flex-wrap button').first()).toBeVisible()
 
     const clearBtn = page.locator('header button:has-text("Clear")')

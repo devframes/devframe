@@ -37,17 +37,17 @@ const STATUS_LABEL: Record<FileStatusCode, string> = {
 function statusColor(code: FileStatusCode): string {
   switch (code) {
     case 'added': return 'text-success'
-    case 'deleted': return 'text-destructive'
+    case 'deleted': return 'text-error'
     case 'modified': return 'text-warning'
-    case 'unmerged': return 'text-destructive'
-    default: return 'text-muted-foreground'
+    case 'unmerged': return 'text-error'
+    default: return 'color-muted'
   }
 }
 
 function FileRow({ entry, action }: { entry: StatusFileEntry, action?: ReactNode }) {
   const label = entry.from ? `${entry.from} → ${entry.path}` : entry.path
   return (
-    <li className="hover:bg-accent/40 flex items-center gap-2 rounded py-0.5 pl-1 font-mono text-xs transition-colors">
+    <li className="hover:bg-active flex items-center gap-2 rounded py-0.5 pl-1 font-mono text-xs transition-colors">
       <span className={`w-3 shrink-0 text-center font-semibold ${statusColor(entry.status)}`}>
         {STATUS_LABEL[entry.status]}
       </span>
@@ -75,7 +75,7 @@ function Section({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium tracking-wide uppercase">
+        <div className="color-muted flex items-center gap-2 text-xs font-medium tracking-wide uppercase">
           {title}
           <Badge variant="secondary" className="px-1.5 py-0 text-[10px] tabular-nums">{count}</Badge>
         </div>
@@ -146,16 +146,16 @@ export function StatusPanelView(props: StatusPanelViewProps) {
       </div>
 
       {data && !data.isRepo && (
-        <p className="text-muted-foreground text-sm">The working directory is not a git repository.</p>
+        <p className="color-muted text-sm">The working directory is not a git repository.</p>
       )}
 
       {data?.isRepo && data.clean && (
-        <p className="text-muted-foreground text-sm">Nothing to commit. The working tree is clean.</p>
+        <p className="color-muted text-sm">Nothing to commit. The working tree is clean.</p>
       )}
 
       {data?.isRepo && !data.clean && (
         <div className="flex min-h-0 flex-1 flex-col gap-3">
-          <ScrollArea className="scrollbar-slim min-h-0 flex-1 pr-3">
+          <ScrollArea className="min-h-0 flex-1 pr-3">
             <div className="space-y-4">
               <Section
                 title="Staged"
@@ -217,7 +217,7 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                 disabled={busy}
                 aria-label="Commit message"
               />
-              {note && <p className="text-destructive text-xs">{note}</p>}
+              {note && <p className="text-error text-xs">{note}</p>}
               <Button size="sm" className="tabular-nums" onClick={onCommit} disabled={busy || message.trim().length === 0}>
                 {`Commit ${data.staged.length} file${data.staged.length === 1 ? '' : 's'}`}
               </Button>

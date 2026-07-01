@@ -139,7 +139,7 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
 
   if (refToken.kind === 'head') {
     return (
-      <span className="text-muted-foreground inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[11px] leading-none font-medium">
+      <span className="color-muted inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[11px] leading-none font-medium">
         HEAD
       </span>
     )
@@ -186,8 +186,8 @@ function CommitRow({ commit, row, gutter, currentBranch, isHead, topStub, select
         aria-current={selected ? 'true' : undefined}
         className={cn(
           'relative flex w-full items-stretch rounded-md text-left transition-colors',
-          'focus-visible:ring-ring/60 outline-none focus-visible:ring-2',
-          selected ? 'ring-primary/60 bg-accent/40 ring-1' : 'hover:bg-accent/25',
+          'focus-visible:ring-primary-500/40 outline-none focus-visible:ring-2',
+          selected ? 'ring-primary/60 bg-active ring-1' : 'hover:bg-active',
         )}
         style={{ height: ROW_H }}
       >
@@ -212,7 +212,7 @@ function CommitRow({ commit, row, gutter, currentBranch, isHead, topStub, select
 
         <div className="relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-0.5 pl-4">
           <span className="truncate text-sm font-medium" title={commit.subject}>{commit.subject}</span>
-          <div className="text-muted-foreground flex items-center gap-2 text-xs">
+          <div className="color-muted flex items-center gap-2 text-xs">
             <code className="shrink-0 tabular-nums">{commit.shortHash}</code>
             <span className="truncate">{commit.author}</span>
             <span aria-hidden>·</span>
@@ -252,9 +252,9 @@ function WipRow({ col, color, gutter, changes }: {
         </svg>
       </div>
       <div className="relative z-10 flex min-w-0 flex-1 items-center gap-2 pl-4">
-        <Icon name="i-ph-pencil-simple-duotone" className="text-muted-foreground size-3.5 shrink-0" />
+        <Icon name="i-ph-pencil-simple-duotone" className="color-muted size-3.5 shrink-0" />
         <span className="text-sm font-medium">Work in Progress</span>
-        <span className="text-muted-foreground text-xs">
+        <span className="color-muted text-xs">
           {changes}
           {' '}
           {changes === 1 ? 'change' : 'changes'}
@@ -328,7 +328,7 @@ export function LogPanelView(props: LogPanelViewProps) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex items-center justify-between">
-        <span className="text-muted-foreground text-xs tabular-nums">
+        <span className="color-muted text-xs tabular-nums">
           {isRepo
             ? `${commits.length}${hasMore ? '+' : ''} commits${selectedRef ? ` · ${selectedRef}` : ''}`
             : ' '}
@@ -345,19 +345,19 @@ export function LogPanelView(props: LogPanelViewProps) {
       )}
 
       {error && (
-        <p className="text-destructive text-sm">{error}</p>
+        <p className="text-error text-sm">{error}</p>
       )}
 
       {isRepo === false && (
-        <p className="text-muted-foreground text-sm">The working directory is not a git repository.</p>
+        <p className="color-muted text-sm">The working directory is not a git repository.</p>
       )}
 
       {isRepo === true && commits.length === 0 && (
-        <p className="text-muted-foreground text-sm">No commits yet.</p>
+        <p className="color-muted text-sm">No commits yet.</p>
       )}
 
       {isRepo === true && commits.length > 0 && (
-        <div ref={scrollRef} className="scrollbar-slim min-h-0 flex-1 overflow-y-auto pr-2">
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto pr-2">
           <ul>
             {showWip && headRow && (
               <WipRow col={headRow.col} color={headRow.color} gutter={gutter} changes={workingChanges ?? 0} />
@@ -378,7 +378,7 @@ export function LogPanelView(props: LogPanelViewProps) {
           </ul>
 
           {hasMore && (
-            <div ref={sentinelRef} className="text-muted-foreground flex items-center justify-center gap-2 py-3 text-xs">
+            <div ref={sentinelRef} className="color-muted flex items-center justify-center gap-2 py-3 text-xs">
               <Icon name="i-ph-spinner-gap" className="size-3.5 animate-spin" />
               Loading more…
             </div>

@@ -1,8 +1,8 @@
 'use client'
 
-import { tab, tabsList } from '@internal/design/components'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import * as React from 'react'
+import { tab, tabsList } from '../../lib/design'
 import { cn } from '../../lib/utils'
 
 function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Root>) {

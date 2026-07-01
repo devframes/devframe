@@ -67,10 +67,11 @@
     "@homebridge/node-pty-prebuilt-multiarch": "catalog:deps"
   },
   "devDependencies": {
+    "@antfu/design": "catalog:frontend",
     "@iconify-json/ph": "catalog:frontend",
-    "@internal/design": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "catalog:frontend",
     "@types/node": "catalog:types",
+    "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
     "get-port-please": "catalog:deps",
     "h3": "catalog:deps",

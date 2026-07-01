@@ -10,13 +10,14 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",
     "@devframes/plugin-a11y": "workspace:*",
     "@devframes/plugin-code-server": "workspace:*",
     "@devframes/plugin-git": "workspace:*",
     "@devframes/plugin-inspect": "workspace:*",
     "@devframes/plugin-terminals": "workspace:*",
-    "@internal/design": "workspace:*",
+    "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*"
   },
   "devDependencies": {

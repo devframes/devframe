@@ -3,16 +3,16 @@ import type {
   ButtonVariant,
   IconButtonSize,
   IconButtonVariant,
-} from '@internal/design/components'
-import { button as buttonClass, iconButton as iconButtonClass } from '@internal/design/components'
+} from '../../lib/design'
 import { Slot } from '@radix-ui/react-slot'
 import * as React from 'react'
+import { button as buttonClass, iconButton as iconButtonClass } from '../../lib/design'
 import { cn } from '../../lib/utils'
 
 /**
- * The three button forms, as thin React shells over the shared recipes from
- * `@internal/design`, so they render identically to the Svelte/vanilla/Vue
- * buttons in the other built-in plugins:
+ * The three button forms, as thin React shells over the co-located `@antfu/design`
+ * class helpers, so they render identically to the Svelte/vanilla/Vue buttons in
+ * the other built-in plugins:
  *
  * - `<Button>` — a text button (label, optionally with a leading icon).
  * - `<IconButton>` — a square icon-only button; bordered by default,

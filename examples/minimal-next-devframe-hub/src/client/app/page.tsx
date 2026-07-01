@@ -31,7 +31,7 @@ function DockIcon({ entry }: { entry: DevframeDockEntry }) {
   if (cls)
     return <span className={`${cls} shrink-0 text-lg`} />
   const initial = (entry.title?.[0] ?? '?').toUpperCase()
-  return <span className="grid h-5 w-5 shrink-0 place-items-center rounded bg-accent text-[0.7rem] font-bold">{initial}</span>
+  return <span className="grid h-5 w-5 shrink-0 place-items-center rounded bg-active text-[0.7rem] font-bold">{initial}</span>
 }
 
 export default function Page() {
@@ -142,24 +142,24 @@ export default function Page() {
     }
   }
 
-  const statusDot = status.kind === 'ready' ? 'df-dot-running' : status.kind === 'error' ? 'df-dot-error' : 'df-dot-idle'
-  const titleClass = 'mb2 text-[0.68rem] uppercase tracking-wider text-muted-foreground'
-  const rowClass = 'df-panel px2.5 py1.5 text-xs font-mono'
+  const statusDot = status.kind === 'ready' ? 'bg-success' : status.kind === 'error' ? 'bg-error' : 'bg-neutral-400'
+  const titleClass = 'mb2 text-[0.68rem] uppercase tracking-wider color-muted'
+  const rowClass = 'rounded-lg border border-base bg-base px2.5 py1.5 text-xs font-mono'
 
   return (
     <div className="h-full flex flex-col bg-base color-base">
       <header className="shrink-0 flex items-baseline gap-3 border-b border-base bg-base px4 py2.5">
         <h1 className="m0 text-sm font-semibold">Minimal Next Devframe Hub</h1>
         <p className="m0 text-xs font-mono op-fade">
-          <span className={`df-dot ${statusDot} mr-1.5 align-middle`} />
+          <span className={`inline-block size-1.5 rounded-full shrink-0 ${statusDot} mr-1.5 align-middle`} />
           {status.text}
         </p>
-        <p className="m0 ml-auto text-xs font-mono italic text-muted-foreground">a vite-devtools-style hub on Next.js you can copy</p>
+        <p className="m0 ml-auto text-xs font-mono italic color-muted">a vite-devtools-style hub on Next.js you can copy</p>
       </header>
 
       <div className="grid grid-cols-[244px_1fr] min-h-0 flex-1">
-        <aside className="flex flex-col gap-0.5 of-auto scrollbar-slim border-r border-base bg-muted p2">
-          <h2 className="px2 py1 text-[0.68rem] uppercase tracking-wider text-muted-foreground">Docks</h2>
+        <aside className="flex flex-col gap-0.5 of-auto border-r border-base bg-secondary p2">
+          <h2 className="px2 py1 text-[0.68rem] uppercase tracking-wider color-muted">Docks</h2>
           <ul className="m0 flex flex-col list-none gap-0.5 p0">
             {iframeDocks.length === 0
               ? <li className="op-mute px2 text-sm">No iframe docks</li>
@@ -168,7 +168,7 @@ export default function Page() {
                     <button
                       type="button"
                       onClick={() => setSelectedDockId(dock.id)}
-                      className={`df-navtab w-full! max-w-none! gap-2.5!${dock.id === selectedDockId ? ' df-navtab-active' : ''}`}
+                      className={`relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${dock.id === selectedDockId ? ' op100! bg-active border-base! color-base' : ''}`}
                       title={dock.title}
                     >
                       <DockIcon entry={dock} />
@@ -179,7 +179,7 @@ export default function Page() {
           </ul>
         </aside>
 
-        <main className="min-w-0 of-hidden bg-muted">
+        <main className="min-w-0 of-hidden bg-secondary">
           <iframe
             key={selectedDock?.id ?? 'none'}
             src={selectedDock?.url ?? 'about:blank'}
@@ -189,12 +189,12 @@ export default function Page() {
         </main>
       </div>
 
-      <footer className="grid grid-cols-3 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto scrollbar-slim">
+      <footer className="grid grid-cols-3 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto">
         <section className="min-w-0">
           <h2 className={titleClass}>Commands</h2>
           <ul className="m0 flex flex-col list-none gap-1.5 p0">
             {commands.length === 0
-              ? <li className="df-panel border-dashed px2.5 py1.5 text-xs font-mono op-mute">Waiting for snapshot…</li>
+              ? <li className="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">Waiting for snapshot…</li>
               : commands.map(command => (
                   <li key={command.id} className={rowClass}>
                     {command.title}
@@ -204,7 +204,7 @@ export default function Page() {
                 ))}
           </ul>
           <div className="mt2.5">
-            <button type="button" onClick={() => void ping()} className="df-btn df-btn-outline df-btn-sm">
+            <button type="button" onClick={() => void ping()} className="btn-action text-sm">
               {pingResult}
             </button>
           </div>
@@ -214,7 +214,7 @@ export default function Page() {
           <h2 className={titleClass}>Messages</h2>
           <ul className="m0 flex flex-col list-none gap-1.5 p0">
             {messages.length === 0
-              ? <li className="df-panel border-dashed px2.5 py1.5 text-xs font-mono op-mute">No messages yet.</li>
+              ? <li className="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">No messages yet.</li>
               : messages.map(message => (
                   <li key={message.id} className={rowClass}>
                     <span className="op-fade">
@@ -233,7 +233,7 @@ export default function Page() {
           <h2 className={titleClass}>Terminals</h2>
           <ul className="m0 flex flex-col list-none gap-1.5 p0">
             {terminals.length === 0
-              ? <li className="df-panel border-dashed px2.5 py1.5 text-xs font-mono op-mute">No terminal sessions.</li>
+              ? <li className="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">No terminal sessions.</li>
               : terminals.map(terminal => (
                   <li key={terminal.id} className={rowClass}>
                     {terminal.title}

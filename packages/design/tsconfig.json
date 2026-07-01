@@ -1,9 +1,0 @@
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "lib": ["esnext", "dom"],
-    "types": []
-  },
-  "include": ["src"],
-  "exclude": ["dist", "node_modules"]
-}

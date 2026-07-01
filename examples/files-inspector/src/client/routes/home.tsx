@@ -1,6 +1,6 @@
 import type { InspectorCtx } from '../app'
-import { badge, button } from '@internal/design/components'
 import { useEffect, useState } from 'preact/hooks'
+import { badge, button } from '../design'
 
 export function Home({ ctx }: { ctx: InspectorCtx }) {
   const [files, setFiles] = useState<string[]>([])
@@ -42,10 +42,10 @@ export function Home({ ctx }: { ctx: InspectorCtx }) {
         </button>
       </div>
 
-      <div class="overflow-hidden rounded-md border border-border bg-card text-card-foreground">
+      <div class="overflow-hidden rounded-md border border-base bg-base color-base">
         {files.length === 0
           ? (
-              <p class="px-3 py-10 text-center text-sm text-muted-foreground">
+              <p class="px-3 py-10 text-center text-sm color-muted">
                 {loading ? 'Loading files…' : 'No files in the working directory.'}
               </p>
             )
@@ -54,9 +54,9 @@ export function Home({ ctx }: { ctx: InspectorCtx }) {
                 {files.map(f => (
                   <li
                     key={f}
-                    class="flex items-center gap-2 border-b border-border px-3 py-1.5 text-sm transition-colors last:border-b-0 hover:bg-accent"
+                    class="flex items-center gap-2 border-b border-base px-3 py-1.5 text-sm transition-colors last:border-b-0 hover:bg-active"
                   >
-                    <span class="i-ph-file-duotone shrink-0 text-muted-foreground" />
+                    <span class="i-ph-file-duotone shrink-0 color-muted" />
                     <span class="truncate font-mono">{f}</span>
                   </li>
                 ))}

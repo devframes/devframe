@@ -18,6 +18,9 @@ export default defineConfig({
     UnoCSS(),
     inspectVitePlugin({ devMiddleware: true, base: '/' }),
   ],
+  // `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile its
+  // SFCs instead of esbuild pre-bundling them.
+  optimizeDeps: { exclude: ['@antfu/design'] },
   build: {
     outDir: fileURLToPath(new URL('../../dist/spa', import.meta.url)),
     emptyOutDir: true,

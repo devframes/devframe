@@ -8,11 +8,22 @@
  * page — so a row and its highlighted element read as one object.
  */
 
-/* The inspector keeps its bespoke "audit console" CSS but sources every
-   color from the shared @internal/design tokens (imported before this file),
-   so it matches the other devframe plugins and follows the `.dark` class.
-   Severity is the one domain-specific palette, set inline from IMPACT_COLOR. */
+/* The inspector keeps its bespoke "audit console" CSS but sources every color
+   from `@antfu/design`'s palette. The local `--df-*` source tokens below mirror
+   the design system's surfaces/text and flip via the `.dark` class; the audit
+   vars (`--ink`, `--surface`, …) derive from them. Severity is the one
+   domain-specific palette, set inline from IMPACT_COLOR. */
 :root {
+  --df-background: #fff;
+  --df-card: #fff;
+  --df-secondary: #f5f5f5;
+  --df-border: rgba(136, 136, 136, 0.13);
+  --df-foreground: #262626;
+  --df-muted-foreground: #525252;
+  --df-primary: #3a6a45;
+  --df-success: #12b76a;
+  --df-accent: rgba(136, 136, 136, 0.067);
+
   --ink: var(--df-background);
   --surface: var(--df-card);
   --surface-2: var(--df-secondary);
@@ -26,6 +37,18 @@
 
   --font-ui: var(--font-sans, system-ui, -apple-system, "Segoe UI", roboto, sans-serif);
   --font-mono: ui-monospace, sfmono-regular, "SF Mono", menlo, consolas, monospace;
+}
+
+.dark {
+  --df-background: #111;
+  --df-card: #181818;
+  --df-secondary: #1a1a1a;
+  --df-border: rgba(136, 136, 136, 0.13);
+  --df-foreground: #e5e5e5;
+  --df-muted-foreground: #a3a3a3;
+  --df-primary: #6fb07d;
+  --df-success: #34d27f;
+  --df-accent: rgba(136, 136, 136, 0.067);
 }
 
 * {
@@ -57,8 +80,8 @@ body {
   min-height: 0;
 }
 
-/* ── top bar: nav, brand and the Rescan button come from the shared
-   @internal/design `df-*` vocabulary; only the connection status pill below
+/* ── top bar: nav, brand and the Rescan button come from the co-located
+   `@antfu/design` class helpers; only the connection status pill below
    stays bespoke. ───────────────────────────────────────────────────────── */
 
 .status {

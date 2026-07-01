@@ -121,18 +121,6 @@
       "@devframes/nuxt": [
         "./packages/nuxt/src/index.ts"
       ],
-      "@internal/design/preset": [
-        "./packages/design/src/preset.ts"
-      ],
-      "@internal/design/components": [
-        "./packages/design/src/components.ts"
-      ],
-      "@internal/design/tokens": [
-        "./packages/design/src/tokens.ts"
-      ],
-      "@internal/design": [
-        "./packages/design/src/index.ts"
-      ],
       "@devframes/plugin-code-server/client": [
         "./plugins/code-server/src/client/index.ts"
       ],

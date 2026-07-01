@@ -1,10 +1,10 @@
-import type { BadgeVariant } from '@internal/design/components'
-import { badge as badgeClass } from '@internal/design/components'
+import type { BadgeVariant } from '../../lib/design'
 import { Slot } from '@radix-ui/react-slot'
 import * as React from 'react'
+import { badge as badgeClass } from '../../lib/design'
 import { cn } from '../../lib/utils'
 
-/** Badge — a React shell over the shared `badge()` recipe from `@internal/design`. */
+/** Badge — a React shell over the co-located `@antfu/design` `badge()` helper. */
 function Badge({
   className,
   variant = 'secondary',

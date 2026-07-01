@@ -2,7 +2,7 @@
 import { render } from 'solid-js/web'
 import { App } from './app.tsx'
 import 'virtual:uno.css'
-import '@internal/design/theme.css'
+import '@antfu/design/styles.css'
 import './styles.css'
 
 // Shared design tokens flip on the `.dark` class; mirror the OS preference onto

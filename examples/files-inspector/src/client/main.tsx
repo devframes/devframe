@@ -1,7 +1,7 @@
 import { render } from 'preact'
 import { App } from './app'
 import 'virtual:uno.css'
-import '@internal/design/theme.css'
+import '@antfu/design/styles.css'
 
 // Shared design tokens flip on the `.dark` class; mirror the OS preference onto
 // <html> (the built-in devframe plugins follow the same approach).
