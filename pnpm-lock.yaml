@@ -562,6 +562,43 @@ importers:
         specifier: catalog:deps
         version: 8.21.0
 
+  examples/storybook-hub:
+    dependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.6.1
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+    devDependencies:
+      '@iconify-json/ph':
+        specifier: catalog:frontend
+        version: 1.2.2
+      get-port-please:
+        specifier: catalog:deps
+        version: 3.2.0
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
+      storybook:
+        specifier: catalog:storybook
+        version: 10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      unocss:
+        specifier: catalog:frontend
+        version: 66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      vite:
+        specifier: catalog:build
+        version: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)
+
   examples/streaming-chat:
     dependencies:
       '@antfu/design':
