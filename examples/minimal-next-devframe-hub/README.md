@@ -18,6 +18,8 @@ Open the printed URL. The dock on the left lists every mounted tool with its ico
 
 Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`.
 
+The A11y Inspector shows a live axe-core report of this hub's own page: the host serves the plugin's in-page agent bundle (`a11yAgentBundlePath`) same-origin through the catch-all route, and `app/layout.tsx` loads it into the page, so the docked panel and the agent share the origin their BroadcastChannel rides.
+
 ## What the example proves
 
 - `createHubContext()` boots a hub with no Vite-specific code path; a `DevframeHost` impl plugs Next specifics (static mounts, connection meta, storage, origin) in uniformly
@@ -32,7 +34,7 @@ The plugins run node-side (child processes, the native `node-pty` PTY backend) a
 
 | File | Role |
 |---|---|
-| `src/client/devframe/minimal-next-devframe-hub.ts` | The Next host — hub context, static-mount registry, side-car WS |
+| `src/client/devframe/minimal-next-devframe-hub.ts` | The Next host — hub context, static-mount registry (incl. the a11y agent), side-car WS |
 | `src/client/app/%5F_hub/%5F_connection.json/route.ts` | Boots the singleton host and serves `/__hub/__connection.json` |
 | `src/client/app/%5F_[id]/[[...path]]/route.ts` | Serves each mounted SPA and its connection meta under `/__<id>/` |
 | `src/client/app/page.tsx` | The browser UI that consumes the hub protocol |

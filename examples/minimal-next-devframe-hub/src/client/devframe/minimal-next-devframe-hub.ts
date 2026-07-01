@@ -8,7 +8,7 @@ import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { startHttpAndWs } from 'devframe/node'
 import { getPort } from 'get-port-please'
-import { join } from 'pathe'
+import { dirname, join } from 'pathe'
 import demoDevframe from './demo-devframe'
 import demoDevframeB from './demo-devframe-b'
 
@@ -38,6 +38,25 @@ async function loadBuiltinPlugins(): Promise<DevframeDefinition[]> {
     ),
   )
   return mods.map(mod => mod.default as DevframeDefinition)
+}
+
+/**
+ * Locate the a11y inspector's in-page **agent** bundle so the hub can serve it
+ * same-origin (see `app/layout.tsx`, which loads it into the host page). Loaded
+ * through the same bundler-ignored dynamic `import()` as the plugins, since the
+ * package resolves its `dist` via `import.meta.url`. Returns the conventional
+ * URL path and the on-disk directory to mount, or `null` if unavailable.
+ */
+async function loadA11yAgentMount(): Promise<{ base: string, dir: string } | null> {
+  try {
+    const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-a11y')
+    const path = mod.A11Y_AGENT_PATH as string
+    const bundle = mod.a11yAgentBundlePath as string
+    return { base: path.slice(0, path.lastIndexOf('/') + 1), dir: dirname(bundle) }
+  }
+  catch {
+    return null
+  }
 }
 
 const STATIC_MOUNTS = new Map<string, string>()
@@ -181,6 +200,14 @@ export async function minimalNextDevframeHub(
   for (const def of devframes) {
     await mountDevframe(context, def)
   }
+
+  // Serve the a11y inspector agent same-origin so the hub's own page (which
+  // loads it via app/layout.tsx) is scanned live by the docked panel. The
+  // catch-all route serves this mount; the panel iframe and the agent share
+  // the origin, so their BroadcastChannel connects.
+  const a11yAgent = await loadA11yAgentMount()
+  if (a11yAgent)
+    host.mountStatic(a11yAgent.base, a11yAgent.dir)
 
   const started = await startHttpAndWs({
     context,

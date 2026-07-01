@@ -17,7 +17,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/*
+          Load the a11y inspector agent into the hub's own page so its docked
+          panel scans the host live. The hub serves this bundle same-origin
+          (see the agent mount in `devframe/minimal-next-devframe-hub.ts`); the
+          path mirrors the plugin's `A11Y_AGENT_PATH` constant.
+        */}
+        <script type="module" src="/__df-inject/inject.js" async />
+      </body>
     </html>
   )
 }

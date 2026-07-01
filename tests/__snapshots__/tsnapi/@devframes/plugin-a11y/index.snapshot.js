@@ -6,5 +6,7 @@ export default a11yDevframe
 // #endregion
 
 // #region Other
+export { A11Y_AGENT_PATH }
+export { a11yAgentBundlePath }
 export { createA11yDevframe }
 // #endregion

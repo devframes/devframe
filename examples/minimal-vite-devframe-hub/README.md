@@ -18,6 +18,8 @@ Open the printed URL. The dock on the left lists every mounted tool with its ico
 
 Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`.
 
+The A11y Inspector shows a live axe-core report of this hub's own page: `a11yAgent()` (in `vite.config.ts`) serves the plugin's in-page agent and injects it into `index.html`, so the docked panel and the agent share the Vite origin their BroadcastChannel rides. Hover a violation to ring the offending element in the hub UI.
+
 ## What the example proves
 
 - `createHubContext()` boots a hub with no Vite-specific code path; a `DevframeHost` impl plugs framework specifics (static mounts, connection meta, storage, origin) in uniformly
@@ -34,7 +36,7 @@ The dock UI is plain DOM in `src/client/`. To skin your own viewer, read the sam
 | File | Role |
 |---|---|
 | `src/minimal-vite-devframe-hub.ts` | The Vite host — hub context, static + connection-meta mounts, side-car WS |
-| `vite.config.ts` | Mounts the built-in plugins via the host's `devframes` option |
+| `vite.config.ts` | Mounts the built-in plugins via the host's `devframes` option; adds `a11yAgent()` to load the a11y agent into the host page |
 | `src/client/main.ts` | The browser UI that consumes the hub protocol |
 | `src/client/icons.ts` | Offline Phosphor icons for the dock |
 | `index.html` | The UI shell |
