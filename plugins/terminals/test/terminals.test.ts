@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 import { SESSIONS_STATE_KEY, TERMINAL_STREAM_CHANNEL } from '../src/constants'
 import { isPtyAvailable } from '../src/node/index'
-import { bootClient, call, collectUntil, startTerminalsServer } from './_utils'
+import { bootClient, call, collectUntil, createFakeHubTerminals, startTerminalsServer } from './_utils'
 
 vi.stubGlobal('WebSocket', WebSocket)
 
@@ -233,5 +233,70 @@ describe('@devframes/plugin-terminals', () => {
     await expect(
       call(client, 'devframes-plugin-terminals:spawn', { command: 'definitely-not-allowed', mode: 'readonly' }),
     ).rejects.toThrow()
+  })
+
+  describe('hub aggregation', () => {
+    it('surfaces sessions contributed by other devframes as read-only entries', async () => {
+      await server.close()
+      const hub = createFakeHubTerminals()
+      server = await startTerminalsServer({}, { hub })
+      const client = bootClient(server.port)
+      await new Promise(r => setTimeout(r, 50))
+
+      // Another devframe (e.g. code-server) registers into the hub.
+      hub.register({
+        id: 'devframes-plugin-code-server',
+        title: 'Code Server',
+        description: '/work',
+        status: 'running',
+        icon: 'ph:code-duotone',
+      })
+
+      const list = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
+      const cs = list.find(s => s.id === 'devframes-plugin-code-server')
+      expect(cs).toBeDefined()
+      expect(cs?.title).toBe('Code Server')
+      expect(cs?.icon).toBe('ph:code-duotone')
+      expect(cs?.mode).toBe('readonly')
+      expect(cs?.status).toBe('running')
+      // Its output is read from the hub's streaming channel, not the plugin's.
+      expect(cs?.channel).toBe('devframe:terminals')
+
+      // A stopped hub session maps onto the plugin's 'exited' status.
+      hub.update({ id: 'devframes-plugin-code-server', status: 'stopped' })
+      const afterStop = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
+      expect(afterStop.find(s => s.id === 'devframes-plugin-code-server')?.status).toBe('exited')
+
+      // Removing it from the hub drops it from the plugin's list.
+      hub.remove({ id: 'devframes-plugin-code-server' })
+      const afterRemove = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
+      expect(afterRemove.some(s => s.id === 'devframes-plugin-code-server')).toBe(false)
+    })
+
+    it('mirrors its own sessions into the hub without looping', async () => {
+      await server.close()
+      const hub = createFakeHubTerminals()
+      server = await startTerminalsServer({}, { hub })
+      const client = bootClient(server.port)
+      await new Promise(r => setTimeout(r, 50))
+
+      const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+        command: NODE,
+        args: ['-e', 'setInterval(() => {}, 1000)'],
+        mode: 'readonly',
+      })
+
+      // The plugin's own session is mirrored into the hub (syncHub), and the
+      // resulting hub event must not re-enter and duplicate it in the list.
+      await vi.waitFor(() => {
+        expect(hub.sessions.has(info.id)).toBe(true)
+      })
+      const list = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
+      expect(list.filter(s => s.id === info.id)).toHaveLength(1)
+      // Own sessions carry no aggregation channel (owned + controllable).
+      expect(list.find(s => s.id === info.id)?.channel).toBeUndefined()
+
+      await call(client, 'devframes-plugin-terminals:remove', { id: info.id })
+    })
   })
 })

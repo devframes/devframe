@@ -39,6 +39,15 @@
     return info.customTitle || info.processName || info.title
   }
 
+  /**
+   * Sessions aggregated from other devframes via the hub (they carry a
+   * `channel`) are surfaced read-only — this plugin doesn't own their process,
+   * so it offers no rename / restart / kill controls for them.
+   */
+  function isExternal(info: TerminalSessionInfo): boolean {
+    return Boolean(info.channel)
+  }
+
   function pickActive(list: TerminalSessionInfo[]): void {
     if (activeId && !list.some(x => x.id === activeId))
       activeId = null
@@ -176,20 +185,25 @@
           <button
             type="button"
             class={navTab({ active: activeId === s.id, class: 'group' })}
-            title={`${displayName(s)} — double-click to rename`}
+            title={isExternal(s) ? displayName(s) : `${displayName(s)} — double-click to rename`}
             onclick={() => (activeId = s.id)}
-            ondblclick={(e) => { e.preventDefault(); e.stopPropagation(); renamingId = s.id }}
+            ondblclick={(e) => { if (isExternal(s)) return; e.preventDefault(); e.stopPropagation(); renamingId = s.id }}
           >
             <span class={dot(statusDot(s.status))}></span>
+            {#if s.icon}
+              <div class="{s.icon} shrink-0"></div>
+            {/if}
             <span class="truncate">{displayName(s)}</span>
-            <span
-              role="button"
-              tabindex="-1"
-              aria-label="Close terminal"
-              class="i-ph-x op0 group-hover:op60 hover:op100! transition-opacity shrink-0"
-              onclick={(e) => { e.stopPropagation(); rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {}) }}
-              onkeydown={() => {}}
-            ></span>
+            {#if !isExternal(s)}
+              <span
+                role="button"
+                tabindex="-1"
+                aria-label="Close terminal"
+                class="i-ph-x op0 group-hover:op60 hover:op100! transition-opacity shrink-0"
+                onclick={(e) => { e.stopPropagation(); rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {}) }}
+                onkeydown={() => {}}
+              ></span>
+            {/if}
           </button>
         {/if}
       {/each}
@@ -248,7 +262,10 @@
       <span class={tag(s.mode === 'interactive' ? 'blue' : 'amber')}>
         {s.mode === 'interactive' ? 'interactive' : 'readonly'}
       </span>
-      <span class="font-mono truncate op-fade" title={`${s.command} ${s.args.join(' ')}`}>
+      <span class="font-mono truncate op-fade flex items-center gap-1.5" title={`${s.command} ${s.args.join(' ')}`}>
+        {#if s.icon}
+          <div class="{s.icon} shrink-0 text-base"></div>
+        {/if}
         {s.command}{s.args.length ? ` ${s.args.join(' ')}` : ''}
       </span>
       <span class="flex items-center gap-1.5 op-mute font-mono text-xs tabular-nums shrink-0">
@@ -262,12 +279,14 @@
 
       <div class="flex-1"></div>
 
-      <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: s.id }).catch(() => {})}>
-        <div class="i-ph-arrow-clockwise-duotone"></div>
-      </button>
-      <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {})}>
-        <div class="i-ph-trash-duotone"></div>
-      </button>
+      {#if !isExternal(s)}
+        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: s.id }).catch(() => {})}>
+          <div class="i-ph-arrow-clockwise-duotone"></div>
+        </button>
+        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {})}>
+          <div class="i-ph-trash-duotone"></div>
+        </button>
+      {/if}
     </div>
   {/if}
 

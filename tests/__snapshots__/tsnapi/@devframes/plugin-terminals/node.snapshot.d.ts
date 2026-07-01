@@ -18,6 +18,7 @@ export declare class TerminalManager {
   private hubOwned;
   constructor(_: DevframeNodeContext, _?: TerminalsOptions);
   init(): Promise<void>;
+  private hubTerminals;
   list(): TerminalSessionInfo[];
   getPresets(): TerminalPreset[];
   private buildEnv;
@@ -34,6 +35,7 @@ export declare class TerminalManager {
   remove(_: string): void;
   dispose(): void;
   private publish;
+  private refreshSessionsState;
   private syncHub;
 }
 // #endregion
