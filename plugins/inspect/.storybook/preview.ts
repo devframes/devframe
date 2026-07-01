@@ -1,4 +1,4 @@
-import type { Preview } from '@storybook/vue3'
+import type { Preview } from '@storybook/vue3-vite'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
 import '../src/spa/style.css'
@@ -16,16 +16,10 @@ const preview: Preview = {
     },
     backgrounds: {
       default: 'dark',
-      values: [
-        {
-          name: 'dark',
-          value: '#111111',
-        },
-        {
-          name: 'light',
-          value: '#ffffff',
-        },
-      ],
+      options: {
+        dark: { name: 'Dark', value: '#111111' },
+        light: { name: 'Light', value: '#ffffff' },
+      },
     },
   },
 }

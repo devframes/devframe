@@ -62,8 +62,7 @@
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@iconify-json/ph": "catalog:frontend",
-    "@storybook/addon-essentials": "catalog:storybook",
-    "@storybook/vue3": "catalog:storybook",
+    "@storybook/addon-docs": "catalog:storybook",
     "@storybook/vue3-vite": "catalog:storybook",
     "@unocss/preset-icons": "catalog:frontend",
     "@vitejs/plugin-vue": "catalog:build",
