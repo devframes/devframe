@@ -38,12 +38,15 @@ export class DevframeMessagesHost {
   removals
   _autoDeleteTimers
   _clock
+  _removalsTrimmedAt
   _tick() {}
+  _recordRemoval(_, _) {}
   constructor(_) {}
   async add(_) {}
   async update(_, _) {}
   async remove(_) {}
   async clear() {}
+  listSince(_) {}
   _createHandle(_) {}
 }
 export class DevframeTerminalsHost {
