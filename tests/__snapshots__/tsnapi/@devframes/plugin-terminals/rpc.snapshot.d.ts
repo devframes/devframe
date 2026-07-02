@@ -22,6 +22,8 @@ export declare const serverFunctions: readonly [{
     readonly rows: _$valibot.NumberSchema<undefined>;
     readonly pid: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
     readonly exitCode: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
+    readonly icon: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
+    readonly channel: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
     readonly presetId: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
     readonly createdAt: _$valibot.NumberSchema<undefined>;
   }, undefined>, undefined>;
@@ -42,6 +44,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }[]>>) | undefined;
@@ -60,6 +64,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }[]) | undefined;
@@ -78,6 +84,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }[], _$devframe.DevframeNodeContext> | undefined;
@@ -97,6 +105,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }[]>>> | undefined;
@@ -115,6 +125,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }[]>> | undefined;
@@ -204,6 +216,8 @@ export declare const serverFunctions: readonly [{
     readonly rows: _$valibot.NumberSchema<undefined>;
     readonly pid: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
     readonly exitCode: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
+    readonly icon: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
+    readonly channel: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
     readonly presetId: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
     readonly createdAt: _$valibot.NumberSchema<undefined>;
   }, undefined>;
@@ -236,6 +250,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }>>) | undefined;
@@ -266,6 +282,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }) | undefined;
@@ -296,6 +314,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }, _$devframe.DevframeNodeContext> | undefined;
@@ -327,6 +347,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }>>> | undefined;
@@ -357,6 +379,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }>> | undefined;
@@ -478,6 +502,8 @@ export declare const serverFunctions: readonly [{
     readonly rows: _$valibot.NumberSchema<undefined>;
     readonly pid: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
     readonly exitCode: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
+    readonly icon: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
+    readonly channel: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
     readonly presetId: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
     readonly createdAt: _$valibot.NumberSchema<undefined>;
   }, undefined>;
@@ -500,6 +526,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }>>) | undefined;
@@ -520,6 +548,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }) | undefined;
@@ -540,6 +570,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }, _$devframe.DevframeNodeContext> | undefined;
@@ -561,6 +593,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }>>> | undefined;
@@ -581,6 +615,8 @@ export declare const serverFunctions: readonly [{
     rows: number;
     pid?: number | undefined;
     exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
   }>> | undefined;

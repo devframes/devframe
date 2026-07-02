@@ -18,6 +18,7 @@ export class TerminalManager {
   hubOwned
   constructor(_, _) {}
   async init() {}
+  hubTerminals() {}
   list() {}
   getPresets() {}
   buildEnv(_) {}
@@ -34,6 +35,7 @@ export class TerminalManager {
   remove(_) {}
   dispose() {}
   publish() {}
+  refreshSessionsState() {}
   syncHub() {}
 }
 // #endregion

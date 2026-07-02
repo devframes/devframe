@@ -9,4 +9,6 @@ export { getCookieSessionName }
 export { PLUGIN_ID }
 export { SESSION_COOKIE_BASE }
 export { STATE_KEY }
+export { TERMINAL_SESSION_ICON }
+export { TERMINAL_SESSION_TITLE }
 // #endregion

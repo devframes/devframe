@@ -12,4 +12,6 @@ export var DEFAULT_START_TIMEOUT /* const */
 export var PLUGIN_ID /* const */
 export var SESSION_COOKIE_BASE /* const */
 export var STATE_KEY /* const */
+export var TERMINAL_SESSION_ICON /* const */
+export var TERMINAL_SESSION_TITLE /* const */
 // #endregion

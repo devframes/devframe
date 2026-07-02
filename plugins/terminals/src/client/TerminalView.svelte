@@ -72,11 +72,15 @@
       })
     }
 
-    term.onResize(({ cols, rows }) => {
-      rpc.call('devframes-plugin-terminals:resize', { id: info.id, cols, rows }).catch(() => {})
-    })
+    // Aggregated hub sessions (they carry a `channel`) aren't owned by this
+    // plugin, so there's no local process to resize.
+    if (!info.channel) {
+      term.onResize(({ cols, rows }) => {
+        rpc.call('devframes-plugin-terminals:resize', { id: info.id, cols, rows }).catch(() => {})
+      })
+    }
 
-    reader = rpc.streaming.subscribe(TERMINAL_STREAM_CHANNEL, info.id)
+    reader = rpc.streaming.subscribe(info.channel || TERMINAL_STREAM_CHANNEL, info.id)
     ;(async () => {
       try {
         for await (const chunk of reader) {

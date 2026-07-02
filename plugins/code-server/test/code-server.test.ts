@@ -3,9 +3,9 @@ import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { STATE_KEY } from '../src/constants'
+import { PLUGIN_ID, STATE_KEY, TERMINAL_SESSION_ICON, TERMINAL_SESSION_TITLE } from '../src/constants'
 import { setupCodeServer } from '../src/node/index'
-import { createTestContext, writeFakeCodeServer } from './_utils'
+import { createFakeHubTerminals, createTestContext, writeFakeCodeServer } from './_utils'
 
 async function sharedState(ctx: Awaited<ReturnType<typeof createTestContext>>): Promise<CodeServerSharedState> {
   const state = await ctx.rpc.sharedState.get(STATE_KEY)
@@ -99,5 +99,61 @@ describe('@devframes/plugin-code-server', () => {
     expect(result.server.status).toBe('running')
     expect(result.server.port).toBeGreaterThan(0)
     expect(result.server.port).not.toBe(8080)
+  })
+
+  describe('hub terminals integration', () => {
+    it('spawns code-server through ctx.terminals as a read-only session', async () => {
+      const dumpEnvTo = join(mkdtempSync(join(tmpdir(), 'dcs-dump-')), 'hashed')
+      const bin = writeFakeCodeServer({ version: '4.99.0', dumpEnvTo })
+      const ctx = await createTestContext()
+      const terminals = createFakeHubTerminals()
+      ;(ctx as unknown as { terminals: typeof terminals }).terminals = terminals
+      const supervisor = await setupCodeServer(ctx, { bin })
+      supervisors.push(supervisor)
+
+      const result = await supervisor.start()
+      expect(result.server.status).toBe('running')
+
+      // Launched through the hub, surfaced as exactly one session.
+      expect(terminals.sessions.size).toBe(1)
+      const session = terminals.sessions.get(PLUGIN_ID)
+      expect(session).toBeDefined()
+      // Proper name + icon, and the workspace folder as description.
+      expect(session!.title).toBe(TERMINAL_SESSION_TITLE)
+      expect(session!.icon).toBe(TERMINAL_SESSION_ICON)
+      expect(session!.status).toBe('running')
+      expect(session!.type).toBe('child-process')
+      expect(session!.description).toBe(ctx.cwd)
+      // The hub-owned child is the one the supervisor reports as running.
+      expect(session!.getChildProcess()?.pid).toBe(result.server.pid)
+
+      // Auth still flows end to end through the hub: HASHED_PASSWORD the process
+      // was launched with equals the cookie handed to the client.
+      const hashed = readFileSync(dumpEnvTo, 'utf8')
+      expect(hashed).toBe(result.auth?.cookieValue)
+    })
+
+    it('reflects stop on the hub session and re-registers on the next start', async () => {
+      const bin = writeFakeCodeServer({ version: '4.99.0' })
+      const ctx = await createTestContext()
+      const terminals = createFakeHubTerminals()
+      ;(ctx as unknown as { terminals: typeof terminals }).terminals = terminals
+      const supervisor = await setupCodeServer(ctx, { bin })
+      supervisors.push(supervisor)
+
+      await supervisor.start()
+      const first = terminals.sessions.get(PLUGIN_ID)
+
+      supervisor.stop()
+      // The session stays visible, marked stopped.
+      expect(terminals.sessions.get(PLUGIN_ID)?.status).toBe('stopped')
+
+      // A fresh start replaces the stale session under the same stable id.
+      await supervisor.start()
+      expect(terminals.sessions.size).toBe(1)
+      const second = terminals.sessions.get(PLUGIN_ID)
+      expect(second).not.toBe(first)
+      expect(second?.status).toBe('running')
+    })
   })
 })

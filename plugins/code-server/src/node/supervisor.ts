@@ -21,7 +21,10 @@ import {
   DEFAULT_CODE_SERVER_PORT,
   DEFAULT_START_TIMEOUT,
   getCookieSessionName,
+  PLUGIN_ID,
   STATE_KEY,
+  TERMINAL_SESSION_ICON,
+  TERMINAL_SESSION_TITLE,
 } from '../constants'
 import { detectCodeServer } from './detect'
 import { diagnostics } from './diagnostics'
@@ -30,6 +33,35 @@ import { diagnostics } from './diagnostics'
 const LOG_BUFFER_LINES = 200
 /** Interval between readiness probes. */
 const PROBE_INTERVAL = 250
+
+/**
+ * Minimal shape of the hub's terminals subsystem (`DevframeHubContext.terminals`).
+ * Declared locally and accessed by duck-typing so the plugin keeps no build- or
+ * runtime dependency on `@devframes/hub` and behaves identically standalone,
+ * where `ctx.terminals` is simply absent. Mirrors the pattern used by the
+ * terminals plugin.
+ */
+interface HubTerminalEntry {
+  id: string
+  title: string
+  description?: string
+  status: 'running' | 'stopped' | 'error'
+  icon?: string
+}
+interface HubChildProcessSession extends HubTerminalEntry {
+  getChildProcess: () => ChildProcess | undefined
+  terminate: () => Promise<void>
+  restart: () => Promise<void>
+}
+interface HubTerminalsBridge {
+  sessions: Map<string, { id: string }>
+  update: (patch: Partial<HubTerminalEntry> & { id: string }) => void
+  remove?: (session: { id: string }) => void
+  startChildProcess: (
+    executeOptions: { command: string, args: string[], cwd?: string, env?: Record<string, string> },
+    terminal: { id: string, title: string, description?: string, icon?: string },
+  ) => Promise<HubChildProcessSession>
+}
 
 /**
  * Owns the lifecycle of a single code-server child process: detects the
@@ -60,6 +92,11 @@ export class CodeServerSupervisor {
   private logBuffer: string[] = []
   private cleanupRegistered = false
 
+  /** Stable id of the hub terminal session, reused across start/stop. */
+  private readonly sessionId: string
+  /** The live hub terminal session when launched through `ctx.terminals`. */
+  private session?: HubChildProcessSession
+
   constructor(
     private readonly ctx: DevframeNodeContext,
     options: CodeServerOptions = {},
@@ -74,6 +111,7 @@ export class CodeServerSupervisor {
     this.cookieName = getCookieSessionName(options.cookieSuffix)
     this.startTimeout = options.startTimeout ?? DEFAULT_START_TIMEOUT
     this.detection = { checked: false, installed: false, bin: this.bin }
+    this.sessionId = options.cookieSuffix ? `${PLUGIN_ID}:${options.cookieSuffix}` : PLUGIN_ID
   }
 
   /** Resolve shared state, register process-exit cleanup, run first detection. */
@@ -158,22 +196,7 @@ export class CodeServerSupervisor {
         })
       : Promise.resolve(initialPort)
 
-    let child: ChildProcess
-    try {
-      child = spawn(this.bin, args, {
-        cwd: folder,
-        env,
-        windowsHide: true,
-        stdio: ['ignore', 'pipe', 'pipe'],
-        shell: process.platform === 'win32' && this.bin.endsWith('.cmd'),
-      })
-    }
-    catch (error) {
-      const reason = error instanceof Error ? error.message : String(error)
-      this.server = { status: 'error', error: reason }
-      this.publish()
-      throw diagnostics.DP_CODE_SERVER_0003({ bin: this.bin, reason })
-    }
+    const child = await this.launchProcess(args, env, folder)
 
     this.proc = child
     this.server = { status: 'starting', port: actualPort || undefined, pid: child.pid, startedAt: Date.now() }
@@ -213,13 +236,18 @@ export class CodeServerSupervisor {
         return
       const exitCode = code ?? 0
       const unexpected = this.server.status !== 'stopped'
+      const crashed = unexpected && exitCode !== 0
       this.proc = undefined
       this.cookieValue = undefined
-      this.server = unexpected && exitCode !== 0
+      this.server = crashed
         ? { status: 'error', error: this.lastLog() || `code-server exited with code ${exitCode}` }
         : { status: 'stopped' }
-      if (unexpected && exitCode !== 0)
+      if (crashed)
         diagnostics.DP_CODE_SERVER_0005({ code: exitCode }, { method: 'warn' })
+      // Reflect the outcome on the hub terminal session (the hub does not
+      // update a child-process session's status on its own exit).
+      this.reflectHub(crashed ? 'error' : 'stopped')
+      this.session = undefined
       if (portRejecter)
         portRejecter?.(new Error(`code-server exited before binding (code ${exitCode})`))
       this.publish()
@@ -246,6 +274,8 @@ export class CodeServerSupervisor {
     catch (error) {
       if (this.proc === child) {
         this.terminate(child)
+        this.reflectHub('error')
+        this.session = undefined
         this.server = { status: 'error', error: error instanceof Error ? error.message : String(error) }
         this.proc = undefined
         this.cookieValue = undefined
@@ -263,6 +293,8 @@ export class CodeServerSupervisor {
     this.server = { status: 'stopped' }
     if (child)
       this.terminate(child)
+    this.reflectHub('stopped')
+    this.session = undefined
     this.publish()
     return this.status()
   }
@@ -273,6 +305,7 @@ export class CodeServerSupervisor {
       this.terminate(this.proc)
     this.proc = undefined
     this.cookieValue = undefined
+    this.session = undefined
   }
 
   private authInfo(): CodeServerAuth | undefined {
@@ -282,6 +315,12 @@ export class CodeServerSupervisor {
   }
 
   private terminate(child: ChildProcess): void {
+    // Hub-launched processes are owned by the hub's terminals subsystem — let
+    // it kill the child and close the mirrored output stream.
+    if (this.session) {
+      void this.session.terminate().catch(() => {})
+      return
+    }
     try {
       if (process.platform === 'win32' && this.bin.endsWith('.cmd') && child.pid) {
         execSync(`taskkill /pid ${child.pid} /t /f`, { stdio: 'ignore' })
@@ -292,6 +331,97 @@ export class CodeServerSupervisor {
     }
     catch {
       // Already gone.
+    }
+  }
+
+  /**
+   * Resolve the hub's terminals subsystem when this devframe is mounted in a
+   * hub. `ctx.terminals` only exists on a `DevframeHubContext`, so it is
+   * duck-typed — standalone runtimes (CLI / Vite / build) have no such property
+   * and fall back to a direct child process.
+   */
+  private resolveHubTerminals(): HubTerminalsBridge | undefined {
+    const terminals = (this.ctx as { terminals?: HubTerminalsBridge }).terminals
+    return terminals && typeof terminals.startChildProcess === 'function' ? terminals : undefined
+  }
+
+  /** Update the mirrored hub terminal session's status, when one exists. */
+  private reflectHub(status: HubTerminalEntry['status']): void {
+    const hub = this.resolveHubTerminals()
+    if (hub?.sessions.has(this.sessionId))
+      hub.update({ id: this.sessionId, status })
+  }
+
+  /**
+   * Launch code-server. In a hub, spawn it through `ctx.terminals` so it shows
+   * up as a read-only terminal session (proper icon + name) whose output the
+   * hub streams to its terminals panel; standalone, spawn it directly. Either
+   * way, return the underlying {@link ChildProcess} so the shared readiness /
+   * port / log wiring in `start()` is identical.
+   */
+  private async launchProcess(
+    args: string[],
+    env: Record<string, string>,
+    folder: string,
+  ): Promise<ChildProcess> {
+    const hub = this.resolveHubTerminals()
+    if (hub) {
+      // Drop a stale session left by a prior run so the stable id is free to
+      // re-register (each start uses a fresh port + password).
+      const stale = hub.sessions.get(this.sessionId)
+      if (stale)
+        hub.remove?.(stale)
+
+      try {
+        const session = await hub.startChildProcess(
+          {
+            command: this.bin,
+            args,
+            cwd: folder,
+            // The hub merges `process.env` under the hood, so neutralize
+            // PASSWORD explicitly (we authenticate via HASHED_PASSWORD) rather
+            // than relying on it being deleted from the passed env.
+            env: { ...env, PASSWORD: '' },
+          },
+          {
+            id: this.sessionId,
+            title: TERMINAL_SESSION_TITLE,
+            description: folder,
+            icon: TERMINAL_SESSION_ICON,
+          },
+        )
+        const child = session.getChildProcess()
+        if (!child)
+          throw new Error('code-server process handle was unavailable')
+        this.session = session
+        return child
+      }
+      catch (error) {
+        const reason = error instanceof Error ? error.message : String(error)
+        const orphan = hub.sessions.get(this.sessionId)
+        if (orphan)
+          hub.remove?.(orphan)
+        this.session = undefined
+        this.server = { status: 'error', error: reason }
+        this.publish()
+        throw diagnostics.DP_CODE_SERVER_0003({ bin: this.bin, reason })
+      }
+    }
+
+    try {
+      return spawn(this.bin, args, {
+        cwd: folder,
+        env,
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        shell: process.platform === 'win32' && this.bin.endsWith('.cmd'),
+      })
+    }
+    catch (error) {
+      const reason = error instanceof Error ? error.message : String(error)
+      this.server = { status: 'error', error: reason }
+      this.publish()
+      throw diagnostics.DP_CODE_SERVER_0003({ bin: this.bin, reason })
     }
   }
 
