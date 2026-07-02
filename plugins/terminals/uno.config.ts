@@ -29,6 +29,8 @@ export default defineConfig({
     'i-ph-code-duotone',
     'i-ph-terminal-window-duotone',
     'i-ph-git-branch-duotone',
+    'i-ph-magnifying-glass-duotone',
+    'i-ph-person-arms-spread-duotone',
   ],
   // Wind4 leaves bare `border`/`border-b` at currentColor; restore the subtle
   // shared border color (matching `border-base`) for unqualified borders.

@@ -18,7 +18,10 @@ then kept mounted so its state survives tab switches. Where the iframe points
 depends on the mode, unified behind the `storybook-hub:ensure` RPC:
 
 - **dev** (`vite`) — the plugin's `storybook dev` server is spawned on first
-  open and the dock iframes it live (HMR).
+  open and the dock iframes it live (HMR). The process is launched through
+  `ctx.terminals`, the hub's terminals subsystem, so each spawned Storybook is
+  a read-only terminal session — open the **Terminals** dock to watch its
+  output stream live.
 - **build** (`vite preview`) — the pre-built `storybook/storybook-static/<id>`
   is served by the hub on one origin and the dock iframes that.
 

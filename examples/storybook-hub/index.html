@@ -34,21 +34,6 @@
           <div id="overlay" class="absolute inset-0 z-10 flex items-center justify-center bg-secondary" style="display:none"></div>
         </main>
       </div>
-
-      <footer class="grid grid-cols-2 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto">
-        <section class="min-w-0">
-          <h2 class="mb2 text-[0.68rem] uppercase tracking-wider color-muted">Activity</h2>
-          <ul id="messages" class="m0 flex flex-col list-none gap-1.5 p0"><li class="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">No activity yet.</li></ul>
-        </section>
-
-        <section class="min-w-0">
-          <h2 class="mb2 text-[0.68rem] uppercase tracking-wider color-muted">Commands</h2>
-          <ul id="commands" class="m0 flex flex-col list-none gap-1.5 p0"><li class="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">Waiting for snapshot…</li></ul>
-          <div class="mt2.5">
-            <button id="ping" class="btn-action text-sm">Dispatch <code class="font-mono op-fade">storybook-hub:ping</code></button>
-          </div>
-        </section>
-      </footer>
     </div>
     <script type="module" src="/src/client/main.ts"></script>
   </body>

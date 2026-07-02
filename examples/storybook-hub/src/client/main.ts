@@ -1,8 +1,4 @@
-import type {
-  DevframeCommandEntry,
-  DevframeDockEntry,
-  DevframeMessageEntry,
-} from '@devframes/hub/types'
+import type { DevframeDockEntry } from '@devframes/hub/types'
 import { connectDevframe } from '@devframes/hub/client'
 import { iconClass } from './icons'
 import 'virtual:uno.css'
@@ -25,9 +21,6 @@ const connEl = document.querySelector<HTMLElement>('#conn')!
 const docksEl = document.querySelector<HTMLElement>('#docks')!
 const stageEl = document.querySelector<HTMLElement>('#stage')!
 const overlayEl = document.querySelector<HTMLElement>('#overlay')!
-const messagesEl = document.querySelector<HTMLElement>('#messages')!
-const commandsEl = document.querySelector<HTMLElement>('#commands')!
-const pingBtn = document.querySelector<HTMLButtonElement>('#ping')!
 
 interface DockRuntime {
   iframe?: HTMLIFrameElement
@@ -206,38 +199,6 @@ async function main() {
       switchTo(target.dataset.dockId)
   })
   syncDocks()
-
-  // Commands — read from `devframe:commands` shared state.
-  const commands = await rpc.sharedState.get<DevframeCommandEntry[]>('devframe:commands', { initialValue: [] })
-  const renderCommands = () => renderList(commandsEl, commands.value() ?? [], c =>
-    `<li class="rounded-lg border border-base bg-base px2.5 py1.5 text-xs font-mono">${c.title} <code class="op-fade">${c.id}</code></li>`)
-  commands.on('updated', renderCommands)
-  renderCommands()
-
-  // Activity — poll hub messages (spawn progress, etc.).
-  const refreshMessages = async () => {
-    const entries = await rpc.call('storybook-hub:messages:list' as any) as DevframeMessageEntry[]
-    renderList(messagesEl, entries.slice(-12).reverse(), m =>
-      `<li class="rounded-lg border border-base bg-base px2.5 py1.5 text-xs font-mono"><span class="op-fade">[${m.level}]</span> ${m.message}</li>`)
-  }
-  await refreshMessages()
-  setInterval(() => void refreshMessages(), 2000)
-
-  pingBtn.addEventListener('click', async () => {
-    try {
-      const result = await rpc.call('hub:commands:execute' as any, 'storybook-hub:ping')
-      pingBtn.textContent = `Ping returned ${JSON.stringify(result)}`
-    }
-    catch (err) {
-      pingBtn.textContent = `Error: ${(err as Error).message}`
-    }
-  })
-}
-
-function renderList<T>(host: HTMLElement, items: readonly T[], render: (item: T) => string) {
-  host.innerHTML = items.length
-    ? items.map(render).join('')
-    : '<li class="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">empty</li>'
 }
 
 main().catch((err) => {

@@ -1,8 +1,7 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
+import type { DevframeChildProcessTerminalSession } from '@devframes/hub/types'
 import type { DevframeHost } from 'devframe/types'
-import type { ChildProcess } from 'node:child_process'
 import type { Plugin, PreviewServer, ResolvedConfig, ViteDevServer } from 'vite'
-import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { homedir } from 'node:os'
@@ -45,24 +44,13 @@ const storybookBin = join(dirname(require.resolve('storybook/package.json')), 'd
 const pluginDir = (id: string): string => join(repoRoot, 'plugins', id)
 const storybookConfigDir = (id: string): string => join(pluginDir(id), '.storybook')
 const storybookStaticDir = (id: string): string => join(repoRoot, 'storybook', 'storybook-static', id)
+const sessionIdFor = (id: string): string => `storybook-hub:${id}`
 
 /** What the client needs to point a dock's iframe at the right place. */
 export type EnsureStorybookResult
   = | { ok: true, kind: 'port', port: number }
     | { ok: true, kind: 'path', url: string }
     | { ok: false, error: string }
-
-// Read-side RPC so the UI can list hub messages (spawn progress, etc.).
-const storybookHubMessagesList = defineHubRpcFunction({
-  name: 'storybook-hub:messages:list',
-  type: 'static',
-  jsonSerializable: true,
-  setup: (ctx: DevframeHubContext) => ({
-    async handler() {
-      return Array.from(ctx.messages.entries.values())
-    },
-  }),
-})
 
 export interface StorybookHubOptions {
   /** Mount path for the hub's connection-meta endpoint. Default: `/__hub/`. */
@@ -79,7 +67,9 @@ export interface StorybookHubOptions {
  * opened (mirroring how the code-server plugin embeds its editor on demand):
  *
  *  - **dev** (`vite`): the plugin's `storybook dev` server is spawned on first
- *    open and the dock iframes it live (HMR).
+ *    open — through `ctx.terminals`, so it lives as a read-only hub terminal
+ *    session whose output streams into the Terminals dock — and the dock
+ *    iframes it live (HMR).
  *  - **build** (`vite preview`): the pre-built `storybook/storybook-static/<id>`
  *    is served by the hub and the dock iframes that single origin.
  *
@@ -90,17 +80,20 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
   const base = normalizeBase(options.base ?? '/__hub/')
   let viteConfig: ResolvedConfig | undefined
   let started: { close: () => Promise<void> } | undefined
-  const devServers = new Map<string, { port: number, proc: ChildProcess, ready: Promise<number> }>()
+  const devServers = new Map<string, { ready: Promise<number>, session: DevframeChildProcessTerminalSession }>()
 
   function killDevServers(): void {
-    for (const { proc } of devServers.values())
-      proc.kill()
+    for (const { session } of devServers.values())
+      void session.terminate().catch(() => {})
     devServers.clear()
   }
 
   /**
    * Spawn (once) the `storybook dev` server for a plugin and resolve when it
-   * answers on its port. Concurrent callers await the same boot.
+   * answers on its port. Concurrent callers await the same boot. The process
+   * is owned by the hub's terminals subsystem (`ctx.terminals`), so it shows
+   * up as a read-only session — proper title + icon, output streamed live —
+   * in the Terminals dock.
    */
   async function ensureDevServer(ctx: DevframeHubContext, meta: StorybookMeta): Promise<number> {
     const existing = devServers.get(meta.id)
@@ -108,25 +101,49 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
       return existing.ready
 
     const port = await getPort({ port: 6100 + STORYBOOKS.findIndex(s => s.id === meta.id), random: true })
-    const cwd = pluginDir(meta.id)
-    const proc = spawn(
-      process.execPath,
-      [storybookBin, 'dev', '--config-dir', storybookConfigDir(meta.id), '--port', String(port), '--host', '0.0.0.0', '--no-open', '--quiet'],
-      { cwd, env: { ...process.env, STORYBOOK_DISABLE_TELEMETRY: '1' }, stdio: 'inherit' },
+    const sessionId = sessionIdFor(meta.id)
+    const title = `${meta.title} Storybook`
+
+    // Drop a stale session left by a crashed/stopped previous run so the
+    // stable id is free to re-register. (`remove` exists on the hub's
+    // terminals host; the public interface doesn't surface it yet.)
+    const stale = ctx.terminals.sessions.get(sessionId)
+    if (stale)
+      (ctx.terminals as unknown as { remove?: (s: typeof stale) => void }).remove?.(stale)
+
+    const session = await ctx.terminals.startChildProcess(
+      {
+        command: process.execPath,
+        args: [storybookBin, 'dev', '--config-dir', storybookConfigDir(meta.id), '--port', String(port), '--host', '0.0.0.0', '--no-open', '--quiet'],
+        cwd: pluginDir(meta.id),
+        env: { STORYBOOK_DISABLE_TELEMETRY: '1' },
+      },
+      {
+        id: sessionId,
+        title,
+        description: `storybook dev · port ${port}`,
+        icon: meta.icon,
+      },
     )
-    proc.on('exit', () => devServers.delete(meta.id))
 
-    void ctx.messages.add({
-      level: 'info',
-      message: `Starting ${meta.title} Storybook…`,
-      description: `storybook dev on port ${port}`,
+    const child = session.getChildProcess()
+    const ready = new Promise<number>((resolvePort, reject) => {
+      // Fail fast when the process dies before serving.
+      child?.once('exit', (code) => {
+        reject(new Error(`storybook dev exited before becoming ready (code ${code ?? 'null'})`))
+      })
+      waitForPort(port, 180_000).then(() => resolvePort(port), reject)
     })
 
-    const ready = waitForPort(port, 180_000).then(() => {
-      void ctx.messages.add({ level: 'success', message: `${meta.title} Storybook ready`, description: `port ${port}` })
-      return port
+    // Reflect the outcome on the hub terminal session (the hub does not
+    // update a child-process session's status on its own exit).
+    child?.on('exit', (code) => {
+      devServers.delete(meta.id)
+      if (ctx.terminals.sessions.has(sessionId))
+        ctx.terminals.update({ id: sessionId, title, status: code === 0 ? 'stopped' : 'error' })
     })
-    devServers.set(meta.id, { port, proc, ready })
+
+    devServers.set(meta.id, { ready, session })
     return ready
   }
 
@@ -197,7 +214,7 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
       workspaceRoot: cwd,
       mode,
       host,
-      builtinRpcDeclarations: [storybookHubEnsure, storybookHubMessagesList],
+      builtinRpcDeclarations: [storybookHubEnsure],
     })
 
     // In build mode, serve each pre-built Storybook so its dock iframe resolves
@@ -225,23 +242,15 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
 
     // The live terminals plugin — a real integration docked alongside the
     // Storybooks, grouped separately so its "Terminals" reads apart from the
-    // "Terminals" Storybook.
+    // "Terminals" Storybook. It also mirrors the hub's `ctx.terminals`
+    // sessions, so the spawned `storybook dev` processes appear inside it.
     await mountDevframe(context, terminalsDevframe, { dock: { category: 'Plugins' } })
 
-    context.commands.register({
-      id: 'storybook-hub:ping',
-      title: 'Storybook Hub · Ping',
-      icon: 'ph:bell-duotone',
-      category: 'kit',
-      handler: () => 'pong',
-    })
-    await context.messages.add({
-      level: 'success',
-      message: 'Storybook Hub started',
-      description: `${mode} mode · side-car WS on port ${port} · ${STORYBOOKS.length} Storybook dock(s).`,
-    })
-
-    started = await startHttpAndWs({ context, port, auth: false })
+    // Bind dual-stack (`::` accepts IPv6 + IPv4-mapped) so the side-car is
+    // dialable via `::1`, `127.0.0.1`, and from outside the machine — the
+    // default `localhost` bind resolves to `::1` only on some hosts, which
+    // strands IPv4 clients and remote browsers.
+    started = await startHttpAndWs({ context, port, host: '::', auth: false })
     serveConnectionMeta(base)
 
     server.httpServer?.once('close', () => {
