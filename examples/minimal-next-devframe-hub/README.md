@@ -18,13 +18,14 @@ Open the printed URL. The dock on the left lists every mounted tool with its ico
 
 Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`.
 
-The A11y Inspector shows a live axe-core report of this hub's own page: the host serves the plugin's in-page agent bundle (`a11yAgentBundlePath`) same-origin through the catch-all route, and `app/layout.tsx` loads it into the page, so the docked panel and the agent share the origin their BroadcastChannel rides.
+The A11y Inspector shows a live axe-core report of this hub's own page: the host serves the plugin's in-page agent module (`a11yAgentBundlePath`) same-origin through the catch-all route and attaches it as the a11y dock's `clientScript`; the hub client runtime — `createDevframeClientHost()` booted in `app/page.tsx` — imports it into the page, so the docked panel and the agent share the origin their BroadcastChannel rides.
 
 ## What the example proves
 
 - `createHubContext()` boots a hub with no Vite-specific code path; a `DevframeHost` impl plugs Next specifics (static mounts, connection meta, storage, origin) in uniformly
 - `mountDevframe(ctx, def)` registers any `DevframeDefinition` as a dock and serves both its SPA and its `__connection.json`, so the embedded SPA connects straight back to the hub
 - The browser reads `devframe:docks` / `devframe:commands` shared state and dispatches commands over RPC — byte-for-byte the same protocol the Vite host speaks
+- `createDevframeClientHost()` boots the hub's framework-level client runtime in the host page: it publishes the shared client context and imports each dock's `clientScript` (here, the a11y agent) so plugins run code in the page being inspected
 
 ## Hosting built-in plugins in a bundler
 

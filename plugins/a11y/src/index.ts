@@ -14,14 +14,15 @@ const BASE_PATH = '/__devframe-a11y-inspector/'
 const distDir = fileURLToPath(new URL('../dist/spa', import.meta.url))
 
 /**
- * Absolute path to the built in-page **agent** bundle (`dist/inject/inject.js`).
+ * Absolute path to the built in-page **agent** module (`dist/inject/inject.js`)
+ * — the dock **client script** the hub runtime imports into the host page to
+ * scan it (its default export boots the agent; importing it does too).
  *
- * A host serves this file at a same-origin URL (conventionally
- * {@link A11Y_AGENT_PATH}) and loads it into the page it wants to check —
- * `a11yAgent()` from `@devframes/plugin-a11y/vite` does this for a Vite host,
- * and any other host can serve the file and inject the module script itself.
- * Resolves under `<pkg>/dist/inject/inject.js` from both the source and the
- * published entry. Requires the built bundle (`pnpm -C plugins/a11y build`).
+ * A hub attaches this as the a11y dock's `clientScript`, resolved to a URL the
+ * page can import: `/@fs/${a11yAgentBundlePath}` for a Vite host, or a
+ * statically-served path for others (see the minimal hub examples). Resolves
+ * under `<pkg>/dist/inject/inject.js` from both the source and the published
+ * entry. Requires the built bundle (`pnpm -C plugins/a11y build`).
  */
 export const a11yAgentBundlePath = fileURLToPath(new URL('../dist/inject/inject.js', import.meta.url))
 
@@ -78,5 +79,4 @@ export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeD
 const a11yDevframe: DevframeDefinition = createA11yDevframe()
 
 export default a11yDevframe
-export { A11Y_AGENT_PATH } from './shared/protocol.ts'
 export type { Impact, ScanReport, Violation, ViolationNode } from './shared/protocol.ts'

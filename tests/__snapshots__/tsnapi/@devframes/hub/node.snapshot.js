@@ -71,4 +71,8 @@ export async function mountDevframe(_, _, _) {}
 // #region Variables
 export var builtinHubRpcDeclarations /* const */
 export var hubCommandsExecute /* const */
+export var hubMessagesAdd /* const */
+export var hubMessagesClear /* const */
+export var hubMessagesRemove /* const */
+export var hubMessagesUpdate /* const */
 // #endregion

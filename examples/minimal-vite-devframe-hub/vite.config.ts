@@ -1,5 +1,4 @@
-import a11yDevframe from '@devframes/plugin-a11y'
-import { a11yAgent } from '@devframes/plugin-a11y/vite'
+import a11yDevframe, { a11yAgentBundlePath } from '@devframes/plugin-a11y'
 import codeServerDevframe from '@devframes/plugin-code-server'
 import gitDevframe from '@devframes/plugin-git'
 import inspectDevframe from '@devframes/plugin-inspect'
@@ -15,10 +14,6 @@ export default defineConfig({
   resolve: { alias },
   plugins: [
     UnoCSS(),
-    // Load the a11y inspector agent into this hub's own page so its docked
-    // panel scans the host live. The panel (mounted below) and this agent
-    // share the Vite origin, so their BroadcastChannel connects.
-    a11yAgent(),
     minimalViteDevframeHub({
       devframes: [
         demoDevframe,
@@ -31,6 +26,13 @@ export default defineConfig({
         inspectDevframe,
         a11yDevframe,
       ],
+      // Attach the a11y inspector's in-page agent as its dock's client script.
+      // The hub client runtime (booted in src/client/main.ts) imports it into
+      // this page so the docked panel scans the host live — no bespoke
+      // injection plugin needed. `/@fs/` lets Vite serve the built module.
+      clientScripts: {
+        [a11yDevframe.id]: { importFrom: `/@fs/${a11yAgentBundlePath}` },
+      },
     }),
   ],
 })

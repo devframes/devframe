@@ -25,15 +25,6 @@ export const A11Y_CHANNEL = 'devframe-a11y-inspector'
  */
 export const A11Y_NODE_ATTR = 'data-df-a11y-node'
 
-/**
- * Conventional same-origin path a host serves the injected agent bundle at,
- * and loads into the page it wants to check via
- * `<script type="module" src="{A11Y_AGENT_PATH}">`. Shared so the copy-paste
- * hint in the panel, the demo host, and the `a11yAgent()` Vite plugin all
- * agree on one URL.
- */
-export const A11Y_AGENT_PATH = '/__df-inject/inject.js'
-
 /** axe-core impact buckets, ordered most → least severe. */
 export const IMPACT_ORDER = ['critical', 'serious', 'moderate', 'minor'] as const
 export type Impact = (typeof IMPACT_ORDER)[number]

@@ -25,7 +25,6 @@ export default _default
 // #endregion
 
 // #region Other
-export { A11Y_AGENT_PATH }
 export { Impact }
 export { ScanReport }
 export { Violation }

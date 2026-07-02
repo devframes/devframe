@@ -9,4 +9,13 @@ export function getDevframeClientContext(): DevframeClientContext | undefined {
   return (globalThis as any)[CLIENT_CONTEXT_KEY]
 }
 
+/**
+ * Publish the global Devframe client context. Called by
+ * {@link import('./host').createDevframeClientHost}; a dock client script or a
+ * viewer reads it back with {@link getDevframeClientContext}.
+ */
+export function setDevframeClientContext(ctx: DevframeClientContext): void {
+  (globalThis as any)[CLIENT_CONTEXT_KEY] = ctx
+}
+
 export { CLIENT_CONTEXT_KEY }

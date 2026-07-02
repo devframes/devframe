@@ -40,19 +40,35 @@ async function loadBuiltinPlugins(): Promise<DevframeDefinition[]> {
   return mods.map(mod => mod.default as DevframeDefinition)
 }
 
+/** URL base the a11y agent module is served under (same-origin, catch-all route). */
+const A11Y_AGENT_MOUNT_BASE = '/__df-a11y-agent/'
+
+interface A11yAgentMount {
+  /** The a11y devframe's dock id — the dock the client script attaches to. */
+  dockId: string
+  /** On-disk directory holding the built agent module. */
+  dir: string
+  /** Same-origin URL of the agent module, importable by the hub client runtime. */
+  importFrom: string
+}
+
 /**
- * Locate the a11y inspector's in-page **agent** bundle so the hub can serve it
- * same-origin (see `app/layout.tsx`, which loads it into the host page). Loaded
- * through the same bundler-ignored dynamic `import()` as the plugins, since the
- * package resolves its `dist` via `import.meta.url`. Returns the conventional
- * URL path and the on-disk directory to mount, or `null` if unavailable.
+ * Locate the a11y inspector's in-page **agent** module so the hub can serve it
+ * same-origin and attach it to the a11y dock as its client script — the hub
+ * client runtime (booted in `app/page.tsx`) imports it into the host page,
+ * where it scans this hub live. Loaded through the same bundler-ignored dynamic
+ * `import()` as the plugins, since the package resolves its `dist` via
+ * `import.meta.url`. Returns `null` if unavailable.
  */
-async function loadA11yAgentMount(): Promise<{ base: string, dir: string } | null> {
+async function loadA11yAgentMount(): Promise<A11yAgentMount | null> {
   try {
     const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-a11y')
-    const path = mod.A11Y_AGENT_PATH as string
     const bundle = mod.a11yAgentBundlePath as string
-    return { base: path.slice(0, path.lastIndexOf('/') + 1), dir: dirname(bundle) }
+    return {
+      dockId: (mod.default as DevframeDefinition).id,
+      dir: dirname(bundle),
+      importFrom: `${A11Y_AGENT_MOUNT_BASE}inject.js`,
+    }
   }
   catch {
     return null
@@ -197,17 +213,21 @@ export async function minimalNextDevframeHub(
     description: `Side-car WS on port ${port}. ${devframes.length} devframe(s) registered.`,
   })
 
-  for (const def of devframes) {
-    await mountDevframe(context, def)
-  }
-
-  // Serve the a11y inspector agent same-origin so the hub's own page (which
-  // loads it via app/layout.tsx) is scanned live by the docked panel. The
-  // catch-all route serves this mount; the panel iframe and the agent share
-  // the origin, so their BroadcastChannel connects.
+  // Serve the a11y inspector's in-page agent same-origin (via the catch-all
+  // route) and attach it to the a11y dock as its client script. The hub client
+  // runtime booted in `app/page.tsx` imports it into the host page, where it
+  // scans this hub live; the panel iframe shares the origin, so their
+  // BroadcastChannel connects.
   const a11yAgent = await loadA11yAgentMount()
   if (a11yAgent)
-    host.mountStatic(a11yAgent.base, a11yAgent.dir)
+    host.mountStatic(A11Y_AGENT_MOUNT_BASE, a11yAgent.dir)
+
+  for (const def of devframes) {
+    const clientScript = a11yAgent && def.id === a11yAgent.dockId
+      ? { importFrom: a11yAgent.importFrom }
+      : undefined
+    await mountDevframe(context, def, clientScript ? { dock: { clientScript } } : undefined)
+  }
 
   const started = await startHttpAndWs({
     context,

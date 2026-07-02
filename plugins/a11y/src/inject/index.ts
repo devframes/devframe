@@ -129,4 +129,15 @@ function findRule(report: ScanReport | null, nodeId: string) {
   return report?.violations.find(v => v.nodes.some(n => n.id === nodeId))?.ruleId
 }
 
+/**
+ * Client-script entry the hub runtime calls after importing this module. The
+ * agent needs no context — it talks to the panel over the same-origin
+ * BroadcastChannel — so this just boots it. `start()` is idempotent.
+ */
+export default function runA11yAgent(): void {
+  start()
+}
+
+// Also self-boot so a plain `<script type="module" src=".../inject.js">`
+// (the standalone demo, any non-hub host) starts the agent on load.
 start()

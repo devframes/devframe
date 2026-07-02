@@ -7,7 +7,7 @@ import type {
   DevframeMessageEntry,
   DevframeTerminalSession,
 } from '@devframes/hub/types'
-import { connectDevframe } from '@devframes/hub/client'
+import { connectDevframe, createDevframeClientHost } from '@devframes/hub/client'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { iconClass } from './icons'
 
@@ -57,6 +57,11 @@ export default function Page() {
         rpcRef.current = rpc
         setStatus({ text: `Connected: backend=${rpc.connectionMeta.backend}`, kind: 'ready' })
 
+        // Boot the framework-level client host: it builds the shared client
+        // context and imports each dock's client script into this page — e.g.
+        // the a11y inspector's in-page agent, which then scans this hub live.
+        const clientHost = await createDevframeClientHost({ rpc })
+
         const docksState = await rpc.sharedState.get<DevframeDockEntry[]>(
           'devframe:docks',
           { initialValue: [] },
@@ -97,7 +102,10 @@ export default function Page() {
           void refreshTerminals()
         }, 2000)
 
-        cleanup = () => window.clearInterval(interval)
+        cleanup = () => {
+          window.clearInterval(interval)
+          clientHost.dispose()
+        }
       }
       catch (err) {
         if (!cancelled)

@@ -31,12 +31,14 @@ function, so it resolves over WebSocket in dev and from the baked dump in a
 static build.
 
 devframe deliberately provides no access to the host application's DOM, so the
-agent is the author-provided bridge: load one module script in the page you want
-to check and it scans, reports, and highlights on demand. In a Vite host,
-`a11yAgent()` (from `@devframes/plugin-a11y/vite`) serves that bundle and injects
-the script for you — pair it with the panel mount so both share the origin their
-BroadcastChannel needs. Any other host can serve `a11yAgentBundlePath` at
-`A11Y_AGENT_PATH` and inject the tag itself; both hub examples do exactly this.
+agent is the author-provided bridge into the page being checked. In a hub, the
+agent is the a11y dock's **client script**: attach `a11yAgentBundlePath` as the
+dock's `clientScript` (resolved to an importable URL — `/@fs/…` under Vite, or a
+statically-served path) and the hub's client runtime (`createDevframeClientHost`
+from `@devframes/hub/client`) imports it into the host page, where it scans,
+reports, and highlights on demand. Both minimal hub examples do exactly this.
+Outside a hub, one `<script type="module">` for the same bundle does the job —
+the demo below shows it.
 
 ## Run the demo
 
@@ -65,10 +67,10 @@ pnpm -C plugins/a11y dev         # panel only, at /__devframe-a11y-inspector/
 
 | Path | Export | Purpose |
 |------|--------|---------|
-| `src/index.ts` | `.` | `createA11yDevframe()` + the default `DevframeDefinition`; `a11yAgentBundlePath` / `A11Y_AGENT_PATH` for hosts that serve the agent themselves |
+| `src/index.ts` | `.` | `createA11yDevframe()` + the default `DevframeDefinition`; `a11yAgentBundlePath` — the agent module a hub attaches as this dock's client script |
 | `src/node/index.ts` | `/node` | `setupA11y(ctx)` — registers the RPC functions |
 | `src/cli.ts` | `/cli` | `createA11yCli()` — backs the `devframe-a11y-inspector` bin |
-| `src/vite.ts` | `/vite` | `a11yVitePlugin()` — mounts the panel into a Vite host; `a11yAgent()` — serves + injects the in-page agent so the host page is scanned live |
+| `src/vite.ts` | `/vite` | `a11yVitePlugin()` — mounts the panel into a Vite host |
 | `src/client/index.ts` | `/client` | `connectA11y()` — typed browser RPC client wrapper |
 | `src/rpc/` | — | `get-config` static RPC + the type-safe client registry |
 | `src/shared/protocol.ts` | — | the agent ↔ panel `BroadcastChannel` contract |

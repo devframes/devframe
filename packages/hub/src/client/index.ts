@@ -1,5 +1,7 @@
 export * from './client-script'
 export * from './context'
 export * from './docks'
+export * from './host'
+export * from './messages'
 export * from './remote'
 export * from 'devframe/client'

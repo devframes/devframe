@@ -1,6 +1,6 @@
 import type { Impact } from '../shared/protocol.ts'
 import { createMemo, createSignal, Match, Show, Switch } from 'solid-js'
-import { A11Y_AGENT_PATH, emptyCounts } from '../shared/protocol.ts'
+import { emptyCounts } from '../shared/protocol.ts'
 import { Header, MetaLine, Summary } from './components/header.tsx'
 import { CheckCircle, PlugIcon } from './components/icons.tsx'
 import { ViolationList } from './components/violations.tsx'
@@ -8,7 +8,7 @@ import { createA11yChannel } from './lib/channel.ts'
 import { connectDevframeState } from './lib/devframe.ts'
 import { IMPACT_LABEL } from './lib/impact.ts'
 
-const SNIPPET = `<script type="module" src="${A11Y_AGENT_PATH}"></script>`
+const SNIPPET = '<script type="module" src="…/inject.js"></script>'
 
 export function App() {
   const channel = createA11yChannel()

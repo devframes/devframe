@@ -1,4 +1,5 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
+import type { ClientScriptEntry } from '@devframes/hub/types'
 import type { DevframeDefinition, DevframeHost } from 'devframe/types'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { homedir } from 'node:os'
@@ -17,6 +18,12 @@ export interface MinimalViteDevframeHubOptions {
   port?: number
   /** Devframes to mount as docks. */
   devframes?: DevframeDefinition[]
+  /**
+   * Per-dock client scripts, keyed by devframe id. Attached to the mounted
+   * iframe dock so the hub client runtime imports them into the host page
+   * (e.g. the a11y inspector's in-page agent).
+   */
+  clientScripts?: Record<string, ClientScriptEntry>
 }
 
 // Minimal hub-local RPCs — used by the UI for read-side data. A more
@@ -142,7 +149,8 @@ export function minimalViteDevframeHub(options: MinimalViteDevframeHubOptions = 
       })
 
       for (const def of options.devframes ?? []) {
-        await mountDevframe(context, def)
+        const clientScript = options.clientScripts?.[def.id]
+        await mountDevframe(context, def, clientScript ? { dock: { clientScript } } : undefined)
       }
 
       started = await startHttpAndWs({

@@ -100,6 +100,66 @@ export declare const hubCommandsExecute: {
   __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>>>> | undefined;
   __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>>> | undefined;
 };
+export declare const hubMessagesAdd: {
+  name: "hub:messages:add";
+  type?: "action" | undefined;
+  cacheable?: boolean;
+  args?: undefined;
+  returns?: undefined;
+  jsonSerializable?: boolean;
+  agent?: _$devframe.RpcFunctionAgentOptions;
+  setup?: ((context: DevframeHubContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[input: DevframeMessageEntryInput], Promise<DevframeMessageEntry>>>) | undefined;
+  handler?: ((input: DevframeMessageEntryInput) => Promise<DevframeMessageEntry>) | undefined;
+  dump?: _$devframe_rpc0.RpcDump<[input: DevframeMessageEntryInput], Promise<DevframeMessageEntry>, DevframeHubContext> | undefined;
+  snapshot?: boolean;
+  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[input: DevframeMessageEntryInput], Promise<DevframeMessageEntry>>>> | undefined;
+  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[input: DevframeMessageEntryInput], Promise<DevframeMessageEntry>>> | undefined;
+};
+export declare const hubMessagesClear: {
+  name: "hub:messages:clear";
+  type?: "action" | undefined;
+  cacheable?: boolean;
+  args?: undefined;
+  returns?: undefined;
+  jsonSerializable?: boolean;
+  agent?: _$devframe.RpcFunctionAgentOptions;
+  setup?: ((context: DevframeHubContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], Promise<void>>>) | undefined;
+  handler?: (() => Promise<void>) | undefined;
+  dump?: _$devframe_rpc0.RpcDump<[], Promise<void>, DevframeHubContext> | undefined;
+  snapshot?: boolean;
+  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], Promise<void>>>> | undefined;
+  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], Promise<void>>> | undefined;
+};
+export declare const hubMessagesRemove: {
+  name: "hub:messages:remove";
+  type?: "action" | undefined;
+  cacheable?: boolean;
+  args?: undefined;
+  returns?: undefined;
+  jsonSerializable?: boolean;
+  agent?: _$devframe.RpcFunctionAgentOptions;
+  setup?: ((context: DevframeHubContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string], Promise<void>>>) | undefined;
+  handler?: ((id: string) => Promise<void>) | undefined;
+  dump?: _$devframe_rpc0.RpcDump<[id: string], Promise<void>, DevframeHubContext> | undefined;
+  snapshot?: boolean;
+  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string], Promise<void>>>> | undefined;
+  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string], Promise<void>>> | undefined;
+};
+export declare const hubMessagesUpdate: {
+  name: "hub:messages:update";
+  type?: "action" | undefined;
+  cacheable?: boolean;
+  args?: undefined;
+  returns?: undefined;
+  jsonSerializable?: boolean;
+  agent?: _$devframe.RpcFunctionAgentOptions;
+  setup?: ((context: DevframeHubContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, patch: Partial<DevframeMessageEntryInput>], Promise<DevframeMessageEntry | undefined>>>) | undefined;
+  handler?: ((id: string, patch: Partial<DevframeMessageEntryInput>) => Promise<DevframeMessageEntry | undefined>) | undefined;
+  dump?: _$devframe_rpc0.RpcDump<[id: string, patch: Partial<DevframeMessageEntryInput>], Promise<DevframeMessageEntry | undefined>, DevframeHubContext> | undefined;
+  snapshot?: boolean;
+  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, patch: Partial<DevframeMessageEntryInput>], Promise<DevframeMessageEntry | undefined>>>> | undefined;
+  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, patch: Partial<DevframeMessageEntryInput>], Promise<DevframeMessageEntry | undefined>>> | undefined;
+};
 // #endregion
 
 // #region Other
