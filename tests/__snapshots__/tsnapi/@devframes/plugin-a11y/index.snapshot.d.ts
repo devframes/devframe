@@ -15,6 +15,10 @@ export interface A11yDevframeOptions {
 export declare function createA11yDevframe(_?: A11yDevframeOptions): DevframeDefinition;
 // #endregion
 
+// #region Variables
+export declare const a11yAgentBundlePath: string;
+// #endregion
+
 // #region Default Export
 declare const _default: DevframeDefinition;
 export default _default

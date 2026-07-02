@@ -8,7 +8,7 @@ import { createA11yChannel } from './lib/channel.ts'
 import { connectDevframeState } from './lib/devframe.ts'
 import { IMPACT_LABEL } from './lib/impact.ts'
 
-const SNIPPET = '<script type="module" src="/__df-inject/inject.js"></script>'
+const SNIPPET = '<script type="module" src="…/inject.js"></script>'
 
 export function App() {
   const channel = createA11yChannel()

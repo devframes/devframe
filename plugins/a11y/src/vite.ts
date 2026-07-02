@@ -10,6 +10,10 @@ export type { ViteDevBridgeOptions }
  * `/__devframe-a11y-inspector/`; pass `{ devMiddleware: true }` for the
  * bridge mode where the host owns the SPA and devframe runs a side-car
  * RPC + WS server.
+ *
+ * The in-page agent that scans the host is loaded separately: a hub loads it
+ * as this dock's client script (see {@link a11yAgentBundlePath}); a standalone
+ * host adds `<script type="module">` for it (see the demo).
  */
 export function a11yVitePlugin(options?: ViteDevBridgeOptions): DevframeVitePlugin {
   return viteDevBridge(a11yDevframe, options)

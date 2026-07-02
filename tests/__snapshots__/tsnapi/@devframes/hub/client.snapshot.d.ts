@@ -11,6 +11,16 @@ export interface CommandsContext {
   settings: SharedState<DevframeDocksUserSettings>;
   paletteOpen: boolean;
 }
+export interface DevframeClientHost {
+  context: DevframeClientContext;
+  dispose: () => void;
+}
+export interface DevframeClientHostOptions {
+  rpc?: DevframeRpcClient;
+  connect?: DevframeRpcClientOptions;
+  clientType?: DockClientType;
+  loadClientScripts?: boolean;
+}
 export interface DockClientScriptContext extends DocksContext {
   current: DockEntryState;
   messages: DevframeMessagesClient;
@@ -78,8 +88,11 @@ export type DockClientType = 'embedded' | 'standalone';
 
 // #region Functions
 export declare function connectRemoteDevframe(_?: ConnectRemoteDevframeOptions): Promise<DevframeRpcClient>;
+export declare function createDevframeClientHost(_?: DevframeClientHostOptions): Promise<DevframeClientHost>;
+export declare function createMessagesClient(_: DevframeRpcClient): DevframeMessagesClient;
 export declare function getDevframeClientContext(): DevframeClientContext | undefined;
 export declare function parseRemoteConnection(_?: string): RemoteConnectionInfo | null;
+export declare function setDevframeClientContext(_: DevframeClientContext): void;
 // #endregion
 
 // #region Variables

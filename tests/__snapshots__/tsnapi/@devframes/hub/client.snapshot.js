@@ -3,8 +3,11 @@
  */
 // #region Functions
 export async function connectRemoteDevframe(_) {}
+export async function createDevframeClientHost(_) {}
+export function createMessagesClient(_) {}
 export function getDevframeClientContext() {}
 export function parseRemoteConnection(_) {}
+export function setDevframeClientContext(_) {}
 // #endregion
 
 // #region Variables

@@ -13,6 +13,19 @@ const BASE_PATH = '/__devframe-a11y-inspector/'
 // entry (`dist/index.mjs`), `../dist/spa` resolves to `<pkg>/dist/spa`.
 const distDir = fileURLToPath(new URL('../dist/spa', import.meta.url))
 
+/**
+ * Absolute path to the built in-page **agent** module (`dist/inject/inject.js`)
+ * — the dock **client script** the hub runtime imports into the host page to
+ * scan it (its default export boots the agent; importing it does too).
+ *
+ * A hub attaches this as the a11y dock's `clientScript`, resolved to a URL the
+ * page can import: `/@fs/${a11yAgentBundlePath}` for a Vite host, or a
+ * statically-served path for others (see the minimal hub examples). Resolves
+ * under `<pkg>/dist/inject/inject.js` from both the source and the published
+ * entry. Requires the built bundle (`pnpm -C plugins/a11y build`).
+ */
+export const a11yAgentBundlePath = fileURLToPath(new URL('../dist/inject/inject.js', import.meta.url))
+
 export interface A11yDevframeOptions {
   /** Override the devframe id (and the default CLI command / mount path). */
   id?: string

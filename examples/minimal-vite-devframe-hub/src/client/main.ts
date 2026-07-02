@@ -4,7 +4,7 @@ import type {
   DevframeMessageEntry,
   DevframeTerminalSession,
 } from '@devframes/hub/types'
-import { connectDevframe } from '@devframes/hub/client'
+import { connectDevframe, createDevframeClientHost } from '@devframes/hub/client'
 import { iconClass } from './icons'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
@@ -52,6 +52,12 @@ async function main() {
 
   const rpc = await connectDevframe({ baseURL: HUB_BASE })
   setStatus(`Connected · backend=${rpc.connectionMeta.backend}`, 'ready')
+
+  // Boot the framework-level client host: it builds the shared client context
+  // and imports each dock's client script into this page — e.g. the a11y
+  // inspector's in-page agent, which then scans this host live. The dock UI
+  // below still reads the same shared state directly.
+  await createDevframeClientHost({ rpc })
 
   // 1. Docks — read from `devframe:docks` shared state.
   const docks = await rpc.sharedState.get<DevframeDockEntry[]>(
