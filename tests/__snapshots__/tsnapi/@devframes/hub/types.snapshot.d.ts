@@ -38,6 +38,7 @@ export { DevframeMessageHandle }
 export { DevframeMessageLevel }
 export { DevframeMessagesClient }
 export { DevframeMessagesHost }
+export { DevframeMessagesListDelta }
 export { DevframeNodeRpcSession }
 export { DevframeRpcClientFunctions }
 export { DevframeRpcServerFunctions }

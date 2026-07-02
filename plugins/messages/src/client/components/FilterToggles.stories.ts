@@ -1,0 +1,42 @@
+import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import FilterToggles from './FilterToggles.vue'
+import { getHashColorFromString, levels } from './MessageItemConstants'
+
+const meta = {
+  title: 'Messages/FilterToggles',
+  component: FilterToggles,
+  tags: ['autodocs'],
+  argTypes: {
+    onToggle: { action: 'toggled' },
+  },
+} satisfies Meta<typeof FilterToggles>
+
+export default meta
+type Story = StoryObj<typeof meta>
+
+export const Levels: Story = {
+  args: {
+    label: 'Level',
+    items: Object.keys(levels),
+    active: new Set<string>(),
+    styles: levels,
+  },
+}
+
+export const LevelsFiltered: Story = {
+  args: {
+    label: 'Level',
+    items: Object.keys(levels),
+    active: new Set<string>(['error', 'warn']),
+    styles: levels,
+  },
+}
+
+export const HashColored: Story = {
+  args: {
+    label: 'Category',
+    items: ['a11y', 'lint', 'runtime', 'build'],
+    active: new Set<string>(),
+    hashColor: getHashColorFromString,
+  },
+}

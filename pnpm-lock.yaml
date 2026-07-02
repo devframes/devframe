@@ -147,6 +147,9 @@ catalogs:
     '@unocss/preset-icons':
       specifier: ^66.0.0
       version: 66.7.2
+    '@vueuse/core':
+      specifier: ^14.3.0
+      version: 14.3.0
     '@xterm/addon-fit':
       specifier: ^0.11.0
       version: 0.11.0
@@ -490,6 +493,9 @@ importers:
       '@devframes/plugin-inspect':
         specifier: workspace:*
         version: link:../../plugins/inspect
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
       '@devframes/plugin-terminals':
         specifier: workspace:*
         version: link:../../plugins/terminals
@@ -1007,6 +1013,73 @@ importers:
       vue:
         specifier: catalog:frontend
         version: 3.5.34(typescript@5.9.3)
+      ws:
+        specifier: catalog:deps
+        version: 8.21.0
+
+  plugins/messages:
+    dependencies:
+      nostics:
+        specifier: catalog:deps
+        version: 1.1.4
+    devDependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.34(typescript@6.0.3)))(@unocss/core@66.7.2)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.34(typescript@6.0.3)))(playwright@1.60.0)(reka-ui@2.10.1(vue@3.5.34(typescript@6.0.3)))(unocss@66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))(vue@3.5.34(typescript@6.0.3))
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@iconify-json/ph':
+        specifier: catalog:frontend
+        version: 1.2.2
+      '@storybook/addon-docs':
+        specifier: catalog:storybook
+        version: 10.4.6(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(esbuild@0.28.0)(rollup@4.60.3)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      '@storybook/vue3-vite':
+        specifier: catalog:storybook
+        version: 10.4.6(esbuild@0.28.0)(rollup@4.60.3)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))(vue@3.5.34(typescript@6.0.3))
+      '@types/node':
+        specifier: catalog:types
+        version: 25.9.1
+      '@vitejs/plugin-vue':
+        specifier: catalog:build
+        version: 6.0.7(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))(vue@3.5.34(typescript@6.0.3))
+      '@vueuse/core':
+        specifier: catalog:frontend
+        version: 14.3.0(vue@3.5.34(typescript@6.0.3))
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.6.1
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      get-port-please:
+        specifier: catalog:deps
+        version: 3.2.0
+      h3:
+        specifier: catalog:deps
+        version: 2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
+      storybook:
+        specifier: catalog:storybook
+        version: 10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      tsdown:
+        specifier: catalog:build
+        version: 0.22.0(oxc-resolver@11.21.3)(tsx@4.22.3)(typescript@6.0.3)
+      unocss:
+        specifier: catalog:frontend
+        version: 66.7.2(@unocss/postcss@66.7.2(postcss@8.5.15))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      vite:
+        specifier: catalog:build
+        version: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)
+      vite-plugin-css-injected-by-js:
+        specifier: catalog:frontend
+        version: 3.5.2(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      vitest:
+        specifier: catalog:testing
+        version: 4.1.7(@types/node@25.9.1)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      vue:
+        specifier: catalog:frontend
+        version: 3.5.34(typescript@6.0.3)
       ws:
         specifier: catalog:deps
         version: 8.21.0
@@ -11275,12 +11348,36 @@ snapshots:
       - vue
       - webpack
 
+  '@storybook/vue3-vite@10.4.6(esbuild@0.28.0)(rollup@4.60.3)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))(vue@3.5.34(typescript@6.0.3))':
+    dependencies:
+      '@storybook/builder-vite': 10.4.6(esbuild@0.28.0)(rollup@4.60.3)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))
+      '@storybook/vue3': 10.4.6(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vue@3.5.34(typescript@6.0.3))
+      magic-string: 0.30.21
+      storybook: 10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      typescript: 5.9.3
+      vite: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)
+      vue-component-meta: 2.2.12(typescript@5.9.3)
+      vue-docgen-api: 4.79.2(vue@3.5.34(typescript@6.0.3))
+    transitivePeerDependencies:
+      - esbuild
+      - rollup
+      - vue
+      - webpack
+
   '@storybook/vue3@10.4.6(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vue@3.5.34(typescript@5.9.3))':
     dependencies:
       '@storybook/global': 5.0.0
       storybook: 10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       type-fest: 5.6.0
       vue: 3.5.34(typescript@5.9.3)
+      vue-component-type-helpers: 3.3.5
+
+  '@storybook/vue3@10.4.6(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vue@3.5.34(typescript@6.0.3))':
+    dependencies:
+      '@storybook/global': 5.0.0
+      storybook: 10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      type-fest: 5.6.0
+      vue: 3.5.34(typescript@6.0.3)
       vue-component-type-helpers: 3.3.5
 
   '@stylistic/eslint-plugin@5.10.0(eslint@10.4.0(jiti@2.7.0))':
@@ -11906,6 +12003,12 @@ snapshots:
       '@rolldown/pluginutils': 1.0.1
       vite: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)
       vue: 3.5.34(typescript@5.9.3)
+
+  '@vitejs/plugin-vue@6.0.7(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4))(vue@3.5.34(typescript@6.0.3))':
+    dependencies:
+      '@rolldown/pluginutils': 1.0.1
+      vite: 8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)
+      vue: 3.5.34(typescript@6.0.3)
 
   '@vitest/eslint-plugin@1.6.17(@typescript-eslint/eslint-plugin@8.59.2(@typescript-eslint/parser@8.59.2(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3)(vitest@4.1.7(@types/node@25.9.1)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.8.4)))':
     dependencies:
@@ -17091,6 +17194,22 @@ snapshots:
       vue: 3.5.34(typescript@5.9.3)
       vue-inbrowser-compiler-independent-utils: 4.71.1(vue@3.5.34(typescript@5.9.3))
 
+  vue-docgen-api@4.79.2(vue@3.5.34(typescript@6.0.3)):
+    dependencies:
+      '@babel/parser': 7.29.3
+      '@babel/types': 7.29.0
+      '@vue/compiler-dom': 3.5.34
+      '@vue/compiler-sfc': 3.5.34
+      ast-types: 0.16.1
+      esm-resolve: 1.0.11
+      hash-sum: 2.0.0
+      lru-cache: 8.0.5
+      pug: 3.0.4
+      recast: 0.23.11
+      ts-map: 1.0.3
+      vue: 3.5.34(typescript@6.0.3)
+      vue-inbrowser-compiler-independent-utils: 4.71.1(vue@3.5.34(typescript@6.0.3))
+
   vue-eslint-parser@10.4.0(eslint@10.4.0(jiti@2.7.0)):
     dependencies:
       debug: 4.4.3
@@ -17106,6 +17225,10 @@ snapshots:
   vue-inbrowser-compiler-independent-utils@4.71.1(vue@3.5.34(typescript@5.9.3)):
     dependencies:
       vue: 3.5.34(typescript@5.9.3)
+
+  vue-inbrowser-compiler-independent-utils@4.71.1(vue@3.5.34(typescript@6.0.3)):
+    dependencies:
+      vue: 3.5.34(typescript@6.0.3)
 
   vue-resize@2.0.0-alpha.1(vue@3.5.34(typescript@5.9.3)):
     dependencies:
