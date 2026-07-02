@@ -15,6 +15,9 @@ const config: StorybookConfig = {
     // own; the React plugin wires up the automatic runtime so `.tsx` stories
     // and views parse.
     viteConfig.plugins.push(react(), UnoCSS())
+    // Dev tool reached from arbitrary hostnames (LAN IPs, tunnels, tailnets),
+    // e.g. when iframed by the storybook-hub example: accept any Host header.
+    viteConfig.server = { ...viteConfig.server, allowedHosts: true }
     return viteConfig
   },
 }

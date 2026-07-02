@@ -12,6 +12,9 @@ import { minimalViteDevframeHub } from './src/minimal-vite-devframe-hub'
 
 export default defineConfig({
   resolve: { alias },
+  // Dev tooling reached from arbitrary hostnames (LAN IPs, tunnels, tailnets):
+  // accept any Host header and fall back to the next free port when busy.
+  server: { allowedHosts: true, strictPort: false },
   plugins: [
     UnoCSS(),
     minimalViteDevframeHub({

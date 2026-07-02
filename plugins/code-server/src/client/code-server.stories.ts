@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/html'
+import type { Meta, StoryObj } from '@storybook/html-vite'
 import type { CodeServerViewState } from './view'
 import { createCodeServerView } from './view'
 import './style.css'

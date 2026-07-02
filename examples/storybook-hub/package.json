@@ -1,0 +1,29 @@
+{
+  "name": "storybook-hub",
+  "type": "module",
+  "version": "0.5.4",
+  "private": true,
+  "description": "Example — a devframe hub that docks every built-in plugin's Storybook (lazily spawned in dev, served static in build) alongside the live terminals plugin.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/storybook-hub",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@antfu/design": "catalog:frontend",
+    "@devframes/hub": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
+    "colorjs.io": "catalog:frontend",
+    "devframe": "workspace:*"
+  },
+  "devDependencies": {
+    "@iconify-json/ph": "catalog:frontend",
+    "get-port-please": "catalog:deps",
+    "pathe": "catalog:deps",
+    "storybook": "catalog:storybook",
+    "unocss": "catalog:frontend",
+    "vite": "catalog:build"
+  }
+}

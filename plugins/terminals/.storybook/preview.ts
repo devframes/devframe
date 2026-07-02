@@ -1,7 +1,7 @@
-import type { Decorator, Preview } from '@storybook/html-vite'
+import type { Decorator, Preview } from '@storybook/svelte-vite'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
-import '../src/client/style.css'
+import '../src/client/styles.css'
 
 // Drive the shared `@antfu/design` tokens off the toolbar theme toggle: dark mode
 // is the `.dark` class on `<html>`, and the canvas takes the semantic

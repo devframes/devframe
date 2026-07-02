@@ -8,11 +8,12 @@ import {
   transformerVariantGroup,
 } from 'unocss'
 
-// The terminals panel uses `@antfu/design` directly: its preset (tuned to
-// devframe's sage green) over a Wind4 base, with Phosphor icons, DM Sans/Mono and
-// the directive/variant-group transformers. The named `z-*` layers are the app's
-// to own (the preset blocks plain `z-<number>`). Svelte is scanned by default;
-// `.ts` (the co-located `design.ts` class helpers) is opted in.
+// The unified host's own welcome/overview surface uses `@antfu/design` directly,
+// with the same stack every plugin composes: the sage-green preset over a Wind4
+// base, Phosphor icons, DM Sans/Mono and the directive/variant-group
+// transformers. Only the host shell reads this config; each composed plugin
+// generates its own CSS from its own `uno.config.ts`. The welcome page is
+// hand-written vanilla `.ts`, so `.ts` is opted into the extraction pipeline.
 export default defineConfig({
   presets: [
     presetAnthonyDesign({ primary: '#3a6a45' }),
@@ -21,17 +22,6 @@ export default defineConfig({
     presetWebFonts({ provider: 'none', fonts: { sans: 'DM Sans', mono: 'DM Mono' } }),
   ],
   transformers: [transformerDirectives(), transformerVariantGroup()],
-  // Icons for terminal sessions contributed by *other* devframes through the
-  // hub (e.g. code-server) arrive as runtime strings, so UnoCSS can't extract
-  // them from source. Safelist the built-in plugins' dock icons so those
-  // aggregated sessions render with their proper glyph.
-  safelist: [
-    'i-ph-code-duotone',
-    'i-ph-terminal-window-duotone',
-    'i-ph-git-branch-duotone',
-    'i-ph-magnifying-glass-duotone',
-    'i-ph-person-arms-spread-duotone',
-  ],
   // Wind4 leaves bare `border`/`border-b` at currentColor; restore the subtle
   // shared border color (matching `border-base`) for unqualified borders.
   preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
@@ -47,7 +37,7 @@ export default defineConfig({
   },
   content: {
     pipeline: {
-      include: [/\.(?:svelte|[cm]?[jt]sx?|html)($|\?)/],
+      include: [/\.(?:[cm]?[jt]sx?|html)($|\?)/],
     },
   },
 })
