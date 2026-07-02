@@ -2,6 +2,7 @@ import type {
   DevframeMessageEntry,
   DevframeMessageEntryInput,
   DevframeMessageHandle,
+  DevframeMessageShortcutInput,
   DevframeMessagesHost as DevframeMessagesHostType,
 } from '../types/messages'
 import type { DevframeHubContext } from './context'
@@ -118,6 +119,26 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
     this.lastModified.delete(id)
     recordRemoval(this.removals, id, this._tick())
     this.events.emit('message:removed', id)
+  }
+
+  info(message: string, extra?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle> {
+    return this.add({ ...extra, message, level: 'info' })
+  }
+
+  warn(message: string, extra?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle> {
+    return this.add({ ...extra, message, level: 'warn' })
+  }
+
+  error(message: string, extra?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle> {
+    return this.add({ ...extra, message, level: 'error' })
+  }
+
+  success(message: string, extra?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle> {
+    return this.add({ ...extra, message, level: 'success' })
+  }
+
+  debug(message: string, extra?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle> {
+    return this.add({ ...extra, message, level: 'debug' })
   }
 
   async clear(): Promise<void> {

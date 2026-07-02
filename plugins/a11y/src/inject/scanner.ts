@@ -88,6 +88,7 @@ export async function scan(): Promise<ScanReport> {
       help: rule.help,
       description: rule.description,
       helpUrl: rule.helpUrl,
+      tags: rule.tags.filter(tag => tag.startsWith('wcag')),
       nodes,
     }
   })

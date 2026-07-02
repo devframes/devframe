@@ -35,10 +35,14 @@ agent is the author-provided bridge into the page being checked. In a hub, the
 agent is the a11y dock's **client script**: attach `a11yAgentBundlePath` as the
 dock's `clientScript` (resolved to an importable URL — `/@fs/…` under Vite, or a
 statically-served path) and the hub's client runtime (`createDevframeClientHost`
-from `@devframes/hub/client`) imports it into the host page, where it scans,
-reports, and highlights on demand. Both minimal hub examples do exactly this.
-Outside a hub, one `<script type="module">` for the same bundle does the job —
-the demo below shows it.
+from `@devframes/hub/client`) imports it into the host page and calls its
+default export with the client-script context. Booted that way, the agent also
+mirrors each scan into the hub's **messages feed** — a summary entry driven
+through the loading → idle lifecycle plus one entry per violated rule, carrying
+the impact-mapped level, WCAG tags as labels, and the first offending element's
+selector. Both minimal hub examples do exactly this. Outside a hub, one
+`<script type="module">` for the same bundle does the job — the demo below
+shows it (no hub context, so the feed mirror simply stays off).
 
 ## Run the demo
 
@@ -74,7 +78,7 @@ pnpm -C plugins/a11y dev         # panel only, at /__devframe-a11y-inspector/
 | `src/client/index.ts` | `/client` | `connectA11y()` — typed browser RPC client wrapper |
 | `src/rpc/` | — | `get-config` static RPC + the type-safe client registry |
 | `src/shared/protocol.ts` | — | the agent ↔ panel `BroadcastChannel` contract |
-| `src/inject/` | — | the host-page agent (axe scan, highlight overlay) → `dist/inject/inject.js` |
+| `src/inject/` | — | the host-page agent (axe scan, highlight overlay, hub messages mirror) → `dist/inject/inject.js` |
 | `src/spa/` | — | the Solid panel SPA → `dist/spa` |
 | `demo/` | — | same-origin host page + server (dev + static modes) |
 | `tests/` | — | dev-server RPC + static-build dump |
