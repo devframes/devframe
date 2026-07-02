@@ -32,6 +32,8 @@ const config: StorybookConfig = {
   viteFinal(viteConfig) {
     viteConfig.plugins ??= []
     viteConfig.plugins.push(UnoCSS())
+    // Dev tool reached from arbitrary hostnames (LAN IPs, tunnels, tailnets).
+    viteConfig.server = { ...viteConfig.server, allowedHosts: true }
     return viteConfig
   },
 }
