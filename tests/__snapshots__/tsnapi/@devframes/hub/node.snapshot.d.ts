@@ -59,6 +59,11 @@ export declare class DevframeMessagesHost implements DevframeMessagesHost$1 {
   add(_: DevframeMessageEntryInput): Promise<DevframeMessageHandle>;
   update(_: string, _: Partial<DevframeMessageEntryInput>): Promise<DevframeMessageEntry | undefined>;
   remove(_: string): Promise<void>;
+  info(_: string, _?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle>;
+  warn(_: string, _?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle>;
+  error(_: string, _?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle>;
+  success(_: string, _?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle>;
+  debug(_: string, _?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle>;
   clear(): Promise<void>;
   private _createHandle;
 }
