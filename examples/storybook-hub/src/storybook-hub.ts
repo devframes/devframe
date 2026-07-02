@@ -153,7 +153,10 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
     killDevServers()
 
     const cwd = viteConfig?.root ?? process.cwd()
-    const port = options.port ?? await getPort({ port: 9787, random: false })
+    // Prefer 9787 but keep booting when it's taken (e.g. a lingering previous
+    // instance) — walk the range, then fall back to a random free port. The
+    // client discovers whatever was chosen via `__connection.json`.
+    const port = options.port ?? await getPort({ port: 9787, portRange: [9787, 9887] })
 
     const serveConnectionMeta = (metaBase: string): void => {
       server.middlewares.use(`${metaBase}${DEVFRAME_CONNECTION_META_FILENAME}`, (_req, res) => {

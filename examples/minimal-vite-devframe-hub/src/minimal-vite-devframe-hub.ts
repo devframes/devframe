@@ -77,7 +77,10 @@ export function minimalViteDevframeHub(options: MinimalViteDevframeHubOptions = 
       started = undefined
 
       const cwd = viteConfig!.root
-      const port = options.port ?? await getPort({ port: 9777, random: false })
+      // Prefer 9777 but keep booting when it's taken (e.g. a lingering
+      // previous instance) — walk the range, then fall back to a random free
+      // port. Clients discover whatever was chosen via `__connection.json`.
+      const port = options.port ?? await getPort({ port: 9777, portRange: [9777, 9877] })
 
       // Serve the side-car's connection meta (`__connection.json`) at a URL
       // base so a browser loaded there can discover the WS endpoint via
