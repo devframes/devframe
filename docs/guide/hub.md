@@ -143,6 +143,10 @@ A hub-aware UI doesn't import any hub classes; it reads three shared-state keys 
 
 Plus broadcast notifications (`devframe:terminals:updated`, `devframe:messages:updated`) that a UI can subscribe to via `rpc.client.register(...)`.
 
+## Running plugin code in the host page
+
+The hub also ships a headless browser runtime, `createDevframeClientHost()` from `@devframes/hub/client`. Booted in the host page, it assembles the shared client context from the protocol above and imports each dock entry's client script into that page — how a plugin like the a11y inspector runs code inside the page being inspected. See [Client Scripts & Client Context](./client-context) for the boot flow, the context surface, and the dock-script contract.
+
 ## Example
 
 Two minimal, copyable hubs mount every built-in plugin (git, terminals, code-server, inspect, a11y) behind an icon dock — the same shape [vite-devtools](https://github.com/vitejs/devtools) wears as the full Vite viewer, shrunk to the smallest thing you can build your own viewer from:
