@@ -12,7 +12,6 @@ export interface CommandsContext {
   paletteOpen: boolean;
 }
 export interface DevframeClientHost {
-  skipped: false;
   context: DevframeClientContext;
   dispose: () => void;
 }
@@ -21,12 +20,6 @@ export interface DevframeClientHostOptions {
   connect?: DevframeRpcClientOptions;
   clientType?: DockClientType;
   loadClientScripts?: boolean;
-  skipInIframe?: boolean;
-}
-export interface DevframeClientHostSkipped {
-  skipped: true;
-  context: undefined;
-  dispose: () => void;
 }
 export interface DockClientScriptContext extends DocksContext {
   current: DockEntryState;
@@ -93,13 +86,12 @@ export interface WhenClauseContext {
 // #region Types
 export type ConnectRemoteDevframeOptions = Omit<DevframeRpcClientOptions, 'connectionMeta' | 'authToken'>;
 export type DevframeClientContext = DocksContext;
-export type DevframeClientHostResult = DevframeClientHost | DevframeClientHostSkipped;
 export type DockClientType = 'embedded' | 'standalone';
 // #endregion
 
 // #region Functions
 export declare function connectRemoteDevframe(_?: ConnectRemoteDevframeOptions): Promise<DevframeRpcClient>;
-export declare function createDevframeClientHost(_?: DevframeClientHostOptions): Promise<DevframeClientHostResult>;
+export declare function createDevframeClientHost(_?: DevframeClientHostOptions): Promise<DevframeClientHost>;
 export declare function createMessagesClient(_: DevframeRpcClient, _?: MessagesClientOptions): DevframeMessagesClient;
 export declare function getDevframeClientContext(): DevframeClientContext | undefined;
 export declare function parseRemoteConnection(_?: string): RemoteConnectionInfo | null;

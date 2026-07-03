@@ -52,33 +52,14 @@ export interface DevframeClientHostOptions {
    * `custom-render`, and iframe `clientScript`). Default `true`.
    */
   loadClientScripts?: boolean
-  /**
-   * Skip booting when the page runs inside an iframe, so a nested frame never
-   * publishes a second context or re-runs every dock client script. Defaults
-   * to `true` for `'embedded'` hosts (dock iframe panels and nested copies of
-   * the app skip themselves) and `false` for `'standalone'` hosts (a hub UI
-   * page stays bootable when intentionally iframed).
-   */
-  skipInIframe?: boolean
 }
 
 export interface DevframeClientHost {
-  /** The host booted and published its context. */
-  skipped: false
   /** The assembled, globally-registered client host context. */
   context: DevframeClientContext
   /** Tear down listeners and stop tracking newly-registered client scripts. */
   dispose: () => void
 }
-
-export interface DevframeClientHostSkipped {
-  /** Boot was skipped — the page runs inside an iframe (see `skipInIframe`). */
-  skipped: true
-  context: undefined
-  dispose: () => void
-}
-
-export type DevframeClientHostResult = DevframeClientHost | DevframeClientHostSkipped
 
 /**
  * Boot the framework-level client host: connect RPC, assemble the full
@@ -92,13 +73,8 @@ export type DevframeClientHostResult = DevframeClientHost | DevframeClientHostSk
  */
 export async function createDevframeClientHost(
   options: DevframeClientHostOptions = {},
-): Promise<DevframeClientHostResult> {
+): Promise<DevframeClientHost> {
   const clientType: DockClientType = options.clientType ?? 'standalone'
-  if ((options.skipInIframe ?? clientType === 'embedded') && isInsideIframe()) {
-    console.warn('[@devframes/hub] Skipping client host in iframe')
-    return { skipped: true, context: undefined, dispose: () => {} }
-  }
-
   const rpc = options.rpc ?? await connectDevframe(options.connect)
 
   const [docksState, commandsState, settings] = await Promise.all([
@@ -154,7 +130,6 @@ export async function createDevframeClientHost(
   }
 
   return {
-    skipped: false,
     context,
     dispose() {
       for (const off of disposers.splice(0)) off()
@@ -323,16 +298,6 @@ export async function createDevframeClientHost(
 }
 
 // ── shared helpers ─────────────────────────────────────────────────────────
-
-function isInsideIframe(): boolean {
-  try {
-    return typeof window !== 'undefined' && window.self !== window.top
-  }
-  catch {
-    // Cross-origin access threw — we are definitely inside a foreign frame.
-    return true
-  }
-}
 
 function createPanelContext(clientType: DockClientType): DocksPanelContext {
   const store: DocksPanelContext['store'] = {

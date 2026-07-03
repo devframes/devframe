@@ -1,19 +1,10 @@
 import type { DevframeRpcClient } from 'devframe/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { DevframeDockEntry } from '../../types/docks'
-import type { DevframeClientHost, DevframeClientHostOptions } from '../host'
 import { createEventEmitter } from 'devframe/utils/events'
 import { describe, expect, it, vi } from 'vitest'
 import { getDevframeClientContext } from '../context'
 import { createDevframeClientHost } from '../host'
-
-/** Boot a host that is expected to actually boot (narrow away the skipped arm). */
-async function boot(options: DevframeClientHostOptions): Promise<DevframeClientHost> {
-  const host = await createDevframeClientHost(options)
-  if (host.skipped)
-    throw new Error('expected the client host to boot, but it skipped')
-  return host
-}
 
 interface StubSharedState<T> extends SharedState<T> {
   /** Replace the state wholesale and emit `updated` (simulates a server patch). */
@@ -67,7 +58,7 @@ function iframeEntry(id: string, extra?: Record<string, unknown>): DevframeDockE
 describe('createDevframeClientHost', () => {
   it('publishes the global client context with the full surface', async () => {
     const { rpc } = createStubRpc()
-    const host = await boot({ rpc })
+    const host = await createDevframeClientHost({ rpc })
 
     expect(getDevframeClientContext()).toBe(host.context)
     expect(host.context.clientType).toBe('standalone')
@@ -84,7 +75,7 @@ describe('createDevframeClientHost', () => {
 
   it('reconciles dock entries from shared state and tracks per-entry state', async () => {
     const { rpc, states } = createStubRpc()
-    const host = await boot({ rpc })
+    const host = await createDevframeClientHost({ rpc })
     const docksState = states.get('devframe:docks')!
 
     docksState.push([iframeEntry('one'), iframeEntry('two')])
@@ -99,7 +90,7 @@ describe('createDevframeClientHost', () => {
 
   it('switches entries with activation/deactivation events and when-context updates', async () => {
     const { rpc, states } = createStubRpc()
-    const host = await boot({ rpc })
+    const host = await createDevframeClientHost({ rpc })
     states.get('devframe:docks')!.push([iframeEntry('one'), iframeEntry('two')])
 
     const activated: string[] = []
@@ -126,7 +117,7 @@ describe('createDevframeClientHost', () => {
 
   it('executes client commands locally and server commands over hub:commands:execute', async () => {
     const { rpc, calls } = createStubRpc()
-    const host = await boot({ rpc })
+    const host = await createDevframeClientHost({ rpc })
 
     const ran: any[] = []
     const off = host.context.commands.register({
@@ -151,7 +142,7 @@ describe('createDevframeClientHost', () => {
 
   it('imports a dock entry client script and hands it the script context', async () => {
     const { rpc, states, calls } = createStubRpc()
-    const host = await boot({ rpc })
+    const host = await createDevframeClientHost({ rpc })
 
     const received: any[] = []
     ;(globalThis as any).__DF_TEST_SCRIPT__ = (ctx: any) => received.push(ctx)
@@ -176,39 +167,14 @@ describe('createDevframeClientHost', () => {
     host.dispose()
   })
 
-  it('skips boot inside an iframe for embedded hosts, overridable via skipInIframe', async () => {
-    vi.stubGlobal('window', { self: {}, top: {} })
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    try {
-      const { rpc } = createStubRpc()
-      const skipped = await createDevframeClientHost({ rpc, clientType: 'embedded' })
-      expect(skipped.skipped).toBe(true)
-      expect(skipped.context).toBeUndefined()
-      expect(getDevframeClientContext()).toBeUndefined()
-      skipped.dispose()
-
-      // Standalone hosts (and an explicit opt-out) still boot inside iframes.
-      const standalone = await createDevframeClientHost({ rpc })
-      expect(standalone.skipped).toBe(false)
-      standalone.dispose()
-      const optOut = await createDevframeClientHost({ rpc, clientType: 'embedded', skipInIframe: false })
-      expect(optOut.skipped).toBe(false)
-      optOut.dispose()
-    }
-    finally {
-      vi.unstubAllGlobals()
-      warn.mockRestore()
-    }
-  })
-
   it('warns when a second host replaces a published context; dispose unpublishes it', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     try {
       const { rpc } = createStubRpc()
-      const first = await boot({ rpc })
+      const first = await createDevframeClientHost({ rpc })
       expect(warn).not.toHaveBeenCalled()
 
-      const second = await boot({ rpc })
+      const second = await createDevframeClientHost({ rpc })
       expect(warn).toHaveBeenCalledOnce()
       expect(getDevframeClientContext()).toBe(second.context)
 
