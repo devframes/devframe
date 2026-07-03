@@ -78,12 +78,12 @@
     "@valibot/to-json-schema": "catalog:deps",
     "birpc": "catalog:deps",
     "cac": "catalog:deps",
+    "crossws": "catalog:deps",
     "h3": "catalog:deps",
     "mrmime": "catalog:deps",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
-    "valibot": "catalog:deps",
-    "ws": "catalog:deps"
+    "valibot": "catalog:deps"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "catalog:deps",
@@ -100,7 +100,8 @@
     "tinyglobby": "catalog:deps",
     "tsdown": "catalog:build",
     "ua-parser-modern": "catalog:inlined",
-    "whenexpr": "catalog:deps"
+    "whenexpr": "catalog:deps",
+    "ws": "catalog:deps"
   },
   "inlinedDependencies": {
     "bundle-name": "4.1.0",

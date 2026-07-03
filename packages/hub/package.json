@@ -49,6 +49,7 @@
     "tinyexec": "catalog:deps"
   },
   "devDependencies": {
+    "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "mlly": "catalog:build",
     "tsdown": "catalog:build"

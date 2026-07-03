@@ -4,5 +4,6 @@
 // #region Other
 export { attachWsRpcTransport }
 export { DevframeNodeRpcSessionMeta }
+export { WsRpcTransport }
 export { WsRpcTransportOptions }
 // #endregion

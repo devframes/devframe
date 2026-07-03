@@ -24,7 +24,7 @@ const distDir = fileURLToPath(new URL('../dist/spa', import.meta.url))
  * under `<pkg>/dist/inject/inject.js` from both the source and the published
  * entry. Requires the built bundle (`pnpm -C plugins/a11y build`).
  */
-export const a11yAgentBundlePath = fileURLToPath(new URL('../dist/inject/inject.js', import.meta.url))
+export const a11yAgentBundlePath: string = fileURLToPath(new URL('../dist/inject/inject.js', import.meta.url))
 
 export interface A11yDevframeOptions {
   /** Override the devframe id (and the default CLI command / mount path). */

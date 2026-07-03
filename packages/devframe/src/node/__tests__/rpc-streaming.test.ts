@@ -45,10 +45,10 @@ async function bootHost(): Promise<Harness> {
     },
   )
 
-  const { wss } = attachWsRpcTransport(rpcGroup, {
+  const { close: closeWs } = attachWsRpcTransport(rpcGroup, {
     port,
     host: '127.0.0.1',
-    onDisconnected: (_ws, meta) => {
+    onDisconnected: (_peer, meta) => {
       rpcHost._emitSessionDisconnected(meta)
     },
   })
@@ -60,8 +60,7 @@ async function bootHost(): Promise<Harness> {
     port,
     rpcHost,
     async close() {
-      for (const ws of wss.clients) ws.terminate()
-      await new Promise<void>(r => wss.close(() => r()))
+      await closeWs()
     },
   }
 }
