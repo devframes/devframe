@@ -63,10 +63,8 @@
     "@xterm/xterm": "catalog:frontend",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
-    "valibot": "catalog:deps"
-  },
-  "optionalDependencies": {
-    "@homebridge/node-pty-prebuilt-multiarch": "catalog:deps"
+    "valibot": "catalog:deps",
+    "zigpty": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",

@@ -29,7 +29,7 @@ The A11y Inspector shows a live axe-core report of this hub's own page: the host
 
 ## Hosting built-in plugins in a bundler
 
-The plugins run node-side (child processes, the native `node-pty` PTY backend) and resolve their SPA dist via `new URL(..., import.meta.url)`. Next's bundler would try to inline that, so the host loads them through a bundler-ignored dynamic `import()` and sets `skipTrailingSlashRedirect` (see `next.config.mjs`) so each SPA's relative assets resolve under `/__<id>/`. This is the recipe for any bundled (webpack/Turbopack) host.
+The plugins run node-side (child processes, the native `zigpty` PTY backend) and resolve their SPA dist via `new URL(..., import.meta.url)`. Next's bundler would try to inline that, so the host loads them through a bundler-ignored dynamic `import()` and sets `skipTrailingSlashRedirect` (see `next.config.mjs`) so each SPA's relative assets resolve under `/__<id>/`. This is the recipe for any bundled (webpack/Turbopack) host.
 
 ## Files
 

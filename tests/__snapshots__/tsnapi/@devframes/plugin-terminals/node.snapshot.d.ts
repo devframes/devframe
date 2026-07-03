@@ -74,8 +74,8 @@ export declare const diagnostics: _$nostics.Diagnostics<{
     }) => string;
   };
   readonly DP_TERMINALS_0005: {
-    readonly why: "PTY backend (@homebridge/node-pty-prebuilt-multiarch) is unavailable; interactive sessions fall back to a piped child process. Full-screen TUIs may not render correctly.";
-    readonly fix: "Install @homebridge/node-pty-prebuilt-multiarch to enable real pseudo-terminals.";
+    readonly why: "Native PTY bindings (zigpty) are unavailable; interactive sessions fall back to pipe-based terminal emulation. Full-screen TUIs may not render correctly.";
+    readonly fix: "Check that this platform is covered by zigpty's prebuilds (Linux/macOS/Windows, x64/arm64, glibc/musl) and that the dependency installed intact.";
   };
   readonly DP_TERMINALS_0006: {
     readonly why: (p: {

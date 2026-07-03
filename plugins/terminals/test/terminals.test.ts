@@ -13,8 +13,8 @@ const NODE = process.execPath
 const ptyAvailable = await isPtyAvailable()
 const isWindows = process.platform === 'win32'
 
-// A real pseudo-terminal works wherever the PTY backend is installed
-// (including Windows conpty); skip when the optional native module is absent.
+// A real pseudo-terminal works wherever zigpty's native bindings load
+// (including Windows ConPTY); skip when they are unavailable.
 const itPty = ptyAvailable ? it : it.skip
 
 // These rely on POSIX PTY semantics that conpty doesn't provide: SIGWINCH,
@@ -161,6 +161,28 @@ describe('@devframes/plugin-terminals', () => {
       const s = list.find(x => x.id === info.id)
       expect(s?.processName?.toLowerCase()).toContain('node')
     }, { timeout: 4000 })
+
+    await call(client, 'devframes-plugin-terminals:remove', { id: info.id })
+  })
+
+  it('tracks the title and cwd a program reports via OSC escapes', async () => {
+    const client = bootClient(server.port)
+    await new Promise(r => setTimeout(r, 50))
+
+    // OSC parsing rides the output stream, so it works for every backend —
+    // a readonly piped session keeps this test deterministic cross-platform.
+    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+      command: NODE,
+      args: ['-e', 'process.stdout.write("\\x1B]2;osc-title\\x07\\x1B]7;file://localhost/tmp/osc-cwd\\x07"); setInterval(() => {}, 1000)'],
+      mode: 'readonly',
+    })
+
+    await vi.waitFor(async () => {
+      const list = await sessions(server)
+      const s = list.find(x => x.id === info.id)
+      expect(s?.termTitle).toBe('osc-title')
+      expect(s?.termCwd).toBe('/tmp/osc-cwd')
+    })
 
     await call(client, 'devframes-plugin-terminals:remove', { id: info.id })
   })

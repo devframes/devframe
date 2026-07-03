@@ -1,4 +1,5 @@
 import type { Buffer } from 'node:buffer'
+import type { IPty } from 'zigpty'
 import type { TerminalBackend } from '../types'
 import { spawn as spawnChild } from 'node:child_process'
 import { diagnostics } from './diagnostics'
@@ -6,7 +7,7 @@ import { diagnostics } from './diagnostics'
 /**
  * Minimal surface the manager needs from a running terminal process,
  * abstracting over a real PTY and a piped child process. Kept local so the
- * plugin's public types never hard-depend on the optional native module.
+ * plugin's public types never hard-depend on the PTY module.
  */
 export interface TerminalProcess {
   readonly pid: number | undefined
@@ -34,65 +35,47 @@ export interface SpawnBackendOptions {
   input: boolean
 }
 
-interface PtyModule {
-  spawn: (file: string, args: string[], options: {
-    name?: string
-    cols?: number
-    rows?: number
-    cwd?: string
-    env?: Record<string, string>
-  }) => PtyProcess
-}
-
-interface PtyProcess {
-  pid: number
-  /** Foreground process title; updated by node-pty as the foreground changes. */
-  readonly process?: string
-  onData: (cb: (data: string) => void) => void
-  onExit: (cb: (e: { exitCode: number, signal?: number }) => void) => void
-  write: (data: string) => void
-  resize: (cols: number, rows: number) => void
-  kill: (signal?: string) => void
-}
-
-/** TERM name handed to the PTY; also used to reject the Windows fallback. */
+/** TERM name handed to the PTY; also used to reject fallback process labels. */
 const PTY_TERM_NAME = 'xterm-256color'
 
-let ptyModulePromise: Promise<PtyModule | undefined> | undefined
+let zigptyPromise: Promise<typeof import('zigpty') | undefined> | undefined
 
 /**
- * Lazily load the optional PTY backend. Resolves to `undefined` when the
- * native module is missing or fails to load, letting interactive sessions
- * degrade to a piped child process.
+ * Lazily load the PTY backend. The import is deferred so the native binding
+ * only loads once a terminal actually spawns, and stays a runtime import for
+ * bundled hosts (Next/Turbopack). Resolves to `undefined` when the module
+ * fails to load, letting interactive sessions degrade to a piped child
+ * process.
  */
-async function loadPty(): Promise<PtyModule | undefined> {
-  ptyModulePromise ??= (async () => {
-    try {
-      const mod = await import('@homebridge/node-pty-prebuilt-multiarch')
-      const candidate = ((mod as any).default ?? mod) as PtyModule
-      return typeof candidate?.spawn === 'function' ? candidate : undefined
-    }
-    catch {
-      return undefined
-    }
-  })()
-  return ptyModulePromise
+async function loadZigpty(): Promise<typeof import('zigpty') | undefined> {
+  zigptyPromise ??= import('zigpty').then(m => m, () => undefined)
+  return zigptyPromise
 }
 
-/** Whether the PTY backend is available in this runtime. */
+/**
+ * Whether real pseudo-terminals are available in this runtime — i.e. zigpty's
+ * native bindings loaded. Without them interactive sessions still run through
+ * zigpty's pipe-based emulation, with degraded TUI fidelity.
+ */
 export async function isPtyAvailable(): Promise<boolean> {
-  return (await loadPty()) !== undefined
+  return (await loadZigpty())?.hasNative ?? false
 }
 
-/** Spawn a real PTY. Returns `undefined` when the backend is unavailable. */
+/**
+ * Spawn an interactive terminal via zigpty. Uses a real PTY when the native
+ * bindings are available, and zigpty's pipe-based emulation (line discipline,
+ * signal translation, best-effort resize) otherwise — the reported `backend`
+ * reflects which one the session got. Returns `undefined` when the module
+ * itself is unavailable or spawning throws.
+ */
 export async function spawnPty(options: SpawnBackendOptions): Promise<TerminalProcess | undefined> {
-  const pty = await loadPty()
-  if (!pty)
+  const zigpty = await loadZigpty()
+  if (!zigpty)
     return undefined
 
-  let proc: PtyProcess
+  let proc: IPty
   try {
-    proc = pty.spawn(options.command, options.args, {
+    proc = zigpty.spawn(options.command, options.args, {
       name: PTY_TERM_NAME,
       cols: options.cols,
       rows: options.rows,
@@ -109,7 +92,7 @@ export async function spawnPty(options: SpawnBackendOptions): Promise<TerminalPr
   }
 
   return {
-    backend: 'pty',
+    backend: zigpty.hasNative ? 'pty' : 'pipe',
     get pid() { return proc.pid },
     write: (data) => {
       try {
@@ -135,13 +118,17 @@ export async function spawnPty(options: SpawnBackendOptions): Promise<TerminalPr
         // Already dead.
       }
     },
-    onData: cb => proc.onData(cb),
+    onData: (cb) => {
+      proc.onData((data) => {
+        cb(typeof data === 'string' ? data : data.toString('utf8'))
+      })
+    },
     onExit: cb => proc.onExit(e => cb(e.exitCode ?? 0)),
     getProcessName: () => {
       try {
+        // On Windows the backend may fall back to the TERM name rather than
+        // the foreground process — don't surface that as a session label.
         const name = proc.process
-        // On Windows node-pty falls back to the TERM name rather than the
-        // foreground process — don't surface that as a session label.
         return name && name !== PTY_TERM_NAME ? name : undefined
       }
       catch {
@@ -152,9 +139,9 @@ export async function spawnPty(options: SpawnBackendOptions): Promise<TerminalPr
 }
 
 /**
- * Spawn a piped child process. Used for readonly sessions and as the
- * interactive fallback when no PTY backend is present. stdout/stderr are
- * merged into a single ordered text stream.
+ * Spawn a piped child process. Used for readonly sessions and as the last
+ * interactive fallback when zigpty is unavailable entirely. stdout/stderr
+ * are merged into a single ordered text stream.
  */
 export function spawnPipe(options: SpawnBackendOptions): TerminalProcess {
   const dataCbs: ((data: string) => void)[] = []
@@ -211,18 +198,19 @@ export function spawnPipe(options: SpawnBackendOptions): TerminalProcess {
 
 /**
  * Spawn the most capable backend for the requested interaction. Interactive
- * sessions prefer a real PTY (for TUIs); readonly sessions and the no-PTY
- * fallback use a piped child process.
+ * sessions prefer a real PTY (for TUIs) and degrade through zigpty's pipe
+ * emulation; readonly sessions use a piped child process.
  */
 export async function spawnBackend(
   options: SpawnBackendOptions,
   preferPty: boolean,
 ): Promise<TerminalProcess> {
   if (preferPty) {
+    if (!(await isPtyAvailable()))
+      diagnostics.DP_TERMINALS_0005({}, { method: 'warn' })
     const pty = await spawnPty(options)
     if (pty)
       return pty
-    diagnostics.DP_TERMINALS_0005({}, { method: 'warn' })
   }
   return spawnPipe(options)
 }

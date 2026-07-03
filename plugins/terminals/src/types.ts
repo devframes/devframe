@@ -30,8 +30,19 @@ export interface TerminalSessionInfo {
    * and once the process has exited.
    */
   processName?: string
-  /** User-assigned name; takes precedence over `processName`/`title` in the UI. */
+  /** User-assigned name; takes precedence over every derived title in the UI. */
   customTitle?: string
+  /**
+   * Window title the running program reported via OSC 0/2 escape sequences
+   * (what a real terminal would show in its tab), e.g. `user@host: ~/dir`.
+   */
+  termTitle?: string
+  /**
+   * Working directory the running program reported via OSC 7 / OSC 9;9 /
+   * OSC 1337 escape sequences (shell integration). Tracks `cd` live, unlike
+   * the static spawn-time `cwd`.
+   */
+  termCwd?: string
   mode: TerminalMode
   status: TerminalStatus
   backend: TerminalBackend
