@@ -2,6 +2,7 @@ import type { DevframeDefinition } from 'devframe/types'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
+import pkg from '../package.json' with { type: 'json' }
 import { setupInspect } from './node/index'
 
 /** Default devframe id — drives the hosted mount path `/__<id>/`. */
@@ -47,6 +48,10 @@ export function createInspectDevframe(options: InspectDevframeOptions = {}): Dev
   return defineDevframe({
     id,
     name: options.name ?? 'Devframe Inspector',
+    version: pkg.version,
+    packageName: pkg.name,
+    homepage: pkg.homepage,
+    description: pkg.description,
     icon: options.icon ?? 'ph:stethoscope-duotone',
     basePath: options.basePath,
     cli: {

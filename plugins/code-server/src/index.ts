@@ -3,6 +3,7 @@ import type { CodeServerOptions } from './types'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
+import pkg from '../package.json' with { type: 'json' }
 import { DEFAULT_PORT, PLUGIN_ID } from './constants'
 
 export {
@@ -40,10 +41,10 @@ export function createCodeServerDevframe(options: CodeServerOptions = {}): Devfr
   return defineDevframe({
     id: PLUGIN_ID,
     name: 'Code Server',
-    version: '0.5.2',
-    packageName: '@devframes/plugin-code-server',
-    homepage: 'https://github.com/devframes/devframe/tree/main/plugins/code-server#readme',
-    description: 'Run code-server (VS Code in the browser) as a devframe panel',
+    version: pkg.version,
+    packageName: pkg.name,
+    homepage: pkg.homepage,
+    description: pkg.description,
     icon: 'ph:code-duotone',
     // Leave undefined so `resolveBasePath` picks `/` standalone and
     // `/__<id>/` when hosted. Authors override via `options.basePath`.
