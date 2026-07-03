@@ -4,6 +4,7 @@ import type {
   DevframeMessageHandle,
   DevframeMessageShortcutInput,
   DevframeMessagesHost as DevframeMessagesHostType,
+  DevframeMessagesListDelta,
 } from '../types/messages'
 import type { DevframeHubContext } from './context'
 import { createEventEmitter } from 'devframe/utils/events'
@@ -11,16 +12,6 @@ import { nanoid } from 'devframe/utils/nanoid'
 
 const MAX_ENTRIES = 1000
 const MAX_REMOVALS = 1000
-
-function recordRemoval(
-  removals: Array<{ id: string, time: number }>,
-  id: string,
-  time: number,
-): void {
-  removals.push({ id, time })
-  if (removals.length > MAX_REMOVALS)
-    removals.splice(0, removals.length - MAX_REMOVALS)
-}
 
 export class DevframeMessagesHost implements DevframeMessagesHostType {
   public readonly entries: DevframeMessagesHostType['entries'] = new Map()
@@ -33,9 +24,23 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
 
   private _autoDeleteTimers = new Map<string, ReturnType<typeof setTimeout>>()
   private _clock = 0
+  /**
+   * The tick of the newest removal record dropped from the capped
+   * `removals` log — cursors older than this can't get a reliable delta
+   * and fall back to a full snapshot in {@link listSince}.
+   */
+  private _removalsTrimmedAt = 0
 
   private _tick(): number {
     return ++this._clock
+  }
+
+  private _recordRemoval(id: string, time: number): void {
+    this.removals.push({ id, time })
+    if (this.removals.length > MAX_REMOVALS) {
+      const dropped = this.removals.splice(0, this.removals.length - MAX_REMOVALS)
+      this._removalsTrimmedAt = dropped[dropped.length - 1]!.time
+    }
   }
 
   constructor(
@@ -117,7 +122,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
     }
     this.entries.delete(id)
     this.lastModified.delete(id)
-    recordRemoval(this.removals, id, this._tick())
+    this._recordRemoval(id, this._tick())
     this.events.emit('message:removed', id)
   }
 
@@ -147,10 +152,38 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
     this._autoDeleteTimers.clear()
     const tick = this._tick()
     for (const id of this.entries.keys())
-      recordRemoval(this.removals, id, tick)
+      this._recordRemoval(id, tick)
     this.entries.clear()
     this.lastModified.clear()
     this.events.emit('message:cleared')
+  }
+
+  listSince(since?: number | null): DevframeMessagesListDelta {
+    const version = this._clock
+    // Fall back to a full snapshot when there is no cursor, when the cursor
+    // predates removal records already trimmed from the capped log, or when
+    // it comes from another host incarnation (ahead of our clock).
+    if (since == null || since < this._removalsTrimmedAt || since > version) {
+      return {
+        entries: Array.from(this.entries.values()),
+        removedIds: [],
+        version,
+        full: true,
+      }
+    }
+
+    const entries: DevframeMessageEntry[] = []
+    for (const [id, entry] of this.entries) {
+      const mod = this.lastModified.get(id)
+      if (mod != null && mod > since)
+        entries.push(entry)
+    }
+    const removedIds: string[] = []
+    for (const removal of this.removals) {
+      if (removal.time > since)
+        removedIds.push(removal.id)
+    }
+    return { entries, removedIds, version, full: false }
   }
 
   private _createHandle(id: string): DevframeMessageHandle {

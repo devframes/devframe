@@ -54,6 +54,7 @@ export { DevframeMessagesClient }
 export { DevframeMessageShortcutInput }
 export { DevframeMessagesHost }
 export { DevframeMessagesLevelShortcuts }
+export { DevframeMessagesListDelta }
 export { DevframeNodeRpcSession }
 export { DevframeRpcClientFunctions }
 export { DevframeRpcServerFunctions }

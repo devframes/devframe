@@ -17,6 +17,7 @@
     "@devframes/plugin-code-server": "workspace:*",
     "@devframes/plugin-git": "workspace:*",
     "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
     "@devframes/plugin-terminals": "workspace:*",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
