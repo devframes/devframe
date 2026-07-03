@@ -20,6 +20,7 @@ export interface HubMessageInput {
   labels?: string[]
   elementPosition?: {
     selector?: string
+    boundingBox?: { x: number, y: number, width: number, height: number }
     description?: string
   }
   status?: 'loading' | 'idle'
@@ -60,14 +61,27 @@ export interface MessagesReporter {
   failed: (error: unknown) => void
 }
 
+export interface MessagesReporterOptions {
+  /**
+   * Resolve the current bounding box of a violating element from its axe
+   * target selectors — the agent supplies a live-DOM implementation. A stale
+   * box is fine: each re-scan refreshes the entry.
+   */
+  resolveBoundingBox?: (target: string[]) => { x: number, y: number, width: number, height: number } | undefined
+}
+
 /**
  * Build the reporter that projects each {@link ScanReport} onto the messages
  * feed: a summary entry driven through the loading → idle lifecycle, plus one
  * entry per violated rule (stable ids, so re-scans update in place) carrying
  * the impact-mapped level, WCAG tags as labels, and the first offending
- * element's selector. Rules that no longer violate are removed.
+ * element's selector and bounding box. Rules that no longer violate are
+ * removed.
  */
-export function createMessagesReporter(messages: HubMessagesClient): MessagesReporter {
+export function createMessagesReporter(
+  messages: HubMessagesClient,
+  options: MessagesReporterOptions = {},
+): MessagesReporter {
   let reportedRules = new Set<string>()
   // Fire-and-forget: the feed is a mirror, never a gate for the scan loop.
   const send = (input: HubMessageInput) => void messages.add(input).catch(() => {})
@@ -107,7 +121,11 @@ export function createMessagesReporter(messages: HubMessagesClient): MessagesRep
           level: IMPACT_LEVEL[violation.impact],
           labels: [violation.impact, ...(violation.tags ?? [])],
           elementPosition: first
-            ? { selector: first.target.join(' '), description: first.failureSummary }
+            ? {
+                selector: first.target.join(' '),
+                boundingBox: options.resolveBoundingBox?.(first.target),
+                description: first.failureSummary,
+              }
             : undefined,
         })
       }

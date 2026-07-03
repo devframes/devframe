@@ -33,7 +33,21 @@ function start(context?: A11yAgentContext) {
 
   // Booted as a hub dock client script — mirror every scan into the hub's
   // messages feed. Standalone boots have no context and skip the mirror.
-  const reporter = context?.messages ? createMessagesReporter(context.messages) : undefined
+  const reporter = context?.messages
+    ? createMessagesReporter(context.messages, {
+        resolveBoundingBox: (target) => {
+          const rect = resolveElement(target)?.getBoundingClientRect()
+          if (!rect)
+            return undefined
+          return {
+            x: Math.round(rect.x),
+            y: Math.round(rect.y),
+            width: Math.round(rect.width),
+            height: Math.round(rect.height),
+          }
+        },
+      })
+    : undefined
 
   let lastReport: ScanReport | null = null
   let scanning = false

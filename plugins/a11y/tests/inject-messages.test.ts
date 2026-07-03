@@ -71,7 +71,10 @@ describe('createMessagesReporter', () => {
 
   it('emits one entry per violated rule with impact-mapped level, WCAG labels, and element position', () => {
     const { client, added } = createStubMessages()
-    const reporter = createMessagesReporter(client)
+    const reporter = createMessagesReporter(client, {
+      resolveBoundingBox: target =>
+        target[0] === '#image-alt-0' ? { x: 1, y: 2, width: 30, height: 40 } : undefined,
+    })
 
     reporter.report(report([violation('image-alt', 'critical', 2), violation('label', 'moderate')]))
 
@@ -86,12 +89,19 @@ describe('createMessagesReporter', () => {
       message: 'Fix image-alt (2)',
       level: 'error',
       labels: ['critical', 'wcag2a'],
-      elementPosition: { selector: '#image-alt-0', description: 'Fix the image-alt element' },
+      elementPosition: {
+        selector: '#image-alt-0',
+        boundingBox: { x: 1, y: 2, width: 30, height: 40 },
+        description: 'Fix the image-alt element',
+      },
     })
     expect(added.find(m => m.id === 'devframe-a11y-inspector:rule:label')).toMatchObject({
       level: 'warn',
       labels: ['moderate', 'wcag2a'],
     })
+    // No resolver hit — the box is simply absent, never a throw.
+    expect(added.find(m => m.id === 'devframe-a11y-inspector:rule:label')?.elementPosition?.boundingBox)
+      .toBeUndefined()
   })
 
   it('removes entries for rules that no longer violate on re-scan', () => {

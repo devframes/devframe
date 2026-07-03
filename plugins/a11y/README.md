@@ -40,7 +40,8 @@ default export with the client-script context. Booted that way, the agent also
 mirrors each scan into the hub's **messages feed** — a summary entry driven
 through the loading → idle lifecycle plus one entry per violated rule, carrying
 the impact-mapped level, WCAG tags as labels, and the first offending element's
-selector. Both minimal hub examples do exactly this. Outside a hub, one
+selector and bounding box (rendered by `@devframes/plugin-messages` when the
+hub mounts it). Both minimal hub examples do exactly this. Outside a hub, one
 `<script type="module">` for the same bundle does the job — the demo below
 shows it (no hub context, so the feed mirror simply stays off).
 
