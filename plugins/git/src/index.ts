@@ -2,6 +2,7 @@ import type { DevframeDefinition } from 'devframe/types'
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe/types'
 import { dirname, resolve } from 'pathe'
+import pkg from '../package.json' with { type: 'json' }
 import { configureGit } from './rpc/context.ts'
 import { readFunctions, writeFunctions } from './rpc/index.ts'
 
@@ -50,10 +51,10 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
   return defineDevframe({
     id: 'git',
     name: 'Git',
-    version: '0.5.2',
-    packageName: '@devframes/plugin-git',
-    homepage: 'https://github.com/devframes/devframe/tree/main/plugins/git#readme',
-    description: 'Git dashboard for devframe',
+    version: pkg.version,
+    packageName: pkg.name,
+    homepage: pkg.homepage,
+    description: pkg.description,
     icon: 'ph:git-branch-duotone',
     basePath: options.basePath,
     cli: {
