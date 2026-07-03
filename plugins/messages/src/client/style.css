@@ -1,0 +1,21 @@
+/* Panel-specific surface tweaks. Base element styling and the `color-scheme`
+   light/dark switch come from `@antfu/design/styles.css`. */
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8884;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8887;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}

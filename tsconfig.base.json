@@ -207,6 +207,30 @@
       ],
       "@devframes/plugin-a11y": [
         "./plugins/a11y/src/index.ts"
+      ],
+      "@devframes/plugin-messages/client": [
+        "./plugins/messages/src/client/index.ts"
+      ],
+      "@devframes/plugin-messages/node": [
+        "./plugins/messages/src/node/index.ts"
+      ],
+      "@devframes/plugin-messages/constants": [
+        "./plugins/messages/src/constants.ts"
+      ],
+      "@devframes/plugin-messages/types": [
+        "./plugins/messages/src/types.ts"
+      ],
+      "@devframes/plugin-messages/rpc": [
+        "./plugins/messages/src/rpc/index.ts"
+      ],
+      "@devframes/plugin-messages/cli": [
+        "./plugins/messages/src/cli.ts"
+      ],
+      "@devframes/plugin-messages/vite": [
+        "./plugins/messages/src/vite.ts"
+      ],
+      "@devframes/plugin-messages": [
+        "./plugins/messages/src/index.ts"
       ]
     },
     "resolveJsonModule": true,

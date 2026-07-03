@@ -1,0 +1,88 @@
+import type { DevframeMessageEntry } from '../../types'
+
+/** Shared story fixtures — a feed that exercises every entry facet. */
+export function makeSampleEntries(now: number = Date.now()): DevframeMessageEntry[] {
+  return [
+    {
+      id: 'sample:success',
+      level: 'success',
+      message: 'Build completed',
+      description: 'Client bundle emitted in 412ms.',
+      from: 'server',
+      category: 'build',
+      labels: ['vite'],
+      timestamp: now - 5 * 60_000,
+    },
+    {
+      id: 'sample:info',
+      level: 'info',
+      message: 'HMR update applied',
+      description: 'src/client/components/MessagesView.vue',
+      from: 'server',
+      category: 'build',
+      labels: ['hmr', 'vite'],
+      timestamp: now - 3 * 60_000,
+    },
+    {
+      id: 'sample:a11y',
+      level: 'warn',
+      message: 'Image element missing alt attribute',
+      description: 'Screen readers announce nothing useful for this image.',
+      from: 'browser',
+      category: 'a11y',
+      labels: ['axe', 'image-alt'],
+      elementPosition: {
+        selector: 'main > figure > img.hero',
+        description: 'Hero image in the landing section',
+        boundingBox: { x: 24, y: 180, width: 640, height: 360 },
+      },
+      timestamp: now - 2 * 60_000,
+    },
+    {
+      id: 'sample:lint',
+      level: 'warn',
+      message: 'Unused variable `delta`',
+      description: '`delta` is declared but its value is never read.',
+      from: 'server',
+      category: 'lint',
+      labels: ['eslint', 'unused-imports'],
+      filePosition: { file: 'src/client/state/messages.ts', line: 42, column: 9 },
+      timestamp: now - 90_000,
+    },
+    {
+      id: 'sample:error',
+      level: 'error',
+      message: 'Unhandled promise rejection',
+      description: 'TypeError: Cannot read properties of undefined (reading \'entries\')',
+      from: 'browser',
+      category: 'runtime',
+      stacktrace: [
+        'TypeError: Cannot read properties of undefined (reading \'entries\')',
+        '    at refresh (src/client/state/messages.ts:42:18)',
+        '    at async useMessages (src/client/state/messages.ts:80:5)',
+      ].join('\n'),
+      notify: true,
+      timestamp: now - 45_000,
+    },
+    {
+      id: 'sample:loading',
+      level: 'info',
+      message: 'Typechecking project…',
+      from: 'server',
+      category: 'build',
+      labels: ['tsc'],
+      status: 'loading',
+      timestamp: now - 10_000,
+    },
+    {
+      id: 'sample:debug',
+      level: 'debug',
+      message: 'WebSocket reconnected',
+      description: 'Resumed the RPC channel after 1 missed heartbeat.',
+      from: 'browser',
+      category: 'runtime',
+      autoDelete: 12_000,
+      timestamp: now - 5_000,
+    },
+  ]
+}

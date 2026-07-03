@@ -36,6 +36,8 @@ describe('minimal-next-devframe-hub (example)', () => {
     expect(dockIds).toContain('~terminals')
     expect(dockIds).toContain('~messages')
     expect(dockIds).toContain('~settings')
+    // The dogfooded built-in plugin packages mount their own docks.
+    expect(dockIds).toContain('devframes-plugin-messages')
   })
 
   it('lists startup and demo messages through the kit-local RPC', async () => {

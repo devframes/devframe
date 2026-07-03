@@ -2,6 +2,7 @@ import a11yDevframe, { a11yAgentBundlePath } from '@devframes/plugin-a11y'
 import codeServerDevframe from '@devframes/plugin-code-server'
 import gitDevframe from '@devframes/plugin-git'
 import inspectDevframe from '@devframes/plugin-inspect'
+import messagesDevframe from '@devframes/plugin-messages'
 import terminalsDevframe from '@devframes/plugin-terminals'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
@@ -28,6 +29,7 @@ export default defineConfig({
         codeServerDevframe,
         inspectDevframe,
         a11yDevframe,
+        messagesDevframe,
       ],
       // Attach the a11y inspector's in-page agent as its dock's client script.
       // The hub client runtime (booted in src/client/main.ts) imports it into
