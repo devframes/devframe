@@ -3,8 +3,19 @@ import type {
   DevframeMessageEntry,
   DevframeMessageEntryInput,
   DevframeMessageHandle,
+  DevframeMessageLevel,
   DevframeMessagesClient,
+  DevframeMessageShortcutInput,
 } from '../types/messages'
+
+export interface MessagesClientOptions {
+  /**
+   * Default fields merged beneath every `add()` input — the client host passes
+   * `{ category: entry.id }` to scope a dock client script's messages to its
+   * entry. Fields set on the input itself win.
+   */
+  defaults?: Partial<DevframeMessageEntryInput>
+}
 
 /**
  * Build a browser-side {@link DevframeMessagesClient} that writes into the
@@ -12,7 +23,7 @@ import type {
  * returned by `add` proxies `update`/`dismiss` back through the same RPCs, so a
  * dock client script reports into the very feed the server writes to.
  */
-export function createMessagesClient(rpc: DevframeRpcClient): DevframeMessagesClient {
+export function createMessagesClient(rpc: DevframeRpcClient, options: MessagesClientOptions = {}): DevframeMessagesClient {
   // The `hub:messages:*` ids aren't in the statically-typed server map.
   const call = rpc.call as (name: string, ...args: any[]) => Promise<any>
 
@@ -35,12 +46,24 @@ export function createMessagesClient(rpc: DevframeRpcClient): DevframeMessagesCl
     }
   }
 
+  async function add(input: DevframeMessageEntryInput): Promise<DevframeMessageHandle> {
+    const entry = await call('hub:messages:add', { ...options.defaults, ...input }) as DevframeMessageEntry
+    return makeHandle(entry)
+  }
+
+  function levelShortcut(level: DevframeMessageLevel) {
+    return (message: string, extra?: DevframeMessageShortcutInput) =>
+      add({ ...extra, message, level })
+  }
+
   return {
-    async add(input: DevframeMessageEntryInput) {
-      const entry = await call('hub:messages:add', input) as DevframeMessageEntry
-      return makeHandle(entry)
-    },
+    add,
     remove: id => call('hub:messages:remove', id) as Promise<void>,
     clear: () => call('hub:messages:clear') as Promise<void>,
+    info: levelShortcut('info'),
+    warn: levelShortcut('warn'),
+    error: levelShortcut('error'),
+    success: levelShortcut('success'),
+    debug: levelShortcut('debug'),
   }
 }

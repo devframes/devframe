@@ -75,6 +75,9 @@ export interface DocksPanelContext {
   isResizing: boolean;
   readonly isVertical: boolean;
 }
+export interface MessagesClientOptions {
+  defaults?: Partial<DevframeMessageEntryInput>;
+}
 export interface WhenClauseContext {
   readonly context: WhenContext;
 }
@@ -89,10 +92,10 @@ export type DockClientType = 'embedded' | 'standalone';
 // #region Functions
 export declare function connectRemoteDevframe(_?: ConnectRemoteDevframeOptions): Promise<DevframeRpcClient>;
 export declare function createDevframeClientHost(_?: DevframeClientHostOptions): Promise<DevframeClientHost>;
-export declare function createMessagesClient(_: DevframeRpcClient): DevframeMessagesClient;
+export declare function createMessagesClient(_: DevframeRpcClient, _?: MessagesClientOptions): DevframeMessagesClient;
 export declare function getDevframeClientContext(): DevframeClientContext | undefined;
 export declare function parseRemoteConnection(_?: string): RemoteConnectionInfo | null;
-export declare function setDevframeClientContext(_: DevframeClientContext): void;
+export declare function setDevframeClientContext(_: DevframeClientContext | undefined): void;
 // #endregion
 
 // #region Variables

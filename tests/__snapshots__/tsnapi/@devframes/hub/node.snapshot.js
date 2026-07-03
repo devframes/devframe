@@ -45,6 +45,11 @@ export class DevframeMessagesHost {
   async add(_) {}
   async update(_, _) {}
   async remove(_) {}
+  info(_, _) {}
+  warn(_, _) {}
+  error(_, _) {}
+  success(_, _) {}
+  debug(_, _) {}
   async clear() {}
   listSince(_) {}
   _createHandle(_) {}

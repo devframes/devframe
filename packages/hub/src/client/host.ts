@@ -25,7 +25,7 @@ import type {
 import { connectDevframe } from 'devframe/client'
 import { createEventEmitter } from 'devframe/utils/events'
 import { DEFAULT_CATEGORIES_ORDER, DEFAULT_STATE_USER_SETTINGS } from '../constants'
-import { setDevframeClientContext } from './context'
+import { getDevframeClientContext, setDevframeClientContext } from './context'
 import { createMessagesClient } from './messages'
 
 const DOCKS_STATE_KEY = 'devframe:docks'
@@ -115,9 +115,14 @@ export async function createDevframeClientHost(
   reconcileEntries()
   disposers.push(docksState.on('updated', reconcileEntries))
 
+  if (getDevframeClientContext()) {
+    console.warn(
+      '[@devframes/hub] A client host context is already published on this page — replacing it. '
+      + 'Boot createDevframeClientHost() once per page (e.g. HTML injection combined with a manual import boots it twice).',
+    )
+  }
   setDevframeClientContext(context)
 
-  const messages = createMessagesClient(rpc)
   const loadedScripts = new Set<string>()
   if (options.loadClientScripts ?? true) {
     loadClientScripts()
@@ -128,6 +133,8 @@ export async function createDevframeClientHost(
     context,
     dispose() {
       for (const off of disposers.splice(0)) off()
+      if (getDevframeClientContext() === context)
+        setDevframeClientContext(undefined)
     },
   }
 
@@ -277,6 +284,9 @@ export async function createDevframeClientHost(
       const current = entryToStateMap.get(entryId)
       if (!current)
         return
+      // Scope the messages client to this entry: its messages default their
+      // `category` to the entry id, so the feed can attribute and group them.
+      const messages = createMessagesClient(rpc, { defaults: { category: entryId } })
       const scriptContext: DockClientScriptContext = { ...context, current, messages }
       await fn(scriptContext)
     }
