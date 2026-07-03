@@ -7,6 +7,7 @@ import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
+import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash } from 'ufo'
 import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_WS_ROUTE } from '../constants'
 import { createHostContext } from '../node/context'
 import { createH3DevframeHost } from '../node/host-h3'
@@ -154,7 +155,7 @@ export async function createDevServer(
   // origin. Both files sit at the SPA root so the deployed SPA discovers them
   // via relative `./__connection.json` / `./<route>` fetches.
   const { bindPath, wsPort, meta } = resolveWsConnection(def, options, basePath)
-  const connectionMetaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`
+  const connectionMetaPath = joinURL(basePath, DEVFRAME_CONNECTION_META_FILENAME)
   app.use(connectionMetaPath, () => ({
     backend: 'websocket',
     websocket: meta,
@@ -191,21 +192,21 @@ function resolveWsConnection(
   const ws = options.ws ?? def.cli?.ws ?? {}
   // Normalize the route to a bare segment; the meta carries it relative so the
   // client resolves it against its own origin (proxy-safe).
-  const route = (ws.route ?? DEVFRAME_WS_ROUTE).replace(/^\/+/, '')
+  const route = withoutLeadingSlash(ws.route ?? DEVFRAME_WS_ROUTE)
 
   // (3) Remote origin — host the socket locally on the shared route, but tell
   // the browser to dial the fully-qualified endpoint (a tunnel/relay) verbatim.
   if (ws.url)
-    return { bindPath: `${basePath}${route}`, wsPort: undefined, meta: ws.url }
+    return { bindPath: joinURL(basePath, route), wsPort: undefined, meta: ws.url }
 
   // (2) Different port — a standalone socket server on its own port, rooted at
   // `/<route>`. The client targets `ws(s)://<page-host>:<port>/<route>`.
   if (ws.port != null)
-    return { bindPath: `/${route}`, wsPort: ws.port, meta: { port: ws.port, path: route } }
+    return { bindPath: withLeadingSlash(route), wsPort: ws.port, meta: { port: ws.port, path: route } }
 
   // (1) Same server, different route (default) — share the HTTP port; advertise
   // a relative same-origin path.
-  return { bindPath: `${basePath}${route}`, wsPort: undefined, meta: { path: route } }
+  return { bindPath: joinURL(basePath, route), wsPort: undefined, meta: { path: route } }
 }
 
 async function maybeOpenBrowser(
@@ -222,7 +223,7 @@ async function maybeOpenBrowser(
   if (resolved === undefined || resolved === false)
     return
   const target = typeof resolved === 'string'
-    ? resolveOpenTarget(origin, resolved)
+    ? withBase(resolved, origin)
     : origin
   try {
     await open(target)
@@ -231,12 +232,4 @@ async function maybeOpenBrowser(
     // Failing to launch a browser shouldn't break the dev server.
     // The user can navigate manually.
   }
-}
-
-function resolveOpenTarget(origin: string, target: string): string {
-  if (/^https?:/.test(target))
-    return target
-  if (target.startsWith('/'))
-    return origin.replace(/\/$/, '') + target
-  return origin.replace(/\/$/, '') + (target ? `/${target}` : '')
 }

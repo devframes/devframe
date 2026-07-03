@@ -62,6 +62,8 @@ export interface Violation {
   description: string
   /** Deque University rule documentation. */
   helpUrl: string
+  /** WCAG tags the rule maps to, e.g. `["wcag2a", "wcag111"]`. */
+  tags?: string[]
   nodes: ViolationNode[]
 }
 

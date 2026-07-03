@@ -43,6 +43,8 @@ function createStubRpc() {
     },
     call: async (...args: any[]) => {
       calls.push(args)
+      if (args[0] === 'hub:messages:add')
+        return { id: 'msg-1', timestamp: 1, from: 'browser', ...args[1] }
       return `rpc:${args[0]}`
     },
   } as unknown as DevframeRpcClient
@@ -139,7 +141,7 @@ describe('createDevframeClientHost', () => {
   })
 
   it('imports a dock entry client script and hands it the script context', async () => {
-    const { rpc, states } = createStubRpc()
+    const { rpc, states, calls } = createStubRpc()
     const host = await createDevframeClientHost({ rpc })
 
     const received: any[] = []
@@ -153,8 +155,37 @@ describe('createDevframeClientHost', () => {
     const scriptCtx = received[0]
     expect(scriptCtx.current.entryMeta.id).toBe('scripted')
     expect(scriptCtx.rpc).toBe(rpc)
-    expect(typeof scriptCtx.messages.add).toBe('function')
+
+    // The messages client is scoped to the entry: `category` defaults to the
+    // entry id, and the doc'd per-level shortcuts delegate to add().
+    await scriptCtx.messages.add({ message: 'hello', level: 'info' })
+    expect(calls.at(-1)).toEqual(['hub:messages:add', { message: 'hello', level: 'info', category: 'scripted' }])
+    await scriptCtx.messages.warn('careful', { category: 'a11y' })
+    expect(calls.at(-1)).toEqual(['hub:messages:add', { message: 'careful', level: 'warn', category: 'a11y' }])
+
     delete (globalThis as any).__DF_TEST_SCRIPT__
     host.dispose()
+  })
+
+  it('warns when a second host replaces a published context; dispose unpublishes it', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const { rpc } = createStubRpc()
+      const first = await createDevframeClientHost({ rpc })
+      expect(warn).not.toHaveBeenCalled()
+
+      const second = await createDevframeClientHost({ rpc })
+      expect(warn).toHaveBeenCalledOnce()
+      expect(getDevframeClientContext()).toBe(second.context)
+
+      // The first host no longer owns the published context — leave it alone.
+      first.dispose()
+      expect(getDevframeClientContext()).toBe(second.context)
+      second.dispose()
+      expect(getDevframeClientContext()).toBeUndefined()
+    }
+    finally {
+      warn.mockRestore()
+    }
   })
 })

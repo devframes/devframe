@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "birpc": "catalog:deps",
+    "destr": "catalog:deps",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
     "perfect-debounce": "catalog:deps",

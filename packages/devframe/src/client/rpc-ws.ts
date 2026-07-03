@@ -4,6 +4,7 @@ import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { promiseWithResolver } from 'devframe/utils/promise'
 import { parseUA } from 'ua-parser-modern'
+import { withProtocol } from 'ufo'
 
 export interface CreateWsRpcClientModeOptions {
   authToken?: string
@@ -82,7 +83,7 @@ export function resolveWsUrl(
     return str
   // HTTP(S) URL — swap to the matching WS protocol.
   if (/^https?:\/\//i.test(str))
-    return str.replace(/^http/i, 'ws')
+    return withProtocol(str, /^https/i.test(str) ? 'wss://' : 'ws://')
   // Path string — resolve same-origin against the meta base.
   const target = new URL(str, base)
   target.protocol = wsProtocol

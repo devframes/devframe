@@ -79,10 +79,12 @@
     "birpc": "catalog:deps",
     "cac": "catalog:deps",
     "crossws": "catalog:deps",
+    "destr": "catalog:deps",
     "h3": "catalog:deps",
     "mrmime": "catalog:deps",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
+    "ufo": "catalog:deps",
     "valibot": "catalog:deps"
   },
   "devDependencies": {

@@ -17,6 +17,7 @@ export default defineConfig({
       'examples/next-runtime-snapshot',
       'plugins/git',
       'plugins/a11y',
+      'plugins/messages',
       'examples/minimal-next-devframe-hub',
       {
         test: {

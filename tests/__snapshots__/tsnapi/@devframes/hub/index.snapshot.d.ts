@@ -51,7 +51,10 @@ export { DevframeMessageFilePosition }
 export { DevframeMessageHandle }
 export { DevframeMessageLevel }
 export { DevframeMessagesClient }
+export { DevframeMessageShortcutInput }
 export { DevframeMessagesHost }
+export { DevframeMessagesLevelShortcuts }
+export { DevframeMessagesListDelta }
 export { DevframeNodeRpcSession }
 export { DevframeRpcClientFunctions }
 export { DevframeRpcServerFunctions }

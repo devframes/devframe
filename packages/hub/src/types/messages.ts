@@ -105,7 +105,31 @@ export interface DevframeMessageHandle {
   dismiss: () => Promise<void>
 }
 
-export interface DevframeMessagesClient {
+/**
+ * Extra fields accepted by the per-level message shortcuts —
+ * everything on {@link DevframeMessageEntryInput} except the
+ * `message` and `level` the shortcut itself provides.
+ */
+export type DevframeMessageShortcutInput = Omit<DevframeMessageEntryInput, 'message' | 'level'>
+
+/**
+ * Per-level shortcuts shared by the client and the node host —
+ * `messages.info('...')` is `messages.add({ message: '...', level: 'info' })`.
+ */
+export interface DevframeMessagesLevelShortcuts {
+  /** Shortcut for `add({ message, level: 'info', ...extra })` */
+  info: (message: string, extra?: DevframeMessageShortcutInput) => Promise<DevframeMessageHandle>
+  /** Shortcut for `add({ message, level: 'warn', ...extra })` */
+  warn: (message: string, extra?: DevframeMessageShortcutInput) => Promise<DevframeMessageHandle>
+  /** Shortcut for `add({ message, level: 'error', ...extra })` */
+  error: (message: string, extra?: DevframeMessageShortcutInput) => Promise<DevframeMessageHandle>
+  /** Shortcut for `add({ message, level: 'success', ...extra })` */
+  success: (message: string, extra?: DevframeMessageShortcutInput) => Promise<DevframeMessageHandle>
+  /** Shortcut for `add({ message, level: 'debug', ...extra })` */
+  debug: (message: string, extra?: DevframeMessageShortcutInput) => Promise<DevframeMessageHandle>
+}
+
+export interface DevframeMessagesClient extends DevframeMessagesLevelShortcuts {
   /**
    * Add a message entry. Returns a Promise resolving to a handle for subsequent updates/dismissal.
    * Can be used without `await` for fire-and-forget usage.
@@ -117,7 +141,27 @@ export interface DevframeMessagesClient {
   clear: () => Promise<void>
 }
 
-export interface DevframeMessagesHost {
+/**
+ * A snapshot or delta of the message list, as returned by
+ * {@link DevframeMessagesHost.listSince}. Consumers apply `removedIds`
+ * first, then upsert `entries`, and pass `version` back as `since` on the
+ * next call.
+ */
+export interface DevframeMessagesListDelta {
+  /** Entries added or updated since the cursor (or all entries when `full`) */
+  entries: DevframeMessageEntry[]
+  /** Ids removed since the cursor (empty when `full`) */
+  removedIds: string[]
+  /** The version cursor — pass back as `since` on the next call */
+  version: number
+  /**
+   * When `true`, `entries` is the complete snapshot and any locally cached
+   * list must be reset before applying it.
+   */
+  full: boolean
+}
+
+export interface DevframeMessagesHost extends DevframeMessagesLevelShortcuts {
   readonly entries: Map<string, DevframeMessageEntry>
   readonly events: EventEmitter<{
     'message:added': (entry: DevframeMessageEntry) => void
@@ -143,4 +187,13 @@ export interface DevframeMessagesHost {
    * Clear all message entries
    */
   clear: () => Promise<void>
+  /**
+   * Read the message list incrementally. Pass the `version` from the
+   * previous result as `since` to receive only the entries modified and the
+   * ids removed after that point; pass `null`/`undefined` for the initial
+   * full snapshot. When the host can no longer compute a reliable delta for
+   * the given cursor (trimmed removal history, or a cursor from another host
+   * incarnation), the result carries `full: true` with the complete list.
+   */
+  listSince: (since?: number | null) => DevframeMessagesListDelta
 }

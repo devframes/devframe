@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import { destr } from 'destr'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { dirname } from 'pathe'
 import { debounce } from 'perfect-debounce'
@@ -20,7 +21,7 @@ export function createStorage<T extends object>(options: CreateStorageOptions<T>
   let initialValue: T = options.initialValue
   if (fs.existsSync(options.filepath)) {
     try {
-      const savedValue = JSON.parse(fs.readFileSync(options.filepath, 'utf-8')) as T
+      const savedValue = destr<T>(fs.readFileSync(options.filepath, 'utf-8'), { strict: true })
       initialValue = mergeInitialValue ? mergeInitialValue(options.initialValue, savedValue) : savedValue
     }
     catch (error) {

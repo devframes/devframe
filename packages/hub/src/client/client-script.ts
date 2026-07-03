@@ -10,7 +10,8 @@ export interface DockClientScriptContext extends DocksContext {
    */
   current: DockEntryState
   /**
-   * Messages client scoped to this dock entry's source
+   * Messages client scoped to this dock entry — messages it adds default
+   * their `category` to the entry id, so the feed can attribute them.
    */
   messages: DevframeMessagesClient
 }

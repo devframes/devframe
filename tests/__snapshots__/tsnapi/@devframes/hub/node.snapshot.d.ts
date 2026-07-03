@@ -54,12 +54,20 @@ export declare class DevframeMessagesHost implements DevframeMessagesHost$1 {
   }>;
   private _autoDeleteTimers;
   private _clock;
+  private _removalsTrimmedAt;
   private _tick;
+  private _recordRemoval;
   constructor(_: DevframeHubContext);
   add(_: DevframeMessageEntryInput): Promise<DevframeMessageHandle>;
   update(_: string, _: Partial<DevframeMessageEntryInput>): Promise<DevframeMessageEntry | undefined>;
   remove(_: string): Promise<void>;
+  info(_: string, _?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle>;
+  warn(_: string, _?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle>;
+  error(_: string, _?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle>;
+  success(_: string, _?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle>;
+  debug(_: string, _?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle>;
   clear(): Promise<void>;
+  listSince(_?: number | null): DevframeMessagesListDelta;
   private _createHandle;
 }
 export declare class DevframeTerminalsHost implements DevframeTerminalsHost$1 {

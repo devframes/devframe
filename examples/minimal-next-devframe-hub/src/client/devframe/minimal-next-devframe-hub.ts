@@ -29,6 +29,7 @@ const BUILTIN_PLUGIN_PACKAGES = [
   '@devframes/plugin-code-server',
   '@devframes/plugin-inspect',
   '@devframes/plugin-a11y',
+  '@devframes/plugin-messages',
 ] as const
 
 async function loadBuiltinPlugins(): Promise<DevframeDefinition[]> {

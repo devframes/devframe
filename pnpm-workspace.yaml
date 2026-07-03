@@ -47,6 +47,7 @@ catalogs:
     birpc: ^4.0.0
     cac: ^7.0.0
     crossws: ^0.4.8
+    destr: ^2.0.5
     get-port-please: ^3.2.0
     h3: 2.0.1-rc.22
     immer: ^11.1.8
@@ -62,6 +63,7 @@ catalogs:
     structured-clone-es: ^2.0.0
     tinyexec: ^1.2.2
     tinyglobby: ^0.2.16
+    ufo: ^1.6.4
     valibot: ^1.4.1
     whenexpr: ^0.1.2
     ws: ^8.21.0
@@ -80,6 +82,7 @@ catalogs:
     '@sveltejs/vite-plugin-svelte': ^5.0.0
     '@unocss/postcss': ^66.0.0
     '@unocss/preset-icons': ^66.0.0
+    '@vueuse/core': ^14.3.0
     '@xterm/addon-fit': ^0.11.0
     '@xterm/xterm': ^6.0.0
     axe-core: ^4.12.1

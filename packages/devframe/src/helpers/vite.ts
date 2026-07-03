@@ -1,7 +1,7 @@
 import type { DevframeDefinition } from '../types/devframe'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { resolve } from 'pathe'
-import { resolveBasePath } from '../adapters/_shared'
+import { normalizeBasePath, resolveBasePath } from '../adapters/_shared'
 import { createDevServer, resolveDevServerPort } from '../adapters/dev'
 import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_WS_ROUTE } from '../constants'
 import { diagnostics } from '../node/diagnostics'
@@ -138,14 +138,9 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
 /**
  * Make `base` safe for `server.middlewares.use(path, …)`. Vite's connect
  * router matches by absolute URL prefix, so relative spellings like
- * `'./'` (commonly used for base-agnostic Nuxt builds) need to be
- * converted to `/` first.
+ * `'./'` (commonly used for base-agnostic Nuxt builds) collapse to the
+ * origin root before the shared leading/trailing-slash normalization.
  */
 function normalizeMountBase(base: string): string {
-  let out = base.replace(/^\.\/?/, '/')
-  if (!out.startsWith('/'))
-    out = `/${out}`
-  if (!out.endsWith('/'))
-    out = `${out}/`
-  return out.replace(/\/+/g, '/')
+  return normalizeBasePath(base.replace(/^\.\/?/, '/'))
 }

@@ -31,6 +31,7 @@ function guideItems(prefix: string): DefaultTheme.NavItemWithLink[] {
     { text: 'Security', link: `${prefix}/guide/security` },
     { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
     { text: 'Hub (multi-tool)', link: `${prefix}/guide/hub` },
+    { text: 'Client Scripts & Context', link: `${prefix}/guide/client-context` },
     { text: 'Agent-Native (experimental)', link: `${prefix}/guide/agent-native` },
   ]
 }
