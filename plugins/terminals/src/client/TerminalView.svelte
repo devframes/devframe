@@ -66,17 +66,30 @@
     term.loadAddon(fitAddon)
     term.open(container)
 
+    // Aggregated hub sessions carry a `channel`; this plugin doesn't own their
+    // process, so input/resize route to the hub's terminal RPC (positional
+    // args) instead of the plugin's own (object args).
+    const isForeign = !!info.channel
+
     if (info.mode === 'interactive') {
       term.onData((data) => {
-        rpc.call('devframes-plugin-terminals:write', { id: info.id, data }).catch(() => {})
+        if (isForeign)
+          rpc.call('hub:terminals:write', info.id, data).catch(() => {})
+        else
+          rpc.call('devframes-plugin-terminals:write', { id: info.id, data }).catch(() => {})
       })
     }
 
-    // Aggregated hub sessions (they carry a `channel`) aren't owned by this
-    // plugin, so there's no local process to resize.
-    if (!info.channel) {
+    // Own sessions always resize; foreign sessions only when interactive
+    // (a read-only aggregated session has no controllable TTY).
+    if (!isForeign) {
       term.onResize(({ cols, rows }) => {
         rpc.call('devframes-plugin-terminals:resize', { id: info.id, cols, rows }).catch(() => {})
+      })
+    }
+    else if (info.mode === 'interactive') {
+      term.onResize(({ cols, rows }) => {
+        rpc.call('hub:terminals:resize', info.id, cols, rows).catch(() => {})
       })
     }
 

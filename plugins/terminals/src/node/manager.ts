@@ -63,6 +63,13 @@ interface HubTerminalEntry {
   description?: string
   status: 'running' | 'stopped' | 'error'
   icon?: string | { light: string, dark: string }
+  /**
+   * Whether the hub session accepts input (a PTY spawned via
+   * `ctx.terminals.startPtySession`). When set, this plugin surfaces the
+   * aggregated session as interactive and routes keystrokes/resize back to
+   * the hub instead of treating it as read-only.
+   */
+  interactive?: boolean
 }
 interface HubTerminalsBridge {
   sessions: Map<string, HubTerminalEntry>
@@ -189,9 +196,9 @@ export class TerminalManager {
       foreign.push({
         id: session.id,
         title: session.title,
-        mode: 'readonly',
+        mode: session.interactive ? 'interactive' : 'readonly',
         status: session.status === 'stopped' ? 'exited' : session.status,
-        backend: 'pipe',
+        backend: session.interactive ? 'pty' : 'pipe',
         command: '',
         args: [],
         cwd: '',

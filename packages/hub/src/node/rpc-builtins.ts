@@ -1,6 +1,24 @@
 import type { RpcFunctionDefinitionAny } from 'devframe/rpc'
 import type { DevframeMessageEntry, DevframeMessageEntryInput } from '../types/messages'
+import type { DevframePtyTerminalSession } from '../types/terminals'
 import { defineHubRpcFunction } from '../define'
+import { diagnostics } from './diagnostics'
+
+/**
+ * Resolve an interactive (PTY) terminal session by id, or throw. Sessions
+ * spawned via `startChildProcess` are output-only and are rejected here.
+ */
+function resolveInteractiveSession(
+  sessions: Map<string, { id: string }>,
+  id: string,
+): DevframePtyTerminalSession {
+  const session = sessions.get(id) as DevframePtyTerminalSession | undefined
+  if (!session)
+    throw diagnostics.DF8201({ id })
+  if (typeof session.write !== 'function')
+    throw diagnostics.DF8202({ id })
+  return session
+}
 
 /**
  * `hub:commands:execute` — Invoke a registered server command by id. The
@@ -76,6 +94,32 @@ export const hubMessagesClear = defineHubRpcFunction({
 })
 
 /**
+ * `hub:terminals:write` — Send input to an interactive PTY session spawned
+ * via `ctx.terminals.startPtySession`. Lets a hub-aware terminal UI (e.g. the
+ * terminals plugin) drive a session owned by another plugin.
+ */
+export const hubTerminalsWrite = defineHubRpcFunction({
+  name: 'hub:terminals:write',
+  type: 'action',
+  setup: context => ({
+    async handler(id: string, data: string): Promise<void> {
+      resolveInteractiveSession(context.terminals.sessions, id).write(data)
+    },
+  }),
+})
+
+/** `hub:terminals:resize` — Resize an interactive PTY session by id. */
+export const hubTerminalsResize = defineHubRpcFunction({
+  name: 'hub:terminals:resize',
+  type: 'action',
+  setup: context => ({
+    async handler(id: string, cols: number, rows: number): Promise<void> {
+      resolveInteractiveSession(context.terminals.sessions, id).resize(cols, rows)
+    },
+  }),
+})
+
+/**
  * Framework-neutral RPC declarations auto-registered by
  * {@link createHubContext}. Provide additional RPCs by passing your own
  * array via `CreateHubContextOptions.builtinRpcDeclarations`; the hub's
@@ -87,4 +131,6 @@ export const builtinHubRpcDeclarations: readonly RpcFunctionDefinitionAny[] = [
   hubMessagesUpdate,
   hubMessagesRemove,
   hubMessagesClear,
+  hubTerminalsWrite,
+  hubTerminalsResize,
 ]

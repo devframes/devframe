@@ -67,6 +67,7 @@ export class DevframeTerminalsHost {
   remove(_) {}
   bindStream(_) {}
   async startChildProcess(_, _) {}
+  async startPtySession(_, _) {}
 }
 // #endregion
 
@@ -83,4 +84,6 @@ export var hubMessagesAdd /* const */
 export var hubMessagesClear /* const */
 export var hubMessagesRemove /* const */
 export var hubMessagesUpdate /* const */
+export var hubTerminalsResize /* const */
+export var hubTerminalsWrite /* const */
 // #endregion

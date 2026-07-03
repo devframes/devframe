@@ -83,6 +83,7 @@ export declare class DevframeTerminalsHost implements DevframeTerminalsHost$1 {
   remove(_: DevframeTerminalSession): void;
   private bindStream;
   startChildProcess(_: DevframeChildProcessExecuteOptions, _: Omit<DevframeTerminalSessionBase, 'status'>): Promise<DevframeChildProcessTerminalSession>;
+  startPtySession(_: DevframePtyExecuteOptions, _: Omit<DevframeTerminalSessionBase, 'status'>): Promise<DevframePtyTerminalSession>;
 }
 // #endregion
 
@@ -167,6 +168,36 @@ export declare const hubMessagesUpdate: {
   snapshot?: boolean;
   __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, patch: Partial<DevframeMessageEntryInput>], Promise<DevframeMessageEntry | undefined>>>> | undefined;
   __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, patch: Partial<DevframeMessageEntryInput>], Promise<DevframeMessageEntry | undefined>>> | undefined;
+};
+export declare const hubTerminalsResize: {
+  name: "hub:terminals:resize";
+  type?: "action" | undefined;
+  cacheable?: boolean;
+  args?: undefined;
+  returns?: undefined;
+  jsonSerializable?: boolean;
+  agent?: _$devframe.RpcFunctionAgentOptions;
+  setup?: ((context: DevframeHubContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, cols: number, rows: number], Promise<void>>>) | undefined;
+  handler?: ((id: string, cols: number, rows: number) => Promise<void>) | undefined;
+  dump?: _$devframe_rpc0.RpcDump<[id: string, cols: number, rows: number], Promise<void>, DevframeHubContext> | undefined;
+  snapshot?: boolean;
+  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, cols: number, rows: number], Promise<void>>>> | undefined;
+  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, cols: number, rows: number], Promise<void>>> | undefined;
+};
+export declare const hubTerminalsWrite: {
+  name: "hub:terminals:write";
+  type?: "action" | undefined;
+  cacheable?: boolean;
+  args?: undefined;
+  returns?: undefined;
+  jsonSerializable?: boolean;
+  agent?: _$devframe.RpcFunctionAgentOptions;
+  setup?: ((context: DevframeHubContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, data: string], Promise<void>>>) | undefined;
+  handler?: ((id: string, data: string) => Promise<void>) | undefined;
+  dump?: _$devframe_rpc0.RpcDump<[id: string, data: string], Promise<void>, DevframeHubContext> | undefined;
+  snapshot?: boolean;
+  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, data: string], Promise<void>>>> | undefined;
+  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, data: string], Promise<void>>> | undefined;
 };
 // #endregion
 

@@ -757,6 +757,9 @@ importers:
       tinyexec:
         specifier: catalog:deps
         version: 1.2.2
+      zigpty:
+        specifier: catalog:deps
+        version: 0.2.1
     devDependencies:
       '@types/node':
         specifier: catalog:types

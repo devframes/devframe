@@ -44,6 +44,13 @@ export const diagnostics = defineDiagnostics({
     DF8201: {
       why: (p: { id: string }) => `Terminal session with id "${p.id}" not registered`,
     },
+    DF8202: {
+      why: (p: { id: string }) => `Terminal session "${p.id}" does not accept input`,
+      fix: 'Spawn it via ctx.terminals.startPtySession() to get an interactive, writable session.',
+    },
+    DF8203: {
+      why: (p: { command: string, reason: string }) => `Failed to spawn PTY session for "${p.command}": ${p.reason}`,
+    },
     DF8400: {
       why: (p: { id: string }) => `Command "${p.id}" is already registered`,
     },
