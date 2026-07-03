@@ -9,6 +9,10 @@ const NODE = process.execPath
 // A real PTY works wherever zigpty's native bindings load (incl. Windows
 // ConPTY); skip when they're unavailable.
 const itPty = hasNative ? it : it.skip
+// Interactive stdin echo relies on POSIX PTY semantics that Windows ConPTY
+// doesn't reliably provide (echo timing); skip there, mirroring the terminals
+// plugin's own `itPosixPty` gate.
+const itPosixPty = (hasNative && process.platform !== 'win32') ? it : it.skip
 
 interface FakeSink {
   write: ReturnType<typeof vi.fn>
@@ -140,7 +144,7 @@ describe('devframeTerminalHost stream lifecycle', () => {
 })
 
 describe('devframeTerminalHost interactive PTY sessions', () => {
-  itPty('spawns an interactive PTY that accepts input and is marked interactive', async () => {
+  itPosixPty('spawns an interactive PTY that accepts input and is marked interactive', async () => {
     const { host, sinks } = createTerminalHost()
 
     const session = await host.startPtySession({
@@ -172,13 +176,19 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
   itPty('closes the PTY stream after natural process exit', async () => {
     const { host, sinks } = createTerminalHost()
 
-    await host.startPtySession({
+    const session = await host.startPtySession({
       command: NODE,
       args: ['-e', 'process.stdout.write("done")'],
     }, {
       id: 'pty-exit',
       title: 'PTY exit',
     })
+
+    // Session shape (cross-platform): a PTY session is flagged interactive so
+    // hub-aware UIs enable stdin.
+    expect(session.type).toBe('pty')
+    expect(session.interactive).toBe(true)
+    expect(host.sessions.get('pty-exit')?.interactive).toBe(true)
 
     await waitUntil(() => {
       expect(sinks.get('pty-exit')?.closed).toBe(true)
