@@ -10,6 +10,7 @@ import {
 } from 'devframe/constants'
 import { RpcCacheManager, RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createEventEmitter } from 'devframe/utils/events'
+import { withBase } from 'ufo'
 import { authenticateWithUrlOtp } from './otp'
 import { createRpcSharedStateClientHost } from './rpc-shared-state'
 import { createStaticRpcClientMode } from './rpc-static'
@@ -231,7 +232,7 @@ export async function getDevframeRpcClient(
   // relative WS path against the SPA's own origin (proxy-safe). Falls back to
   // the page location when running outside a browser document.
   function resolveMetaBaseUrl(): string {
-    const metaPath = resolveBasePath(resolvedBaseURL, DEVFRAME_CONNECTION_META_FILENAME)
+    const metaPath = withBase(DEVFRAME_CONNECTION_META_FILENAME, resolvedBaseURL)
     try {
       return new URL(metaPath, globalThis.location?.href).href
     }
@@ -240,23 +241,11 @@ export async function getDevframeRpcClient(
     }
   }
 
-  function normalizeBase(base: string): string {
-    return base.endsWith('/') ? base : `${base}/`
-  }
-
-  function resolveBasePath(base: string, path: string): string {
-    if (/^https?:\/\//.test(path))
-      return path
-    if (path.startsWith('/'))
-      return path
-    return `${normalizeBase(base)}${path}`
-  }
-
   if (!connectionMeta) {
     const errors: Error[] = []
     for (const base of bases) {
       try {
-        connectionMeta = await fetch(resolveBasePath(base, DEVFRAME_CONNECTION_META_FILENAME))
+        connectionMeta = await fetch(withBase(DEVFRAME_CONNECTION_META_FILENAME, base))
           .then(r => r.json()) as ConnectionMeta
         resolvedBaseURL = base
         ;(globalThis as any)[CONNECTION_META_KEY] = connectionMeta
@@ -295,7 +284,7 @@ export async function getDevframeRpcClient(
     const errors: Error[] = []
     for (const base of candidates) {
       try {
-        return await fetch(resolveBasePath(base, path)).then((r) => {
+        return await fetch(withBase(path, base)).then((r) => {
           if (!r.ok) {
             throw new Error(`Failed to fetch ${path} from ${base}: ${r.status}`)
           }

@@ -1,5 +1,6 @@
 import type { DevframeRpcClient, DevframeRpcClientOptions } from 'devframe/client'
 import type { RemoteConnectionInfo } from '../types'
+import { destr } from 'destr'
 import { getDevframeRpcClient } from 'devframe/client'
 import { REMOTE_CONNECTION_KEY } from 'devframe/constants'
 
@@ -81,7 +82,7 @@ export function parseRemoteConnection(input?: string): RemoteConnectionInfo | nu
 
   let payload: unknown
   try {
-    payload = JSON.parse(base64UrlDecode(encoded))
+    payload = destr(base64UrlDecode(encoded), { strict: true })
   }
   catch (cause) {
     throw new Error('[@devframes/hub] Failed to decode remote connection descriptor.', { cause })

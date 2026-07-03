@@ -55,6 +55,9 @@ catalogs:
     cac:
       specifier: ^7.0.0
       version: 7.0.0
+    destr:
+      specifier: ^2.0.5
+      version: 2.0.5
     get-port-please:
       specifier: ^3.2.0
       version: 3.2.0
@@ -100,6 +103,9 @@ catalogs:
     tinyglobby:
       specifier: ^0.2.16
       version: 0.2.16
+    ufo:
+      specifier: ^1.6.4
+      version: 1.6.4
     valibot:
       specifier: ^1.4.1
       version: 1.4.1
@@ -656,6 +662,9 @@ importers:
       cac:
         specifier: catalog:deps
         version: 7.0.0
+      destr:
+        specifier: catalog:deps
+        version: 2.0.5
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.22(crossws@0.4.5(srvx@0.11.15))
@@ -668,6 +677,9 @@ importers:
       pathe:
         specifier: catalog:deps
         version: 2.0.3
+      ufo:
+        specifier: catalog:deps
+        version: 1.6.4
       valibot:
         specifier: catalog:deps
         version: 1.4.1(typescript@6.0.3)
@@ -726,6 +738,9 @@ importers:
       birpc:
         specifier: catalog:deps
         version: 4.0.0
+      destr:
+        specifier: catalog:deps
+        version: 2.0.5
       nostics:
         specifier: catalog:deps
         version: 1.1.4
