@@ -1,4 +1,5 @@
 import type { DevframeDefinition, DevframeDeploymentKind } from '../types/devframe'
+import { cleanDoubleSlashes, withLeadingSlash, withTrailingSlash } from 'ufo'
 
 /**
  * Resolve the mount base path for a devframe's SPA. Hosted adapters
@@ -15,8 +16,5 @@ export function resolveBasePath(def: DevframeDefinition, kind: DevframeDeploymen
 }
 
 export function normalizeBasePath(base: string): string {
-  let out = base.startsWith('/') ? base : `/${base}`
-  if (!out.endsWith('/'))
-    out = `${out}/`
-  return out.replace(/\/+/g, '/')
+  return cleanDoubleSlashes(withTrailingSlash(withLeadingSlash(base)))
 }
