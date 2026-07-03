@@ -61,7 +61,8 @@
         "@devframes/plugin-terminals#build",
         "@devframes/plugin-code-server#build",
         "@devframes/plugin-inspect#build",
-        "@devframes/plugin-a11y#build"
+        "@devframes/plugin-a11y#build",
+        "@devframes/plugin-messages#build"
       ],
       "outputs": ["dist/**"]
     },

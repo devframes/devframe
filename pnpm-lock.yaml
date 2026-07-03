@@ -426,6 +426,9 @@ importers:
       '@devframes/plugin-inspect':
         specifier: workspace:*
         version: link:../../plugins/inspect
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
       '@devframes/plugin-terminals':
         specifier: workspace:*
         version: link:../../plugins/terminals
