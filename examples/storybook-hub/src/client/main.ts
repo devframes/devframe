@@ -1,5 +1,6 @@
 import type { DevframeDockEntry } from '@devframes/hub/types'
 import { connectDevframe } from '@devframes/hub/client'
+import { createIframePanes } from 'iframe-pane'
 import { iconClass } from './icons'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
@@ -23,11 +24,14 @@ const stageEl = document.querySelector<HTMLElement>('#stage')!
 const overlayEl = document.querySelector<HTMLElement>('#overlay')!
 
 interface DockRuntime {
-  iframe?: HTMLIFrameElement
   status: 'idle' | 'starting' | 'ready' | 'error'
   error?: string
 }
 
+// Every opened dock's iframe is parked here for its whole lifetime — switching
+// tabs only mounts/unmounts the pane over `#stage`, so background docks keep
+// their state (Storybook's own routing, scroll, etc.) intact.
+const panes = createIframePanes({ container: stageEl })
 const runtimes = new Map<string, DockRuntime>()
 let docks: IframeDock[] = []
 let selectedId: string | null = null
@@ -73,9 +77,11 @@ function overlay(kind: 'spin' | 'error' | 'idle', title: string, detail = '') {
 }
 
 function updateStage() {
-  for (const [id, rt] of runtimes) {
-    if (rt.iframe)
-      rt.iframe.style.display = id === selectedId ? 'block' : 'none'
+  for (const pane of panes.list()) {
+    if (pane.id === selectedId)
+      pane.mount(stageEl)
+    else
+      pane.unmount()
   }
 
   if (!selectedId) {
@@ -84,7 +90,7 @@ function updateStage() {
   }
   const rt = runtimes.get(selectedId)
   const title = docks.find(d => d.id === selectedId)?.title ?? selectedId
-  if (!rt || rt.status === 'starting' || (rt.status !== 'error' && !rt.iframe)) {
+  if (!rt || rt.status === 'starting' || (rt.status !== 'error' && !panes.has(selectedId))) {
     overlay('spin', isStorybookDock(selectedId) ? `Starting ${title} Storybook…` : `Loading ${title}…`)
     return
   }
@@ -118,18 +124,17 @@ function initDock(rpc: Awaited<ReturnType<typeof connectDevframe>>, entry: Ifram
 
   ensureUrl(rpc, entry)
     .then((url) => {
-      const frame = document.createElement('iframe')
-      frame.className = 'absolute inset-0 h-full w-full border-0 bg-base'
-      frame.title = entry.title
-      frame.setAttribute('allow', 'clipboard-read; clipboard-write')
-      frame.addEventListener('load', () => {
-        rt.status = 'ready'
-        updateStage()
+      panes.ensure(entry.id, {
+        src: url,
+        attrs: { title: entry.title, allow: 'clipboard-read; clipboard-write' },
+        style: { border: '0' },
+        onCreated: (iframe) => {
+          iframe.addEventListener('load', () => {
+            rt.status = 'ready'
+            updateStage()
+          })
+        },
       })
-      frame.src = url
-      rt.iframe = frame
-      // Keep every opened dock mounted so its state survives tab switches.
-      stageEl.appendChild(frame)
       updateStage()
     })
     .catch((err: Error) => {

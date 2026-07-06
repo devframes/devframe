@@ -60,6 +60,7 @@
   },
   "dependencies": {
     "get-port-please": "catalog:deps",
+    "iframe-pane": "catalog:frontend",
     "nostics": "catalog:deps"
   },
   "devDependencies": {

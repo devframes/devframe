@@ -16,7 +16,8 @@
     "@devframes/hub": "workspace:*",
     "@devframes/plugin-terminals": "workspace:*",
     "colorjs.io": "catalog:frontend",
-    "devframe": "workspace:*"
+    "devframe": "workspace:*",
+    "iframe-pane": "catalog:frontend"
   },
   "devDependencies": {
     "@iconify-json/ph": "catalog:frontend",
