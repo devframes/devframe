@@ -5,6 +5,7 @@ export default antfu({
   pnpm: true,
   ignores: [
     'skills',
+    'plans',
     '**/dist',
     '**/storybook-static',
     '**/.next',
