@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-code-server",
   "type": "module",
-  "version": "0.5.2",
+  "version": "0.6.0-beta.1",
   "description": "Run code-server (VS Code in the browser) as a devframe panel — detect a local install, launch it on demand, and embed the editor in an auto-authenticated iframe.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
