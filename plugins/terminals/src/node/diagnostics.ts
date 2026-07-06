@@ -37,8 +37,8 @@ export const diagnostics = defineDiagnostics({
       why: (p: { command: string, reason: string }) => `Failed to spawn "${p.command}": ${p.reason}`,
     },
     DP_TERMINALS_0005: {
-      why: 'PTY backend (@homebridge/node-pty-prebuilt-multiarch) is unavailable; interactive sessions fall back to a piped child process. Full-screen TUIs may not render correctly.',
-      fix: 'Install @homebridge/node-pty-prebuilt-multiarch to enable real pseudo-terminals.',
+      why: 'Native PTY bindings (zigpty) are unavailable; interactive sessions fall back to pipe-based terminal emulation. Full-screen TUIs may not render correctly.',
+      fix: 'Check that this platform is covered by zigpty\'s prebuilds (Linux/macOS/Windows, x64/arm64, glibc/musl) and that the dependency installed intact.',
     },
     DP_TERMINALS_0006: {
       why: (p: { id: string }) => `Unknown terminal preset "${p.id}"`,

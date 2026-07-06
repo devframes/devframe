@@ -19,7 +19,7 @@ import demoDevframeB from './demo-devframe-b'
  * `webpackIgnore` / `turbopackIgnore` magic comments so Next's bundler leaves
  * them alone: Node resolves the published `dist` at request time, where the
  * plugins' node-side code (git shell-outs, child-process supervisors, the
- * native `node-pty` PTY backend) and their `new URL('../dist/...',
+ * native `zigpty` PTY backend) and their `new URL('../dist/...',
  * import.meta.url)` SPA-dist lookups all work — none of which survive being
  * statically bundled into a Next server chunk.
  */

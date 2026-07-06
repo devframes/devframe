@@ -106,7 +106,7 @@ describe('devframe rpc', () => {
 
     const serverFunctions = { ping: () => 'pong' }
     const server = createRpcServer<Record<string, never>, typeof serverFunctions>(serverFunctions)
-    const { wss, detach } = attachWsRpcTransport(server, { server: httpServer, path: '/__devframe_ws' })
+    const { close } = attachWsRpcTransport(server, { server: httpServer, path: '/__devframe_ws' })
 
     try {
       const client = createRpcClient<typeof serverFunctions, Record<string, never>>({}, {
@@ -123,9 +123,7 @@ describe('devframe rpc', () => {
       expect(otherConnections).toEqual(['hmr'])
     }
     finally {
-      detach()
-      for (const c of wss.clients) c.terminate()
-      await new Promise<void>(r => wss.close(() => r()))
+      await close()
       other.close()
       await new Promise<void>(r => httpServer.close(() => r()))
     }
@@ -150,7 +148,7 @@ describe('devframe rpc', () => {
     ])
 
     const server = createRpcServer<Record<string, never>, typeof serverFunctions>(serverFunctions)
-    const { wss } = attachWsRpcTransport(server, { port: PORT, host: HOST, definitions })
+    const { close } = attachWsRpcTransport(server, { port: PORT, host: HOST, definitions })
 
     try {
       const client = createRpcClient<typeof serverFunctions, Record<string, never>>({}, {
@@ -160,8 +158,7 @@ describe('devframe rpc', () => {
       await expect(client.$call('explode')).rejects.toThrow(/boom/)
     }
     finally {
-      for (const c of wss.clients) c.terminate()
-      await new Promise<void>(resolve => wss.close(() => resolve()))
+      await close()
     }
   })
 })

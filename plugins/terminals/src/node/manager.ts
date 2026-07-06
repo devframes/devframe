@@ -13,6 +13,7 @@ import type {
 import type { TerminalProcess } from './backend'
 import process from 'node:process'
 import { nanoid } from 'devframe/utils/nanoid'
+import { OSCInspector } from 'zigpty/osc'
 import {
   DEFAULT_COLS,
   DEFAULT_ROWS,
@@ -43,6 +44,8 @@ interface ManagedSession {
   spawn: ResolvedSpawn
   proc?: TerminalProcess
   pollTimer?: ReturnType<typeof setInterval>
+  /** Parses OSC escapes out of the output stream (title / cwd reports). */
+  osc?: OSCInspector
 }
 
 /** How often a PTY session's foreground process name is polled. */
@@ -60,6 +63,13 @@ interface HubTerminalEntry {
   description?: string
   status: 'running' | 'stopped' | 'error'
   icon?: string | { light: string, dark: string }
+  /**
+   * Whether the hub session accepts input (a PTY spawned via
+   * `ctx.terminals.startPtySession`). When set, this plugin surfaces the
+   * aggregated session as interactive and routes keystrokes/resize back to
+   * the hub instead of treating it as read-only.
+   */
+  interactive?: boolean
 }
 interface HubTerminalsBridge {
   sessions: Map<string, HubTerminalEntry>
@@ -186,9 +196,9 @@ export class TerminalManager {
       foreign.push({
         id: session.id,
         title: session.title,
-        mode: 'readonly',
+        mode: session.interactive ? 'interactive' : 'readonly',
         status: session.status === 'stopped' ? 'exited' : session.status,
-        backend: 'pipe',
+        backend: session.interactive ? 'pty' : 'pipe',
         command: '',
         args: [],
         cwd: '',
@@ -338,7 +348,26 @@ export class TerminalManager {
     session.info.backend = proc.backend
     session.info.pid = proc.pid
 
+    // Track the title / cwd the program reports through OSC escape sequences
+    // (shell integration, `cd`, TUIs setting the window title). A restart gets
+    // a fresh inspector so stale reports from the previous run don't linger.
+    session.osc?.dispose()
+    session.info.termTitle = undefined
+    session.info.termCwd = undefined
+    const osc = new OSCInspector()
+    session.osc = osc
+    osc.onStateChange((state) => {
+      const termTitle = state.title?.trim() || undefined
+      const termCwd = state.cwd?.path
+      if (termTitle !== session.info.termTitle || termCwd !== session.info.termCwd) {
+        session.info.termTitle = termTitle
+        session.info.termCwd = termCwd
+        this.publish()
+      }
+    })
+
     proc.onData((data) => {
+      osc.feed(data)
       if (!sink.closed)
         sink.write(data)
     })
@@ -347,6 +376,9 @@ export class TerminalManager {
       if (session.proc !== proc)
         return
       this.stopProcessPoll(session)
+      // Stop parsing, but keep the last reported title/cwd on the session.
+      session.osc?.dispose()
+      session.osc = undefined
       session.info.status = code === 0 ? 'exited' : 'error'
       session.info.exitCode = code
       session.info.pid = undefined
@@ -454,6 +486,8 @@ export class TerminalManager {
     const proc = session.proc
     session.proc = undefined
     this.stopProcessPoll(session)
+    session.osc?.dispose()
+    session.osc = undefined
     proc?.kill()
     if (!session.sink.closed)
       session.sink.close()
@@ -465,6 +499,8 @@ export class TerminalManager {
   dispose(): void {
     for (const session of this.sessions.values()) {
       this.stopProcessPoll(session)
+      session.osc?.dispose()
+      session.osc = undefined
       session.proc?.kill()
       if (!session.sink.closed)
         session.sink.close()
@@ -507,7 +543,7 @@ export class TerminalManager {
       live.add(info.id)
       const entry: HubTerminalEntry = {
         id: info.id,
-        title: info.customTitle || info.processName || info.title,
+        title: info.customTitle || info.termTitle || info.processName || info.title,
         description: `${info.mode} · ${info.backend}${info.pid ? ` · pid ${info.pid}` : ''}`,
         status: HUB_STATUS[info.status] ?? 'stopped',
         icon: 'ph:terminal-window-duotone',

@@ -1,8 +1,11 @@
 import type { RpcStreamingChannel } from 'devframe/types'
 import type { Result as TinyExecResult } from 'tinyexec'
+import type { IPty } from 'zigpty'
 import type {
   DevframeChildProcessExecuteOptions,
   DevframeChildProcessTerminalSession,
+  DevframePtyExecuteOptions,
+  DevframePtyTerminalSession,
   DevframeTerminalSession,
   DevframeTerminalSessionBase,
   DevframeTerminalsHost as DevframeTerminalsHostType,
@@ -20,6 +23,9 @@ type PartialWithoutId<T extends { id: string }> = Partial<T> & { id: string }
  */
 const TERMINAL_STREAM_CHANNEL = 'devframe:terminals' as const
 const TERMINAL_REPLAY_WINDOW = 1000
+
+/** TERM handed to spawned PTYs; also used to reject fallback process labels. */
+const PTY_TERM_NAME = 'xterm-256color'
 
 export class DevframeTerminalsHost implements DevframeTerminalsHostType {
   public readonly sessions: DevframeTerminalsHostType['sessions'] = new Map()
@@ -259,5 +265,141 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     this.register(session)
 
     return Promise.resolve(session)
+  }
+
+  async startPtySession(
+    executeOptions: DevframePtyExecuteOptions,
+    terminal: Omit<DevframeTerminalSessionBase, 'status'>,
+  ): Promise<DevframePtyTerminalSession> {
+    if (this.sessions.has(terminal.id)) {
+      throw diagnostics.DF8200({ id: terminal.id })
+    }
+    const { spawn } = await import('zigpty')
+
+    const cols = executeOptions.cols ?? 80
+    const rows = executeOptions.rows ?? 24
+
+    let controller: ReadableStreamDefaultController<string> | undefined
+    let pty: IPty | undefined
+    let runId = 0
+    let streamClosed = false
+
+    const closeStream = () => {
+      if (streamClosed)
+        return
+      streamClosed = true
+      try {
+        controller?.close()
+      }
+      catch {
+        // The stream may already be closed by cancellation.
+      }
+    }
+
+    const errorStream = (error: unknown) => {
+      if (streamClosed)
+        return
+      streamClosed = true
+      try {
+        controller?.error(error)
+      }
+      catch {
+        // The stream may already be closed by cancellation.
+      }
+    }
+
+    const stream = new ReadableStream<string>({
+      start(_controller) {
+        controller = _controller
+      },
+      cancel() {
+        pty?.kill()
+        pty = undefined
+        closeStream()
+      },
+    })
+
+    const spawnPty = (): IPty => {
+      const currentRun = ++runId
+      const proc = spawn(executeOptions.command, executeOptions.args ?? [], {
+        name: PTY_TERM_NAME,
+        cols,
+        rows,
+        cwd: executeOptions.cwd ?? process.cwd(),
+        env: {
+          TERM: PTY_TERM_NAME,
+          COLORTERM: 'truecolor',
+          FORCE_COLOR: '1',
+          ...(executeOptions.env ?? {}),
+        },
+      })
+      proc.onData((data) => {
+        if (streamClosed || currentRun !== runId)
+          return
+        controller?.enqueue(typeof data === 'string' ? data : data.toString('utf8'))
+      })
+      proc.onExit(() => {
+        if (currentRun === runId)
+          closeStream()
+      })
+      return proc
+    }
+
+    try {
+      pty = spawnPty()
+    }
+    catch (error) {
+      errorStream(error)
+      throw diagnostics.DF8203({
+        command: executeOptions.command,
+        reason: error instanceof Error ? error.message : String(error),
+      })
+    }
+
+    const session: DevframePtyTerminalSession = {
+      ...terminal,
+      status: 'running',
+      interactive: true,
+      stream,
+      type: 'pty',
+      executeOptions,
+      write: (data) => {
+        try {
+          pty?.write(data)
+        }
+        catch {
+          // Process already gone.
+        }
+      },
+      resize: (nextCols, nextRows) => {
+        try {
+          pty?.resize(Math.max(1, nextCols), Math.max(1, nextRows))
+        }
+        catch {
+          // Resize after exit is a no-op.
+        }
+      },
+      getProcessName: () => {
+        try {
+          const name = pty?.process
+          return name && name !== PTY_TERM_NAME ? name : undefined
+        }
+        catch {
+          return undefined
+        }
+      },
+      terminate: async () => {
+        pty?.kill()
+        pty = undefined
+        closeStream()
+      },
+      restart: async () => {
+        pty?.kill()
+        pty = spawnPty()
+      },
+    }
+    this.register(session)
+
+    return session
   }
 }

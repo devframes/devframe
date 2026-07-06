@@ -28,6 +28,8 @@ export interface TerminalSessionInfo {
   title: string;
   processName?: string;
   customTitle?: string;
+  termTitle?: string;
+  termCwd?: string;
   mode: TerminalMode;
   status: TerminalStatus;
   backend: TerminalBackend;

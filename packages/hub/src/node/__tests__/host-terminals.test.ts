@@ -2,7 +2,17 @@ import type { DevframeTerminalSession } from '../../types/terminals'
 import type { DevframeHubContext } from '../context'
 import process from 'node:process'
 import { describe, expect, it, vi } from 'vitest'
+import { hasNative } from 'zigpty'
 import { DevframeTerminalsHost } from '../host-terminals'
+
+const NODE = process.execPath
+// A real PTY works wherever zigpty's native bindings load (incl. Windows
+// ConPTY); skip when they're unavailable.
+const itPty = hasNative ? it : it.skip
+// Interactive stdin echo relies on POSIX PTY semantics that Windows ConPTY
+// doesn't reliably provide (echo timing); skip there, mirroring the terminals
+// plugin's own `itPosixPty` gate.
+const itPosixPty = (hasNative && process.platform !== 'win32') ? it : it.skip
 
 interface FakeSink {
   write: ReturnType<typeof vi.fn>
@@ -130,5 +140,76 @@ describe('devframeTerminalHost stream lifecycle', () => {
       expect(sinks.get('child')?.closed).toBe(true)
     })
     expect(session.getChildProcess()).toBeUndefined()
+  })
+})
+
+describe('devframeTerminalHost interactive PTY sessions', () => {
+  itPosixPty('spawns an interactive PTY that accepts input and is marked interactive', async () => {
+    const { host, sinks } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdin.on("data", d => process.stdout.write("echo:" + d)); setTimeout(() => {}, 4000)'],
+    }, {
+      id: 'pty',
+      title: 'PTY',
+    })
+
+    expect(session.type).toBe('pty')
+    expect(session.interactive).toBe(true)
+    expect(host.sessions.get('pty')?.interactive).toBe(true)
+
+    session.write('ping\n')
+
+    await waitUntil(() => {
+      expect(sinks.get('pty')?.write).toHaveBeenCalled()
+      const written = sinks.get('pty')!.write.mock.calls.map(c => c[0]).join('')
+      expect(written).toContain('echo:ping')
+    })
+
+    await session.terminate()
+    await waitUntil(() => {
+      expect(sinks.get('pty')?.closed).toBe(true)
+    })
+  })
+
+  itPty('closes the PTY stream after natural process exit', async () => {
+    const { host, sinks } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("done")'],
+    }, {
+      id: 'pty-exit',
+      title: 'PTY exit',
+    })
+
+    // Session shape (cross-platform): a PTY session is flagged interactive so
+    // hub-aware UIs enable stdin.
+    expect(session.type).toBe('pty')
+    expect(session.interactive).toBe(true)
+    expect(host.sessions.get('pty-exit')?.interactive).toBe(true)
+
+    await waitUntil(() => {
+      expect(sinks.get('pty-exit')?.closed).toBe(true)
+    })
+  })
+
+  itPty('does not accept resize after termination without throwing', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'setInterval(() => {}, 4000)'],
+      cols: 80,
+      rows: 24,
+    }, {
+      id: 'pty-resize',
+      title: 'PTY resize',
+    })
+
+    expect(() => session.resize(120, 40)).not.toThrow()
+    await session.terminate()
+    expect(() => session.resize(100, 30)).not.toThrow()
   })
 })

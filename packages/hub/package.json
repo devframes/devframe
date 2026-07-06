@@ -47,9 +47,11 @@
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
     "perfect-debounce": "catalog:deps",
-    "tinyexec": "catalog:deps"
+    "tinyexec": "catalog:deps",
+    "zigpty": "catalog:deps"
   },
   "devDependencies": {
+    "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "mlly": "catalog:build",
     "tsdown": "catalog:build"

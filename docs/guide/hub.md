@@ -62,7 +62,7 @@ Hosts that omit `mountConnectionMeta` fall back to same-origin window inheritanc
 
 ### Bundled hosts (Next.js)
 
-Dev servers with a module bundler (Next's Turbopack/webpack) statically analyse server imports. Plugin packages resolve their SPA dist with `new URL('../dist/...', import.meta.url)` and lazy-load node-side code — child processes, the native `node-pty` PTY backend — that resolves at runtime, not at bundle time. Load them with a dynamic `import()` carrying ignore comments so the bundler keeps them as a runtime Node import:
+Dev servers with a module bundler (Next's Turbopack/webpack) statically analyse server imports. Plugin packages resolve their SPA dist with `new URL('../dist/...', import.meta.url)` and lazy-load node-side code — child processes, the native `zigpty` PTY backend — that resolves at runtime, not at bundle time. Load them with a dynamic `import()` carrying ignore comments so the bundler keeps them as a runtime Node import:
 
 ```ts
 const pkgs = ['@devframes/plugin-git', '@devframes/plugin-terminals']

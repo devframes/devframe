@@ -14,7 +14,7 @@ Package: `@devframes/plugin-terminals` · framework: **Svelte + xterm.js**
 - **Interactive shells** — spawn PTY-backed sessions you can type into, including full-screen TUI programs. Sessions can be renamed, resized, restarted, and removed; the session list lives in shared state so every panel stays in sync.
 - **Presets** — declare named commands the user can launch with one click.
 
-Interactive shells require the optional `node-pty` peer; without it the panel still streams read-only output.
+Interactive shells run on a real pseudo-terminal via [`zigpty`](https://github.com/pithings/zigpty)'s prebuilt native bindings (Linux/macOS/Windows, x64/arm64, no install scripts). Where the bindings can't load, sessions degrade to pipe-based terminal emulation.
 
 ## Standalone
 

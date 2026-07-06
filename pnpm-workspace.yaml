@@ -1,5 +1,4 @@
 allowBuilds:
-  '@homebridge/node-pty-prebuilt-multiarch': true
   '@parcel/watcher': false
   esbuild: true
   sharp: false
@@ -12,6 +11,7 @@ ignoreWorkspaceRootCheck: true
 minimumReleaseAgeExclude:
   - nostics@1.1.4
   - '@antfu/design@0.2.1'
+  - crossws@0.4.8
 shamefullyHoist: true
 shellEmulator: true
 strictPeerDependencies: false
@@ -26,6 +26,7 @@ packages:
   - docs
 overrides:
   chokidar: ^5.0.0
+  crossws: ^0.4.8
   semver: ^7.8.1
 catalogs:
   build:
@@ -41,11 +42,11 @@ catalogs:
     vite: ^8.0.14
     vite-plugin-solid: ^2.11.12
   deps:
-    '@homebridge/node-pty-prebuilt-multiarch': ^0.13.1
     '@modelcontextprotocol/sdk': ^1.29.0
     '@valibot/to-json-schema': ^1.7.0
     birpc: ^4.0.0
     cac: ^7.0.0
+    crossws: ^0.4.8
     destr: ^2.0.5
     get-port-please: ^3.2.0
     h3: 2.0.1-rc.22
@@ -66,6 +67,7 @@ catalogs:
     valibot: ^1.4.1
     whenexpr: ^0.1.2
     ws: ^8.21.0
+    zigpty: ^0.2.1
   docs:
     mermaid: ^11.15.0
     vitepress: ^2.0.0-alpha.17

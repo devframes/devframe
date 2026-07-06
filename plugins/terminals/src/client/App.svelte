@@ -36,7 +36,7 @@
   }
 
   function displayName(info: TerminalSessionInfo): string {
-    return info.customTitle || info.processName || info.title
+    return info.customTitle || info.termTitle || info.processName || info.title
   }
 
   /**
@@ -268,6 +268,12 @@
         {/if}
         {s.command}{s.args.length ? ` ${s.args.join(' ')}` : ''}
       </span>
+      {#if s.termCwd}
+        <span class="flex items-center gap-1 font-mono text-xs op-mute truncate" title={s.termCwd}>
+          <div class="i-ph-folder-duotone shrink-0"></div>
+          <span class="truncate">{s.termCwd}</span>
+        </span>
+      {/if}
       <span class="flex items-center gap-1.5 op-mute font-mono text-xs tabular-nums shrink-0">
         {#if s.status === 'running'}
           <span class={dot('running')}></span>

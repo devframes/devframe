@@ -1,7 +1,7 @@
 import type { BirpcGroup } from 'birpc'
+import type { NodeAdapter } from 'crossws/adapters/node'
 import type { DevframeNodeContext, DevframeNodeRpcSession, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
 import type { Server as NodeHttpServer } from 'node:http'
-import type { WebSocketServer } from 'ws'
 import type { RpcFunctionsHost } from './host-functions'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { createServer } from 'node:http'
@@ -69,7 +69,8 @@ export interface StartedServer {
   origin: string
   port: number
   app: H3
-  wss: WebSocketServer
+  /** The crossws node adapter driving the RPC socket (connected peers, pub/sub). */
+  ws: NodeAdapter
   rpcGroup: BirpcGroup<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>
   close: () => Promise<void>
 }
@@ -124,9 +125,9 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
   const separateWsPort = ownsHttpServer && options.wsPort != null && options.wsPort !== port
     ? options.wsPort
     : undefined
-  const { wss, detach: detachWs } = attachWsRpcTransport(rpcGroup, {
+  const { ws, close: closeWs } = attachWsRpcTransport(rpcGroup, {
     // Share the HTTP server unless a separate WS port is requested, in which
-    // case bind a standalone `ws` server on that port.
+    // case bind a standalone WS server on that port.
     ...(separateWsPort != null
       ? { port: separateWsPort, host: bindHost }
       : { server: httpServer }),
@@ -135,7 +136,7 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
     // off-route attempts promptly. A shared (caller-owned) server may host
     // other sockets, so leave non-matching upgrades for them.
     destroyUnmatched: ownsHttpServer,
-    onDisconnected: (_ws, meta) => {
+    onDisconnected: (_peer, meta) => {
       rpcHost._emitSessionDisconnected(meta)
     },
   })
@@ -191,18 +192,14 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
     origin,
     port: resolvedPort,
     app,
-    wss,
+    ws,
     rpcGroup,
     async close() {
-      // Detach our upgrade listener first so a shared host server stops
-      // routing new connections to us (and other handlers keep working).
-      detachWs()
-      // `wss.close` only stops accepting new connections — existing ones
-      // would keep the close callback pending until they disconnect on
-      // their own. Force-terminate so callers can deterministically tear
-      // the server down (tests, hot reload, graceful shutdown).
-      for (const ws of wss.clients) ws.terminate()
-      await new Promise<void>(r => wss.close(() => r()))
+      // Detaches the upgrade listener first (so a shared host server stops
+      // routing new connections to us while other handlers keep working),
+      // force-terminates every peer for deterministic teardown, and closes
+      // any dedicated-port WS server the transport created.
+      await closeWs()
       // Leave a caller-owned server running — we only created (and listen on)
       // our own.
       if (ownsHttpServer)
