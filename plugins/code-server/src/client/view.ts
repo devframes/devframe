@@ -3,6 +3,7 @@ import type {
   CodeServerDetection,
   CodeServerServerInfo,
 } from '../types'
+import { createIframePanes } from 'iframe-pane'
 import { button, cx, link as linkClass, spinner } from './design'
 
 /** The data the view renders from. Pure — no RPC, no process knowledge. */
@@ -46,6 +47,13 @@ export interface CodeServerViewHandle {
 
 const DOCS_URL = 'https://coder.com/docs/code-server/latest/install'
 const REPO_URL = 'https://github.com/coder/code-server'
+
+// The editor iframe is parked here for the life of the view — leaving the
+// "running" phase (e.g. a transient restart passing through "starting") only
+// unmounts it, so its state (open files, cursor, terminals) survives churn
+// that used to tear the whole iframe down.
+const panes = createIframePanes()
+let paneCounter = 0
 
 const INSTALL_COMMANDS: { label: string, command: string }[] = [
   { label: 'Install script (Linux / macOS)', command: 'curl -fsSL https://code-server.dev/install.sh | sh' },
@@ -117,10 +125,14 @@ export function createCodeServerView(
   const root = el('div', 'absolute inset-0 flex flex-col of-hidden bg-base color-base font-sans')
   container.append(root)
 
-  let frameSrc: string | null = null
+  const paneId = `code-server-editor-${++paneCounter}`
+  const editorTarget = el('div', 'dcs-frame flex-1 w-full')
+  let editorUrl: string | null = null
 
   function shell(...children: Node[]): void {
-    frameSrc = null
+    // Leaving "running" — hide the editor iframe without disposing it.
+    panes.get(paneId)?.unmount()
+    editorUrl = null
     const center = el('div', 'flex-1 flex items-center justify-center p-6')
     const card = el('div', 'w-full max-w-[560px]')
     card.append(...children)
@@ -214,20 +226,27 @@ export function createCodeServerView(
   }
 
   function renderRunning(state: CodeServerViewState): void {
-    const port = state.server.port!
-    const url = resolveEditorUrl(port)
-    // Reuse the live editor iframe across unrelated state updates.
-    if (frameSrc === url && root.querySelector('.dcs-frame'))
-      return
-    if (state.auth)
-      applyAuth(state.auth)
-    // The editor fills the whole surface — no chrome over the iframe. The
-    // `dcs-frame` class is a stable JS hook for the reuse check above.
-    const frame = el('iframe', 'dcs-frame flex-1 w-full border-0 bg-base') as HTMLIFrameElement
-    frame.setAttribute('allow', 'clipboard-read; clipboard-write; cross-origin-isolated')
-    frame.src = url
-    frameSrc = url
-    root.replaceChildren(frame)
+    const url = resolveEditorUrl(state.server.port!)
+    // Apply the auth cookie before the iframe (re-)navigates, or code-server
+    // shows its login page — only needed when the URL actually changes.
+    if (editorUrl !== url) {
+      if (state.auth)
+        applyAuth(state.auth)
+      editorUrl = url
+    }
+    // `ensure()` only applies `src` on creation; the live editor iframe is
+    // otherwise never reparented or recreated, so its state survives.
+    const pane = panes.ensure(paneId, {
+      src: url,
+      attrs: { allow: 'clipboard-read; clipboard-write; cross-origin-isolated' },
+      style: { border: '0' },
+    })
+    if (pane.iframe.src !== url)
+      pane.iframe.src = url
+    // The editor fills the whole surface — no chrome over the iframe.
+    if (root.firstElementChild !== editorTarget)
+      root.replaceChildren(editorTarget)
+    pane.mount(editorTarget)
   }
 
   function link(text: string, href: string): HTMLAnchorElement {
@@ -262,6 +281,7 @@ export function createCodeServerView(
   return {
     update,
     dispose() {
+      panes.get(paneId)?.dispose()
       root.remove()
     },
   }
