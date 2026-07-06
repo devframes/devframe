@@ -14,7 +14,8 @@
     "cli:build": "node bin.mjs build --out-dir dist/static",
     "dev": "node bin.mjs",
     "next:dev": "next dev src/client",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@antfu/design": "catalog:frontend",

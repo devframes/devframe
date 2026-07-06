@@ -28,7 +28,7 @@ export const invoke = defineInspectRpc({
 
       const start = Date.now()
       try {
-        const result = await ctx.rpc.invokeLocal(name as never, ...(args as never[]))
+        const result = await ctx.rpc.invokeLocal(name as any, ...(args as any))
         return { ok: true, result, durationMs: Date.now() - start }
       }
       catch (error) {
