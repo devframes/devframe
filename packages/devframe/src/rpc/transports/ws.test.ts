@@ -5,7 +5,7 @@ import { WebSocket, WebSocketServer } from 'ws'
 import { createRpcClient } from '../client'
 import { createRpcServer } from '../server'
 import { createWsRpcChannel } from './ws-client'
-import { attachWsRpcTransport } from './ws-server'
+import { attachWsRpcTransport, isAllowedOrigin, isLoopbackHostname } from './ws-server'
 
 vi.stubGlobal('WebSocket', WebSocket)
 
@@ -156,6 +156,94 @@ describe('devframe rpc', () => {
       })
 
       await expect(client.$call('explode')).rejects.toThrow(/boom/)
+    }
+    finally {
+      await close()
+    }
+  })
+})
+
+describe('ws origin check', () => {
+  it('isLoopbackHostname / isAllowedOrigin recognize loopback hosts', () => {
+    expect(isLoopbackHostname('localhost')).toBe(true)
+    expect(isLoopbackHostname('127.0.0.1')).toBe(true)
+    expect(isLoopbackHostname('127.5.5.5')).toBe(true)
+    expect(isLoopbackHostname('::1')).toBe(true)
+    expect(isLoopbackHostname('foo.localhost')).toBe(true)
+    expect(isLoopbackHostname('evil.example')).toBe(false)
+
+    expect(isAllowedOrigin(undefined, [])).toBe(true)
+    expect(isAllowedOrigin('http://localhost:5173', [])).toBe(true)
+    expect(isAllowedOrigin('http://evil.example', [])).toBe(false)
+    expect(isAllowedOrigin('http://evil.example', ['http://evil.example'])).toBe(true)
+  })
+
+  async function connectRaw(url: string, origin?: string): Promise<'open' | 'closed'> {
+    return await new Promise((resolve) => {
+      const ws = new WebSocket(url, origin ? { headers: { origin } } : undefined)
+      ws.on('open', () => {
+        ws.close()
+        resolve('open')
+      })
+      ws.on('error', () => resolve('closed'))
+      ws.on('unexpected-response', () => resolve('closed'))
+    })
+  }
+
+  it('rejects a cross-origin browser upgrade', async () => {
+    const HOST = '127.0.0.1'
+    const PORT = await getPort({ host: HOST, random: true })
+    const server = createRpcServer<Record<string, never>, Record<string, never>>({})
+    const { close } = attachWsRpcTransport(server, { port: PORT, host: HOST })
+
+    try {
+      const result = await connectRaw(`ws://${HOST}:${PORT}`, 'http://evil.example')
+      expect(result).toBe('closed')
+    }
+    finally {
+      await close()
+    }
+  })
+
+  it('allows a loopback origin', async () => {
+    const HOST = '127.0.0.1'
+    const PORT = await getPort({ host: HOST, random: true })
+    const server = createRpcServer<Record<string, never>, Record<string, never>>({})
+    const { close } = attachWsRpcTransport(server, { port: PORT, host: HOST })
+
+    try {
+      const result = await connectRaw(`ws://${HOST}:${PORT}`, 'http://localhost:12345')
+      expect(result).toBe('open')
+    }
+    finally {
+      await close()
+    }
+  })
+
+  it('allows a request with no Origin header (native client)', async () => {
+    const HOST = '127.0.0.1'
+    const PORT = await getPort({ host: HOST, random: true })
+    const server = createRpcServer<Record<string, never>, Record<string, never>>({})
+    const { close } = attachWsRpcTransport(server, { port: PORT, host: HOST })
+
+    try {
+      const result = await connectRaw(`ws://${HOST}:${PORT}`)
+      expect(result).toBe('open')
+    }
+    finally {
+      await close()
+    }
+  })
+
+  it('honors allowedOrigins for an otherwise-disallowed origin', async () => {
+    const HOST = '127.0.0.1'
+    const PORT = await getPort({ host: HOST, random: true })
+    const server = createRpcServer<Record<string, never>, Record<string, never>>({})
+    const { close } = attachWsRpcTransport(server, { port: PORT, host: HOST, allowedOrigins: ['http://evil.example'] })
+
+    try {
+      const result = await connectRaw(`ws://${HOST}:${PORT}`, 'http://evil.example')
+      expect(result).toBe('open')
     }
     finally {
       await close()

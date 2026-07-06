@@ -65,6 +65,13 @@ export interface WsRpcTransportOptions {
   /** When set, a new https.Server is created and the WS endpoint is attached to it. */
   https?: HttpsServerOptions
   /**
+   * Extra origins to accept on the WS upgrade beyond the loopback default.
+   * Add your LAN/tunnel origin here when reaching the tool from another host.
+   * Pass `false` to disable origin checking entirely (not recommended).
+   * Default: loopback-only.
+   */
+  allowedOrigins?: readonly string[] | false
+  /**
    * RPC function definitions, used by the per-call wire serializer to
    * dispatch between strict-JSON and structured-clone encoding based
    * on each function's `jsonSerializable` flag.
@@ -109,6 +116,32 @@ function pathMatches(a: string, b: string): boolean {
   return strip(a) === strip(b)
 }
 
+export function isLoopbackHostname(hostname: string): boolean {
+  const h = hostname.replace(/^\[|\]$/g, '') // strip IPv6 brackets
+  return h === 'localhost' || h === '127.0.0.1' || h === '::1'
+    || h.endsWith('.localhost') || h.startsWith('127.')
+}
+
+/**
+ * Default origin policy for a localhost dev tool: allow requests with no
+ * `Origin` header (native, non-browser clients), allow any loopback origin
+ * (so cross-port localhost dev setups keep working), and allow explicitly
+ * configured origins. Everything else — a real remote page in the dev's
+ * browser — is rejected.
+ */
+export function isAllowedOrigin(origin: string | undefined, allowedOrigins: readonly string[]): boolean {
+  if (!origin)
+    return true
+  if (allowedOrigins.includes(origin))
+    return true
+  try {
+    return isLoopbackHostname(new URL(origin).hostname)
+  }
+  catch {
+    return false
+  }
+}
+
 /**
  * Route `upgrade` events on a server to the crossws adapter, optionally
  * filtered to a single `path`. Non-matching requests are left untouched so
@@ -121,6 +154,7 @@ function routeUpgrades(
   ws: NodeAdapter,
   path: string | undefined,
   destroyUnmatched: boolean,
+  allowedOrigins: readonly string[] | false | undefined,
 ): () => void {
   const listener = (req: IncomingMessage, socket: Duplex, head: Buffer) => {
     if (path) {
@@ -134,6 +168,10 @@ function routeUpgrades(
           socket.destroy()
         return
       }
+    }
+    if (allowedOrigins !== false && !isAllowedOrigin(req.headers.origin, allowedOrigins ?? [])) {
+      socket.destroy()
+      return
     }
     void ws.handleUpgrade(req, socket, head)
   }
@@ -165,6 +203,7 @@ export function attachWsRpcTransport<
     path,
     destroyUnmatched = false,
     https,
+    allowedOrigins,
     onConnected = NOOP,
     onDisconnected = NOOP,
     definitions = EMPTY_DEFS,
@@ -264,11 +303,11 @@ export function attachWsRpcTransport<
   if (server) {
     // Share an existing HTTP(S) server's port. Route upgrades ourselves so we
     // can coexist with the host's own upgrade handlers.
-    detach = routeUpgrades(server, ws, path, destroyUnmatched)
+    detach = routeUpgrades(server, ws, path, destroyUnmatched, allowedOrigins)
   }
   else if (https) {
     ownedServer = createHttpsServer(https)
-    detach = routeUpgrades(ownedServer, ws, path, true)
+    detach = routeUpgrades(ownedServer, ws, path, true, allowedOrigins)
     ownedServer.listen(port, host)
   }
   else {
@@ -278,7 +317,7 @@ export function attachWsRpcTransport<
       res.writeHead(426, { 'content-type': 'text/plain' })
       res.end('Upgrade Required')
     })
-    detach = routeUpgrades(ownedServer, ws, path, true)
+    detach = routeUpgrades(ownedServer, ws, path, true, allowedOrigins)
     ownedServer.listen(port, host)
   }
 

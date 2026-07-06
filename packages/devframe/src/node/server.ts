@@ -57,6 +57,14 @@ export interface StartHttpAndWsOptions {
    */
   auth?: boolean
   /**
+   * Extra origins to accept on the WS upgrade beyond the loopback default
+   * (`localhost`/`127.0.0.1`/`::1` and any `Origin`-less request from a
+   * native client). Add your LAN/tunnel origin here when reaching the tool
+   * from another host. Pass `false` to disable origin checking entirely
+   * (not recommended). Default: loopback-only.
+   */
+  allowedOrigins?: readonly string[] | false
+  /**
    * Called once the WS server is bound so callers can mount static
    * handlers whose origin depends on the resolved port, or print their
    * own startup banner. Devframe does not print one itself.
@@ -136,6 +144,7 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
     // off-route attempts promptly. A shared (caller-owned) server may host
     // other sockets, so leave non-matching upgrades for them.
     destroyUnmatched: ownsHttpServer,
+    allowedOrigins: options.allowedOrigins,
     onDisconnected: (_peer, meta) => {
       rpcHost._emitSessionDisconnected(meta)
     },

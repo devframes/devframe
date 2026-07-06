@@ -4,6 +4,8 @@
 // #region Other
 export { attachWsRpcTransport }
 export { DevframeNodeRpcSessionMeta }
+export { isAllowedOrigin }
+export { isLoopbackHostname }
 export { WsRpcTransport }
 export { WsRpcTransportOptions }
 // #endregion
