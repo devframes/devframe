@@ -31,6 +31,8 @@ The `pnpm test` script intentionally runs `build` first so `tsnapi` snapshots co
 
 `pnpm typecheck` fans out through Turbo: every workspace package owns a `"typecheck": "tsc --noEmit"` script and its own `tsconfig.json` (extending `tsconfig.base.json` with an explicit `include`). Cross-package imports resolve to source through the `paths` aliases in `tsconfig.base.json`, so no prior build is needed. Any package added under `packages/*` or `plugins/*` is typechecked automatically once it ships that `typecheck` script — add one to every new package so it can't silently skip type errors.
 
+`pnpm typecheck` runs `scripts/verify-typecheck-coverage.ts` first — it fails the command (and CI, since CI just runs `pnpm typecheck`) if any workspace package has a `tsconfig.json` but no `typecheck` script, so a new package can't silently join the same blind spot. A package that genuinely can't typecheck yet needs a documented exception in that script, not a missing script.
+
 ## Conventions
 
 - RPC functions must use `defineRpcFunction`; always namespace IDs (`my-plugin:fn-name`).

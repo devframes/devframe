@@ -104,6 +104,12 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED 
   its own). Fixing this means loosening `host-terminals.ts`'s env type in
   `packages/hub` — out of scope here. Follow-up: type that field as
   `Record<string, string | undefined>` (or similar) in `packages/hub`.
+- **CI guard added**: `scripts/verify-typecheck-coverage.ts` (wired into
+  `pnpm typecheck`, and therefore into CI) now fails if any workspace package
+  has a `tsconfig.json` but no `typecheck` script, with the two exceptions
+  above declared explicitly (and flagged stale the moment they're fixed) —
+  closing plan 001's original "Maintenance notes" follow-up so the gap this
+  plan fixed can't quietly reopen.
 
 ## Findings considered and deferred / rejected
 
