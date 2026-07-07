@@ -41,6 +41,14 @@ export async function tryGit(cwd: string, args: string[]): Promise<string | null
   }
 }
 
+/**
+ * Client-supplied revisions must not start with `-`, which Git would parse as
+ * an option before it treats the value as a revision.
+ */
+export function isSafeRevision(rev: string): boolean {
+  return rev.length > 0 && !rev.startsWith('-')
+}
+
 /** Resolve the repository root for `cwd`, or `null` when `cwd` is outside a repo. */
 export async function resolveRepoRoot(cwd: string): Promise<string | null> {
   return tryGit(cwd, ['rev-parse', '--show-toplevel'])
