@@ -17,7 +17,7 @@ changes are allowed as long as they're marked).
 | 002 | Clear the critical `shell-quote` advisory in the bundle | security/deps | P1 | S | — | DONE |
 | 003 | Reject cross-origin WebSocket upgrades ⚠️ | security | P1 | S | — | DONE |
 | 004 | Stop git argument injection via `ref`/`hash` | security/bug | P1 | S | — | TODO |
-| 005 | Don't cache a rejected RPC `setup()` promise | bug | P1 | S | — | TODO |
+| 005 | Don't cache a rejected RPC `setup()` promise | bug | P1 | S | — | DONE |
 | 006 | Bound `SharedState.syncIds` (memory leak) | bug | P1 | S | — | TODO |
 | 007 | Behavioral tests for the auth/OTP trust boundary | tests | P1 | S | — | TODO |
 | 008 | Cap hub terminal buffer + reject restart-after-terminate | bug | P2 | S | — | TODO |
