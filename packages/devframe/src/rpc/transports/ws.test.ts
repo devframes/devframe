@@ -38,6 +38,149 @@ describe('ws auth token in URL', () => {
   })
 })
 
+describe('ws client post on a non-open socket', () => {
+  class FakeWS {
+    static OPEN = 1
+    static CONNECTING = 0
+    static CLOSING = 2
+    static CLOSED = 3
+
+    readyState: number
+    listeners = new Map<string, Set<() => void>>()
+    sent: string[] = []
+
+    constructor(public url: string, readyState: number) {
+      this.readyState = readyState
+    }
+
+    addEventListener(type: string, handler: () => void) {
+      let set = this.listeners.get(type)
+      if (!set) {
+        set = new Set()
+        this.listeners.set(type, set)
+      }
+      set.add(handler)
+    }
+
+    removeEventListener(type: string, handler: () => void) {
+      this.listeners.get(type)?.delete(handler)
+    }
+
+    send(data: string) {
+      this.sent.push(data)
+    }
+
+    dispatch(type: string) {
+      for (const handler of this.listeners.get(type) ?? [])
+        handler()
+    }
+  }
+
+  // Builds a `WebSocket` constructor fixed at the given `readyState`,
+  // stashing every instance it creates into `instances` (avoids aliasing
+  // `this` inside the constructor).
+  function fakeWsCtor(readyState: number, instances: FakeWS[]) {
+    return class extends FakeWS {
+      constructor(url: string) {
+        super(url, readyState)
+        instances.push(this)
+      }
+    }
+  }
+
+  it('does not queue an open listener when posting on a CLOSED socket, and notifies onError', () => {
+    const errors: Error[] = []
+    const instances: FakeWS[] = []
+    vi.stubGlobal('WebSocket', fakeWsCtor(FakeWS.CLOSED, instances))
+    try {
+      // Baseline: `createWsRpcChannel` itself registers one 'open' listener
+      // (for `onConnected`) regardless of readyState — that one is expected
+      // to stick around; `post` must not add another on top of it.
+      const channel = createWsRpcChannel({ url: 'ws://127.0.0.1:1', onError: e => errors.push(e) })
+      const ws = instances[0]!
+      const baseline = ws.listeners.get('open')?.size ?? 0
+      channel.post!('hello')
+      expect(ws.listeners.get('open')?.size ?? 0).toBe(baseline)
+      expect(ws.sent).toEqual([])
+      expect(errors).toHaveLength(1)
+    }
+    finally {
+      vi.stubGlobal('WebSocket', WebSocket)
+    }
+  })
+
+  it('does not queue an open listener when posting on a CLOSING socket, and notifies onError', () => {
+    const errors: Error[] = []
+    const instances: FakeWS[] = []
+    vi.stubGlobal('WebSocket', fakeWsCtor(FakeWS.CLOSING, instances))
+    try {
+      const channel = createWsRpcChannel({ url: 'ws://127.0.0.1:1', onError: e => errors.push(e) })
+      const ws = instances[0]!
+      const baseline = ws.listeners.get('open')?.size ?? 0
+      channel.post!('hello')
+      expect(ws.listeners.get('open')?.size ?? 0).toBe(baseline)
+      expect(ws.sent).toEqual([])
+      expect(errors).toHaveLength(1)
+    }
+    finally {
+      vi.stubGlobal('WebSocket', WebSocket)
+    }
+  })
+
+  it('queues exactly one open listener on CONNECTING and cleans it up (and the close listener) after open fires', () => {
+    const errors: Error[] = []
+    const instances: FakeWS[] = []
+    vi.stubGlobal('WebSocket', fakeWsCtor(FakeWS.CONNECTING, instances))
+    try {
+      // Baseline: `createWsRpcChannel` already registers one 'open' listener
+      // (`onConnected`) and one 'close' listener (`onDisconnected`) up front;
+      // `post`'s queued listeners are on top of those and must clean up back
+      // down to this baseline.
+      const channel = createWsRpcChannel({ url: 'ws://127.0.0.1:1', onError: e => errors.push(e) })
+      const ws = instances[0]!
+      const openBaseline = ws.listeners.get('open')?.size ?? 0
+      const closeBaseline = ws.listeners.get('close')?.size ?? 0
+      channel.post!('hello')
+      expect(ws.listeners.get('open')?.size ?? 0).toBe(openBaseline + 1)
+      expect(ws.listeners.get('close')?.size ?? 0).toBe(closeBaseline + 1)
+
+      ws.readyState = FakeWS.OPEN
+      ws.dispatch('open')
+
+      expect(ws.sent).toEqual(['hello'])
+      expect(ws.listeners.get('open')?.size ?? 0).toBe(openBaseline)
+      expect(ws.listeners.get('close')?.size ?? 0).toBe(closeBaseline)
+      expect(errors).toHaveLength(0)
+    }
+    finally {
+      vi.stubGlobal('WebSocket', WebSocket)
+    }
+  })
+
+  it('drops a queued post (no send) if the socket closes before it opens', () => {
+    const errors: Error[] = []
+    const instances: FakeWS[] = []
+    vi.stubGlobal('WebSocket', fakeWsCtor(FakeWS.CONNECTING, instances))
+    try {
+      const channel = createWsRpcChannel({ url: 'ws://127.0.0.1:1', onError: e => errors.push(e) })
+      const ws = instances[0]!
+      const openBaseline = ws.listeners.get('open')?.size ?? 0
+      const closeBaseline = ws.listeners.get('close')?.size ?? 0
+      channel.post!('hello')
+
+      ws.readyState = FakeWS.CLOSED
+      ws.dispatch('close')
+
+      expect(ws.sent).toEqual([])
+      expect(ws.listeners.get('open')?.size ?? 0).toBe(openBaseline)
+      expect(ws.listeners.get('close')?.size ?? 0).toBe(closeBaseline)
+    }
+    finally {
+      vi.stubGlobal('WebSocket', WebSocket)
+    }
+  })
+})
+
 describe('devframe rpc', () => {
   it('should work w/ ws transport', async () => {
     // Use 127.0.0.1 on both client and server so they agree on the

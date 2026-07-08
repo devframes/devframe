@@ -23,7 +23,7 @@ changes are allowed as long as they're marked).
 | 008 | Cap hub terminal buffer + reject restart-after-terminate | bug | P2 | S | — | TODO |
 | 009 | Fix two server-side streaming lifecycle leaks | bug | P2 | S-M | — | TODO |
 | 010 | Initialize client shared state once across trust flips | bug | P2 | S | — | TODO |
-| 011 | Don't leak/drop when WS client posts on a closing socket | bug | P2 | S | — | TODO |
+| 011 | Don't leak/drop when WS client posts on a closing socket | bug | P2 | S | — | DONE |
 | 012 | Atomic, non-throwing `createStorage` writes | bug | P2 | M | — | TODO |
 | 013 | De-duplicate git parse helpers into `node/git.ts` | tech-debt | P2 | S | 004 | TODO |
 | 014 | Parallelize the `git:show` static dump | perf | P2 | S-M | 004, 013 | TODO |

@@ -66,14 +66,25 @@ export function createWsRpcChannel(options: WsRpcChannelOptions): ChannelOptions
     post: (data: string) => {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(data)
+        return
       }
-      else {
-        function handler() {
-          ws.send(data)
-          ws.removeEventListener('open', handler)
+      if (ws.readyState === WebSocket.CONNECTING) {
+        const onOpen = () => {
+          cleanup()
+          if (ws.readyState === WebSocket.OPEN)
+            ws.send(data)
         }
-        ws.addEventListener('open', handler)
+        const onClose = () => cleanup()
+        function cleanup() {
+          ws.removeEventListener('open', onOpen)
+          ws.removeEventListener('close', onClose)
+        }
+        ws.addEventListener('open', onOpen)
+        ws.addEventListener('close', onClose) // drop the queued send if it closes first
+        return
       }
+      // CLOSING or CLOSED: the socket will never (re)open on this channel.
+      onError(new Error('Devframe WebSocket is not open; message dropped'))
     },
     serialize: (msg: any): string => {
       let method: string | undefined
