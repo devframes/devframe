@@ -13,7 +13,8 @@
     "build": "vite build --config src/client/vite.config.ts",
     "dev": "node bin.mjs",
     "cli:build": "node bin.mjs build --out-dir dist/static",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@antfu/design": "catalog:frontend",

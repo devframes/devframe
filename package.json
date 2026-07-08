@@ -27,7 +27,8 @@
     "test:e2e:ui": "turbo run build && playwright test --ui",
     "test:ecosystem": "tsx scripts/ecosystem-ci.ts",
     "release": "bumpp -r",
-    "typecheck": "turbo run typecheck",
+    "typecheck": "pnpm run verify:typecheck-coverage && turbo run typecheck",
+    "verify:typecheck-coverage": "tsx scripts/verify-typecheck-coverage.ts",
     "postinstall": "npx simple-git-hooks && skills-npm"
   },
   "devDependencies": {

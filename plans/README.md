@@ -13,7 +13,7 @@ changes are allowed as long as they're marked).
 
 | Plan | Title | Cat | Priority | Effort | Depends on | Status |
 |------|-------|-----|----------|--------|------------|--------|
-| 001 | Add missing `typecheck` scripts (inspect + 5 examples) | dx | P1 | S | — | TODO |
+| 001 | Add missing `typecheck` scripts (inspect + 5 examples) | dx | P1 | S | — | DONE (partial — see note) |
 | 002 | Clear the critical `shell-quote` advisory in the bundle | security/deps | P1 | S | — | DONE |
 | 003 | Reject cross-origin WebSocket upgrades ⚠️ | security | P1 | S | — | TODO |
 | 004 | Stop git argument injection via `ref`/`hash` | security/bug | P1 | S | — | TODO |
@@ -70,8 +70,46 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED 
   fully addressed by **030** (auth); 016 itself ships the bind + folder hardening.
 - **026 depends on 002** — 002 clears the one runtime-shipped critical; 026 mops
   up the dev/docs-only advisories.
-- **019 / 001** — 019's inspect typecheck command relies on 001's added script
-  (else run `tsc --noEmit` directly).
+- **019 / 001** — 001 hit a STOP condition on the inspect plugin itself (see
+  below) and did **not** add its `typecheck` script; 019's verification should
+  run `tsc --noEmit` directly in `plugins/inspect` instead.
+
+## Execution notes
+
+- **001 shipped for 4 of the 6 in-scope packages** (`files-inspector`,
+  `streaming-chat`, `next-runtime-snapshot`, `minimal-vite-devframe-hub`),
+  fixing the small in-scope type errors each surfaced (a missing `*.css` /
+  `virtual:uno.css` ambient shim, a superfluous `async` on a schema-typed RPC
+  handler whose framework type requires a synchronous return, a missing
+  destructure default matching a valibot `v.optional(..., default)`, a bad
+  `as never[]` cast in `plugins/inspect/src/rpc/functions/invoke.ts` — the
+  last one *is* an in-scope inspect-plugin fix and was kept even though the
+  plugin's own script was not added, below).
+- **`plugins/inspect` did not get the script** (STOP condition): its
+  `tsconfig.json` is the only one in the repo with `composite: true`, which
+  makes `tsc --noEmit` reject otherwise-valid cross-package imports (`devframe/
+  utils/*`, `devframe/adapters/cli`, etc.) with TS6307 "file not listed in the
+  file list of project" errors — a tsconfig fix, which this plan's Scope marks
+  out-of-bounds. The plugin also has a few genuine SPA-composable type bugs
+  (`src/spa/composables/{history,rpc}.ts`) independent of that flag. Follow-up:
+  a small dedicated plan to drop `composite` (auditing why it was set — see
+  `6bbe9d2`, it looks like copy-paste from a template, unused elsewhere) and
+  then fix the remaining composable bugs.
+- **`minimal-next-devframe-hub` did not get the script** (STOP condition):
+  `packages/hub/src/node/host-terminals.ts` types its child-process `env` as
+  `NodeJS.ProcessEnv`; Next.js's own ambient types (`next/types/global.d.ts`)
+  augment `ProcessEnv` to require a literal-typed `NODE_ENV`, so the plain
+  `{ COLORS, FORCE_COLOR, ...env }` object hub builds no longer satisfies it
+  **once a Next.js app is in the program** (`packages/hub` typechecks clean on
+  its own). Fixing this means loosening `host-terminals.ts`'s env type in
+  `packages/hub` — out of scope here. Follow-up: type that field as
+  `Record<string, string | undefined>` (or similar) in `packages/hub`.
+- **CI guard added**: `scripts/verify-typecheck-coverage.ts` (wired into
+  `pnpm typecheck`, and therefore into CI) now fails if any workspace package
+  has a `tsconfig.json` but no `typecheck` script, with the two exceptions
+  above declared explicitly (and flagged stale the moment they're fixed) —
+  closing plan 001's original "Maintenance notes" follow-up so the gap this
+  plan fixed can't quietly reopen.
 
 ## Findings considered and deferred / rejected
 

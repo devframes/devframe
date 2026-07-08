@@ -41,7 +41,7 @@ export const env = defineRpcFunction({
     total: v.number(),
     pattern: v.string(),
   }),
-  handler: ({ pattern, limit }): EnvSnapshot => {
+  handler: ({ pattern = '', limit = 50 }): EnvSnapshot => {
     const keys = Object.keys(process.env).sort()
     let matched: string[]
     if (!pattern) {

@@ -61,7 +61,7 @@ export const send = defineRpcFunction({
   setup: (ctx) => {
     const { channel, history, pruneIfTooLarge } = getStreamingChatContext(ctx)
     return {
-      handler: async ({ prompt, intervalMs = 35 }) => {
+      handler: ({ prompt, intervalMs = 35 }) => {
         const stream = channel.start()
         const userId = nanoid()
         const assistantId = nanoid()
