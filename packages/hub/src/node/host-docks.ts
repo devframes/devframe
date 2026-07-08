@@ -1,6 +1,7 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type {
+  BuiltinDocksOptions,
   DevframeDockEntry,
   DevframeDocksHost as DevframeDocksHostType,
   DevframeDockUserEntry,
@@ -92,6 +93,12 @@ export class DevframeDocksHost implements DevframeDocksHostType {
 
   constructor(
     public readonly context: DevframeHubContext,
+    /**
+     * Per-entry toggles for the synthesized built-in dock entries. An omitted
+     * (or `undefined`) flag keeps that built-in; only an explicit `false`
+     * suppresses it.
+     */
+    private readonly builtinDocks: BuiltinDocksOptions = {},
   ) {
 
   }
@@ -111,8 +118,11 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     includeBuiltin?: boolean
   } = {}): DevframeDockEntry[] {
     const context = this.context
-    const builtinDocksEntries: DevframeViewBuiltin[] = [
-      {
+    // An omitted flag keeps the built-in; only an explicit `false` drops it.
+    const { terminals = true, messages = true, settings = true } = this.builtinDocks
+    const builtinDocksEntries: DevframeViewBuiltin[] = []
+    if (terminals) {
+      builtinDocksEntries.push({
         type: '~builtin',
         id: '~terminals',
         title: 'Terminals',
@@ -121,8 +131,10 @@ export class DevframeDocksHost implements DevframeDocksHostType {
         get when() {
           return context.terminals.sessions.size === 0 ? 'false' : undefined
         },
-      },
-      {
+      })
+    }
+    if (messages) {
+      builtinDocksEntries.push({
         type: '~builtin',
         id: '~messages',
         title: 'Messages & Notifications',
@@ -132,15 +144,17 @@ export class DevframeDocksHost implements DevframeDocksHostType {
           const size = context.messages.entries.size
           return size > 0 ? String(size) : undefined
         },
-      },
-      {
+      })
+    }
+    if (settings) {
+      builtinDocksEntries.push({
         type: '~builtin',
         id: '~settings',
         title: 'Settings',
         category: '~builtin',
         icon: 'ph:gear-duotone',
-      },
-    ]
+      })
+    }
 
     return [
       ...Array.from(this.views.values(), view => this.projectView(view)),

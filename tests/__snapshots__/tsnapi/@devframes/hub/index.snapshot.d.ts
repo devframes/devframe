@@ -16,6 +16,7 @@ export declare const defineHubRpcFunction: <NAME extends string, TYPE extends _$
 // #endregion
 
 // #region Other
+export { BuiltinDocksOptions }
 export { ClientScriptEntry }
 export { ConnectionMeta }
 export { CreateHubContextOptions }

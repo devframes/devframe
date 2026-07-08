@@ -23,11 +23,13 @@ export declare class DevframeCommandsHost implements DevframeCommandsHost$1 {
 }
 export declare class DevframeDocksHost implements DevframeDocksHost$1 {
   readonly context: DevframeHubContext;
+  private readonly builtinDocks;
   readonly views: DevframeDocksHost$1['views'];
   readonly events: DevframeDocksHost$1['events'];
   userSettings: SharedState<DevframeDocksUserSettings>;
   private readonly remoteDocks;
-  constructor(_: DevframeHubContext);
+  constructor(_: DevframeHubContext,
+  _?: BuiltinDocksOptions);
   init(): Promise<void>;
   values({
     includeBuiltin
