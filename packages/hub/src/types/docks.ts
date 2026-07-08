@@ -14,6 +14,32 @@ export interface DevframeDocksHost {
   values: (options?: { includeBuiltin?: boolean }) => DevframeDockEntry[]
 }
 
+/**
+ * Per-entry toggles for the hub's synthesized built-in dock entries.
+ *
+ * Each flag defaults to `true` (the entry is present). Set one to `false` to
+ * suppress that built-in everywhere it would otherwise appear — useful when a
+ * host mounts a plugin that supersedes the built-in tab (e.g.
+ * `@devframes/plugin-terminals` replacing the `~terminals` entry).
+ */
+export interface BuiltinDocksOptions {
+  /**
+   * Include the built-in `~terminals` dock entry.
+   * @default true
+   */
+  terminals?: boolean
+  /**
+   * Include the built-in `~messages` dock entry.
+   * @default true
+   */
+  messages?: boolean
+  /**
+   * Include the built-in `~settings` dock entry.
+   * @default true
+   */
+  settings?: boolean
+}
+
 // Known categories the hub orders by default. Kits may pass their own
 // category ids; `(string & {})` keeps autocomplete on the known set while
 // allowing arbitrary string values.

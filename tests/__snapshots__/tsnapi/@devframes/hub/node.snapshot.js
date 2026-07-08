@@ -16,11 +16,12 @@ export class DevframeCommandsHost {
 }
 export class DevframeDocksHost {
   context
+  builtinDocks
   views
   events
   userSettings
   remoteDocks
-  constructor(_) {}
+  constructor(_, _) {}
   async init() {}
   values(_) {}
   projectView(_) {}

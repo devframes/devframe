@@ -30,6 +30,18 @@ describe('createHubContext shared state', () => {
       '~settings',
     ])
   })
+
+  it('suppresses built-ins gated off via builtinDocks', async () => {
+    const context = await createHubContext({
+      cwd: process.cwd(),
+      mode: 'build',
+      host: createHost(),
+      builtinDocks: { terminals: false, messages: false },
+    })
+
+    const docks = await context.rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks')
+    expect(docks.value().map(dock => dock.id)).toEqual(['~settings'])
+  })
 })
 
 describe('startHttpAndWs remote endpoint metadata', () => {

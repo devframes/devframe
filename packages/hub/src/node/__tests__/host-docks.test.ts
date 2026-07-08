@@ -16,6 +16,10 @@ function createContext(): DevframeHubContext {
       resolveOrigin: () => 'http://localhost:5173',
       getStorageDir: () => storageDir,
     },
+    // Minimal stubs so the built-in `~terminals`/`~messages` getters
+    // (`when`/`badge`) can be evaluated without a full context.
+    terminals: { sessions: new Map() },
+    messages: { entries: new Map() },
   } as unknown as DevframeHubContext
 }
 
@@ -187,5 +191,50 @@ describe('devframeDockHost grouping', () => {
       icon: 'ph:ghost-duotone',
       url: '/__ghost/',
     })).toThrow('Dock with id "ghost" is not registered and cannot be updated')
+  })
+})
+
+describe('devframeDockHost built-in gating', () => {
+  it('includes all three built-ins by default', () => {
+    const host = new DevframeDocksHost(createContext())
+    const ids = host.values().map(entry => entry.id)
+    expect(ids).toEqual(['~terminals', '~messages', '~settings'])
+  })
+
+  it('treats an empty builtinDocks map as all-enabled', () => {
+    const host = new DevframeDocksHost(createContext(), {})
+    const ids = host.values().map(entry => entry.id)
+    expect(ids).toEqual(['~terminals', '~messages', '~settings'])
+  })
+
+  it('omits the built-ins gated with `false`, keeping the rest', () => {
+    const host = new DevframeDocksHost(createContext(), { terminals: false, messages: false })
+    const ids = host.values().map(entry => entry.id)
+    expect(ids).toEqual(['~settings'])
+  })
+
+  it('keeps an explicitly-enabled built-in and drops an omitted-as-false sibling', () => {
+    const host = new DevframeDocksHost(createContext(), { terminals: true, settings: false })
+    const ids = host.values().map(entry => entry.id)
+    expect(ids).toEqual(['~terminals', '~messages'])
+  })
+
+  it('keeps user views ahead of gated built-ins', () => {
+    const host = new DevframeDocksHost(createContext(), { messages: false, settings: false })
+    host.register({
+      type: 'iframe',
+      id: 'app:overview',
+      title: 'Overview',
+      icon: 'ph:gauge-duotone',
+      url: '/__app/',
+    })
+
+    const ids = host.values().map(entry => entry.id)
+    expect(ids).toEqual(['app:overview', '~terminals'])
+  })
+
+  it('drops every built-in when includeBuiltin is false, regardless of gating', () => {
+    const host = new DevframeDocksHost(createContext(), { terminals: true, messages: true, settings: true })
+    expect(host.values({ includeBuiltin: false })).toEqual([])
   })
 })
