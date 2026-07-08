@@ -71,6 +71,22 @@ export interface SharedStateOptions<T> {
   enablePatches?: boolean
 }
 
+/**
+ * Upper bound on retained syncIds. Loop echoes arrive near-immediately, so a
+ * generous window preserves de-dup while capping memory on long-lived,
+ * frequently-mutated states (e.g. a 1s terminal poll).
+ */
+const MAX_SYNC_IDS = 1000
+
+function rememberSyncId(syncIds: Set<string>, syncId: string): void {
+  syncIds.add(syncId)
+  if (syncIds.size > MAX_SYNC_IDS) {
+    const oldest = syncIds.values().next().value
+    if (oldest !== undefined)
+      syncIds.delete(oldest)
+  }
+}
+
 export function createSharedState<T extends object>(
   options: SharedStateOptions<T>,
 ): SharedState<T> {
@@ -91,7 +107,7 @@ export function createSharedState<T extends object>(
         return
       enableImmerPatches()
       state = applyPatches(state as unknown as Objectish, patches as unknown as Patch[]) as T
-      syncIds.add(syncId)
+      rememberSyncId(syncIds, syncId)
       events.emit('updated', state, undefined, syncId)
     },
     mutate: (fn, syncId = nanoid()) => {
@@ -99,7 +115,7 @@ export function createSharedState<T extends object>(
       if (syncIds.has(syncId))
         return
 
-      syncIds.add(syncId)
+      rememberSyncId(syncIds, syncId)
       if (enablePatches) {
         const [newState, patches] = produceWithPatches(
           state as unknown as Objectish,
