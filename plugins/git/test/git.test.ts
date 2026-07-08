@@ -1,4 +1,6 @@
-import type { CommitResult, GitBranches, GitDiff, GitLog, GitStatus } from '../src/index'
+import type { CommitDetail, CommitResult, GitBranches, GitDiff, GitLog, GitStatus } from '../src/index'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { createRpcClient } from 'devframe/rpc/client'
 import { collectStaticRpcDump } from 'devframe/rpc/dump'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
@@ -81,6 +83,41 @@ describe('@devframes/plugin-git', () => {
     const tail = await rpc.$call('git:log', { limit: 1, skip: 2 }) as GitLog
     expect(tail.commits).toHaveLength(0)
     expect(tail.hasMore).toBe(false)
+  })
+
+  it('treats dashed log refs as invalid revisions instead of Git options', async () => {
+    const rpc = bootRpc(server.port)
+    const marker = join(repo.dir, 'log-injected.txt')
+
+    const log = await rpc.$call('git:log', { ref: `--output=${marker}` }) as GitLog
+
+    expect(log.isRepo).toBe(true)
+    expect(log.commits).toEqual([])
+    expect(log.hasMore).toBe(false)
+    expect(existsSync(marker)).toBe(false)
+  })
+
+  it('treats dashed show hashes as invalid revisions instead of Git options', async () => {
+    const rpc = bootRpc(server.port)
+    const marker = join(repo.dir, 'show-injected.txt')
+
+    const detail = await rpc.$call('git:show', { hash: `--output=${marker}` }) as CommitDetail
+
+    expect(detail.isRepo).toBe(true)
+    expect(detail.found).toBe(false)
+    expect(existsSync(marker)).toBe(false)
+  })
+
+  it('returns commit details for a valid hash', async () => {
+    const rpc = bootRpc(server.port)
+    const log = await rpc.$call('git:log', { limit: 1 }) as GitLog
+
+    const detail = await rpc.$call('git:show', { hash: log.commits[0].hash }) as CommitDetail
+
+    expect(detail.isRepo).toBe(true)
+    expect(detail.found).toBe(true)
+    expect(detail.hash).toBe(log.commits[0].hash)
+    expect(detail.files.map(file => file.path)).toContain('a.txt')
   })
 
   it('lists local branches with the current one first', async () => {
