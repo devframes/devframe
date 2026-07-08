@@ -187,6 +187,7 @@ describe('ws origin check', () => {
       })
       ws.on('error', () => resolve('closed'))
       ws.on('unexpected-response', () => resolve('closed'))
+      ws.on('close', () => resolve('closed'))
     })
   }
 

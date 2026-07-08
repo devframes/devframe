@@ -157,6 +157,11 @@ function routeUpgrades(
   allowedOrigins: readonly string[] | false | undefined,
 ): () => void {
   const listener = (req: IncomingMessage, socket: Duplex, head: Buffer) => {
+    socket.on('error', () => {
+      // Prevent unhandled ECONNRESET crashes when destroying the socket
+      // or when the client abruptly disconnects.
+    })
+
     if (path) {
       let pathname = req.url ?? '/'
       try {
@@ -164,12 +169,15 @@ function routeUpgrades(
       }
       catch {}
       if (!pathMatches(pathname, path)) {
-        if (destroyUnmatched)
+        if (destroyUnmatched) {
+          socket.write('HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n')
           socket.destroy()
+        }
         return
       }
     }
     if (allowedOrigins !== false && !isAllowedOrigin(req.headers.origin, allowedOrigins ?? [])) {
+      socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n')
       socket.destroy()
       return
     }
