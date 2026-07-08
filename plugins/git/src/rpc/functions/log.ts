@@ -1,5 +1,5 @@
 import { defineRpcFunction } from 'devframe'
-import { RECORD, splitClean, tryGit, UNIT } from '../../node/git.ts'
+import { isSafeRevision, RECORD, splitClean, tryGit, UNIT } from '../../node/git.ts'
 import { getGitContext } from '../context.ts'
 
 export interface Commit {
@@ -108,8 +108,11 @@ export const log = defineRpcFunction({
           `--skip=${skip}`,
           `--pretty=format:${FORMAT}`,
         ]
-        if (ref)
-          command.push(ref)
+        if (ref) {
+          if (!isSafeRevision(ref))
+            return { isRepo: true, commits: [], limit, skip, hasMore: false }
+          command.push('--end-of-options', ref)
+        }
 
         const raw = await tryGit(git.cwd, command)
         // `null` happens on a repo with no commits yet — treat as empty.

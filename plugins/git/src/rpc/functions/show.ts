@@ -1,6 +1,6 @@
 import type { GitContext } from '../context.ts'
 import { defineRpcFunction } from 'devframe'
-import { splitClean, tryGit, UNIT } from '../../node/git.ts'
+import { isSafeRevision, splitClean, tryGit, UNIT } from '../../node/git.ts'
 import { getGitContext } from '../context.ts'
 
 /** Hard cap on the returned patch text to keep payloads bounded. */
@@ -102,7 +102,10 @@ function parseNumstat(raw: string): CommitFile[] {
 }
 
 async function readCommit(git: GitContext, hash: string, includePatch: boolean): Promise<CommitDetail> {
-  const meta = await tryGit(git.cwd, ['show', '-s', `--format=${SHOW_FORMAT}`, hash])
+  if (!isSafeRevision(hash))
+    return { ...EMPTY_DETAIL, isRepo: true }
+
+  const meta = await tryGit(git.cwd, ['show', '-s', `--format=${SHOW_FORMAT}`, '--end-of-options', hash])
   if (meta == null)
     return { ...EMPTY_DETAIL, isRepo: true }
 
@@ -122,7 +125,7 @@ async function readCommit(git: GitContext, hash: string, includePatch: boolean):
   ] = meta.split(UNIT)
 
   // `--root` so the initial commit reports its full tree as additions.
-  const numstat = await tryGit(git.cwd, ['diff-tree', '--no-commit-id', '--numstat', '-r', '--root', hash])
+  const numstat = await tryGit(git.cwd, ['diff-tree', '--no-commit-id', '--numstat', '-r', '--root', '--end-of-options', hash])
   const files = numstat ? parseNumstat(numstat) : []
   const totalAdditions = files.reduce((sum, f) => sum + f.additions, 0)
   const totalDeletions = files.reduce((sum, f) => sum + f.deletions, 0)
@@ -130,7 +133,7 @@ async function readCommit(git: GitContext, hash: string, includePatch: boolean):
   let patch: string | null = null
   let truncated = false
   if (includePatch) {
-    const raw = await tryGit(git.cwd, ['diff-tree', '-p', '--no-commit-id', '-r', '--root', hash])
+    const raw = await tryGit(git.cwd, ['diff-tree', '-p', '--no-commit-id', '-r', '--root', '--end-of-options', hash])
     if (raw != null) {
       if (raw.length > PATCH_CHAR_LIMIT) {
         patch = raw.slice(0, PATCH_CHAR_LIMIT)
