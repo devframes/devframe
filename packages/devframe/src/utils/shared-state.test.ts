@@ -304,6 +304,20 @@ describe('shared-state', () => {
       expect(state.syncIds.has('sync-2')).toBe(true)
     })
 
+    it('caps syncIds and evicts oldest-first (FIFO), keeping recent de-dup', () => {
+      const state = createSharedState({ initialValue: { count: 0 } })
+      for (let i = 0; i < 1500; i++) {
+        state.mutate((draft) => {
+          draft.count = i
+        }, `sync-${i}`)
+      }
+      expect(state.syncIds.size).toBeLessThanOrEqual(1000)
+      // The most recent id is retained (still de-duped)...
+      expect(state.syncIds.has('sync-1499')).toBe(true)
+      // ...the oldest was evicted.
+      expect(state.syncIds.has('sync-0')).toBe(false)
+    })
+
     it('should able to sync between two shared states', () => {
       const state1 = createSharedState({
         initialValue: { count: 0 },
