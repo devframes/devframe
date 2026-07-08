@@ -15,7 +15,7 @@ changes are allowed as long as they're marked).
 |------|-------|-----|----------|--------|------------|--------|
 | 001 | Add missing `typecheck` scripts (inspect + 5 examples) | dx | P1 | S | — | DONE (partial — see note) |
 | 002 | Clear the critical `shell-quote` advisory in the bundle | security/deps | P1 | S | — | DONE |
-| 003 | Reject cross-origin WebSocket upgrades ⚠️ | security | P1 | S | — | TODO |
+| 003 | Reject cross-origin WebSocket upgrades ⚠️ | security | P1 | S | — | DONE |
 | 004 | Stop git argument injection via `ref`/`hash` | security/bug | P1 | S | — | TODO |
 | 005 | Don't cache a rejected RPC `setup()` promise | bug | P1 | S | — | TODO |
 | 006 | Bound `SharedState.syncIds` (memory leak) | bug | P1 | S | — | TODO |

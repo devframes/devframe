@@ -3,4 +3,6 @@
  */
 // #region Functions
 export function attachWsRpcTransport(_, _) {}
+export function isAllowedOrigin(_, _) {}
+export function isLoopbackHostname(_) {}
 // #endregion
