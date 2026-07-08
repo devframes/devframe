@@ -216,6 +216,36 @@ describe('@devframes/plugin-git (build snapshot)', () => {
       repo.cleanup()
     }
   })
+
+  it('bakes git:show records for the log snapshot window', async () => {
+    const repo = createTempRepo()
+    try {
+      const ctx = await createDashboardContext(repo.dir, 'build')
+      const dump = await collectStaticRpcDump(ctx.rpc.definitions.values(), ctx)
+
+      const entry = dump.manifest['git:show']
+      expect(entry).toBeDefined()
+      expect(entry.type).toBe('query')
+      expect(Object.keys(entry.records)).toHaveLength(2)
+      expect(entry.fallback).toBeTruthy()
+
+      const recordPaths = Object.values(entry.records as Record<string, string>)
+      const details = recordPaths.map((path) => {
+        return (dump.files[path].data as { output: CommitDetail }).output
+      })
+
+      expect(details.map(detail => detail.subject)).toEqual([
+        'feat: add a.txt',
+        'init: add readme',
+      ])
+      expect(details.every(detail => detail.isRepo && detail.found)).toBe(true)
+      expect(details.every(detail => detail.patch === null)).toBe(true)
+      expect(details[0].files.map(file => file.path)).toContain('a.txt')
+    }
+    finally {
+      repo.cleanup()
+    }
+  })
 })
 
 describe('@devframes/plugin-git (write actions)', () => {
