@@ -21,16 +21,30 @@ export async function getRpcResolvedSetupResult<
   // closed over a prior context's state.
   if (typeof context === 'object' && context !== null) {
     definition.__cache ??= new WeakMap()
-    let promise = definition.__cache.get(context as object)
+    const cache = definition.__cache
+    let promise = cache.get(context as object)
     if (!promise) {
       promise = Promise.resolve(definition.setup(context))
-      definition.__cache.set(context as object, promise)
+      // If setup rejects, evict so a later call can retry instead of
+      // re-awaiting the cached rejection permanently.
+      promise.catch(() => {
+        if (cache.get(context as object) === promise)
+          cache.delete(context as object)
+      })
+      cache.set(context as object, promise)
     }
     return await promise
   }
 
   // Primitive / undefined context — fall back to a single-slot cache.
-  definition.__promise ??= Promise.resolve(definition.setup(context))
+  if (!definition.__promise) {
+    const promise = Promise.resolve(definition.setup(context))
+    promise.catch(() => {
+      if (definition.__promise === promise)
+        definition.__promise = undefined
+    })
+    definition.__promise = promise
+  }
   return await definition.__promise
 }
 
