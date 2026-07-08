@@ -132,6 +132,9 @@ catalogs:
     '@iconify-json/ph':
       specifier: ^1.2.2
       version: 1.2.2
+    '@pierre/diffs':
+      specifier: ^1.2.12
+      version: 1.2.12
     '@radix-ui/react-scroll-area':
       specifier: ^1.2.14
       version: 1.2.14
@@ -912,6 +915,9 @@ importers:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.2.1(@antfu/utils@9.3.0)(@tanstack/vue-virtual@3.13.30(vue@3.5.39(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.39(typescript@6.0.3)))(playwright@1.61.1)(reka-ui@2.10.1(vue@3.5.39(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.16))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.0)(yaml@2.9.0)))(vue@3.5.39(typescript@6.0.3))
+      '@pierre/diffs':
+        specifier: catalog:frontend
+        version: 1.2.12(@shikijs/themes@4.3.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@radix-ui/react-scroll-area':
         specifier: catalog:frontend
         version: 1.2.14(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -3383,6 +3389,36 @@ packages:
     resolution: {integrity: sha512-tmmZ3lQxAe/k/+rNnXQRawJ4NjxO2hqiOLTHvWchtGZULp4RyFeh6aU4XdOYBFe2KE1oShQTv4AblOs2iOrNnQ==}
     engines: {node: '>= 10.0.0'}
 
+  '@pierre/diffs@1.2.12':
+    resolution: {integrity: sha512-pY/gmgWL03WnagqCyCnBi3QtRXUv4hCIY6FYqd5b1ZGaoI6a4Bsji8j+yRl2RfzPh/8Hf19rCl1GE80G6a1cLQ==}
+    peerDependencies:
+      react: ^18.3.1 || ^19.0.0
+      react-dom: ^18.3.1 || ^19.0.0
+
+  '@pierre/theme@1.1.0':
+    resolution: {integrity: sha512-GC2OWTAfTIIWWYhPCygwG8t2EtePQkRfON4MI2rwIkJylmiyqIttJID2dCL8sUD8cNdEvYkEyfEHHKMeCiDLoQ==}
+    engines: {vscode: ^1.0.0}
+
+  '@pierre/theming@0.0.2':
+    resolution: {integrity: sha512-QM1M4stXfnzfaE8I8YbjXSApV8c+2dBsXJj8eYg9WTpBR/cTmCZIcfGnN4p13iRrYu2Br/R/OJfEL7uR8Qjctw==}
+    peerDependencies:
+      '@pierre/theme': ^1.1.0
+      '@shikijs/themes': ^3.0.0 || ^4.0.0
+      react: ^18.3.1 || ^19.0.0
+      react-dom: ^18.3.1 || ^19.0.0
+      shiki: ^3.0.0 || ^4.0.0
+    peerDependenciesMeta:
+      '@pierre/theme':
+        optional: true
+      '@shikijs/themes':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+      shiki:
+        optional: true
+
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
@@ -5690,6 +5726,10 @@ packages:
     resolution: {integrity: sha512-DPi0FmjiSU5EvQV0++GFDOJ9ASQUVFh5kD+OzOnYdi7n3Wpm9hWWGfB/O2blfHcMVTL5WkQXSnRiK9makhrcnw==}
     engines: {node: '>=0.3.1'}
 
+  diff@9.0.0:
+    resolution: {integrity: sha512-svtcdpS8CgJyqAjEQIXdb3OjhFVVYjzGAPO8WGCmRbrml64SPw/jJD4GoE98aR7r25A0XcgrK3F02yw9R/vhQw==}
+    engines: {node: '>=0.3.1'}
+
   doctrine@3.0.0:
     resolution: {integrity: sha512-yS+Q5i3hBf7GBkd4KG8a7eBNNWNGLTaEwwYWUijIYM7zrlYDM0BFXHjjPWlWZ1Rg7UaddZeIDmi9jF3HmqiQ2w==}
     engines: {node: '>=6.0.0'}
@@ -6829,6 +6869,9 @@ packages:
   lru-cache@8.0.5:
     resolution: {integrity: sha512-MhWWlVnuab1RG5/zMRRcVGXZLCXrZTgfwMikgzCegsPnG62yDQo5JnqKkrK4jO5iKqDAZGItAqN5CtKBCBWRUA==}
     engines: {node: '>=16.14'}
+
+  lru_map@0.4.1:
+    resolution: {integrity: sha512-I+lBvqMMFfqaV8CJCISjI3wbjmwVu/VyOoU7+qtu9d7ioW5klMgsTTiUOUp+DJvfTTzKXoPbyC6YfgkNcyPSOg==}
 
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
@@ -10905,6 +10948,30 @@ snapshots:
       '@parcel/watcher-win32-ia32': 2.5.6
       '@parcel/watcher-win32-x64': 2.5.6
 
+  '@pierre/diffs@1.2.12(@shikijs/themes@4.3.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+    dependencies:
+      '@pierre/theme': 1.1.0
+      '@pierre/theming': 0.0.2(@pierre/theme@1.1.0)(@shikijs/themes@4.3.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(shiki@4.3.1)
+      '@shikijs/transformers': 4.3.1
+      diff: 9.0.0
+      hast-util-to-html: 9.0.5
+      lru_map: 0.4.1
+      react: 19.2.7
+      react-dom: 19.2.7(react@19.2.7)
+      shiki: 4.3.1
+    transitivePeerDependencies:
+      - '@shikijs/themes'
+
+  '@pierre/theme@1.1.0': {}
+
+  '@pierre/theming@0.0.2(@pierre/theme@1.1.0)(@shikijs/themes@4.3.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(shiki@4.3.1)':
+    optionalDependencies:
+      '@pierre/theme': 1.1.0
+      '@shikijs/themes': 4.3.1
+      react: 19.2.7
+      react-dom: 19.2.7(react@19.2.7)
+      shiki: 4.3.1
+
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
@@ -13354,6 +13421,8 @@ snapshots:
 
   diff@8.0.4: {}
 
+  diff@9.0.0: {}
+
   doctrine@3.0.0:
     dependencies:
       esutils: 2.0.3
@@ -14532,6 +14601,8 @@ snapshots:
       yallist: 3.1.1
 
   lru-cache@8.0.5: {}
+
+  lru_map@0.4.1: {}
 
   lz-string@1.5.0: {}
 

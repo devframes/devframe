@@ -19,6 +19,7 @@ strictPeerDependencies: false
 trustPolicy: no-downgrade
 trustPolicyExclude:
   - tinyexec@1.2.2
+  - '@pierre/theme@1.1.0'
 packages:
   - packages/*
   - plugins/*
@@ -77,6 +78,7 @@ catalogs:
   frontend:
     '@antfu/design': ^0.2.1
     '@iconify-json/ph': ^1.2.2
+    '@pierre/diffs': ^1.2.12
     '@radix-ui/react-scroll-area': ^1.2.14
     '@radix-ui/react-separator': ^1.1.11
     '@radix-ui/react-slot': ^1.3.0

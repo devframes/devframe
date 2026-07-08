@@ -52,6 +52,7 @@
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
+    "@pierre/diffs": "catalog:frontend",
     "@radix-ui/react-scroll-area": "catalog:frontend",
     "@radix-ui/react-separator": "catalog:frontend",
     "@radix-ui/react-slot": "catalog:frontend",

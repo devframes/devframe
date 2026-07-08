@@ -1,8 +1,13 @@
 'use client'
 
+import type { FileDiffOptions } from '@pierre/diffs'
 import type { ReactNode } from 'react'
 import type { GitDiff } from '../../../index'
+import { parsePatchFiles } from '@pierre/diffs'
+import { FileDiff } from '@pierre/diffs/react'
+import { useMemo } from 'react'
 import { cn } from '../../lib/utils'
+import { useColorScheme } from '../theme'
 import { Badge } from '../ui/badge'
 import { IconButton } from '../ui/button'
 import { Icon } from '../ui/icon'
@@ -21,39 +26,53 @@ export interface DiffPanelViewProps {
   patchSlot?: ReactNode
 }
 
-function patchLineClass(line: string): string {
-  if (line.startsWith('@@'))
-    return 'color-active'
-  if (line.startsWith('+') && !line.startsWith('+++'))
-    return 'text-success'
-  if (line.startsWith('-') && !line.startsWith('---'))
-    return 'text-error'
-  if (line.startsWith('diff ') || line.startsWith('index ') || line.startsWith('+++') || line.startsWith('---'))
-    return 'color-muted font-semibold'
-  return 'color-base'
+// Shiki themes for the diff renderer, chosen to sit alongside the @antfu/design
+// surfaces; @pierre/diffs picks light vs. dark from `themeType`.
+const DIFF_THEME = { light: 'vitesse-light', dark: 'vitesse-dark' } as const
+
+/** Split a unified/git patch into its per-file diffs, tolerant of truncation. */
+function parsePatch(patch: string) {
+  try {
+    return parsePatchFiles(patch).flatMap(p => p.files)
+  }
+  catch {
+    return []
+  }
 }
 
 /**
- * Pure renderer for a unified patch. Set `scroll={false}` to render inline
- * (no inner scroll area) when the patch already sits in a scrolling parent.
+ * Renders a unified git patch with `@pierre/diffs` (diffs.com) — Shiki syntax
+ * highlighting, per-file headers, and a theme synced to the app. Set
+ * `scroll={false}` to render inline (no inner scroll area) when the patch
+ * already sits in a scrolling parent.
  */
 export function DiffPatchView({ patch, loading, truncated, scroll = true }: { patch: string | null, loading: boolean, truncated: boolean, scroll?: boolean }) {
+  const scheme = useColorScheme()
+  const files = useMemo(() => (patch ? parsePatch(patch) : []), [patch])
+  const options = useMemo<FileDiffOptions<undefined>>(() => ({
+    theme: DIFF_THEME,
+    themeType: scheme,
+    diffStyle: 'unified',
+    diffIndicators: 'classic',
+  }), [scheme])
+
   if (loading)
     return <Skeleton className="h-40 w-full" />
-  if (!patch)
+  if (!patch || files.length === 0)
     return <p className="color-muted p-3 text-sm">No textual diff available (binary or unchanged).</p>
+
   const body = (
     <>
-      <pre className="font-mono text-xs leading-relaxed">
-        {patch.split('\n').map((line, i) => (
-          <div key={i} className={cn('px-3 whitespace-pre', patchLineClass(line))}>{line || ' '}</div>
+      <div className="flex flex-col text-sm [&>*+*]:border-t [&>*+*]:border-base">
+        {files.map((file, i) => (
+          <FileDiff key={file.name || i} fileDiff={file} options={options} disableWorkerPool />
         ))}
-      </pre>
+      </div>
       {truncated && <p className="text-warning px-3 py-1 text-xs">Patch truncated.</p>}
     </>
   )
   if (!scroll)
-    return <div className="overflow-x-auto py-1">{body}</div>
+    return <div>{body}</div>
   return <ScrollArea className="h-72 w-full">{body}</ScrollArea>
 }
 
@@ -154,7 +173,6 @@ export function DiffPanelView(props: DiffPanelViewProps) {
 
           {selected && (
             <div className="overflow-hidden rounded-md border">
-              <div className="bg-secondary border-b px-3 py-1 font-mono text-xs">{selected}</div>
               {patchSlot}
             </div>
           )}
