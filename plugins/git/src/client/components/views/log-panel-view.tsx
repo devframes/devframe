@@ -3,7 +3,7 @@
 import type { Commit } from '../../../index'
 import type { GraphRow } from '../../lib/commit-graph'
 import type { GitRef } from '../../lib/refs'
-import { useEffect, useMemo, useRef } from 'react'
+import { memo, useEffect, useMemo, useRef } from 'react'
 import { computeGraph } from '../../lib/commit-graph'
 import { parseRefs } from '../../lib/refs'
 import { cn } from '../../lib/utils'
@@ -165,7 +165,7 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
   )
 }
 
-function CommitRow({ commit, row, gutter, currentBranch, isHead, topStub, selected, onSelect }: {
+const CommitRow = memo(({ commit, row, gutter, currentBranch, isHead, topStub, selected, onSelect }: {
   commit: Commit
   row: GraphRow
   gutter: number
@@ -174,7 +174,7 @@ function CommitRow({ commit, row, gutter, currentBranch, isHead, topStub, select
   topStub: boolean
   selected: boolean
   onSelect?: (hash: string) => void
-}) {
+}) => {
   const refs = useMemo(() => parseRefs(commit.refs, currentBranch), [commit.refs, currentBranch])
   const hasCurrent = refs.some(r => r.kind === 'branch' && r.current)
 
@@ -222,7 +222,7 @@ function CommitRow({ commit, row, gutter, currentBranch, isHead, topStub, select
       </button>
     </li>
   )
-}
+})
 
 function WipRow({ col, color, gutter, changes }: {
   col: number
