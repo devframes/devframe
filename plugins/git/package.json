@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-git",
   "type": "module",
-  "version": "0.6.0-beta.2",
+  "version": "0.6.0-beta.3",
   "description": "Git integration for devframe — a read-only repository dashboard (status, log, branches, diff) with a Next.js + shadcn/ui SPA over type-safe RPC.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
