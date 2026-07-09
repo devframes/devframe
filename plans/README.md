@@ -22,9 +22,9 @@ changes are allowed as long as they're marked).
 | 007 | Behavioral tests for the auth/OTP trust boundary | tests | P1 | S | — | DONE |
 | 008 | Cap hub terminal buffer + reject restart-after-terminate | bug | P2 | S | — | TODO |
 | 009 | Fix two server-side streaming lifecycle leaks | bug | P2 | S-M | — | TODO |
-| 010 | Initialize client shared state once across trust flips | bug | P2 | S | — | TODO |
+| 010 | Initialize client shared state once across trust flips | bug | P2 | S | — | DONE |
 | 011 | Don't leak/drop when WS client posts on a closing socket | bug | P2 | S | — | DONE |
-| 012 | Atomic, non-throwing `createStorage` writes | bug | P2 | M | — | TODO |
+| 012 | Atomic, non-throwing `createStorage` writes | bug | P2 | M | — | DONE |
 | 013 | De-duplicate git parse helpers into `node/git.ts` | tech-debt | P2 | S | 004 | TODO |
 | 014 | Parallelize the `git:show` static dump | perf | P2 | S-M | 004, 013 | TODO |
 | 015 | Expire + bound the persisted trusted-token store | security | P2 | S | 007 (shared test) | TODO |
@@ -37,7 +37,7 @@ changes are allowed as long as they're marked).
 | 022 | Memoize git commit-log rows | perf | P3 | M | — | TODO |
 | 023 | Single-pass MessagesView filtering | perf | P3 | M | — | TODO |
 | 024 | Batch stream-replay into one frame | perf | P3 | M | 009 | TODO |
-| 025 | Cache falsy RPC results (presence check) | bug | P3 | S | — | TODO |
+| 025 | Cache falsy RPC results (presence check) | bug | P3 | S | — | DONE |
 | 026 | Clear dev/docs-only dependency advisories | deps | P3 | S | 002 | TODO |
 | 027 | Spike: `@devframes/next` host-integration package | direction | P3 | M | — | TODO |
 | 028 | Spike: MCP-inspector + OG-viewer plugins | direction | P3 | L | — | TODO |
