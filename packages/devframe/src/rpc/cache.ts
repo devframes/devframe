@@ -33,6 +33,10 @@ export class RpcCacheManager {
     return undefined
   }
 
+  has(m: string, a: unknown[]): boolean {
+    return this.cacheMap.get(m)?.has(this.keySerializer(a)) ?? false
+  }
+
   apply(req: { m: string, a: unknown[] }, res: unknown): void {
     const methodCache = this.cacheMap.get(req.m) || new Map<string, unknown>()
     methodCache.set(this.keySerializer(req.a), res)

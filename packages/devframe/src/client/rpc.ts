@@ -316,14 +316,11 @@ export async function getDevframeRpcClient(
           async onRequest(req, next, resolve) {
             await rpcOptions.onRequest?.call(this, req, next, resolve)
             if (cacheOptions && cacheManager?.validate(req.m)) {
-              const cached = cacheManager.cached(req.m, req.a)
-              if (cached) {
-                return resolve(cached)
+              if (cacheManager.has(req.m, req.a)) {
+                return resolve(cacheManager.cached(req.m, req.a))
               }
-              else {
-                const res = await next(req)
-                cacheManager?.apply(req, res)
-              }
+              const res = await next(req)
+              cacheManager.apply(req, res)
             }
             else {
               await next(req)
