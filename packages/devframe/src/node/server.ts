@@ -1,13 +1,16 @@
 import type { BirpcGroup } from 'birpc'
+import type { Peer } from 'crossws'
 import type { NodeAdapter } from 'crossws/adapters/node'
-import type { DevframeNodeContext, DevframeNodeRpcSession, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
+import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
 import type { Server as NodeHttpServer } from 'node:http'
+import type { DevframeAuthHandler } from './auth'
 import type { RpcFunctionsHost } from './host-functions'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { createServer } from 'node:http'
 import { createRpcServer } from 'devframe/rpc/server'
 import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
 import { H3, toNodeHandler } from 'h3'
+import { diagnostics } from './diagnostics'
 import { getInternalContext } from './hub-internals/context'
 
 export interface StartHttpAndWsOptions {
@@ -46,16 +49,37 @@ export interface StartHttpAndWsOptions {
    */
   server?: NodeHttpServer
   /**
-   * When `false`, the RPC server is started without a trust handshake.
-   * Intended for single-user localhost tools where an auth round-trip
-   * would only get in the way. The Vite-flavoured auth layer in
-   * `@vitejs/devtools` already honors the equivalent
-   * `devtools.clientAuth` setting; devframe records the intent here so
-   * future auth plumbing can consult it without another API change.
+   * Authentication for the server:
    *
-   * Default: `true`.
+   *   - `true` (default) — no gate; every registered method is callable
+   *     regardless of trust (today's behavior, unchanged).
+   *   - `false` — the RPC server is started without a trust handshake.
+   *     Intended for single-user localhost tools where an auth round-trip
+   *     would only get in the way. A noop `anonymous:devframe:auth` handler
+   *     is registered so the browser client's unconditional handshake call
+   *     succeeds and auto-trusts.
+   *   - A {@link DevframeAuthHandler} (e.g. from
+   *     `devframe/recipes/interactive-auth`'s `createInteractiveAuth`) —
+   *     registers its `rpcFunctions`, wires its `authorize` as the resolver
+   *     gate, and wires its `onConnect` on every new peer. This is the
+   *     fully-authenticated server: an untrusted caller can only reach
+   *     `anonymous:`-prefixed methods (see `isAnonymousRpcMethod`).
    */
-  auth?: boolean
+  auth?: boolean | DevframeAuthHandler
+  /**
+   * Lower-level escape hatch: gate individual RPC calls by method name and
+   * session without a full {@link DevframeAuthHandler}. Ignored when `auth`
+   * is a handler object (its own `authorize` is used); combine with `auth:
+   * true` to layer a custom policy on top of an otherwise ungated server.
+   */
+  authorize?: (methodName: string, session: DevframeNodeRpcSession) => boolean
+  /**
+   * Called once per new WS connection, right after its session is created
+   * (before any RPC call is dispatched). Runs after the auth handler's own
+   * `onConnect` (when `auth` is a {@link DevframeAuthHandler}), so it can
+   * observe — but not override — the connect-time trust decision.
+   */
+  onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
   /**
    * Extra origins to accept on the WS upgrade beyond the loopback default
    * (`localhost`/`127.0.0.1`/`::1` and any `Origin`-less request from a
@@ -80,6 +104,14 @@ export interface StartedServer {
   /** The crossws node adapter driving the RPC socket (connected peers, pub/sub). */
   ws: NodeAdapter
   rpcGroup: BirpcGroup<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>
+  /**
+   * The {@link ConnectionMeta} descriptor for this server — the same shape
+   * a `__connection.json` route should serve so a devframe client's
+   * `resolveWsUrl` can dial back in. Reflects the `path` / `wsPort` this
+   * server was started with and the `jsonSerializable` methods currently
+   * registered on `context.rpc`.
+   */
+  connectionMeta: () => ConnectionMeta
   close: () => Promise<void>
 }
 
@@ -100,6 +132,20 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
 
   const asyncStorage = new AsyncLocalStorage<DevframeNodeRpcSession>()
 
+  // A full auth handler (e.g. from `createInteractiveAuth`) registers its own
+  // RPC functions and supplies both the resolver gate and the connect-time
+  // trust hook. `authorize`/`onPeerConnect` are the lower-level escape
+  // hatches for callers not using a full handler.
+  const authHandler: DevframeAuthHandler | undefined = typeof options.auth === 'object' ? options.auth : undefined
+  const effectiveAuthorize = options.authorize ?? authHandler?.authorize
+
+  if (authHandler) {
+    for (const fn of authHandler.rpcFunctions) {
+      if (!rpcHost.definitions.has(fn.name))
+        rpcHost.register(fn)
+    }
+  }
+
   const rpcGroup = createRpcServer<DevframeRpcClientFunctions, DevframeRpcServerFunctions>(
     rpcHost.functions,
     {
@@ -107,18 +153,21 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
         // Wrap each RPC handler in an AsyncLocalStorage context so
         // `ctx.rpc.getCurrentRpcSession()` works inside handlers (used
         // by streaming subscribe/unsubscribe/cancel and shared-state
-        // sync). Mirrors `packages/core/src/node/ws.ts`'s resolver,
-        // minus the auth gate (devframe defers auth to its host
-        // adapters; the standalone CLI server is unauthenticated).
+        // sync), and — when an `authorize` gate is configured — reject
+        // the call before it ever reaches the handler. Mirrors
+        // `packages/core/src/node/ws.ts`'s resolver.
         resolver(name, fn) {
           // eslint-disable-next-line ts/no-this-alias
           const rpc = this
           if (!fn)
             return undefined
           return async function (this: any, ...args) {
+            const meta = rpc.$meta as DevframeNodeRpcSessionMeta
+            if (effectiveAuthorize && !effectiveAuthorize(name, { meta, rpc: rpc as any }))
+              throw diagnostics.DF0036({ name })
             return await asyncStorage.run({
               rpc,
-              meta: rpc.$meta,
+              meta,
             }, async () => {
               return (await fn).apply(this, args)
             })
@@ -145,6 +194,16 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
     // other sockets, so leave non-matching upgrades for them.
     destroyUnmatched: ownsHttpServer,
     allowedOrigins: options.allowedOrigins,
+    onConnected: (authHandler || options.onPeerConnect)
+      ? (peer, meta) => {
+          const session: DevframeNodeRpcSession = {
+            meta,
+            rpc: rpcGroup.clients.find(client => (client as any).$meta === meta) as any,
+          }
+          authHandler?.onConnect(peer, session)
+          options.onPeerConnect?.(peer, session)
+        }
+      : undefined,
     onDisconnected: (_peer, meta) => {
       rpcHost._emitSessionDisconnected(meta)
     },
@@ -154,15 +213,15 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
   ;(rpcHost as any)._asyncStorage = asyncStorage
   ;(rpcHost as any)._authDisabled = options.auth === false
 
-  // The browser client unconditionally calls `devframe:anonymous:auth` on
+  // The browser client unconditionally calls `anonymous:devframe:auth` on
   // connect (see `client/rpc-ws.ts`). When `auth: false` is set on the
   // standalone server, register a noop handler that auto-trusts so the
-  // client's hardcoded handshake succeeds. The Vite-side adapter
-  // registers the real handler with the same name; the two paths never
-  // overlap because Vite consumers never opt into `auth: false`.
-  if (options.auth === false && !rpcHost.definitions.has('devframe:anonymous:auth')) {
+  // client's hardcoded handshake succeeds. A host passing a full
+  // `DevframeAuthHandler` already registered the real handler above, and
+  // never opts into `auth: false`, so the two paths never overlap.
+  if (options.auth === false && !rpcHost.definitions.has('anonymous:devframe:auth')) {
     rpcHost.register({
-      name: 'devframe:anonymous:auth',
+      name: 'anonymous:devframe:auth',
       type: 'action',
       handler: () => {
         const session = rpcHost.getCurrentRpcSession()
@@ -197,12 +256,25 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
   if (options.onReady)
     await options.onReady({ origin, port: resolvedPort, app })
 
+  function connectionMeta(): ConnectionMeta {
+    const jsonSerializableMethods: string[] = []
+    for (const def of rpcHost.definitions.values()) {
+      if (def.jsonSerializable === true)
+        jsonSerializableMethods.push(def.name)
+    }
+    const websocket = separateWsPort != null
+      ? { port: separateWsPort, path: options.path }
+      : { path: options.path }
+    return { backend: 'websocket', websocket, jsonSerializableMethods }
+  }
+
   return {
     origin,
     port: resolvedPort,
     app,
     ws,
     rpcGroup,
+    connectionMeta,
     async close() {
       // Detaches the upgrade listener first (so a shared host server stops
       // routing new connections to us while other handlers keep working),

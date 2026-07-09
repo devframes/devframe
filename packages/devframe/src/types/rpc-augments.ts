@@ -57,17 +57,33 @@ export interface DevframeRpcServerFunctions {
    * by the host adapter (e.g. Vite DevTools); the standalone server registers
    * an auto-trust noop when `auth: false`.
    *
+   * Named with the `anonymous:` prefix (see `isAnonymousRpcMethod`) so it is
+   * reachable before the connection is trusted — this is the *only* rule the
+   * pre-trust gate applies, no per-method allowlist.
+   *
    * @internal
    */
-  'devframe:anonymous:auth': (params: { authToken: string, ua: string, origin: string }) => Promise<{ isTrusted: boolean }>
+  'anonymous:devframe:auth': (params: { authToken: string, ua: string, origin: string }) => Promise<{ isTrusted: boolean }>
   /**
    * Exchange a one-time authentication code (shown by the dev server) for a fresh,
    * node-issued bearer token, returning the token on success or `null`. The
    * handler is provided by the host adapter on top of `exchangeTempAuthCode`.
    *
+   * Named with the `anonymous:` prefix (see `isAnonymousRpcMethod`) so it is
+   * reachable before the connection is trusted.
+   *
    * @internal
    */
-  'devframe:auth:exchange': (params: { code: string, ua: string, origin: string }) => Promise<{ authToken: string | null }>
+  'anonymous:devframe:auth:exchange': (params: { code: string, ua: string, origin: string }) => Promise<{ authToken: string | null }>
+  /**
+   * Self-revoke: the caller asks the server to revoke its own bearer token
+   * (if any) and drop to untrusted. Requires an already-trusted caller, so
+   * unlike the two handshake methods above it does **not** carry the
+   * `anonymous:` prefix. Registered by `recipes/interactive-auth`.
+   *
+   * @internal
+   */
+  'devframe:auth:revoke': () => Promise<void>
   /**
    * Subscribe a client to a shared-state key. Wired by
    * `RpcSharedStateHost`; do not register manually.

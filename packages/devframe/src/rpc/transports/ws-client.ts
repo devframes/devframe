@@ -1,5 +1,6 @@
 import type { ChannelOptions } from 'birpc'
 import type { RpcFunctionDefinitionAny } from '../types'
+import { DEVFRAME_AUTH_TOKEN_QUERY_PARAM } from 'devframe/constants'
 import { structuredCloneParse, structuredCloneStringify } from 'devframe/utils/structured-clone'
 import { strictJsonStringify, STRUCTURED_CLONE_PREFIX } from '../serialization'
 
@@ -30,7 +31,7 @@ const EMPTY_DEFS: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerial
 export function createWsRpcChannel(options: WsRpcChannelOptions): ChannelOptions {
   let url = options.url
   if (options.authToken) {
-    url = `${url}?devframe_auth_token=${encodeURIComponent(options.authToken)}`
+    url = `${url}?${DEVFRAME_AUTH_TOKEN_QUERY_PARAM}=${encodeURIComponent(options.authToken)}`
   }
   const ws = new WebSocket(url)
   const {

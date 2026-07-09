@@ -95,6 +95,7 @@ const serverEntries = {
   'adapters/mcp': 'src/adapters/mcp/index.ts',
   'helpers/vite': 'src/helpers/vite.ts',
   'recipes/open-helpers': 'src/recipes/open-helpers.ts',
+  'recipes/interactive-auth': 'src/recipes/interactive-auth.ts',
 }
 
 // Three configs:

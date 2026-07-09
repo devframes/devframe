@@ -33,3 +33,31 @@ export const REMOTE_CONNECTION_KEY = 'devframe-remote-connection'
  * `consumeOtpFromUrl` client utilities (or `connectDevframe`'s `otpParam`).
  */
 export const DEVFRAME_OTP_URL_PARAM = 'devframe_otp'
+
+/**
+ * WS upgrade-URL query parameter carrying a previously-issued bearer token.
+ * Set by `createWsRpcChannel` (browser transport) whenever `authToken` is
+ * passed; read at connect time by a host's connect-time trust hook (see
+ * `recipes/interactive-auth`'s `onConnect`) so a returning client can be
+ * trusted before its own `anonymous:devframe:auth` handshake call arrives.
+ */
+export const DEVFRAME_AUTH_TOKEN_QUERY_PARAM = 'devframe_auth_token'
+
+/**
+ * Prefix that marks an RPC method as callable before a connection is
+ * trusted. This is the *only* rule the pre-trust gate applies — there is no
+ * per-method allowlist. Any handshake method a host adapter needs to reach
+ * before authentication must be named `anonymous:<rest>` (e.g.
+ * `anonymous:devframe:auth`).
+ */
+export const ANONYMOUS_RPC_PREFIX = 'anonymous:'
+
+/**
+ * Whether `name` is callable before a connection is trusted, i.e. it starts
+ * with {@link ANONYMOUS_RPC_PREFIX}. Used by the resolver gate in
+ * `startHttpAndWs` (via an `authorize` function) and by host adapters that
+ * implement their own transport.
+ */
+export function isAnonymousRpcMethod(name: string): boolean {
+  return name.startsWith(ANONYMOUS_RPC_PREFIX)
+}

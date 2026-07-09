@@ -60,7 +60,7 @@ export function buildOtpAuthUrl(baseUrl: string, code: string = tempAuthCode): s
  * Re-authenticate a connection that presents a previously-issued bearer token.
  * Returns `true` and marks the session trusted when the token is known.
  *
- * Used by the `devframe:anonymous:auth` handler so a client that already
+ * Used by the `anonymous:devframe:auth` handler so a client that already
  * authenticated (token persisted in the browser) is trusted on reconnect
  * without entering the code again.
  */
