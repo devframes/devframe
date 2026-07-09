@@ -49,3 +49,24 @@ export function useTheme() {
 
   return { theme, toggle }
 }
+
+/**
+ * The color scheme currently applied to the document, tracked by observing the
+ * `.dark` class on `<html>`. Unlike {@link useTheme}, this reacts to toggles
+ * made anywhere in the app (or by Storybook), so Shiki-themed surfaces like the
+ * diff viewer stay in step with the rest of the UI regardless of who flipped it.
+ */
+export function useColorScheme(): Theme {
+  const [scheme, setScheme] = useState<Theme>('dark')
+
+  useEffect(() => {
+    const root = document.documentElement
+    const read = () => setScheme(root.classList.contains('dark') ? 'dark' : 'light')
+    read()
+    const observer = new MutationObserver(read)
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
+  }, [])
+
+  return scheme
+}
