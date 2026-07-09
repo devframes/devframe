@@ -9,13 +9,13 @@ export declare const serverFunctions: readonly [{
   args?: undefined;
   returns?: undefined;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[since?: number | null | undefined], Promise<_$_devframes_hub_types0.DevframeMessagesListDelta>>>) | undefined;
-  handler?: ((since?: number | null | undefined) => Promise<_$_devframes_hub_types0.DevframeMessagesListDelta>) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[since?: number | null | undefined], Promise<_$_devframes_hub_types0.DevframeMessagesListDelta>, _$devframe.DevframeNodeContext> | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[since?: number | null | undefined], Promise<import("@devframes/hub/types").DevframeMessagesListDelta>>>) | undefined;
+  handler?: ((since?: number | null | undefined) => Promise<import("@devframes/hub/types").DevframeMessagesListDelta>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[since?: number | null | undefined], Promise<import("@devframes/hub/types").DevframeMessagesListDelta>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[since?: number | null | undefined], Promise<_$_devframes_hub_types0.DevframeMessagesListDelta>>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[since?: number | null | undefined], Promise<_$_devframes_hub_types0.DevframeMessagesListDelta>>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[since?: number | null | undefined], Promise<import("@devframes/hub/types").DevframeMessagesListDelta>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[since?: number | null | undefined], Promise<import("@devframes/hub/types").DevframeMessagesListDelta>>> | undefined;
 }, {
   name: "devframes-plugin-messages:add";
   type?: "action" | undefined;
@@ -23,13 +23,13 @@ export declare const serverFunctions: readonly [{
   args?: undefined;
   returns?: undefined;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[input: _$_devframes_hub_types0.DevframeMessageEntryInput], Promise<_$_devframes_hub_types0.DevframeMessageEntry | null>>>) | undefined;
-  handler?: ((input: _$_devframes_hub_types0.DevframeMessageEntryInput) => Promise<_$_devframes_hub_types0.DevframeMessageEntry | null>) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[input: _$_devframes_hub_types0.DevframeMessageEntryInput], Promise<_$_devframes_hub_types0.DevframeMessageEntry | null>, _$devframe.DevframeNodeContext> | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: import("@devframes/hub/types").DevframeMessageEntryInput], Promise<import("@devframes/hub/types").DevframeMessageEntry | null>>>) | undefined;
+  handler?: ((input: import("@devframes/hub/types").DevframeMessageEntryInput) => Promise<import("@devframes/hub/types").DevframeMessageEntry | null>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[input: import("@devframes/hub/types").DevframeMessageEntryInput], Promise<import("@devframes/hub/types").DevframeMessageEntry | null>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[input: _$_devframes_hub_types0.DevframeMessageEntryInput], Promise<_$_devframes_hub_types0.DevframeMessageEntry | null>>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[input: _$_devframes_hub_types0.DevframeMessageEntryInput], Promise<_$_devframes_hub_types0.DevframeMessageEntry | null>>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: import("@devframes/hub/types").DevframeMessageEntryInput], Promise<import("@devframes/hub/types").DevframeMessageEntry | null>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: import("@devframes/hub/types").DevframeMessageEntryInput], Promise<import("@devframes/hub/types").DevframeMessageEntry | null>>> | undefined;
 }, {
   name: "devframes-plugin-messages:update";
   type?: "action" | undefined;
@@ -37,13 +37,13 @@ export declare const serverFunctions: readonly [{
   args?: undefined;
   returns?: undefined;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, patch: Partial<_$_devframes_hub_types0.DevframeMessageEntryInput>], Promise<_$_devframes_hub_types0.DevframeMessageEntry | null>>>) | undefined;
-  handler?: ((id: string, patch: Partial<_$_devframes_hub_types0.DevframeMessageEntryInput>) => Promise<_$_devframes_hub_types0.DevframeMessageEntry | null>) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[id: string, patch: Partial<_$_devframes_hub_types0.DevframeMessageEntryInput>], Promise<_$_devframes_hub_types0.DevframeMessageEntry | null>, _$devframe.DevframeNodeContext> | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, patch: Partial<import("@devframes/hub/types").DevframeMessageEntryInput>], Promise<import("@devframes/hub/types").DevframeMessageEntry | null>>>) | undefined;
+  handler?: ((id: string, patch: Partial<import("@devframes/hub/types").DevframeMessageEntryInput>) => Promise<import("@devframes/hub/types").DevframeMessageEntry | null>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[id: string, patch: Partial<import("@devframes/hub/types").DevframeMessageEntryInput>], Promise<import("@devframes/hub/types").DevframeMessageEntry | null>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, patch: Partial<_$_devframes_hub_types0.DevframeMessageEntryInput>], Promise<_$_devframes_hub_types0.DevframeMessageEntry | null>>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string, patch: Partial<_$_devframes_hub_types0.DevframeMessageEntryInput>], Promise<_$_devframes_hub_types0.DevframeMessageEntry | null>>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, patch: Partial<import("@devframes/hub/types").DevframeMessageEntryInput>], Promise<import("@devframes/hub/types").DevframeMessageEntry | null>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, patch: Partial<import("@devframes/hub/types").DevframeMessageEntryInput>], Promise<import("@devframes/hub/types").DevframeMessageEntry | null>>> | undefined;
 }, {
   name: "devframes-plugin-messages:remove";
   type?: "action" | undefined;
@@ -51,13 +51,13 @@ export declare const serverFunctions: readonly [{
   args?: undefined;
   returns?: undefined;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string], Promise<void>>>) | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>>) | undefined;
   handler?: ((id: string) => Promise<void>) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[id: string], Promise<void>, _$devframe.DevframeNodeContext> | undefined;
+  dump?: import("devframe/rpc").RpcDump<[id: string], Promise<void>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string], Promise<void>>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[id: string], Promise<void>>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>> | undefined;
 }, {
   name: "devframes-plugin-messages:clear";
   type?: "action" | undefined;
@@ -65,12 +65,12 @@ export declare const serverFunctions: readonly [{
   args?: undefined;
   returns?: undefined;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], Promise<void>>>) | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<void>>>) | undefined;
   handler?: (() => Promise<void>) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[], Promise<void>, _$devframe.DevframeNodeContext> | undefined;
+  dump?: import("devframe/rpc").RpcDump<[], Promise<void>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], Promise<void>>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], Promise<void>>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<void>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<void>>> | undefined;
 }];
 // #endregion

@@ -12,7 +12,7 @@ export declare function defineJsonRenderSpec(_: JsonRenderSpec): JsonRenderSpec;
 // #endregion
 
 // #region Variables
-export declare const defineHubRpcFunction: <NAME extends string, TYPE extends _$devframe_rpc0.RpcFunctionType, ARGS extends any[], RETURN = void, const AS extends _$devframe_rpc0.RpcArgsSchema | undefined = undefined, const RS extends _$devframe_rpc0.RpcReturnSchema | undefined = undefined>(definition: _$devframe_rpc0.RpcFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS, DevframeHubContext>) => _$devframe_rpc0.RpcFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS, DevframeHubContext>;
+export declare const defineHubRpcFunction: <NAME extends string, TYPE extends import("devframe/rpc").RpcFunctionType, ARGS extends any[], RETURN = void, const AS extends import("devframe/rpc").RpcArgsSchema | undefined = undefined, const RS extends import("devframe/rpc").RpcReturnSchema | undefined = undefined>(definition: import("devframe/rpc").RpcFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS, DevframeHubContext>) => import("devframe/rpc").RpcFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS, DevframeHubContext>;
 // #endregion
 
 // #region Other

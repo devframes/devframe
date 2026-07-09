@@ -48,7 +48,7 @@ export declare function setupTerminals(_: DevframeNodeContext, _?: TerminalsOpti
 // #endregion
 
 // #region Variables
-export declare const diagnostics: _$nostics.Diagnostics<{
+export declare const diagnostics: import("nostics").Diagnostics<{
   readonly DP_TERMINALS_0001: {
     readonly why: (p: {
       id: string;

@@ -7,29 +7,29 @@ export declare const serverFunctions: readonly [{
   type?: "query" | undefined;
   cacheable?: boolean;
   args: readonly [];
-  returns: _$valibot.ArraySchema<_$valibot.ObjectSchema<{
-    readonly id: _$valibot.StringSchema<undefined>;
-    readonly title: _$valibot.StringSchema<undefined>;
-    readonly processName: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly customTitle: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly mode: _$valibot.PicklistSchema<["interactive", "readonly"], undefined>;
-    readonly status: _$valibot.PicklistSchema<["running", "exited", "error"], undefined>;
-    readonly backend: _$valibot.PicklistSchema<["pty", "pipe"], undefined>;
-    readonly command: _$valibot.StringSchema<undefined>;
-    readonly args: _$valibot.ArraySchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly cwd: _$valibot.StringSchema<undefined>;
-    readonly cols: _$valibot.NumberSchema<undefined>;
-    readonly rows: _$valibot.NumberSchema<undefined>;
-    readonly pid: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
-    readonly exitCode: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
-    readonly icon: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly channel: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly presetId: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly createdAt: _$valibot.NumberSchema<undefined>;
+  returns: import("valibot").ArraySchema<import("valibot").ObjectSchema<{
+    readonly id: import("valibot").StringSchema<undefined>;
+    readonly title: import("valibot").StringSchema<undefined>;
+    readonly processName: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly customTitle: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly mode: import("valibot").PicklistSchema<["interactive", "readonly"], undefined>;
+    readonly status: import("valibot").PicklistSchema<["running", "exited", "error"], undefined>;
+    readonly backend: import("valibot").PicklistSchema<["pty", "pipe"], undefined>;
+    readonly command: import("valibot").StringSchema<undefined>;
+    readonly args: import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly cwd: import("valibot").StringSchema<undefined>;
+    readonly cols: import("valibot").NumberSchema<undefined>;
+    readonly rows: import("valibot").NumberSchema<undefined>;
+    readonly pid: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
+    readonly exitCode: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
+    readonly icon: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly channel: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly presetId: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly createdAt: import("valibot").NumberSchema<undefined>;
   }, undefined>, undefined>;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], {
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     id: string;
     title: string;
     processName?: string | undefined;
@@ -69,7 +69,7 @@ export declare const serverFunctions: readonly [{
     presetId?: string | undefined;
     createdAt: number;
   }[]) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[], {
+  dump?: import("devframe/rpc").RpcDump<[], {
     id: string;
     title: string;
     processName?: string | undefined;
@@ -88,9 +88,9 @@ export declare const serverFunctions: readonly [{
     channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
-  }[], _$devframe.DevframeNodeContext> | undefined;
+  }[], import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], {
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     id: string;
     title: string;
     processName?: string | undefined;
@@ -110,7 +110,7 @@ export declare const serverFunctions: readonly [{
     presetId?: string | undefined;
     createdAt: number;
   }[]>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], {
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     id: string;
     title: string;
     processName?: string | undefined;
@@ -135,17 +135,17 @@ export declare const serverFunctions: readonly [{
   type?: "query" | undefined;
   cacheable?: boolean;
   args: readonly [];
-  returns: _$valibot.ArraySchema<_$valibot.ObjectSchema<{
-    readonly id: _$valibot.StringSchema<undefined>;
-    readonly title: _$valibot.StringSchema<undefined>;
-    readonly command: _$valibot.StringSchema<undefined>;
-    readonly args: _$valibot.ArraySchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly mode: _$valibot.PicklistSchema<["interactive", "readonly"], undefined>;
-    readonly icon: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
+  returns: import("valibot").ArraySchema<import("valibot").ObjectSchema<{
+    readonly id: import("valibot").StringSchema<undefined>;
+    readonly title: import("valibot").StringSchema<undefined>;
+    readonly command: import("valibot").StringSchema<undefined>;
+    readonly args: import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly mode: import("valibot").PicklistSchema<["interactive", "readonly"], undefined>;
+    readonly icon: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
   }, undefined>, undefined>;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], {
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     id: string;
     title: string;
     command: string;
@@ -161,16 +161,16 @@ export declare const serverFunctions: readonly [{
     mode: "interactive" | "readonly";
     icon?: string | undefined;
   }[]) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[], {
+  dump?: import("devframe/rpc").RpcDump<[], {
     id: string;
     title: string;
     command: string;
     args: string[];
     mode: "interactive" | "readonly";
     icon?: string | undefined;
-  }[], _$devframe.DevframeNodeContext> | undefined;
+  }[], import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], {
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     id: string;
     title: string;
     command: string;
@@ -178,7 +178,7 @@ export declare const serverFunctions: readonly [{
     mode: "interactive" | "readonly";
     icon?: string | undefined;
   }[]>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], {
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     id: string;
     title: string;
     command: string;
@@ -190,40 +190,40 @@ export declare const serverFunctions: readonly [{
   name: "devframes-plugin-terminals:spawn";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [_$valibot.ObjectSchema<{
-    readonly presetId: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly command: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly args: _$valibot.OptionalSchema<_$valibot.ArraySchema<_$valibot.StringSchema<undefined>, undefined>, undefined>;
-    readonly cwd: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly mode: _$valibot.OptionalSchema<_$valibot.PicklistSchema<["interactive", "readonly"], undefined>, undefined>;
-    readonly title: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly cols: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
-    readonly rows: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
-    readonly env: _$valibot.OptionalSchema<_$valibot.RecordSchema<_$valibot.StringSchema<undefined>, _$valibot.StringSchema<undefined>, undefined>, undefined>;
+  args: readonly [import("valibot").ObjectSchema<{
+    readonly presetId: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly command: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly args: import("valibot").OptionalSchema<import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>, undefined>;
+    readonly cwd: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly mode: import("valibot").OptionalSchema<import("valibot").PicklistSchema<["interactive", "readonly"], undefined>, undefined>;
+    readonly title: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly cols: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
+    readonly rows: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
+    readonly env: import("valibot").OptionalSchema<import("valibot").RecordSchema<import("valibot").StringSchema<undefined>, import("valibot").StringSchema<undefined>, undefined>, undefined>;
   }, undefined>];
-  returns: _$valibot.ObjectSchema<{
-    readonly id: _$valibot.StringSchema<undefined>;
-    readonly title: _$valibot.StringSchema<undefined>;
-    readonly processName: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly customTitle: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly mode: _$valibot.PicklistSchema<["interactive", "readonly"], undefined>;
-    readonly status: _$valibot.PicklistSchema<["running", "exited", "error"], undefined>;
-    readonly backend: _$valibot.PicklistSchema<["pty", "pipe"], undefined>;
-    readonly command: _$valibot.StringSchema<undefined>;
-    readonly args: _$valibot.ArraySchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly cwd: _$valibot.StringSchema<undefined>;
-    readonly cols: _$valibot.NumberSchema<undefined>;
-    readonly rows: _$valibot.NumberSchema<undefined>;
-    readonly pid: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
-    readonly exitCode: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
-    readonly icon: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly channel: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly presetId: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly createdAt: _$valibot.NumberSchema<undefined>;
+  returns: import("valibot").ObjectSchema<{
+    readonly id: import("valibot").StringSchema<undefined>;
+    readonly title: import("valibot").StringSchema<undefined>;
+    readonly processName: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly customTitle: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly mode: import("valibot").PicklistSchema<["interactive", "readonly"], undefined>;
+    readonly status: import("valibot").PicklistSchema<["running", "exited", "error"], undefined>;
+    readonly backend: import("valibot").PicklistSchema<["pty", "pipe"], undefined>;
+    readonly command: import("valibot").StringSchema<undefined>;
+    readonly args: import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly cwd: import("valibot").StringSchema<undefined>;
+    readonly cols: import("valibot").NumberSchema<undefined>;
+    readonly rows: import("valibot").NumberSchema<undefined>;
+    readonly pid: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
+    readonly exitCode: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
+    readonly icon: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly channel: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly presetId: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly createdAt: import("valibot").NumberSchema<undefined>;
   }, undefined>;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     presetId?: string | undefined;
     command?: string | undefined;
     args?: string[] | undefined;
@@ -287,7 +287,7 @@ export declare const serverFunctions: readonly [{
     presetId?: string | undefined;
     createdAt: number;
   }) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[{
+  dump?: import("devframe/rpc").RpcDump<[{
     presetId?: string | undefined;
     command?: string | undefined;
     args?: string[] | undefined;
@@ -318,9 +318,9 @@ export declare const serverFunctions: readonly [{
     channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
-  }, _$devframe.DevframeNodeContext> | undefined;
+  }, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     presetId?: string | undefined;
     command?: string | undefined;
     args?: string[] | undefined;
@@ -352,7 +352,7 @@ export declare const serverFunctions: readonly [{
     presetId?: string | undefined;
     createdAt: number;
   }>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     presetId?: string | undefined;
     command?: string | undefined;
     args?: string[] | undefined;
@@ -388,14 +388,14 @@ export declare const serverFunctions: readonly [{
   name: "devframes-plugin-terminals:write";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [_$valibot.ObjectSchema<{
-    readonly id: _$valibot.StringSchema<undefined>;
-    readonly data: _$valibot.StringSchema<undefined>;
+  args: readonly [import("valibot").ObjectSchema<{
+    readonly id: import("valibot").StringSchema<undefined>;
+    readonly data: import("valibot").StringSchema<undefined>;
   }, undefined>];
-  returns: _$valibot.VoidSchema<undefined>;
+  returns: import("valibot").VoidSchema<undefined>;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
     data: string;
   }], void>>) | undefined;
@@ -403,16 +403,16 @@ export declare const serverFunctions: readonly [{
     id: string;
     data: string;
   }) => void) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[{
+  dump?: import("devframe/rpc").RpcDump<[{
     id: string;
     data: string;
-  }], void, _$devframe.DevframeNodeContext> | undefined;
+  }], void, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
     data: string;
   }], void>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
     data: string;
   }], void>> | undefined;
@@ -420,15 +420,15 @@ export declare const serverFunctions: readonly [{
   name: "devframes-plugin-terminals:resize";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [_$valibot.ObjectSchema<{
-    readonly id: _$valibot.StringSchema<undefined>;
-    readonly cols: _$valibot.SchemaWithPipe<readonly [_$valibot.NumberSchema<undefined>, _$valibot.IntegerAction<number, undefined>, _$valibot.MinValueAction<number, 1, undefined>]>;
-    readonly rows: _$valibot.SchemaWithPipe<readonly [_$valibot.NumberSchema<undefined>, _$valibot.IntegerAction<number, undefined>, _$valibot.MinValueAction<number, 1, undefined>]>;
+  args: readonly [import("valibot").ObjectSchema<{
+    readonly id: import("valibot").StringSchema<undefined>;
+    readonly cols: import("valibot").SchemaWithPipe<readonly [import("valibot").NumberSchema<undefined>, import("valibot").IntegerAction<number, undefined>, import("valibot").MinValueAction<number, 1, undefined>]>;
+    readonly rows: import("valibot").SchemaWithPipe<readonly [import("valibot").NumberSchema<undefined>, import("valibot").IntegerAction<number, undefined>, import("valibot").MinValueAction<number, 1, undefined>]>;
   }, undefined>];
-  returns: _$valibot.VoidSchema<undefined>;
+  returns: import("valibot").VoidSchema<undefined>;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
     cols: number;
     rows: number;
@@ -438,18 +438,18 @@ export declare const serverFunctions: readonly [{
     cols: number;
     rows: number;
   }) => void) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[{
+  dump?: import("devframe/rpc").RpcDump<[{
     id: string;
     cols: number;
     rows: number;
-  }], void, _$devframe.DevframeNodeContext> | undefined;
+  }], void, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
     cols: number;
     rows: number;
   }], void>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
     cols: number;
     rows: number;
@@ -458,58 +458,58 @@ export declare const serverFunctions: readonly [{
   name: "devframes-plugin-terminals:terminate";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [_$valibot.ObjectSchema<{
-    readonly id: _$valibot.StringSchema<undefined>;
+  args: readonly [import("valibot").ObjectSchema<{
+    readonly id: import("valibot").StringSchema<undefined>;
   }, undefined>];
-  returns: _$valibot.VoidSchema<undefined>;
+  returns: import("valibot").VoidSchema<undefined>;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
   }], void>>) | undefined;
   handler?: ((args_0: {
     id: string;
   }) => void) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[{
+  dump?: import("devframe/rpc").RpcDump<[{
     id: string;
-  }], void, _$devframe.DevframeNodeContext> | undefined;
+  }], void, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
   }], void>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
   }], void>> | undefined;
 }, {
   name: "devframes-plugin-terminals:restart";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [_$valibot.ObjectSchema<{
-    readonly id: _$valibot.StringSchema<undefined>;
+  args: readonly [import("valibot").ObjectSchema<{
+    readonly id: import("valibot").StringSchema<undefined>;
   }, undefined>];
-  returns: _$valibot.ObjectSchema<{
-    readonly id: _$valibot.StringSchema<undefined>;
-    readonly title: _$valibot.StringSchema<undefined>;
-    readonly processName: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly customTitle: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly mode: _$valibot.PicklistSchema<["interactive", "readonly"], undefined>;
-    readonly status: _$valibot.PicklistSchema<["running", "exited", "error"], undefined>;
-    readonly backend: _$valibot.PicklistSchema<["pty", "pipe"], undefined>;
-    readonly command: _$valibot.StringSchema<undefined>;
-    readonly args: _$valibot.ArraySchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly cwd: _$valibot.StringSchema<undefined>;
-    readonly cols: _$valibot.NumberSchema<undefined>;
-    readonly rows: _$valibot.NumberSchema<undefined>;
-    readonly pid: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
-    readonly exitCode: _$valibot.OptionalSchema<_$valibot.NumberSchema<undefined>, undefined>;
-    readonly icon: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly channel: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly presetId: _$valibot.OptionalSchema<_$valibot.StringSchema<undefined>, undefined>;
-    readonly createdAt: _$valibot.NumberSchema<undefined>;
+  returns: import("valibot").ObjectSchema<{
+    readonly id: import("valibot").StringSchema<undefined>;
+    readonly title: import("valibot").StringSchema<undefined>;
+    readonly processName: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly customTitle: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly mode: import("valibot").PicklistSchema<["interactive", "readonly"], undefined>;
+    readonly status: import("valibot").PicklistSchema<["running", "exited", "error"], undefined>;
+    readonly backend: import("valibot").PicklistSchema<["pty", "pipe"], undefined>;
+    readonly command: import("valibot").StringSchema<undefined>;
+    readonly args: import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly cwd: import("valibot").StringSchema<undefined>;
+    readonly cols: import("valibot").NumberSchema<undefined>;
+    readonly rows: import("valibot").NumberSchema<undefined>;
+    readonly pid: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
+    readonly exitCode: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
+    readonly icon: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly channel: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly presetId: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
+    readonly createdAt: import("valibot").NumberSchema<undefined>;
   }, undefined>;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
   }], {
     id: string;
@@ -553,7 +553,7 @@ export declare const serverFunctions: readonly [{
     presetId?: string | undefined;
     createdAt: number;
   }) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[{
+  dump?: import("devframe/rpc").RpcDump<[{
     id: string;
   }], {
     id: string;
@@ -574,9 +574,9 @@ export declare const serverFunctions: readonly [{
     channel?: string | undefined;
     presetId?: string | undefined;
     createdAt: number;
-  }, _$devframe.DevframeNodeContext> | undefined;
+  }, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
   }], {
     id: string;
@@ -598,7 +598,7 @@ export declare const serverFunctions: readonly [{
     presetId?: string | undefined;
     createdAt: number;
   }>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
   }], {
     id: string;
@@ -624,14 +624,14 @@ export declare const serverFunctions: readonly [{
   name: "devframes-plugin-terminals:rename";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [_$valibot.ObjectSchema<{
-    readonly id: _$valibot.StringSchema<undefined>;
-    readonly title: _$valibot.StringSchema<undefined>;
+  args: readonly [import("valibot").ObjectSchema<{
+    readonly id: import("valibot").StringSchema<undefined>;
+    readonly title: import("valibot").StringSchema<undefined>;
   }, undefined>];
-  returns: _$valibot.VoidSchema<undefined>;
+  returns: import("valibot").VoidSchema<undefined>;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
     title: string;
   }], void>>) | undefined;
@@ -639,16 +639,16 @@ export declare const serverFunctions: readonly [{
     id: string;
     title: string;
   }) => void) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[{
+  dump?: import("devframe/rpc").RpcDump<[{
     id: string;
     title: string;
-  }], void, _$devframe.DevframeNodeContext> | undefined;
+  }], void, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
     title: string;
   }], void>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
     title: string;
   }], void>> | undefined;
@@ -656,26 +656,26 @@ export declare const serverFunctions: readonly [{
   name: "devframes-plugin-terminals:remove";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [_$valibot.ObjectSchema<{
-    readonly id: _$valibot.StringSchema<undefined>;
+  args: readonly [import("valibot").ObjectSchema<{
+    readonly id: import("valibot").StringSchema<undefined>;
   }, undefined>];
-  returns: _$valibot.VoidSchema<undefined>;
+  returns: import("valibot").VoidSchema<undefined>;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
   }], void>>) | undefined;
   handler?: ((args_0: {
     id: string;
   }) => void) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[{
+  dump?: import("devframe/rpc").RpcDump<[{
     id: string;
-  }], void, _$devframe.DevframeNodeContext> | undefined;
+  }], void, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
   }], void>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[{
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
   }], void>> | undefined;
 }];
