@@ -20,7 +20,7 @@ changes are allowed as long as they're marked).
 | 005 | Don't cache a rejected RPC `setup()` promise | bug | P1 | S | — | DONE |
 | 006 | Bound `SharedState.syncIds` (memory leak) | bug | P1 | S | — | DONE |
 | 007 | Behavioral tests for the auth/OTP trust boundary | tests | P1 | S | — | DONE |
-| 008 | Cap hub terminal buffer + reject restart-after-terminate | bug | P2 | S | — | TODO |
+| 008 | Cap hub terminal buffer + reject restart-after-terminate | bug | P2 | S | — | DONE |
 | 009 | Fix two server-side streaming lifecycle leaks | bug | P2 | S-M | — | TODO |
 | 010 | Initialize client shared state once across trust flips | bug | P2 | S | — | DONE |
 | 011 | Don't leak/drop when WS client posts on a closing socket | bug | P2 | S | — | DONE |

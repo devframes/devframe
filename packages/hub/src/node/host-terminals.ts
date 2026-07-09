@@ -23,6 +23,8 @@ type PartialWithoutId<T extends { id: string }> = Partial<T> & { id: string }
  */
 const TERMINAL_STREAM_CHANNEL = 'devframe:terminals' as const
 const TERMINAL_REPLAY_WINDOW = 1000
+/** Max chunks retained in the per-session scrollback buffer (bounded like the replay window). */
+const TERMINAL_BUFFER_LIMIT = 1000
 
 /** TERM handed to spawned PTYs; also used to reject fallback process labels. */
 const PTY_TERM_NAME = 'xterm-256color'
@@ -123,8 +125,10 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
           if (result.done)
             break
           // Mirror to the legacy session.buffer used by `terminals:read` —
-          // unbounded history kept for the snapshot endpoint.
+          // bounded tail kept for the snapshot endpoint.
           sessionBuffer.push(result.value)
+          if (sessionBuffer.length > TERMINAL_BUFFER_LIMIT)
+            sessionBuffer.splice(0, sessionBuffer.length - TERMINAL_BUFFER_LIMIT)
           sink?.write(result.value)
         }
         if (!disposed && sink && !sink.closed)
@@ -243,6 +247,8 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     cp = createChildProcess()
 
     const restart = async () => {
+      if (streamClosed)
+        return
       cp?.kill()
       cp = createChildProcess()
     }
@@ -394,6 +400,8 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         closeStream()
       },
       restart: async () => {
+        if (streamClosed)
+          return
         pty?.kill()
         pty = spawnPty()
       },

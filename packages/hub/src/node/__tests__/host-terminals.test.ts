@@ -141,6 +141,42 @@ describe('devframeTerminalHost stream lifecycle', () => {
     })
     expect(session.getChildProcess()).toBeUndefined()
   })
+
+  it('bounds the session scrollback buffer', async () => {
+    const { host } = createTerminalHost()
+    let controller: ReadableStreamDefaultController<string>
+    const stream = new ReadableStream<string>({
+      start(_controller) {
+        controller = _controller
+      },
+    })
+    const session: DevframeTerminalSession = { id: 't', title: 'T', status: 'running', stream }
+    host.register(session)
+    for (let i = 0; i < 1200; i++) controller!.enqueue(`line-${i}`)
+    // Wait for the read loop to drain every enqueued chunk (each read is its
+    // own microtask tick) before asserting the trimmed shape.
+    await waitUntil(() => {
+      expect(session.buffer!.at(-1)).toBe('line-1199')
+    })
+    // Keeps the newest, drops the oldest.
+    expect(session.buffer!.length).toBeLessThanOrEqual(1000)
+    expect(session.buffer!.includes('line-0')).toBe(false)
+  })
+
+  it('does not restart a terminated child-process session', async () => {
+    const { host, sinks } = createTerminalHost()
+    const session = await host.startChildProcess(
+      { command: process.execPath, args: ['-e', 'setInterval(() => {}, 1000)'] },
+      { id: 'child', title: 'Child' },
+    )
+    await session.terminate()
+    await waitUntil(() => {
+      expect(sinks.get('child')?.closed).toBe(true)
+    })
+    await session.restart()
+    // Stream stays closed; no orphan output stream.
+    expect(sinks.get('child')?.closed).toBe(true)
+  })
 })
 
 describe('devframeTerminalHost interactive PTY sessions', () => {
