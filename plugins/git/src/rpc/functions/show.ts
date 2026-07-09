@@ -9,6 +9,9 @@ const PATCH_CHAR_LIMIT = 200_000
 /** Matches the window `git:log` bakes, so any visible commit has a snapshot. */
 const SNAPSHOT_LIMIT = 200
 
+/** Read-only git detail work can run in parallel without overwhelming builds. */
+const DUMP_CONCURRENCY = 8
+
 export interface CommitFile {
   path: string
   additions: number
@@ -189,10 +192,13 @@ export const show = defineRpcFunction({
     ])
     const hashes = raw ? raw.split('\n').filter(Boolean) : []
 
-    const records = []
-    for (const hash of hashes) {
-      const output = await readCommit(git, hash, false)
-      records.push({ inputs: [{ hash }], output })
+    const records: { inputs: [{ hash: string }], output: CommitDetail }[] = []
+    for (let i = 0; i < hashes.length; i += DUMP_CONCURRENCY) {
+      const batch = hashes.slice(i, i + DUMP_CONCURRENCY)
+      const outputs = await Promise.all(batch.map(hash => readCommit(git, hash, false)))
+      batch.forEach((hash, index) => {
+        records.push({ inputs: [{ hash }], output: outputs[index] })
+      })
     }
 
     const fallback = records[0]?.output ?? { ...EMPTY_DETAIL, isRepo: true }
