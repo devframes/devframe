@@ -114,8 +114,10 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
       return new Promise<SharedState<T>>((resolve) => {
         if (!rpc.isTrusted) {
           resolve(state)
+          let initialized = false
           rpc.events.on('rpc:is-trusted:updated', (isTrusted) => {
-            if (isTrusted) {
+            if (isTrusted && !initialized) {
+              initialized = true
               initSharedState()
             }
           })
