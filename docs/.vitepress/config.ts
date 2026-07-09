@@ -33,6 +33,7 @@ function guideItems(prefix: string): DefaultTheme.NavItemWithLink[] {
     { text: 'Hub (multi-tool)', link: `${prefix}/guide/hub` },
     { text: 'Client Scripts & Context', link: `${prefix}/guide/client-context` },
     { text: 'Agent-Native (experimental)', link: `${prefix}/guide/agent-native` },
+    { text: 'Migrating to 0.6', link: `${prefix}/guide/migration-0.6` },
   ]
 }
 
