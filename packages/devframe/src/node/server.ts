@@ -1,4 +1,4 @@
-import type { BirpcGroup } from 'birpc'
+import type { BirpcGroup, EventOptions } from 'birpc'
 import type { Peer } from 'crossws'
 import type { NodeAdapter } from 'crossws/adapters/node'
 import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
@@ -81,6 +81,20 @@ export interface StartHttpAndWsOptions {
    */
   onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
   /**
+   * Forwarded verbatim to the internal `createRpcServer`'s birpc
+   * `rpcOptions`, alongside the resolver `startHttpAndWs` installs for
+   * auth/session wiring. Use this so a host that owns its own structured
+   * diagnostics (e.g. a coded error reporter) keeps seeing RPC failures
+   * instead of them being silently absorbed by delegating to
+   * `startHttpAndWs`. Returning `true` from either callback suppresses
+   * birpc's own error response to the caller — see birpc's
+   * `EventOptions` for the full contract.
+   */
+  rpcOptions?: Pick<
+    EventOptions<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>,
+    'onFunctionError' | 'onGeneralError'
+  >
+  /**
    * Extra origins to accept on the WS upgrade beyond the loopback default
    * (`localhost`/`127.0.0.1`/`::1` and any `Origin`-less request from a
    * native client). Add your LAN/tunnel origin here when reaching the tool
@@ -150,6 +164,10 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
     rpcHost.functions,
     {
       rpcOptions: {
+        // Forwarded as-is so a host with its own structured diagnostics
+        // keeps seeing RPC failures; see `StartHttpAndWsOptions.rpcOptions`.
+        onFunctionError: options.rpcOptions?.onFunctionError,
+        onGeneralError: options.rpcOptions?.onGeneralError,
         // Wrap each RPC handler in an AsyncLocalStorage context so
         // `ctx.rpc.getCurrentRpcSession()` works inside handlers (used
         // by streaming subscribe/unsubscribe/cancel and shared-state
