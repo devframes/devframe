@@ -14,7 +14,18 @@ index 1234567..89abcde 100644
 -      )}
 +      {hasMore && (
 +        <div ref={sentinelRef}>Loading more…</div>
-+      )}`
++      )}
+diff --git a/src/client/components/log-panel.tsx b/src/client/components/log-panel.tsx
+index 2345678..9abcdef 100644
+--- a/src/client/components/log-panel.tsx
++++ b/src/client/components/log-panel.tsx
+@@ -12,7 +12,6 @@ export function LogPanel({ branch }: LogPanelProps) {
+   const sentinelRef = useRef<HTMLDivElement>(null)
+-  const [loadingMore, setLoadingMore] = useState(false)
+   useIntersectionObserver(sentinelRef, onLoadMore)
+diff --git a/public/preview.png b/public/preview.png
+index 3456789..0abcdef 100644
+Binary files a/public/preview.png and b/public/preview.png differ`
 
 const detail: CommitDetail = {
   isRepo: true,

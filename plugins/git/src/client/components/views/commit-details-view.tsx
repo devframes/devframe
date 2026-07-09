@@ -1,7 +1,6 @@
 'use client'
 
 import type { CommitDetail } from '../../../index'
-import { cn } from '../../lib/utils'
 import { Badge } from '../ui/badge'
 import { IconButton } from '../ui/button'
 import { Icon } from '../ui/icon'
@@ -123,29 +122,33 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
                   <span className="text-error">{`−${data.totalDeletions}`}</span>
                 </span>
               </div>
-              <ul className="space-y-0.5">
-                {data.files.map(file => (
-                  <li key={file.path} className="flex items-center gap-2 font-mono text-xs">
-                    <span className="min-w-0 flex-1 truncate" title={file.path}>{file.path}</span>
-                    {file.binary
-                      ? <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">bin</Badge>
-                      : (
-                          <span className="shrink-0 tabular-nums">
-                            <span className="text-success">{`+${file.additions}`}</span>
-                            {' '}
-                            <span className="text-error">{`−${file.deletions}`}</span>
-                          </span>
-                        )}
-                  </li>
-                ))}
-              </ul>
-            </div>
 
-            <div className={cn('overflow-hidden rounded-md border')}>
-              <div className="bg-secondary border-b px-3 py-1 text-xs font-medium">Patch</div>
+              {/* Live: an expandable per-file diff list. Static builds bake no
+                  patch, so fall back to the plain changed-files list. */}
               {data.patch !== null
-                ? <DiffPatchView patch={data.patch} loading={false} truncated={data.truncated} scroll={false} />
-                : <p className="color-muted p-3 text-xs">Patch is not available in static builds.</p>}
+                ? (
+                    <div className="overflow-hidden rounded-md border">
+                      <DiffPatchView patch={data.patch} loading={false} truncated={data.truncated} scroll={false} collapsible />
+                    </div>
+                  )
+                : (
+                    <ul className="space-y-0.5">
+                      {data.files.map(file => (
+                        <li key={file.path} className="flex items-center gap-2 font-mono text-xs">
+                          <span className="min-w-0 flex-1 truncate" title={file.path}>{file.path}</span>
+                          {file.binary
+                            ? <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">bin</Badge>
+                            : (
+                                <span className="shrink-0 tabular-nums">
+                                  <span className="text-success">{`+${file.additions}`}</span>
+                                  {' '}
+                                  <span className="text-error">{`−${file.deletions}`}</span>
+                                </span>
+                              )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
             </div>
           </div>
         </ScrollArea>
