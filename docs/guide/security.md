@@ -12,34 +12,57 @@ An RPC handler runs with the full privileges of the process hosting it — files
 
 Two postures cover that boundary:
 
-- **Authenticated (default).** `auth` defaults to `true`. The browser authenticates with the server before calls are accepted, and reconnects by presenting a node-issued bearer token. Devframe supplies the node-side primitives (`exchangeTempAuthCode`, `verifyAuthToken`); the host adapter — e.g. Vite DevTools — provides the interactive handler and authentication UI.
+- **Authenticated (default).** `auth` defaults to `true`. The browser authenticates with the server before calls are accepted, and reconnects by presenting a node-issued bearer token. `devframe/recipes/interactive-auth`'s `createInteractiveAuth` packages the whole protocol — handshake handlers, the resolver gate, connect-time trust, and the code/link banner — into a single `DevframeAuthHandler` you pass straight to `startHttpAndWs({ auth })`.
 - **Unauthenticated opt-out.** Setting `auth: false` starts the server with an auto-trust handshake. It exists for single-user tools talking to their own `localhost`, where a round-trip would only add friction.
 
 > [!WARNING]
 > `auth: false` trusts every connection that can reach the port. Only use it when the surface is reachable solely by the local developer. Never combine it with a non-loopback bind host, a tunnelled port, or a shared/CI environment.
 
+## The pre-trust gate
+
+Exactly one rule decides what an untrusted connection may call: **a method is reachable before trust iff its name starts with `anonymous:`** (`isAnonymousRpcMethod`, from `devframe/constants`). There is no separate allowlist to keep in sync — the two handshake methods below carry the prefix precisely because they're the only ones an unauthenticated caller needs.
+
+`startHttpAndWs` enforces this itself once you give it something to enforce: pass `auth: authHandler` (its `.authorize` becomes the gate) or your own `authorize(methodName, session)` function. Every other call from an untrusted session throws [`DF0036`](../errors/DF0036).
+
 ## Authentication flow
 
 Authentication exchanges a short code for a long-lived token. A node mints and owns the token; the browser only ever sends the short code, and only over the open socket.
 
-1. A fresh client connects unauthenticated and calls `devframe:anonymous:auth` with its stored token (empty on first run). The server returns `{ isTrusted: false }`, so the trust gate stays open while the UI prompts for a code.
-2. The dev server shows a 6-digit one-time code in the developer's terminal.
-3. The developer enters it; the browser calls `requestTrustWithCode(code)` → `devframe:auth:exchange`.
+1. A fresh client connects unauthenticated and calls `anonymous:devframe:auth` with its stored token (empty on first run). The server returns `{ isTrusted: false }`, so the trust gate stays open while the UI prompts for a code.
+2. The dev server shows a 6-digit one-time code in the developer's terminal — call `auth.printBanner()` once the server is listening; devframe stays headless otherwise.
+3. The developer enters it; the browser calls `requestTrustWithCode(code)` → `anonymous:devframe:auth:exchange`.
 4. The server verifies the code, mints a high-entropy bearer token, records it as trusted, marks the session trusted, and returns the token.
-5. The browser persists the token and presents it on reconnect (`devframe:anonymous:auth` → `verifyAuthToken`); sibling tabs receive it over the `devframe-auth` channel and become trusted too.
+5. The browser persists the token and presents it on reconnect (`anonymous:devframe:auth` → `verifyAuthToken`, or as a `?devframe_auth_token=` query param the connect-time hook checks before the handshake even runs); sibling tabs receive it over the `devframe-auth` channel and become trusted too.
 
 The 6-digit code is single-use, expires after five minutes, is compared in constant time, and rotates after repeated wrong attempts — which is what keeps a short code brute-force resistant. Show it only in a trusted channel (the terminal), never over the network.
 
-The bearer token is a secret. It travels to the server on the WebSocket URL (`?devframe_auth_token=…`), so serve over `wss://`/`https://` whenever the surface is reachable beyond loopback. Revoke a token with `revokeAuthToken(context, storage, token)`; affected clients drop to untrusted via the `devframe:auth:revoked` event.
+The bearer token is a secret. It travels to the server on the WebSocket URL (`?devframe_auth_token=…`), so serve over `wss://`/`https://` whenever the surface is reachable beyond loopback. A client can give up its own token by calling `devframe:auth:revoke`; a host can revoke on a client's behalf with `revokeAuthToken(context, storage, token)`. Either way, affected clients drop to untrusted via the `devframe:auth:revoked` event.
+
+### The ready-made layer
+
+```ts
+import { startHttpAndWs } from 'devframe/node'
+import { createInteractiveAuth } from 'devframe/recipes/interactive-auth'
+
+const auth = createInteractiveAuth(ctx, {
+  clientAuthTokens: process.env.CI ? [process.env.DEVFRAME_CI_TOKEN!] : undefined,
+})
+
+const server = await startHttpAndWs({ context: ctx, port: 9999, auth })
+auth.printBanner()
+```
+
+`createInteractiveAuth` closes over the auth storage internally — nothing here reaches into `devframe/node/hub-internals`. Pass `clientAuthTokens` for CI/shared machines that should skip the interactive prompt entirely, or a custom `banner`/`serverUrl` to change how the code is presented.
 
 ### Auth methods
 
-Devframe owns the wire contract; the host adapter registers the handlers on top of the `devframe/node/auth` primitives (the standalone server registers a noop auto-trust handler when `auth: false`).
+Devframe owns the wire contract; `createInteractiveAuth` registers the handlers on top of the `devframe/node/auth` primitives (the standalone server registers a noop auto-trust handler when `auth: false`).
 
 | RPC method | Direction | Shape |
 |------------|-----------|-------|
-| `devframe:anonymous:auth` | client → server | `{ authToken, ua, origin }` → `{ isTrusted }` — re-authenticate a stored token |
-| `devframe:auth:exchange` | client → server | `{ code, ua, origin }` → `{ authToken \| null }` — exchange a one-time code for a token |
+| `anonymous:devframe:auth` | client → server | `{ authToken, ua, origin }` → `{ isTrusted }` — re-authenticate a stored token |
+| `anonymous:devframe:auth:exchange` | client → server | `{ code, ua, origin }` → `{ authToken \| null }` — exchange a one-time code for a token |
+| `devframe:auth:revoke` | client → server | — self-revoke: drop the caller's own token |
 | `devframe:auth:revoked` | server → client | event — the connection's token was revoked |
 
 Node primitives (`devframe/node/auth`):

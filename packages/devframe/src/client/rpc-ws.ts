@@ -159,7 +159,7 @@ export function createWsRpcClientMode(
   async function requestTrustWithToken(token: string) {
     currentAuthToken = token
 
-    const result = await serverRpc.$call('devframe:anonymous:auth', {
+    const result = await serverRpc.$call('anonymous:devframe:auth', {
       authToken: token,
       ua: describeUA(),
       origin: location.origin,
@@ -175,7 +175,7 @@ export function createWsRpcClientMode(
   }
 
   async function requestTrustWithCode(code: string): Promise<string | null> {
-    const result = await serverRpc.$call('devframe:auth:exchange', {
+    const result = await serverRpc.$call('anonymous:devframe:auth:exchange', {
       code,
       ua: describeUA(),
       origin: location.origin,

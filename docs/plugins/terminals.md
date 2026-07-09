@@ -50,6 +50,12 @@ export default createTerminalsDevframe({
 })
 ```
 
+## Hub aggregation
+
+Mounted into a hub, the plugin owns PTY/child-process spawning and its own streaming channel (`devframes-plugin-terminals:output`) — that's what the panel renders. It also mirrors every session it spawns into `ctx.terminals` (the hub's aggregate registry, streaming on `devframe:terminals`) so other tools — a launcher dock, a custom panel — see the same session list without depending on the plugin's own types. A session started the other way, via `ctx.terminals.startChildProcess` / `startPtySession` directly (e.g. from a launcher dock), shows up in the terminals panel too — the plugin reads foreign hub sessions read-only and renders them alongside its own, subscribing to the hub's channel for their output.
+
+`ctx.terminals` is the source of truth for "what sessions exist"; the plugin is the panel that renders them and the one PTY-capable provider among possibly several session sources. The plugin never imports `@devframes/hub`'s types to stay mountable without a hub — it duck-types the minimal `register` / `update` / `events` shape it needs.
+
 ## Source
 
 [`plugins/terminals`](https://github.com/devframes/devframe/tree/main/plugins/terminals)

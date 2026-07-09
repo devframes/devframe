@@ -68,5 +68,9 @@ export const diagnostics = defineDiagnostics({
       why: (p: { filepath: string }) => `Failed to persist storage file: ${p.filepath}`,
       fix: 'Check that the storage directory is writable and has free space.',
     },
+    DF0036: {
+      why: (p: { name: string }) => `RPC call to "${p.name}" was rejected: the caller is not authorized.`,
+      fix: 'Complete the auth handshake (or connect with a static/pre-shared token) before calling a trusted method. Untrusted callers may only call `anonymous:`-prefixed methods — see `isAnonymousRpcMethod`.',
+    },
   },
 })
