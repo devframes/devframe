@@ -64,5 +64,9 @@ export const diagnostics = defineDiagnostics({
         `Scoped RPC registration for namespace "${p.namespace}" received an already-namespaced function name "${p.name}".`,
       fix: 'A scoped context auto-namespaces ids. Pass a bare name without a ":" separator (e.g. `register({ name: "get-cwd" })`), or use the unscoped `ctx.base.rpc.register` for a fully-qualified name.',
     },
+    DF0035: {
+      why: (p: { filepath: string }) => `Failed to persist storage file: ${p.filepath}`,
+      fix: 'Check that the storage directory is writable and has free space.',
+    },
   },
 })

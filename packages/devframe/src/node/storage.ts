@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import process from 'node:process'
 import { destr } from 'destr'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { dirname } from 'pathe'
@@ -39,8 +40,16 @@ export function createStorage<T extends object>(options: CreateStorageOptions<T>
   state.on(
     'updated',
     debounce((newState) => {
-      fs.mkdirSync(dirname(options.filepath), { recursive: true })
-      fs.writeFileSync(options.filepath, `${JSON.stringify(newState, null, 2)}\n`)
+      try {
+        const dir = dirname(options.filepath)
+        fs.mkdirSync(dir, { recursive: true })
+        const tmp = `${options.filepath}.${process.pid}.tmp`
+        fs.writeFileSync(tmp, `${JSON.stringify(newState, null, 2)}\n`)
+        fs.renameSync(tmp, options.filepath) // atomic replace on same filesystem
+      }
+      catch (error) {
+        diagnostics.DF0035({ filepath: options.filepath, cause: error }, { method: 'error' })
+      }
     }, debounceTime),
   )
 
