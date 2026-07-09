@@ -340,7 +340,7 @@ program
 await program.parseAsync()
 ```
 
-`createDevServer` returns the underlying `StartedServer` handle (`origin`, `port`, `app`, `wss`, `rpcGroup`, `close()`) so the surrounding program can drive graceful shutdown — SIGINT, hot reload, integration tests.
+`createDevServer` returns the underlying `StartedServer` handle (`origin`, `port`, `app`, `ws`, `rpcGroup`, `connectionMeta()`, `close()`) so the surrounding program can drive graceful shutdown — SIGINT, hot reload, integration tests.
 
 For typed flag schemas, `parseCliFlags(schema, rawBag)` (from `devframe/adapters/cli`) validates a commander/yargs flag bag against a `CliFlagsSchema` (the same `defineCliFlags(...)` value you'd put on `cli.flags`). Typed-schema validation works with any CLI framework.
 
