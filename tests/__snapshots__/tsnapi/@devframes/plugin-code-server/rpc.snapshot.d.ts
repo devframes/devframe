@@ -9,13 +9,13 @@ export declare const serverFunctions: readonly [{
   args?: undefined;
   returns?: undefined;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], Promise<CodeServerDetection>>>) | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<CodeServerDetection>>>) | undefined;
   handler?: (() => Promise<CodeServerDetection>) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[], Promise<CodeServerDetection>, _$devframe.DevframeNodeContext> | undefined;
+  dump?: import("devframe/rpc").RpcDump<[], Promise<CodeServerDetection>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], Promise<CodeServerDetection>>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], Promise<CodeServerDetection>>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<CodeServerDetection>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<CodeServerDetection>>> | undefined;
 }, {
   name: "devframes-plugin-code-server:status";
   type?: "query" | undefined;
@@ -23,13 +23,13 @@ export declare const serverFunctions: readonly [{
   args?: undefined;
   returns?: undefined;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], CodeServerStatusResult>>) | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], CodeServerStatusResult>>) | undefined;
   handler?: (() => CodeServerStatusResult) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[], CodeServerStatusResult, _$devframe.DevframeNodeContext> | undefined;
+  dump?: import("devframe/rpc").RpcDump<[], CodeServerStatusResult, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], CodeServerStatusResult>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], CodeServerStatusResult>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], CodeServerStatusResult>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], CodeServerStatusResult>> | undefined;
 }, {
   name: "devframes-plugin-code-server:start";
   type?: "action" | undefined;
@@ -37,13 +37,13 @@ export declare const serverFunctions: readonly [{
   args?: undefined;
   returns?: undefined;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[req?: CodeServerStartRequest | undefined], Promise<CodeServerStatusResult>>>) | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[req?: CodeServerStartRequest | undefined], Promise<CodeServerStatusResult>>>) | undefined;
   handler?: ((req?: CodeServerStartRequest | undefined) => Promise<CodeServerStatusResult>) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[req?: CodeServerStartRequest | undefined], Promise<CodeServerStatusResult>, _$devframe.DevframeNodeContext> | undefined;
+  dump?: import("devframe/rpc").RpcDump<[req?: CodeServerStartRequest | undefined], Promise<CodeServerStatusResult>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[req?: CodeServerStartRequest | undefined], Promise<CodeServerStatusResult>>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[req?: CodeServerStartRequest | undefined], Promise<CodeServerStatusResult>>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[req?: CodeServerStartRequest | undefined], Promise<CodeServerStatusResult>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[req?: CodeServerStartRequest | undefined], Promise<CodeServerStatusResult>>> | undefined;
 }, {
   name: "devframes-plugin-code-server:stop";
   type?: "action" | undefined;
@@ -51,12 +51,12 @@ export declare const serverFunctions: readonly [{
   args?: undefined;
   returns?: undefined;
   jsonSerializable?: boolean;
-  agent?: _$devframe.RpcFunctionAgentOptions;
-  setup?: ((context: _$devframe.DevframeNodeContext) => _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], CodeServerStatusResult>>) | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], CodeServerStatusResult>>) | undefined;
   handler?: (() => CodeServerStatusResult) | undefined;
-  dump?: _$devframe_rpc0.RpcDump<[], CodeServerStatusResult, _$devframe.DevframeNodeContext> | undefined;
+  dump?: import("devframe/rpc").RpcDump<[], CodeServerStatusResult, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], CodeServerStatusResult>>> | undefined;
-  __promise?: _$devframe_rpc0.Thenable<_$devframe_rpc0.RpcFunctionSetupResult<[], CodeServerStatusResult>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], CodeServerStatusResult>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], CodeServerStatusResult>> | undefined;
 }];
 // #endregion

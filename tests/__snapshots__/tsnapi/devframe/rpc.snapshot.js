@@ -9,6 +9,7 @@ export class RpcCacheManager {
   constructor(_) {}
   updateOptions(_) {}
   cached(_, _) {}
+  has(_, _) {}
   apply(_, _) {}
   validate(_) {}
   clear(_) {}
@@ -31,11 +32,17 @@ export class RpcFunctionsCollectorBase {
 // #endregion
 
 // #region Variables
+/** @deprecated */
 export var collectStaticRpcDump /* const */
+/** @deprecated */
 export var createClientFromDump /* const */
+/** @deprecated */
 export var dumpFunctions /* const */
+/** @deprecated */
 export var getDefinitionsWithDumps /* const */
+/** @deprecated */
 export var reviveDumpError /* const */
+/** @deprecated */
 export var serializeDumpError /* const */
 // #endregion
 
