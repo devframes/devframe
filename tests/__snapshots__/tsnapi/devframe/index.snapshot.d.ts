@@ -50,6 +50,7 @@ export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }
 export { EventUnsubscribe }
+export { McpRouteOptions }
 export { PartialWithoutId }
 export { RpcBroadcastOptions }
 export { RpcFunctionAgentOptions }

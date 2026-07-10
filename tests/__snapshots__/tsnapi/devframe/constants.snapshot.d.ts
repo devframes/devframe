@@ -12,6 +12,7 @@ export declare const DEVFRAME_CONNECTION_META_FILENAME: string;
 export declare const DEVFRAME_DIRNAME: string;
 export declare const DEVFRAME_DOCK_IMPORTS_FILENAME: string;
 export declare const DEVFRAME_DOCK_IMPORTS_VIRTUAL_ID: string;
+export declare const DEVFRAME_MCP_ROUTE: string;
 export declare const DEVFRAME_MOUNT_PATH: string;
 export declare const DEVFRAME_MOUNT_PATH_NO_TRAILING_SLASH: string;
 export declare const DEVFRAME_OTP_URL_PARAM: string;

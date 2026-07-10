@@ -13,6 +13,14 @@ export const DEVFRAME_CONNECTION_META_FILENAME = '__connection.json'
  * handler here without colliding with its own routes (HMR, asset serving).
  */
 export const DEVFRAME_WS_ROUTE = '__devframe_ws'
+
+/**
+ * Route the Streamable-HTTP MCP endpoint is bound to, relative to a
+ * devframe's base path. Sits next to `__connection.json` and the WS route
+ * so an MCP client reaches it on the same origin the SPA loaded from — the
+ * dev server shares one port for HTTP, WS, and MCP. Opt-in via `cli.mcp`.
+ */
+export const DEVFRAME_MCP_ROUTE = '__mcp'
 export const DEVFRAME_RPC_DUMP_MANIFEST_FILENAME = '__rpc-dump/index.json'
 export const DEVFRAME_DOCK_IMPORTS_FILENAME = '__client-imports.js'
 export const DEVFRAME_DOCK_IMPORTS_VIRTUAL_ID = '/__devframe-client-imports.js'

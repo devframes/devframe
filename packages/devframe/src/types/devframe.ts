@@ -59,6 +59,37 @@ export interface DevframeWsOptions {
   url?: string
 }
 
+/**
+ * Configuration for the route-based MCP server mounted alongside the dev
+ * server (opt-in via {@link DevframeCliOptions.mcp}). The endpoint speaks
+ * the MCP Streamable-HTTP transport over the same origin as the SPA,
+ * exposing the definition's `ctx.agent` tools + shared-state resources to
+ * external MCP clients connected to the *running* server.
+ *
+ * @experimental The agent-native surface is experimental and may change
+ * without a major version bump until it stabilizes.
+ */
+export interface McpRouteOptions {
+  /**
+   * Route segment the MCP endpoint binds to, relative to the SPA base.
+   * Default: `__mcp` (i.e. `/__mcp` standalone, `/__<id>/__mcp` hosted).
+   */
+  path?: string
+  /**
+   * Extra `Origin` header values to accept beyond the loopback default
+   * (`localhost`/`127.0.0.1`/`::1` and any `Origin`-less native client).
+   * Add your LAN/tunnel origin here when reaching the endpoint from another
+   * host, mirroring the WS transport's origin gate. Pass `false` to disable
+   * origin checking entirely (not recommended). Default: loopback-only.
+   *
+   * This is the endpoint's DNS-rebinding protection — the shared
+   * `isAllowedOrigin` gate the WS upgrade already uses, applied as external
+   * middleware (the approach the MCP SDK now recommends over its own
+   * deprecated `allowedHosts`/`allowedOrigins` transport flags).
+   */
+  allowedOrigins?: readonly string[] | false
+}
+
 export interface DevframeCliOptions {
   /** Binary name; default: the devframe's `id`. */
   command?: string
@@ -85,6 +116,22 @@ export interface DevframeCliOptions {
    * `devtools.clientAuth` today.
    */
   auth?: boolean
+  /**
+   * Expose a route-based MCP server alongside the dev server, speaking the
+   * MCP Streamable-HTTP transport at `/__mcp` (relative to the base path).
+   * It surfaces the same `ctx.agent` tools + shared-state resources as the
+   * stdio `mcp` command, but against the live, running server.
+   *
+   * - `false` / omitted (default) — no MCP route is mounted.
+   * - `true` — mount at the default `__mcp` route with the loopback-only
+   *   origin gate.
+   * - {@link McpRouteOptions} — customise the route path / allowed origins.
+   *
+   * The `--mcp` / `--no-mcp` CLI flags override this per run.
+   *
+   * @experimental
+   */
+  mcp?: boolean | McpRouteOptions
   /** Author's SPA dist directory (served as the devframe's UI). */
   distDir?: string
   /**
