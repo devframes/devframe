@@ -34,7 +34,15 @@ describe('mcp adapter (streamable http route)', () => {
   })
 
   async function boot(def = defineTestDef()): Promise<StartedServer> {
-    server = await createDevServer(def, { host: '127.0.0.1', mcp: true })
+    // `port: 0` lets the OS assign a fresh ephemeral port per test. Without
+    // it every test binds the same default port, and since they all share
+    // one process, Node's global `fetch()` (undici) pools keep-alive
+    // sockets per origin (`http://127.0.0.1:<port>`) — a later test can get
+    // handed a stale, already-closed socket left over from an earlier
+    // test's (torn-down) server, failing instantly with a socket error, or
+    // making that earlier server's `close()` hang until undici's
+    // keep-alive timeout releases it.
+    server = await createDevServer(def, { host: '127.0.0.1', port: 0, mcp: true })
     return server
   }
 
@@ -47,7 +55,7 @@ describe('mcp adapter (streamable http route)', () => {
   })
 
   it('omits the mcp block when the route is disabled', async () => {
-    server = await createDevServer(defineTestDef(), { host: '127.0.0.1', mcp: false })
+    server = await createDevServer(defineTestDef(), { host: '127.0.0.1', port: 0, mcp: false })
     const res = await fetch(`${server.origin}/__connection.json`)
     const meta = await res.json() as { mcp?: unknown }
     expect(meta.mcp).toBeUndefined()
