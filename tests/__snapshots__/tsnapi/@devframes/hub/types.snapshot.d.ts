@@ -63,6 +63,7 @@ export { DevframeViewIframe }
 export { DevframeViewJsonRender }
 export { DevframeViewLauncher }
 export { DevframeViewLauncherStatus }
+export { DevframeWhen }
 export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }

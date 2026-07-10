@@ -19,6 +19,7 @@ import { createEventEmitter } from 'devframe/utils/events'
 import { join } from 'pathe'
 import { DEFAULT_STATE_USER_SETTINGS } from '../constants'
 import { diagnostics } from './diagnostics'
+import { resolveWhen } from './when'
 
 interface RemoteDockRecord {
   token: string
@@ -162,13 +163,22 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     ]
   }
 
+  /**
+   * Turn a registered entry into its serializable wire form: resolve
+   * `when` down to `string | undefined` (see {@link resolveWhen}) and, for
+   * remote iframes, inject the connection descriptor into the URL. Always
+   * returns a shallow copy — the stored entry (and any `when` function on
+   * it) is left untouched for the next call.
+   */
   private projectView(view: DevframeDockUserEntry): DevframeDockUserEntry {
-    if (view.type !== 'iframe' || !view.remote)
-      return view
-    const record = this.remoteDocks.get(view.id)
+    const resolved: DevframeDockUserEntry = { ...view, when: resolveWhen(view.when) }
+
+    if (resolved.type !== 'iframe' || !resolved.remote)
+      return resolved
+    const record = this.remoteDocks.get(resolved.id)
     const endpoint = getInternalContext(this.context as DevframeNodeContext).wsEndpoint
     if (!record || !endpoint)
-      return view
+      return resolved
 
     const payload: RemoteConnectionInfo = {
       v: 1,
@@ -178,8 +188,8 @@ export class DevframeDocksHost implements DevframeDocksHostType {
       origin: this.resolveDevServerOrigin(),
     }
     return {
-      ...view,
-      url: buildRemoteUrl(view.url, payload, record.options.transport),
+      ...resolved,
+      url: buildRemoteUrl(resolved.url, payload, record.options.transport),
     } satisfies DevframeViewIframe
   }
 

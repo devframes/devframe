@@ -76,6 +76,7 @@ export class DevframeTerminalsHost {
 export async function createHubContext(_) {}
 export function createSimpleClientScript(_) {}
 export async function mountDevframe(_, _, _) {}
+export function resolveWhen(_) {}
 // #endregion
 
 // #region Variables

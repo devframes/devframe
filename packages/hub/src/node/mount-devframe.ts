@@ -15,6 +15,11 @@ export interface MountDevframeOptions {
    * customize the entry's `category`, override the icon, hide it via
    * `when`, etc. Cannot change `id`, `type`, or `url` — those are
    * derived from the devframe definition.
+   *
+   * `when` may be a function (`() => string | boolean | undefined`),
+   * re-invoked every time the dock is serialized — the mounted-dock
+   * equivalent of the built-in docks' `when` getters, since a getter here
+   * would only ever run once through this spread.
    */
   dock?: Partial<Omit<DevframeViewIframe, 'id' | 'type' | 'url'>>
 }

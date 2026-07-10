@@ -6,7 +6,7 @@ export declare function defineCommand<const W extends string = ''>(_: Omit<Devfr
   when?: WhenExpression<WhenContext, W>;
 }): DevframeServerCommandInput;
 export declare function defineDockEntry<const T extends DevframeDockUserEntry, const W extends string = ''>(_: Omit<T, 'when'> & {
-  when?: WhenExpression<WhenContext, W>;
+  when?: WhenExpression<WhenContext, W> | boolean | (() => string | boolean | undefined);
 }): T;
 export declare function defineJsonRenderSpec(_: JsonRenderSpec): JsonRenderSpec;
 // #endregion
@@ -77,6 +77,7 @@ export { DevframeViewIframe }
 export { DevframeViewJsonRender }
 export { DevframeViewLauncher }
 export { DevframeViewLauncherStatus }
+export { DevframeWhen }
 export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }

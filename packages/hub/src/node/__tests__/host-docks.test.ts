@@ -238,3 +238,81 @@ describe('devframeDockHost built-in gating', () => {
     expect(host.values({ includeBuiltin: false })).toEqual([])
   })
 })
+
+describe('devframeDockHost dynamic `when`', () => {
+  it('resolves a function `when` on every values() call, reflecting the current return value', () => {
+    const host = new DevframeDocksHost(createContext())
+    let hidden = false
+
+    host.register({
+      type: 'iframe',
+      id: 'app:overview',
+      title: 'Overview',
+      icon: 'ph:gauge-duotone',
+      url: '/__app/',
+      when: () => (hidden ? 'false' : undefined),
+    })
+
+    expect(host.values({ includeBuiltin: false })[0].when).toBeUndefined()
+
+    hidden = true
+    expect(host.values({ includeBuiltin: false })[0].when).toBe('false')
+
+    hidden = false
+    expect(host.values({ includeBuiltin: false })[0].when).toBeUndefined()
+  })
+
+  it('resolves boolean `when`: false -> \'false\', true -> undefined', () => {
+    const host = new DevframeDocksHost(createContext())
+    host.register({
+      type: 'iframe',
+      id: 'app:hidden',
+      title: 'Hidden',
+      icon: 'ph:gauge-duotone',
+      url: '/__hidden/',
+      when: false,
+    })
+    host.register({
+      type: 'iframe',
+      id: 'app:shown',
+      title: 'Shown',
+      icon: 'ph:gauge-duotone',
+      url: '/__shown/',
+      when: true,
+    })
+
+    const entries = host.values({ includeBuiltin: false })
+    expect(entries.find(e => e.id === 'app:hidden')!.when).toBe('false')
+    expect(entries.find(e => e.id === 'app:shown')!.when).toBeUndefined()
+  })
+
+  it('passes a string `when` through unchanged', () => {
+    const host = new DevframeDocksHost(createContext())
+    host.register({
+      type: 'iframe',
+      id: 'app:embedded-only',
+      title: 'Embedded Only',
+      icon: 'ph:gauge-duotone',
+      url: '/__embedded-only/',
+      when: 'clientType == embedded',
+    })
+
+    expect(host.values({ includeBuiltin: false })[0].when).toBe('clientType == embedded')
+  })
+
+  it('does not mutate the stored entry when resolving a function `when`', () => {
+    const host = new DevframeDocksHost(createContext())
+    const whenFn = () => 'false' as const
+    host.register({
+      type: 'iframe',
+      id: 'app:overview',
+      title: 'Overview',
+      icon: 'ph:gauge-duotone',
+      url: '/__app/',
+      when: whenFn,
+    })
+
+    host.values({ includeBuiltin: false })
+    expect(host.views.get('app:overview')!.when).toBe(whenFn)
+  })
+})

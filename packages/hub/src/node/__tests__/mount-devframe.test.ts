@@ -93,6 +93,20 @@ describe('mountDevframe', () => {
     expect(ctx.docks.views.size).toBe(1)
   })
 
+  it('flows a function `when` through the `options.dock` spread and re-resolves it per values() call', async () => {
+    const ctx = createContext()
+    let hidden = false
+
+    await mountDevframe(ctx, makeDevframe(), {
+      dock: { when: () => (hidden ? 'false' : undefined) },
+    })
+
+    expect(ctx.docks.values({ includeBuiltin: false })[0].when).toBeUndefined()
+
+    hidden = true
+    expect(ctx.docks.values({ includeBuiltin: false })[0].when).toBe('false')
+  })
+
   it('lets instances coexist under disambiguated ids when "duplicate"', async () => {
     const ctx = createContext()
     const setup = vi.fn()

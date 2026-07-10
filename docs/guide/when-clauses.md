@@ -40,6 +40,23 @@ ctx.docks.register({
 
 `when: 'false'` hides an entry unconditionally.
 
+### Dynamic `when` on registered/mounted docks
+
+A dock entry's `when` also accepts a boolean or a function, resolved to the string form above once per serialization (`ctx.docks.values()`) — a server-side authoring convenience for docks whose visibility depends on live state:
+
+```ts
+ctx.docks.register({
+  id: 'my-devtool:sessions',
+  title: 'Sessions',
+  type: 'action',
+  icon: 'ph:cursor-duotone',
+  when: () => (sessions.size === 0 ? 'false' : undefined),
+  action: { importFrom: 'my-devtool/sessions' },
+})
+```
+
+The function is re-invoked on every serialization pass, so it reflects the current state each time a client reads `devframe:docks` — the same pattern the hub's built-in `~terminals` dock uses to hide itself while no terminal session is open. `false` resolves to `'false'`; `true` resolves to `undefined` (unconditionally visible); a returned string is passed through unchanged and still evaluated client-side. This is what makes a function `when` useful specifically for a dock registered via `mountDevframe`'s `dock` option — that object is spread once, so a getter would only run once, but a function value survives the spread by reference.
+
 ## Expression syntax
 
 ### Operators

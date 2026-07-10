@@ -92,6 +92,7 @@ export declare class DevframeTerminalsHost implements DevframeTerminalsHost$1 {
 // #region Functions
 export declare function createSimpleClientScript(_: string | ((_: any) => void)): ClientScriptEntry;
 export declare function mountDevframe(_: DevframeHubContext, _: DevframeDefinition, _?: MountDevframeOptions): Promise<void>;
+export declare function resolveWhen(_: DevframeWhen | undefined): string | undefined;
 // #endregion
 
 // #region Variables

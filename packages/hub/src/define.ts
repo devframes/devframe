@@ -17,7 +17,7 @@ export function defineDockEntry<
   const T extends DevframeDockUserEntry,
   const W extends string = '',
 >(
-  entry: Omit<T, 'when'> & { when?: WhenExpression<WhenContext, W> },
+  entry: Omit<T, 'when'> & { when?: WhenExpression<WhenContext, W> | boolean | (() => string | boolean | undefined) },
 ): T {
   return entry as unknown as T
 }

@@ -54,6 +54,26 @@ export type DevframeDockEntryCategory
 
 export type DevframeDockEntryIcon = string | { light: string, dark: string }
 
+/**
+ * A dock entry's `when` value, as authored.
+ *
+ * - `string` — a `whenexpr` expression, evaluated client-side against a
+ *   `WhenContext` (unchanged from before).
+ * - `boolean` — a static shortcut: `false` unconditionally hides the entry,
+ *   `true` unconditionally shows it.
+ * - `() => string | boolean | undefined` — a live clause, invoked server-side
+ *   every time the dock's shared state is serialized. Lets a host give a
+ *   registered/mounted dock the same dynamic visibility the built-in
+ *   `~terminals`/`~messages` entries have, without relying on a getter that
+ *   would be evaluated only once by `mountDevframe`'s `...options.dock` spread.
+ *
+ * Whichever form is authored, it is resolved down to the wire contract
+ * (`string | undefined`) during serialization — see
+ * {@link import('../node/when').resolveWhen}. Clients only ever see a
+ * `string | undefined`, evaluated the same way as always.
+ */
+export type DevframeWhen = string | boolean | (() => string | boolean | undefined)
+
 export interface DevframeDockEntryBase {
   id: string
   title: string
@@ -70,16 +90,21 @@ export interface DevframeDockEntryBase {
    */
   category?: DevframeDockEntryCategory
   /**
-   * Conditional visibility expression.
-   * When set, the dock entry is only visible when the expression evaluates to true.
-   * Uses the same syntax as command `when` clauses.
+   * Conditional visibility.
+   * When set, the dock entry is only visible when it resolves to true.
+   * A string uses the same `whenexpr` syntax as command `when` clauses and
+   * is still evaluated client-side. A boolean or a function is a
+   * server-side authoring convenience, resolved to a `string | undefined`
+   * once per serialization — see {@link DevframeWhen}.
    *
-   * Set to `'false'` to unconditionally hide the entry.
+   * Set to `'false'` (or a function returning `false`) to unconditionally
+   * hide the entry.
    *
    * @example 'clientType == embedded'
+   * @example () => sessions.size === 0 ? 'false' : undefined
    * @see {@link import('devframe/utils/when').evaluateWhen}
    */
-  when?: string
+  when?: DevframeWhen
   /**
    * Badge text to display on the dock icon (e.g., unread count)
    */
