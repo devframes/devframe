@@ -12,6 +12,7 @@ export var DEVFRAME_CONNECTION_META_FILENAME /* const */
 export var DEVFRAME_DIRNAME /* const */
 export var DEVFRAME_DOCK_IMPORTS_FILENAME /* const */
 export var DEVFRAME_DOCK_IMPORTS_VIRTUAL_ID /* const */
+export var DEVFRAME_MCP_ROUTE /* const */
 export var DEVFRAME_MOUNT_PATH /* const */
 export var DEVFRAME_MOUNT_PATH_NO_TRAILING_SLASH /* const */
 export var DEVFRAME_OTP_URL_PARAM /* const */

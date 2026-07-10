@@ -1,6 +1,6 @@
 import type { StartedServer } from '../node/server'
 import type { ConnectionMeta } from '../types/context'
-import type { DevframeDefinition, DevframeSetupInfo, DevframeWsOptions } from '../types/devframe'
+import type { DevframeDefinition, DevframeSetupInfo, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
 import process from 'node:process'
 import { open } from 'devframe/utils/open'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
@@ -8,8 +8,9 @@ import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash } from 'ufo'
-import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_WS_ROUTE } from '../constants'
+import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_MCP_ROUTE, DEVFRAME_WS_ROUTE } from '../constants'
 import { createHostContext } from '../node/context'
+import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { startHttpAndWs } from '../node/server'
 import { normalizeBasePath, resolveBasePath } from './_shared'
@@ -64,6 +65,13 @@ export interface CreateDevServerOptions {
    * sources; a string opens that relative path.
    */
   openBrowser?: boolean | string
+  /**
+   * Expose a route-based MCP server on the dev server (Streamable-HTTP).
+   * Overrides `def.cli?.mcp`; `undefined` falls through to it. `false`
+   * disables the route regardless of the definition default. See
+   * {@link McpRouteOptions}.
+   */
+  mcp?: boolean | McpRouteOptions
   /**
    * Called once the WS server is bound. Devframe stays headless
    * otherwise — wire this if you want a startup banner.
@@ -149,6 +157,35 @@ export async function createDevServer(
   const setupInfo: DevframeSetupInfo = { flags }
   await def.setup(ctx, setupInfo)
 
+  // Route-based MCP server (opt-in via `cli.mcp` / the `mcp` option). Mounted
+  // before the SPA static catch-all so the exact `/__mcp` route wins, and
+  // advertised in `__connection.json` so in-browser tooling can discover it.
+  // The MCP SDK is an optional peer dep, so its code is only pulled in
+  // (dynamically) when the route is enabled.
+  const mcpConfig = resolveMcpConfig(options.mcp ?? def.cli?.mcp)
+  let mcpDispose: (() => Promise<void>) | undefined
+  let mcpMeta: ConnectionMeta['mcp']
+  if (mcpConfig) {
+    const mcpRoute = withoutLeadingSlash(mcpConfig.path ?? DEVFRAME_MCP_ROUTE)
+    const mcpPath = joinURL(basePath, mcpRoute)
+    let mountMcpHttp: typeof import('./mcp/http').mountMcpHttp
+    try {
+      ;({ mountMcpHttp } = await import('./mcp/http'))
+    }
+    catch (error) {
+      const reason = error instanceof Error ? error.message : String(error)
+      throw diagnostics.DF0017({ transport: 'http', reason, cause: error })
+    }
+    const mounted = mountMcpHttp(app, ctx, mcpPath, {
+      serverName: `${def.id} (devframe)`,
+      serverVersion: def.version ?? '0.0.0',
+      exposeSharedState: true,
+      allowedOrigins: mcpConfig.allowedOrigins,
+    })
+    mcpDispose = mounted.dispose
+    mcpMeta = { path: mcpRoute }
+  }
+
   // Connection meta — the SPA fetches this to discover the RPC backend. How
   // the WS endpoint is bound and advertised follows the resolved ws config:
   // a same-origin route (default, proxy-safe), a dedicated port, or a remote
@@ -159,12 +196,13 @@ export async function createDevServer(
   app.use(connectionMetaPath, () => ({
     backend: 'websocket',
     websocket: meta,
+    ...(mcpMeta ? { mcp: mcpMeta } : {}),
   }))
 
   if (distDir)
     mountStaticHandler(app, basePath, resolve(distDir))
 
-  return startHttpAndWs({
+  const started = await startHttpAndWs({
     context: ctx,
     host,
     port,
@@ -177,6 +215,28 @@ export async function createDevServer(
       await maybeOpenBrowser(def, flags, `${info.origin}${basePath}`, options.openBrowser)
     },
   })
+
+  // Fold MCP session teardown into the server's close so callers get a single
+  // graceful-shutdown handle.
+  if (mcpDispose) {
+    const closeServer = started.close
+    started.close = async () => {
+      await mcpDispose!()
+      await closeServer()
+    }
+  }
+
+  return started
+}
+
+/**
+ * Normalize the `cli.mcp` / `mcp` option (`boolean | McpRouteOptions`) into
+ * concrete options, or `undefined` when the MCP route is disabled.
+ */
+function resolveMcpConfig(mcp: boolean | McpRouteOptions | undefined): McpRouteOptions | undefined {
+  if (!mcp)
+    return undefined
+  return mcp === true ? {} : mcp
 }
 
 /**

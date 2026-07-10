@@ -104,6 +104,14 @@ export interface ConnectionMeta {
    */
   websocket?: number | string | ConnectionMetaWebsocket
   /**
+   * Present when the dev server exposes a route-based MCP endpoint
+   * (`cli.mcp`). Advertises the MCP Streamable-HTTP route so in-browser
+   * tooling (e.g. an MCP inspector) can discover it without guessing the
+   * path. `path` is relative to `__connection.json`'s location, like the
+   * WebSocket `path`.
+   */
+  mcp?: { path: string }
+  /**
    * Names of RPC functions that have declared `jsonSerializable: true`.
    * Used by the WS / static client to dispatch the per-call wire
    * serializer (strict JSON for these methods, structured-clone for
