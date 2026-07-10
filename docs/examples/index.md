@@ -14,12 +14,6 @@ End-to-end examples that exercise the full adapter surface, each a runnable app 
 | [minimal-vite-devframe-hub](./minimal-vite-devframe-hub) | Vanilla TypeScript (Vite) | A ~120-line Vite host wiring `@devframes/hub` end to end. |
 | [minimal-next-devframe-hub](./minimal-next-devframe-hub) | React (Next.js) | The same hub protocol, hosted from a Next.js route handler. |
 
-## Two kinds of example
-
-The first three are **single-tool devframes** — one `DevframeDefinition` deployed through the [adapters](/adapters/), showing how RPC, streaming, and a chosen SPA framework fit together.
-
-The last two are **hub hosts** built on [`@devframes/hub`](/guide/hub). They are protocol witnesses: each is a small host that exercises every hub subsystem (docks, commands, messages, terminals) so you can read one file and see the whole shape. One is a Vite plugin; the other a Next.js route handler — same hub, different host runtime.
-
 ## Run any example
 
 Each example ships its own scripts; from the repository root:

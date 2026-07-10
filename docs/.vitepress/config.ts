@@ -16,10 +16,9 @@ function listErrorCodes(prefix: string): string[] {
     .sort()
 }
 
-function guideItems(prefix: string): DefaultTheme.NavItemWithLink[] {
+function guideItems(prefix: string) {
   return [
     { text: 'Introduction', link: `${prefix}/guide/` },
-    { text: 'Built with Devframe', link: `${prefix}/guide/built-with` },
     { text: 'Devframe Definition', link: `${prefix}/guide/devframe-definition` },
     { text: 'Scoped Context', link: `${prefix}/guide/scoped-context` },
     { text: 'RPC', link: `${prefix}/guide/rpc` },
@@ -30,14 +29,13 @@ function guideItems(prefix: string): DefaultTheme.NavItemWithLink[] {
     { text: 'Client', link: `${prefix}/guide/client` },
     { text: 'Security', link: `${prefix}/guide/security` },
     { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
-    { text: 'Hub (multi-tool)', link: `${prefix}/guide/hub` },
+    { text: 'Hub', link: `${prefix}/guide/hub` },
     { text: 'Client Scripts & Context', link: `${prefix}/guide/client-context` },
     { text: 'Agent-Native (experimental)', link: `${prefix}/guide/agent-native` },
-    { text: 'Migrating to 0.6', link: `${prefix}/guide/migration-0.6` },
-  ]
+  ] satisfies DefaultTheme.NavItemWithLink[]
 }
 
-function adaptersItems(prefix: string): DefaultTheme.NavItemWithLink[] {
+function adaptersItems(prefix: string) {
   return [
     { text: 'Overview', link: `${prefix}/adapters/` },
     { text: 'CLI', link: `${prefix}/adapters/cli` },
@@ -46,10 +44,10 @@ function adaptersItems(prefix: string): DefaultTheme.NavItemWithLink[] {
     { text: 'Vite', link: `${prefix}/adapters/vite` },
     { text: 'Embedded', link: `${prefix}/adapters/embedded` },
     { text: 'MCP', link: `${prefix}/adapters/mcp` },
-  ]
+  ] satisfies DefaultTheme.NavItemWithLink[]
 }
 
-function helpersItems(prefix: string): DefaultTheme.NavItemWithLink[] {
+function helpersItems(prefix: string) {
   return [
     { text: 'Overview', link: `${prefix}/helpers/` },
     { text: 'Utilities', link: `${prefix}/helpers/utilities` },
@@ -57,10 +55,10 @@ function helpersItems(prefix: string): DefaultTheme.NavItemWithLink[] {
     { text: 'Nuxt Module', link: `${prefix}/helpers/nuxt` },
     { text: 'Open Helpers', link: `${prefix}/helpers/open-helpers` },
     { text: 'Interactive Auth', link: `${prefix}/helpers/interactive-auth` },
-  ]
+  ] satisfies DefaultTheme.NavItemWithLink[]
 }
 
-function pluginsItems(prefix: string): DefaultTheme.NavItemWithLink[] {
+function pluginsItems(prefix: string) {
   return [
     { text: 'Overview', link: `${prefix}/plugins/` },
     { text: 'Devframe Inspector', link: `${prefix}/plugins/inspect` },
@@ -68,18 +66,19 @@ function pluginsItems(prefix: string): DefaultTheme.NavItemWithLink[] {
     { text: 'Git', link: `${prefix}/plugins/git` },
     { text: 'Terminals', link: `${prefix}/plugins/terminals` },
     { text: 'Code Server', link: `${prefix}/plugins/code-server` },
-  ]
+  ] satisfies DefaultTheme.NavItemWithLink[]
 }
 
-function examplesItems(prefix: string): DefaultTheme.NavItemWithLink[] {
+function examplesItems(prefix: string) {
   return [
     { text: 'Overview', link: `${prefix}/examples/` },
+    { text: 'Built with Devframe', link: `${prefix}/examples/built-with` },
     { text: 'files-inspector', link: `${prefix}/examples/files-inspector` },
     { text: 'streaming-chat', link: `${prefix}/examples/streaming-chat` },
     { text: 'next-runtime-snapshot', link: `${prefix}/examples/next-runtime-snapshot` },
     { text: 'minimal-vite-devframe-hub', link: `${prefix}/examples/minimal-vite-devframe-hub` },
     { text: 'minimal-next-devframe-hub', link: `${prefix}/examples/minimal-next-devframe-hub` },
-  ]
+  ] satisfies DefaultTheme.NavItemWithLink[]
 }
 
 export function devframeSidebar(prefix = ''): DefaultTheme.SidebarItem[] {
@@ -104,15 +103,6 @@ export function devframeSidebar(prefix = ''): DefaultTheme.SidebarItem[] {
       text: 'Examples',
       items: examplesItems(prefix),
     },
-    {
-      text: 'Error Reference',
-      link: `${prefix}/errors/`,
-      collapsed: true,
-      items: listErrorCodes('DF').map(code => ({
-        text: code,
-        link: `${prefix}/errors/${code}`,
-      })),
-    },
   ]
 }
 
@@ -120,15 +110,26 @@ export function devframeNav(prefix = ''): DefaultTheme.NavItem[] {
   return [
     { text: 'Guide', items: guideItems(prefix) },
     { text: 'Adapters', items: adaptersItems(prefix) },
-    { text: 'Helpers', items: helpersItems(prefix) },
-    { text: 'Plugins', items: pluginsItems(prefix) },
-    { text: 'Examples', items: examplesItems(prefix) },
+    {
+      text: 'Resources',
+      items: [
+        { text: 'Examples', link: `${prefix}/examples/` },
+        { text: 'Built with Devframe', link: `${prefix}/examples/built-with` },
+        { text: 'Helpers', items: helpersItems(prefix) },
+        { text: 'Plugins', items: pluginsItems(prefix) },
+      ],
+    },
     { text: 'Errors', link: `${prefix}/errors/` },
     {
       text: `v${pkg.version}`,
       items: [
         { text: 'Release Notes', link: `${repo}/releases` },
         { text: 'Contributing', link: `${repo}/blob/main/CONTRIBUTING.md` },
+        {
+          items: [
+            { text: 'Migrating to 0.6', link: `${prefix}/guide/migration-0.6` },
+          ],
+        },
       ],
     },
   ]
@@ -146,7 +147,20 @@ export default withMermaid(defineConfig({
   themeConfig: {
     logo: { light: '/logo.svg', dark: '/logo.svg' },
     nav: devframeNav(),
-    sidebar: devframeSidebar(),
+    sidebar: {
+      '/': devframeSidebar(),
+      '/errors/': [
+        {
+          text: 'Error Reference',
+          link: '/errors/',
+          collapsed: true,
+          items: listErrorCodes('DF').map(code => ({
+            text: code,
+            link: `/errors/${code}`,
+          })),
+        },
+      ],
+    },
     search: {
       provider: 'local',
     },

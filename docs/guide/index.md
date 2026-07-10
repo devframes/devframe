@@ -8,9 +8,6 @@ outline: deep
 
 [Vite DevTools](https://devtools.vite.dev/) is built on top of devframe. If you need an integrated multi-tool host (docks, command palette, terminals, cross-tool toasts), mount your devframe into Vite DevTools via the [`vite` adapter](/adapters/vite) — or build your own host adapter targeting any environment you like.
 
-> [!WARNING] Experimental
-> The Devframe API is still in development and may change between versions. The agent-native surface (`agent` on `defineRpcFunction`, `ctx.agent`, and the MCP adapter) is additionally flagged as experimental.
-
 ## Design principles
 
 Devframe keeps its surface focused on one tool, so the same definition stays portable across runtimes:
