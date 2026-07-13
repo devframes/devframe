@@ -109,6 +109,18 @@ export function LogPanel({ branch, selectedHash, onSelectCommit }: LogPanelProps
     await loadPage(rpc, skip, 'append')
   }, [rpc, skip, loadPage])
 
+  // Feeds the row hover card: metadata + changed-file stats for one commit.
+  // The patch is skipped here — the card only needs totals, and the full diff
+  // lives in the details panel.
+  const loadDetail = useCallback(
+    (hash: string) => {
+      if (!rpc)
+        return Promise.reject(new Error('rpc unavailable'))
+      return rpc.call('git:show', { hash, patch: false })
+    },
+    [rpc],
+  )
+
   return (
     <LogPanelView
       rpcConnected={!!rpc}
@@ -124,6 +136,7 @@ export function LogPanel({ branch, selectedHash, onSelectCommit }: LogPanelProps
       onRefresh={refresh}
       onLoadMore={loadMore}
       onSelectCommit={onSelectCommit}
+      onLoadDetail={rpc ? loadDetail : undefined}
     />
   )
 }
