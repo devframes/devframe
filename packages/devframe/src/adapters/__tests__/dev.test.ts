@@ -37,7 +37,9 @@ describe('adapters/dev', () => {
 
     try {
       expect(handle.port).toBe(port)
-      expect(handle.origin).toBe(`http://${host}:${port}`)
+      // The advertised origin is dialable: the loopback IP normalizes to
+      // `localhost` so a client can actually open it.
+      expect(handle.origin).toBe(`http://localhost:${port}`)
 
       const res = await fetch(`http://${host}:${port}/__connection.json`)
       expect(res.ok).toBe(true)
@@ -45,6 +47,41 @@ describe('adapters/dev', () => {
       // Proxy-safe: the WS endpoint is advertised as a same-origin route
       // relative to `__connection.json`, never a baked-in host/port.
       expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__devframe_ws' } })
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
+  it('advertises a dialable origin when bound to the wildcard host', async () => {
+    const distDir = makeTmpDist()
+    const devframe = defineDevframe({
+      id: 'devframe-test-wildcard',
+      name: 'Wildcard Host',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      setup: () => {},
+    })
+
+    // Binding to `0.0.0.0` listens on every interface, but that address isn't
+    // dialable from a browser — the advertised origin must fall back to a
+    // loopback host so the page (and its same-origin WS) actually connect.
+    const host = '0.0.0.0'
+    const port = await getPort({ port: 19795, host })
+    const handle = await createDevServer(devframe, {
+      host,
+      port,
+      distDir,
+      openBrowser: false,
+    })
+
+    try {
+      expect(handle.origin).toBe(`http://localhost:${port}`)
+      // The socket still listens on the wildcard host, reachable via loopback.
+      const res = await fetch(`http://localhost:${port}/__connection.json`)
+      expect(res.ok).toBe(true)
     }
     finally {
       await handle.close()

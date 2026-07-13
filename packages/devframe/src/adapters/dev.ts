@@ -13,6 +13,7 @@ import { createHostContext } from '../node/context'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { startHttpAndWs } from '../node/server'
+import { normalizeHttpServerUrl } from '../node/utils'
 import { normalizeBasePath, resolveBasePath } from './_shared'
 
 const DEFAULT_PORT = 9999
@@ -139,7 +140,9 @@ export async function createDevServer(
   const flags = options.flags ?? {}
   const basePath = options.basePath ? normalizeBasePath(options.basePath) : resolveBasePath(def, 'standalone')
   const app = options.app ?? new H3()
-  const origin = `http://${host}:${port}`
+  // A wildcard bind host (`0.0.0.0` / `::`) isn't dialable from a browser, so
+  // advertise a loopback origin for anything that hands a client an absolute URL.
+  const origin = normalizeHttpServerUrl(host, port)
 
   const h3Host = createH3DevframeHost({
     origin,
