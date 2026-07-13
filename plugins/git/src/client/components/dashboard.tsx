@@ -2,12 +2,10 @@
 
 import type { DevframeRpcClient } from 'devframe/client'
 import type { PointerEvent as ReactPointerEvent } from 'react'
-import type { Branch, GitBranches } from '../../index'
+import type { GitBranches } from '../../index'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { nav as navBar, navBrand, tab as tabClass, tabsList } from '../lib/design'
-import { cn } from '../lib/utils'
 import { CommitDetailsPanel } from './commit-details-panel'
-import { DiffPanel } from './diff-panel'
 import { LogPanel } from './log-panel'
 import { RpcProvider, useRpc } from './rpc-provider'
 import { StatusPanel } from './status-panel'
@@ -15,10 +13,9 @@ import { useTheme } from './theme'
 import { Badge } from './ui/badge'
 import { IconButton } from './ui/button'
 import { Icon } from './ui/icon'
-import { Skeleton } from './ui/skeleton'
 import { useRpcResource } from './use-rpc-resource'
 
-type DashboardPane = 'status' | 'commits' | 'diff'
+type DashboardPane = 'commits' | 'changes'
 
 interface NavItem {
   id: DashboardPane
@@ -27,9 +24,8 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'status', label: 'Status', icon: 'i-ph-tree-view-duotone' },
   { id: 'commits', label: 'Commits', icon: 'i-ph-git-commit-duotone' },
-  { id: 'diff', label: 'Diff', icon: 'i-ph-git-diff-duotone' },
+  { id: 'changes', label: 'Changes', icon: 'i-ph-git-diff-duotone' },
 ]
 
 function clamp(value: number, min: number, max: number): number {
@@ -117,47 +113,36 @@ function ThemeToggle() {
   )
 }
 
-function BranchRow({
-  branch,
-  selected,
+/** Branch picker, living in the nav bar. */
+function BranchSelect({
+  branches,
+  disabled,
+  value,
   onSelect,
 }: {
-  branch: Branch
-  selected: boolean
+  branches: GitBranches | null
+  disabled: boolean
+  value: string | null
   onSelect: (name: string) => void
 }) {
   return (
-    <li>
-      <button
-        type="button"
-        onClick={() => onSelect(branch.name)}
-        className={cn(
-          'hover:bg-active w-full rounded-md px-2 py-1.5 text-left transition-colors',
-          selected && 'bg-active',
-        )}
+    <label className="border-base bg-base focus-within:ring-primary-500/40 flex h-7 min-w-0 items-center gap-1.5 rounded-md border pr-1.5 pl-2 focus-within:ring-2">
+      <Icon name="i-ph-git-branch-duotone" className="color-active size-3.5 shrink-0" />
+      <select
+        aria-label="Branch"
+        value={value ?? ''}
+        onChange={event => onSelect(event.target.value)}
+        disabled={disabled}
+        className="color-base h-full max-w-44 min-w-0 cursor-pointer appearance-none truncate bg-transparent pr-4 text-sm outline-none disabled:cursor-default"
       >
-        <div className="flex items-center gap-2">
-          <Icon name="i-ph-git-branch-duotone" className={cn('size-3.5', branch.current ? 'color-active' : 'color-muted')} />
-          <span className="truncate font-mono text-xs" title={branch.name}>{branch.name}</span>
-          {branch.current && <Badge variant="success" className="px-1 py-0 text-[10px]">current</Badge>}
-        </div>
-        {(branch.ahead > 0 || branch.behind > 0) && (
-          <p className="color-muted mt-0.5 text-[11px] tabular-nums">
-            {branch.ahead > 0 && `ahead ${branch.ahead}`}
-            {branch.ahead > 0 && branch.behind > 0 && ' · '}
-            {branch.behind > 0 && `behind ${branch.behind}`}
-          </p>
-        )}
-      </button>
-    </li>
-  )
-}
-
-function PanelHeading({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex h-9 shrink-0 items-center justify-between gap-2 border-b px-3">
-      {children}
-    </div>
+        {!branches?.isRepo && <option value="">Not a repository</option>}
+        {branches?.isRepo && branches.branches.length === 0 && <option value="">No branches</option>}
+        {branches?.isRepo && branches.branches.map(branch => (
+          <option key={branch.name} value={branch.name}>{branch.name}</option>
+        ))}
+      </select>
+      <Icon name="i-ph-caret-up-down" className="color-faint pointer-events-none -ml-4 size-3.5 shrink-0" />
+    </label>
   )
 }
 
@@ -166,15 +151,12 @@ function DashboardBody() {
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null)
   const [selectedCommit, setSelectedCommit] = useState<string | null>(null)
 
-  const leftRail = useRailWidth('devframe-git:rail-left', 264, 200, 420, 1)
-  const rightRail = useRailWidth('devframe-git:rail-right', 360, 280, 560, -1)
+  const rightRail = useRailWidth('devframe-git:rail-right', 480, 340, 760, -1)
 
   const branchesLoader = useCallback((rpc: DevframeRpcClient) => rpc.call('git:branches'), [])
   const {
     data: branches,
     loading: branchesLoading,
-    error: branchesError,
-    refresh: refreshBranches,
   } = useRpcResource<GitBranches>(branchesLoader)
 
   useEffect(() => {
@@ -202,8 +184,15 @@ function DashboardBody() {
       <header className={navBar()}>
         <div className={navBrand()}>
           <Icon name="i-ph-git-fork-duotone" className="text-base color-active" />
-          <span>Git Dashboard</span>
+          <span>Git</span>
         </div>
+
+        <BranchSelect
+          branches={branches}
+          disabled={branchesLoading || !branches?.isRepo || branches.branches.length === 0}
+          value={selectedBranch}
+          onSelect={selectBranch}
+        />
 
         <nav className={tabsList()} role="tablist" aria-label="Git views">
           {NAV_ITEMS.map(({ id, label, icon }) => (
@@ -228,83 +217,10 @@ function DashboardBody() {
       </header>
 
       <div className="flex min-h-0 flex-1">
-        {/* Left rail: views + branch picker, then the branch list. */}
-        <aside className="flex min-h-0 flex-col" style={{ width: leftRail.width }}>
-          <div className="shrink-0 space-y-3 border-b p-3">
-            <div className="space-y-1.5">
-              <label htmlFor="branch-select" className="color-muted text-[11px] font-medium tracking-wide uppercase">
-                Branch
-              </label>
-              <select
-                id="branch-select"
-                value={selectedBranch ?? ''}
-                onChange={event => selectBranch(event.target.value)}
-                disabled={branchesLoading || !branches?.isRepo || branches.branches.length === 0}
-                className="bg-base border-base focus:ring-primary-500/40 h-9 w-full rounded-md border px-2 text-sm outline-none focus:ring-2"
-              >
-                {!branches?.isRepo && <option value="">Not a repository</option>}
-                {branches?.isRepo && branches.branches.length === 0 && <option value="">No branches</option>}
-                {branches?.isRepo && branches.branches.map(branch => (
-                  <option key={branch.name} value={branch.name}>{branch.name}</option>
-                ))}
-              </select>
-            </div>
-
-            {branchesError && <p className="text-error text-xs">{branchesError}</p>}
-          </div>
-
-          <div className="flex min-h-0 flex-1 flex-col">
-            <PanelHeading>
-              <span className="text-xs font-medium">Branches</span>
-              <div className="flex items-center gap-1">
-                <span className="color-muted text-[11px] tabular-nums">
-                  {branches?.isRepo ? branches.branches.length : ''}
-                </span>
-                <IconButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={refreshBranches}
-                  disabled={branchesLoading}
-                  aria-label="Refresh branches"
-                >
-                  <Icon name="i-ph-arrows-clockwise" className={cn('size-4', branchesLoading && 'animate-spin')} />
-                </IconButton>
-              </div>
-            </PanelHeading>
-
-            <div className="min-h-0 flex-1 overflow-y-auto p-2">
-              {!branches && (
-                <div className="space-y-2">
-                  {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-9 w-full" />)}
-                </div>
-              )}
-
-              {branches && !branches.isRepo && (
-                <p className="color-muted p-2 text-sm">The working directory is not a git repository.</p>
-              )}
-
-              {branches?.isRepo && (
-                <ul className="space-y-0.5">
-                  {branches.branches.map(branch => (
-                    <BranchRow
-                      key={branch.name}
-                      branch={branch}
-                      selected={branch.name === selectedBranch}
-                      onSelect={selectBranch}
-                    />
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        </aside>
-
-        <Resizer onPointerDown={leftRail.onPointerDown} label="Resize sidebar" />
-
         {/* Center: the active pane, scrolling inside its own region. */}
         <section className="flex min-h-0 min-w-0 flex-1 flex-col">
           {pane === 'commits' && (
-            <div className="flex min-h-0 flex-1 flex-col p-3">
+            <div className="flex min-h-0 flex-1 flex-col px-3 py-2.5">
               <LogPanel
                 branch={selectedBranch}
                 selectedHash={selectedCommit}
@@ -312,14 +228,9 @@ function DashboardBody() {
               />
             </div>
           )}
-          {pane === 'status' && (
-            <div className="flex min-h-0 flex-1 flex-col p-3">
+          {pane === 'changes' && (
+            <div className="flex min-h-0 flex-1 flex-col px-3 py-2.5">
               <StatusPanel />
-            </div>
-          )}
-          {pane === 'diff' && (
-            <div className="min-h-0 flex-1 overflow-y-auto p-3">
-              <DiffPanel />
             </div>
           )}
         </section>

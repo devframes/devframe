@@ -54,6 +54,7 @@ async function loadDetail(hash: string): Promise<CommitDetail> {
       additions: Math.round(additions / fileCount),
       deletions: Math.round(deletions / fileCount),
       binary: false,
+      status: 'modified' as const,
     })),
     totalAdditions: additions,
     totalDeletions: deletions,

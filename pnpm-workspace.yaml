@@ -77,6 +77,8 @@ catalogs:
     vitepress-plugin-mermaid: ^2.0.17
   frontend:
     '@antfu/design': ^0.2.1
+    '@floating-ui/react': ^0.27.0
+    '@iconify-json/catppuccin': ^1.2.0
     '@iconify-json/ph': ^1.2.2
     '@pierre/diffs': ^1.2.12
     '@radix-ui/react-scroll-area': ^1.2.14

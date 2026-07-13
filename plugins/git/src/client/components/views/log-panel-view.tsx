@@ -3,7 +3,21 @@
 import type { Commit, CommitDetail } from '../../../index'
 import type { GraphRow } from '../../lib/commit-graph'
 import type { GitRef } from '../../lib/refs'
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  autoUpdate,
+  flip,
+  FloatingPortal,
+  offset,
+  safePolygon,
+  shift,
+  useDismiss,
+  useFloating,
+  useFocus,
+  useHover,
+  useInteractions,
+  useTransitionStatus,
+} from '@floating-ui/react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { computeGraph } from '../../lib/commit-graph'
 import { parseRefs } from '../../lib/refs'
 import { cn } from '../../lib/utils'
@@ -12,12 +26,10 @@ import { IconButton } from '../ui/button'
 import { Icon } from '../ui/icon'
 import { Skeleton } from '../ui/skeleton'
 
-const ROW_H = 48
-const COL_W = 18
-const NODE_R = 5
-const PAD_L = 12
-const HOVER_CARD_W = 320
-const HOVER_CARD_EST_H = 150
+const ROW_H = 36
+const COL_W = 16
+const NODE_R = 4.5
+const PAD_L = 8
 
 export interface LogPanelViewProps {
   rpcConnected: boolean
@@ -115,7 +127,7 @@ function GraphCell({ row, width, isHead, topStub }: {
         />
       ))}
       {isHead && (
-        <circle cx={cx(row.col)} cy={mid} r={NODE_R + 4} fill="none" stroke={row.color} strokeWidth={1.5} opacity={0.3} />
+        <circle cx={cx(row.col)} cy={mid} r={NODE_R + 3.5} fill="none" stroke={row.color} strokeWidth={1.5} opacity={0.3} />
       )}
       {/* HEAD reads as a hollow ring ("you are here"); every other commit is a
           solid lane-colored dot. The ring's fill tracks the base surface
@@ -137,10 +149,10 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
   if (refToken.kind === 'tag') {
     return (
       <span
-        className="inline-flex max-w-[140px] items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-none font-medium"
+        className="inline-flex max-w-[140px] items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] leading-none font-medium"
         style={{ color, borderColor: withAlpha(color, 0.5), backgroundColor: withAlpha(color, 0.12) }}
       >
-        <Icon name="i-ph-tag-duotone" className="size-3 shrink-0" />
+        <Icon name="i-ph-tag-duotone" className="size-2.5 shrink-0" />
         <span className="truncate" title={refToken.name}>{refToken.name}</span>
       </span>
     )
@@ -148,7 +160,7 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
 
   if (refToken.kind === 'head') {
     return (
-      <span className="color-muted inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[11px] leading-none font-medium">
+      <span className="color-muted inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 font-mono text-[10px] leading-none font-medium">
         HEAD
       </span>
     )
@@ -159,7 +171,7 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
 
   return (
     <span
-      className="inline-flex max-w-[140px] items-center gap-1 rounded-full px-2 py-0.5 text-[11px] leading-none font-medium"
+      className="inline-flex max-w-[140px] items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-medium"
       style={
         current
           ? { color: '#fff', backgroundColor: color }
@@ -167,103 +179,10 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
       }
     >
       {current
-        ? <Icon name="i-ph-check" className="size-3 shrink-0" />
-        : <Icon name="i-ph-git-branch-duotone" className="size-3 shrink-0 opacity-70" />}
+        ? <Icon name="i-ph-check" className="size-2.5 shrink-0" />
+        : <Icon name="i-ph-git-branch-duotone" className="size-2.5 shrink-0 opacity-70" />}
       <span className="truncate" title={name}>{name}</span>
     </span>
-  )
-}
-
-const CommitRow = memo(({ commit, row, gutter, currentBranch, isHead, topStub, selected, active, onSelect, onHoverEnter, onHoverLeave }: {
-  commit: Commit
-  row: GraphRow
-  gutter: number
-  currentBranch?: string | null
-  isHead: boolean
-  topStub: boolean
-  selected: boolean
-  active: boolean
-  onSelect?: (hash: string) => void
-  onHoverEnter: (hash: string, el: HTMLElement) => void
-  onHoverLeave: () => void
-}) => {
-  const refs = useMemo(() => parseRefs(commit.refs, currentBranch), [commit.refs, currentBranch])
-  // Commits off the mainline (lane 0) recede, so the checked-out line reads as
-  // the spine of the history — matching the emphasized/faded rows in the design.
-  const dim = row.col !== 0 && !selected && !active
-
-  return (
-    <li>
-      <button
-        type="button"
-        onClick={() => onSelect?.(commit.hash)}
-        onMouseEnter={e => onHoverEnter(commit.hash, e.currentTarget)}
-        onMouseLeave={onHoverLeave}
-        onFocus={e => onHoverEnter(commit.hash, e.currentTarget)}
-        onBlur={onHoverLeave}
-        aria-current={selected ? 'true' : undefined}
-        className={cn(
-          'relative flex w-full items-stretch rounded-lg text-left transition-colors',
-          'focus-visible:ring-primary-500/40 outline-none focus-visible:ring-2',
-          selected ? 'bg-active' : 'hover:bg-active',
-        )}
-        style={{ height: ROW_H }}
-      >
-        <div className="relative z-10">
-          <GraphCell row={row} width={gutter} isHead={isHead} topStub={topStub} />
-        </div>
-
-        <div className="relative z-10 flex min-w-0 flex-1 items-center gap-2 pr-3 pl-2">
-          <span
-            className={cn(
-              'truncate text-[15px] transition-colors',
-              dim ? 'color-faint font-normal' : 'color-base font-medium',
-            )}
-            title={commit.subject}
-          >
-            {commit.subject}
-          </span>
-          {refs.map((refToken, i) => (
-            <RefLabel key={i} refToken={refToken} color={row.color} />
-          ))}
-        </div>
-      </button>
-    </li>
-  )
-})
-
-function WipRow({ col, color, gutter, changes }: {
-  col: number
-  color: string
-  gutter: number
-  changes: number
-}) {
-  const mid = ROW_H / 2
-  return (
-    <li className="relative flex items-stretch" style={{ height: ROW_H }}>
-      <div className="relative z-10">
-        <svg width={gutter} height={ROW_H} className="block shrink-0" style={{ overflow: 'visible' }} aria-hidden>
-          <path
-            d={linkPath(col, mid, col, ROW_H)}
-            fill="none"
-            stroke={color}
-            strokeWidth={2}
-            strokeDasharray="2 3"
-            strokeLinecap="round"
-          />
-          <circle cx={cx(col)} cy={mid} r={NODE_R} className="fill-white dark:fill-[#111]" stroke={color} strokeWidth={2} strokeDasharray="2 2" />
-        </svg>
-      </div>
-      <div className="relative z-10 flex min-w-0 flex-1 items-center gap-2 pr-3 pl-2">
-        <Icon name="i-ph-pencil-simple-duotone" className="color-muted size-3.5 shrink-0" />
-        <span className="text-[15px] font-medium">Work in Progress</span>
-        <span className="color-muted text-xs">
-          {changes}
-          {' '}
-          {changes === 1 ? 'change' : 'changes'}
-        </span>
-      </div>
-    </li>
   )
 }
 
@@ -282,26 +201,17 @@ function DiffStat({ additions, deletions }: { additions: number, deletions: numb
   )
 }
 
-/** The floating commit card shown while hovering a row. */
-function CommitHoverCard({ commit, detail, position, onOpen, onMouseEnter, onMouseLeave }: {
+/** The floating commit card body (avatar, author, message, changed stats). */
+function CommitHoverCard({ commit, detail, onOpen }: {
   commit: Commit
   detail: DetailState | undefined
-  position: { top: number, left: number }
   onOpen: () => void
-  onMouseEnter: () => void
-  onMouseLeave: () => void
 }) {
   const body = (detail?.data?.body || commit.body || commit.subject).trim()
   const files = detail?.data?.files.length ?? 0
 
   return (
-    <div
-      role="dialog"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      className="border-base bg-base z-tooltip fixed w-80 overflow-hidden rounded-xl border shadow-xl"
-      style={{ top: position.top, left: position.left }}
-    >
+    <>
       <div className="space-y-2.5 p-3.5">
         <div className="flex items-center gap-2.5">
           <Avatar name={commit.author} email={commit.email} className="size-8 text-xs" />
@@ -345,7 +255,148 @@ function CommitHoverCard({ commit, detail, position, onOpen, onMouseEnter, onMou
           <Icon name="i-ph-arrow-right" className="size-4" />
         </IconButton>
       </div>
-    </div>
+    </>
+  )
+}
+
+const CommitRow = memo(({ commit, row, gutter, currentBranch, isHead, topStub, selected, onSelect, onLoadDetail }: {
+  commit: Commit
+  row: GraphRow
+  gutter: number
+  currentBranch?: string | null
+  isHead: boolean
+  topStub: boolean
+  selected: boolean
+  onSelect?: (hash: string) => void
+  onLoadDetail?: (hash: string) => Promise<CommitDetail>
+}) => {
+  const refs = useMemo(() => parseRefs(commit.refs, currentBranch), [commit.refs, currentBranch])
+  // Commits off the mainline (lane 0) recede, so the checked-out line reads as
+  // the spine of the history — matching the emphasized/faded rows in the design.
+  const [open, setOpen] = useState(false)
+  const [detail, setDetail] = useState<DetailState | undefined>()
+  const dim = row.col !== 0 && !selected && !open
+
+  // Floating-ui drives the hover card: hover (with a safe-polygon bridge so the
+  // pointer can travel into the card) + keyboard focus open it, dismiss closes
+  // it, and `useTransitionStatus` gates the @antfu/design fade animation.
+  const floating = useFloating({
+    open,
+    onOpenChange: setOpen,
+    placement: 'bottom-start',
+    middleware: [offset(6), flip({ padding: 8 }), shift({ padding: 8 })],
+    whileElementsMounted: autoUpdate,
+  })
+  const hover = useHover(floating.context, { delay: { open: 200, close: 80 }, handleClose: safePolygon() })
+  const focus = useFocus(floating.context)
+  const dismiss = useDismiss(floating.context)
+  const { getReferenceProps, getFloatingProps } = useInteractions([hover, focus, dismiss])
+  const { isMounted, status } = useTransitionStatus(floating.context, { duration: 150 })
+
+  useEffect(() => {
+    if (!open || detail || !onLoadDetail)
+      return
+    let alive = true
+    setDetail({ loading: true, data: null })
+    onLoadDetail(commit.hash)
+      .then(data => alive && setDetail({ loading: false, data }))
+      .catch(() => alive && setDetail({ loading: false, data: null }))
+    return () => {
+      alive = false
+    }
+  }, [open, detail, onLoadDetail, commit.hash])
+
+  return (
+    <li>
+      <button
+        ref={floating.refs.setReference}
+        type="button"
+        aria-current={selected ? 'true' : undefined}
+        className={cn(
+          'relative flex w-full items-stretch rounded-md text-left transition-colors',
+          'focus-visible:ring-primary-500/40 outline-none focus-visible:ring-2',
+          selected ? 'bg-active' : 'hover:bg-active',
+        )}
+        style={{ height: ROW_H }}
+        {...getReferenceProps({ onClick: () => onSelect?.(commit.hash) })}
+      >
+        <div className="relative z-10">
+          <GraphCell row={row} width={gutter} isHead={isHead} topStub={topStub} />
+        </div>
+
+        <div className="relative z-10 flex min-w-0 flex-1 items-center gap-1.5 pr-2 pl-1.5">
+          <span
+            className={cn(
+              'truncate text-[13px] transition-colors',
+              dim ? 'color-faint font-normal' : 'color-base font-medium',
+            )}
+            title={commit.subject}
+          >
+            {commit.subject}
+          </span>
+          {refs.map((refToken, i) => (
+            <RefLabel key={i} refToken={refToken} color={row.color} />
+          ))}
+        </div>
+      </button>
+
+      {isMounted && (
+        <FloatingPortal>
+          <div
+            ref={floating.refs.setFloating}
+            style={floating.floatingStyles}
+            data-af-animate
+            data-state={status === 'open' ? 'open' : 'closed'}
+            className="border-base bg-base z-tooltip w-80 overflow-hidden rounded-lg border shadow-lg"
+            {...getFloatingProps()}
+          >
+            <CommitHoverCard
+              commit={commit}
+              detail={detail}
+              onOpen={() => {
+                onSelect?.(commit.hash)
+                setOpen(false)
+              }}
+            />
+          </div>
+        </FloatingPortal>
+      )}
+    </li>
+  )
+})
+
+function WipRow({ col, color, gutter, changes }: {
+  col: number
+  color: string
+  gutter: number
+  changes: number
+}) {
+  const mid = ROW_H / 2
+  return (
+    <li className="relative flex items-stretch" style={{ height: ROW_H }}>
+      <div className="relative z-10">
+        <svg width={gutter} height={ROW_H} className="block shrink-0" style={{ overflow: 'visible' }} aria-hidden>
+          <path
+            d={linkPath(col, mid, col, ROW_H)}
+            fill="none"
+            stroke={color}
+            strokeWidth={2}
+            strokeDasharray="2 3"
+            strokeLinecap="round"
+          />
+          <circle cx={cx(col)} cy={mid} r={NODE_R} className="fill-white dark:fill-[#111]" stroke={color} strokeWidth={2} strokeDasharray="2 2" />
+        </svg>
+      </div>
+      <div className="relative z-10 flex min-w-0 flex-1 items-center gap-2 pr-2 pl-1.5">
+        <Icon name="i-ph-pencil-simple-duotone" className="color-muted size-3.5 shrink-0" />
+        <span className="text-[13px] font-medium">Work in Progress</span>
+        <span className="color-muted text-xs">
+          {changes}
+          {' '}
+          {changes === 1 ? 'change' : 'changes'}
+        </span>
+      </div>
+    </li>
   )
 }
 
@@ -377,65 +428,6 @@ export function LogPanelView(props: LogPanelViewProps) {
     && commits.length > 0
     && (!selectedRef || selectedRef === currentBranch)
   const headRow = graph.rows[0]
-
-  // Hover card: an anchored floating card that resolves the hovered commit's
-  // detail lazily. `hovered` carries the fixed-position anchor; `details`
-  // caches per-hash results so re-hovering is instant.
-  const [hovered, setHovered] = useState<{ hash: string, top: number, left: number } | null>(null)
-  const [details, setDetails] = useState<Record<string, DetailState>>({})
-  const showTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
-  const hideTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
-  const detailsRef = useRef(details)
-  detailsRef.current = details
-  const onLoadDetailRef = useRef(onLoadDetail)
-  onLoadDetailRef.current = onLoadDetail
-
-  const commitByHash = useMemo(() => {
-    const map = new Map<string, Commit>()
-    for (const c of commits)
-      map.set(c.hash, c)
-    return map
-  }, [commits])
-
-  const loadDetail = useCallback((hash: string) => {
-    if (!onLoadDetailRef.current || detailsRef.current[hash])
-      return
-    setDetails(prev => ({ ...prev, [hash]: { loading: true, data: null } }))
-    onLoadDetailRef.current(hash)
-      .then(data => setDetails(prev => ({ ...prev, [hash]: { loading: false, data } })))
-      .catch(() => setDetails(prev => ({ ...prev, [hash]: { loading: false, data: null } })))
-  }, [])
-
-  const onHoverEnter = useCallback((hash: string, el: HTMLElement) => {
-    clearTimeout(hideTimer.current)
-    clearTimeout(showTimer.current)
-    showTimer.current = setTimeout(() => {
-      const rect = el.getBoundingClientRect()
-      let left = rect.left + Math.min(gutter, 64) + 8
-      left = Math.min(left, window.innerWidth - HOVER_CARD_W - 12)
-      left = Math.max(12, left)
-      let top = rect.bottom + 4
-      if (top + HOVER_CARD_EST_H > window.innerHeight)
-        top = Math.max(12, rect.top - HOVER_CARD_EST_H - 4)
-      setHovered({ hash, top, left })
-      loadDetail(hash)
-    }, 220)
-  }, [gutter, loadDetail])
-
-  const scheduleHide = useCallback(() => {
-    clearTimeout(showTimer.current)
-    clearTimeout(hideTimer.current)
-    hideTimer.current = setTimeout(setHovered, 160, null)
-  }, [])
-
-  const cancelHide = useCallback(() => {
-    clearTimeout(hideTimer.current)
-  }, [])
-
-  useEffect(() => () => {
-    clearTimeout(showTimer.current)
-    clearTimeout(hideTimer.current)
-  }, [])
 
   // Auto-load the next page when the bottom sentinel scrolls into view, instead
   // of a manual "Load more" button. `busyRef` debounces the observer so one
@@ -470,10 +462,8 @@ export function LogPanelView(props: LogPanelViewProps) {
     return () => observer.disconnect()
   }, [hasMore, loading, commits.length])
 
-  const hoveredCommit = hovered ? commitByHash.get(hovered.hash) : undefined
-
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-baseline gap-2.5">
           <h2 className="text-lg leading-none font-semibold tracking-tight">Commit History</h2>
@@ -489,8 +479,8 @@ export function LogPanelView(props: LogPanelViewProps) {
       </div>
 
       {!rpcConnected && (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+        <div className="space-y-1.5">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}
         </div>
       )}
 
@@ -507,7 +497,7 @@ export function LogPanelView(props: LogPanelViewProps) {
       )}
 
       {isRepo === true && commits.length > 0 && (
-        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto pr-2" onScroll={scheduleHide}>
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto pr-1">
           <ul>
             {showWip && headRow && (
               <WipRow col={headRow.col} color={headRow.color} gutter={gutter} changes={workingChanges ?? 0} />
@@ -522,10 +512,8 @@ export function LogPanelView(props: LogPanelViewProps) {
                 isHead={i === 0}
                 topStub={i === 0 && showWip}
                 selected={commit.hash === selectedHash}
-                active={commit.hash === hovered?.hash}
                 onSelect={onSelectCommit}
-                onHoverEnter={onHoverEnter}
-                onHoverLeave={scheduleHide}
+                onLoadDetail={onLoadDetail}
               />
             ))}
           </ul>
@@ -537,20 +525,6 @@ export function LogPanelView(props: LogPanelViewProps) {
             </div>
           )}
         </div>
-      )}
-
-      {hovered && hoveredCommit && (
-        <CommitHoverCard
-          commit={hoveredCommit}
-          detail={details[hovered.hash]}
-          position={{ top: hovered.top, left: hovered.left }}
-          onOpen={() => {
-            onSelectCommit?.(hovered.hash)
-            setHovered(null)
-          }}
-          onMouseEnter={cancelHide}
-          onMouseLeave={scheduleHide}
-        />
       )}
     </div>
   )

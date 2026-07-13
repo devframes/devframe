@@ -52,6 +52,8 @@
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
+    "@floating-ui/react": "catalog:frontend",
+    "@iconify-json/catppuccin": "catalog:frontend",
     "@pierre/diffs": "catalog:frontend",
     "@radix-ui/react-scroll-area": "catalog:frontend",
     "@radix-ui/react-separator": "catalog:frontend",

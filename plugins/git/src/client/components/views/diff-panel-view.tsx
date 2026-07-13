@@ -2,7 +2,7 @@
 
 import type { FileDiffMetadata, FileDiffOptions } from '@pierre/diffs'
 import type { ReactNode } from 'react'
-import type { GitDiff } from '../../../index'
+import type { FileStatusCode, GitDiff } from '../../../index'
 import { parsePatchFiles } from '@pierre/diffs'
 import { FileDiff } from '@pierre/diffs/react'
 import { useMemo, useState } from 'react'
@@ -10,9 +10,11 @@ import { cn } from '../../lib/utils'
 import { useColorScheme } from '../theme'
 import { Badge } from '../ui/badge'
 import { IconButton } from '../ui/button'
+import { FileIcon } from '../ui/file-icon'
 import { Icon } from '../ui/icon'
 import { ScrollArea } from '../ui/scroll-area'
 import { Skeleton } from '../ui/skeleton'
+import { StatusMark } from '../ui/status-mark'
 
 export interface DiffPanelViewProps {
   data: GitDiff | null
@@ -51,18 +53,18 @@ function fileStats(file: FileDiffMetadata): { additions: number, deletions: numb
   return { additions, deletions }
 }
 
-/** Phosphor icon + tint for a parsed file's change type. */
-function changeTypeIcon(type: FileDiffMetadata['type']): { name: string, className: string } {
+/** Map a parsed file's change type to a git status code (for the status mark). */
+function changeTypeStatus(type: FileDiffMetadata['type']): FileStatusCode {
   switch (type) {
     case 'new':
-      return { name: 'i-ph-file-plus-duotone', className: 'text-success' }
+      return 'added'
     case 'deleted':
-      return { name: 'i-ph-file-x-duotone', className: 'text-error' }
+      return 'deleted'
     case 'rename-pure':
     case 'rename-changed':
-      return { name: 'i-ph-file-arrow-up-duotone', className: 'color-muted' }
+      return 'renamed'
     default:
-      return { name: 'i-ph-file-duotone', className: 'color-muted' }
+      return 'modified'
   }
 }
 
@@ -74,7 +76,6 @@ function changeTypeIcon(type: FileDiffMetadata['type']): { name: string, classNa
 function FileDiffSection({ file, options, defaultOpen }: { file: FileDiffMetadata, options: FileDiffOptions<undefined>, defaultOpen: boolean }) {
   const [open, setOpen] = useState(defaultOpen)
   const { additions, deletions } = fileStats(file)
-  const icon = changeTypeIcon(file.type)
   const label = file.prevName ? `${file.prevName} → ${file.name}` : file.name
 
   return (
@@ -83,10 +84,11 @@ function FileDiffSection({ file, options, defaultOpen }: { file: FileDiffMetadat
         type="button"
         onClick={() => setOpen(value => !value)}
         aria-expanded={open}
-        className="hover:bg-active bg-secondary flex w-full items-center gap-2 px-2.5 py-1.5 text-left font-mono text-xs transition-colors"
+        className="hover:bg-active bg-secondary flex w-full items-center gap-1.5 px-2.5 py-1.5 text-left font-mono text-xs transition-colors"
       >
         <Icon name="i-ph-caret-right" className={cn('color-faint size-3 transition-transform', open && 'rotate-90')} />
-        <Icon name={icon.name} className={cn('size-3.5', icon.className)} />
+        <StatusMark code={changeTypeStatus(file.type)} />
+        <FileIcon path={file.name} className="size-3.5" />
         <span className="min-w-0 flex-1 truncate" title={label}>{label}</span>
         {file.hunks.length > 0
           ? (

@@ -57,7 +57,7 @@ function Harness(props: Partial<React.ComponentProps<typeof StatusPanelView>>) {
 }
 
 const meta = {
-  title: 'Panels/Status',
+  title: 'Panels/Changes',
   component: Harness,
 } satisfies Meta<typeof Harness>
 
@@ -69,3 +69,13 @@ export const ReadOnly: Story = { args: { canWrite: false } }
 export const Clean: Story = { args: { data: clean } }
 export const Loading: Story = { args: { data: null, loading: true } }
 export const NotARepo: Story = { args: { data: { ...clean, isRepo: false } } }
+export const FileSelected: Story = {
+  args: {
+    selectedKey: 'false:README.md',
+    patchSlot: (
+      <div className="color-muted p-3 font-mono text-xs">
+        diff --git a/README.md b/README.md
+      </div>
+    ),
+  },
+}

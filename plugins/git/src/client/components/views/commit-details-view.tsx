@@ -3,9 +3,11 @@
 import type { CommitDetail } from '../../../index'
 import { Badge } from '../ui/badge'
 import { IconButton } from '../ui/button'
+import { FileIcon } from '../ui/file-icon'
 import { Icon } from '../ui/icon'
 import { ScrollArea } from '../ui/scroll-area'
 import { Skeleton } from '../ui/skeleton'
+import { StatusMark } from '../ui/status-mark'
 import { DiffPatchView } from './diff-panel-view'
 
 export interface CommitDetailsViewProps {
@@ -134,12 +136,14 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
                 : (
                     <ul className="space-y-0.5">
                       {data.files.map(file => (
-                        <li key={file.path} className="flex items-center gap-2 font-mono text-xs">
-                          <span className="min-w-0 flex-1 truncate" title={file.path}>{file.path}</span>
+                        <li key={file.path} className="flex items-center gap-2 text-xs">
+                          <StatusMark code={file.status} />
+                          <FileIcon path={file.path} className="size-4 shrink-0" />
+                          <span className="min-w-0 flex-1 truncate font-mono" title={file.path}>{file.path}</span>
                           {file.binary
                             ? <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">bin</Badge>
                             : (
-                                <span className="shrink-0 tabular-nums">
+                                <span className="shrink-0 font-mono tabular-nums">
                                   <span className="text-success">{`+${file.additions}`}</span>
                                   {' '}
                                   <span className="text-error">{`−${file.deletions}`}</span>
