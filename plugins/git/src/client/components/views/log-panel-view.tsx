@@ -26,9 +26,9 @@ import { IconButton } from '../ui/button'
 import { Icon } from '../ui/icon'
 import { Skeleton } from '../ui/skeleton'
 
-const ROW_H = 36
-const COL_W = 16
-const NODE_R = 4.5
+const ROW_H = 30
+const COL_W = 15
+const NODE_R = 4
 const PAD_L = 8
 
 export interface LogPanelViewProps {
