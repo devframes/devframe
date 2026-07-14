@@ -1,8 +1,11 @@
 import type { RpcStreamingChannel } from 'devframe/types'
+import type { Buffer } from 'node:buffer'
 import type { Result as TinyExecResult } from 'tinyexec'
 import type { IPty } from 'zigpty'
 import type {
   DevframeChildProcessExecuteOptions,
+  DevframeChildProcessOutput,
+  DevframeChildProcessResult,
   DevframeChildProcessTerminalSession,
   DevframePtyExecuteOptions,
   DevframePtyTerminalSession,
@@ -169,6 +172,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
 
     let controller: ReadableStreamDefaultController<string> | undefined
     let cp: TinyExecResult | undefined
+    let currentResult: DevframeChildProcessResult | undefined
     let runId = 0
     let streamClosed = false
 
@@ -225,21 +229,70 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         },
       )
 
-      ;(async () => {
-        try {
-          for await (const chunk of cp) {
-            if (streamClosed || currentRun !== runId)
-              return
-            controller?.enqueue(chunk)
-          }
-          if (currentRun === runId)
-            closeStream()
-        }
-        catch (error) {
-          if (currentRun === runId)
-            errorStream(error)
-        }
-      })()
+      // Capture stdout/stderr separately (for `getResult()`) by listening on
+      // the raw child process directly, rather than consuming `cp`'s own
+      // async iterator/promise — those merge stdout+stderr line-by-line and
+      // would starve one another if both were read from.
+      const stdoutChunks: string[] = []
+      const stderrChunks: string[] = []
+      let settled = false
+      let resolveOutput!: (output: DevframeChildProcessOutput) => void
+      const outputPromise = new Promise<DevframeChildProcessOutput>((resolve) => {
+        resolveOutput = resolve
+      })
+
+      const settle = (exitCode: number | undefined) => {
+        if (settled || currentRun !== runId)
+          return
+        settled = true
+        resolveOutput({
+          stdout: stdoutChunks.join(''),
+          stderr: stderrChunks.join(''),
+          exitCode,
+        })
+      }
+
+      cp.process?.stdout?.on('data', (chunk: Buffer | string) => {
+        if (currentRun !== runId)
+          return
+        const text = chunk.toString()
+        stdoutChunks.push(text)
+        if (!streamClosed)
+          controller?.enqueue(text)
+      })
+      cp.process?.stderr?.on('data', (chunk: Buffer | string) => {
+        if (currentRun !== runId)
+          return
+        const text = chunk.toString()
+        stderrChunks.push(text)
+        if (!streamClosed)
+          controller?.enqueue(text)
+      })
+      cp.process?.once('error', (error) => {
+        if (currentRun !== runId)
+          return
+        settle(cp.process?.exitCode ?? undefined)
+        errorStream(error)
+      })
+      cp.process?.once('close', (code) => {
+        settle(code ?? undefined)
+        if (currentRun === runId)
+          closeStream()
+      })
+
+      currentResult = {
+        get pid() {
+          return cp.process?.pid
+        },
+        get exitCode() {
+          return cp.process?.exitCode ?? undefined
+        },
+        get killed() {
+          return cp.process?.killed === true
+        },
+        kill: signal => cp.kill(signal),
+        then: (onfulfilled, onrejected) => outputPromise.then(onfulfilled, onrejected),
+      }
 
       return cp
     }
@@ -265,6 +318,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       type: 'child-process',
       executeOptions,
       getChildProcess: () => cp?.process,
+      getResult: () => currentResult!,
       terminate,
       restart,
     }

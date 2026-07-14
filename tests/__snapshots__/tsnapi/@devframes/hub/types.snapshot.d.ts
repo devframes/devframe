@@ -8,6 +8,8 @@ export { ConnectionMeta }
 export { CreateHubContextOptions }
 export { DevframeCapabilities }
 export { DevframeChildProcessExecuteOptions }
+export { DevframeChildProcessOutput }
+export { DevframeChildProcessResult }
 export { DevframeChildProcessTerminalSession }
 export { DevframeClientCommand }
 export { DevframeCommandBase }

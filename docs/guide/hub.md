@@ -13,7 +13,7 @@ A hub-aware node context (`DevframeHubContext`) extends `DevframeNodeContext` wi
 | Subsystem | Surface | Purpose |
 |---|---|---|
 | `ctx.docks` | `register / update / values` | Multi-tool dock entries (iframes, launchers, json-render, custom-render) and groups that collapse them under one button. |
-| `ctx.terminals` | `register / startChildProcess` | Aggregate terminal sessions, stream output over a well-known channel. The single source of truth for "what sessions exist" — see [Terminals](/plugins/terminals#hub-aggregation) for how the terminals plugin renders and mirrors into it. |
+| `ctx.terminals` | `register / startChildProcess` | Aggregate terminal sessions, stream output over a well-known channel. The single source of truth for "what sessions exist" — see [Terminals](/plugins/terminals#hub-aggregation) for how the terminals plugin renders and mirrors into it. A `startChildProcess()` session's `getResult()` mirrors `tinyexec`'s `Result` (promise-like, plus live `pid` / `exitCode` / `killed`), so subprocess-runner APIs built on `tinyexec`/`execa` can adopt it with little change. |
 | `ctx.messages` | `add / update / remove / clear` | Server-side toast/notification queue (FIFO, capped at 1000). |
 | `ctx.commands` | `register / execute / list` | Hierarchical command palette with keybindings and `when` clauses. |
 
