@@ -177,6 +177,84 @@ describe('devframeTerminalHost stream lifecycle', () => {
     // Stream stays closed; no orphan output stream.
     expect(sinks.get('child')?.closed).toBe(true)
   })
+
+  it('getResult() resolves with separately captured stdout/stderr and the exit code', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startChildProcess({
+      command: process.execPath,
+      args: ['-e', 'process.stdout.write("out"); process.stderr.write("err"); process.exit(3)'],
+    }, {
+      id: 'child',
+      title: 'Child',
+    })
+
+    const output = await session.getResult()
+    expect(output).toEqual({ stdout: 'out', stderr: 'err', exitCode: 3 })
+    // The merged display stream still carries both, for terminal rendering.
+    expect(session.buffer?.join('')).toContain('out')
+    expect(session.buffer?.join('')).toContain('err')
+  })
+
+  it('getResult() exposes live pid/exitCode/killed before and after exit', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startChildProcess({
+      command: process.execPath,
+      args: ['-e', 'setTimeout(() => process.exit(0), 50)'],
+    }, {
+      id: 'child',
+      title: 'Child',
+    })
+
+    const result = session.getResult()
+    expect(result.pid).toBeTypeOf('number')
+    expect(result.exitCode).toBeUndefined()
+    expect(result.killed).toBe(false)
+
+    await result
+    expect(result.exitCode).toBe(0)
+  })
+
+  it('getResult() tracks the new run after restart()', async () => {
+    const { host } = createTerminalHost()
+
+    // Long-running, so the stream is still open (and `restart()` allowed)
+    // by the time we restart it.
+    const session = await host.startChildProcess({
+      command: process.execPath,
+      args: ['-e', 'setInterval(() => {}, 1000)'],
+    }, {
+      id: 'child',
+      title: 'Child',
+    })
+
+    const firstHandle = session.getResult()
+    expect(firstHandle.exitCode).toBeUndefined()
+
+    await session.restart()
+    const secondHandle = session.getResult()
+    // A fresh result handle for the fresh run, not the stale first one.
+    expect(secondHandle).not.toBe(firstHandle)
+
+    await session.terminate()
+  })
+
+  it('getResult() still settles with the real exit code after terminate()', async () => {
+    const { host, sinks } = createTerminalHost()
+    const session = await host.startChildProcess(
+      { command: process.execPath, args: ['-e', 'setInterval(() => {}, 1000)'] },
+      { id: 'child', title: 'Child' },
+    )
+    const result = session.getResult()
+    await session.terminate()
+    await waitUntil(() => {
+      expect(sinks.get('child')?.closed).toBe(true)
+    })
+
+    const output = await result
+    expect(output.exitCode).toBeUndefined()
+  })
 })
 
 describe('devframeTerminalHost interactive PTY sessions', () => {

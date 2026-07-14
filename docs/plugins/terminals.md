@@ -56,6 +56,8 @@ Mounted into a hub, the plugin owns PTY/child-process spawning and its own strea
 
 `ctx.terminals` is the source of truth for "what sessions exist"; the plugin is the panel that renders them and the one PTY-capable provider among possibly several session sources. The plugin never imports `@devframes/hub`'s types to stay mountable without a hub — it duck-types the minimal `register` / `update` / `events` shape it needs.
 
+A session from `ctx.terminals.startChildProcess()` carries a `getResult()` accessor shaped like `tinyexec`'s `Result` — `await`able to `{ stdout, stderr, exitCode }` (captured separately from the merged display stream), with live `pid` / `exitCode` / `killed` getters and `kill()` in the meantime. That's the seam for migrating an existing `tinyexec`/`execa`-based "run a subprocess and get its result" API onto the hub's terminals: keep the same calling code, swap the runner for `startChildProcess()`, and the session's output shows up in every hub-aware terminal panel for free.
+
 ## Source
 
 [`plugins/terminals`](https://github.com/devframes/devframe/tree/main/plugins/terminals)
