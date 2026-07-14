@@ -12,6 +12,7 @@ import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
 import { H3, toNodeHandler } from 'h3'
 import { diagnostics } from './diagnostics'
 import { getInternalContext } from './hub-internals/context'
+import { formatHostForUrl, normalizeHttpServerUrl } from './utils'
 
 export interface StartHttpAndWsOptions {
   context: DevframeNodeContext
@@ -260,13 +261,16 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
 
   const address = httpServer.address()
   const resolvedPort = typeof address === 'object' && address ? address.port : port
-  const origin = `http://${bindHost}:${resolvedPort}`
+  // Advertise a dialable origin: a wildcard bind host (`0.0.0.0` / `::`) is not
+  // reachable from a browser, so the URL a client opens falls back to loopback
+  // even though the socket keeps listening on every interface.
+  const origin = normalizeHttpServerUrl(bindHost, resolvedPort)
   const internal = getInternalContext(context)
   // Record the full WS URL (including the bound route) so consumers like the
   // hub docks host can hand remote iframes a complete endpoint. A dedicated WS
   // port is reflected here so the URL stays dialable.
   const wsPortForUrl = separateWsPort ?? resolvedPort
-  const wsUrl = `ws://${bindHost}:${wsPortForUrl}${options.path ?? ''}`
+  const wsUrl = `ws://${formatHostForUrl(bindHost)}:${wsPortForUrl}${options.path ?? ''}`
   internal.wsEndpoint = {
     url: wsUrl,
   }
