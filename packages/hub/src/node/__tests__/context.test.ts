@@ -58,8 +58,10 @@ describe('startHttpAndWs remote endpoint metadata', () => {
       port: 0,
     })
 
+    // The advertised WS endpoint is dialable: the loopback IP normalizes to
+    // `localhost`, matching the HTTP origin's normalization.
     expect(getInternalContext(context).wsEndpoint).toEqual({
-      url: `ws://127.0.0.1:${started.port}`,
+      url: `ws://localhost:${started.port}`,
     })
 
     await started.close()

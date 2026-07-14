@@ -86,8 +86,10 @@ export declare function createRpcSharedStateServerHost(_: RpcFunctionsHost$1): R
 export declare function createRpcStreamingServerHost(_: RpcFunctionsHost$1): RpcStreamingHost;
 export declare function createScopedNodeContext<NS extends string = string>(_: DevframeNodeContext, _: NS): DevframeScopedNodeContext<NS>;
 export declare function createStorage<T extends object>(_: CreateStorageOptions<T>): SharedState<T>;
+export declare function formatHostForUrl(_: string): string;
 export declare function isObject(_: unknown): value is Record<string, any>;
 export declare function normalizeHttpServerUrl(_: string, _: number | string): string;
+export declare function toDialableHost(_: string): string;
 // #endregion
 
 // #region Other
