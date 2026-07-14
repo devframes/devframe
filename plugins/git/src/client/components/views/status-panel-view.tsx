@@ -1,12 +1,15 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import type { FileStatusCode, GitStatus, StatusFileEntry } from '../../../index'
+import type { GitStatus, StatusFileEntry } from '../../../index'
+import { cn } from '../../lib/utils'
 import { Badge } from '../ui/badge'
 import { Button, IconButton } from '../ui/button'
+import { FileIcon } from '../ui/file-icon'
 import { Icon } from '../ui/icon'
 import { ScrollArea } from '../ui/scroll-area'
 import { Skeleton } from '../ui/skeleton'
+import { StatusMark } from '../ui/status-mark'
 import { Textarea } from '../ui/textarea'
 
 export interface StatusPanelViewProps {
@@ -16,44 +19,47 @@ export interface StatusPanelViewProps {
   canWrite: boolean
   message: string
   note: string | null
+  /** `${staged}:${path}` of the file whose diff is shown, or `null`. */
+  selectedKey?: string | null
   onRefresh: () => void | Promise<void>
   onStage: (paths: string[]) => void | Promise<void>
   onUnstage: (paths: string[]) => void | Promise<void>
   onCommit: () => void | Promise<void>
   onMessageChange: (value: string) => void
+  /** Reveal a file's diff. `staged` picks the index-vs-HEAD diff. */
+  onSelectFile?: (path: string, staged: boolean) => void
+  /** The selected file's diff viewer, rendered below the file list. */
+  patchSlot?: ReactNode
 }
 
-const STATUS_LABEL: Record<FileStatusCode, string> = {
-  'modified': 'M',
-  'added': 'A',
-  'deleted': 'D',
-  'renamed': 'R',
-  'copied': 'C',
-  'type-changed': 'T',
-  'unmerged': 'U',
-  'unknown': '?',
+function fileKey(path: string, staged: boolean): string {
+  return `${staged}:${path}`
 }
 
-function statusColor(code: FileStatusCode): string {
-  switch (code) {
-    case 'added': return 'text-success'
-    case 'deleted': return 'text-error'
-    case 'modified': return 'text-warning'
-    case 'unmerged': return 'text-error'
-    default: return 'color-muted'
-  }
-}
-
-function FileRow({ entry, action }: { entry: StatusFileEntry, action?: ReactNode }) {
+function FileRow({ entry, staged, selected, action, onSelect }: {
+  entry: StatusFileEntry
+  staged: boolean
+  selected: boolean
+  action?: ReactNode
+  onSelect?: (path: string, staged: boolean) => void
+}) {
   const label = entry.from ? `${entry.from} → ${entry.path}` : entry.path
   return (
-    <li className="hover:bg-active flex items-center gap-2 rounded py-0.5 pl-1 font-mono text-xs transition-colors">
-      <span className={`w-3 shrink-0 text-center font-semibold ${statusColor(entry.status)}`}>
-        {STATUS_LABEL[entry.status]}
-      </span>
-      <span className="flex-1 truncate" title={label}>
-        {label}
-      </span>
+    <li
+      className={cn(
+        'group flex items-center gap-1 rounded pr-1 transition-colors',
+        selected ? 'bg-active' : 'hover:bg-active',
+      )}
+    >
+      <button
+        type="button"
+        onClick={() => onSelect?.(entry.path, staged)}
+        className="flex min-w-0 flex-1 items-center gap-1.5 py-0.5 pl-1 text-left text-xs outline-none"
+      >
+        <StatusMark code={entry.status} />
+        <FileIcon path={entry.path} className="size-4" />
+        <span className="min-w-0 flex-1 truncate font-mono" title={label}>{label}</span>
+      </button>
       {action}
     </li>
   )
@@ -87,7 +93,7 @@ function Section({
 }
 
 export function StatusPanelView(props: StatusPanelViewProps) {
-  const { data, loading, busy, canWrite, message, note, onRefresh, onStage, onUnstage, onCommit, onMessageChange } = props
+  const { data, loading, busy, canWrite, message, note, selectedKey, onRefresh, onStage, onUnstage, onCommit, onMessageChange, onSelectFile, patchSlot } = props
 
   const stageBtn = (paths: string[], label: string) => (
     <IconButton variant="ghost" size="sm" disabled={busy} aria-label={label} onClick={() => onStage(paths)}>
@@ -103,47 +109,44 @@ export function StatusPanelView(props: StatusPanelViewProps) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex shrink-0 items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          {data?.isRepo
-            ? (
-                <>
-                  <Badge variant="outline" className="gap-1 font-mono">
-                    <Icon name="i-ph-git-branch-duotone" className="size-3" />
-                    {data.detached ? `detached @ ${data.head}` : data.branch}
-                  </Badge>
-                  {data.upstream && (
-                    <Badge variant="secondary" className="gap-1 font-mono">
-                      {data.upstream}
-                      {data.ahead > 0 && (
-                        <span className="text-success inline-flex items-center tabular-nums">
-                          <Icon name="i-ph-arrow-up" className="size-3" />
-                          {data.ahead}
-                        </span>
-                      )}
-                      {data.behind > 0 && (
-                        <span className="text-warning inline-flex items-center tabular-nums">
-                          <Icon name="i-ph-arrow-down" className="size-3" />
-                          {data.behind}
-                        </span>
-                      )}
-                    </Badge>
-                  )}
-                  {data.clean
-                    ? (
-                        <Badge variant="success" className="gap-1">
-                          <Icon name="i-ph-check" className="size-3" />
-                          clean
-                        </Badge>
-                      )
-                    : <Badge variant="warning">working tree dirty</Badge>}
-                </>
-              )
-            : <Skeleton className="h-5 w-40" />}
+        <div className="flex min-w-0 items-baseline gap-2.5">
+          <h2 className="text-lg leading-none font-semibold tracking-tight">Changes</h2>
+          {data?.isRepo && !data.clean && (
+            <span className="color-muted shrink-0 text-xs tabular-nums">
+              {data.staged.length + data.unstaged.length + data.untracked.length}
+              {' '}
+              changed
+            </span>
+          )}
         </div>
-        <IconButton variant="ghost" size="sm" onClick={onRefresh} disabled={loading || busy} aria-label="Refresh status">
-          <Icon name="i-ph-arrows-clockwise" className={`size-4 ${loading ? 'animate-spin' : ''}`} />
-        </IconButton>
+        <div className="flex items-center gap-2">
+          {data?.isRepo && (data.ahead > 0 || data.behind > 0) && (
+            <Badge variant="secondary" className="gap-1 font-mono">
+              {data.ahead > 0 && (
+                <span className="text-success inline-flex items-center tabular-nums">
+                  <Icon name="i-ph-arrow-up" className="size-3" />
+                  {data.ahead}
+                </span>
+              )}
+              {data.behind > 0 && (
+                <span className="text-warning inline-flex items-center tabular-nums">
+                  <Icon name="i-ph-arrow-down" className="size-3" />
+                  {data.behind}
+                </span>
+              )}
+            </Badge>
+          )}
+          <IconButton variant="ghost" size="sm" onClick={onRefresh} disabled={loading || busy} aria-label="Refresh status">
+            <Icon name="i-ph-arrows-clockwise" className={`size-4 ${loading ? 'animate-spin' : ''}`} />
+          </IconButton>
+        </div>
       </div>
+
+      {!data && (
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-6 w-full" />)}
+        </div>
+      )}
 
       {data && !data.isRepo && (
         <p className="color-muted text-sm">The working directory is not a git repository.</p>
@@ -168,6 +171,9 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                   <FileRow
                     key={`s:${entry.path}`}
                     entry={entry}
+                    staged
+                    selected={selectedKey === fileKey(entry.path, true)}
+                    onSelect={onSelectFile}
                     action={canWrite ? unstageBtn([entry.path], `Unstage ${entry.path}`) : undefined}
                   />
                 ))}
@@ -184,6 +190,9 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                   <FileRow
                     key={`u:${entry.path}`}
                     entry={entry}
+                    staged={false}
+                    selected={selectedKey === fileKey(entry.path, false)}
+                    onSelect={onSelectFile}
                     action={canWrite ? stageBtn([entry.path], `Stage ${entry.path}`) : undefined}
                   />
                 ))}
@@ -200,12 +209,21 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                   <FileRow
                     key={`t:${path}`}
                     entry={{ path, status: 'unknown' }}
+                    staged={false}
+                    selected={selectedKey === fileKey(path, false)}
+                    onSelect={onSelectFile}
                     action={canWrite ? stageBtn([path], `Stage ${path}`) : undefined}
                   />
                 ))}
               </Section>
             </div>
           </ScrollArea>
+
+          {patchSlot && (
+            <div className="min-h-0 flex-1 overflow-hidden rounded-md border">
+              {patchSlot}
+            </div>
+          )}
 
           {canWrite && data.staged.length > 0 && (
             <div className="shrink-0 space-y-2 border-t pt-3">

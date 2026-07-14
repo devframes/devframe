@@ -1,8 +1,10 @@
 'use client'
 
 import type { DevframeRpcClient } from 'devframe/client'
+import type { ConnectionMeta } from 'devframe/types'
 import type { ReactNode } from 'react'
 import { connectDevframe } from 'devframe/client'
+import { DEVFRAME_WS_ROUTE } from 'devframe/constants'
 import { createContext, use, useEffect, useState } from 'react'
 
 interface ConnectionState {
@@ -28,8 +30,13 @@ export function RpcProvider({ children }: { children: ReactNode }) {
     // Next.js statically inlines `process.env.NEXT_PUBLIC_*` at build time.
     // eslint-disable-next-line node/prefer-global/process
     const devWs = process.env.NEXT_PUBLIC_DEVFRAME_WS
-    const options = devWs
-      ? { connectionMeta: { backend: 'websocket' as const, websocket: devWs } }
+    // A bare port (what `scripts/dev.mjs` sets) becomes a same-host socket on
+    // the backend's WS route; a full `ws(s)://` URL is used verbatim.
+    const websocket: ConnectionMeta['websocket'] | undefined = devWs
+      ? (/^\d+$/.test(devWs) ? { port: Number(devWs), path: DEVFRAME_WS_ROUTE } : devWs)
+      : undefined
+    const options = websocket
+      ? { connectionMeta: { backend: 'websocket' as const, websocket } }
       : undefined
     connectDevframe(options).then(
       (rpc) => {

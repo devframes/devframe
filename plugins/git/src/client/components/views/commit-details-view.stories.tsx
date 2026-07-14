@@ -43,9 +43,9 @@ const detail: CommitDetail = {
   parents: ['b2c3d4e5f6a7b8c9'],
   refs: ['HEAD -> main', 'origin/main'],
   files: [
-    { path: 'src/client/components/views/log-panel-view.tsx', additions: 41, deletions: 18, binary: false },
-    { path: 'src/client/components/log-panel.tsx', additions: 6, deletions: 1, binary: false },
-    { path: 'public/preview.png', additions: 0, deletions: 0, binary: true },
+    { path: 'src/client/components/views/log-panel-view.tsx', additions: 41, deletions: 18, binary: false, status: 'modified' },
+    { path: 'src/client/components/log-panel.tsx', additions: 6, deletions: 1, binary: false, status: 'added' },
+    { path: 'public/preview.png', additions: 0, deletions: 0, binary: true, status: 'added' },
   ],
   totalAdditions: 47,
   totalDeletions: 19,

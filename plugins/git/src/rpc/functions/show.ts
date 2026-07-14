@@ -1,4 +1,5 @@
 import type { GitContext } from '../context.ts'
+import type { FileStatusCode } from './status.ts'
 import { defineRpcFunction } from 'devframe'
 import { isSafeRevision, splitClean, tryGit, UNIT } from '../../node/git.ts'
 import { getGitContext } from '../context.ts'
@@ -17,6 +18,8 @@ export interface CommitFile {
   additions: number
   deletions: number
   binary: boolean
+  /** Change kind relative to the parent (add / modify / delete / rename …). */
+  status: FileStatusCode
 }
 
 export interface CommitDetail {
@@ -91,15 +94,46 @@ const SHOW_FORMAT = [
   '%b', // body
 ].join(UNIT)
 
-function parseNumstat(raw: string): CommitFile[] {
+function mapStatusCode(code: string): FileStatusCode {
+  switch (code[0]) {
+    case 'M': return 'modified'
+    case 'A': return 'added'
+    case 'D': return 'deleted'
+    case 'R': return 'renamed'
+    case 'C': return 'copied'
+    case 'T': return 'type-changed'
+    case 'U': return 'unmerged'
+    default: return 'unknown'
+  }
+}
+
+/**
+ * Parse `git diff-tree --name-status` into a `path → status` map. Rename/copy
+ * rows carry a similarity score and both old + new paths; the new path (last
+ * field) keys the map so it aligns with the numstat entry.
+ */
+function parseNameStatus(raw: string): Map<string, FileStatusCode> {
+  const map = new Map<string, FileStatusCode>()
+  for (const line of splitClean(raw, '\n')) {
+    const [code, ...paths] = line.split('\t')
+    const path = paths[paths.length - 1]
+    if (path)
+      map.set(path, mapStatusCode(code))
+  }
+  return map
+}
+
+function parseNumstat(raw: string, status: Map<string, FileStatusCode>): CommitFile[] {
   return splitClean(raw, '\n').map((line) => {
     const [add, del, ...rest] = line.split('\t')
     const binary = add === '-' || del === '-'
+    const path = rest.join('\t')
     return {
-      path: rest.join('\t'),
+      path,
       additions: binary ? 0 : Number(add),
       deletions: binary ? 0 : Number(del),
       binary,
+      status: status.get(path) ?? 'modified',
     }
   })
 }
@@ -129,7 +163,8 @@ async function readCommit(git: GitContext, hash: string, includePatch: boolean):
 
   // `--root` so the initial commit reports its full tree as additions.
   const numstat = await tryGit(git.cwd, ['diff-tree', '--no-commit-id', '--numstat', '-r', '--root', '--end-of-options', hash])
-  const files = numstat ? parseNumstat(numstat) : []
+  const nameStatusRaw = await tryGit(git.cwd, ['diff-tree', '--no-commit-id', '--name-status', '-r', '--root', '--end-of-options', hash])
+  const files = numstat ? parseNumstat(numstat, nameStatusRaw ? parseNameStatus(nameStatusRaw) : new Map()) : []
   const totalAdditions = files.reduce((sum, f) => sum + f.additions, 0)
   const totalDeletions = files.reduce((sum, f) => sum + f.deletions, 0)
 

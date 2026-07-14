@@ -52,6 +52,7 @@ export interface CommitFile {
   additions: number;
   deletions: number;
   binary: boolean;
+  status: FileStatusCode;
 }
 export interface CommitResult {
   ok: boolean;

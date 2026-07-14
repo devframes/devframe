@@ -118,6 +118,8 @@ describe('@devframes/plugin-git', () => {
     expect(detail.found).toBe(true)
     expect(detail.hash).toBe(log.commits[0].hash)
     expect(detail.files.map(file => file.path)).toContain('a.txt')
+    // Each changed file carries its change kind (add / modify / delete …).
+    expect(detail.files.find(file => file.path === 'a.txt')?.status).toBe('added')
   })
 
   it('lists local branches with the current one first', async () => {
