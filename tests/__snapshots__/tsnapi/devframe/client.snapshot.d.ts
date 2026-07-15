@@ -84,10 +84,6 @@ export interface DevframeScopedClientStreamingHost {
   subscribe: <T = unknown>(_: string, _: string, _?: StreamingSubscribeOptions) => StreamReader<T>;
   upload: <T = unknown>(_: string, _: string) => StreamSink<T>;
 }
-export interface PublishedConnectionMeta {
-  meta: ConnectionMeta;
-  metaBaseUrl?: string;
-}
 export interface RpcClientEvents {
   'rpc:is-trusted:updated': (_: boolean) => void;
   'connection:status': (_: DevframeConnectionStatus, _: DevframeConnectionStatus) => void;
@@ -133,7 +129,6 @@ export declare function createScopedClientContext<NS extends string = string>(_:
 export declare function getDevframeRpcClient(_?: DevframeRpcClientOptions): Promise<DevframeRpcClient>;
 export declare function isCallableStatus(_: DevframeConnectionStatus): boolean;
 export declare function readOtpFromUrl(_?: string): string | undefined;
-export declare function readPublishedConnectionMeta(_: unknown): PublishedConnectionMeta | undefined;
 // #endregion
 
 // #region Variables

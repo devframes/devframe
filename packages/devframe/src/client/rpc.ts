@@ -230,42 +230,7 @@ function persistAuthToken(token: string): void {
   ;(globalThis as any)[CONNECTION_AUTH_TOKEN_KEY] = token
 }
 
-/**
- * The connection meta published on a shared window for same-origin inheritance,
- * paired with the absolute base URL it was resolved against.
- *
- * Carrying `metaBaseUrl` is what lets a same-origin child mounted at another
- * base (e.g. a hub mounting several devframe SPAs at `/__foo/`, `/__bar/`, …)
- * resolve a relative `websocket.path` against the base the publisher loaded
- * `__connection.json` from, rather than against the child's own mount — which
- * would dial the wrong endpoint.
- */
-export interface PublishedConnectionMeta {
-  meta: ConnectionMeta
-  /**
-   * Absolute URL of the `__connection.json` the meta was resolved from. A
-   * relative `websocket.path` resolves against this, so it stays dialable no
-   * matter which base the inheriting SPA is mounted at.
-   */
-  metaBaseUrl?: string
-}
-
-/**
- * Normalize a value read off a shared window under {@link CONNECTION_META_KEY}
- * into a {@link PublishedConnectionMeta}. Accepts both the wrapped form (which
- * carries the base) and a bare {@link ConnectionMeta} (older publishers, or a
- * host that sets the key directly) — the latter inherits without a base.
- */
-export function readPublishedConnectionMeta(value: unknown): PublishedConnectionMeta | undefined {
-  if (!value || typeof value !== 'object')
-    return undefined
-  const wrapped = value as Partial<PublishedConnectionMeta>
-  if (wrapped.meta && typeof wrapped.meta === 'object')
-    return { meta: wrapped.meta, metaBaseUrl: wrapped.metaBaseUrl }
-  return { meta: value as ConnectionMeta }
-}
-
-function findConnectionMetaFromWindows(): PublishedConnectionMeta | undefined {
+function findConnectionMetaFromWindows(): ConnectionMeta | undefined {
   const getters = [
     () => (window as any)?.[CONNECTION_META_KEY],
     () => (globalThis as any)?.[CONNECTION_META_KEY],
@@ -276,7 +241,7 @@ function findConnectionMetaFromWindows(): PublishedConnectionMeta | undefined {
     try {
       const value = getter()
       if (value)
-        return readPublishedConnectionMeta(value)
+        return value
     }
     catch {}
   }
@@ -297,13 +262,13 @@ export async function getDevframeRpcClient(
   } = options
   const events = createEventEmitter<RpcClientEvents>()
   const bases = Array.isArray(baseURL) ? baseURL : [baseURL]
-  const inherited = options.connectionMeta ? undefined : findConnectionMetaFromWindows()
-  let connectionMeta: ConnectionMeta | undefined = options.connectionMeta || inherited?.meta
+  let connectionMeta: ConnectionMeta | undefined = options.connectionMeta || findConnectionMetaFromWindows()
   let resolvedBaseURL = bases[0] ?? './'
-  // When the meta is inherited from a same-origin parent, inherit the base it
-  // was resolved against too, so a relative `websocket.path` resolves against
-  // the publisher's mount rather than this SPA's own (possibly different) base.
-  const inheritedMetaBaseUrl = inherited?.metaBaseUrl
+  // When the meta is inherited from a same-origin parent, it carries the base
+  // it was resolved against (`baseUrl`); reuse it so a relative `websocket.path`
+  // resolves against the publisher's mount rather than this SPA's own
+  // (possibly different) base.
+  const inheritedMetaBaseUrl = options.connectionMeta ? undefined : connectionMeta?.baseUrl
 
   // Absolute URL of where `__connection.json` lives, used to resolve a
   // relative WS path against the SPA's own origin (proxy-safe). Falls back to
@@ -327,14 +292,14 @@ export async function getDevframeRpcClient(
         connectionMeta = await fetch(withBase(DEVFRAME_CONNECTION_META_FILENAME, base))
           .then(r => r.json()) as ConnectionMeta
         resolvedBaseURL = base
-        // Publish the meta together with the absolute base it was resolved
-        // against, so a same-origin child mounted at another base inherits a
-        // dialable endpoint instead of resolving the relative WS path against
-        // its own mount.
+        // Publish the meta annotated with the absolute base it was resolved
+        // against (`baseUrl`), so a same-origin child mounted at another base
+        // inherits a dialable endpoint instead of resolving the relative WS
+        // path against its own mount.
         ;(globalThis as any)[CONNECTION_META_KEY] = {
-          meta: connectionMeta,
-          metaBaseUrl: resolveMetaBaseUrl(),
-        } satisfies PublishedConnectionMeta
+          ...connectionMeta,
+          baseUrl: resolveMetaBaseUrl(),
+        } satisfies ConnectionMeta
         break
       }
       catch (e) {

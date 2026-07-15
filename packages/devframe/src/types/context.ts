@@ -120,4 +120,13 @@ export interface ConnectionMeta {
    * structured-clone.
    */
   jsonSerializableMethods?: string[]
+  /**
+   * Absolute URL of the `__connection.json` this meta was loaded from.
+   * Annotated by the client (not served) when it publishes the meta on a
+   * shared window for same-origin inheritance: a relative `websocket.path`
+   * resolves against this, so a child SPA mounted at another base (e.g. a hub
+   * mounting several devframes at `/__foo/`, `/__bar/`, …) inherits a dialable
+   * endpoint rather than resolving the path against its own mount.
+   */
+  baseUrl?: string
 }
