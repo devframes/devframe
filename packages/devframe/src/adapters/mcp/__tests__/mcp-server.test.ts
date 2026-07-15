@@ -61,7 +61,7 @@ describe('mcp adapter (in-memory)', () => {
     }
   })
 
-  it('calls a tool and returns the text content', async () => {
+  it('returns text and structured content for a tool with an output schema', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {
       ctx.agent.registerTool({
