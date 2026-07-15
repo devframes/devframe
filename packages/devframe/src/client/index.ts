@@ -1,5 +1,6 @@
 import { getDevframeRpcClient } from './rpc'
 
+export * from './connection'
 export * from './otp'
 export * from './rpc'
 export * from './rpc-streaming'

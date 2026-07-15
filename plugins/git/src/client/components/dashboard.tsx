@@ -6,6 +6,7 @@ import type { GitBranches } from '../../index'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { nav as navBar, navBrand, tab as tabClass, tabsList } from '../lib/design'
 import { CommitDetailsPanel } from './commit-details-panel'
+import { ConnectionState } from './connection-state'
 import { LogPanel } from './log-panel'
 import { RpcProvider, useRpc } from './rpc-provider'
 import { StatusPanel } from './status-panel'
@@ -91,10 +92,12 @@ function Resizer({ onPointerDown, label }: { onPointerDown: (e: ReactPointerEven
 }
 
 function ConnectionBadge() {
-  const { rpc, error } = useRpc()
-  if (error)
-    return <Badge variant="destructive">disconnected</Badge>
-  if (!rpc)
+  const { rpc, status } = useRpc()
+  if (status === 'error' || status === 'disconnected')
+    return <Badge variant="destructive">{status}</Badge>
+  if (status === 'unauthorized')
+    return <Badge variant="warning">unauthorized</Badge>
+  if (status === 'connecting' || !rpc)
     return <Badge variant="secondary">connecting…</Badge>
   const backend = rpc.connectionMeta.backend
   return (
@@ -251,10 +254,20 @@ function DashboardBody() {
   )
 }
 
+function DashboardGate() {
+  const { status, error } = useRpc()
+  // A static backend reports `connected` immediately; a websocket backend
+  // shows the connection state until it's live, so data views never spin
+  // against a socket that will never answer.
+  if (status !== 'connected')
+    return <ConnectionState status={status} error={error} />
+  return <DashboardBody />
+}
+
 export function Dashboard() {
   return (
     <RpcProvider>
-      <DashboardBody />
+      <DashboardGate />
     </RpcProvider>
   )
 }

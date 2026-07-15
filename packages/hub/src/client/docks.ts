@@ -1,4 +1,4 @@
-import type { DevframeRpcContext } from 'devframe/client'
+import type { DevframeConnectionStatus, DevframeRpcContext, RpcClientEvents } from 'devframe/client'
 import type { EventEmitter } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
@@ -45,6 +45,24 @@ export interface DocksContext extends DevframeRpcContext {
    * The when-clause context for conditional visibility
    */
   readonly when: WhenClauseContext
+  /**
+   * The live connection status of the underlying devframe client, so a viewer
+   * can render one central connection indicator for every docked plugin
+   * instead of each plugin surfacing its own.
+   */
+  readonly connection: DocksConnectionContext
+}
+
+export interface DocksConnectionContext {
+  /** The current connection status. */
+  readonly status: DevframeConnectionStatus
+  /** The most recent connection-level error, or `null` when healthy. */
+  readonly error: Error | null
+  /**
+   * The client's event emitter — subscribe to `connection:status`,
+   * `connection:error`, and `rpc:error` to react to changes.
+   */
+  readonly events: EventEmitter<RpcClientEvents>
 }
 
 export interface WhenClauseContext {

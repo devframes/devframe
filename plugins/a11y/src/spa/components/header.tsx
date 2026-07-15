@@ -45,14 +45,24 @@ export function Header(props: HeaderProps) {
   )
 }
 
-export function MetaLine(props: { report: Accessor<ScanReport | null>, backend: Accessor<string | null> }) {
+export function MetaLine(props: {
+  report: Accessor<ScanReport | null>
+  backend: Accessor<string | null>
+  status?: Accessor<string | null>
+}) {
+  // The backend is optional here, so a degraded connection is shown as a quiet
+  // tag rather than taking over the panel.
+  const degraded = () => {
+    const s = props.status?.()
+    return s === 'disconnected' || s === 'unauthorized' || s === 'error' ? s : null
+  }
   return (
     <Show when={props.report()}>
       {report => (
         <div class="meta">
           <span class="meta__url" title={report().url}>{report().url}</span>
-          <Show when={props.backend()}>
-            {b => <span class="meta__tag">{b()}</span>}
+          <Show when={degraded()} fallback={<Show when={props.backend()}>{b => <span class="meta__tag">{b()}</span>}</Show>}>
+            {s => <span class="meta__tag meta__tag--warn" title="devframe backend connection">{s()}</span>}
           </Show>
           <span class="meta__tag">
             axe

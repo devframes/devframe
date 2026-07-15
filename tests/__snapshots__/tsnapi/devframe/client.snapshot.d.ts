@@ -5,6 +5,8 @@
 export interface DevframeRpcClient {
   events: EventEmitter<RpcClientEvents>;
   readonly isTrusted: boolean | null;
+  readonly status: DevframeConnectionStatus;
+  readonly connectionError: Error | null;
   readonly connectionMeta: ConnectionMeta;
   ensureTrusted: (_?: number) => Promise<boolean>;
   requestTrust: () => Promise<boolean>;
@@ -24,6 +26,8 @@ export interface DevframeRpcClient {
 }
 export interface DevframeRpcClientMode {
   readonly isTrusted: boolean;
+  readonly status: DevframeConnectionStatus;
+  readonly connectionError: Error | null;
   ensureTrusted: DevframeRpcClient['ensureTrusted'];
   requestTrust: DevframeRpcClient['requestTrust'];
   requestTrustWithToken: DevframeRpcClient['requestTrustWithToken'];
@@ -40,6 +44,7 @@ export interface DevframeRpcClientOptions {
   wsOptions?: Partial<WsRpcChannelOptions>;
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>;
   cacheOptions?: boolean | Partial<RpcCacheOptions>;
+  callTimeout?: number;
 }
 export interface DevframeRpcContext {
   readonly rpc: DevframeRpcClient;
@@ -81,6 +86,9 @@ export interface DevframeScopedClientStreamingHost {
 }
 export interface RpcClientEvents {
   'rpc:is-trusted:updated': (_: boolean) => void;
+  'connection:status': (_: DevframeConnectionStatus, _: DevframeConnectionStatus) => void;
+  'connection:error': (_: Error) => void;
+  'rpc:error': (_: Error, _: string) => void;
 }
 export interface RpcStreamingClientHost {
   subscribe: <T = unknown>(_: string, _: string, _?: StreamingSubscribeOptions) => StreamReader<T>;
@@ -93,9 +101,21 @@ export interface StreamingSubscribeOptions {
 
 // #region Types
 export type DevframeClientRpcHost = RpcFunctionsCollector<DevframeRpcClientFunctions, DevframeRpcContext>;
+export type DevframeConnectionErrorKind = 'connection' | 'auth' | 'timeout';
+export type DevframeConnectionStatus = 'connecting' | 'connected' | 'unauthorized' | 'disconnected' | 'error';
 export type DevframeRpcClientCall = BirpcReturn<DevframeRpcServerFunctions, DevframeRpcClientFunctions>['$call'];
 export type DevframeRpcClientCallEvent = BirpcReturn<DevframeRpcServerFunctions, DevframeRpcClientFunctions>['$callEvent'];
 export type DevframeRpcClientCallOptional = BirpcReturn<DevframeRpcServerFunctions, DevframeRpcClientFunctions>['$callOptional'];
+// #endregion
+
+// #region Classes
+export declare class DevframeConnectionError extends Error {
+  name: string;
+  readonly kind: DevframeConnectionErrorKind;
+  constructor(_: DevframeConnectionErrorKind, _: string, _?: {
+    cause?: unknown;
+  });
+}
 // #endregion
 
 // #region Functions
@@ -107,6 +127,7 @@ export declare function createClientSettings<T extends Record<string, any> = Rec
 export declare function createRpcStreamingClientHost(_: DevframeRpcClient): RpcStreamingClientHost;
 export declare function createScopedClientContext<NS extends string = string>(_: DevframeRpcClient, _: NS): DevframeScopedClientContext<NS>;
 export declare function getDevframeRpcClient(_?: DevframeRpcClientOptions): Promise<DevframeRpcClient>;
+export declare function isCallableStatus(_: DevframeConnectionStatus): boolean;
 export declare function readOtpFromUrl(_?: string): string | undefined;
 // #endregion
 

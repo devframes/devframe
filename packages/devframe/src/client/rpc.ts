@@ -2,6 +2,7 @@ import type { BirpcOptions, BirpcReturn } from 'birpc'
 import type { RpcCacheOptions, RpcFunctionsCollector } from 'devframe/rpc'
 import type { WsRpcChannelOptions } from 'devframe/rpc/transports/ws-client'
 import type { ConnectionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, EventEmitter, RpcSharedStateHost, SettingsForNamespace } from 'devframe/types'
+import type { DevframeConnectionStatus } from './connection'
 import type { RpcStreamingClientHost } from './rpc-streaming'
 import type { DevframeScopedClientContext } from './scope'
 import {
@@ -29,6 +30,21 @@ export type DevframeClientRpcHost = RpcFunctionsCollector<DevframeRpcClientFunct
 
 export interface RpcClientEvents {
   'rpc:is-trusted:updated': (isTrusted: boolean) => void
+  /**
+   * The connection status changed. Carries the new status and the previous one
+   * so a UI can react to specific transitions (e.g. `connected` → `disconnected`).
+   */
+  'connection:status': (status: DevframeConnectionStatus, previous: DevframeConnectionStatus) => void
+  /**
+   * A connection-level error occurred (the WebSocket errored, or trust was
+   * refused). The status typically moves to `error`/`unauthorized` alongside it.
+   */
+  'connection:error': (error: Error) => void
+  /**
+   * An RPC call rejected — either from the server, or because the connection
+   * was down / timed out. Useful for a global error feed or toast surface.
+   */
+  'rpc:error': (error: Error, method: string) => void
 }
 
 const CONNECTION_META_KEY = '__DEVFRAME_CONNECTION_META__'
@@ -52,6 +68,14 @@ export interface DevframeRpcClientOptions {
   wsOptions?: Partial<WsRpcChannelOptions>
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>
   cacheOptions?: boolean | Partial<RpcCacheOptions>
+  /**
+   * Reject a pending `rpc.call(...)` if the server hasn't answered within this
+   * many milliseconds, with a {@link DevframeConnectionError} of kind
+   * `'timeout'`. Guards against a live-but-unresponsive server hanging the UI.
+   * Omit (or `0`) to wait indefinitely. Calls always fail fast — regardless of
+   * this option — once the socket closes or trust is refused.
+   */
+  callTimeout?: number
 }
 
 export type DevframeRpcClientCall = BirpcReturn<DevframeRpcServerFunctions, DevframeRpcClientFunctions>['$call']
@@ -68,6 +92,17 @@ export interface DevframeRpcClient {
    * Whether the client is trusted
    */
   readonly isTrusted: boolean | null
+  /**
+   * The current connection status. Drives connection/auth/error UI without the
+   * consumer having to track the transport and trust handshake separately.
+   * Subscribe to `events.on('connection:status', …)` to react to changes.
+   */
+  readonly status: DevframeConnectionStatus
+  /**
+   * The most recent connection-level error (WebSocket error, refused trust, or
+   * failed connection-meta load), or `null` when the connection is healthy.
+   */
+  readonly connectionError: Error | null
   /**
    * The connection meta
    */
@@ -149,6 +184,8 @@ export interface DevframeRpcClient {
 
 export interface DevframeRpcClientMode {
   readonly isTrusted: boolean
+  readonly status: DevframeConnectionStatus
+  readonly connectionError: Error | null
   ensureTrusted: DevframeRpcClient['ensureTrusted']
   requestTrust: DevframeRpcClient['requestTrust']
   requestTrustWithToken: DevframeRpcClient['requestTrustWithToken']
@@ -311,6 +348,7 @@ export async function getDevframeRpcClient(
         metaBaseUrl: resolveMetaBaseUrl(),
         events,
         clientRpc,
+        callTimeout: options.callTimeout,
         rpcOptions: {
           ...rpcOptions,
           async onRequest(req, next, resolve) {
@@ -341,6 +379,12 @@ export async function getDevframeRpcClient(
     events,
     get isTrusted() {
       return mode.isTrusted
+    },
+    get status() {
+      return mode.status
+    },
+    get connectionError() {
+      return mode.connectionError
     },
     connectionMeta,
     ensureTrusted: mode.ensureTrusted,

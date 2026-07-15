@@ -49,7 +49,8 @@ await connectDevframe({
 | `baseURL` | Mount path to probe for `__connection.json`. Accepts an array for fallback. Default: `'./'` — resolved relative to `document.baseURI` so the SPA finds its meta wherever it was deployed. Pass an explicit absolute path (e.g. `'/__devframe/'`) when calling from outside the SPA — say, an embedded webcomponent injected into a host app. |
 | `authToken` | Override the auth token. Defaults to a locally-persisted human-readable id. |
 | `cacheOptions` | `true` to enable caching with defaults, or an options object. |
-| `wsOptions` | Forwarded to the WebSocket transport (reconnect, heartbeat, etc.). |
+| `callTimeout` | Milliseconds after which a pending `rpc.call` rejects with a `DevframeConnectionError` of kind `'timeout'`. Omit (or `0`) to wait indefinitely. See [Handling connection and auth errors](#handling-connection-and-auth-errors). |
+| `wsOptions` | Low-level WebSocket transport overrides — `onConnected` / `onError` / `onDisconnected` lifecycle hooks and the socket URL. |
 | `rpcOptions` | Forwarded to `birpc`. |
 | `connectionMeta` | Pre-known descriptor that skips the `__connection.json` fetch. |
 
@@ -229,6 +230,15 @@ The descriptor carries a session-only, pre-approved auth token, so `ensureTruste
 
 ## Events
 
+The client emits over `rpc.events`:
+
+| Event | Fires when |
+|-------|------------|
+| `rpc:is-trusted:updated` | Trust is granted, denied, or revoked. Carries the new `isTrusted` boolean. |
+| `connection:status` | The [connection status](#handling-connection-and-auth-errors) changes. Carries `(status, previous)`. |
+| `connection:error` | A connection-level failure occurs — the socket errors, or trust is refused. Carries the `Error`. |
+| `rpc:error` | An `rpc.call` rejects, from the server or a down connection. Carries `(error, method)`. |
+
 ```ts
 rpc.events.on('rpc:is-trusted:updated', (isTrusted) => {
   if (isTrusted)
@@ -239,3 +249,85 @@ rpc.events.on('rpc:is-trusted:updated', (isTrusted) => {
 ```
 
 `rpc.isTrusted` is the synchronous read. Subscribe to `rpc:is-trusted:updated` to drive reauth flows or gate rendering until the client is trusted.
+
+## Handling connection and auth errors
+
+A dev-mode client rides a live WebSocket, so it can lose the server mid-session or be refused authentication. Surface those states in your UI — a devtool that keeps spinning with no feedback leaves the user guessing whether it's loading or broken. The client gives you a single status to render from, events to react to, and calls that fail fast instead of hanging.
+
+### Connection status
+
+`rpc.status` collapses the transport and the trust handshake into one value, and `rpc.connectionError` holds the last connection-level `Error` (or `null` when healthy):
+
+| Status | Meaning |
+|--------|---------|
+| `connecting` | Establishing the socket / running the initial handshake. Calls issued now queue until it opens. |
+| `connected` | Socket open and trusted; calls are served. |
+| `unauthorized` | Socket open, but the server refused trust. Prompt for [authentication](#authenticating-with-a-one-time-code). |
+| `disconnected` | The socket closed — dropped mid-session, or never opened. |
+| `error` | A fatal connection error, e.g. the socket errored or the connection meta couldn't load. |
+
+A `static` backend has no live socket, so `rpc.status` is `connected` for its whole life — gating on it is a no-op there, and a build-time SPA never shows a connection state.
+
+### Calls fail fast
+
+Once the socket closes or trust is refused, in-flight and new `rpc.call` promises reject with a `DevframeConnectionError` rather than hanging forever. Its `kind` tells you why, so a `catch` can branch without string-matching:
+
+- `'connection'` — the transport is down (`disconnected` / `error`).
+- `'auth'` — the client is `unauthorized`.
+- `'timeout'` — the call outlived the `callTimeout` option.
+
+Set `callTimeout` when constructing the client to also cap a live-but-unresponsive server:
+
+```ts
+const rpc = await connectDevframe({ callTimeout: 10_000 })
+```
+
+### Putting it together
+
+Gate the UI on `connection:status`, and wrap calls to branch on failure:
+
+```ts
+import { connectDevframe, DevframeConnectionError } from 'devframe/client'
+
+const rpc = await connectDevframe()
+
+// 1. Render from the live status.
+function render() {
+  switch (rpc.status) {
+    case 'connected': return renderApp()
+    case 'connecting': return renderSpinner('Connecting…')
+    case 'unauthorized': return renderMessage('Not authorized — reopen the link from your dev server.')
+    case 'disconnected': return renderMessage('Disconnected.', { onRetry: reconnect })
+    case 'error': return renderMessage(rpc.connectionError?.message ?? 'Connection failed.', { onRetry: reconnect })
+  }
+}
+rpc.events.on('connection:status', render)
+render()
+
+// 2. Handle a failing call.
+async function loadModules() {
+  try {
+    return await rpc.call('my-devframe:get-modules', { limit: 10 })
+  }
+  catch (error) {
+    if (error instanceof DevframeConnectionError) {
+      // 'connection' | 'auth' | 'timeout' — the UI already reflects rpc.status.
+      return null
+    }
+    throw error // a real server-side error — surface it.
+  }
+}
+```
+
+### Recovering
+
+Recovery is explicit — the client doesn't reconnect on its own. The simplest path is a full page reload, which re-runs `connectDevframe` and the trust handshake; that's what the built-in plugins do behind their **Reload** button. An app that wants to reconnect without a reload can own it by re-running its connect routine to build a fresh client:
+
+```ts
+async function reconnect() {
+  rpc = await connectDevframe() // a new client; re-subscribe your listeners
+  render()
+}
+```
+
+The five built-in plugins are worked references — each gates its surface on `rpc.status` and offers a reload. In a hub, a viewer can read the same status centrally from [`context.connection`](./client-context#the-client-context) instead of every plugin surfacing its own.

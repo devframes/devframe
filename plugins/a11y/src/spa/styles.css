@@ -148,6 +148,12 @@ body {
   border-radius: 5px;
 }
 
+.meta__tag--warn {
+  border-color: color-mix(in oklab, #d9a441 60%, var(--line));
+  color: #d9a441;
+  text-transform: capitalize;
+}
+
 /* ── severity summary ──────────────────────────────────────────────────── */
 
 .summary {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { DevframeRpcClient } from 'devframe/client'
+  import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/client'
   import type { TerminalPreset, TerminalSessionInfo } from '../types'
   import type { DotState } from './design'
   import { button, dot, iconButton, nav, navBrand, navTab, tag, toolbar } from './design'
@@ -11,6 +11,18 @@
     rpc: DevframeRpcClient
     autostart: boolean
   }>()
+
+  let connectionStatus = $state<DevframeConnectionStatus>(rpc.status)
+
+  // Terminals ride live PTY streams, so a dropped socket or refused auth makes
+  // the whole surface useless — swap it for a clear state instead of a frozen
+  // terminal. The client doesn't auto-reconnect; a reload re-runs the handshake.
+  const CONNECTION_COPY: Record<Exclude<DevframeConnectionStatus, 'connected'>, { icon: string, title: string, body: string }> = {
+    connecting: { icon: 'i-ph-plugs-connected-duotone', title: 'Connecting…', body: 'Establishing a connection to the devframe server.' },
+    disconnected: { icon: 'i-ph-plugs-duotone', title: 'Disconnected', body: 'Lost the connection to the devframe server. Reload once it is back up.' },
+    unauthorized: { icon: 'i-ph-lock-key-duotone', title: 'Not authorized', body: 'Reopen the link printed by your dev server, then reload.' },
+    error: { icon: 'i-ph-warning-octagon-duotone', title: 'Connection failed', body: 'Could not reach the devframe server.' },
+  }
 
   let isDark = $state(true)
   let sessions = $state<TerminalSessionInfo[]>([])
@@ -56,6 +68,10 @@
       activeId = (hashId && list.some(x => x.id === hashId)) ? hashId : list[list.length - 1].id
     }
   }
+
+  onMount(() => rpc.events.on('connection:status', (status: DevframeConnectionStatus) => {
+    connectionStatus = status
+  }))
 
   onMount(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
@@ -158,6 +174,22 @@
   }
 </script>
 
+{#if connectionStatus !== 'connected'}
+  {@const copy = CONNECTION_COPY[connectionStatus]}
+  <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-base color-base font-sans p-8 text-center">
+    <div class="{copy.icon} text-4xl color-active"></div>
+    <div class="flex flex-col gap-1">
+      <p class="text-lg font-medium">{copy.title}</p>
+      <p class="text-sm op-mute max-w-sm">{copy.body}</p>
+    </div>
+    {#if connectionStatus !== 'connecting'}
+      <button type="button" class={button({ variant: 'primary', size: 'sm' })} onclick={() => location.reload()}>
+        <div class="i-ph-arrow-clockwise"></div>
+        Reload
+      </button>
+    {/if}
+  </div>
+{:else}
 <div class="absolute inset-0 flex flex-col bg-base color-base font-sans of-hidden">
   <!-- Top navigation: brand + session tabs + actions -->
   <nav class={nav()}>
@@ -315,3 +347,4 @@
     {/each}
   </div>
 </div>
+{/if}

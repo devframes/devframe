@@ -51,12 +51,18 @@ export interface DockPanelStorage {
   open: boolean;
   inactiveTimeout: number;
 }
+export interface DocksConnectionContext {
+  readonly status: DevframeConnectionStatus;
+  readonly error: Error | null;
+  readonly events: EventEmitter<RpcClientEvents$1>;
+}
 export interface DocksContext extends DevframeRpcContext {
   readonly clientType: 'embedded' | 'standalone';
   readonly panel: DocksPanelContext;
   readonly docks: DocksEntriesContext;
   readonly commands: CommandsContext;
   readonly when: WhenClauseContext;
+  readonly connection: DocksConnectionContext;
 }
 export interface DocksEntriesContext {
   selectedId: string | null;

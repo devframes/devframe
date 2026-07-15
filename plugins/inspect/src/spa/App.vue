@@ -23,6 +23,11 @@ const tabs: { value: Tab, label: string, icon: string }[] = [
 ]
 
 onMounted(connect)
+
+// The client doesn't auto-reconnect; a reload re-runs the whole handshake.
+function reload(): void {
+  location.reload()
+}
 </script>
 
 <template>
@@ -42,10 +47,12 @@ onMounted(connect)
       <template #end>
         <div
           class="conn"
-          :class="{ ok: connection.connected, err: !!connection.error }"
+          :class="{ ok: connection.connected, err: connection.status === 'error' || connection.status === 'disconnected', warn: connection.status === 'unauthorized' }"
         >
           <span class="led" />
-          <span v-if="connection.error">disconnected</span>
+          <span v-if="connection.status === 'disconnected'">disconnected</span>
+          <span v-else-if="connection.status === 'unauthorized'">unauthorized</span>
+          <span v-else-if="connection.status === 'error'">error</span>
           <span v-else-if="connection.connected">{{ connection.backend }}</span>
           <span v-else>connecting…</span>
         </div>
@@ -62,11 +69,30 @@ onMounted(connect)
     </LayoutToolbar>
 
     <main class="app-body">
-      <div v-if="connection.error" class="center error">
+      <div v-if="connection.status === 'error'" class="center error">
+        <span class="i-ph-warning-octagon-duotone state-glyph" />
         <div>Failed to connect to the devframe backend.</div>
-        <code>{{ connection.error }}</code>
+        <code v-if="connection.error">{{ connection.error }}</code>
+        <button type="button" class="btn-action" @click="reload">
+          Reload
+        </button>
+      </div>
+      <div v-else-if="connection.status === 'disconnected'" class="center error">
+        <span class="i-ph-plugs-duotone state-glyph" />
+        <div>Disconnected from the devframe backend.</div>
+        <button type="button" class="btn-action" @click="reload">
+          Reload
+        </button>
+      </div>
+      <div v-else-if="connection.status === 'unauthorized'" class="center error">
+        <span class="i-ph-lock-key-duotone state-glyph" />
+        <div>Not authorized. Reopen the link printed by your dev server, then reload.</div>
+        <button type="button" class="btn-action" @click="reload">
+          Reload
+        </button>
       </div>
       <div v-else-if="!connection.connected" class="center">
+        <span class="i-ph-plugs-connected-duotone state-glyph" />
         Connecting to devframe…
       </div>
       <template v-else>

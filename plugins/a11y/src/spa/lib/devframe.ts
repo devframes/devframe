@@ -1,3 +1,4 @@
+import type { DevframeConnectionStatus } from 'devframe/client'
 import type { Accessor } from 'solid-js'
 import type { Impact } from '../../shared/protocol.ts'
 import { connectDevframe } from 'devframe/client'
@@ -19,6 +20,12 @@ export interface A11yConfig {
 export interface DevframeState {
   /** `'websocket'` in dev, `'static'` for a baked build, `null` while/if unreachable. */
   backend: Accessor<string | null>
+  /**
+   * Connection status of the (optional) devframe backend. The panel's core
+   * scan loop runs over BroadcastChannel, so this is informational only —
+   * surfaced as a tag rather than blocking the UI.
+   */
+  status: Accessor<DevframeConnectionStatus | null>
   /** Impact taxonomy + copy from the `get-config` RPC. */
   config: Accessor<A11yConfig | null>
 }
@@ -31,11 +38,14 @@ export interface DevframeState {
  */
 export function connectDevframeState(): DevframeState {
   const [backend, setBackend] = createSignal<string | null>(null)
+  const [status, setStatus] = createSignal<DevframeConnectionStatus | null>(null)
   const [config, setConfig] = createSignal<A11yConfig | null>(null)
 
   connectDevframe()
     .then(async (rpc) => {
       setBackend(rpc.connectionMeta.backend)
+      setStatus(rpc.status)
+      rpc.events.on('connection:status', s => setStatus(s))
       try {
         await rpc.ensureTrusted(2000)
       }
@@ -51,7 +61,8 @@ export function connectDevframeState(): DevframeState {
     })
     .catch(() => {
       // No reachable backend (e.g. agent loaded outside a devframe host).
+      setStatus('error')
     })
 
-  return { backend, config }
+  return { backend, status, config }
 }
