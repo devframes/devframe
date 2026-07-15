@@ -23,6 +23,7 @@ export { DevframeDeploymentKind }
 export { DevframeDiagnosticsDefinition }
 export { DevframeDiagnosticsHost }
 export { DevframeDiagnosticsLogger }
+export { DevframeDockDefaults }
 export { DevframeDuplicationStrategy }
 export { DevframeHost }
 export { DevframeNodeContext }

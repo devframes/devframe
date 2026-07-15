@@ -11,10 +11,11 @@ export interface MountDevframeOptions {
    */
   base?: string
   /**
-   * Overrides for the auto-synthesized iframe dock entry. Use this to
-   * customize the entry's `category`, override the icon, hide it via
-   * `when`, etc. Cannot change `id`, `type`, or `url` — those are
-   * derived from the devframe definition.
+   * Per-mount overrides for the auto-synthesized iframe dock entry. Use
+   * this to customize the entry's `category`, override the icon, hide it
+   * via `when`, etc. Takes precedence over the definition's own
+   * {@link DevframeDefinition.dock} defaults. Cannot change `id`, `type`,
+   * or `url` — those are derived from the devframe definition.
    */
   dock?: Partial<Omit<DevframeViewIframe, 'id' | 'type' | 'url'>>
 }
@@ -85,6 +86,10 @@ export async function mountDevframe(
     id,
     title: d.name,
     icon: d.icon ?? 'ph:plug-duotone',
+    // Definition-level `dock` defaults sit above the name/icon-derived
+    // defaults; per-mount `options.dock` overrides them; `type`/`url`
+    // (and `id`) stay locked, derived from the definition.
+    ...d.dock,
     ...options.dock,
     type: 'iframe',
     url: base,

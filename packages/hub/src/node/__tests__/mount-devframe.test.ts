@@ -55,6 +55,36 @@ describe('mountDevframe', () => {
     expect(setup).toHaveBeenCalledTimes(1)
   })
 
+  it('applies the definition-level dock defaults to the synthesized entry', async () => {
+    const ctx = createContext()
+    await mountDevframe(ctx, makeDevframe({
+      dock: { category: 'framework', defaultOrder: 5, when: 'clientType == embedded' },
+    }))
+
+    expect(ctx.docks.views.get('demo')).toMatchObject({
+      id: 'demo',
+      title: 'Demo',
+      type: 'iframe',
+      category: 'framework',
+      defaultOrder: 5,
+      when: 'clientType == embedded',
+    })
+  })
+
+  it('lets per-mount dock overrides win over the definition dock defaults', async () => {
+    const ctx = createContext()
+    await mountDevframe(
+      ctx,
+      makeDevframe({ dock: { category: 'framework', defaultOrder: 5 } }),
+      { dock: { category: 'app' } },
+    )
+
+    expect(ctx.docks.views.get('demo')).toMatchObject({
+      category: 'app',
+      defaultOrder: 5,
+    })
+  })
+
   it('warns and deduplicates by default, keeping the first registration', async () => {
     const ctx = createContext()
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
