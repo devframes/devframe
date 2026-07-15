@@ -23,25 +23,20 @@ export declare class DevframeCommandsHost implements DevframeCommandsHost$1 {
 }
 export declare class DevframeDocksHost implements DevframeDocksHost$1 {
   readonly context: DevframeHubContext;
-  private readonly builtinDocks;
   readonly views: DevframeDocksHost$1['views'];
   readonly events: DevframeDocksHost$1['events'];
   userSettings: SharedState<DevframeDocksUserSettings>;
   private readonly remoteDocks;
-  constructor(_: DevframeHubContext,
-  _?: BuiltinDocksOptions);
+  constructor(_: DevframeHubContext);
   init(): Promise<void>;
-  values({
-    includeBuiltin
-  }?: {
-    includeBuiltin?: boolean;
-  }): DevframeDockEntry[];
+  values(): DevframeDockEntry[];
   private projectView;
   private resolveDevServerOrigin;
   register<T extends DevframeDockUserEntry>(_: T, _?: boolean): {
     update: (_: Partial<T>) => void;
   };
   update(_: DevframeDockUserEntry): void;
+  private withBuiltinCategory;
   private validateGroupMembership;
   private prepareRemoteRegistration;
 }

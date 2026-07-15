@@ -16,18 +16,18 @@ export class DevframeCommandsHost {
 }
 export class DevframeDocksHost {
   context
-  builtinDocks
   views
   events
   userSettings
   remoteDocks
-  constructor(_, _) {}
+  constructor(_) {}
   async init() {}
-  values(_) {}
+  values() {}
   projectView(_) {}
   resolveDevServerOrigin() {}
   register(_, _) {}
   update(_) {}
+  withBuiltinCategory(_) {}
   validateGroupMembership(_) {}
   prepareRemoteRegistration(_) {}
 }

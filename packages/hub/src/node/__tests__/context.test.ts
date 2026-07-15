@@ -16,7 +16,7 @@ function createHost(storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-contex
 }
 
 describe('createHubContext shared state', () => {
-  it('seeds built-in docks immediately', async () => {
+  it('seeds an empty dock list — the hub synthesizes no built-in docks', async () => {
     const context = await createHubContext({
       cwd: process.cwd(),
       mode: 'build',
@@ -24,23 +24,7 @@ describe('createHubContext shared state', () => {
     })
 
     const docks = await context.rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks')
-    expect(docks.value().map(dock => dock.id)).toEqual([
-      '~terminals',
-      '~messages',
-      '~settings',
-    ])
-  })
-
-  it('suppresses built-ins gated off via builtinDocks', async () => {
-    const context = await createHubContext({
-      cwd: process.cwd(),
-      mode: 'build',
-      host: createHost(),
-      builtinDocks: { terminals: false, messages: false },
-    })
-
-    const docks = await context.rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks')
-    expect(docks.value().map(dock => dock.id)).toEqual(['~settings'])
+    expect(docks.value()).toEqual([])
   })
 })
 

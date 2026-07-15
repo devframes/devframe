@@ -1,11 +1,9 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type {
-  BuiltinDocksOptions,
   DevframeDockEntry,
   DevframeDocksHost as DevframeDocksHostType,
   DevframeDockUserEntry,
-  DevframeViewBuiltin,
   DevframeViewIframe,
   RemoteConnectionInfo,
   RemoteDockOptions,
@@ -93,15 +91,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
 
   constructor(
     public readonly context: DevframeHubContext,
-    /**
-     * Per-entry toggles for the synthesized built-in dock entries. An omitted
-     * (or `undefined`) flag keeps that built-in; only an explicit `false`
-     * suppresses it.
-     */
-    private readonly builtinDocks: BuiltinDocksOptions = {},
-  ) {
-
-  }
+  ) {}
 
   async init() {
     this.userSettings = await this.context.rpc.sharedState.get('devframe:user-settings', {
@@ -112,54 +102,8 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     })
   }
 
-  values({
-    includeBuiltin = true,
-  }: {
-    includeBuiltin?: boolean
-  } = {}): DevframeDockEntry[] {
-    const context = this.context
-    // An omitted flag keeps the built-in; only an explicit `false` drops it.
-    const { terminals = true, messages = true, settings = true } = this.builtinDocks
-    const builtinDocksEntries: DevframeViewBuiltin[] = []
-    if (terminals) {
-      builtinDocksEntries.push({
-        type: '~builtin',
-        id: '~terminals',
-        title: 'Terminals',
-        icon: 'ph:terminal-duotone',
-        category: '~builtin',
-        get when() {
-          return context.terminals.sessions.size === 0 ? 'false' : undefined
-        },
-      })
-    }
-    if (messages) {
-      builtinDocksEntries.push({
-        type: '~builtin',
-        id: '~messages',
-        title: 'Messages & Notifications',
-        icon: 'ph:notification-duotone',
-        category: '~builtin',
-        get badge() {
-          const size = context.messages.entries.size
-          return size > 0 ? String(size) : undefined
-        },
-      })
-    }
-    if (settings) {
-      builtinDocksEntries.push({
-        type: '~builtin',
-        id: '~settings',
-        title: 'Settings',
-        category: '~builtin',
-        icon: 'ph:gear-duotone',
-      })
-    }
-
-    return [
-      ...Array.from(this.views.values(), view => this.projectView(view)),
-      ...(includeBuiltin ? builtinDocksEntries : []),
-    ]
+  values(): DevframeDockEntry[] {
+    return Array.from(this.views.values(), view => this.projectView(view))
   }
 
   private projectView(view: DevframeDockUserEntry): DevframeDockUserEntry {
@@ -195,8 +139,9 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     }
     this.validateGroupMembership(view)
     this.prepareRemoteRegistration(view)
-    this.views.set(view.id, view)
-    this.events.emit('dock:entry:updated', view)
+    const entry = this.withBuiltinCategory(view)
+    this.views.set(entry.id, entry)
+    this.events.emit('dock:entry:updated', entry)
 
     return {
       update: (patch) => {
@@ -214,8 +159,20 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     }
     this.validateGroupMembership(view)
     this.prepareRemoteRegistration(view)
-    this.views.set(view.id, view)
-    this.events.emit('dock:entry:updated', view)
+    const entry = this.withBuiltinCategory(view)
+    this.views.set(entry.id, entry)
+    this.events.emit('dock:entry:updated', entry)
+  }
+
+  /**
+   * `~builtin` views default their category to `~builtin` so the viewer's
+   * native views group together and sort last — a high-level integration
+   * registering one needn't repeat the category.
+   */
+  private withBuiltinCategory<T extends DevframeDockUserEntry>(view: T): T {
+    if (view.type === '~builtin' && view.category === undefined)
+      return { ...view, category: '~builtin' }
+    return view
   }
 
   private validateGroupMembership(view: DevframeDockUserEntry): void {

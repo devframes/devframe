@@ -11,38 +11,13 @@ export interface DevframeDocksHost {
     update: (patch: Partial<T>) => void
   }
   update: (entry: DevframeDockUserEntry) => void
-  values: (options?: { includeBuiltin?: boolean }) => DevframeDockEntry[]
-}
-
-/**
- * Per-entry toggles for the hub's synthesized built-in dock entries.
- *
- * Each flag defaults to `true` (the entry is present). Set one to `false` to
- * suppress that built-in everywhere it would otherwise appear — useful when a
- * host mounts a plugin that supersedes the built-in tab (e.g.
- * `@devframes/plugin-terminals` replacing the `~terminals` entry).
- */
-export interface BuiltinDocksOptions {
-  /**
-   * Include the built-in `~terminals` dock entry.
-   * @default true
-   */
-  terminals?: boolean
-  /**
-   * Include the built-in `~messages` dock entry.
-   * @default true
-   */
-  messages?: boolean
-  /**
-   * Include the built-in `~settings` dock entry.
-   * @default true
-   */
-  settings?: boolean
+  values: () => DevframeDockEntry[]
 }
 
 // Known categories the hub orders by default. Kits may pass their own
 // category ids; `(string & {})` keeps autocomplete on the known set while
-// allowing arbitrary string values.
+// allowing arbitrary string values. `~builtin` is reserved for the viewer's
+// own built-in views (see {@link DevframeViewBuiltin}) and always sorts last.
 export type DevframeDockEntryCategory
   = | 'app'
     | 'framework'
@@ -197,6 +172,16 @@ export interface DevframeViewCustomRender extends DevframeDockEntryBase {
   renderer: ClientScriptEntry
 }
 
+/**
+ * A view rendered natively by the viewer rather than by a plugin — the
+ * settings panel, the terminals feed, the messages feed, etc. A high-level
+ * integration registers the built-in views it wants; the viewer recognizes the
+ * reserved `id` and renders its own UI for it.
+ *
+ * Its {@link DevframeDockEntryBase.category} defaults to `'~builtin'` when
+ * omitted, so built-in views group together and sort last without every
+ * integration repeating it.
+ */
 export interface DevframeViewBuiltin extends DevframeDockEntryBase {
   type: '~builtin'
   id: '~terminals' | '~messages' | '~client-auth-notice' | '~settings' | '~popup'
@@ -230,8 +215,8 @@ export interface DevframeViewGroup extends DevframeDockEntryBase {
   defaultChildId?: string
 }
 
-export type DevframeDockUserEntry = DevframeViewIframe | DevframeViewAction | DevframeViewCustomRender | DevframeViewLauncher | DevframeViewJsonRender | DevframeViewGroup
+export type DevframeDockUserEntry = DevframeViewIframe | DevframeViewAction | DevframeViewCustomRender | DevframeViewLauncher | DevframeViewJsonRender | DevframeViewGroup | DevframeViewBuiltin
 
-export type DevframeDockEntry = DevframeDockUserEntry | DevframeViewBuiltin
+export type DevframeDockEntry = DevframeDockUserEntry
 
 export type DevframeDockEntriesGrouped = [category: string, entries: DevframeDockEntry[]][]

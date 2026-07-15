@@ -1,7 +1,7 @@
 import type { CreateHostContextOptions } from 'devframe/node'
 import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
 import type { DevframeCommandsHost } from '../types/commands'
-import type { BuiltinDocksOptions, DevframeDocksHost } from '../types/docks'
+import type { DevframeDocksHost } from '../types/docks'
 import type { JsonRenderer, JsonRenderSpec } from '../types/json-render'
 import type { DevframeMessagesHost } from '../types/messages'
 import type { DevframeTerminalsHost } from '../types/terminals'
@@ -57,19 +57,12 @@ export interface DevframeHubContext extends DevframeNodeContext {
   createJsonRenderer: (spec: JsonRenderSpec) => JsonRenderer
 }
 
-export interface CreateHubContextOptions extends CreateHostContextOptions {
-  /**
-   * Gate the hub's synthesized built-in dock entries (`~terminals`,
-   * `~messages`, `~settings`). Each entry defaults to present; set one to
-   * `false` to suppress it — e.g. when mounting `@devframes/plugin-terminals`
-   * or `@devframes/plugin-messages`, which replace the built-in tabs.
-   *
-   * Omitting this option keeps all three built-ins.
-   *
-   * @default { terminals: true, messages: true, settings: true }
-   */
-  builtinDocks?: BuiltinDocksOptions
-}
+/**
+ * Options for {@link createHubContext} — devframe's
+ * {@link CreateHostContextOptions} plus any hub-level additions kits layer on
+ * through declaration merging.
+ */
+export interface CreateHubContextOptions extends CreateHostContextOptions {}
 
 /**
  * Create a hub-level node context: wraps devframe's `createHostContext`,
@@ -87,7 +80,7 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
   })
   const context = baseContext as DevframeHubContext
 
-  const docks = new DocksHostImpl(context, options.builtinDocks)
+  const docks = new DocksHostImpl(context)
   const terminals = new TerminalsHostImpl(context)
   const messages = new MessagesHostImpl(context)
   const commands = new CommandsHostImpl(context)

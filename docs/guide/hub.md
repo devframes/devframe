@@ -133,7 +133,7 @@ A hub-aware UI doesn't import any hub classes; it reads three shared-state keys 
 
 | Channel | Type | What it carries |
 |---|---|---|
-| `devframe:docks` shared state | `DevframeDockEntry[]` | The full dock list, including the hub's `~terminals` / `~messages` / `~settings` builtins. |
+| `devframe:docks` shared state | `DevframeDockEntry[]` | Every dock entry the mounted integrations registered. |
 | `devframe:commands` shared state | `DevframeServerCommandEntry[]` | Serializable command list (handlers stripped). |
 | `devframe:user-settings` shared state | `DevframeDocksUserSettings` | Persisted per-workspace hub settings. |
 | `hub:commands:execute` RPC | `(id, ...args) => unknown` | Server-side command dispatch. |

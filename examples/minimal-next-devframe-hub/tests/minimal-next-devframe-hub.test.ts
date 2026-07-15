@@ -28,15 +28,18 @@ describe('minimal-next-devframe-hub (example)', () => {
     })
   })
 
-  it('registers hub built-in docks and the mounted demo devframe', async () => {
+  it('registers a hub-owned settings dock and the mounted plugin docks', async () => {
     server = await minimalNextDevframeHub({ host: '127.0.0.1' })
 
-    const dockIds = server.context.docks.values().map(d => d.id)
+    const docks = server.context.docks.values()
+    const dockIds = docks.map(d => d.id)
     expect(dockIds).toContain('next-demo-tool')
-    expect(dockIds).toContain('~terminals')
-    expect(dockIds).toContain('~messages')
+    // The hub synthesizes no built-in docks; the integration registers the
+    // settings tab itself, and `~builtin` views default to the `~builtin` category.
     expect(dockIds).toContain('~settings')
+    expect(docks.find(d => d.id === '~settings')?.category).toBe('~builtin')
     // The dogfooded built-in plugin packages mount their own docks.
+    expect(dockIds).toContain('devframes-plugin-terminals')
     expect(dockIds).toContain('devframes-plugin-messages')
   })
 
