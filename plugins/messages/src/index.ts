@@ -63,6 +63,9 @@ export function createMessagesDevframe(options: MessagesDevframeOptions = {}): D
       // (Vite/hub) supply their own auth layer and ignore this.
       auth: options.auth ?? false,
     },
+    dock: {
+      category: '~builtin',
+    },
     spa: { loader: 'none' },
     setup(ctx) {
       setupMessages(ctx)

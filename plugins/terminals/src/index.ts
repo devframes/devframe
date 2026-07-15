@@ -61,6 +61,9 @@ export function createTerminalsDevframe(options: TerminalsOptions = {}): Devfram
       auth: false,
     },
     spa: { loader: 'none' },
+    dock: {
+      category: '~builtin',
+    },
     async setup(ctx) {
       const { setupTerminals } = await import('./node/index')
       await setupTerminals(ctx, options)

@@ -65,6 +65,9 @@ export function createInspectDevframe(options: InspectDevframeOptions = {}): Dev
       auth: options.auth ?? false,
     },
     spa: { loader: 'none' },
+    dock: {
+      category: '~builtin',
+    },
     setup(ctx) {
       setupInspect(ctx)
     },
