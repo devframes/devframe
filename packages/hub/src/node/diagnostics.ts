@@ -38,6 +38,10 @@ export const diagnostics = defineDiagnostics({
       why: (p: { id: string, name: string }) => `Devframe "${p.name}" (id "${p.id}") is already mounted on this hub`,
       fix: 'Each devframe is deduplicated by id. Set `duplicationStrategy: "duplicate"` on the definition to let instances coexist, `"silent"` to drop duplicates quietly, or `"throw"` to surface them as errors.',
     },
+    DF8106: {
+      why: (p: { id: string, name: string, base: string }) => `The host cannot serve the RPC connection meta for devframe "${p.name}" (id "${p.id}") at "${p.base}" — its \`DevframeHost\` does not implement \`mountConnectionMeta\`.`,
+      fix: 'Implement `mountConnectionMeta(base)` on your DevframeHost so it serves `__connection.json` at each mounted base. Without it, the devframe SPA connects only when it shares an origin with the hub UI (same-origin window inheritance); cross-origin, sandboxed, or directly-opened iframes stay disconnected. Static-snapshot hosts that bake the meta into the served files can implement it as a no-op to acknowledge this intentionally.',
+    },
     DF8200: {
       why: (p: { id: string }) => `Terminal session with id "${p.id}" already registered`,
     },

@@ -18,6 +18,7 @@ export function createScopedClientContext(_, _) {}
 export async function getDevframeRpcClient(_) {}
 export function isCallableStatus(_) {}
 export function readOtpFromUrl(_) {}
+export function readPublishedConnectionMeta(_) {}
 // #endregion
 
 // #region Variables
