@@ -1,8 +1,8 @@
 import process from 'node:process'
-import { createCli } from 'devframe/adapters/cli'
+import { createCac } from 'devframe/adapters/cac'
 import { createGitDevframe } from './index.ts'
 
-const cli = createCli(createGitDevframe(), {
+const cli = createCac(createGitDevframe(), {
   onReady({ origin }) {
     // devframe is headless by default — print our own ready banner so the
     // dev server doesn't look like it silently did nothing.

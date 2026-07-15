@@ -4,7 +4,7 @@ outline: deep
 
 # Devframe Definition
 
-Every Devframe tool starts with a single `defineDevframe` call. The returned `DevframeDefinition` is a portable value that any of the [adapters](/adapters/) can consume — the same definition runs under `createCli`, `createBuild`, `createMcpServer`, the `vite` adapter's `createPluginFromDevframe`, and so on.
+Every Devframe tool starts with a single `defineDevframe` call. The returned `DevframeDefinition` is a portable value that any of the [adapters](/adapters/) can consume — the same definition runs under `createCac`, `createBuild`, `createMcpServer`, the `vite` adapter's `createPluginFromDevframe`, and so on.
 
 ## Minimal definition
 
@@ -51,7 +51,7 @@ export default defineDevframe({
 | `basePath` | `string` | Optional mount path override. Defaults depend on the adapter: `/` for standalone (`cli` / `spa` / `build`), `/.<id>/` for hosted (`vite` / `embedded`). |
 | `duplicationStrategy` | `'warn' \| 'silent' \| 'throw' \| 'duplicate'` | How a hub reacts when another devframe sharing this `id` is mounted onto the same hub. Defaults to `'warn'`. See [Hub](./hub). Hub adapters consult it; standalone adapters ignore it. |
 | `capabilities` | `{ dev?, build?, spa? }` | Per-runtime feature flags. A `boolean` applies to the runtime as a whole; an object enables individual features. |
-| `setup` | `(ctx, info?) => void \| Promise<void>` | **Required.** Server-side entry point. Runs in every runtime. The optional second argument carries runtime metadata — most notably the parsed CLI `flags` when running under `createCli`. |
+| `setup` | `(ctx, info?) => void \| Promise<void>` | **Required.** Server-side entry point. Runs in every runtime. The optional second argument carries runtime metadata — most notably the parsed CLI `flags` when running under `createCac`. |
 | `setupBrowser` | `(ctx) => void \| Promise<void>` | Browser-only entry used by the SPA adapter. |
 | `cli` | `DevframeCliOptions` | Defaults for the CLI adapter. See [CLI options](#cli-options) below. |
 | `spa` | `DevframeSpaOptions` | Defaults for the SPA adapter (`base`, `loader`). |
@@ -185,7 +185,7 @@ defineDevframe({
 | `host` | `string` | Default bind host. |
 | `open` | `boolean \| string` | `true` opens the origin, a string opens a specific path, `false` disables. Matches the `--open` / `--no-open` flags. |
 | `auth` | `boolean` | Disable the WS trust flow when the tool is localhost-only and single-user. Default `true`. |
-| `configure` | `(cli: CAC) => void` | Contribute capability flags/commands. Runs before `createCli`'s `configureCli` option so the final tool author always has the last word. |
+| `configure` | `(cli: CAC) => void` | Contribute capability flags/commands. Runs before `createCac`'s `configureCli` option so the final tool author always has the last word. |
 
 `setup(ctx, info)` receives `info.flags` populated from both devframe's built-in flags and any you declared via `configure` — saves duplicating flag parsing.
 
@@ -210,12 +210,12 @@ The definition is a plain value, so wire it into multiple adapters from the same
 ```ts
 import { createPluginFromDevframe } from '@vitejs/devtools-kit/node'
 import { createBuild } from 'devframe/adapters/build'
-import { createCli } from 'devframe/adapters/cli'
+import { createCac } from 'devframe/adapters/cac'
 
 const devframe = defineDevframe({ id: 'my-devframe', name: 'My Devframe', setup() {} })
 
 // 1. Standalone CLI:
-await createCli(devframe).parse()
+await createCac(devframe).parse()
 
 // 2. Offline snapshot:
 await createBuild(devframe, { outDir: 'dist-static' })

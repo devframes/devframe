@@ -22,7 +22,7 @@ const distDir = fileURLToPath(new URL('../dist/spa', import.meta.url))
 
 /**
  * Build a {@link DevframeDefinition} for the code-server panel. The same
- * definition runs standalone (`createCli`), mounts into a Vite host
+ * definition runs standalone (`createCac`), mounts into a Vite host
  * (`/vite`), or docks inside a hub — its `setup` only relies on the core
  * devframe RPC + shared-state surface.
  *

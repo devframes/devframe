@@ -11,7 +11,7 @@ description: >
   terminals, palette, etc.), the devframe can be mounted into a
   host that provides them — Vite DevTools is one supported target,
   reached via the `vite` adapter. Triggers on `devframe` imports,
-  `defineDevframe`, `createCli`, `createMcpServer`,
+  `defineDevframe`, `createCac`, `createMcpServer`,
   `connectDevframe`, and on migrations of existing inspectors
   (eslint-config-inspector, unocss-inspector,
   node-modules-inspector-style tools) to devframe.
@@ -31,7 +31,7 @@ All adapter factories share the shape `createXxx(devframeDef, options?)`.
 
 | Author goal | Factory | Entry |
 |-------------|---------|-------|
-| Standalone CLI for local use | `createCli(def, options?)` | `devframe/adapters/cli` |
+| Standalone CLI for local use | `createCac(def, options?)` | `devframe/adapters/cac` |
 | Run the dev server programmatically (any CLI framework) | `createDevServer(def, options?)` | `devframe/adapters/dev` |
 | Self-contained static deploy with baked data | `createBuild(def, options?)` | `devframe/adapters/build` |
 | Mount into a host (Vite DevTools or any compatible host) | `createPluginFromDevframe(def, options?)` | `@vitejs/devtools-kit/node` |
@@ -530,7 +530,7 @@ At runtime, static clients look up the argument hash in the dump; misses resolve
 
 ## CLI adapter subcommands
 
-`createCli(devframe).parse()` gives the tool four subcommands out of the box:
+`createCac(devframe).parse()` gives the tool four subcommands out of the box:
 
 | Subcommand | Action |
 |------------|--------|
@@ -539,7 +539,7 @@ At runtime, static clients look up the argument hash in the dump; misses resolve
 | `spa` | Deployable SPA → `./dist-spa/` |
 | `mcp` | stdio MCP server (experimental) |
 
-**Bring your own CLI framework?** `createCli` is just a cac wrapper around three peer factories — `createDevServer` (`devframe/adapters/dev`), `createBuild` (`devframe/adapters/build`), and `createMcpServer` (`devframe/adapters/mcp`). Use them directly with commander/yargs/oclif when `createCli`'s baked-in command structure doesn't fit. `createDevServer` returns a `StartedServer` handle (`origin`, `port`, `app`, `wss`, `close()`) so you can wire SIGINT / hot-reload teardown into the surrounding program. `parseCliFlags(schema, raw)` and `defineCliFlags(...)` (both from `devframe/adapters/cli`) validate an arbitrary flag bag against a `CliFlagsSchema` — typed flags aren't tied to cac.
+**Bring your own CLI framework?** `createCac` (`devframe/adapters/cac`) is just a cac wrapper around three peer factories — `createDevServer` (`devframe/adapters/dev`), `createBuild` (`devframe/adapters/build`), and `createMcpServer` (`devframe/adapters/mcp`). Use them directly with commander/yargs/oclif when `createCac`'s baked-in command structure doesn't fit. `cac` is an optional peer dependency pulled in only through `devframe/adapters/cac`, so bring-your-own-CLI tools run without installing it. (The legacy `devframe/adapters/cli` entry / `createCli` remains as a deprecated alias.) `createDevServer` returns a `StartedServer` handle (`origin`, `port`, `app`, `wss`, `close()`) so you can wire SIGINT / hot-reload teardown into the surrounding program. `parseCliFlags(schema, raw)` and `defineCliFlags(...)` (both from `devframe/adapters/cac`) validate an arbitrary flag bag against a `CliFlagsSchema` — the helpers are framework-agnostic.
 
 ## Bundled utilities
 

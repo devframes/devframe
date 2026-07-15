@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@antfu/design": "catalog:frontend",
+    "cac": "catalog:deps",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
     "preact": "catalog:frontend"

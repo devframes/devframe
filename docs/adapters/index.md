@@ -6,13 +6,13 @@ outline: deep
 
 An adapter takes a `DevframeDefinition` and deploys it into a specific runtime — a standalone CLI, a Vite plugin, a static snapshot, an embedded host, or an MCP server. Each adapter ships at its own entry point (`devframe/adapters/<name>`); the bundler pulls in only the ones you use.
 
-Every adapter factory has the shape `createXxx(devframeDef, options?)`.
+Every adapter factory has the shape `createXxx(devframeDef, options?)`. Some adapters draw on an optional peer dependency, installed only when you opt into that adapter: `cac` pulls in [`cac`](https://github.com/cacjs/cac), and `mcp` pulls in [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk).
 
 ## Comparison
 
 | Adapter | Entry | Factory | Best for |
 |---------|-------|---------|----------|
-| [`cli`](./cli) | `devframe/adapters/cli` | `createCli(def, options?)` | Standalone tools run via `node ./my-tool.js` |
+| [`cac`](./cac) | `devframe/adapters/cac` | `createCac(def, options?)` | Standalone tools run via `node ./my-tool.js` |
 | [`dev`](./dev) | `devframe/adapters/dev` | `createDevServer(def, options?)` | Run the dev server programmatically — drive it from any CLI framework |
 | [`build`](./build) | `devframe/adapters/build` | `createBuild(def, options?)` | Offline reports, CI artifacts, deployable SPA snapshots |
 | [`vite`](./vite) | `@vitejs/devtools-kit/node` | `createPluginFromDevframe(def, options?)` | Mount the definition into Vite DevTools (or any compatible host) |

@@ -45,9 +45,9 @@ export default defineConfig({
 
 ```ts
 import { createInspectDevframe } from '@devframes/plugin-inspect'
-import { createCli } from 'devframe/adapters/cli'
+import { createCac } from 'devframe/adapters/cac'
 
-await createCli(createInspectDevframe({ port: 9100 })).parse()
+await createCac(createInspectDevframe({ port: 9100 })).parse()
 ```
 
 ## RPC surface

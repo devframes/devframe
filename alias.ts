@@ -32,6 +32,7 @@ export const alias = {
   'devframe/utils/streaming-channel': r('devframe/src/utils/streaming-channel.ts'),
   'devframe/utils/structured-clone': r('devframe/src/utils/structured-clone.ts'),
   'devframe/utils/when': r('devframe/src/utils/when.ts'),
+  'devframe/adapters/cac': r('devframe/src/adapters/cac.ts'),
   'devframe/adapters/cli': r('devframe/src/adapters/cli.ts'),
   'devframe/adapters/dev': r('devframe/src/adapters/dev.ts'),
   'devframe/adapters/build': r('devframe/src/adapters/build.ts'),

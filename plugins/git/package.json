@@ -47,6 +47,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "cac": "catalog:deps",
     "devframe": "workspace:*",
     "pathe": "catalog:deps"
   },

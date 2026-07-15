@@ -82,6 +82,9 @@
       "devframe/utils/when": [
         "./packages/devframe/src/utils/when.ts"
       ],
+      "devframe/adapters/cac": [
+        "./packages/devframe/src/adapters/cac.ts"
+      ],
       "devframe/adapters/cli": [
         "./packages/devframe/src/adapters/cli.ts"
       ],

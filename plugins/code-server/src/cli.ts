@@ -1,6 +1,6 @@
-import type { CliHandle, CreateCliOptions } from 'devframe/adapters/cli'
+import type { CacHandle, CreateCacOptions } from 'devframe/adapters/cac'
 import type { CodeServerOptions } from './types'
-import { createCli } from 'devframe/adapters/cli'
+import { createCac } from 'devframe/adapters/cac'
 import { createCodeServerDevframe } from './index'
 
 /**
@@ -10,7 +10,7 @@ import { createCodeServerDevframe } from './index'
  */
 export function createCodeServerCli(
   options: CodeServerOptions = {},
-  cliOptions: CreateCliOptions = {},
-): CliHandle {
-  return createCli(createCodeServerDevframe(options), cliOptions)
+  cliOptions: CreateCacOptions = {},
+): CacHandle {
+  return createCac(createCodeServerDevframe(options), cliOptions)
 }

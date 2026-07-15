@@ -1,5 +1,5 @@
-import type { CliHandle } from 'devframe/adapters/cli'
-import { createCli } from 'devframe/adapters/cli'
+import type { CacHandle } from 'devframe/adapters/cac'
+import { createCac } from 'devframe/adapters/cac'
 import a11yDevframe from './index.ts'
 
 /**
@@ -8,6 +8,6 @@ import a11yDevframe from './index.ts'
  * default {@link createA11yDevframe} definition with devframe's
  * `dev` / `build` / `spa` command shell.
  */
-export function createA11yCli(): CliHandle {
-  return createCli(a11yDevframe)
+export function createA11yCli(): CacHandle {
+  return createCac(a11yDevframe)
 }
