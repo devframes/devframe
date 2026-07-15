@@ -53,6 +53,7 @@ Boot the host once per page: a second boot replaces the published context and lo
 | `panel` | Dock panel state: position, size, drag/resize flags. |
 | `commands` | The command palette: `register()`, `execute()`, `getKeybindings()`. |
 | `when` | The [when-clause](./when-clauses) evaluation context. |
+| `connection` | The client's live [connection status](./client#handling-connection-and-auth-errors) — `status`, `error`, and `events` — so a viewer can render one central connection indicator for every docked plugin. |
 
 ### Accessing the context
 
