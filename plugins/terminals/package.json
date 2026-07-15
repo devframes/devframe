@@ -61,6 +61,7 @@
   "dependencies": {
     "@xterm/addon-fit": "catalog:frontend",
     "@xterm/xterm": "catalog:frontend",
+    "cac": "catalog:deps",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
     "valibot": "catalog:deps",

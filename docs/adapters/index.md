@@ -6,7 +6,7 @@ outline: deep
 
 An adapter takes a `DevframeDefinition` and deploys it into a specific runtime — a standalone CLI, a Vite plugin, a static snapshot, an embedded host, or an MCP server. Each adapter ships at its own entry point (`devframe/adapters/<name>`); the bundler pulls in only the ones you use.
 
-Every adapter factory has the shape `createXxx(devframeDef, options?)`.
+Every adapter factory has the shape `createXxx(devframeDef, options?)`. Some adapters draw on an optional peer dependency, installed only when you opt into that adapter: `cli` pulls in [`cac`](https://github.com/cacjs/cac), and `mcp` pulls in [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk).
 
 ## Comparison
 

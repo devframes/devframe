@@ -63,6 +63,7 @@
   },
   "dependencies": {
     "axe-core": "catalog:frontend",
+    "cac": "catalog:deps",
     "solid-js": "catalog:frontend"
   },
   "devDependencies": {

@@ -89,6 +89,7 @@ const serverEntries = {
   'utils/open': 'src/utils/open.ts',
   'utils/serve-static': 'src/utils/serve-static.ts',
   'adapters/cli': 'src/adapters/cli.ts',
+  'adapters/flags': 'src/adapters/flags.ts',
   'adapters/dev': 'src/adapters/dev.ts',
   'adapters/build': 'src/adapters/build.ts',
   'adapters/embedded': 'src/adapters/embedded.ts',

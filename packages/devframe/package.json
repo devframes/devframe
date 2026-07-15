@@ -24,6 +24,7 @@
     "./adapters/cli": "./dist/adapters/cli.mjs",
     "./adapters/dev": "./dist/adapters/dev.mjs",
     "./adapters/embedded": "./dist/adapters/embedded.mjs",
+    "./adapters/flags": "./dist/adapters/flags.mjs",
     "./adapters/mcp": "./dist/adapters/mcp.mjs",
     "./client": "./dist/client/index.mjs",
     "./constants": "./dist/constants.mjs",
@@ -68,17 +69,20 @@
     "prepack": "pnpm build && mkdir -p ./skills && cp -r ../../skills/devframe ./skills/devframe"
   },
   "peerDependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "cac": "^7.0.0"
   },
   "peerDependenciesMeta": {
     "@modelcontextprotocol/sdk": {
+      "optional": true
+    },
+    "cac": {
       "optional": true
     }
   },
   "dependencies": {
     "@valibot/to-json-schema": "catalog:deps",
     "birpc": "catalog:deps",
-    "cac": "catalog:deps",
     "crossws": "catalog:deps",
     "destr": "catalog:deps",
     "h3": "catalog:deps",
@@ -90,6 +94,7 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "catalog:deps",
+    "cac": "catalog:deps",
     "get-port-please": "catalog:deps",
     "immer": "catalog:deps",
     "launch-editor": "catalog:deps",

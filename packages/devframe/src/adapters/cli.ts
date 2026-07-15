@@ -1,3 +1,12 @@
+// The `cac` command-line framework is an optional peer dependency: it's
+// only pulled in through this adapter entry, so tools that assemble their
+// own CLI from the lower-level `createDevServer` / `createBuild` /
+// `createMcpServer` factories never need it installed. Install `cac`
+// alongside `devframe` to opt into `createCli`; importing this entry
+// without it throws at load time with the usual Node module-not-found
+// error. The cac-independent flag helpers are re-exported below for
+// convenience, and also ship from the cac-free `devframe/adapters/flags`
+// entry for tools that only want typed-flag validation.
 import type { CAC } from 'cac'
 import type { H3 } from 'h3'
 import type { DevframeDefinition } from '../types/devframe'

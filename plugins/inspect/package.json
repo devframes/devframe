@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "@valibot/to-json-schema": "catalog:deps",
+    "cac": "catalog:deps",
     "nostics": "catalog:deps"
   },
   "devDependencies": {

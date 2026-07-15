@@ -6,6 +6,14 @@ outline: deep
 
 The CLI adapter wraps a `DevframeDefinition` in a `cac`-powered command-line interface. From one entry it spins up an `h3` dev server with WebSocket RPC, builds static snapshots, builds SPA bundles, or starts an MCP server.
 
+`cac` is an optional peer dependency, pulled in only through this adapter — install it alongside `devframe` to opt into `createCli`:
+
+```sh
+npm install devframe cac
+```
+
+Tools that assemble their own command-line shell from the [lower-level factories](#use-your-own-cli-framework) never import this adapter, so they run without `cac`.
+
 ```ts
 import { defineDevframe } from 'devframe'
 import { createCli } from 'devframe/adapters/cli'
@@ -105,6 +113,6 @@ To integrate devframe into an existing commander / yargs program — or to expos
 | [`createDevServer(def, opts?)`](./dev) | `devframe/adapters/dev` | h3 + WebSocket RPC + SPA mount |
 | [`createBuild(def, opts?)`](./build) | `devframe/adapters/build` | Static deploy |
 | [`createMcpServer(def, opts?)`](./mcp) | `devframe/adapters/mcp` | stdio MCP server |
-| `parseCliFlags(schema, raw)` | `devframe/adapters/cli` | Validate a flag bag against a `CliFlagsSchema` |
+| `parseCliFlags(schema, raw)` | `devframe/adapters/flags` | Validate a flag bag against a `CliFlagsSchema` (no `cac` required) |
 
 See the [Standalone CLI guide](/guide/standalone-cli#use-your-own-cli-framework) for a worked commander example.

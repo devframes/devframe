@@ -3,6 +3,9 @@
  */
 // #region Functions
 export function createCli(_, _) {}
-export function defineCliFlags(_) {}
-export function parseCliFlags(_, _) {}
+// #endregion
+
+// #region Other
+export { defineCliFlags }
+export { parseCliFlags }
 // #endregion
