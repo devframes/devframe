@@ -175,6 +175,42 @@ export interface DevframeCliOptions {
   flags?: CliFlagsSchema
 }
 
+/**
+ * Default dock attributes for the iframe entry a hub synthesizes when it
+ * mounts this devframe. Framework-neutral metadata only — the hub layer
+ * (`mountDevframe`) merges these beneath its per-mount `dock` overrides,
+ * which in turn sit beneath the locked, derived `id` / `type` / `url`.
+ *
+ * Every field is optional. `title` / `icon` default to the definition's
+ * `name` / `icon` when omitted here; the rest are unset by default.
+ * Standalone adapters (`cli` / `spa` / `build`) ignore this entirely.
+ */
+export interface DevframeDockDefaults {
+  /** Dock entry title. Defaults to the definition's `name`. */
+  title?: string
+  /** Dock entry icon. Defaults to the definition's `icon`. */
+  icon?: string | { light: string, dark: string }
+  /**
+   * Sort weight within the dock; higher sorts earlier.
+   * @default 0
+   */
+  defaultOrder?: number
+  /**
+   * Category the entry groups under in the dock.
+   * @default 'default'
+   */
+  category?: string
+  /**
+   * Conditional-visibility expression (same syntax as command `when`
+   * clauses). Set to `'false'` to hide the entry unconditionally.
+   */
+  when?: string
+  /** Badge text rendered on the dock icon (e.g. an unread count). */
+  badge?: string
+  /** Id of the dock group this entry collapses under, if any. */
+  groupId?: string
+}
+
 export interface DevframeSpaOptions {
   base?: string
   /**
@@ -215,6 +251,15 @@ export interface DevframeDefinition {
   /** One-line summary of what the tool does. */
   description: string
   icon?: string | { light: string, dark: string }
+  /**
+   * Default dock attributes applied when a hub mounts this devframe as an
+   * iframe dock entry. Consulted only by hub adapters (`mountDevframe`),
+   * which merge these beneath the per-mount `dock` overrides; standalone
+   * adapters (`cli` / `spa` / `build`) ignore it.
+   *
+   * @see {@link DevframeDockDefaults}
+   */
+  dock?: DevframeDockDefaults
   /**
    * Mount path override. Defaults depend on the adapter:
    * `/` for standalone (`cli` / `spa` / `build`), `/__<id>/` for hosted
