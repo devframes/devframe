@@ -1,14 +1,16 @@
-import type { DevframeRpcClient } from '@devframes/plugin-inspect/client'
+import type { DevframeConnectionStatus, DevframeRpcClient } from '@devframes/plugin-inspect/client'
 import { connectInspect } from '@devframes/plugin-inspect/client'
 import { reactive, shallowRef } from 'vue'
 import { addHistoryRecord } from './history'
 
 export const connection = reactive<{
   connected: boolean
+  status: DevframeConnectionStatus
   error: string | null
   backend: 'websocket' | 'static' | null
 }>({
   connected: false,
+  status: 'connecting',
   error: null,
   backend: null,
 })
@@ -64,20 +66,31 @@ function setupHistoryHooks(client: DevframeRpcClient) {
   }
 }
 
+function applyStatus(client: DevframeRpcClient): void {
+  connection.status = client.status
+  connection.connected = client.status === 'connected'
+  connection.error = client.connectionError?.message ?? null
+}
+
 export async function connect(): Promise<void> {
   try {
     const client = await connectInspect()
     setupHistoryHooks(client)
     rpcRef.value = client
     connection.backend = client.connectionMeta.backend
+    applyStatus(client)
+    // Reflect the live connection: a dropped socket or refused auth swaps the
+    // panel to a clear state instead of leaving stale data on screen.
+    client.events.on('connection:status', () => applyStatus(client))
     // Best-effort trust handshake — data calls succeed regardless on the
     // single-user standalone server, but shared-state subscription needs
     // it, so kick it off and ignore failures/timeouts.
     if (client.connectionMeta.backend === 'websocket')
       client.ensureTrusted(5000).catch(() => {})
-    connection.connected = true
   }
   catch (e) {
+    // Failing to load the connection meta is a fatal connection error.
+    connection.status = 'error'
     connection.error = (e as Error)?.message ?? String(e)
   }
 }

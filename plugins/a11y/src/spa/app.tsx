@@ -52,7 +52,7 @@ export function App() {
         scanning={channel.scanning()}
         onRescan={channel.rescan}
       />
-      <MetaLine report={channel.report} backend={devframe.backend} />
+      <MetaLine report={channel.report} backend={devframe.backend} status={devframe.status} />
 
       <Show when={channel.report() && total() > 0}>
         <Summary counts={counts()} active={filter()} onToggle={toggleFilter} />

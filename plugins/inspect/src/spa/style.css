@@ -122,6 +122,10 @@ textarea {
   background: var(--df-danger);
 }
 
+.conn.warn .led {
+  background: var(--df-warning, #d9a441);
+}
+
 /* ---- body ---- */
 .app-body {
   flex: 1;
@@ -143,6 +147,11 @@ textarea {
 
 .center.error {
   color: var(--df-danger);
+}
+
+.center .state-glyph {
+  font-size: 32px;
+  opacity: 0.85;
 }
 
 .pane {

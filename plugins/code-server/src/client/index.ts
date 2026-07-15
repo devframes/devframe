@@ -9,6 +9,7 @@ import type {
 import type { CodeServerViewState } from './view'
 import { connectDevframe } from 'devframe/client'
 import { STATE_KEY } from '../constants'
+import { createConnectionState } from './connection-state'
 import { createCodeServerView } from './view'
 
 export interface MountCodeServerOptions {
@@ -41,6 +42,18 @@ export async function mountCodeServer(
   const rpc = options.rpc ?? (await connectDevframe())
   if (rpc.connectionMeta.backend === 'websocket')
     await rpc.ensureTrusted(5000).catch(() => {})
+
+  // Overlay the launcher with a clear connection state whenever the client
+  // isn't connected — a dropped socket or refused auth would otherwise leave
+  // an unexplained blank / stale editor. Needs a positioned container.
+  if (!container.style.position)
+    container.style.position = 'relative'
+  const connectionState = createConnectionState(container)
+  const syncConnection = (): void => {
+    connectionState.update(rpc.status, rpc.connectionError?.message)
+  }
+  syncConnection()
+  const offConnection = rpc.events.on('connection:status', syncConnection)
 
   let detection: CodeServerDetection = { checked: false, installed: false, bin: 'code-server' }
   let server: CodeServerServerInfo = { status: 'stopped' }
@@ -148,6 +161,8 @@ export async function mountCodeServer(
     dispose() {
       disposed = true
       off?.()
+      offConnection?.()
+      connectionState.dispose()
       view.dispose()
     },
   }

@@ -1,7 +1,7 @@
-import type { DevframeRpcClient, DevframeRpcClientOptions } from 'devframe/client'
+import type { DevframeConnectionStatus, DevframeRpcClient, DevframeRpcClientOptions } from 'devframe/client'
 import { connectDevframe } from 'devframe/client'
 
-export type { DevframeRpcClient }
+export type { DevframeConnectionStatus, DevframeRpcClient }
 export type { AgentManifest, InvokeResult, RpcFunctionAgentInfo, RpcFunctionInfo } from '../types'
 
 /**
