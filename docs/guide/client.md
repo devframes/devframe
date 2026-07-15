@@ -59,7 +59,7 @@ The client runs in one of two modes depending on the backend advertised in `__de
 
 | Backend | When | Capabilities |
 |---------|------|--------------|
-| `websocket` | Dev mode (`createCli`, Kit) | Full read/write, broadcasts, shared-state mutation. Requires auth. |
+| `websocket` | Dev mode (`createCac`, Kit) | Full read/write, broadcasts, shared-state mutation. Requires auth. |
 | `static` | Build / SPA output | Read-only — all calls resolve against the baked RPC dump. |
 
 The client picks a mode automatically from the backend field. Mode-specific code paths like `broadcast` are scoped to `websocket`.

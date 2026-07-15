@@ -143,7 +143,7 @@ export interface DevframeCliOptions {
   /**
    * Capability-side CAC hook. Called with the CAC instance after the
    * adapter registers its built-in commands (`build` / `spa` / `mcp`)
-   * but before `createCli`'s own `configureCli` caller. Use this to
+   * but before `createCac`'s own `configureCli` caller. Use this to
    * contribute tool-specific flags and subcommands from the definition
    * itself.
    */
@@ -232,7 +232,7 @@ export interface DevframeBrowserContext {
 /**
  * Runtime information threaded into `setup(ctx, info)`. Adapters
  * populate the fields that make sense for their deployment. In
- * particular, `createCli` fills `flags` with the parsed CAC bag.
+ * particular, `createCac` fills `flags` with the parsed CAC bag.
  */
 export interface DevframeSetupInfo {
   /** Parsed CLI flags, populated by the CLI adapter. */

@@ -22,7 +22,7 @@ export {
 
 /**
  * Build a {@link DevframeDefinition} for the terminals panel. The same
- * definition runs standalone (`createCli`), mounts into a Vite host
+ * definition runs standalone (`createCac`), mounts into a Vite host
  * (`/vite`), or docks inside a hub — its `setup` only relies on the core
  * devframe RPC surface.
  *

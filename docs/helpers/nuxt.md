@@ -96,13 +96,13 @@ export default defineNuxtConfig({
 - **`host`** controls the bridge bind host. Defaults to `nuxt.options.devServer.host ?? devframe.cli?.host ?? 'localhost'`, so `nuxt dev --host` propagates automatically. Set this manually when your Nuxt server config doesn't surface `host` (e.g. custom listen options).
 - **`flags`** is forwarded to `devframe.setup(ctx, { flags })`. Use it to pass env-derived configuration into the RPC layer.
 
-### Relationship to `createCli`
+### Relationship to `createCac`
 
-The bridge handles the **dev workflow**. Production deploys still go through `createCli` (or `createBuild`), which produces a static `__connection.json` + `__rpc-dump/` snapshot from `cli.distDir`:
+The bridge handles the **dev workflow**. Production deploys still go through `createCac` (or `createBuild`), which produces a static `__connection.json` + `__rpc-dump/` snapshot from `cli.distDir`:
 
 ```
 my-tool/
-├── bin.mjs               # createCli(devframe).parse()
+├── bin.mjs               # createCac(devframe).parse()
 ├── src/
 │   ├── devframe.ts       # defineDevframe + setup(ctx) { ctx.rpc.register(...) }
 │   └── app/              # Nuxt SPA — uses `@devframes/nuxt`

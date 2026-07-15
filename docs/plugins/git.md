@@ -26,9 +26,9 @@ npx @devframes/plugin-git build        # static deploy → dist-static/
 
 ```ts
 import { createGitDevframe } from '@devframes/plugin-git'
-import { createCli } from 'devframe/adapters/cli'
+import { createCac } from 'devframe/adapters/cac'
 
-await createCli(createGitDevframe({ repoRoot: process.cwd() })).parse()
+await createCac(createGitDevframe({ repoRoot: process.cwd() })).parse()
 ```
 
 | Option | Default | Description |

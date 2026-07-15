@@ -127,7 +127,7 @@ export async function resolveDevServerPort(
  *
  * Use this directly when integrating devframe into an existing CLI
  * framework (commander, yargs, hand-rolled CAC). For the all-in-one
- * `dev` / `build` / `mcp` shell, reach for {@link createCli} instead.
+ * `dev` / `build` / `mcp` shell, reach for {@link createCac} instead.
  */
 export async function createDevServer(
   def: DevframeDefinition,

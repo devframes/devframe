@@ -38,7 +38,7 @@ function guideItems(prefix: string) {
 function adaptersItems(prefix: string) {
   return [
     { text: 'Overview', link: `${prefix}/adapters/` },
-    { text: 'CLI', link: `${prefix}/adapters/cli` },
+    { text: 'CLI (cac)', link: `${prefix}/adapters/cac` },
     { text: 'Dev', link: `${prefix}/adapters/dev` },
     { text: 'Build', link: `${prefix}/adapters/build` },
     { text: 'Vite', link: `${prefix}/adapters/vite` },

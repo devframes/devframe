@@ -1,6 +1,6 @@
-import type { CliHandle, CreateCliOptions } from 'devframe/adapters/cli'
+import type { CacHandle, CreateCacOptions } from 'devframe/adapters/cac'
 import type { TerminalsOptions } from './types'
-import { createCli } from 'devframe/adapters/cli'
+import { createCac } from 'devframe/adapters/cac'
 import { createTerminalsDevframe } from './index'
 
 /**
@@ -10,7 +10,7 @@ import { createTerminalsDevframe } from './index'
  */
 export function createTerminalsCli(
   options: TerminalsOptions = {},
-  cliOptions: CreateCliOptions = {},
-): CliHandle {
-  return createCli(createTerminalsDevframe(options), cliOptions)
+  cliOptions: CreateCacOptions = {},
+): CacHandle {
+  return createCac(createTerminalsDevframe(options), cliOptions)
 }

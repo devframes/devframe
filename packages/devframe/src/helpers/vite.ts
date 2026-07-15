@@ -64,7 +64,7 @@ export interface DevframeVitePlugin {
  *
  * Use bridge mode when integrating with frameworks that own the SPA
  * (Nuxt, Astro, SolidStart, plain Vite apps). For the all-in-one
- * `dev` / `build` / `mcp` shell, reach for {@link createCli} instead.
+ * `dev` / `build` / `mcp` shell, reach for {@link createCac} instead.
  */
 export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptions = {}): DevframeVitePlugin {
   const base = normalizeMountBase(options.base ?? resolveBasePath(d, 'hosted'))

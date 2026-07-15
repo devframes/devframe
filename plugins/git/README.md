@@ -37,9 +37,9 @@ any host with devframe's adapters, or drive yourself.
 
 ```ts
 import { createGitDevframe } from '@devframes/plugin-git'
-import { createCli } from 'devframe/adapters/cli'
+import { createCac } from 'devframe/adapters/cac'
 
-await createCli(createGitDevframe({ repoRoot: process.cwd() })).parse()
+await createCac(createGitDevframe({ repoRoot: process.cwd() })).parse()
 ```
 
 | Option | Default | Description |

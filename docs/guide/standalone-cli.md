@@ -14,7 +14,7 @@ It's the pattern used by tools like an ESLint config inspector or a bundler-conf
 my-tool/
 ├── bin.mjs                  # shebang + import './dist/cli.mjs'
 ├── src/
-│   ├── cli.ts               # defineDevframe + createCli
+│   ├── cli.ts               # defineDevframe + createCac
 │   ├── rpc.ts               # your RPC function definitions
 │   └── data.ts              # your domain-specific logic
 ├── app/                     # Nuxt / Vue / React SPA source
@@ -29,7 +29,7 @@ my-tool/
 ```ts [src/cli.ts]
 import process from 'node:process'
 import { defineDevframe, defineRpcFunction } from 'devframe'
-import { createCli } from 'devframe/adapters/cli'
+import { createCac } from 'devframe/adapters/cac'
 import { colors as c } from 'devframe/utils/colors'
 import { resolve } from 'pathe'
 
@@ -66,7 +66,7 @@ const devframe = defineDevframe({
   },
 })
 
-await createCli(devframe, {
+await createCac(devframe, {
   onReady({ origin }) {
     console.log(c.green`My Tool ready at ${origin}`)
   },
@@ -94,7 +94,7 @@ export default defineNuxtConfig({
   modules: ['@devframes/nuxt'],
   nitro: {
     preset: 'static',
-    output: { dir: './dist' }, // matches createCli's distDir of ./dist/public
+    output: { dir: './dist' }, // matches createCac's distDir of ./dist/public
   },
 })
 ```
@@ -172,9 +172,9 @@ const payload = await my.rpc.call('get-payload')
 For flags that are specific to your tool, declare them as valibot schemas so they're validated at parse time and typed at the call site:
 
 ```ts
-import type { InferCliFlags } from 'devframe/adapters/cli'
+import type { InferCliFlags } from 'devframe/adapters/cac'
 import { defineDevframe } from 'devframe'
-import { defineCliFlags } from 'devframe/adapters/cli'
+import { defineCliFlags } from 'devframe/adapters/cac'
 import * as v from 'valibot'
 
 const appFlags = defineCliFlags({
@@ -293,7 +293,7 @@ version.on('updated', () => fetchPayload().then(setData))
 
 ## Use your own CLI framework
 
-`createCli` is a convenience wrapper around three lower-level factories — reach for them directly when you already own a CLI framework (commander, yargs, oclif, hand-rolled cac) or want a different command structure:
+`createCac` is a convenience wrapper around three lower-level factories — reach for them directly when you already own a CLI framework (commander, yargs, oclif, hand-rolled cac) or want a different command structure:
 
 | Building block | Entry |
 |----------------|-------|
@@ -301,7 +301,7 @@ version.on('updated', () => fetchPayload().then(setData))
 | `createBuild(def, opts?)`     | `devframe/adapters/build` |
 | `createMcpServer(def, opts?)` | `devframe/adapters/mcp` |
 
-Each one runs against the same `DevframeDefinition` you'd pass to `createCli`. A commander example:
+Each one runs against the same `DevframeDefinition` you'd pass to `createCac`. A commander example:
 
 ```ts [src/cli.ts]
 import process from 'node:process'
@@ -342,11 +342,11 @@ await program.parseAsync()
 
 `createDevServer` returns the underlying `StartedServer` handle (`origin`, `port`, `app`, `ws`, `rpcGroup`, `connectionMeta()`, `close()`) so the surrounding program can drive graceful shutdown — SIGINT, hot reload, integration tests.
 
-For typed flag schemas, `parseCliFlags(schema, rawBag)` (from `devframe/adapters/flags`) validates a commander/yargs flag bag against a `CliFlagsSchema` (the same `defineCliFlags(...)` value you'd put on `cli.flags`). This entry carries no `cac` dependency, so typed-schema validation works with any CLI framework.
+For typed flag schemas, `parseCliFlags(schema, rawBag)` (from `devframe/adapters/cac`) validates a commander/yargs flag bag against a `CliFlagsSchema` (the same `defineCliFlags(...)` value you'd put on `cli.flags`). The helper is framework-agnostic, so typed-schema validation works with any CLI framework.
 
 ## Why this shape
 
-- **One command, one binary.** `createCli` is a complete CLI — dev, build, spa, mcp all from a single `defineDevframe` value.
+- **One command, one binary.** `createCac` is a complete CLI — dev, build, spa, mcp all from a single `defineDevframe` value.
 - **Headless.** Your `onReady` callback owns startup output, so your tool's stdout stays yours.
 - **Base-agnostic.** Same SPA build works at `/` (dev, standalone static) and at any deployment base.
 - **Typed end-to-end.** RPC function definitions flow their types through to the client `rpc.call` site.
@@ -355,7 +355,7 @@ For typed flag schemas, `parseCliFlags(schema, rawBag)` (from `devframe/adapters
 ## See also
 
 - [Devframe Definition](./devframe-definition) — field reference
-- [Adapters → CLI](/adapters/cli) — full CLI adapter reference including `configureCli` and mount-path rules
+- [Adapters → CLI (cac)](/adapters/cac) — full CLI adapter reference including `configureCli` and mount-path rules
 - [Adapters → Dev](/adapters/dev) — `createDevServer` reference for bring-your-own-CLI integration
 - [Client](./client) — `connectDevframe`, shared state, caching
 - [Agent-Native](./agent-native) — exposing your tool to Claude Desktop, Cursor, etc.

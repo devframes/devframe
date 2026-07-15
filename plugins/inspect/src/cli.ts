@@ -1,5 +1,5 @@
-import type { CliHandle } from 'devframe/adapters/cli'
-import { createCli } from 'devframe/adapters/cli'
+import type { CacHandle } from 'devframe/adapters/cac'
+import { createCac } from 'devframe/adapters/cac'
 import inspectDevframe from './index'
 
 /**
@@ -8,6 +8,6 @@ import inspectDevframe from './index'
  * default {@link createInspectDevframe} definition with devframe's
  * `dev` / `build` / `spa` / `mcp` command shell.
  */
-export function createInspectCli(): CliHandle {
-  return createCli(inspectDevframe)
+export function createInspectCli(): CacHandle {
+  return createCac(inspectDevframe)
 }

@@ -17,7 +17,7 @@ Devframe keeps its surface focused on one tool, so the same definition stays por
 - **App-owned file watching.** Wire your own watcher (chokidar, fs.watch, …) and signal change via `ctx.rpc.sharedState.set(...)` or event-typed RPCs.
 - **Context-aware mount paths.** Standalone adapters (`cli`, `spa`, `build`) serve at `/` by default; hosted adapters (`vite`, `embedded`) serve at `/.<id>/`. Override via `DevframeDefinition.basePath`.
 - **SPAs own their base at runtime.** Build with relative asset paths (`vite.base: './'`); `connectDevframe` discovers the effective base from the executing script's location.
-- **CLI flags compose.** The `cac` instance is exposed to both the devframe (`cli.configure`) and the caller of `createCli`, so capability flags and app flags merge cleanly.
+- **CLI flags compose.** The `cac` instance is exposed to both the devframe (`cli.configure`) and the caller of `createCac`, so capability flags and app flags merge cleanly.
 
 ## What Devframe provides
 
@@ -47,7 +47,7 @@ A minimal devframe with a CLI entry point:
 
 ```ts twoslash
 import { defineDevframe, defineRpcFunction } from 'devframe'
-import { createCli } from 'devframe/adapters/cli'
+import { createCac } from 'devframe/adapters/cac'
 
 const devframe = defineDevframe({
   id: 'my-devframe',
@@ -70,7 +70,7 @@ const devframe = defineDevframe({
   },
 })
 
-await createCli(devframe).parse()
+await createCac(devframe).parse()
 ```
 
 The same definition can also be deployed through any of the other adapters — for example, mounted into Vite DevTools via the [`vite` adapter](/adapters/vite).
@@ -91,7 +91,7 @@ Devframe deploys the same `DevframeDefinition` through one of these adapters:
 
 | Adapter | Entry | Target |
 |---------|-------|--------|
-| `cli` | `createCli(d).parse()` | Standalone CLI with dev / build / mcp subcommands |
+| `cli` | `createCac(d).parse()` | Standalone CLI with dev / build / mcp subcommands |
 | `vite` | `createPluginFromDevframe(d, opts?)` *(from `@vitejs/devtools-kit/node`)* | Mount the devframe into Vite DevTools (or another compatible host) |
 | `build` | `createBuild(d, opts?)` | Self-contained static deploy with baked RPC dumps |
 | `embedded` | `createEmbedded(d, { ctx })` | Runtime registration into an existing host |

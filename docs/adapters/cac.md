@@ -2,11 +2,11 @@
 outline: deep
 ---
 
-# CLI
+# CLI (cac)
 
-The CLI adapter wraps a `DevframeDefinition` in a `cac`-powered command-line interface. From one entry it spins up an `h3` dev server with WebSocket RPC, builds static snapshots, builds SPA bundles, or starts an MCP server.
+The cac adapter wraps a `DevframeDefinition` in a [`cac`](https://github.com/cacjs/cac)-powered command-line interface. From one entry it spins up an `h3` dev server with WebSocket RPC, builds static snapshots, builds SPA bundles, or starts an MCP server.
 
-`cac` is an optional peer dependency, pulled in only through this adapter — install it alongside `devframe` to opt into `createCli`:
+`cac` is an optional peer dependency, pulled in only through this adapter — install it alongside `devframe` to opt into `createCac`:
 
 ```sh
 npm install devframe cac
@@ -16,7 +16,7 @@ Tools that assemble their own command-line shell from the [lower-level factories
 
 ```ts
 import { defineDevframe } from 'devframe'
-import { createCli } from 'devframe/adapters/cli'
+import { createCac } from 'devframe/adapters/cac'
 
 const devframe = defineDevframe({
   id: 'my-devframe',
@@ -25,8 +25,10 @@ const devframe = defineDevframe({
   setup(ctx) { /* register docks, RPC, etc. */ },
 })
 
-await createCli(devframe).parse()
+await createCac(devframe).parse()
 ```
+
+The `devframe/adapters/cli` entry (`createCli`) remains as a deprecated alias for this module — new code should import `createCac` from `devframe/adapters/cac`.
 
 Running the resulting binary:
 
@@ -42,7 +44,7 @@ Standalone CLI serves the SPA at `/` by default. The `/__devframe/` prefix is fo
 
 ## Options
 
-`createCli(def, options?)` accepts:
+`createCac(def, options?)` accepts:
 
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -50,10 +52,10 @@ Standalone CLI serves the SPA at `/` by default. The `/__devframe/` prefix is fo
 | `configureCli` | — | `(cli: CAC) => void` — final hook to add commands/flags at the assembly stage, after the definition's `cli.configure` runs. |
 | `onReady` | — | `(info: { origin, port, app }) => void \| Promise<void>` — called once the dev server is listening. Use this to print your own startup banner. |
 
-`createCli` returns a `CliHandle`:
+`createCac` returns a `CacHandle`:
 
 ```ts
-interface CliHandle {
+interface CacHandle {
   cli: CAC // raw cac instance — mutate before calling parse()
   parse: (argv?: string[]) => Promise<void>
 }
@@ -88,14 +90,14 @@ defineDevframe({
 })
 ```
 
-`distDir` is the only required field; everything else has sensible defaults. The `configure` hook runs *before* the `configureCli` option passed to `createCli`, so the final tool author always has the last word on flags.
+`distDir` is the only required field; everything else has sensible defaults. The `configure` hook runs *before* the `configureCli` option passed to `createCac`, so the final tool author always has the last word on flags.
 
 ## Headless logging
 
 Devframe leaves startup output to the application. Wire `onReady` to print your own banner:
 
 ```ts
-await createCli(devframe, {
+await createCac(devframe, {
   onReady({ origin }) {
     console.log(`ESLint Config Inspector ready at ${origin}`)
   },
@@ -106,13 +108,13 @@ Structured diagnostics (via `nostics`) continue to surface through their normal 
 
 ## Use your own CLI framework
 
-To integrate devframe into an existing commander / yargs program — or to expose a different command structure than `createCli`'s `dev` / `build` / `mcp` triplet — drop down to the peer factories. Same `DevframeDefinition`, different shell:
+To integrate devframe into an existing commander / yargs program — or to expose a different command structure than `createCac`'s `dev` / `build` / `mcp` triplet — drop down to the peer factories. Same `DevframeDefinition`, different shell:
 
 | Building block | Entry | Purpose |
 |----------------|-------|---------|
 | [`createDevServer(def, opts?)`](./dev) | `devframe/adapters/dev` | h3 + WebSocket RPC + SPA mount |
 | [`createBuild(def, opts?)`](./build) | `devframe/adapters/build` | Static deploy |
 | [`createMcpServer(def, opts?)`](./mcp) | `devframe/adapters/mcp` | stdio MCP server |
-| `parseCliFlags(schema, raw)` | `devframe/adapters/flags` | Validate a flag bag against a `CliFlagsSchema` (no `cac` required) |
+| `parseCliFlags(schema, raw)` | `devframe/adapters/cac` | Validate a flag bag against a `CliFlagsSchema` |
 
 See the [Standalone CLI guide](/guide/standalone-cli#use-your-own-cli-framework) for a worked commander example.

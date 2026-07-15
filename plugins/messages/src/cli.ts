@@ -1,5 +1,5 @@
-import type { CliHandle } from 'devframe/adapters/cli'
-import { createCli } from 'devframe/adapters/cli'
+import type { CacHandle } from 'devframe/adapters/cac'
+import { createCac } from 'devframe/adapters/cac'
 import messagesDevframe from './index'
 
 /**
@@ -8,6 +8,6 @@ import messagesDevframe from './index'
  * default {@link createMessagesDevframe} definition with devframe's
  * `dev` / `build` / `spa` / `mcp` command shell.
  */
-export function createMessagesCli(): CliHandle {
-  return createCli(messagesDevframe)
+export function createMessagesCli(): CacHandle {
+  return createCac(messagesDevframe)
 }
