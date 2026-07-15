@@ -14,6 +14,10 @@ export async function createStaticRpcClientMode(
 
   return {
     isTrusted: true,
+    // A static backend has no live socket; every call is a local fetch, so it
+    // is "connected" for its whole life.
+    status: 'connected',
+    connectionError: null,
     requestTrust: async () => true,
     requestTrustWithToken: async () => true,
     // Static backends are always trusted, so there's nothing to exchange.

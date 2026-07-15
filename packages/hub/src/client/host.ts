@@ -109,6 +109,15 @@ export async function createDevframeClientHost(
     docks,
     commands,
     when,
+    connection: {
+      get status() {
+        return rpc.status
+      },
+      get error() {
+        return rpc.connectionError
+      },
+      events: rpc.events,
+    },
   }
 
   const disposers: Array<() => void> = []
