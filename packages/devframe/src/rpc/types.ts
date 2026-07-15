@@ -72,10 +72,10 @@ export interface RpcFunctionsCollector<LocalFunctions, SetupContext = undefined>
   readonly functions: LocalFunctions
   /** Map of registered function definitions keyed by function name */
   readonly definitions: Map<string, RpcFunctionDefinitionAnyWithContext<SetupContext>>
-  /** Register a new function definition */
-  register: (fn: RpcFunctionDefinitionAnyWithContext<SetupContext>) => void
-  /** Update an existing function definition */
-  update: (fn: RpcFunctionDefinitionAnyWithContext<SetupContext>) => void
+  /** Register a new function definition. Pass `force` to overwrite an existing one. */
+  register: (fn: RpcFunctionDefinitionAnyWithContext<SetupContext>, force?: boolean) => void
+  /** Update an existing function definition. Pass `force` to register it if it doesn't exist yet. */
+  update: (fn: RpcFunctionDefinitionAnyWithContext<SetupContext>, force?: boolean) => void
   /** Subscribe to function changes, returns unsubscribe function */
   onChanged: (fn: (id?: string) => void) => (() => void)
 }
