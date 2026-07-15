@@ -25,7 +25,10 @@ async function createTestContext(): Promise<DevframeNodeContext> {
 }
 
 /** Starts a fully-authenticated server with one trusted-only probe method. */
-async function startAuthenticatedServer(banners: { code: string, url: string }[] = []) {
+async function startAuthenticatedServer(
+  banners: { code: string, url: string }[] = [],
+  preTrust = false,
+) {
   const context = await createTestContext()
   context.rpc.register({
     name: 'test:trusted-only',
@@ -38,7 +41,17 @@ async function startAuthenticatedServer(banners: { code: string, url: string }[]
 
   const host = '127.0.0.1'
   const port = await getPort({ port: 0, host })
-  const server = await startHttpAndWs({ context, host, port, auth })
+  const server = await startHttpAndWs({
+    context,
+    host,
+    port,
+    auth,
+    onPeerConnect: preTrust
+      ? (_peer, session) => {
+          session.meta.isTrusted = true
+        }
+      : undefined,
+  })
   return { context, auth, server, host, port }
 }
 
@@ -115,6 +128,22 @@ describe('recipes/interactive-auth', () => {
       await expect(returning.$call('test:trusted-only' as any)).resolves.toBe('ok')
       expect(getTempAuthCode()).toBe(codeAfterExchange)
       returning.$close()
+    }
+    finally {
+      await server.close()
+    }
+  })
+
+  it('preserves trust established by the host before the client handshake', async () => {
+    const { server, host, port } = await startAuthenticatedServer([], true)
+
+    try {
+      const client = connectClient(host, port)
+      const handshake = await client.$call('anonymous:devframe:auth', { authToken: '', ua: 'test', origin: 'http://localhost' })
+
+      expect(handshake).toEqual({ isTrusted: true })
+      await expect(client.$call('test:trusted-only' as any)).resolves.toBe('ok')
+      client.$close()
     }
     finally {
       await server.close()
