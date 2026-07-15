@@ -27,7 +27,6 @@ export class DevframeDocksHost {
   resolveDevServerOrigin() {}
   register(_, _) {}
   update(_) {}
-  withBuiltinCategory(_) {}
   validateGroupMembership(_) {}
   prepareRemoteRegistration(_) {}
 }

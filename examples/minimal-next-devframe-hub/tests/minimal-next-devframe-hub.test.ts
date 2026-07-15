@@ -35,7 +35,7 @@ describe('minimal-next-devframe-hub (example)', () => {
     const dockIds = docks.map(d => d.id)
     expect(dockIds).toContain('next-demo-tool')
     // The hub synthesizes no built-in docks; the integration registers the
-    // settings tab itself, and `~builtin` views default to the `~builtin` category.
+    // settings tab itself, declaring the `~builtin` category explicitly.
     expect(dockIds).toContain('~settings')
     expect(docks.find(d => d.id === '~settings')?.category).toBe('~builtin')
     // The dogfooded built-in plugin packages mount their own docks.

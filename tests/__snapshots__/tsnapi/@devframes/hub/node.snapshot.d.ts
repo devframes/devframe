@@ -36,7 +36,6 @@ export declare class DevframeDocksHost implements DevframeDocksHost$1 {
     update: (_: Partial<T>) => void;
   };
   update(_: DevframeDockUserEntry): void;
-  private withBuiltinCategory;
   private validateGroupMembership;
   private prepareRemoteRegistration;
 }
