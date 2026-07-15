@@ -205,13 +205,14 @@ export async function minimalNextDevframeHub(
   })
 
   // The hub no longer synthesizes built-in docks — a high-level integration
-  // registers the viewer's native views it wants. `~builtin` views default
-  // their category to `~builtin`, so this Settings tab sorts last on its own.
+  // registers the viewer's native views it wants, declaring the `~builtin`
+  // category itself so this Settings tab groups and sorts last.
   context.docks.register({
     type: '~builtin',
     id: '~settings',
     title: 'Settings',
     icon: 'ph:gear-duotone',
+    category: '~builtin',
   })
 
   // Demo devframes alongside the dogfooded built-in plugin packages.

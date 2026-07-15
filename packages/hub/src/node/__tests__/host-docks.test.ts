@@ -190,13 +190,13 @@ describe('devframeDockHost grouping', () => {
   })
 })
 
-describe('devframeDockHost ~builtin category default', () => {
+describe('devframeDockHost ~builtin category', () => {
   it('returns no docks until an integration registers one', () => {
     const host = new DevframeDocksHost(createContext())
     expect(host.values()).toEqual([])
   })
 
-  it('defaults a ~builtin view without a category to the ~builtin category', () => {
+  it('preserves a ~builtin view without a category untouched', () => {
     const host = new DevframeDocksHost(createContext())
     host.register({
       type: '~builtin',
@@ -206,7 +206,8 @@ describe('devframeDockHost ~builtin category default', () => {
     })
 
     const entry = host.values()[0]
-    expect(entry).toMatchObject({ id: '~settings', type: '~builtin', category: '~builtin' })
+    expect(entry).toMatchObject({ id: '~settings', type: '~builtin' })
+    expect(entry.category).toBeUndefined()
   })
 
   it('preserves an explicit category on a ~builtin view', () => {
