@@ -16,10 +16,6 @@ function createContext(): DevframeHubContext {
       resolveOrigin: () => 'http://localhost:5173',
       getStorageDir: () => storageDir,
     },
-    // Minimal stubs so the built-in `~terminals`/`~messages` getters
-    // (`when`/`badge`) can be evaluated without a full context.
-    terminals: { sessions: new Map() },
-    messages: { entries: new Map() },
   } as unknown as DevframeHubContext
 }
 
@@ -38,7 +34,7 @@ describe('devframeDockHost remote URL enrichment', () => {
       remote: true,
     })
 
-    const first = host.values({ includeBuiltin: false })[0]
+    const first = host.values()[0]
     expect(first.type).toBe('iframe')
     const firstUrl = first.type === 'iframe' ? first.url : ''
     expect(firstUrl).toContain(`#/inspect?tab=state&${REMOTE_CONNECTION_KEY}=`)
@@ -57,7 +53,7 @@ describe('devframeDockHost remote URL enrichment', () => {
       remote: true,
     })
 
-    const second = host.values({ includeBuiltin: false })[0]
+    const second = host.values()[0]
     const secondUrl = second.type === 'iframe' ? second.url : ''
     expect(secondUrl.match(new RegExp(REMOTE_CONNECTION_KEY, 'g'))).toHaveLength(1)
     expect(secondUrl).toContain('#/inspect?tab=state&')
@@ -77,7 +73,7 @@ describe('devframeDockHost remote URL enrichment', () => {
       remote: true,
     })
 
-    const entry = host.values({ includeBuiltin: false })[0]
+    const entry = host.values()[0]
     const url = entry.type === 'iframe' ? entry.url : ''
     expect(url).toContain(`#section&${REMOTE_CONNECTION_KEY}=`)
     expect(parseRemoteConnection(url)?.websocket).toBe('ws://localhost:4173')
@@ -101,7 +97,7 @@ describe('devframeDockHost grouping', () => {
 
     expect(host.views.has('nuxt')).toBe(true)
     expect(emitted).toEqual(['nuxt'])
-    const entry = host.values({ includeBuiltin: false })[0]
+    const entry = host.values()[0]
     expect(entry.type).toBe('group')
     expect(entry).toMatchObject({ id: 'nuxt', defaultChildId: 'nuxt:overview' })
   })
@@ -117,7 +113,7 @@ describe('devframeDockHost grouping', () => {
       groupId: 'nuxt',
     })
 
-    const entry = host.values({ includeBuiltin: false })[0]
+    const entry = host.values()[0]
     expect(entry.groupId).toBe('nuxt')
   })
 
@@ -138,7 +134,7 @@ describe('devframeDockHost grouping', () => {
       icon: 'logos:nuxt-icon',
     })
 
-    const ids = host.values({ includeBuiltin: false }).map(entry => entry.id)
+    const ids = host.values().map(entry => entry.id)
     expect(ids).toEqual(['nuxt:overview', 'nuxt'])
   })
 
@@ -194,33 +190,40 @@ describe('devframeDockHost grouping', () => {
   })
 })
 
-describe('devframeDockHost built-in gating', () => {
-  it('includes all three built-ins by default', () => {
+describe('devframeDockHost ~builtin category default', () => {
+  it('returns no docks until an integration registers one', () => {
     const host = new DevframeDocksHost(createContext())
-    const ids = host.values().map(entry => entry.id)
-    expect(ids).toEqual(['~terminals', '~messages', '~settings'])
+    expect(host.values()).toEqual([])
   })
 
-  it('treats an empty builtinDocks map as all-enabled', () => {
-    const host = new DevframeDocksHost(createContext(), {})
-    const ids = host.values().map(entry => entry.id)
-    expect(ids).toEqual(['~terminals', '~messages', '~settings'])
+  it('defaults a ~builtin view without a category to the ~builtin category', () => {
+    const host = new DevframeDocksHost(createContext())
+    host.register({
+      type: '~builtin',
+      id: '~settings',
+      title: 'Settings',
+      icon: 'ph:gear-duotone',
+    })
+
+    const entry = host.values()[0]
+    expect(entry).toMatchObject({ id: '~settings', type: '~builtin', category: '~builtin' })
   })
 
-  it('omits the built-ins gated with `false`, keeping the rest', () => {
-    const host = new DevframeDocksHost(createContext(), { terminals: false, messages: false })
-    const ids = host.values().map(entry => entry.id)
-    expect(ids).toEqual(['~settings'])
+  it('preserves an explicit category on a ~builtin view', () => {
+    const host = new DevframeDocksHost(createContext())
+    host.register({
+      type: '~builtin',
+      id: '~settings',
+      title: 'Settings',
+      icon: 'ph:gear-duotone',
+      category: 'app',
+    })
+
+    expect(host.values()[0].category).toBe('app')
   })
 
-  it('keeps an explicitly-enabled built-in and drops an omitted-as-false sibling', () => {
-    const host = new DevframeDocksHost(createContext(), { terminals: true, settings: false })
-    const ids = host.values().map(entry => entry.id)
-    expect(ids).toEqual(['~terminals', '~messages'])
-  })
-
-  it('keeps user views ahead of gated built-ins', () => {
-    const host = new DevframeDocksHost(createContext(), { messages: false, settings: false })
+  it('leaves a non-builtin view without a category untouched', () => {
+    const host = new DevframeDocksHost(createContext())
     host.register({
       type: 'iframe',
       id: 'app:overview',
@@ -229,12 +232,6 @@ describe('devframeDockHost built-in gating', () => {
       url: '/__app/',
     })
 
-    const ids = host.values().map(entry => entry.id)
-    expect(ids).toEqual(['app:overview', '~terminals'])
-  })
-
-  it('drops every built-in when includeBuiltin is false, regardless of gating', () => {
-    const host = new DevframeDocksHost(createContext(), { terminals: true, messages: true, settings: true })
-    expect(host.values({ includeBuiltin: false })).toEqual([])
+    expect(host.values()[0].category).toBeUndefined()
   })
 })
