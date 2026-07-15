@@ -139,9 +139,8 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     }
     this.validateGroupMembership(view)
     this.prepareRemoteRegistration(view)
-    const entry = this.withBuiltinCategory(view)
-    this.views.set(entry.id, entry)
-    this.events.emit('dock:entry:updated', entry)
+    this.views.set(view.id, view)
+    this.events.emit('dock:entry:updated', view)
 
     return {
       update: (patch) => {
@@ -159,20 +158,8 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     }
     this.validateGroupMembership(view)
     this.prepareRemoteRegistration(view)
-    const entry = this.withBuiltinCategory(view)
-    this.views.set(entry.id, entry)
-    this.events.emit('dock:entry:updated', entry)
-  }
-
-  /**
-   * `~builtin` views default their category to `~builtin` so the viewer's
-   * native views group together and sort last — a high-level integration
-   * registering one needn't repeat the category.
-   */
-  private withBuiltinCategory<T extends DevframeDockUserEntry>(view: T): T {
-    if (view.type === '~builtin' && view.category === undefined)
-      return { ...view, category: '~builtin' }
-    return view
+    this.views.set(view.id, view)
+    this.events.emit('dock:entry:updated', view)
   }
 
   private validateGroupMembership(view: DevframeDockUserEntry): void {

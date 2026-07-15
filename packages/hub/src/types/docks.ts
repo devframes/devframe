@@ -184,7 +184,7 @@ export interface DevframeViewCustomRender extends DevframeDockEntryBase {
  */
 export interface DevframeViewBuiltin extends DevframeDockEntryBase {
   type: '~builtin'
-  id: '~terminals' | '~messages' | '~client-auth-notice' | '~settings' | '~popup'
+  id: string
 }
 
 export interface DevframeViewJsonRender extends DevframeDockEntryBase {
