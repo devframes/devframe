@@ -67,13 +67,20 @@ describe('mcp adapter (in-memory)', () => {
       ctx.agent.registerTool({
         id: 'echo',
         description: 'Echo.',
+        outputSchema: {
+          type: 'object',
+          properties: { echoed: { type: 'object' } },
+          required: ['echoed'],
+        },
         handler: args => ({ echoed: args }),
       })
 
+      await client.listTools()
       const result = await client.callTool({ name: 'echo', arguments: { foo: 'bar' } })
       const content = result.content as Array<{ type: string, text: string }>
       expect(content[0]!.type).toBe('text')
       expect(JSON.parse(content[0]!.text)).toEqual({ echoed: { foo: 'bar' } })
+      expect(result.structuredContent).toEqual({ echoed: { foo: 'bar' } })
     }
     finally {
       await cleanup()
