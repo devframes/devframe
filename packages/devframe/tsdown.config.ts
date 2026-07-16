@@ -23,6 +23,17 @@ const deps = {
     'terser',
     '@jridgewell/trace-mapping',
   ],
+  // `whenexpr` is runtime-only bundled (see `onlyBundle` below); its
+  // declaration file mixes type-only and value named exports
+  // (`export { type WhenExpression, evaluateWhen, ... }`) in a way that
+  // trips up rolldown's dts bundler when it tries to inline the type
+  // graph too (spuriously drops the `type` modifier off the merged
+  // re-export, then can't find `WhenExpression` as a value export). Leave
+  // `whenexpr`'s types external and let dts consumers resolve them
+  // straight from the published package.
+  dts: {
+    neverBundle: ['whenexpr'],
+  },
   onlyBundle: [
     'acorn',
     'bundle-name',
