@@ -96,6 +96,8 @@ export function createInteractiveAuth(
       const session = context.rpc.getCurrentRpcSession()
       if (!session)
         return { isTrusted: false }
+      if (session.meta.isTrusted)
+        return { isTrusted: true }
       if (isStaticToken(params.authToken)) {
         session.meta.clientAuthToken = params.authToken
         session.meta.isTrusted = true
