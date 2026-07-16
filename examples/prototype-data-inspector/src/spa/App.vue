@@ -57,6 +57,20 @@ function queryProp(key: string): void {
   wb.query.value = /^[a-z_$][\w$]*$/i.test(key) ? key : `$["${key.replaceAll('"', '\\"')}"]`
   void wb.runNow()
 }
+
+/** "Create a subquery from the path": pipe the path onto the current query. */
+function querySubquery(path: string): void {
+  const current = wb.query.value.trim()
+  wb.query.value = current && current !== '$' ? `${current}\n| ${path}` : path
+  void wb.runNow()
+}
+
+/** "Append path to current query": plain textual append. */
+function queryAppend(path: string): void {
+  const current = wb.query.value.trim()
+  wb.query.value = current ? `${current}${path.startsWith('[') ? '' : '.'}${path}` : path
+  void wb.runNow()
+}
 </script>
 
 <template>
@@ -171,6 +185,8 @@ function queryProp(key: string): void {
             :error="wb.serverError.value"
             :running="wb.running.value"
             @rerun="wb.runNow()"
+            @query-subquery="querySubquery"
+            @query-append="queryAppend"
           />
         </Pane>
       </LayoutSplitPane>

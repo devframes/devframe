@@ -10,6 +10,7 @@ import type { ColorScheme } from './scheme'
 import { ViewModel } from '@discoveryjs/discovery'
 import discoveryCss from '@discoveryjs/discovery/dist/discovery.css?inline'
 import { onMounted, onUnmounted, shallowRef, watch } from 'vue'
+import { keyBadges, objectBadges } from './display-transform'
 
 // Bridge discovery's theme custom props to the design tokens (see style.css
 // for the `.di-result-host` values that flip with `.dark`), zero out the
@@ -51,44 +52,48 @@ interface AnnotationBadge {
   tooltip?: unknown
 }
 
-/** Badge the normalizer's tag objects with their type. */
-function typeAnnotation(value: unknown): AnnotationBadge | undefined {
-  if (!value || typeof value !== 'object' || Array.isArray(value))
-    return undefined
-  const v = value as Record<string, unknown>
+interface AnnotationContext {
+  host?: unknown
+  key?: string | number
+}
 
-  if (typeof v.$ref === 'string') {
-    return { place: 'after', style: 'badge', text: '#Circular', className: 'di-type-badge di-type-ref' }
+/**
+ * Badge values from the display-transform side-tables (`$class`/`$type` meta
+ * is stripped from the rendered data; badges carry the type info instead).
+ */
+function typeAnnotation(value: unknown, context?: AnnotationContext): AnnotationBadge | undefined {
+  // Object-valued entries: identity lookup.
+  if (value && typeof value === 'object') {
+    const v = value as Record<string, unknown>
+    if (typeof v.$ref === 'string')
+      return { place: 'after', style: 'badge', text: '#Circular', className: 'di-type-badge di-type-ref' }
+    const badge = objectBadges.get(value as object)
+    if (badge)
+      return { place: 'after', style: 'badge', ...badge }
+    return undefined
   }
-  if (typeof v.$type === 'string') {
-    const type = v.$type
-    const size = typeof v.size === 'number' ? `(${v.size})` : ''
-    const kind = type === 'function'
-      ? 'di-type-function'
-      : type === 'Map'
-        ? 'di-type-map'
-        : type === 'Set'
-          ? 'di-type-set'
-          : type === 'Date'
-            ? 'di-type-date'
-            : 'di-type-other'
-    const label = type === 'function'
-      ? (v.name && v.name !== '(anonymous)')
-          ? `fn ${v.name}`
-          : 'Function'
-      : `${type}${size}`
-    return { place: 'after', style: 'badge', text: label, className: `di-type-badge ${kind}` }
-  }
-  if (typeof v.$class === 'string') {
-    return { place: 'after', style: 'badge', text: `class ${v.$class}`, className: 'di-type-badge di-type-class' }
+  // Primitive-valued entries (Date strings, BigInt, ...): parent+key lookup.
+  const parent = context?.host
+  if (parent && typeof parent === 'object' && context?.key !== undefined) {
+    const badge = keyBadges.get(parent as object)?.[context.key]
+    if (badge)
+      return { place: 'after', style: 'badge', ...badge }
   }
   return undefined
+}
+
+export interface DiscoveryQueryActions {
+  /** "Create a subquery from the path" in the struct value-actions popup. */
+  onQuerySubquery?: (path: string) => void
+  /** "Append path to current query" in the struct value-actions popup. */
+  onQueryAppend?: (path: string) => void
 }
 
 export function useDiscoveryViewer(
   container: Readonly<ShallowRef<HTMLElement | null>>,
   scheme: Ref<ColorScheme>,
   viewConfig: Record<string, unknown> = { view: 'struct', expanded: 2 },
+  actions: DiscoveryQueryActions = {},
 ) {
   const host = shallowRef<ViewModel | null>(null)
   let pendingData: { data: unknown } | null = null
@@ -109,6 +114,16 @@ export function useDiscoveryViewer(
         ...viewConfig,
       } as never,
     )
+    // Opting into discovery's built-in query actions makes the struct view's
+    // per-value actions popup offer "query this key" entries; the callbacks
+    // receive a ready-made jora path (host.pathToQuery).
+    if (actions.onQuerySubquery || actions.onQueryAppend) {
+      vm.action.define('queryAcceptChanges', () => true)
+      if (actions.onQuerySubquery)
+        vm.action.define('querySubquery', path => actions.onQuerySubquery?.(String(path)))
+      if (actions.onQueryAppend)
+        vm.action.define('queryAppend', path => actions.onQueryAppend?.(String(path)))
+    }
     await vm.dom.ready
     host.value = vm
     if (pendingData) {

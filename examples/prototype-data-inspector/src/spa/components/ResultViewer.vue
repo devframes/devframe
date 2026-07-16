@@ -6,6 +6,7 @@ import DisplayBytes from '@antfu/design/components/Display/DisplayBytes.vue'
 import DisplayDuration from '@antfu/design/components/Display/DisplayDuration.vue'
 import { shallowRef, watch } from 'vue'
 import { useDiscoveryViewer } from '../composables/discovery'
+import { prepareForDisplay } from '../composables/display-transform'
 import { colorScheme } from '../composables/scheme'
 
 const props = defineProps<{
@@ -17,14 +18,23 @@ const props = defineProps<{
   running: boolean
 }>()
 
-const emit = defineEmits<{ rerun: [] }>()
+const emit = defineEmits<{
+  rerun: []
+  /** From the struct's value actions: replace the query with this jora path. */
+  querySubquery: [path: string]
+  /** From the struct's value actions: append this jora path to the query. */
+  queryAppend: [path: string]
+}>()
 
 const containerEl = shallowRef<HTMLElement | null>(null)
-const viewer = useDiscoveryViewer(containerEl, colorScheme)
+const viewer = useDiscoveryViewer(containerEl, colorScheme, { view: 'struct', expanded: 2 }, {
+  onQuerySubquery: path => emit('querySubquery', path),
+  onQueryAppend: path => emit('queryAppend', path),
+})
 
 watch(() => props.result, (value) => {
   if (props.hasResult)
-    void viewer.setData(value)
+    void viewer.setData(prepareForDisplay(value))
 })
 </script>
 
