@@ -36,6 +36,7 @@ export declare class DevframeDocksHost implements DevframeDocksHost$1 {
     update: (_: Partial<T>) => void;
   };
   update(_: DevframeDockUserEntry): void;
+  activate(_: string, _?: Record<string, unknown>): void;
   private validateGroupMembership;
   private prepareRemoteRegistration;
 }
@@ -104,6 +105,36 @@ export declare const hubCommandsExecute: {
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>>> | undefined;
+};
+export declare const hubDocksActivate: {
+  name: "hub:docks:activate";
+  type?: "action" | undefined;
+  cacheable?: boolean;
+  args?: undefined;
+  returns?: undefined;
+  jsonSerializable?: boolean;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: {
+    dockId: string;
+    params?: Record<string, unknown>;
+  }], Promise<void>>>) | undefined;
+  handler?: ((input: {
+    dockId: string;
+    params?: Record<string, unknown>;
+  }) => Promise<void>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[input: {
+    dockId: string;
+    params?: Record<string, unknown>;
+  }], Promise<void>, DevframeHubContext> | undefined;
+  snapshot?: boolean;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: {
+    dockId: string;
+    params?: Record<string, unknown>;
+  }], Promise<void>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: {
+    dockId: string;
+    params?: Record<string, unknown>;
+  }], Promise<void>>> | undefined;
 };
 export declare const hubMessagesAdd: {
   name: "hub:messages:add";

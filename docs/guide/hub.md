@@ -12,7 +12,7 @@ A hub-aware node context (`DevframeHubContext`) extends `DevframeNodeContext` wi
 
 | Subsystem | Surface | Purpose |
 |---|---|---|
-| `ctx.docks` | `register / update / values` | Multi-tool dock entries (iframes, launchers, json-render, custom-render) and groups that collapse them under one button. |
+| `ctx.docks` | `register / update / values / activate` | Multi-tool dock entries (iframes, launchers, json-render, custom-render) and groups that collapse them under one button. `activate(dockId, params?)` steers which dock the viewer shows — see [Cross-iframe dock activation](#cross-iframe-dock-activation). |
 | `ctx.terminals` | `register / startChildProcess` | Aggregate terminal sessions, stream output over a well-known channel. The single source of truth for "what sessions exist" — see [Terminals](/plugins/terminals#hub-aggregation) for how the terminals plugin renders and mirrors into it. |
 | `ctx.messages` | `add / update / remove / clear` | Server-side toast/notification queue (FIFO, capped at 1000). |
 | `ctx.commands` | `register / execute / list` | Hierarchical command palette with keybindings and `when` clauses. |
@@ -21,11 +21,30 @@ Plus a `createJsonRenderer(spec)` factory for building remote-UI panels via the 
 
 ## Built-in RPC
 
-Every hub context auto-registers this RPC function so framework kits don't reimplement it:
+Every hub context auto-registers these RPC functions so framework kits don't reimplement them:
 
 - `hub:commands:execute` — invoke a registered server command by id. `await rpc.call('hub:commands:execute', 'my-tool:do-thing', ...args)`.
+- `hub:docks:activate` — switch the viewer's active dock. `await rpc.call('hub:docks:activate', { dockId, params })` — see [Cross-iframe dock activation](#cross-iframe-dock-activation).
 
 Host-specific capabilities (open in editor, reveal in finder, …) ship as kit-registered RPC functions rather than as part of the hub surface.
+
+## Cross-iframe dock activation
+
+The viewer's active dock is client-local state — which dock is on screen lives in the shell page, not in shared state. A mounted devframe runs in its own iframe on its own RPC client, so it can't reach that selection directly. `hub:docks:activate` bridges the gap: any connected client asks the hub to switch the active dock, and the hub relays the request to the shell.
+
+```ts
+// From inside a mounted devframe's iframe (its own RPC client):
+await rpc.call('hub:docks:activate', {
+  dockId: 'devframes-plugin-terminals',
+  params: { sessionId }, // opaque bag the target dock interprets
+})
+```
+
+The hub broadcasts the request live over `devframe:docks:activate` (the client host calls its local `switchEntry(dockId)`) and mirrors it into the `devframe:docks:active` shared-state slot, so a dock that mounts *because* of the switch still converges on the request instead of missing the broadcast. `params` is an opaque, serializable bag the target dock reads — the [terminals dock](/plugins/terminals#focusing-a-session) reads `params.sessionId` to focus a specific session. Unknown dock ids degrade to a no-op (warned server-side as [DF8107](/errors/DF8107)); the target dock ignores `params` it doesn't recognize.
+
+This is what lets Vite DevTools' Rolldown analyzer spawn a `vite build` via `ctx.terminals.startChildProcess` and then navigate the user straight to that build's terminal session.
+
+Server-side, the same switch is available as `ctx.docks.activate(dockId, params?)`.
 
 ## Mounting a devframe into a hub
 
@@ -136,9 +155,11 @@ A hub-aware UI doesn't import any hub classes; it reads three shared-state keys 
 | `devframe:docks` shared state | `DevframeDockEntry[]` | Every dock entry the mounted integrations registered. |
 | `devframe:commands` shared state | `DevframeServerCommandEntry[]` | Serializable command list (handlers stripped). |
 | `devframe:user-settings` shared state | `DevframeDocksUserSettings` | Persisted per-workspace hub settings. |
+| `devframe:docks:active` shared state | `DevframeDocksActiveState` | The most recent [dock activation](#cross-iframe-dock-activation) request, so a dock that mounts in response converges on it. |
 | `hub:commands:execute` RPC | `(id, ...args) => unknown` | Server-side command dispatch. |
+| `hub:docks:activate` RPC | `({ dockId, params? }) => void` | Switch the active dock from any client. |
 
-Plus broadcast notifications (`devframe:terminals:updated`, `devframe:messages:updated`) that a UI can subscribe to via `rpc.client.register(...)`.
+Plus broadcast notifications (`devframe:docks:activate`, `devframe:terminals:updated`, `devframe:messages:updated`) that a UI can subscribe to via `rpc.client.register(...)`. The client host registers the `devframe:docks:activate` handler for you.
 
 ## Running plugin code in the host page
 
