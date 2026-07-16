@@ -154,6 +154,10 @@ function registerToolHandlers(server: Server, ctx: DevframeNodeContext): void {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params
     try {
+      const tool = ctx.agent.getTool(name)
+      const outputSchema = tool
+        ? tool.outputSchema ?? computeOutputSchema(tool, ctx)
+        : undefined
       const result = await ctx.agent.invoke(name, args ?? {})
       return {
         content: [
@@ -162,6 +166,7 @@ function registerToolHandlers(server: Server, ctx: DevframeNodeContext): void {
             text: stringifyForMcp(result),
           },
         ],
+        ...(outputSchema ? { structuredContent: result as Record<string, unknown> } : {}),
       }
     }
     catch (error) {
