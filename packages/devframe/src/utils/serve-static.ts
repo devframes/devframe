@@ -173,8 +173,8 @@ export function serveStaticHandler(
  *
  * h3 v2's `app.use(base, handler)` only matches the exact `base` path and
  * does not strip the prefix from `event.url.pathname`. Static serving
- * needs both subpath matching (`/base/**`) and the URL stripped so the
- * file resolver sees paths relative to `dir` — this helper bundles both.
+ * needs an explicit segment-boundary match plus a stripped URL so the file
+ * resolver sees paths relative to `dir` — this helper bundles both.
  */
 export function mountStaticHandler(
   app: H3,
@@ -188,7 +188,9 @@ export function mountStaticHandler(
     app.use('/**', handler)
     return
   }
-  app.use(`${trimmed}/**`, withBase(trimmed, handler))
+  app.use(withBase(trimmed, handler), {
+    match: event => event.url.pathname === trimmed || event.url.pathname.startsWith(`${trimmed}/`),
+  })
 }
 
 /**

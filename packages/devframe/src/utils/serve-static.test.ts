@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { H3, toNodeHandler } from 'h3'
 import { afterEach, describe, expect, it } from 'vitest'
-import { serveStaticHandler, serveStaticNodeMiddleware } from './serve-static'
+import { mountStaticHandler, serveStaticHandler, serveStaticNodeMiddleware } from './serve-static'
 
 interface Fixture {
   dir: string
@@ -164,6 +164,36 @@ describe('serveStaticHandler', () => {
     const res = await fetch(`${fx.baseUrl}/about`)
     expect(res.status).toBe(200)
     expect(await res.text()).toBe('<title>about</title>')
+  })
+})
+
+describe('mountStaticHandler', () => {
+  it('keeps static bases with overlapping prefixes isolated', async () => {
+    const viteDir = makeTmp('devframe-serve-vite-')
+    const vitestDir = makeTmp('devframe-serve-vitest-')
+    writeFileSync(join(viteDir, 'index.html'), 'vite-index', 'utf-8')
+    writeFileSync(join(viteDir, 'favicon.svg'), 'vite', 'utf-8')
+    writeFileSync(join(vitestDir, 'favicon.svg'), 'vitest', 'utf-8')
+
+    const app = new H3()
+    mountStaticHandler(app, '/__devtools-vite/', viteDir)
+    mountStaticHandler(app, '/__devtools-vitest/', vitestDir)
+
+    const viteBaseResponse = await app.request('/__devtools-vite')
+    const viteBaseSlashResponse = await app.request('/__devtools-vite/')
+    const viteResponse = await app.request('/__devtools-vite/favicon.svg')
+    const vitestResponse = await app.request('/__devtools-vitest/favicon.svg')
+    const adjacentResponse = await app.request('/__devtools-vite-extra/favicon.svg')
+
+    expect(viteBaseResponse.status).toBe(200)
+    expect(await viteBaseResponse.text()).toBe('vite-index')
+    expect(viteBaseSlashResponse.status).toBe(200)
+    expect(await viteBaseSlashResponse.text()).toBe('vite-index')
+    expect(viteResponse.status).toBe(200)
+    expect(await viteResponse.text()).toBe('vite')
+    expect(vitestResponse.status).toBe(200)
+    expect(await vitestResponse.text()).toBe('vitest')
+    expect(adjacentResponse.status).toBe(404)
   })
 })
 
