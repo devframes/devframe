@@ -168,6 +168,25 @@ describe('serveStaticHandler', () => {
 })
 
 describe('mountStaticHandler', () => {
+  it('serves files when mounted at the root', async () => {
+    const dir = makeTmp('devframe-serve-root-')
+    writeFileSync(join(dir, 'index.html'), 'root-index', 'utf-8')
+    writeFileSync(join(dir, 'app.js'), 'root-app', 'utf-8')
+
+    const app = new H3()
+    mountStaticHandler(app, '/', dir)
+
+    const indexResponse = await app.request('/')
+    const assetResponse = await app.request('/app.js')
+    const missingResponse = await app.request('/missing.js')
+
+    expect(indexResponse.status).toBe(200)
+    expect(await indexResponse.text()).toBe('root-index')
+    expect(assetResponse.status).toBe(200)
+    expect(await assetResponse.text()).toBe('root-app')
+    expect(missingResponse.status).toBe(404)
+  })
+
   it('keeps static bases with overlapping prefixes isolated', async () => {
     const viteDir = makeTmp('devframe-serve-vite-')
     const vitestDir = makeTmp('devframe-serve-vitest-')
