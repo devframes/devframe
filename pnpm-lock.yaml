@@ -43,6 +43,9 @@ catalogs:
     '@discoveryjs/discovery':
       specifier: 1.0.0-beta.99
       version: 1.0.0-beta.99
+    '@types/codemirror':
+      specifier: ^5.60.16
+      version: 5.60.17
     jora:
       specifier: 1.0.0-beta.16
       version: 1.0.0-beta.16
@@ -523,6 +526,9 @@ importers:
       '@devframes/plugin-code-server':
         specifier: workspace:*
         version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
       '@devframes/plugin-git':
         specifier: workspace:*
         version: link:../../plugins/git
@@ -606,52 +612,6 @@ importers:
       ws:
         specifier: catalog:deps
         version: 8.21.1
-
-  examples/prototype-data-inspector:
-    dependencies:
-      '@antfu/design':
-        specifier: catalog:frontend
-        version: 0.2.2(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.39(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.39(typescript@6.0.3)))(playwright@1.61.1)(reka-ui@2.10.1(vue@3.5.39(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.39(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.16))(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)))(vue@3.5.39(typescript@6.0.3))
-      '@discoveryjs/discovery':
-        specifier: 'catalog:'
-        version: 1.0.0-beta.99
-      devframe:
-        specifier: workspace:*
-        version: link:../../packages/devframe
-      floating-vue:
-        specifier: catalog:frontend
-        version: 5.2.2(vue@3.5.39(typescript@6.0.3))
-      jora:
-        specifier: 'catalog:'
-        version: 1.0.0-beta.16
-      reka-ui:
-        specifier: catalog:frontend
-        version: 2.10.1(vue@3.5.39(typescript@6.0.3))
-      splitpanes:
-        specifier: 'catalog:'
-        version: 4.1.2(vue@3.5.39(typescript@6.0.3))
-      vue:
-        specifier: catalog:frontend
-        version: 3.5.39(typescript@6.0.3)
-    devDependencies:
-      '@iconify-json/ph':
-        specifier: catalog:frontend
-        version: 1.2.2
-      '@vitejs/plugin-vue':
-        specifier: catalog:build
-        version: 6.0.8(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
-      tsx:
-        specifier: catalog:build
-        version: 4.23.1
-      unocss:
-        specifier: catalog:frontend
-        version: 66.7.5(@unocss/postcss@66.7.5(postcss@8.5.16))(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))
-      vite:
-        specifier: catalog:build
-        version: 8.1.4(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)
 
   examples/storybook-hub:
     dependencies:
@@ -979,6 +939,64 @@ importers:
       ws:
         specifier: catalog:deps
         version: 8.21.1
+
+  plugins/data-inspector:
+    dependencies:
+      cac:
+        specifier: catalog:deps
+        version: 7.0.0
+      get-port-please:
+        specifier: catalog:deps
+        version: 3.2.0
+      jora:
+        specifier: 'catalog:'
+        version: 1.0.0-beta.16
+      nostics:
+        specifier: catalog:deps
+        version: 1.1.4
+    devDependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.2.2(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.39(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(floating-vue@5.2.2(vue@3.5.39(typescript@6.0.3)))(playwright@1.61.1)(reka-ui@2.10.1(vue@3.5.39(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.39(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.16))(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)))(vue@3.5.39(typescript@6.0.3))
+      '@discoveryjs/discovery':
+        specifier: 'catalog:'
+        version: 1.0.0-beta.99
+      '@iconify-json/ph':
+        specifier: catalog:frontend
+        version: 1.2.2
+      '@types/codemirror':
+        specifier: 'catalog:'
+        version: 5.60.17
+      '@vitejs/plugin-vue':
+        specifier: catalog:build
+        version: 6.0.8(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      floating-vue:
+        specifier: catalog:frontend
+        version: 5.2.2(vue@3.5.39(typescript@6.0.3))
+      reka-ui:
+        specifier: catalog:frontend
+        version: 2.10.1(vue@3.5.39(typescript@6.0.3))
+      splitpanes:
+        specifier: 'catalog:'
+        version: 4.1.2(vue@3.5.39(typescript@6.0.3))
+      tsdown:
+        specifier: catalog:build
+        version: 0.22.7(oxc-resolver@11.21.3)(tsx@4.23.1)(typescript@6.0.3)
+      unocss:
+        specifier: catalog:frontend
+        version: 66.7.5(@unocss/postcss@66.7.5(postcss@8.5.16))(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))
+      vite:
+        specifier: catalog:build
+        version: 8.1.4(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)
+      vitest:
+        specifier: catalog:testing
+        version: 4.1.10(@types/node@26.1.1)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))
+      vue:
+        specifier: catalog:frontend
+        version: 3.5.39(typescript@6.0.3)
 
   plugins/git:
     dependencies:
@@ -4496,6 +4514,9 @@ packages:
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
 
+  '@types/codemirror@5.60.17':
+    resolution: {integrity: sha512-AZq2FIsUHVMlp7VSe2hTfl5w4pcUkoFkM3zVsRKsn1ca8CXRDYvnin04+HP2REkwsxemuHqvDofdlhUWNpbwfw==}
+
   '@types/d3-array@3.2.2':
     resolution: {integrity: sha512-hOLWVbm7uRza0BYXpIIW5pxfrKe0W+D5lrFiAEYR+pb6w3N2SwSMaJbXdUfSEv+dT4MfHBLtn5js0LAWaO6otw==}
 
@@ -4653,6 +4674,9 @@ packages:
 
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
+
+  '@types/tern@0.23.9':
+    resolution: {integrity: sha512-ypzHFE/wBzh+BlH6rrBgS5I/Z7RD21pGhZ2rltb/+ZrVM1awdZwjx7hE5XfuYgHWk9uvV5HLZN3SloevCAp3Bw==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -12326,6 +12350,10 @@ snapshots:
       '@types/deep-eql': 4.0.2
       assertion-error: 2.0.1
 
+  '@types/codemirror@5.60.17':
+    dependencies:
+      '@types/tern': 0.23.9
+
   '@types/d3-array@3.2.2': {}
 
   '@types/d3-axis@3.0.6':
@@ -12499,6 +12527,10 @@ snapshots:
       csstype: 3.2.3
 
   '@types/resolve@1.20.2': {}
+
+  '@types/tern@0.23.9':
+    dependencies:
+      '@types/estree': 1.0.9
 
   '@types/trusted-types@2.0.7': {}
 

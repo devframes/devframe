@@ -1,0 +1,21 @@
+/* App-level styles beyond the design system. */
+
+html,
+body,
+#app {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Bridge for the discovery panel's shadow root: the --discovery-* custom
+   props (set in the injected :host rule) read these values, which flip with
+   the design system's `.dark` class. Values mirror `bg-base` / `color-base`. */
+.di-result-host {
+  --di-result-bg: #ffffff;
+  --di-result-fg: #262626;
+}
+.dark .di-result-host {
+  --di-result-bg: #111111;
+  --di-result-fg: #e5e5e5;
+}

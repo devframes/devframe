@@ -177,9 +177,11 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
         return resolved ? new URL(resolved).origin : 'http://localhost:5173'
       },
       getStorageDir(scope) {
-        return scope === 'workspace'
-          ? join(cwd, 'node_modules/.storybook-hub')
-          : join(homedir(), '.storybook-hub')
+        if (scope === 'workspace')
+          return join(cwd, '.devframe')
+        if (scope === 'project')
+          return join(cwd, 'node_modules/.storybook-hub')
+        return join(homedir(), '.storybook-hub')
       },
     }
 

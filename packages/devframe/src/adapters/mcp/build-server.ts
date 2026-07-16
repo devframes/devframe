@@ -107,9 +107,13 @@ export async function createMcpServer(
   const host: DevframeHost = {
     mountStatic: () => { /* MCP has no static surface */ },
     resolveOrigin: () => 'mcp://devframe',
-    getStorageDir: scope => scope === 'workspace'
-      ? join(process.cwd(), `node_modules/.${definition.id}/devframe`)
-      : join(homedir(), `.${definition.id}/devframe`),
+    getStorageDir: (scope) => {
+      if (scope === 'workspace')
+        return join(process.cwd(), '.devframe')
+      if (scope === 'project')
+        return join(process.cwd(), `node_modules/.${definition.id}/devframe`)
+      return join(homedir(), `.${definition.id}/devframe`)
+    },
   }
 
   const ctx = await createHostContext({

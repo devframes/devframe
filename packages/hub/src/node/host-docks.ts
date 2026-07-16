@@ -96,7 +96,8 @@ export class DevframeDocksHost implements DevframeDocksHostType {
   async init() {
     this.userSettings = await this.context.rpc.sharedState.get('devframe:user-settings', {
       sharedState: createStorage({
-        filepath: join(this.context.host.getStorageDir('workspace'), 'settings.json'),
+        // Personal dock layout/preferences: per-checkout private state.
+        filepath: join(this.context.host.getStorageDir('project'), 'settings.json'),
         initialValue: DEFAULT_STATE_USER_SETTINGS(),
       }),
     })

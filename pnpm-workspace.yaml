@@ -33,6 +33,7 @@ overrides:
   shell-quote: ^1.10.0
 catalog:
   '@discoveryjs/discovery': 1.0.0-beta.99
+  '@types/codemirror': ^5.60.16
   jora: 1.0.0-beta.16
   splitpanes: ^4.0.4
 catalogs:

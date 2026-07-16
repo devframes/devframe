@@ -1,5 +1,7 @@
 import a11yDevframe, { a11yAgentBundlePath } from '@devframes/plugin-a11y'
 import codeServerDevframe from '@devframes/plugin-code-server'
+import dataInspectorDevframe from '@devframes/plugin-data-inspector'
+import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
 import gitDevframe from '@devframes/plugin-git'
 import inspectDevframe from '@devframes/plugin-inspect'
 import messagesDevframe from '@devframes/plugin-messages'
@@ -18,6 +20,34 @@ export default defineConfig({
   server: { allowedHosts: true, strictPort: false },
   plugins: [
     UnoCSS(),
+    {
+      // The host registers its own live objects as data-inspector sources —
+      // the registry is process-global, so this works from any plugin hook.
+      name: 'minimal-vite-devframe-hub:data-sources',
+      configureServer(server) {
+        registerDataSource({
+          id: 'vite:server',
+          title: 'Vite Dev Server',
+          description: 'The live ViteDevServer instance serving this hub.',
+          icon: 'i-ph:lightning-duotone',
+          data: () => server,
+          queries: [
+            { title: 'Plugin names', query: 'config.plugins.name' },
+            {
+              title: 'Module graph',
+              description: 'Client-environment modules with their importers',
+              query: 'environments.client.moduleGraph.idToModuleMap.mapEntries().value.({ url, type, importers: importers.fromSet().url })',
+            },
+            {
+              title: 'Resolved config (clean)',
+              query: 'config',
+              excludeFunctions: true,
+              excludeUnderscoreProps: true,
+            },
+          ],
+        })
+      },
+    },
     minimalViteDevframeHub({
       devframes: [
         demoDevframe,
@@ -28,6 +58,7 @@ export default defineConfig({
         terminalsDevframe,
         codeServerDevframe,
         inspectDevframe,
+        dataInspectorDevframe,
         a11yDevframe,
         messagesDevframe,
       ],

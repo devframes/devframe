@@ -11,6 +11,7 @@ export { createScopedNodeContext }
 export { createStorage }
 export { DevframeAgentHost }
 export { DevframeDiagnosticsHost }
+export { DevframeServicesHostImpl }
 export { DevframeViewHost }
 export { formatHostForUrl }
 export { isObject }

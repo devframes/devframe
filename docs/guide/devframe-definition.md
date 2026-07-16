@@ -112,10 +112,36 @@ interface DevframeNodeContext {
   views: DevframeViewHost // static file hosting (`hostStatic`)
   diagnostics: DevframeDiagnosticsHost
   agent: DevframeAgentHost // experimental
+  services: DevframeServicesHost // typed cross-plugin service registry
 
   scope: (id) => DevframeScopedNodeContext // namespaced view (preferred)
 }
 ```
+
+### Cross-plugin services
+
+`ctx.services` is a typed, namespaced registry through which one integration exposes a capability and others consume it without a hard package dependency. The provider augments the `DevframeServicesRegistry` interface (so consumers get full typing from a types-only import) and provides the implementation at setup time; consumers use `whenAvailable`, which absorbs setup-order differences:
+
+```ts
+// provider
+declare module 'devframe' {
+  interface DevframeServicesRegistry {
+    'my-plugin:sources': SourcesService
+  }
+}
+ctx.services.provide('my-plugin:sources', sources)
+
+// consumer — types come from `import type`, no runtime dependency
+ctx.services.whenAvailable('my-plugin:sources', (sources) => {
+  sources.register(/* ... */)
+})
+```
+
+Service ids follow the RPC naming rule: prefix with the providing plugin's id. Duplicate ids throw [`DF0037`](https://devfra.me/errors/DF0037).
+
+### Storage scopes
+
+`ctx.host.getStorageDir(scope)` places persisted state in one of three classes: `'workspace'` (committable, shared with the team — conventionally `<workspaceRoot>/.devframe/`), `'project'` (per-checkout private, under `node_modules`), and `'global'` (per-user, under the home directory).
 
 `ctx.scope(id)` returns a namespace-scoped view that auto-prefixes every RPC id, shared-state key, and streaming channel and adds a persisted top-level `settings` store. It's the recommended entry point from a single tool's setup code — see [Scoped Context](./scoped-context).
 

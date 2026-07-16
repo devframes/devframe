@@ -72,5 +72,9 @@ export const diagnostics = defineDiagnostics({
       why: (p: { name: string }) => `RPC call to "${p.name}" was rejected: the caller is not authorized.`,
       fix: 'Complete the auth handshake (or connect with a static/pre-shared token) before calling a trusted method. Untrusted callers may only call `anonymous:`-prefixed methods — see `isAnonymousRpcMethod`.',
     },
+    DF0037: {
+      why: (p: { id: string }) => `A service is already provided under "${p.id}".`,
+      fix: 'Service ids are unique per context. Revoke the existing provider first (the `provide()` call returns a revoke function), or namespace the id with your plugin id to avoid collisions.',
+    },
   },
 })

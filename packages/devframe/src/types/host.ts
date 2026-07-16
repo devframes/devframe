@@ -51,8 +51,14 @@ export interface DevframeHost {
    * collide between, say, the Vite host (`.vite/devframe`) and a
    * standalone CLI host (`.<appName>/devframe`).
    *
-   *   - `workspace` — per-project state (settings, caches). Typically
-   *     under `${workspaceRoot}/node_modules/.<appName>/devframe/`.
+   *   - `workspace` — state shared with the whole team through version
+   *     control (saved queries, shared presets). Conventionally
+   *     `${workspaceRoot}/.devframe/`; hosts must place it somewhere
+   *     committable.
+   *   - `project`   — per-checkout private state (caches, personal
+   *     settings). Typically under
+   *     `${cwd}/node_modules/.<appName>/devframe/`, which version
+   *     control ignores.
    *   - `global`    — per-user state (auth tokens, machine-wide
    *     preferences). Typically under
    *     `${homedir()}/.<appName>/devframe/`.
@@ -61,5 +67,12 @@ export interface DevframeHost {
    * pass to a downstream `createStorage(...)` call that creates it
    * lazily.
    */
-  getStorageDir: (scope: 'workspace' | 'global') => string
+  getStorageDir: (scope: DevframeStorageScope) => string
 }
+
+/**
+ * Storage placement classes for {@link DevframeHost.getStorageDir}:
+ * `workspace` is committable and team-shared, `project` is per-checkout
+ * private, `global` is per-user.
+ */
+export type DevframeStorageScope = 'workspace' | 'project' | 'global'

@@ -10,6 +10,7 @@ export default defineConfig({
       'packages/devframe',
       'packages/hub',
       'plugins/code-server',
+      'plugins/data-inspector',
       'plugins/terminals',
       'plugins/inspect',
       'examples/files-inspector',

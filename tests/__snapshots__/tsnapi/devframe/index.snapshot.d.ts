@@ -40,11 +40,16 @@ export { DevframeRuntime }
 export { DevframeScopedNodeContext }
 export { DevframeScopedNodeRpc }
 export { DevframeScopedStreamingHost }
+export { DevframeServiceId }
+export { DevframeServiceOf }
+export { DevframeServicesHost }
+export { DevframeServicesRegistry }
 export { DevframeSettings }
 export { DevframeSettingsRegistry }
 export { DevframeSettingsStore }
 export { DevframeSetupInfo }
 export { DevframeSpaOptions }
+export { DevframeStorageScope }
 export { DevframeViewHost }
 export { DevframeWsOptions }
 export { EntriesToObject }
