@@ -55,7 +55,7 @@ const host: DevframeHost = {
 }
 ```
 
-Hosts that omit `mountConnectionMeta` fall back to same-origin window inheritance, which connects an embedded SPA only when it shares an origin with the hub UI.
+A host that omits `mountConnectionMeta` while mounting a devframe with a servable `distDir` triggers a [`DF8106`](https://devfra.me/errors/DF8106) diagnostic and falls back to same-origin window inheritance, which connects an embedded SPA only when it shares an origin with the hub UI. When the hub mounts several devframe SPAs at different bases in the same page, inheritance still works: the connection meta is published together with the base it was resolved against, so each same-origin child resolves the RPC/WS endpoint against the publisher's base rather than its own.
 
 ### Bundled hosts (Next.js)
 

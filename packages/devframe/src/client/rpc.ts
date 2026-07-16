@@ -264,11 +264,18 @@ export async function getDevframeRpcClient(
   const bases = Array.isArray(baseURL) ? baseURL : [baseURL]
   let connectionMeta: ConnectionMeta | undefined = options.connectionMeta || findConnectionMetaFromWindows()
   let resolvedBaseURL = bases[0] ?? './'
+  // When the meta is inherited from a same-origin parent, it carries the base
+  // it was resolved against (`baseUrl`); reuse it so a relative `websocket.path`
+  // resolves against the publisher's mount rather than this SPA's own
+  // (possibly different) base.
+  const inheritedMetaBaseUrl = options.connectionMeta ? undefined : connectionMeta?.baseUrl
 
   // Absolute URL of where `__connection.json` lives, used to resolve a
   // relative WS path against the SPA's own origin (proxy-safe). Falls back to
   // the page location when running outside a browser document.
   function resolveMetaBaseUrl(): string {
+    if (inheritedMetaBaseUrl)
+      return inheritedMetaBaseUrl
     const metaPath = withBase(DEVFRAME_CONNECTION_META_FILENAME, resolvedBaseURL)
     try {
       return new URL(metaPath, globalThis.location?.href).href
@@ -285,7 +292,14 @@ export async function getDevframeRpcClient(
         connectionMeta = await fetch(withBase(DEVFRAME_CONNECTION_META_FILENAME, base))
           .then(r => r.json()) as ConnectionMeta
         resolvedBaseURL = base
-        ;(globalThis as any)[CONNECTION_META_KEY] = connectionMeta
+        // Publish the meta annotated with the absolute base it was resolved
+        // against (`baseUrl`), so a same-origin child mounted at another base
+        // inherits a dialable endpoint instead of resolving the relative WS
+        // path against its own mount.
+        ;(globalThis as any)[CONNECTION_META_KEY] = {
+          ...connectionMeta,
+          baseUrl: resolveMetaBaseUrl(),
+        } satisfies ConnectionMeta
         break
       }
       catch (e) {

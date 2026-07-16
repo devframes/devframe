@@ -78,8 +78,12 @@ export async function mountDevframe(
     // discovers the RPC/WS endpoint via `connectDevframe()`'s relative
     // `./__connection.json` fetch — instead of relying on inheriting it from a
     // same-origin parent window (which breaks for cross-origin / sandboxed
-    // iframes). Hosts that can't serve a dynamic route simply omit the hook.
-    await ctx.host.mountConnectionMeta?.(base)
+    // iframes). A host that omits the hook turns this into silent breakage
+    // (empty panels / stuck-loading SPAs), so surface it rather than no-op away.
+    if (ctx.host.mountConnectionMeta)
+      await ctx.host.mountConnectionMeta(base)
+    else
+      diagnostics.DF8106({ id, name: d.name, base })
   }
 
   ctx.docks.register({

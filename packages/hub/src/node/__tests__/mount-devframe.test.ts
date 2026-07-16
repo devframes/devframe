@@ -123,6 +123,28 @@ describe('mountDevframe', () => {
     expect(ctx.docks.views.size).toBe(1)
   })
 
+  it('serves connection meta at the mounted base when the host implements it', async () => {
+    const ctx = createContext()
+    const mountConnectionMeta = vi.fn()
+    ;(ctx.host as { mountConnectionMeta?: unknown }).mountConnectionMeta = mountConnectionMeta
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    await mountDevframe(ctx, makeDevframe({ cli: { distDir: '/tmp/demo-dist' } }))
+
+    expect(mountConnectionMeta).toHaveBeenCalledWith('/__demo/')
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('warns (DF8106) when a servable devframe is mounted on a host without mountConnectionMeta', async () => {
+    const ctx = createContext()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    await mountDevframe(ctx, makeDevframe({ cli: { distDir: '/tmp/demo-dist' } }))
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0].join(' ')).toContain('DF8106')
+  })
+
   it('lets instances coexist under disambiguated ids when "duplicate"', async () => {
     const ctx = createContext()
     const setup = vi.fn()
