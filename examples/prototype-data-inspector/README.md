@@ -20,10 +20,15 @@ against a real programmatic `ViteDevServer` (jora over live objects, Map/Set
 bridge methods, normalizer, stat-mode suggestions, function-invocation hazard).
 
 Stage 2 (`pnpm --filter prototype-data-inspector dev`): the full workbench
-against the Vite server serving the page itself — left editor / right viewer
-split panes, debounced auto-run, client-side syntax gate, non-destructive
-errors, per-query stats (jora / normalize / rpc timings, payload size, node
-count), remote autocomplete, saved queries in both scopes, synced dark mode.
+against the Vite server serving the page itself — resizable split panes
+(`LayoutSplitPane`, outer editor|viewer plus the stacked left column),
+debounced auto-run with a manual re-run button, an empty query running `$`
+(the entire source object), client-side syntax gate, non-destructive errors,
+per-query stats (jora / normalize / rpc timings, payload size, node count),
+query settings (ignore functions / `_`-prefixed / `$`-prefixed, persisted,
+applied to results and skeleton alike), an "available data" panel showing the
+source's type skeleton independent of the query, remote autocomplete, saved
+queries in both scopes, and synced dark mode.
 
 ## The pieces (what the real plugin reuses)
 
@@ -34,7 +39,11 @@ count), remote autocomplete, saved queries in both scopes, synced dark mode.
   `registerDataSource` returns an unregister fn and fires change listeners.
 - **`src/normalize.ts`** — the core asset: live graph -> strict JSON
   (circular -> `$ref`, Map/Set/class/function/BigInt/Error tagging,
-  depth/entry/prop/string caps) with stats.
+  depth/entry/prop/string caps) with stats, honoring the client's ignore
+  settings (functions, `_`/`$`-prefixed keys).
+- **`src/skeleton.ts`** — "what data are available": walks a source into a
+  compact type skeleton (keys + type names, ancestor-path cycle detection so
+  shared refs still expand), same ignore settings.
 - **`src/query-engine.ts`** — jora with duck-typed `fromMap()` /
   `mapEntries()` / `fromSet()` / `ownKeys()` / `typeOf()` bridges, plus
   flattened stat-mode suggestions.
@@ -43,8 +52,8 @@ count), remote autocomplete, saved queries in both scopes, synced dark mode.
   `user` -> `node_modules/.data-inspector/queries.json` (per checkout),
   `project` -> `.devframe/data-inspector/queries.json` (committable, shared).
   Saving an id into one scope removes its twin from the other.
-- **`src/rpc-functions.ts`** — `data-inspector:{sources,query,suggest}` +
-  `data-inspector:saved:{list,save,delete}`, all `jsonSerializable`.
+- **`src/rpc-functions.ts`** — `data-inspector:{sources,query,skeleton,suggest}`
+  + `data-inspector:saved:{list,save,delete}`, all `jsonSerializable`.
 - **`src/spa/`** — Vue 3 + `@antfu/design` workbench: canonical uno preset
   block (mirrors `plugins/inspect`), design components used directly
   (`LayoutToolbar`, `LayoutSplitPane`, `FormSelect`, `FormTextInput`,
@@ -63,7 +72,9 @@ count), remote autocomplete, saved queries in both scopes, synced dark mode.
    through the model (`page.define('default', ...)` + `setData`) — rendering
    into `dom.pageContent` manually races discovery's own page cycle.
 3. **Theming**: `host.colorScheme.set()` + `--discovery-*` custom props
-   (bridged to design tokens through CSS vars that flip with `.dark`).
+   (bridged to design tokens through CSS vars that flip with `.dark`);
+   `--discovery-page-padding-{top,right,bottom,left}: 0` removes the stock
+   page padding so the struct sits flush in the panel.
 4. **jora syntax check runs client-side** (`jora.syntax.parse`, ~20 KB gzip):
    parse errors carry `details.loc.range`, so end-of-input errors show as a
    soft "keep typing" state and malformed queries never hit the wire.

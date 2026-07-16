@@ -51,6 +51,17 @@ export type QueryOutcome
   = | { ok: true, result: unknown, stats: QueryStats }
     | { ok: false, error: { name: string, message: string } }
 
+/** Client-controlled query settings, forwarded to the normalizer/skeleton. */
+export interface QuerySettings {
+  ignoreFunctions?: boolean
+  ignoreUnderscorePrefixed?: boolean
+  ignoreDollarPrefixed?: boolean
+}
+
+export type SkeletonOutcome
+  = | { ok: true, skeleton: unknown, nodes: number, ms: number }
+    | { ok: false, error: { name: string, message: string } }
+
 /** Where a saved query persists. */
 export type SavedQueryScope = 'user' | 'project'
 

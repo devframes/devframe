@@ -7,11 +7,12 @@
  * strict and proves wire-safety on every call.
  */
 import type { DevframeNodeContext } from 'devframe/types'
-import type { SavedQueryScope, SaveQueryInput } from './rpc-contract'
+import type { QuerySettings, SavedQueryScope, SaveQueryInput, SkeletonOutcome } from './rpc-contract'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
 import { runQuery, suggest } from './query-engine'
 import { getDataSource, listDataSources, resolveSourceData } from './registry'
 import { deleteSavedQuery, listSavedQueries, saveQuery } from './saved-queries'
+import { skeletonOf } from './skeleton'
 
 const defineRpc = createDefineWrapperWithContext<DevframeNodeContext>()
 
@@ -31,11 +32,31 @@ export const queryFn = defineRpc({
   type: 'query',
   jsonSerializable: true,
   setup: ctx => ({
-    handler: async (sourceId: string, joraQuery: string, options?: { maxDepth?: number, maxEntries?: number }) => {
+    handler: async (sourceId: string, joraQuery: string, options?: { maxDepth?: number, maxEntries?: number } & QuerySettings) => {
       const source = getDataSource(ctx, sourceId)
       if (!source)
         return { ok: false as const, error: { name: 'UnknownSource', message: `No data source "${sourceId}"` } }
       return runQuery(resolveSourceData(ctx, source), joraQuery, options)
+    },
+  }),
+})
+
+export const skeletonFn = defineRpc({
+  name: `${NS}:skeleton`,
+  type: 'query',
+  jsonSerializable: true,
+  setup: ctx => ({
+    handler: async (sourceId: string, options?: QuerySettings): Promise<SkeletonOutcome> => {
+      const source = getDataSource(ctx, sourceId)
+      if (!source)
+        return { ok: false, error: { name: 'UnknownSource', message: `No data source "${sourceId}"` } }
+      try {
+        return { ok: true, ...skeletonOf(resolveSourceData(ctx, source), options) }
+      }
+      catch (error) {
+        const e = error instanceof Error ? error : new Error(String(error))
+        return { ok: false, error: { name: e.name, message: e.message } }
+      }
     },
   }),
 })
@@ -81,4 +102,4 @@ export const savedDeleteFn = defineRpc({
   }),
 })
 
-export const allRpcFunctions = [sourcesFn, queryFn, suggestFn, savedListFn, savedSaveFn, savedDeleteFn]
+export const allRpcFunctions = [sourcesFn, queryFn, skeletonFn, suggestFn, savedListFn, savedSaveFn, savedDeleteFn]

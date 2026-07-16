@@ -8,8 +8,10 @@ import LayoutToolbar from '@antfu/design/components/Layout/LayoutToolbar.vue'
 import { Pane } from 'splitpanes'
 import { computed, onMounted } from 'vue'
 import QueryEditor from './components/QueryEditor.vue'
+import QuerySettings from './components/QuerySettings.vue'
 import ResultViewer from './components/ResultViewer.vue'
 import SavedQueriesPanel from './components/SavedQueriesPanel.vue'
+import SkeletonPanel from './components/SkeletonPanel.vue'
 import { connect, connection } from './composables/rpc'
 import { useSavedQueries } from './composables/saved'
 import { colorScheme } from './composables/scheme'
@@ -27,9 +29,9 @@ onMounted(async () => {
   if (!connection.connected)
     return
   await Promise.all([wb.loadSources(), savedApi.refresh()])
-  // Land on a rendered result.
-  if (!wb.query.value)
-    wb.query.value = 'config.plugins.name'
+  // An empty query runs `$`: the workbench lands on the full source object.
+  void wb.runNow()
+  void wb.loadSkeleton()
 })
 
 function loadSaved(entry: SavedQuery): void {
@@ -82,25 +84,41 @@ function saveCurrent(input: { title: string, description?: string, scope: SavedQ
 
     <main class="flex-1 min-h-0">
       <LayoutSplitPane storage-key="data-inspector-panes" class="h-full">
-        <Pane :size="38" min-size="24" class="flex flex-col gap-3 p-3 min-w-0">
-          <QueryEditor
-            v-model="wb.query.value"
-            :syntax="wb.syntax.value"
-            :suggestions="wb.suggestions.value"
-            class="flex-1 min-h-0"
-            @run="wb.runNow()"
-            @suggest="wb.scheduleSuggestions($event)"
-            @accept="wb.acceptSuggestion($event)"
-            @dismiss="wb.suggestions.value = []"
-          />
-          <SavedQueriesPanel
-            :saved="savedApi.saved.value"
-            :can-save="!!wb.query.value.trim()"
-            class="max-h-45%"
-            @load="loadSaved"
-            @remove="savedApi.remove($event)"
-            @save="saveCurrent"
-          />
+        <Pane :size="38" min-size="24" class="min-w-0">
+          <!-- The left column's sections resize with the same split-pane setup. -->
+          <LayoutSplitPane horizontal storage-key="data-inspector-left-panes" class="h-full">
+            <Pane :size="42" min-size="20" class="flex flex-col gap-2 p-3 pb-1.5 min-h-0">
+              <QueryEditor
+                v-model="wb.query.value"
+                :syntax="wb.syntax.value"
+                :suggestions="wb.suggestions.value"
+                class="flex-1 min-h-0"
+                @run="wb.runNow()"
+                @suggest="wb.scheduleSuggestions($event)"
+                @accept="wb.acceptSuggestion($event)"
+                @dismiss="wb.suggestions.value = []"
+              />
+              <QuerySettings v-model="wb.settings" />
+            </Pane>
+            <Pane :size="33" min-size="12" class="p-3 py-1.5 min-h-0">
+              <SkeletonPanel
+                :skeleton="wb.skeleton.value"
+                :error="wb.skeletonError.value"
+                :loading="wb.skeletonLoading.value"
+                @refresh="wb.loadSkeleton()"
+              />
+            </Pane>
+            <Pane min-size="12" class="p-3 pt-1.5 min-h-0">
+              <SavedQueriesPanel
+                :saved="savedApi.saved.value"
+                :can-save="!!wb.query.value.trim()"
+                class="h-full"
+                @load="loadSaved"
+                @remove="savedApi.remove($event)"
+                @save="saveCurrent"
+              />
+            </Pane>
+          </LayoutSplitPane>
         </Pane>
         <Pane class="min-w-0">
           <ResultViewer
@@ -110,6 +128,7 @@ function saveCurrent(input: { title: string, description?: string, scope: SavedQ
             :stats-stale="wb.statsStale.value"
             :error="wb.serverError.value"
             :running="wb.running.value"
+            @rerun="wb.runNow()"
           />
         </Pane>
       </LayoutSplitPane>

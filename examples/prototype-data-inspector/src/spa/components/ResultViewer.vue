@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { QueryStats } from '../../rpc-contract'
+import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
 import DisplayBytes from '@antfu/design/components/Display/DisplayBytes.vue'
 import DisplayDuration from '@antfu/design/components/Display/DisplayDuration.vue'
 import { shallowRef, watch } from 'vue'
@@ -14,6 +15,8 @@ const props = defineProps<{
   error: string | null
   running: boolean
 }>()
+
+const emit = defineEmits<{ rerun: [] }>()
 
 const containerEl = shallowRef<HTMLElement | null>(null)
 const viewer = useDiscoveryViewer(containerEl, colorScheme)
@@ -42,6 +45,14 @@ watch(() => props.result, (value) => {
         <span class="i-ph:circle-notch animate-spin" />
         running
       </span>
+      <ActionIconButton
+        size="sm"
+        :icon="running ? 'i-ph:arrows-clockwise animate-spin' : 'i-ph:arrows-clockwise'"
+        label="Re-run query"
+        tooltip="Re-run against the live object"
+        :disabled="running"
+        @click="emit('rerun')"
+      />
     </div>
 
     <div

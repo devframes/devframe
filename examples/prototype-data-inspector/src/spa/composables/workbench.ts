@@ -2,11 +2,13 @@
  * PROTOTYPE — the query workbench pipeline:
  * debounced auto-run, client-side jora syntax gate (malformed queries never
  * hit the wire), stale-response sequencing, non-destructive errors (the last
- * good result stays), and remote stat-mode suggestions.
+ * good result stays), remote stat-mode suggestions, client query settings,
+ * and the source SKELETON ("what data are available", query-independent).
+ * An empty query runs `$` (the root), so every source lands on a full view.
  */
-import type { DataSourceMeta, QueryOutcome, QueryStats, SuggestItem, SuggestOutcome } from '../../rpc-contract'
+import type { DataSourceMeta, QueryOutcome, QuerySettings, QueryStats, SkeletonOutcome, SuggestItem, SuggestOutcome } from '../../rpc-contract'
 import jora from 'jora'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, reactive, ref, shallowRef, watch } from 'vue'
 import { call } from './rpc'
 
 export type SyntaxState
@@ -16,6 +18,7 @@ export type SyntaxState
 
 const AUTO_RUN_DEBOUNCE = 400
 const SUGGEST_DEBOUNCE = 150
+const SETTINGS_KEY = 'data-inspector:settings'
 
 function checkSyntax(query: string): SyntaxState {
   try {
@@ -33,10 +36,26 @@ function checkSyntax(query: string): SyntaxState {
   }
 }
 
+function loadSettings(): QuerySettings {
+  try {
+    return { ...JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}') }
+  }
+  catch {
+    return {}
+  }
+}
+
 export function useWorkbench() {
   const sources = ref<DataSourceMeta[]>([])
   const sourceId = ref('')
   const query = ref('')
+
+  const settings = reactive<Required<QuerySettings>>({
+    ignoreFunctions: false,
+    ignoreUnderscorePrefixed: false,
+    ignoreDollarPrefixed: false,
+    ...loadSettings(),
+  })
 
   const syntax = ref<SyntaxState>({ kind: 'ok' })
   const running = ref(false)
@@ -47,6 +66,10 @@ export function useWorkbench() {
   const hasResult = ref(false)
 
   const suggestions = ref<SuggestItem[]>([])
+
+  const skeleton = shallowRef<unknown>()
+  const skeletonError = ref<string | null>(null)
+  const skeletonLoading = ref(false)
 
   const activeSource = computed(() => sources.value.find(s => s.id === sourceId.value))
 
@@ -63,24 +86,27 @@ export function useWorkbench() {
   async function runNow(): Promise<void> {
     clearTimeout(runTimer)
     suggestions.value = []
-    const text = query.value
-    if (!text.trim()) {
-      syntax.value = { kind: 'ok' }
-      serverError.value = null
+    if (!sourceId.value)
       return
-    }
+    // An empty query still fires: `$` displays the entire source object.
+    const text = query.value.trim() || '$'
 
-    const check = checkSyntax(text)
-    syntax.value = check
-    if (check.kind !== 'ok')
-      return // never send malformed queries over the wire
+    if (text !== '$') {
+      const check = checkSyntax(text)
+      syntax.value = check
+      if (check.kind !== 'ok')
+        return // never send malformed queries over the wire
+    }
+    else {
+      syntax.value = { kind: 'ok' }
+    }
 
     const seq = ++runSeq
     running.value = true
     const started = performance.now()
     let outcome: QueryOutcome
     try {
-      outcome = await call<QueryOutcome>('data-inspector:query', sourceId.value, text)
+      outcome = await call<QueryOutcome>('data-inspector:query', sourceId.value, text, { ...settings })
     }
     catch (error) {
       if (seq === runSeq) {
@@ -109,6 +135,36 @@ export function useWorkbench() {
   function scheduleRun(): void {
     clearTimeout(runTimer)
     runTimer = setTimeout(() => void runNow(), AUTO_RUN_DEBOUNCE)
+  }
+
+  // ── skeleton: what data are available (query-independent) ──────────
+  let skeletonSeq = 0
+
+  async function loadSkeleton(): Promise<void> {
+    if (!sourceId.value)
+      return
+    const seq = ++skeletonSeq
+    skeletonLoading.value = true
+    let out: SkeletonOutcome
+    try {
+      out = await call<SkeletonOutcome>('data-inspector:skeleton', sourceId.value, { ...settings })
+    }
+    catch (error) {
+      if (seq === skeletonSeq) {
+        skeletonLoading.value = false
+        skeletonError.value = `rpc: ${error instanceof Error ? error.message : String(error)}`
+      }
+      return
+    }
+    if (seq !== skeletonSeq)
+      return
+    skeletonLoading.value = false
+    if (!out.ok) {
+      skeletonError.value = `${out.error.name}: ${out.error.message}`
+      return
+    }
+    skeletonError.value = null
+    skeleton.value = out.skeleton
   }
 
   // ── remote suggestions ─────────────────────────────────────────────
@@ -149,6 +205,12 @@ export function useWorkbench() {
   watch(sourceId, () => {
     suggestions.value = []
     void runNow()
+    void loadSkeleton()
+  })
+  watch(settings, () => {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+    void runNow()
+    void loadSkeleton()
   })
 
   return {
@@ -156,6 +218,7 @@ export function useWorkbench() {
     sourceId,
     activeSource,
     query,
+    settings,
     syntax,
     running,
     serverError,
@@ -164,7 +227,11 @@ export function useWorkbench() {
     result,
     hasResult,
     suggestions,
+    skeleton,
+    skeletonError,
+    skeletonLoading,
     loadSources,
+    loadSkeleton,
     runNow,
     requestSuggestions,
     scheduleSuggestions,

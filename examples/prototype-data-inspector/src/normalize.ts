@@ -26,6 +26,21 @@ export interface NormalizeOptions {
   maxProps?: number
   /** Max string length before truncation. */
   maxString?: number
+  /** Drop function values (object props and array items). */
+  ignoreFunctions?: boolean
+  /** Drop object properties whose key starts with `_`. */
+  ignoreUnderscorePrefixed?: boolean
+  /** Drop object properties whose key starts with `$`. */
+  ignoreDollarPrefixed?: boolean
+}
+
+/** True when a property key is excluded by the ignore settings. */
+export function isIgnoredKey(key: string, opts: Pick<NormalizeOptions, 'ignoreUnderscorePrefixed' | 'ignoreDollarPrefixed'>): boolean {
+  if (opts.ignoreUnderscorePrefixed && key.startsWith('_'))
+    return true
+  if (opts.ignoreDollarPrefixed && key.startsWith('$'))
+    return true
+  return false
 }
 
 export interface NormalizeStats {
@@ -61,6 +76,9 @@ export function normalize(value: unknown, options: NormalizeOptions = {}): { dat
       maxEntries: options.maxEntries ?? 200,
       maxProps: options.maxProps ?? 150,
       maxString: options.maxString ?? 4000,
+      ignoreFunctions: options.ignoreFunctions ?? false,
+      ignoreUnderscorePrefixed: options.ignoreUnderscorePrefixed ?? false,
+      ignoreDollarPrefixed: options.ignoreDollarPrefixed ?? false,
     },
   }
   const data = walk(value, walker, 0, '#')
@@ -128,13 +146,14 @@ function walk(value: unknown, w: Walker, depth: number, path: string): unknown {
   w.seen.set(obj, path)
 
   if (Array.isArray(obj)) {
-    const cap = Math.min(obj.length, w.opts.maxEntries)
+    const source = w.opts.ignoreFunctions ? obj.filter(item => typeof item !== 'function') : obj
+    const cap = Math.min(source.length, w.opts.maxEntries)
     const out: unknown[] = Array.from({ length: cap })
     for (let i = 0; i < cap; i++)
-      out[i] = walk(obj[i], w, depth + 1, `${path}[${i}]`)
-    if (obj.length > cap) {
+      out[i] = walk(source[i], w, depth + 1, `${path}[${i}]`)
+    if (source.length > cap) {
       w.stats.truncatedEntries++
-      out.push({ $truncated: 'entries', $total: obj.length, $shown: cap })
+      out.push({ $truncated: 'entries', $total: source.length, $shown: cap })
     }
     return out
   }
@@ -182,7 +201,7 @@ function walk(value: unknown, w: Walker, depth: number, path: string): unknown {
   if (className && className !== 'Object')
     out.$class = className
 
-  const keys = Object.keys(obj)
+  const keys = Object.keys(obj).filter(key => !isIgnoredKey(key, w.opts))
   const cap = Math.min(keys.length, w.opts.maxProps)
   for (let i = 0; i < cap; i++) {
     const key = keys[i]
@@ -194,6 +213,8 @@ function walk(value: unknown, w: Walker, depth: number, path: string): unknown {
       out[key] = { $type: 'getter-error', message: error instanceof Error ? error.message : String(error) }
       continue
     }
+    if (w.opts.ignoreFunctions && typeof v === 'function')
+      continue
     out[key] = walk(v, w, depth + 1, `${path}.${key}`)
   }
   if (keys.length > cap) {

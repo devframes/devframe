@@ -16,6 +16,10 @@ const themeBridge = `
   :host {
     --discovery-background-color: var(--di-result-bg);
     --discovery-color: var(--di-result-fg);
+    --discovery-page-padding-top: 0;
+    --discovery-page-padding-right: 0;
+    --discovery-page-padding-bottom: 0;
+    --discovery-page-padding-left: 0;
     font-family: var(--font-mono, ui-monospace, monospace);
   }
 `
@@ -23,6 +27,7 @@ const themeBridge = `
 export function useDiscoveryViewer(
   container: Readonly<ShallowRef<HTMLElement | null>>,
   scheme: Ref<ColorScheme>,
+  viewConfig: Record<string, unknown> = { view: 'struct', expanded: 2 },
 ) {
   const host = shallowRef<ViewModel | null>(null)
   let pendingData: { data: unknown } | null = null
@@ -36,7 +41,7 @@ export function useDiscoveryViewer(
       colorScheme: scheme.value,
       colorSchemePersistent: false,
     })
-    vm.page.define('default', { view: 'struct', expanded: 2 })
+    vm.page.define('default', viewConfig as never)
     await vm.dom.ready
     host.value = vm
     if (pendingData) {
