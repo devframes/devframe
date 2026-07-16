@@ -7,7 +7,7 @@
  * object, so anyone can register sources dynamically — at setup time or later —
  * and the data-inspector finds them with no dependency edge beyond this module.
  */
-import type { DataSourceMeta } from './rpc-contract'
+import type { DataSourceMeta, Query } from './rpc-contract'
 
 export interface DataSourceEntry {
   id: string
@@ -17,6 +17,8 @@ export interface DataSourceEntry {
   getData: () => unknown
   /** Data never changes; `getData()` is called once and memoized (default false). */
   static?: boolean
+  /** Suggested queries, surfaced in the UI alongside saved ones (read-only). */
+  queries?: Query[]
 }
 
 interface Registry {
@@ -65,6 +67,7 @@ export function listDataSources(ctx: object): DataSourceMeta[] {
     title: entry.title,
     description: entry.description,
     static: entry.static ?? false,
+    queries: entry.queries,
   }))
 }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SavedQuery, SavedQueryScope } from '../rpc-contract'
+import type { Query, SavedQueryScope } from '../rpc-contract'
 import ActionDarkToggle from '@antfu/design/components/Action/ActionDarkToggle.vue'
 import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import FormSelect from '@antfu/design/components/Form/FormSelect.vue'
@@ -34,18 +34,19 @@ onMounted(async () => {
   void wb.loadSkeleton()
 })
 
-function loadSaved(entry: SavedQuery): void {
-  if (wb.sources.value.some(s => s.id === entry.sourceId))
-    wb.sourceId.value = entry.sourceId
-  wb.query.value = entry.query
-  void wb.runNow()
+// Queries are source-agnostic recipes: load applies the text AND the filter
+// options it was authored with, against the currently selected source.
+function loadRecipe(entry: Query): void {
+  wb.applyRecipe(entry)
 }
 
-function saveCurrent(input: { title: string, description?: string, scope: SavedQueryScope }): void {
+function saveCurrent(input: { title?: string, description?: string, scope: SavedQueryScope }): void {
   void savedApi.save({
     ...input,
     query: wb.query.value,
-    sourceId: wb.sourceId.value,
+    excludeFunctions: wb.settings.excludeFunctions || undefined,
+    excludeUnderscoreProps: wb.settings.excludeUnderscoreProps || undefined,
+    excludeDollarProps: wb.settings.excludeDollarProps || undefined,
   })
 }
 </script>
@@ -111,9 +112,11 @@ function saveCurrent(input: { title: string, description?: string, scope: SavedQ
             <Pane min-size="12" class="p-3 pt-1.5 min-h-0">
               <SavedQueriesPanel
                 :saved="savedApi.saved.value"
-                :can-save="!!wb.query.value.trim()"
+                :suggested="wb.activeSource.value?.queries ?? []"
+                :current-query="wb.query.value"
+                :current-filters="wb.settings"
                 class="h-full"
-                @load="loadSaved"
+                @load="loadRecipe"
                 @remove="savedApi.remove($event)"
                 @save="saveCurrent"
               />

@@ -7,7 +7,9 @@
  *   - `project` -> `<workspaceRoot>/.devframe/data-inspector/queries.json`
  *                  (committable, shared with the team)
  *
- * Backed by devframe's `createStorage` (debounced atomic JSON writes).
+ * A saved query is a source-agnostic recipe: the query text, optional
+ * title/description, and the FilterOptions it was authored with. Backed by
+ * devframe's `createStorage` (debounced atomic JSON writes).
  */
 import type { DevframeNodeContext } from 'devframe/types'
 import type { SavedQuery, SavedQueryScope, SaveQueryInput } from './rpc-contract'
@@ -45,12 +47,28 @@ function storesFor(ctx: DevframeNodeContext): Record<SavedQueryScope, Store> {
   return byScope
 }
 
-function slugify(title: string): string {
-  return title
+function slugify(text: string): string {
+  return text
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    || `query-${Date.now()}`
+    .slice(0, 60)
+}
+
+/** djb2 — stable short id for untitled queries (same query, same id). */
+function hashOf(text: string): string {
+  let hash = 5381
+  for (let i = 0; i < text.length; i++)
+    hash = ((hash << 5) + hash + text.charCodeAt(i)) >>> 0
+  return hash.toString(36)
+}
+
+function deriveId(input: SaveQueryInput): string {
+  if (input.id)
+    return input.id
+  if (input.title?.trim())
+    return slugify(input.title)
+  return `q-${hashOf(input.query)}`
 }
 
 export function listSavedQueries(ctx: DevframeNodeContext): SavedQuery[] {
@@ -65,13 +83,15 @@ export function listSavedQueries(ctx: DevframeNodeContext): SavedQuery[] {
 
 export function saveQuery(ctx: DevframeNodeContext, input: SaveQueryInput): SavedQuery {
   const byScope = storesFor(ctx)
-  const id = input.id ?? slugify(input.title)
+  const id = deriveId(input)
   const record: Omit<SavedQuery, 'scope'> = {
     id,
-    title: input.title,
-    description: input.description || undefined,
     query: input.query,
-    sourceId: input.sourceId,
+    title: input.title?.trim() || undefined,
+    description: input.description?.trim() || undefined,
+    excludeFunctions: input.excludeFunctions || undefined,
+    excludeUnderscoreProps: input.excludeUnderscoreProps || undefined,
+    excludeDollarProps: input.excludeDollarProps || undefined,
     updatedAt: Date.now(),
   }
   byScope[input.scope].mutate((draft) => {

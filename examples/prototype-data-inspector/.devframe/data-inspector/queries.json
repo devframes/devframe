@@ -5,7 +5,6 @@
       "title": "Plugin names",
       "description": "All Vite plugin names in order",
       "query": "config.plugins.name",
-      "sourceId": "vite:server",
       "updatedAt": 1784177708176
     }
   }

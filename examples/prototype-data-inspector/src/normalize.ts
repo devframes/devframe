@@ -27,18 +27,18 @@ export interface NormalizeOptions {
   /** Max string length before truncation. */
   maxString?: number
   /** Drop function values (object props and array items). */
-  ignoreFunctions?: boolean
+  excludeFunctions?: boolean
   /** Drop object properties whose key starts with `_`. */
-  ignoreUnderscorePrefixed?: boolean
+  excludeUnderscoreProps?: boolean
   /** Drop object properties whose key starts with `$`. */
-  ignoreDollarPrefixed?: boolean
+  excludeDollarProps?: boolean
 }
 
-/** True when a property key is excluded by the ignore settings. */
-export function isIgnoredKey(key: string, opts: Pick<NormalizeOptions, 'ignoreUnderscorePrefixed' | 'ignoreDollarPrefixed'>): boolean {
-  if (opts.ignoreUnderscorePrefixed && key.startsWith('_'))
+/** True when a property key is excluded by the filter options. */
+export function isExcludedKey(key: string, opts: Pick<NormalizeOptions, 'excludeUnderscoreProps' | 'excludeDollarProps'>): boolean {
+  if (opts.excludeUnderscoreProps && key.startsWith('_'))
     return true
-  if (opts.ignoreDollarPrefixed && key.startsWith('$'))
+  if (opts.excludeDollarProps && key.startsWith('$'))
     return true
   return false
 }
@@ -76,9 +76,9 @@ export function normalize(value: unknown, options: NormalizeOptions = {}): { dat
       maxEntries: options.maxEntries ?? 200,
       maxProps: options.maxProps ?? 150,
       maxString: options.maxString ?? 4000,
-      ignoreFunctions: options.ignoreFunctions ?? false,
-      ignoreUnderscorePrefixed: options.ignoreUnderscorePrefixed ?? false,
-      ignoreDollarPrefixed: options.ignoreDollarPrefixed ?? false,
+      excludeFunctions: options.excludeFunctions ?? false,
+      excludeUnderscoreProps: options.excludeUnderscoreProps ?? false,
+      excludeDollarProps: options.excludeDollarProps ?? false,
     },
   }
   const data = walk(value, walker, 0, '#')
@@ -146,7 +146,7 @@ function walk(value: unknown, w: Walker, depth: number, path: string): unknown {
   w.seen.set(obj, path)
 
   if (Array.isArray(obj)) {
-    const source = w.opts.ignoreFunctions ? obj.filter(item => typeof item !== 'function') : obj
+    const source = w.opts.excludeFunctions ? obj.filter(item => typeof item !== 'function') : obj
     const cap = Math.min(source.length, w.opts.maxEntries)
     const out: unknown[] = Array.from({ length: cap })
     for (let i = 0; i < cap; i++)
@@ -201,7 +201,7 @@ function walk(value: unknown, w: Walker, depth: number, path: string): unknown {
   if (className && className !== 'Object')
     out.$class = className
 
-  const keys = Object.keys(obj).filter(key => !isIgnoredKey(key, w.opts))
+  const keys = Object.keys(obj).filter(key => !isExcludedKey(key, w.opts))
   const cap = Math.min(keys.length, w.opts.maxProps)
   for (let i = 0; i < cap; i++) {
     const key = keys[i]
@@ -213,7 +213,7 @@ function walk(value: unknown, w: Walker, depth: number, path: string): unknown {
       out[key] = { $type: 'getter-error', message: error instanceof Error ? error.message : String(error) }
       continue
     }
-    if (w.opts.ignoreFunctions && typeof v === 'function')
+    if (w.opts.excludeFunctions && typeof v === 'function')
       continue
     out[key] = walk(v, w, depth + 1, `${path}.${key}`)
   }

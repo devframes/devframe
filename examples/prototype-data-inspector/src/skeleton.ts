@@ -14,11 +14,11 @@
  *   - depth/prop caps      -> '...'
  */
 import type { NormalizeOptions } from './normalize'
-import { isIgnoredKey } from './normalize'
+import { isExcludedKey } from './normalize'
 
 export type SkeletonOptions = Pick<
   NormalizeOptions,
-  'maxDepth' | 'maxProps' | 'ignoreFunctions' | 'ignoreUnderscorePrefixed' | 'ignoreDollarPrefixed'
+  'maxDepth' | 'maxProps' | 'excludeFunctions' | 'excludeUnderscoreProps' | 'excludeDollarProps'
 >
 
 interface SkeletonWalker {
@@ -35,9 +35,9 @@ export function skeletonOf(value: unknown, options: SkeletonOptions = {}): { ske
     opts: {
       maxDepth: options.maxDepth ?? 5,
       maxProps: options.maxProps ?? 80,
-      ignoreFunctions: options.ignoreFunctions ?? false,
-      ignoreUnderscorePrefixed: options.ignoreUnderscorePrefixed ?? false,
-      ignoreDollarPrefixed: options.ignoreDollarPrefixed ?? false,
+      excludeFunctions: options.excludeFunctions ?? false,
+      excludeUnderscoreProps: options.excludeUnderscoreProps ?? false,
+      excludeDollarProps: options.excludeDollarProps ?? false,
     },
   }
   const skeleton = walk(value, walker, 0)
@@ -94,7 +94,7 @@ function walk(value: unknown, w: SkeletonWalker, depth: number): unknown {
 
 function walkObject(obj: object, w: SkeletonWalker, depth: number): unknown {
   if (Array.isArray(obj)) {
-    const items = w.opts.ignoreFunctions ? obj.filter(item => typeof item !== 'function') : obj
+    const items = w.opts.excludeFunctions ? obj.filter(item => typeof item !== 'function') : obj
     if (items.length === 0)
       return []
     const first = walk(items[0], w, depth + 1)
@@ -130,7 +130,7 @@ function walkObject(obj: object, w: SkeletonWalker, depth: number): unknown {
   if (className && className !== 'Object')
     out.$class = className
 
-  const keys = Object.keys(obj).filter(key => !isIgnoredKey(key, w.opts))
+  const keys = Object.keys(obj).filter(key => !isExcludedKey(key, w.opts))
   const cap = Math.min(keys.length, w.opts.maxProps)
   for (let i = 0; i < cap; i++) {
     const key = keys[i]
@@ -142,7 +142,7 @@ function walkObject(obj: object, w: SkeletonWalker, depth: number): unknown {
       out[key] = 'getter-error'
       continue
     }
-    if (w.opts.ignoreFunctions && typeof v === 'function')
+    if (w.opts.excludeFunctions && typeof v === 'function')
       continue
     out[key] = walk(v, w, depth + 1)
   }

@@ -25,17 +25,22 @@ against the Vite server serving the page itself — resizable split panes
 debounced auto-run with a manual re-run button, an empty query running `$`
 (the entire source object), client-side syntax gate, non-destructive errors,
 per-query stats (jora / normalize / rpc timings, payload size, node count),
-query settings (ignore functions / `_`-prefixed / `$`-prefixed, persisted,
-applied to results and skeleton alike), an "available data" panel showing the
-source's type skeleton independent of the query, remote autocomplete, saved
-queries in both scopes, and synced dark mode.
+filter options (exclude functions / `_` props / `$` props) applied to results
+and skeleton alike, an "available data" panel showing the source's type
+skeleton independent of the query, type badges on exotic values (`Function`,
+`Map(n)`, `Set(n)`, `Date`, class names, `circular`) via discovery's value
+annotations, remote autocomplete, source-provided suggested queries plus
+saved queries in both scopes (save dialog, recipes carry their filter
+options), the whole workbench state (source, query, filters) persisted in
+the URL, and synced dark mode.
 
 ## The pieces (what the real plugin reuses)
 
 - **`src/registry.ts`** — data sources as
-  `{ id, title, description?, getData(): any, static?: boolean }`, registered
-  dynamically against the shared `DevframeNodeContext`
+  `{ id, title, description?, getData(): any, static?: boolean, queries?: Query[] }`,
+  registered dynamically against the shared `DevframeNodeContext`
   (`WeakMap` idiom from `plugins/git`). `static: true` memoizes `getData()`;
+  `queries` are source-suggested recipes shown read-only in the UI;
   `registerDataSource` returns an unregister fn and fires change listeners.
 - **`src/normalize.ts`** — the core asset: live graph -> strict JSON
   (circular -> `$ref`, Map/Set/class/function/BigInt/Error tagging,
@@ -47,7 +52,9 @@ queries in both scopes, and synced dark mode.
 - **`src/query-engine.ts`** — jora with duck-typed `fromMap()` /
   `mapEntries()` / `fromSet()` / `ownKeys()` / `typeOf()` bridges, plus
   flattened stat-mode suggestions.
-- **`src/saved-queries.ts`** — id-keyed saved queries via devframe
+- **`src/saved-queries.ts`** — saved queries are source-agnostic recipes
+  `{ query, title?, description?, ...FilterOptions }`, id-keyed (slug of the
+  title, or a stable hash of the query when untitled) via devframe
   `createStorage` (debounced atomic JSON):
   `user` -> `node_modules/.data-inspector/queries.json` (per checkout),
   `project` -> `.devframe/data-inspector/queries.json` (committable, shared).

@@ -56,6 +56,29 @@ function dataInspectorHost(): Plugin {
         title: 'Vite Dev Server',
         description: 'The live ViteDevServer instance serving this very page.',
         getData: () => server,
+        queries: [
+          {
+            title: 'Plugin names',
+            description: 'Every plugin in resolution order',
+            query: 'config.plugins.name',
+          },
+          {
+            title: 'Module graph',
+            description: 'Modules of the client environment with their importers',
+            query: 'environments.client.moduleGraph.idToModuleMap.mapEntries().value.({ url, type, importers: importers.fromSet().url })',
+          },
+          {
+            title: 'Resolved config (clean)',
+            description: 'The config without functions and internals',
+            query: 'config',
+            excludeFunctions: true,
+            excludeUnderscoreProps: true,
+          },
+          {
+            title: 'Server capabilities',
+            query: 'ownKeys()',
+          },
+        ],
       })
 
       const demo = createDemoGraph()
@@ -64,6 +87,11 @@ function dataInspectorHost(): Plugin {
         title: 'Kitchen-sink demo',
         description: 'Maps, Sets, circular refs, class instances, BigInt, functions.',
         getData: () => demo,
+        queries: [
+          { title: 'Session store entries', query: 'store.entries.mapEntries()' },
+          { title: 'Circular structure', query: 'circular' },
+          { title: 'Data only', description: 'The whole graph without functions', query: '', excludeFunctions: true },
+        ],
       })
 
       // `static: true` demo — getData runs once and is memoized, so

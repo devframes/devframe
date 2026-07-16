@@ -6,7 +6,7 @@
  * and the source SKELETON ("what data are available", query-independent).
  * An empty query runs `$` (the root), so every source lands on a full view.
  */
-import type { DataSourceMeta, QueryOutcome, QuerySettings, QueryStats, SkeletonOutcome, SuggestItem, SuggestOutcome } from '../../rpc-contract'
+import type { DataSourceMeta, FilterOptions, QueryOutcome, QueryStats, SkeletonOutcome, SuggestItem, SuggestOutcome } from '../../rpc-contract'
 import jora from 'jora'
 import { computed, reactive, ref, shallowRef, watch } from 'vue'
 import { call } from './rpc'
@@ -18,7 +18,9 @@ export type SyntaxState
 
 const AUTO_RUN_DEBOUNCE = 400
 const SUGGEST_DEBOUNCE = 150
-const SETTINGS_KEY = 'data-inspector:settings'
+const URL_SYNC_DEBOUNCE = 300
+
+const FILTER_KEYS = ['excludeFunctions', 'excludeUnderscoreProps', 'excludeDollarProps'] as const
 
 function checkSyntax(query: string): SyntaxState {
   try {
@@ -36,26 +38,53 @@ function checkSyntax(query: string): SyntaxState {
   }
 }
 
-function loadSettings(): QuerySettings {
-  try {
-    return { ...JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}') }
+/** Read the shareable workbench state from the page URL. */
+function readUrlState(): { sourceId: string, query: string, filters: FilterOptions } {
+  const params = new URLSearchParams(location.search)
+  const filters: FilterOptions = {}
+  for (const key of FILTER_KEYS) {
+    if (params.get(key) === '1')
+      filters[key] = true
   }
-  catch {
-    return {}
+  return {
+    sourceId: params.get('source') ?? '',
+    query: params.get('query') ?? '',
+    filters,
   }
 }
 
 export function useWorkbench() {
-  const sources = ref<DataSourceMeta[]>([])
-  const sourceId = ref('')
-  const query = ref('')
+  const initial = readUrlState()
 
-  const settings = reactive<Required<QuerySettings>>({
-    ignoreFunctions: false,
-    ignoreUnderscorePrefixed: false,
-    ignoreDollarPrefixed: false,
-    ...loadSettings(),
+  const sources = ref<DataSourceMeta[]>([])
+  const sourceId = ref(initial.sourceId)
+  const query = ref(initial.query)
+
+  const settings = reactive<Required<FilterOptions>>({
+    excludeFunctions: false,
+    excludeUnderscoreProps: false,
+    excludeDollarProps: false,
+    ...initial.filters,
   })
+
+  // ── URL persistence: source, query, and filters stay shareable ──────
+  let urlTimer: ReturnType<typeof setTimeout> | undefined
+  function syncUrl(): void {
+    clearTimeout(urlTimer)
+    urlTimer = setTimeout(() => {
+      const params = new URLSearchParams()
+      if (sourceId.value)
+        params.set('source', sourceId.value)
+      if (query.value)
+        params.set('query', query.value)
+      for (const key of FILTER_KEYS) {
+        if (settings[key])
+          params.set(key, '1')
+      }
+      const search = params.toString()
+      history.replaceState(null, '', search ? `?${search}` : location.pathname)
+    }, URL_SYNC_DEBOUNCE)
+  }
 
   const syntax = ref<SyntaxState>({ kind: 'ok' })
   const running = ref(false)
@@ -201,14 +230,26 @@ export function useWorkbench() {
     return query.value
   }
 
-  watch(query, scheduleRun)
+  /** Load a query recipe: text + the filter options it was authored with. */
+  function applyRecipe(recipe: { query: string } & FilterOptions): void {
+    for (const key of FILTER_KEYS)
+      settings[key] = recipe[key] ?? false
+    query.value = recipe.query
+    void runNow()
+  }
+
+  watch(query, () => {
+    syncUrl()
+    scheduleRun()
+  })
   watch(sourceId, () => {
     suggestions.value = []
+    syncUrl()
     void runNow()
     void loadSkeleton()
   })
   watch(settings, () => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+    syncUrl()
     void runNow()
     void loadSkeleton()
   })
@@ -236,6 +277,7 @@ export function useWorkbench() {
     requestSuggestions,
     scheduleSuggestions,
     acceptSuggestion,
+    applyRecipe,
   }
 }
 

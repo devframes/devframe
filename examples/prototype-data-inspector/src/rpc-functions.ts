@@ -7,7 +7,7 @@
  * strict and proves wire-safety on every call.
  */
 import type { DevframeNodeContext } from 'devframe/types'
-import type { QuerySettings, SavedQueryScope, SaveQueryInput, SkeletonOutcome } from './rpc-contract'
+import type { FilterOptions, SavedQueryScope, SaveQueryInput, SkeletonOutcome } from './rpc-contract'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
 import { runQuery, suggest } from './query-engine'
 import { getDataSource, listDataSources, resolveSourceData } from './registry'
@@ -32,7 +32,7 @@ export const queryFn = defineRpc({
   type: 'query',
   jsonSerializable: true,
   setup: ctx => ({
-    handler: async (sourceId: string, joraQuery: string, options?: { maxDepth?: number, maxEntries?: number } & QuerySettings) => {
+    handler: async (sourceId: string, joraQuery: string, options?: { maxDepth?: number, maxEntries?: number } & FilterOptions) => {
       const source = getDataSource(ctx, sourceId)
       if (!source)
         return { ok: false as const, error: { name: 'UnknownSource', message: `No data source "${sourceId}"` } }
@@ -46,7 +46,7 @@ export const skeletonFn = defineRpc({
   type: 'query',
   jsonSerializable: true,
   setup: ctx => ({
-    handler: async (sourceId: string, options?: QuerySettings): Promise<SkeletonOutcome> => {
+    handler: async (sourceId: string, options?: FilterOptions): Promise<SkeletonOutcome> => {
       const source = getDataSource(ctx, sourceId)
       if (!source)
         return { ok: false, error: { name: 'UnknownSource', message: `No data source "${sourceId}"` } }
