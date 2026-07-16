@@ -1,7 +1,7 @@
 {
   "name": "minimal-vite-devframe-hub",
   "type": "module",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "private": true,
   "description": "Protocol-witness example — a tiny Vite Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/minimal-vite-devframe-hub",
