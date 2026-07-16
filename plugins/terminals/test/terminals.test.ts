@@ -62,6 +62,26 @@ describe('@devframes/plugin-terminals', () => {
     })
   })
 
+  it('normalizes bare LF from a piped readonly session to CRLF', async () => {
+    const client = bootClient(server.port)
+    await new Promise(r => setTimeout(r, 50))
+
+    // A piped child has no TTY to apply ONLCR, so it emits bare `\n`. Without
+    // normalization xterm renders a staircase; the backend must translate lone
+    // `\n` to `\r\n` while leaving an existing `\r\n` untouched.
+    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+      command: NODE,
+      args: ['-e', 'process.stdout.write("a\\nb\\r\\nc")'],
+      mode: 'readonly',
+    })
+
+    const reader = subscribe(client, info.id)
+    const output = await collectUntil(reader, acc => acc.includes('a') && acc.includes('b') && acc.includes('c'))
+    expect(output).toContain('a\r\nb\r\nc')
+    expect(output).not.toContain('a\nb')
+    expect(output).not.toContain('\r\r\n')
+  })
+
   it('rejects writes to a readonly session', async () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
