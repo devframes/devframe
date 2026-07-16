@@ -1,7 +1,7 @@
 {
   "name": "devframe-monorepo",
   "type": "module",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "private": true,
   "packageManager": "pnpm@11.13.0",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
