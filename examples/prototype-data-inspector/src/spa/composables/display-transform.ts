@@ -82,7 +82,7 @@ function walk(value: unknown): Walked {
     switch (type) {
       case 'function': {
         const name = typeof obj.name === 'string' && obj.name !== '(anonymous)' ? obj.name : ''
-        return { value: {}, badge: badgeFor('function', name ? `fn ${name}` : 'Function') }
+        return { value: name ? `<function ${name}>` : '<function>', badge: badgeFor('function', 'Function') }
       }
       case 'Map': {
         const inner = walk(obj.value ?? obj.entries ?? {})
@@ -98,14 +98,17 @@ function walk(value: unknown): Walked {
       case 'bigint':
       case 'symbol':
         return { value: obj.value, badge: badgeFor(type, type === 'bigint' ? 'BigInt' : type === 'symbol' ? 'Symbol' : type) }
-      case 'Error':
-        return { value: `${obj.name}: ${obj.message}`, badge: badgeFor('Error') }
+      case 'Error':{
+        const clone = { ...obj }
+        delete clone.$type
+        return { value: clone, badge: badgeFor('Error') }
+      }
       case 'getter-error':
         return { value: String(obj.message ?? ''), badge: badgeFor('getter-error', 'getter threw') }
       default:
         // Promise, WeakMap, TypedArray tags, ... - opaque stubs
         return {
-          value: {},
+          value: `<${type}>`,
           badge: badgeFor(type, typeof obj.length === 'number' ? `${type}(${obj.length})` : type),
         }
     }

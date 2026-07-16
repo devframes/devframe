@@ -83,7 +83,7 @@ function queryAppend(path: string): void {
             <div class="flex items-center gap-1.5 shrink-0 select-none border-b border-base py1 px3">
               <span class="i-ph-crosshair-duotone text-base  color-primary" />
               <span class="color-primary font-semibold">Data Inspector</span>
-              <span class="op-fade text-sm">Inspect server side data/objects interactively</span>
+              <span class="op-fade text-xs">Inspect server side data/objects interactively</span>
               <DisplayBadge
                 v-if="connection.status !== 'connected'"
                 class="flex items-center gap-1.5 py-1 text-xs select-none capitalize"
