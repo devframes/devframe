@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { DataSourceMeta } from '../../rpc-contract'
 import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
-import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import { computed } from 'vue'
 
 const props = defineProps<{
@@ -65,10 +64,11 @@ const rootLabel = computed(() => {
 
 <template>
   <div class="flex flex-col h-full min-h-0">
-    <div class="flex items-center gap-2 px-1 pb-1.5">
-      <span class="text-sm font-semibold truncate select-none">{{ source?.title ?? 'Data source' }}</span>
-      <DisplayBadge v-if="source?.static" text="static" :color="false" />
-      <div class="flex-1" />
+    <div class="flex gap-2">
+      <div v-if="source?.description" class="text-sm op-fade">
+        {{ source.description }}
+      </div>
+      <div class="flex-auto" />
       <ActionIconButton
         size="sm"
         :icon="loading ? 'i-ph:arrows-clockwise animate-spin' : 'i-ph:arrows-clockwise'"
@@ -78,9 +78,6 @@ const rootLabel = computed(() => {
         @click="emit('refresh')"
       />
     </div>
-    <p v-if="source?.description" class="m-0 px-1 pb-2 text-xs color-muted">
-      {{ source.description }}
-    </p>
 
     <div
       v-if="error"
@@ -90,7 +87,7 @@ const rootLabel = computed(() => {
     </div>
 
     <!-- One-level data shape as a plain code block; click a prop to query it. -->
-    <div class="flex-1 min-h-0 overflow-auto font-mono text-xs leading-relaxed bg-secondary border border-base rounded-lg px-3 py-2">
+    <div class="flex-1 min-h-0 overflow-auto font-mono max-h50 overflow-auto text-xs border border-base rounded-lg px-3 py-2">
       <template v-if="entries.length">
         <div class="op50 select-none">
           {

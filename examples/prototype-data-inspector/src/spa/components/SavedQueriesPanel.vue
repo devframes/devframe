@@ -68,17 +68,20 @@ function filterBadges(entry: Query): string[] {
 </script>
 
 <template>
-  <div class="flex flex-col gap-2 min-h-0">
+  <div class="flex flex-col gap-2">
     <div class="flex items-center gap-2">
-      <span class="text-xs font-medium color-muted uppercase tracking-wide select-none">Queries</span>
-      <span v-if="saved.length + suggested.length" class="text-xs color-faint font-mono tabular-nums">{{ saved.length + suggested.length }}</span>
+      <div class="font-semibold text-xs op-fade uppercase tracking-wide select-none">
+        Saved Queries
+      </div>
+      <span v-if="saved.length + suggested.length" class="text-xs op-fade font-mono tabular-nums">({{ saved.length + suggested.length }})</span>
       <div class="flex-1" />
-      <ActionButton size="sm" icon="i-ph:bookmark-simple-duotone" @click="openDialog">
+      <ActionButton class="text-sm" icon="i-ph:bookmark-simple-duotone" @click="openDialog">
         Save query
       </ActionButton>
     </div>
 
-    <div v-if="saved.length || suggested.length" class="flex flex-col gap-1 overflow-auto min-h-0">
+    <div v-if="saved.length || suggested.length" class="overflow-auto min-h-0 max-h-200 grid grid-cols-[repeat(auto-fit,minmax(20rem,1fr))] gap-2">
+      <!-- TODO: merge and unify this two sources -->
       <div
         v-for="entry in suggested"
         :key="`suggested:${entry.query}`"
@@ -93,7 +96,6 @@ function filterBadges(entry: Query): string[] {
         </div>
         <div class="flex-1" />
         <span v-for="badge in filterBadges(entry)" :key="badge" class="font-mono text-10px color-faint">{{ badge }}</span>
-        <DisplayBadge text="suggested" :color="false" class="shrink-0" />
       </div>
 
       <div
@@ -110,11 +112,6 @@ function filterBadges(entry: Query): string[] {
         </div>
         <div class="flex-1" />
         <span v-for="badge in filterBadges(entry)" :key="badge" class="font-mono text-10px color-faint">{{ badge }}</span>
-        <DisplayBadge
-          :text="entry.scope"
-          :color="entry.scope === 'project' ? 150 : false"
-          class="shrink-0"
-        />
         <ActionIconButton
           size="sm"
           icon="i-ph:trash-duotone"
@@ -122,6 +119,11 @@ function filterBadges(entry: Query): string[] {
           tooltip="Delete"
           class="op0 group-hover:op100 transition-opacity"
           @click.stop="emit('remove', entry)"
+        />
+        <DisplayBadge
+          :text="entry.scope"
+          :color="entry.scope === 'project' ? 150 : false"
+          class="shrink-0"
         />
       </div>
     </div>
