@@ -19,8 +19,20 @@ export type SyntaxState
 const AUTO_RUN_DEBOUNCE = 400
 const SUGGEST_DEBOUNCE = 150
 const URL_SYNC_DEBOUNCE = 300
+const DRAFTS_KEY = 'data-inspector:drafts'
 
 const FILTER_KEYS = ['excludeFunctions', 'excludeUnderscoreProps', 'excludeDollarProps'] as const
+
+/** Per-source query drafts, persisted in localStorage. */
+function loadDrafts(): Record<string, string> {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(DRAFTS_KEY) ?? '{}')
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  }
+  catch {
+    return {}
+  }
+}
 
 function checkSyntax(query: string): SyntaxState {
   try {
@@ -59,6 +71,25 @@ export function useWorkbench() {
   const sources = ref<DataSourceMeta[]>([])
   const sourceId = ref(initial.sourceId)
   const query = ref(initial.query)
+
+  // ── per-source query drafts (restored/reset on source switch) ───────
+  const drafts = loadDrafts()
+  let restoringDraft = false
+
+  function saveDraft(): void {
+    if (!sourceId.value)
+      return
+    if (query.value)
+      drafts[sourceId.value] = query.value
+    else
+      delete drafts[sourceId.value]
+    localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts))
+  }
+
+  function restoreDraft(): void {
+    restoringDraft = true
+    query.value = drafts[sourceId.value] ?? ''
+  }
 
   const settings = reactive<Required<FilterOptions>>({
     excludeFunctions: false,
@@ -106,6 +137,10 @@ export function useWorkbench() {
     sources.value = await call<DataSourceMeta[]>('data-inspector:sources')
     if (!sourceId.value || !sources.value.some(s => s.id === sourceId.value))
       sourceId.value = sources.value[0]?.id ?? ''
+    // A query arriving via the URL becomes the draft for its source, so the
+    // source-switch restore below can never clobber a shared link.
+    if (initial.query)
+      saveDraft()
   }
 
   // ── auto-run with syntax gate + stale-drop ─────────────────────────
@@ -239,11 +274,18 @@ export function useWorkbench() {
   }
 
   watch(query, () => {
+    saveDraft()
     syncUrl()
+    if (restoringDraft) {
+      // Draft restores ride the source-switch runNow; skip the debounce run.
+      restoringDraft = false
+      return
+    }
     scheduleRun()
   })
   watch(sourceId, () => {
     suggestions.value = []
+    restoreDraft()
     syncUrl()
     void runNow()
     void loadSkeleton()

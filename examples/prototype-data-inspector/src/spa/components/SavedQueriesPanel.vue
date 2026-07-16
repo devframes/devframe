@@ -33,16 +33,12 @@ const scopeOptions = [
   { value: 'project', label: 'Project (.devframe, shared)' },
 ]
 
-const activeFilterLabels = computed(() => {
-  const labels: string[] = []
-  if (props.currentFilters.excludeFunctions)
-    labels.push('no functions')
-  if (props.currentFilters.excludeUnderscoreProps)
-    labels.push('no _ props')
-  if (props.currentFilters.excludeDollarProps)
-    labels.push('no $ props')
-  return labels
-})
+/** All filter options with their current state — the modal shows every one. */
+const filterStates = computed(() => [
+  { label: 'Exclude functions', on: props.currentFilters.excludeFunctions },
+  { label: 'Exclude _ props', on: props.currentFilters.excludeUnderscoreProps },
+  { label: 'Exclude $ props', on: props.currentFilters.excludeDollarProps },
+])
 
 function openDialog(): void {
   title.value = ''
@@ -133,7 +129,6 @@ function filterBadges(entry: Query): string[] {
       No queries yet. Compose one and hit "Save query".
     </div>
 
-    <!-- TODO: in this save query modal, we should also show the filters -->
     <OverlayModal
       v-model:open="dialogOpen"
       title="Save query"
@@ -143,9 +138,17 @@ function filterBadges(entry: Query): string[] {
         <div class="px-3 py-2 rounded-lg bg-secondary border border-base font-mono text-xs whitespace-pre-wrap break-all max-h-24 overflow-auto">
           {{ currentQuery.trim() || '$' }}
         </div>
-        <div v-if="activeFilterLabels.length" class="flex items-center gap-1.5 flex-wrap">
-          <span class="text-xs color-muted">Filters:</span>
-          <DisplayBadge v-for="label in activeFilterLabels" :key="label" :text="label" :color="false" />
+        <div class="flex items-center gap-3 flex-wrap text-xs">
+          <span class="color-muted">Filters:</span>
+          <span
+            v-for="state in filterStates"
+            :key="state.label"
+            class="flex items-center gap-1"
+            :class="state.on ? 'color-base' : 'color-faint'"
+          >
+            <span :class="state.on ? 'i-ph:check-circle-duotone color-active' : 'i-ph:circle-duotone'" />
+            {{ state.label }}
+          </span>
         </div>
         <FormTextInput v-model="title" placeholder="Title (optional, becomes the storage id)" />
         <FormTextInput v-model="description" placeholder="Description (optional)" />

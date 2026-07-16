@@ -8,11 +8,11 @@ import LayoutSplitPane from '@antfu/design/components/Layout/LayoutSplitPane.vue
 import LayoutToolbar from '@antfu/design/components/Layout/LayoutToolbar.vue'
 import { Pane } from 'splitpanes'
 import { computed, onMounted } from 'vue'
+import DataSourceInfoPanel from './components/DataSourceInfoPanel.vue'
 import QueryEditor from './components/QueryEditor.vue'
 import QuerySettings from './components/QuerySettings.vue'
 import ResultViewer from './components/ResultViewer.vue'
 import SavedQueriesPanel from './components/SavedQueriesPanel.vue'
-import SkeletonPanel from './components/SkeletonPanel.vue'
 import { connect, connection } from './composables/rpc'
 import { useSavedQueries } from './composables/saved'
 import { colorScheme } from './composables/scheme'
@@ -50,6 +50,12 @@ function saveCurrent(input: { title?: string, description?: string, scope: Saved
     excludeUnderscoreProps: wb.settings.excludeUnderscoreProps || undefined,
     excludeDollarProps: wb.settings.excludeDollarProps || undefined,
   })
+}
+
+/** A prop clicked in the data-shape panel becomes the query. */
+function queryProp(key: string): void {
+  wb.query.value = /^[a-z_$][\w$]*$/i.test(key) ? key : `$["${key.replaceAll('"', '\\"')}"]`
+  void wb.runNow()
 }
 </script>
 
@@ -120,7 +126,6 @@ function saveCurrent(input: { title?: string, description?: string, scope: Saved
                   <span>Run</span>
                 </Button>
               </div>
-              <!-- TODO: Query draft should be persistent in local storage per data source, on switching data sources, it should be restored/reset -->
               <QueryEditor
                 v-model="wb.query.value"
                 :syntax="wb.syntax.value"
@@ -146,12 +151,13 @@ function saveCurrent(input: { title?: string, description?: string, scope: Saved
               />
             </Pane>
             <Pane :size="33" min-size="12" class="p-3 py-1.5 min-h-0">
-              <!-- TODO: this should be replaced with "DataSourceInfoPanel", that shows the data source title/description and simple data shape with one-level depth with normal code block (not discovery), on click the prop it would set the query -->
-              <SkeletonPanel
+              <DataSourceInfoPanel
+                :source="wb.activeSource.value"
                 :skeleton="wb.skeleton.value"
                 :error="wb.skeletonError.value"
                 :loading="wb.skeletonLoading.value"
                 @refresh="wb.loadSkeleton()"
+                @select="queryProp"
               />
             </Pane>
           </LayoutSplitPane>
