@@ -11,9 +11,16 @@ declare module 'jora' {
     assertions?: Record<string, string | ((current: unknown) => boolean)>
   }
   export type JoraQueryFn = (data: unknown, context?: unknown) => unknown
+  export interface JoraSyntax {
+    parse: (source: string, tolerantMode?: boolean) => unknown
+    tokenize: (source: string) => unknown
+    stringify: (ast: unknown) => string
+    walk: (ast: unknown, visitor: unknown) => void
+  }
   export interface Jora {
     (query: string, options?: JoraQueryOptions): JoraQueryFn
     setup: (options?: JoraSetupOptions) => (query: string, options?: JoraQueryOptions) => JoraQueryFn
+    syntax: JoraSyntax
     version: string
   }
   const jora: Jora

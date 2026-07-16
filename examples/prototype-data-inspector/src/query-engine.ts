@@ -5,8 +5,8 @@
  * suggestions. Custom methods bridge jora's blind spots on live graphs
  * (Map/Set are opaque to it; the prototype chain is not walked).
  */
-import type { NormalizeOptions, NormalizeStats } from './normalize'
-import type { SuggestItem, SuggestOutcome } from './rpc-contract'
+import type { NormalizeOptions } from './normalize'
+import type { QueryOutcome, SuggestItem, SuggestOutcome } from './rpc-contract'
 import jora from 'jora'
 import { normalize } from './normalize'
 
@@ -50,16 +50,7 @@ const createQuery = jora.setup({
   },
 })
 
-export interface QuerySuccess {
-  ok: true
-  result: unknown
-  stats: { queryMs: number, normalize: NormalizeStats }
-}
-export interface QueryFailure {
-  ok: false
-  error: { message: string, name: string }
-}
-export type QueryOutcome = QuerySuccess | QueryFailure
+export type { QueryOutcome } from './rpc-contract'
 
 export function runQuery(target: unknown, query: string, options?: NormalizeOptions): QueryOutcome {
   try {
@@ -67,7 +58,9 @@ export function runQuery(target: unknown, query: string, options?: NormalizeOpti
     const raw = createQuery(query)(target)
     const queryMs = Math.round((performance.now() - started) * 100) / 100
     const { data, stats } = normalize(raw, options)
-    return { ok: true, result: data, stats: { queryMs, normalize: stats } }
+    // The normalizer guarantees plain JSON, so this measures the actual wire payload.
+    const payloadBytes = new TextEncoder().encode(JSON.stringify(data) ?? '').length
+    return { ok: true, result: data, stats: { queryMs, normalize: stats, payloadBytes } }
   }
   catch (error) {
     const e = error instanceof Error ? error : new Error(String(error))

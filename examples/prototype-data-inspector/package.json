@@ -1,0 +1,30 @@
+{
+  "name": "prototype-data-inspector",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PROTOTYPE (throwaway) — validates the data-inspector plugin architecture: server-side jora over live registered objects + RPC + saved queries + a Vue/@antfu/design workbench with a themed discovery struct view. Not a real example; see README.",
+  "scripts": {
+    "dev": "vite --host",
+    "spike": "tsx src/spike.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@antfu/design": "catalog:frontend",
+    "@discoveryjs/discovery": "catalog:",
+    "devframe": "workspace:*",
+    "floating-vue": "catalog:frontend",
+    "jora": "catalog:",
+    "reka-ui": "catalog:frontend",
+    "splitpanes": "catalog:",
+    "vue": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@iconify-json/ph": "catalog:frontend",
+    "@vitejs/plugin-vue": "catalog:build",
+    "get-port-please": "catalog:deps",
+    "tsx": "catalog:build",
+    "unocss": "catalog:frontend",
+    "vite": "catalog:build"
+  }
+}
