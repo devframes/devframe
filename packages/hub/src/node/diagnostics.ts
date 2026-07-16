@@ -42,6 +42,10 @@ export const diagnostics = defineDiagnostics({
       why: (p: { id: string, name: string, base: string }) => `The host cannot serve the RPC connection meta for devframe "${p.name}" (id "${p.id}") at "${p.base}" — its \`DevframeHost\` does not implement \`mountConnectionMeta\`.`,
       fix: 'Implement `mountConnectionMeta(base)` on your DevframeHost so it serves `__connection.json` at each mounted base. Without it, the devframe SPA connects only when it shares an origin with the hub UI (same-origin window inheritance); cross-origin, sandboxed, or directly-opened iframes stay disconnected. Static-snapshot hosts that bake the meta into the served files can implement it as a no-op to acknowledge this intentionally.',
     },
+    DF8107: {
+      why: (p: { id: string }) => `Dock activation requested for unknown dock id "${p.id}"`,
+      fix: 'Pass a `dockId` that matches a registered dock entry. The activation is still broadcast, but no viewer will switch to it. Ids are case-sensitive — check for typos, and ensure the target dock is registered before activating it.',
+    },
     DF8200: {
       why: (p: { id: string }) => `Terminal session with id "${p.id}" already registered`,
     },

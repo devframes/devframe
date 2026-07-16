@@ -23,6 +23,17 @@ export const SESSIONS_STATE_KEY = 'devframes-plugin-terminals:sessions'
 /** Shared-state key holding the spawnable command presets. */
 export const PRESETS_STATE_KEY = 'devframes-plugin-terminals:presets'
 
+/**
+ * Shared-state key the hub (`@devframes/hub`) mirrors the most recent dock
+ * activation into. When a mounted devframe asks the hub to switch to this
+ * dock — e.g. Vite DevTools navigating to the build it just spawned — the
+ * request lands here as `{ activation: { dockId, params } }`. The UI reads
+ * `params.sessionId` off it (when `dockId` is this plugin) to focus a specific
+ * session, converging even when it mounts *because* of the switch. Kept as a
+ * literal so the plugin needs no build dependency on the hub.
+ */
+export const DOCKS_ACTIVE_STATE_KEY = 'devframe:docks:active'
+
 /** Default dev-server port for the standalone CLI. */
 export const DEFAULT_PORT = 9011
 

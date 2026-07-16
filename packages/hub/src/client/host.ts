@@ -31,6 +31,7 @@ import { createMessagesClient } from './messages'
 const DOCKS_STATE_KEY = 'devframe:docks'
 const COMMANDS_STATE_KEY = 'devframe:commands'
 const USER_SETTINGS_STATE_KEY = 'devframe:user-settings'
+const DOCKS_ACTIVATE_EVENT = 'devframe:docks:activate'
 
 export interface DevframeClientHostOptions {
   /**
@@ -123,6 +124,32 @@ export async function createDevframeClientHost(
   const disposers: Array<() => void> = []
   reconcileEntries()
   disposers.push(docksState.on('updated', reconcileEntries))
+
+  // Honor cross-iframe dock activation: any client (e.g. a mounted devframe in
+  // its own iframe) can ask the hub to switch this shell's active dock via the
+  // `hub:docks:activate` RPC, which the hub broadcasts here. `switchEntry`
+  // ignores ids it doesn't recognize, so an unknown target degrades to a no-op.
+  // Another consumer sharing this rpc client may have registered the handler
+  // already — chain onto it rather than replacing it.
+  const activateHandler = (activation: { dockId?: string } | undefined): void => {
+    if (activation?.dockId)
+      void switchEntry(activation.dockId)
+  }
+  const existingActivate = rpc.client.definitions.get(DOCKS_ACTIVATE_EVENT)
+  if (existingActivate) {
+    const prev = existingActivate.handler
+    existingActivate.handler = (...args: unknown[]) => {
+      activateHandler(args[0] as { dockId?: string })
+      return prev?.(...args)
+    }
+  }
+  else {
+    rpc.client.register({
+      name: DOCKS_ACTIVATE_EVENT,
+      type: 'action',
+      handler: (activation: { dockId?: string }) => activateHandler(activation),
+    })
+  }
 
   if (getDevframeClientContext()) {
     console.warn(

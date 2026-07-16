@@ -21,11 +21,13 @@ export { DevframeCommandsHostEvents }
 export { DevframeDiagnosticsDefinition }
 export { DevframeDiagnosticsHost }
 export { DevframeDiagnosticsLogger }
+export { DevframeDockActivation }
 export { DevframeDockEntriesGrouped }
 export { DevframeDockEntry }
 export { DevframeDockEntryBase }
 export { DevframeDockEntryCategory }
 export { DevframeDockEntryIcon }
+export { DevframeDocksActiveState }
 export { DevframeDocksHost }
 export { DevframeDocksUserSettings }
 export { DevframeDockUserEntry }

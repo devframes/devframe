@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createHostContext, startHttpAndWs } from 'devframe/node'
 import { getInternalContext } from 'devframe/node/hub-internals'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createHubContext } from '../context'
 
 function createHost(storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-context-'))) {
@@ -25,6 +25,37 @@ describe('createHubContext shared state', () => {
 
     const docks = await context.rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks')
     expect(docks.value()).toEqual([])
+  })
+})
+
+describe('createHubContext dock activation', () => {
+  it('mirrors an activation into shared state and broadcasts it live', async () => {
+    const context = await createHubContext({
+      cwd: process.cwd(),
+      mode: 'build',
+      host: createHost(),
+    })
+    context.docks.register({
+      type: 'iframe',
+      id: 'devframes-plugin-terminals',
+      title: 'Terminals',
+      icon: 'ph:terminal-window-duotone',
+      url: '/__devframes-plugin-terminals/',
+    })
+
+    const broadcast = vi.spyOn(context.rpc, 'broadcast').mockResolvedValue()
+    context.docks.activate('devframes-plugin-terminals', { sessionId: 'sess-1' })
+
+    const active = await context.rpc.sharedState.get<{ activation: unknown }>('devframe:docks:active')
+    expect(active.value().activation).toEqual({
+      dockId: 'devframes-plugin-terminals',
+      params: { sessionId: 'sess-1' },
+    })
+    expect(broadcast).toHaveBeenCalledWith({
+      method: 'devframe:docks:activate',
+      args: [{ dockId: 'devframes-plugin-terminals', params: { sessionId: 'sess-1' } }],
+    })
+    broadcast.mockRestore()
   })
 })
 

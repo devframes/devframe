@@ -1,7 +1,7 @@
 import type { CreateHostContextOptions } from 'devframe/node'
 import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
 import type { DevframeCommandsHost } from '../types/commands'
-import type { DevframeDocksHost } from '../types/docks'
+import type { DevframeDockActivation, DevframeDocksActiveState, DevframeDocksHost } from '../types/docks'
 import type { JsonRenderer, JsonRenderSpec } from '../types/json-render'
 import type { DevframeMessagesHost } from '../types/messages'
 import type { DevframeTerminalsHost } from '../types/terminals'
@@ -15,6 +15,17 @@ import { builtinHubRpcDeclarations } from './rpc-builtins'
 
 declare module 'devframe/types' {
   interface DevframeRpcClientFunctions {
+    /**
+     * Server→client request to switch the active dock. Broadcast by the hub
+     * context in response to `ctx.docks.activate()` (driven by the
+     * `hub:docks:activate` RPC). The client host registers a handler that
+     * calls its local `switchEntry(dockId)`; the target dock reads
+     * `activation.params` to react (e.g. focus a session). Do not register
+     * manually.
+     *
+     * @internal
+     */
+    'devframe:docks:activate': (activation: DevframeDockActivation) => Promise<void>
     /**
      * Server→client notification that terminal sessions changed. Broadcast
      * by the hub context; a hub-aware client re-reads terminal state in
@@ -122,6 +133,25 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
   }, debounceMs)
   docks.events.on('dock:entry:updated', refreshDocks)
   docksSharedState.mutate(() => docks.values())
+
+  // Cross-iframe dock activation. A dock activation is a discrete user intent
+  // ("go to Terminals now"), so it fires immediately (no debounce, which could
+  // coalesce two distinct requests) both as a live broadcast — the host shell
+  // switches its active dock — and into a shared-state slot, so a dock that
+  // only mounts *because* of the switch still converges on the request.
+  const activeDockSharedState = await context.rpc.sharedState.get<DevframeDocksActiveState>(
+    'devframe:docks:active',
+    { initialValue: { activation: null } },
+  )
+  docks.events.on('dock:activate', (activation) => {
+    activeDockSharedState.mutate((state) => {
+      state.activation = activation
+    })
+    context.rpc.broadcast({
+      method: 'devframe:docks:activate',
+      args: [activation],
+    })
+  })
 
   const broadcastTerminals = debounce(() => {
     context.rpc.broadcast({

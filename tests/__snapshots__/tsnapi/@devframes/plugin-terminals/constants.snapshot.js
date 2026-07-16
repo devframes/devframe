@@ -6,6 +6,7 @@ export var DEFAULT_COLS /* const */
 export var DEFAULT_PORT /* const */
 export var DEFAULT_ROWS /* const */
 export var DEFAULT_SCROLLBACK /* const */
+export var DOCKS_ACTIVE_STATE_KEY /* const */
 export var HUB_TERMINAL_STREAM_CHANNEL /* const */
 export var PLUGIN_ID /* const */
 export var PRESETS_STATE_KEY /* const */
