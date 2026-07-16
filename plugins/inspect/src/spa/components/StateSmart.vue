@@ -18,7 +18,7 @@ let flashTimer: ReturnType<typeof setTimeout> | null = null
 async function fetchData(): Promise<void> {
   if (!rpc.value)
     return
-  keys.value = await rpc.value.call('devframes-plugin-inspect:list-state-keys')
+  keys.value = await rpc.value.call('devframes:plugin:inspect:list-state-keys')
 }
 
 useRefreshProvider(fetchData)

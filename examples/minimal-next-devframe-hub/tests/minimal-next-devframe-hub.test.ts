@@ -39,8 +39,8 @@ describe('minimal-next-devframe-hub (example)', () => {
     expect(dockIds).toContain('~settings')
     expect(docks.find(d => d.id === '~settings')?.category).toBe('~builtin')
     // The dogfooded built-in plugin packages mount their own docks.
-    expect(dockIds).toContain('devframes-plugin-terminals')
-    expect(dockIds).toContain('devframes-plugin-messages')
+    expect(dockIds).toContain('devframes_plugin_terminals')
+    expect(dockIds).toContain('devframes_plugin_messages')
   })
 
   it('lists startup and demo messages through the kit-local RPC', async () => {

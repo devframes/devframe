@@ -8,7 +8,7 @@ import { defineInspectRpc } from './_define'
  * `build`/`spa` mode.
  */
 export const listStateKeys = defineInspectRpc({
-  name: 'devframes-plugin-inspect:list-state-keys',
+  name: 'devframes:plugin:inspect:list-state-keys',
   type: 'query',
   jsonSerializable: true,
   snapshot: true,

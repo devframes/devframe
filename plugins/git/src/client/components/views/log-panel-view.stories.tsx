@@ -25,7 +25,7 @@ const commits: Commit[] = [
   { hash: 'c12', shortHash: 'c12f2cd', parents: [], author: 'Ada Lovelace', email: 'ada@example.dev', date: at(9000), subject: 'Add type safety to date ordering', body: 'Types the comparator so bad inputs fail at compile time.', refs: ['tag: v0.1.0'] },
 ]
 
-// Stand-in for the `git:show` call the live dashboard makes to fill the hover
+// Stand-in for the `devframes:plugin:git:show` call the live dashboard makes to fill the hover
 // card. Derives plausible changed-file stats from the hash so each commit reads
 // distinctly.
 async function loadDetail(hash: string): Promise<CommitDetail> {

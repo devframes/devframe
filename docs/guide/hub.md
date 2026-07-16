@@ -35,7 +35,7 @@ The viewer's active dock is client-local state — which dock is on screen lives
 ```ts
 // From inside a mounted devframe's iframe (its own RPC client):
 await rpc.call('hub:docks:activate', {
-  dockId: 'devframes-plugin-terminals',
+  dockId: 'devframes_plugin_terminals',
   params: { sessionId }, // opaque bag the target dock interprets
 })
 ```

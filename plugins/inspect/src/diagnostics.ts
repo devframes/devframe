@@ -12,7 +12,7 @@ export const diagnostics = defineDiagnostics({
     DP_INSPECT_0001: {
       why: (p: { name: string }) =>
         `Cannot invoke "${p.name}" — no RPC function with that name is registered on this connection.`,
-      fix: 'Call `devframes-plugin-inspect:list-functions` to see the registered names, or check for a typo.',
+      fix: 'Call `devframes:plugin:inspect:list-functions` to see the registered names, or check for a typo.',
     },
     DP_INSPECT_0002: {
       why: (p: { name: string, type: string }) =>

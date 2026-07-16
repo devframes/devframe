@@ -17,7 +17,7 @@ export const Default: Story = {
   args: {
     functions: [
       {
-        name: 'devframes-plugin-inspect:list-functions',
+        name: 'devframes:plugin:inspect:list-functions',
         type: 'query',
         jsonSerializable: true,
         snapshot: true,
@@ -34,7 +34,7 @@ export const Default: Story = {
         },
       },
       {
-        name: 'devframes-plugin-inspect:invoke',
+        name: 'devframes:plugin:inspect:invoke',
         type: 'action',
         jsonSerializable: false,
         snapshot: false,
@@ -103,12 +103,12 @@ export const WithResultsAndPending: Story = {
   args: {
     ...Default.args,
     results: {
-      'devframes-plugin-inspect:list-functions': {
+      'devframes:plugin:inspect:list-functions': {
         ok: true,
         result: [{ name: 'dummy' }],
         durationMs: 42,
       },
-      'devframes-plugin-inspect:invoke': {
+      'devframes:plugin:inspect:invoke': {
         ok: false,
         error: { name: 'Error', message: 'Failed to invoke' },
         durationMs: 12,

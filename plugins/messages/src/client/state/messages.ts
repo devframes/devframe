@@ -40,8 +40,8 @@ export function useMessages(rpc: DevframeRpcClient): Reactive<MessagesState> {
       // Omit the cursor on the first call — static builds serve the baked
       // no-args snapshot; live servers return the full list either way.
       const result = (lastVersion == null
-        ? await rpc.call('devframes-plugin-messages:list')
-        : await rpc.call('devframes-plugin-messages:list', lastVersion)) as DevframeMessagesListDelta
+        ? await rpc.call('devframes:plugin:messages:list')
+        : await rpc.call('devframes:plugin:messages:list', lastVersion)) as DevframeMessagesListDelta
       if (result.full)
         entryMap.clear()
       // Apply removals before upserts — an id can be evicted and re-added

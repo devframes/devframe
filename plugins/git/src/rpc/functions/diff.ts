@@ -46,7 +46,7 @@ function parseNumstat(raw: string): DiffFile[] {
 }
 
 export const diff = defineRpcFunction({
-  name: 'git:diff',
+  name: 'devframes:plugin:git:diff',
   type: 'query',
   snapshot: true,
   jsonSerializable: true,

@@ -17,7 +17,7 @@ export interface RpcFunctionAgentInfo {
 
 /**
  * Serializable description of a single registered RPC function. Returned
- * by `devframes-plugin-inspect:list-functions`. JSON-safe by construction
+ * by `devframes:plugin:inspect:list-functions`. JSON-safe by construction
  * — valibot schemas are projected to JSON Schema (best effort), never
  * sent as live objects.
  */
@@ -53,7 +53,7 @@ export interface RpcFunctionInfo {
 }
 
 /**
- * Result envelope for `devframes-plugin-inspect:invoke`. Errors are
+ * Result envelope for `devframes:plugin:inspect:invoke`. Errors are
  * normalized to a serializable shape rather than thrown so the inspector
  * UI can render failures inline alongside successes.
  */

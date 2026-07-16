@@ -42,7 +42,7 @@ function parseTrack(track: string): { ahead: number, behind: number, gone: boole
 }
 
 export const branches = defineRpcFunction({
-  name: 'git:branches',
+  name: 'devframes:plugin:git:branches',
   type: 'query',
   snapshot: true,
   jsonSerializable: true,

@@ -13,7 +13,7 @@ const pending = reactive<Record<string, boolean>>({})
 async function fetchData(): Promise<void> {
   if (!rpc.value)
     return
-  functions.value = await rpc.value.call('devframes-plugin-inspect:list-functions')
+  functions.value = await rpc.value.call('devframes:plugin:inspect:list-functions')
 }
 
 useRefreshProvider(fetchData)
@@ -24,7 +24,7 @@ async function onInvoke(fn: RpcFunctionInfo, parsedArgs: unknown[]): Promise<voi
     return
   pending[fn.name] = true
   try {
-    results[fn.name] = await rpc.value.call('devframes-plugin-inspect:invoke', fn.name, parsedArgs)
+    results[fn.name] = await rpc.value.call('devframes:plugin:inspect:invoke', fn.name, parsedArgs)
   }
   catch (e) {
     const err = e as Error

@@ -1,5 +1,5 @@
-/** Devframe id — drives the hosted mount path `/__<id>/` and RPC namespacing. */
-export const PLUGIN_ID = 'devframes-plugin-messages'
+/** Devframe id — drives the hosted mount path `/__<id>/`. */
+export const PLUGIN_ID = 'devframes_plugin_messages'
 
 /** Preferred standalone CLI port (901x band shared by the core-ish plugins). */
 export const DEFAULT_PORT = 9014

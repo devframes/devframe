@@ -3,16 +3,16 @@ import { parseNamespacedName } from '../src/spa/utils/color'
 
 describe('parseNamespacedName', () => {
   it('splits a single `:` namespace into a colored prefix and an uncolored leaf', () => {
-    const segments = parseNamespacedName('devframes-plugin-inspect:list-functions')
+    const segments = parseNamespacedName('foo:bar')
     expect(segments).toEqual([
-      { text: 'devframes-plugin-inspect', separator: ':', isLeaf: false, color: expect.any(String) },
-      { text: 'list-functions', separator: '', isLeaf: true, color: undefined },
+      { text: 'foo', separator: ':', isLeaf: false, color: expect.any(String) },
+      { text: 'bar', separator: '', isLeaf: true, color: undefined },
     ])
   })
 
   it('splits deep `:` namespaces, coloring every namespace segment', () => {
-    const segments = parseNamespacedName('devframe:rpc:server-state:get')
-    expect(segments.map(s => s.text)).toEqual(['devframe', 'rpc', 'server-state', 'get'])
+    const segments = parseNamespacedName('devframes:plugin:inspect:list-functions')
+    expect(segments.map(s => s.text)).toEqual(['devframes', 'plugin', 'inspect', 'list-functions'])
     expect(segments.map(s => s.separator)).toEqual([':', ':', ':', ''])
     expect(segments.map(s => s.isLeaf)).toEqual([false, false, false, true])
     // Every namespace gets a color; only the leaf is uncolored.

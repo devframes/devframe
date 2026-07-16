@@ -179,7 +179,7 @@
   onMount(async () => {
     let existing: TerminalSessionInfo[] | null = null
     try {
-      existing = await rpc.call('devframes-plugin-terminals:list') as TerminalSessionInfo[]
+      existing = await rpc.call('devframes:plugin:terminals:list') as TerminalSessionInfo[]
     }
     catch {
       existing = null
@@ -200,7 +200,7 @@
 
   async function spawn(req: any): Promise<void> {
     try {
-      const info = await rpc.call('devframes-plugin-terminals:spawn', req) as any
+      const info = await rpc.call('devframes:plugin:terminals:spawn', req) as any
       if (info?.id)
         activeId = info.id
     }
@@ -214,7 +214,7 @@
 
   function commitRename(id: string, title: string): void {
     renamingId = null
-    rpc.call('devframes-plugin-terminals:rename', { id, title: title.trim() }).catch(() => {})
+    rpc.call('devframes:plugin:terminals:rename', { id, title: title.trim() }).catch(() => {})
   }
 
   function focusSelect(node: HTMLInputElement) {
@@ -287,7 +287,7 @@
                 tabindex="-1"
                 aria-label="Close terminal"
                 class="i-ph-x op0 group-hover:op60 hover:op100! transition-opacity shrink-0"
-                onclick={(e) => { e.stopPropagation(); rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {}) }}
+                onclick={(e) => { e.stopPropagation(); rpc.call('devframes:plugin:terminals:remove', { id: s.id }).catch(() => {}) }}
                 onkeydown={() => {}}
               ></span>
             {/if}
@@ -373,10 +373,10 @@
       <div class="flex-1"></div>
 
       {#if !isExternal(s)}
-        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: s.id }).catch(() => {})}>
+        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => rpc.call('devframes:plugin:terminals:restart', { id: s.id }).catch(() => {})}>
           <div class="i-ph-arrow-clockwise-duotone"></div>
         </button>
-        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {})}>
+        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill" onclick={() => rpc.call('devframes:plugin:terminals:remove', { id: s.id }).catch(() => {})}>
           <div class="i-ph-trash-duotone"></div>
         </button>
       {/if}

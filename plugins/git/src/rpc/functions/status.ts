@@ -150,7 +150,7 @@ function parseStatus(root: string, raw: string): GitStatus {
 }
 
 /**
- * Read the working-tree status for a git context. Shared by the `git:status`
+ * Read the working-tree status for a git context. Shared by the `devframes:plugin:git:status`
  * query and the write actions (which return fresh status after mutating).
  */
 export async function readStatus(git: GitContext): Promise<GitStatus> {
@@ -164,7 +164,7 @@ export async function readStatus(git: GitContext): Promise<GitStatus> {
 }
 
 export const status = defineRpcFunction({
-  name: 'git:status',
+  name: 'devframes:plugin:git:status',
   type: 'query',
   snapshot: true,
   jsonSerializable: true,

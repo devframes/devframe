@@ -29,7 +29,7 @@ const SPA_DIST = messagesDevframe.cli!.distDir!
 export function assertSpaBuilt(): void {
   if (!existsSync(path.join(SPA_DIST, 'index.html'))) {
     throw new Error(
-      '[devframes-plugin-messages] dist/spa missing — run `pnpm -C plugins/messages run build` first.',
+      '[devframes_plugin_messages] dist/spa missing — run `pnpm -C plugins/messages run build` first.',
     )
   }
 }
@@ -65,7 +65,7 @@ async function boot(options: BootOptions): Promise<MessagesServer> {
   const h3Host = createH3DevframeHost({
     origin,
     appName: messagesDevframe.id,
-    workspaceRoot: await mkdtemp(path.join(os.tmpdir(), 'devframes-plugin-messages-test-')),
+    workspaceRoot: await mkdtemp(path.join(os.tmpdir(), 'devframes_plugin_messages-test-')),
     mount: (base, dir) => {
       mountStaticHandler(app, base, dir)
     },

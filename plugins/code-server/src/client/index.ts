@@ -93,7 +93,7 @@ export async function mountCodeServer(
       return
     busy = true
     sync()
-    const result = await call<CodeServerStatusResult>('devframes-plugin-code-server:start', {})
+    const result = await call<CodeServerStatusResult>('devframes:plugin:code-server:start', {})
     if (result)
       applyResult(result)
     busy = false
@@ -105,7 +105,7 @@ export async function mountCodeServer(
       return
     busy = true
     sync()
-    const result = await call<CodeServerStatusResult>('devframes-plugin-code-server:stop')
+    const result = await call<CodeServerStatusResult>('devframes:plugin:code-server:stop')
     if (result)
       applyResult(result)
     auth = undefined
@@ -118,7 +118,7 @@ export async function mountCodeServer(
       return
     busy = true
     sync()
-    await call('devframes-plugin-code-server:detect')
+    await call('devframes:plugin:code-server:detect')
     busy = false
     sync()
   }
@@ -127,7 +127,7 @@ export async function mountCodeServer(
 
   sync()
 
-  const initial = await call<CodeServerStatusResult>('devframes-plugin-code-server:status')
+  const initial = await call<CodeServerStatusResult>('devframes:plugin:code-server:status')
   if (initial)
     applyResult(initial)
   sync()
@@ -144,7 +144,7 @@ export async function mountCodeServer(
     server = full.server ?? server
     // Shared state never carries the cookie; fetch it when the server comes up.
     if (server.status === 'running' && !auth) {
-      void call<CodeServerStatusResult>('devframes-plugin-code-server:status').then((result) => {
+      void call<CodeServerStatusResult>('devframes:plugin:code-server:status').then((result) => {
         if (result?.auth)
           auth = result.auth
         sync()

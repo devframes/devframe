@@ -10,7 +10,7 @@ export interface StageArgs {
 }
 
 export const stage = defineRpcFunction({
-  name: 'git:stage',
+  name: 'devframes:plugin:git:stage',
   type: 'action',
   jsonSerializable: true,
   setup: (ctx) => {

@@ -55,14 +55,14 @@ describe('createMessagesReporter', () => {
 
     reporter.scanning()
     expect(added.at(-1)).toMatchObject({
-      id: 'devframe-a11y-inspector:scan',
+      id: 'devframes:plugin:a11y:scan',
       level: 'info',
       status: 'loading',
     })
 
     reporter.report(report([]))
     expect(added.at(-1)).toMatchObject({
-      id: 'devframe-a11y-inspector:scan',
+      id: 'devframes:plugin:a11y:scan',
       message: 'No accessibility issues found',
       level: 'success',
       status: 'idle',
@@ -78,13 +78,13 @@ describe('createMessagesReporter', () => {
 
     reporter.report(report([violation('image-alt', 'critical', 2), violation('label', 'moderate')]))
 
-    const summary = added.find(m => m.id === 'devframe-a11y-inspector:scan')
+    const summary = added.find(m => m.id === 'devframes:plugin:a11y:scan')
     expect(summary).toMatchObject({
       message: '3 accessibility issues across 2 rules',
       level: 'warn',
     })
 
-    const imageAlt = added.find(m => m.id === 'devframe-a11y-inspector:rule:image-alt')
+    const imageAlt = added.find(m => m.id === 'devframes:plugin:a11y:rule:image-alt')
     expect(imageAlt).toMatchObject({
       message: 'Fix image-alt (2)',
       level: 'error',
@@ -95,12 +95,12 @@ describe('createMessagesReporter', () => {
         description: 'Fix the image-alt element',
       },
     })
-    expect(added.find(m => m.id === 'devframe-a11y-inspector:rule:label')).toMatchObject({
+    expect(added.find(m => m.id === 'devframes:plugin:a11y:rule:label')).toMatchObject({
       level: 'warn',
       labels: ['moderate', 'wcag2a'],
     })
     // No resolver hit — the box is simply absent, never a throw.
-    expect(added.find(m => m.id === 'devframe-a11y-inspector:rule:label')?.elementPosition?.boundingBox)
+    expect(added.find(m => m.id === 'devframes:plugin:a11y:rule:label')?.elementPosition?.boundingBox)
       .toBeUndefined()
   })
 
@@ -111,9 +111,9 @@ describe('createMessagesReporter', () => {
     reporter.report(report([violation('image-alt', 'critical'), violation('label', 'minor')]))
     reporter.report(report([violation('label', 'minor')]))
 
-    expect(removed).toEqual(['devframe-a11y-inspector:rule:image-alt'])
+    expect(removed).toEqual(['devframes:plugin:a11y:rule:image-alt'])
     // The surviving rule was re-added (dedup by stable id updates in place).
-    expect(added.filter(m => m.id === 'devframe-a11y-inspector:rule:label')).toHaveLength(2)
+    expect(added.filter(m => m.id === 'devframes:plugin:a11y:rule:label')).toHaveLength(2)
   })
 
   it('settles the summary entry as an error when a scan fails', () => {
@@ -122,7 +122,7 @@ describe('createMessagesReporter', () => {
 
     reporter.failed(new Error('axe exploded'))
     expect(added.at(-1)).toMatchObject({
-      id: 'devframe-a11y-inspector:scan',
+      id: 'devframes:plugin:a11y:scan',
       message: 'Accessibility scan failed',
       description: 'Error: axe exploded',
       level: 'error',

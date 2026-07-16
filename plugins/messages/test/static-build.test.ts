@@ -17,7 +17,7 @@ describe('messages static build', () => {
 
   beforeAll(async () => {
     assertSpaBuilt()
-    outDir = await mkdtemp(path.join(os.tmpdir(), 'devframes-plugin-messages-build-'))
+    outDir = await mkdtemp(path.join(os.tmpdir(), 'devframes_plugin_messages-build-'))
     await createBuild(messagesDevframe, { outDir })
   })
 
@@ -47,8 +47,8 @@ describe('messages static build', () => {
 
     // The snapshot `query` bakes into the static dump; the mutating
     // `action` functions must not appear.
-    expect(manifest['devframes-plugin-messages:list']).toBeTruthy()
-    expect(manifest['devframes-plugin-messages:add']).toBeUndefined()
-    expect(manifest['devframes-plugin-messages:clear']).toBeUndefined()
+    expect(manifest['devframes:plugin:messages:list']).toBeTruthy()
+    expect(manifest['devframes:plugin:messages:add']).toBeUndefined()
+    expect(manifest['devframes:plugin:messages:clear']).toBeUndefined()
   })
 })

@@ -3,7 +3,7 @@ import * as v from 'valibot'
 import { getTerminalManager } from '../../node/context'
 
 export const resize = defineRpcFunction({
-  name: 'devframes-plugin-terminals:resize',
+  name: 'devframes:plugin:terminals:resize',
   type: 'action',
   jsonSerializable: true,
   args: [v.object({

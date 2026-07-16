@@ -17,7 +17,7 @@
  */
 
 /** BroadcastChannel name. Namespaced with the devframe id, per convention. */
-export const A11Y_CHANNEL = 'devframe-a11y-inspector'
+export const A11Y_CHANNEL = 'devframes:plugin:a11y'
 
 /**
  * Attribute the agent stamps on each violating element so the panel can ask

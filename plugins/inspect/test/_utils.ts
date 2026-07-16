@@ -24,7 +24,7 @@ const SPA_DIST = inspectDevframe.cli!.distDir!
 export function assertSpaBuilt(): void {
   if (!existsSync(path.join(SPA_DIST, 'index.html'))) {
     throw new Error(
-      '[devframes-plugin-inspect] dist/spa missing — run `pnpm -C plugins/inspect run build` first.',
+      '[devframes_plugin_inspect] dist/spa missing — run `pnpm -C plugins/inspect run build` first.',
     )
   }
 }

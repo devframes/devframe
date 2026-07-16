@@ -8,7 +8,7 @@ import { messagesUpdate } from './functions/update'
 /**
  * The message-feed RPC functions registered by the plugin — thin, typed
  * wrappers over the hub's `ctx.messages` host. Namespaced
- * `devframes-plugin-messages:*` per the plugin convention.
+ * `devframes:plugin:messages:*` per the plugin convention.
  */
 export const serverFunctions = [
   messagesList,

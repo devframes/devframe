@@ -8,7 +8,7 @@ import { defineMessagesRpc, getMessagesHost } from './_define'
  * when no messages host is attached.
  */
 export const messagesAdd = defineMessagesRpc({
-  name: 'devframes-plugin-messages:add',
+  name: 'devframes:plugin:messages:add',
   type: 'action',
   jsonSerializable: true,
   setup: ctx => ({

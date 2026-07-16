@@ -6,7 +6,7 @@ import pkg from '../package.json' with { type: 'json' }
 import { setupInspect } from './node/index'
 
 /** Default devframe id — drives the hosted mount path `/__<id>/`. */
-const DEFAULT_ID = 'devframes-plugin-inspect'
+const DEFAULT_ID = 'devframes_plugin_inspect'
 
 // The Vue SPA is built (by Vite) into `dist/spa`. From both the source
 // entry (`src/index.ts`, via the workspace alias) and the published

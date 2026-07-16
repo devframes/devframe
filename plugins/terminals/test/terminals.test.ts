@@ -45,7 +45,7 @@ describe('@devframes/plugin-terminals', () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
-    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
       command: NODE,
       args: ['-e', 'process.stdout.write("hello-readonly")'],
       mode: 'readonly',
@@ -69,7 +69,7 @@ describe('@devframes/plugin-terminals', () => {
     // A piped child has no TTY to apply ONLCR, so it emits bare `\n`. Without
     // normalization xterm renders a staircase; the backend must translate lone
     // `\n` to `\r\n` while leaving an existing `\r\n` untouched.
-    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
       command: NODE,
       args: ['-e', 'process.stdout.write("a\\nb\\r\\nc")'],
       mode: 'readonly',
@@ -86,14 +86,14 @@ describe('@devframes/plugin-terminals', () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
-    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
       command: NODE,
       args: ['-e', 'setInterval(() => {}, 1000)'],
       mode: 'readonly',
     })
 
     await expect(
-      call(client, 'devframes-plugin-terminals:write', { id: info.id, data: 'x' }),
+      call(client, 'devframes:plugin:terminals:write', { id: info.id, data: 'x' }),
     ).rejects.toThrow(/read-only/i)
   })
 
@@ -101,7 +101,7 @@ describe('@devframes/plugin-terminals', () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
-    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
       command: NODE,
       args: ['-e', 'process.stdin.on("data", d => process.stdout.write("echo:" + d)); setTimeout(() => {}, 4000)'],
       mode: 'interactive',
@@ -110,7 +110,7 @@ describe('@devframes/plugin-terminals', () => {
 
     const reader = subscribe(client, info.id)
     await new Promise(r => setTimeout(r, 200))
-    await call(client, 'devframes-plugin-terminals:write', { id: info.id, data: 'ping\n' })
+    await call(client, 'devframes:plugin:terminals:write', { id: info.id, data: 'ping\n' })
 
     const output = await collectUntil(reader, acc => acc.includes('echo:ping'))
     expect(output).toContain('echo:ping')
@@ -120,7 +120,7 @@ describe('@devframes/plugin-terminals', () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
-    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
       command: NODE,
       args: ['-e', 'process.stdout.write("isTTY=" + process.stdout.isTTY)'],
       mode: 'interactive',
@@ -135,7 +135,7 @@ describe('@devframes/plugin-terminals', () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
-    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
       command: NODE,
       args: ['-e', 'process.stdout.write("cols=" + process.stdout.columns); process.on("SIGWINCH", () => process.stdout.write(" winch=" + process.stdout.columns)); setInterval(() => {}, 4000)'],
       mode: 'interactive',
@@ -145,7 +145,7 @@ describe('@devframes/plugin-terminals', () => {
 
     const reader = subscribe(client, info.id)
     await new Promise(r => setTimeout(r, 200))
-    await call(client, 'devframes-plugin-terminals:resize', { id: info.id, cols: 120, rows: 40 })
+    await call(client, 'devframes:plugin:terminals:resize', { id: info.id, cols: 120, rows: 40 })
 
     const output = await collectUntil(reader, acc => acc.includes('winch='))
     expect(output).toContain('winch=120')
@@ -155,13 +155,13 @@ describe('@devframes/plugin-terminals', () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
-    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
       command: NODE,
       args: ['-e', 'process.stdout.write("run")'],
       mode: 'readonly',
     })
 
-    const restarted = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:restart', { id: info.id })
+    const restarted = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:restart', { id: info.id })
     expect(restarted.id).toBe(info.id)
     expect(restarted.status).toBe('running')
   })
@@ -170,7 +170,7 @@ describe('@devframes/plugin-terminals', () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
-    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
       command: NODE,
       args: ['-e', 'setInterval(() => {}, 4000)'],
       mode: 'interactive',
@@ -182,7 +182,7 @@ describe('@devframes/plugin-terminals', () => {
       expect(s?.processName?.toLowerCase()).toContain('node')
     }, { timeout: 4000 })
 
-    await call(client, 'devframes-plugin-terminals:remove', { id: info.id })
+    await call(client, 'devframes:plugin:terminals:remove', { id: info.id })
   })
 
   it('tracks the title and cwd a program reports via OSC escapes', async () => {
@@ -191,7 +191,7 @@ describe('@devframes/plugin-terminals', () => {
 
     // OSC parsing rides the output stream, so it works for every backend —
     // a readonly piped session keeps this test deterministic cross-platform.
-    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
       command: NODE,
       args: ['-e', 'process.stdout.write("\\x1B]2;osc-title\\x07\\x1B]7;file://localhost/tmp/osc-cwd\\x07"); setInterval(() => {}, 1000)'],
       mode: 'readonly',
@@ -204,46 +204,46 @@ describe('@devframes/plugin-terminals', () => {
       expect(s?.termCwd).toBe('/tmp/osc-cwd')
     })
 
-    await call(client, 'devframes-plugin-terminals:remove', { id: info.id })
+    await call(client, 'devframes:plugin:terminals:remove', { id: info.id })
   })
 
   it('supports custom renaming via the rename RPC', async () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
-    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
       command: NODE,
       args: ['-e', 'setInterval(() => {}, 4000)'],
       mode: 'readonly',
     })
 
-    await call(client, 'devframes-plugin-terminals:rename', { id: info.id, title: 'My Build' })
-    let list = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
+    await call(client, 'devframes:plugin:terminals:rename', { id: info.id, title: 'My Build' })
+    let list = await call<TerminalSessionInfo[]>(client, 'devframes:plugin:terminals:list')
     expect(list.find(s => s.id === info.id)?.customTitle).toBe('My Build')
 
     // Empty string clears the custom name.
-    await call(client, 'devframes-plugin-terminals:rename', { id: info.id, title: '   ' })
-    list = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
+    await call(client, 'devframes:plugin:terminals:rename', { id: info.id, title: '   ' })
+    list = await call<TerminalSessionInfo[]>(client, 'devframes:plugin:terminals:list')
     expect(list.find(s => s.id === info.id)?.customTitle).toBeUndefined()
 
-    await call(client, 'devframes-plugin-terminals:remove', { id: info.id })
+    await call(client, 'devframes:plugin:terminals:remove', { id: info.id })
   })
 
   it('lists sessions and removes them', async () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
-    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
       command: NODE,
       args: ['-e', 'setInterval(() => {}, 1000)'],
       mode: 'readonly',
     })
 
-    let list = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
+    let list = await call<TerminalSessionInfo[]>(client, 'devframes:plugin:terminals:list')
     expect(list.some(s => s.id === info.id)).toBe(true)
 
-    await call(client, 'devframes-plugin-terminals:remove', { id: info.id })
-    list = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
+    await call(client, 'devframes:plugin:terminals:remove', { id: info.id })
+    list = await call<TerminalSessionInfo[]>(client, 'devframes:plugin:terminals:list')
     expect(list.some(s => s.id === info.id)).toBe(false)
   })
 
@@ -255,10 +255,10 @@ describe('@devframes/plugin-terminals', () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
-    const presets = await call<any[]>(client, 'devframes-plugin-terminals:presets')
+    const presets = await call<any[]>(client, 'devframes:plugin:terminals:presets')
     expect(presets.map(p => p.id)).toContain('greet')
 
-    const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', { presetId: 'greet' })
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', { presetId: 'greet' })
     expect(info.presetId).toBe('greet')
 
     const reader = subscribe(client, info.id)
@@ -273,7 +273,7 @@ describe('@devframes/plugin-terminals', () => {
     await new Promise(r => setTimeout(r, 50))
 
     await expect(
-      call(client, 'devframes-plugin-terminals:spawn', { command: 'definitely-not-allowed', mode: 'readonly' }),
+      call(client, 'devframes:plugin:terminals:spawn', { command: 'definitely-not-allowed', mode: 'readonly' }),
     ).rejects.toThrow()
   })
 
@@ -287,15 +287,15 @@ describe('@devframes/plugin-terminals', () => {
 
       // Another devframe (e.g. code-server) registers into the hub.
       hub.register({
-        id: 'devframes-plugin-code-server',
+        id: 'devframes_plugin_code-server',
         title: 'Code Server',
         description: '/work',
         status: 'running',
         icon: 'ph:code-duotone',
       })
 
-      const list = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
-      const cs = list.find(s => s.id === 'devframes-plugin-code-server')
+      const list = await call<TerminalSessionInfo[]>(client, 'devframes:plugin:terminals:list')
+      const cs = list.find(s => s.id === 'devframes_plugin_code-server')
       expect(cs).toBeDefined()
       expect(cs?.title).toBe('Code Server')
       // Hub dock icon normalized to the client's UnoCSS icon class.
@@ -306,14 +306,14 @@ describe('@devframes/plugin-terminals', () => {
       expect(cs?.channel).toBe('devframe:terminals')
 
       // A stopped hub session maps onto the plugin's 'exited' status.
-      hub.update({ id: 'devframes-plugin-code-server', status: 'stopped' })
-      const afterStop = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
-      expect(afterStop.find(s => s.id === 'devframes-plugin-code-server')?.status).toBe('exited')
+      hub.update({ id: 'devframes_plugin_code-server', status: 'stopped' })
+      const afterStop = await call<TerminalSessionInfo[]>(client, 'devframes:plugin:terminals:list')
+      expect(afterStop.find(s => s.id === 'devframes_plugin_code-server')?.status).toBe('exited')
 
       // Removing it from the hub drops it from the plugin's list.
-      hub.remove({ id: 'devframes-plugin-code-server' })
-      const afterRemove = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
-      expect(afterRemove.some(s => s.id === 'devframes-plugin-code-server')).toBe(false)
+      hub.remove({ id: 'devframes_plugin_code-server' })
+      const afterRemove = await call<TerminalSessionInfo[]>(client, 'devframes:plugin:terminals:list')
+      expect(afterRemove.some(s => s.id === 'devframes_plugin_code-server')).toBe(false)
     })
 
     it('mirrors its own sessions into the hub without looping', async () => {
@@ -323,7 +323,7 @@ describe('@devframes/plugin-terminals', () => {
       const client = bootClient(server.port)
       await new Promise(r => setTimeout(r, 50))
 
-      const info = await call<TerminalSessionInfo>(client, 'devframes-plugin-terminals:spawn', {
+      const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
         command: NODE,
         args: ['-e', 'setInterval(() => {}, 1000)'],
         mode: 'readonly',
@@ -334,12 +334,12 @@ describe('@devframes/plugin-terminals', () => {
       await vi.waitFor(() => {
         expect(hub.sessions.has(info.id)).toBe(true)
       })
-      const list = await call<TerminalSessionInfo[]>(client, 'devframes-plugin-terminals:list')
+      const list = await call<TerminalSessionInfo[]>(client, 'devframes:plugin:terminals:list')
       expect(list.filter(s => s.id === info.id)).toHaveLength(1)
       // Own sessions carry no aggregation channel (owned + controllable).
       expect(list.find(s => s.id === info.id)?.channel).toBeUndefined()
 
-      await call(client, 'devframes-plugin-terminals:remove', { id: info.id })
+      await call(client, 'devframes:plugin:terminals:remove', { id: info.id })
     })
   })
 })

@@ -31,12 +31,12 @@ by plans 004 and 014, so this plan focuses on inspect.)
 ## Current state
 
 `plugins/inspect/src/rpc/functions/` defines (names verified):
-- `devframes-plugin-inspect:list-functions`
-- `devframes-plugin-inspect:invoke`
-- `devframes-plugin-inspect:list-state-keys`
-- `devframes-plugin-inspect:describe-agent`
-- `devframes-plugin-inspect:read-agent-resource`
-- `devframes-plugin-inspect:invoke-agent-tool`
+- `devframes:plugin:inspect:list-functions`
+- `devframes:plugin:inspect:invoke`
+- `devframes:plugin:inspect:list-state-keys`
+- `devframes:plugin:inspect:describe-agent`
+- `devframes:plugin:inspect:read-agent-resource`
+- `devframes:plugin:inspect:invoke-agent-tool`
 
 Existing tests: `plugins/inspect/test/{dev-server,static-build,function-name}.test.ts`.
 `dev-server.test.ts` already boots the inspect devframe over a real server —

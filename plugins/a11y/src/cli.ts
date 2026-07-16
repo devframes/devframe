@@ -4,7 +4,7 @@ import a11yDevframe from './index.ts'
 
 /**
  * Build the standalone CLI for the a11y inspector — backs the package `bin`
- * (`devframe-a11y-inspector`) and `npx @devframes/plugin-a11y`. Wraps the
+ * (`devframes_plugin_a11y`) and `npx @devframes/plugin-a11y`. Wraps the
  * default {@link createA11yDevframe} definition with devframe's
  * `dev` / `build` / `spa` command shell.
  */

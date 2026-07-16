@@ -3,7 +3,7 @@ import { defineRpcFunction } from 'devframe'
 import { getCodeServerSupervisor } from '../../node/context'
 
 export const start = defineRpcFunction({
-  name: 'devframes-plugin-code-server:start',
+  name: 'devframes:plugin:code-server:start',
   type: 'action',
   jsonSerializable: true,
   agent: {
