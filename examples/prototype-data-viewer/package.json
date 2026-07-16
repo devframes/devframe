@@ -1,0 +1,22 @@
+{
+  "name": "prototype-data-viewer",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PROTOTYPE (throwaway) — validates the live-query data-viewer architecture: server-side jora over live objects + RPC + themed discovery struct view. Not a real example; see README.",
+  "scripts": {
+    "dev": "vite --host",
+    "spike": "tsx src/spike.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@discoveryjs/discovery": "catalog:",
+    "devframe": "workspace:*",
+    "jora": "catalog:"
+  },
+  "devDependencies": {
+    "get-port-please": "catalog:deps",
+    "tsx": "catalog:build",
+    "vite": "catalog:build"
+  }
+}
