@@ -40,6 +40,29 @@ const filterStates = computed(() => [
   { label: 'Exclude $ props', on: props.currentFilters.excludeDollarProps },
 ])
 
+/** Suggested and saved queries unified into one list shape. */
+interface ListEntry {
+  key: string
+  recipe: Query
+  icon: string
+  /** Set for saved entries only — drives the scope badge and delete button. */
+  saved?: SavedQuery
+}
+
+const entries = computed<ListEntry[]>(() => [
+  ...props.suggested.map(entry => ({
+    key: `suggested:${entry.query}`,
+    recipe: entry,
+    icon: 'i-ph:lightbulb-duotone',
+  })),
+  ...props.saved.map(entry => ({
+    key: `${entry.scope}:${entry.id}`,
+    recipe: entry as Query,
+    icon: 'i-ph:code-duotone',
+    saved: entry,
+  })),
+])
+
 function openDialog(): void {
   title.value = ''
   description.value = ''
@@ -80,51 +103,37 @@ function filterBadges(entry: Query): string[] {
       </ActionButton>
     </div>
 
-    <div v-if="saved.length || suggested.length" class="overflow-auto min-h-0 max-h-200 grid grid-cols-[repeat(auto-fit,minmax(20rem,1fr))] gap-2">
-      <!-- TODO: merge and unify this two sources -->
+    <div v-if="entries.length" class="overflow-auto min-h-0 max-h-200 grid grid-cols-[repeat(auto-fit,minmax(20rem,1fr))] gap-2">
       <div
-        v-for="entry in suggested"
-        :key="`suggested:${entry.query}`"
+        v-for="entry in entries"
+        :key="entry.key"
         class="group flex items-center gap-2 px-2 py-1.5 border border-base rounded-lg hover:bg-active cursor-pointer"
-        :title="entry.description ?? entry.query"
-        @click="emit('load', entry)"
+        :title="entry.recipe.description ?? entry.recipe.query"
+        @click="emit('load', entry.recipe)"
       >
-        <span class="i-ph:lightbulb-duotone color-active shrink-0" />
+        <span class="shrink-0 color-active" :class="entry.icon" />
         <div class="flex flex-col min-w-0">
-          <span class="text-sm truncate">{{ entry.title ?? (entry.query || '$ (entire object)') }}</span>
-          <span class="font-mono text-11px color-faint truncate">{{ entry.query || '$' }}</span>
+          <span class="text-sm truncate">{{ entry.recipe.title ?? (entry.recipe.query || '$ (entire object)') }}</span>
+          <span v-if="entry.recipe.title || !entry.recipe.query" class="font-mono text-11px color-faint truncate">{{ entry.recipe.query || '$' }}</span>
         </div>
         <div class="flex-1" />
-        <span v-for="badge in filterBadges(entry)" :key="badge" class="font-mono text-10px color-faint">{{ badge }}</span>
-      </div>
-
-      <div
-        v-for="entry in saved"
-        :key="`${entry.scope}:${entry.id}`"
-        class="group flex items-center gap-2 px-2 py-1.5 border border-base rounded-lg hover:bg-active cursor-pointer"
-        :title="entry.description ?? entry.query"
-        @click="emit('load', entry)"
-      >
-        <span class="i-ph:code-duotone color-active shrink-0" />
-        <div class="flex flex-col min-w-0">
-          <span class="text-sm truncate">{{ entry.title ?? entry.query }}</span>
-          <span v-if="entry.title" class="font-mono text-11px color-faint truncate">{{ entry.query }}</span>
-        </div>
-        <div class="flex-1" />
-        <span v-for="badge in filterBadges(entry)" :key="badge" class="font-mono text-10px color-faint">{{ badge }}</span>
-        <ActionIconButton
-          size="sm"
-          icon="i-ph:trash-duotone"
-          label="Delete"
-          tooltip="Delete"
-          class="op0 group-hover:op100 transition-opacity"
-          @click.stop="emit('remove', entry)"
-        />
-        <DisplayBadge
-          :text="entry.scope"
-          :color="entry.scope === 'project' ? 150 : false"
-          class="shrink-0"
-        />
+        <span v-for="badge in filterBadges(entry.recipe)" :key="badge" class="font-mono text-10px color-faint">{{ badge }}</span>
+        <template v-if="entry.saved">
+          <ActionIconButton
+            size="sm"
+            icon="i-ph:trash-duotone"
+            label="Delete"
+            tooltip="Delete"
+            class="op0 group-hover:op100 transition-opacity"
+            @click.stop="emit('remove', entry.saved)"
+          />
+          <DisplayBadge
+            :text="entry.saved.scope"
+            :color="entry.saved.scope === 'project' ? 150 : false"
+            class="shrink-0"
+          />
+        </template>
+        <DisplayBadge v-else text="suggested" :color="false" class="shrink-0" />
       </div>
     </div>
     <div v-else class="text-xs color-faint px-1 select-none">

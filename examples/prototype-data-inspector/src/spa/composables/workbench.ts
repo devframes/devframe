@@ -149,7 +149,8 @@ export function useWorkbench() {
 
   async function runNow(): Promise<void> {
     clearTimeout(runTimer)
-    suggestions.value = []
+    // Deliberately leaves `suggestions` alone: executions (auto-run included)
+    // must not close the autocomplete while the user is still composing.
     if (!sourceId.value)
       return
     // An empty query still fires: `$` displays the entire source object.

@@ -32,6 +32,11 @@ function onInput(): void {
   emit('suggest', caretPos())
 }
 
+function onBlur(): void {
+  // Delayed so a mousedown-accept on a suggestion lands first.
+  setTimeout(emit, 150, 'dismiss')
+}
+
 function accept(item: SuggestItem): void {
   emit('accept', item)
   requestAnimationFrame(() => {
@@ -82,17 +87,20 @@ function onKeydown(e: KeyboardEvent): void {
         :class="{ 'border-red-600/60! dark:border-red-400/60!': syntax.kind === 'error' }"
         @input="onInput"
         @keydown="onKeydown"
+        @blur="onBlur"
       />
+      <!-- Solid, elevated popover: explicit surface colors so nothing shows
+           through, distinct from the page bg in both schemes. -->
       <div
         v-if="suggestions.length"
-        class="absolute left-3 top-12 z-dropdown min-w-64 max-w-90% max-h-60 overflow-auto bg-base border border-base rounded-lg shadow-lg"
+        class="absolute left-3 top-12 z-dropdown min-w-64 max-w-90% max-h-60 overflow-auto bg-white dark:bg-#1e1e1e border border-base rounded-lg shadow-xl"
       >
         <button
           v-for="(item, i) in suggestions"
           :key="`${item.value}-${i}`"
           type="button"
           class="w-full flex items-center justify-between gap-4 px-2.5 py-1 text-left font-mono text-xs"
-          :class="i === active ? 'bg-active color-active' : 'color-base'"
+          :class="i === active ? 'bg-#8882 color-active' : 'color-base'"
           @mousedown.prevent="accept(item)"
         >
           <span>{{ item.value }}</span>
