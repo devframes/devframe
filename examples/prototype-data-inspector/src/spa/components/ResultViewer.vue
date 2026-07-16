@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { QueryStats } from '../../rpc-contract'
 import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
+import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import DisplayBytes from '@antfu/design/components/Display/DisplayBytes.vue'
 import DisplayDuration from '@antfu/design/components/Display/DisplayDuration.vue'
 import { shallowRef, watch } from 'vue'
@@ -31,13 +32,20 @@ watch(() => props.result, (value) => {
   <div class="flex flex-col h-full min-h-0">
     <div class="flex items-center gap-3 px-3 py-1.5 border-b border-base min-h-9 text-xs color-muted font-mono tabular-nums" :class="{ 'op-fade': statsStale }">
       <template v-if="stats">
-        <span class="flex items-center gap-1">jora <DisplayDuration :ms="stats.queryMs" colorize /></span>
-        <span class="flex items-center gap-1">normalize <DisplayDuration :ms="stats.normalize.ms" colorize /></span>
-        <span class="flex items-center gap-1">rpc <DisplayDuration :ms="stats.rpcMs" colorize /></span>
-        <span class="flex items-center gap-1">payload <DisplayBytes :bytes="stats.payloadBytes" colorize /></span>
-        <span>{{ stats.normalize.nodes }} nodes</span>
-        <span v-if="stats.normalize.refs">{{ stats.normalize.refs }} $refs</span>
-        <span v-if="stats.normalize.truncatedEntries || stats.normalize.truncatedDepth" class="color-amber-600 dark:color-amber-400">truncated</span>
+        <span class="flex items-center gap-1"><span class="op50">jora</span> <DisplayDuration :ms="stats.queryMs" colorize /></span>
+        <div class="h-full border-r border-base" />
+        <span class="flex items-center gap-1"><span class="op50">normalize</span> <DisplayDuration :ms="stats.normalize.ms" colorize /></span>
+        <div class="h-full border-r border-base" />
+        <span class="flex items-center gap-1"><span class="op50">rpc</span> <DisplayDuration :ms="stats.rpcMs" colorize /></span>
+        <div class="h-full border-r border-base" />
+        <span class="flex items-center gap-1"><span class="op50">payload</span> <DisplayBytes :bytes="stats.payloadBytes" colorize /></span>
+        <div class="h-full border-r border-base" />
+        <span>{{ stats.normalize.nodes }} <span class="op50">nodes</span></span>
+        <template v-if="stats.normalize.refs">
+          <div class="h-full border-r border-base" />
+          <span>{{ stats.normalize.refs }} <span class="op50">refs</span></span>
+        </template>
+        <DisplayBadge v-if="stats.normalize.truncatedEntries || stats.normalize.truncatedDepth" :color="12" text="truncated" />
       </template>
       <span v-else class="op-fade select-none">no query run yet</span>
       <div class="flex-1" />

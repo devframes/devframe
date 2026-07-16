@@ -133,6 +133,7 @@ function filterBadges(entry: Query): string[] {
       No queries yet. Compose one and hit "Save query".
     </div>
 
+    <!-- TODO: in this save query modal, we should also show the filters -->
     <OverlayModal
       v-model:open="dialogOpen"
       title="Save query"
