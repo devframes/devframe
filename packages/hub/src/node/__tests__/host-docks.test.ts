@@ -265,4 +265,44 @@ describe('devframeDockHost ~builtin category', () => {
 
     expect(host.values()[0].category).toBeUndefined()
   })
+
+  it('carries a launcher bound to a command + terminal session with a digest, without onLaunch', () => {
+    const host = new DevframeDocksHost(createContext())
+    host.register({
+      type: 'launcher',
+      id: 'app:build',
+      title: 'Build',
+      icon: 'ph:hammer-duotone',
+      launcher: {
+        title: 'Run build',
+        status: 'loading',
+        command: 'app:run-build',
+        terminalSessionId: 'build-session',
+        digest: 'compiling…',
+      },
+    })
+
+    const entry = host.values()[0]
+    expect(entry.type).toBe('launcher')
+    const launcher = entry.type === 'launcher' ? entry.launcher : undefined
+    expect(launcher).toMatchObject({
+      command: 'app:run-build',
+      terminalSessionId: 'build-session',
+      digest: 'compiling…',
+    })
+    expect(launcher?.onLaunch).toBeUndefined()
+
+    // Progress patches flow through update() like any other entry field.
+    host.update({
+      type: 'launcher',
+      id: 'app:build',
+      title: 'Build',
+      icon: 'ph:hammer-duotone',
+      launcher: { ...launcher!, digest: 'done', status: 'success' },
+    })
+    const updated = host.values()[0]
+    const updatedLauncher = updated.type === 'launcher' ? updated.launcher : undefined
+    expect(updatedLauncher?.digest).toBe('done')
+    expect(updatedLauncher?.status).toBe('success')
+  })
 })

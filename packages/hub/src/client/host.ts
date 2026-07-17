@@ -279,7 +279,7 @@ export async function createDevframeClientHost(
         if (client?.action)
           return client.action(...args)
         // Server command — dispatch through the hub built-in.
-        return (rpc.call as (name: string, ...a: any[]) => Promise<unknown>)('hub:commands:execute', id, ...args)
+        return rpc.call('hub:commands:execute', id, ...args)
       },
       getKeybindings(id): DevframeCommandKeybinding[] {
         const override = settings.value().commandShortcuts?.[id]

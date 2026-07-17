@@ -257,6 +257,81 @@ describe('devframeTerminalHost stream lifecycle', () => {
   })
 })
 
+describe('devframeTerminalHost child-process status lifecycle', () => {
+  it('marks status stopped and emits an update on a clean exit', async () => {
+    const { host } = createTerminalHost()
+    const updates: string[] = []
+    host.events.on('terminal:session:updated', s => updates.push(s.status))
+
+    const session = await host.startChildProcess({
+      command: process.execPath,
+      args: ['-e', 'process.exit(0)'],
+    }, { id: 'child', title: 'Child' })
+
+    await waitUntil(() => {
+      expect(session.status).toBe('stopped')
+    })
+    expect(updates).toContain('stopped')
+  })
+
+  it('marks status error on a non-zero exit', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startChildProcess({
+      command: process.execPath,
+      args: ['-e', 'process.exit(3)'],
+    }, { id: 'child', title: 'Child' })
+
+    await waitUntil(() => {
+      expect(session.status).toBe('error')
+    })
+  })
+
+  it('marks status error when the process fails to spawn', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startChildProcess({
+      command: 'this-command-does-not-exist-df',
+      args: [],
+    }, { id: 'child', title: 'Child' })
+
+    await waitUntil(() => {
+      expect(session.status).toBe('error')
+    })
+  })
+
+  it('marks status stopped on terminate() rather than error', async () => {
+    const { host, sinks } = createTerminalHost()
+
+    const session = await host.startChildProcess({
+      command: process.execPath,
+      args: ['-e', 'setInterval(() => {}, 1000)'],
+    }, { id: 'child', title: 'Child' })
+
+    expect(session.status).toBe('running')
+    await session.terminate()
+
+    await waitUntil(() => {
+      expect(sinks.get('child')?.closed).toBe(true)
+    })
+    expect(session.status).toBe('stopped')
+  })
+
+  it('returns to running after restart() without an error flash', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startChildProcess({
+      command: process.execPath,
+      args: ['-e', 'setInterval(() => {}, 1000)'],
+    }, { id: 'child', title: 'Child' })
+
+    await session.restart()
+    expect(session.status).toBe('running')
+
+    await session.terminate()
+  })
+})
+
 describe('devframeTerminalHost interactive PTY sessions', () => {
   itPosixPty('spawns an interactive PTY that accepts input and is marked interactive', async () => {
     const { host, sinks } = createTerminalHost()

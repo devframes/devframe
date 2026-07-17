@@ -21,10 +21,12 @@ Plus a `createJsonRenderer(spec)` factory for building remote-UI panels via the 
 
 ## Built-in RPC
 
-Every hub context auto-registers these RPC functions so framework kits don't reimplement them:
+Every hub context auto-registers these RPC functions so framework kits don't reimplement them. Each id is declared on the client-callable surface, so `rpc.call(...)` type-checks the arguments and return value:
 
 - `hub:commands:execute` — invoke a registered server command by id. `await rpc.call('hub:commands:execute', 'my-tool:do-thing', ...args)`.
 - `hub:docks:activate` — switch the viewer's active dock. `await rpc.call('hub:docks:activate', { dockId, params })` — see [Cross-iframe dock activation](#cross-iframe-dock-activation).
+- `hub:messages:add` / `update` / `remove` / `clear` — write into the messages feed from a browser client.
+- `hub:terminals:write` / `resize` — drive an interactive PTY session by id.
 
 Host-specific capabilities (open in editor, reveal in finder, …) ship as kit-registered RPC functions rather than as part of the hub surface.
 
@@ -45,6 +47,52 @@ The hub broadcasts the request live over `devframe:docks:activate` (the client h
 This is what lets Vite DevTools' Rolldown analyzer spawn a `vite build` via `ctx.terminals.startChildProcess` and then navigate the user straight to that build's terminal session.
 
 Server-side, the same switch is available as `ctx.docks.activate(dockId, params?)`.
+
+## Process-control launchers
+
+A `type: 'launcher'` dock entry is a one-click action tile — "run this build", "start this server". Three optional fields on `launcher` turn it into a live process controller that binds a command, streams progress, and navigates to its terminal:
+
+| Field | Purpose |
+|---|---|
+| `command` | Bound command id. The launch button, its command-palette entry, and any keybinding all resolve to this one handler. A viewer running out of process dispatches it over `hub:commands:execute` — the serializable path, since a function is dropped when the entry is projected into `devframe:docks`. Register the command (with its handler) via `ctx.commands`. |
+| `terminalSessionId` | Id of the terminal session the launcher tracks. A viewer surfaces a "view in terminal" action that calls `hub:docks:activate` with the terminals dock id and `{ sessionId }`, jumping straight to the running process. |
+| `digest` | Latest single line of progress, shown inline beneath the launcher. Author-set: patch it via `docks.update()` as the process reports progress. |
+
+`onLaunch` remains for a same-process host to invoke directly; provide `command`, `onLaunch`, or both.
+
+```ts
+ctx.commands.register({ id: 'app:build', title: 'Run build', handler: runBuild })
+
+const launcher = ctx.docks.register({
+  type: 'launcher',
+  id: 'app:build',
+  title: 'Build',
+  icon: 'ph:hammer-duotone',
+  launcher: { title: 'Run build', command: 'app:build', status: 'idle' },
+})
+
+async function runBuild() {
+  const session = await ctx.terminals.startChildProcess(
+    { command: 'vite', args: ['build'] },
+    { id: 'app:build-session', title: 'vite build' },
+  )
+  launcher.update({ launcher: { title: 'Run build', command: 'app:build', status: 'loading', terminalSessionId: session.id } })
+
+  // A child-process session keeps its `status` live: `running` → `stopped` on a
+  // clean exit, `error` on a non-zero exit or spawn failure. Map it onto the
+  // launcher and read the exit code from getResult().
+  const { exitCode } = await session.getResult()
+  launcher.update({ launcher: {
+    title: 'Run build',
+    command: 'app:build',
+    terminalSessionId: session.id,
+    status: exitCode === 0 ? 'success' : 'error',
+    error: exitCode === 0 ? undefined : `vite build exited ${exitCode}`,
+  } })
+}
+```
+
+This is what lets a downstream analyzer spawn a `vite build`, show its progress inline, and navigate the user straight to that build's terminal session.
 
 ## Mounting a devframe into a hub
 
