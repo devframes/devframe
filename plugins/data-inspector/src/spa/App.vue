@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Query, SavedQueryScope } from '../engine'
 import Button from '@antfu/design/components/Action/ActionButton.vue'
-import ActionDarkToggle from '@antfu/design/components/Action/ActionDarkToggle.vue'
+import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
 import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import LayoutSplitPane from '@antfu/design/components/Layout/LayoutSplitPane.vue'
 import { Pane } from 'splitpanes'
@@ -14,7 +14,7 @@ import ResultViewer from './components/ResultViewer.vue'
 import SavedQueriesPanel from './components/SavedQueriesPanel.vue'
 import { backend, connect, connection } from './composables/rpc'
 import { useSavedQueries } from './composables/saved'
-import { colorScheme } from './composables/scheme'
+import { isDark } from './composables/scheme'
 import { useWorkbench } from './composables/workbench'
 import '@antfu/design/styles.css'
 
@@ -96,18 +96,17 @@ function queryAppend(path: string): void {
                 :color="connection.connected ? 100 : 200"
               />
               <div class="flex-auto" />
-              <a
+              <ActionIconButton
+                icon="i-ph:book-open-duotone"
+                as="a"
                 href="https://devfra.me/plugins/data-inspector"
                 target="_blank"
                 title="Data Inspector docs — using the plugin and providing data sources"
-                class="flex items-center gap-1 text-xs color-muted hover:color-active"
-              >
-                <span class="i-ph:book-open-duotone text-base" />
-                <span>Docs</span>
-              </a>
-              <ActionDarkToggle
-                :color-scheme="colorScheme"
-                @update:color-scheme="colorScheme = $event"
+              />
+              <ActionIconButton
+                icon="i-ph:sun-duotone dark:i-ph:moon-duotone"
+                title="Toggle dark mode"
+                @click="isDark = !isDark"
               />
             </div>
 
@@ -121,13 +120,13 @@ function queryAppend(path: string): void {
                   {{ wb.activeSource.value?.description }}
                 </div>
                 <div class="flex-auto" />
-                <Button
-                  size="sm"
-                  :icon="showDataSourceDetails ? 'i-ph:eye-slash-duotone' : 'i-ph:eye-duotone'"
+                <ActionIconButton
+                  icon="i-ph:caret-down"
+                  class="transition flex-none text-sm"
+                  :class="{ 'rotate-180': showDataSourceDetails }"
+                  :title="showDataSourceDetails ? 'Hide details' : 'Show details'"
                   @click="showDataSourceDetails = !showDataSourceDetails"
-                >
-                  <span>{{ showDataSourceDetails ? 'Hide' : 'Show' }} details</span>
-                </Button>
+                />
               </div>
 
               <div v-if="connection.connected && !wb.sources.value.length" class="text-xs color-muted">
