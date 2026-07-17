@@ -19,6 +19,9 @@ export default defineDevframe({
     command: 'devframe-files-inspector',
     port: 9876,
     distDir,
+    // Single-user localhost demo — skip the trust handshake so the served
+    // SPA can call RPC without an OTP round-trip.
+    auth: false,
   },
   spa: { loader: 'none' },
   setup(ctx) {
