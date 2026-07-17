@@ -9,7 +9,25 @@ import { createRpcStreamingServerHost } from './rpc-streaming'
 
 const debugBroadcast = createDebug('devframe:rpc:broadcast')
 
-export class RpcFunctionsHost extends RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> implements RpcFunctionsHostType {
+/**
+ * The public, structural shape of `ctx.rpc`. Re-exported from
+ * `devframe/types` so `import { RpcFunctionsHost } from 'devframe/node'`
+ * resolves to the exact same type as `DevframeNodeContext['rpc']` (and the
+ * `devframe` main entry) — free of the `@internal` implementation members
+ * carried by {@link RpcFunctionsHostImpl}.
+ */
+export type { RpcFunctionsHost } from 'devframe/types'
+
+/**
+ * Concrete implementation backing `ctx.rpc`. Internal: consumers should
+ * depend on the structural {@link RpcFunctionsHost} type, never this class.
+ * Its `@internal` members (`_rpcGroup`, `_asyncStorage`,
+ * `_emitSessionDisconnected`) are wired by `startHttpAndWs` and must not
+ * widen the public surface.
+ *
+ * @internal
+ */
+export class RpcFunctionsHostImpl extends RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> implements RpcFunctionsHostType {
   /**
    * @internal
    */

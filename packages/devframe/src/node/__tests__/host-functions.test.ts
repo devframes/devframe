@@ -1,7 +1,8 @@
 import type { DevframeNodeContext } from 'devframe/types'
+import type { RpcFunctionsHost } from '../host-functions'
 import { defineRpcFunction } from 'devframe'
-import { describe, expect, it } from 'vitest'
-import { RpcFunctionsHost } from '../host-functions'
+import { describe, expect, expectTypeOf, it } from 'vitest'
+import { RpcFunctionsHostImpl } from '../host-functions'
 
 async function emptyHandler() { /* empty */ }
 const returnFirst = async () => 'first'
@@ -15,7 +16,7 @@ describe('rpcFunctionsHost', () => {
 
   describe('register() collision detection', () => {
     it('should register a new RPC function successfully', () => {
-      const host = new RpcFunctionsHost(mockContext)
+      const host = new RpcFunctionsHostImpl(mockContext)
       const fn = defineRpcFunction({
         name: 'test-function',
         type: 'action',
@@ -27,7 +28,7 @@ describe('rpcFunctionsHost', () => {
     })
 
     it('should throw error when registering duplicate RPC function ID', () => {
-      const host = new RpcFunctionsHost(mockContext)
+      const host = new RpcFunctionsHostImpl(mockContext)
       const fn1 = defineRpcFunction({
         name: 'duplicate-fn',
         type: 'action',
@@ -48,7 +49,7 @@ describe('rpcFunctionsHost', () => {
     })
 
     it('should include the duplicate ID in error message', () => {
-      const host = new RpcFunctionsHost(mockContext)
+      const host = new RpcFunctionsHostImpl(mockContext)
       const fn = defineRpcFunction({
         name: 'my-special-function',
         type: 'query',
@@ -64,7 +65,7 @@ describe('rpcFunctionsHost', () => {
 
   describe('update() existence validation', () => {
     it('should throw error when updating non-existent RPC function', () => {
-      const host = new RpcFunctionsHost(mockContext)
+      const host = new RpcFunctionsHostImpl(mockContext)
       const fn = defineRpcFunction({
         name: 'nonexistent',
         type: 'action',
@@ -79,7 +80,7 @@ describe('rpcFunctionsHost', () => {
     })
 
     it('should update existing RPC function successfully', () => {
-      const host = new RpcFunctionsHost(mockContext)
+      const host = new RpcFunctionsHostImpl(mockContext)
       const fn1 = defineRpcFunction({
         name: 'update-test',
         type: 'action',
@@ -100,7 +101,7 @@ describe('rpcFunctionsHost', () => {
     })
 
     it('should validate that update only works on existing entries', () => {
-      const host = new RpcFunctionsHost(mockContext)
+      const host = new RpcFunctionsHostImpl(mockContext)
 
       // Register one function
       host.register(defineRpcFunction({
@@ -131,7 +132,7 @@ describe('rpcFunctionsHost', () => {
 
   describe('broadcast() without rpc group', () => {
     it('should not throw in build mode', async () => {
-      const host = new RpcFunctionsHost({ mode: 'build' } as DevframeNodeContext)
+      const host = new RpcFunctionsHostImpl({ mode: 'build' } as DevframeNodeContext)
       await expect(host.broadcast({
         method: 'devframe:auth:revoked',
         args: [],
@@ -139,7 +140,7 @@ describe('rpcFunctionsHost', () => {
     })
 
     it('should not throw in dev mode when rpc group is not yet set', async () => {
-      const host = new RpcFunctionsHost({ mode: 'dev' } as DevframeNodeContext)
+      const host = new RpcFunctionsHostImpl({ mode: 'dev' } as DevframeNodeContext)
       await expect(host.broadcast({
         method: 'devframe:auth:revoked',
         args: [],
@@ -149,7 +150,7 @@ describe('rpcFunctionsHost', () => {
 
   describe('invokeLocal()', () => {
     it('should invoke a locally registered function', async () => {
-      const host = new RpcFunctionsHost(mockContext)
+      const host = new RpcFunctionsHostImpl(mockContext)
       host.register(defineRpcFunction({
         name: 'test:invoke-local',
         type: 'query',
@@ -162,8 +163,29 @@ describe('rpcFunctionsHost', () => {
     })
 
     it('should throw when invoking a missing local function', async () => {
-      const host = new RpcFunctionsHost(mockContext)
+      const host = new RpcFunctionsHostImpl(mockContext)
       await expect(host.invokeLocal('test:missing' as any)).rejects.toThrow('RPC function "test:missing" is not registered')
+    })
+  })
+
+  describe('public RpcFunctionsHost type', () => {
+    it('is the structural type that ctx.rpc satisfies', () => {
+      // The `RpcFunctionsHost` exported from `devframe/node` (this
+      // re-export) must be the exact same structural type as
+      // `DevframeNodeContext['rpc']`, so consumers can cast `ctx.rpc`
+      // to it without a TS2352 conversion error.
+      expectTypeOf<DevframeNodeContext['rpc']>().toEqualTypeOf<RpcFunctionsHost>()
+      expectTypeOf<DevframeNodeContext['rpc']>().toMatchTypeOf<RpcFunctionsHost>()
+    })
+
+    it('does not carry the impl-only @internal members', () => {
+      const rpc = {} as RpcFunctionsHost
+      // @ts-expect-error `_rpcGroup` is impl-only and must stay off the public type
+      void rpc._rpcGroup
+      // @ts-expect-error `_asyncStorage` is impl-only and must stay off the public type
+      void rpc._asyncStorage
+      // @ts-expect-error `_emitSessionDisconnected` is impl-only and must stay off the public type
+      void rpc._emitSessionDisconnected
     })
   })
 })

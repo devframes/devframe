@@ -2,7 +2,10 @@
 export * from './context'
 export * from './host-agent'
 export * from './host-diagnostics'
-export * from './host-functions'
+// `RpcFunctionsHostImpl` stays internal; expose only the structural
+// `RpcFunctionsHost` type so consumers can type/cast `ctx.rpc` without
+// pulling in the implementation's `@internal` members.
+export type { RpcFunctionsHost } from './host-functions'
 export * from './host-h3'
 export * from './host-services'
 export * from './host-views'

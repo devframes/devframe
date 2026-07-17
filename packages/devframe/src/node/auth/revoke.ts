@@ -1,6 +1,6 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
-import type { RpcFunctionsHost } from '../host-functions'
+import type { RpcFunctionsHostImpl } from '../host-functions'
 import type { InternalAnonymousAuthStorage } from '../hub-internals/context'
 
 /**
@@ -13,7 +13,7 @@ export async function revokeActiveConnectionsForToken(
   context: DevframeNodeContext,
   token: string,
 ): Promise<void> {
-  const rpcHost = context.rpc as unknown as RpcFunctionsHost | undefined
+  const rpcHost = context.rpc as unknown as RpcFunctionsHostImpl | undefined
   if (!rpcHost?._rpcGroup)
     return
 

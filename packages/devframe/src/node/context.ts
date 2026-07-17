@@ -4,7 +4,7 @@ import { diagnostics as rpcDiagnostics } from '../rpc/diagnostics'
 import { diagnostics as devframeDiagnostics } from './diagnostics'
 import { DevframeAgentHost } from './host-agent'
 import { DevframeDiagnosticsHost } from './host-diagnostics'
-import { RpcFunctionsHost } from './host-functions'
+import { RpcFunctionsHostImpl } from './host-functions'
 import { DevframeServicesHostImpl } from './host-services'
 import { DevframeViewHost } from './host-views'
 import { BUILTIN_AGENT_RPC } from './rpc'
@@ -47,7 +47,7 @@ export async function createHostContext(options: CreateHostContextOptions): Prom
     scope: undefined!,
   } as unknown as DevframeNodeContext
 
-  const rpcHost = new RpcFunctionsHost(context)
+  const rpcHost = new RpcFunctionsHostImpl(context)
   const viewsHost = new DevframeViewHost(context)
   const diagnosticsHost = new DevframeDiagnosticsHost(context, [devframeDiagnostics, rpcDiagnostics])
   context.rpc = rpcHost

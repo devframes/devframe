@@ -9,20 +9,20 @@ import { getPort } from 'get-port-please'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 
-import { RpcFunctionsHost } from '../host-functions'
+import { RpcFunctionsHostImpl } from '../host-functions'
 
 vi.stubGlobal('WebSocket', WebSocket)
 
 interface Harness {
   port: number
-  rpcHost: RpcFunctionsHost
+  rpcHost: RpcFunctionsHostImpl
   close: () => Promise<void>
 }
 
 async function bootHost(): Promise<Harness> {
   const port = await getPort({ host: '127.0.0.1', random: true })
   const mockContext = {} as DevframeNodeContext
-  const rpcHost = new RpcFunctionsHost(mockContext)
+  const rpcHost = new RpcFunctionsHostImpl(mockContext)
 
   const asyncStorage = new AsyncLocalStorage<any>()
 

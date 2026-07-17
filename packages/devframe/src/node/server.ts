@@ -4,7 +4,7 @@ import type { NodeAdapter } from 'crossws/adapters/node'
 import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
 import type { Server as NodeHttpServer } from 'node:http'
 import type { DevframeAuthHandler } from './auth'
-import type { RpcFunctionsHost } from './host-functions'
+import type { RpcFunctionsHostImpl } from './host-functions'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { createServer } from 'node:http'
 import { createRpcServer } from 'devframe/rpc/server'
@@ -143,7 +143,7 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
   // otherwise we own a fresh one bound to `app`.
   const ownsHttpServer = !options.server
   const httpServer = options.server ?? createServer(toNodeHandler(app))
-  const rpcHost = context.rpc as unknown as RpcFunctionsHost
+  const rpcHost = context.rpc as unknown as RpcFunctionsHostImpl
 
   const asyncStorage = new AsyncLocalStorage<DevframeNodeRpcSession>()
 

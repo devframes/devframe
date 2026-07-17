@@ -74,25 +74,14 @@ export declare class DevframeViewHost implements DevframeViewHost$1 {
   constructor(_: DevframeNodeContext);
   hostStatic(_: string, _: string): void;
 }
-export declare class RpcFunctionsHost extends RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> implements RpcFunctionsHost$1 {
-  _rpcGroup: BirpcGroup<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>;
-  _asyncStorage: AsyncLocalStorage<DevframeNodeRpcSession>;
-  constructor(_: DevframeNodeContext);
-  sharedState: RpcSharedStateHost;
-  streaming: RpcStreamingHost;
-  _emitSessionDisconnected(_: DevframeNodeRpcSessionMeta): void;
-  invokeLocal<T extends keyof DevframeRpcServerFunctions, Args extends Parameters<DevframeRpcServerFunctions[T]>>(_: T, ..._: Args): Promise<Awaited<ReturnType<DevframeRpcServerFunctions[T]>>>;
-  broadcast<T extends keyof DevframeRpcClientFunctions, Args extends Parameters<DevframeRpcClientFunctions[T]>>(_: RpcBroadcastOptions<T, Args>): Promise<void>;
-  getCurrentRpcSession(): DevframeNodeRpcSession | undefined;
-}
 // #endregion
 
 // #region Functions
 export declare function createH3DevframeHost(_: CreateH3DevframeHostOptions): DevframeHost;
 export declare function createHostContext(_: CreateHostContextOptions): Promise<DevframeNodeContext>;
 export declare function createNodeSettings<T extends Record<string, any> = Record<string, any>>(_: DevframeNodeContext, _: string): DevframeSettings<T>;
-export declare function createRpcSharedStateServerHost(_: RpcFunctionsHost$1): RpcSharedStateHost;
-export declare function createRpcStreamingServerHost(_: RpcFunctionsHost$1): RpcStreamingHost;
+export declare function createRpcSharedStateServerHost(_: RpcFunctionsHost): RpcSharedStateHost;
+export declare function createRpcStreamingServerHost(_: RpcFunctionsHost): RpcStreamingHost;
 export declare function createScopedNodeContext<NS extends string = string>(_: DevframeNodeContext, _: NS): DevframeScopedNodeContext<NS>;
 export declare function createStorage<T extends object>(_: CreateStorageOptions<T>): SharedState<T>;
 export declare function formatHostForUrl(_: string): string;
@@ -102,6 +91,7 @@ export declare function toDialableHost(_: string): string;
 // #endregion
 
 // #region Other
+export { RpcFunctionsHost }
 export { StartedServer }
 export { startHttpAndWs }
 export { StartHttpAndWsOptions }

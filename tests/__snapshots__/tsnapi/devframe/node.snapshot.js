@@ -16,7 +16,6 @@ export { DevframeViewHost }
 export { formatHostForUrl }
 export { isObject }
 export { normalizeHttpServerUrl }
-export { RpcFunctionsHost }
 export { startHttpAndWs }
 export { toDialableHost }
 // #endregion
