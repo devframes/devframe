@@ -17,6 +17,7 @@ import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/clien
 import type {
   DataSourceMeta,
   FilterOptions,
+  NodePath,
   QueryOutcome,
   SavedQuery,
   SavedQueryScope,
@@ -26,7 +27,7 @@ import type {
 } from '../../engine'
 import { connectDevframe } from 'devframe/client'
 import { reactive, shallowRef } from 'vue'
-import { runQuery, skeletonOf, suggest as suggestQuery } from '../../engine'
+import { runQuery, runQueryAtPath, skeletonOf, suggest as suggestQuery } from '../../engine'
 
 export const connection = reactive<{
   connected: boolean
@@ -47,6 +48,8 @@ export interface DataBackend {
   readonly static: boolean
   sources: () => Promise<DataSourceMeta[]>
   query: (sourceId: string, query: string, options: FilterOptions) => Promise<QueryOutcome>
+  /** Lazily expand a depth-truncated node: a fresh slice of the subtree at `path`. */
+  queryPath: (sourceId: string, query: string, path: NodePath, options: FilterOptions) => Promise<QueryOutcome>
   suggest: (sourceId: string, query: string, pos: number) => Promise<SuggestOutcome>
   skeleton: (sourceId: string, options: FilterOptions) => Promise<SkeletonOutcome>
   savedList: () => Promise<SavedQuery[]>
@@ -77,6 +80,8 @@ function createRpcBackend(client: DevframeRpcClient): DataBackend {
     sources: () => call<DataSourceMeta[]>('devframes:plugin:data-inspector:sources'),
     query: (sourceId, query, options) =>
       call<QueryOutcome>('devframes:plugin:data-inspector:query', sourceId, query, options),
+    queryPath: (sourceId, query, path, options) =>
+      call<QueryOutcome>('devframes:plugin:data-inspector:queryPath', sourceId, query, path, options),
     suggest: (sourceId, query, pos) =>
       call<SuggestOutcome>('devframes:plugin:data-inspector:suggest', sourceId, query, pos),
     skeleton: (sourceId, options) =>
@@ -125,6 +130,9 @@ function createStaticBackend(dataset: StaticDataset): DataBackend {
     },
     async query(sourceId, query, options) {
       return runQuery(dataOf(sourceId), query, options)
+    },
+    async queryPath(sourceId, query, path, options) {
+      return runQueryAtPath(dataOf(sourceId), query, path, options)
     },
     async suggest(sourceId, query, pos) {
       return suggestQuery(dataOf(sourceId), query, pos)

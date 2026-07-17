@@ -75,6 +75,8 @@ export interface SuggestOutcome {
 // #endregion
 
 // #region Types
+export type NodePath = PathSegment[];
+export type PathSegment = ['k', string] | ['i', number] | ['s', number] | ['mk', number] | ['mv', number];
 export type QueryOutcome = {
   ok: true;
   result: unknown;
@@ -104,11 +106,13 @@ export type SkeletonOutcome = {
 
 // #region Functions
 export declare function isExcludedKey(_: string, _: Pick<NormalizeOptions, 'excludeUnderscoreProps' | 'excludeDollarProps'>): boolean;
+export declare function navigate(_: unknown, _: NodePath, _?: Pick<NormalizeOptions, 'excludeFunctions'>): unknown;
 export declare function normalize(_: unknown, _?: NormalizeOptions): {
   data: unknown;
   stats: NormalizeStats;
 };
 export declare function runQuery(_: unknown, _: string, _?: NormalizeOptions): QueryOutcome;
+export declare function runQueryAtPath(_: unknown, _: string, _: NodePath, _?: NormalizeOptions): QueryOutcome;
 export declare function skeletonOf(_: unknown, _?: SkeletonOptions): {
   skeleton: unknown;
   nodes: number;

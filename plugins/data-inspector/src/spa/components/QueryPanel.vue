@@ -1,10 +1,24 @@
 <script setup lang="ts">
 import Button from '@antfu/design/components/Action/ActionButton.vue'
+import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
+import { shallowRef } from 'vue'
 import { injectWorkbench } from '../composables/workbench'
 import QueryEditor from './QueryEditor.vue'
 import QuerySettings from './QuerySettings.vue'
 
 const wb = injectWorkbench()
+
+const copied = shallowRef(false)
+let copiedTimer: ReturnType<typeof setTimeout> | undefined
+function copyQuery(): void {
+  try {
+    void navigator.clipboard.writeText(wb.query.value || '$')
+    copied.value = true
+    clearTimeout(copiedTimer)
+    copiedTimer = setTimeout(() => (copied.value = false), 1200)
+  }
+  catch {}
+}
 </script>
 
 <template>
@@ -22,6 +36,14 @@ const wb = injectWorkbench()
         <span class="i-ph:question-duotone" />
       </a>
       <div class="flex-auto" />
+      <ActionIconButton
+        v-if="wb.query.value"
+        class="text-sm"
+        :icon="copied ? 'i-ph:check' : 'i-ph:copy-duotone'"
+        label="Copy query"
+        tooltip="Copy the jora query"
+        @click="copyQuery"
+      />
       <Button
         v-if="wb.query.value"
         class="text-sm"
@@ -52,6 +74,11 @@ const wb = injectWorkbench()
       @accept="wb.acceptSuggestion($event)"
       @dismiss="wb.suggestions.value = []"
     />
-    <QuerySettings v-model="wb.settings" class="py2 px4" />
+    <QuerySettings
+      v-model="wb.settings"
+      v-model:auto-run="wb.autoRun.value"
+      v-model:auto-run-seconds="wb.autoRunSeconds.value"
+      class="py2 px4"
+    />
   </div>
 </template>

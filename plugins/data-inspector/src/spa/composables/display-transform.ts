@@ -12,13 +12,49 @@
  *   - `{ $type: 'Map', size, value|entries }` -> inner object/array    + `Map(n)` badge
  *   - `{ $type: 'Set', size, values }`        -> values array          + `Set(n)` badge
  *   - `{ $type: 'Date'|'RegExp'|..., value }` -> the value string      + type badge (keyed by parent+key)
- *   - `{ $ref }` / `{ $truncated }`           -> untouched (informative as data)
+ *   - `{ $truncated: 'depth', $path, $preview }` -> the preview string  + a "load deeper" LINK badge (lazy expand)
+ *   - `{ $ref }` / `{ $truncated: 'entries' }` -> untouched (informative as data)
  */
+import type { NodePath } from '../../engine'
 
 export interface DisplayBadge {
   text: string
   className: string
+  /**
+   * When set, the annotation renders as a link. Depth-truncation markers use
+   * a `di-expand:<url-encoded NodePath>` href; the result viewer intercepts
+   * clicks on it to lazily fetch and splice in the subtree.
+   */
+  href?: string
 }
+
+/** href scheme used by the lazy-expand link badge on depth-truncation markers. */
+export const EXPAND_HREF_PREFIX = 'di-expand:'
+
+/** Encode a node path into the lazy-expand link href. */
+export function encodeExpandHref(path: NodePath): string {
+  return EXPAND_HREF_PREFIX + encodeURIComponent(JSON.stringify(path))
+}
+
+/** Decode a lazy-expand link href back into a node path (null if not one). */
+export function decodeExpandHref(href: string): NodePath | null {
+  if (!href.startsWith(EXPAND_HREF_PREFIX))
+    return null
+  try {
+    return JSON.parse(decodeURIComponent(href.slice(EXPAND_HREF_PREFIX.length))) as NodePath
+  }
+  catch {
+    return null
+  }
+}
+
+/**
+ * Node path this render is rooted at — empty for the top-level result, and the
+ * expanded node's path for a lazily fetched subtree, so its own truncation
+ * markers carry absolute paths back to the root. Set for the duration of each
+ * synchronous `prepareForDisplay` call.
+ */
+let currentBasePath: NodePath = []
 
 /** Badges for transformed values that are objects/arrays (identity lookup). */
 export const objectBadges = new WeakMap<object, DisplayBadge>()
@@ -75,6 +111,20 @@ function walk(value: unknown): Walked {
   }
 
   const obj = value as Record<string, unknown>
+
+  // ── depth-truncation marker: render the preview as a lazy-expand link ─
+  if (obj.$truncated === 'depth' && Array.isArray(obj.$path)) {
+    const preview = typeof obj.$preview === 'string' ? obj.$preview : 'load deeper'
+    const absolute = [...currentBasePath, ...(obj.$path as NodePath)]
+    return {
+      value: preview,
+      badge: {
+        text: 'load deeper',
+        className: 'di-type-badge di-type-lazy',
+        href: encodeExpandHref(absolute),
+      },
+    }
+  }
 
   // ── normalizer stubs ────────────────────────────────────────────────
   if (typeof obj.$type === 'string') {
@@ -142,10 +192,20 @@ function walk(value: unknown): Walked {
   return { value: out, badge: classBadge }
 }
 
-/** Rewrite a normalized result into its display shape; badges land in the tables. */
-export function prepareForDisplay(result: unknown): unknown {
-  const walked = walk(result)
-  if (walked.badge && walked.value && typeof walked.value === 'object')
-    objectBadges.set(walked.value as object, walked.badge)
-  return walked.value
+/**
+ * Rewrite a normalized result into its display shape; badges land in the
+ * tables. `basePath` roots a lazily fetched subtree so its own truncation
+ * markers keep absolute paths back to the query root (empty for the top level).
+ */
+export function prepareForDisplay(result: unknown, basePath: NodePath = []): unknown {
+  currentBasePath = basePath
+  try {
+    const walked = walk(result)
+    if (walked.badge && walked.value && typeof walked.value === 'object')
+      objectBadges.set(walked.value as object, walked.badge)
+    return walked.value
+  }
+  finally {
+    currentBasePath = []
+  }
 }

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { QueryStats } from '../../engine'
+import type { NodePath, QueryStats } from '../../engine'
 import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
 import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import DisplayBytes from '@antfu/design/components/Display/DisplayBytes.vue'
+import DisplayDate from '@antfu/design/components/Display/DisplayDate.vue'
 import DisplayDuration from '@antfu/design/components/Display/DisplayDuration.vue'
 import { shallowRef, watch } from 'vue'
 import { useDiscoveryViewer } from '../composables/discovery'
@@ -16,6 +17,10 @@ const props = defineProps<{
   statsStale: boolean
   error: string | null
   running: boolean
+  /** When the last successful query landed (ms epoch), or null before the first. */
+  lastRunAt: number | null
+  /** Lazily fetch the subtree behind a depth-truncation marker. */
+  expand: (path: NodePath) => Promise<unknown>
 }>()
 
 const emit = defineEmits<{
@@ -30,12 +35,29 @@ const containerEl = shallowRef<HTMLElement | null>(null)
 const viewer = useDiscoveryViewer(containerEl, colorScheme, { view: 'struct', expanded: 2 }, {
   onQuerySubquery: path => emit('querySubquery', path),
   onQueryAppend: path => emit('queryAppend', path),
+}, {
+  onExpand: path => props.expand(path),
 })
+
+/** Deep enough to open every loaded level of a depth-capped result. */
+const EXPAND_ALL_DEPTH = 100
 
 watch(() => props.result, (value) => {
   if (props.hasResult)
     void viewer.setData(prepareForDisplay(value))
 })
+
+const copied = shallowRef(false)
+let copiedTimer: ReturnType<typeof setTimeout> | undefined
+function copyResult(): void {
+  try {
+    void navigator.clipboard.writeText(JSON.stringify(props.result, null, 2))
+    copied.value = true
+    clearTimeout(copiedTimer)
+    copiedTimer = setTimeout(() => (copied.value = false), 1200)
+  }
+  catch {}
+}
 </script>
 
 <template>
@@ -56,6 +78,10 @@ watch(() => props.result, (value) => {
           <span>{{ stats.normalize.refs }} <span class="op50">refs</span></span>
         </template>
         <DisplayBadge v-if="stats.normalize.truncatedEntries || stats.normalize.truncatedDepth" :color="12" text="truncated" />
+        <template v-if="lastRunAt">
+          <div class="h-full border-r border-base" />
+          <span class="flex items-center gap-1"><span class="op50">ran</span> <DisplayDate :date="lastRunAt" live /></span>
+        </template>
       </template>
       <span v-else class="op-fade select-none">no query run yet</span>
       <div class="flex-1" />
@@ -63,6 +89,30 @@ watch(() => props.result, (value) => {
         <span class="i-ph:circle-notch animate-spin" />
         running
       </span>
+      <ActionIconButton
+        v-if="hasResult"
+        class="text-sm"
+        icon="i-ph:arrows-out-line-vertical"
+        label="Expand all"
+        tooltip="Expand all levels"
+        @click="viewer.setExpanded(EXPAND_ALL_DEPTH)"
+      />
+      <ActionIconButton
+        v-if="hasResult"
+        class="text-sm"
+        icon="i-ph:arrows-in-line-vertical"
+        label="Collapse all"
+        tooltip="Collapse to the top level"
+        @click="viewer.setExpanded(1)"
+      />
+      <ActionIconButton
+        v-if="hasResult"
+        class="text-sm"
+        :icon="copied ? 'i-ph:check' : 'i-ph:copy-duotone'"
+        label="Copy result as JSON"
+        tooltip="Copy the result as JSON"
+        @click="copyResult"
+      />
       <ActionIconButton
         class="text-sm"
         :icon="running ? 'i-ph:arrows-clockwise animate-spin' : 'i-ph:arrows-clockwise'"

@@ -1,6 +1,6 @@
 # @devframes/plugin-data-inspector
 
-Inspect live server-side objects interactively. Other plugins and hosts register **data sources**; the workbench composes [jora](https://github.com/discoveryjs/jora) queries against them — executed in the process that owns the objects — and renders normalized results in a [discovery.js](https://github.com/discoveryjs/discovery) struct view with type badges, a shape panel, saved queries, and shareable URL state.
+Inspect live server-side objects interactively. Other plugins and hosts register **data sources**; the workbench composes [jora](https://github.com/discoveryjs/jora) queries against them — executed in the process that owns the objects — and renders normalized results in a [discovery.js](https://github.com/discoveryjs/discovery) struct view with type badges, a shape panel, saved queries, and shareable URL state. Deep graphs expand a level at a time (`load deeper` fetches each subtree on demand), an optional poller re-runs the query every N seconds, and a toolbar offers expand/collapse-all and copy.
 
 ## Register a data source
 
@@ -50,7 +50,10 @@ Static exports embed the dataset and run the same query engine client-side, so s
 ```ts
 import { exposeDataInspector } from '@devframes/plugin-data-inspector/inject'
 
-await exposeDataInspector()
+// pass sources inline, or register them separately beforehand
+await exposeDataInspector({
+  sources: [{ id: 'app:store', title: 'App store', data: () => store }],
+})
 ```
 
 or with zero code changes:
@@ -58,6 +61,8 @@ or with zero code changes:
 ```sh
 DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject server.js
 ```
+
+On the zero-code path there's nowhere to call `registerDataSource`, so the agent auto-registers a **`globalThis`** source: assign what you want to inspect onto the global object (`globalThis.store = store`) and query it live. Opt out with `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
 
 The agent binds `127.0.0.1`, requires devframe's trust handshake with a per-run token by default, and advertises its endpoint in `node_modules/.data-inspector/agent.json`, which `devframe-data-inspector attach` picks up automatically.
 

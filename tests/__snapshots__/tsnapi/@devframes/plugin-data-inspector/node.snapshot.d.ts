@@ -58,6 +58,35 @@ export declare const serverFunctions: readonly [{
     maxEntries?: number;
   } & FilterOptions) | undefined], Promise<QueryOutcome>>> | undefined;
 }, {
+  name: "devframes:plugin:data-inspector:queryPath";
+  type?: "query" | undefined;
+  cacheable?: boolean;
+  args?: undefined;
+  returns?: undefined;
+  jsonSerializable?: boolean;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[sourceId: string, joraQuery: string, path: NodePath, options?: ({
+    maxDepth?: number;
+    maxEntries?: number;
+  } & FilterOptions) | undefined], Promise<QueryOutcome>>>) | undefined;
+  handler?: ((sourceId: string, joraQuery: string, path: NodePath, options?: ({
+    maxDepth?: number;
+    maxEntries?: number;
+  } & FilterOptions) | undefined) => Promise<QueryOutcome>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[sourceId: string, joraQuery: string, path: NodePath, options?: ({
+    maxDepth?: number;
+    maxEntries?: number;
+  } & FilterOptions) | undefined], Promise<QueryOutcome>, import("devframe").DevframeNodeContext> | undefined;
+  snapshot?: boolean;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[sourceId: string, joraQuery: string, path: NodePath, options?: ({
+    maxDepth?: number;
+    maxEntries?: number;
+  } & FilterOptions) | undefined], Promise<QueryOutcome>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[sourceId: string, joraQuery: string, path: NodePath, options?: ({
+    maxDepth?: number;
+    maxEntries?: number;
+  } & FilterOptions) | undefined], Promise<QueryOutcome>>> | undefined;
+}, {
   name: "devframes:plugin:data-inspector:skeleton";
   type?: "query" | undefined;
   cacheable?: boolean;

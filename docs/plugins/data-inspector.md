@@ -10,8 +10,10 @@ Package: `@devframes/plugin-data-inspector` · framework: **Vue + Vite**
 
 ## What it does
 
-- **Query workbench** — a CodeMirror jora editor with syntax highlighting and server-computed autocomplete; queries auto-run as you type, with a client-side syntax gate so malformed input never hits the wire. Source, query, and filters persist in the URL, so any workbench state is shareable.
+- **Query workbench** — a CodeMirror jora editor with syntax highlighting and server-computed autocomplete; queries auto-run as you type, with a client-side syntax gate so malformed input never hits the wire. A toolbar copies the query, and the editor pairs with expand-all / collapse-all and copy-as-JSON controls over the results. Source, query, filters, and the auto-rerun setting persist in the URL, so any workbench state is shareable.
+- **Auto rerun** — an optional poller under the filters (`auto rerun every N seconds`) re-runs the current query against the live object on a fixed period, so a value that changes over time updates on its own. Ticks are skipped while a run is in flight or the query is syntactically broken.
 - **Result viewer** — results normalize to strict JSON (circulars become `$ref` markers; Maps, Sets, class instances, functions, and Dates get type badges) with per-query stats: jora / normalize / rpc timings, payload size, node count. The value-actions popup copies paths and turns any key into a query.
+- **Lazy expansion** — deep graphs return one level at a time: a node past the depth cap renders a `load deeper` link that fetches just that subtree with a fresh budget and splices it in place, so a huge object stays responsive and loads on demand.
 - **Data shape panel** — a one-level type skeleton of the active source, independent of the query; click a property to query it.
 - **Filters** — exclude functions, `_`-prefixed, or `$`-prefixed properties from results and skeleton alike.
 - **Saved queries** — recipes (`query` + optional title/description + the filters they were authored with), id-keyed, in two scopes: **workspace** (committable, shared with the team) and **project** (per-checkout).
@@ -114,14 +116,28 @@ The target process opts in by starting the agent:
 ```ts
 import { exposeDataInspector } from '@devframes/plugin-data-inspector/inject'
 
-await exposeDataInspector()
+await exposeDataInspector({
+  sources: [{ id: 'app:store', title: 'App store', data: () => store }],
+})
 ```
 
-or with zero code changes:
+`sources` registers the given entries before the endpoint opens — a convenience over calling `registerDataSource` yourself; both paths share the one process-global registry. Call `exposeDataInspector()` with no sources to expose whatever is already registered.
+
+Or with zero code changes:
 
 ```sh
 DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject server.js
 ```
+
+On this zero-code path there is nowhere to call `registerDataSource`, so the agent auto-registers a **`globalThis`** source. Assign anything you want to inspect onto the global object and query it live:
+
+```ts
+// somewhere in the running process
+globalThis.store = store
+globalThis.cache = cache
+```
+
+Then query `store`, `cache`, or `keys($)` to see what's there. The source reads `globalThis` at query time, so assignments made after the agent started show up on the next run. Opt out with `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
 
 The agent binds `127.0.0.1`, requires devframe's trust handshake with a per-run pre-shared token, and advertises its endpoint in `node_modules/.data-inspector/agent.json` — `devframe-data-inspector attach` consumes it automatically (or pass `ws://…` and `--token` explicitly). Queries execute inside the target process, where the live objects are. Treat the endpoint like a debugger port.
 
@@ -133,6 +149,7 @@ All functions are namespaced `devframes:plugin:data-inspector:*`:
 |----------|------|---------|
 | `sources` | `query` | Every registered source (meta and suggested queries). |
 | `query` | `query` | Runs a jora query against a source; normalized result with stats. |
+| `queryPath` | `query` | Re-runs a query and returns a fresh, depth-limited slice of the subtree at a node path (lazy expansion). |
 | `skeleton` | `query` | The type skeleton of a source, honoring the filter options. |
 | `suggest` | `query` | Autocomplete candidates from jora's stat mode at a cursor position. |
 | `saved:list` / `saved:save` / `saved:delete` | `query` / `action` | Saved-query recipes in the `workspace` and `project` scopes. |

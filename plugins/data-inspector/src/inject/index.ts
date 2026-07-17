@@ -5,10 +5,15 @@
  * Two ways in:
  *
  * ```ts
- * // 1. explicit, from the target's code
+ * // 1. explicit, from the target's code — pass sources inline …
  * import { exposeDataInspector } from '@devframes/plugin-data-inspector/inject'
- * import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
  *
+ * await exposeDataInspector({
+ *   sources: [{ id: 'app:store', title: 'App store', data: () => store }],
+ * })
+ *
+ * // … or register them separately through the global registry.
+ * import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
  * registerDataSource({ id: 'app:store', title: 'App store', data: () => store })
  * await exposeDataInspector()
  * ```
@@ -17,6 +22,11 @@
  * # 2. zero code change — preload the inject entry into any Node process
  * DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject server.js
  * ```
+ *
+ * On that zero-code path there's nowhere to call `registerDataSource`, so the
+ * agent auto-registers a **`globalThis`** source: assign anything you want to
+ * inspect onto the global object (`globalThis.store = store`) and query it
+ * live. Opt out with `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
  *
  * It binds `127.0.0.1` and requires devframe's trust handshake by
  * default: a random pre-shared token is minted per run, printed to stderr,
@@ -27,6 +37,7 @@
  * treat the endpoint like a debugger port.
  */
 import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
+import type { DataSourceEntry } from '../registry/index'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -49,6 +60,14 @@ export interface AgentDiscovery {
 }
 
 export interface ExposeDataInspectorOptions {
+  /**
+   * Data sources to expose, registered before the endpoint opens. A
+   * convenience over calling `registerDataSource` yourself; the two paths
+   * share one process-global registry, so inline sources and separately
+   * registered ones coexist (a later registration replaces an earlier one
+   * with the same id).
+   */
+  sources?: DataSourceEntry[]
   /** Preferred port (falls back to a free one nearby). Default 9878. */
   port?: number
   /**
@@ -77,11 +96,35 @@ export interface DataInspectorAgent {
   close: () => Promise<void>
 }
 
+/**
+ * A data source exposing the inspected process's global object. On the
+ * zero-code `--import` path there is nowhere to call `registerDataSource`, so
+ * assigning to `globalThis` is how you surface things to inspect
+ * (`globalThis.store = store`); this source makes them queryable live. The
+ * factory reads `globalThis` at query time, so late assignments show up on the
+ * next run.
+ */
+export function createGlobalThisDataSource(): DataSourceEntry {
+  return {
+    id: 'globalThis',
+    title: 'globalThis',
+    description: 'The global object of the inspected process. Assign values to inspect them, e.g. globalThis.store = store',
+    icon: 'i-ph:globe-duotone',
+    data: () => globalThis,
+  }
+}
+
 /** Start the agent endpoint in the current process. */
 export async function exposeDataInspector(options: ExposeDataInspectorOptions = {}): Promise<DataInspectorAgent> {
   // Deferred so `--import`ing the agent never pulls the whole node surface
   // into processes that don't enable it.
   const { setupDataInspector } = await import('../node/index')
+
+  if (options.sources?.length) {
+    const { registerDataSource } = await import('../registry/index')
+    for (const source of options.sources)
+      registerDataSource(source)
+  }
 
   const cwd = process.cwd()
   const port = await getPort({ port: options.port ?? 9878, portRange: [9878, 9978] })
@@ -154,6 +197,9 @@ if (process.env.DEVFRAME_DATA_INSPECTOR === '1' || process.env.DEVFRAME_DATA_INS
     auth: process.env.DEVFRAME_DATA_INSPECTOR_AUTH !== '0',
     token: process.env.DEVFRAME_DATA_INSPECTOR_TOKEN,
     exampleSource: process.env.DEVFRAME_DATA_INSPECTOR_EXAMPLE !== '0',
+    // Zero-code path: with no chance to call `registerDataSource`, expose
+    // `globalThis` so assigning to it is enough to inspect anything.
+    sources: process.env.DEVFRAME_DATA_INSPECTOR_GLOBAL !== '0' ? [createGlobalThisDataSource()] : undefined,
   }).catch((error) => {
     console.error('[data-inspector] agent failed to start:', error)
   })

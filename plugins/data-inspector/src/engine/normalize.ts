@@ -12,8 +12,14 @@
  *   - BigInt / Symbol      -> tagged string forms
  *   - Error                -> { $type: 'Error', name, message }
  *   - Promise / WeakMap/.. -> opaque tags
- *   - depth / entry caps   -> { $truncated: ... } markers + stats
+ *   - depth cap            -> { $truncated: 'depth', $preview, $path } markers
+ *   - entry cap            -> { $truncated: 'entries', ... } markers + stats
+ *
+ * Depth-truncated markers carry a `$path` (a `NodePath` of structural steps
+ * from the query root) so the client can lazily re-fetch that subtree with a
+ * fresh depth budget through `navigate` + `runQueryAtPath`.
  */
+import type { NodePath, PathSegment } from './contract'
 
 export interface NormalizeOptions {
   /** Max object/array nesting depth before truncation. */
@@ -79,12 +85,47 @@ export function normalize(value: unknown, options: NormalizeOptions = {}): { dat
       excludeDollarProps: options.excludeDollarProps ?? false,
     },
   }
-  const data = walk(value, walker, 0, '#')
+  const data = walk(value, walker, 0, '#', [])
   walker.stats.ms = Math.round((performance.now() - start) * 100) / 100
   return { data, stats: walker.stats }
 }
 
-function walk(value: unknown, w: Walker, depth: number, path: string): unknown {
+/**
+ * Re-descend a live graph along a `NodePath`, mirroring the walker's own
+ * traversal (and re-applying `excludeFunctions` to array indices so a lazily
+ * fetched index lines up with what the client saw). Returns the node the
+ * path addresses, or `undefined` if any step falls off the graph.
+ */
+export function navigate(value: unknown, path: NodePath, options: Pick<NormalizeOptions, 'excludeFunctions'> = {}): unknown {
+  let cur: unknown = value
+  for (const [kind, at] of path) {
+    if (cur === null || typeof cur !== 'object')
+      return undefined
+    switch (kind) {
+      case 'k':
+        cur = cur instanceof Map ? cur.get(at) : (cur as Record<string, unknown>)[at]
+        break
+      case 'i': {
+        const arr = cur as unknown[]
+        const source = options.excludeFunctions ? arr.filter(item => typeof item !== 'function') : arr
+        cur = source[at]
+        break
+      }
+      case 's':
+        cur = [...(cur as Set<unknown>)][at]
+        break
+      case 'mk':
+        cur = [...(cur as Map<unknown, unknown>).entries()][at]?.[0]
+        break
+      case 'mv':
+        cur = [...(cur as Map<unknown, unknown>).entries()][at]?.[1]
+        break
+    }
+  }
+  return cur
+}
+
+function walk(value: unknown, w: Walker, depth: number, path: string, segs: NodePath): unknown {
   w.stats.nodes++
 
   // ── primitives ──────────────────────────────────────────────────────
@@ -138,7 +179,7 @@ function walk(value: unknown, w: Walker, depth: number, path: string): unknown {
 
   if (depth >= w.opts.maxDepth) {
     w.stats.truncatedDepth++
-    return { $truncated: 'depth', $preview: preview(obj) }
+    return { $truncated: 'depth', $preview: preview(obj), $path: segs }
   }
 
   w.seen.set(obj, path)
@@ -148,7 +189,7 @@ function walk(value: unknown, w: Walker, depth: number, path: string): unknown {
     const cap = Math.min(source.length, w.opts.maxEntries)
     const out: unknown[] = Array.from({ length: cap })
     for (let i = 0; i < cap; i++)
-      out[i] = walk(source[i], w, depth + 1, `${path}[${i}]`)
+      out[i] = walk(source[i], w, depth + 1, `${path}[${i}]`, seg(segs, ['i', i]))
     if (source.length > cap) {
       w.stats.truncatedEntries++
       out.push({ $truncated: 'entries', $total: source.length, $shown: cap })
@@ -169,15 +210,15 @@ function walk(value: unknown, w: Walker, depth: number, path: string): unknown {
     if (allStringKeys) {
       const value: Record<string, unknown> = {}
       for (const [k, v] of entries)
-        value[k as string] = walk(v, w, depth + 1, `${path}.${String(k)}`)
+        value[k as string] = walk(v, w, depth + 1, `${path}.${String(k)}`, seg(segs, ['k', k as string]))
       return { $type: 'Map', size: obj.size, value }
     }
     return {
       $type: 'Map',
       size: obj.size,
       entries: entries.map(([k, v], i) => ({
-        key: walk(k, w, depth + 1, `${path}~keys[${i}]`),
-        value: walk(v, w, depth + 1, `${path}~values[${i}]`),
+        key: walk(k, w, depth + 1, `${path}~keys[${i}]`, seg(segs, ['mk', i])),
+        value: walk(v, w, depth + 1, `${path}~values[${i}]`, seg(segs, ['mv', i])),
       })),
     }
   }
@@ -186,7 +227,7 @@ function walk(value: unknown, w: Walker, depth: number, path: string): unknown {
     const values = [...obj].slice(0, w.opts.maxEntries)
     if (obj.size > values.length)
       w.stats.truncatedEntries++
-    return { $type: 'Set', size: obj.size, values: values.map((v, i) => walk(v, w, depth + 1, `${path}~set[${i}]`)) }
+    return { $type: 'Set', size: obj.size, values: values.map((v, i) => walk(v, w, depth + 1, `${path}~set[${i}]`, seg(segs, ['s', i]))) }
   }
 
   // Plain object or class instance: own enumerable string-keyed props.
@@ -213,13 +254,18 @@ function walk(value: unknown, w: Walker, depth: number, path: string): unknown {
     }
     if (w.opts.excludeFunctions && typeof v === 'function')
       continue
-    out[key] = walk(v, w, depth + 1, `${path}.${key}`)
+    out[key] = walk(v, w, depth + 1, `${path}.${key}`, seg(segs, ['k', key]))
   }
   if (keys.length > cap) {
     w.stats.truncatedProps++
     out.$truncated = `props: showing ${cap} of ${keys.length}`
   }
   return out
+}
+
+/** Append one structural step to a path, returning a fresh array. */
+function seg(path: NodePath, step: PathSegment): NodePath {
+  return [...path, step]
 }
 
 function preview(obj: object): string {
