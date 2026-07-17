@@ -4,7 +4,9 @@ import { join } from 'pathe'
 import { createStorage } from './storage'
 
 // Map a settings scope to the host storage scope it persists under.
-const STORAGE_SCOPE = { global: 'global', project: 'workspace' } as const
+// Project settings are per-checkout private state, so they live in the
+// host's ignored `project` dir (not the committable `workspace` one).
+const STORAGE_SCOPE = { global: 'global', project: 'project' } as const
 
 function createNodeSettingsStore<T extends Record<string, any>>(
   context: DevframeNodeContext,

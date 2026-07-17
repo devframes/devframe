@@ -2,6 +2,7 @@ import type { DevframeAgentHost } from './agent'
 import type { DevframeDiagnosticsHost } from './diagnostics'
 import type { DevframeHost } from './host'
 import type { DevframeScopedNodeContext, SettingsForNamespace } from './scope'
+import type { DevframeServicesHost } from './services'
 import type { DevframeViewHost } from './views'
 
 export interface DevframeCapabilities {
@@ -52,6 +53,15 @@ export interface DevframeNodeContext {
    * @experimental
    */
   agent: DevframeAgentHost
+  /**
+   * Cross-plugin services — a typed, namespaced registry through which one
+   * integration exposes a capability (e.g. a data-source registry) and
+   * others consume it without a hard package dependency. Ids follow the RPC
+   * namespacing rule (`<plugin-id>:<service>`); types come from augmenting
+   * the `DevframeServicesRegistry` interface. `whenAvailable` subscriptions
+   * absorb setup-order differences between provider and consumer.
+   */
+  services: DevframeServicesHost
   /**
    * Create a namespace-scoped view of this context. The returned
    * `ctx.scope('my-plugin')` auto-namespaces every RPC id, shared-state

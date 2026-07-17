@@ -19,8 +19,9 @@ export interface CreateH3DevframeHostOptions {
   mount?: (base: string, distDir: string) => void | Promise<void>
   /**
    * Namespace for storage paths returned by `getStorageDir`. Workspace
-   * state lives under `${workspaceRoot}/node_modules/.<appName>/devframe/`
-   * and global state under `${homedir()}/.<appName>/devframe/`. Pick the
+   * state (committable) lives under `${workspaceRoot}/.devframe/`, project
+   * state under `${workspaceRoot}/node_modules/.<appName>/devframe/`, and
+   * global state under `${homedir()}/.<appName>/devframe/`. Pick the
    * devtool's id (or another stable, filesystem-safe identifier) so the
    * standalone host doesn't collide with other tools' storage.
    */
@@ -46,9 +47,11 @@ export function createH3DevframeHost(options: CreateH3DevframeHostOptions): Devf
     },
     getStorageDir(scope) {
       const namespace = `.${options.appName}/devframe`
-      return scope === 'workspace'
-        ? join(workspaceRoot, 'node_modules', namespace)
-        : join(homedir(), namespace)
+      if (scope === 'workspace')
+        return join(workspaceRoot, '.devframe')
+      if (scope === 'project')
+        return join(workspaceRoot, 'node_modules', namespace)
+      return join(homedir(), namespace)
     },
   }
 }

@@ -56,6 +56,15 @@ export declare class DevframeDiagnosticsHost implements DevframeDiagnosticsHost$
   constructor(_: DevframeNodeContext, _?: Array<Record<string, unknown>>);
   register(_: Record<string, unknown>): void;
 }
+export declare class DevframeServicesHostImpl implements DevframeServicesHost {
+  private services;
+  private listeners;
+  provide<ID extends DevframeServiceId>(_: ID, _: DevframeServiceOf<ID>): () => void;
+  get<ID extends DevframeServiceId>(_: ID): DevframeServiceOf<ID> | undefined;
+  has(_: DevframeServiceId): boolean;
+  whenAvailable<ID extends DevframeServiceId>(_: ID, _: (_: DevframeServiceOf<ID>) => void): () => void;
+  keys(): string[];
+}
 export declare class DevframeViewHost implements DevframeViewHost$1 {
   readonly context: DevframeNodeContext;
   buildStaticDirs: {

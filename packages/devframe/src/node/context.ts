@@ -5,6 +5,7 @@ import { diagnostics as devframeDiagnostics } from './diagnostics'
 import { DevframeAgentHost } from './host-agent'
 import { DevframeDiagnosticsHost } from './host-diagnostics'
 import { RpcFunctionsHost } from './host-functions'
+import { DevframeServicesHostImpl } from './host-services'
 import { DevframeViewHost } from './host-views'
 import { BUILTIN_AGENT_RPC } from './rpc'
 import { createScopedNodeContext } from './scope'
@@ -42,6 +43,7 @@ export async function createHostContext(options: CreateHostContextOptions): Prom
     views: undefined!,
     diagnostics: undefined!,
     agent: undefined!,
+    services: undefined!,
     scope: undefined!,
   } as unknown as DevframeNodeContext
 
@@ -51,6 +53,7 @@ export async function createHostContext(options: CreateHostContextOptions): Prom
   context.rpc = rpcHost
   context.views = viewsHost
   context.diagnostics = diagnosticsHost
+  context.services = new DevframeServicesHostImpl()
 
   // Agent host must be constructed after `rpcHost` so it can subscribe
   // to `onChanged` — it auto-discovers RPC functions flagged with

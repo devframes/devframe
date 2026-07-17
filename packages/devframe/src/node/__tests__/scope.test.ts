@@ -161,7 +161,7 @@ describe('ctx.scope()', () => {
       expect(ctx.rpc.sharedState.keys()).toContain('devframe:settings:project:my-plugin')
     })
 
-    it('persists to the workspace and global storage dirs', async () => {
+    it('persists to the project and global storage dirs', async () => {
       const { ctx, dir } = await createCtx()
       const { settings } = ctx.scope('my-plugin')
       await settings.project.set('theme', 'dark')
@@ -169,7 +169,10 @@ describe('ctx.scope()', () => {
 
       await sleep(250)
 
-      const projectFile = join(dir, 'workspace', 'settings', 'my-plugin.json')
+      // Project settings are per-checkout private state -> the host's
+      // ignored 'project' dir (the committable 'workspace' dir is for
+      // team-shared files).
+      const projectFile = join(dir, 'project', 'settings', 'my-plugin.json')
       const globalFile = join(dir, 'global', 'settings', 'my-plugin.json')
       expect(existsSync(projectFile)).toBe(true)
       expect(existsSync(globalFile)).toBe(true)
