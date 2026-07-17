@@ -132,6 +132,12 @@ export function createExampleDataSource(ctx?: DevframeNodeContext): DataSourceEn
         description: 'Filter and project an array',
         query: 'playground.build.modules.[sizeKb > 80].({ id, sizeKb })',
       },
+      {
+        title: 'Middlewares (data only)',
+        description: 'The exclude-functions filter strips the handlers',
+        query: 'playground.middlewares',
+        excludeFunctions: true,
+      },
       { title: 'Everything', query: '' },
     ],
   }

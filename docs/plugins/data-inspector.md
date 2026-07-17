@@ -112,7 +112,7 @@ devframe-data-inspector attach               # attach to a process running the a
 The target process opts in by starting the agent:
 
 ```ts
-import { exposeDataInspector } from '@devframes/plugin-data-inspector/agent'
+import { exposeDataInspector } from '@devframes/plugin-data-inspector/inject'
 
 await exposeDataInspector()
 ```
@@ -120,7 +120,7 @@ await exposeDataInspector()
 or with zero code changes:
 
 ```sh
-DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/agent server.js
+DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject server.js
 ```
 
 The agent binds `127.0.0.1`, requires devframe's trust handshake with a per-run pre-shared token, and advertises its endpoint in `node_modules/.data-inspector/agent.json` — `devframe-data-inspector attach` consumes it automatically (or pass `ws://…` and `--token` explicitly). Queries execute inside the target process, where the live objects are. Treat the endpoint like a debugger port.

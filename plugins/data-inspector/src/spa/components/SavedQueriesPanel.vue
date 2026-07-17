@@ -2,8 +2,7 @@
 import type { FilterOptions, Query, SavedQuery, SavedQueryScope } from '../../engine'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
-import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
-import FormSelect from '@antfu/design/components/Form/FormSelect.vue'
+import ActionToggleGroup from '@antfu/design/components/Action/ActionToggleGroup.vue'
 import FormTextInput from '@antfu/design/components/Form/FormTextInput.vue'
 import OverlayModal from '@antfu/design/components/Overlay/OverlayModal.vue'
 import { computed, ref } from 'vue'
@@ -31,8 +30,8 @@ const description = ref('')
 const scope = ref<SavedQueryScope>('project')
 
 const scopeOptions = [
-  { value: 'project', label: 'Project (node_modules, just me)' },
-  { value: 'workspace', label: 'Workspace (.devframe, shared with team)' },
+  { value: 'project', label: 'Just me', icon: 'i-ph:user-duotone' },
+  { value: 'workspace', label: 'Shared with team', icon: 'i-ph:users-three-duotone' },
 ]
 
 /** All filter options with their current state — the modal shows every one. */
@@ -80,14 +79,20 @@ function submit(): void {
   dialogOpen.value = false
 }
 
-function filterBadges(entry: Query): string[] {
-  const out: string[] = []
+interface FilterBadge {
+  label: string
+  title: string
+}
+
+/** The filters a recipe carries, as pretty pill badges. */
+function filterBadges(entry: Query): FilterBadge[] {
+  const out: FilterBadge[] = []
   if (entry.excludeFunctions)
-    out.push('-fn')
+    out.push({ label: 'no fn', title: 'Excludes functions' })
   if (entry.excludeUnderscoreProps)
-    out.push('-_')
+    out.push({ label: 'no _', title: 'Excludes _-prefixed props' })
   if (entry.excludeDollarProps)
-    out.push('-$')
+    out.push({ label: 'no $', title: 'Excludes $-prefixed props' })
   return out
 }
 </script>
@@ -119,24 +124,21 @@ function filterBadges(entry: Query): string[] {
           <span v-if="entry.recipe.title || !entry.recipe.query" class="font-mono text-11px color-faint truncate">{{ entry.recipe.query || '$' }}</span>
         </div>
         <div class="flex-1" />
-        <span v-for="badge in filterBadges(entry.recipe)" :key="badge" class="font-mono text-10px color-faint">{{ badge }}</span>
-        <template v-if="entry.saved">
-          <ActionIconButton
-            v-if="!readonly"
-            size="sm"
-            icon="i-ph:trash-duotone"
-            label="Delete"
-            tooltip="Delete"
-            class="op0 group-hover:op100 transition-opacity"
-            @click.stop="emit('remove', entry.saved)"
-          />
-          <DisplayBadge
-            :text="entry.saved.scope"
-            :color="entry.saved.scope === 'workspace' ? 150 : false"
-            class="shrink-0"
-          />
-        </template>
-        <DisplayBadge v-else text="suggested" :color="false" class="shrink-0" />
+        <span
+          v-for="badge in filterBadges(entry.recipe)"
+          :key="badge.label"
+          :title="badge.title"
+          class="shrink-0 font-mono text-10px color-muted bg-secondary border border-base rounded px-1.5 py-0.5 leading-none"
+        >{{ badge.label }}</span>
+        <ActionIconButton
+          v-if="entry.saved && !readonly"
+          size="sm"
+          icon="i-ph:trash-duotone"
+          label="Delete"
+          tooltip="Delete"
+          class="op0 group-hover:op100 transition-opacity"
+          @click.stop="emit('remove', entry.saved)"
+        />
       </div>
     </div>
     <div v-else class="text-xs color-faint px-1 select-none">
@@ -166,7 +168,13 @@ function filterBadges(entry: Query): string[] {
         </div>
         <FormTextInput v-model="title" placeholder="Title (optional, becomes the storage id)" />
         <FormTextInput v-model="description" placeholder="Description (optional)" />
-        <FormSelect v-model="scope" :options="scopeOptions" />
+        <div class="flex flex-col gap-1.5">
+          <span class="text-xs color-muted">Save location</span>
+          <ActionToggleGroup v-model="scope" :options="scopeOptions" />
+          <span class="text-11px color-faint">
+            {{ scope === 'workspace' ? '.devframe/ — committed, shared with the team' : 'node_modules/ — this checkout only' }}
+          </span>
+        </div>
       </div>
       <template #footer>
         <ActionButton @click="dialogOpen = false">

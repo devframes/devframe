@@ -8,7 +8,7 @@
  * devframe-data-inspector build stats.json         # self-contained static export
  * ```
  */
-import type { AgentDiscovery } from './agent/index'
+import type { AgentDiscovery } from './inject/index'
 import { existsSync, readFileSync } from 'node:fs'
 import { cp, mkdir, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
@@ -21,8 +21,8 @@ import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import pkg from '../package.json' with { type: 'json' }
-import { AGENT_DISCOVERY_FILE } from './agent/index'
 import { createDataInspectorDevframe } from './index'
+import { AGENT_DISCOVERY_FILE } from './inject/index'
 import { createFileDataSource, loadDataFile } from './node/files'
 import { listDataSources, registerDataSource } from './registry/index'
 
@@ -77,7 +77,7 @@ export function createDataInspectorCli() {
         const discoveryPath = resolve(process.cwd(), AGENT_DISCOVERY_FILE)
         if (!existsSync(discoveryPath)) {
           console.error(`No agent endpoint given and no discovery file at ${discoveryPath}.`)
-          console.error('Start the target with the agent (see @devframes/plugin-data-inspector/agent) or pass a ws:// endpoint.')
+          console.error('Start the target with the agent (see @devframes/plugin-data-inspector/inject) or pass a ws:// endpoint.')
           process.exitCode = 1
           return
         }

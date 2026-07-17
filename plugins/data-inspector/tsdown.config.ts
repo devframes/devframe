@@ -11,14 +11,14 @@ const clientEntries = {
 }
 
 // Node-side entries — the devframe definition, the CLI/Vite host adapters,
-// the setup module, the source registry, and the in-process agent.
+// the setup module, the source registry, and the in-process inject entry.
 const serverEntries = {
   'index': 'src/index.ts',
   'cli': 'src/cli.ts',
   'vite': 'src/vite.ts',
   'node/index': 'src/node/index.ts',
   'registry/index': 'src/registry/index.ts',
-  'agent/index': 'src/agent/index.ts',
+  'inject/index': 'src/inject/index.ts',
 }
 
 export default defineConfig([

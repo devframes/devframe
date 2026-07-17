@@ -22,8 +22,8 @@
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.mjs",
-    "./agent": "./dist/agent/index.mjs",
     "./client": "./dist/client/index.mjs",
+    "./inject": "./dist/inject/index.mjs",
     "./cli": "./dist/cli.mjs",
     "./engine": "./dist/engine/index.mjs",
     "./node": "./dist/node/index.mjs",

@@ -1,12 +1,12 @@
 /**
- * In-process agent — expose this process's registered data sources to an
- * external data-inspector UI.
+ * Inject the data inspector into a running process — expose that process's
+ * registered data sources to an external data-inspector UI.
  *
  * Two ways in:
  *
  * ```ts
  * // 1. explicit, from the target's code
- * import { exposeDataInspector } from '@devframes/plugin-data-inspector/agent'
+ * import { exposeDataInspector } from '@devframes/plugin-data-inspector/inject'
  * import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
  *
  * registerDataSource({ id: 'app:store', title: 'App store', data: () => store })
@@ -14,11 +14,11 @@
  * ```
  *
  * ```sh
- * # 2. zero code change — preload the agent into any Node process
- * DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/agent server.js
+ * # 2. zero code change — preload the inject entry into any Node process
+ * DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject server.js
  * ```
  *
- * The agent binds `127.0.0.1` and requires devframe's trust handshake by
+ * It binds `127.0.0.1` and requires devframe's trust handshake by
  * default: a random pre-shared token is minted per run, printed to stderr,
  * and written (with the endpoint) to the discovery file
  * `<cwd>/node_modules/.data-inspector/agent.json`, which
@@ -146,7 +146,7 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
   }
 }
 
-// `node --import @devframes/plugin-data-inspector/agent` path: opt in via env
+// `node --import @devframes/plugin-data-inspector/inject` path: opt in via env
 // so merely importing the module never opens a port.
 if (process.env.DEVFRAME_DATA_INSPECTOR === '1' || process.env.DEVFRAME_DATA_INSPECTOR === 'true') {
   void exposeDataInspector({

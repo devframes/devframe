@@ -48,7 +48,7 @@ Static exports embed the dataset and run the same query engine client-side, so s
 ## Attach to another Node process
 
 ```ts
-import { exposeDataInspector } from '@devframes/plugin-data-inspector/agent'
+import { exposeDataInspector } from '@devframes/plugin-data-inspector/inject'
 
 await exposeDataInspector()
 ```
@@ -56,7 +56,7 @@ await exposeDataInspector()
 or with zero code changes:
 
 ```sh
-DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/agent server.js
+DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject server.js
 ```
 
 The agent binds `127.0.0.1`, requires devframe's trust handshake with a per-run token by default, and advertises its endpoint in `node_modules/.data-inspector/agent.json`, which `devframe-data-inspector attach` picks up automatically.

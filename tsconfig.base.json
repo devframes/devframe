@@ -196,8 +196,8 @@
       "@devframes/plugin-data-inspector/engine": [
         "./plugins/data-inspector/src/engine/index.ts"
       ],
-      "@devframes/plugin-data-inspector/agent": [
-        "./plugins/data-inspector/src/agent/index.ts"
+      "@devframes/plugin-data-inspector/inject": [
+        "./plugins/data-inspector/src/inject/index.ts"
       ],
       "@devframes/plugin-data-inspector/cli": [
         "./plugins/data-inspector/src/cli.ts"

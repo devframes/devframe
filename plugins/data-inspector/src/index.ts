@@ -33,7 +33,7 @@ export interface DataInspectorDevframeOptions {
   /**
    * Require the trust handshake on the standalone server. Defaults to
    * `false` (auto-trust) for the single-user localhost CLI. The in-process
-   * agent (`@devframes/plugin-data-inspector/agent`) defaults to `true`.
+   * agent (`@devframes/plugin-data-inspector/inject`) defaults to `true`.
    */
   auth?: boolean
   /**

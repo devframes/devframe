@@ -70,7 +70,7 @@ export const alias = {
   '@devframes/plugin-data-inspector/node': p('data-inspector/src/node/index.ts'),
   '@devframes/plugin-data-inspector/registry': p('data-inspector/src/registry/index.ts'),
   '@devframes/plugin-data-inspector/engine': p('data-inspector/src/engine/index.ts'),
-  '@devframes/plugin-data-inspector/agent': p('data-inspector/src/agent/index.ts'),
+  '@devframes/plugin-data-inspector/inject': p('data-inspector/src/inject/index.ts'),
   '@devframes/plugin-data-inspector/cli': p('data-inspector/src/cli.ts'),
   '@devframes/plugin-data-inspector/vite': p('data-inspector/src/vite.ts'),
   '@devframes/plugin-data-inspector': p('data-inspector/src/index.ts'),

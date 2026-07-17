@@ -3,11 +3,11 @@ import type { Query, SavedQueryScope } from '../engine'
 import Button from '@antfu/design/components/Action/ActionButton.vue'
 import ActionDarkToggle from '@antfu/design/components/Action/ActionDarkToggle.vue'
 import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
-import FormSelect from '@antfu/design/components/Form/FormSelect.vue'
 import LayoutSplitPane from '@antfu/design/components/Layout/LayoutSplitPane.vue'
 import { Pane } from 'splitpanes'
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import DataShapePanel from './components/DataShapePanel.vue'
+import DataSourceSelect from './components/DataSourceSelect.vue'
 import QueryEditor from './components/QueryEditor.vue'
 import QuerySettings from './components/QuerySettings.vue'
 import ResultViewer from './components/ResultViewer.vue'
@@ -20,10 +20,6 @@ import '@antfu/design/styles.css'
 
 const wb = useWorkbench()
 const savedApi = useSavedQueries()
-
-const sourceOptions = computed(() =>
-  wb.sources.value.map(s => ({ value: s.id, label: s.title })),
-)
 
 const showDataSourceDetails = ref(false)
 
@@ -120,8 +116,7 @@ function queryAppend(path: string): void {
                 <div class="font-semibold text-xs op-fade uppercase tracking-wide select-none">
                   Data Source
                 </div>
-                <FormSelect v-model="wb.sourceId.value" :options="sourceOptions" placeholder="Data source" class="text-sm font-semibold text-primary" />
-                <DisplayBadge v-if="wb.activeSource.value?.static" text="static" :color="false" />
+                <DataSourceSelect v-model="wb.sourceId.value" :sources="wb.sources.value" placeholder="Data source" />
                 <div v-if="wb.activeSource.value?.description && !showDataSourceDetails" class="text-xs op-fade ws-nowrap of-hidden shrink" :title="wb.activeSource.value?.description">
                   {{ wb.activeSource.value?.description }}
                 </div>

@@ -3,13 +3,17 @@ import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
 import { alias } from '../../../../alias'
+import { dataInspectorVitePlugin } from '../vite'
 
 // The data-inspector SPA. `base: './'` keeps every asset URL relative so the
 // bundle is mount-path portable — it discovers its runtime base from
 // `document.baseURI` and connects via `connectDevframe()`. The build is
-// copied verbatim by `createBuild`/`createSpa`; no HTML rewriting. There is
-// deliberately no host plugin here: the plugin's own `vite.ts` handles
-// hosting, and for `pnpm dev` a plain SPA is fine.
+// copied verbatim by `createBuild`/`createSpa`; no HTML rewriting.
+//
+// `dataInspectorVitePlugin({ devMiddleware: true })` dogfoods the plugin: it
+// runs a side-car RPC + WS backend (with the built-in example source) next to
+// this HMR frontend, so `pnpm dev` is a full devframe dev server, not a
+// backend-less SPA.
 export default defineConfig({
   base: './',
   root: fileURLToPath(new URL('.', import.meta.url)),
@@ -20,6 +24,7 @@ export default defineConfig({
   plugins: [
     vue(),
     UnoCSS(),
+    dataInspectorVitePlugin({ devMiddleware: true, base: '/' }),
   ],
   // `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile its
   // SFCs instead of esbuild pre-bundling them.
