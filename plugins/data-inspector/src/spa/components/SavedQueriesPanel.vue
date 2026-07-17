@@ -132,11 +132,10 @@ function filterBadges(entry: Query): FilterBadge[] {
         >{{ badge.label }}</span>
         <ActionIconButton
           v-if="entry.saved && !readonly"
-          size="sm"
           icon="i-ph:trash-duotone"
           label="Delete"
           tooltip="Delete"
-          class="op0 group-hover:op100 transition-opacity"
+          class="text-sm op0 group-hover:op100 transition-opacity"
           @click.stop="emit('remove', entry.saved)"
         />
       </div>

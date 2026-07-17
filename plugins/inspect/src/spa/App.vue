@@ -58,7 +58,7 @@ function reload(): void {
         </div>
 
         <ActionIconButton
-          size="sm"
+          class="text-sm"
           :icon="loading ? 'i-ph-arrows-clockwise animate-spin' : 'i-ph-arrows-clockwise'"
           :tooltip="loading ? 'Refreshing…' : 'Refresh'"
           label="Refresh"

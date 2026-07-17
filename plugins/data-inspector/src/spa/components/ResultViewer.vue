@@ -64,7 +64,7 @@ watch(() => props.result, (value) => {
         running
       </span>
       <ActionIconButton
-        size="sm"
+        class="text-sm"
         :icon="running ? 'i-ph:arrows-clockwise animate-spin' : 'i-ph:arrows-clockwise'"
         label="Re-run query"
         tooltip="Re-run against the live object"

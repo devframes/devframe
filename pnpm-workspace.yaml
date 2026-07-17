@@ -10,7 +10,7 @@ cleanupUnusedCatalogs: true
 ignoreWorkspaceRootCheck: true
 minimumReleaseAgeExclude:
   - nostics@1.1.4
-  - '@antfu/design@0.2.1'
+  - '@antfu/design@0.3.0'
   - crossws@0.4.8
   - iframe-pane@1.1.0
 shamefullyHoist: true
@@ -81,7 +81,7 @@ catalogs:
     vitepress: ^2.0.0-alpha.18
     vitepress-plugin-mermaid: ^2.0.17
   frontend:
-    '@antfu/design': ^0.2.2
+    '@antfu/design': ^0.3.0
     '@floating-ui/react': ^0.27.20
     '@iconify-json/catppuccin': ^1.2.17
     '@iconify-json/ph': ^1.2.2
@@ -100,6 +100,7 @@ catalogs:
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     colorjs.io: ^0.7.0
+    dompurify: ^3.4.2
     floating-vue: ^5.2.2
     iframe-pane: ^1.1.0
     next: ^16.2.10

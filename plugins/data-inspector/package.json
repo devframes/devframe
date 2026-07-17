@@ -69,6 +69,7 @@
     "@types/codemirror": "catalog:",
     "@vitejs/plugin-vue": "catalog:build",
     "devframe": "workspace:*",
+    "dompurify": "catalog:frontend",
     "floating-vue": "catalog:frontend",
     "reka-ui": "catalog:frontend",
     "splitpanes": "catalog:",
