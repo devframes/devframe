@@ -70,7 +70,7 @@ const rootLabel = computed(() => {
       </div>
       <div class="flex-auto" />
       <ActionIconButton
-        size="sm"
+        class="text-sm"
         :icon="loading ? 'i-ph:arrows-clockwise animate-spin' : 'i-ph:arrows-clockwise'"
         label="Refresh data shape"
         tooltip="Refresh"

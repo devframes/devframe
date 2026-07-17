@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DataSourceMeta } from '../../engine'
+import DisplayIconifyRemoteIcon from '@antfu/design/components/Display/DisplayIconifyRemoteIcon.vue'
 import { SelectContent, SelectIcon, SelectItem, SelectItemIndicator, SelectPortal, SelectRoot, SelectTrigger, SelectViewport } from 'reka-ui'
 import { computed } from 'vue'
 
@@ -26,8 +27,9 @@ function iconOf(source: DataSourceMeta | undefined): string {
       class="text-sm px-2.5 outline-none border border-base rounded bg-base inline-flex gap-2 h-9 min-w-52 max-w-80 transition items-center justify-between data-[disabled]:op50 focus-visible:ring-2 focus-visible:ring-primary-500/40"
     >
       <span class="inline-flex items-center gap-2 min-w-0">
-        <!-- TODO: migrate to IconifyIcon.vue in @antfu/design 0.3 -->
-        <span class="shrink-0 color-active" :class="iconOf(active)" aria-hidden="true" />
+        <!-- Source icons are declared per-source at runtime, so render them via
+             the remote-icon component rather than a static (build-extracted) class. -->
+        <DisplayIconifyRemoteIcon :icon="iconOf(active)" class="shrink-0 w-3.5 h-3.5 color-active [&_svg]:h-full [&_svg]:w-full" aria-hidden="true" />
         <span class="truncate font-semibold text-primary">{{ active?.title ?? placeholder ?? 'Data source' }}</span>
       </span>
       <SelectIcon class="op-fade shrink-0">
@@ -47,8 +49,7 @@ function iconOf(source: DataSourceMeta | undefined): string {
             :value="source.id"
             class="text-sm color-base py-1.5 pl-2 pr-2 outline-none rounded-md flex gap-2 cursor-pointer select-none transition items-start relative data-[highlighted]:bg-active"
           >
-            <!-- TODO: migrate to IconifyIcon.vue in @antfu/design 0.3 -->
-            <span class="shrink-0 mt-0.5 color-active" :class="iconOf(source)" aria-hidden="true" />
+            <DisplayIconifyRemoteIcon :icon="iconOf(source)" class="shrink-0 mt-0.5 w-3.5 h-3.5 color-active [&_svg]:h-full [&_svg]:w-full" aria-hidden="true" />
             <span class="flex flex-col min-w-0 flex-1">
               <span class="flex items-center gap-1.5">
                 <span class="truncate font-medium">{{ source.title }}</span>

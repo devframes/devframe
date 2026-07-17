@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SavedQueryScope } from '../engine'
 import LayoutSplitPane from '@antfu/design/components/Layout/LayoutSplitPane.vue'
+import { provideColorScheme } from '@antfu/design/composables/colorScheme'
 import { Pane } from 'splitpanes'
 import { onMounted, provide } from 'vue'
 import AppHeader from './components/AppHeader.vue'
@@ -10,6 +11,7 @@ import ResultViewer from './components/ResultViewer.vue'
 import SavedQueriesPanel from './components/SavedQueriesPanel.vue'
 import { backend, connect, connection } from './composables/rpc'
 import { useSavedQueries } from './composables/saved'
+import { colorScheme } from './composables/scheme'
 import { useWorkbench, workbenchKey } from './composables/workbench'
 import '@antfu/design/styles.css'
 
@@ -19,6 +21,11 @@ const savedApi = useSavedQueries()
 // The workbench is the app's shared context; panels inject it rather than
 // receiving it (and mutating it) through props.
 provide(workbenchKey, wb)
+
+// The app owns the color scheme; feed it to @antfu/design's opt-in context so
+// the JS-colored surfaces (hash/hue `DisplayBadge`) tune their contrast to the
+// active mode without threading a `colorScheme` prop through every panel.
+provideColorScheme(() => colorScheme.value)
 
 onMounted(async () => {
   await connect()
