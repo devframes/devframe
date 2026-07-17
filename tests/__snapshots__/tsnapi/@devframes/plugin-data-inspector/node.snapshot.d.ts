@@ -8,7 +8,7 @@ export interface SetupDataInspectorOptions {
 // #endregion
 
 // #region Functions
-export declare function createExampleDataSource(): DataSourceEntry;
+export declare function createExampleDataSource(_?: DevframeNodeContext): DataSourceEntry;
 export declare function setupDataInspector(_: DevframeNodeContext, _?: SetupDataInspectorOptions): void;
 // #endregion
 

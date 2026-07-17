@@ -62,6 +62,13 @@ export interface ExposeDataInspectorOptions {
   discoveryFile?: boolean
   /** Suppress the stderr banner. */
   silent?: boolean
+  /**
+   * Register the built-in example source (devframe context, OS, live
+   * process stats of the target). Default `true`; set `false` (or
+   * `DEVFRAME_DATA_INSPECTOR_EXAMPLE=0` on the `--import` path) to expose
+   * only the target's own registrations.
+   */
+  exampleSource?: boolean
 }
 
 export interface DataInspectorAgent {
@@ -94,9 +101,7 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
   }
 
   const context: DevframeNodeContext = await createHostContext({ cwd, mode: 'dev', host })
-  // Attach exists to inspect the target's own objects; the example source
-  // would only be noise next to them.
-  setupDataInspector(context, { exampleSource: false })
+  setupDataInspector(context, { exampleSource: options.exampleSource })
 
   const useAuth = options.auth ?? true
   const token = useAuth ? (options.token ?? randomToken()) : undefined
@@ -148,6 +153,7 @@ if (process.env.DEVFRAME_DATA_INSPECTOR === '1' || process.env.DEVFRAME_DATA_INS
     port: process.env.DEVFRAME_DATA_INSPECTOR_PORT ? Number(process.env.DEVFRAME_DATA_INSPECTOR_PORT) : undefined,
     auth: process.env.DEVFRAME_DATA_INSPECTOR_AUTH !== '0',
     token: process.env.DEVFRAME_DATA_INSPECTOR_TOKEN,
+    exampleSource: process.env.DEVFRAME_DATA_INSPECTOR_EXAMPLE !== '0',
   }).catch((error) => {
     console.error('[data-inspector] agent failed to start:', error)
   })

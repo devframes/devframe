@@ -19,6 +19,7 @@ export interface ExposeDataInspectorOptions {
   token?: string;
   discoveryFile?: boolean;
   silent?: boolean;
+  exampleSource?: boolean;
 }
 // #endregion
 

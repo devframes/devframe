@@ -51,12 +51,11 @@ export function createDataInspectorCli() {
     .option('--host <host>', 'Host to bind to', { default: 'localhost' })
     .option('--open', 'Open the browser on start')
     .option('--no-open', 'Do not open the browser')
-    .action(async (files: string[], flags: { port?: number, host: string, open?: boolean }) => {
+    .option('--no-example', 'Skip the built-in example source')
+    .action(async (files: string[], flags: { port?: number, host: string, open?: boolean, example?: boolean }) => {
       for (const file of files)
         registerDataSource(createFileDataSource(file))
-      // With files given, they are the point; the example source only backs
-      // the empty first-run.
-      const def = createDataInspectorDevframe({ exampleSource: files.length === 0 })
+      const def = createDataInspectorDevframe({ exampleSource: flags.example })
       await createDevServer(def, {
         host: flags.host,
         port: flags.port ? Number(flags.port) : undefined,

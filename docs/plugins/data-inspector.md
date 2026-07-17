@@ -16,7 +16,7 @@ Package: `@devframes/plugin-data-inspector` · framework: **Vue + Vite**
 - **Filters** — exclude functions, `_`-prefixed, or `$`-prefixed properties from results and skeleton alike.
 - **Saved queries** — recipes (`query` + optional title/description + the filters they were authored with), id-keyed, in two scopes: **workspace** (committable, shared with the team) and **project** (per-checkout).
 
-A built-in example source demonstrates all of it on first run; disable it with `createDataInspectorDevframe({ exampleSource: false })` once your own sources are registered.
+A built-in **example source** is always registered alongside your own: it exposes the devframe context (registered RPC functions, services, storage dirs), OS info, and live process stats — with query-time getters that change on every re-run — plus a small playground branch exercising every viewer capability. Opt out with `createDataInspectorDevframe({ exampleSource: false })` (CLI: `--no-example`, agent: `DEVFRAME_DATA_INSPECTOR_EXAMPLE=0`).
 
 ## Providing data sources
 

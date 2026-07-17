@@ -107,4 +107,34 @@ describe('example source', () => {
       expect(out.ok, `suggested query "${recipe.title}" must run`).toBe(true)
     }
   })
+
+  it('exposes os and live process info', async () => {
+    const { createExampleDataSource } = await import('../src/node/example-source')
+    const entry = createExampleDataSource()
+    const data = await resolveSourceData(entry) as Record<string, any>
+    expect(data.os.platform).toBeTypeOf('string')
+    expect(data.os.cpus.count).toBeGreaterThan(0)
+    expect(data.process.memory.heapUsed).toBeGreaterThan(0)
+    expect(data.process.versions.node).toBeTypeOf('string')
+  })
+
+  it('describes the devframe context when given one', async () => {
+    const { createExampleDataSource } = await import('../src/node/example-source')
+    const ctx = {
+      cwd: '/w/app',
+      workspaceRoot: '/w',
+      mode: 'dev',
+      rpc: { definitions: new Map([['a:fn', {}]]) },
+      services: { keys: () => ['a:svc'] },
+      host: { getStorageDir: (scope: string) => `/w/${scope}` },
+    } as any
+    const data = await resolveSourceData(createExampleDataSource(ctx)) as Record<string, any>
+    expect(data.devframe).toMatchObject({
+      cwd: '/w/app',
+      mode: 'dev',
+      rpcFunctions: ['a:fn'],
+      services: ['a:svc'],
+      storage: { workspace: '/w/workspace', project: '/w/project', global: '/w/global' },
+    })
+  })
 })

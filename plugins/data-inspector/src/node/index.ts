@@ -28,8 +28,10 @@ export function setupDataInspector(ctx: DevframeNodeContext, options: SetupDataI
   if (!ctx.services.has(DATA_SOURCES_SERVICE_ID))
     ctx.services.provide(DATA_SOURCES_SERVICE_ID, createDataSourcesService())
 
+  // Always on unless opted out: the example source doubles as an
+  // environment inspector (this context, OS, live process stats).
   if ((options.exampleSource ?? true) && !getDataSource(EXAMPLE_SOURCE_ID))
-    registerDataSource(createExampleDataSource())
+    registerDataSource(createExampleDataSource(ctx))
 
   onDataSourcesChanged(() => {
     ctx.rpc.broadcast(SOURCES_CHANGED_EVENT as never)
