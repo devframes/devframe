@@ -6,9 +6,10 @@
  * and the source SKELETON ("what data are available", query-independent).
  * An empty query runs `$` (the root), so every source lands on a full view.
  */
+import type { InjectionKey } from 'vue'
 import type { DataSourceMeta, FilterOptions, QueryOutcome, QueryStats, SkeletonOutcome, SuggestItem, SuggestOutcome } from '../../engine'
 import jora from 'jora'
-import { computed, reactive, ref, shallowRef, watch } from 'vue'
+import { computed, inject, reactive, ref, shallowRef, watch } from 'vue'
 import { backend } from './rpc'
 
 export type SyntaxState
@@ -297,6 +298,27 @@ export function useWorkbench() {
     void loadSkeleton()
   })
 
+  // ── query composition helpers ──────────────────────────────────────
+  /** Set the query to a single top-level key (from the data-shape panel). */
+  function queryProp(key: string): void {
+    query.value = /^[a-z_$][\w$]*$/i.test(key) ? key : `$["${key.replaceAll('"', '\\"')}"]`
+    void runNow()
+  }
+
+  /** Pipe a path onto the current query ("create a subquery from the path"). */
+  function applySubquery(path: string): void {
+    const current = query.value.trim()
+    query.value = current && current !== '$' ? `${current}\n| ${path}` : path
+    void runNow()
+  }
+
+  /** Append a path to the current query (plain textual append). */
+  function appendPath(path: string): void {
+    const current = query.value.trim()
+    query.value = current ? `${current}${path.startsWith('[') ? '' : '.'}${path}` : path
+    void runNow()
+  }
+
   return {
     sources,
     sourceId,
@@ -321,7 +343,21 @@ export function useWorkbench() {
     scheduleSuggestions,
     acceptSuggestion,
     applyRecipe,
+    queryProp,
+    applySubquery,
+    appendPath,
   }
 }
 
 export type Workbench = ReturnType<typeof useWorkbench>
+
+/** Injection key for the shared workbench — provided by the root, consumed by panels. */
+export const workbenchKey: InjectionKey<Workbench> = Symbol('data-inspector:workbench')
+
+/** Inject the workbench provided by the app root. */
+export function injectWorkbench(): Workbench {
+  const wb = inject(workbenchKey)
+  if (!wb)
+    throw new Error('workbench not provided')
+  return wb
+}
