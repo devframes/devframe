@@ -115,9 +115,11 @@ export function minimalViteDevframeHub(options: MinimalViteDevframeHubOptions = 
           return resolved ? new URL(resolved).origin : 'http://localhost:5173'
         },
         getStorageDir(scope) {
-          return scope === 'workspace'
-            ? join(cwd, 'node_modules/.minimal-vite-devframe-hub')
-            : join(homedir(), '.minimal-vite-devframe-hub')
+          if (scope === 'workspace')
+            return join(cwd, '.devframe')
+          if (scope === 'project')
+            return join(cwd, 'node_modules/.minimal-vite-devframe-hub')
+          return join(homedir(), '.minimal-vite-devframe-hub')
         },
       }
 

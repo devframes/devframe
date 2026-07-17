@@ -177,9 +177,11 @@ export async function minimalNextDevframeHub(
       return `http://${hostName}:3000`
     },
     getStorageDir(scope) {
-      return scope === 'workspace'
-        ? join(cwd, 'node_modules/.minimal-next-devframe-hub')
-        : join(homedir(), '.minimal-next-devframe-hub')
+      if (scope === 'workspace')
+        return join(cwd, '.devframe')
+      if (scope === 'project')
+        return join(cwd, 'node_modules/.minimal-next-devframe-hub')
+      return join(homedir(), '.minimal-next-devframe-hub')
     },
   }
 

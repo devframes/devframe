@@ -70,7 +70,14 @@ const host: DevframeHost = {
     // serve `${base}__connection.json` → { backend: 'websocket', websocket: port }
   },
   resolveOrigin() { /* … */ },
-  getStorageDir(scope) { /* … */ },
+  getStorageDir(scope) {
+    // workspace = committable, team-shared; project = per-checkout; global = per-user
+    if (scope === 'workspace')
+      return join(cwd, '.devframe')
+    if (scope === 'project')
+      return join(cwd, 'node_modules/.my-hub')
+    return join(homedir(), '.my-hub')
+  },
 }
 ```
 
