@@ -1,3 +1,4 @@
+import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/server'
 import type { ConnectionMeta } from '../types/context'
 import type { DevframeDefinition, DevframeSetupInfo, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
@@ -14,6 +15,7 @@ import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { startHttpAndWs } from '../node/server'
 import { normalizeHttpServerUrl } from '../node/utils'
+import { createInteractiveAuth } from '../recipes/interactive-auth'
 import { normalizeBasePath, resolveBasePath } from './_shared'
 
 const DEFAULT_PORT = 9999
@@ -205,6 +207,27 @@ export async function createDevServer(
   if (distDir)
     mountStaticHandler(app, basePath, resolve(distDir))
 
+  // Resolve authentication. The standalone dev server gates by default: when
+  // the author leaves `auth` unset (or `true`), auto-wire devframe's
+  // interactive OTP handler and print its code + magic-link banner once the
+  // server is listening (a gate is useless without surfacing the code). A
+  // `false` (including the `--no-auth` flag) opts out; a handler object is
+  // passed straight through to `startHttpAndWs`.
+  const authOption = flags.auth === false ? false : def.cli?.auth
+  let authHandler: DevframeAuthHandler | undefined
+  let resolvedAuth: boolean | DevframeAuthHandler
+  if (authOption === false) {
+    resolvedAuth = false
+  }
+  else if (typeof authOption === 'object') {
+    authHandler = authOption
+    resolvedAuth = authOption
+  }
+  else {
+    authHandler = createInteractiveAuth(ctx)
+    resolvedAuth = authHandler
+  }
+
   const started = await startHttpAndWs({
     context: ctx,
     host,
@@ -212,8 +235,11 @@ export async function createDevServer(
     app,
     path: bindPath,
     wsPort,
-    auth: def.cli?.auth,
+    auth: resolvedAuth,
     onReady: async (info) => {
+      // Print the auth banner before the caller's own onReady / browser open
+      // so the code is on screen by the time a browser lands on the page.
+      authHandler?.printBanner()
       await options.onReady?.(info)
       await maybeOpenBrowser(def, flags, `${info.origin}${basePath}`, options.openBrowser)
     },

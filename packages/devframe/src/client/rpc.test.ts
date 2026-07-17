@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getDevframeRpcClient } from './rpc'
 
 const CONNECTION_META_KEY = '__DEVFRAME_CONNECTION_META__'
+const CONNECTION_AUTH_TOKEN_KEY = '__DEVFRAME_CONNECTION_AUTH_TOKEN__'
 
 // Minimal fake WebSocket: records the URL it was dialed with (all this suite
 // needs) and never opens, so the trust handshake stays pending.
@@ -43,12 +44,14 @@ describe('getDevframeRpcClient — connection meta base', () => {
       origin: 'http://localhost:5173',
     })
     delete (globalThis as any)[CONNECTION_META_KEY]
+    delete (globalThis as any)[CONNECTION_AUTH_TOKEN_KEY]
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
     delete (globalThis as any)[CONNECTION_META_KEY]
+    delete (globalThis as any)[CONNECTION_AUTH_TOKEN_KEY]
   })
 
   it('publishes the meta annotated with the absolute base it resolved from', async () => {
@@ -81,6 +84,31 @@ describe('getDevframeRpcClient — connection meta base', () => {
     // Resolved against the inherited base, not the child's own `/__foo/`.
     expect(lastWsUrl()).toBe('ws://localhost:5173/__devtools/__ws')
     expect(rpc.connectionMeta.baseUrl).toBe('http://localhost:5173/__devtools/__connection.json')
+  })
+
+  it('uses a token embedded in the (hub-served) connection meta as the bearer token', async () => {
+    // A hub bakes the token into the per-frame meta so a cross-origin frame —
+    // which can't read the hub's localStorage — is pre-authorized on connect.
+    await getDevframeRpcClient({
+      baseURL: '/__foo/',
+      otpParam: false,
+      simpleAuth: false,
+      connectionMeta: { backend: 'websocket', websocket: { path: '__ws' }, authToken: 'hub-token' },
+    })
+
+    expect(lastWsUrl()).toContain('devframe_auth_token=hub-token')
+  })
+
+  it('prefers an explicit authToken option over the connection-meta token', async () => {
+    await getDevframeRpcClient({
+      baseURL: '/__foo/',
+      otpParam: false,
+      simpleAuth: false,
+      authToken: 'explicit-token',
+      connectionMeta: { backend: 'websocket', websocket: { path: '__ws' }, authToken: 'hub-token' },
+    })
+
+    expect(lastWsUrl()).toContain('devframe_auth_token=explicit-token')
   })
 
   it('ignores a window baseUrl when connection meta is passed explicitly', async () => {
