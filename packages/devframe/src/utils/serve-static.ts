@@ -1,9 +1,9 @@
-import type { EventHandler, H3 } from 'h3'
+import type { EventHandler } from 'h3'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createReadStream } from 'node:fs'
 import { stat } from 'node:fs/promises'
 import { Readable } from 'node:stream'
-import { defineHandler, withBase } from 'h3'
+import { defineHandler, H3 } from 'h3'
 import { lookup } from 'mrmime'
 import { extname, join, normalize, resolve, sep } from 'pathe'
 
@@ -168,13 +168,11 @@ export function serveStaticHandler(
 }
 
 /**
- * Mount {@link serveStaticHandler} on an h3 app at `base`, handling the
- * route pattern and prefix-stripping required by h3 v2.
+ * Mount {@link serveStaticHandler} on an h3 app at `base`.
  *
- * h3 v2's `app.use(base, handler)` only matches the exact `base` path and
- * does not strip the prefix from `event.url.pathname`. Static serving
- * needs both subpath matching (`/base/**`) and the URL stripped so the
- * file resolver sees paths relative to `dir` — this helper bundles both.
+ * h3's sub-app mount provides segment-boundary matching and strips `base`
+ * from `event.url.pathname`, so the file resolver sees paths relative to
+ * `dir`.
  */
 export function mountStaticHandler(
   app: H3,
@@ -182,13 +180,9 @@ export function mountStaticHandler(
   dir: string,
   options?: ServeStaticOptions,
 ): void {
-  const trimmed = base.replace(/\/$/, '')
-  const handler = serveStaticHandler(dir, options)
-  if (trimmed === '') {
-    app.use('/**', handler)
-    return
-  }
-  app.use(`${trimmed}/**`, withBase(trimmed, handler))
+  const staticApp = new H3()
+  staticApp.use(serveStaticHandler(dir, options))
+  app.mount(base.replace(/\/$/, ''), staticApp)
 }
 
 /**
