@@ -62,7 +62,9 @@ export interface DevframeRpcClientOptions {
    * (OTP) for "magic link" auth (e.g. a link the dev server prints). When
    * present, the client exchanges the code for a token and removes the parameter
    * from the URL. Set `false` to disable — e.g. integrations that drive their
-   * own authentication via `authenticateWithUrlOtp`. Default: `'devframe_otp'`.
+   * own authentication via `authenticateWithUrlOtp`.
+   *
+   * @default 'devframe_otp'
    */
   otpParam?: string | false
   /**
@@ -74,7 +76,9 @@ export interface DevframeRpcClientOptions {
    * block `prompt()` in cross-origin frames anyway.
    *
    * Set `false` to drive your own auth UI (a hub sets this on the plugin
-   * connections it manages, alongside supplying the token). Default: `true`.
+   * connections it manages, alongside supplying the token).
+   *
+   * @default true
    */
   simpleAuth?: boolean
   wsOptions?: Partial<WsRpcChannelOptions>

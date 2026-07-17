@@ -111,8 +111,8 @@ export interface DevframeCliOptions {
   /**
    * Authentication for the standalone dev server.
    *
-   *   - `undefined` / `true` (default) — the standalone adapters (`cli` /
-   *     `spa` / served `build`) auto-wire devframe's interactive OTP auth
+   *   - `undefined` / `true` — the standalone adapters (`cli` / `spa` /
+   *     served `build`) auto-wire devframe's interactive OTP auth
    *     (`createInteractiveAuth`): an untrusted client can only reach
    *     `anonymous:` methods until it exchanges the printed one-time code.
    *     The adapter prints the code + magic-link banner once the server is
@@ -126,6 +126,8 @@ export interface DevframeCliOptions {
    *
    * Hosted adapters (`vite`, `embedded`) ignore this and defer to the host's
    * auth; `@vitejs/devtools` honors the equivalent `devtools.clientAuth`.
+   *
+   * @default true
    */
   auth?: boolean | DevframeAuthHandler
   /**
