@@ -10,7 +10,7 @@ cleanupUnusedCatalogs: true
 ignoreWorkspaceRootCheck: true
 minimumReleaseAgeExclude:
   - nostics@1.1.4
-  - '@antfu/design@0.3.0'
+  - '@antfu/design@0.3.0 || 0.3.2'
   - crossws@0.4.8
   - iframe-pane@1.1.0
 shamefullyHoist: true
@@ -33,9 +33,9 @@ overrides:
   shell-quote: ^1.10.0
 catalog:
   '@discoveryjs/discovery': 1.0.0-beta.99
-  '@types/codemirror': ^5.60.16
+  '@types/codemirror': ^5.60.17
   jora: 1.0.0-beta.16
-  splitpanes: ^4.0.4
+  splitpanes: ^4.1.2
 catalogs:
   build:
     '@antfu/ni': ^30.2.0
@@ -44,10 +44,10 @@ catalogs:
     '@vitejs/plugin-vue': ^6.0.8
     mlly: ^1.8.2
     nuxt: ^4.4.8
-    tsdown: ^0.22.7
+    tsdown: ^0.22.8
     tsx: ^4.23.1
     turbo: ^2.10.5
-    vite: ^8.1.4
+    vite: ^8.1.5
     vite-plugin-solid: ^2.11.12
   deps:
     '@modelcontextprotocol/sdk': ^1.29.0
@@ -81,7 +81,7 @@ catalogs:
     vitepress: ^2.0.0-alpha.18
     vitepress-plugin-mermaid: ^2.0.17
   frontend:
-    '@antfu/design': ^0.3.0
+    '@antfu/design': ^0.3.2
     '@floating-ui/react': ^0.27.20
     '@iconify-json/catppuccin': ^1.2.17
     '@iconify-json/ph': ^1.2.2
@@ -100,7 +100,7 @@ catalogs:
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     colorjs.io: ^0.7.0
-    dompurify: ^3.4.2
+    dompurify: ^3.4.12
     floating-vue: ^5.2.2
     iframe-pane: ^1.1.0
     next: ^16.2.10
@@ -113,7 +113,7 @@ catalogs:
     tailwind-merge: ^3.6.0
     unocss: ^66.7.5
     vite-plugin-css-injected-by-js: ^5.0.1
-    vue: ^3.5.39
+    vue: ^3.5.40
   inlined:
     '@antfu/utils': ^9.3.0
     ua-parser-modern: ^0.1.1
