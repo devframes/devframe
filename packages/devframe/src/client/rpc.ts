@@ -215,13 +215,9 @@ export interface DevframeRpcClientMode {
   callOptional: DevframeRpcClient['callOptional']
 }
 
-function getStoredAuthToken(userAuthToken?: string, metaAuthToken?: string): string | undefined {
+function getStoredAuthToken(userAuthToken?: string): string | undefined {
   const getters = [
-    // Explicit option wins, then a token baked into the (hub-served) meta —
-    // the cross-origin channel a framed plugin relies on since it can't read
-    // the hub's `localStorage` — then this origin's own stored token.
     () => userAuthToken,
-    () => metaAuthToken,
     () => localStorage.getItem(CONNECTION_AUTH_TOKEN_KEY) ?? undefined,
     () => (window as any)?.[CONNECTION_AUTH_TOKEN_KEY],
     () => (globalThis as any)?.[CONNECTION_AUTH_TOKEN_KEY],
@@ -337,7 +333,10 @@ export async function getDevframeRpcClient(
   const context: DevframeRpcContext = {
     rpc: undefined!,
   }
-  const authToken = getStoredAuthToken(options.authToken, connectionMeta.authToken)
+  // An explicit option wins, then a token baked into the (hub-served) meta —
+  // the cross-origin channel a framed plugin relies on since it can't read the
+  // hub's `localStorage` — then this origin's own stored token.
+  const authToken = getStoredAuthToken(options.authToken || connectionMeta.authToken)
   // Persist a resolved token so one supplied out-of-band — e.g. a host that
   // bootstraps trust by passing `authToken` (read from its own page URL query)
   // — survives reconnects. The token is still sent to the server via the WS
