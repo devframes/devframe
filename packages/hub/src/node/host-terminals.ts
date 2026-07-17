@@ -175,6 +175,18 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     let currentResult: DevframeChildProcessResult | undefined
     let runId = 0
     let streamClosed = false
+    let session: DevframeChildProcessTerminalSession
+
+    // Keep the registered session's `status` in step with the process
+    // lifecycle so a hub-aware client (and any launcher tracking this session)
+    // sees `running` → `stopped`/`error` transitions instead of a value frozen
+    // at spawn time.
+    const markStatus = (next: DevframeTerminalSession['status']): void => {
+      if (session.status === next)
+        return
+      session.status = next
+      this.events.emit('terminal:session:updated', session)
+    }
 
     const closeStream = () => {
       if (streamClosed)
@@ -213,6 +225,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
 
     function createChildProcess() {
       const currentRun = ++runId
+      let runErrored = false
       const cp = exec(
         executeOptions.command,
         executeOptions.args || [],
@@ -271,13 +284,21 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       cp.process?.once('error', (error) => {
         if (currentRun !== runId)
           return
+        runErrored = true
         settle(cp.process?.exitCode ?? undefined)
         errorStream(error)
+        markStatus('error')
       })
       cp.process?.once('close', (code) => {
         settle(code ?? undefined)
-        if (currentRun === runId)
-          closeStream()
+        if (currentRun !== runId)
+          return
+        closeStream()
+        // A spawn/runtime error already settled the status; a non-zero exit
+        // code is a crash. A clean exit, or a signal kill (no numeric code —
+        // e.g. terminate()/restart()), is a deliberate/normal stop.
+        if (!runErrored)
+          markStatus(typeof code === 'number' && code !== 0 ? 'error' : 'stopped')
       })
 
       currentResult = {
@@ -304,14 +325,16 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         return
       cp?.kill()
       cp = createChildProcess()
+      markStatus('running')
     }
     const terminate = async () => {
       cp?.kill()
       cp = undefined
       closeStream()
+      markStatus('stopped')
     }
 
-    const session: DevframeChildProcessTerminalSession = {
+    session = {
       ...terminal,
       status: 'running',
       stream,

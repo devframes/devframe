@@ -194,7 +194,36 @@ export interface DevframeViewLauncher extends DevframeDockEntryBase {
     description?: string
     buttonStart?: string
     buttonLoading?: string
-    onLaunch: () => Promise<void>
+    /**
+     * Bound command id: the launch button, command palette entry, and any
+     * keybinding all resolve to this one handler. A viewer running out of
+     * process dispatches it over the `hub:commands:execute` RPC — the
+     * serializable path {@link onLaunch} can't cross, since a function is
+     * dropped when the entry is projected into the `devframe:docks` shared
+     * state. Register the command (with its handler) via `ctx.commands`.
+     */
+    command?: string
+    /**
+     * Id of the terminal session this launcher tracks (e.g. the one returned
+     * by `ctx.terminals.startChildProcess`). A viewer surfaces a first-class
+     * "view in terminal" action that calls `hub:docks:activate` with the
+     * terminals dock id and `{ sessionId: terminalSessionId }`, jumping the
+     * user straight to the running process.
+     */
+    terminalSessionId?: string
+    /**
+     * Latest single line of progress for inline display beneath the launcher
+     * (e.g. the tail of the tracked session's output). Author-set: the owner
+     * patches it via `docks.update()` as the process reports progress.
+     */
+    digest?: string
+    /**
+     * In-process launch handler. Optional: a same-process host can invoke it
+     * directly, but it does not survive projection into shared state, so an
+     * out-of-process viewer relies on {@link command} instead. Provide one or
+     * both.
+     */
+    onLaunch?: () => Promise<void>
   }
 }
 

@@ -24,8 +24,7 @@ export interface MessagesClientOptions {
  * dock client script reports into the very feed the server writes to.
  */
 export function createMessagesClient(rpc: DevframeRpcClient, options: MessagesClientOptions = {}): DevframeMessagesClient {
-  // The `hub:messages:*` ids aren't in the statically-typed server map.
-  const call = rpc.call as (name: string, ...args: any[]) => Promise<any>
+  const { call } = rpc
 
   function makeHandle(entry: DevframeMessageEntry): DevframeMessageHandle {
     let current = entry
@@ -37,17 +36,17 @@ export function createMessagesClient(rpc: DevframeRpcClient, options: MessagesCl
         return current.id
       },
       async update(patch) {
-        const updated = await call('hub:messages:update', current.id, patch) as DevframeMessageEntry | undefined
+        const updated = await call('hub:messages:update', current.id, patch)
         if (updated)
           current = updated
         return updated
       },
-      dismiss: () => call('hub:messages:remove', current.id) as Promise<void>,
+      dismiss: () => call('hub:messages:remove', current.id),
     }
   }
 
   async function add(input: DevframeMessageEntryInput): Promise<DevframeMessageHandle> {
-    const entry = await call('hub:messages:add', { ...options.defaults, ...input }) as DevframeMessageEntry
+    const entry = await call('hub:messages:add', { ...options.defaults, ...input })
     return makeHandle(entry)
   }
 
@@ -58,8 +57,8 @@ export function createMessagesClient(rpc: DevframeRpcClient, options: MessagesCl
 
   return {
     add,
-    remove: id => call('hub:messages:remove', id) as Promise<void>,
-    clear: () => call('hub:messages:clear') as Promise<void>,
+    remove: id => call('hub:messages:remove', id),
+    clear: () => call('hub:messages:clear'),
     info: levelShortcut('info'),
     warn: levelShortcut('warn'),
     error: levelShortcut('error'),

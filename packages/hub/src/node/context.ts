@@ -3,7 +3,7 @@ import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
 import type { DevframeCommandsHost } from '../types/commands'
 import type { DevframeDockActivation, DevframeDocksActiveState, DevframeDocksHost } from '../types/docks'
 import type { JsonRenderer, JsonRenderSpec } from '../types/json-render'
-import type { DevframeMessagesHost } from '../types/messages'
+import type { DevframeMessageEntry, DevframeMessageEntryInput, DevframeMessagesHost } from '../types/messages'
 import type { DevframeTerminalsHost } from '../types/terminals'
 import { createHostContext } from 'devframe/node'
 import { debounce } from 'perfect-debounce'
@@ -42,6 +42,43 @@ declare module 'devframe/types' {
      * @internal
      */
     'devframe:messages:updated': () => Promise<void>
+  }
+
+  interface DevframeRpcServerFunctions {
+    /**
+     * Ask the active viewer to switch its focused dock to `dockId`, optionally
+     * carrying `params` for the target dock to interpret (e.g.
+     * `{ sessionId }` for the terminals dock). Any connected client may call
+     * it — a mounted devframe in its own iframe steers the host shell's dock
+     * selection. Handled by {@link import('./rpc-builtins').hubDocksActivate}.
+     */
+    'hub:docks:activate': (input: { dockId: string, params?: Record<string, unknown> }) => Promise<void>
+    /**
+     * Invoke a registered server command by id; trailing args are forwarded to
+     * the command's handler. Handled by
+     * {@link import('./rpc-builtins').hubCommandsExecute}.
+     */
+    'hub:commands:execute': (id: string, ...args: any[]) => Promise<unknown>
+    /**
+     * Add a message from a browser client into the hub's messages feed
+     * (marked `from: 'browser'`); returns the serializable entry. Handled by
+     * {@link import('./rpc-builtins').hubMessagesAdd}.
+     */
+    'hub:messages:add': (input: DevframeMessageEntryInput) => Promise<DevframeMessageEntry>
+    /** Patch a message by id; resolves the updated entry (or `undefined`). */
+    'hub:messages:update': (id: string, patch: Partial<DevframeMessageEntryInput>) => Promise<DevframeMessageEntry | undefined>
+    /** Remove a message by id. */
+    'hub:messages:remove': (id: string) => Promise<void>
+    /** Remove every message. */
+    'hub:messages:clear': () => Promise<void>
+    /**
+     * Send input to an interactive PTY session spawned via
+     * `ctx.terminals.startPtySession`. Handled by
+     * {@link import('./rpc-builtins').hubTerminalsWrite}.
+     */
+    'hub:terminals:write': (id: string, data: string) => Promise<void>
+    /** Resize an interactive PTY session by id. */
+    'hub:terminals:resize': (id: string, cols: number, rows: number) => Promise<void>
   }
 }
 
