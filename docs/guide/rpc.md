@@ -231,6 +231,8 @@ declare module 'devframe' {
 
 For server→client calls invoked via `ctx.rpc.broadcast`, augment `DevframeRpcClientFunctions` the same way.
 
+Augment one of the canonical module specifiers where these interfaces live — `declare module 'devframe'` or `declare module 'devframe/types'` (the form `@devframes/hub` uses). A wrapper package that re-exports the interface under a renamed alias (e.g. `DevToolsRpcServerFunctions`) is a different declaration, so augmenting the alias no longer merges into the base interface.
+
 ## Static dumps
 
 For `static` functions, Devframe records the handler's output during `createBuild` and bakes it into the build:

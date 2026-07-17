@@ -2,11 +2,11 @@ import type { RpcFunctionDefinitionAnyWithContext } from '../../rpc/types'
 import type { DevframeNodeContext } from '../../types/context'
 import { describe, expect, it, vi } from 'vitest'
 import { DevframeAgentHost } from '../host-agent'
-import { RpcFunctionsHost } from '../host-functions'
+import { RpcFunctionsHostImpl } from '../host-functions'
 
 function createContext(): DevframeNodeContext {
   const ctx = {} as DevframeNodeContext
-  ctx.rpc = new RpcFunctionsHost(ctx)
+  ctx.rpc = new RpcFunctionsHostImpl(ctx)
   ctx.agent = new DevframeAgentHost(ctx)
   return ctx
 }
