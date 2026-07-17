@@ -5,10 +5,15 @@
  * Two ways in:
  *
  * ```ts
- * // 1. explicit, from the target's code
+ * // 1. explicit, from the target's code — pass sources inline …
  * import { exposeDataInspector } from '@devframes/plugin-data-inspector/inject'
- * import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
  *
+ * await exposeDataInspector({
+ *   sources: [{ id: 'app:store', title: 'App store', data: () => store }],
+ * })
+ *
+ * // … or register them separately through the global registry.
+ * import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
  * registerDataSource({ id: 'app:store', title: 'App store', data: () => store })
  * await exposeDataInspector()
  * ```
@@ -27,6 +32,7 @@
  * treat the endpoint like a debugger port.
  */
 import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
+import type { DataSourceEntry } from '../registry/index'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -49,6 +55,14 @@ export interface AgentDiscovery {
 }
 
 export interface ExposeDataInspectorOptions {
+  /**
+   * Data sources to expose, registered before the endpoint opens. A
+   * convenience over calling `registerDataSource` yourself; the two paths
+   * share one process-global registry, so inline sources and separately
+   * registered ones coexist (a later registration replaces an earlier one
+   * with the same id).
+   */
+  sources?: DataSourceEntry[]
   /** Preferred port (falls back to a free one nearby). Default 9878. */
   port?: number
   /**
@@ -82,6 +96,12 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
   // Deferred so `--import`ing the agent never pulls the whole node surface
   // into processes that don't enable it.
   const { setupDataInspector } = await import('../node/index')
+
+  if (options.sources?.length) {
+    const { registerDataSource } = await import('../registry/index')
+    for (const source of options.sources)
+      registerDataSource(source)
+  }
 
   const cwd = process.cwd()
   const port = await getPort({ port: options.port ?? 9878, portRange: [9878, 9978] })

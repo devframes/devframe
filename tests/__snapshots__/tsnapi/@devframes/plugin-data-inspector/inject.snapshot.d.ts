@@ -14,6 +14,7 @@ export interface DataInspectorAgent {
   close: () => Promise<void>;
 }
 export interface ExposeDataInspectorOptions {
+  sources?: DataSourceEntry[];
   port?: number;
   auth?: boolean;
   token?: string;

@@ -10,6 +10,27 @@ export interface FilterOptions {
   excludeDollarProps?: boolean
 }
 
+/**
+ * One structural step from a query result toward a nested node, recorded by
+ * the normalizer on each depth-truncated marker so the client can lazily
+ * re-fetch that subtree with a fresh depth budget (see `queryPath`). Each
+ * segment mirrors exactly one descent the normalizer makes:
+ *
+ *   - `['k', key]`   own object property, or a string-keyed Map value
+ *   - `['i', index]` array item (index into the filtered array)
+ *   - `['s', index]` Set value
+ *   - `['mk', index]` / `['mv', index]` non-string Map entry key / value
+ */
+export type PathSegment
+  = | ['k', string]
+    | ['i', number]
+    | ['s', number]
+    | ['mk', number]
+    | ['mv', number]
+
+/** A path from the query root to a nested node: a list of structural steps. */
+export type NodePath = PathSegment[]
+
 /** A query recipe: the text plus the filter options it was authored with. */
 export interface Query extends FilterOptions {
   query: string

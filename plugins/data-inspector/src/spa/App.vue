@@ -82,6 +82,7 @@ function saveCurrent(input: { title?: string, description?: string, scope: Saved
             :stats-stale="wb.statsStale.value"
             :error="wb.serverError.value"
             :running="wb.running.value"
+            :expand="wb.expandNode"
             @rerun="wb.runNow()"
             @query-subquery="wb.applySubquery($event)"
             @query-append="wb.appendPath($event)"

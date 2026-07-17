@@ -10,10 +10,10 @@
  *   - suggestions come from jora's stat mode, flattened into plain
  *     RPC-safe completion items.
  */
-import type { QueryOutcome, SuggestItem, SuggestOutcome } from './contract'
+import type { NodePath, QueryOutcome, SuggestItem, SuggestOutcome } from './contract'
 import type { NormalizeOptions } from './normalize'
 import jora from 'jora'
-import { normalize } from './normalize'
+import { navigate, normalize } from './normalize'
 
 export type { SuggestItem, SuggestOutcome } from './contract'
 
@@ -94,6 +94,29 @@ export function runQuery(target: unknown, query: string, options?: NormalizeOpti
     const queryMs = Math.round((performance.now() - started) * 100) / 100
     const { data, stats } = normalize(raw, options)
     // The normalizer guarantees plain JSON, so this measures the actual wire payload.
+    const payloadBytes = new TextEncoder().encode(JSON.stringify(data) ?? '').length
+    return { ok: true, result: data, stats: { queryMs, normalize: stats, payloadBytes } }
+  }
+  catch (error) {
+    const e = error instanceof Error ? error : new Error(String(error))
+    return { ok: false, error: { message: e.message, name: e.name } }
+  }
+}
+
+/**
+ * Lazy-expand a depth-truncated node: re-run the base query against the live
+ * object, re-descend to the node the `NodePath` addresses, and normalize just
+ * that subtree with a fresh depth budget. The path comes from a `$truncated:
+ * 'depth'` marker the client is expanding, so the same filter options must be
+ * threaded through (they shift array indices and drop keys).
+ */
+export function runQueryAtPath(target: unknown, query: string, path: NodePath, options?: NormalizeOptions): QueryOutcome {
+  try {
+    const started = performance.now()
+    const raw = createQuery(query)(target)
+    const node = navigate(raw, path, options)
+    const queryMs = Math.round((performance.now() - started) * 100) / 100
+    const { data, stats } = normalize(node, options)
     const payloadBytes = new TextEncoder().encode(JSON.stringify(data) ?? '').length
     return { ok: true, result: data, stats: { queryMs, normalize: stats, payloadBytes } }
   }

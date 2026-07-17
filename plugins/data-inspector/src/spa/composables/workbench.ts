@@ -7,7 +7,7 @@
  * An empty query runs `$` (the root), so every source lands on a full view.
  */
 import type { InjectionKey } from 'vue'
-import type { DataSourceMeta, FilterOptions, QueryOutcome, QueryStats, SkeletonOutcome, SuggestItem, SuggestOutcome } from '../../engine'
+import type { DataSourceMeta, FilterOptions, NodePath, QueryOutcome, QueryStats, SkeletonOutcome, SuggestItem, SuggestOutcome } from '../../engine'
 import jora from 'jora'
 import { computed, inject, reactive, ref, shallowRef, watch } from 'vue'
 import { backend } from './rpc'
@@ -21,6 +21,12 @@ const AUTO_RUN_DEBOUNCE = 400
 const SUGGEST_DEBOUNCE = 150
 const URL_SYNC_DEBOUNCE = 300
 const DRAFTS_KEY = 'data-inspector:drafts'
+
+/** Default period for the "auto rerun every N seconds" poller. */
+const DEFAULT_AUTO_RERUN_SECONDS = 5
+/** Clamp the poll period into a sane range (sub-second polling is abusive). */
+const MIN_AUTO_RERUN_SECONDS = 1
+const MAX_AUTO_RERUN_SECONDS = 3600
 
 const FILTER_KEYS = ['excludeFunctions', 'excludeUnderscoreProps', 'excludeDollarProps'] as const
 
@@ -51,18 +57,28 @@ function checkSyntax(query: string): SyntaxState {
   }
 }
 
+/** Clamp a poll period (seconds) into the accepted range. */
+function clampSeconds(value: number): number {
+  if (!Number.isFinite(value))
+    return DEFAULT_AUTO_RERUN_SECONDS
+  return Math.min(MAX_AUTO_RERUN_SECONDS, Math.max(MIN_AUTO_RERUN_SECONDS, Math.round(value)))
+}
+
 /** Read the shareable workbench state from the page URL. */
-function readUrlState(): { sourceId: string, query: string, filters: FilterOptions } {
+function readUrlState(): { sourceId: string, query: string, filters: FilterOptions, autoRun: boolean, autoRunSeconds: number } {
   const params = new URLSearchParams(location.search)
   const filters: FilterOptions = {}
   for (const key of FILTER_KEYS) {
     if (params.get(key) === '1')
       filters[key] = true
   }
+  const seconds = Number(params.get('autorunSecs'))
   return {
     sourceId: params.get('source') ?? '',
     query: params.get('query') ?? '',
     filters,
+    autoRun: params.get('autorun') === '1',
+    autoRunSeconds: seconds ? clampSeconds(seconds) : DEFAULT_AUTO_RERUN_SECONDS,
   }
 }
 
@@ -99,6 +115,10 @@ export function useWorkbench() {
     ...initial.filters,
   })
 
+  // ── auto-rerun: poll the live object on a fixed period ──────────────
+  const autoRun = ref(initial.autoRun)
+  const autoRunSeconds = ref(initial.autoRunSeconds)
+
   // ── URL persistence: source, query, and filters stay shareable ──────
   let urlTimer: ReturnType<typeof setTimeout> | undefined
   function syncUrl(): void {
@@ -112,6 +132,10 @@ export function useWorkbench() {
       for (const key of FILTER_KEYS) {
         if (settings[key])
           params.set(key, '1')
+      }
+      if (autoRun.value) {
+        params.set('autorun', '1')
+        params.set('autorunSecs', String(autoRunSeconds.value))
       }
       const search = params.toString()
       history.replaceState(null, '', search ? `?${search}` : location.pathname)
@@ -201,6 +225,40 @@ export function useWorkbench() {
   function scheduleRun(): void {
     clearTimeout(runTimer)
     runTimer = setTimeout(() => void runNow(), AUTO_RUN_DEBOUNCE)
+  }
+
+  // ── auto-rerun poller: re-run the current query on a fixed period ────
+  // Re-runs read the live object afresh (the whole point — watch a value
+  // change over time). A tick is skipped while a run is in flight or the
+  // query is syntactically broken, so the poller never piles up requests
+  // or spams the wire with queries that can't parse.
+  let autoRunTimer: ReturnType<typeof setInterval> | undefined
+  function restartAutoRerun(): void {
+    clearInterval(autoRunTimer)
+    if (!autoRun.value)
+      return
+    autoRunTimer = setInterval(() => {
+      if (running.value || syntax.value.kind === 'error')
+        return
+      void runNow()
+    }, clampSeconds(autoRunSeconds.value) * 1000)
+  }
+
+  /**
+   * Lazily expand a depth-truncated node: fetch a fresh, depth-limited slice
+   * of the subtree the `$truncated: 'depth'` marker at `path` stands in for.
+   * Runs against the same source/query/filters as the current result, so the
+   * slice lines up with what is on screen. Returns the normalized subtree, or
+   * throws with a readable message the caller surfaces inline.
+   */
+  async function expandNode(path: NodePath): Promise<unknown> {
+    if (!sourceId.value)
+      throw new Error('no source selected')
+    const text = query.value.trim() || '$'
+    const outcome = await backend().queryPath(sourceId.value, text, path, { ...settings })
+    if (!outcome.ok)
+      throw new Error(`${outcome.error.name}: ${outcome.error.message}`)
+    return outcome.result
   }
 
   // ── skeleton: what data are available (query-independent) ──────────
@@ -297,6 +355,15 @@ export function useWorkbench() {
     void runNow()
     void loadSkeleton()
   })
+  watch([autoRun, autoRunSeconds], () => {
+    autoRunSeconds.value = clampSeconds(autoRunSeconds.value)
+    syncUrl()
+    restartAutoRerun()
+  })
+  // Honor auto-rerun restored from a shared URL right away (watchers above
+  // are lazy, so an already-on toggle needs an initial kick).
+  if (autoRun.value)
+    restartAutoRerun()
 
   // ── query composition helpers ──────────────────────────────────────
   /** Set the query to a single top-level key (from the data-shape panel). */
@@ -325,6 +392,8 @@ export function useWorkbench() {
     activeSource,
     query,
     settings,
+    autoRun,
+    autoRunSeconds,
     syntax,
     running,
     serverError,
@@ -338,6 +407,7 @@ export function useWorkbench() {
     skeletonLoading,
     loadSources,
     loadSkeleton,
+    expandNode,
     runNow,
     requestSuggestions,
     scheduleSuggestions,

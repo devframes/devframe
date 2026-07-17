@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { normalize } from '../src/engine/normalize'
-import { runQuery, suggest } from '../src/engine/query-engine'
+import { navigate, normalize } from '../src/engine/normalize'
+import { runQuery, runQueryAtPath, suggest } from '../src/engine/query-engine'
 import { skeletonOf } from '../src/engine/skeleton'
 
 class Store {
@@ -54,6 +54,64 @@ describe('normalize', () => {
       excludeDollarProps: true,
     }) as { data: Record<string, unknown> }
     expect(Object.keys(data)).toEqual(['keep'])
+  })
+})
+
+describe('depth truncation + lazy expand', () => {
+  // A graph deeper than a tiny maxDepth so the walker truncates partway.
+  function deep() {
+    return {
+      level0: {
+        level1: {
+          level2: {
+            level3: { leaf: 'found', more: [1, 2, 3] },
+          },
+        },
+      },
+    }
+  }
+
+  it('marks depth-truncated nodes with a re-fetchable $path', () => {
+    const { data, stats } = normalize(deep(), { maxDepth: 2 }) as { data: any, stats: any }
+    expect(stats.truncatedDepth).toBeGreaterThan(0)
+    const marker = data.level0.level1
+    expect(marker.$truncated).toBe('depth')
+    expect(marker.$path).toEqual([['k', 'level0'], ['k', 'level1']])
+  })
+
+  it('navigate() re-descends a live graph along a node path', () => {
+    const g = deep()
+    expect(navigate(g, [['k', 'level0'], ['k', 'level1'], ['k', 'level2']])).toBe(g.level0.level1.level2)
+    expect(navigate(g, [['k', 'nope']])).toBeUndefined()
+  })
+
+  it('navigate() re-applies excludeFunctions to array indices', () => {
+    const g = { list: [() => {}, { keep: 1 }, () => {}, { keep: 2 }] }
+    // With functions filtered out, display index 1 is the { keep: 2 } object.
+    expect(navigate(g, [['k', 'list'], ['i', 1]], { excludeFunctions: true })).toEqual({ keep: 2 })
+    // Without filtering, display index 1 is the first plain object.
+    expect(navigate(g, [['k', 'list'], ['i', 1]])).toEqual({ keep: 1 })
+  })
+
+  it('navigate() handles Set and non-string-keyed Map steps', () => {
+    const key = { id: 1 }
+    const g = { tags: new Set(['a', 'b']), map: new Map<unknown, unknown>([[key, 'v']]) }
+    expect(navigate(g, [['k', 'tags'], ['s', 1]])).toBe('b')
+    expect(navigate(g, [['k', 'map'], ['mk', 0]])).toBe(key)
+    expect(navigate(g, [['k', 'map'], ['mv', 0]])).toBe('v')
+  })
+
+  it('runQueryAtPath re-runs and returns a fresh slice of the subtree', () => {
+    const out = runQueryAtPath(deep(), '$', [['k', 'level0'], ['k', 'level1']], { maxDepth: 3 })
+    expect(out.ok).toBe(true)
+    if (out.ok) {
+      // The subtree normalizes from level2 with a fresh budget, reaching the leaf.
+      expect(out.result).toMatchObject({ level2: { level3: { leaf: 'found' } } })
+    }
+  })
+
+  it('runQueryAtPath fails soft on a broken base query', () => {
+    expect(runQueryAtPath(deep(), 'nope.method()', []).ok).toBe(false)
   })
 })
 
