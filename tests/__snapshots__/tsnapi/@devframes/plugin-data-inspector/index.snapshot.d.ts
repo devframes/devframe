@@ -10,20 +10,34 @@ export interface DataInspectorDevframeOptions {
   port?: number;
   auth?: boolean;
 }
+export interface DataSourceEntry {
+  id: string;
+  title: string;
+  description?: string;
+  icon?: string;
+  data: unknown | (() => unknown | Promise<unknown>);
+  static?: boolean;
+  queries?: Query[];
+}
+export interface DataSourcesService {
+  register: (_: DataSourceEntry) => () => void;
+  unregister: (_: string) => void;
+  list: () => DataSourceMeta[];
+  get: (_: string) => DataSourceEntry | undefined;
+  onChanged: (_: () => void) => () => void;
+}
 // #endregion
 
 // #region Functions
 export declare function createDataInspectorDevframe(_?: DataInspectorDevframeOptions): DevframeDefinition;
+export declare function registerDataSource(_: DataSourceEntry): () => void;
+// #endregion
+
+// #region Variables
+export declare const DATA_SOURCES_SERVICE_ID: string;
 // #endregion
 
 // #region Default Export
 declare const _default: DevframeDefinition;
 export default _default
-// #endregion
-
-// #region Other
-export { DATA_SOURCES_SERVICE_ID }
-export { DataSourceEntry }
-export { DataSourcesService }
-export { registerDataSource }
 // #endregion

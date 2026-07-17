@@ -37,12 +37,16 @@ export default defineConfig([
     dts: false,
     entry: serverEntries,
   },
-  {
+  // One dts graph PER entry: a single-entry graph can never split shared
+  // chunks, so declarations always inline and the emitted .d.mts files are
+  // byte-deterministic (a combined graph let rolldown hoist entry contents
+  // into shared chunks nondeterministically, flaking the tsnapi snapshots).
+  ...Object.entries({ ...clientEntries, ...serverEntries }).map(([name, source]) => ({
     clean: false,
-    platform: 'neutral',
+    platform: 'neutral' as const,
     tsconfig,
     dts: { emitDtsOnly: true },
     outExtensions: () => ({ dts: '.d.mts' }),
-    entry: { ...clientEntries, ...serverEntries },
-  },
+    entry: { [name]: source },
+  })),
 ])
