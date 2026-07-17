@@ -19,6 +19,9 @@ export default defineDevframe({
     command: 'devframe-files-inspector',
     port: 9876,
     distDir,
+    // Single-user localhost demo (and e2e target): skip the trust handshake
+    // the standalone dev server now gates with by default.
+    auth: false,
   },
   spa: { loader: 'none' },
   setup(ctx) {
