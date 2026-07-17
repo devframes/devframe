@@ -25,6 +25,7 @@ export interface ExposeDataInspectorOptions {
 // #endregion
 
 // #region Functions
+export declare function createGlobalThisDataSource(): DataSourceEntry;
 export declare function exposeDataInspector(_?: ExposeDataInspectorOptions): Promise<DataInspectorAgent>;
 // #endregion
 

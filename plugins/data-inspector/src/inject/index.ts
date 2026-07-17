@@ -23,6 +23,11 @@
  * DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject server.js
  * ```
  *
+ * On that zero-code path there's nowhere to call `registerDataSource`, so the
+ * agent auto-registers a **`globalThis`** source: assign anything you want to
+ * inspect onto the global object (`globalThis.store = store`) and query it
+ * live. Opt out with `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
+ *
  * It binds `127.0.0.1` and requires devframe's trust handshake by
  * default: a random pre-shared token is minted per run, printed to stderr,
  * and written (with the endpoint) to the discovery file
@@ -89,6 +94,24 @@ export interface DataInspectorAgent {
   websocket: string
   token?: string
   close: () => Promise<void>
+}
+
+/**
+ * A data source exposing the inspected process's global object. On the
+ * zero-code `--import` path there is nowhere to call `registerDataSource`, so
+ * assigning to `globalThis` is how you surface things to inspect
+ * (`globalThis.store = store`); this source makes them queryable live. The
+ * factory reads `globalThis` at query time, so late assignments show up on the
+ * next run.
+ */
+export function createGlobalThisDataSource(): DataSourceEntry {
+  return {
+    id: 'globalThis',
+    title: 'globalThis',
+    description: 'The global object of the inspected process. Assign values to inspect them, e.g. globalThis.store = store',
+    icon: 'i-ph:globe-duotone',
+    data: () => globalThis,
+  }
 }
 
 /** Start the agent endpoint in the current process. */
@@ -174,6 +197,9 @@ if (process.env.DEVFRAME_DATA_INSPECTOR === '1' || process.env.DEVFRAME_DATA_INS
     auth: process.env.DEVFRAME_DATA_INSPECTOR_AUTH !== '0',
     token: process.env.DEVFRAME_DATA_INSPECTOR_TOKEN,
     exampleSource: process.env.DEVFRAME_DATA_INSPECTOR_EXAMPLE !== '0',
+    // Zero-code path: with no chance to call `registerDataSource`, expose
+    // `globalThis` so assigning to it is enough to inspect anything.
+    sources: process.env.DEVFRAME_DATA_INSPECTOR_GLOBAL !== '0' ? [createGlobalThisDataSource()] : undefined,
   }).catch((error) => {
     console.error('[data-inspector] agent failed to start:', error)
   })

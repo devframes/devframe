@@ -129,6 +129,16 @@ Or with zero code changes:
 DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject server.js
 ```
 
+On this zero-code path there is nowhere to call `registerDataSource`, so the agent auto-registers a **`globalThis`** source. Assign anything you want to inspect onto the global object and query it live:
+
+```ts
+// somewhere in the running process
+globalThis.store = store
+globalThis.cache = cache
+```
+
+Then query `store`, `cache`, or `keys($)` to see what's there. The source reads `globalThis` at query time, so assignments made after the agent started show up on the next run. Opt out with `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
+
 The agent binds `127.0.0.1`, requires devframe's trust handshake with a per-run pre-shared token, and advertises its endpoint in `node_modules/.data-inspector/agent.json` — `devframe-data-inspector attach` consumes it automatically (or pass `ws://…` and `--token` explicitly). Queries execute inside the target process, where the live objects are. Treat the endpoint like a debugger port.
 
 ## RPC surface
