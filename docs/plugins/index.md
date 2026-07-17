@@ -10,6 +10,7 @@ Each plugin is built with a **different UI framework**. That is deliberate: devf
 
 | Plugin | UI framework | What it does |
 |--------|--------------|--------------|
+| [Data Inspector](./data-inspector) | Vue | Query live server-side objects with jora — sources contributed by plugins, hosts, data files, or attached processes. |
 | [Devframe Inspector](./inspect) | Vue | Browse the RPC registry, invoke read-only queries, watch shared state update live, and explore the agent surface. |
 | [Accessibility Inspector](./a11y) | Solid | Run axe-core against a host app, list WCAG violations, and highlight the offending element in the page on hover. |
 | [Git](./git) | React (Next.js) | A repository dashboard — status, a commit graph, branches, and diffs, with optional staging and committing. |
@@ -18,7 +19,7 @@ Each plugin is built with a **different UI framework**. That is deliberate: devf
 
 ## One client, any framework
 
-The five plugins span Vue, Solid, React, Svelte, and framework-free TypeScript, yet they share the same node-side surface: register RPC functions, publish shared state, and connect from the browser with `connectDevframe`. Whatever renders the UI — a reactive framework or a handful of DOM calls — talks to the backend through the same protocol.
+The collection spans Vue, Solid, React, Svelte, and framework-free TypeScript, yet every plugin shares the same node-side surface: register RPC functions, publish shared state, and connect from the browser with `connectDevframe`. Whatever renders the UI — a reactive framework or a handful of DOM calls — talks to the backend through the same protocol.
 
 This is the framework-agnostic promise in practice. The browser bundle is the author's to choose; devframe handles the transport, the data model, the adapters, and the agent surface underneath.
 

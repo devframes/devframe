@@ -62,6 +62,7 @@ function helpersItems(prefix: string) {
 function pluginsItems(prefix: string) {
   return [
     { text: 'Overview', link: `${prefix}/plugins/` },
+    { text: 'Data Inspector', link: `${prefix}/plugins/data-inspector` },
     { text: 'Devframe Inspector', link: `${prefix}/plugins/inspect` },
     { text: 'Accessibility Inspector', link: `${prefix}/plugins/a11y` },
     { text: 'Git', link: `${prefix}/plugins/git` },

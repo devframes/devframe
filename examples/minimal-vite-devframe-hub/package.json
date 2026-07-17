@@ -15,6 +15,7 @@
     "@devframes/hub": "workspace:*",
     "@devframes/plugin-a11y": "workspace:*",
     "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-data-inspector": "workspace:*",
     "@devframes/plugin-git": "workspace:*",
     "@devframes/plugin-inspect": "workspace:*",
     "@devframes/plugin-messages": "workspace:*",

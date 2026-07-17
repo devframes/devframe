@@ -172,6 +172,9 @@
       "@devframes/plugin-git": [
         "./plugins/git/src/index.ts"
       ],
+      "devframe/recipes/interactive-auth": [
+        "./packages/devframe/src/recipes/interactive-auth.ts"
+      ],
       "devframe/recipes/open-helpers": [
         "./packages/devframe/src/recipes/open-helpers.ts"
       ],
@@ -180,6 +183,30 @@
       ],
       "devframe": [
         "./packages/devframe/src"
+      ],
+      "@devframes/plugin-data-inspector/client": [
+        "./plugins/data-inspector/src/client/index.ts"
+      ],
+      "@devframes/plugin-data-inspector/node": [
+        "./plugins/data-inspector/src/node/index.ts"
+      ],
+      "@devframes/plugin-data-inspector/registry": [
+        "./plugins/data-inspector/src/registry/index.ts"
+      ],
+      "@devframes/plugin-data-inspector/engine": [
+        "./plugins/data-inspector/src/engine/index.ts"
+      ],
+      "@devframes/plugin-data-inspector/inject": [
+        "./plugins/data-inspector/src/inject/index.ts"
+      ],
+      "@devframes/plugin-data-inspector/cli": [
+        "./plugins/data-inspector/src/cli.ts"
+      ],
+      "@devframes/plugin-data-inspector/vite": [
+        "./plugins/data-inspector/src/vite.ts"
+      ],
+      "@devframes/plugin-data-inspector": [
+        "./plugins/data-inspector/src/index.ts"
       ],
       "@devframes/plugin-inspect/client": [
         "./plugins/inspect/src/client/index.ts"
