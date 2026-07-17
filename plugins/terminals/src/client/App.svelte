@@ -4,7 +4,7 @@
   import type { DotState } from './design'
   import { button, dot, iconButton, nav, navBrand, navTab, tag, toolbar } from './design'
   import { onMount } from 'svelte'
-  import { PRESETS_STATE_KEY, SESSIONS_STATE_KEY } from '../constants'
+  import { DOCKS_ACTIVE_STATE_KEY, PLUGIN_ID, PRESETS_STATE_KEY, SESSIONS_STATE_KEY } from '../constants'
   import TerminalView from './TerminalView.svelte'
 
   const { rpc, autostart } = $props<{
@@ -32,6 +32,28 @@
   let presetsOpen = $state(false)
 
   const activeSession = $derived(sessions.find(s => s.id === activeId) ?? null)
+
+  // A focus request that arrived (via the hub's dock-activation slot) before
+  // its session showed up in the list. Applied one-shot the moment a matching
+  // session appears, then cleared so the user's own tab clicks stay honored.
+  let pendingFocusId: string | null = null
+
+  /**
+   * Focus a session by id, on request from the hub's cross-iframe dock
+   * activation (e.g. Vite DevTools navigating to the build it just spawned).
+   * Focuses immediately when the session is already known; otherwise waits for
+   * it to arrive. An unknown/ended id is a no-op — the default selection
+   * (most-recent session) stands.
+   */
+  function requestFocus(id: string): void {
+    if (sessions.some(s => s.id === id)) {
+      activeId = id
+      pendingFocusId = null
+    }
+    else {
+      pendingFocusId = id
+    }
+  }
 
   function readHashId(): string | null {
     if (typeof location === 'undefined')
@@ -61,6 +83,14 @@
   }
 
   function pickActive(list: TerminalSessionInfo[]): void {
+    // A queued focus request (from the hub's dock activation) wins over the
+    // default pick the moment its session lands, then clears so it fires
+    // exactly once and the user's own tab clicks stay honored.
+    if (pendingFocusId && list.some(x => x.id === pendingFocusId)) {
+      activeId = pendingFocusId
+      pendingFocusId = null
+      return
+    }
     if (activeId && !list.some(x => x.id === activeId))
       activeId = null
     if (!activeId && list.length) {
@@ -121,10 +151,35 @@
     }
   })
 
+  // The hub mirrors the most recent dock activation here. When it targets this
+  // dock and carries a session id, focus that session — this is how a mounted
+  // devframe (e.g. Vite DevTools) navigates the user straight to a spawned
+  // build's terminal, whether the dock was already open or mounts in response.
+  let offActivation: (() => void) | undefined
+
+  function applyActivation(activation: unknown): void {
+    if (!activation || typeof activation !== 'object')
+      return
+    const { dockId, params } = activation as { dockId?: string, params?: Record<string, unknown> }
+    if (dockId !== PLUGIN_ID)
+      return
+    const sessionId = params?.sessionId
+    if (typeof sessionId === 'string')
+      requestFocus(sessionId)
+  }
+
+  onMount(() => {
+    rpc.sharedState.get(DOCKS_ACTIVE_STATE_KEY, { initialValue: { activation: null } }).then((state: any) => {
+      applyActivation(state.value().activation)
+      offActivation = state.on('updated', (full: any) => applyActivation(full.activation))
+    })
+    return () => offActivation?.()
+  })
+
   onMount(async () => {
     let existing: TerminalSessionInfo[] | null = null
     try {
-      existing = await rpc.call('devframes-plugin-terminals:list') as TerminalSessionInfo[]
+      existing = await rpc.call('devframes:plugin:terminals:list') as TerminalSessionInfo[]
     }
     catch {
       existing = null
@@ -145,7 +200,7 @@
 
   async function spawn(req: any): Promise<void> {
     try {
-      const info = await rpc.call('devframes-plugin-terminals:spawn', req) as any
+      const info = await rpc.call('devframes:plugin:terminals:spawn', req) as any
       if (info?.id)
         activeId = info.id
     }
@@ -159,7 +214,7 @@
 
   function commitRename(id: string, title: string): void {
     renamingId = null
-    rpc.call('devframes-plugin-terminals:rename', { id, title: title.trim() }).catch(() => {})
+    rpc.call('devframes:plugin:terminals:rename', { id, title: title.trim() }).catch(() => {})
   }
 
   function focusSelect(node: HTMLInputElement) {
@@ -232,7 +287,7 @@
                 tabindex="-1"
                 aria-label="Close terminal"
                 class="i-ph-x op0 group-hover:op60 hover:op100! transition-opacity shrink-0"
-                onclick={(e) => { e.stopPropagation(); rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {}) }}
+                onclick={(e) => { e.stopPropagation(); rpc.call('devframes:plugin:terminals:remove', { id: s.id }).catch(() => {}) }}
                 onkeydown={() => {}}
               ></span>
             {/if}
@@ -318,10 +373,10 @@
       <div class="flex-1"></div>
 
       {#if !isExternal(s)}
-        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => rpc.call('devframes-plugin-terminals:restart', { id: s.id }).catch(() => {})}>
+        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => rpc.call('devframes:plugin:terminals:restart', { id: s.id }).catch(() => {})}>
           <div class="i-ph-arrow-clockwise-duotone"></div>
         </button>
-        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill" onclick={() => rpc.call('devframes-plugin-terminals:remove', { id: s.id }).catch(() => {})}>
+        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill" onclick={() => rpc.call('devframes:plugin:terminals:remove', { id: s.id }).catch(() => {})}>
           <div class="i-ph-trash-duotone"></div>
         </button>
       {/if}

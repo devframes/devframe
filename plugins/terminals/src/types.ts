@@ -17,7 +17,7 @@ export type TerminalBackend = 'pty' | 'pipe'
 
 /**
  * Serializable descriptor for a single terminal session. Lives in the
- * `devframes-plugin-terminals:sessions` shared state and is returned by the
+ * `devframes:plugin:terminals:sessions` shared state and is returned by the
  * `list` RPC.
  */
 export interface TerminalSessionInfo {

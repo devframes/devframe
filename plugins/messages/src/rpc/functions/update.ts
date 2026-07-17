@@ -8,7 +8,7 @@ import { defineMessagesRpc, getMessagesHost } from './_define'
  * attached.
  */
 export const messagesUpdate = defineMessagesRpc({
-  name: 'devframes-plugin-messages:update',
+  name: 'devframes:plugin:messages:update',
   type: 'action',
   jsonSerializable: true,
   setup: ctx => ({

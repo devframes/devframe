@@ -55,7 +55,7 @@ export function connectDevframeState(): DevframeState {
       // The server-fn augmentation lives in `src/rpc` (node side); the client
       // bundle doesn't import it, so call by name with a local return type.
       const callConfig = rpc.callOptional as (name: string) => Promise<A11yConfig | undefined>
-      const cfg = await callConfig('devframe-a11y-inspector:get-config')
+      const cfg = await callConfig('devframes:plugin:a11y:get-config')
       if (cfg)
         setConfig(cfg)
     })

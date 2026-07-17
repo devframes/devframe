@@ -8,7 +8,7 @@ index 1234567..89abcde 100644
 --- a/src/rpc/functions/log.ts
 +++ b/src/rpc/functions/log.ts
 @@ -72,7 +72,7 @@ export const log = defineRpcFunction({
-   name: 'git:log',
+   name: 'devframes:plugin:git:log',
    type: 'query',
 -  snapshot: true,
 +  dump: async (_ctx, handler) => { /* bake head of history */ },

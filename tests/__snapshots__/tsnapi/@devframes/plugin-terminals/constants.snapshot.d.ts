@@ -6,6 +6,7 @@ export declare const DEFAULT_COLS: number;
 export declare const DEFAULT_PORT: number;
 export declare const DEFAULT_ROWS: number;
 export declare const DEFAULT_SCROLLBACK: number;
+export declare const DOCKS_ACTIVE_STATE_KEY: string;
 export declare const HUB_TERMINAL_STREAM_CHANNEL: string;
 export declare const PLUGIN_ID: string;
 export declare const PRESETS_STATE_KEY: string;

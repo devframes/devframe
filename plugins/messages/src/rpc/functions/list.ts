@@ -10,7 +10,7 @@ import { defineMessagesRpc, getMessagesHost } from './_define'
  * renders the last captured feed without a live server.
  */
 export const messagesList = defineMessagesRpc({
-  name: 'devframes-plugin-messages:list',
+  name: 'devframes:plugin:messages:list',
   type: 'query',
   jsonSerializable: true,
   snapshot: true,

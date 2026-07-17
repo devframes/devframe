@@ -148,8 +148,22 @@ export function spawnPipe(options: SpawnBackendOptions): TerminalProcess {
   const exitCbs: ((code: number) => void)[] = []
   let exited = false
 
+  // A piped child has no controlling TTY, so its stdout/stderr carry bare `\n`
+  // line endings — a real PTY would apply the kernel's ONLCR translation. xterm
+  // only returns the cursor to column 0 on `\r`, so forwarding bare `\n` renders
+  // a staircase. Translate lone `\n` to `\r\n`, tracking a `\r` left dangling at
+  // a chunk boundary so an existing `\r\n` split across chunks isn't doubled.
+  let pendingCr = false
+  const normalizeNewlines = (data: string): string => {
+    const out = data.replace(/\r?\n/g, (match, offset: number) =>
+      match === '\n' && !(offset === 0 && pendingCr) ? '\r\n' : match)
+    pendingCr = out.endsWith('\r')
+    return out
+  }
+
   const emitData = (data: string): void => {
-    for (const cb of dataCbs) cb(data)
+    const normalized = normalizeNewlines(data)
+    for (const cb of dataCbs) cb(normalized)
   }
   const emitExit = (code: number): void => {
     if (exited)

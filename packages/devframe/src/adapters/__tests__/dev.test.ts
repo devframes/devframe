@@ -1,11 +1,24 @@
+import type { DevframeNodeContext, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from '../../types'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { createRpcClient } from 'devframe/rpc/client'
+import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
+import { getTempAuthCode } from '../../node/auth/state'
 import { defineDevframe } from '../../types/devframe'
 import { createDevServer, resolveDevServerPort } from '../dev'
+
+function connectWsClient(host: string, port: number, authToken?: string) {
+  return createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>(
+    {} as DevframeRpcClientFunctions,
+    { channel: createWsRpcChannel({ url: `ws://${host}:${port}/__devframe_ws`, authToken }) },
+  )
+}
+
+const HANDSHAKE = { authToken: '', ua: 'test', origin: 'http://localhost' }
 
 function makeTmpDist(): string {
   const dir = mkdtempSync(join(tmpdir(), 'devframe-dev-'))
@@ -265,6 +278,103 @@ describe('adapters/dev', () => {
       // index.html.
       const spa = await fetch(`http://${host}:${port}/`)
       expect(spa.status).toBe(404)
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
+  it('gates by default: an unset `auth` auto-wires the interactive OTP handler', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-auth-default',
+      name: 'Auth Default',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      setup: (ctx: DevframeNodeContext) => {
+        ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+      },
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19410, host })
+    // No `banner` override is exposed through the adapter, so silence the
+    // default stdout banner for the test run.
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const handle = await createDevServer(devframe, { host, port, openBrowser: false })
+
+    try {
+      const client = connectWsClient(host, port)
+      // Untrusted: only `anonymous:` methods are reachable; the probe rejects.
+      const handshake = await client.$call('anonymous:devframe:auth' as any, HANDSHAKE)
+      expect(handshake).toEqual({ isTrusted: false })
+      await expect(client.$call('test:probe' as any)).rejects.toThrow()
+
+      // The interactive exchange method is wired — the printed code trusts.
+      const code = getTempAuthCode()
+      const exchange = await client.$call('anonymous:devframe:auth:exchange' as any, { code, ua: 'test', origin: 'http://localhost' }) as { authToken: string | null }
+      expect(exchange.authToken).toBeTruthy()
+      await expect(client.$call('test:probe' as any)).resolves.toBe('ok')
+      client.$close()
+    }
+    finally {
+      spy.mockRestore()
+      await handle.close()
+    }
+  })
+
+  it('opts out with `auth: false`: the server auto-trusts and skips the gate', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-auth-off',
+      name: 'Auth Off',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      cli: { auth: false },
+      setup: (ctx: DevframeNodeContext) => {
+        ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+      },
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19420, host })
+    const handle = await createDevServer(devframe, { host, port, openBrowser: false })
+
+    try {
+      const client = connectWsClient(host, port)
+      const handshake = await client.$call('anonymous:devframe:auth' as any, HANDSHAKE)
+      expect(handshake).toEqual({ isTrusted: true })
+      // Ungated: the probe resolves without any code exchange.
+      await expect(client.$call('test:probe' as any)).resolves.toBe('ok')
+      client.$close()
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
+  it('the `--no-auth` flag (flags.auth === false) opts out of the gate', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-auth-flag',
+      name: 'Auth Flag',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      setup: (ctx: DevframeNodeContext) => {
+        ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+      },
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19430, host })
+    const handle = await createDevServer(devframe, { host, port, openBrowser: false, flags: { auth: false } })
+
+    try {
+      const client = connectWsClient(host, port)
+      const handshake = await client.$call('anonymous:devframe:auth' as any, HANDSHAKE)
+      expect(handshake).toEqual({ isTrusted: true })
+      await expect(client.$call('test:probe' as any)).resolves.toBe('ok')
+      client.$close()
     }
     finally {
       await handle.close()

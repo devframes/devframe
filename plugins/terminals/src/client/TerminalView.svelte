@@ -76,7 +76,7 @@
         if (isForeign)
           rpc.call('hub:terminals:write', info.id, data).catch(() => {})
         else
-          rpc.call('devframes-plugin-terminals:write', { id: info.id, data }).catch(() => {})
+          rpc.call('devframes:plugin:terminals:write', { id: info.id, data }).catch(() => {})
       })
     }
 
@@ -84,7 +84,7 @@
     // (a read-only aggregated session has no controllable TTY).
     if (!isForeign) {
       term.onResize(({ cols, rows }) => {
-        rpc.call('devframes-plugin-terminals:resize', { id: info.id, cols, rows }).catch(() => {})
+        rpc.call('devframes:plugin:terminals:resize', { id: info.id, cols, rows }).catch(() => {})
       })
     }
     else if (info.mode === 'interactive') {

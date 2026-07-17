@@ -5,6 +5,7 @@ export interface DevframeDocksHost {
   readonly views: Map<string, DevframeDockUserEntry>
   readonly events: EventEmitter<{
     'dock:entry:updated': (entry: DevframeDockUserEntry) => void
+    'dock:activate': (activation: DevframeDockActivation) => void
   }>
 
   register: <T extends DevframeDockUserEntry>(entry: T, force?: boolean) => {
@@ -12,6 +13,41 @@ export interface DevframeDocksHost {
   }
   update: (entry: DevframeDockUserEntry) => void
   values: () => DevframeDockEntry[]
+
+  /**
+   * Request the active viewer switch its focused dock to `dockId`, optionally
+   * carrying `params` for the target dock to interpret (e.g. a terminals
+   * session id).
+   *
+   * Any connected client may drive this via the `hub:docks:activate` RPC — a
+   * mounted devframe running in its own iframe can steer the host shell's dock
+   * selection, which is otherwise client-local. The request is delivered live
+   * to connected clients (broadcast) and mirrored into the
+   * `devframe:docks:active` shared state so a dock that mounts in response
+   * still sees it. Activation is best-effort: unknown dock ids degrade
+   * gracefully.
+   */
+  activate: (dockId: string, params?: Record<string, unknown>) => void
+}
+
+/**
+ * A request to switch the active dock. `params` is an opaque, serializable
+ * bag the target dock interprets — the terminals dock reads `params.sessionId`
+ * to focus a specific session.
+ */
+export interface DevframeDockActivation {
+  dockId: string
+  params?: Record<string, unknown>
+}
+
+/**
+ * Shape of the `devframe:docks:active` shared-state slot — the most recent
+ * {@link DevframeDockActivation}, or `null` before any activation. Mirrored
+ * so a dock that mounts in response to an activation can still converge on the
+ * request instead of missing the live broadcast.
+ */
+export interface DevframeDocksActiveState {
+  activation: DevframeDockActivation | null
 }
 
 // Known categories the hub orders by default. Kits may pass their own

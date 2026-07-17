@@ -62,9 +62,25 @@ export interface DevframeRpcClientOptions {
    * (OTP) for "magic link" auth (e.g. a link the dev server prints). When
    * present, the client exchanges the code for a token and removes the parameter
    * from the URL. Set `false` to disable — e.g. integrations that drive their
-   * own authentication via `authenticateWithUrlOtp`. Default: `'devframe_otp'`.
+   * own authentication via `authenticateWithUrlOtp`.
+   *
+   * @default 'devframe_otp'
    */
   otpParam?: string | false
+  /**
+   * Fall back to a native browser `prompt()` for the one-time authentication
+   * code when the server refuses trust and no other credential succeeds (a
+   * stored token, an injected token, or a magic-link OTP). The prompt fires
+   * only on a **top-level, unframed** page — a framed plugin (e.g. mounted in
+   * a hub dock) never prompts, since a hub pre-authorizes it and browsers
+   * block `prompt()` in cross-origin frames anyway.
+   *
+   * Set `false` to drive your own auth UI (a hub sets this on the plugin
+   * connections it manages, alongside supplying the token).
+   *
+   * @default true
+   */
+  simpleAuth?: boolean
   wsOptions?: Partial<WsRpcChannelOptions>
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>
   cacheOptions?: boolean | Partial<RpcCacheOptions>
@@ -317,7 +333,10 @@ export async function getDevframeRpcClient(
   const context: DevframeRpcContext = {
     rpc: undefined!,
   }
-  const authToken = getStoredAuthToken(options.authToken)
+  // An explicit option wins, then a token baked into the (hub-served) meta —
+  // the cross-origin channel a framed plugin relies on since it can't read the
+  // hub's `localStorage` — then this origin's own stored token.
+  const authToken = getStoredAuthToken(options.authToken || connectionMeta.authToken)
   // Persist a resolved token so one supplied out-of-band — e.g. a host that
   // bootstraps trust by passing `authToken` (read from its own page URL query)
   // — survives reconnects. The token is still sent to the server via the WS
@@ -450,16 +469,60 @@ export async function getDevframeRpcClient(
 
   // @ts-expect-error assign to readonly property
   context.rpc = rpc
-  void mode.requestTrust()
 
-  // Magic-link authentication: if the page URL carries a one-time code, exchange
-  // it and strip it from the URL. The code is single-use and short-lived; the
-  // resulting bearer token is persisted (never written back to the URL).
-  // Integrations that drive their own auth UI opt out with `otpParam: false`
-  // and call `authenticateWithUrlOtp` / `consumeOtpFromUrl` directly.
-  const otpParam = options.otpParam ?? DEVFRAME_OTP_URL_PARAM
-  if (otpParam)
-    void authenticateWithUrlOtp(rpc, { param: otpParam })
+  // Whether this document is the top-level, unframed page. Only there can a
+  // native `prompt()` actually be shown — a framed plugin (hub dock) instead
+  // waits for a hub-injected/broadcast token to arrive. Accessing
+  // `window.top` cross-origin throws, which itself means we're framed.
+  function isTopLevelUnframed(): boolean {
+    try {
+      return typeof window !== 'undefined' && window.self === window.top
+    }
+    catch {
+      return false
+    }
+  }
+
+  // Last-resort standalone fallback: ask for the one-time code via the
+  // browser's native `prompt()` (zero UI, so devframe stays headless) and
+  // re-prompt on a wrong/expired code until the exchange succeeds or the user
+  // cancels. Cancelling leaves the connection `unauthorized` without nagging.
+  async function runSimpleAuthPrompt(): Promise<void> {
+    if (options.simpleAuth === false || !isTopLevelUnframed())
+      return
+    if (typeof globalThis.prompt !== 'function')
+      return
+    while (!rpc.isTrusted) {
+      // eslint-disable-next-line no-alert -- native prompt() is intentional: zero UI keeps devframe headless.
+      const code = globalThis.prompt('devframe: enter the authentication code shown in your terminal')
+      // Cancel → stop; leave status `unauthorized`.
+      if (code == null)
+        return
+      const trimmed = code.trim()
+      if (!trimmed)
+        continue
+      if (await rpc.requestTrustWithCode(trimmed))
+        return
+    }
+  }
+
+  // Drive trust in order: the connect-time handshake (stored/injected token)
+  // first, then the magic-link OTP (silent — a one-time code on the page URL,
+  // single-use and short-lived, stripped from the URL and never re-persisted),
+  // then the native-prompt fallback. Integrations that drive their own auth UI
+  // opt out of the URL read with `otpParam: false` and of the prompt with
+  // `simpleAuth: false`.
+  async function bootstrapAuth(): Promise<void> {
+    const trusted = await mode.requestTrust()
+    const otpParam = options.otpParam ?? DEVFRAME_OTP_URL_PARAM
+    // Always consume the URL OTP (so it's stripped) even once trusted; it only
+    // exchanges when a code is present and we're not yet trusted.
+    const viaOtp = otpParam ? await authenticateWithUrlOtp(rpc, { param: otpParam }) : false
+    if (trusted || viaOtp || rpc.isTrusted)
+      return
+    await runSimpleAuthPrompt()
+  }
+  void bootstrapAuth()
 
   // Listen for auth updates from other tabs (e.g., the auth page, or another
   // tab that just completed a code exchange).

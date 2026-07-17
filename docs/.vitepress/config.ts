@@ -21,6 +21,7 @@ function guideItems(prefix: string) {
     { text: 'Introduction', link: `${prefix}/guide/` },
     { text: 'Devframe Definition', link: `${prefix}/guide/devframe-definition` },
     { text: 'Scoped Context', link: `${prefix}/guide/scoped-context` },
+    { text: 'Cross-Plugin Services', link: `${prefix}/guide/services` },
     { text: 'RPC', link: `${prefix}/guide/rpc` },
     { text: 'Shared State', link: `${prefix}/guide/shared-state` },
     { text: 'Streaming', link: `${prefix}/guide/streaming` },

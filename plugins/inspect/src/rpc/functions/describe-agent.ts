@@ -8,7 +8,7 @@ import { defineInspectRpc } from './_define'
  * the manifest into the static dump for `build`/`spa` mode.
  */
 export const describeAgent = defineInspectRpc({
-  name: 'devframes-plugin-inspect:describe-agent',
+  name: 'devframes:plugin:inspect:describe-agent',
   type: 'query',
   jsonSerializable: true,
   snapshot: true,

@@ -3,7 +3,7 @@ import * as v from 'valibot'
 import { getTerminalManager } from '../../node/context'
 
 export const terminate = defineRpcFunction({
-  name: 'devframes-plugin-terminals:terminate',
+  name: 'devframes:plugin:terminals:terminate',
   type: 'action',
   jsonSerializable: true,
   args: [v.object({ id: v.string() })],

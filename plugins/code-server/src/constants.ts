@@ -1,5 +1,5 @@
 /** Stable devframe id for the code-server plugin. */
-export const PLUGIN_ID = 'devframes-plugin-code-server'
+export const PLUGIN_ID = 'devframes_plugin_code-server'
 
 /**
  * Shared-state key holding the serializable, secret-free server status and
@@ -7,7 +7,7 @@ export const PLUGIN_ID = 'devframes-plugin-code-server'
  * is returned only from the `start` / `status` RPCs to the already-authorized
  * client (see {@link CodeServerAuth}).
  */
-export const STATE_KEY = 'devframes-plugin-code-server:state'
+export const STATE_KEY = 'devframes:plugin:code-server:state'
 
 /** Default dev-server port for the plugin's own launcher SPA (standalone CLI). */
 export const DEFAULT_PORT = 9013

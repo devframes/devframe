@@ -13,7 +13,7 @@ export interface CommitDetailsPanelProps {
 
 export function CommitDetailsPanel({ hash, onClose }: CommitDetailsPanelProps) {
   const loader = useCallback(
-    (rpc: DevframeRpcClient): Promise<CommitDetail> => rpc.call('git:show', { hash }),
+    (rpc: DevframeRpcClient): Promise<CommitDetail> => rpc.call('devframes:plugin:git:show', { hash }),
     [hash],
   )
   const { data, loading, error } = useRpcResource<CommitDetail>(loader)

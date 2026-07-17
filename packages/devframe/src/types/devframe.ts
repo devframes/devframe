@@ -1,5 +1,6 @@
 import type { CAC } from 'cac'
 import type { CliFlagsSchema } from '../adapters/flags'
+import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeNodeContext } from './context'
 
 export type DevframeRuntime = 'cli' | 'build' | 'spa' | 'vite' | 'embedded'
@@ -108,14 +109,27 @@ export interface DevframeCliOptions {
    */
   open?: boolean | string
   /**
-   * Skip the RPC trust handshake. Set to `false` for trusted
-   * single-user localhost tools. Default `true`.
+   * Authentication for the standalone dev server.
    *
-   * Forwarded to `startHttpAndWs` as a no-op placeholder until devframe
-   * ships its own auth layer; `@vitejs/devtools` honors the equivalent
-   * `devtools.clientAuth` today.
+   *   - `undefined` / `true` — the standalone adapters (`cli` / `spa` /
+   *     served `build`) auto-wire devframe's interactive OTP auth
+   *     (`createInteractiveAuth`): an untrusted client can only reach
+   *     `anonymous:` methods until it exchanges the printed one-time code.
+   *     The adapter prints the code + magic-link banner once the server is
+   *     listening.
+   *   - `false` — no gate, for trusted single-user localhost tools where an
+   *     auth round-trip only gets in the way (the built-in plugins set this).
+   *     The `--no-auth` CLI flag maps here for one-off runs.
+   *   - A {@link DevframeAuthHandler} — a custom handler (e.g. a tuned
+   *     `createInteractiveAuth`, or an entirely different scheme) passed
+   *     straight through to `startHttpAndWs`.
+   *
+   * Hosted adapters (`vite`, `embedded`) ignore this and defer to the host's
+   * auth; `@vitejs/devtools` honors the equivalent `devtools.clientAuth`.
+   *
+   * @default true
    */
-  auth?: boolean
+  auth?: boolean | DevframeAuthHandler
   /**
    * Expose a route-based MCP server alongside the dev server, speaking the
    * MCP Streamable-HTTP transport at `/__mcp` (relative to the base path).

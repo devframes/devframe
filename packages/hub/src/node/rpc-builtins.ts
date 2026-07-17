@@ -120,6 +120,28 @@ export const hubTerminalsResize = defineHubRpcFunction({
 })
 
 /**
+ * `hub:docks:activate` — Ask the active viewer to switch its focused dock to
+ * `dockId`, optionally carrying `params` for the target dock to interpret
+ * (e.g. `{ sessionId }` for the terminals dock to focus a session).
+ *
+ * Any connected client may call it, which is the point: a mounted devframe
+ * running in its own iframe (on its own RPC client) can steer the host shell's
+ * dock selection — client-local state it otherwise can't reach. The hub
+ * broadcasts the request live to connected clients (the host shell switches)
+ * and mirrors it into the `devframe:docks:active` shared state (a dock that
+ * mounts in response still converges on it).
+ */
+export const hubDocksActivate = defineHubRpcFunction({
+  name: 'hub:docks:activate',
+  type: 'action',
+  setup: context => ({
+    async handler(input: { dockId: string, params?: Record<string, unknown> }): Promise<void> {
+      context.docks.activate(input.dockId, input.params)
+    },
+  }),
+})
+
+/**
  * Framework-neutral RPC declarations auto-registered by
  * {@link createHubContext}. Provide additional RPCs by passing your own
  * array via `CreateHubContextOptions.builtinRpcDeclarations`; the hub's
@@ -127,6 +149,7 @@ export const hubTerminalsResize = defineHubRpcFunction({
  */
 export const builtinHubRpcDeclarations: readonly RpcFunctionDefinitionAny[] = [
   hubCommandsExecute,
+  hubDocksActivate,
   hubMessagesAdd,
   hubMessagesUpdate,
   hubMessagesRemove,

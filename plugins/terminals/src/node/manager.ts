@@ -109,7 +109,7 @@ function defaultShell(): string {
 
 /**
  * Owns terminal session lifecycle: spawns PTY / piped backends, streams
- * their output over the `devframes-plugin-terminals:output` channel (one
+ * their output over the `devframes:plugin:terminals:output` channel (one
  * stream per session, stable for the session's whole life so restarts reuse
  * the same id), and mirrors a serializable session list into shared state.
  */

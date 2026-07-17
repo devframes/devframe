@@ -16,6 +16,6 @@ declare module 'devframe' {
   interface DevframeRpcServerFunctions extends RpcDefinitionsToFunctions<typeof serverFunctions> {}
 
   interface DevframeRpcSharedStates {
-    'devframes-plugin-code-server:state': CodeServerSharedState
+    'devframes:plugin:code-server:state': CodeServerSharedState
   }
 }

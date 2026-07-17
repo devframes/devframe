@@ -35,7 +35,7 @@ The `pnpm test` script intentionally runs `build` first so `tsnapi` snapshots co
 
 ## Conventions
 
-- RPC functions must use `defineRpcFunction`; always namespace IDs (`my-plugin:fn-name`).
+- RPC functions must use `defineRpcFunction`; always namespace IDs `devframes:plugin:<slug>:<fn-name>` (matching the plugin's `@devframes/plugin-<slug>` package name).
 - Shared state via `devframe/utils/shared-state`; keep values serializable.
 - Utility imports use the package-path form `devframe/utils/*`, never relative `../utils/*`.
 - Dependencies go through the pnpm catalogs in `pnpm-workspace.yaml` (`cli`, `inlined`, `testing`, `types`) — add to a catalog and reference as `catalog:<name>`, don't pin versions in `package.json`.

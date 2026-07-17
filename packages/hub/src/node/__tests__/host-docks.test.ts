@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { REMOTE_CONNECTION_KEY } from 'devframe/constants'
 import { getInternalContext } from 'devframe/node/hub-internals'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { parseRemoteConnection } from '../../client/remote'
 import { DevframeDocksHost } from '../host-docks'
 
@@ -187,6 +187,36 @@ describe('devframeDockHost grouping', () => {
       icon: 'ph:ghost-duotone',
       url: '/__ghost/',
     })).toThrow('Dock with id "ghost" is not registered and cannot be updated')
+  })
+})
+
+describe('devframeDockHost activate', () => {
+  it('emits a dock:activate event carrying the id and params', () => {
+    const host = new DevframeDocksHost(createContext())
+    host.register({ type: 'iframe', id: 'terminals', title: 'Terminals', icon: 'ph:terminal-window-duotone', url: '/__terminals/' })
+
+    const activations: Array<{ dockId: string, params?: Record<string, unknown> }> = []
+    host.events.on('dock:activate', a => activations.push(a))
+
+    host.activate('terminals', { sessionId: 'sess-1' })
+    expect(activations).toEqual([{ dockId: 'terminals', params: { sessionId: 'sess-1' } }])
+  })
+
+  it('still emits for an unknown dock but warns (DF8107, graceful)', () => {
+    const host = new DevframeDocksHost(createContext())
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const activations: string[] = []
+      host.events.on('dock:activate', a => activations.push(a.dockId))
+
+      host.activate('nope')
+      expect(activations).toEqual(['nope'])
+      expect(warn).toHaveBeenCalledOnce()
+      expect(warn.mock.calls[0]!.join(' ')).toMatch(/unknown dock id/i)
+    }
+    finally {
+      warn.mockRestore()
+    }
   })
 })
 

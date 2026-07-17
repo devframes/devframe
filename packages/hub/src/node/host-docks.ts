@@ -163,6 +163,16 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     this.events.emit('dock:entry:updated', view)
   }
 
+  activate(dockId: string, params?: Record<string, unknown>): void {
+    // Best-effort: warn (don't throw) when the target isn't a registered dock
+    // so a typo is observable, but still emit — the client host and each dock
+    // ignore ids they don't recognize, so a mis-addressed activation is inert
+    // rather than fatal.
+    if (!this.views.has(dockId))
+      diagnostics.DF8107({ id: dockId })
+    this.events.emit('dock:activate', { dockId, params })
+  }
+
   private validateGroupMembership(view: DevframeDockUserEntry): void {
     if (view.groupId === undefined)
       return

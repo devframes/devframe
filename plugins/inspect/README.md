@@ -46,7 +46,7 @@ const devframe = createInspectDevframe({ port: 9100 })
 
 ## RPC surface
 
-All functions are namespaced `devframes-plugin-inspect:*`:
+All functions are namespaced `devframes:plugin:inspect:*`:
 
 | Function | Type | What it returns |
 |----------|------|-----------------|

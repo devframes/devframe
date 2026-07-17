@@ -15,7 +15,7 @@ describe('inspector static build', () => {
 
   beforeAll(async () => {
     assertSpaBuilt()
-    outDir = await mkdtemp(path.join(os.tmpdir(), 'devframes-plugin-inspect-build-'))
+    outDir = await mkdtemp(path.join(os.tmpdir(), 'devframes_plugin_inspect-build-'))
     await createBuild(inspectDevframe, { outDir })
   })
 
@@ -43,10 +43,10 @@ describe('inspector static build', () => {
     ) as Record<string, unknown>
 
     // `invoke` is an `action` with no dump — it must not appear.
-    expect(manifest['devframes-plugin-inspect:invoke']).toBeUndefined()
+    expect(manifest['devframes:plugin:inspect:invoke']).toBeUndefined()
     // The three snapshot `query` functions bake into the static dump.
-    expect(manifest['devframes-plugin-inspect:list-functions']).toBeTruthy()
-    expect(manifest['devframes-plugin-inspect:list-state-keys']).toBeTruthy()
-    expect(manifest['devframes-plugin-inspect:describe-agent']).toBeTruthy()
+    expect(manifest['devframes:plugin:inspect:list-functions']).toBeTruthy()
+    expect(manifest['devframes:plugin:inspect:list-state-keys']).toBeTruthy()
+    expect(manifest['devframes:plugin:inspect:describe-agent']).toBeTruthy()
   })
 })

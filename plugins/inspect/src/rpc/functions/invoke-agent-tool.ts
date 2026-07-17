@@ -2,7 +2,7 @@ import type { InvokeResult } from '../../types'
 import { defineInspectRpc } from './_define'
 
 export const invokeAgentTool = defineInspectRpc({
-  name: 'devframes-plugin-inspect:invoke-agent-tool',
+  name: 'devframes:plugin:inspect:invoke-agent-tool',
   type: 'action',
   setup: ctx => ({
     handler: async (id: string, args: unknown): Promise<InvokeResult> => {

@@ -27,6 +27,7 @@ export class DevframeDocksHost {
   resolveDevServerOrigin() {}
   register(_, _) {}
   update(_) {}
+  activate(_, _) {}
   validateGroupMembership(_) {}
   prepareRemoteRegistration(_) {}
 }
@@ -80,6 +81,7 @@ export async function mountDevframe(_, _, _) {}
 // #region Variables
 export var builtinHubRpcDeclarations /* const */
 export var hubCommandsExecute /* const */
+export var hubDocksActivate /* const */
 export var hubMessagesAdd /* const */
 export var hubMessagesClear /* const */
 export var hubMessagesRemove /* const */

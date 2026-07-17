@@ -61,13 +61,13 @@ export default {
 
 | Function | Type | Purpose |
 |----------|------|---------|
-| `devframes-plugin-code-server:detect` | query | Re-probe for the binary; returns `{ installed, version, bin }`. |
-| `devframes-plugin-code-server:status` | query | Current status + auth cookie when running. |
-| `devframes-plugin-code-server:start` | action | Launch and wait for readiness. |
-| `devframes-plugin-code-server:stop` | action | Stop the process. |
+| `devframes:plugin:code-server:detect` | query | Re-probe for the binary; returns `{ installed, version, bin }`. |
+| `devframes:plugin:code-server:status` | query | Current status + auth cookie when running. |
+| `devframes:plugin:code-server:start` | action | Launch and wait for readiness. |
+| `devframes:plugin:code-server:stop` | action | Stop the process. |
 
 Status (minus the auth cookie) is mirrored into the
-`devframes-plugin-code-server:state` shared state for reactive UIs.
+`devframes:plugin:code-server:state` shared state for reactive UIs.
 
 ## UI
 

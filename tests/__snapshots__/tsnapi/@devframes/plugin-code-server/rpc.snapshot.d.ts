@@ -3,7 +3,7 @@
  */
 // #region Variables
 export declare const serverFunctions: readonly [{
-  name: "devframes-plugin-code-server:detect";
+  name: "devframes:plugin:code-server:detect";
   type?: "query" | undefined;
   cacheable?: boolean;
   args?: undefined;
@@ -17,7 +17,7 @@ export declare const serverFunctions: readonly [{
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<CodeServerDetection>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<CodeServerDetection>>> | undefined;
 }, {
-  name: "devframes-plugin-code-server:status";
+  name: "devframes:plugin:code-server:status";
   type?: "query" | undefined;
   cacheable?: boolean;
   args?: undefined;
@@ -31,7 +31,7 @@ export declare const serverFunctions: readonly [{
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], CodeServerStatusResult>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], CodeServerStatusResult>> | undefined;
 }, {
-  name: "devframes-plugin-code-server:start";
+  name: "devframes:plugin:code-server:start";
   type?: "action" | undefined;
   cacheable?: boolean;
   args?: undefined;
@@ -45,7 +45,7 @@ export declare const serverFunctions: readonly [{
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[req?: CodeServerStartRequest | undefined], Promise<CodeServerStatusResult>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[req?: CodeServerStartRequest | undefined], Promise<CodeServerStatusResult>>> | undefined;
 }, {
-  name: "devframes-plugin-code-server:stop";
+  name: "devframes:plugin:code-server:stop";
   type?: "action" | undefined;
   cacheable?: boolean;
   args?: undefined;

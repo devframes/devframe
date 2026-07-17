@@ -45,11 +45,11 @@ describe('messages dev-server (hub context)', () => {
 
   it('registers the open-in-editor recipe alongside the feed RPCs', () => {
     const names = Array.from(server.ctx.rpc.definitions.keys())
-    expect(names).toContain('devframes-plugin-messages:list')
-    expect(names).toContain('devframes-plugin-messages:add')
-    expect(names).toContain('devframes-plugin-messages:update')
-    expect(names).toContain('devframes-plugin-messages:remove')
-    expect(names).toContain('devframes-plugin-messages:clear')
+    expect(names).toContain('devframes:plugin:messages:list')
+    expect(names).toContain('devframes:plugin:messages:add')
+    expect(names).toContain('devframes:plugin:messages:update')
+    expect(names).toContain('devframes:plugin:messages:remove')
+    expect(names).toContain('devframes:plugin:messages:clear')
     expect(names).toContain('devframe:open-in-editor')
   })
 
@@ -57,14 +57,14 @@ describe('messages dev-server (hub context)', () => {
     const rpc = connect(server)
     await server.ctx.messages.add({ id: 'from-server', level: 'info', message: 'hello' })
 
-    const full = await rpc.$call('devframes-plugin-messages:list') as DevframeMessagesListDelta
+    const full = await rpc.$call('devframes:plugin:messages:list') as DevframeMessagesListDelta
     expect(full.full).toBe(true)
     expect(full.entries.map(e => e.id)).toContain('from-server')
 
     await server.ctx.messages.add({ id: 'later', level: 'warn', message: 'later' })
     await server.ctx.messages.remove('from-server')
 
-    const delta = await rpc.$call('devframes-plugin-messages:list', full.version) as DevframeMessagesListDelta
+    const delta = await rpc.$call('devframes:plugin:messages:list', full.version) as DevframeMessagesListDelta
     expect(delta.full).toBe(false)
     expect(delta.entries.map(e => e.id)).toEqual(['later'])
     expect(delta.removedIds).toContain('from-server')
@@ -73,24 +73,24 @@ describe('messages dev-server (hub context)', () => {
   it('add stamps browser origin; update patches; clear empties', async () => {
     const rpc = connect(server)
 
-    const added = await rpc.$call('devframes-plugin-messages:add', {
+    const added = await rpc.$call('devframes:plugin:messages:add', {
       level: 'info',
       message: 'from the panel',
     }) as DevframeMessageEntry
     expect(added.from).toBe('browser')
     expect(server.ctx.messages.entries.get(added.id)?.message).toBe('from the panel')
 
-    const updated = await rpc.$call('devframes-plugin-messages:update', added.id, {
+    const updated = await rpc.$call('devframes:plugin:messages:update', added.id, {
       level: 'success',
     }) as DevframeMessageEntry
     expect(updated.level).toBe('success')
     expect(updated.from).toBe('browser')
 
-    await rpc.$call('devframes-plugin-messages:remove', added.id)
+    await rpc.$call('devframes:plugin:messages:remove', added.id)
     expect(server.ctx.messages.entries.has(added.id)).toBe(false)
 
     await server.ctx.messages.add({ level: 'debug', message: 'leftover' })
-    await rpc.$call('devframes-plugin-messages:clear')
+    await rpc.$call('devframes:plugin:messages:clear')
     expect(server.ctx.messages.entries.size).toBe(0)
   })
 })
@@ -116,15 +116,15 @@ describe('messages dev-server (plain context — warn + noop)', () => {
 
   it('list no-ops with an empty full snapshot', async () => {
     const rpc = connect(server)
-    const result = await rpc.$call('devframes-plugin-messages:list') as DevframeMessagesListDelta
+    const result = await rpc.$call('devframes:plugin:messages:list') as DevframeMessagesListDelta
     expect(result).toEqual({ entries: [], removedIds: [], version: 0, full: true })
   })
 
   it('mutations no-op without throwing', async () => {
     const rpc = connect(server)
-    const added = await rpc.$call('devframes-plugin-messages:add', { level: 'info', message: 'x' })
+    const added = await rpc.$call('devframes:plugin:messages:add', { level: 'info', message: 'x' })
     expect(added).toBeNull()
-    await expect(rpc.$call('devframes-plugin-messages:remove', 'nope')).resolves.toBeUndefined()
-    await expect(rpc.$call('devframes-plugin-messages:clear')).resolves.toBeUndefined()
+    await expect(rpc.$call('devframes:plugin:messages:remove', 'nope')).resolves.toBeUndefined()
+    await expect(rpc.$call('devframes:plugin:messages:clear')).resolves.toBeUndefined()
   })
 })

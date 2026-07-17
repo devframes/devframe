@@ -3,7 +3,7 @@
  */
 // #region Variables
 export declare const serverFunctions: readonly [{
-  name: "devframes-plugin-terminals:list";
+  name: "devframes:plugin:terminals:list";
   type?: "query" | undefined;
   cacheable?: boolean;
   args: readonly [];
@@ -131,7 +131,7 @@ export declare const serverFunctions: readonly [{
     createdAt: number;
   }[]>> | undefined;
 }, {
-  name: "devframes-plugin-terminals:presets";
+  name: "devframes:plugin:terminals:presets";
   type?: "query" | undefined;
   cacheable?: boolean;
   args: readonly [];
@@ -187,7 +187,7 @@ export declare const serverFunctions: readonly [{
     icon?: string | undefined;
   }[]>> | undefined;
 }, {
-  name: "devframes-plugin-terminals:spawn";
+  name: "devframes:plugin:terminals:spawn";
   type?: "action" | undefined;
   cacheable?: boolean;
   args: readonly [import("valibot").ObjectSchema<{
@@ -385,7 +385,7 @@ export declare const serverFunctions: readonly [{
     createdAt: number;
   }>> | undefined;
 }, {
-  name: "devframes-plugin-terminals:write";
+  name: "devframes:plugin:terminals:write";
   type?: "action" | undefined;
   cacheable?: boolean;
   args: readonly [import("valibot").ObjectSchema<{
@@ -417,7 +417,7 @@ export declare const serverFunctions: readonly [{
     data: string;
   }], void>> | undefined;
 }, {
-  name: "devframes-plugin-terminals:resize";
+  name: "devframes:plugin:terminals:resize";
   type?: "action" | undefined;
   cacheable?: boolean;
   args: readonly [import("valibot").ObjectSchema<{
@@ -455,7 +455,7 @@ export declare const serverFunctions: readonly [{
     rows: number;
   }], void>> | undefined;
 }, {
-  name: "devframes-plugin-terminals:terminate";
+  name: "devframes:plugin:terminals:terminate";
   type?: "action" | undefined;
   cacheable?: boolean;
   args: readonly [import("valibot").ObjectSchema<{
@@ -481,7 +481,7 @@ export declare const serverFunctions: readonly [{
     id: string;
   }], void>> | undefined;
 }, {
-  name: "devframes-plugin-terminals:restart";
+  name: "devframes:plugin:terminals:restart";
   type?: "action" | undefined;
   cacheable?: boolean;
   args: readonly [import("valibot").ObjectSchema<{
@@ -621,7 +621,7 @@ export declare const serverFunctions: readonly [{
     createdAt: number;
   }>> | undefined;
 }, {
-  name: "devframes-plugin-terminals:rename";
+  name: "devframes:plugin:terminals:rename";
   type?: "action" | undefined;
   cacheable?: boolean;
   args: readonly [import("valibot").ObjectSchema<{
@@ -653,7 +653,7 @@ export declare const serverFunctions: readonly [{
     title: string;
   }], void>> | undefined;
 }, {
-  name: "devframes-plugin-terminals:remove";
+  name: "devframes:plugin:terminals:remove";
   type?: "action" | undefined;
   cacheable?: boolean;
   args: readonly [import("valibot").ObjectSchema<{

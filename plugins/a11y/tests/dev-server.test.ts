@@ -42,12 +42,12 @@ describe('dev-server (CLI surface)', () => {
     })
     const rpc = createRpcClient<any, any>({}, { channel })
 
-    const config = await rpc.$call('devframe-a11y-inspector:get-config') as {
+    const config = await rpc.$call('devframes:plugin:a11y:get-config') as {
       channel: string
       nodeAttr: string
       impacts: { id: string }[]
     }
-    expect(config.channel).toBe('devframe-a11y-inspector')
+    expect(config.channel).toBe('devframes:plugin:a11y')
     expect(config.nodeAttr).toBe('data-df-a11y-node')
     expect(config.impacts.map(i => i.id)).toEqual(['critical', 'serious', 'moderate', 'minor'])
   })

@@ -40,7 +40,7 @@ describe('@devframes/plugin-git', () => {
 
   it('reports branch, staged, unstaged, and untracked status', async () => {
     const rpc = bootRpc(server.port)
-    const status = await rpc.$call('git:status') as GitStatus
+    const status = await rpc.$call('devframes:plugin:git:status') as GitStatus
     expect(status.isRepo).toBe(true)
     expect(status.branch).toBe('main')
     expect(status.detached).toBe(false)
@@ -54,7 +54,7 @@ describe('@devframes/plugin-git', () => {
 
   it('returns the commit log newest-first', async () => {
     const rpc = bootRpc(server.port)
-    const log = await rpc.$call('git:log', { limit: 30 }) as GitLog
+    const log = await rpc.$call('devframes:plugin:git:log', { limit: 30 }) as GitLog
     expect(log.isRepo).toBe(true)
     expect(log.commits).toHaveLength(2)
     expect(log.commits[0].subject).toBe('feat: add a.txt')
@@ -70,17 +70,17 @@ describe('@devframes/plugin-git', () => {
 
   it('paginates the log and flags more history', async () => {
     const rpc = bootRpc(server.port)
-    const page = await rpc.$call('git:log', { limit: 1 }) as GitLog
+    const page = await rpc.$call('devframes:plugin:git:log', { limit: 1 }) as GitLog
     expect(page.commits).toHaveLength(1)
     expect(page.commits[0].subject).toBe('feat: add a.txt')
     expect(page.hasMore).toBe(true)
 
-    const next = await rpc.$call('git:log', { limit: 1, skip: 1 }) as GitLog
+    const next = await rpc.$call('devframes:plugin:git:log', { limit: 1, skip: 1 }) as GitLog
     expect(next.commits).toHaveLength(1)
     expect(next.commits[0].subject).toBe('init: add readme')
     expect(next.hasMore).toBe(true)
 
-    const tail = await rpc.$call('git:log', { limit: 1, skip: 2 }) as GitLog
+    const tail = await rpc.$call('devframes:plugin:git:log', { limit: 1, skip: 2 }) as GitLog
     expect(tail.commits).toHaveLength(0)
     expect(tail.hasMore).toBe(false)
   })
@@ -89,7 +89,7 @@ describe('@devframes/plugin-git', () => {
     const rpc = bootRpc(server.port)
     const marker = join(repo.dir, 'log-injected.txt')
 
-    const log = await rpc.$call('git:log', { ref: `--output=${marker}` }) as GitLog
+    const log = await rpc.$call('devframes:plugin:git:log', { ref: `--output=${marker}` }) as GitLog
 
     expect(log.isRepo).toBe(true)
     expect(log.commits).toEqual([])
@@ -101,7 +101,7 @@ describe('@devframes/plugin-git', () => {
     const rpc = bootRpc(server.port)
     const marker = join(repo.dir, 'show-injected.txt')
 
-    const detail = await rpc.$call('git:show', { hash: `--output=${marker}` }) as CommitDetail
+    const detail = await rpc.$call('devframes:plugin:git:show', { hash: `--output=${marker}` }) as CommitDetail
 
     expect(detail.isRepo).toBe(true)
     expect(detail.found).toBe(false)
@@ -110,9 +110,9 @@ describe('@devframes/plugin-git', () => {
 
   it('returns commit details for a valid hash', async () => {
     const rpc = bootRpc(server.port)
-    const log = await rpc.$call('git:log', { limit: 1 }) as GitLog
+    const log = await rpc.$call('devframes:plugin:git:log', { limit: 1 }) as GitLog
 
-    const detail = await rpc.$call('git:show', { hash: log.commits[0].hash }) as CommitDetail
+    const detail = await rpc.$call('devframes:plugin:git:show', { hash: log.commits[0].hash }) as CommitDetail
 
     expect(detail.isRepo).toBe(true)
     expect(detail.found).toBe(true)
@@ -124,7 +124,7 @@ describe('@devframes/plugin-git', () => {
 
   it('lists local branches with the current one first', async () => {
     const rpc = bootRpc(server.port)
-    const result = await rpc.$call('git:branches', {}) as GitBranches
+    const result = await rpc.$call('devframes:plugin:git:branches', {}) as GitBranches
     expect(result.isRepo).toBe(true)
     expect(result.current).toBe('main')
     expect(result.branches).toHaveLength(2)
@@ -135,7 +135,7 @@ describe('@devframes/plugin-git', () => {
 
   it('summarizes the working-tree diff', async () => {
     const rpc = bootRpc(server.port)
-    const diff = await rpc.$call('git:diff', {}) as GitDiff
+    const diff = await rpc.$call('devframes:plugin:git:diff', {}) as GitDiff
     expect(diff.isRepo).toBe(true)
     expect(diff.staged).toBe(false)
     expect(diff.files.map(f => f.path)).toContain('README.md')
@@ -147,14 +147,14 @@ describe('@devframes/plugin-git', () => {
 
   it('summarizes the staged diff', async () => {
     const rpc = bootRpc(server.port)
-    const diff = await rpc.$call('git:diff', { staged: true }) as GitDiff
+    const diff = await rpc.$call('devframes:plugin:git:diff', { staged: true }) as GitDiff
     expect(diff.staged).toBe(true)
     expect(diff.files.map(f => f.path)).toContain('staged.txt')
   })
 
   it('returns a unified patch for a single path', async () => {
     const rpc = bootRpc(server.port)
-    const diff = await rpc.$call('git:diff', { path: 'README.md' }) as GitDiff
+    const diff = await rpc.$call('devframes:plugin:git:diff', { path: 'README.md' }) as GitDiff
     expect(diff.path).toBe('README.md')
     expect(diff.files.map(f => f.path)).toEqual(['README.md'])
     expect(diff.patch).toContain('+more')
@@ -178,19 +178,19 @@ describe('@devframes/plugin-git (non-repo directory)', () => {
 
   it('degrades gracefully outside a git repository', async () => {
     const rpc = bootRpc(server.port)
-    const status = await rpc.$call('git:status') as GitStatus
+    const status = await rpc.$call('devframes:plugin:git:status') as GitStatus
     expect(status.isRepo).toBe(false)
     expect(status.branch).toBeNull()
     expect(status.clean).toBe(true)
 
-    const log = await rpc.$call('git:log', {}) as GitLog
+    const log = await rpc.$call('devframes:plugin:git:log', {}) as GitLog
     expect(log.isRepo).toBe(false)
     expect(log.commits).toEqual([])
 
-    const branches = await rpc.$call('git:branches', {}) as GitBranches
+    const branches = await rpc.$call('devframes:plugin:git:branches', {}) as GitBranches
     expect(branches.isRepo).toBe(false)
 
-    const diff = await rpc.$call('git:diff', {}) as GitDiff
+    const diff = await rpc.$call('devframes:plugin:git:diff', {}) as GitDiff
     expect(diff.isRepo).toBe(false)
     expect(diff.files).toEqual([])
   })
@@ -203,7 +203,7 @@ describe('@devframes/plugin-git (build snapshot)', () => {
       const ctx = await createDashboardContext(repo.dir, 'build')
       const dump = await collectStaticRpcDump(ctx.rpc.definitions.values(), ctx)
 
-      const entry = dump.manifest['git:status']
+      const entry = dump.manifest['devframes:plugin:git:status']
       expect(entry).toBeDefined()
       expect(entry.type).toBe('query')
       expect(entry.fallback).toBeTruthy()
@@ -225,7 +225,7 @@ describe('@devframes/plugin-git (build snapshot)', () => {
       const ctx = await createDashboardContext(repo.dir, 'build')
       const dump = await collectStaticRpcDump(ctx.rpc.definitions.values(), ctx)
 
-      const entry = dump.manifest['git:show']
+      const entry = dump.manifest['devframes:plugin:git:show']
       expect(entry).toBeDefined()
       expect(entry.type).toBe('query')
       expect(Object.keys(entry.records)).toHaveLength(2)
@@ -257,26 +257,26 @@ describe('@devframes/plugin-git (write actions)', () => {
     try {
       const rpc = bootRpc(server.port)
 
-      const initial = await rpc.$call('git:status') as GitStatus
+      const initial = await rpc.$call('devframes:plugin:git:status') as GitStatus
       expect(initial.canWrite).toBe(true)
 
       // Stage the unstaged + untracked files.
-      let status = await rpc.$call('git:stage', { paths: ['README.md', 'untracked.txt'] }) as GitStatus
+      let status = await rpc.$call('devframes:plugin:git:stage', { paths: ['README.md', 'untracked.txt'] }) as GitStatus
       expect(status.staged.map(f => f.path)).toEqual(
         expect.arrayContaining(['staged.txt', 'README.md', 'untracked.txt']),
       )
       expect(status.untracked).not.toContain('untracked.txt')
 
       // Unstage one of them again.
-      status = await rpc.$call('git:unstage', { paths: ['staged.txt'] }) as GitStatus
+      status = await rpc.$call('devframes:plugin:git:unstage', { paths: ['staged.txt'] }) as GitStatus
       expect(status.staged.map(f => f.path)).not.toContain('staged.txt')
 
       // Commit what's left staged.
-      const result = await rpc.$call('git:commit', { message: 'test: commit from ui' }) as CommitResult
+      const result = await rpc.$call('devframes:plugin:git:commit', { message: 'test: commit from ui' }) as CommitResult
       expect(result.ok).toBe(true)
       expect(result.hash).toMatch(/^[0-9a-f]+$/)
 
-      const log = await rpc.$call('git:log', {}) as GitLog
+      const log = await rpc.$call('devframes:plugin:git:log', {}) as GitLog
       expect(log.commits[0].subject).toBe('test: commit from ui')
     }
     finally {
@@ -290,7 +290,7 @@ describe('@devframes/plugin-git (write actions)', () => {
     const server = await startDashboardServer(repo.dir, { write: true })
     try {
       const rpc = bootRpc(server.port)
-      const result = await rpc.$call('git:commit', { message: '   ' }) as CommitResult
+      const result = await rpc.$call('devframes:plugin:git:commit', { message: '   ' }) as CommitResult
       expect(result.ok).toBe(false)
       expect(result.hash).toBeNull()
     }
@@ -305,9 +305,9 @@ describe('@devframes/plugin-git (write actions)', () => {
     const server = await startDashboardServer(repo.dir)
     try {
       const rpc = bootRpc(server.port)
-      const status = await rpc.$call('git:status') as GitStatus
+      const status = await rpc.$call('devframes:plugin:git:status') as GitStatus
       expect(status.canWrite).toBe(false)
-      await expect(rpc.$call('git:stage', { paths: ['README.md'] })).rejects.toBeDefined()
+      await expect(rpc.$call('devframes:plugin:git:stage', { paths: ['README.md'] })).rejects.toBeDefined()
     }
     finally {
       await server.close()

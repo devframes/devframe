@@ -33,6 +33,7 @@ function createStubSharedState<T>(initial: T): StubSharedState<T> {
 function createStubRpc() {
   const calls: any[][] = []
   const states = new Map<string, StubSharedState<any>>()
+  const definitions = new Map<string, { name: string, type: string, handler?: (...args: any[]) => any }>()
   const rpc = {
     sharedState: {
       async get(key: string, options?: { initialValue?: any }) {
@@ -47,8 +48,14 @@ function createStubRpc() {
         return { id: 'msg-1', timestamp: 1, from: 'browser', ...args[1] }
       return `rpc:${args[0]}`
     },
+    client: {
+      definitions,
+      register(fn: { name: string, type: string, handler?: (...args: any[]) => any }) {
+        definitions.set(fn.name, fn)
+      },
+    },
   } as unknown as DevframeRpcClient
-  return { rpc, calls, states }
+  return { rpc, calls, states, definitions }
 }
 
 function iframeEntry(id: string, extra?: Record<string, unknown>): DevframeDockEntry {
@@ -112,6 +119,23 @@ describe('createDevframeClientHost', () => {
     expect(activated).toEqual(['one', 'two'])
     expect(deactivated).toEqual(['one', 'two'])
     expect(host.context.docks.selected).toBeNull()
+    host.dispose()
+  })
+
+  it('switches the active dock when the hub broadcasts devframe:docks:activate', async () => {
+    const { rpc, states, definitions } = createStubRpc()
+    const host = await createDevframeClientHost({ rpc })
+    states.get('devframe:docks')!.push([iframeEntry('one'), iframeEntry('devframes_plugin_terminals')])
+
+    // Simulate the hub's server→client broadcast.
+    const handler = definitions.get('devframe:docks:activate')!.handler!
+    handler({ dockId: 'devframes_plugin_terminals', params: { sessionId: 'sess-1' } })
+    await vi.waitFor(() => expect(host.context.docks.selectedId).toBe('devframes_plugin_terminals'))
+
+    // Unknown dock ids degrade to a no-op (the previous selection stands).
+    handler({ dockId: 'ghost' })
+    await new Promise(r => setTimeout(r, 0))
+    expect(host.context.docks.selectedId).toBe('devframes_plugin_terminals')
     host.dispose()
   })
 

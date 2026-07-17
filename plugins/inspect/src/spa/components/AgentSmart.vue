@@ -13,7 +13,7 @@ const pending = reactive<Record<string, boolean>>({})
 async function fetchData(): Promise<void> {
   if (!rpc.value)
     return
-  manifest.value = await rpc.value.call('devframes-plugin-inspect:describe-agent')
+  manifest.value = await rpc.value.call('devframes:plugin:inspect:describe-agent')
 }
 
 useRefreshProvider(fetchData)
@@ -24,7 +24,7 @@ async function onInvoke(id: string, parsedArgs: unknown) {
     return
   pending[id] = true
   try {
-    results[id] = await rpc.value.call('devframes-plugin-inspect:invoke-agent-tool', id, parsedArgs)
+    results[id] = await rpc.value.call('devframes:plugin:inspect:invoke-agent-tool', id, parsedArgs)
   }
   catch (e) {
     const err = e as Error
@@ -40,7 +40,7 @@ async function onRead(id: string) {
     return
   pending[id] = true
   try {
-    results[id] = await rpc.value.call('devframes-plugin-inspect:read-agent-resource', id)
+    results[id] = await rpc.value.call('devframes:plugin:inspect:read-agent-resource', id)
   }
   catch (e) {
     const err = e as Error

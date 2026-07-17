@@ -8,7 +8,7 @@ import { readAgentResource } from './functions/read-agent-resource'
 
 /**
  * The introspection RPC functions registered by the inspector plugin.
- * Namespaced `devframes-plugin-inspect:*` per the plugin convention.
+ * Namespaced `devframes:plugin:inspect:*` per the plugin convention.
  */
 export const serverFunctions = [
   listFunctions,

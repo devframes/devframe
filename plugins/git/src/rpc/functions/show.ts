@@ -7,7 +7,7 @@ import { getGitContext } from '../context.ts'
 /** Hard cap on the returned patch text to keep payloads bounded. */
 const PATCH_CHAR_LIMIT = 200_000
 
-/** Matches the window `git:log` bakes, so any visible commit has a snapshot. */
+/** Matches the window `devframes:plugin:git:log` bakes, so any visible commit has a snapshot. */
 const SNAPSHOT_LIMIT = 200
 
 /** Read-only git detail work can run in parallel without overwhelming builds. */
@@ -207,11 +207,11 @@ async function readCommit(git: GitContext, hash: string, includePatch: boolean):
 }
 
 export const show = defineRpcFunction({
-  name: 'git:show',
+  name: 'devframes:plugin:git:show',
   type: 'query',
   jsonSerializable: true,
   // Static builds can't run git per click, so bake one record per commit in the
-  // same window `git:log` snapshots. Patches are omitted from the baked records
+  // same window `devframes:plugin:git:log` snapshots. Patches are omitted from the baked records
   // to keep the bundle bounded — static detail panels show metadata + files.
   dump: async (ctx, _handler: (args: ShowArgs) => Promise<CommitDetail>) => {
     const git = getGitContext(ctx)

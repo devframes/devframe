@@ -22,7 +22,7 @@ describe('static build (CLI build surface)', () => {
 
   beforeAll(async () => {
     assertClientBuilt()
-    outBuild = await mkdtemp(path.join(os.tmpdir(), 'devframe-a11y-inspector-build-'))
+    outBuild = await mkdtemp(path.join(os.tmpdir(), 'devframes_plugin_a11y-build-'))
   })
 
   afterAll(async () => {
@@ -51,7 +51,7 @@ describe('static build (CLI build surface)', () => {
       await readFile(path.join(outBuild, DEVFRAME_RPC_DUMP_MANIFEST_FILENAME), 'utf-8'),
     ) as DumpManifest
 
-    const entry = manifest['devframe-a11y-inspector:get-config']
+    const entry = manifest['devframes:plugin:a11y:get-config']
     expect(entry).toMatchObject({ type: 'static' })
     if (!('path' in entry))
       throw new Error('expected static manifest entry')
@@ -59,7 +59,7 @@ describe('static build (CLI build surface)', () => {
     const record = JSON.parse(
       await readFile(path.join(outBuild, entry.path), 'utf-8'),
     ) as { output: { channel: string, impacts: { id: string }[] } }
-    expect(record.output.channel).toBe('devframe-a11y-inspector')
+    expect(record.output.channel).toBe('devframes:plugin:a11y')
     expect(record.output.impacts.map(i => i.id)).toEqual(['critical', 'serious', 'moderate', 'minor'])
   })
 })

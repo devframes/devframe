@@ -21,7 +21,7 @@ export interface CommitResult {
 }
 
 export const commit = defineRpcFunction({
-  name: 'git:commit',
+  name: 'devframes:plugin:git:commit',
   type: 'action',
   jsonSerializable: true,
   setup: (ctx) => {

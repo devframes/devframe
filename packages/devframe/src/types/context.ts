@@ -139,4 +139,19 @@ export interface ConnectionMeta {
    * endpoint rather than resolving the path against its own mount.
    */
   baseUrl?: string
+  /**
+   * A pre-issued bearer token embedded in the meta so a client trusts the
+   * server on connect without any prompt or `localStorage` lookup. Only a
+   * **hub** serving a **per-frame** connection meta populates this — it
+   * authenticates once at the top level and bakes the resulting token into
+   * the meta each plugin iframe fetches, so a cross-origin frame (which
+   * cannot read the hub's `localStorage`) is still pre-authorized. The
+   * standalone `__connection.json` never carries a token.
+   *
+   * > [!WARNING]
+   * > A token in a fetchable JSON is only as protected as the URL serving
+   * > it. Emit it exclusively from hub-controlled, per-frame meta — never
+   * > from a publicly reachable static `__connection.json`.
+   */
+  authToken?: string
 }

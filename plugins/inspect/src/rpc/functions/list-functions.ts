@@ -11,7 +11,7 @@ const INVOKABLE_TYPES = new Set(['query', 'static'])
  * inspector still lists functions in `build`/`spa` mode.
  */
 export const listFunctions = defineInspectRpc({
-  name: 'devframes-plugin-inspect:list-functions',
+  name: 'devframes:plugin:inspect:list-functions',
   type: 'query',
   jsonSerializable: true,
   snapshot: true,

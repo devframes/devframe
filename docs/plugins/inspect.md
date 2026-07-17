@@ -52,7 +52,7 @@ await createCac(createInspectDevframe({ port: 9100 })).parse()
 
 ## RPC surface
 
-All functions are namespaced `devframes-plugin-inspect:*`:
+All functions are namespaced `devframes:plugin:inspect:*`:
 
 | Function | Type | Returns |
 |----------|------|---------|

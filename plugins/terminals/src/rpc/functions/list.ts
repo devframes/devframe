@@ -4,7 +4,7 @@ import { getTerminalManager } from '../../node/context'
 import { sessionInfoSchema } from '../schemas'
 
 export const list = defineRpcFunction({
-  name: 'devframes-plugin-terminals:list',
+  name: 'devframes:plugin:terminals:list',
   type: 'query',
   jsonSerializable: true,
   snapshot: true,

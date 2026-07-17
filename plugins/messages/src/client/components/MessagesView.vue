@@ -9,7 +9,7 @@ import { fromEntries, getHashColorFromString, levelPriority, levels } from './Me
 
 // Ported from vitejs/devtools' `ViewBuiltinMessages.vue`, split into a dumb
 // view: the feed comes in as a prop, mutations go out as emits (the smart
-// wrapper maps them onto the `devframes-plugin-messages:*` RPCs).
+// wrapper maps them onto the `devframes:plugin:messages:*` RPCs).
 //
 // TODO(toasts): the upstream view also participates in toast selection —
 // `pendingSelectId` (set by clicking a toast) selects + scrolls an entry into
