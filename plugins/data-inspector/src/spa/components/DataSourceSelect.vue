@@ -30,9 +30,7 @@ function iconOf(source: DataSourceMeta | undefined): string {
         <span class="truncate font-semibold text-primary">{{ active?.title ?? placeholder ?? 'Data source' }}</span>
       </span>
       <SelectIcon class="op-fade shrink-0">
-        <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="m6 9l6 6l6-6" />
-        </svg>
+        <span class="i-ph:caret-down" aria-hidden="true" />
       </SelectIcon>
     </SelectTrigger>
     <SelectPortal>
@@ -57,9 +55,7 @@ function iconOf(source: DataSourceMeta | undefined): string {
               <span v-if="source.description" class="text-11px color-faint truncate">{{ source.description }}</span>
             </span>
             <SelectItemIndicator class="color-active inline-flex items-center shrink-0 mt-0.5">
-              <svg width="0.85em" height="0.85em" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M20 6L9 17l-5-5" />
-              </svg>
+              <span class="i-ph:check" aria-hidden="true" />
             </SelectItemIndicator>
           </SelectItem>
         </SelectViewport>
