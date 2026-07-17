@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-data-inspector",
   "type": "module",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "Devframe plugin — inspect live server-side objects interactively with jora queries: registry-contributed data sources, saved queries, file and process-attach inspection.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
