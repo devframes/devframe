@@ -7,7 +7,7 @@ export type { ViteDevBridgeOptions }
 /**
  * Mount the a11y inspector panel into an existing Vite dev server. In the
  * default static-mount mode it serves the built panel at
- * `/__devframe-a11y-inspector/`; pass `{ devMiddleware: true }` for the
+ * `/__devframes_plugin_a11y/`; pass `{ devMiddleware: true }` for the
  * bridge mode where the host owns the SPA and devframe runs a side-car
  * RPC + WS server.
  *

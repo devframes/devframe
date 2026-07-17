@@ -125,17 +125,17 @@ describe('createDevframeClientHost', () => {
   it('switches the active dock when the hub broadcasts devframe:docks:activate', async () => {
     const { rpc, states, definitions } = createStubRpc()
     const host = await createDevframeClientHost({ rpc })
-    states.get('devframe:docks')!.push([iframeEntry('one'), iframeEntry('devframes-plugin-terminals')])
+    states.get('devframe:docks')!.push([iframeEntry('one'), iframeEntry('devframes_plugin_terminals')])
 
     // Simulate the hub's server→client broadcast.
     const handler = definitions.get('devframe:docks:activate')!.handler!
-    handler({ dockId: 'devframes-plugin-terminals', params: { sessionId: 'sess-1' } })
-    await vi.waitFor(() => expect(host.context.docks.selectedId).toBe('devframes-plugin-terminals'))
+    handler({ dockId: 'devframes_plugin_terminals', params: { sessionId: 'sess-1' } })
+    await vi.waitFor(() => expect(host.context.docks.selectedId).toBe('devframes_plugin_terminals'))
 
     // Unknown dock ids degrade to a no-op (the previous selection stands).
     handler({ dockId: 'ghost' })
     await new Promise(r => setTimeout(r, 0))
-    expect(host.context.docks.selectedId).toBe('devframes-plugin-terminals')
+    expect(host.context.docks.selectedId).toBe('devframes_plugin_terminals')
     host.dispose()
   })
 

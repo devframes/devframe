@@ -49,7 +49,7 @@ export default createCodeServerDevframe({
 
 ## RPC surface
 
-All functions are namespaced `devframes-plugin-code-server:*`:
+All functions are namespaced `devframes:plugin:code-server:*`:
 
 | Function | Type | Purpose |
 |----------|------|---------|

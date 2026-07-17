@@ -46,17 +46,17 @@ describe('inspector dev-server', () => {
 
   it('list-functions reports the inspector RPCs plus built-ins, with metadata', async () => {
     const rpc = connect(server)
-    const fns = await rpc.$call('devframes-plugin-inspect:list-functions') as RpcFunctionInfo[]
+    const fns = await rpc.$call('devframes:plugin:inspect:list-functions') as RpcFunctionInfo[]
     const names = fns.map(f => f.name)
 
-    expect(names).toContain('devframes-plugin-inspect:list-functions')
-    expect(names).toContain('devframes-plugin-inspect:invoke')
-    expect(names).toContain('devframes-plugin-inspect:list-state-keys')
-    expect(names).toContain('devframes-plugin-inspect:describe-agent')
+    expect(names).toContain('devframes:plugin:inspect:list-functions')
+    expect(names).toContain('devframes:plugin:inspect:invoke')
+    expect(names).toContain('devframes:plugin:inspect:list-state-keys')
+    expect(names).toContain('devframes:plugin:inspect:describe-agent')
     // The built-in shared-state RPCs are always registered on the host.
     expect(names).toContain('devframe:rpc:server-state:get')
 
-    const listFn = fns.find(f => f.name === 'devframes-plugin-inspect:list-functions')!
+    const listFn = fns.find(f => f.name === 'devframes:plugin:inspect:list-functions')!
     expect(listFn).toMatchObject({
       type: 'query',
       jsonSerializable: true,
@@ -65,15 +65,15 @@ describe('inspector dev-server', () => {
     })
     expect(listFn.agent?.description).toBeTruthy()
 
-    const invokeFn = fns.find(f => f.name === 'devframes-plugin-inspect:invoke')!
+    const invokeFn = fns.find(f => f.name === 'devframes:plugin:inspect:invoke')!
     expect(invokeFn).toMatchObject({ type: 'action', invokable: false })
   })
 
   it('invoke runs a read-only query and returns a result envelope', async () => {
     const rpc = connect(server)
     const result = await rpc.$call(
-      'devframes-plugin-inspect:invoke',
-      'devframes-plugin-inspect:list-state-keys',
+      'devframes:plugin:inspect:invoke',
+      'devframes:plugin:inspect:list-state-keys',
       [],
     ) as InvokeResult
     expect(result.ok).toBe(true)
@@ -84,22 +84,22 @@ describe('inspector dev-server', () => {
   it('invoke refuses to fire action / event functions', async () => {
     const rpc = connect(server)
     await expect(
-      rpc.$call('devframes-plugin-inspect:invoke', 'devframes-plugin-inspect:invoke', []),
+      rpc.$call('devframes:plugin:inspect:invoke', 'devframes:plugin:inspect:invoke', []),
     ).rejects.toThrow(/only read-only/)
   })
 
   it('invoke rejects unknown function names', async () => {
     const rpc = connect(server)
     await expect(
-      rpc.$call('devframes-plugin-inspect:invoke', 'does-not:exist', []),
+      rpc.$call('devframes:plugin:inspect:invoke', 'does-not:exist', []),
     ).rejects.toThrow(/not registered|Cannot invoke/)
   })
 
   it('describe-agent surfaces the agent-exposed inspector tools', async () => {
     const rpc = connect(server)
-    const manifest = await rpc.$call('devframes-plugin-inspect:describe-agent') as AgentManifest
+    const manifest = await rpc.$call('devframes:plugin:inspect:describe-agent') as AgentManifest
     const toolIds = manifest.tools.map(t => t.id)
-    expect(toolIds).toContain('devframes-plugin-inspect:list-functions')
-    expect(toolIds).toContain('devframes-plugin-inspect:describe-agent')
+    expect(toolIds).toContain('devframes:plugin:inspect:list-functions')
+    expect(toolIds).toContain('devframes:plugin:inspect:describe-agent')
   })
 })

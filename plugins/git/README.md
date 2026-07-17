@@ -57,21 +57,21 @@ WebSocket in dev, and served from a snapshot baked at build time for static
 deploys. Each degrades to an empty, `isRepo: false` result outside a git
 repository.
 
-- `git:status` — branch, upstream tracking (ahead/behind), staged / unstaged /
+- `devframes:plugin:git:status` — branch, upstream tracking (ahead/behind), staged / unstaged /
   untracked files, parsed from `git status --porcelain=v2`. Reports `canWrite`.
-- `git:log` — paginated commit history (`limit` / `skip`) including parent
+- `devframes:plugin:git:log` — paginated commit history (`limit` / `skip`) including parent
   hashes, which drive the commit graph.
-- `git:branches` — local branches with SHA, upstream, ahead/behind, tip subject.
-- `git:diff` — per-file added/deleted counts for the working tree or index, plus
+- `devframes:plugin:git:branches` — local branches with SHA, upstream, ahead/behind, tip subject.
+- `devframes:plugin:git:diff` — per-file added/deleted counts for the working tree or index, plus
   a unified patch for a selected file.
 
 Write actions are `action` functions, registered only when write mode is enabled
 (`createGitDevframe({ write: true })` or the `--write` flag) and gated behind
 `status.canWrite` in the UI. Each returns fresh status (commit returns a result):
 
-- `git:stage` — `git add` the given paths.
-- `git:unstage` — `git restore --staged` the given paths.
-- `git:commit` — commit the staged changes with a message.
+- `devframes:plugin:git:stage` — `git add` the given paths.
+- `devframes:plugin:git:unstage` — `git restore --staged` the given paths.
+- `devframes:plugin:git:commit` — commit the staged changes with a message.
 
 ## Develop
 

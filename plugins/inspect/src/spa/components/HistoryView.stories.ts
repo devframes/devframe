@@ -20,7 +20,7 @@ export const Default: Story = {
       {
         id: 1,
         type: 'call',
-        method: 'devframes-plugin-inspect:list-functions',
+        method: 'devframes:plugin:inspect:list-functions',
         args: [],
         result: [{ name: 'dummy' }],
         duration: 42,
@@ -37,8 +37,8 @@ export const Default: Story = {
       {
         id: 3,
         type: 'call',
-        method: 'devframes-plugin-inspect:invoke',
-        args: ['devframes-plugin-inspect:list-state-keys', []],
+        method: 'devframes:plugin:inspect:invoke',
+        args: ['devframes:plugin:inspect:list-state-keys', []],
         error: { name: 'Error', message: 'Failed' },
         duration: 12,
         time: Date.now() - 1000,

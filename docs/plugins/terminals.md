@@ -52,7 +52,7 @@ export default createTerminalsDevframe({
 
 ## Hub aggregation
 
-Mounted into a hub, the plugin owns PTY/child-process spawning and its own streaming channel (`devframes-plugin-terminals:output`) — that's what the panel renders. It also mirrors every session it spawns into `ctx.terminals` (the hub's aggregate registry, streaming on `devframe:terminals`) so other tools — a launcher dock, a custom panel — see the same session list without depending on the plugin's own types. A session started the other way, via `ctx.terminals.startChildProcess` / `startPtySession` directly (e.g. from a launcher dock), shows up in the terminals panel too — the plugin reads foreign hub sessions read-only and renders them alongside its own, subscribing to the hub's channel for their output.
+Mounted into a hub, the plugin owns PTY/child-process spawning and its own streaming channel (`devframes:plugin:terminals:output`) — that's what the panel renders. It also mirrors every session it spawns into `ctx.terminals` (the hub's aggregate registry, streaming on `devframe:terminals`) so other tools — a launcher dock, a custom panel — see the same session list without depending on the plugin's own types. A session started the other way, via `ctx.terminals.startChildProcess` / `startPtySession` directly (e.g. from a launcher dock), shows up in the terminals panel too — the plugin reads foreign hub sessions read-only and renders them alongside its own, subscribing to the hub's channel for their output.
 
 `ctx.terminals` is the source of truth for "what sessions exist"; the plugin is the panel that renders them and the one PTY-capable provider among possibly several session sources. The plugin never imports `@devframes/hub`'s types to stay mountable without a hub — it duck-types the minimal `register` / `update` / `events` shape it needs.
 
@@ -60,12 +60,12 @@ A session from `ctx.terminals.startChildProcess()` carries a `getResult()` acces
 
 ## Focusing a session
 
-The panel reacts to the hub's [cross-iframe dock activation](/guide/hub#cross-iframe-dock-activation): when an activation targets this dock (`dockId: 'devframes-plugin-terminals'`) and carries a `sessionId`, the panel selects that session. This lets another tool spawn a build and jump the user straight to its output:
+The panel reacts to the hub's [cross-iframe dock activation](/guide/hub#cross-iframe-dock-activation): when an activation targets this dock (`dockId: 'devframes_plugin_terminals'`) and carries a `sessionId`, the panel selects that session. This lets another tool spawn a build and jump the user straight to its output:
 
 ```ts
 // e.g. right after ctx.terminals.startChildProcess(..., { id: sessionId, ... })
 await rpc.call('hub:docks:activate', {
-  dockId: 'devframes-plugin-terminals',
+  dockId: 'devframes_plugin_terminals',
   params: { sessionId },
 })
 ```

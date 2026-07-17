@@ -156,7 +156,7 @@ function DashboardBody() {
 
   const rightRail = useRailWidth('devframe-git:rail-right', 480, 340, 760, -1)
 
-  const branchesLoader = useCallback((rpc: DevframeRpcClient) => rpc.call('git:branches'), [])
+  const branchesLoader = useCallback((rpc: DevframeRpcClient) => rpc.call('devframes:plugin:git:branches'), [])
   const {
     data: branches,
     loading: branchesLoading,

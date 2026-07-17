@@ -37,23 +37,23 @@ describe('createHubContext dock activation', () => {
     })
     context.docks.register({
       type: 'iframe',
-      id: 'devframes-plugin-terminals',
+      id: 'devframes_plugin_terminals',
       title: 'Terminals',
       icon: 'ph:terminal-window-duotone',
-      url: '/__devframes-plugin-terminals/',
+      url: '/__devframes_plugin_terminals/',
     })
 
     const broadcast = vi.spyOn(context.rpc, 'broadcast').mockResolvedValue()
-    context.docks.activate('devframes-plugin-terminals', { sessionId: 'sess-1' })
+    context.docks.activate('devframes_plugin_terminals', { sessionId: 'sess-1' })
 
     const active = await context.rpc.sharedState.get<{ activation: unknown }>('devframe:docks:active')
     expect(active.value().activation).toEqual({
-      dockId: 'devframes-plugin-terminals',
+      dockId: 'devframes_plugin_terminals',
       params: { sessionId: 'sess-1' },
     })
     expect(broadcast).toHaveBeenCalledWith({
       method: 'devframe:docks:activate',
-      args: [{ dockId: 'devframes-plugin-terminals', params: { sessionId: 'sess-1' } }],
+      args: [{ dockId: 'devframes_plugin_terminals', params: { sessionId: 'sess-1' } }],
     })
     broadcast.mockRestore()
   })

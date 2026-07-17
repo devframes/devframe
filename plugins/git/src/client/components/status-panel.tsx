@@ -9,7 +9,7 @@ import { StatusPanelView } from './views/status-panel-view'
 
 function PatchViewer({ staged, path }: { staged: boolean, path: string }) {
   const loader = useCallback(
-    (rpc: DevframeRpcClient) => rpc.call('git:diff', { staged, path }),
+    (rpc: DevframeRpcClient) => rpc.call('devframes:plugin:git:diff', { staged, path }),
     [staged, path],
   )
   const { data, loading } = useRpcResource(loader)
@@ -30,7 +30,7 @@ function PatchViewer({ staged, path }: { staged: boolean, path: string }) {
  */
 export function StatusPanel() {
   const { rpc } = useRpc()
-  const loader = useCallback((r: DevframeRpcClient) => r.call('git:status'), [])
+  const loader = useCallback((r: DevframeRpcClient) => r.call('devframes:plugin:git:status'), [])
   const { data, loading, refresh, setData } = useRpcResource(loader)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
@@ -45,7 +45,7 @@ export function StatusPanel() {
     setBusy(true)
     setNote(null)
     try {
-      setData(await rpc.call('git:stage', { paths }))
+      setData(await rpc.call('devframes:plugin:git:stage', { paths }))
     }
     finally {
       setBusy(false)
@@ -58,7 +58,7 @@ export function StatusPanel() {
     setBusy(true)
     setNote(null)
     try {
-      setData(await rpc.call('git:unstage', { paths }))
+      setData(await rpc.call('devframes:plugin:git:unstage', { paths }))
     }
     finally {
       setBusy(false)
@@ -71,7 +71,7 @@ export function StatusPanel() {
     setBusy(true)
     setNote(null)
     try {
-      const result = await rpc.call('git:commit', { message })
+      const result = await rpc.call('devframes:plugin:git:commit', { message })
       setData(result.status)
       if (result.ok)
         setMessage('')

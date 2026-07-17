@@ -26,7 +26,7 @@ declare module 'devframe' {
   interface DevframeRpcServerFunctions extends RpcDefinitionsToFunctions<typeof serverFunctions> {}
 
   interface DevframeRpcSharedStates {
-    'devframes-plugin-terminals:sessions': TerminalsSharedState
-    'devframes-plugin-terminals:presets': { presets: TerminalPreset[] }
+    'devframes:plugin:terminals:sessions': TerminalsSharedState
+    'devframes:plugin:terminals:presets': { presets: TerminalPreset[] }
   }
 }

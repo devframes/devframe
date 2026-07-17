@@ -76,7 +76,7 @@ function parseLog(raw: string): Commit[] {
 const SNAPSHOT_LIMIT = 200
 
 export const log = defineRpcFunction({
-  name: 'git:log',
+  name: 'devframes:plugin:git:log',
   type: 'query',
   jsonSerializable: true,
   // A static build can't run git on demand, so bake the head of history (up to

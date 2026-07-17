@@ -65,7 +65,7 @@ behave identically; the panel's `websocket` / `static` tag is the only tell.
 Standalone, without a host app:
 
 ```sh
-pnpm -C plugins/a11y dev         # panel only, at /__devframe-a11y-inspector/
+pnpm -C plugins/a11y dev         # panel only, at /__devframes_plugin_a11y/
 ```
 
 ## File map
@@ -74,7 +74,7 @@ pnpm -C plugins/a11y dev         # panel only, at /__devframe-a11y-inspector/
 |------|--------|---------|
 | `src/index.ts` | `.` | `createA11yDevframe()` + the default `DevframeDefinition`; `a11yAgentBundlePath` — the agent module a hub attaches as this dock's client script |
 | `src/node/index.ts` | `/node` | `setupA11y(ctx)` — registers the RPC functions |
-| `src/cli.ts` | `/cli` | `createA11yCli()` — backs the `devframe-a11y-inspector` bin |
+| `src/cli.ts` | `/cli` | `createA11yCli()` — backs the `devframes_plugin_a11y` bin |
 | `src/vite.ts` | `/vite` | `a11yVitePlugin()` — mounts the panel into a Vite host |
 | `src/client/index.ts` | `/client` | `connectA11y()` — typed browser RPC client wrapper |
 | `src/rpc/` | — | `get-config` static RPC + the type-safe client registry |

@@ -14,7 +14,7 @@ const INVOKABLE_TYPES = new Set(['query', 'static'])
  * constraints that `jsonSerializable: true` would impose.
  */
 export const invoke = defineInspectRpc({
-  name: 'devframes-plugin-inspect:invoke',
+  name: 'devframes:plugin:inspect:invoke',
   type: 'action',
   setup: ctx => ({
     handler: async (name: string, args: unknown[] = []): Promise<InvokeResult> => {

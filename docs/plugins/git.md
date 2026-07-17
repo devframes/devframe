@@ -41,12 +41,12 @@ await createCac(createGitDevframe({ repoRoot: process.cwd() })).parse()
 
 The read functions are each a `query` with `snapshot: true` — resolved live over WebSocket in dev, and served from a snapshot baked at build time for static deploys. Each degrades to an empty, `isRepo: false` result outside a git repository.
 
-- `git:status` — branch, upstream tracking, and staged / unstaged / untracked files.
-- `git:log` — paginated commit history including parent hashes, which drive the commit graph.
-- `git:branches` — local branches with SHA, upstream, ahead / behind, and tip subject.
-- `git:diff` — per-file added / deleted counts plus a unified patch for a selected file.
+- `devframes:plugin:git:status` — branch, upstream tracking, and staged / unstaged / untracked files.
+- `devframes:plugin:git:log` — paginated commit history including parent hashes, which drive the commit graph.
+- `devframes:plugin:git:branches` — local branches with SHA, upstream, ahead / behind, and tip subject.
+- `devframes:plugin:git:diff` — per-file added / deleted counts plus a unified patch for a selected file.
 
-Write actions (`git:stage`, `git:unstage`, `git:commit`) are `action` functions, registered only when write mode is enabled.
+Write actions (`devframes:plugin:git:stage`, `devframes:plugin:git:unstage`, `devframes:plugin:git:commit`) are `action` functions, registered only when write mode is enabled.
 
 ## Source
 

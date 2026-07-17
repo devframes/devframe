@@ -103,7 +103,7 @@ it('bakes one show record per commit in the snapshot', async () => {
   try {
     const ctx = await createDashboardContext(repo.dir, 'build')
     const dump = await collectStaticRpcDump(ctx.rpc.definitions.values(), ctx)
-    const entry = dump.manifest['git:show']
+    const entry = dump.manifest['devframes:plugin:git:show']
     expect(entry).toBeDefined()
     // The temp repo has 2 commits; both should be baked, each with a hash + output.
     const files = Object.values(dump.files).map(f => (f.data as any).output)
@@ -117,7 +117,7 @@ it('bakes one show record per commit in the snapshot', async () => {
 ```
 
 Adjust the assertion to how the git dump surfaces records in the manifest/files
-(inspect `dump.manifest['git:show']` shape while writing). The key assertion:
+(inspect `dump.manifest['devframes:plugin:git:show']` shape while writing). The key assertion:
 every commit in the window produced a record, and order/content match the serial
 version.
 

@@ -5,8 +5,8 @@ import pkg from '../package.json' with { type: 'json' }
 import { setupA11y } from './node/index.ts'
 
 /** Default devframe id — drives the standalone CLI command and the hosted mount path `/__<id>/`. */
-const DEFAULT_ID = 'devframe-a11y-inspector'
-const BASE_PATH = '/__devframe-a11y-inspector/'
+const DEFAULT_ID = 'devframes_plugin_a11y'
+const BASE_PATH = '/__devframes_plugin_a11y/'
 
 // The Solid panel SPA is built (by Vite) into `dist/spa`. From both the
 // source entry (`src/index.ts`, via the workspace alias) and the published
@@ -34,7 +34,7 @@ export interface A11yDevframeOptions {
   /** Override the dock icon. */
   icon?: string
   /**
-   * Override the mount path. Defaults to `/__devframe-a11y-inspector/` so the
+   * Override the mount path. Defaults to `/__devframes_plugin_a11y/` so the
    * panel iframe shares an origin with the host page it scans.
    */
   basePath?: string

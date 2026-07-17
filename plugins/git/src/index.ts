@@ -25,7 +25,7 @@ export interface GitDevframeOptions {
   repoRoot?: string
   /**
    * Mount path override. Left to the adapter by default: `/` for standalone
-   * (cli / build / spa), `/__git/` for hosted (vite / embedded).
+   * (cli / build / spa), `/__devframes_plugin_git/` for hosted (vite / embedded).
    */
   basePath?: string
   /** SPA dist directory. Defaults to the package's bundled SPA. */
@@ -49,7 +49,7 @@ export interface GitDevframeOptions {
 export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDefinition {
   const distDir = options.distDir ?? resolve(PKG_ROOT, 'dist/client')
   return defineDevframe({
-    id: 'git',
+    id: 'devframes_plugin_git',
     name: 'Git',
     version: pkg.version,
     packageName: pkg.name,

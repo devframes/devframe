@@ -6,7 +6,7 @@ export type { ViteDevBridgeOptions }
 
 /**
  * Mount the messages panel into an existing Vite dev server. In the default
- * static-mount mode it serves the built SPA at `/__devframes-plugin-messages/`;
+ * static-mount mode it serves the built SPA at `/__devframes_plugin_messages/`;
  * pass `{ devMiddleware: true }` for the bridge mode where the host owns
  * the SPA and devframe runs a side-car RPC + WS server.
  */

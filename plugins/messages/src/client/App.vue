@@ -39,20 +39,20 @@ function reload(): void {
 const canOpenFile = computed(() => props.rpc.connectionMeta.backend !== 'static')
 
 async function onDismiss(id: string): Promise<void> {
-  await props.rpc.call('devframes-plugin-messages:remove', id)
+  await props.rpc.call('devframes:plugin:messages:remove', id)
 }
 
 async function onDismissMany(ids: string[]): Promise<void> {
   for (const id of ids)
-    await props.rpc.call('devframes-plugin-messages:remove', id)
+    await props.rpc.call('devframes:plugin:messages:remove', id)
 }
 
 async function onClear(): Promise<void> {
-  await props.rpc.call('devframes-plugin-messages:clear')
+  await props.rpc.call('devframes:plugin:messages:clear')
 }
 
 async function onPersist(id: string): Promise<void> {
-  await props.rpc.call('devframes-plugin-messages:update', id, { autoDelete: 0 })
+  await props.rpc.call('devframes:plugin:messages:update', id, { autoDelete: 0 })
 }
 
 async function onOpenFile(entry: DevframeMessageEntry): Promise<void> {

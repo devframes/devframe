@@ -10,7 +10,7 @@ export interface UnstageArgs {
 }
 
 export const unstage = defineRpcFunction({
-  name: 'git:unstage',
+  name: 'devframes:plugin:git:unstage',
   type: 'action',
   jsonSerializable: true,
   setup: (ctx) => {

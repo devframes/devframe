@@ -4,7 +4,7 @@ import { getTerminalManager } from '../../node/context'
 import { presetSchema } from '../schemas'
 
 export const presets = defineRpcFunction({
-  name: 'devframes-plugin-terminals:presets',
+  name: 'devframes:plugin:terminals:presets',
   type: 'query',
   jsonSerializable: true,
   snapshot: true,

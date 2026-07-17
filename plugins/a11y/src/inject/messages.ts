@@ -41,9 +41,9 @@ export interface A11yAgentContext {
 }
 
 /** One deduplicated summary entry tracks the scan lifecycle. */
-const SCAN_MESSAGE_ID = 'devframe-a11y-inspector:scan'
+const SCAN_MESSAGE_ID = 'devframes:plugin:a11y:scan'
 /** One deduplicated entry per violated rule; removed when the rule clears. */
-const RULE_MESSAGE_PREFIX = 'devframe-a11y-inspector:rule:'
+const RULE_MESSAGE_PREFIX = 'devframes:plugin:a11y:rule:'
 
 const IMPACT_LEVEL: Record<Impact, HubMessageInput['level']> = {
   critical: 'error',

@@ -7,7 +7,7 @@
  *
  *   GET  /                              → the demo page (intentional a11y bugs)
  *   GET  /__df-inject/inject.js         → the injected agent bundle
- *   GET  /__devframe-a11y-inspector/**  → the Solid panel SPA
+ *   GET  /__devframes_plugin_a11y/**  → the Solid panel SPA
  *
  * Two modes prove the plugin works either way:
  *

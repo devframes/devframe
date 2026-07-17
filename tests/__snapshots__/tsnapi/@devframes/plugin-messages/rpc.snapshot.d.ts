@@ -3,7 +3,7 @@
  */
 // #region Variables
 export declare const serverFunctions: readonly [{
-  name: "devframes-plugin-messages:list";
+  name: "devframes:plugin:messages:list";
   type?: "query" | undefined;
   cacheable?: boolean;
   args?: undefined;
@@ -17,7 +17,7 @@ export declare const serverFunctions: readonly [{
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[since?: number | null | undefined], Promise<import("@devframes/hub/types").DevframeMessagesListDelta>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[since?: number | null | undefined], Promise<import("@devframes/hub/types").DevframeMessagesListDelta>>> | undefined;
 }, {
-  name: "devframes-plugin-messages:add";
+  name: "devframes:plugin:messages:add";
   type?: "action" | undefined;
   cacheable?: boolean;
   args?: undefined;
@@ -31,7 +31,7 @@ export declare const serverFunctions: readonly [{
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: import("@devframes/hub/types").DevframeMessageEntryInput], Promise<import("@devframes/hub/types").DevframeMessageEntry | null>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: import("@devframes/hub/types").DevframeMessageEntryInput], Promise<import("@devframes/hub/types").DevframeMessageEntry | null>>> | undefined;
 }, {
-  name: "devframes-plugin-messages:update";
+  name: "devframes:plugin:messages:update";
   type?: "action" | undefined;
   cacheable?: boolean;
   args?: undefined;
@@ -45,7 +45,7 @@ export declare const serverFunctions: readonly [{
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, patch: Partial<import("@devframes/hub/types").DevframeMessageEntryInput>], Promise<import("@devframes/hub/types").DevframeMessageEntry | null>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, patch: Partial<import("@devframes/hub/types").DevframeMessageEntryInput>], Promise<import("@devframes/hub/types").DevframeMessageEntry | null>>> | undefined;
 }, {
-  name: "devframes-plugin-messages:remove";
+  name: "devframes:plugin:messages:remove";
   type?: "action" | undefined;
   cacheable?: boolean;
   args?: undefined;
@@ -59,7 +59,7 @@ export declare const serverFunctions: readonly [{
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>> | undefined;
 }, {
-  name: "devframes-plugin-messages:clear";
+  name: "devframes:plugin:messages:clear";
   type?: "action" | undefined;
   cacheable?: boolean;
   args?: undefined;

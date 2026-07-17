@@ -31,7 +31,7 @@
   },
   "types": "./dist/index.d.mts",
   "bin": {
-    "devframe-a11y-inspector": "./bin.mjs"
+    "devframes_plugin_a11y": "./bin.mjs"
   },
   "files": [
     "bin.mjs",

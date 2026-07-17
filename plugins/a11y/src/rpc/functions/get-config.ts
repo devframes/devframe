@@ -30,7 +30,7 @@ const IMPACT_COPY = {
  * same in both modes.
  */
 export const getConfig = defineRpcFunction({
-  name: 'devframe-a11y-inspector:get-config',
+  name: 'devframes:plugin:a11y:get-config',
   type: 'static',
   jsonSerializable: true,
   handler: () => ({

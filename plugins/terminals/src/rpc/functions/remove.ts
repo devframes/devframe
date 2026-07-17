@@ -3,7 +3,7 @@ import * as v from 'valibot'
 import { getTerminalManager } from '../../node/context'
 
 export const remove = defineRpcFunction({
-  name: 'devframes-plugin-terminals:remove',
+  name: 'devframes:plugin:terminals:remove',
   type: 'action',
   jsonSerializable: true,
   args: [v.object({ id: v.string() })],

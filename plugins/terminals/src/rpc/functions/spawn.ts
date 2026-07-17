@@ -3,7 +3,7 @@ import { getTerminalManager } from '../../node/context'
 import { sessionInfoSchema, spawnRequestSchema } from '../schemas'
 
 export const spawn = defineRpcFunction({
-  name: 'devframes-plugin-terminals:spawn',
+  name: 'devframes:plugin:terminals:spawn',
   type: 'action',
   jsonSerializable: true,
   args: [spawnRequestSchema],

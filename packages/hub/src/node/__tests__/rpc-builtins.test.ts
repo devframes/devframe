@@ -44,8 +44,8 @@ describe('hub docks activate RPC', () => {
     const ctx = { docks: { activate } } as unknown as DevframeHubContext
 
     const fn = await hubDocksActivate.setup!(ctx)
-    await fn.handler!({ dockId: 'devframes-plugin-terminals', params: { sessionId: 'sess-1' } })
-    expect(activate).toHaveBeenCalledWith('devframes-plugin-terminals', { sessionId: 'sess-1' })
+    await fn.handler!({ dockId: 'devframes_plugin_terminals', params: { sessionId: 'sess-1' } })
+    expect(activate).toHaveBeenCalledWith('devframes_plugin_terminals', { sessionId: 'sess-1' })
   })
 
   it('forwards a bare dockId without params', async () => {
@@ -53,7 +53,7 @@ describe('hub docks activate RPC', () => {
     const ctx = { docks: { activate } } as unknown as DevframeHubContext
 
     const fn = await hubDocksActivate.setup!(ctx)
-    await fn.handler!({ dockId: 'devframes-plugin-messages' })
-    expect(activate).toHaveBeenCalledWith('devframes-plugin-messages', undefined)
+    await fn.handler!({ dockId: 'devframes_plugin_messages' })
+    expect(activate).toHaveBeenCalledWith('devframes_plugin_messages', undefined)
   })
 })

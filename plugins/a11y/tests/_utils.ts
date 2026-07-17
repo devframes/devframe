@@ -18,7 +18,7 @@ export const SPA_DIST = resolve(HERE, '../dist/spa')
 export function assertClientBuilt(): void {
   if (!existsSync(path.join(SPA_DIST, 'index.html'))) {
     throw new Error(
-      '[devframe-a11y-inspector] dist/spa missing — run `pnpm -C plugins/a11y run build` first.',
+      '[devframes_plugin_a11y] dist/spa missing — run `pnpm -C plugins/a11y run build` first.',
     )
   }
 }

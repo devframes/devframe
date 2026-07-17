@@ -2,7 +2,7 @@ import { defineMessagesRpc, getMessagesHost } from './_define'
 
 /** Remove (dismiss) a single message entry by id. */
 export const messagesRemove = defineMessagesRpc({
-  name: 'devframes-plugin-messages:remove',
+  name: 'devframes:plugin:messages:remove',
   type: 'action',
   jsonSerializable: true,
   setup: ctx => ({
