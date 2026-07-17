@@ -149,6 +149,8 @@ export function useWorkbench() {
   const statsStale = ref(false)
   const result = shallowRef<unknown>()
   const hasResult = ref(false)
+  /** When the last successful query landed — drives the "ran … ago" label. */
+  const lastRunAt = ref<number | null>(null)
 
   const suggestions = ref<SuggestItem[]>([])
 
@@ -220,6 +222,7 @@ export function useWorkbench() {
     stats.value = { ...outcome.stats, rpcMs: Math.round(performance.now() - started) }
     result.value = outcome.result
     hasResult.value = true
+    lastRunAt.value = Date.now()
   }
 
   function scheduleRun(): void {
@@ -231,17 +234,33 @@ export function useWorkbench() {
   // Re-runs read the live object afresh (the whole point — watch a value
   // change over time). A tick is skipped while a run is in flight or the
   // query is syntactically broken, so the poller never piles up requests
-  // or spams the wire with queries that can't parse.
+  // or spams the wire with queries that can't parse. The poller also pauses
+  // while the tab is backgrounded (no point polling an unseen page) and
+  // resumes — with an immediate catch-up run — when it returns to the front.
   let autoRunTimer: ReturnType<typeof setInterval> | undefined
+  function pageHidden(): boolean {
+    return typeof document !== 'undefined' && document.hidden
+  }
   function restartAutoRerun(): void {
     clearInterval(autoRunTimer)
-    if (!autoRun.value)
+    autoRunTimer = undefined
+    if (!autoRun.value || pageHidden())
       return
     autoRunTimer = setInterval(() => {
       if (running.value || syntax.value.kind === 'error')
         return
       void runNow()
     }, clampSeconds(autoRunSeconds.value) * 1000)
+  }
+
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (!autoRun.value)
+        return
+      restartAutoRerun() // clears the timer while hidden, recreates it on return
+      if (!pageHidden() && !running.value && syntax.value.kind !== 'error')
+        void runNow() // catch up on whatever changed while the tab was away
+    })
   }
 
   /**
@@ -401,6 +420,7 @@ export function useWorkbench() {
     statsStale,
     result,
     hasResult,
+    lastRunAt,
     suggestions,
     skeleton,
     skeletonError,

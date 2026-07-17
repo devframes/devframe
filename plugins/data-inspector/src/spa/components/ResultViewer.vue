@@ -3,6 +3,7 @@ import type { NodePath, QueryStats } from '../../engine'
 import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
 import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import DisplayBytes from '@antfu/design/components/Display/DisplayBytes.vue'
+import DisplayDate from '@antfu/design/components/Display/DisplayDate.vue'
 import DisplayDuration from '@antfu/design/components/Display/DisplayDuration.vue'
 import { shallowRef, watch } from 'vue'
 import { useDiscoveryViewer } from '../composables/discovery'
@@ -16,6 +17,8 @@ const props = defineProps<{
   statsStale: boolean
   error: string | null
   running: boolean
+  /** When the last successful query landed (ms epoch), or null before the first. */
+  lastRunAt: number | null
   /** Lazily fetch the subtree behind a depth-truncation marker. */
   expand: (path: NodePath) => Promise<unknown>
 }>()
@@ -75,6 +78,10 @@ function copyResult(): void {
           <span>{{ stats.normalize.refs }} <span class="op50">refs</span></span>
         </template>
         <DisplayBadge v-if="stats.normalize.truncatedEntries || stats.normalize.truncatedDepth" :color="12" text="truncated" />
+        <template v-if="lastRunAt">
+          <div class="h-full border-r border-base" />
+          <span class="flex items-center gap-1"><span class="op50">ran</span> <DisplayDate :date="lastRunAt" live /></span>
+        </template>
       </template>
       <span v-else class="op-fade select-none">no query run yet</span>
       <div class="flex-1" />
