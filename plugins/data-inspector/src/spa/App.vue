@@ -100,6 +100,15 @@ function queryAppend(path: string): void {
                 :color="connection.connected ? 100 : 200"
               />
               <div class="flex-auto" />
+              <a
+                href="https://devfra.me/plugins/data-inspector"
+                target="_blank"
+                title="Data Inspector docs — using the plugin and providing data sources"
+                class="flex items-center gap-1 text-xs color-muted hover:color-active"
+              >
+                <span class="i-ph:book-open-duotone text-base" />
+                <span>Docs</span>
+              </a>
               <ActionDarkToggle
                 :color-scheme="colorScheme"
                 @update:color-scheme="colorScheme = $event"
@@ -124,6 +133,17 @@ function queryAppend(path: string): void {
                 >
                   <span>{{ showDataSourceDetails ? 'Hide' : 'Show' }} details</span>
                 </Button>
+              </div>
+
+              <div v-if="connection.connected && !wb.sources.value.length" class="text-xs color-muted">
+                No data sources registered yet. Call
+                <code class="font-mono bg-secondary border border-base rounded px-1">registerDataSource()</code>
+                from your plugin or host —
+                <a
+                  href="https://devfra.me/plugins/data-inspector#providing-data-sources"
+                  target="_blank"
+                  class="color-active hover:underline"
+                >see the docs</a>.
               </div>
 
               <template v-if="showDataSourceDetails">

@@ -94,7 +94,9 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
   }
 
   const context: DevframeNodeContext = await createHostContext({ cwd, mode: 'dev', host })
-  setupDataInspector(context)
+  // Attach exists to inspect the target's own objects; the example source
+  // would only be noise next to them.
+  setupDataInspector(context, { exampleSource: false })
 
   const useAuth = options.auth ?? true
   const token = useAuth ? (options.token ?? randomToken()) : undefined

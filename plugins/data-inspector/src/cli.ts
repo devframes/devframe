@@ -54,7 +54,9 @@ export function createDataInspectorCli() {
     .action(async (files: string[], flags: { port?: number, host: string, open?: boolean }) => {
       for (const file of files)
         registerDataSource(createFileDataSource(file))
-      const def = createDataInspectorDevframe()
+      // With files given, they are the point; the example source only backs
+      // the empty first-run.
+      const def = createDataInspectorDevframe({ exampleSource: files.length === 0 })
       await createDevServer(def, {
         host: flags.host,
         port: flags.port ? Number(flags.port) : undefined,

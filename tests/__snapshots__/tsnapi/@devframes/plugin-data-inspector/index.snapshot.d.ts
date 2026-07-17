@@ -9,6 +9,7 @@ export interface DataInspectorDevframeOptions {
   basePath?: string;
   port?: number;
   auth?: boolean;
+  exampleSource?: boolean;
 }
 export interface DataSourceEntry {
   id: string;

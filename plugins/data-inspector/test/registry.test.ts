@@ -94,3 +94,17 @@ describe('data source registry (process-global)', () => {
     expect(listDataSources()).toEqual([])
   })
 })
+
+describe('example source', () => {
+  it('registers a live, queryable playground with suggested queries', async () => {
+    const { createExampleDataSource } = await import('../src/node/example-source')
+    const entry = createExampleDataSource()
+    registerDataSource(entry)
+    const data = await resolveSourceData(getDataSource(entry.id)!)
+    const { runQuery } = await import('../src/engine/query-engine')
+    for (const recipe of entry.queries ?? []) {
+      const out = runQuery(data, recipe.query.trim() || '$', recipe)
+      expect(out.ok, `suggested query "${recipe.title}" must run`).toBe(true)
+    }
+  })
+})

@@ -36,6 +36,12 @@ export interface DataInspectorDevframeOptions {
    * agent (`@devframes/plugin-data-inspector/agent`) defaults to `true`.
    */
   auth?: boolean
+  /**
+   * Register the built-in example source — a small live playground graph
+   * with suggested queries (default `true`). Disable once your own sources
+   * cover the first-run experience.
+   */
+  exampleSource?: boolean
 }
 
 /**
@@ -71,7 +77,7 @@ export function createDataInspectorDevframe(options: DataInspectorDevframeOption
     spa: { loader: 'none' },
     dock: { category: '~builtin' },
     setup(ctx) {
-      setupDataInspector(ctx)
+      setupDataInspector(ctx, { exampleSource: options.exampleSource })
     },
   })
 }
