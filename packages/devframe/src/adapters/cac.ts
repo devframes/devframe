@@ -66,6 +66,10 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
     .option('--host <host>', 'Host to bind to', { default: defaultHost })
     .option('--open', 'Open the browser on start')
     .option('--no-open', 'Do not open the browser')
+    // Standalone auth is on by default; `--no-auth` opts a one-off run out of
+    // the interactive OTP gate. The `true` default CAC injects is harmless —
+    // the dev server only acts on an explicit `auth: false`.
+    .option('--no-auth', 'Disable the interactive authentication gate')
     // Only `--mcp` is declared: CAC's `--no-*` auto-negation would inject a
     // `true` default, silently enabling MCP. Declaring just `--mcp` yields the
     // opt-in tri-state — absent → `undefined` (falls through to `cli.mcp`),

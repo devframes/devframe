@@ -41,6 +41,7 @@ export interface DevframeRpcClientOptions {
   baseURL?: string | string[];
   authToken?: string;
   otpParam?: string | false;
+  simpleAuth?: boolean;
   wsOptions?: Partial<WsRpcChannelOptions>;
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>;
   cacheOptions?: boolean | Partial<RpcCacheOptions>;
