@@ -52,7 +52,7 @@ export declare class CodeServerSupervisor {
   private adopted;
   private readyUrl?;
   private logBuffer;
-  private cleanupRegistered;
+  private exitHandler?;
   private readonly sessionId;
   private session?;
   constructor(_: DevframeNodeContext, _?: CodeServerOptions);

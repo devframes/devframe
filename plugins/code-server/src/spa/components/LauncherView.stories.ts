@@ -60,7 +60,7 @@ export const Launch: Story = {
 export const LaunchServeWeb: Story = {
   args: {
     phase: 'launch',
-    detection: { ...localCodeServer, backend: 'code-serve-web', bin: 'code', version: '1.99.0' },
+    detection: { ...localCodeServer, backend: 'ms-code-serve-web', bin: 'code', version: '1.99.0' },
     server: { status: 'stopped' },
     busy: false,
   },
@@ -90,7 +90,7 @@ export const Starting: Story = {
 export const TunnelLogin: Story = {
   args: {
     phase: 'starting',
-    detection: { checked: true, installed: true, version: '1.99.0', bin: 'code', backend: 'code-serve-web', mode: 'tunnel' },
+    detection: { checked: true, installed: true, version: '1.99.0', bin: 'code', backend: 'ms-code-serve-web', mode: 'tunnel' },
     server: {
       status: 'starting',
       login: { url: 'https://github.com/login/device', code: 'ABCD-1234' },

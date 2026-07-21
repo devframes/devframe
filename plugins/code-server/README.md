@@ -30,7 +30,7 @@ or leave it unset to auto-detect (prefers `code-server`, then `code serve-web`).
 | `backend` | Binary | Auth |
 |-----------|--------|------|
 | `'code-server'` | Coder [`code-server`](https://github.com/coder/code-server) | password + session cookie |
-| `'code-serve-web'` | Microsoft [`code serve-web`](https://code.visualstudio.com/docs/remote/vscode-server) | connection token (`?tkn=`) |
+| `'ms-code-serve-web'` | Microsoft [`code serve-web`](https://code.visualstudio.com/docs/remote/vscode-server) | connection token (`?tkn=`) |
 
 `mode: 'tunnel'` runs Microsoft's `code tunnel` and embeds the hosted
 `vscode.dev` editor. The first launch surfaces a device-login prompt in the
@@ -50,7 +50,7 @@ npx @devframes/plugin-code-server        # dev server + launcher
 import { createCodeServerDevframe } from '@devframes/plugin-code-server'
 
 export default createCodeServerDevframe({
-  // backend: 'code-server',    // 'code-server' | 'code-serve-web' (default: auto)
+  // backend: 'code-server',    // 'code-server' | 'ms-code-serve-web' (default: auto)
   // mode: 'local',             // 'local' | 'tunnel'
   // serverPort: 8080,          // force a port (default: free port near 8080)
   // startOnBoot: true,         // launch during setup instead of on demand

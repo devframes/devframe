@@ -28,7 +28,7 @@ export interface ProfileContext {
 
 export interface CodeServerProfile {
   kind: CodeServerProfileKind
-  /** Public backend id (tunnel reports `code-serve-web`'s sibling `code` binary). */
+  /** Public backend id (tunnel reports `ms-code-serve-web`'s sibling `code` binary). */
   backend: CodeServerBackend
   /** Default binary when the caller doesn't override `bin`. */
   defaultBin: string
@@ -87,7 +87,7 @@ const codeServerProfile: CodeServerProfile = {
 /** Microsoft's `code serve-web`, with a connection token passed via `?tkn=`. */
 const serveWebProfile: CodeServerProfile = {
   kind: 'serve-web',
-  backend: 'code-serve-web',
+  backend: 'ms-code-serve-web',
   defaultBin: 'code',
   buildArgs: c => [
     'serve-web',
@@ -117,7 +117,7 @@ const DEVICE_LOGIN_RE = /log in(?:to)? (https?:\/\/\S+) and use code ([A-Z0-9-]+
 /** Microsoft's `code tunnel`, embedding the hosted `vscode.dev` editor. */
 const tunnelProfile: CodeServerProfile = {
   kind: 'tunnel',
-  backend: 'code-serve-web',
+  backend: 'ms-code-serve-web',
   defaultBin: 'code',
   buildArgs: c => [
     'tunnel',
@@ -142,11 +142,11 @@ const tunnelProfile: CodeServerProfile = {
 
 const LOCAL_PROFILES: Record<CodeServerBackend, CodeServerProfile> = {
   'code-server': codeServerProfile,
-  'code-serve-web': serveWebProfile,
+  'ms-code-serve-web': serveWebProfile,
 }
 
 /** The ordered auto-detection candidates for `mode: 'local'` with no explicit backend. */
-export const AUTO_DETECT_ORDER: CodeServerBackend[] = ['code-server', 'code-serve-web']
+export const AUTO_DETECT_ORDER: CodeServerBackend[] = ['code-server', 'ms-code-serve-web']
 
 /** Resolve the launch profile for a mode + backend. */
 export function resolveProfile(mode: CodeServerMode, backend: CodeServerBackend): CodeServerProfile {

@@ -8,12 +8,12 @@ export type CodeServerStatus = 'stopped' | 'starting' | 'running' | 'error'
  *   [code-server](https://github.com/coder/code-server) (`code-server …`). The
  *   plugin runs it with password auth and hands the client a session cookie, so
  *   the embedded editor opens already signed in.
- * - `'code-serve-web'` — Microsoft's official
+ * - `'ms-code-serve-web'` — Microsoft's official
  *   [`code serve-web`](https://code.visualstudio.com/docs/remote/vscode-server)
  *   (ships with the `code` CLI). The plugin generates a connection token and
  *   hands it to the client as a `?tkn=` query parameter.
  */
-export type CodeServerBackend = 'code-server' | 'code-serve-web'
+export type CodeServerBackend = 'code-server' | 'ms-code-serve-web'
 
 /**
  * How the editor is served:

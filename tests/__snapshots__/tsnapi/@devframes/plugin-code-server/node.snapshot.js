@@ -28,7 +28,7 @@ export class CodeServerSupervisor {
   adopted
   readyUrl
   logBuffer
-  cleanupRegistered
+  exitHandler
   sessionId
   session
   constructor(_, _) {}

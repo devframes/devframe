@@ -23,7 +23,7 @@ The editor iframe points at the server's own origin, so its WebSocket traffic fl
 | `backend` | Binary | Auth handoff |
 |-----------|--------|--------------|
 | `'code-server'` | Coder's [`code-server`](https://github.com/coder/code-server) | password + session cookie |
-| `'code-serve-web'` | Microsoft's [`code serve-web`](https://code.visualstudio.com/docs/remote/vscode-server) | connection token (`?tkn=`) |
+| `'ms-code-serve-web'` | Microsoft's [`code serve-web`](https://code.visualstudio.com/docs/remote/vscode-server) | connection token (`?tkn=`) |
 
 ## Tunnel mode
 
@@ -55,7 +55,7 @@ export default defineConfig({
 import { createCodeServerDevframe } from '@devframes/plugin-code-server'
 
 export default createCodeServerDevframe({
-  // backend: 'code-server',    // 'code-server' | 'code-serve-web' (default: auto-detect)
+  // backend: 'code-server',    // 'code-server' | 'ms-code-serve-web' (default: auto-detect)
   // mode: 'local',             // 'local' | 'tunnel'
   // serverPort: 8080,          // force a port (default: free port near 8080)
   // startOnBoot: true,         // launch during setup instead of on demand

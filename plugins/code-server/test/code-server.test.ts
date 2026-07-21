@@ -136,12 +136,12 @@ describe('@devframes/plugin-code-server', () => {
       const dumpTokenTo = join(mkdtempSync(join(tmpdir(), 'dcs-tkn-')), 'token')
       const bin = writeFakeServeWeb({ version: '1.99.0', dumpTokenTo })
       const ctx = await createTestContext()
-      const supervisor = await setupCodeServer(ctx, { backend: 'code-serve-web', bin, serverPort: 0 })
+      const supervisor = await setupCodeServer(ctx, { backend: 'ms-code-serve-web', bin, serverPort: 0 })
       supervisors.push(supervisor)
 
       const result = await supervisor.start()
       expect(result.server.status).toBe('running')
-      expect(result.detection.backend).toBe('code-serve-web')
+      expect(result.detection.backend).toBe('ms-code-serve-web')
       // No cookie for serve-web; the token rides on the URL query.
       expect(result.connect?.cookie).toBeUndefined()
       const token = readFileSync(dumpTokenTo, 'utf8')

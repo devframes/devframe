@@ -40,7 +40,7 @@ function copy(command: string): void {
 const backendLabel = computed(() =>
   props.detection.mode === 'tunnel'
     ? 'tunnel'
-    : props.detection.backend === 'code-serve-web' ? 'code serve-web' : 'code-server',
+    : props.detection.backend === 'ms-code-serve-web' ? 'code serve-web' : 'code-server',
 )
 const errorText = computed(() => (props.server.status === 'error' ? props.server.error : undefined))
 </script>

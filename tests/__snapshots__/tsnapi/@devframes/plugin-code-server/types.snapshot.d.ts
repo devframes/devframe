@@ -67,7 +67,7 @@ export interface CodeServerTunnelOptions {
 // #endregion
 
 // #region Types
-export type CodeServerBackend = 'code-server' | 'code-serve-web';
+export type CodeServerBackend = 'code-server' | 'ms-code-serve-web';
 export type CodeServerMode = 'local' | 'tunnel';
 export type CodeServerStartResult = CodeServerStatusResult;
 export type CodeServerStatus = 'stopped' | 'starting' | 'running' | 'error';
