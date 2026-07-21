@@ -12,6 +12,7 @@ Each plugin is built with a **different UI framework**. That is deliberate: devf
 |--------|--------------|--------------|
 | [Data Inspector](./data-inspector) | Vue | Query live server-side objects with jora — sources contributed by plugins, hosts, data files, or attached processes. |
 | [Devframe Inspector](./inspect) | Vue | Browse the RPC registry, invoke read-only queries, watch shared state update live, and explore the agent surface. |
+| [Open Graph Viewer](./og) | Vue | Inspect Open Graph and Twitter metadata and compare social-card previews. |
 | [Accessibility Inspector](./a11y) | Solid | Run axe-core against a host app, list WCAG violations, and highlight the offending element in the page on hover. |
 | [Git](./git) | React (Next.js) | A repository dashboard — status, a commit graph, branches, and diffs, with optional staging and committing. |
 | [Terminals](./terminals) | Svelte | Stream read-only command output and run fully interactive PTY shells in the browser. |
@@ -29,6 +30,7 @@ Most plugins publish a `bin`, so the quickest path is `npx`:
 
 ```sh
 npx @devframes/plugin-inspect      # the Devframe Inspector, standalone
+npx @devframes/plugin-og           # inspect Open Graph metadata and social cards
 npx @devframes/plugin-git          # the Git dashboard against the current repo
 ```
 

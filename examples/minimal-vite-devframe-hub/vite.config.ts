@@ -5,6 +5,7 @@ import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
 import gitDevframe from '@devframes/plugin-git'
 import inspectDevframe from '@devframes/plugin-inspect'
 import messagesDevframe from '@devframes/plugin-messages'
+import ogDevframe from '@devframes/plugin-og'
 import terminalsDevframe from '@devframes/plugin-terminals'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
@@ -61,6 +62,7 @@ export default defineConfig({
         dataInspectorDevframe,
         a11yDevframe,
         messagesDevframe,
+        ogDevframe,
       ],
       // Attach the a11y inspector's in-page agent as its dock's client script.
       // The hub client runtime (booted in src/client/main.ts) imports it into
