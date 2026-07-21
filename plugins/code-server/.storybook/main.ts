@@ -1,20 +1,25 @@
-import type { StorybookConfig } from '@storybook/html-vite'
+import type { StorybookConfig } from '@storybook/vue3-vite'
+import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
+import { mergeConfig } from 'vite'
+import { alias } from '../../../alias'
 
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(ts|tsx)'],
+  stories: ['../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
+  addons: ['@storybook/addon-docs'],
   framework: {
-    name: '@storybook/html-vite',
+    name: '@storybook/vue3-vite',
     options: {},
   },
-  viteFinal(viteConfig) {
-    viteConfig.plugins ??= []
-    viteConfig.plugins.push(UnoCSS())
-    // Dev tool reached from arbitrary hostnames (LAN IPs, tunnels, tailnets),
-    // e.g. when iframed by the storybook-hub example: accept any Host header.
-    viteConfig.server = { ...viteConfig.server, allowedHosts: true }
-    return viteConfig
+  docs: {},
+  async viteFinal(config) {
+    return mergeConfig(config, {
+      resolve: { alias },
+      plugins: [vue(), UnoCSS()],
+      // Dev tool reached from arbitrary hostnames (LAN IPs, tunnels,
+      // tailnets), e.g. when iframed by the storybook-hub example.
+      server: { allowedHosts: true },
+    })
   },
 }
-
 export default config

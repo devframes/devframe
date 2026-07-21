@@ -15,11 +15,11 @@ Each plugin is built with a **different UI framework**. That is deliberate: devf
 | [Accessibility Inspector](./a11y) | Solid | Run axe-core against a host app, list WCAG violations, and highlight the offending element in the page on hover. |
 | [Git](./git) | React (Next.js) | A repository dashboard — status, a commit graph, branches, and diffs, with optional staging and committing. |
 | [Terminals](./terminals) | Svelte | Stream read-only command output and run fully interactive PTY shells in the browser. |
-| [Code Server](./code-server) | Vanilla TypeScript | Launch code-server (VS Code in the browser) on demand and embed it in an auto-authenticated iframe. |
+| [Code Server](./code-server) | Vue | Launch VS Code in the browser (code-server, `code serve-web`, or a tunnel) on demand and embed it in an auto-authenticated iframe. |
 
 ## One client, any framework
 
-The collection spans Vue, Solid, React, Svelte, and framework-free TypeScript, yet every plugin shares the same node-side surface: register RPC functions, publish shared state, and connect from the browser with `connectDevframe`. Whatever renders the UI — a reactive framework or a handful of DOM calls — talks to the backend through the same protocol.
+The collection spans Vue, Solid, React, and Svelte, yet every plugin shares the same node-side surface: register RPC functions, publish shared state, and connect from the browser with `connectDevframe`. Whatever renders the UI, it talks to the backend through the same protocol — the framework-free Vite hub example drives it with a handful of DOM calls.
 
 This is the framework-agnostic promise in practice. The browser bundle is the author's to choose; devframe handles the transport, the data model, the adapters, and the agent surface underneath.
 

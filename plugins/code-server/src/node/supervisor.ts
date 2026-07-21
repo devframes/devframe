@@ -3,8 +3,11 @@ import type { SharedState } from 'devframe/utils/shared-state'
 import type { Buffer } from 'node:buffer'
 import type { ChildProcess } from 'node:child_process'
 import type {
-  CodeServerAuth,
+  CodeServerBackend,
+  CodeServerConnect,
   CodeServerDetection,
+  CodeServerLogin,
+  CodeServerMode,
   CodeServerOptions,
   CodeServerServerInfo,
   CodeServerSharedState,
@@ -12,9 +15,11 @@ import type {
   CodeServerStartResult,
   CodeServerStatusResult,
 } from '../types'
+import type { CodeServerProfile, ProfileContext } from './backends'
 import { execSync, spawn } from 'node:child_process'
-import { createHash, randomBytes } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import { request as httpRequest } from 'node:http'
+import { hostname } from 'node:os'
 import process from 'node:process'
 import { getPort } from 'get-port-please'
 import {
@@ -26,6 +31,7 @@ import {
   TERMINAL_SESSION_ICON,
   TERMINAL_SESSION_TITLE,
 } from '../constants'
+import { AUTO_DETECT_ORDER, resolveProfile } from './backends'
 import { detectCodeServer } from './detect'
 import { diagnostics } from './diagnostics'
 
@@ -64,33 +70,49 @@ interface HubTerminalsBridge {
 }
 
 /**
- * Owns the lifecycle of a single code-server child process: detects the
- * binary, launches it with a freshly generated password-auth token, probes
- * `/healthz` for readiness, and mirrors a secret-free status into shared
- * state. The auth cookie is handed back only through `start()` / `status()`
- * so the already-authorized client can sign the iframe in automatically.
+ * Owns the lifecycle of a single editor child process. Resolves a launch
+ * {@link CodeServerProfile} (Coder `code-server`, Microsoft `code serve-web`,
+ * or `code tunnel`), detects the binary, launches it with freshly generated
+ * auth material, waits for readiness, and mirrors a secret-free status into
+ * shared state. The connect descriptor (session cookie / connection token /
+ * tunnel URL) is handed back only through `start()` / `status()` so the
+ * already-authorized client can open the editor without a login page.
  *
  * Depends only on the core devframe context (shared state), not on the hub.
  */
 export class CodeServerSupervisor {
-  private readonly bin: string
+  private readonly mode: CodeServerMode
+  private readonly explicitBackend?: CodeServerBackend
+  private readonly explicitBin?: string
   private readonly workspace: string
   private readonly host: string
   private readonly forcedPort?: number
   private readonly extraArgs: string[]
   private readonly extraEnv: Record<string, string>
-  private readonly cookieName: string
   private readonly cookieSuffix?: string
+  private readonly cookieName: string
   private readonly startTimeout: number
+  private readonly reuseExistingServer: boolean
+  private readonly tunnelName: string
+
+  /** Resolved after the first detection. */
+  private backend: CodeServerBackend
+  private bin: string
+  private profile: CodeServerProfile
 
   private state?: SharedState<CodeServerSharedState>
   private detection: CodeServerDetection
   private server: CodeServerServerInfo = { status: 'stopped' }
 
   private proc?: ChildProcess
-  private cookieValue?: string
+  /** Context of the live launch, used to compute the client connect descriptor. */
+  private launchCtx?: ProfileContext
+  /** Whether the running server was adopted (reused) rather than launched. */
+  private adopted = false
+  /** Captured `vscode.dev` URL for a running tunnel. */
+  private readyUrl?: string
   private logBuffer: string[] = []
-  private cleanupRegistered = false
+  private exitHandler?: () => void
 
   /** Stable id of the hub terminal session, reused across start/stop. */
   private readonly sessionId: string
@@ -101,17 +123,26 @@ export class CodeServerSupervisor {
     private readonly ctx: DevframeNodeContext,
     options: CodeServerOptions = {},
   ) {
-    this.bin = options.bin ?? 'code-server'
+    this.mode = options.mode ?? 'local'
+    this.explicitBackend = options.backend
+    this.explicitBin = options.bin
     this.workspace = options.cwd ?? ctx.cwd
-    this.host = options.host ?? '0.0.0.0'
+    this.host = options.host ?? '127.0.0.1'
     this.forcedPort = options.serverPort
     this.extraArgs = options.args ?? []
     this.extraEnv = options.env ?? {}
     this.cookieSuffix = options.cookieSuffix
     this.cookieName = getCookieSessionName(options.cookieSuffix)
     this.startTimeout = options.startTimeout ?? DEFAULT_START_TIMEOUT
-    this.detection = { checked: false, installed: false, bin: this.bin }
+    this.reuseExistingServer = options.reuseExistingServer ?? false
+    this.tunnelName = options.tunnel?.name || hostname().split('.').join('') || 'devframe'
     this.sessionId = options.cookieSuffix ? `${PLUGIN_ID}:${options.cookieSuffix}` : PLUGIN_ID
+
+    // Provisional resolution — refined by the first `detect()` (auto-detection).
+    this.backend = this.explicitBackend ?? 'code-server'
+    this.profile = resolveProfile(this.mode, this.backend)
+    this.bin = this.explicitBin ?? this.profile.defaultBin
+    this.detection = { checked: false, installed: false, bin: this.bin, backend: this.backend, mode: this.mode }
   }
 
   /** Resolve shared state, register process-exit cleanup, run first detection. */
@@ -121,31 +152,62 @@ export class CodeServerSupervisor {
     this.state = await this.ctx.rpc.sharedState.get(STATE_KEY, {
       initialValue: { detection: this.detection, server: this.server } as CodeServerSharedState,
     })
-    this.registerCleanup()
     await this.detect()
   }
 
-  /** Re-probe for the code-server binary and publish the result. */
+  /**
+   * Probe for a usable editor binary and publish the result. Resolves the
+   * backend + binary when the caller left them implicit: tunnel mode always
+   * uses `code`; an explicit backend or `bin` is honored as-is; otherwise the
+   * plugin tries each {@link AUTO_DETECT_ORDER} candidate and keeps the first
+   * that is installed.
+   */
   async detect(): Promise<CodeServerDetection> {
-    const result = await detectCodeServer(this.bin)
-    this.detection = { checked: true, ...result }
+    let installed = false
+    let version: string | undefined
+
+    if (this.mode === 'tunnel' || this.explicitBackend || this.explicitBin) {
+      const result = await detectCodeServer(this.bin)
+      installed = result.installed
+      version = result.version
+    }
+    else {
+      let resolved: { backend: CodeServerBackend, bin: string, version?: string } | undefined
+      for (const backend of AUTO_DETECT_ORDER) {
+        const bin = resolveProfile('local', backend).defaultBin
+        const result = await detectCodeServer(bin)
+        if (result.installed) {
+          resolved = { backend, bin, version: result.version }
+          break
+        }
+      }
+      if (resolved) {
+        this.setResolved(resolved.backend, resolved.bin)
+        installed = true
+        version = resolved.version
+      }
+    }
+
+    this.detection = { checked: true, installed, version, bin: this.bin, backend: this.backend, mode: this.mode }
     this.publish()
     return this.detection
   }
 
-  /** Current status (+ auth when running) for the launcher UI. */
+  /** Current status (+ connect info when running) for the launcher UI. */
   status(): CodeServerStatusResult {
     return {
       detection: { ...this.detection },
       server: { ...this.server },
-      auth: this.authInfo(),
+      connect: this.connectInfo(),
     }
   }
 
   /**
-   * Launch code-server (if not already up) and resolve once it answers its
-   * readiness probe. Idempotent while starting/running — returns the live
-   * status instead of spawning a second process.
+   * Launch the editor (if not already up) and resolve once it is reachable.
+   * Idempotent while starting/running — returns the live status instead of
+   * spawning a second process. In tunnel mode it resolves as soon as either
+   * the `vscode.dev` URL or a device-login prompt is seen, so the action never
+   * blocks on interactive authentication.
    */
   async start(req: CodeServerStartRequest = {}): Promise<CodeServerStartResult> {
     if (this.server.status === 'running' || this.server.status === 'starting')
@@ -156,64 +218,101 @@ export class CodeServerSupervisor {
     if (!this.detection.installed)
       throw diagnostics.DP_CODE_SERVER_0001({ bin: this.bin })
 
-    const initialPort = this.forcedPort !== undefined && this.forcedPort !== 0
-      ? this.forcedPort
-      : (this.forcedPort === 0 ? 0 : await getPort({ host: '127.0.0.1', port: DEFAULT_CODE_SERVER_PORT }))
-    const token = randomBytes(32).toString('hex')
-    this.cookieValue = createHash('sha256').update(token).digest('hex')
-
     const folder = req.folder ?? this.workspace
-    const args = [
-      '--auth',
-      'password',
-      '--bind-addr',
-      `${this.host}:${initialPort}`,
-      '--disable-telemetry',
-      '--disable-update-check',
-      ...(this.cookieSuffix ? ['--cookie-suffix', this.cookieSuffix] : []),
-      ...this.extraArgs,
-      folder,
-    ]
+    const isLocal = this.profile.kind !== 'tunnel'
 
-    const env: Record<string, string> = {}
+    // Adopt an already-running local server when asked.
+    if (isLocal && this.reuseExistingServer) {
+      const target = this.forcedPort && this.forcedPort !== 0 ? this.forcedPort : DEFAULT_CODE_SERVER_PORT
+      if (this.profile.healthPath && await probeHealth(target, this.profile.healthPath)) {
+        this.adopted = true
+        this.launchCtx = this.baseCtx(folder, target, '')
+        this.server = { status: 'running', port: target, startedAt: Date.now() }
+        this.publish()
+        return this.status()
+      }
+    }
+
+    const secret = randomBytes(32).toString('hex')
+    const initialPort = !isLocal
+      ? 0
+      : this.forcedPort !== undefined && this.forcedPort !== 0
+        ? this.forcedPort
+        : this.forcedPort === 0
+          ? 0
+          : await getPort({ host: '127.0.0.1', port: DEFAULT_CODE_SERVER_PORT })
+
+    const ctx = this.baseCtx(folder, initialPort, secret)
+    this.launchCtx = ctx
+    this.adopted = false
+    this.readyUrl = undefined
+
+    const args = this.profile.buildArgs(ctx)
+
+    const baseEnv: Record<string, string> = {}
     for (const [k, v] of Object.entries(process.env)) {
       if (v !== undefined)
-        env[k] = v
+        baseEnv[k] = v
     }
-    delete env.PASSWORD
-    env.HASHED_PASSWORD = this.cookieValue
-    Object.assign(env, this.extraEnv)
+    Object.assign(baseEnv, this.extraEnv)
+    const env = this.profile.buildEnv(ctx, baseEnv)
 
     this.logBuffer = []
 
     let actualPort = initialPort
     let portResolver: ((port: number) => void) | undefined
     let portRejecter: ((err: Error) => void) | undefined
-    const portPromise = initialPort === 0
+    const portPromise = isLocal && initialPort === 0
       ? new Promise<number>((resolve, reject) => {
           portResolver = resolve
           portRejecter = reject
         })
       : Promise.resolve(initialPort)
 
+    // Tunnel readiness / login are surfaced from the child's log stream.
+    let readyUrlResolver: ((url: string) => void) | undefined
+    let loginResolver: ((login: CodeServerLogin) => void) | undefined
+    const readyUrlPromise = new Promise<string>((resolve) => {
+      readyUrlResolver = resolve
+    })
+    const loginPromise = new Promise<CodeServerLogin>((resolve) => {
+      loginResolver = resolve
+    })
+
     const child = await this.launchProcess(args, env, folder)
+    this.registerCleanup()
 
     this.proc = child
-    this.server = { status: 'starting', port: actualPort || undefined, pid: child.pid, startedAt: Date.now() }
+    this.server = { status: 'starting', port: isLocal ? (actualPort || undefined) : undefined, pid: child.pid, startedAt: Date.now() }
     this.publish()
 
     const capture = (chunk: Buffer): void => {
       const text = chunk.toString('utf8')
       this.appendLog(text)
-      if (actualPort === 0 && portResolver) {
-        for (const line of text.split('\n')) {
-          const match = line.match(/HTTP server listening on https?:\/\/(?:[^:]+|\[[^\]]+\]):(\d+)/)
-          if (match) {
-            actualPort = Number.parseInt(match[1], 10)
-            this.server.port = actualPort
+      for (const line of text.split('\n')) {
+        if (isLocal && actualPort === 0 && this.profile.matchPort) {
+          const port = this.profile.matchPort(line)
+          if (port) {
+            actualPort = port
+            this.server.port = port
             this.publish()
-            portResolver?.(actualPort)
+            portResolver?.(port)
             portResolver = undefined
+          }
+        }
+        if (this.profile.matchLogin) {
+          const login = this.profile.matchLogin(line)
+          if (login && this.proc === child) {
+            this.server = { ...this.server, login }
+            this.publish()
+            loginResolver?.(login)
+          }
+        }
+        if (this.profile.matchReadyUrl) {
+          const url = this.profile.matchReadyUrl(line)
+          if (url && this.proc === child) {
+            this.readyUrl = url
+            readyUrlResolver?.(url)
           }
         }
       }
@@ -225,10 +324,8 @@ export class CodeServerSupervisor {
       if (this.proc !== child)
         return
       this.server = { status: 'error', error: error.message }
-      this.proc = undefined
-      this.cookieValue = undefined
-      if (portRejecter)
-        portRejecter?.(error)
+      this.reset()
+      portRejecter?.(error)
       this.publish()
     })
     child.on('exit', (code) => {
@@ -237,32 +334,30 @@ export class CodeServerSupervisor {
       const exitCode = code ?? 0
       const unexpected = this.server.status !== 'stopped'
       const crashed = unexpected && exitCode !== 0
-      this.proc = undefined
-      this.cookieValue = undefined
+      this.reset()
       this.server = crashed
-        ? { status: 'error', error: this.lastLog() || `code-server exited with code ${exitCode}` }
+        ? { status: 'error', error: this.lastLog() || `${this.bin} exited with code ${exitCode}` }
         : { status: 'stopped' }
       if (crashed)
         diagnostics.DP_CODE_SERVER_0005({ code: exitCode }, { method: 'warn' })
-      // Reflect the outcome on the hub terminal session (the hub does not
-      // update a child-process session's status on its own exit).
       this.reflectHub(crashed ? 'error' : 'stopped')
       this.session = undefined
-      if (portRejecter)
-        portRejecter?.(new Error(`code-server exited before binding (code ${exitCode})`))
+      portRejecter?.(new Error(`${this.bin} exited before binding (code ${exitCode})`))
       this.publish()
     })
 
     try {
+      if (!isLocal)
+        return await this.awaitTunnel(child, readyUrlPromise, loginPromise)
+
       const port = await Promise.race([
         portPromise,
         new Promise<number>((_, reject) => setTimeout(() => reject(new Error('timeout waiting for dynamic port allocation')), this.startTimeout)),
       ])
 
-      const ready = await this.waitForReady(port)
-      if (!ready) {
+      const ready = await this.waitForReady(port, this.profile.healthPath!)
+      if (!ready)
         throw new Error(this.lastLog() || 'startup timed out')
-      }
 
       if (this.proc !== child)
         return this.status()
@@ -277,21 +372,23 @@ export class CodeServerSupervisor {
         this.reflectHub('error')
         this.session = undefined
         this.server = { status: 'error', error: error instanceof Error ? error.message : String(error) }
-        this.proc = undefined
-        this.cookieValue = undefined
+        this.reset()
         this.publish()
       }
+      if (!isLocal)
+        throw diagnostics.DP_CODE_SERVER_0006({ timeout: this.startTimeout })
       throw diagnostics.DP_CODE_SERVER_0002({ port: actualPort, timeout: this.startTimeout })
     }
   }
 
-  /** Stop the code-server process and reset to `stopped`. */
+  /** Stop the editor process and reset to `stopped`. */
   stop(): CodeServerStatusResult {
     const child = this.proc
-    this.proc = undefined
-    this.cookieValue = undefined
+    const wasAdopted = this.adopted
+    this.reset()
     this.server = { status: 'stopped' }
-    if (child)
+    // Adopted servers were never ours to kill.
+    if (child && !wasAdopted)
       this.terminate(child)
     this.reflectHub('stopped')
     this.session = undefined
@@ -301,17 +398,89 @@ export class CodeServerSupervisor {
 
   /** Kill the process on host shutdown / test teardown. */
   dispose(): void {
-    if (this.proc)
+    if (this.proc && !this.adopted)
       this.terminate(this.proc)
-    this.proc = undefined
-    this.cookieValue = undefined
+    this.reset()
     this.session = undefined
+    if (this.exitHandler) {
+      process.off('exit', this.exitHandler)
+      this.exitHandler = undefined
+    }
   }
 
-  private authInfo(): CodeServerAuth | undefined {
-    if (this.server.status !== 'running' || !this.cookieValue)
+  /** Resolved backend for tests / callers. */
+  get resolvedBackend(): CodeServerBackend {
+    return this.backend
+  }
+
+  private setResolved(backend: CodeServerBackend, bin: string): void {
+    this.backend = backend
+    this.bin = bin
+    this.profile = resolveProfile(this.mode, backend)
+  }
+
+  private baseCtx(folder: string, port: number, secret: string): ProfileContext {
+    return {
+      host: this.host,
+      port,
+      folder,
+      secret,
+      cookieName: this.cookieName,
+      extraArgs: this.extraArgs,
+      tunnelName: this.tunnelName,
+    }
+  }
+
+  /** Clear per-launch process state (keeps `server`/`detection`). */
+  private reset(): void {
+    this.proc = undefined
+    this.launchCtx = undefined
+    this.adopted = false
+    this.readyUrl = undefined
+  }
+
+  /**
+   * Resolve start() for a tunnel: succeed as soon as the `vscode.dev` URL
+   * appears (→ running) or a device-login prompt is seen (→ starting, so the
+   * user can authenticate while the log stream continues to a running URL).
+   */
+  private async awaitTunnel(
+    child: ChildProcess,
+    readyUrlPromise: Promise<string>,
+    loginPromise: Promise<CodeServerLogin>,
+  ): Promise<CodeServerStartResult> {
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('timed out waiting for the tunnel')), this.startTimeout))
+    const outcome = await Promise.race([
+      readyUrlPromise.then(() => 'ready' as const),
+      loginPromise.then(() => 'login' as const),
+      timeout,
+    ])
+    if (this.proc !== child)
+      return this.status()
+    if (outcome === 'ready') {
+      this.server = { status: 'running', pid: child.pid, startedAt: this.server.startedAt }
+      // Flip to running when the URL later arrives (already captured here).
+      this.publish()
+      return this.status()
+    }
+    // Login pending: keep 'starting' with the prompt, and promote to running
+    // once the URL is captured after the user authenticates.
+    void readyUrlPromise.then(() => {
+      if (this.proc === child && this.server.status !== 'running') {
+        this.server = { status: 'running', pid: child.pid, startedAt: this.server.startedAt, login: undefined }
+        this.publish()
+      }
+    })
+    return this.status()
+  }
+
+  private connectInfo(): CodeServerConnect | undefined {
+    if (this.server.status !== 'running' || !this.launchCtx)
       return undefined
-    return { cookieName: this.cookieName, cookieValue: this.cookieValue }
+    if (this.adopted)
+      return this.profile.connectReused({ port: this.launchCtx.port })
+    return this.profile.connect({ ...this.launchCtx, port: this.server.port ?? this.launchCtx.port, readyUrl: this.readyUrl })
   }
 
   private terminate(child: ChildProcess): void {
@@ -353,11 +522,11 @@ export class CodeServerSupervisor {
   }
 
   /**
-   * Launch code-server. In a hub, spawn it through `ctx.terminals` so it shows
-   * up as a read-only terminal session (proper icon + name) whose output the
-   * hub streams to its terminals panel; standalone, spawn it directly. Either
-   * way, return the underlying {@link ChildProcess} so the shared readiness /
-   * port / log wiring in `start()` is identical.
+   * Launch the editor binary. In a hub, spawn it through `ctx.terminals` so it
+   * shows up as a read-only terminal session (proper icon + name) whose output
+   * the hub streams to its terminals panel; standalone, spawn it directly.
+   * Either way, return the underlying {@link ChildProcess} so the shared
+   * readiness / port / log wiring in `start()` is identical.
    */
   private async launchProcess(
     args: string[],
@@ -367,7 +536,7 @@ export class CodeServerSupervisor {
     const hub = this.resolveHubTerminals()
     if (hub) {
       // Drop a stale session left by a prior run so the stable id is free to
-      // re-register (each start uses a fresh port + password).
+      // re-register (each start uses a fresh port + secret).
       const stale = hub.sessions.get(this.sessionId)
       if (stale)
         hub.remove?.(stale)
@@ -379,8 +548,8 @@ export class CodeServerSupervisor {
             args,
             cwd: folder,
             // The hub merges `process.env` under the hood, so neutralize
-            // PASSWORD explicitly (we authenticate via HASHED_PASSWORD) rather
-            // than relying on it being deleted from the passed env.
+            // PASSWORD explicitly (code-server authenticates via
+            // HASHED_PASSWORD) rather than relying on it being deleted.
             env: { ...env, PASSWORD: '' },
           },
           {
@@ -392,7 +561,7 @@ export class CodeServerSupervisor {
         )
         const child = session.getChildProcess()
         if (!child)
-          throw new Error('code-server process handle was unavailable')
+          throw new Error('editor process handle was unavailable')
         this.session = session
         return child
       }
@@ -447,15 +616,15 @@ export class CodeServerSupervisor {
   }
 
   /**
-   * Poll code-server's unauthenticated `/healthz` endpoint until it responds
-   * or the timeout elapses. Returns false if the process exits first.
+   * Poll the server's readiness path until it responds or the timeout elapses.
+   * Returns false if the process exits first.
    */
-  private async waitForReady(port: number): Promise<boolean> {
+  private async waitForReady(port: number, path: string): Promise<boolean> {
     const deadline = Date.now() + this.startTimeout
     while (Date.now() < deadline) {
       if (!this.proc)
         return false
-      if (await probeHealthz(port))
+      if (await probeHealth(port, path))
         return true
       await delay(PROBE_INTERVAL)
     }
@@ -463,13 +632,14 @@ export class CodeServerSupervisor {
   }
 
   private registerCleanup(): void {
-    if (this.cleanupRegistered)
+    if (this.exitHandler)
       return
-    this.cleanupRegistered = true
     // Synchronously reap the child when the host process exits. Signals
     // (SIGINT/SIGTERM) are left to the host's own shutdown — the child shares
-    // our process group, so a terminal interrupt reaches it directly.
-    process.once('exit', () => this.dispose())
+    // our process group, so a terminal interrupt reaches it directly. The
+    // handler is removed in `dispose()` so it doesn't accumulate.
+    this.exitHandler = () => this.dispose()
+    process.once('exit', this.exitHandler)
   }
 }
 
@@ -480,10 +650,10 @@ function delay(ms: number): Promise<void> {
   })
 }
 
-function probeHealthz(port: number): Promise<boolean> {
+function probeHealth(port: number, path: string): Promise<boolean> {
   return new Promise((resolve) => {
     const req = httpRequest(
-      { host: '127.0.0.1', port, path: '/healthz', method: 'GET', timeout: 1500 },
+      { host: '127.0.0.1', port, path, method: 'GET', timeout: 1500 },
       (res) => {
         res.resume()
         resolve((res.statusCode ?? 0) >= 200 && (res.statusCode ?? 0) < 500)

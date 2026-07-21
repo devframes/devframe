@@ -1,0 +1,14 @@
+/* code-server launcher SPA — structural layout only. The component vocabulary
+   and base element styling come from `@antfu/design` (`@antfu/design/styles.css`
+   + the UnoCSS preset), generated on the page by UnoCSS. */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+#app {
+  position: relative;
+  height: 100%;
+}
