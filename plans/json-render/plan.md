@@ -1,176 +1,169 @@
 # JSON Render Packages — Implementation Plan
 
-A single, concrete plan for `@devframes/json-render` and `@devframes/json-render-ui`. It resolves every open decision from the earlier wayfinder map into firm choices and an ordered implementation sequence, grounded in two primary-source studies kept alongside this file:
+A single, concrete plan for `@devframes/json-render` and `@devframes/json-render-ui`, reflecting the decisions settled in a full design-tree interview. It is grounded in two primary-source studies kept alongside this file:
 
 - [Upstream json-render contracts](research/upstream-json-render.md) — `@json-render/core@0.19.0` / `@json-render/vue@0.19.0`.
 - [Existing JSON-render integration seams](research/existing-integration-seams.md) — this repo and `vitejs/devtools@v0.4.2`.
 
-Scope is this repository. Implementing, publishing, or releasing the packages, and adopting them in `vitejs/devtools`, are out of scope. Where a choice is genuinely contestable it is marked **Decision** with the reasoning; treat those as the default to build against, not as reopened questions.
+Scope is this repository. This PR is **documentation only** — the plan and research; no package scaffolding or code. Implementing, publishing, or releasing the packages, and adopting them in `vitejs/devtools`, are follow-up efforts.
+
+This plan intentionally **supersedes** the earlier wayfinder destination on two points: it does **not** adopt a declared-action allowlist (the action bridge is unrestricted, §4), and it **defers** incremental named catalog extensions (v1 replaces the whole registry instead, §7).
 
 ## Destination
 
-Two packages plus the devframe/hub changes that host them:
+Two opt-in packages plus the devframe/hub changes that host them, so that JSON-render is a capability a devframe app *adds*, never a cost a plain app pays:
 
-- `@devframes/json-render` — the devframe-native, framework-neutral protocol package. Owns the versioned spec schema, the versioned base catalog and extension model, the declared-action contract and validator, the runtime view factory (`createJsonRenderView`), and a curated re-export of `@json-render/core`. No Vue, no DOM, no presentation.
-- `@devframes/json-render-ui` — the official Vue renderer. Implements the base catalog with `@antfu/design`, ships the renderer shell, the default standalone SPA, and Storybook. Third-party registries can replace it.
+- `@devframes/json-render` — the opt-in, framework-neutral protocol layer. Augments a devframe context with a view factory; owns the spec/catalog types, the base catalog and its Devframes-authored prop schemas, the serializable view reference, and (when a hub is present) contributes the `json-render` dock type. Uses upstream `@json-render/core` as its wire contract. No Vue, no DOM.
+- `@devframes/json-render-ui` — the official reference frontend library: a Vue renderer implementing the base catalog with `@antfu/design`. Any compatible frontend library can replace it.
 
-A single view definition authored once renders standalone (CLI/dev/build/SPA/embedded) and inside a hub dock, live or static, with the official Vue UI or a substituted registry.
+A single view definition authored once renders standalone (the app supplies a compatible frontend lib) and inside a hub dock (the hub supplies the frontend lib), live or static.
 
-## 1. Package ownership and exports (resolves decision 03)
+## 1. Package relationship
+
+```
+devframe (core)          — no json-render awareness; a plain app pulls ZERO json-render deps
+   ▲ peer
+@devframes/json-render   — OPT-IN protocol layer; augments a devframe ctx (arrow is json-render → devframe only)
+   ▲ peer
+@devframes/json-render-ui — OFFICIAL / reference compatible frontend lib (others may be compatible)
+
+@devframes/hub           — json-render-AGNOSTIC; extensible dock types; registerRenderer() routes a dock
+                            type to a registered renderer; NO json-render dependency
+```
+
+- **`devframe` core stays clean.** It never imports json-render. The current base-context doc comment that names `createJsonRenderer` as a host augmentation is removed. A devframe app that doesn't declare JSON-render views has no new dependency.
+- **`@devframes/json-render` is the opt-in layer.** It peer-depends on `devframe` and augments an existing `DevframeNodeContext` through the context's own scope / RPC / shared-state / views surfaces — it does not fork the context. Depends on `@json-render/core` (caret, §3) and `zod`.
+- **`@devframes/json-render-ui` is the reference frontend.** It peer-depends on `@devframes/json-render` and `vue`, depends on `@json-render/vue` (caret, paired with core), and dev-depends on `@antfu/design`. It is never a dependency of the protocol package — Vue stays out of the protocol.
+- **`@devframes/hub` gains no json-render dependency** (§5).
+
+### Deployment modes
+
+- **Standalone.** The author opts in with `devframe` + `@devframes/json-render` + a compatible frontend lib (`@devframes/json-render-ui`, or another). The `dev` / `build` adapters and the `vite` helper serve that lib's SPA. devframe bundles no renderer by default.
+- **Hub-mounted.** The app provides `@devframes/json-render` (protocol + view); the **hub provides the frontend lib** to render, through its client-host `registerRenderer()` (default `@devframes/json-render-ui`). The app need not bundle a UI.
+
+## 2. Package layout and exports
 
 ### `@devframes/json-render`
 
-Location `packages/json-render/`. ESM, `tsdown`, own `tsconfig.json` (extends `tsconfig.base.json`), `build` + `typecheck` scripts, committed tsnapi snapshot. Two entry graphs kept separate so the node factory never pulls browser code:
+`packages/json-render/`. ESM, `tsdown`, own `tsconfig.json`, `build` + `typecheck` scripts, committed tsnapi snapshot. Node and browser entry graphs kept separate:
 
 | Subpath | Contents |
 | --- | --- |
-| `.` (isomorphic) | Protocol schema + types, base catalog, extension composition, action-declaration builder, validator, catalog-compatibility helper. Pure data + Zod; safe in node and browser. |
-| `./node` | `createJsonRenderView` and devframe integration helpers (touch RPC/shared-state/scope). Node only. |
-| `./core` | Curated named re-exports of `@json-render/core@0.19.0` (see below). |
+| `.` (isomorphic) | Base catalog + Devframes-authored per-component prop schemas, `JsonRenderViewRef`, and the re-exported protocol types. Pure data + Zod. |
+| `./node` | `createJsonRenderView` and devframe integration helpers (RPC/shared-state/scope). Node only. |
+| `./core` | Curated named re-exports of `@json-render/core` (below). |
 
-**Curated core re-export (`./core`).** Explicit named list, never `export *`. Each name is a Devframes semver commitment; adding or removing one is a Devframes API change. Initial set, per the upstream study: `defineSchema`, `defineCatalog`, catalog inference types, `Spec`, `UIElement`, state/visibility/prop/action types and resolvers, `StateStore`, `createStateStore`. Excluded from the base: prompt/generation/edit/devtools hooks and all streaming primitives (may return later as an opt-in `./core/stream` subpath). `@json-render/core` is pinned to **exact `0.19.0`**; bumping it requires re-running the compatibility tests.
+**`./core` re-export — builders + types only.** Explicit named list, never `export *`: `defineSchema`, `defineCatalog`, catalog inference types, `Spec`, `UIElement`, `StateStore`, `createStateStore`. Excludes streaming, prompt/generation, and devtools hooks. Each name is a Devframes semver commitment.
 
-**Dependencies.** `@json-render/core` exact-pinned (catalog `inlined`), `zod ^4` aligned to core's instance (catalog `types`/`inlined`). `devframe` is a **peer** (the node helpers augment a devframe context; they never fork it). No dependency on `@devframes/hub`.
-
-**Type names.** `DevframeJsonRenderSpec`, `DevframeJsonRenderCatalog`, `JsonRenderView`, `JsonRenderViewRef`, `JsonRenderActionDeclaration`, `JsonRenderExtension`. These replace the hub's hand-written `JsonRenderSpec` / `JsonRenderer`.
+**Type names.** `DevframeJsonRenderSpec` (alias of upstream `Spec`), `JsonRenderView`, `JsonRenderViewRef`. These replace the hub's hand-written `JsonRenderSpec` / `JsonRenderer`.
 
 ### `@devframes/json-render-ui`
 
-Location `packages/json-render-ui/`. Same monorepo contract plus a Storybook. Subpaths:
+`packages/json-render-ui/`. Same monorepo contract plus a Storybook.
 
 | Subpath | Contents |
 | --- | --- |
-| `.` | `createRenderer()` shell, base Vue registry, `defineRegistry`/`extendRegistry`, provider lifecycle wiring, loading/error surfaces. |
-| `./components` | Individual ported components for direct import / third-party reuse. |
-| `./spa` | Prebuilt standalone SPA entry assets (relative base) consumed by devframe adapters. |
+| `.` | `createRenderer()` shell, base Vue registry, provider lifecycle wiring, action bridge, loading/error surfaces. |
+| `./components` | Individual ported components for direct import / reuse. |
+| `./spa` | Prebuilt standalone SPA entry assets (relative base) served by devframe adapters. |
 
-**Dependencies.** `@devframes/json-render` (peer + workspace), `@json-render/vue` exact-pinned `0.19.0` (paired with core), `vue ^3.5` (peer), `@antfu/design` (dev, build-time). Never a dependency of the protocol package — Vue stays out of the protocol.
+## 3. Upstream coupling
 
-### Dependency direction
+- **Upstream is the wire contract.** A Devframes spec *is* an `@json-render/core` `Spec`; the Vue `schema` is accepted **as-is**. Devframes does not author a bespoke spec schema and does not extend the schema to validate the fields the Vue schema omits (`state`, `on`, `repeat`, `watch`) — those pass structurally unchecked.
+- **Per-component prop validation is the one validation Devframes adds.** Because upstream `defineCatalog` collapses multi-component `propsOf` to `Record<string, unknown>`, Devframes authors a Zod prop schema per base component and parses element props against it at **both** boundaries: at spec ingress (server, in `createJsonRenderView` update — reject invalid props with a `DF` diagnostic) and at render time (client renderer, isolate a bad element).
+- **Caret range** on `@json-render/core` and `@json-render/vue` (`^0.19.0`, kept paired). No compatibility test suite; the committed **lockfile is the only guard** against a breaking upgrade. This is an accepted risk given the pre-1.0 upstream.
+- **Compatibility signal is the upstream package version.** No Devframes protocol/catalog version stamp.
+- **Streaming / generative-UI is out of v1.** A complete remote spec renders without it; it may return later behind an opt-in `./core/stream` subpath, reusing core's patch semantics.
+- **License.** Apache-2.0, compatible; keep required notices for any redistributed upstream object code and avoid implying Vercel endorsement.
 
-```
-@devframes/json-render-ui ──▶ @devframes/json-render ──▶ devframe (peer)
-                                        │                 @json-render/core (pinned)
-@devframes/hub ─────────────────────────┘  (dock discriminator references JsonRenderViewRef)
-```
+## 4. Actions, state, and validation
 
-The hub depends on `@devframes/json-render` only for the serializable `JsonRenderViewRef` used in its dock discriminator. It never imports the Vue UI.
+- **Action bridge is unrestricted.** An element event maps to an action whose name is dispatched as an RPC call — any spec action string calls any RPC method the client can reach (the current `vitejs/devtools` behavior). There is no declared-action allowlist and no param validation. The capability implication — a spec, or anything that can write one to shared state, can invoke any client-reachable RPC — is accepted.
+- **Improve on the Vite bridge's quality.** Unlike the current proxy, the bridge tracks per-action loading state and surfaces RPC failures to the view rather than silently swallowing them to the console.
+- **State** is `Record<string, unknown>` addressed by JSON Pointer, JSON-serializable. **State updates travel as JSON-Pointer patches** (enable patches on this server-created shared state, currently disabled); a structural change replaces the whole spec.
+- **Serialization.** Strict JSON only for specs and state; the shared-state getter is marked `jsonSerializable: true` so the obligation is enforced.
+- **Reserved client-local built-ins** (no RPC): `setState`, `pushState`, `removeState`, `validateForm`, per upstream semantics.
 
-## 2. Protocol: catalog, state, actions (resolves decision 04)
+## 5. Devframe runtime integration
 
-**Devframes owns the wire contract.** A `DevframeJsonRenderSpec` is validated against a Devframes-authored Zod schema, structurally compatible with core `Spec`/`UIElement` but not derived from upstream typing (the study shows upstream typing checks names, not per-component props or actions). Every spec carries `protocolVersion: 1` and `catalog: { id, version, extensions: [{ id, version }] }`.
-
-**Base catalog v1** = the fourteen components inventoried in the seams study (`Stack`, `Card`, `Text`, `Badge`, `Button`, `Icon`, `Divider`, `TextInput`, `Switch`, `KeyValueTable`, `DataTable`, `CodeBlock`, `Progress`, `Tree`), with props/defaults normalized: documented props only, typed event payloads (`Button.press`, `TextInput.change`, `Switch.change`, `DataTable.rowClick` carry their value/row/index), and `language`/`loading` honored. Undocumented upstream props (`Stack.flex`, `Badge.title`/`minWidth`) are either promoted to documented props or dropped — each decided in the component port, not silently accepted. Catalog is versioned (`catalogVersion` independent of `protocolVersion`).
-
-**Extensions.** An extension is `{ id, version, components, actions }`. Composition is explicit and collision-on-duplicate is an **error** (no upstream last-write-wins). Base is the portable floor; `$computed` and custom directives, which execute host code, are extension-only capabilities, never base assumptions.
-
-**State.** `Record<string, unknown>` addressed by JSON Pointer, JSON-serializable. Spec structure is replaced whole on update; **state updates travel as JSON-Pointer patches** over shared state (enable patches for this server-created state — they are currently disabled, per the seams study). This keeps state syncs narrow without a whole-spec broadcast.
-
-**Actions — declared allowlist, no catch-all bridge.** This is the central correction to the Vite implementation's arbitrary action-string→RPC proxy. Each view declares its actions up front:
+`createJsonRenderView` lives in `@devframes/json-render/node` and augments a base `DevframeNodeContext`:
 
 ```ts
-declareAction('reload', { params: z.object({ id: z.string() }) })
-```
-
-- Client dispatch: the action name must be in the view's allowlist and params must parse against the declared schema **before** any RPC crosses the boundary. Unknown names refuse to dispatch (no probing a Proxy).
-- Server: the RPC handler re-validates name + params at the trust boundary.
-- Reserved client-local built-ins (no RPC): `setState`, `pushState`, `removeState`, `validateForm`, matching upstream semantics.
-
-**Serialization.** Strict JSON only for specs and state; the shared-state getter is marked `jsonSerializable: true` so the obligation is enforced, not assumed.
-
-**Validation timing & failure.** Validate spec on the server at declaration and on every update; reject invalid specs with a `DF` diagnostic. Validate action name + params on the client before dispatch and again on the server. Browser-side render failures follow upstream's per-element isolation (render that element as null) and use `console.*`; node-side failures use `nostics`.
-
-**Streaming / generative UI.** Excluded from v1. A complete remote spec renders without it. If adopted later, reuse core's patch semantics (core throws on failed RFC-6902 `test`; the Vue hook treats it as a no-op) behind an opt-in subpath, with patch validation and resource limits.
-
-## 3. Devframe runtime integration (resolves decision 05)
-
-The JSON-render view is a **devframe-level** integration, not hub-only — it must run standalone. `createJsonRenderView` lives in `@devframes/json-render/node` and augments a base `DevframeNodeContext` through its existing scope/RPC/shared-state/views surfaces. The hub's `createJsonRenderer` is removed and its callers migrated.
-
-```ts
-const view = createJsonRenderView(ctx, {
-  id: 'metrics',            // author-provided, stable
-  spec,
-  actions: { reload, clear },
-})
+const view = createJsonRenderView(ctx, { id: 'metrics', spec })
 view.update(spec)
 view.patchState([{ op: 'replace', path: '/count', value: 3 }])
 view.dispose()
 ```
 
-- **Identity.** Scoped stable IDs `devframe:json-render:<scope>:<id>`, replacing the global allocation-order counter. Stable across reconnects and rebuilds.
-- **Lifecycle.** `dispose()` unregisters the shared state and its listeners; no leak for the context lifetime.
-- **Scoped actions.** Registered as scoped RPC via `defineRpcFunction` under the namespacing convention, validated as in §2.
-- **Static.** Build dumps the spec + state as a shared-state query snapshot (read-only render). Actions are **not** dumped; a declared static policy renders action-bound controls in an explicit "unavailable in static output" state rather than silently inheriting live behavior. Local input bindings still work in the renderer.
-- **Standalone UI assets.** When a definition declares json-render views and the author ships no SPA, the `dev`/`build`/`spa` adapters serve `@devframes/json-render-ui/spa` (relative base, runtime connection discovery preserved). Author SPAs still win.
-- **View primitive.** Reuse the existing devframe `views` surface; the json-render view is a typed specialization, not a new primitive.
+- **Identity.** Scoped stable IDs `devframe:json-render:<scope>:<authorId>` (author-supplied, stable); a duplicate id within a scope raises a `DF` diagnostic. Replaces the current global allocation-order counter.
+- **Lifecycle.** `dispose()` unregisters the shared state and its listeners.
+- **Static output.** The build dumps the spec + state as a shared-state query snapshot (read-only render). Action RPC is not dumped; controls whose elements carry `on` handlers render **disabled** with an "unavailable in static output" affordance. Local state/bindings still work.
+- **Default UI.** No renderer is bundled into devframe. When a definition declares JSON-render views and the author has added a compatible frontend lib, the `dev` / `build` adapters and the `vite` helper serve that lib's `./spa` assets (relative base, runtime connection discovery preserved). The `spa` adapter is wired when `createSpa` lands. Under a hub the hub supplies the renderer instead.
+- **View primitive.** Reuse the existing devframe `views` surface; the JSON-render view is a typed specialization.
 
-## 4. Hub projection and renderer substitution (resolves decision 06)
-
-- **Serializable dock ref.** The dock discriminator becomes `{ type: 'json-render', view: JsonRenderViewRef }` where `JsonRenderViewRef = { stateKey, protocolVersion, catalog }` — no functions. This fixes the accidental `_stateKey` projection and the current type/projection mismatch where the projected `JsonRenderer` overstates what crosses the wire.
-- **Headless host.** `createDevframeClientHost` gains a `json-render` branch that resolves a renderer implementation from a host-registered registry (default `@devframes/json-render-ui`, overridable by the UI kit), checks catalog compatibility (`catalog.id`/`version`/extensions) before mounting, drives loading/error states, and disposes on dock deactivation (unsubscribing shared-state listeners the Vite viewer currently leaks). The hub package itself acquires no Vue.
-- **Migration.** `packages/hub/src/types/json-render.ts`, `defineJsonRenderSpec`, and `createJsonRenderer` move to `@devframes/json-render`; the hub re-exports `JsonRenderViewRef` for its dock type only. tsnapi snapshots for `@devframes/hub` update accordingly.
-
-## 5. Official Vue + Antfu Design UI (resolves decision 07)
+## 6. Official Vue + Antfu Design UI
 
 `@devframes/json-render-ui` ships:
 
-- **Base registry** implementing catalog v1's fourteen components, each ported to `@antfu/design` semantic tokens (`bg-base`/`color-muted`/`border-base`…), the shared UnoCSS preset stack, Phosphor `i-ph:*` icons, and dark mode via `.dark`. Reference behavior is the Vite catalog; conforming code replaces its hardcoded RGB palette and bespoke button/input styling.
-- **Intentional changes from the Vite catalog:** typed event payloads; honor `language` (syntax highlighting) and `loading`; **Decision** — replace runtime Iconify network fetch + DOMPurify `innerHTML` with build-time Phosphor icons mapped by name (removes per-render network access and an HTML-injection surface); provider state reset made explicit on view-identity/protocol change (remount/reset vs preserve).
-- **Renderer shell** wiring `JSONUIProvider` + `Renderer` with the Devframes action bridge (declared allowlist, not the catch-all proxy), seeding `spec.state`, and owning remount/reset semantics.
-- **Registry extension** via `defineRegistry`/`extendRegistry` for catalog extensions; third-party registries replace the whole registry.
-- **Standalone SPA** entry (relative assets, OS-preference dark flip) under `./spa`.
-- **Storybook** following the repo's one setup (co-located stories, `viteFinal` + `unocss/vite`, `.dark` toggle, `bg-base color-base` decorator) covering every component, loading/error, and a full sample view.
+- **Base registry** implementing catalog v1's fourteen components (`Stack`, `Card`, `Text`, `Badge`, `Button`, `Icon`, `Divider`, `TextInput`, `Switch`, `KeyValueTable`, `DataTable`, `CodeBlock`, `Progress`, `Tree`) on `@antfu/design` semantic tokens, the shared UnoCSS preset, and dark mode via `.dark`. Reference behavior is the Vite catalog; the hardcoded RGB palette and bespoke button/input styling are replaced by semantic tokens.
+- **Corrections from the Vite catalog:** typed event payloads (`Button.press`, `TextInput.change`, `Switch.change`, `DataTable.rowClick` carry their value/row/index); `CodeBlock` honors `language`; components honor `loading`; provider state reset is explicit (see below).
+- **Icons are fully dynamic.** The `Icon` component resolves whatever icon name a spec supplies at runtime (sanitized), with no preferred or bundled icon set. This is a deliberate, documented deviation from the repo's Phosphor-first icon convention, which applies to a surface's own chrome, not to spec-driven content icons.
+- **Renderer shell** wiring the upstream provider + renderer with the unrestricted action bridge (§4), seeding `spec.state`, and owning reset semantics: **reset provider state on view-identity or upstream-version change; preserve it across ordinary spec/state updates.**
+- **Registry replacement.** A third party replaces the whole registry (there is no incremental extension in v1, §7).
+- **Standalone SPA** under `./spa` (relative assets, OS-preference dark flip).
+- **Storybook** following the repo's one setup, covering every component, loading/error, and a full sample view.
 
-## 6. End-to-end prototype (resolves decision 08)
+## 7. Hub projection and renderer substitution
 
-Before the spec is frozen, build one disposable prototype (scratch under `examples/`, deleted after) exercising all seams: one view authored once; rendered standalone by the official Vue registry; mounted in a hub dock; re-rendered by a swapped third-party registry; updated through a declared live action and a state patch; emitted as a static snapshot. Its only output is confirmation (or correction) of ownership, naming, lifecycle, and configuration ergonomics feeding §7.
+- **The hub is json-render-agnostic.** Its dock union becomes **extensible/open** rather than hard-coding a `json-render` variant; the opt-in `@devframes/json-render` integration contributes the `json-render` dock type and its serializable ref. `@devframes/hub` carries **no** json-render dependency. This enlarges the migration: the current closed `DevframeViewJsonRender` variant and the `createJsonRenderer` factory are removed from hub.
+- **Serializable dock ref.** `JsonRenderViewRef = { stateKey, upstreamVersion }` — no functions, no Devframes catalog version. This fixes the accidental `_stateKey` projection and the current type/projection mismatch.
+- **`registerRenderer()` on `@devframes/hub/client`.** Configured at `createDevframeClientHost` boot; the host application injects `@devframes/json-render-ui` as the default. The client-host routes a dock type to its registered renderer, drives loading/error, and disposes on deactivation (unsubscribing shared-state listeners the Vite viewer leaks). A renderer/upstream-version mismatch logs a warning rather than blocking. The hub package itself acquires no Vue.
+- **Extensions deferred.** v1 supports the versioned base catalog plus whole-registry replacement. Incremental named extensions (add-on components with their own identity/version) are post-v1 — they clash with the upstream-version-only compatibility model and add protocol surface now.
 
-## 7. Implementation sequence
+## 8. Implementation sequence
 
 Each step is an independently reviewable slice; ⟶ marks the dependency.
 
-1. **Scaffold `@devframes/json-render`** — manifest, `tsdown.config.ts` (isomorphic/node/core graphs), `tsconfig.json`, `typecheck` script, empty tsnapi snapshot, catalog deps, exact core pin.
-2. **Protocol core** ⟶1 — spec Zod schema, base catalog v1, extension composition (collision = error), catalog-compatibility helper, validator, `DF` diagnostics. Unit tests.
-3. **Declared-action contract** ⟶2 — action builder, param validation, reserved built-ins, client + server validators.
-4. **Runtime factory** ⟶3 — `createJsonRenderView` (scoped IDs, shared state, JSON-Pointer state patches enabled, scoped action RPC, `dispose`), `jsonSerializable` getter.
-5. **Hub migration** ⟶4 — move types/factory out of hub, `JsonRenderViewRef` dock discriminator, correct projection, update hub tsnapi.
-6. **Scaffold `@devframes/json-render-ui` + base registry** ⟶2 — package, fourteen ported components, tokens, Storybook.
-7. **Renderer shell + action bridge** ⟶3,6 — provider/renderer wiring, declared-action bridge, loading/error, reset semantics.
-8. **Client-host projection** ⟶5,7 — `json-render` branch, renderer registry/injection, compatibility check, lifecycle/disposal.
-9. **Standalone adapters + SPA** ⟶4,7 — serve default SPA from `./spa`; static snapshot + static-action policy.
-10. **Prototype** ⟶8,9 — validate ergonomics; feed corrections back.
-11. **Test matrix** ⟶ across — see §8.
-12. **Docs + error pages** ⟶ across — package docs, `docs/errors/DFxxxx.md` for each new code.
+1. **Scaffold `@devframes/json-render`** — manifest, `tsdown.config.ts` (isomorphic/node/core graphs), `tsconfig.json`, `typecheck`, empty tsnapi snapshot, caret core dep.
+2. **Protocol surface** ⟶1 — `./core` re-exports, base catalog + per-component Zod prop schemas, `JsonRenderViewRef`, `DF` diagnostics. Unit tests.
+3. **Runtime factory** ⟶2 — `createJsonRenderView` (scoped IDs, shared state, JSON-Pointer state patches enabled, ingress prop validation, `dispose`), `jsonSerializable` getter.
+4. **Hub decoupling** ⟶2 — open the dock union, remove `createJsonRenderer` + the closed json-render variant from hub, add `registerRenderer()` to the client host, regenerate hub tsnapi.
+5. **Scaffold `@devframes/json-render-ui` + base registry** ⟶2 — package, fourteen ported components (dynamic `Icon`), tokens, Storybook.
+6. **Renderer shell + action bridge** ⟶2,5 — provider/renderer wiring, unrestricted bridge with loading/error, render-time prop validation, reset semantics.
+7. **Client-host routing** ⟶4,6 — dock-type → registered renderer, default injection, disposal.
+8. **Standalone adapters + SPA** ⟶3,6 — serve the author's frontend lib `./spa`; static snapshot + static-action affordance.
+9. **Prototype** ⟶7,8 — one disposable end-to-end prototype (one view: standalone + hub dock + swapped registry + live update + static snapshot); feed ergonomics back before finalizing.
+10. **Test matrix** ⟶ across — §9.
+11. **Docs + error pages** ⟶ across — package docs, `docs/errors/DFxxxx.md` per new code.
 
-## 8. Test matrix (resolves the map's deferred slices)
+## 9. Test matrix
 
-Behavioral coverage, since the seams study shows no current test touches `createJsonRenderer`, `_stateKey`, or a json-render dock:
+- Protocol: per-component prop validation (ingress + render), catalog membership.
+- Runtime: scoped ID stability, `update` / `patchState`, disposal + listener cleanup, multiple concurrent views, reconnect.
+- Transport: state-patch vs whole-spec replace, `jsonSerializable` enforcement, shared-state broadcast.
+- Actions: bridge dispatch, per-action loading, error surfacing.
+- Hub: extensible dock projection (no functions on the wire), client-host renderer routing/injection, version-mismatch warning, deactivation disposal.
+- Standalone: live dev render; static build ordering (states registered before dump), static replay read-only, static-action affordance.
+- Vue UI: each component's props/defaults/events/bindings (`press`/`change`/`rowClick`/`$bindState`), dynamic icon resolution, loading/error, reset-on-identity/version-change; Storybook render.
+- Snapshots: tsnapi for both new packages and the updated hub; `tests/exports.test.ts` subpaths.
 
-- Protocol: valid/invalid spec, per-component prop validation, extension collision, catalog compatibility.
-- Actions: allowlist enforcement, param schema pass/fail, reserved built-ins, server re-validation, rejection of undeclared names.
-- Runtime: scoped ID stability, `update`/`patchState`, disposal + listener cleanup, multiple concurrent views, reconnect.
-- Transport: whole-spec replace vs state patch, `jsonSerializable` enforcement, shared-state broadcast.
-- Hub: serializable dock projection (no functions), client-host renderer selection/injection, compatibility gate, deactivation disposal.
-- Standalone: live dev render; static build ordering (states registered before dump), static replay read-only, static-action policy.
-- Vue UI: each component's props/defaults/events/bindings (`press`/`change`/`rowClick`/`$bindState`), loading/error, reset-on-identity-change; Storybook render.
-- Snapshots: tsnapi for both packages and the updated hub; `tests/exports.test.ts` subpaths.
+## 10. Diagnostics
 
-## 9. Diagnostics
+New node diagnostics use `nostics` with sequential `DF` codes. `@devframes/json-render` protocol/runtime → the core range (next free after the current highest `DF00xx`); hub dock changes stay in the hub dock range (`DF81xx`). Set: invalid element props (ingress), duplicate view id, disposed-view use, catalog/registry error. Browser-only render failures keep `console.*`.
 
-New node diagnostics use `nostics` with sequential `DF` codes. `@devframes/json-render` is core-side protocol/runtime → allocate in the core range (next free after the current highest `DF00xx`); hub projection changes stay in the hub dock range (`DF81xx`). Suggested set: invalid spec, unknown/invalid action, catalog incompatibility, duplicate extension id, view id collision, disposed-view use. Each gets a `docs/errors/DFxxxx.md` page. Browser-only render failures keep `console.*`.
+## 11. Acceptance criteria
 
-## 10. Acceptance criteria
-
-- One view definition renders standalone (dev/build/spa/embedded) and in a hub dock, live and static, with the official Vue UI and a substituted registry.
-- No arbitrary action-string→RPC path exists anywhere; every action is declared and param-validated on both sides.
+- A plain devframe app pulls no json-render dependency; JSON-render is added only by depending on `@devframes/json-render`.
+- One view definition renders standalone (the app's frontend lib) and in a hub dock (the hub's registered renderer), live and static.
+- `@devframes/hub` and `devframe` acquire no Vue and no json-render dependency respectively; the frontend lib is fully replaceable via `registerRenderer()`.
 - Dock projection carries only serializable data; no function survives to the wire, and the projected type matches what the client receives.
 - Views have stable scoped IDs and dispose cleanly with no leaked shared state or listeners.
-- The hub and devframe packages acquire no Vue; the Vue UI is fully replaceable.
+- Element props are validated at ingress and render; the action bridge surfaces loading and errors.
 - `pnpm lint && pnpm test && pnpm typecheck && pnpm build` pass, with tsnapi snapshots and exports tests updated.
 
 ## Out of scope
 
 - Implementing, publishing, or releasing the packages (this plan is the specification).
 - Changing `vitejs/devtools` to consume the packages or deleting its current implementation.
-- Official React/Solid/Svelte/vanilla registries — third-party compatibility is specified through the core contract only.
-- Agent-driven / generative UI beyond keeping the base catalog compatible with json-render.
+- Official React/Solid/Svelte/vanilla frontend libs — other frontends are supported through registry replacement, not shipped here.
+- A declared-action allowlist, a Devframes protocol/catalog version, incremental named catalog extensions, and streaming — each explicitly deferred or declined above.
