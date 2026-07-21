@@ -11,6 +11,7 @@ export function createRpcSharedStateServerHost(
   rpc: RpcFunctionsHost,
 ): RpcSharedStateHost {
   const sharedState = new Map<string, SharedState<any>>()
+  const stateDisposers = new Map<string, () => void>()
   const keyAddedListeners = new Set<(key: string) => void>()
 
   function registerSharedState<T extends object>(key: string, state: SharedState<T>) {
@@ -57,7 +58,7 @@ export function createRpcSharedStateServerHost(
         initialValue: options.initialValue as T,
         enablePatches: false,
       })
-      registerSharedState(key, state)
+      stateDisposers.set(key, registerSharedState(key, state))
       sharedState.set(key, state)
       for (const fn of keyAddedListeners)
         fn(key)
@@ -71,6 +72,15 @@ export function createRpcSharedStateServerHost(
       return () => {
         keyAddedListeners.delete(fn)
       }
+    },
+    delete(key) {
+      const dispose = stateDisposers.get(key)
+      if (!dispose)
+        return false
+      dispose()
+      stateDisposers.delete(key)
+      sharedState.delete(key)
+      return true
     },
   }
 

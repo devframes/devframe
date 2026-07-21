@@ -5,6 +5,7 @@ import { createSharedState } from 'devframe/utils/shared-state'
 
 export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcSharedStateHost {
   const sharedState = new Map<string, SharedState<any>>()
+  const stateDisposers = new Map<string, () => void>()
   const initialValues = new Map<string, any>()
   const keyAddedListeners = new Set<(key: string) => void>()
   const isStaticBackend = rpc.connectionMeta.backend === 'static'
@@ -68,6 +69,14 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
         keyAddedListeners.delete(fn)
       }
     },
+    delete(key) {
+      const dispose = stateDisposers.get(key)
+      stateDisposers.delete(key)
+      const existed = sharedState.delete(key)
+      initialValues.delete(key)
+      dispose?.()
+      return existed
+    },
     get: async <T extends object>(key: string, options?: RpcSharedStateGetOptions<T>) => {
       if (options?.initialValue !== undefined) {
         initialValues.set(key, options.initialValue)
@@ -97,7 +106,7 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
             .catch((error) => {
               console.error('Error getting server state', error)
             })
-          registerSharedState(key, state)
+          stateDisposers.set(key, registerSharedState(key, state))
           return state
         }
         else {
@@ -106,7 +115,7 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
           sharedState.set(key, state)
           for (const fn of keyAddedListeners)
             fn(key)
-          registerSharedState(key, state)
+          stateDisposers.set(key, registerSharedState(key, state))
           return state
         }
       }

@@ -18,6 +18,16 @@
       "outputLogs": "new-only",
       "outputs": ["dist/**"]
     },
+    "@devframes/json-render#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe#build", "@devframes/hub#build"],
+      "outputs": ["dist/**"]
+    },
+    "@devframes/json-render-ui#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["@devframes/json-render#build"],
+      "outputs": ["dist/**"]
+    },
     "@devframes/plugin-code-server#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build"],

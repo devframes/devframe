@@ -81,6 +81,13 @@ export interface RpcSharedStateHost {
    * as dynamic resources.
    */
   onKeyAdded: (fn: (key: string) => void) => () => void
+  /**
+   * Unregister a shared state and drop its broadcast listeners. Returns
+   * `true` when a state was removed, `false` when the key was unknown.
+   * Used by short-lived states (e.g. a disposed JSON-render view) to avoid
+   * leaking listeners and lingering entries for the context lifetime.
+   */
+  delete: (key: string) => boolean
 }
 
 /**

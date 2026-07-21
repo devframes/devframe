@@ -28,8 +28,8 @@ export interface CreateHostContextOptions {
  * Wires the RPC host, view (HTTP file-serving) host, diagnostics, and
  * agent subsystems. Host adapters can wrap this to augment `ctx` with
  * extra surfaces — for example, `@vitejs/devtools-kit`'s
- * `createKitContext` attaches `docks`, `terminals`, `messages`,
- * `commands`, and `createJsonRenderer` when mounted into Vite DevTools.
+ * `createKitContext` attaches `docks`, `terminals`, `messages`, and
+ * `commands` when mounted into Vite DevTools.
  */
 export async function createHostContext(options: CreateHostContextOptions): Promise<DevframeNodeContext> {
   const { cwd, workspaceRoot = cwd, mode, host, builtinRpcDeclarations = [] } = options

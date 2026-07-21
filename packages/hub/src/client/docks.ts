@@ -5,6 +5,7 @@ import type { WhenContext } from 'devframe/utils/when'
 import type { DevframeClientCommand, DevframeCommandEntry, DevframeCommandKeybinding } from '../types/commands'
 import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeDockUserEntry } from '../types/docks'
 import type { DevframeDocksUserSettings } from '../types/settings'
+import type { DockRenderersContext } from './renderers'
 
 export type { DevframeClientRpcHost, RpcClientEvents } from 'devframe/client'
 
@@ -51,6 +52,12 @@ export interface DocksContext extends DevframeRpcContext {
    * instead of each plugin surfacing its own.
    */
   readonly connection: DocksConnectionContext
+  /**
+   * The dock-renderer registry. Routes a dock `type` to a host-registered
+   * renderer (e.g. `@devframes/json-render-ui` for `'json-render'`). The hub
+   * itself ships no renderers.
+   */
+  readonly renderers: DockRenderersContext
 }
 
 export interface DocksConnectionContext {

@@ -20,6 +20,7 @@ export interface DevframeClientHostOptions {
   connect?: DevframeRpcClientOptions;
   clientType?: DockClientType;
   loadClientScripts?: boolean;
+  renderers?: Record<string, DockRenderer>;
 }
 export interface DockClientScriptContext extends DocksContext {
   current: DockEntryState;
@@ -51,6 +52,20 @@ export interface DockPanelStorage {
   open: boolean;
   inactiveTimeout: number;
 }
+export interface DockRendererInstance {
+  dispose?: () => void;
+}
+export interface DockRendererMountOptions {
+  entry: DevframeDockEntry;
+  container: HTMLElement;
+  context: DevframeClientContext;
+}
+export interface DockRenderersContext {
+  register: (_: string, _: DockRenderer) => () => void;
+  get: (_: string) => DockRenderer | undefined;
+  has: (_: string) => boolean;
+  mount: (_: DevframeDockEntry, _: HTMLElement) => Promise<() => void>;
+}
 export interface DocksConnectionContext {
   readonly status: DevframeConnectionStatus;
   readonly error: Error | null;
@@ -63,6 +78,7 @@ export interface DocksContext extends DevframeRpcContext {
   readonly commands: CommandsContext;
   readonly when: WhenClauseContext;
   readonly connection: DocksConnectionContext;
+  readonly renderers: DockRenderersContext;
 }
 export interface DocksEntriesContext {
   selectedId: string | null;
@@ -93,6 +109,7 @@ export interface WhenClauseContext {
 export type ConnectRemoteDevframeOptions = Omit<DevframeRpcClientOptions, 'connectionMeta' | 'authToken'>;
 export type DevframeClientContext = DocksContext;
 export type DockClientType = 'embedded' | 'standalone';
+export type DockRenderer = (_: DockRendererMountOptions) => DockRendererInstance | Promise<DockRendererInstance>;
 // #endregion
 
 // #region Functions

@@ -9,6 +9,8 @@ export default defineConfig({
     projects: [
       'packages/devframe',
       'packages/hub',
+      'packages/json-render',
+      'packages/json-render-ui',
       'plugins/code-server',
       'plugins/data-inspector',
       'plugins/terminals',
