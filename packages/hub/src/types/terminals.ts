@@ -10,6 +10,8 @@ export interface DevframeTerminalsHost {
 
   register: (session: DevframeTerminalSession) => DevframeTerminalSession
   update: (session: DevframeTerminalSession) => void
+  /** Drop a session from the registry, disposing its bound output stream. */
+  remove: (session: DevframeTerminalSession) => void
 
   /**
    * Spawn a read-only child process (pipe-backed, output only). Use this for
@@ -50,6 +52,15 @@ export interface DevframeTerminalSessionBase {
    * decide whether to enable stdin and wire resize.
    */
   interactive?: boolean
+  /**
+   * Whether the session may be restarted in place (re-running its command).
+   * Defaults to `true`. Set `false` for sessions whose lifecycle is owned
+   * elsewhere — e.g. a one-shot build, or a server (like code-server) that
+   * should be restarted through its own controls rather than by re-spawning
+   * the raw process. A hub-aware terminal UI hides its restart affordance for
+   * these, and `hub:terminals:restart` rejects them.
+   */
+  restartable?: boolean
 }
 
 export interface DevframeTerminalSession extends DevframeTerminalSessionBase {

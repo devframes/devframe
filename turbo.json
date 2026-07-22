@@ -43,6 +43,11 @@
       "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
     },
+    "@devframes/plugin-og#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe#build"],
+      "outputs": ["dist/**"]
+    },
     "@devframes/plugin-data-inspector#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build"],
@@ -62,6 +67,7 @@
         "@devframes/plugin-terminals#build",
         "@devframes/plugin-code-server#build",
         "@devframes/plugin-inspect#build",
+        "@devframes/plugin-og#build",
         "@devframes/plugin-data-inspector#build",
         "@devframes/plugin-a11y#build",
         "@devframes/plugin-messages#build"

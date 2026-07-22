@@ -27,6 +27,8 @@ interface FakeHubEntry {
   description?: string
   status: 'running' | 'stopped' | 'error'
   icon?: string | { light: string, dark: string }
+  interactive?: boolean
+  restartable?: boolean
 }
 
 export interface FakeHubTerminals {

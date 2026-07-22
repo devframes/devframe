@@ -4,14 +4,13 @@ import type { DevframeRpcClient } from 'devframe/client'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { GitBranches } from '../../index'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { nav as navBar, navBrand, tab as tabClass, tabsList } from '../lib/design'
+import { connectionIndicator, nav as navBar, navBrand, tab as tabClass, tabsList } from '../lib/design'
 import { CommitDetailsPanel } from './commit-details-panel'
 import { ConnectionState } from './connection-state'
 import { LogPanel } from './log-panel'
 import { RpcProvider, useRpc } from './rpc-provider'
 import { StatusPanel } from './status-panel'
 import { useTheme } from './theme'
-import { Badge } from './ui/badge'
 import { IconButton } from './ui/button'
 import { Icon } from './ui/icon'
 import { useRpcResource } from './use-rpc-resource'
@@ -91,19 +90,18 @@ function Resizer({ onPointerDown, label }: { onPointerDown: (e: ReactPointerEven
   )
 }
 
+// The shared top-nav connection indicator (dot + label), shown only while the
+// connection is not live; when connected it renders nothing.
 function ConnectionBadge() {
-  const { rpc, status } = useRpc()
-  if (status === 'error' || status === 'disconnected')
-    return <Badge variant="destructive">{status}</Badge>
-  if (status === 'unauthorized')
-    return <Badge variant="warning">unauthorized</Badge>
-  if (status === 'connecting' || !rpc)
-    return <Badge variant="secondary">connecting…</Badge>
-  const backend = rpc.connectionMeta.backend
+  const { status } = useRpc()
+  const conn = connectionIndicator(status)
+  if (!conn)
+    return null
   return (
-    <Badge variant={backend === 'websocket' ? 'success' : 'secondary'} className="font-mono">
-      {backend === 'websocket' ? 'live' : 'static'}
-    </Badge>
+    <span className={conn.class}>
+      <span className={conn.dot} />
+      {conn.label}
+    </span>
   )
 }
 

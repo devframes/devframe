@@ -33,6 +33,8 @@ export class TerminalManager {
   rename(_, _) {}
   restart(_) {}
   remove(_) {}
+  clearExited() {}
+  disposeSession(_, _) {}
   dispose() {}
   publish() {}
   refreshSessionsState() {}

@@ -1,0 +1,29 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--c-bg-base);
+  color: var(--c-text-base);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.preview-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, currentColor 4%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, currentColor 4%, transparent) 1px, transparent 1px);
+  background-size: 16px 16px;
+}

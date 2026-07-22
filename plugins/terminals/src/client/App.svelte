@@ -2,7 +2,23 @@
   import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/client'
   import type { TerminalPreset, TerminalSessionInfo } from '../types'
   import type { DotState } from './design'
-  import { button, dot, iconButton, nav, navBrand, navTab, tag, toolbar } from './design'
+  import {
+    button,
+    connectionBody,
+    connectionGlyph,
+    connectionPanel,
+    connectionState,
+    connectionTitle,
+    dot,
+    iconButton,
+    modalBackdrop,
+    modalCard,
+    nav,
+    navBrand,
+    navTab,
+    tag,
+    toolbar,
+  } from './design'
   import { onMount } from 'svelte'
   import { DOCKS_ACTIVE_STATE_KEY, PLUGIN_ID, PRESETS_STATE_KEY, SESSIONS_STATE_KEY } from '../constants'
   import TerminalView from './TerminalView.svelte'
@@ -15,14 +31,10 @@
   let connectionStatus = $state<DevframeConnectionStatus>(rpc.status)
 
   // Terminals ride live PTY streams, so a dropped socket or refused auth makes
-  // the whole surface useless — swap it for a clear state instead of a frozen
-  // terminal. The client doesn't auto-reconnect; a reload re-runs the handshake.
-  const CONNECTION_COPY: Record<Exclude<DevframeConnectionStatus, 'connected'>, { icon: string, title: string, body: string }> = {
-    connecting: { icon: 'i-ph-plugs-connected-duotone', title: 'Connecting…', body: 'Establishing a connection to the devframe server.' },
-    disconnected: { icon: 'i-ph-plugs-duotone', title: 'Disconnected', body: 'Lost the connection to the devframe server. Reload once it is back up.' },
-    unauthorized: { icon: 'i-ph-lock-key-duotone', title: 'Not authorized', body: 'Reopen the link printed by your dev server, then reload.' },
-    error: { icon: 'i-ph-warning-octagon-duotone', title: 'Connection failed', body: 'Could not reach the devframe server.' },
-  }
+  // the whole surface useless — swap it for the shared connection state instead
+  // of a frozen terminal. The client doesn't auto-reconnect; a reload re-runs
+  // the handshake.
+  const connCopy = $derived(connectionState(connectionStatus))
 
   let isDark = $state(true)
   let sessions = $state<TerminalSessionInfo[]>([])
@@ -31,7 +43,23 @@
   let renamingId = $state<string | null>(null)
   let presetsOpen = $state(false)
 
+  // Terminating a running process is destructive (its output stops, and for a
+  // full remove, its scrollback is discarded), so it goes through this modal.
+  interface ConfirmDialog {
+    title: string
+    body: string
+    confirmLabel: string
+    onConfirm: () => void
+  }
+  let confirm = $state<ConfirmDialog | null>(null)
+
   const activeSession = $derived(sessions.find(s => s.id === activeId) ?? null)
+
+  // Only own sessions can be killed/removed; hub-aggregated ones are read-only.
+  // `exitedCount` drives the nav-level "Clear exited" sweep.
+  const exitedCount = $derived(
+    sessions.filter(s => !isExternal(s) && s.status !== 'running').length,
+  )
 
   // A focus request that arrived (via the hub's dock-activation slot) before
   // its session showed up in the list. Applied one-shot the moment a matching
@@ -212,6 +240,80 @@
     spawn({ presetId: id })
   }
 
+  /**
+   * Route a lifecycle action to the right RPC: own sessions go through this
+   * plugin (object args); sessions aggregated from other devframes via the hub
+   * are driven through the hub's built-ins (positional args), the same seam
+   * `TerminalView` uses for write/resize. Force-killing and removing therefore
+   * work for read-only aggregated sessions too, not just the plugin's own.
+   */
+  function control(s: TerminalSessionInfo, action: 'terminate' | 'restart' | 'remove'): void {
+    if (isExternal(s))
+      rpc.call(`hub:terminals:${action}`, s.id).catch(() => {})
+    else
+      rpc.call(`devframes:plugin:terminals:${action}`, { id: s.id }).catch(() => {})
+  }
+
+  /** A session offers a restart affordance unless it opted out (`restartable: false`). */
+  function canRestart(s: TerminalSessionInfo): boolean {
+    return s.restartable !== false
+  }
+
+  function restartSession(id: string): void {
+    const s = sessions.find(x => x.id === id)
+    if (s)
+      control(s, 'restart')
+  }
+
+  /**
+   * Kill a session's running process (interactive or readonly, own or
+   * aggregated), keeping the stopped session and its scrollback. Always
+   * confirmed — a live process is being terminated.
+   */
+  function killSession(id: string): void {
+    const s = sessions.find(x => x.id === id)
+    if (!s)
+      return
+    confirm = {
+      title: 'Kill process',
+      body: `Terminate “${displayName(s)}”? The process stops, but the session stays in the list so you can read its output or restart it.`,
+      confirmLabel: 'Kill process',
+      onConfirm: () => control(s, 'terminate'),
+    }
+  }
+
+  /**
+   * Discard a session entirely — process, stream, and scrollback. Removing a
+   * session whose process is still running terminates it, so that case is
+   * confirmed; an already-stopped session is dropped immediately.
+   */
+  function removeSession(id: string): void {
+    const s = sessions.find(x => x.id === id)
+    if (!s)
+      return
+    if (s.status === 'running') {
+      confirm = {
+        title: 'Remove terminal',
+        body: `“${displayName(s)}” is still running. Removing it terminates the process and discards its output.`,
+        confirmLabel: 'Kill & remove',
+        onConfirm: () => control(s, 'remove'),
+      }
+      return
+    }
+    control(s, 'remove')
+  }
+
+  function resolveConfirm(): void {
+    const action = confirm?.onConfirm
+    confirm = null
+    action?.()
+  }
+
+  /** Sweep every stopped session away in one go. */
+  function clearExited(): void {
+    rpc.call('devframes:plugin:terminals:clear-exited').catch(() => {})
+  }
+
   function commitRename(id: string, title: string): void {
     renamingId = null
     rpc.call('devframes:plugin:terminals:rename', { id, title: title.trim() }).catch(() => {})
@@ -222,6 +324,24 @@
     node.select()
   }
 
+  function autofocus(node: HTMLElement) {
+    node.focus()
+  }
+
+  // While the confirmation modal is open, Escape cancels and Enter confirms.
+  function onGlobalKey(e: KeyboardEvent): void {
+    if (!confirm)
+      return
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      confirm = null
+    }
+    else if (e.key === 'Enter') {
+      e.preventDefault()
+      resolveConfirm()
+    }
+  }
+
   function statusDot(status: string): DotState {
     if (status === 'running')
       return 'running'
@@ -229,15 +349,16 @@
   }
 </script>
 
-{#if connectionStatus !== 'connected'}
-  {@const copy = CONNECTION_COPY[connectionStatus]}
-  <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-base color-base font-sans p-8 text-center">
-    <div class="{copy.icon} text-4xl color-active"></div>
+<svelte:window onkeydown={onGlobalKey} />
+
+{#if connCopy}
+  <div class={connectionPanel('absolute inset-0 color-base font-sans')}>
+    <div class="{connCopy.icon} {connectionGlyph(connCopy.spin)}"></div>
     <div class="flex flex-col gap-1">
-      <p class="text-lg font-medium">{copy.title}</p>
-      <p class="text-sm op-mute max-w-sm">{copy.body}</p>
+      <p class={connectionTitle()}>{connCopy.title}</p>
+      <p class={connectionBody()}>{connCopy.body}</p>
     </div>
-    {#if connectionStatus !== 'connecting'}
+    {#if connCopy.reloadable}
       <button type="button" class={button({ variant: 'primary', size: 'sm' })} onclick={() => location.reload()}>
         <div class="i-ph-arrow-clockwise"></div>
         Reload
@@ -281,16 +402,14 @@
               <div class="{s.icon} shrink-0"></div>
             {/if}
             <span class="truncate">{displayName(s)}</span>
-            {#if !isExternal(s)}
-              <span
-                role="button"
-                tabindex="-1"
-                aria-label="Close terminal"
-                class="i-ph-x op0 group-hover:op60 hover:op100! transition-opacity shrink-0"
-                onclick={(e) => { e.stopPropagation(); rpc.call('devframes:plugin:terminals:remove', { id: s.id }).catch(() => {}) }}
-                onkeydown={() => {}}
-              ></span>
-            {/if}
+            <span
+              role="button"
+              tabindex="-1"
+              aria-label="Close terminal"
+              class="i-ph-x op0 group-hover:op60 hover:op100! transition-opacity shrink-0"
+              onclick={(e) => { e.stopPropagation(); removeSession(s.id) }}
+              onkeydown={() => {}}
+            ></span>
           </button>
         {/if}
       {/each}
@@ -304,6 +423,18 @@
         <div class="i-ph-plus"></div>
       </button>
     </div>
+
+    {#if exitedCount > 0}
+      <button
+        type="button"
+        class={button({ variant: 'outline', size: 'sm', class: 'shrink-0' })}
+        title="Remove all stopped sessions"
+        onclick={() => clearExited()}
+      >
+        <div class="i-ph-broom-duotone"></div>
+        <span class="hidden sm:inline">Clear exited</span>
+      </button>
+    {/if}
 
     {#if presets.length}
       <div class="relative shrink-0">
@@ -372,11 +503,17 @@
 
       <div class="flex-1"></div>
 
-      {#if !isExternal(s)}
-        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => rpc.call('devframes:plugin:terminals:restart', { id: s.id }).catch(() => {})}>
+      {#if canRestart(s)}
+        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => restartSession(s.id)}>
           <div class="i-ph-arrow-clockwise-duotone"></div>
         </button>
-        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill" onclick={() => rpc.call('devframes:plugin:terminals:remove', { id: s.id }).catch(() => {})}>
+      {/if}
+      {#if s.status === 'running'}
+        <button type="button" class={[iconButton({ variant: 'ghost', size: 'sm' }), 'hover:text-red']} title="Kill process" onclick={() => killSession(s.id)}>
+          <div class="i-ph-prohibit-duotone"></div>
+        </button>
+      {:else}
+        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Remove session" onclick={() => removeSession(s.id)}>
           <div class="i-ph-trash-duotone"></div>
         </button>
       {/if}
@@ -401,5 +538,36 @@
       <TerminalView {rpc} info={s} active={activeId === s.id} {isDark} />
     {/each}
   </div>
+
+  {#if confirm}
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class={modalBackdrop()} role="presentation" onclick={() => (confirm = null)}>
+      <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+      <div
+        class={modalCard()}
+        role="alertdialog"
+        aria-modal="true"
+        aria-label={confirm.title}
+        tabindex="-1"
+        onclick={e => e.stopPropagation()}
+      >
+        <div class="flex items-start gap-3">
+          <div class="i-ph-warning-duotone text-xl text-error shrink-0 mt-0.5"></div>
+          <div class="flex flex-col gap-1 min-w-0">
+            <h2 class="text-sm font-semibold color-base">{confirm.title}</h2>
+            <p class="text-sm op-mute">{confirm.body}</p>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" class={button({ variant: 'outline', size: 'sm' })} onclick={() => (confirm = null)}>
+            Cancel
+          </button>
+          <button type="button" class={button({ variant: 'destructive', size: 'sm' })} use:autofocus onclick={() => resolveConfirm()}>
+            {confirm.confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
 </div>
 {/if}

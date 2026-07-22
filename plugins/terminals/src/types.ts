@@ -55,6 +55,13 @@ export interface TerminalSessionInfo {
   exitCode?: number
   icon?: string
   channel?: string
+  /**
+   * Whether the session may be restarted in place. `false` hides the restart
+   * control and makes the restart RPC reject it — used for sessions whose
+   * lifecycle is owned elsewhere (surfaced from the hub's `restartable` flag).
+   * Own sessions leave this unset (always restartable).
+   */
+  restartable?: boolean
   /** Preset this session was spawned from, if any. */
   presetId?: string
   createdAt: number

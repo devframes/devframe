@@ -1,5 +1,6 @@
 import type { RpcDefinitionsToFunctions } from 'devframe/rpc'
 import type { TerminalPreset, TerminalsSharedState } from '../types'
+import { clearExited } from './functions/clear-exited'
 import { list } from './functions/list'
 import { presets } from './functions/presets'
 import { remove } from './functions/remove'
@@ -20,6 +21,7 @@ export const serverFunctions = [
   restart,
   rename,
   remove,
+  clearExited,
 ] as const
 
 declare module 'devframe' {

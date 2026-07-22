@@ -42,6 +42,7 @@ export interface TerminalSessionInfo {
   exitCode?: number;
   icon?: string;
   channel?: string;
+  restartable?: boolean;
   presetId?: string;
   createdAt: number;
 }

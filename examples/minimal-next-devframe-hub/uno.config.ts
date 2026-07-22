@@ -1,48 +1,25 @@
 import { fileURLToPath } from 'node:url'
-import { presetAnthonyDesign } from '@antfu/design/unocss'
-import {
-  defineConfig,
-  presetIcons,
-  presetWebFonts,
-  presetWind4,
-  transformerDirectives,
-  transformerVariantGroup,
-} from 'unocss'
+import { mergeConfigs } from 'unocss'
+import { designConfig } from '../../design/uno.config'
 
-// `@unocss/postcss` (see src/client/postcss.config.mjs) loads this config.
-// Absolute globs keep class extraction working regardless of the directory
+// The hub UI composes the shared devframe base (see `design/uno.config.ts`).
+// `@unocss/postcss` (see src/client/postcss.config.mjs) loads this config;
+// absolute globs keep class extraction working regardless of the directory
 // PostCSS runs in (Next builds from `src/client`).
 const client = fileURLToPath(new URL('./src/client', import.meta.url))
 
-export default defineConfig({
-  presets: [
-    presetAnthonyDesign({ primary: '#3a6a45' }),
-    presetWind4(),
-    presetIcons({ scale: 1.1 }),
-    presetWebFonts({ provider: 'none', fonts: { sans: 'DM Sans', mono: 'DM Mono' } }),
-  ],
-  transformers: [transformerDirectives(), transformerVariantGroup()],
-  // Wind4 leaves bare `border`/`border-b` at currentColor; restore the subtle
-  // shared border color (matching `border-base`) for unqualified borders.
-  preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
-  // The mini React json-render registry sets `badge-color-<name>` from a fixed
-  // set — these literals live in source, but safelist them to be explicit.
-  safelist: ['badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],
-  shortcuts: {
-    'z-nav': 'z-[30]',
-    'z-dropdown': 'z-[40]',
-    'z-tooltip': 'z-[45]',
-    'z-toast': 'z-[50]',
-    'z-modal-backdrop': 'z-[60]',
-    'z-modal-content': 'z-[70]',
-    'z-drawer-backdrop': 'z-[80]',
-    'z-drawer-content': 'z-[90]',
+export default mergeConfigs([
+  designConfig,
+  {
+    // The mini React json-render registry sets `badge-color-<name>` from a fixed
+    // set — these literals live in source, but safelist them to be explicit.
+    safelist: ['badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],
+    content: {
+      filesystem: [
+        `${client}/app/**/*.{ts,tsx}`,
+        // The mini React json-render registry lives outside app/.
+        `${client}/json-render/**/*.{ts,tsx}`,
+      ],
+    },
   },
-  content: {
-    filesystem: [
-      `${client}/app/**/*.{ts,tsx}`,
-      // The mini React json-render registry lives outside app/.
-      `${client}/json-render/**/*.{ts,tsx}`,
-    ],
-  },
-})
+])
