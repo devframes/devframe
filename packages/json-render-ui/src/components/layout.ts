@@ -62,7 +62,7 @@ export const Card: JrComponent<CardProps> = ({ props, children, loading }) => {
       h(
         'summary',
         { class: 'flex items-center justify-between px2 py1.5 border-b border-base color-base font-medium text-sm cursor-pointer select-none list-none' },
-        [h('span', props.title ?? ''), h('span', { class: 'i-ph:caret-down color-faint' })],
+        [h('span', props.title ?? ''), h('span', { class: 'color-faint text-xs' }, '▾')],
       ),
       h('div', { class: 'p2' }, [body]),
     ])

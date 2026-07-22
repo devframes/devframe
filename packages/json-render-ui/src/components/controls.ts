@@ -1,10 +1,12 @@
 import type { JrComponent } from './_shared'
 import { useBoundProp } from '@json-render/vue'
 import { h } from 'vue'
+import { Icon } from './icon'
 
 interface ButtonProps {
   label?: string
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
+  /** Icon name resolved at runtime (e.g. `ph:arrow-clockwise`). */
   icon?: string
   disabled?: boolean
   loading?: boolean
@@ -33,10 +35,12 @@ export const Button: JrComponent<ButtonProps> = ({ props, on }) => {
       },
     },
     [
+      // Dependency-free CSS spinner (no icon font needed); the dynamic Icon
+      // resolves the button's icon at runtime, like the standalone Icon.
       busy
-        ? h('span', { class: 'i-ph:spinner animate-spin' })
+        ? h('span', { class: 'inline-block h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin' })
         : props.icon
-          ? h('span', { class: `i-ph:${props.icon}` })
+          ? Icon({ props: { name: props.icon, size: 16 } } as Parameters<typeof Icon>[0])
           : null,
       props.label ? h('span', props.label) : null,
     ],
