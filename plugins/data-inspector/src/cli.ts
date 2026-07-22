@@ -52,7 +52,10 @@ export function createDataInspectorCli() {
     .option('--open', 'Open the browser on start')
     .option('--no-open', 'Do not open the browser')
     .option('--no-example', 'Skip the built-in example source')
-    .action(async (files: string[], flags: { port?: number, host: string, open?: boolean, example?: boolean }) => {
+    // Standalone auth is on by default; `--no-auth` opts a one-off run out
+    // of the interactive OTP gate (see `createCac`'s equivalent flag).
+    .option('--no-auth', 'Disable the interactive authentication gate')
+    .action(async (files: string[], flags: { port?: number, host: string, open?: boolean, example?: boolean, auth?: boolean }) => {
       for (const file of files)
         registerDataSource(createFileDataSource(file))
       const def = createDataInspectorDevframe({ exampleSource: flags.example })

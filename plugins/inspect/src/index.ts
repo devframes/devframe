@@ -28,9 +28,10 @@ export interface InspectDevframeOptions {
   /** Preferred standalone CLI port. */
   port?: number
   /**
-   * Require the trust handshake on the standalone server. Defaults to
-   * `false` (auto-trust) since the inspector is a single-user localhost
-   * tool. Hosted adapters manage their own auth.
+   * Require the trust handshake on the standalone server. Enabled by
+   * default — `--open` embeds the current OTP in the opened URL, so the
+   * tab authenticates automatically without extra prompts. Hosted adapters
+   * manage their own auth and ignore this.
    */
   auth?: boolean
 }
@@ -58,11 +59,10 @@ export function createInspectDevframe(options: InspectDevframeOptions = {}): Dev
       command: id,
       port: options.port ?? 9012,
       distDir: existsSync(distDir) ? distDir : undefined,
-      // A single-user localhost inspector: skip the trust handshake so
-      // the SPA's shared-state subscription initializes without a manual
-      // auth round-trip. Hosted adapters (Vite/hub) supply their own
-      // auth layer and ignore this.
-      auth: options.auth ?? false,
+      // Gate the standalone server by default; `maybeOpenBrowser` folds the
+      // current OTP into the `--open` URL so the tab lands already trusted.
+      // Hosted adapters (Vite/hub) supply their own auth layer and ignore this.
+      auth: options.auth ?? true,
     },
     spa: { loader: 'none' },
     dock: {

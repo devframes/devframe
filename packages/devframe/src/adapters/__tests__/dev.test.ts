@@ -4,12 +4,17 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
+import { open } from 'devframe/utils/open'
 import { getPort } from 'get-port-please'
 import { describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 import { getTempAuthCode } from '../../node/auth/state'
 import { defineDevframe } from '../../types/devframe'
 import { createDevServer, resolveDevServerPort } from '../dev'
+
+// `--open` is exercised directly (asserting the URL handed to the OS opener)
+// rather than actually launching a browser in CI.
+vi.mock('devframe/utils/open', () => ({ open: vi.fn(async () => {}) }))
 
 function connectWsClient(host: string, port: number, authToken?: string) {
   return createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>(
@@ -319,6 +324,62 @@ describe('adapters/dev', () => {
     }
     finally {
       spy.mockRestore()
+      await handle.close()
+    }
+  })
+
+  it('`--open` embeds the current OTP so the opened tab authenticates automatically', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-auth-open',
+      name: 'Auth Open',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      setup: () => {},
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19415, host })
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const mockedOpen = vi.mocked(open)
+    mockedOpen.mockClear()
+    const code = getTempAuthCode()
+    const handle = await createDevServer(devframe, { host, port, openBrowser: true })
+
+    try {
+      expect(mockedOpen).toHaveBeenCalledTimes(1)
+      const [target] = mockedOpen.mock.calls[0]
+      expect(target).toBe(`http://localhost:${port}/?devframe_otp=${code}`)
+    }
+    finally {
+      spy.mockRestore()
+      await handle.close()
+    }
+  })
+
+  it('`--open` opens the plain origin when `auth: false` (no handler to embed a code)', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-auth-open-off',
+      name: 'Auth Open Off',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      cli: { auth: false },
+      setup: () => {},
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19416, host })
+    const mockedOpen = vi.mocked(open)
+    mockedOpen.mockClear()
+    const handle = await createDevServer(devframe, { host, port, openBrowser: true })
+
+    try {
+      expect(mockedOpen).toHaveBeenCalledTimes(1)
+      const [target] = mockedOpen.mock.calls[0]
+      expect(target).toBe(`http://localhost:${port}/`)
+    }
+    finally {
       await handle.close()
     }
   })

@@ -174,6 +174,13 @@ export interface CodeServerOptions {
   portRange?: [number, number]
   /** Prefer a random port for the launcher SPA. */
   random?: boolean
+  /**
+   * Require the trust handshake on the standalone launcher server. Enabled
+   * by default — `--open` embeds the current OTP in the opened URL, so the
+   * tab authenticates automatically without extra prompts. Hosted adapters
+   * manage their own auth and ignore this.
+   */
+  auth?: boolean
 }
 
 /** Options for `mode: 'tunnel'`. */

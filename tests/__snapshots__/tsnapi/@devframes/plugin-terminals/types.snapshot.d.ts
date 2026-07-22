@@ -59,6 +59,7 @@ export interface TerminalsOptions {
   distDir?: string;
   command?: string;
   port?: number;
+  auth?: boolean;
 }
 export interface TerminalsSharedState {
   sessions: TerminalSessionInfo[];

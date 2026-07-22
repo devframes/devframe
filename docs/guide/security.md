@@ -79,7 +79,7 @@ Client methods (`devframe/client`): `requestTrustWithCode(code)` (exchange a cod
 
 ### Magic-link authentication
 
-To skip typing, a host can print a link that embeds the code and open the browser straight into an authenticated session. Build it from the current code with `buildOtpAuthUrl(origin)` (devframe stays headless, so the host prints its own banner):
+To skip typing, a host can print a link that embeds the code and open the browser straight into an authenticated session. The standalone CLI (`createCac` / `createDevServer`) does this automatically for `--open`: when the server is auth-gated, the browser it launches already carries the current code, so the tab lands authenticated with no prompt at all. Build the link yourself from the current code with `buildOtpAuthUrl(origin)` (devframe stays headless, so the host prints its own banner):
 
 ```
 Devtools ready — authenticate this browser: http://localhost:3000/?devframe_otp=123456

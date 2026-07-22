@@ -137,4 +137,11 @@ export interface TerminalsOptions {
   command?: string
   /** Preferred dev-server port. */
   port?: number
+  /**
+   * Require the trust handshake on the standalone server. Enabled by
+   * default — `--open` embeds the current OTP in the opened URL, so the
+   * tab authenticates automatically without extra prompts. Hosted adapters
+   * manage their own auth and ignore this.
+   */
+  auth?: boolean
 }

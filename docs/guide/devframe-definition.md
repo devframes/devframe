@@ -185,8 +185,7 @@ defineDevframe({
     portRange: [9876, 10000], // forwarded to get-port-please
     random: false, // forwarded to get-port-please
     host: 'localhost', // default host; --host overrides
-    open: true, // auto-open the browser on dev start
-    auth: false, // skip the trust handshake (single-user localhost)
+    open: true, // auto-open the browser on dev start; embeds the current OTP so the tab lands authenticated
     configure(cli) { // contribute capability flags/commands
       cli
         .option('--my-flag <value>', 'Tool-specific flag')
@@ -208,7 +207,7 @@ defineDevframe({
 | `portRange` | `[number, number]` | Port scan range, passed through to `get-port-please`. |
 | `random` | `boolean` | Prefer a random open port. |
 | `host` | `string` | Default bind host. |
-| `open` | `boolean \| string` | `true` opens the origin, a string opens a specific path, `false` disables. Matches the `--open` / `--no-open` flags. |
+| `open` | `boolean \| string` | `true` opens the origin, a string opens a specific path, `false` disables. Matches the `--open` / `--no-open` flags. When `auth` is on, the opened URL embeds the current OTP so the tab authenticates automatically. |
 | `auth` | `boolean` | Disable the WS trust flow when the tool is localhost-only and single-user. Default `true`. |
 | `configure` | `(cli: CAC) => void` | Contribute capability flags/commands. Runs before `createCac`'s `configureCli` option so the final tool author always has the last word. |
 

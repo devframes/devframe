@@ -37,6 +37,13 @@ export interface GitDevframeOptions {
    * default; the standalone CLI also accepts a `--write` flag.
    */
   write?: boolean
+  /**
+   * Require the trust handshake on the standalone server. Enabled by
+   * default — `--open` embeds the current OTP in the opened URL, so the
+   * tab authenticates automatically without extra prompts. Hosted adapters
+   * manage their own auth and ignore this.
+   */
+  auth?: boolean
 }
 
 /**
@@ -61,7 +68,9 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
       command: 'devframe-git',
       port: options.port ?? 9710,
       distDir,
-      auth: false,
+      // Gate the standalone server by default; `maybeOpenBrowser` folds the
+      // current OTP into the `--open` URL so the tab lands already trusted.
+      auth: options.auth ?? true,
       configure(cli) {
         cli.option('--write', 'Enable staging, unstaging, and committing from the UI')
       },
