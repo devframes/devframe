@@ -2,7 +2,7 @@ import type { DevframeConnectionStatus, DevframeRpcClient, DevframeRpcClientOpti
 import { connectDevframe } from 'devframe/client'
 
 export type { DevframeConnectionStatus, DevframeRpcClient }
-export type { AgentManifest, InvokeResult, RpcFunctionAgentInfo, RpcFunctionInfo } from '../types'
+export type { AgentManifest, DevframeInspectCommandInfo, InvokeResult, RpcFunctionAgentInfo, RpcFunctionInfo } from '../types'
 
 /**
  * Connect to the inspector's devframe backend. A thin, typed wrapper

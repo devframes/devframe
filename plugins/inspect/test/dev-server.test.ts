@@ -1,11 +1,12 @@
-import type { InvokeResult, RpcFunctionInfo } from '@devframes/plugin-inspect'
+import type { DevframeHubContext } from '@devframes/hub/node'
+import type { DevframeInspectCommandInfo, InvokeResult, RpcFunctionInfo } from '@devframes/plugin-inspect'
 import type { AgentManifest } from 'devframe/types'
 import type { InspectorServer } from './_utils'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
-import { assertSpaBuilt, startInspectorServer } from './_utils'
+import { assertSpaBuilt, startInspectorHubServer, startInspectorServer } from './_utils'
 
 vi.stubGlobal('WebSocket', WebSocket)
 
@@ -53,6 +54,8 @@ describe('inspector dev-server', () => {
     expect(names).toContain('devframes:plugin:inspect:invoke')
     expect(names).toContain('devframes:plugin:inspect:list-state-keys')
     expect(names).toContain('devframes:plugin:inspect:describe-agent')
+    expect(names).toContain('devframes:plugin:inspect:list-commands')
+    expect(names).toContain('devframes:plugin:inspect:execute-command')
     // The built-in shared-state RPCs are always registered on the host.
     expect(names).toContain('devframe:rpc:server-state:get')
 
@@ -101,5 +104,106 @@ describe('inspector dev-server', () => {
     const toolIds = manifest.tools.map(t => t.id)
     expect(toolIds).toContain('devframes:plugin:inspect:list-functions')
     expect(toolIds).toContain('devframes:plugin:inspect:describe-agent')
+  })
+
+  it('list-commands returns an empty list outside a hub', async () => {
+    const rpc = connect(server)
+    const commands = await rpc.$call('devframes:plugin:inspect:list-commands') as DevframeInspectCommandInfo[]
+    expect(commands).toEqual([])
+  })
+
+  it('execute-command throws when this connection has no hub commands host', async () => {
+    const rpc = connect(server)
+    await expect(
+      rpc.$call('devframes:plugin:inspect:execute-command', 'anything', []),
+    ).rejects.toThrow(/no hub commands host/)
+  })
+})
+
+describe('inspector dev-server (hub)', () => {
+  let server: InspectorServer<DevframeHubContext>
+
+  beforeAll(async () => {
+    assertSpaBuilt()
+    server = await startInspectorHubServer()
+
+    server.ctx.commands.register({
+      id: 'demo:say-hello',
+      title: 'Say Hello',
+      description: 'Returns a greeting.',
+      category: 'demo',
+      handler: (name: string = 'world') => `Hello, ${name}!`,
+    })
+    server.ctx.commands.register({
+      id: 'demo:group',
+      title: 'Demo Group',
+      children: [
+        { id: 'demo:group:child', title: 'Child Command', handler: () => 'child ran' },
+      ],
+    })
+  })
+
+  afterAll(async () => {
+    await server?.close()
+  })
+
+  it('list-commands reports registered hub commands, with children and hasHandler flags', async () => {
+    const rpc = connect(server)
+    const commands = await rpc.$call('devframes:plugin:inspect:list-commands') as DevframeInspectCommandInfo[]
+    const byId = Object.fromEntries(commands.map(c => [c.id, c]))
+
+    expect(byId['demo:say-hello']).toMatchObject({
+      title: 'Say Hello',
+      description: 'Returns a greeting.',
+      category: 'demo',
+      hasHandler: true,
+    })
+
+    expect(byId['demo:group']).toMatchObject({ title: 'Demo Group', hasHandler: false })
+    expect(byId['demo:group'].children).toEqual([
+      expect.objectContaining({ id: 'demo:group:child', hasHandler: true }),
+    ])
+  })
+
+  it('execute-command runs a command handler and returns a result envelope', async () => {
+    const rpc = connect(server)
+    const result = await rpc.$call(
+      'devframes:plugin:inspect:execute-command',
+      'demo:say-hello',
+      ['Ada'],
+    ) as InvokeResult
+    expect(result).toMatchObject({ ok: true, result: 'Hello, Ada!' })
+    expect(typeof result.durationMs).toBe('number')
+  })
+
+  it('execute-command runs a nested child command by id', async () => {
+    const rpc = connect(server)
+    const result = await rpc.$call(
+      'devframes:plugin:inspect:execute-command',
+      'demo:group:child',
+      [],
+    ) as InvokeResult
+    expect(result).toMatchObject({ ok: true, result: 'child ran' })
+  })
+
+  it('execute-command reports an error envelope for a group-only command', async () => {
+    const rpc = connect(server)
+    const result = await rpc.$call(
+      'devframes:plugin:inspect:execute-command',
+      'demo:group',
+      [],
+    ) as InvokeResult
+    expect(result.ok).toBe(false)
+    expect(result.error?.message).toMatch(/no handler/)
+  })
+
+  it('execute-command reports an error envelope for an unregistered id', async () => {
+    const rpc = connect(server)
+    const result = await rpc.$call(
+      'devframes:plugin:inspect:execute-command',
+      'does-not:exist',
+      [],
+    ) as InvokeResult
+    expect(result.ok).toBe(false)
   })
 })

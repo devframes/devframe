@@ -53,6 +53,27 @@ export interface RpcFunctionInfo {
 }
 
 /**
+ * Serializable projection of a single command registered on a hub's
+ * commands host (`DevframeServerCommandEntry`/`DevframeCommandBase` in
+ * `@devframes/hub`), returned by `devframes:plugin:inspect:list-commands`.
+ * Populated only when this connection is mounted inside a hub — a plain
+ * devframe connection (no hub) returns an empty list.
+ */
+export interface DevframeInspectCommandInfo {
+  /** Unique namespaced command id, e.g. `"vite:open-in-editor"`. */
+  id: string
+  title: string
+  description?: string
+  /** Iconify icon string, or a theme-specific `{ light, dark }` pair. */
+  icon?: string | { light: string, dark: string }
+  category?: string
+  /** Whether the command carries its own handler (`false` for group-only parents). */
+  hasHandler: boolean
+  /** Static sub-commands, up to two levels deep (parent → children). */
+  children?: DevframeInspectCommandInfo[]
+}
+
+/**
  * Result envelope for `devframes:plugin:inspect:invoke`. Errors are
  * normalized to a serializable shape rather than thrown so the inspector
  * UI can render failures inline alongside successes.
