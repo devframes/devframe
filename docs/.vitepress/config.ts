@@ -64,6 +64,7 @@ function pluginsItems(prefix: string) {
     { text: 'Overview', link: `${prefix}/plugins/` },
     { text: 'Data Inspector', link: `${prefix}/plugins/data-inspector` },
     { text: 'Devframe Inspector', link: `${prefix}/plugins/inspect` },
+    { text: 'Open Graph Viewer', link: `${prefix}/plugins/og` },
     { text: 'Accessibility Inspector', link: `${prefix}/plugins/a11y` },
     { text: 'Git', link: `${prefix}/plugins/git` },
     { text: 'Terminals', link: `${prefix}/plugins/terminals` },
