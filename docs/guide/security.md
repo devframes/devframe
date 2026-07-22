@@ -24,6 +24,8 @@ Exactly one rule decides what an untrusted connection may call: **a method is re
 
 `startHttpAndWs` enforces this itself once you give it something to enforce: pass `auth: authHandler` (its `.authorize` becomes the gate) or your own `authorize(methodName, session)` function. Every other call from an untrusted session throws [`DF0036`](../errors/DF0036).
 
+On the client, `connectDevframe()` kicks off the handshake below without waiting for it, so a naive client could otherwise race it — sending a trusted call over the freshly-opened socket before the server has had a chance to answer `anonymous:devframe:auth`, hitting this exact gate. `rpc.call` / `rpc.callOptional` / `rpc.callEvent` hold anything issued while that first handshake is still in flight and release it once the handshake settles, so application code never has to special-case this window itself.
+
 ## Authentication flow
 
 Authentication exchanges a short code for a long-lived token. A node mints and owns the token; the browser only ever sends the short code, and only over the open socket.
