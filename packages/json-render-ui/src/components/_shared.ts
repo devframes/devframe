@@ -16,3 +16,12 @@ export function toNumber(value: unknown, fallback: number): number {
   const n = typeof value === 'string' ? Number(value) : value
   return typeof n === 'number' && Number.isFinite(n) ? n : fallback
 }
+
+/** Render an arbitrary value as a display string for table cells. */
+export function formatValue(value: unknown): string {
+  if (value == null)
+    return ''
+  if (typeof value === 'object')
+    return JSON.stringify(value)
+  return String(value)
+}
