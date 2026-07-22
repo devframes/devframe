@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { presetAnthonyDesign } from '@antfu/design/unocss'
 import {
   defineConfig,
@@ -27,6 +28,12 @@ export const designConfig = defineConfig({
     presetWebFonts({ provider: 'none', fonts: { sans: 'DM Sans', mono: 'DM Mono' } }),
   ],
   transformers: [transformerDirectives(), transformerVariantGroup()],
+  // The shared class-helper builders (`design/design.ts`) assemble their class
+  // chains at runtime, so every app scans that one file (it carries
+  // `@unocss-include`) for extraction regardless of its own framework globs.
+  content: {
+    filesystem: [fileURLToPath(new URL('./design.ts', import.meta.url))],
+  },
   // Wind4 leaves bare `border`/`border-b` at currentColor; restore the subtle
   // shared border color (matching `border-base`) for unqualified borders.
   preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
