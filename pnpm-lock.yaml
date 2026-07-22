@@ -474,9 +474,6 @@ importers:
 
   examples/minimal-json-render:
     dependencies:
-      '@antfu/design':
-        specifier: catalog:frontend
-        version: 0.3.2(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(dompurify@3.4.12)(floating-vue@5.2.2(vue@3.5.40(typescript@6.0.3)))(playwright@1.61.1)(reka-ui@2.10.1(vue@3.5.40(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.19))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))
       '@devframes/json-render':
         specifier: workspace:*
         version: link:../../packages/json-render
@@ -489,22 +486,10 @@ importers:
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
-      vue:
-        specifier: catalog:frontend
-        version: 3.5.40(typescript@6.0.3)
     devDependencies:
-      '@vitejs/plugin-vue':
-        specifier: catalog:build
-        version: 6.0.8(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))(vue@3.5.40(typescript@6.0.3))
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0
-      unocss:
-        specifier: catalog:frontend
-        version: 66.7.5(@unocss/postcss@66.7.5(postcss@8.5.19))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))
-      vite:
-        specifier: catalog:build
-        version: 8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)
 
   examples/minimal-next-devframe-hub:
     dependencies:

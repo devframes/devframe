@@ -30,6 +30,8 @@ export interface JsonRenderStatePatch {
 export interface JsonRenderView {
   /** Author-supplied stable id, unique within the view's scope. */
   readonly id: string
+  /** Human-facing label published in the view index (defaults to `id`). */
+  readonly title: string
   /** The serializable reference clients subscribe through. */
   readonly ref: JsonRenderViewRef
   /** Replace the entire spec (a structural change replaces the whole spec). */

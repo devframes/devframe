@@ -139,6 +139,9 @@
       "@devframes/json-render-ui/components": [
         "./packages/json-render-ui/src/components/index.ts"
       ],
+      "@devframes/json-render-ui/spa": [
+        "./packages/json-render-ui/src/spa.ts"
+      ],
       "@devframes/json-render-ui": [
         "./packages/json-render-ui/src/index.ts"
       ],

@@ -7,6 +7,9 @@ export default defineConfig({
   entry: {
     'index': 'src/index.ts',
     'components/index': 'src/components/index.ts',
+    // Node-safe entry: exposes the prebuilt SPA path + a devframe wiring
+    // helper. Imports no Vue / `@antfu/design`, only `node:url`.
+    'spa': 'src/spa.ts',
   },
   outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),
   clean: true,

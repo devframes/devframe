@@ -9,6 +9,6 @@ export type {
   JsonRenderDockRendererOptions,
 } from './dock-renderer'
 
-export { baseRegistry, ERROR_COMPONENT_TYPE } from './registry'
+export { baseRegistry, ERROR_COMPONENT_TYPE, UNSUPPORTED_COMPONENT_TYPE } from './registry'
 export { createRenderer, JsonRenderView, sanitizeSpec } from './renderer'
 export type { CreateRendererOptions } from './renderer'

@@ -5,13 +5,14 @@
 export function createActionBridge(_, _) {}
 export function createJsonRenderDockRenderer(_) {}
 export function createRenderer(_) {}
-export function sanitizeSpec(_) {}
+export function sanitizeSpec(_, _) {}
 // #endregion
 
 // #region Variables
 export var baseRegistry /* const */
 export var ERROR_COMPONENT_TYPE /* const */
 export var JsonRenderView /* const */
+export var UNSUPPORTED_COMPONENT_TYPE /* const */
 // #endregion
 
 // #region Other

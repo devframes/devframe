@@ -18,9 +18,13 @@ import {
   Tree,
 } from './components'
 import { JsonRenderError } from './components/_error'
+import { JsonRenderUnsupported } from './components/_unsupported'
 
 /** Reserved component type used to isolate an element that fails validation. */
 export const ERROR_COMPONENT_TYPE = '__jsonRenderError'
+
+/** Reserved component type used to placeholder an element the registry lacks. */
+export const UNSUPPORTED_COMPONENT_TYPE = '__jsonRenderUnsupported'
 
 /**
  * The base Vue registry: the fourteen catalog-v1 components ported onto
@@ -45,5 +49,6 @@ export const baseRegistry: ComponentRegistry = defineRegistry(baseCatalog as any
     Progress,
     Tree,
     [ERROR_COMPONENT_TYPE]: JsonRenderError,
+    [UNSUPPORTED_COMPONENT_TYPE]: JsonRenderUnsupported,
   } as any,
 }).registry

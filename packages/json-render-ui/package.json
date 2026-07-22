@@ -22,6 +22,7 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./components": "./dist/components/index.mjs",
+    "./spa": "./dist/spa.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -29,7 +30,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && vite build --config src/spa/vite.config.ts",
     "watch": "tsdown --watch",
     "typecheck": "tsc --noEmit",
     "storybook": "storybook dev -p 6014 --host 0.0.0.0",

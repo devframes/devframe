@@ -1,8 +1,10 @@
 import type { DevframeNodeContext, DevframeScopedNodeContext } from 'devframe/types'
 import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
 import type { DevframeJsonRenderSpec, JsonRenderStatePatch, JsonRenderView } from '../types'
+import type { JsonRenderIndex } from '../view-index'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { basePropSchemas } from '../prop-schemas'
+import { JSON_RENDER_INDEX_KEY } from '../view-index'
 import { JSON_RENDER_UPSTREAM_VERSION } from '../view-ref'
 import { diagnostics } from './diagnostics'
 
@@ -22,6 +24,12 @@ export interface CreateJsonRenderViewOptions {
    * `'global'`.
    */
   scope?: string
+  /**
+   * Human-facing label published in the view index and used by a multi-view
+   * frontend (e.g. the standalone SPA's view switcher) to name this view.
+   * Defaults to {@link CreateJsonRenderViewOptions.id}.
+   */
+  title?: string
 }
 
 type AnyContext = DevframeNodeContext | DevframeScopedNodeContext<string>
@@ -41,6 +49,20 @@ function registryFor(ctx: DevframeNodeContext): Set<string> {
     registries.set(ctx, set)
   }
   return set
+}
+
+// One shared view-index state per base context, published at
+// `JSON_RENDER_INDEX_KEY`, so a frontend that does not know view ids ahead of
+// time can discover every live view from a single subscription.
+const indexStates = new WeakMap<object, SharedState<JsonRenderIndex>>()
+function indexStateFor(ctx: DevframeNodeContext): SharedState<JsonRenderIndex> {
+  let state = indexStates.get(ctx)
+  if (!state) {
+    state = createSharedState<JsonRenderIndex>({ initialValue: {} })
+    indexStates.set(ctx, state)
+    void ctx.rpc.sharedState.get(JSON_RENDER_INDEX_KEY, { sharedState: state as SharedState<any> })
+  }
+  return state
 }
 
 /** Parse an RFC 6901 JSON Pointer into path segments. */
@@ -106,6 +128,7 @@ export function createJsonRenderView(
   const baseCtx = scoped ? ctx.base : ctx
   const scope = options.scope ?? (scoped ? ctx.namespace : 'global')
   const { id } = options
+  const title = options.title ?? id
   const stateKey = `devframe:json-render:${scope}:${id}`
 
   const registry = registryFor(baseCtx)
@@ -127,6 +150,12 @@ export function createJsonRenderView(
   // subsequent `update`/`patchState` calls broadcast correctly.
   void baseCtx.rpc.sharedState.get(stateKey, { sharedState: state as SharedState<any> })
 
+  // Publish the view into the shared index so a frontend can discover it.
+  const index = indexStateFor(baseCtx)
+  index.mutate((idx) => {
+    idx[stateKey] = { id, scope, stateKey, title, upstreamVersion: JSON_RENDER_UPSTREAM_VERSION }
+  })
+
   let disposed = false
   function assertLive(): void {
     if (disposed)
@@ -135,6 +164,7 @@ export function createJsonRenderView(
 
   return {
     id,
+    title,
     ref: { stateKey, upstreamVersion: JSON_RENDER_UPSTREAM_VERSION },
     value: () => state.value() as DevframeJsonRenderSpec,
     update(spec) {
@@ -158,6 +188,9 @@ export function createJsonRenderView(
         return
       disposed = true
       registry.delete(stateKey)
+      index.mutate((idx) => {
+        delete idx[stateKey]
+      })
       baseCtx.rpc.sharedState.delete(stateKey)
     },
   }
