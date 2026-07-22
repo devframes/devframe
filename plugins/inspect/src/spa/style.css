@@ -118,15 +118,6 @@ textarea {
   text-align: center;
 }
 
-.center.error {
-  color: var(--df-danger);
-}
-
-.center .state-glyph {
-  font-size: 32px;
-  opacity: 0.85;
-}
-
 .pane {
   height: 100%;
   overflow: auto;

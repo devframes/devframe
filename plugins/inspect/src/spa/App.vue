@@ -3,7 +3,16 @@ import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.v
 import LayoutTabs from '@antfu/design/components/Layout/LayoutTabs.vue'
 import LayoutToolbar from '@antfu/design/components/Layout/LayoutToolbar.vue'
 import { computed, onMounted, ref } from 'vue'
-import { connectionIndicator } from '../../../../design/design'
+import {
+  button,
+  connectionBody,
+  connectionDetail,
+  connectionGlyph,
+  connectionIndicator,
+  connectionPanel,
+  connectionState,
+  connectionTitle,
+} from '../../../../design/design'
 import AgentSmart from './components/AgentSmart.vue'
 import FunctionsSmart from './components/FunctionsSmart.vue'
 import HistorySmart from './components/HistorySmart.vue'
@@ -19,6 +28,10 @@ const { refresh, loading } = useRefresh()
 // The shared connection indicator (dot + label) surfaces only while the
 // connection is not live; when connected it renders nothing.
 const conn = computed(() => connectionIndicator(connection.status))
+
+// The shared full-panel connection state takes over the body until the client
+// is connected.
+const connState = computed(() => connectionState(connection.status))
 
 const tabs: { value: Tab, label: string, icon: string }[] = [
   { value: 'functions', label: 'Functions', icon: 'i-ph-function-duotone' },
@@ -67,31 +80,23 @@ function reload(): void {
     </LayoutToolbar>
 
     <main class="app-body">
-      <div v-if="connection.status === 'error'" class="center error">
-        <span class="i-ph-warning-octagon-duotone state-glyph" />
-        <div>Failed to connect to the devframe backend.</div>
-        <code v-if="connection.error">{{ connection.error }}</code>
-        <button type="button" class="btn-action" @click="reload">
+      <div v-if="connState" :class="connectionPanel('h-full')">
+        <span :class="[connState.icon, connectionGlyph(connState.spin)]" />
+        <div class="flex flex-col gap-1">
+          <p :class="connectionTitle()">
+            {{ connState.title }}
+          </p>
+          <p :class="connectionBody()">
+            {{ connState.body }}
+          </p>
+          <p v-if="connection.error && connection.status === 'error'" :class="connectionDetail()">
+            {{ connection.error }}
+          </p>
+        </div>
+        <button v-if="connState.reloadable" type="button" :class="button({ variant: 'primary', size: 'sm' })" @click="reload">
+          <span class="i-ph-arrow-clockwise" />
           Reload
         </button>
-      </div>
-      <div v-else-if="connection.status === 'disconnected'" class="center error">
-        <span class="i-ph-plugs-duotone state-glyph" />
-        <div>Disconnected from the devframe backend.</div>
-        <button type="button" class="btn-action" @click="reload">
-          Reload
-        </button>
-      </div>
-      <div v-else-if="connection.status === 'unauthorized'" class="center error">
-        <span class="i-ph-lock-key-duotone state-glyph" />
-        <div>Not authorized. Reopen the link printed by your dev server, then reload.</div>
-        <button type="button" class="btn-action" @click="reload">
-          Reload
-        </button>
-      </div>
-      <div v-else-if="!connection.connected" class="center">
-        <span class="i-ph-plugs-connected-duotone state-glyph" />
-        Connecting to devframe…
       </div>
       <template v-else>
         <FunctionsSmart v-if="tab === 'functions'" />

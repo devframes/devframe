@@ -123,6 +123,82 @@ export function connectionIndicator(status: ConnectionStatus, extra?: string): C
   }
 }
 
+export interface ConnectionStateCopy {
+  /** Phosphor icon for the state glyph. */
+  icon: string
+  /** Short heading, e.g. `Disconnected`. */
+  title: string
+  /** One-line explanation of the state and how to recover. */
+  body: string
+  /** Whether to offer the reload recovery button (every state but `connecting`). */
+  reloadable: boolean
+  /** Whether the glyph should animate while the handshake is in flight. */
+  spin: boolean
+}
+
+const CONNECTION_STATE: Record<Exclude<ConnectionStatus, 'connected'>, ConnectionStateCopy> = {
+  connecting: {
+    icon: 'i-ph-plugs-connected-duotone',
+    title: 'Connecting…',
+    body: 'Establishing a connection to the devframe server.',
+    reloadable: false,
+    spin: true,
+  },
+  disconnected: {
+    icon: 'i-ph-plugs-duotone',
+    title: 'Disconnected',
+    body: 'Lost the connection to the devframe server. Reload once it is back up.',
+    reloadable: true,
+    spin: false,
+  },
+  unauthorized: {
+    icon: 'i-ph-lock-key-duotone',
+    title: 'Not authorized',
+    body: 'This client isn’t authorized. Reopen the link printed by your dev server, then reload.',
+    reloadable: true,
+    spin: false,
+  },
+  error: {
+    icon: 'i-ph-warning-octagon-duotone',
+    title: 'Connection failed',
+    body: 'Could not reach the devframe server.',
+    reloadable: true,
+    spin: false,
+  },
+}
+
+// The shared full-panel connection state copy: shown whenever the client isn't
+// `connected`, so a surface never sits on an infinite spinner without saying
+// why. Returns `null` when connected. Pair with the `connection*` class builders
+// below so every surface renders the identical centered glyph + title + body.
+export function connectionState(status: ConnectionStatus): ConnectionStateCopy | null {
+  if (status === 'connected')
+    return null
+  return CONNECTION_STATE[status]
+}
+
+// Centered fill for the full-panel state; each surface adds its own fill
+// strategy (`h-full`, `h-svh w-full`, `absolute inset-0`, …) via `extra`.
+export function connectionPanel(extra?: string): string {
+  return cx('flex flex-col items-center justify-center gap-4 bg-base p-8 text-center', extra)
+}
+
+export function connectionGlyph(spin = false, extra?: string): string {
+  return cx('text-4xl color-active', spin && 'animate-pulse', extra)
+}
+
+export function connectionTitle(extra?: string): string {
+  return cx('text-lg font-medium color-base', extra)
+}
+
+export function connectionBody(extra?: string): string {
+  return cx('max-w-sm text-sm color-muted', extra)
+}
+
+export function connectionDetail(extra?: string): string {
+  return cx('mt-1 max-w-sm break-words font-mono text-xs color-faint', extra)
+}
+
 export function toolbar(extra?: string): string {
   return cx('flex items-center gap-2 shrink-0 h-8 px-2.5 border-b border-base bg-secondary text-sm', extra)
 }

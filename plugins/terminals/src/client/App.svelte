@@ -2,7 +2,21 @@
   import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/client'
   import type { TerminalPreset, TerminalSessionInfo } from '../types'
   import type { DotState } from './design'
-  import { button, dot, iconButton, nav, navBrand, navTab, tag, toolbar } from './design'
+  import {
+    button,
+    connectionBody,
+    connectionGlyph,
+    connectionPanel,
+    connectionState,
+    connectionTitle,
+    dot,
+    iconButton,
+    nav,
+    navBrand,
+    navTab,
+    tag,
+    toolbar,
+  } from './design'
   import { onMount } from 'svelte'
   import { DOCKS_ACTIVE_STATE_KEY, PLUGIN_ID, PRESETS_STATE_KEY, SESSIONS_STATE_KEY } from '../constants'
   import TerminalView from './TerminalView.svelte'
@@ -15,14 +29,10 @@
   let connectionStatus = $state<DevframeConnectionStatus>(rpc.status)
 
   // Terminals ride live PTY streams, so a dropped socket or refused auth makes
-  // the whole surface useless — swap it for a clear state instead of a frozen
-  // terminal. The client doesn't auto-reconnect; a reload re-runs the handshake.
-  const CONNECTION_COPY: Record<Exclude<DevframeConnectionStatus, 'connected'>, { icon: string, title: string, body: string }> = {
-    connecting: { icon: 'i-ph-plugs-connected-duotone', title: 'Connecting…', body: 'Establishing a connection to the devframe server.' },
-    disconnected: { icon: 'i-ph-plugs-duotone', title: 'Disconnected', body: 'Lost the connection to the devframe server. Reload once it is back up.' },
-    unauthorized: { icon: 'i-ph-lock-key-duotone', title: 'Not authorized', body: 'Reopen the link printed by your dev server, then reload.' },
-    error: { icon: 'i-ph-warning-octagon-duotone', title: 'Connection failed', body: 'Could not reach the devframe server.' },
-  }
+  // the whole surface useless — swap it for the shared connection state instead
+  // of a frozen terminal. The client doesn't auto-reconnect; a reload re-runs
+  // the handshake.
+  const connCopy = $derived(connectionState(connectionStatus))
 
   let isDark = $state(true)
   let sessions = $state<TerminalSessionInfo[]>([])
@@ -229,15 +239,14 @@
   }
 </script>
 
-{#if connectionStatus !== 'connected'}
-  {@const copy = CONNECTION_COPY[connectionStatus]}
-  <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-base color-base font-sans p-8 text-center">
-    <div class="{copy.icon} text-4xl color-active"></div>
+{#if connCopy}
+  <div class={connectionPanel('absolute inset-0 color-base font-sans')}>
+    <div class="{connCopy.icon} {connectionGlyph(connCopy.spin)}"></div>
     <div class="flex flex-col gap-1">
-      <p class="text-lg font-medium">{copy.title}</p>
-      <p class="text-sm op-mute max-w-sm">{copy.body}</p>
+      <p class={connectionTitle()}>{connCopy.title}</p>
+      <p class={connectionBody()}>{connCopy.body}</p>
     </div>
-    {#if connectionStatus !== 'connecting'}
+    {#if connCopy.reloadable}
       <button type="button" class={button({ variant: 'primary', size: 'sm' })} onclick={() => location.reload()}>
         <div class="i-ph-arrow-clockwise"></div>
         Reload

@@ -3,7 +3,15 @@ import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/clien
 import type { DevframeMessageEntry } from '../types'
 import LayoutToolbar from '@antfu/design/components/Layout/LayoutToolbar.vue'
 import { computed, onBeforeUnmount, ref } from 'vue'
-import { connectionIndicator } from '../../../../design/design'
+import {
+  button,
+  connectionBody,
+  connectionGlyph,
+  connectionIndicator,
+  connectionPanel,
+  connectionState,
+  connectionTitle,
+} from '../../../../design/design'
 import MessagesView from './components/MessagesView.vue'
 import { useMessages } from './state/messages'
 
@@ -22,17 +30,12 @@ const offStatus = props.rpc.events.on('connection:status', (next) => {
 })
 onBeforeUnmount(offStatus)
 
-const CONNECTION_COPY: Record<Exclude<DevframeConnectionStatus, 'connected'>, { icon: string, title: string, body: string }> = {
-  connecting: { icon: 'i-ph-plugs-connected-duotone', title: 'Connecting…', body: 'Establishing a connection to the devframe server.' },
-  disconnected: { icon: 'i-ph-plugs-duotone', title: 'Disconnected', body: 'Lost the connection to the devframe server. Reload once it is back up.' },
-  unauthorized: { icon: 'i-ph-lock-key-duotone', title: 'Not authorized', body: 'Reopen the link printed by your dev server, then reload.' },
-  error: { icon: 'i-ph-warning-octagon-duotone', title: 'Connection failed', body: 'Could not reach the devframe server.' },
-}
-const connectionCopy = computed(() => status.value === 'connected' ? null : CONNECTION_COPY[status.value])
-
 // The shared top-nav connection indicator (dot + label), shown only while the
 // connection is not live.
 const conn = computed(() => connectionIndicator(status.value))
+
+// The shared full-panel connection state takes over the body until connected.
+const connState = computed(() => connectionState(status.value))
 
 function reload(): void {
   location.reload()
@@ -97,23 +100,20 @@ async function onOpenFile(entry: DevframeMessageEntry): Promise<void> {
     </LayoutToolbar>
 
     <div class="min-h-0">
-      <div
-        v-if="connectionCopy"
-        class="h-full flex flex-col items-center justify-center gap-4 p-8 text-center"
-      >
-        <span :class="connectionCopy.icon" class="text-4xl color-active" />
+      <div v-if="connState" :class="connectionPanel('h-full')">
+        <span :class="[connState.icon, connectionGlyph(connState.spin)]" />
         <div class="flex flex-col gap-1">
-          <p class="text-lg font-medium">
-            {{ connectionCopy.title }}
+          <p :class="connectionTitle()">
+            {{ connState.title }}
           </p>
-          <p class="text-sm color-muted max-w-sm">
-            {{ connectionCopy.body }}
+          <p :class="connectionBody()">
+            {{ connState.body }}
           </p>
         </div>
         <button
-          v-if="status !== 'connecting'"
+          v-if="connState.reloadable"
           type="button"
-          class="btn-primary text-sm px-2.5! py-1!"
+          :class="button({ variant: 'primary', size: 'sm' })"
           @click="reload"
         >
           <span class="i-ph-arrow-clockwise" />
