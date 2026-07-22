@@ -1,4 +1,7 @@
 import type { JrComponent } from './_shared'
+import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
+import FormSwitch from '@antfu/design/components/Form/FormSwitch.vue'
+import FormTextInput from '@antfu/design/components/Form/FormTextInput.vue'
 import { useBoundProp } from '@json-render/vue'
 import { h } from 'vue'
 import { Icon } from './icon'
@@ -12,36 +15,32 @@ interface ButtonProps {
   loading?: boolean
 }
 
-const buttonBase
-  = 'inline-flex items-center gap-1.5 rounded px2.5 py1 text-sm font-medium transition disabled:op-50 disabled:cursor-not-allowed'
+// Catalog variant → `@antfu/design` ActionButton variant. `danger` has no
+// upstream variant, so it renders as `primary` with a red override.
 const buttonVariant: Record<string, string> = {
-  primary: 'bg-primary color-white hover:bg-primary/90',
-  secondary: 'bg-secondary color-base border border-base hover:bg-active',
-  ghost: 'color-base hover:bg-secondary',
-  danger: 'bg-red color-white hover:bg-red/90',
+  primary: 'primary',
+  secondary: 'action',
+  ghost: 'text',
+  danger: 'primary',
 }
 
 export const Button: JrComponent<ButtonProps> = ({ props, on }) => {
-  const busy = !!props.loading
+  const variant = props.variant ?? 'secondary'
   return h(
-    'button',
+    ActionButton,
     {
-      type: 'button',
-      class: `${buttonBase} ${buttonVariant[props.variant ?? 'secondary'] ?? buttonVariant.secondary}`,
-      disabled: props.disabled || busy,
-      onClick: () => {
-        const handle = on('press')
-        handle.emit()
-      },
+      variant: buttonVariant[variant] ?? 'action',
+      disabled: props.disabled,
+      loading: props.loading,
+      // `danger` isn't an ActionButton variant — override the primary tint.
+      class: variant === 'danger' ? 'bg-red! color-white! border-red! hover:bg-red/90!' : undefined,
+      onClick: () => on('press').emit(),
     },
-    [
-      // Dependency-free CSS spinner (no icon font needed); the dynamic Icon
-      // resolves the button's icon at runtime, like the standalone Icon.
-      busy
-        ? h('span', { class: 'inline-block h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin' })
-        : props.icon
-          ? Icon({ props: { name: props.icon, size: 16 } } as Parameters<typeof Icon>[0])
-          : null,
+    // Render the dynamic Icon in the slot (ActionButton's own `icon` prop is a
+    // static UnoCSS class, unsuited to spec-supplied names). Skip it while
+    // loading — ActionButton already shows its spinner.
+    () => [
+      props.icon && !props.loading ? Icon({ props: { name: props.icon, size: 16 } } as Parameters<typeof Icon>[0]) : null,
       props.label ? h('span', props.label) : null,
     ],
   )
@@ -56,23 +55,18 @@ interface TextInputProps {
   loading?: boolean
 }
 
-const fieldBase
-  = 'w-full rounded border border-base bg-base color-base px2 py1 text-sm outline-none focus:border-primary disabled:op-50'
-
 export const TextInput: JrComponent<TextInputProps> = ({ props, on, bindings }) => {
   const [value, setValue] = useBoundProp(props.value, bindings?.value)
-  const input = h('input', {
-    class: fieldBase,
-    type: props.type ?? 'text',
-    value: value ?? '',
-    placeholder: props.placeholder,
-    disabled: props.disabled || props.loading,
-    onInput: (e: Event) => {
-      // Carry the new value into bound state, then fire the `change` action —
-      // an improvement over the Vite bridge's payload-free `change`.
-      setValue((e.target as HTMLInputElement).value)
+  const input = h(FormTextInput, {
+    'modelValue': value ?? '',
+    'onUpdate:modelValue': (next: string) => {
+      // Carry the new value into bound state, then fire the `change` action.
+      setValue(next)
       on('change').emit()
     },
+    'placeholder': props.placeholder,
+    'type': props.type ?? 'text',
+    'disabled': props.disabled || props.loading,
   })
   if (props.label) {
     return h('label', { class: 'flex flex-col gap-1 text-sm color-muted' }, [
@@ -91,25 +85,13 @@ interface SwitchProps {
 
 export const Switch: JrComponent<SwitchProps> = ({ props, on, bindings }) => {
   const [value, setValue] = useBoundProp(props.value, bindings?.value)
-  const checked = !!value
-  const toggle = h('button', {
-    'type': 'button',
-    'role': 'switch',
-    'aria-checked': checked ? 'true' : 'false',
-    'disabled': props.disabled,
-    'class': `relative inline-flex h-5 w-9 items-center rounded-full transition disabled:op-50 ${checked ? 'bg-primary' : 'bg-active'}`,
-    'onClick': () => {
-      setValue(!checked)
+  return h(FormSwitch, {
+    'modelValue': !!value,
+    'onUpdate:modelValue': (next: boolean) => {
+      setValue(next)
       on('change').emit()
     },
-  }, [
-    h('span', { class: `inline-block h-4 w-4 transform rounded-full bg-base shadow transition ${checked ? 'translate-x-4.5' : 'translate-x-0.5'}` }),
-  ])
-  if (props.label) {
-    return h('label', { class: 'inline-flex items-center gap-2 text-sm color-base cursor-pointer' }, [
-      toggle,
-      h('span', props.label),
-    ])
-  }
-  return toggle
+    'label': props.label,
+    'disabled': props.disabled,
+  })
 }

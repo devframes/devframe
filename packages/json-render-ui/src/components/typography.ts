@@ -1,4 +1,5 @@
 import type { JrComponent } from './_shared'
+import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import { h } from 'vue'
 
 interface TextProps {
@@ -45,23 +46,24 @@ interface BadgeProps {
   minWidth?: number
 }
 
-const badgeVariant: Record<string, string> = {
-  default: 'bg-secondary color-muted',
-  success: 'bg-green:15 color-green',
-  warning: 'bg-amber:15 color-amber',
-  danger: 'bg-red:15 color-red',
-  info: 'bg-primary:15 color-primary',
+// Map the catalog's semantic variants onto `@antfu/design` `DisplayBadge`
+// palette color names (`false` = neutral/muted). The resulting
+// `badge-color-<name>` classes are safelisted (see the package uno.config and
+// the JSON-Render docs) since a spec picks the variant at runtime.
+const badgeColor: Record<string, boolean | string> = {
+  default: false,
+  success: 'green',
+  warning: 'amber',
+  danger: 'red',
+  info: 'blue',
 }
 
 export const Badge: JrComponent<BadgeProps> = ({ props, children }) => {
   const style = props.minWidth != null ? { minWidth: `${props.minWidth}px` } : undefined
   return h(
-    'span',
-    {
-      class: `inline-flex items-center justify-center rounded px1.5 py0.5 text-xs font-medium ${badgeVariant[props.variant ?? 'default'] ?? badgeVariant.default}`,
-      style,
-    },
-    props.text ?? (children as any),
+    DisplayBadge,
+    { text: props.text, color: badgeColor[props.variant ?? 'default'], style },
+    props.text ? undefined : () => children,
   )
 }
 

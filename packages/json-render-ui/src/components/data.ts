@@ -1,5 +1,7 @@
 import type { VNodeChild } from 'vue'
 import type { JrComponent } from './_shared'
+import DisplayKeyValue from '@antfu/design/components/Display/DisplayKeyValue.vue'
+import DisplayProgressBar from '@antfu/design/components/Display/DisplayProgressBar.vue'
 import { useBoundProp } from '@json-render/vue'
 import { h } from 'vue'
 import { toNumber } from './_shared'
@@ -17,17 +19,13 @@ function formatValue(value: unknown): string {
   return String(value)
 }
 
+// Renders each entry as an `@antfu/design` DisplayKeyValue row.
 export const KeyValueTable: JrComponent<KeyValueTableProps> = ({ props, loading }) => {
   if (loading || props.loading)
     return h('div', { class: 'color-faint text-sm' }, 'Loading…')
   const entries = Object.entries(props.data ?? {})
-  return h('table', { class: 'w-full text-sm border-collapse' }, [
-    h('tbody', entries.map(([key, value]) =>
-      h('tr', { class: 'border-b border-base' }, [
-        h('td', { class: 'py1 pr3 color-muted font-medium align-top' }, key),
-        h('td', { class: 'py1 color-base font-mono break-all' }, formatValue(value)),
-      ]))),
-  ])
+  return h('div', { class: 'flex flex-col gap-1' }, entries.map(([key, value]) =>
+    h(DisplayKeyValue, { key, label: key, value: formatValue(value) })))
 }
 
 interface DataTableColumn { key: string, label?: string }
@@ -45,6 +43,9 @@ function normalizeColumns(columns: DataTableProps['columns'], rows: DataTablePro
   return first ? Object.keys(first).map(key => ({ key })) : []
 }
 
+// `@antfu/design` LayoutDataTable has no per-row click or loading state, both of
+// which the catalog requires (`rowClick`, `loading`), so this stays custom on
+// the shared tokens. (A candidate to contribute back upstream.)
 export const DataTable: JrComponent<DataTableProps> = ({ props, on, bindings, loading }) => {
   if (loading || props.loading)
     return h('div', { class: 'color-faint text-sm' }, 'Loading…')
@@ -63,8 +64,7 @@ export const DataTable: JrComponent<DataTableProps> = ({ props, on, bindings, lo
         h('tr', {
           class: 'border-b border-base hover:bg-secondary cursor-pointer',
           onClick: () => {
-            // Deliver row + index into bound state (Vite's rowClick dropped
-            // them), then fire the action.
+            // Deliver row + index into bound state, then fire the action.
             setSelected({ row, index })
             on('rowClick').emit()
           },
@@ -80,15 +80,17 @@ interface ProgressProps {
   label?: string
 }
 
+// Wraps `@antfu/design` DisplayProgressBar (which takes a 0–1 ratio), adding the
+// catalog's visible label + percentage row.
 export const Progress: JrComponent<ProgressProps> = ({ props }) => {
   const max = toNumber(props.max, 100)
   const value = toNumber(props.value, 0)
-  const pct = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0
+  const ratio = max > 0 ? Math.min(1, Math.max(0, value / max)) : 0
   return h('div', { class: 'flex flex-col gap-1' }, [
-    props.label ? h('div', { class: 'flex justify-between text-xs color-muted' }, [h('span', props.label), h('span', `${Math.round(pct)}%`)]) : null,
-    h('div', { class: 'h-2 w-full rounded-full bg-active overflow-hidden' }, [
-      h('div', { class: 'h-full rounded-full bg-primary transition-all', style: { width: `${pct}%` } }),
-    ]),
+    props.label
+      ? h('div', { class: 'flex justify-between text-xs color-muted' }, [h('span', props.label), h('span', `${Math.round(ratio * 100)}%`)])
+      : null,
+    h(DisplayProgressBar, { value: ratio, label: props.label }),
   ])
 }
 
@@ -120,5 +122,7 @@ function renderNode(value: unknown, keyLabel: string | null, expanded: boolean):
   ])
 }
 
+// `@antfu/design` DisplayTree nests a flat path list (file/folder style), not an
+// arbitrary JSON value, so the catalog's value-tree viewer stays custom.
 export const Tree: JrComponent<TreeProps> = ({ props }) =>
   h('div', { class: 'color-base' }, [renderNode(props.data, null, props.defaultExpanded !== false)])

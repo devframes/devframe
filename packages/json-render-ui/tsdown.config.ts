@@ -14,6 +14,9 @@ export default defineConfig({
   dts: true,
   platform: 'browser',
   deps: {
-    neverBundle: ['vue', '@devframes/json-render', '@devframes/json-render/core'],
+    // Keep peers external; `@antfu/design` ships `.vue` source that the
+    // consumer's Vite (with @vitejs/plugin-vue) compiles, so it must not be
+    // bundled/parsed here.
+    neverBundle: ['vue', '@antfu/design', /^@antfu\/design\//, '@devframes/json-render', '@devframes/json-render/core'],
   },
 })

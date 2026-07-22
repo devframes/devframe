@@ -22,6 +22,9 @@ export default defineConfig({
   ],
   transformers: [transformerDirectives(), transformerVariantGroup()],
   preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
+  // `Badge` picks a `badge-color-<name>` at runtime from a fixed set, so those
+  // classes can't be found by static extraction — safelist them.
+  safelist: ['badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],
   shortcuts: {
     'z-nav': 'z-[30]',
     'z-dropdown': 'z-[40]',

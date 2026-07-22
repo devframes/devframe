@@ -1,4 +1,6 @@
 import type { JrComponent } from './_shared'
+import LayoutCard from '@antfu/design/components/Layout/LayoutCard.vue'
+import LayoutSeparator from '@antfu/design/components/Layout/LayoutSeparator.vue'
 import { h } from 'vue'
 import { toNumber } from './_shared'
 
@@ -21,6 +23,8 @@ const justifyMap: Record<string, string> = {
   around: 'space-around',
 }
 
+// A flex layout primitive — `@antfu/design` has no generic Stack, so this stays
+// a thin custom component built on the shared tokens.
 export const Stack: JrComponent<StackProps> = ({ props, children }) => {
   const style: Record<string, string> = {
     display: 'flex',
@@ -48,41 +52,31 @@ interface CardProps {
   loading?: boolean
 }
 
+const headerClass = 'flex items-center justify-between px4 py2.5 border-b border-base color-base font-medium text-sm'
+
+// Wraps `@antfu/design` LayoutCard for the bordered surface, composing the
+// title/collapsible header on top (LayoutCard is a plain surface).
 export const Card: JrComponent<CardProps> = ({ props, children, loading }) => {
   const isLoading = loading || props.loading
   const body = isLoading
     ? h('div', { class: 'color-faint text-sm' }, 'Loading…')
     : (children as any)
-  const outer = `rounded ${props.border === false ? '' : 'border border-base'} bg-base overflow-hidden`
 
-  // Collapsible uses native <details> so open/closed state persists without a
-  // Vue ref (the registry re-invokes this render fn on every update).
   if (props.collapsible) {
-    return h('details', { class: outer, open: !props.defaultCollapsed }, [
-      h(
-        'summary',
-        { class: 'flex items-center justify-between px2 py1.5 border-b border-base color-base font-medium text-sm cursor-pointer select-none list-none' },
-        [h('span', props.title ?? ''), h('span', { class: 'color-faint text-xs' }, '▾')],
-      ),
-      h('div', { class: 'p2' }, [body]),
-    ])
+    return h(LayoutCard, { padding: false }, () => h('details', { open: !props.defaultCollapsed }, [
+      h('summary', { class: `${headerClass} cursor-pointer select-none list-none` }, [
+        h('span', props.title ?? ''),
+        h('span', { class: 'color-faint text-xs' }, '▾'),
+      ]),
+      h('div', { class: 'p4' }, [body]),
+    ]))
   }
 
-  return h('div', { class: outer }, [
-    props.title
-      ? h('div', { class: 'px2 py1.5 border-b border-base color-base font-medium text-sm' }, props.title)
-      : null,
-    h('div', { class: 'p2' }, [body]),
+  return h(LayoutCard, { padding: false }, () => [
+    props.title ? h('div', { class: headerClass }, props.title) : null,
+    h('div', { class: 'p4' }, [body]),
   ])
 }
 
-export const Divider: JrComponent<{ label?: string }> = ({ props }) => {
-  if (props.label) {
-    return h('div', { class: 'flex items-center gap-2 my-2 color-faint text-xs' }, [
-      h('div', { class: 'flex-1 border-t border-base' }),
-      h('span', props.label),
-      h('div', { class: 'flex-1 border-t border-base' }),
-    ])
-  }
-  return h('div', { class: 'my-2 border-t border-base' })
-}
+export const Divider: JrComponent<{ label?: string }> = ({ props }) =>
+  h(LayoutSeparator, { label: props.label })

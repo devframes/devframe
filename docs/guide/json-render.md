@@ -120,9 +120,24 @@ there is no live RPC, so the action bridge reports actions as unavailable and
 `interactive: false` renders a static-output notice. Local state and bindings
 still work.
 
-The reference components author their class strings in `.ts`, so a consuming
-app must opt `.ts` into UnoCSS extraction (`content.pipeline.include` for Vite),
-and add the lib to the scanned sources when it lives in `node_modules`.
+### Consuming the reference frontend
+
+`@devframes/json-render-ui` wraps `@antfu/design`'s Vue components directly
+(`ActionButton`, `DisplayBadge`, `LayoutCard`, `FormTextInput`, `FormSwitch`,
+`DisplayProgressBar`, `DisplayKeyValue`, and `DisplayIconifyRemoteIcon` for
+fully dynamic, `currentColor`-inheriting icons), so it looks and behaves like
+the rest of the devframe surfaces. A few catalog components stay bespoke where
+`@antfu/design` has no matching primitive — `Stack`, `Text`, `CodeBlock`, the
+value-tree `Tree`, and the row-clickable/loadable `DataTable`.
+
+A consuming Vite app therefore:
+
+- installs `@antfu/design` (a peer dependency) and imports `@antfu/design/styles.css`;
+- excludes it from dep pre-bundling so `@vitejs/plugin-vue` compiles its SFCs —
+  `optimizeDeps: { exclude: ['@antfu/design'] }`;
+- composes the shared UnoCSS preset (`presetAnthonyDesign`) and safelists the
+  runtime-selected badge colors the base catalog can emit —
+  `safelist: ['badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue']`.
 
 ## Rendering inside a hub
 

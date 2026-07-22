@@ -38,12 +38,12 @@
     "prepack": "pnpm run build"
   },
   "peerDependencies": {
+    "@antfu/design": "^0.3.0",
     "@devframes/json-render": "workspace:*",
     "vue": "^3.5.0"
   },
   "dependencies": {
-    "@json-render/vue": "catalog:frontend",
-    "dompurify": "catalog:frontend"
+    "@json-render/vue": "catalog:frontend"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",

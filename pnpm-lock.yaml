@@ -891,9 +891,6 @@ importers:
       '@json-render/vue':
         specifier: catalog:frontend
         version: 0.19.0(vue@3.5.40(typescript@5.9.3))(zod@4.4.3)
-      dompurify:
-        specifier: catalog:frontend
-        version: 3.4.12
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend

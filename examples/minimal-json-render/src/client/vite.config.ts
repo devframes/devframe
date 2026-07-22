@@ -9,6 +9,9 @@ export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
   plugins: [UnoCSS(), vue()],
+  // `@antfu/design` (pulled in by @devframes/json-render-ui) ships raw `.vue`;
+  // let @vitejs/plugin-vue compile its SFCs instead of esbuild pre-bundling.
+  optimizeDeps: { exclude: ['@antfu/design', '@devframes/json-render-ui'] },
   build: {
     outDir: fileURLToPath(new URL('../../dist/client', import.meta.url)),
     emptyOutDir: true,

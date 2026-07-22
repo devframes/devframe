@@ -16,6 +16,8 @@ const config: StorybookConfig = {
     return mergeConfig(config, {
       resolve: { alias },
       plugins: [vue(), UnoCSS()],
+      // `@antfu/design` ships raw `.vue`; let plugin-vue compile its SFCs.
+      optimizeDeps: { exclude: ['@antfu/design'] },
       server: { allowedHosts: true },
     })
   },
