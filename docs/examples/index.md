@@ -9,6 +9,7 @@ End-to-end examples that exercise the full adapter surface, each a runnable app 
 | Example | UI framework | What it shows |
 |---------|--------------|---------------|
 | [files-inspector](./files-inspector) | Preact | Lists files in the cwd via RPC; exercises the CLI dev / build / spa surfaces. |
+| [minimal-json-render](./minimal-json-render) | Vue | A server-authored JSON-render view rendered by `@devframes/json-render-ui`, with live state and an action bridge. |
 | [streaming-chat](./streaming-chat) | Preact | Streams synthetic chat tokens server → client, with history kept in shared state. |
 | [next-runtime-snapshot](./next-runtime-snapshot) | React (Next.js) | A Next.js App Router SPA over RPC, surfacing the host Node runtime. |
 | [minimal-vite-devframe-hub](./minimal-vite-devframe-hub) | Vanilla TypeScript (Vite) | A ~120-line Vite host wiring `@devframes/hub` end to end. |

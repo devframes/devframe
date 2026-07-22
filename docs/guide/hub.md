@@ -12,12 +12,12 @@ A hub-aware node context (`DevframeHubContext`) extends `DevframeNodeContext` wi
 
 | Subsystem | Surface | Purpose |
 |---|---|---|
-| `ctx.docks` | `register / update / values / activate` | Multi-tool dock entries (iframes, launchers, json-render, custom-render) and groups that collapse them under one button. `activate(dockId, params?)` steers which dock the viewer shows — see [Cross-iframe dock activation](#cross-iframe-dock-activation). |
+| `ctx.docks` | `register / update / values / activate` | Multi-tool dock entries (iframes, launchers, custom-render) and groups that collapse them under one button. The dock union is **open**, so opt-in integrations contribute their own entry types. `activate(dockId, params?)` steers which dock the viewer shows — see [Cross-iframe dock activation](#cross-iframe-dock-activation). |
 | `ctx.terminals` | `register / startChildProcess` | Aggregate terminal sessions, stream output over a well-known channel. The single source of truth for "what sessions exist" — see [Terminals](/plugins/terminals#hub-aggregation) for how the terminals plugin renders and mirrors into it. |
 | `ctx.messages` | `add / update / remove / clear` | Server-side toast/notification queue (FIFO, capped at 1000). |
 | `ctx.commands` | `register / execute / list` | Hierarchical command palette with keybindings and `when` clauses. |
 
-Plus a `createJsonRenderer(spec)` factory for building remote-UI panels via the framework-neutral json-render DSL.
+The hub itself is JSON-render-agnostic. Data-driven UI panels are an opt-in integration — see [JSON-Render](/guide/json-render), which contributes a `json-render` dock type to the open dock union and a client-host renderer, with no JSON-render dependency in the hub.
 
 ## Built-in RPC
 
@@ -197,7 +197,7 @@ ctx.docks.register({
 })
 ```
 
-`groupId` lives on every entry kind, so iframes, launchers, json-render panels, and custom-render views all join groups the same way. The group and its members stay independent top-level entries in `devframe:docks`; a downstream UI derives the visual collapse by matching each member's `groupId` to the group's `id` and renders members in a popover or sub-navigation. `defaultChildId` names the member opened when the group button is activated.
+`groupId` lives on every entry kind, so iframes, launchers, custom-render views, and integration-contributed types (e.g. json-render panels) all join groups the same way. The group and its members stay independent top-level entries in `devframe:docks`; a downstream UI derives the visual collapse by matching each member's `groupId` to the group's `id` and renders members in a popover or sub-navigation. `defaultChildId` names the member opened when the group button is activated.
 
 Grouping is one level deep: members join a group, and a group is always a top-level button. A member whose group is never registered renders as a normal top-level entry, so registration order is free.
 
