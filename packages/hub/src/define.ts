@@ -26,8 +26,8 @@ export function defineDockEntry<
  * @deprecated json-render moved out of the hub into the opt-in
  * `@devframes/json-render` integration in 0.7. This identity helper is kept
  * so existing imports keep compiling — pass your spec directly to
- * `createJsonRenderView` (from `@devframes/json-render/node`) instead. Will
- * be removed in a future major release.
+ * `createJsonRenderView` (from `@devframes/json-render/node`) instead.
+ * Removed in 0.8.
  */
 export function defineJsonRenderSpec(spec: JsonRenderSpec): JsonRenderSpec {
   return spec

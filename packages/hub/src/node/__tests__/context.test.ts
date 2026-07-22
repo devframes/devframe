@@ -59,6 +59,38 @@ describe('createHubContext dock activation', () => {
   })
 })
 
+describe('createHubContext createJsonRenderer (deprecated 0.7 compatibility factory)', () => {
+  it('seeds shared state with the initial spec and applies updateSpec/updateState', async () => {
+    const context = await createHubContext({
+      cwd: process.cwd(),
+      mode: 'build',
+      host: createHost(),
+    })
+
+    const renderer = context.createJsonRenderer({ root: 'panel', elements: {} })
+    const state = await context.rpc.sharedState.get<any>(renderer._stateKey)
+    expect(state.value()).toEqual({ root: 'panel', elements: {} })
+
+    await renderer.updateSpec({ root: 'panel', elements: {}, state: { count: 1 } })
+    expect(state.value()).toEqual({ root: 'panel', elements: {}, state: { count: 1 } })
+
+    await renderer.updateState({ count: 2, label: 'hi' })
+    expect(state.value()).toEqual({ root: 'panel', elements: {}, state: { count: 2, label: 'hi' } })
+  })
+
+  it('gives each renderer its own stable, distinct state key', async () => {
+    const context = await createHubContext({
+      cwd: process.cwd(),
+      mode: 'build',
+      host: createHost(),
+    })
+
+    const first = context.createJsonRenderer({ root: 'a', elements: {} })
+    const second = context.createJsonRenderer({ root: 'b', elements: {} })
+    expect(first._stateKey).not.toEqual(second._stateKey)
+  })
+})
+
 describe('startHttpAndWs remote endpoint metadata', () => {
   it('sets and clears the internal websocket endpoint', async () => {
     const context = await createHostContext({

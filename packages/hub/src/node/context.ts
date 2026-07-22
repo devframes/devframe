@@ -2,6 +2,7 @@ import type { CreateHostContextOptions } from 'devframe/node'
 import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
 import type { DevframeCommandsHost } from '../types/commands'
 import type { DevframeDockActivation, DevframeDocksActiveState, DevframeDocksHost } from '../types/docks'
+import type { JsonRenderer, JsonRenderSpec } from '../types/json-render'
 import type { DevframeMessageEntry, DevframeMessageEntryInput, DevframeMessagesHost } from '../types/messages'
 import type { DevframeTerminalsHost } from '../types/terminals'
 import { createHostContext } from 'devframe/node'
@@ -84,14 +85,17 @@ declare module 'devframe/types' {
 /**
  * Hub-augmented node context — extends devframe's framework-neutral
  * `DevframeNodeContext` with the hub-level subsystems (`docks`,
- * `terminals`, `messages`, `commands`).
+ * `terminals`, `messages`, `commands`) and the deprecated
+ * `createJsonRenderer` compatibility factory.
  *
  * Framework kits further extend this with their own slots (e.g.
  * `viteConfig`, `viteServer`). Host-specific capabilities (editor open,
  * filesystem reveal, etc.) ship as kit-registered RPC functions rather
- * than as part of this surface. JSON-render is not part of the hub: it is
- * an opt-in integration (`@devframes/json-render`) that augments any
- * devframe context and contributes its own dock type.
+ * than as part of this surface. JSON-render itself is not part of the hub:
+ * it is an opt-in integration (`@devframes/json-render`) that augments any
+ * devframe context and contributes its own dock type — prefer
+ * `createJsonRenderView` from `@devframes/json-render/node` over the
+ * deprecated factory below.
  */
 export interface DevframeHubContext extends DevframeNodeContext {
   readonly host: DevframeHost
@@ -99,6 +103,16 @@ export interface DevframeHubContext extends DevframeNodeContext {
   terminals: DevframeTerminalsHost
   messages: DevframeMessagesHost
   commands: DevframeCommandsHost
+  /**
+   * Create a `JsonRenderer` handle for building json-render powered UIs.
+   *
+   * @deprecated json-render moved out of the hub into the opt-in
+   * `@devframes/json-render` integration in 0.7. This factory is kept
+   * working (not just type-compatible) for the 0.7 series so existing call
+   * sites don't break — use `createJsonRenderView(ctx, { id, spec })` from
+   * `@devframes/json-render/node` instead. Will be removed in 0.8.
+   */
+  createJsonRenderer: (spec: JsonRenderSpec) => JsonRenderer
 }
 
 /**
@@ -135,6 +149,36 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
   context.commands = commands
 
   await docks.init()
+
+  // Deprecated pre-0.7 compatibility factory — restored as a working (not
+  // merely type-compatible) shim so 0.7 only *deprecates* it rather than
+  // breaking it outright; see the `createJsonRenderer` JSDoc above. Kept
+  // self-contained against `context.rpc.sharedState` (as it was pre-0.7)
+  // rather than delegating to `@devframes/json-render`'s
+  // `createJsonRenderView`, so the hub still carries no dependency — direct
+  // or peer — on that opt-in package. Removed in 0.8: migrate call sites to
+  // `createJsonRenderView` before then.
+  let jsonRenderCounter = 0
+  context.createJsonRenderer = (initialSpec: JsonRenderSpec): JsonRenderer => {
+    const stateKey = `devframe:json-render:${jsonRenderCounter++}`
+    const statePromise = context.rpc.sharedState.get(stateKey as any, {
+      initialValue: initialSpec as any,
+    })
+
+    return {
+      _stateKey: stateKey,
+      async updateSpec(spec) {
+        const state = await statePromise
+        state.mutate(() => spec as any)
+      },
+      async updateState(newState) {
+        const state = await statePromise
+        state.mutate((draft: any) => {
+          draft.state = { ...draft.state, ...newState }
+        })
+      },
+    }
+  }
 
   const debounceMs = options.mode === 'build' ? 0 : 10
 

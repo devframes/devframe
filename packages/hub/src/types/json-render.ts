@@ -3,10 +3,10 @@
 // 0.7 moved json-render out of the hub into the opt-in `@devframes/json-render`
 // integration — use its `DevframeJsonRenderSpec` (from `@devframes/json-render`)
 // and `createJsonRenderView` (from `@devframes/json-render/node`) instead. These
-// types are kept so existing imports keep compiling; they will be removed in a
-// future major release.
+// types are kept so existing imports keep compiling through the 0.7 series;
+// they are removed in 0.8.
 
-/** @deprecated Use `DevframeJsonRenderSpec`'s element shape from `@devframes/json-render` instead. */
+/** @deprecated Use `DevframeJsonRenderSpec`'s element shape from `@devframes/json-render` instead. Removed in 0.8. */
 export interface JsonRenderElement {
   type: string
   props?: Record<string, unknown>
@@ -21,7 +21,7 @@ export interface JsonRenderElement {
   [key: string]: unknown
 }
 
-/** @deprecated Use `DevframeJsonRenderSpec` from `@devframes/json-render` instead. */
+/** @deprecated Use `DevframeJsonRenderSpec` from `@devframes/json-render` instead. Removed in 0.8. */
 export interface JsonRenderSpec {
   root: string
   elements: Record<string, JsonRenderElement>
@@ -29,7 +29,7 @@ export interface JsonRenderSpec {
   state?: Record<string, unknown>
 }
 
-/** @deprecated Use `JsonRenderView` from `@devframes/json-render` instead. */
+/** @deprecated Use `JsonRenderView` from `@devframes/json-render` instead. Removed in 0.8. */
 export interface JsonRenderer {
   /** Replace the entire spec */
   updateSpec: (spec: JsonRenderSpec) => void | Promise<void>

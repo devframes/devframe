@@ -72,6 +72,6 @@ const view = createJsonRenderView(ctx, {
 })
 ```
 
-`@devframes/hub` still exports `defineJsonRenderSpec` as a deprecated identity function (same for the `JsonRenderSpec` / `JsonRenderElement` / `JsonRenderer` types), so existing imports keep compiling — but it no longer registers anything with the hub on its own. Move call sites over to `createJsonRenderView` now rather than waiting for the alias's removal in a future major release.
+`@devframes/hub` still exports `defineJsonRenderSpec` as a deprecated identity function (same for the `JsonRenderSpec` / `JsonRenderElement` / `JsonRenderer` types) and still runs `ctx.createJsonRenderer` (against its own pre-0.7 shared-state implementation, not `@devframes/json-render`), so existing call sites keep working through 0.7 unmodified — but it no longer registers anything with the hub's dock union on its own, and won't gain the new dock projection or `registerRenderer()` support that `createJsonRenderView` gets. Move call sites over to `createJsonRenderView` now; `ctx.createJsonRenderer` and the other aliases above are removed in 0.8.
 
 See [JSON-Render](./json-render) for the full integration reference.
