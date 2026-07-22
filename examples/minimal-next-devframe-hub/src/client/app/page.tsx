@@ -206,7 +206,6 @@ export default function Page() {
           <span className={`inline-block size-1.5 rounded-full shrink-0 ${statusDot} mr-1.5 align-middle`} />
           {status.text}
         </p>
-        <p className="m0 ml-auto text-xs font-mono italic color-muted">a vite-devtools-style hub on Next.js you can copy</p>
       </header>
 
       <div className="grid grid-cols-[244px_1fr] min-h-0 flex-1">
