@@ -299,6 +299,9 @@ catalogs:
     nano-staged:
       specifier: ^1.0.2
       version: 1.0.2
+    prompts:
+      specifier: ^2.4.2
+      version: 2.4.2
     simple-git-hooks:
       specifier: ^2.13.1
       version: 2.13.1
@@ -312,6 +315,9 @@ catalogs:
     '@types/node':
       specifier: ^26.1.1
       version: 26.1.1
+    '@types/prompts':
+      specifier: ^2.4.9
+      version: 2.4.9
     '@types/react':
       specifier: ^19.2.17
       version: 19.2.17
@@ -347,6 +353,9 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 26.1.1
+      '@types/prompts':
+        specifier: catalog:types
+        version: 2.4.9
       '@types/ws':
         specifier: catalog:types
         version: 8.18.1
@@ -359,6 +368,9 @@ importers:
       nano-staged:
         specifier: catalog:tooling
         version: 1.0.2
+      prompts:
+        specifier: catalog:tooling
+        version: 2.4.2
       simple-git-hooks:
         specifier: catalog:tooling
         version: 2.13.1
@@ -4498,6 +4510,9 @@ packages:
   '@types/node@26.1.1':
     resolution: {integrity: sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==}
 
+  '@types/prompts@2.4.9':
+    resolution: {integrity: sha512-qTxFi6Buiu8+50/+3DGIWLHM6QuWsEKugJnnP6iv2Mc4ncxE4A/OJkjuVOA+5X0X1S/nq5VJRa8Lu+nwcvbrKA==}
+
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
     peerDependencies:
@@ -7025,6 +7040,10 @@ packages:
     resolution: {integrity: sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==}
     engines: {node: '>=0.10.0'}
 
+  kleur@3.0.3:
+    resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
+    engines: {node: '>=6'}
+
   kleur@4.1.5:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
@@ -8055,6 +8074,10 @@ packages:
 
   promise@7.3.1:
     resolution: {integrity: sha512-nolQXZ/4L+bP/UGlkfaIujX9BKxGwmQ9OT4mOt5yvy8iK1h3wqTEJCijzGANTCCl9nWjY41juyAn2K3Q1hLLTg==}
+
+  prompts@2.4.2:
+    resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}
+    engines: {node: '>= 6'}
 
   proper-lockfile@4.1.2:
     resolution: {integrity: sha512-TjNPblN4BwAWMXU8s9AEz4JmQxnD1NNL7bNOY/AKUzyamc379FWASUhc/K1pL2noVb+XmZKLL68cjzLsiOAMaA==}
@@ -12553,6 +12576,11 @@ snapshots:
     dependencies:
       undici-types: 8.3.0
 
+  '@types/prompts@2.4.9':
+    dependencies:
+      '@types/node': 26.1.1
+      kleur: 3.0.3
+
   '@types/react-dom@19.2.3(@types/react@19.2.17)':
     dependencies:
       '@types/react': 19.2.17
@@ -15322,6 +15350,8 @@ snapshots:
 
   kind-of@6.0.3: {}
 
+  kleur@3.0.3: {}
+
   kleur@4.1.5: {}
 
   klona@2.0.6: {}
@@ -16843,6 +16873,11 @@ snapshots:
   promise@7.3.1:
     dependencies:
       asap: 2.0.6
+
+  prompts@2.4.2:
+    dependencies:
+      kleur: 3.0.3
+      sisteransi: 1.0.5
 
   proper-lockfile@4.1.2:
     dependencies:
