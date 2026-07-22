@@ -68,6 +68,7 @@ export { RpcStreamingChannelOptions }
 export { RpcStreamingHost }
 export { ScopedBroadcastOptions }
 export { ScopedClientFunctions }
+export { ScopedRpcFn }
 export { ScopedServerFunctions }
 export { ScopedSharedStates }
 export { SettingsForNamespace }

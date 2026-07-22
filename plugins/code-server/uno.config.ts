@@ -8,14 +8,13 @@ import {
   transformerVariantGroup,
 } from 'unocss'
 
-// The code-server launcher uses `@antfu/design` directly: its preset (tuned to
-// devframe's sage green) over a Wind4 base, with Phosphor icons, DM Sans/Mono and
-// the directive/variant-group transformers. The SPA and Storybook generate CSS
-// from this config; the mounted library emits the same `@antfu/design` classes
-// and relies on the host page providing the matching stylesheet.
+// The code-server launcher is a Vue SPA using `@antfu/design` directly: its
+// preset (tuned to devframe's sage green) over a Wind4 base, with Phosphor
+// icons, DM Sans/Mono and the directive/variant-group transformers. The SPA and
+// Storybook generate CSS from this config.
 //
-// The launcher view is hand-written vanilla TS (and the co-located `design.ts`
-// class helpers), so `.ts` is opted into the extraction pipeline.
+// Vue templates are scanned by default; `.ts` is opted into the extraction
+// pipeline for class strings authored in composables/helpers.
 export default defineConfig({
   presets: [
     presetAnthonyDesign({ primary: '#3a6a45' }),
@@ -39,7 +38,7 @@ export default defineConfig({
   },
   content: {
     pipeline: {
-      include: [/\.(?:[cm]?[jt]sx?|html)($|\?)/],
+      include: [/\.(?:vue|[cm]?[jt]sx?|html)($|\?)/],
     },
   },
 })

@@ -3,6 +3,7 @@ import type {
   DevframeRpcServerFunctions,
   DevframeSettings,
   RpcSharedStateGetOptions,
+  ScopedRpcFn,
   ScopedServerFunctions,
   ScopedSharedStates,
 } from 'devframe/types'
@@ -43,21 +44,21 @@ export interface DevframeScopedClientRpc<NS extends string = string> {
 
   /** Call a server RPC function. Bare names resolve within this namespace. */
   call: {
-    <T extends keyof ScopedServerFunctions<NS> & string>(method: T, ...args: Parameters<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>>>
+    <T extends keyof ScopedServerFunctions<NS> & string>(method: T, ...args: Parameters<ScopedRpcFn<DevframeRpcServerFunctions, NS, T>>): Promise<Awaited<ReturnType<ScopedRpcFn<DevframeRpcServerFunctions, NS, T>>>>
     <T extends keyof DevframeRpcServerFunctions & string>(method: T, ...args: Parameters<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>>>
     (method: string, ...args: any[]): Promise<any>
   }
 
   /** Call a server RPC event (fire-and-forget). */
   callEvent: {
-    <T extends keyof ScopedServerFunctions<NS> & string>(method: T, ...args: Parameters<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>): void
+    <T extends keyof ScopedServerFunctions<NS> & string>(method: T, ...args: Parameters<ScopedRpcFn<DevframeRpcServerFunctions, NS, T>>): void
     <T extends keyof DevframeRpcServerFunctions & string>(method: T, ...args: Parameters<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>): void
     (method: string, ...args: any[]): void
   }
 
   /** Call an optional server RPC function (no error if unregistered). */
   callOptional: {
-    <T extends keyof ScopedServerFunctions<NS> & string>(method: T, ...args: Parameters<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>> | undefined>
+    <T extends keyof ScopedServerFunctions<NS> & string>(method: T, ...args: Parameters<ScopedRpcFn<DevframeRpcServerFunctions, NS, T>>): Promise<Awaited<ReturnType<ScopedRpcFn<DevframeRpcServerFunctions, NS, T>>> | undefined>
     <T extends keyof DevframeRpcServerFunctions & string>(method: T, ...args: Parameters<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>> | undefined>
     (method: string, ...args: any[]): Promise<any>
   }

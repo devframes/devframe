@@ -2,7 +2,7 @@
   "name": "@devframes/plugin-code-server",
   "type": "module",
   "version": "0.7.5",
-  "description": "Run code-server (VS Code in the browser) as a devframe panel — detect a local install, launch it on demand, and embed the editor in an auto-authenticated iframe.",
+  "description": "Run VS Code in the browser (code-server, code serve-web, or a tunnel) as a devframe panel — detect a local install, launch it on demand, and embed the editor in an auto-authenticated iframe.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/devframes/devframe#readme",
@@ -61,14 +61,15 @@
   "dependencies": {
     "cac": "catalog:deps",
     "get-port-please": "catalog:deps",
-    "iframe-pane": "catalog:frontend",
     "nostics": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@iconify-json/ph": "catalog:frontend",
-    "@storybook/html-vite": "catalog:storybook",
+    "@storybook/addon-docs": "catalog:storybook",
+    "@storybook/vue3-vite": "catalog:storybook",
     "@types/node": "catalog:types",
+    "@vitejs/plugin-vue": "catalog:build",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
     "h3": "catalog:deps",
@@ -77,6 +78,7 @@
     "unocss": "catalog:frontend",
     "vite": "catalog:build",
     "vitest": "catalog:testing",
+    "vue": "catalog:frontend",
     "ws": "catalog:deps"
   }
 }

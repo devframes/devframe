@@ -1,12 +1,17 @@
-import { mountCodeServer } from '../client/index'
+import { createApp } from 'vue'
+import App from './App.vue'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
-import '../client/style.css'
+import './style.css'
 
-const app = document.getElementById('app')
-if (!app)
-  throw new Error('#app mount node missing from index.html')
+// The shared design tokens flip on the `.dark` class; mirror the OS preference
+// onto <html> (the other devframe plugins follow the same approach).
+const mq = window.matchMedia('(prefers-color-scheme: dark)')
+function applyScheme(dark: boolean): void {
+  document.documentElement.classList.toggle('dark', dark)
+  document.documentElement.classList.toggle('light', !dark)
+}
+applyScheme(mq.matches)
+mq.addEventListener('change', e => applyScheme(e.matches))
 
-mountCodeServer(app).catch((error) => {
-  app.textContent = `Failed to connect: ${error instanceof Error ? error.message : String(error)}`
-})
+createApp(App).mount('#app')
