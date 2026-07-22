@@ -59,6 +59,14 @@ export const diagnostics = defineDiagnostics({
     DF8203: {
       why: (p: { command: string, reason: string }) => `Failed to spawn PTY session for "${p.command}": ${p.reason}`,
     },
+    DF8204: {
+      why: (p: { id: string }) => `Terminal session "${p.id}" cannot be controlled (no lifecycle handle)`,
+      fix: 'Spawn it via ctx.terminals.startChildProcess() or startPtySession() — sessions added with a bare register() expose no terminate/restart handle.',
+    },
+    DF8205: {
+      why: (p: { id: string }) => `Terminal session "${p.id}" is not restartable`,
+      fix: 'It was registered with `restartable: false`; restart it through its owner\'s controls, or spawn it with `restartable: true` (the default) to allow in-place restarts.',
+    },
     DF8400: {
       why: (p: { id: string }) => `Command "${p.id}" is already registered`,
     },

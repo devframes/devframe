@@ -33,6 +33,8 @@ export declare class TerminalManager {
   rename(_: string, _: string): void;
   restart(_: string): TerminalSessionInfo;
   remove(_: string): void;
+  clearExited(): void;
+  private disposeSession;
   dispose(): void;
   private publish;
   private refreshSessionsState;
