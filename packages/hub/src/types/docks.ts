@@ -259,10 +259,11 @@ export interface DevframeViewBuiltin extends DevframeDockEntryBase {
  * `JsonRenderer` handle) to {@link DevframeDockEntryRegistry} via declaration
  * merging. This type is kept for compatibility but is no longer a member of
  * {@link DevframeDockUserEntry} — use `@devframes/json-render/hub` instead.
+ * Removed in 0.8.
  */
 export interface DevframeViewJsonRender extends DevframeDockEntryBase {
   type: 'json-render'
-  /** JsonRenderer handle created by ctx.createJsonRenderer() */
+  /** JsonRenderer handle created by the deprecated ctx.createJsonRenderer() */
   ui: JsonRenderer
 }
 
