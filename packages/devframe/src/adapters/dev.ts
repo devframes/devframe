@@ -241,7 +241,7 @@ export async function createDevServer(
       // so the code is on screen by the time a browser lands on the page.
       authHandler?.printBanner()
       await options.onReady?.(info)
-      await maybeOpenBrowser(def, flags, `${info.origin}${basePath}`, options.openBrowser)
+      await maybeOpenBrowser(def, flags, `${info.origin}${basePath}`, options.openBrowser, authHandler)
     },
   })
 
@@ -303,6 +303,7 @@ async function maybeOpenBrowser(
   flags: Record<string, unknown>,
   origin: string,
   override: boolean | string | undefined,
+  authHandler: DevframeAuthHandler | undefined,
 ): Promise<void> {
   const flagsOpen = flags.open as boolean | string | undefined
   const cliOpen = def.cli?.open
@@ -314,8 +315,12 @@ async function maybeOpenBrowser(
   const target = typeof resolved === 'string'
     ? withBase(resolved, origin)
     : origin
+  // When the server is auth-gated, let the handler embed a one-time
+  // credential (e.g. the OTP query param) in the opened URL so the tab
+  // lands already authorized instead of prompting the user.
+  const authorizedTarget = authHandler?.buildOpenUrl?.(target) ?? target
   try {
-    await open(target)
+    await open(authorizedTarget)
   }
   catch {
     // Failing to launch a browser shouldn't break the dev server.

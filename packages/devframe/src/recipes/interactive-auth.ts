@@ -166,10 +166,15 @@ export function createInteractiveAuth(
     verifyAuthToken(token, session, storage)
   }
 
+  function buildOpenUrl(url: string): string {
+    return buildOtpAuthUrl(url)
+  }
+
   return {
     rpcFunctions: [anonymousAuth, anonymousAuthExchange, revoke],
     authorize,
     onConnect: onConnect as DevframeAuthHandler['onConnect'],
     printBanner,
+    buildOpenUrl,
   }
 }

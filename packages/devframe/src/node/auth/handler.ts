@@ -40,4 +40,13 @@ export interface DevframeAuthHandler {
    * call repeatedly; it only prints once per code.
    */
   printBanner: () => void
+  /**
+   * Rewrite a URL the CLI is about to open in the browser (`--open`) so the
+   * tab lands already authenticated — e.g. appending the current OTP as a
+   * query param. Called with the fully-resolved target URL; return it
+   * unchanged to opt out. Optional: a handler that doesn't need this (e.g.
+   * one gated by a pre-shared bearer token instead of an interactive code)
+   * can omit it and the URL opens as-is.
+   */
+  buildOpenUrl?: (url: string) => string
 }

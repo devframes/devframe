@@ -56,9 +56,10 @@ export function createTerminalsDevframe(options: TerminalsOptions = {}): Devfram
       command: options.command ?? 'devframe-terminals',
       port: options.port ?? DEFAULT_PORT,
       distDir,
-      // Single-user localhost tool: auto-trust the connection so streaming
-      // and shared-state sync work without an auth round-trip.
-      auth: false,
+      // Gate the standalone server by default — shell access is sensitive.
+      // `maybeOpenBrowser` folds the current OTP into the `--open` URL so
+      // the tab lands already trusted.
+      auth: options.auth ?? true,
     },
     spa: { loader: 'none' },
     dock: {

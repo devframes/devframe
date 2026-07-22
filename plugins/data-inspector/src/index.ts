@@ -31,9 +31,11 @@ export interface DataInspectorDevframeOptions {
   /** Preferred standalone CLI port. */
   port?: number
   /**
-   * Require the trust handshake on the standalone server. Defaults to
-   * `false` (auto-trust) for the single-user localhost CLI. The in-process
-   * agent (`@devframes/plugin-data-inspector/inject`) defaults to `true`.
+   * Require the trust handshake on the standalone server. Enabled by
+   * default — `--open` embeds the current OTP in the opened URL, so the
+   * tab authenticates automatically without extra prompts. The in-process
+   * agent (`@devframes/plugin-data-inspector/inject`) uses its own
+   * pre-shared-token scheme and is unaffected by this option.
    */
   auth?: boolean
   /**
@@ -72,7 +74,7 @@ export function createDataInspectorDevframe(options: DataInspectorDevframeOption
       command: 'data-inspector',
       port: options.port ?? DEFAULT_PORT,
       distDir: existsSync(distDir) ? distDir : undefined,
-      auth: options.auth ?? false,
+      auth: options.auth ?? true,
     },
     spa: { loader: 'none' },
     dock: { category: '~builtin' },

@@ -43,8 +43,7 @@ const devframe = defineDevframe({
     distDir,
     port: 7777,
     portRange: [7777, 9000],
-    open: true,
-    auth: false, // single-user localhost — skip the trust handshake
+    open: true, // auth defaults to on; `--open` embeds the current OTP so the tab lands authenticated
     configure(cli) {
       cli
         .option('--config <file>', 'Config file path')

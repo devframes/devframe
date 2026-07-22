@@ -42,6 +42,7 @@ export interface CodeServerOptions {
   port?: number;
   portRange?: [number, number];
   random?: boolean;
+  auth?: boolean;
 }
 export interface CodeServerServerInfo {
   status: CodeServerStatus;

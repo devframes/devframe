@@ -81,6 +81,7 @@ export interface GitDevframeOptions {
   distDir?: string;
   port?: number;
   write?: boolean;
+  auth?: boolean;
 }
 export interface GitDiff {
   isRepo: boolean;

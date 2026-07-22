@@ -80,6 +80,8 @@ if (!trusted) {
 }
 ```
 
+`connectDevframe()` kicks off that same handshake (stored token, then a magic-link OTP on the page URL, then — top-level pages only — a native prompt) the moment it resolves, without making the caller wait for it. `rpc.call` / `rpc.callOptional` / `rpc.callEvent` know about that in-flight handshake internally and hold anything issued before it settles, so application code can call a trusted method right away — e.g. in a component's `onMount` — without an explicit `ensureTrusted()` guard just to avoid a race. Reach for `ensureTrusted()` when you want to reflect the pending state in the UI (a spinner, a "waiting for auth" banner), not to make calls safe.
+
 ### Authenticating with a one-time code
 
 A fresh client holds no token. The dev server prints a 6-digit one-time code; pass it to `requestTrustWithCode` to exchange it for a node-issued token. The token is persisted for future reconnections and shared with sibling tabs, which become trusted without re-entering the code:

@@ -408,6 +408,30 @@ export async function getDevframeRpcClient(
   }
   catch {}
 
+  // Gate outbound calls behind the auth bootstrap kicked off below (stored
+  // auth token, then the URL's magic-link OTP, then — standalone/top-level
+  // only — a native prompt). Without this, a caller's very first RPC calls
+  // (fired the moment `connectDevframe()` resolves — e.g. a component's
+  // `onMount`) race that still-in-flight sequence: the socket is open, so
+  // the transport happily sends them, and the server rejects them with
+  // DF0036 because trust hasn't landed yet — even though the exact same call
+  // would succeed a moment later. `bootstrapAuthPromise` is assigned once
+  // `bootstrapAuth()` is kicked off further down; these closures read the
+  // variable at call time, so the gate is live even though it's declared
+  // before that assignment happens. Once the first bootstrap attempt has
+  // settled (trusted, refused, or given up), `bootstrapAuthSettled` flips
+  // for good and every later call skips the gate entirely — this only ever
+  // holds the first wave of calls.
+  let bootstrapAuthPromise: Promise<void> | undefined
+  let bootstrapAuthSettled = false
+  function gateOnBootstrapAuth<F extends (...args: any[]) => any>(fn: F): F {
+    return ((...args: any[]) => {
+      if (bootstrapAuthSettled || !bootstrapAuthPromise)
+        return fn(...args)
+      return bootstrapAuthPromise.then(() => fn(...args))
+    }) as F
+  }
+
   const rpc: DevframeRpcClient = {
     events,
     get isTrusted() {
@@ -440,9 +464,9 @@ export async function getDevframeRpcClient(
       catch {}
       return true
     },
-    call: mode.call,
-    callEvent: mode.callEvent,
-    callOptional: mode.callOptional,
+    call: gateOnBootstrapAuth(mode.call),
+    callEvent: gateOnBootstrapAuth(mode.callEvent),
+    callOptional: gateOnBootstrapAuth(mode.callOptional),
     client: clientRpc,
     sharedState: undefined!,
     streaming: undefined!,
@@ -522,7 +546,14 @@ export async function getDevframeRpcClient(
       return
     await runSimpleAuthPrompt()
   }
-  void bootstrapAuth()
+  // Always resolves (never rejects) regardless of `bootstrapAuth`'s outcome —
+  // the gate only cares that the first attempt is *over*, not whether it
+  // succeeded; a rejection here must never leak into unrelated calls waiting
+  // on `bootstrapAuthPromise`.
+  bootstrapAuthPromise = bootstrapAuth().then(
+    () => { bootstrapAuthSettled = true },
+    () => { bootstrapAuthSettled = true },
+  )
 
   // Listen for auth updates from other tabs (e.g., the auth page, or another
   // tab that just completed a code exchange).

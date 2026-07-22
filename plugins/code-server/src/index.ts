@@ -55,10 +55,10 @@ export function createCodeServerDevframe(options: CodeServerOptions = {}): Devfr
       portRange: options.portRange,
       random: options.random,
       distDir: existsSync(resolvedDist) ? resolvedDist : undefined,
-      // Single-user localhost tool: auto-trust the connection so the launcher's
-      // shared-state subscription and the auth handoff work without a manual
-      // round-trip. Hosted adapters supply their own auth layer.
-      auth: false,
+      // Gate the standalone launcher by default; `maybeOpenBrowser` folds the
+      // current OTP into the `--open` URL so the tab lands already trusted.
+      // Hosted adapters supply their own auth layer and ignore this.
+      auth: options.auth ?? true,
     },
     spa: { loader: 'none' },
     async setup(ctx) {

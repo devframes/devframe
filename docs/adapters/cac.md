@@ -75,8 +75,7 @@ defineDevframe({
     portRange: [7777, 9000], // passed through to get-port-please
     random: false, // passed through to get-port-please
     host: '127.0.0.1', // default host; --host overrides
-    open: true, // auto-open the browser on dev start
-    auth: false, // skip the trust handshake (single-user localhost)
+    open: true, // auto-open the browser on dev start; embeds the current OTP so the tab lands authenticated
     configure(cli) { // contribute capability flags/commands
       cli.option('--config <file>', 'Custom config file')
         .option('--no-files', 'Skip file matching')

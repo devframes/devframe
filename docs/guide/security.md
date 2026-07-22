@@ -24,6 +24,8 @@ Exactly one rule decides what an untrusted connection may call: **a method is re
 
 `startHttpAndWs` enforces this itself once you give it something to enforce: pass `auth: authHandler` (its `.authorize` becomes the gate) or your own `authorize(methodName, session)` function. Every other call from an untrusted session throws [`DF0036`](../errors/DF0036).
 
+On the client, `connectDevframe()` kicks off the handshake below without waiting for it, so a naive client could otherwise race it — sending a trusted call over the freshly-opened socket before the server has had a chance to answer `anonymous:devframe:auth`, hitting this exact gate. `rpc.call` / `rpc.callOptional` / `rpc.callEvent` hold anything issued while that first handshake is still in flight and release it once the handshake settles, so application code never has to special-case this window itself.
+
 ## Authentication flow
 
 Authentication exchanges a short code for a long-lived token. A node mints and owns the token; the browser only ever sends the short code, and only over the open socket.
@@ -79,7 +81,7 @@ Client methods (`devframe/client`): `requestTrustWithCode(code)` (exchange a cod
 
 ### Magic-link authentication
 
-To skip typing, a host can print a link that embeds the code and open the browser straight into an authenticated session. Build it from the current code with `buildOtpAuthUrl(origin)` (devframe stays headless, so the host prints its own banner):
+To skip typing, a host can print a link that embeds the code and open the browser straight into an authenticated session. The standalone CLI (`createCac` / `createDevServer`) does this automatically for `--open`: when the server is auth-gated, the browser it launches already carries the current code, so the tab lands authenticated with no prompt at all. Build the link yourself from the current code with `buildOtpAuthUrl(origin)` (devframe stays headless, so the host prints its own banner):
 
 ```
 Devtools ready — authenticate this browser: http://localhost:3000/?devframe_otp=123456
