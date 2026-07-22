@@ -42,7 +42,7 @@ const handle = await mountMessages(document.querySelector('#panel')!, {
 ## Standalone
 
 ```bash
-npx @devframes/plugin-messages
+pnpx @devframes/plugin-messages
 ```
 
 `pnpm dev` in this package self-hosts the SPA against a demo-seeded messages

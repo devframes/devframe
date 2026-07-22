@@ -65,7 +65,8 @@ behave identically; the panel's `websocket` / `static` tag is the only tell.
 Standalone, without a host app:
 
 ```sh
-pnpm -C plugins/a11y dev         # panel only, at /__devframes_plugin_a11y/
+pnpx @devframes/plugin-a11y      # the published package, panel only, at /__devframes_plugin_a11y/
+pnpm -C plugins/a11y dev         # from source: same, at /__devframes_plugin_a11y/
 ```
 
 ## File map

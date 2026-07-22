@@ -41,7 +41,7 @@ launcher; `vscode.dev` handles authentication.
 ### Standalone CLI
 
 ```sh
-npx @devframes/plugin-code-server        # dev server + launcher
+pnpx @devframes/plugin-code-server        # dev server + launcher
 ```
 
 ### Programmatic

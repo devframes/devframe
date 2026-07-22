@@ -20,7 +20,7 @@ The three introspection `query` functions are agent-exposed and bake into the st
 ## Standalone
 
 ```sh
-npx @devframes/plugin-inspect
+pnpx @devframes/plugin-inspect
 ```
 
 Opens the inspector against a fresh standalone devframe connection — handy as a reference and for poking at the introspection RPCs themselves. The CLI prints the URL it serves on.

@@ -26,12 +26,12 @@ This is the framework-agnostic promise in practice. The browser bundle is the au
 
 ## Running a plugin
 
-Most plugins publish a `bin`, so the quickest path is `npx`:
+Most plugins publish a `bin`, so the quickest path is `pnpx`:
 
 ```sh
-npx @devframes/plugin-inspect      # the Devframe Inspector, standalone
-npx @devframes/plugin-og           # inspect Open Graph metadata and social cards
-npx @devframes/plugin-git          # the Git dashboard against the current repo
+pnpx @devframes/plugin-inspect      # the Devframe Inspector, standalone
+pnpx @devframes/plugin-og           # inspect Open Graph metadata and social cards
+pnpx @devframes/plugin-git          # the Git dashboard against the current repo
 ```
 
 Each also exports a `create…Devframe` factory (or, for the Accessibility Inspector, a ready-made definition) you can drive through any adapter — see the individual pages for the factory name, options, and host-mount snippets.

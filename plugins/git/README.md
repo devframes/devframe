@@ -24,10 +24,10 @@ npm i -D @devframes/plugin-git
 Run the dashboard against the current repository:
 
 ```sh
-npx devframe-git              # dev server (live RPC over WebSocket)
-npx devframe-git --write      # also enable staging / committing from the UI
-npx devframe-git build        # static deploy → dist-static/
-npx devframe-git --port 4000
+pnpx @devframes/plugin-git         # dev server (live RPC over WebSocket)
+pnpx @devframes/plugin-git --write # also enable staging / committing from the UI
+pnpx @devframes/plugin-git build   # static deploy → dist-static/
+pnpx @devframes/plugin-git --port 4000
 ```
 
 ## Programmatic
