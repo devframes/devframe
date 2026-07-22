@@ -86,6 +86,9 @@ export var hubMessagesAdd /* const */
 export var hubMessagesClear /* const */
 export var hubMessagesRemove /* const */
 export var hubMessagesUpdate /* const */
+export var hubTerminalsRemove /* const */
 export var hubTerminalsResize /* const */
+export var hubTerminalsRestart /* const */
+export var hubTerminalsTerminate /* const */
 export var hubTerminalsWrite /* const */
 // #endregion

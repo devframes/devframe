@@ -70,6 +70,12 @@ interface HubTerminalEntry {
    * the hub instead of treating it as read-only.
    */
   interactive?: boolean
+  /**
+   * Whether the aggregated hub session may be restarted in place. `false` when
+   * its owner reserves restarts for its own controls; surfaced so this plugin's
+   * UI can hide the restart affordance for it.
+   */
+  restartable?: boolean
 }
 interface HubTerminalsBridge {
   sessions: Map<string, HubTerminalEntry>
@@ -207,6 +213,7 @@ export class TerminalManager {
         createdAt: 0,
         icon: toIconClass(session.icon),
         channel: HUB_TERMINAL_STREAM_CHANNEL,
+        restartable: session.restartable,
       })
     }
     return [...own, ...foreign]

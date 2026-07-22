@@ -229,9 +229,34 @@
   }
 
   /**
-   * Kill a session's running process (interactive or readonly), keeping the
-   * stopped session and its scrollback. Always confirmed — a live process is
-   * being terminated.
+   * Route a lifecycle action to the right RPC: own sessions go through this
+   * plugin (object args); sessions aggregated from other devframes via the hub
+   * are driven through the hub's built-ins (positional args), the same seam
+   * `TerminalView` uses for write/resize. Force-killing and removing therefore
+   * work for read-only aggregated sessions too, not just the plugin's own.
+   */
+  function control(s: TerminalSessionInfo, action: 'terminate' | 'restart' | 'remove'): void {
+    if (isExternal(s))
+      rpc.call(`hub:terminals:${action}`, s.id).catch(() => {})
+    else
+      rpc.call(`devframes:plugin:terminals:${action}`, { id: s.id }).catch(() => {})
+  }
+
+  /** A session offers a restart affordance unless it opted out (`restartable: false`). */
+  function canRestart(s: TerminalSessionInfo): boolean {
+    return s.restartable !== false
+  }
+
+  function restartSession(id: string): void {
+    const s = sessions.find(x => x.id === id)
+    if (s)
+      control(s, 'restart')
+  }
+
+  /**
+   * Kill a session's running process (interactive or readonly, own or
+   * aggregated), keeping the stopped session and its scrollback. Always
+   * confirmed — a live process is being terminated.
    */
   function killSession(id: string): void {
     const s = sessions.find(x => x.id === id)
@@ -241,7 +266,7 @@
       title: 'Kill process',
       body: `Terminate “${displayName(s)}”? The process stops, but the session stays in the list so you can read its output or restart it.`,
       confirmLabel: 'Kill process',
-      onConfirm: () => rpc.call('devframes:plugin:terminals:terminate', { id }).catch(() => {}),
+      onConfirm: () => control(s, 'terminate'),
     }
   }
 
@@ -259,11 +284,11 @@
         title: 'Remove terminal',
         body: `“${displayName(s)}” is still running. Removing it terminates the process and discards its output.`,
         confirmLabel: 'Kill & remove',
-        onConfirm: () => rpc.call('devframes:plugin:terminals:remove', { id }).catch(() => {}),
+        onConfirm: () => control(s, 'remove'),
       }
       return
     }
-    rpc.call('devframes:plugin:terminals:remove', { id }).catch(() => {})
+    control(s, 'remove')
   }
 
   function resolveConfirm(): void {
@@ -366,16 +391,14 @@
               <div class="{s.icon} shrink-0"></div>
             {/if}
             <span class="truncate">{displayName(s)}</span>
-            {#if !isExternal(s)}
-              <span
-                role="button"
-                tabindex="-1"
-                aria-label="Close terminal"
-                class="i-ph-x op0 group-hover:op60 hover:op100! transition-opacity shrink-0"
-                onclick={(e) => { e.stopPropagation(); removeSession(s.id) }}
-                onkeydown={() => {}}
-              ></span>
-            {/if}
+            <span
+              role="button"
+              tabindex="-1"
+              aria-label="Close terminal"
+              class="i-ph-x op0 group-hover:op60 hover:op100! transition-opacity shrink-0"
+              onclick={(e) => { e.stopPropagation(); removeSession(s.id) }}
+              onkeydown={() => {}}
+            ></span>
           </button>
         {/if}
       {/each}
@@ -469,19 +492,19 @@
 
       <div class="flex-1"></div>
 
-      {#if !isExternal(s)}
-        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => rpc.call('devframes:plugin:terminals:restart', { id: s.id }).catch(() => {})}>
+      {#if canRestart(s)}
+        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => restartSession(s.id)}>
           <div class="i-ph-arrow-clockwise-duotone"></div>
         </button>
-        {#if s.status === 'running'}
-          <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill process" onclick={() => killSession(s.id)}>
-            <div class="i-ph-stop-duotone"></div>
-          </button>
-        {:else}
-          <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Remove session" onclick={() => removeSession(s.id)}>
-            <div class="i-ph-trash-duotone"></div>
-          </button>
-        {/if}
+      {/if}
+      {#if s.status === 'running'}
+        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill process" onclick={() => killSession(s.id)}>
+          <div class="i-ph-stop-duotone"></div>
+        </button>
+      {:else}
+        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Remove session" onclick={() => removeSession(s.id)}>
+          <div class="i-ph-trash-duotone"></div>
+        </button>
       {/if}
     </div>
   {/if}

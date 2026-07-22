@@ -65,7 +65,7 @@ interface HubTerminalsBridge {
   remove?: (session: { id: string }) => void
   startChildProcess: (
     executeOptions: { command: string, args: string[], cwd?: string, env?: Record<string, string> },
-    terminal: { id: string, title: string, description?: string, icon?: string },
+    terminal: { id: string, title: string, description?: string, icon?: string, restartable?: boolean },
   ) => Promise<HubChildProcessSession>
 }
 
@@ -557,6 +557,10 @@ export class CodeServerSupervisor {
             title: TERMINAL_SESSION_TITLE,
             description: folder,
             icon: TERMINAL_SESSION_ICON,
+            // Restarting the editor means re-running the supervisor's start
+            // flow (fresh port + secret), not re-spawning this raw process, so
+            // hide the terminal panel's generic restart for this session.
+            restartable: false,
           },
         )
         const child = session.getChildProcess()

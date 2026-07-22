@@ -375,6 +375,28 @@ describe('@devframes/plugin-terminals', () => {
       expect(afterRemove.some(s => s.id === 'devframes_plugin_code-server')).toBe(false)
     })
 
+    it('surfaces a foreign session\'s restartable flag so the UI can respect it', async () => {
+      await server.close()
+      const hub = createFakeHubTerminals()
+      server = await startTerminalsServer({}, { hub })
+      const client = bootClient(server.port)
+      await new Promise(r => setTimeout(r, 50))
+
+      // A session whose owner reserves restarts for its own controls.
+      hub.register({
+        id: 'devframes_plugin_code-server',
+        title: 'Code Server',
+        status: 'running',
+        restartable: false,
+      })
+      // A plain aggregated session leaves it unset (restartable by default).
+      hub.register({ id: 'other', title: 'Other', status: 'running' })
+
+      const list = await call<TerminalSessionInfo[]>(client, 'devframes:plugin:terminals:list')
+      expect(list.find(s => s.id === 'devframes_plugin_code-server')?.restartable).toBe(false)
+      expect(list.find(s => s.id === 'other')?.restartable).toBeUndefined()
+    })
+
     it('mirrors its own sessions into the hub without looping', async () => {
       await server.close()
       const hub = createFakeHubTerminals()

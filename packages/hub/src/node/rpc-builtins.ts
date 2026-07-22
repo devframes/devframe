@@ -1,6 +1,9 @@
 import type { RpcFunctionDefinitionAny } from 'devframe/rpc'
 import type { DevframeMessageEntry, DevframeMessageEntryInput } from '../types/messages'
-import type { DevframePtyTerminalSession } from '../types/terminals'
+import type {
+  DevframeChildProcessTerminalSession,
+  DevframePtyTerminalSession,
+} from '../types/terminals'
 import { defineHubRpcFunction } from '../define'
 import { diagnostics } from './diagnostics'
 
@@ -17,6 +20,26 @@ function resolveInteractiveSession(
     throw diagnostics.DF8201({ id })
   if (typeof session.write !== 'function')
     throw diagnostics.DF8202({ id })
+  return session
+}
+
+/** A session exposing lifecycle handles — spawned via startChildProcess/startPtySession. */
+type ControllableTerminalSession = DevframeChildProcessTerminalSession | DevframePtyTerminalSession
+
+/**
+ * Resolve a session that can be terminated/restarted (spawned via
+ * `startChildProcess` or `startPtySession`), or throw. Sessions added with a
+ * bare `register()` carry no lifecycle handle and are rejected.
+ */
+function resolveControllableSession(
+  sessions: Map<string, { id: string }>,
+  id: string,
+): ControllableTerminalSession {
+  const session = sessions.get(id) as ControllableTerminalSession | undefined
+  if (!session)
+    throw diagnostics.DF8201({ id })
+  if (typeof session.terminate !== 'function')
+    throw diagnostics.DF8204({ id })
   return session
 }
 
@@ -120,6 +143,61 @@ export const hubTerminalsResize = defineHubRpcFunction({
 })
 
 /**
+ * `hub:terminals:terminate` — Kill a session's process while keeping the
+ * session registered (its output/scrollback stays). Works for both read-only
+ * child-process and interactive PTY sessions, letting a hub-aware terminal UI
+ * force-kill a session owned by another plugin.
+ */
+export const hubTerminalsTerminate = defineHubRpcFunction({
+  name: 'hub:terminals:terminate',
+  type: 'action',
+  setup: context => ({
+    async handler(id: string): Promise<void> {
+      await resolveControllableSession(context.terminals.sessions, id).terminate()
+    },
+  }),
+})
+
+/**
+ * `hub:terminals:restart` — Re-run a session's command in place. Rejected for
+ * sessions registered with `restartable: false`, whose lifecycle is owned
+ * elsewhere.
+ */
+export const hubTerminalsRestart = defineHubRpcFunction({
+  name: 'hub:terminals:restart',
+  type: 'action',
+  setup: context => ({
+    async handler(id: string): Promise<void> {
+      const session = resolveControllableSession(context.terminals.sessions, id)
+      if (session.restartable === false)
+        throw diagnostics.DF8205({ id })
+      await session.restart()
+    },
+  }),
+})
+
+/**
+ * `hub:terminals:remove` — Kill a session's process (when it still owns one)
+ * and drop it from the registry, disposing its output stream. Lets a hub-aware
+ * terminal UI discard a stopped aggregated session.
+ */
+export const hubTerminalsRemove = defineHubRpcFunction({
+  name: 'hub:terminals:remove',
+  type: 'action',
+  setup: context => ({
+    async handler(id: string): Promise<void> {
+      const session = context.terminals.sessions.get(id)
+      if (!session)
+        throw diagnostics.DF8201({ id })
+      const controllable = session as Partial<ControllableTerminalSession>
+      if (typeof controllable.terminate === 'function')
+        await controllable.terminate()
+      context.terminals.remove(session)
+    },
+  }),
+})
+
+/**
  * `hub:docks:activate` — Ask the active viewer to switch its focused dock to
  * `dockId`, optionally carrying `params` for the target dock to interpret
  * (e.g. `{ sessionId }` for the terminals dock to focus a session).
@@ -156,4 +234,7 @@ export const builtinHubRpcDeclarations: readonly RpcFunctionDefinitionAny[] = [
   hubMessagesClear,
   hubTerminalsWrite,
   hubTerminalsResize,
+  hubTerminalsTerminate,
+  hubTerminalsRestart,
+  hubTerminalsRemove,
 ]
