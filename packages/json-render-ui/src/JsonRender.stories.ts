@@ -1,6 +1,7 @@
 import type { Spec } from '@devframes/json-render'
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { h } from 'vue'
+import { baseRegistry } from './registry'
 import { JsonRenderView } from './renderer'
 
 // A no-op RPC — stories don't dispatch real actions.
@@ -74,3 +75,31 @@ export const InvalidElement: StoryObj = story({
     bad: { type: 'Badge', props: { variant: 'purple' }, children: [] },
   },
 })
+
+// An element whose `type` is absent from the registry renders behind the
+// unsupported placeholder (type + prop-keys gist), while its siblings render.
+export const UnsupportedComponent: StoryObj = story({
+  root: 'root',
+  elements: {
+    root: { type: 'Stack', props: { gap: 8 }, children: ['ok', 'chart', 'more'] },
+    ok: { type: 'Text', props: { text: 'This view uses a component the frontend does not ship.' }, children: [] },
+    chart: { type: 'Fancy3DChart', props: { data: [1, 2, 3], title: 'Revenue', animate: true }, children: [] },
+    more: { type: 'Badge', props: { text: 'still renders', variant: 'success' }, children: [] },
+  },
+})
+
+// A frontend that supports only a subset of the catalog: rendering with a
+// registry missing `DataTable` placeholders that element, everything else
+// renders normally.
+const { DataTable: _omitted, ...subsetRegistry } = baseRegistry as Record<string, unknown>
+export const SubsetRegistry: StoryObj = story(
+  {
+    root: 'root',
+    elements: {
+      root: { type: 'Stack', props: { gap: 8 }, children: ['title', 'table'] },
+      title: { type: 'Text', props: { text: 'Registry without DataTable', variant: 'heading' }, children: [] },
+      table: { type: 'DataTable', props: { rows: [{ id: 1, name: 'a' }], height: 120 }, children: [] },
+    },
+  },
+  { registry: subsetRegistry },
+)

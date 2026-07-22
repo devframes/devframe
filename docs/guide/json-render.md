@@ -115,11 +115,12 @@ export default createJsonRenderDevframe({
 ```
 
 The SPA discovers views from the **view index** (`JSON_RENDER_INDEX_KEY`), a
-shared state the node factory maintains as views are created and disposed. It
-renders a single view full-bleed, or presents multiple views under the shared
-segmented switcher, labelling each with its `title` (defaulting to the view id).
-The `@devframes/json-render-ui/spa` entry is node-safe — it exposes only the
-asset path and the wiring helper, pulling in no Vue.
+shared state the node factory maintains as views are created and disposed. A
+single view renders full-bleed on its own; once more than one view is
+registered, a top bar appears with the shared segmented switcher, labelling each
+view with its `title` (defaulting to the view id). The
+`@devframes/json-render-ui/spa` entry is node-safe — it exposes only the asset
+path and the wiring helper, pulling in no Vue.
 
 ### Custom frontend
 
