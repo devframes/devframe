@@ -11,8 +11,11 @@ export default _default
 // #endregion
 
 // #region Other
-export { CodeServerAuth }
+export { CodeServerBackend }
+export { CodeServerConnect }
 export { CodeServerDetection }
+export { CodeServerLogin }
+export { CodeServerMode }
 export { CodeServerOptions }
 export { CodeServerServerInfo }
 export { CodeServerSharedState }
@@ -20,6 +23,7 @@ export { CodeServerStartRequest }
 export { CodeServerStartResult }
 export { CodeServerStatus }
 export { CodeServerStatusResult }
+export { CodeServerTunnelOptions }
 export { DEFAULT_CODE_SERVER_PORT }
 export { DEFAULT_PORT }
 export { getCookieSessionName }

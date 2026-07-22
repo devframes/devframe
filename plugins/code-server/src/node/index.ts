@@ -4,6 +4,8 @@ import { serverFunctions } from '../rpc/index'
 import { setCodeServerSupervisor } from './context'
 import { CodeServerSupervisor } from './supervisor'
 
+export type { CodeServerProfile, CodeServerProfileKind } from './backends'
+export { resolveProfile } from './backends'
 export * from './context'
 export { detectCodeServer } from './detect'
 export { diagnostics } from './diagnostics'
@@ -28,6 +30,11 @@ export async function setupCodeServer(
 
   for (const fn of serverFunctions)
     ctx.rpc.register(fn)
+
+  // Launch eagerly when asked, rather than waiting for the launcher's button.
+  // Failures surface through shared state (status `error`); don't reject setup.
+  if (options.startOnBoot)
+    void supervisor.start().catch(() => {})
 
   return supervisor
 }

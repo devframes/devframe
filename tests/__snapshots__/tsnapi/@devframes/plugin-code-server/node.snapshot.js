@@ -4,22 +4,31 @@
 // #region Classes
 export class CodeServerSupervisor {
   ctx
-  bin
+  mode
+  explicitBackend
+  explicitBin
   workspace
   host
   forcedPort
   extraArgs
   extraEnv
-  cookieName
   cookieSuffix
+  cookieName
   startTimeout
+  reuseExistingServer
+  tunnelName
+  backend
+  bin
+  profile
   state
   detection
   server
   proc
-  cookieValue
+  launchCtx
+  adopted
+  readyUrl
   logBuffer
-  cleanupRegistered
+  exitHandler
   sessionId
   session
   constructor(_, _) {}
@@ -29,7 +38,12 @@ export class CodeServerSupervisor {
   async start(_) {}
   stop() {}
   dispose() {}
-  authInfo() {}
+  get resolvedBackend() {}
+  setResolved(_, _) {}
+  baseCtx(_, _, _) {}
+  reset() {}
+  async awaitTunnel(_, _, _) {}
+  connectInfo() {}
   terminate(_) {}
   resolveHubTerminals() {}
   reflectHub(_) {}
@@ -37,13 +51,14 @@ export class CodeServerSupervisor {
   appendLog(_) {}
   lastLog() {}
   publish() {}
-  async waitForReady(_) {}
+  async waitForReady(_, _) {}
   registerCleanup() {}
 }
 // #endregion
 
 // #region Functions
 export function detectCodeServer(_, _) {}
+export function resolveProfile(_, _) {}
 export async function setupCodeServer(_, _) {}
 // #endregion
 

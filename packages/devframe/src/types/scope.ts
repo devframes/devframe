@@ -18,6 +18,16 @@ import type { DevframeViewHost } from './views'
 type AnyRpcFn = (...args: any[]) => any
 
 /**
+ * Resolve a scoped bare name `T` back to its fully-qualified entry in
+ * `Registry` (`<NS>:<T>`). Indexing the plain registry behind a `keyof`
+ * guard keeps TypeScript from rejecting a generic index into the
+ * key-remapped `Scoped*Functions<NS>` maps (TS2536) once a plugin augments
+ * the registry, while preserving each name's argument/return typing.
+ */
+export type ScopedRpcFn<Registry, NS extends string, T extends string>
+  = `${NS}:${T}` extends keyof Registry ? Extract<Registry[`${NS}:${T}`], AnyRpcFn> : AnyRpcFn
+
+/**
  * Augmentable registry mapping a scope namespace to the shape of its
  * persisted settings. Tools augment it so `ctx.scope('my-plugin')`
  * gets a fully-typed `settings.global` / `settings.project`:
@@ -157,7 +167,7 @@ export interface DevframeScopedNodeRpc<NS extends string = string> {
    * (containing `:`) to call another scope's function.
    */
   call: {
-    <T extends keyof ScopedServerFunctions<NS> & string>(method: T, ...args: Parameters<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>>>
+    <T extends keyof ScopedServerFunctions<NS> & string>(method: T, ...args: Parameters<ScopedRpcFn<DevframeRpcServerFunctions, NS, T>>): Promise<Awaited<ReturnType<ScopedRpcFn<DevframeRpcServerFunctions, NS, T>>>>
     <T extends keyof DevframeRpcServerFunctions & string>(method: T, ...args: Parameters<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>>>
     (method: string, ...args: any[]): Promise<any>
   }
@@ -167,7 +177,7 @@ export interface DevframeScopedNodeRpc<NS extends string = string> {
    * names are resolved within this namespace.
    */
   broadcast: {
-    <T extends keyof ScopedClientFunctions<NS> & string>(options: ScopedBroadcastOptions<T, Parameters<Extract<ScopedClientFunctions<NS>[T], AnyRpcFn>>>): Promise<void>
+    <T extends keyof ScopedClientFunctions<NS> & string>(options: ScopedBroadcastOptions<T, Parameters<ScopedRpcFn<DevframeRpcClientFunctions, NS, T>>>): Promise<void>
     (options: ScopedBroadcastOptions<string, any[]>): Promise<void>
   }
 

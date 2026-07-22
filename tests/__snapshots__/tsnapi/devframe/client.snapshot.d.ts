@@ -61,17 +61,17 @@ export interface DevframeScopedClientRpc<NS extends string = string> {
   readonly namespace: NS;
   register: (_: RpcFunctionDefinition<string, any, any, any, any, any, DevframeRpcContext>) => void;
   call: {
-    <T extends keyof ScopedServerFunctions<NS> & string>(_: T, ..._: Parameters<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>>>;
+    <T extends keyof ScopedServerFunctions<NS> & string>(_: T, ..._: Parameters<ScopedRpcFn<DevframeRpcServerFunctions, NS, T>>): Promise<Awaited<ReturnType<ScopedRpcFn<DevframeRpcServerFunctions, NS, T>>>>;
     <T extends keyof DevframeRpcServerFunctions & string>(_: T, ..._: Parameters<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>>>;
     (_: string, ..._: any[]): Promise<any>;
   };
   callEvent: {
-    <T extends keyof ScopedServerFunctions<NS> & string>(_: T, ..._: Parameters<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>): void;
+    <T extends keyof ScopedServerFunctions<NS> & string>(_: T, ..._: Parameters<ScopedRpcFn<DevframeRpcServerFunctions, NS, T>>): void;
     <T extends keyof DevframeRpcServerFunctions & string>(_: T, ..._: Parameters<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>): void;
     (_: string, ..._: any[]): void;
   };
   callOptional: {
-    <T extends keyof ScopedServerFunctions<NS> & string>(_: T, ..._: Parameters<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<ScopedServerFunctions<NS>[T], AnyRpcFn>>> | undefined>;
+    <T extends keyof ScopedServerFunctions<NS> & string>(_: T, ..._: Parameters<ScopedRpcFn<DevframeRpcServerFunctions, NS, T>>): Promise<Awaited<ReturnType<ScopedRpcFn<DevframeRpcServerFunctions, NS, T>>> | undefined>;
     <T extends keyof DevframeRpcServerFunctions & string>(_: T, ..._: Parameters<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>): Promise<Awaited<ReturnType<Extract<DevframeRpcServerFunctions[T], AnyRpcFn>>> | undefined>;
     (_: string, ..._: any[]): Promise<any>;
   };

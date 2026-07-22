@@ -4,28 +4,37 @@
 > This plugin is experimental and may change without a major version bump until
 > it stabilizes.
 
-Run [code-server](https://github.com/coder/code-server) (VS Code in the
-browser) as a devframe panel. The plugin detects a local `code-server`
-install, launches it on demand, and embeds the editor in an
-auto-authenticated `<iframe>`.
+Run VS Code in the browser as a devframe panel. The plugin detects a local
+editor binary, launches it on demand, and embeds the editor in an
+auto-authenticated `<iframe>`. The launcher is a **Vue** SPA built on the shared
+`@antfu/design` system.
 
 ## How it works
 
-- **Detection** — on startup it runs `code-server --version`. When the binary
-  is missing, the launcher renders install instructions and links instead of a
+- **Detection** — on startup it probes the resolved binary with `--version`.
+  When none is found, the launcher renders install instructions instead of a
   launch button.
-- **Launch** — the launcher's button starts code-server as a managed child
+- **Launch** — the launcher's button starts the editor as a managed child
   process bound to a free port, scoped to the workspace. Readiness is probed
-  via code-server's `/healthz` endpoint.
-- **Auto-auth** — code-server runs with password auth. The plugin generates a
-  random token, sets `HASHED_PASSWORD` to its SHA-256, and hands the matching
-  session cookie back to the already-authorized devframe client. The launcher
-  applies that cookie for the current host before loading the iframe, so the
-  editor opens already signed in — no code-server login page.
+  before the iframe loads.
+- **Auto-auth** — the plugin generates fresh auth material per launch and hands
+  it to the already-authorized devframe client, so the editor opens already
+  signed in. `code-server` uses a session cookie (`HASHED_PASSWORD`);
+  `code serve-web` uses a connection token on the URL (`?tkn=`).
 
-The editor iframe points at code-server's own origin
-(`<protocol>//<host>:<port>/`), so WebSocket traffic flows directly without a
-reverse proxy.
+## Backends & modes
+
+`mode: 'local'` (default) embeds a server on this machine; `backend` selects it,
+or leave it unset to auto-detect (prefers `code-server`, then `code serve-web`).
+
+| `backend` | Binary | Auth |
+|-----------|--------|------|
+| `'code-server'` | Coder [`code-server`](https://github.com/coder/code-server) | password + session cookie |
+| `'ms-code-serve-web'` | Microsoft [`code serve-web`](https://code.visualstudio.com/docs/remote/vscode-server) | connection token (`?tkn=`) |
+
+`mode: 'tunnel'` runs Microsoft's `code tunnel` and embeds the hosted
+`vscode.dev` editor. The first launch surfaces a device-login prompt in the
+launcher; `vscode.dev` handles authentication.
 
 ## Usage
 
@@ -41,9 +50,12 @@ npx @devframes/plugin-code-server        # dev server + launcher
 import { createCodeServerDevframe } from '@devframes/plugin-code-server'
 
 export default createCodeServerDevframe({
-  // bin: 'code-server',     // binary to detect/launch (default: PATH)
-  // serverPort: 8080,       // force a port (default: free port near 8080)
-  // args: ['--disable-getting-started-override'],
+  // backend: 'code-server',    // 'code-server' | 'ms-code-serve-web' (default: auto)
+  // mode: 'local',             // 'local' | 'tunnel'
+  // serverPort: 8080,          // force a port (default: free port near 8080)
+  // startOnBoot: true,         // launch during setup instead of on demand
+  // reuseExistingServer: true, // adopt a server already answering on the port
+  // tunnel: { name: 'my-box' },
 })
 ```
 
@@ -61,24 +73,25 @@ export default {
 
 | Function | Type | Purpose |
 |----------|------|---------|
-| `devframes:plugin:code-server:detect` | query | Re-probe for the binary; returns `{ installed, version, bin }`. |
-| `devframes:plugin:code-server:status` | query | Current status + auth cookie when running. |
+| `devframes:plugin:code-server:detect` | query | Re-probe; returns `{ installed, version, bin, backend, mode }`. |
+| `devframes:plugin:code-server:status` | query | Current status + connect descriptor when running. |
 | `devframes:plugin:code-server:start` | action | Launch and wait for readiness. |
 | `devframes:plugin:code-server:stop` | action | Stop the process. |
 
-Status (minus the auth cookie) is mirrored into the
+Status (minus the connect descriptor) is mirrored into the
 `devframes:plugin:code-server:state` shared state for reactive UIs.
 
 ## UI
 
-The launcher UI is a pure, state-driven view (`src/client/view.ts`) decoupled
-from RPC, so every state renders in isolation. `mountCodeServer` wires the live
-connection to it. Each UI state has a Storybook story:
+The launcher is a Vue SPA (`src/spa`). `LauncherView.vue` is a pure,
+state-driven view decoupled from RPC — every phase renders in isolation and has
+a Storybook story; `App.vue` wires the live connection to it and mounts the
+editor in a full-bleed, auto-authenticated iframe (`EditorFrame.vue`).
 
 ```sh
 pnpm storybook         # dev
 pnpm build-storybook   # static build
 ```
 
-Stories: connecting, not-installed, launch, launch-error, starting, running
-(the running story mounts a mock editor instead of a live server).
+Stories: connecting, not-installed, launch, launch (serve-web), launch-error,
+starting, tunnel-login, and a running editor frame (mock editor).

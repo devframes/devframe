@@ -73,6 +73,93 @@ process.on('SIGINT', () => process.exit(0))
   return binPath
 }
 
+export interface FakeServeWebOptions {
+  /** Version string `--version` prints; omit to make `--version` exit non-zero. */
+  version?: string
+  /** File the fake writes its `--connection-token` value to on startup. */
+  dumpTokenTo?: string
+}
+
+/**
+ * Write an executable that stands in for Microsoft's `code` CLI running
+ * `serve-web`: `--version` prints the configured version; `serve-web … --port N
+ * --connection-token T` serves `/` (200) until terminated, optionally dumping
+ * the connection token so tests can assert the `?tkn=` handoff.
+ */
+export function writeFakeServeWeb(options: FakeServeWebOptions = {}): string {
+  const dir = mkdtempSync(join(tmpdir(), 'dcs-code-'))
+  const binPath = join(dir, 'code')
+  const version = options.version
+  const script = `#!/usr/bin/env node
+const args = process.argv.slice(2)
+if (args.includes('--version')) {
+  ${version ? `process.stdout.write(${JSON.stringify(`${version}\n`)}); process.exit(0)` : `process.exit(1)`}
+}
+const pi = args.indexOf('--port')
+const port = Number(pi >= 0 ? args[pi + 1] : 8000)
+const ti = args.indexOf('--connection-token')
+const token = ti >= 0 ? args[ti + 1] : ''
+const dump = ${options.dumpTokenTo ? JSON.stringify(options.dumpTokenTo) : 'null'}
+if (dump) require('fs').writeFileSync(dump, token)
+const http = require('http')
+const server = http.createServer((req, res) => { res.statusCode = 200; res.end('ok') })
+server.listen(port, '127.0.0.1', () => {
+  console.log(\`Web UI available at http://localhost:\${server.address().port}/?tkn=\${token}\`)
+})
+process.on('SIGTERM', () => process.exit(0))
+process.on('SIGINT', () => process.exit(0))
+`
+  writeFileSync(binPath, script)
+  chmodSync(binPath, 0o755)
+  if (process.platform === 'win32') {
+    const cmdPath = `${binPath}.cmd`
+    writeFileSync(cmdPath, `@node "${binPath}" %*`)
+    return cmdPath
+  }
+  return binPath
+}
+
+export interface FakeTunnelOptions {
+  version?: string
+  /** Emit a device-login prompt line. */
+  printLogin?: boolean
+  /** Emit the `vscode.dev` URL line (marks the tunnel ready). */
+  printUrl?: boolean
+  /** The tunnel URL to print (defaults to a vscode.dev tunnel URL). */
+  url?: string
+}
+
+/**
+ * Write an executable standing in for `code tunnel`: `--version` prints the
+ * version; `tunnel …` optionally prints a device-login prompt and/or the
+ * `vscode.dev` URL, then stays alive.
+ */
+export function writeFakeTunnel(options: FakeTunnelOptions = {}): string {
+  const dir = mkdtempSync(join(tmpdir(), 'dcs-tunnel-'))
+  const binPath = join(dir, 'code')
+  const version = options.version
+  const url = options.url ?? 'https://vscode.dev/tunnel/testmachine/work'
+  const script = `#!/usr/bin/env node
+const args = process.argv.slice(2)
+if (args.includes('--version')) {
+  ${version ? `process.stdout.write(${JSON.stringify(`${version}\n`)}); process.exit(0)` : `process.exit(1)`}
+}
+${options.printLogin ? `console.log('To grant access to the server, please log into https://github.com/login/device and use code ABCD-1234')` : ''}
+${options.printUrl ? `setTimeout(() => console.log('Open this link in your browser ${url}'), 20)` : ''}
+setInterval(() => {}, 1000)
+process.on('SIGTERM', () => process.exit(0))
+process.on('SIGINT', () => process.exit(0))
+`
+  writeFileSync(binPath, script)
+  chmodSync(binPath, 0o755)
+  if (process.platform === 'win32') {
+    const cmdPath = `${binPath}.cmd`
+    writeFileSync(cmdPath, `@node "${binPath}" %*`)
+    return cmdPath
+  }
+  return binPath
+}
+
 interface FakeHubSession {
   id: string
   title: string
