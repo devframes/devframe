@@ -22,10 +22,6 @@ Framework-neutral foundation for building devframes.
 <b>Documentation:</b> <a href="https://devfra.me/">https://devfra.me/</a>
 </p>
 
-<p align="center">
-Upgrading from 0.5.x? See the <a href="https://devfra.me/guide/migration-0.6">0.6 migration guide</a> (source: <a href="./docs/guide/migration-0.6.md">docs/guide/migration-0.6.md</a>).
-</p>
-
 ## Sponsors
 
 <p align="center">
