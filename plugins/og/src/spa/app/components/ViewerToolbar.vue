@@ -15,7 +15,7 @@ const target = defineModel<string>('target', { required: true })
 </script>
 
 <template>
-  <LayoutToolbar :glass="false">
+  <LayoutToolbar :glass="false" class="h-nav">
     <div class="flex items-center gap-1.5 shrink-0 font-semibold text-sm select-none">
       <span class="i-ph-image-square-duotone text-base color-active" />
       <span>Open Graph</span>
