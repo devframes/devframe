@@ -1,7 +1,10 @@
+import type { DevframeHubContext } from '@devframes/hub/node'
 import type { StartedServer } from 'devframe/node'
+import type { DevframeNodeContext } from 'devframe/types'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
+import { createHubContext } from '@devframes/hub/node'
 import inspectDevframe from '@devframes/plugin-inspect'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import {
@@ -29,16 +32,27 @@ export function assertSpaBuilt(): void {
   }
 }
 
-export interface InspectorServer extends StartedServer {
+export interface InspectorServer<Ctx extends DevframeNodeContext = DevframeNodeContext> extends StartedServer {
   basePath: string
+  ctx: Ctx
+}
+
+interface BootOptions {
+  /** Build the node context. Default: devframe's plain `createHostContext`. */
+  hub?: boolean
 }
 
 /**
  * Boot the inspector dev server in-process, mirroring the CLI adapter's
  * wiring (`auth: false` so the standalone server auto-trusts) but with a
  * controllable lifecycle. Bound to 127.0.0.1 to avoid the IPv4/IPv6 race.
+ *
+ * With `hub: true` the context comes from `@devframes/hub`'s
+ * `createHubContext`, so `ctx.commands` is a live host — the surface the
+ * Commands tab reads from when mounted inside a hub. Without it, the plain
+ * context exercises the no-hub path (empty list, thrown diagnostic).
  */
-export async function startInspectorServer(): Promise<InspectorServer> {
+async function boot(options: BootOptions): Promise<InspectorServer> {
   const distDir = inspectDevframe.cli!.distDir!
   const basePath = resolveBasePath(inspectDevframe, 'standalone')
   const host = '127.0.0.1'
@@ -54,7 +68,9 @@ export async function startInspectorServer(): Promise<InspectorServer> {
     },
   })
 
-  const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
+  const ctx = options.hub
+    ? await createHubContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
+    : await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
   await inspectDevframe.setup(ctx)
 
   const metaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`
@@ -69,5 +85,15 @@ export async function startInspectorServer(): Promise<InspectorServer> {
     auth: false,
   })
 
-  return Object.assign(server, { basePath })
+  return Object.assign(server, { basePath, ctx })
+}
+
+/** Standalone boot — plain devframe context, no hub commands host. */
+export function startInspectorServer(): Promise<InspectorServer> {
+  return boot({})
+}
+
+/** Hub boot — `createHubContext` attaches a live `ctx.commands` host. */
+export async function startInspectorHubServer(): Promise<InspectorServer<DevframeHubContext>> {
+  return await boot({ hub: true }) as InspectorServer<DevframeHubContext>
 }

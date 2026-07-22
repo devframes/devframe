@@ -62,6 +62,7 @@
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
+    "@devframes/hub": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
     "@storybook/addon-docs": "catalog:storybook",
     "@storybook/vue3-vite": "catalog:storybook",

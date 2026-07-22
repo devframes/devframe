@@ -14,13 +14,14 @@ import {
   connectionTitle,
 } from '../../../../design/design'
 import AgentSmart from './components/AgentSmart.vue'
+import CommandsSmart from './components/CommandsSmart.vue'
 import FunctionsSmart from './components/FunctionsSmart.vue'
 import HistorySmart from './components/HistorySmart.vue'
 import StateSmart from './components/StateSmart.vue'
 import { useRefresh } from './composables/refresh'
 import { connect, connection } from './composables/rpc'
 
-type Tab = 'functions' | 'state' | 'agent' | 'history'
+type Tab = 'functions' | 'state' | 'agent' | 'commands' | 'history'
 
 const tab = ref<Tab>('functions')
 const { refresh, loading } = useRefresh()
@@ -37,6 +38,7 @@ const tabs: { value: Tab, label: string, icon: string }[] = [
   { value: 'functions', label: 'Functions', icon: 'i-ph-function-duotone' },
   { value: 'state', label: 'State', icon: 'i-ph-database-duotone' },
   { value: 'agent', label: 'Agent', icon: 'i-ph-robot-duotone' },
+  { value: 'commands', label: 'Commands', icon: 'i-ph-terminal-window-duotone' },
   { value: 'history', label: 'History', icon: 'i-ph-clock-counter-clockwise-duotone' },
 ]
 
@@ -102,6 +104,7 @@ function reload(): void {
         <FunctionsSmart v-if="tab === 'functions'" />
         <StateSmart v-else-if="tab === 'state'" />
         <AgentSmart v-else-if="tab === 'agent'" />
+        <CommandsSmart v-else-if="tab === 'commands'" />
         <HistorySmart v-else-if="tab === 'history'" />
       </template>
     </main>

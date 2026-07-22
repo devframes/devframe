@@ -360,6 +360,47 @@ textarea.args:focus {
   font-style: italic;
 }
 
+/* ---- commands list ---- */
+.cmd-icon {
+  flex-shrink: 0;
+  color: var(--df-fg-dim);
+}
+
+.cmd-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.cmd-id {
+  font-size: 11px;
+  color: var(--df-fg-faint);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cmd-row-child .fn-head {
+  padding-left: 22px;
+}
+
+.cmd-children {
+  padding-left: 16px;
+  border-left: 1px solid var(--df-border-soft);
+  margin-left: 5px;
+}
+
+.cmd-children .fn-row {
+  border-top: none;
+  border-bottom: 1px solid var(--df-border-soft);
+}
+
+.cmd-children .fn-row:last-child {
+  border-bottom: none;
+}
+
 /* ---- state view ---- */
 .split {
   display: flex;

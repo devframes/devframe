@@ -44,9 +44,11 @@ describe('inspector static build', () => {
 
     // `invoke` is an `action` with no dump — it must not appear.
     expect(manifest['devframes:plugin:inspect:invoke']).toBeUndefined()
-    // The three snapshot `query` functions bake into the static dump.
+    // The snapshot `query` functions bake into the static dump.
     expect(manifest['devframes:plugin:inspect:list-functions']).toBeTruthy()
     expect(manifest['devframes:plugin:inspect:list-state-keys']).toBeTruthy()
     expect(manifest['devframes:plugin:inspect:describe-agent']).toBeTruthy()
+    // list-commands is a snapshot query too — bakes to an empty list outside a hub.
+    expect(manifest['devframes:plugin:inspect:list-commands']).toBeTruthy()
   })
 })
