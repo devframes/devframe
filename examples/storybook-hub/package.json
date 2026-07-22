@@ -6,9 +6,9 @@
   "description": "Example — a devframe hub that docks every built-in plugin's Storybook (lazily spawned in dev, served static in build) alongside the live terminals plugin.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/storybook-hub",
   "scripts": {
-    "dev": "vite --host",
+    "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview --host",
+    "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

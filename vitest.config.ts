@@ -13,6 +13,7 @@ export default defineConfig({
       'plugins/data-inspector',
       'plugins/terminals',
       'plugins/inspect',
+      'plugins/og',
       'examples/files-inspector',
       'examples/streaming-chat',
       'examples/next-runtime-snapshot',

@@ -156,8 +156,11 @@ export default function Page() {
 
   return (
     <div className="h-full flex flex-col bg-base color-base">
-      <header className="shrink-0 flex items-baseline gap-3 border-b border-base bg-base px4 py2.5">
-        <h1 className="m0 text-sm font-semibold">Minimal Next Devframe Hub</h1>
+      <header className="shrink-0 flex items-center gap-3 h-nav px-3 border-b border-base bg-base">
+        <h1 className="m0 flex items-center gap-1.5 shrink-0 text-sm font-semibold select-none">
+          <span className="i-ph-squares-four-duotone text-base color-active" />
+          <span>Minimal Next Devframe Hub</span>
+        </h1>
         <p className="m0 text-xs font-mono op-fade">
           <span className={`inline-block size-1.5 rounded-full shrink-0 ${statusDot} mr-1.5 align-middle`} />
           {status.text}
