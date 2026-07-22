@@ -32,7 +32,7 @@ function reload(): void {
 
 <template>
   <div class="app">
-    <LayoutToolbar :glass="false">
+    <LayoutToolbar :glass="false" class="h-nav">
       <div class="flex items-center gap-1.5 shrink-0 font-semibold text-sm select-none">
         <span class="i-ph-magnifying-glass-duotone text-base color-active" />
         <span>Devframe Inspector</span>

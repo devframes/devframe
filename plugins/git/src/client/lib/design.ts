@@ -80,7 +80,7 @@ export function navTab({ active = false, class: extra }: NavTabProps = {}): stri
 }
 
 export function nav(extra?: string): string {
-  return cx('flex items-center gap-2 shrink-0 h-10 px-3 border-b border-base bg-base z-nav', extra)
+  return cx('flex items-center gap-2 shrink-0 h-nav px-3 border-b border-base bg-base z-nav', extra)
 }
 
 export function navBrand(extra?: string): string {

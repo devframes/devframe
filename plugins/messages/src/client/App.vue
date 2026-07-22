@@ -70,7 +70,7 @@ async function onOpenFile(entry: DevframeMessageEntry): Promise<void> {
 
 <template>
   <div class="h-full w-full grid grid-rows-[max-content_1fr] bg-base color-base font-sans">
-    <LayoutToolbar :glass="false">
+    <LayoutToolbar :glass="false" class="h-nav">
       <div class="flex items-center gap-1.5 shrink-0 font-semibold text-sm select-none">
         <span class="i-ph-notification-duotone text-base color-active" />
         <span>Messages</span>
