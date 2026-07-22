@@ -678,5 +678,19 @@ export declare const serverFunctions: readonly [{
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
   }], void>> | undefined;
+}, {
+  name: "devframes:plugin:terminals:clear-exited";
+  type?: "action" | undefined;
+  cacheable?: boolean;
+  args: readonly [];
+  returns: import("valibot").VoidSchema<undefined>;
+  jsonSerializable?: boolean;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], void>>) | undefined;
+  handler?: (() => void) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[], void, import("devframe").DevframeNodeContext> | undefined;
+  snapshot?: boolean;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], void>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], void>> | undefined;
 }];
 // #endregion
