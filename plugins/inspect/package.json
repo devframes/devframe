@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-inspect",
   "type": "module",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "Devframe plugin — a self-inspector for the RPC registry, shared state, and agent surface of a devframe connection.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

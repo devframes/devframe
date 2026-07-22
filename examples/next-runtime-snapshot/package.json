@@ -1,7 +1,7 @@
 {
   "name": "next-runtime-snapshot-example",
   "type": "module",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "private": true,
   "description": "End-to-end devframe demo — Next.js App Router SPA over RPC, exposing the host Node runtime snapshot (system info, memory, env).",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/next-runtime-snapshot",
