@@ -97,34 +97,7 @@ textarea {
 }
 
 /* ---- header: the LayoutToolbar, LayoutTabs and ActionIconButton come from
-   `@antfu/design`; only the connection status pill below stays bespoke. ---- */
-.conn {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11.5px;
-  color: var(--df-fg-dim);
-}
-
-.conn .led {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--df-fg-faint);
-}
-
-.conn.ok .led {
-  background: var(--df-accent);
-  box-shadow: 0 0 6px var(--df-accent);
-}
-
-.conn.err .led {
-  background: var(--df-danger);
-}
-
-.conn.warn .led {
-  background: var(--df-warning, #d9a441);
-}
+   `@antfu/design`; the connection indicator comes from `design/design.ts`. ---- */
 
 /* ---- body ---- */
 .app-body {

@@ -89,6 +89,40 @@ export function navBrand(extra?: string): string {
   return cx('flex items-center gap-1.5 shrink-0 font-semibold text-sm select-none', extra)
 }
 
+// Mirrors devframe's `DevframeConnectionStatus` (kept local so this class-helper
+// module stays free of package imports); the two share the same string members.
+export type ConnectionStatus = 'connecting' | 'connected' | 'unauthorized' | 'disconnected' | 'error'
+
+export interface ConnectionIndicator {
+  /** Short status label, e.g. `disconnected`. */
+  label: string
+  /** Class chain for the status dot. */
+  dot: string
+  /** Class chain for the pill wrapper. */
+  class: string
+}
+
+const CONNECTION_TONE: Record<Exclude<ConnectionStatus, 'connected'>, { label: string, dot: string }> = {
+  connecting: { label: 'connecting…', dot: 'bg-neutral-400 animate-pulse' },
+  disconnected: { label: 'disconnected', dot: 'bg-error' },
+  unauthorized: { label: 'unauthorized', dot: 'bg-warning' },
+  error: { label: 'error', dot: 'bg-error' },
+}
+
+// The shared top-nav connection indicator: a small status dot + label. Returns
+// `null` when the client is `connected`, so every surface renders the indicator
+// only while the connection is not live.
+export function connectionIndicator(status: ConnectionStatus, extra?: string): ConnectionIndicator | null {
+  if (status === 'connected')
+    return null
+  const tone = CONNECTION_TONE[status]
+  return {
+    label: tone.label,
+    dot: cx('inline-block size-1.5 rounded-full shrink-0', tone.dot),
+    class: cx('flex items-center gap-1.5 shrink-0 text-xs color-muted select-none', extra),
+  }
+}
+
 export function toolbar(extra?: string): string {
   return cx('flex items-center gap-2 shrink-0 h-8 px-2.5 border-b border-base bg-secondary text-sm', extra)
 }

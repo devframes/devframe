@@ -2,7 +2,8 @@
 import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
 import LayoutTabs from '@antfu/design/components/Layout/LayoutTabs.vue'
 import LayoutToolbar from '@antfu/design/components/Layout/LayoutToolbar.vue'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { connectionIndicator } from '../../../../design/design'
 import AgentSmart from './components/AgentSmart.vue'
 import FunctionsSmart from './components/FunctionsSmart.vue'
 import HistorySmart from './components/HistorySmart.vue'
@@ -14,6 +15,10 @@ type Tab = 'functions' | 'state' | 'agent' | 'history'
 
 const tab = ref<Tab>('functions')
 const { refresh, loading } = useRefresh()
+
+// The shared connection indicator (dot + label) surfaces only while the
+// connection is not live; when connected it renders nothing.
+const conn = computed(() => connectionIndicator(connection.status))
 
 const tabs: { value: Tab, label: string, icon: string }[] = [
   { value: 'functions', label: 'Functions', icon: 'i-ph-function-duotone' },
@@ -45,17 +50,10 @@ function reload(): void {
       </template>
 
       <template #end>
-        <div
-          class="conn"
-          :class="{ ok: connection.connected, err: connection.status === 'error' || connection.status === 'disconnected', warn: connection.status === 'unauthorized' }"
-        >
-          <span class="led" />
-          <span v-if="connection.status === 'disconnected'">disconnected</span>
-          <span v-else-if="connection.status === 'unauthorized'">unauthorized</span>
-          <span v-else-if="connection.status === 'error'">error</span>
-          <span v-else-if="connection.connected">{{ connection.backend }}</span>
-          <span v-else>connecting…</span>
-        </div>
+        <span v-if="conn" :class="conn.class">
+          <span :class="conn.dot" />
+          {{ conn.label }}
+        </span>
 
         <ActionIconButton
           class="text-sm"

@@ -3,6 +3,7 @@ import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/clien
 import type { DevframeMessageEntry } from '../types'
 import LayoutToolbar from '@antfu/design/components/Layout/LayoutToolbar.vue'
 import { computed, onBeforeUnmount, ref } from 'vue'
+import { connectionIndicator } from '../../../../design/design'
 import MessagesView from './components/MessagesView.vue'
 import { useMessages } from './state/messages'
 
@@ -28,6 +29,10 @@ const CONNECTION_COPY: Record<Exclude<DevframeConnectionStatus, 'connected'>, { 
   error: { icon: 'i-ph-warning-octagon-duotone', title: 'Connection failed', body: 'Could not reach the devframe server.' },
 }
 const connectionCopy = computed(() => status.value === 'connected' ? null : CONNECTION_COPY[status.value])
+
+// The shared top-nav connection indicator (dot + label), shown only while the
+// connection is not live.
+const conn = computed(() => connectionIndicator(status.value))
 
 function reload(): void {
   location.reload()
@@ -81,6 +86,10 @@ async function onOpenFile(entry: DevframeMessageEntry): Promise<void> {
       </template>
 
       <template #end>
+        <span v-if="conn" :class="conn.class">
+          <span :class="conn.dot" />
+          {{ conn.label }}
+        </span>
         <span v-if="state.entries.length > 0" class="badge-muted font-mono">
           {{ state.entries.length }}
         </span>

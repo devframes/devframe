@@ -2,8 +2,14 @@
 import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
 import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import LayoutToolbar from '@antfu/design/components/Layout/LayoutToolbar.vue'
+import { computed } from 'vue'
+import { connectionIndicator } from '../../../../../design/design'
 import { connection } from '../composables/rpc'
 import { isDark } from '../composables/scheme'
+
+// The shared top-nav connection indicator (dot + label), shown only while the
+// connection is not live. The `static` mode badge below is a separate concept.
+const conn = computed(() => connectionIndicator(connection.status))
 </script>
 
 <template>
@@ -20,13 +26,10 @@ import { isDark } from '../composables/scheme'
         text="static"
         :color="false"
       />
-      <DisplayBadge
-        v-else-if="connection.status !== 'connected'"
-        class="flex items-center gap-1.5 py-1 text-xs select-none capitalize"
-        :title="connection.error ?? undefined"
-        :text="connection.status"
-        :color="connection.connected ? 100 : 200"
-      />
+      <span v-else-if="conn" :class="conn.class" :title="connection.error ?? undefined">
+        <span :class="conn.dot" />
+        {{ conn.label }}
+      </span>
     </div>
 
     <template #search>
