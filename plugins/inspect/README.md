@@ -16,7 +16,7 @@ framework-neutral client (`connectDevframe`, `rpc.sharedState`) with a Vue + Vit
 ## Use it standalone
 
 ```bash
-npx @devframes/plugin-inspect
+pnpx @devframes/plugin-inspect
 ```
 
 Opens the inspector against a fresh standalone devframe connection — useful as a

@@ -19,7 +19,7 @@ Interactive shells run on a real pseudo-terminal via [`zigpty`](https://github.c
 ## Standalone
 
 ```sh
-npx @devframes/plugin-terminals
+pnpx @devframes/plugin-terminals
 ```
 
 ## Mount into a Vite host
@@ -71,6 +71,25 @@ await rpc.call('hub:docks:activate', {
 ```
 
 It works whether the panel is already open (it reacts to the `devframe:docks:active` shared-state slot) or mounts in response to the switch (it reads the slot on start and converges). Focus is one-shot: an unknown or not-yet-arrived session id waits for that session to appear, and the user's own tab clicks are always honored afterward. A session id that never appears is a no-op — the default selection (most-recent session) stands.
+
+## RPC surface
+
+All functions are namespaced `devframes:plugin:terminals:*`:
+
+| Function | Type | Purpose |
+|----------|------|---------|
+| `list` | `query` (snapshot) | The current sessions with their status, mode, and command. |
+| `presets` | `query` (snapshot) | The declared launcher presets. |
+| `spawn` | `action` | Start a new session from a preset id, or a command + mode. Interactive sessions accept input; readonly sessions only stream output. |
+| `write` | `action` | Send input to an interactive session. |
+| `resize` | `action` | Resize a session's PTY to the given columns and rows. |
+| `restart` | `action` | Restart a session's process, keeping its id and scrollback. |
+| `rename` | `action` | Rename a session. |
+| `terminate` | `action` | End a session's running process; keeps the session and its scrollback. |
+| `remove` | `action` | Kill a session and discard it (process, stream, and scrollback). |
+| `clear-exited` | `action` | Discard every stopped session at once; running sessions are left untouched. |
+
+Status (and every mutation above) is mirrored into shared state, so every connected panel stays in sync.
 
 ## Source
 

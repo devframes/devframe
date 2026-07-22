@@ -32,7 +32,7 @@ The editor iframe points at the server's own origin, so its WebSocket traffic fl
 ## Standalone
 
 ```sh
-npx @devframes/plugin-code-server
+pnpx @devframes/plugin-code-server
 ```
 
 ## Mount into a Vite host

@@ -38,9 +38,9 @@ import { dataInspectorVitePlugin } from '@devframes/plugin-data-inspector/vite'
 ## Standalone CLI
 
 ```sh
-devframe-data-inspector stats.json trace.jsonl   # inspect local data files
-devframe-data-inspector build stats.json         # self-contained static export
-devframe-data-inspector attach                   # attach to a process running the agent
+pnpx @devframes/plugin-data-inspector stats.json trace.jsonl # inspect local data files
+pnpx @devframes/plugin-data-inspector build stats.json       # self-contained static export
+pnpx @devframes/plugin-data-inspector attach                 # attach to a process running the agent
 ```
 
 Static exports embed the dataset and run the same query engine client-side, so saved recipes stay portable.
@@ -64,7 +64,7 @@ DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject 
 
 On the zero-code path there's nowhere to call `registerDataSource`, so the agent auto-registers a **`globalThis`** source: assign what you want to inspect onto the global object (`globalThis.store = store`) and query it live. Opt out with `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
 
-The agent binds `127.0.0.1`, requires devframe's trust handshake with a per-run token by default, and advertises its endpoint in `node_modules/.data-inspector/agent.json`, which `devframe-data-inspector attach` picks up automatically.
+The agent binds `127.0.0.1`, requires devframe's trust handshake with a per-run token by default, and advertises its endpoint in `node_modules/.data-inspector/agent.json`, which `pnpx @devframes/plugin-data-inspector attach` picks up automatically.
 
 > [!WARNING]
 > A connected inspector runs eval-grade jora queries against live objects: queries can invoke functions reachable as own properties and fire getters. Treat the agent endpoint like a debugger port — keep it on loopback and keep auth on.

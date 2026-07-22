@@ -70,6 +70,17 @@ ctx.services.whenAvailable('devframes:plugin:data-inspector:sources', (sources) 
 > [!WARNING]
 > Queries are eval-grade access to registered objects: jora can invoke any function reachable as an own property and fires own getters. Register live objects with that in mind, and keep inspector endpoints on loopback.
 
+## Standalone
+
+```sh
+pnpx @devframes/plugin-data-inspector                      # the example source
+pnpx @devframes/plugin-data-inspector stats.json log.jsonl # one static source per data file
+pnpx @devframes/plugin-data-inspector build stats.json     # self-contained static export
+pnpx @devframes/plugin-data-inspector attach               # attach to a process running the agent
+```
+
+`.json` files parse whole; `.jsonl` / `.ndjson` parse as an array of records. `build` writes a static site embedding the dataset — the same query engine runs client-side there, so saved recipes keep working.
+
 ## Mount into a Vite host
 
 ```ts
@@ -98,16 +109,17 @@ export default defineConfig({
 
 Hub hosts mount the default export like any devframe definition.
 
-## Standalone CLI
+## Programmatic
 
-```sh
-devframe-data-inspector                      # the example source
-devframe-data-inspector stats.json log.jsonl # one static source per data file
-devframe-data-inspector build stats.json     # self-contained static export
-devframe-data-inspector attach               # attach to a process running the agent
+`createDataInspectorDevframe(options)` returns a definition you can deploy through any adapter:
+
+```ts
+import { createDataInspectorDevframe } from '@devframes/plugin-data-inspector'
+
+export default createDataInspectorDevframe({
+  exampleSource: false,
+})
 ```
-
-`.json` files parse whole; `.jsonl` / `.ndjson` parse as an array of records. `build` writes a static site embedding the dataset — the same query engine runs client-side there, so saved recipes keep working.
 
 ## Attach to another Node process
 
@@ -139,7 +151,7 @@ globalThis.cache = cache
 
 Then query `store`, `cache`, or `keys($)` to see what's there. The source reads `globalThis` at query time, so assignments made after the agent started show up on the next run. Opt out with `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
 
-The agent binds `127.0.0.1`, requires devframe's trust handshake with a per-run pre-shared token, and advertises its endpoint in `node_modules/.data-inspector/agent.json` — `devframe-data-inspector attach` consumes it automatically (or pass `ws://…` and `--token` explicitly). Queries execute inside the target process, where the live objects are. Treat the endpoint like a debugger port.
+The agent binds `127.0.0.1`, requires devframe's trust handshake with a per-run pre-shared token, and advertises its endpoint in `node_modules/.data-inspector/agent.json` — `pnpx @devframes/plugin-data-inspector attach` consumes it automatically (or pass `ws://…` and `--token` explicitly). Queries execute inside the target process, where the live objects are. Treat the endpoint like a debugger port.
 
 ## RPC surface
 
@@ -153,3 +165,7 @@ All functions are namespaced `devframes:plugin:data-inspector:*`:
 | `skeleton` | `query` | The type skeleton of a source, honoring the filter options. |
 | `suggest` | `query` | Autocomplete candidates from jora's stat mode at a cursor position. |
 | `saved:list` / `saved:save` / `saved:delete` | `query` / `action` | Saved-query recipes in the `workspace` and `project` scopes. |
+
+## Source
+
+[`plugins/data-inspector`](https://github.com/devframes/devframe/tree/main/plugins/data-inspector)
