@@ -247,6 +247,65 @@ describe('@devframes/plugin-terminals', () => {
     expect(list.some(s => s.id === info.id)).toBe(false)
   })
 
+  it('kills a running process but keeps the session as stopped', async () => {
+    const client = bootClient(server.port)
+    await new Promise(r => setTimeout(r, 50))
+
+    const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
+      command: NODE,
+      args: ['-e', 'setInterval(() => {}, 1000)'],
+      mode: 'readonly',
+    })
+
+    await vi.waitFor(async () => {
+      const list = await sessions(server)
+      expect(list.find(s => s.id === info.id)?.status).toBe('running')
+    })
+
+    // terminate stops the process, but the session (and its scrollback) survive.
+    await call(client, 'devframes:plugin:terminals:terminate', { id: info.id })
+
+    await vi.waitFor(async () => {
+      const list = await sessions(server)
+      const s = list.find(x => x.id === info.id)
+      expect(s).toBeDefined()
+      expect(s?.status).not.toBe('running')
+    })
+
+    await call(client, 'devframes:plugin:terminals:remove', { id: info.id })
+  })
+
+  it('clears stopped sessions, leaving running ones untouched', async () => {
+    const client = bootClient(server.port)
+    await new Promise(r => setTimeout(r, 50))
+
+    // One session exits on its own; another stays alive.
+    const done = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
+      command: NODE,
+      args: ['-e', 'process.stdout.write("bye")'],
+      mode: 'readonly',
+    })
+    const alive = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
+      command: NODE,
+      args: ['-e', 'setInterval(() => {}, 1000)'],
+      mode: 'readonly',
+    })
+
+    await vi.waitFor(async () => {
+      const list = await sessions(server)
+      expect(list.find(s => s.id === done.id)?.status).toBe('exited')
+      expect(list.find(s => s.id === alive.id)?.status).toBe('running')
+    })
+
+    await call(client, 'devframes:plugin:terminals:clear-exited')
+
+    const list = await sessions(server)
+    expect(list.some(s => s.id === done.id)).toBe(false)
+    expect(list.some(s => s.id === alive.id)).toBe(true)
+
+    await call(client, 'devframes:plugin:terminals:remove', { id: alive.id })
+  })
+
   it('exposes presets and spawns from them', async () => {
     await server.close()
     server = await startTerminalsServer({

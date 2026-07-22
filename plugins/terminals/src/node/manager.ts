@@ -483,6 +483,30 @@ export class TerminalManager {
     const session = this.sessions.get(id)
     if (!session)
       throw diagnostics.DP_TERMINALS_0001({ id })
+    this.disposeSession(id, session)
+    this.publish()
+  }
+
+  /**
+   * Drop every stopped (non-running) session this manager owns, closing their
+   * streams and forgetting their scrollback. Sessions still running are left
+   * untouched; aggregated hub sessions aren't owned here so they never appear
+   * in {@link sessions}. Publishes once for the whole sweep.
+   */
+  clearExited(): void {
+    for (const [id, session] of this.sessions) {
+      if (session.info.status !== 'running')
+        this.disposeSession(id, session)
+    }
+    this.publish()
+  }
+
+  /**
+   * Tear a single session down — kill its process, stop polling, dispose the
+   * OSC inspector, close the sink, and drop it from the store — without
+   * publishing. Callers publish once they've finished mutating the store.
+   */
+  private disposeSession(id: string, session: ManagedSession): void {
     const proc = session.proc
     session.proc = undefined
     this.stopProcessPoll(session)
@@ -492,7 +516,6 @@ export class TerminalManager {
     if (!session.sink.closed)
       session.sink.close()
     this.sessions.delete(id)
-    this.publish()
   }
 
   /** Tear everything down — used on server shutdown and in tests. */

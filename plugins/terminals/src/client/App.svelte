@@ -33,6 +33,12 @@
 
   const activeSession = $derived(sessions.find(s => s.id === activeId) ?? null)
 
+  // Only own sessions can be killed/removed; hub-aggregated ones are read-only.
+  // `exitedCount` drives the nav-level "Clear exited" sweep.
+  const exitedCount = $derived(
+    sessions.filter(s => !isExternal(s) && s.status !== 'running').length,
+  )
+
   // A focus request that arrived (via the hub's dock-activation slot) before
   // its session showed up in the list. Applied one-shot the moment a matching
   // session appears, then cleared so the user's own tab clicks stay honored.
@@ -212,6 +218,21 @@
     spawn({ presetId: id })
   }
 
+  /** Stop the running process but keep the (now stopped) session and its scrollback. */
+  function killSession(id: string): void {
+    rpc.call('devframes:plugin:terminals:terminate', { id }).catch(() => {})
+  }
+
+  /** Discard a session entirely — process, stream, and scrollback. */
+  function removeSession(id: string): void {
+    rpc.call('devframes:plugin:terminals:remove', { id }).catch(() => {})
+  }
+
+  /** Sweep every stopped session away in one go. */
+  function clearExited(): void {
+    rpc.call('devframes:plugin:terminals:clear-exited').catch(() => {})
+  }
+
   function commitRename(id: string, title: string): void {
     renamingId = null
     rpc.call('devframes:plugin:terminals:rename', { id, title: title.trim() }).catch(() => {})
@@ -287,7 +308,7 @@
                 tabindex="-1"
                 aria-label="Close terminal"
                 class="i-ph-x op0 group-hover:op60 hover:op100! transition-opacity shrink-0"
-                onclick={(e) => { e.stopPropagation(); rpc.call('devframes:plugin:terminals:remove', { id: s.id }).catch(() => {}) }}
+                onclick={(e) => { e.stopPropagation(); removeSession(s.id) }}
                 onkeydown={() => {}}
               ></span>
             {/if}
@@ -304,6 +325,18 @@
         <div class="i-ph-plus"></div>
       </button>
     </div>
+
+    {#if exitedCount > 0}
+      <button
+        type="button"
+        class={button({ variant: 'outline', size: 'sm', class: 'shrink-0' })}
+        title="Remove all stopped sessions"
+        onclick={() => clearExited()}
+      >
+        <div class="i-ph-broom-duotone"></div>
+        <span class="hidden sm:inline">Clear exited</span>
+      </button>
+    {/if}
 
     {#if presets.length}
       <div class="relative shrink-0">
@@ -376,9 +409,15 @@
         <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Restart" onclick={() => rpc.call('devframes:plugin:terminals:restart', { id: s.id }).catch(() => {})}>
           <div class="i-ph-arrow-clockwise-duotone"></div>
         </button>
-        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill" onclick={() => rpc.call('devframes:plugin:terminals:remove', { id: s.id }).catch(() => {})}>
-          <div class="i-ph-trash-duotone"></div>
-        </button>
+        {#if s.status === 'running'}
+          <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill process" onclick={() => killSession(s.id)}>
+            <div class="i-ph-stop-duotone"></div>
+          </button>
+        {:else}
+          <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Remove session" onclick={() => removeSession(s.id)}>
+            <div class="i-ph-trash-duotone"></div>
+          </button>
+        {/if}
       {/if}
     </div>
   {/if}
