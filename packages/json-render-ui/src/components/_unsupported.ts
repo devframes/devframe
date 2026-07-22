@@ -16,10 +16,10 @@ export function formatPropKeys(keys: readonly string[]): string {
  */
 export const JsonRenderUnsupported: JrComponent<{ type?: string, keys?: string[] }> = ({ props }) =>
   h('div', {
-    class: 'flex flex-col gap-0.5 rounded border border-base bg-secondary text-xs font-mono px2 py1',
+    class: 'flex flex-wrap gap-x-2 gap-y-1 gap-0.5 rounded text-center border-2 border-dashed border-orange:50 bg-orange:5 text-xs px2 py1',
     role: 'note',
   }, [
-    h('div', { class: 'color-muted' }, 'Unsupported component'),
-    h('div', { class: 'color-base font-semibold' }, props.type ?? 'unknown'),
-    h('div', { class: 'color-faint' }, formatPropKeys(props.keys ?? [])),
+    h('div', { class: 'text-orange' }, 'Unsupported component:'),
+    h('div', { class: 'font-semibold text-orange font-mono' }, props.type ?? 'unknown'),
+    h('div', { class: 'color-faint font-mono' }, formatPropKeys(props.keys ?? [])),
   ])
