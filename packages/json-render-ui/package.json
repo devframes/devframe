@@ -1,0 +1,64 @@
+{
+  "name": "@devframes/json-render-ui",
+  "type": "module",
+  "version": "0.7.5",
+  "description": "Official reference frontend for @devframes/json-render — a Vue renderer implementing the base catalog with @antfu/design.",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/devframes/devframe#readme",
+  "repository": {
+    "directory": "packages/json-render-ui",
+    "type": "git",
+    "url": "git+https://github.com/devframes/devframe.git"
+  },
+  "bugs": "https://github.com/devframes/devframe/issues",
+  "keywords": [
+    "devtools",
+    "devframe",
+    "json-render",
+    "vue"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./components": "./dist/components/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "watch": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
+    "storybook": "storybook dev -p 6014 --host 0.0.0.0",
+    "build-storybook": "storybook build",
+    "test": "vitest run",
+    "prepack": "pnpm run build"
+  },
+  "peerDependencies": {
+    "@antfu/design": "^0.3.0",
+    "@devframes/json-render": "workspace:*",
+    "vue": "^3.5.0"
+  },
+  "dependencies": {
+    "@json-render/vue": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@antfu/design": "catalog:frontend",
+    "@devframes/json-render": "workspace:*",
+    "@iconify-json/ph": "catalog:frontend",
+    "@storybook/addon-docs": "catalog:storybook",
+    "@storybook/vue3-vite": "catalog:storybook",
+    "@unocss/preset-icons": "catalog:frontend",
+    "@vitejs/plugin-vue": "catalog:build",
+    "devframe": "workspace:*",
+    "storybook": "catalog:storybook",
+    "tsdown": "catalog:build",
+    "unocss": "catalog:frontend",
+    "vite": "catalog:build",
+    "vitest": "catalog:testing",
+    "vue": "catalog:frontend"
+  }
+}

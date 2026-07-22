@@ -5,9 +5,11 @@ import { homedir } from 'node:os'
 import process from 'node:process'
 import { defineHubRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
+import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { startHttpAndWs } from 'devframe/node'
 import { getPort } from 'get-port-please'
+import { createDashboardView } from 'minimal-json-render/dashboard'
 import { dirname, join } from 'pathe'
 import demoDevframe from './demo-devframe'
 import demoDevframeB from './demo-devframe-b'
@@ -242,6 +244,17 @@ export async function minimalNextDevframeHub(
       : undefined
     await mountDevframe(context, def, clientScript ? { dock: { clientScript } } : undefined)
   }
+
+  // Dogfood the opt-in JSON-render hub integration: author a view on the hub
+  // context and project it onto a `json-render` dock. The client (app/page.tsx)
+  // renders it with a mini React registry (registry replacement).
+  const jsonRenderView = createDashboardView(context)
+  context.docks.register(toJsonRenderDockEntry(jsonRenderView, {
+    id: 'minimal-json-render',
+    title: 'JSON Render',
+    icon: 'ph:layout-duotone',
+    category: 'app',
+  }))
 
   const started = await startHttpAndWs({
     context,

@@ -8,7 +8,6 @@ export declare function defineCommand<const W extends string = ''>(_: Omit<Devfr
 export declare function defineDockEntry<const T extends DevframeDockUserEntry, const W extends string = ''>(_: Omit<T, 'when'> & {
   when?: WhenExpression<WhenContext, W>;
 }): T;
-export declare function defineJsonRenderSpec(_: JsonRenderSpec): JsonRenderSpec;
 // #endregion
 
 // #region Variables
@@ -41,6 +40,7 @@ export { DevframeDockEntry }
 export { DevframeDockEntryBase }
 export { DevframeDockEntryCategory }
 export { DevframeDockEntryIcon }
+export { DevframeDockEntryRegistry }
 export { DevframeDocksActiveState }
 export { DevframeDocksHost }
 export { DevframeDocksUserSettings }
@@ -77,16 +77,12 @@ export { DevframeViewCustomRender }
 export { DevframeViewGroup }
 export { DevframeViewHost }
 export { DevframeViewIframe }
-export { DevframeViewJsonRender }
 export { DevframeViewLauncher }
 export { DevframeViewLauncherStatus }
 export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }
 export { EventUnsubscribe }
-export { JsonRenderElement }
-export { JsonRenderer }
-export { JsonRenderSpec }
 export { PartialWithoutId }
 export { RemoteConnectionInfo }
 export { RemoteDockOptions }

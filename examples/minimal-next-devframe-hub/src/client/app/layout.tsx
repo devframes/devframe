@@ -13,11 +13,11 @@ const themeScript = `(function(){try{if(window.matchMedia('(prefers-color-scheme
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body>{children}</body>
+      <body className="h-full m0 of-hidden bg-base color-base">{children}</body>
     </html>
   )
 }

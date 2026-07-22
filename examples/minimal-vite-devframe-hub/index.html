@@ -20,7 +20,6 @@
           <span>Minimal Vite Devframe Hub</span>
         </h1>
         <p id="status" class="m0 text-xs font-mono op-fade"><span id="conn">Connecting…</span></p>
-        <p class="m0 ml-auto text-xs font-mono italic color-muted">a ~120-line, vite-devtools-style hub you can copy</p>
       </header>
 
       <div class="grid grid-cols-[244px_1fr] min-h-0 flex-1">
@@ -33,6 +32,8 @@
 
         <main class="min-w-0 of-hidden bg-secondary">
           <iframe id="dock-iframe" src="about:blank" title="Selected dock" class="block h-full w-full border-0 bg-base"></iframe>
+          <!-- Renderer docks (e.g. json-render) mount here instead of the iframe. -->
+          <div id="dock-panel" hidden class="h-full w-full of-auto bg-base p4"></div>
         </main>
       </div>
 

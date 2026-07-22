@@ -15,6 +15,7 @@ Package: `minimal-next-devframe-hub` · framework: **React (Next.js)**
 - `mountDevframe(ctx, def)` registers any `DevframeDefinition` as a dock.
 - The built-in `hub:commands:execute` RPC dispatches any registered server command, regardless of how the host was constructed.
 - The browser-side `connectDevframe({ baseURL: '/__hub/' })` discovers the WS endpoint via the Next route handler at `/__hub/__connection.json`, which starts the singleton host on demand.
+- The [JSON-render](/guide/json-render) hub integration with **registry replacement**: the host authors a view and projects it onto a `json-render` dock, and the React client renders it with a small in-example React registry (rather than the Vue `@devframes/json-render-ui`) — the path a non-Vue host uses.
 
 ## Run it
 

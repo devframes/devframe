@@ -13,14 +13,17 @@
   "dependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",
+    "@devframes/json-render": "workspace:*",
     "@devframes/plugin-a11y": "workspace:*",
     "@devframes/plugin-code-server": "workspace:*",
     "@devframes/plugin-git": "workspace:*",
     "@devframes/plugin-inspect": "workspace:*",
     "@devframes/plugin-messages": "workspace:*",
     "@devframes/plugin-terminals": "workspace:*",
+    "@json-render/react": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
+    "minimal-json-render": "workspace:*",
     "next": "catalog:frontend",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend"

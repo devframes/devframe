@@ -50,6 +50,7 @@ catalogs:
     vite: ^8.1.5
     vite-plugin-solid: ^2.11.13
   deps:
+    '@json-render/core': ^0.19.0
     '@modelcontextprotocol/sdk': ^1.29.0
     '@valibot/to-json-schema': ^1.7.1
     birpc: ^4.0.0
@@ -77,6 +78,7 @@ catalogs:
     whenexpr: ^0.1.2
     ws: ^8.21.1
     zigpty: ^0.2.1
+    zod: ^4.3.6
   docs:
     mermaid: ^11.16.0
     vitepress: ^2.0.0-alpha.18
@@ -86,6 +88,8 @@ catalogs:
     '@floating-ui/react': ^0.27.20
     '@iconify-json/catppuccin': ^1.2.17
     '@iconify-json/ph': ^1.2.2
+    '@json-render/react': ^0.19.0
+    '@json-render/vue': ^0.19.0
     '@pierre/diffs': ^1.2.12
     '@radix-ui/react-scroll-area': ^1.2.15
     '@radix-ui/react-separator': ^1.1.12

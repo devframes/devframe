@@ -13,6 +13,8 @@
   "dependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",
+    "@devframes/json-render": "workspace:*",
+    "@devframes/json-render-ui": "workspace:*",
     "@devframes/plugin-a11y": "workspace:*",
     "@devframes/plugin-code-server": "workspace:*",
     "@devframes/plugin-data-inspector": "workspace:*",
@@ -22,10 +24,13 @@
     "@devframes/plugin-og": "workspace:*",
     "@devframes/plugin-terminals": "workspace:*",
     "colorjs.io": "catalog:frontend",
-    "devframe": "workspace:*"
+    "devframe": "workspace:*",
+    "minimal-json-render": "workspace:*",
+    "vue": "catalog:frontend"
   },
   "devDependencies": {
     "@iconify-json/ph": "catalog:frontend",
+    "@vitejs/plugin-vue": "catalog:build",
     "get-port-please": "catalog:deps",
     "pathe": "catalog:deps",
     "unocss": "catalog:frontend",

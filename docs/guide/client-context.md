@@ -38,6 +38,7 @@ Viewers with an HTML pipeline layer injection on top: `@vitejs/devtools` wraps t
 | `connect` | Options forwarded to `connectDevframe` when `rpc` is not supplied — pass `baseURL` to point at the hub's connection-meta mount (e.g. `/__hub/`). |
 | `clientType` | `'standalone'` (default) — the runtime owns the whole page (a hub UI). `'embedded'` — the runtime lives inside a user app alongside a panel. |
 | `loadClientScripts` | Import and run dock entries' client scripts. Default `true`. |
+| `renderers` | Dock renderers to register at boot, keyed by dock `type` (e.g. `{ 'json-render': createJsonRenderDockRenderer() }` from `@devframes/json-render-ui`). The hub ships none. |
 
 Boot the host once per page: a second boot replaces the published context and logs a warning. `dispose()` tears down its listeners and unpublishes the context it owns.
 
@@ -52,6 +53,7 @@ Boot the host once per page: a second boot replaces the published context and lo
 | `docks` | Dock entries and selection — `entries`, `selected`, `groupedEntries`, `switchEntry()`, `toggleEntry()`, `getStateById()`. |
 | `panel` | Dock panel state: position, size, drag/resize flags. |
 | `commands` | The command palette: `register()`, `execute()`, `getKeybindings()`. |
+| `renderers` | Dock-renderer registry — `register()`, `get()`, `has()`, `mount(entry, container)`. Routes a dock `type` to a host-registered renderer (e.g. [JSON-Render](./json-render)); the hub ships none. |
 | `when` | The [when-clause](./when-clauses) evaluation context. |
 | `connection` | The client's live [connection status](./client#handling-connection-and-auth-errors) — `status`, `error`, and `events` — so a viewer can render one central connection indicator for every docked plugin. |
 

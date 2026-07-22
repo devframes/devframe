@@ -22,6 +22,7 @@ import type {
   DocksPanelContext,
   WhenClauseContext,
 } from './docks'
+import type { DockRenderer, DockRenderersContext } from './renderers'
 import { connectDevframe } from 'devframe/client'
 import { createEventEmitter } from 'devframe/utils/events'
 import { DEFAULT_CATEGORIES_ORDER, DEFAULT_STATE_USER_SETTINGS } from '../constants'
@@ -53,6 +54,13 @@ export interface DevframeClientHostOptions {
    * `custom-render`, and iframe `clientScript`). Default `true`.
    */
   loadClientScripts?: boolean
+  /**
+   * Dock renderers to register at boot, keyed by dock `type`. The host
+   * application injects the ones it wants (e.g.
+   * `{ 'json-render': createJsonRenderDockRenderer() }` from
+   * `@devframes/json-render-ui`). The hub ships none by default.
+   */
+  renderers?: Record<string, DockRenderer>
 }
 
 export interface DevframeClientHost {
@@ -77,6 +85,8 @@ export async function createDevframeClientHost(
 ): Promise<DevframeClientHost> {
   const clientType: DockClientType = options.clientType ?? 'standalone'
   const rpc = options.rpc ?? await connectDevframe(options.connect)
+  // Set by createRenderersContext(); teardown disposes every live mount.
+  let mountedRenderers: Set<() => void> | undefined
 
   const [docksState, commandsState, settings] = await Promise.all([
     rpc.sharedState.get<DevframeDockEntry[]>(DOCKS_STATE_KEY, { initialValue: [] }),
@@ -92,6 +102,7 @@ export async function createDevframeClientHost(
   const panel = createPanelContext(clientType)
   const docks = createDocksContext()
   const commands = createCommandsContext()
+  const renderers = createRenderersContext()
   const when: WhenClauseContext = {
     get context(): WhenContext {
       return {
@@ -109,6 +120,7 @@ export async function createDevframeClientHost(
     panel,
     docks,
     commands,
+    renderers,
     when,
     connection: {
       get status() {
@@ -169,6 +181,9 @@ export async function createDevframeClientHost(
     context,
     dispose() {
       for (const off of disposers.splice(0)) off()
+      if (mountedRenderers) {
+        for (const disposeMount of [...mountedRenderers]) disposeMount()
+      }
       if (getDevframeClientContext() === context)
         setDevframeClientContext(undefined)
     },
@@ -291,6 +306,52 @@ export async function createDevframeClientHost(
       paletteOpen: false,
     }
     return ctx
+  }
+
+  // ── renderers ────────────────────────────────────────────────────────────
+
+  function createRenderersContext(): DockRenderersContext {
+    const rendererMap = new Map<string, DockRenderer>()
+    for (const [type, renderer] of Object.entries(options.renderers ?? {}))
+      rendererMap.set(type, renderer)
+    // Every live mount's disposer, so host teardown cleans them all up.
+    const mountedDisposers = new Set<() => void>()
+    mountedRenderers = mountedDisposers
+
+    return {
+      register(type, renderer) {
+        rendererMap.set(type, renderer)
+        return () => {
+          if (rendererMap.get(type) === renderer)
+            rendererMap.delete(type)
+        }
+      },
+      get: type => rendererMap.get(type),
+      has: type => rendererMap.has(type),
+      async mount(entry, container) {
+        const renderer = rendererMap.get(entry.type)
+        if (!renderer) {
+          console.warn(`[@devframes/hub] no renderer registered for dock type "${entry.type}" (entry "${entry.id}")`)
+          return () => {}
+        }
+        const instance = await renderer({ entry, container, context })
+        let disposed = false
+        let offDeactivate: (() => void) | undefined
+        const dispose = (): void => {
+          if (disposed)
+            return
+          disposed = true
+          mountedDisposers.delete(dispose)
+          offDeactivate?.()
+          instance.dispose?.()
+        }
+        mountedDisposers.add(dispose)
+        // Dispose when the dock deactivates — the Vite viewer leaked here by
+        // never unsubscribing the renderer's shared-state listeners.
+        offDeactivate = entryToStateMap.get(entry.id)?.events.on('entry:deactivated', dispose)
+        return dispose
+      },
+    }
   }
 
   // ── client scripts ───────────────────────────────────────────────────────

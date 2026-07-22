@@ -15,7 +15,9 @@ export interface DevframeCapabilities {
  * agent + the view-host (HTTP file-serving). Host adapters can wrap this
  * to add their own surfaces; for example, `@vitejs/devtools-kit`'s
  * `createKitContext` adds `docks`, `terminals`, `messages`, and
- * `commands` when mounted into Vite DevTools.
+ * `commands` when mounted into Vite DevTools. JSON rendering is an opt-in
+ * integration (`@devframes/json-render`) layered on top, not part of this
+ * core surface.
  */
 export interface DevframeNodeContext {
   readonly workspaceRoot: string

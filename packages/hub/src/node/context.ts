@@ -2,7 +2,6 @@ import type { CreateHostContextOptions } from 'devframe/node'
 import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
 import type { DevframeCommandsHost } from '../types/commands'
 import type { DevframeDockActivation, DevframeDocksActiveState, DevframeDocksHost } from '../types/docks'
-import type { JsonRenderer, JsonRenderSpec } from '../types/json-render'
 import type { DevframeMessageEntry, DevframeMessageEntryInput, DevframeMessagesHost } from '../types/messages'
 import type { DevframeTerminalsHost } from '../types/terminals'
 import { createHostContext } from 'devframe/node'
@@ -85,13 +84,14 @@ declare module 'devframe/types' {
 /**
  * Hub-augmented node context — extends devframe's framework-neutral
  * `DevframeNodeContext` with the hub-level subsystems (`docks`,
- * `terminals`, `messages`, `commands`) and the `createJsonRenderer`
- * factory.
+ * `terminals`, `messages`, `commands`).
  *
  * Framework kits further extend this with their own slots (e.g.
  * `viteConfig`, `viteServer`). Host-specific capabilities (editor open,
  * filesystem reveal, etc.) ship as kit-registered RPC functions rather
- * than as part of this surface.
+ * than as part of this surface. JSON-render is not part of the hub: it is
+ * an opt-in integration (`@devframes/json-render`) that augments any
+ * devframe context and contributes its own dock type.
  */
 export interface DevframeHubContext extends DevframeNodeContext {
   readonly host: DevframeHost
@@ -99,10 +99,6 @@ export interface DevframeHubContext extends DevframeNodeContext {
   terminals: DevframeTerminalsHost
   messages: DevframeMessagesHost
   commands: DevframeCommandsHost
-  /**
-   * Create a JsonRenderer handle for building json-render powered UIs.
-   */
-  createJsonRenderer: (spec: JsonRenderSpec) => JsonRenderer
 }
 
 /**
@@ -139,28 +135,6 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
   context.commands = commands
 
   await docks.init()
-
-  let jrCounter = 0
-  context.createJsonRenderer = (initialSpec: JsonRenderSpec): JsonRenderer => {
-    const stateKey = `devframe:json-render:${jrCounter++}`
-    const statePromise = context.rpc.sharedState.get(stateKey as any, {
-      initialValue: initialSpec as any,
-    })
-
-    return {
-      _stateKey: stateKey,
-      async updateSpec(spec) {
-        const state = await statePromise
-        state.mutate(() => spec as any)
-      },
-      async updateState(newState) {
-        const state = await statePromise
-        state.mutate((draft: any) => {
-          draft.state = { ...draft.state, ...newState }
-        })
-      },
-    }
-  }
 
   const debounceMs = options.mode === 'build' ? 0 : 10
 

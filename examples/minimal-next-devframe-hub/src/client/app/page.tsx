@@ -9,6 +9,7 @@ import type {
 } from '@devframes/hub/types'
 import { connectDevframe, createDevframeClientHost } from '@devframes/hub/client'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createReactJsonRenderDockRenderer } from '../json-render/dock-renderer'
 import { iconClass } from './icons'
 
 const HUB_BASE = '/__hub/'
@@ -20,9 +21,17 @@ interface Status {
 
 type IframeDock = DevframeDockEntry & { type: 'iframe', url: string }
 type TerminalSummary = Pick<DevframeTerminalSession, 'id' | 'title' | 'status' | 'description'>
+type ClientHost = Awaited<ReturnType<typeof createDevframeClientHost>>
 
 function isIframeDock(d: DevframeDockEntry): d is IframeDock {
   return d.type === 'iframe' && typeof (d as { url?: unknown }).url === 'string'
+}
+
+// A dock this shell can display: an iframe, or one with a registered renderer
+// (the json-render dock, rendered by the mini React registry).
+const RENDERER_TYPES = new Set(['json-render'])
+function isRenderableDock(d: DevframeDockEntry): boolean {
+  return isIframeDock(d) || RENDERER_TYPES.has(d.type)
 }
 
 /** Render a dock icon, falling back to the title's initial when unmapped. */
@@ -43,6 +52,8 @@ export default function Page() {
   const [pingResult, setPingResult] = useState('Run ping')
   const [selectedDockId, setSelectedDockId] = useState<string | null>(null)
   const rpcRef = useRef<DevframeRpcClient | null>(null)
+  const hostRef = useRef<ClientHost | null>(null)
+  const panelRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -60,7 +71,14 @@ export default function Page() {
         // Boot the framework-level client host: it builds the shared client
         // context and imports each dock's client script into this page — e.g.
         // the a11y inspector's in-page agent, which then scans this hub live.
-        const clientHost = await createDevframeClientHost({ rpc })
+        //
+        // Register a mini React json-render renderer so the hub can display the
+        // `json-render` dock authored server-side via @devframes/json-render.
+        const clientHost = await createDevframeClientHost({
+          rpc,
+          renderers: { 'json-render': createReactJsonRenderDockRenderer() },
+        })
+        hostRef.current = clientHost
 
         const docksState = await rpc.sharedState.get<DevframeDockEntry[]>(
           'devframe:docks',
@@ -122,18 +140,41 @@ export default function Page() {
     }
   }, [])
 
-  const iframeDocks = useMemo(() => docks.filter(isIframeDock), [docks])
+  const renderableDocks = useMemo(() => docks.filter(isRenderableDock), [docks])
 
   useEffect(() => {
-    if (selectedDockId && !iframeDocks.some(d => d.id === selectedDockId)) {
+    if (selectedDockId && !renderableDocks.some(d => d.id === selectedDockId)) {
       setSelectedDockId(null)
       return
     }
-    if (!selectedDockId && iframeDocks.length > 0)
-      setSelectedDockId(iframeDocks[0].id)
-  }, [iframeDocks, selectedDockId])
+    if (!selectedDockId && renderableDocks.length > 0)
+      setSelectedDockId(renderableDocks[0].id)
+  }, [renderableDocks, selectedDockId])
 
-  const selectedDock = iframeDocks.find(d => d.id === selectedDockId) ?? null
+  const selectedDock = renderableDocks.find(d => d.id === selectedDockId) ?? null
+  const selectedIsIframe = selectedDock ? isIframeDock(selectedDock) : false
+
+  // Mount a renderer dock (json-render) into the panel via the client host's
+  // renderer registry, disposing when the selection changes. Keyed by dock id
+  // so a live view-state update (its own shared state) doesn't remount.
+  useEffect(() => {
+    const host = hostRef.current
+    const dock = selectedDock
+    const container = panelRef.current
+    if (!host || !dock || isIframeDock(dock) || !container)
+      return
+    let alive = true
+    let dispose: (() => void) | undefined
+    void host.context.renderers.mount(dock, container).then((d) => {
+      if (alive)
+        dispose = d
+      else d()
+    })
+    return () => {
+      alive = false
+      dispose?.()
+    }
+  }, [selectedDockId, selectedIsIframe])
 
   async function ping() {
     if (!rpcRef.current)
@@ -165,16 +206,15 @@ export default function Page() {
           <span className={`inline-block size-1.5 rounded-full shrink-0 ${statusDot} mr-1.5 align-middle`} />
           {status.text}
         </p>
-        <p className="m0 ml-auto text-xs font-mono italic color-muted">a vite-devtools-style hub on Next.js you can copy</p>
       </header>
 
       <div className="grid grid-cols-[244px_1fr] min-h-0 flex-1">
         <aside className="flex flex-col gap-0.5 of-auto border-r border-base bg-secondary p2">
           <h2 className="px2 py1 text-[0.68rem] uppercase tracking-wider color-muted">Docks</h2>
           <ul className="m0 flex flex-col list-none gap-0.5 p0">
-            {iframeDocks.length === 0
-              ? <li className="op-mute px2 text-sm">No iframe docks</li>
-              : iframeDocks.map(dock => (
+            {renderableDocks.length === 0
+              ? <li className="op-mute px2 text-sm">No docks</li>
+              : renderableDocks.map(dock => (
                   <li key={dock.id}>
                     <button
                       type="button"
@@ -191,12 +231,19 @@ export default function Page() {
         </aside>
 
         <main className="min-w-0 of-hidden bg-secondary">
-          <iframe
-            key={selectedDock?.id ?? 'none'}
-            src={selectedDock?.url ?? 'about:blank'}
-            title="Selected dock"
-            className="block h-full w-full border-0 bg-base"
-          />
+          {selectedIsIframe
+            ? (
+                <iframe
+                  key={selectedDock?.id ?? 'none'}
+                  src={(selectedDock as IframeDock | null)?.url ?? 'about:blank'}
+                  title="Selected dock"
+                  className="block h-full w-full border-0 bg-base"
+                />
+              )
+            : (
+                // Renderer docks (json-render) mount here via the client host.
+                <div key={selectedDock?.id ?? 'none'} ref={panelRef} className="h-full w-full of-auto bg-base p4" />
+              )}
         </main>
       </div>
 

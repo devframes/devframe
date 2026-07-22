@@ -1,5 +1,4 @@
 import type { ConnectionMeta, EventEmitter } from 'devframe/types'
-import type { JsonRenderer } from './json-render'
 
 export interface DevframeDocksHost {
   readonly views: Map<string, DevframeDockUserEntry>
@@ -252,12 +251,6 @@ export interface DevframeViewBuiltin extends DevframeDockEntryBase {
   id: string
 }
 
-export interface DevframeViewJsonRender extends DevframeDockEntryBase {
-  type: 'json-render'
-  /** JsonRenderer handle created by ctx.createJsonRenderer() */
-  ui: JsonRenderer
-}
-
 /**
  * A dock group: a single dock-bar button that collapses every entry whose
  * {@link DevframeDockEntryBase.groupId} matches this group's `id`.
@@ -280,7 +273,33 @@ export interface DevframeViewGroup extends DevframeDockEntryBase {
   defaultChildId?: string
 }
 
-export type DevframeDockUserEntry = DevframeViewIframe | DevframeViewAction | DevframeViewCustomRender | DevframeViewLauncher | DevframeViewJsonRender | DevframeViewGroup | DevframeViewBuiltin
+/**
+ * The **open** registry of dock entry variants, keyed by their `type`
+ * discriminator. The hub ships the framework-neutral built-ins; opt-in
+ * integrations contribute their own variants through declaration merging —
+ * e.g. `@devframes/json-render/hub` adds a `'json-render'` entry. The hub
+ * itself stays agnostic: it hard-codes no integration-specific variant.
+ *
+ * @example
+ * ```ts
+ * // in an opt-in integration package
+ * declare module '@devframes/hub/types' {
+ *   interface DevframeDockEntryRegistry {
+ *     'my-view': MyDockEntry
+ *   }
+ * }
+ * ```
+ */
+export interface DevframeDockEntryRegistry {
+  'iframe': DevframeViewIframe
+  'action': DevframeViewAction
+  'custom-render': DevframeViewCustomRender
+  'launcher': DevframeViewLauncher
+  'group': DevframeViewGroup
+  '~builtin': DevframeViewBuiltin
+}
+
+export type DevframeDockUserEntry = DevframeDockEntryRegistry[keyof DevframeDockEntryRegistry]
 
 export type DevframeDockEntry = DevframeDockUserEntry
 

@@ -94,6 +94,11 @@ export function createSharedState<T extends object>(
     enablePatches = false,
   } = options
 
+  // `mutate` uses `produceWithPatches` when patches are enabled, which requires
+  // Immer's Patches plugin to be loaded up front (not only on `patch()`).
+  if (enablePatches)
+    enableImmerPatches()
+
   const events = createEventEmitter<SharedStateEvents<T>>()
   let state = options.initialValue
   const syncIds = new Set<string>()

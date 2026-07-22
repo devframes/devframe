@@ -1,0 +1,58 @@
+{
+  "name": "@devframes/json-render",
+  "type": "module",
+  "version": "0.7.5",
+  "description": "Opt-in, framework-neutral JSON-render protocol layer for devframe — spec/catalog types, base catalog, and the node runtime factory.",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/devframes/devframe#readme",
+  "repository": {
+    "directory": "packages/json-render",
+    "type": "git",
+    "url": "git+https://github.com/devframes/devframe.git"
+  },
+  "bugs": "https://github.com/devframes/devframe/issues",
+  "keywords": [
+    "devtools",
+    "devframe",
+    "json-render"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./core": "./dist/core.mjs",
+    "./hub": "./dist/hub.mjs",
+    "./node": "./dist/node/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "watch": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
+    "prepack": "pnpm run build"
+  },
+  "peerDependencies": {
+    "@devframes/hub": "workspace:*",
+    "devframe": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@devframes/hub": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@json-render/core": "catalog:deps",
+    "nostics": "catalog:deps",
+    "zod": "catalog:deps"
+  },
+  "devDependencies": {
+    "@devframes/hub": "workspace:*",
+    "@types/node": "catalog:types",
+    "devframe": "workspace:*",
+    "tsdown": "catalog:build"
+  }
+}

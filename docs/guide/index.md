@@ -26,6 +26,7 @@ Devframe keeps its surface focused on one tool, so the same definition stays por
 | **[Devframe Definition](./devframe-definition)** | One `defineDevframe` call describes your tool once; the adapters deploy it anywhere. |
 | **[RPC](./rpc)** | Type-safe bidirectional calls built on birpc + valibot. Supports `query`, `static`, `action`, and `event` types. |
 | **[Shared State](./shared-state)** | Observable, patch-synced state that survives reconnects and bridges server ↔ browser. |
+| **[JSON-Render](./json-render)** | Opt-in data-driven UI — author a view as a serializable spec, render it standalone or in a hub dock with a replaceable frontend. |
 | **[Diagnostics](./diagnostics)** | Coded warnings/errors via `nostics` — registered into the host's shared lookup so adapters and consumers share the same surface. |
 | **[Streaming](./streaming)** | One-way (RPC streaming) and two-way (uploads) channel primitives for long-running data. |
 | **[When Clauses](./when-clauses)** | VS Code-style conditional expressions for docks, commands, and custom UI. |

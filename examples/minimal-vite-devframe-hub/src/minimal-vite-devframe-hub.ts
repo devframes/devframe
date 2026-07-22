@@ -24,6 +24,12 @@ export interface MinimalViteDevframeHubOptions {
    * (e.g. the a11y inspector's in-page agent).
    */
   clientScripts?: Record<string, ClientScriptEntry>
+  /**
+   * Called once the hub context is created (after devframes are mounted),
+   * before the server starts. Lets the composition register extra surfaces on
+   * the context — e.g. a `json-render` dock via `@devframes/json-render`.
+   */
+  onContextReady?: (context: DevframeHubContext) => void | Promise<void>
 }
 
 // Minimal hub-local RPCs — used by the UI for read-side data. A more
@@ -157,6 +163,8 @@ export function minimalViteDevframeHub(options: MinimalViteDevframeHubOptions = 
         const clientScript = options.clientScripts?.[def.id]
         await mountDevframe(context, def, clientScript ? { dock: { clientScript } } : undefined)
       }
+
+      await options.onContextReady?.(context)
 
       started = await startHttpAndWs({
         context,
