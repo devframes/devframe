@@ -102,17 +102,22 @@ async function main(): Promise<void> {
         const activeEntry = list.find(e => e.stateKey === active.value) ?? list[0]
         const spec = specs[activeEntry.stateKey]
 
+        // A single view renders on its own — no nav. The top bar (brand +
+        // segmented view switcher) only appears once there's more than one.
+        const multiple = list.length > 1
+
         return h('div', { class: 'min-h-screen bg-base color-base font-sans' }, [
-          // Top bar: brand + (when >1) the shared segmented view switcher.
-          h('div', {
-            class: 'flex items-center gap-3 border-b border-base px5 h-nav',
-          }, [
-            h('div', { class: 'flex items-center gap-2 font-medium' }, [
-              h('div', { class: 'i-ph:layout-duotone color-primary text-lg' }),
-              h('span', 'JSON Render'),
-            ]),
-            list.length > 1 ? h('div', { class: 'ml-auto' }, [renderTabs(list)]) : null,
-          ]),
+          multiple
+            ? h('div', {
+                class: 'flex items-center gap-3 border-b border-base px5 h-nav',
+              }, [
+                h('div', { class: 'flex items-center gap-2 font-medium' }, [
+                  h('div', { class: 'i-ph:layout-duotone color-primary text-lg' }),
+                  h('span', 'JSON Render'),
+                ]),
+                h('div', { class: 'ml-auto' }, [renderTabs(list)]),
+              ])
+            : null,
           h('div', { class: 'p6' }, [
             h(JsonRenderView, {
               spec: spec ?? null,
