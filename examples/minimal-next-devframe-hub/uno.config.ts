@@ -25,6 +25,9 @@ export default defineConfig({
   // Wind4 leaves bare `border`/`border-b` at currentColor; restore the subtle
   // shared border color (matching `border-base`) for unqualified borders.
   preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
+  // The mini React json-render registry sets `badge-color-<name>` from a fixed
+  // set — these literals live in source, but safelist them to be explicit.
+  safelist: ['badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],
   shortcuts: {
     'z-nav': 'z-[30]',
     'z-dropdown': 'z-[40]',
@@ -36,6 +39,10 @@ export default defineConfig({
     'z-drawer-content': 'z-[90]',
   },
   content: {
-    filesystem: [`${client}/app/**/*.{ts,tsx}`],
+    filesystem: [
+      `${client}/app/**/*.{ts,tsx}`,
+      // The mini React json-render registry lives outside app/.
+      `${client}/json-render/**/*.{ts,tsx}`,
+    ],
   },
 })

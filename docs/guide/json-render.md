@@ -174,6 +174,10 @@ upstreamVersion }`) — no functions cross the wire. The client host disposes th
 renderer when the dock deactivates. A renderer/upstream-version mismatch logs a
 warning rather than blocking.
 
+Both hub example shells dogfood this end to end: the [Vite hub](/examples/minimal-vite-devframe-hub)
+registers `@devframes/json-render-ui` (Vue), and the [Next hub](/examples/minimal-next-devframe-hub)
+registers a small in-example React registry — the same dock, two frontends.
+
 ## Swapping the frontend
 
 A third party replaces the whole registry — pass a custom `registry` to

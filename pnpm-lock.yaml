@@ -157,6 +157,9 @@ catalogs:
     '@iconify-json/ph':
       specifier: ^1.2.2
       version: 1.2.2
+    '@json-render/react':
+      specifier: ^0.19.0
+      version: 0.19.0
     '@json-render/vue':
       specifier: ^0.19.0
       version: 0.19.0
@@ -496,6 +499,9 @@ importers:
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
+      '@devframes/json-render':
+        specifier: workspace:*
+        version: link:../../packages/json-render
       '@devframes/plugin-a11y':
         specifier: workspace:*
         version: link:../../plugins/a11y
@@ -514,12 +520,18 @@ importers:
       '@devframes/plugin-terminals':
         specifier: workspace:*
         version: link:../../plugins/terminals
+      '@json-render/react':
+        specifier: catalog:frontend
+        version: 0.19.0(react@19.2.7)(zod@4.4.3)
       colorjs.io:
         specifier: catalog:frontend
         version: 0.7.0
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
+      minimal-json-render:
+        specifier: workspace:*
+        version: link:../minimal-json-render
       next:
         specifier: catalog:frontend
         version: 16.2.10(@babel/core@7.29.0(supports-color@10.2.2))(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -2394,6 +2406,11 @@ packages:
     resolution: {integrity: sha512-vvcyZ+10EDZKbEyB1J2kXOGfDaiZR2LurZGSqi2r5STHyKr+Te85DWaBxTwRGgM7U1LtIvNx85BzzjElRKoAIg==}
     peerDependencies:
       zod: ^4.0.0
+
+  '@json-render/react@0.19.0':
+    resolution: {integrity: sha512-kTW6b6cSNRrlEfCUf/69SLoLn+CufC968ruge9tnQlp9pDTGG/SK8pgM541FdgwMFA4zm3s5mpM3G8rdODKc/A==}
+    peerDependencies:
+      react: ^19.2.3
 
   '@json-render/vue@0.19.0':
     resolution: {integrity: sha512-WWvjQnsYJsHvc61Y18z3n0feFIGDrL00ltezh4d2FGs9yrpNXhw3bZVvAi1jB7yq8/rB7nC2VF/CVu+Qg56Wgg==}
@@ -10666,6 +10683,13 @@ snapshots:
   '@json-render/core@0.19.0(zod@4.4.3)':
     dependencies:
       zod: 4.4.3
+
+  '@json-render/react@0.19.0(react@19.2.7)(zod@4.4.3)':
+    dependencies:
+      '@json-render/core': 0.19.0(zod@4.4.3)
+      react: 19.2.7
+    transitivePeerDependencies:
+      - zod
 
   '@json-render/vue@0.19.0(vue@3.5.40(typescript@5.9.3))(zod@4.4.3)':
     dependencies:

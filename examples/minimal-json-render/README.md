@@ -33,3 +33,12 @@ node bin.mjs build --out-dir dist/static   # static snapshot (read-only; actions
 
 In the static build, the spec + state are snapshotted as a read-only render and
 the action bridge reports actions as unavailable — there is no live RPC.
+
+## Reused by the hub shells
+
+The view is factored into `src/dashboard.ts` and exported as
+`minimal-json-render/dashboard` (`createDashboardView(ctx)` + `dashboardSpec`),
+so the hub examples plug the very same view into their hub context and project
+it onto a `json-render` dock — the [Vite hub](../minimal-vite-devframe-hub)
+renders it with `@devframes/json-render-ui` (Vue), and the
+[Next hub](../minimal-next-devframe-hub) renders it with a small React registry.
