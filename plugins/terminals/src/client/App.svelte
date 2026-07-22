@@ -2,7 +2,7 @@
   import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/client'
   import type { TerminalPreset, TerminalSessionInfo } from '../types'
   import type { DotState } from './design'
-  import { button, dot, iconButton, nav, navBrand, navTab, tag, toolbar } from './design'
+  import { button, dot, iconButton, modalBackdrop, modalCard, nav, navBrand, navTab, tag, toolbar } from './design'
   import { onMount } from 'svelte'
   import { DOCKS_ACTIVE_STATE_KEY, PLUGIN_ID, PRESETS_STATE_KEY, SESSIONS_STATE_KEY } from '../constants'
   import TerminalView from './TerminalView.svelte'
@@ -30,6 +30,16 @@
   let activeId = $state<string | null>(null)
   let renamingId = $state<string | null>(null)
   let presetsOpen = $state(false)
+
+  // Terminating a running process is destructive (its output stops, and for a
+  // full remove, its scrollback is discarded), so it goes through this modal.
+  interface ConfirmDialog {
+    title: string
+    body: string
+    confirmLabel: string
+    onConfirm: () => void
+  }
+  let confirm = $state<ConfirmDialog | null>(null)
 
   const activeSession = $derived(sessions.find(s => s.id === activeId) ?? null)
 
@@ -218,14 +228,48 @@
     spawn({ presetId: id })
   }
 
-  /** Stop the running process but keep the (now stopped) session and its scrollback. */
+  /**
+   * Kill a session's running process (interactive or readonly), keeping the
+   * stopped session and its scrollback. Always confirmed — a live process is
+   * being terminated.
+   */
   function killSession(id: string): void {
-    rpc.call('devframes:plugin:terminals:terminate', { id }).catch(() => {})
+    const s = sessions.find(x => x.id === id)
+    if (!s)
+      return
+    confirm = {
+      title: 'Kill process',
+      body: `Terminate “${displayName(s)}”? The process stops, but the session stays in the list so you can read its output or restart it.`,
+      confirmLabel: 'Kill process',
+      onConfirm: () => rpc.call('devframes:plugin:terminals:terminate', { id }).catch(() => {}),
+    }
   }
 
-  /** Discard a session entirely — process, stream, and scrollback. */
+  /**
+   * Discard a session entirely — process, stream, and scrollback. Removing a
+   * session whose process is still running terminates it, so that case is
+   * confirmed; an already-stopped session is dropped immediately.
+   */
   function removeSession(id: string): void {
+    const s = sessions.find(x => x.id === id)
+    if (!s)
+      return
+    if (s.status === 'running') {
+      confirm = {
+        title: 'Remove terminal',
+        body: `“${displayName(s)}” is still running. Removing it terminates the process and discards its output.`,
+        confirmLabel: 'Kill & remove',
+        onConfirm: () => rpc.call('devframes:plugin:terminals:remove', { id }).catch(() => {}),
+      }
+      return
+    }
     rpc.call('devframes:plugin:terminals:remove', { id }).catch(() => {})
+  }
+
+  function resolveConfirm(): void {
+    const action = confirm?.onConfirm
+    confirm = null
+    action?.()
   }
 
   /** Sweep every stopped session away in one go. */
@@ -243,12 +287,32 @@
     node.select()
   }
 
+  function autofocus(node: HTMLElement) {
+    node.focus()
+  }
+
+  // While the confirmation modal is open, Escape cancels and Enter confirms.
+  function onGlobalKey(e: KeyboardEvent): void {
+    if (!confirm)
+      return
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      confirm = null
+    }
+    else if (e.key === 'Enter') {
+      e.preventDefault()
+      resolveConfirm()
+    }
+  }
+
   function statusDot(status: string): DotState {
     if (status === 'running')
       return 'running'
     return status === 'exited' ? 'idle' : 'error'
   }
 </script>
+
+<svelte:window onkeydown={onGlobalKey} />
 
 {#if connectionStatus !== 'connected'}
   {@const copy = CONNECTION_COPY[connectionStatus]}
@@ -440,5 +504,36 @@
       <TerminalView {rpc} info={s} active={activeId === s.id} {isDark} />
     {/each}
   </div>
+
+  {#if confirm}
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class={modalBackdrop()} role="presentation" onclick={() => (confirm = null)}>
+      <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+      <div
+        class={modalCard()}
+        role="alertdialog"
+        aria-modal="true"
+        aria-label={confirm.title}
+        tabindex="-1"
+        onclick={e => e.stopPropagation()}
+      >
+        <div class="flex items-start gap-3">
+          <div class="i-ph-warning-duotone text-xl text-error shrink-0 mt-0.5"></div>
+          <div class="flex flex-col gap-1 min-w-0">
+            <h2 class="text-sm font-semibold color-base">{confirm.title}</h2>
+            <p class="text-sm op-mute">{confirm.body}</p>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" class={button({ variant: 'outline', size: 'sm' })} onclick={() => (confirm = null)}>
+            Cancel
+          </button>
+          <button type="button" class={button({ variant: 'destructive', size: 'sm' })} use:autofocus onclick={() => resolveConfirm()}>
+            {confirm.confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
 </div>
 {/if}

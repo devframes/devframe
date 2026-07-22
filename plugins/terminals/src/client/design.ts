@@ -95,6 +95,14 @@ export function card(extra?: string): string {
   return cx('flex flex-col rounded-xl border border-base bg-base shadow-sm', extra)
 }
 
+export function modalBackdrop(extra?: string): string {
+  return cx('fixed inset-0 z-modal-backdrop grid place-items-center p-4 bg-black/40 backdrop-blur-sm', extra)
+}
+
+export function modalCard(extra?: string): string {
+  return cx('z-modal-content w-full max-w-sm flex flex-col gap-3 p-4 rounded-xl border border-base bg-base shadow-lg', extra)
+}
+
 export function panel(extra?: string): string {
   return cx('rounded-lg border border-base bg-base', extra)
 }
