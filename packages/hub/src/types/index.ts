@@ -4,6 +4,9 @@ export type { CreateHubContextOptions, DevframeHubContext } from '../node/contex
 
 export * from './commands'
 export * from './docks'
+// Deprecated pre-0.7 json-render types, kept for compatibility — see
+// `./json-render` for details on the `@devframes/json-render` replacement.
+export * from './json-render'
 export * from './messages'
 export * from './settings'
 export * from './terminals'

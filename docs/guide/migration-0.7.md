@@ -4,7 +4,7 @@ outline: deep
 
 # Migrating to 0.7
 
-0.7's one breaking change moves the `cac` CLI framework out of `devframe`'s bundled dependencies and renames the adapter that wraps it. This page covers the change between 0.6.x and 0.7.
+0.7 moves the `cac` CLI framework out of `devframe`'s bundled dependencies (renaming the adapter that wraps it) and moves json-render out of `@devframes/hub` into its own opt-in integration. This page covers the changes between 0.6.x and 0.7.
 
 ## `cac` is now an optional peer dependency
 
@@ -43,3 +43,35 @@ await createCac(devframe).parse()
 `devframe/adapters/cli` still exports `createCli` as a deprecated alias of `createCac` (same for `CreateCliOptions` and `CliHandle`), so existing imports keep compiling — but the underlying `cac` peer dependency still needs installing per above, and the alias will be removed in a future major release. Move call sites over now rather than waiting for that removal.
 
 See [CLI (cac)](/adapters/cac) for the full adapter reference.
+
+## json-render moves out of `@devframes/hub`
+
+The hub is now json-render-agnostic — `defineJsonRenderSpec`, `ctx.createJsonRenderer`, and the `JsonRenderSpec` / `JsonRenderElement` / `JsonRenderer` types move to the opt-in [`@devframes/json-render`](./json-render) integration, which contributes its own `json-render` dock type to the hub's open dock union instead of the hub shipping one.
+
+| 0.6.x (`@devframes/hub`) | 0.7 (`@devframes/json-render`) |
+|---|---|
+| `defineJsonRenderSpec(spec)` | Pass the spec directly to `createJsonRenderView(ctx, { id, spec })` |
+| `JsonRenderSpec` | `DevframeJsonRenderSpec` |
+| `ctx.createJsonRenderer(spec)` | `createJsonRenderView(ctx, { id, spec })` (from `@devframes/json-render/node`) |
+
+```ts
+// 0.6.x
+import { defineJsonRenderSpec } from '@devframes/hub'
+
+const spec = defineJsonRenderSpec({ root: 'panel', elements: { /* ... */ } })
+const renderer = ctx.createJsonRenderer(spec)
+```
+
+```ts
+// 0.7
+import { createJsonRenderView } from '@devframes/json-render/node'
+
+const view = createJsonRenderView(ctx, {
+  id: 'panel',
+  spec: { root: 'panel', elements: { /* ... */ } },
+})
+```
+
+`@devframes/hub` still exports `defineJsonRenderSpec` as a deprecated identity function (same for the `JsonRenderSpec` / `JsonRenderElement` / `JsonRenderer` types), so existing imports keep compiling — but it no longer registers anything with the hub on its own. Move call sites over to `createJsonRenderView` now rather than waiting for the alias's removal in a future major release.
+
+See [JSON-Render](./json-render) for the full integration reference.

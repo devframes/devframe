@@ -64,12 +64,16 @@ export { DevframeViewCustomRender }
 export { DevframeViewGroup }
 export { DevframeViewHost }
 export { DevframeViewIframe }
+export { DevframeViewJsonRender }
 export { DevframeViewLauncher }
 export { DevframeViewLauncherStatus }
 export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }
 export { EventUnsubscribe }
+export { JsonRenderElement }
+export { JsonRenderer }
+export { JsonRenderSpec }
 export { PartialWithoutId }
 export { RemoteConnectionInfo }
 export { RemoteDockOptions }

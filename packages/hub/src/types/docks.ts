@@ -1,4 +1,5 @@
 import type { ConnectionMeta, EventEmitter } from 'devframe/types'
+import type { JsonRenderer } from './json-render'
 
 export interface DevframeDocksHost {
   readonly views: Map<string, DevframeDockUserEntry>
@@ -249,6 +250,20 @@ export interface DevframeViewCustomRender extends DevframeDockEntryBase {
 export interface DevframeViewBuiltin extends DevframeDockEntryBase {
   type: '~builtin'
   id: string
+}
+
+/**
+ * @deprecated json-render moved out of the hub into the opt-in
+ * `@devframes/json-render` integration in 0.7, which contributes its own
+ * `'json-render'` entry (carrying a serializable view ref, not a live
+ * `JsonRenderer` handle) to {@link DevframeDockEntryRegistry} via declaration
+ * merging. This type is kept for compatibility but is no longer a member of
+ * {@link DevframeDockUserEntry} — use `@devframes/json-render/hub` instead.
+ */
+export interface DevframeViewJsonRender extends DevframeDockEntryBase {
+  type: 'json-render'
+  /** JsonRenderer handle created by ctx.createJsonRenderer() */
+  ui: JsonRenderer
 }
 
 /**
