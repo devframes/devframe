@@ -509,8 +509,8 @@
         </button>
       {/if}
       {#if s.status === 'running'}
-        <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Kill process" onclick={() => killSession(s.id)}>
-          <div class="i-ph-stop-duotone"></div>
+        <button type="button" class={[iconButton({ variant: 'ghost', size: 'sm' }), 'hover:text-red']} title="Kill process" onclick={() => killSession(s.id)}>
+          <div class="i-ph-prohibit-duotone"></div>
         </button>
       {:else}
         <button type="button" class={iconButton({ variant: 'ghost', size: 'sm' })} title="Remove session" onclick={() => removeSession(s.id)}>
