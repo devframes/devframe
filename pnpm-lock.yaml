@@ -566,6 +566,12 @@ importers:
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
+      '@devframes/json-render':
+        specifier: workspace:*
+        version: link:../../packages/json-render
+      '@devframes/json-render-ui':
+        specifier: workspace:*
+        version: link:../../packages/json-render-ui
       '@devframes/plugin-a11y':
         specifier: workspace:*
         version: link:../../plugins/a11y
@@ -593,10 +599,19 @@ importers:
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
+      minimal-json-render:
+        specifier: workspace:*
+        version: link:../minimal-json-render
+      vue:
+        specifier: catalog:frontend
+        version: 3.5.40(typescript@6.0.3)
     devDependencies:
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
+      '@vitejs/plugin-vue':
+        specifier: catalog:build
+        version: 6.0.8(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))(vue@3.5.40(typescript@6.0.3))
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0

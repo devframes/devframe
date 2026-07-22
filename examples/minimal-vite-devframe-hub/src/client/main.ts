@@ -5,6 +5,7 @@ import type {
   DevframeTerminalSession,
 } from '@devframes/hub/types'
 import { connectDevframe, createDevframeClientHost } from '@devframes/hub/client'
+import { createJsonRenderDockRenderer } from '@devframes/json-render-ui'
 import { iconClass } from './icons'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
@@ -18,8 +19,11 @@ const messagesEl = document.querySelector<HTMLElement>('#messages')!
 const terminalsEl = document.querySelector<HTMLElement>('#terminals')!
 const pingBtn = document.querySelector<HTMLButtonElement>('#ping')!
 const iframeEl = document.querySelector<HTMLIFrameElement>('#dock-iframe')!
+const panelEl = document.querySelector<HTMLElement>('#dock-panel')!
 
 let selectedDockId: string | null = null
+// Disposer for the currently mounted renderer dock (e.g. json-render).
+let disposePanel: (() => void) | null = null
 
 function setStatus(text: string, kind?: 'ready' | 'error') {
   const dot = kind === 'ready' ? 'bg-success' : kind === 'error' ? 'bg-error' : 'bg-neutral-400'
@@ -47,6 +51,13 @@ function isIframeDock(d: DevframeDockEntry): d is DevframeDockEntry & { type: 'i
   return d.type === 'iframe' && typeof (d as { url?: unknown }).url === 'string'
 }
 
+// A dock this shell can display: an iframe, or one with a registered renderer
+// (e.g. the json-render dock, rendered by @devframes/json-render-ui).
+const RENDERER_TYPES = new Set(['json-render'])
+function isRenderableDock(d: DevframeDockEntry): boolean {
+  return isIframeDock(d) || RENDERER_TYPES.has(d.type)
+}
+
 async function main() {
   setStatus('Connecting…')
 
@@ -57,7 +68,13 @@ async function main() {
   // and imports each dock's client script into this page — e.g. the a11y
   // inspector's in-page agent, which then scans this host live. The dock UI
   // below still reads the same shared state directly.
-  await createDevframeClientHost({ rpc })
+  //
+  // Register the JSON-render dock renderer so the hub can display a
+  // `json-render` dock (authored server-side via @devframes/json-render).
+  const host = await createDevframeClientHost({
+    rpc,
+    renderers: { 'json-render': createJsonRenderDockRenderer() },
+  })
 
   // 1. Docks — read from `devframe:docks` shared state.
   const docks = await rpc.sharedState.get<DevframeDockEntry[]>(
@@ -65,26 +82,63 @@ async function main() {
     { initialValue: [] },
   )
 
+  // The dock currently mounted into the viewport (iframe or renderer panel).
+  let mountedDockId: string | null = null
+
+  async function applySelection(list: DevframeDockEntry[]): Promise<void> {
+    if (selectedDockId === mountedDockId)
+      return
+    mountedDockId = selectedDockId
+    // Tear down any active renderer mount (json-render) before switching.
+    disposePanel?.()
+    disposePanel = null
+
+    const entry = list.find(d => d.id === selectedDockId) ?? null
+    if (!entry) {
+      iframeEl.hidden = false
+      iframeEl.src = 'about:blank'
+      panelEl.hidden = true
+      return
+    }
+    if (isIframeDock(entry)) {
+      panelEl.hidden = true
+      panelEl.innerHTML = ''
+      iframeEl.hidden = false
+      iframeEl.src = entry.url
+    }
+    else {
+      // A renderer dock (json-render): mount it into the panel via the client
+      // host's renderer registry. The Vue app subscribes to the view's shared
+      // state and updates live.
+      iframeEl.hidden = true
+      iframeEl.src = 'about:blank'
+      panelEl.hidden = false
+      panelEl.innerHTML = ''
+      disposePanel = await host.context.renderers.mount(entry, panelEl)
+    }
+  }
+
   const renderDocks = () => {
-    const iframeDocks = (docks.value() ?? []).filter(isIframeDock)
+    const list = (docks.value() ?? []).filter(isRenderableDock)
 
-    if (selectedDockId && !iframeDocks.some(d => d.id === selectedDockId))
+    if (selectedDockId && !list.some(d => d.id === selectedDockId))
       selectedDockId = null
-    if (!selectedDockId && iframeDocks.length > 0)
-      selectedDockId = iframeDocks[0].id
+    if (!selectedDockId && list.length > 0)
+      selectedDockId = list[0].id
 
-    if (!iframeDocks.length) {
-      docksEl.innerHTML = '<li class="op-mute px2 text-sm">No iframe docks</li>'
+    if (!list.length) {
+      docksEl.innerHTML = '<li class="op-mute px2 text-sm">No docks</li>'
+      mountedDockId = null
+      disposePanel?.()
+      disposePanel = null
       iframeEl.src = 'about:blank'
       return
     }
 
-    renderList(docksEl, iframeDocks, d =>
+    renderList(docksEl, list, d =>
       `<li><button type="button" data-dock-id="${d.id}" class="relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${d.id === selectedDockId ? ' op100! bg-active border-base! color-base' : ''}" title="${d.title}">${dockIcon(d)}<span class="truncate">${d.title}</span></button></li>`)
 
-    const selected = iframeDocks.find(d => d.id === selectedDockId)
-    if (selected && iframeEl.getAttribute('src') !== selected.url)
-      iframeEl.src = selected.url
+    void applySelection(list)
   }
 
   docksEl.addEventListener('click', (event) => {

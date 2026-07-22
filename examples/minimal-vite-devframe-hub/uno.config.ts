@@ -25,6 +25,9 @@ export default defineConfig({
   // Wind4 leaves bare `border`/`border-b` at currentColor; restore the subtle
   // shared border color (matching `border-base`) for unqualified borders.
   preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
+  // The JSON-render dock renders @devframes/json-render-ui, whose `Badge` picks
+  // a `badge-color-<name>` at runtime — safelist the fixed set.
+  safelist: ['badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],
   shortcuts: {
     'z-nav': 'z-[30]',
     'z-dropdown': 'z-[40]',
@@ -35,5 +38,6 @@ export default defineConfig({
     'z-drawer-backdrop': 'z-[80]',
     'z-drawer-content': 'z-[90]',
   },
-  content: { pipeline: { include: [/\.(?:[cm]?[jt]sx?|html)($|\?)/] } },
+  // Also scan `.vue` — the JSON-render dock pulls in @antfu/design SFCs.
+  content: { pipeline: { include: [/\.(?:vue|[cm]?[jt]sx?|html)($|\?)/] } },
 })
