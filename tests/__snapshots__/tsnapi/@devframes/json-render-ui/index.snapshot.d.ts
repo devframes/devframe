@@ -45,7 +45,7 @@ export declare function createJsonRenderDockRenderer(_?: JsonRenderDockRendererO
 export declare function createRenderer(_?: CreateRendererOptions): import("vue").DefineComponent<{}, () => import("vue").VNode<import("vue").RendererNode, import("vue").RendererElement, {
   [key: string]: any;
 }>, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<{}> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
-export declare function sanitizeSpec(_: Spec): Spec;
+export declare function sanitizeSpec(_: Spec, _?: ComponentRegistry): Spec;
 // #endregion
 
 // #region Variables
@@ -128,6 +128,7 @@ export declare const JsonRenderView: import("vue").DefineComponent<import("vue")
   loading: boolean;
   connectionError: string | null;
 }, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+export declare const UNSUPPORTED_COMPONENT_TYPE: string;
 // #endregion
 
 // #region Other

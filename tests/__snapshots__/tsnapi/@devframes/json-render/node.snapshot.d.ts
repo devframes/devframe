@@ -6,6 +6,7 @@ export interface CreateJsonRenderViewOptions {
   id: string;
   spec: DevframeJsonRenderSpec;
   scope?: string;
+  title?: string;
 }
 // #endregion
 

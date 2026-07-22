@@ -108,11 +108,6 @@
       "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
     },
-    "minimal-json-render#build": {
-      "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@devframes/json-render#build", "@devframes/json-render-ui#build"],
-      "outputs": ["dist/**"]
-    },
     "@devframes/plugin-git#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build"],

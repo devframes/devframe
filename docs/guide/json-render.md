@@ -89,8 +89,44 @@ validation.
 
 ## Rendering standalone
 
-The app supplies the frontend lib and devframe serves its SPA. Connect, read the
-view's shared state, and render it with `JsonRenderView`:
+### Out-of-box SPA (no client build)
+
+`@devframes/json-render-ui/spa` ships a prebuilt renderer, so an app serves a
+JSON-render UI without authoring or building any client. Wrap the definition
+with `createJsonRenderDevframe` — it points `cli.distDir` at the shipped SPA
+(`jsonRenderSpaDir`) and sets `spa.loader: 'none'`:
+
+```ts
+import { createJsonRenderDevframe } from '@devframes/json-render-ui/spa'
+import { createJsonRenderView } from '@devframes/json-render/node'
+
+export default createJsonRenderDevframe({
+  id: 'my-app',
+  name: 'My App',
+  version,
+  packageName,
+  homepage,
+  description,
+  cli: { command: 'my-app', port: 9800 },
+  setup(ctx) {
+    createJsonRenderView(ctx, { id: 'main', title: 'Dashboard', spec })
+  },
+})
+```
+
+The SPA discovers views from the **view index** (`JSON_RENDER_INDEX_KEY`), a
+shared state the node factory maintains as views are created and disposed. A
+single view renders full-bleed on its own; once more than one view is
+registered, a top bar appears with the shared segmented switcher, labelling each
+view with its `title` (defaulting to the view id). The
+`@devframes/json-render-ui/spa` entry is node-safe — it exposes only the asset
+path and the wiring helper, pulling in no Vue.
+
+### Custom frontend
+
+To render with your own client, supply the frontend lib and let devframe serve
+its SPA. Connect, read the view's shared state, and render it with
+`JsonRenderView`:
 
 ```ts
 import { JSON_RENDER_UPSTREAM_VERSION } from '@devframes/json-render'
@@ -184,6 +220,12 @@ A third party replaces the whole registry — pass a custom `registry` to
 `createRenderer({ registry })` or `createJsonRenderDockRenderer({ registry })`.
 `@devframes/json-render-ui` is the reference implementation, not a hard
 dependency of the protocol; the hub acquires no Vue.
+
+A frontend need not implement every component. When a spec references a
+component the active registry lacks, the renderer isolates that element behind a
+placeholder — showing the component type and a gist of its prop keys (`{ label,
+onPress }`) — and logs a `console.warn`, while the rest of the view renders
+normally.
 
 See the [`minimal-json-render` example](/examples/minimal-json-render) for a
 runnable end-to-end app.

@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import { createHostContext } from 'devframe/node'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createJsonRenderView } from '../src/node/index'
+import { JSON_RENDER_INDEX_KEY } from '../src/view-index'
 import { JSON_RENDER_UPSTREAM_VERSION } from '../src/view-ref'
 
 function createHost(): DevframeHost {
@@ -94,6 +95,30 @@ describe('createJsonRenderView validation', () => {
     const circular: any = { root: 'a', elements: {} }
     circular.self = circular
     expect(() => createJsonRenderView(ctx, { id: 'circular', spec: circular })).toThrow(expect.objectContaining({ code: 'DF0041' }))
+  })
+})
+
+describe('createJsonRenderView index', () => {
+  it('publishes an index entry (title defaults to id) and removes it on dispose', async () => {
+    const view = createJsonRenderView(ctx, { id: 'metrics', spec })
+    const index = await ctx.rpc.sharedState.get(JSON_RENDER_INDEX_KEY)
+    expect((index.value() as Record<string, unknown>)[view.ref.stateKey]).toEqual({
+      id: 'metrics',
+      scope: 'global',
+      stateKey: view.ref.stateKey,
+      title: 'metrics',
+      upstreamVersion: JSON_RENDER_UPSTREAM_VERSION,
+    })
+
+    view.dispose()
+    expect((index.value() as Record<string, unknown>)[view.ref.stateKey]).toBeUndefined()
+  })
+
+  it('carries an explicit title', async () => {
+    const view = createJsonRenderView(ctx, { id: 'm', title: 'Metrics', spec })
+    const index = await ctx.rpc.sharedState.get(JSON_RENDER_INDEX_KEY)
+    expect((index.value() as Record<string, { title: string }>)[view.ref.stateKey].title).toBe('Metrics')
+    expect(view.title).toBe('Metrics')
   })
 })
 

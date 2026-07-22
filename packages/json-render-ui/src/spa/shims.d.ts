@@ -2,8 +2,8 @@
 declare module '*.css' {}
 declare module 'virtual:uno.css' {}
 
-// @devframes/json-render-ui resolves to source in the workspace, and wraps
-// `@antfu/design` `.vue` components — declare the module so `tsc` resolves them.
+// `@antfu/design` ships raw `.vue` components — declare the module so `tsc`
+// resolves them when the SPA renders through the shared components.
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
 

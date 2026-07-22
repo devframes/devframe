@@ -127,7 +127,7 @@ export const dashboardSpec: DevframeJsonRenderSpec = {
  * view handle so callers can build a dock ref from it.
  */
 export function createDashboardView(ctx: DevframeNodeContext): JsonRenderView {
-  const view = createJsonRenderView(ctx, { id: VIEW_ID, spec: dashboardSpec })
+  const view = createJsonRenderView(ctx, { id: VIEW_ID, title: 'Dashboard', spec: dashboardSpec })
 
   // The action bridge dispatches a spec action as an RPC call of the same
   // name. `Refresh` re-samples the metrics.

@@ -6,7 +6,7 @@ import { basePropSchemas, JSON_RENDER_UPSTREAM_VERSION } from '@devframes/json-r
 import { JSONUIProvider, Renderer } from '@json-render/vue'
 import { computed, defineComponent, h, watch } from 'vue'
 import { createActionBridge } from './action-bridge'
-import { baseRegistry, ERROR_COMPONENT_TYPE } from './registry'
+import { baseRegistry, ERROR_COMPONENT_TYPE, UNSUPPORTED_COMPONENT_TYPE } from './registry'
 
 // Upstream ships these as heavily-typed `DefineComponent`s; render them through
 // a loose alias so `h()` doesn't demand their full public-instance surface.
@@ -16,15 +16,32 @@ const ProviderC = JSONUIProvider as any
 const RendererC = Renderer as any
 
 /**
- * Render-time prop validation: parse every element's props against the base
- * catalog schema and swap any element that fails for the reserved error
- * component, so one bad element is isolated instead of breaking the view.
- * Returns the effective spec (unchanged when everything validates).
+ * Render-time isolation, parameterized by the active registry:
+ *
+ * - An element whose `type` is **not in the registry** (a component this
+ *   frontend does not support) is swapped for the reserved *unsupported*
+ *   placeholder, which shows the type and a gist of its prop keys. The rest of
+ *   the view still renders.
+ * - An element whose props fail the base-catalog schema is swapped for the
+ *   reserved *error* placeholder, so one bad element is isolated.
+ *
+ * Both cases emit a `console.warn` (browser-only failures keep `console.*` per
+ * the plan; no coded diagnostic). Returns the effective spec (unchanged when
+ * every element renders cleanly).
  */
-export function sanitizeSpec(spec: Spec): Spec {
+export function sanitizeSpec(spec: Spec, registry: ComponentRegistry = baseRegistry): Spec {
   let changed = false
   const elements: Spec['elements'] = {}
   for (const [key, element] of Object.entries(spec.elements ?? {})) {
+    // Unsupported component: the active registry has no renderer for it.
+    if (!(element.type in registry)) {
+      changed = true
+      const keys = Object.keys(element.props ?? {})
+      // Browser-only render failure — keep console.* per the plan.
+      console.warn(`[@devframes/json-render-ui] unsupported component "${element.type}" on element "${key}": not in the active registry. Rendering a placeholder.`)
+      elements[key] = { ...element, type: UNSUPPORTED_COMPONENT_TYPE, props: { type: element.type, keys } }
+      continue
+    }
     const schema = basePropSchemas[element.type as keyof typeof basePropSchemas]
     if (schema) {
       const result = schema.safeParse(element.props ?? {})
@@ -83,7 +100,7 @@ export const JsonRenderView = defineComponent({
 
     // Reset the provider (reseed state) only on identity / version change.
     const resetKey = computed(() => `${props.viewId}::${props.upstreamVersion ?? JSON_RENDER_UPSTREAM_VERSION}`)
-    const effectiveSpec = computed(() => (props.spec ? sanitizeSpec(props.spec) : null))
+    const effectiveSpec = computed(() => (props.spec ? sanitizeSpec(props.spec, props.registry) : null))
 
     return () => {
       if (props.loading)

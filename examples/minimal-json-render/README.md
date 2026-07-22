@@ -19,15 +19,15 @@ dashboard** that exercises **every base-catalog component** — `Stack`, `Card`,
   `Save` sends the bound form values as action params and the server writes the
   name into the `KeyValueTable`. Each is dispatched as an RPC call of the same
   name, with per-action loading and error surfacing.
-- **`@devframes/json-render-ui`** — the SPA (`src/client`) subscribes to the
-  view's shared state and renders it with `JsonRenderView`. The app supplies the
-  frontend lib; devframe serves the SPA.
+- **`@devframes/json-render-ui/spa`** — the prebuilt out-of-box SPA. This example
+  has **no client build**: `createJsonRenderDevframe(...)` points `cli.distDir` at
+  the shipped renderer, which discovers the view from the JSON-render view index
+  and renders it with `JsonRenderView`.
 
 ## Run
 
 ```sh
 pnpm --filter minimal-json-render dev      # live dev server (http://localhost:9877/__minimal-json-render/)
-pnpm --filter minimal-json-render build    # build the SPA
 node bin.mjs build --out-dir dist/static   # static snapshot (read-only; actions render disabled)
 ```
 

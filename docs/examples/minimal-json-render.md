@@ -5,10 +5,10 @@ outline: deep
 # minimal-json-render
 
 A standalone devframe that serves a **JSON-render view**: the server authors an
-`@json-render/core` spec once, and the browser renders it with the official
-`@devframes/json-render-ui` Vue frontend.
+`@json-render/core` spec once, and the prebuilt `@devframes/json-render-ui` SPA
+renders it — the app ships no client build of its own.
 
-Package: `minimal-json-render` · framework: **Vue + Vite**
+Package: `minimal-json-render` · frontend: **prebuilt `@devframes/json-render-ui/spa`**
 
 ## What it shows
 
@@ -20,9 +20,9 @@ Package: `minimal-json-render` · framework: **Vue + Vite**
 - **Action bridge** — the `Refresh` button's `press` action is dispatched as an
   RPC call of the same name; the handler bumps a counter and patches state, with
   per-action loading and error surfacing.
-- **Standalone rendering** — the app supplies the frontend lib
-  (`@devframes/json-render-ui`); devframe serves the SPA, which subscribes to
-  the view's shared state and renders it with `JsonRenderView`.
+- **Out-of-box SPA** — `createJsonRenderDevframe` points `cli.distDir` at the
+  prebuilt `@devframes/json-render-ui/spa`, which discovers the view from the
+  view index and renders it — no client build in the example.
 - **Static output** — `cli:build` snapshots the spec + state as a read-only
   render; the action bridge reports actions as unavailable (no live RPC).
 
@@ -30,7 +30,6 @@ Package: `minimal-json-render` · framework: **Vue + Vite**
 
 ```sh
 pnpm --filter minimal-json-render dev         # CLI dev server (live RPC)
-pnpm --filter minimal-json-render build       # build the Vue client
 pnpm --filter minimal-json-render cli:build   # static deploy → dist/static
 ```
 

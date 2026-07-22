@@ -16,6 +16,7 @@ export { CodeBlockPropsSchema }
 export { DataTablePropsSchema }
 export { DividerPropsSchema }
 export { IconPropsSchema }
+export { JSON_RENDER_INDEX_KEY }
 export { JSON_RENDER_UPSTREAM_VERSION }
 export { KeyValueTablePropsSchema }
 export { ProgressPropsSchema }
