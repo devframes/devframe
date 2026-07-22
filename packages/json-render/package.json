@@ -1,7 +1,7 @@
 {
   "name": "@devframes/json-render",
   "type": "module",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "description": "Opt-in, framework-neutral JSON-render protocol layer for devframe — spec/catalog types, base catalog, and the node runtime factory.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
