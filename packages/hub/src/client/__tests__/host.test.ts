@@ -139,6 +139,60 @@ describe('createDevframeClientHost', () => {
     host.dispose()
   })
 
+  it('registers, updates, and disposes client-only docks merged with server entries', async () => {
+    const { rpc, states } = createStubRpc()
+    const host = await createDevframeClientHost({ rpc })
+    const docks = host.context.docks
+    states.get('devframe:docks')!.push([iframeEntry('server')])
+
+    // Client-only registration is merged with the server entries.
+    const handle = docks.register(iframeEntry('client'))
+    expect(docks.entries.map(e => e.id)).toEqual(['server', 'client'])
+    expect(docks.getStateById('client')?.entryMeta.id).toBe('client')
+
+    // It survives a server-driven reconcile and is switchable.
+    states.get('devframe:docks')!.push([iframeEntry('server'), iframeEntry('server2')])
+    expect(docks.entries.map(e => e.id)).toEqual(['server', 'server2', 'client'])
+    expect(await docks.switchEntry('client')).toBe(true)
+    expect(docks.selected?.id).toBe('client')
+
+    // A registered client dock is never pushed into shared state (client-only).
+    expect((states.get('devframe:docks')!.value() as DevframeDockEntry[]).map(e => e.id))
+      .toEqual(['server', 'server2'])
+
+    // Patch in place; id is immutable.
+    handle.update({ title: 'Renamed' })
+    expect(docks.getStateById('client')?.entryMeta.title).toBe('Renamed')
+    expect(() => handle.update({ id: 'other' } as any)).toThrow()
+
+    // Duplicate id throws unless forced; update() requires a prior registration.
+    expect(() => docks.register(iframeEntry('client'))).toThrow()
+    expect(() => docks.register(iframeEntry('client'), true)).not.toThrow()
+    expect(() => docks.update(iframeEntry('ghost'))).toThrow()
+
+    // Disposing removes it from the merge.
+    handle.dispose()
+    expect(docks.entries.map(e => e.id)).toEqual(['server', 'server2'])
+    expect(docks.getStateById('client')).toBeUndefined()
+    host.dispose()
+  })
+
+  it('imports the client script of a client-registered dock', async () => {
+    const { rpc } = createStubRpc()
+    const host = await createDevframeClientHost({ rpc })
+
+    const received: any[] = []
+    ;(globalThis as any).__DF_TEST_CLIENT_DOCK__ = (ctx: any) => received.push(ctx)
+    const dataUrl = `data:text/javascript,export default ctx => globalThis.__DF_TEST_CLIENT_DOCK__(ctx)`
+    host.context.docks.register(iframeEntry('local', { clientScript: { importFrom: dataUrl } }))
+
+    await vi.waitFor(() => expect(received).toHaveLength(1))
+    expect(received[0].current.entryMeta.id).toBe('local')
+
+    delete (globalThis as any).__DF_TEST_CLIENT_DOCK__
+    host.dispose()
+  })
+
   it('executes client commands locally and server commands over hub:commands:execute', async () => {
     const { rpc, calls } = createStubRpc()
     const host = await createDevframeClientHost({ rpc })

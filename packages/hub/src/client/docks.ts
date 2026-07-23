@@ -112,6 +112,35 @@ export interface DocksEntriesContext {
    * @returns Whether the selection was changed successfully
    */
   toggleEntry: (id: string) => Promise<boolean>
+  /**
+   * Register a **client-only** dock entry, live in this page and merged with
+   * the server-provided docks (`devframe:docks` shared state) into
+   * {@link entries}. Unlike a dock registered on the node
+   * {@link import('../types/docks').DevframeDocksHost}, it never flows into
+   * shared state, so it stays local to this client instead of syncing to the
+   * hub or other viewers — for a view a client host synthesizes itself.
+   *
+   * Throws when `id` already names a client dock, unless `force` is set. A
+   * client dock sharing an id with a server dock overrides it in the local
+   * merge. Returns a handle to {@link DockRegistration.update patch} or
+   * {@link DockRegistration.dispose remove} it.
+   */
+  register: <T extends DevframeDockEntry>(entry: T, force?: boolean) => DockRegistration<T>
+  /**
+   * Replace a previously {@link register client-registered} dock entry, keyed
+   * by `id`. Throws when no client dock owns that id.
+   */
+  update: (entry: DevframeDockUserEntry) => void
+}
+
+export interface DockRegistration<T extends DevframeDockEntry = DevframeDockEntry> {
+  /**
+   * Patch the registered client dock in place. The `id` is immutable — passing
+   * a differing `id` throws.
+   */
+  update: (patch: Partial<T>) => void
+  /** Remove the client dock from the local merge. */
+  dispose: () => void
 }
 
 export interface DockEntryState {
