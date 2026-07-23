@@ -12,13 +12,13 @@ import prompts from 'prompts'
  * new example, plugin, or other playground shows up here for free, with no
  * change to this script.
  */
-const WORKSPACE_PATTERNS = ['packages/*', 'plugins/*', 'examples/*', 'storybook', 'docs']
+const WORKSPACE_PATTERNS = ['examples/*', 'packages/*', 'plugins/*', 'storybook']
 
 /**
  * Script names that make a workspace package runnable as a "play" — the
  * first one present in a package's `scripts` wins.
  */
-const RUN_SCRIPTS = ['dev', 'storybook', 'docs', 'start']
+const RUN_SCRIPTS = ['dev', 'storybook', 'start']
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -38,6 +38,7 @@ function expandPattern(pattern: string): string[] {
   return readdirSync(baseDir, { withFileTypes: true })
     .filter(entry => entry.isDirectory())
     .map(entry => `${base}/${entry.name}`)
+    .sort((a, b) => a.localeCompare(b))
 }
 
 function findPlay(dir: string): Play | undefined {
@@ -61,7 +62,6 @@ async function main(): Promise<void> {
     .flatMap(expandPattern)
     .map(findPlay)
     .filter((play): play is Play => play !== undefined)
-    .sort((a, b) => a.dir.localeCompare(b.dir))
 
   if (plays.length === 0) {
     console.error(`No playgrounds found — none of ${WORKSPACE_PATTERNS.join(', ')} has a package.json with a ${RUN_SCRIPTS.join('/')} script.`)
