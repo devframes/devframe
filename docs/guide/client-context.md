@@ -50,7 +50,7 @@ Boot the host once per page: a second boot replaces the published context and lo
 |----------|-------------|
 | `rpc` | The [RPC client](./client) — call server functions, register client-side functions, access shared state. |
 | `clientType` | `'embedded'` (runtime inside your app) or `'standalone'` (independent hub page). |
-| `docks` | Dock entries and selection — `entries`, `selected`, `groupedEntries`, `switchEntry()`, `toggleEntry()`, `getStateById()`. |
+| `docks` | Dock entries and selection — `entries`, `selected`, `groupedEntries`, `switchEntry()`, `toggleEntry()`, `getStateById()`. `groupedEntries` buckets entries by outer category (a grouped member takes its group's category; see [Grouping dock entries](./hub#grouping-dock-entries)). |
 | `panel` | Dock panel state: position, size, drag/resize flags. |
 | `commands` | The command palette: `register()`, `execute()`, `getKeybindings()`. |
 | `renderers` | Dock-renderer registry — `register()`, `get()`, `has()`, `mount(entry, container)`. Routes a dock `type` to a host-registered renderer (e.g. [JSON-Render](./json-render)); the hub ships none. |

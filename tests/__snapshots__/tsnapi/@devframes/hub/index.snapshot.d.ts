@@ -20,6 +20,7 @@ export declare const defineHubRpcFunction: <NAME extends string, TYPE extends im
 export { ClientScriptEntry }
 export { ConnectionMeta }
 export { CreateHubContextOptions }
+export { DEFAULT_CATEGORIES_ORDER }
 export { DevframeCapabilities }
 export { DevframeChildProcessExecuteOptions }
 export { DevframeChildProcessOutput }

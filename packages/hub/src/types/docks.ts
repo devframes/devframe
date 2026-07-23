@@ -76,7 +76,19 @@ export interface DevframeDockEntryBase {
    */
   defaultOrder?: number
   /**
-   * The category of the entry
+   * The category of the entry — a field with a dual role that depends on
+   * whether {@link groupId} resolves to a registered {@link DevframeViewGroup}:
+   *
+   * - **Ungrouped (or orphan) entry** — `category` is the entry's OUTER bucket
+   *   on the dock bar, ordered by {@link import('../constants').DEFAULT_CATEGORIES_ORDER}.
+   * - **Grouped entry** (a `groupId` that resolves to a registered group) —
+   *   the OUTER bucket is instead the group's own `category`, and this field is
+   *   reinterpreted as the entry's IN-GROUP sub-category, used to sub-divide and
+   *   sort members inside the group's popover / sub-navigation.
+   *
+   * Falls back to `'default'` when omitted — both as an outer bucket and, for a
+   * grouped member, as its in-group sub-bucket.
+   *
    * @default 'default'
    */
   category?: DevframeDockEntryCategory
@@ -102,8 +114,14 @@ export interface DevframeDockEntryBase {
    *
    * This is a flat pointer — membership, not containment. The entry stays an
    * independently-registered, top-level entry; only its rendering is grouped
-   * downstream. If the referenced group is never registered, the entry renders
-   * as a normal top-level entry (orphan tolerance).
+   * downstream.
+   *
+   * When the referenced group **is** registered, it supplies the entry's OUTER
+   * dock-bar category (the group's own {@link category}), and this entry's own
+   * {@link category} is reinterpreted as its IN-GROUP sub-category. When the
+   * referenced group is **never** registered, the entry renders as a normal
+   * top-level entry and falls back to using its own {@link category} as the
+   * outer bucket (orphan tolerance).
    *
    * @see {@link DevframeViewGroup}
    */
@@ -276,6 +294,12 @@ export interface DevframeViewJsonRender extends DevframeDockEntryBase {
  * own — hosts render its members in a popover / sub-navigation. It flows
  * through the same `register`/`update`/`values` machinery as every other entry,
  * keyed by `id`.
+ *
+ * The group's `category` is the OUTER bucket for the group button itself AND
+ * for every one of its members — a member's own `category` no longer decides
+ * its outer bucket, but is reinterpreted as an in-group sub-category that
+ * sub-divides and sorts members inside this group. A group with no `category`
+ * buckets itself and its members under `'default'`.
  *
  * Grouping is one level deep: a group entry must not itself set `groupId`.
  */

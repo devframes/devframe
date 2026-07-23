@@ -419,9 +419,22 @@ function createPanelContext(clientType: DockClientType): DocksPanelContext {
 }
 
 function groupByCategory(entries: DevframeDockEntry[]): DevframeDockEntriesGrouped {
+  // Index registered groups so a member whose `groupId` resolves takes its
+  // OUTER bucket from the group's category, not its own (which becomes the
+  // member's in-group sub-category). Orphan members — a `groupId` with no
+  // registered group — fall back to their own category.
+  const groupsById = new Map<string, DevframeDockEntry>()
+  for (const entry of entries) {
+    if (entry.type === 'group')
+      groupsById.set(entry.id, entry)
+  }
+
   const groups = new Map<string, DevframeDockEntry[]>()
   for (const entry of entries) {
-    const category = entry.category ?? 'default'
+    const resolvedGroup = entry.groupId ? groupsById.get(entry.groupId) : undefined
+    const category = resolvedGroup
+      ? resolvedGroup.category ?? 'default'
+      : entry.category ?? 'default'
     let list = groups.get(category)
     if (!list) {
       list = []

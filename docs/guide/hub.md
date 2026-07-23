@@ -199,6 +199,21 @@ ctx.docks.register({
 
 `groupId` lives on every entry kind, so iframes, launchers, custom-render views, and integration-contributed types (e.g. json-render panels) all join groups the same way. The group and its members stay independent top-level entries in `devframe:docks`; a downstream UI derives the visual collapse by matching each member's `groupId` to the group's `id` and renders members in a popover or sub-navigation. `defaultChildId` names the member opened when the group button is activated.
 
+### The dual role of `category`
+
+`category` decides an entry's outer bucket on the dock bar (ordered by `DEFAULT_CATEGORIES_ORDER`) — but its meaning shifts once an entry joins a group:
+
+- **Ungrouped entry** — `category` is the entry's outer dock-bar bucket, defaulting to `'default'`.
+- **Grouped entry** (a `groupId` that resolves to a registered group) — the outer bucket comes from the **group's** own `category` instead. The member's own `category` is reinterpreted as an **in-group sub-category** that sub-divides and sorts members inside the group's popover / sub-navigation.
+
+The group's `category` is therefore the single outer bucket shared by the group button and all its members. Fallbacks keep the rule total:
+
+- A **group** with no `category` buckets itself and its members under `'default'`.
+- A grouped **member** with no `category` defaults its in-group sub-category to `'default'`.
+- **Orphan tolerance** — a member whose `groupId` never resolves to a registered group renders as a normal top-level entry and uses its **own** `category` as the outer bucket, exactly as an ungrouped entry does.
+
+In the example above, `nuxt:overview` renders under the `framework` bucket (from the `nuxt` group) even though it could carry its own `category`; that own `category` would only sort it against sibling members inside the Nuxt group.
+
 Grouping is one level deep: members join a group, and a group is always a top-level button. A member whose group is never registered renders as a normal top-level entry, so registration order is free.
 
 ## The protocol — what the UI sees

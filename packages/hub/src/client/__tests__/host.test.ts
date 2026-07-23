@@ -62,6 +62,10 @@ function iframeEntry(id: string, extra?: Record<string, unknown>): DevframeDockE
   return { id, title: id, icon: 'ph:cube', type: 'iframe', url: `/__${id}/`, ...extra } as DevframeDockEntry
 }
 
+function groupEntry(id: string, extra?: Record<string, unknown>): DevframeDockEntry {
+  return { id, title: id, icon: 'ph:folder', type: 'group', ...extra } as DevframeDockEntry
+}
+
 describe('createDevframeClientHost', () => {
   it('publishes the global client context with the full surface', async () => {
     const { rpc } = createStubRpc()
@@ -92,6 +96,46 @@ describe('createDevframeClientHost', () => {
     docksState.push([iframeEntry('two')])
     expect(host.context.docks.entries.map(e => e.id)).toEqual(['two'])
     expect(host.context.docks.getStateById('one')).toBeUndefined()
+    host.dispose()
+  })
+
+  it('groups entries by category — grouped members bucket under their group, orphans by their own', async () => {
+    const { rpc, states } = createStubRpc()
+    const host = await createDevframeClientHost({ rpc })
+
+    states.get('devframe:docks')!.push([
+      // (a) member with groupId + its own category → outer bucket = group's category ('framework'),
+      // and its own 'app' category is reinterpreted as an in-group sub-category.
+      groupEntry('nuxt', { category: 'framework' }),
+      iframeEntry('nuxt:overview', { groupId: 'nuxt', category: 'app' }),
+      // (b) group with no category → members bucket to 'default'.
+      groupEntry('misc'),
+      iframeEntry('misc:one', { groupId: 'misc', category: 'web' }),
+      // (c) orphan member (groupId with no registered group) → its own category ('web').
+      iframeEntry('orphan', { groupId: 'ghost', category: 'web' }),
+      // plain ungrouped entry keeps its own category.
+      iframeEntry('plain', { category: 'app' }),
+    ])
+
+    const grouped = Object.fromEntries(
+      host.context.docks.groupedEntries.map(([cat, entries]) => [cat, entries.map(e => e.id)]),
+    )
+
+    // (a) grouped member lands under the group's category, alongside the group button.
+    expect(grouped.framework).toEqual(['nuxt', 'nuxt:overview'])
+    // (b) group without a category, and its member, bucket to 'default'.
+    expect(grouped.default).toEqual(['misc', 'misc:one'])
+    // (c) orphan + plain keep their own categories.
+    expect(grouped.web).toEqual(['orphan'])
+    expect(grouped.app).toEqual(['plain'])
+
+    // Categories sort by DEFAULT_CATEGORIES_ORDER — framework first.
+    expect(host.context.docks.groupedEntries.map(([cat]) => cat)).toEqual([
+      'framework',
+      'default',
+      'app',
+      'web',
+    ])
     host.dispose()
   })
 
