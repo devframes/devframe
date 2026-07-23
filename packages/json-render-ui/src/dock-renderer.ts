@@ -38,10 +38,13 @@ export interface JsonRenderDockRendererOptions {
  * })
  * ```
  *
- * It subscribes to the view's shared state (`entry.view.stateKey`), mounts a
- * Vue app rendering {@link JsonRenderView}, and disposes cleanly — unmounting
- * the app and unsubscribing the shared-state listener — when the dock
- * deactivates (the client host drives that).
+ * For a shared-state view (`entry.view.stateKey`) it subscribes to the live
+ * spec and re-renders on every update; for an inline view (`entry.view.spec`)
+ * it renders the embedded spec directly, with no shared-state round-trip — the
+ * path a client-synthesized view takes. Either way it mounts a Vue app
+ * rendering {@link JsonRenderView} and disposes cleanly — unmounting the app and
+ * unsubscribing any shared-state listener — when the dock deactivates (the
+ * client host drives that).
  */
 export function createJsonRenderDockRenderer(
   options: JsonRenderDockRendererOptions = {},
@@ -51,20 +54,26 @@ export function createJsonRenderDockRenderer(
     const view = (entry as { view: JsonRenderViewRef }).view
     const rpc = context.rpc
     const interactive = rpc.connectionMeta?.backend !== 'static'
-    const state = await rpc.sharedState.get(view.stateKey, { initialValue: null })
+    const viewId = 'stateKey' in view ? view.stateKey : ((entry as { id?: string }).id ?? 'inline')
 
-    const specRef = shallowRef<Spec | null>(state.value() as Spec | null)
-    const off = state.on('updated', () => {
+    // Inline view: render the embedded spec as-is; shared-state view: subscribe
+    // to the live spec and track updates through `specRef`.
+    const specRef = shallowRef<Spec | null>('spec' in view ? view.spec : null)
+    let off: (() => void) | undefined
+    if ('stateKey' in view) {
+      const state = await rpc.sharedState.get(view.stateKey, { initialValue: null })
       specRef.value = state.value() as Spec | null
-    })
+      off = state.on('updated', () => {
+        specRef.value = state.value() as Spec | null
+      })
+    }
 
     const app = createApp({
       render: () => h(JsonRenderView, {
         spec: specRef.value,
         rpc: rpc as ActionBridgeRpc,
         registry,
-        viewId: view.stateKey,
-        upstreamVersion: view.upstreamVersion,
+        viewId,
         interactive,
       }),
     })
@@ -72,7 +81,7 @@ export function createJsonRenderDockRenderer(
 
     return {
       dispose() {
-        off()
+        off?.()
         app.unmount()
       },
     }

@@ -3,7 +3,7 @@
 import type { JsonRenderViewRef, Spec } from '@devframes/json-render'
 import type { ComponentRegistry } from '@json-render/react'
 import type { ReactNode } from 'react'
-import { basePropSchemas, JSON_RENDER_UPSTREAM_VERSION } from '@devframes/json-render'
+import { basePropSchemas } from '@devframes/json-render'
 import { JSONUIProvider, Renderer } from '@json-render/react'
 import { useMemo } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -63,18 +63,17 @@ interface JsonRenderViewProps {
   rpc: { call: (method: string, ...args: unknown[]) => Promise<unknown> }
   registry: ComponentRegistry
   viewId: string
-  upstreamVersion?: string
 }
 
-function JsonRenderView({ spec, rpc, registry, viewId, upstreamVersion }: JsonRenderViewProps): ReactNode {
+function JsonRenderView({ spec, rpc, registry, viewId }: JsonRenderViewProps): ReactNode {
   const handlers = useMemo(() => createActionBridge(rpc), [rpc])
   const effective = useMemo(() => (spec ? sanitizeSpec(spec) : null), [spec])
   if (!spec)
     return <div className="p4 color-faint text-sm">No view to render.</div>
   return (
     <JSONUIProvider
-      // Reset the provider (reseed state) only on identity/version change.
-      key={`${viewId}::${upstreamVersion ?? JSON_RENDER_UPSTREAM_VERSION}`}
+      // Reset the provider (reseed state) only on identity change.
+      key={viewId}
       registry={registry}
       handlers={handlers}
       initialState={spec.state ?? {}}
@@ -95,22 +94,37 @@ export interface ReactDockMountOptions {
  * A hub-compatible dock renderer that renders a `json-render` dock with this
  * example's mini **React** registry (registry replacement) instead of the Vue
  * reference frontend. Mounts a React root into the container the client host
- * provides, subscribes to the view's shared state, and disposes cleanly.
+ * provides. For a shared-state view it subscribes to the live spec; for an
+ * inline view (`entry.view.spec`) it renders the embedded spec directly, with
+ * no shared-state round-trip. Disposes cleanly either way.
  */
 export function createReactJsonRenderDockRenderer() {
   return async ({ entry, container, context }: ReactDockMountOptions): Promise<{ dispose: () => void }> => {
     const view = (entry as { view: JsonRenderViewRef }).view
     const rpc = context.rpc
-    const state = await rpc.sharedState.get(view.stateKey, { initialValue: null })
+    const viewId = 'stateKey' in view ? view.stateKey : ((entry as { id?: string }).id ?? 'inline')
     const root = createRoot(container)
+
+    // Inline view: render the embedded spec once, no shared state involved.
+    if ('spec' in view) {
+      root.render(
+        <JsonRenderView spec={view.spec} rpc={rpc} registry={baseReactRegistry} viewId={viewId} />,
+      )
+      return {
+        dispose() {
+          root.unmount()
+        },
+      }
+    }
+
+    const state = await rpc.sharedState.get(view.stateKey, { initialValue: null })
     const render = (): void => {
       root.render(
         <JsonRenderView
           spec={state.value() as Spec | null}
           rpc={rpc}
           registry={baseReactRegistry}
-          viewId={view.stateKey}
-          upstreamVersion={view.upstreamVersion}
+          viewId={viewId}
         />,
       )
     }

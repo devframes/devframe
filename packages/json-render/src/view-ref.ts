@@ -1,31 +1,33 @@
+import type { DevframeJsonRenderSpec } from './types'
+
 /**
- * The `@json-render/core` / `@json-render/vue` version this build of
- * `@devframes/json-render` is written and tested against. It is the sole
- * compatibility signal carried across the wire — there is no separate
- * Devframes protocol/catalog version stamp. A renderer compares its own
- * upstream version against a view's {@link JsonRenderViewRef.upstreamVersion}
- * and warns (rather than blocking) on a mismatch.
- *
- * Kept paired with the caret range on `@json-render/core` /
- * `@json-render/vue` in this package's manifest; the committed lockfile is
- * the guard against a breaking upstream upgrade.
+ * A view backed by **live shared state**: the client subscribes to `stateKey`
+ * for the spec + state and re-renders on every update. This is what a
+ * node-authored view ({@link import('./node/create-view').createJsonRenderView})
+ * produces.
  */
-export const JSON_RENDER_UPSTREAM_VERSION = '0.19.0'
+export interface JsonRenderViewStateRef {
+  /** Shared-state key the client subscribes to for the live spec + state. */
+  stateKey: string
+}
+
+/**
+ * A view whose spec is embedded **inline** in the reference. It carries no
+ * shared-state key, so a client can synthesize a view entirely in the browser
+ * and hand it straight to a renderer — no `sharedState` round-trip. The spec is
+ * rendered as-is (static: local state and bindings still work, but there is no
+ * server-driven live update stream).
+ */
+export interface JsonRenderViewInlineRef {
+  /** The full spec, carried in the reference itself. */
+  spec: DevframeJsonRenderSpec
+}
 
 /**
  * The serializable reference to a JSON-render view that crosses process /
  * static boundaries — e.g. projected onto a hub dock entry. It carries **no
- * functions** and no Devframes catalog version: just the shared-state key the
- * client subscribes to for the live spec + state, and the upstream version
- * the view was authored against.
- *
- * This is the corrected projection contract: the previous hub implementation
- * leaked an accidental `_stateKey` field and a non-serializable renderer
- * handle; a `JsonRenderViewRef` is a plain, fully-serializable object.
+ * functions**: either a {@link JsonRenderViewStateRef.stateKey shared-state key}
+ * the client subscribes through, or an {@link JsonRenderViewInlineRef.spec
+ * inline spec} rendered directly.
  */
-export interface JsonRenderViewRef {
-  /** Shared-state key the client subscribes to for the live spec + state. */
-  stateKey: string
-  /** Upstream `@json-render/*` version the view was authored against. */
-  upstreamVersion: string
-}
+export type JsonRenderViewRef = JsonRenderViewStateRef | JsonRenderViewInlineRef

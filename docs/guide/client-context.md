@@ -90,6 +90,22 @@ handle.dispose() // remove it
 
 Client-only docks merge into the same `docks.entries` list, group, select, and load their client scripts exactly like server docks — they just never sync to the hub or other viewers. A client dock sharing an id with a server dock overrides it locally. `ctx.docks.update(entry)` replaces a previously registered client dock wholesale. Registering an id that a client dock already owns throws unless you pass `register(entry, true)`.
 
+A client-only dock can render a [JSON-render](./json-render) view the page authors itself. Carry the spec **inline** in the dock's `view` — no shared state, no server round-trip — and register a `json-render` dock. With a `json-render` renderer registered at boot, it renders through the same path as a server-authored view:
+
+```ts
+const spec = { /* a DevframeJsonRenderSpec built in the browser */ }
+
+ctx.docks.register({
+  id: 'client-playground',
+  title: 'Client Playground',
+  icon: 'ph:sliders-horizontal-duotone',
+  type: 'json-render',
+  view: { spec },
+})
+```
+
+The `view` field accepts either `{ spec }` (the spec rendered inline) or `{ stateKey }` (subscribed to a live shared state, the shape `createJsonRenderView` produces server-side). An inline view still runs its own state: `{ $bindState }` inputs and `{ $state }` reads work against the spec's `state`, and the built-in `setState` / `pushState` / `removeState` actions mutate it — so a client-authored view is interactive with no server and no shared state. What `{ spec }` lacks versus `{ stateKey }` is a server-driven update stream.
+
 ## Dock client scripts
 
 A dock entry declares its client script as a `ClientScriptEntry` — `{ importFrom, importName? }`, where `importName` defaults to `'default'`. The field depends on the entry kind:

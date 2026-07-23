@@ -5,6 +5,8 @@ import type {
   DevframeTerminalSession,
   DevframeViewIframe,
 } from '@devframes/hub/types'
+import type { DevframeJsonRenderSpec } from '@devframes/json-render'
+import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { connectDevframe, createDevframeClientHost, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
 import { createJsonRenderDockRenderer } from '@devframes/json-render-ui'
 import { iconClass } from './icons'
@@ -79,6 +81,79 @@ function createClientNotesUrl(): string {
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 }
 
+// An *interactive* json-render spec synthesized entirely in the browser — the
+// client-only counterpart to a server-authored view. Interactivity needs no
+// server and no shared state: `{ $bindState }` inputs write straight into the
+// view's own `state`, `{ $state }` reads mirror it live, and the buttons use the
+// framework's built-in state actions (`pushState` / `setState`) to mutate that
+// state — every change re-renders through the same `createJsonRenderDockRenderer`.
+function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec {
+  return {
+    root: 'root',
+    elements: {
+      root: { type: 'Stack', props: { gap: 14 }, children: ['head', 'hello', 'notes', 'env'] },
+
+      head: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'center' }, children: ['icon', 'title', 'badge'] },
+      icon: { type: 'Icon', props: { name: 'ph:sliders-horizontal-duotone', size: 22 }, children: [] },
+      title: { type: 'Text', props: { text: 'Client Playground', variant: 'heading' }, children: [] },
+      badge: { type: 'Badge', props: { text: 'client-only', variant: 'info' }, children: [] },
+
+      // ── Two-way binding: type a name, see it echoed live; toggle a switch ──
+      hello: { type: 'Card', props: { title: 'Say hello' }, children: ['helloBody'] },
+      helloBody: { type: 'Stack', props: { gap: 10 }, children: ['nameInput', 'greetRow', 'compact'] },
+      nameInput: { type: 'TextInput', props: { label: 'Your name', placeholder: 'Type your name…', value: { $bindState: '/form/name' } }, children: [] },
+      greetRow: { type: 'Stack', props: { direction: 'row', gap: 6, align: 'center' }, children: ['greetLabel', 'greetName'] },
+      greetLabel: { type: 'Text', props: { text: 'Hello,', variant: 'body', color: 'muted' }, children: [] },
+      greetName: { type: 'Text', props: { text: { $state: '/form/name' }, variant: 'body', color: 'primary' }, children: [] },
+      compact: { type: 'Switch', props: { label: 'Compact mode', value: { $bindState: '/prefs/compact' } }, children: [] },
+
+      // ── Actions mutate state → the DataTable re-renders ──
+      notes: { type: 'Card', props: { title: 'Notes' }, children: ['notesBody'] },
+      notesBody: { type: 'Stack', props: { gap: 10 }, children: ['draftRow', 'notesTable', 'clearBtn'] },
+      draftRow: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'end' }, children: ['draftInput', 'addBtn'] },
+      draftInput: { type: 'TextInput', props: { label: 'New note', placeholder: 'Write something…', value: { $bindState: '/draft' } }, children: [] },
+      addBtn: {
+        type: 'Button',
+        props: { label: 'Add', variant: 'primary', icon: 'ph:plus' },
+        // Built-in `pushState`: append the typed draft to /notes, then clear the input.
+        on: { press: { action: 'pushState', params: { statePath: '/notes', value: { text: { $state: '/draft' } }, clearStatePath: '/draft' } } },
+        children: [],
+      },
+      notesTable: {
+        type: 'DataTable',
+        props: { columns: [{ key: 'text', label: 'Note' }], rows: { $state: '/notes' }, height: 160 },
+        children: [],
+      },
+      clearBtn: {
+        type: 'Button',
+        props: { label: 'Clear all', variant: 'ghost', icon: 'ph:trash' },
+        // Built-in `setState`: replace /notes with an empty array.
+        on: { press: { action: 'setState', params: { statePath: '/notes', value: [] } } },
+        children: [],
+      },
+
+      env: { type: 'Card', props: { title: 'Environment', collapsible: true, defaultCollapsed: true }, children: ['envTable'] },
+      envTable: {
+        type: 'KeyValueTable',
+        props: {
+          data: {
+            clientType,
+            language: navigator.language,
+            viewport: `${window.innerWidth}×${window.innerHeight}`,
+          },
+        },
+        children: [],
+      },
+    },
+    state: {
+      form: { name: '' },
+      prefs: { compact: false },
+      draft: '',
+      notes: [{ text: 'Authored entirely in the browser' }],
+    },
+  }
+}
+
 async function main() {
   setStatus('Connecting…')
 
@@ -113,6 +188,22 @@ async function main() {
   // Patch it in place with the returned handle (the id is immutable). Call
   // `clientDock.dispose()` to remove it from the merged list again.
   clientDock.update({ badge: host.context.clientType })
+
+  // Register a second client-only dock — this one a *json-render* view the page
+  // authors itself, the richer sibling of the iframe dock above. Its spec is
+  // carried **inline** in the dock entry (`view.spec`), so it needs no shared
+  // state at all: it lives only in this page yet renders — and stays fully
+  // interactive (inputs, toggles, and buttons that mutate its state) — through
+  // the very same `json-render` dock renderer registered above as a
+  // server-authored view.
+  host.context.docks.register<DevframeJsonRenderDockEntry>({
+    id: 'client-playground',
+    title: 'Client Playground',
+    icon: 'ph:sliders-horizontal-duotone',
+    type: 'json-render',
+    view: { spec: createClientPlaygroundSpec(host.context.clientType) },
+    category: 'app',
+  })
 
   // 1. Docks — the merged list from the client host: server docks (projected
   // from `devframe:docks` shared state) plus the client-only docks above and

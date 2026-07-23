@@ -20,6 +20,7 @@ const ICON_CLASS: Record<string, string> = {
   'ph:puzzle-piece-duotone': 'i-ph-puzzle-piece-duotone',
   'ph:clock-duotone': 'i-ph-clock-duotone',
   'ph:gear-duotone': 'i-ph-gear-duotone',
+  'ph:sliders-horizontal-duotone': 'i-ph-sliders-horizontal-duotone',
 }
 
 /**

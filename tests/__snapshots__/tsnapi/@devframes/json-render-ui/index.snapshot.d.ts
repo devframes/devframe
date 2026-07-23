@@ -68,10 +68,6 @@ export declare const JsonRenderView: import("vue").DefineComponent<import("vue")
     type: StringConstructor;
     default: string;
   };
-  upstreamVersion: {
-    type: StringConstructor;
-    default: undefined;
-  };
   interactive: {
     type: BooleanConstructor;
     default: boolean;
@@ -103,10 +99,6 @@ export declare const JsonRenderView: import("vue").DefineComponent<import("vue")
     type: StringConstructor;
     default: string;
   };
-  upstreamVersion: {
-    type: StringConstructor;
-    default: undefined;
-  };
   interactive: {
     type: BooleanConstructor;
     default: boolean;
@@ -123,7 +115,6 @@ export declare const JsonRenderView: import("vue").DefineComponent<import("vue")
   spec: Spec | null;
   registry: ComponentRegistry;
   viewId: string;
-  upstreamVersion: string;
   interactive: boolean;
   loading: boolean;
   connectionError: string | null;

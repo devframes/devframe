@@ -129,7 +129,6 @@ its SPA. Connect, read the view's shared state, and render it with
 `JsonRenderView`:
 
 ```ts
-import { JSON_RENDER_UPSTREAM_VERSION } from '@devframes/json-render'
 import { JsonRenderView } from '@devframes/json-render-ui'
 import { connectDevframe } from 'devframe/client'
 import { createApp, h, shallowRef } from 'vue'
@@ -145,7 +144,6 @@ createApp({
   render: () => h(JsonRenderView, {
     spec: spec.value,
     rpc,
-    upstreamVersion: JSON_RENDER_UPSTREAM_VERSION,
     interactive: rpc.connectionMeta.backend !== 'static',
   }),
 }).mount('#app')
@@ -205,10 +203,13 @@ const host = await createDevframeClientHost({
 const dispose = await host.context.renderers.mount(entry, container)
 ```
 
-The dock carries only a serializable `JsonRenderViewRef` (`{ stateKey,
-upstreamVersion }`) — no functions cross the wire. The client host disposes the
-renderer when the dock deactivates. A renderer/upstream-version mismatch logs a
-warning rather than blocking.
+The dock carries only a serializable `JsonRenderViewRef` — no functions cross
+the wire. It comes in two shapes: `{ stateKey }` points the client at a live
+shared state to subscribe to (what `createJsonRenderView` produces), while
+`{ spec }` embeds the whole spec inline, so a client can synthesize a view in
+the browser and render it with no shared state at all (see [client-only
+docks](./client-context#client-only-docks)). The client host disposes the
+renderer when the dock deactivates.
 
 Both hub example shells dogfood this end to end: the [Vite hub](/examples/minimal-vite-devframe-hub)
 registers `@devframes/json-render-ui` (Vue), and the [Next hub](/examples/minimal-next-devframe-hub)
