@@ -1,3 +1,4 @@
+import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeDefinition } from '../types/devframe'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { resolve } from 'pathe'
@@ -36,6 +37,19 @@ export interface ViteDevBridgeOptions {
     /** Flag bag forwarded to `def.setup(ctx, { flags })`. */
     flags?: Record<string, unknown>
   }
+  /**
+   * Whether the bridged devframe runs its own auth gate. This is a **hosted**
+   * adapter — the devframe shares the host app's origin and the host owns
+   * authentication — so it defaults to `false`: the plugin's own gate never
+   * fires and its `cli.auth` default is ignored (matching devframe's
+   * hosted-deployment contract). Pass `true` to force devframe's interactive
+   * OTP gate on, or a {@link DevframeAuthHandler} to install a custom scheme.
+   * Only applies in bridge mode (`devMiddleware`); the static-mount mode
+   * starts no RPC server.
+   *
+   * @default false
+   */
+  auth?: boolean | DevframeAuthHandler
 }
 
 export interface DevframeVitePlugin {
@@ -61,6 +75,12 @@ export interface DevframeVitePlugin {
  *     and registers Vite middleware at `<base>__connection.json` so the
  *     host-served SPA can discover the WS endpoint via
  *     {@link connectDevframe}.
+ *
+ * As a hosted adapter the bridge defers authentication to the host: its
+ * side-car RPC server runs with the plugin's own auth gate **off** by
+ * default (ignoring `def.cli?.auth`), so a plugin mounted this way never
+ * triggers its standalone OTP prompt. Opt back in per-mount with
+ * `options.auth` (`true` for devframe's interactive gate, or a handler).
  *
  * Use bridge mode when integrating with frameworks that own the SPA
  * (Nuxt, Astro, SolidStart, plain Vite apps). For the all-in-one
@@ -103,6 +123,9 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
           port,
           flags: mw.flags,
           openBrowser: false,
+          // Hosted adapter: the host owns auth, so the bridged devframe's own
+          // gate stays off unless the caller explicitly opts back in.
+          auth: options.auth ?? false,
         })
       }
       catch (e) {

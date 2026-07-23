@@ -11,6 +11,7 @@ export interface CreateDevServerOptions {
   ws?: DevframeWsOptions;
   app?: H3;
   openBrowser?: boolean | string;
+  auth?: boolean | DevframeAuthHandler;
   mcp?: boolean | McpRouteOptions;
   onReady?: (_: {
     origin: string;

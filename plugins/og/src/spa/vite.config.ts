@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [
     vue(),
     UnoCSS(),
-    ogVitePlugin({ devMiddleware: true, base: '/', auth: false }),
+    ogVitePlugin({ devMiddleware: true, base: '/' }),
   ],
   optimizeDeps: { exclude: ['@antfu/design'] },
   build: {

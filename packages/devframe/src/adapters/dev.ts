@@ -69,6 +69,17 @@ export interface CreateDevServerOptions {
    */
   openBrowser?: boolean | string
   /**
+   * Override how authentication resolves, taking precedence over
+   * `def.cli?.auth`. Pass `false` to skip the gate entirely (the standard
+   * choice for a **hosted** deployment where the host manages auth — see
+   * {@link viteDevBridge}); a {@link DevframeAuthHandler} to install a custom
+   * scheme; or `true` to force devframe's interactive OTP gate on. When
+   * omitted, auth resolves from `flags.auth` / `def.cli?.auth` (the standalone
+   * default: gated). The `--no-auth` flag (`flags.auth === false`) still forces
+   * the gate off regardless of this option.
+   */
+  auth?: boolean | DevframeAuthHandler
+  /**
    * Expose a route-based MCP server on the dev server (Streamable-HTTP).
    * Overrides `def.cli?.mcp`; `undefined` falls through to it. `false`
    * disables the route regardless of the definition default. See
@@ -212,8 +223,15 @@ export async function createDevServer(
   // interactive OTP handler and print its code + magic-link banner once the
   // server is listening (a gate is useless without surfacing the code). A
   // `false` (including the `--no-auth` flag) opts out; a handler object is
-  // passed straight through to `startHttpAndWs`.
-  const authOption = flags.auth === false ? false : def.cli?.auth
+  // passed straight through to `startHttpAndWs`. An explicit `options.auth`
+  // wins over the definition default — a hosted adapter (e.g. `viteDevBridge`)
+  // passes `false` so the plugin's own gate never fires and the host owns auth
+  // — but the `--no-auth` flag can still force the gate off.
+  const authOption = flags.auth === false
+    ? false
+    : options.auth !== undefined
+      ? options.auth
+      : def.cli?.auth
   let authHandler: DevframeAuthHandler | undefined
   let resolvedAuth: boolean | DevframeAuthHandler
   if (authOption === false) {

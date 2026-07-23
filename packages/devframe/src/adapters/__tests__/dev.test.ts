@@ -442,6 +442,99 @@ describe('adapters/dev', () => {
     }
   })
 
+  it('the `auth: false` option overrides a gated `def.cli.auth` (hosted adapter defers to the host)', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-auth-option-off',
+      name: 'Auth Option Off',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      // Standalone would gate; a hosted caller passes `auth: false` to defer.
+      cli: { auth: true },
+      setup: (ctx: DevframeNodeContext) => {
+        ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+      },
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19440, host })
+    const handle = await createDevServer(devframe, { host, port, openBrowser: false, auth: false })
+
+    try {
+      const client = connectWsClient(host, port)
+      const handshake = await client.$call('anonymous:devframe:auth' as any, HANDSHAKE)
+      expect(handshake).toEqual({ isTrusted: true })
+      await expect(client.$call('test:probe' as any)).resolves.toBe('ok')
+      client.$close()
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
+  it('the `auth: true` option forces the gate on even when `def.cli.auth` is false', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-auth-option-on',
+      name: 'Auth Option On',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      cli: { auth: false },
+      setup: (ctx: DevframeNodeContext) => {
+        ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+      },
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19450, host })
+    // Silence the default OTP stdout banner for the test run.
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const handle = await createDevServer(devframe, { host, port, openBrowser: false, auth: true })
+
+    try {
+      const client = connectWsClient(host, port)
+      // Gated: an empty handshake token is refused until a code is exchanged.
+      const handshake = await client.$call('anonymous:devframe:auth' as any, HANDSHAKE)
+      expect(handshake).toEqual({ isTrusted: false })
+      const code = getTempAuthCode()
+      const exchange = await client.$call('anonymous:devframe:auth:exchange' as any, { code, ua: 'test', origin: 'http://localhost' }) as { authToken: string | null }
+      expect(exchange.authToken).toBeTruthy()
+      client.$close()
+    }
+    finally {
+      spy.mockRestore()
+      await handle.close()
+    }
+  })
+
+  it('the `--no-auth` flag forces the gate off even when the `auth: true` option opts in', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-auth-flag-wins',
+      name: 'Auth Flag Wins',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      setup: (ctx: DevframeNodeContext) => {
+        ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+      },
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19460, host })
+    const handle = await createDevServer(devframe, { host, port, openBrowser: false, auth: true, flags: { auth: false } })
+
+    try {
+      const client = connectWsClient(host, port)
+      const handshake = await client.$call('anonymous:devframe:auth' as any, HANDSHAKE)
+      expect(handshake).toEqual({ isTrusted: true })
+      await expect(client.$call('test:probe' as any)).resolves.toBe('ok')
+      client.$close()
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
   it('resolveDevServerPort honors def.cli.port as the preferred default', async () => {
     const preferred = await getPort({ port: 19500, host: '127.0.0.1' })
     const devframe = defineDevframe({
