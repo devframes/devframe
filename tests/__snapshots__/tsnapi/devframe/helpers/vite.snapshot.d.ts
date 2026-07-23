@@ -22,6 +22,7 @@ export interface ViteDevBridgeOptions {
     host?: string;
     flags?: Record<string, unknown>;
   };
+  auth?: boolean | DevframeAuthHandler;
 }
 // #endregion
 
