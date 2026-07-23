@@ -58,30 +58,58 @@ function createClientNotesUrl(): string {
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 }
 
-// A json-render spec synthesized entirely in the browser — the client-only
-// counterpart to a server-authored view. It reads real values captured from the
-// page at registration time and uses the same base-catalog components the hub's
-// server view does, rendered here by the mini React registry.
-function createClientMetricsSpec(clientType: string): DevframeJsonRenderSpec {
+// An *interactive* json-render spec synthesized entirely in the browser — the
+// client-only counterpart to a server-authored view. Interactivity needs no
+// server and no shared state: `{ $bindState }` inputs write straight into the
+// view's own `state`, `{ $state }` reads mirror it live, and the buttons use the
+// framework's built-in state actions (`pushState` / `setState`) to mutate that
+// state — every change re-renders through the mini React registry.
+function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec {
   return {
     root: 'root',
     elements: {
-      root: { type: 'Stack', props: { gap: 14 }, children: ['head', 'about', 'env'] },
+      root: { type: 'Stack', props: { gap: 14 }, children: ['head', 'hello', 'notes', 'env'] },
+
       head: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'center' }, children: ['icon', 'title', 'badge'] },
-      icon: { type: 'Icon', props: { name: 'ph:gauge-duotone', size: 22 }, children: [] },
-      title: { type: 'Text', props: { text: 'Client Metrics', variant: 'heading' }, children: [] },
+      icon: { type: 'Icon', props: { name: 'ph:sliders-horizontal-duotone', size: 22 }, children: [] },
+      title: { type: 'Text', props: { text: 'Client Playground', variant: 'heading' }, children: [] },
       badge: { type: 'Badge', props: { text: 'client-only', variant: 'info' }, children: [] },
-      about: { type: 'Card', props: { title: 'About this dock' }, children: ['aboutText'] },
-      aboutText: {
-        type: 'Text',
-        props: {
-          text: 'This json-render view was authored in the browser and seeded into a client-local shared state — it never reaches the hub server or other viewers, yet renders through the same dock renderer as a server-authored view.',
-          variant: 'body',
-          color: 'muted',
-        },
+
+      // ── Two-way binding: type a name, see it echoed live; toggle a switch ──
+      hello: { type: 'Card', props: { title: 'Say hello' }, children: ['helloBody'] },
+      helloBody: { type: 'Stack', props: { gap: 10 }, children: ['nameInput', 'greetRow', 'compact'] },
+      nameInput: { type: 'TextInput', props: { label: 'Your name', placeholder: 'Type your name…', value: { $bindState: '/form/name' } }, children: [] },
+      greetRow: { type: 'Stack', props: { direction: 'row', gap: 6, align: 'center' }, children: ['greetLabel', 'greetName'] },
+      greetLabel: { type: 'Text', props: { text: 'Hello,', variant: 'body', color: 'muted' }, children: [] },
+      greetName: { type: 'Text', props: { text: { $state: '/form/name' }, variant: 'body', color: 'primary' }, children: [] },
+      compact: { type: 'Switch', props: { label: 'Compact mode', value: { $bindState: '/prefs/compact' } }, children: [] },
+
+      // ── Actions mutate state → the DataTable re-renders ──
+      notes: { type: 'Card', props: { title: 'Notes' }, children: ['notesBody'] },
+      notesBody: { type: 'Stack', props: { gap: 10 }, children: ['draftRow', 'notesTable', 'clearBtn'] },
+      draftRow: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'end' }, children: ['draftInput', 'addBtn'] },
+      draftInput: { type: 'TextInput', props: { label: 'New note', placeholder: 'Write something…', value: { $bindState: '/draft' } }, children: [] },
+      addBtn: {
+        type: 'Button',
+        props: { label: 'Add', variant: 'primary', icon: 'ph:plus' },
+        // Built-in `pushState`: append the typed draft to /notes, then clear the input.
+        on: { press: { action: 'pushState', params: { statePath: '/notes', value: { text: { $state: '/draft' } }, clearStatePath: '/draft' } } },
         children: [],
       },
-      env: { type: 'Card', props: { title: 'Environment' }, children: ['envTable'] },
+      notesTable: {
+        type: 'DataTable',
+        props: { columns: [{ key: 'text', label: 'Note' }], rows: { $state: '/notes' }, height: 160 },
+        children: [],
+      },
+      clearBtn: {
+        type: 'Button',
+        props: { label: 'Clear all', variant: 'ghost', icon: 'ph:trash' },
+        // Built-in `setState`: replace /notes with an empty array.
+        on: { press: { action: 'setState', params: { statePath: '/notes', value: [] } } },
+        children: [],
+      },
+
+      env: { type: 'Card', props: { title: 'Environment', collapsible: true, defaultCollapsed: true }, children: ['envTable'] },
       envTable: {
         type: 'KeyValueTable',
         props: {
@@ -89,13 +117,17 @@ function createClientMetricsSpec(clientType: string): DevframeJsonRenderSpec {
             clientType,
             language: navigator.language,
             viewport: `${window.innerWidth}×${window.innerHeight}`,
-            online: navigator.onLine ? 'yes' : 'no',
           },
         },
         children: [],
       },
     },
-    state: {},
+    state: {
+      form: { name: '' },
+      prefs: { compact: false },
+      draft: '',
+      notes: [{ text: 'Authored entirely in the browser' }],
+    },
   }
 }
 
@@ -166,16 +198,17 @@ export default function Page() {
         // Register a second client-only dock — this one a *json-render* view the
         // page authors itself, the richer sibling of the iframe dock above. Its
         // spec is carried **inline** in the dock entry (`view.spec`), so it needs
-        // no shared state at all: it lives only in this page yet renders through
-        // the same `json-render` dock renderer (the mini React registry) as a
-        // server-authored view. `force` lets React StrictMode re-run this effect
-        // safely.
+        // no shared state at all: it lives only in this page yet renders — and
+        // stays fully interactive (inputs, toggles, and buttons that mutate its
+        // state) — through the same `json-render` dock renderer (the mini React
+        // registry) as a server-authored view. `force` lets React StrictMode
+        // re-run this effect safely.
         const clientJsonRenderDock = clientHost.context.docks.register<DevframeJsonRenderDockEntry>({
-          id: 'client-metrics',
-          title: 'Client Metrics',
-          icon: 'ph:gauge-duotone',
+          id: 'client-playground',
+          title: 'Client Playground',
+          icon: 'ph:sliders-horizontal-duotone',
           type: 'json-render',
-          view: { spec: createClientMetricsSpec(clientHost.context.clientType) },
+          view: { spec: createClientPlaygroundSpec(clientHost.context.clientType) },
           category: 'app',
         }, true)
 

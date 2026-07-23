@@ -96,15 +96,15 @@ A client-only dock can render a [JSON-render](./json-render) view the page autho
 const spec = { /* a DevframeJsonRenderSpec built in the browser */ }
 
 ctx.docks.register({
-  id: 'client-metrics',
-  title: 'Client Metrics',
-  icon: 'ph:gauge-duotone',
+  id: 'client-playground',
+  title: 'Client Playground',
+  icon: 'ph:sliders-horizontal-duotone',
   type: 'json-render',
   view: { spec },
 })
 ```
 
-The `view` field accepts either `{ spec }` (rendered inline, static) or `{ stateKey }` (subscribed to a live shared state, the shape `createJsonRenderView` produces server-side).
+The `view` field accepts either `{ spec }` (the spec rendered inline) or `{ stateKey }` (subscribed to a live shared state, the shape `createJsonRenderView` produces server-side). An inline view still runs its own state: `{ $bindState }` inputs and `{ $state }` reads work against the spec's `state`, and the built-in `setState` / `pushState` / `removeState` actions mutate it — so a client-authored view is interactive with no server and no shared state. What `{ spec }` lacks versus `{ stateKey }` is a server-driven update stream.
 
 ## Dock client scripts
 
