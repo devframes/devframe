@@ -6,6 +6,7 @@ import type {
   DevframeDockEntry,
   DevframeMessageEntry,
   DevframeTerminalSession,
+  DevframeViewIframe,
 } from '@devframes/hub/types'
 import { connectDevframe, createDevframeClientHost } from '@devframes/hub/client'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -32,6 +33,27 @@ function isIframeDock(d: DevframeDockEntry): d is IframeDock {
 const RENDERER_TYPES = new Set(['json-render'])
 function isRenderableDock(d: DevframeDockEntry): boolean {
   return isIframeDock(d) || RENDERER_TYPES.has(d.type)
+}
+
+// A self-contained document for the client-only dock, rendered from a Blob URL
+// so the whole dock is synthesized in the browser with no server route.
+function createClientNotesUrl(): string {
+  const html = `<!doctype html><meta charset="utf-8">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; padding: 24px; font: 14px/1.6 system-ui, sans-serif; }
+  h1 { margin: 0 0 8px; font-size: 16px; }
+  p { max-width: 54ch; opacity: .85; }
+  code { padding: 1px 5px; border-radius: 4px; background: rgba(127,127,127,.18); font-size: 12px; }
+</style>
+<h1>Client-only dock</h1>
+<p>This dock was registered in the browser with
+  <code>host.context.docks.register()</code>. It lives only in this page — it
+  never enters the <code>devframe:docks</code> shared state, so it is not synced
+  to the hub server or to any other connected viewer.</p>
+<p>Patch it live through the returned handle with <code>update()</code> (its
+  <code>badge</code> was set that way), or remove it with <code>dispose()</code>.</p>`
+  return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 }
 
 /** Render a dock icon, falling back to the title's initial when unmapped. */
@@ -80,6 +102,24 @@ export default function Page() {
         })
         hostRef.current = clientHost
 
+        // Register a *client-only* dock — one this page synthesizes itself.
+        // Unlike the server-authored docks, it's registered on the client host
+        // context, so it never enters the `devframe:docks` shared state: it
+        // stays local to this page and is not synced to the hub server or other
+        // viewers. It merges into `clientHost.context.docks.entries` alongside
+        // the server docks. `force` lets React StrictMode re-run this effect
+        // without tripping the duplicate-id guard.
+        const clientDock = clientHost.context.docks.register<DevframeViewIframe>({
+          id: 'client-notes',
+          title: 'Client Notes',
+          icon: 'ph:note-pencil-duotone',
+          type: 'iframe',
+          url: createClientNotesUrl(),
+          category: 'app',
+        }, true)
+        // Patch it in place with the returned handle (the id is immutable).
+        clientDock.update({ badge: clientHost.context.clientType })
+
         const docksState = await rpc.sharedState.get<DevframeDockEntry[]>(
           'devframe:docks',
           { initialValue: [] },
@@ -89,7 +129,10 @@ export default function Page() {
           { initialValue: [] },
         )
 
-        const renderDocks = () => setDocks([...(docksState.value() ?? [])] as DevframeDockEntry[])
+        // The merged list from the client host: server docks (projected from
+        // `devframe:docks` shared state) plus the client-only dock above. We
+        // still subscribe to the shared state to re-render on server changes.
+        const renderDocks = () => setDocks([...clientHost.context.docks.entries])
         const renderCommands = () => setCommands([...(commandsState.value() ?? [])] as DevframeCommandEntry[])
         docksState.on('updated', renderDocks)
         commandsState.on('updated', renderCommands)
@@ -122,6 +165,8 @@ export default function Page() {
 
         cleanup = () => {
           window.clearInterval(interval)
+          // Remove the client-only dock, then tear down the host.
+          clientDock.dispose()
           clientHost.dispose()
         }
       }
@@ -224,6 +269,7 @@ export default function Page() {
                     >
                       <DockIcon entry={dock} />
                       <span className="truncate">{dock.title}</span>
+                      {dock.badge && <span className="ml-auto shrink-0 rounded bg-active px1 py0.5 text-[0.6rem] font-mono color-base">{dock.badge}</span>}
                     </button>
                   </li>
                 ))}
