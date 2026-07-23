@@ -5,7 +5,10 @@ import type {
   DevframeTerminalSession,
   DevframeViewIframe,
 } from '@devframes/hub/types'
+import type { DevframeJsonRenderSpec } from '@devframes/json-render'
+import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { connectDevframe, createDevframeClientHost } from '@devframes/hub/client'
+import { JSON_RENDER_UPSTREAM_VERSION } from '@devframes/json-render'
 import { createJsonRenderDockRenderer } from '@devframes/json-render-ui'
 import { iconClass } from './icons'
 import 'virtual:uno.css'
@@ -80,6 +83,52 @@ function createClientNotesUrl(): string {
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 }
 
+// The shared-state key the client-only json-render dock renders from. It uses a
+// `client:` prefix rather than the server's `devframe:json-render:<scope>:<id>`
+// namespace to signal it is authored here, not by a node `createJsonRenderView`.
+const CLIENT_JSON_RENDER_KEY = 'client:json-render:metrics'
+
+// A json-render spec synthesized entirely in the browser — the client-only
+// counterpart to a server-authored view. It reads real values captured from the
+// page at registration time and uses the same base-catalog components the hub's
+// server view does, rendered by the very same `createJsonRenderDockRenderer`.
+function createClientMetricsSpec(clientType: string): DevframeJsonRenderSpec {
+  return {
+    root: 'root',
+    elements: {
+      root: { type: 'Stack', props: { gap: 14 }, children: ['head', 'about', 'env'] },
+      head: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'center' }, children: ['icon', 'title', 'badge'] },
+      icon: { type: 'Icon', props: { name: 'ph:gauge-duotone', size: 22 }, children: [] },
+      title: { type: 'Text', props: { text: 'Client Metrics', variant: 'heading' }, children: [] },
+      badge: { type: 'Badge', props: { text: 'client-only', variant: 'info' }, children: [] },
+      about: { type: 'Card', props: { title: 'About this dock' }, children: ['aboutText'] },
+      aboutText: {
+        type: 'Text',
+        props: {
+          text: 'This json-render view was authored in the browser and seeded into a client-local shared state — it never reaches the hub server or other viewers, yet renders through the same dock renderer as a server-authored view.',
+          variant: 'body',
+          color: 'muted',
+        },
+        children: [],
+      },
+      env: { type: 'Card', props: { title: 'Environment' }, children: ['envTable'] },
+      envTable: {
+        type: 'KeyValueTable',
+        props: {
+          data: {
+            clientType,
+            language: navigator.language,
+            viewport: `${window.innerWidth}×${window.innerHeight}`,
+            online: navigator.onLine ? 'yes' : 'no',
+          },
+        },
+        children: [],
+      },
+    },
+    state: {},
+  }
+}
+
 async function main() {
   setStatus('Connecting…')
 
@@ -114,6 +163,24 @@ async function main() {
   // Patch it in place with the returned handle (the id is immutable). Call
   // `clientDock.dispose()` to remove it from the merged list again.
   clientDock.update({ badge: host.context.clientType })
+
+  // Register a second client-only dock — this one a *json-render* view the page
+  // authors itself, the richer sibling of the iframe dock above. First seed the
+  // spec as this client's local value for the dock's `stateKey`: because we only
+  // pass `initialValue` and never mutate it, the spec stays local to this page —
+  // it never syncs to the hub server or other viewers. The `json-render` dock
+  // renderer registered above then reads that same state and renders it.
+  await rpc.sharedState.get<DevframeJsonRenderSpec>(CLIENT_JSON_RENDER_KEY, {
+    initialValue: createClientMetricsSpec(host.context.clientType),
+  })
+  host.context.docks.register<DevframeJsonRenderDockEntry>({
+    id: 'client-metrics',
+    title: 'Client Metrics',
+    icon: 'ph:gauge-duotone',
+    type: 'json-render',
+    view: { stateKey: CLIENT_JSON_RENDER_KEY, upstreamVersion: JSON_RENDER_UPSTREAM_VERSION },
+    category: 'app',
+  })
 
   // 1. Docks — the merged list from the client host: server docks (projected
   // from `devframe:docks` shared state) plus the client-only dock above. We

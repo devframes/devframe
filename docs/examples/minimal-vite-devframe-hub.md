@@ -16,6 +16,7 @@ Package: `minimal-vite-devframe-hub` · framework: **Vanilla TypeScript (Vite)**
 - The built-in `hub:commands:execute` RPC dispatches any registered server command, regardless of how the host was constructed.
 - The browser-side `connectDevframe({ baseURL: '/__hub/' })` discovers the WS endpoint via the kit's `__connection.json` middleware.
 - The opt-in [JSON-render](/guide/json-render) hub integration end to end: the host authors a view on its hub context and projects it onto a `json-render` dock, and the client host renders it via `@devframes/json-render-ui` (registered through `createDevframeClientHost({ renderers })`).
+- [Client-only docks](/guide/client-context#client-only-docks) the page registers itself with `context.docks.register()`: an iframe dock rendered from a Blob URL, and a `json-render` dock whose spec is authored in the browser and seeded into a client-local shared state — rendered by the same renderer as the server-authored view, yet never syncing to the hub or other viewers.
 
 ## Run it
 
