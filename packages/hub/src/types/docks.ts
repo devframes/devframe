@@ -200,15 +200,20 @@ export interface DevframeViewIframe extends DevframeDockEntryBase {
 
 /**
  * A structured, soft-navigation target within a shared frame. `path` is opaque
- * to the hub — the embedded app maps it onto its own router. `state` rides the
- * soft-nav (`postMessage`) path only; it is dropped when a target has to be
- * expressed as a URL (boot deep-link / hard-nav fallback), since history state
- * cannot travel in a URL.
+ * to the hub — the embedded app maps it onto its own router.
+ *
+ * Kept to `path` + `query` so the shape survives shared-state's `Immutable`
+ * projection cleanly (a `DevframeViewIframe` must still narrow back from its
+ * immutable form). An `unknown`/recursive history-`state` field breaks that
+ * round-trip, so richer per-navigation state is intentionally out of scope for
+ * now — carry it in `query` or the app's own store.
  */
 export interface NavTarget {
   path: string
-  query?: Record<string, string | string[]>
-  state?: unknown
+  // `readonly` arrays keep this shape stable under the shared-state `Immutable`
+  // projection, so a `Immutable<DevframeViewIframe>` still narrows back to
+  // `DevframeViewIframe` (a mutable `string[]` would not).
+  query?: Record<string, string | readonly string[]>
 }
 
 /**

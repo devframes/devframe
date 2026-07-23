@@ -31,7 +31,7 @@ The embedded app stays maximally decoupled: **~30 lines of `postMessage` shim** 
 | **Member dock** | A per-tab **client-only** dock materialized by the viewer adapter from the manifest. Shares the anchor's `frameId`, carries its own `navTarget` (+ optional `fallbackUrl`). |
 | **Nav shim** | The tiny `postMessage` implementation the embedded app ships (announces its tabs, answers `navigate`, reports `navigated`). |
 | **Manifest** | The declarative, full-snapshot list of tabs the shim reports. |
-| **`navTarget`** | A structured `{ path, query?, state? }` describing which internal view to show. |
+| **`navTarget`** | A structured `{ path, query? }` describing which internal view to show. |
 | **Viewer adapter** | Hub-shipped client code that runs the handshake, turns the manifest into client-only member docks, and drives the nav loop. |
 
 ### Orthogonality of `frameId` and `groupId` (important)
@@ -105,9 +105,8 @@ export interface DevframeViewIframe extends DevframeDockEntryBase {
 export interface NavTarget {
   /** Opaque-to-the-hub route the embedded app maps to its own router. */
   path: string
-  query?: Record<string, string | string[]>
-  /** History state; JSON/structured-cloneable. Rides soft-nav only. */
-  state?: unknown
+  // `readonly` arrays keep the type stable under shared-state's `Immutable`.
+  query?: Record<string, string | readonly string[]>
 }
 
 export interface FrameSubTabsConfig {
@@ -133,7 +132,7 @@ ctx.docks.register({
 })
 ```
 
-`state` is dropped when a target is expressed as a URL (boot deep-link / hard-nav fallback), because history state cannot ride a URL. It survives only on the soft-nav (`postMessage`) path.
+`navTarget` is kept to `path` + `query`. A richer history-`state` field was intentionally deferred: an `unknown`/recursive `state` breaks `DevframeViewIframe`'s round-trip through shared-state's `Immutable<T>` projection (`Immutable<unknown>` collapses to `{}`; a recursive serializable type trips TS2589), so per-navigation state should ride `query` or the embedded app's own store for now.
 
 ### 4.2 Client-only docks via `context.docks.register(...)` (shipped in #129)
 
@@ -350,7 +349,7 @@ On each `ready`/`manifest` (declarative full snapshot):
 ### 7.4 Nav loop + idempotent echo guard
 
 - Track `currentTabId`.
-- On dock activation of a member (`entry:activated`): if `tabId !== currentTabId` and frame READY → post `navigate`; set `currentTabId`. If not READY → hard-nav `iframe.src = fallbackUrl` (drops `state`).
+- On dock activation of a member (`entry:activated`): if `tabId !== currentTabId` and frame READY → post `navigate`; set `currentTabId`. If not READY → hard-nav `iframe.src = fallbackUrl`.
 - On inbound `navigated`: set `currentTabId`, call `switchEntry("<frameId>:<tabId>")`. If it already equals the current selection → **no-op** (do not post `navigate`).
 - The "activate the already-active dock / navigate to the already-current route = no-op" rule on **both** sides breaks the ping-pong. (Shared-state's `syncId` de-dup, [`packages/devframe/src/utils/shared-state.ts:118`](../packages/devframe/src/utils/shared-state.ts), is the analogous guard on the data-model side.)
 
@@ -369,7 +368,7 @@ On each `ready`/`manifest` (declarative full snapshot):
 | Shim present, frame READY | Full soft-nav; members are first-class docks; bidirectional highlight. |
 | No shim (timeout) | Anchor renders as a single plain iframe dock; no members. Nothing breaks. |
 | Static build (no server) | The data model may come from the baked dump; the `postMessage` loop **still works** (server-free). |
-| Navigate before READY | Hard-nav `iframe.src = fallbackUrl` (drops `state`). |
+| Navigate before READY | Hard-nav `iframe.src = fallbackUrl`. |
 | Cross-origin iframe | Fully supported — origin-locked `postMessage`. |
 
 ---
@@ -412,7 +411,7 @@ addEventListener('message', (e) => {
   if (d.type === 'hello')
     post({ type: 'ready', tabs: tabsSnapshot(), current: currentTabId() })
   else if (d.type === 'navigate')
-    router.push({ path: d.navTarget.path, query: d.navTarget.query, state: d.navTarget.state })
+    router.push({ path: d.navTarget.path, query: d.navTarget.query })
 })
 
 // Announce on load (race-proof: host also sends `hello`).

@@ -334,10 +334,14 @@ function deriveFallbackUrl(base: string, navTarget: NavTarget): string {
   if (query) {
     const params = new URLSearchParams()
     for (const [key, value] of Object.entries(query)) {
-      if (Array.isArray(value))
-        value.forEach(v => params.append(key, v))
-      else
+      // `typeof` (not `Array.isArray`) so the string branch narrows cleanly —
+      // `Array.isArray` leaves a `readonly string[]` in the negative branch.
+      if (typeof value === 'string') {
         params.set(key, value)
+      }
+      else {
+        for (const v of value) params.append(key, v)
+      }
     }
     const qs = params.toString()
     if (qs)
