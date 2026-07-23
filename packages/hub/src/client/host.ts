@@ -98,6 +98,11 @@ export async function createDevframeClientHost(
 
   let selectedId: string | null = null
   const entryToStateMap = new Map<string, DockEntryState>()
+  // Docks registered live in this page via `docks.register()`. They never flow
+  // into the `devframe:docks` shared state (client-only), and are merged with
+  // the server entries — a client dock overriding a server one of the same id.
+  const clientDocks = new Map<string, DevframeDockEntry>()
+  const loadScriptsEnabled = options.loadClientScripts ?? true
 
   const panel = createPanelContext(clientType)
   const docks = createDocksContext()
@@ -172,7 +177,7 @@ export async function createDevframeClientHost(
   setDevframeClientContext(context)
 
   const loadedScripts = new Set<string>()
-  if (options.loadClientScripts ?? true) {
+  if (loadScriptsEnabled) {
     loadClientScripts()
     disposers.push(docksState.on('updated', loadClientScripts))
   }
@@ -202,8 +207,36 @@ export async function createDevframeClientHost(
     }
   }
 
+  // The merged dock list: server entries from shared state overlaid with any
+  // client-registered docks (client wins on id collision, new ids appended).
+  function currentEntries(): DevframeDockEntry[] {
+    const server = docksState.value() as DevframeDockEntry[]
+    if (clientDocks.size === 0)
+      return server
+    const merged: DevframeDockEntry[] = []
+    const seen = new Set<string>()
+    for (const entry of server) {
+      merged.push(clientDocks.get(entry.id) ?? entry)
+      seen.add(entry.id)
+    }
+    for (const [id, entry] of clientDocks) {
+      if (!seen.has(id))
+        merged.push(entry)
+    }
+    return merged
+  }
+
+  // Re-run the reconcile + client-script load after a local dock mutation
+  // (register/update/dispose), which doesn't emit the shared-state `updated`
+  // event that the server path relies on.
+  function refreshEntries(): void {
+    reconcileEntries()
+    if (loadScriptsEnabled)
+      loadClientScripts()
+  }
+
   function reconcileEntries(): void {
-    const entries = docksState.value() as DevframeDockEntry[]
+    const entries = currentEntries()
     const seen = new Set<string>()
 
     for (const meta of entries) {
@@ -246,6 +279,33 @@ export async function createDevframeClientHost(
       getStateById: id => entryToStateMap.get(id),
       switchEntry,
       toggleEntry: id => (selectedId === id ? switchEntry(null) : switchEntry(id)),
+      register(entry, force) {
+        if (clientDocks.has(entry.id) && !force)
+          throw new Error(`[@devframes/hub] a client dock "${entry.id}" is already registered — pass force to overwrite`)
+        clientDocks.set(entry.id, entry)
+        refreshEntries()
+        return {
+          update: (patch) => {
+            if (patch.id && patch.id !== entry.id)
+              throw new Error(`[@devframes/hub] cannot change a dock id ("${entry.id}" → "${patch.id}")`)
+            const existing = clientDocks.get(entry.id)
+            if (!existing)
+              throw new Error(`[@devframes/hub] client dock "${entry.id}" was removed — register it again to update`)
+            clientDocks.set(entry.id, { ...existing, ...patch } as DevframeDockEntry)
+            refreshEntries()
+          },
+          dispose: () => {
+            if (clientDocks.delete(entry.id))
+              refreshEntries()
+          },
+        }
+      },
+      update(entry) {
+        if (!clientDocks.has(entry.id))
+          throw new Error(`[@devframes/hub] no client dock "${entry.id}" to update — register it first`)
+        clientDocks.set(entry.id, entry)
+        refreshEntries()
+      },
     }
     return ctx
   }
@@ -361,7 +421,7 @@ export async function createDevframeClientHost(
   }
 
   function loadClientScripts(): void {
-    for (const entry of docksState.value() as DevframeDockEntry[]) {
+    for (const entry of currentEntries()) {
       const script = clientScriptOf(entry)
       if (!script?.importFrom || loadedScripts.has(entry.id))
         continue
@@ -419,9 +479,22 @@ function createPanelContext(clientType: DockClientType): DocksPanelContext {
 }
 
 function groupByCategory(entries: DevframeDockEntry[]): DevframeDockEntriesGrouped {
+  // Index registered groups so a member whose `groupId` resolves takes its
+  // OUTER bucket from the group's category, not its own (which becomes the
+  // member's in-group sub-category). Orphan members — a `groupId` with no
+  // registered group — fall back to their own category.
+  const groupsById = new Map<string, DevframeDockEntry>()
+  for (const entry of entries) {
+    if (entry.type === 'group')
+      groupsById.set(entry.id, entry)
+  }
+
   const groups = new Map<string, DevframeDockEntry[]>()
   for (const entry of entries) {
-    const category = entry.category ?? 'default'
+    const resolvedGroup = entry.groupId ? groupsById.get(entry.groupId) : undefined
+    const category = resolvedGroup
+      ? resolvedGroup.category ?? 'default'
+      : entry.category ?? 'default'
     let list = groups.get(category)
     if (!list) {
       list = []

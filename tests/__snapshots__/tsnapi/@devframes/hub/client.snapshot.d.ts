@@ -52,6 +52,10 @@ export interface DockPanelStorage {
   open: boolean;
   inactiveTimeout: number;
 }
+export interface DockRegistration<T extends DevframeDockEntry = DevframeDockEntry> {
+  update: (_: Partial<T>) => void;
+  dispose: () => void;
+}
 export interface DockRendererInstance {
   dispose?: () => void;
 }
@@ -90,6 +94,8 @@ export interface DocksEntriesContext {
   getStateById: (_: string) => DockEntryState | undefined;
   switchEntry: (_?: string | null) => Promise<boolean>;
   toggleEntry: (_: string) => Promise<boolean>;
+  register: <T extends DevframeDockEntry>(_: T, _?: boolean) => DockRegistration<T>;
+  update: (_: DevframeDockUserEntry) => void;
 }
 export interface DocksPanelContext {
   store: DockPanelStorage;
@@ -130,6 +136,7 @@ export * from "devframe/client";
 // #endregion
 
 // #region Other
+export { DEFAULT_CATEGORIES_ORDER }
 export { DevframeClientRpcHost }
 export { RpcClientEvents }
 // #endregion

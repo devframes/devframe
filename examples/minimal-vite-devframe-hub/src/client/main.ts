@@ -3,6 +3,7 @@ import type {
   DevframeDockEntry,
   DevframeMessageEntry,
   DevframeTerminalSession,
+  DevframeViewIframe,
 } from '@devframes/hub/types'
 import { connectDevframe, createDevframeClientHost } from '@devframes/hub/client'
 import { createJsonRenderDockRenderer } from '@devframes/json-render-ui'
@@ -58,6 +59,27 @@ function isRenderableDock(d: DevframeDockEntry): boolean {
   return isIframeDock(d) || RENDERER_TYPES.has(d.type)
 }
 
+// A self-contained document for the client-only dock, rendered from a Blob URL
+// so the whole dock is synthesized in the browser with no server route.
+function createClientNotesUrl(): string {
+  const html = `<!doctype html><meta charset="utf-8">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; padding: 24px; font: 14px/1.6 system-ui, sans-serif; }
+  h1 { margin: 0 0 8px; font-size: 16px; }
+  p { max-width: 54ch; opacity: .85; }
+  code { padding: 1px 5px; border-radius: 4px; background: rgba(127,127,127,.18); font-size: 12px; }
+</style>
+<h1>Client-only dock</h1>
+<p>This dock was registered in the browser with
+  <code>host.context.docks.register()</code>. It lives only in this page — it
+  never enters the <code>devframe:docks</code> shared state, so it is not synced
+  to the hub server or to any other connected viewer.</p>
+<p>Patch it live through the returned handle with <code>update()</code> (its
+  <code>badge</code> was set that way), or remove it with <code>dispose()</code>.</p>`
+  return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
+}
+
 async function main() {
   setStatus('Connecting…')
 
@@ -76,7 +98,26 @@ async function main() {
     renderers: { 'json-render': createJsonRenderDockRenderer() },
   })
 
-  // 1. Docks — read from `devframe:docks` shared state.
+  // Register a *client-only* dock — one this page synthesizes itself. Unlike
+  // the server-authored docks, it's registered on the client host context, so
+  // it never enters the `devframe:docks` shared state: it stays local to this
+  // page and is not synced to the hub server or other viewers. It merges into
+  // `host.context.docks.entries` (read below) alongside the server docks.
+  const clientDock = host.context.docks.register<DevframeViewIframe>({
+    id: 'client-notes',
+    title: 'Client Notes',
+    icon: 'ph:note-pencil-duotone',
+    type: 'iframe',
+    url: createClientNotesUrl(),
+    category: 'app',
+  })
+  // Patch it in place with the returned handle (the id is immutable). Call
+  // `clientDock.dispose()` to remove it from the merged list again.
+  clientDock.update({ badge: host.context.clientType })
+
+  // 1. Docks — the merged list from the client host: server docks (projected
+  // from `devframe:docks` shared state) plus the client-only dock above. We
+  // still subscribe to the shared state to re-render when server docks change.
   const docks = await rpc.sharedState.get<DevframeDockEntry[]>(
     'devframe:docks',
     { initialValue: [] },
@@ -119,7 +160,7 @@ async function main() {
   }
 
   const renderDocks = () => {
-    const list = (docks.value() ?? []).filter(isRenderableDock)
+    const list = host.context.docks.entries.filter(isRenderableDock)
 
     if (selectedDockId && !list.some(d => d.id === selectedDockId))
       selectedDockId = null
@@ -136,7 +177,7 @@ async function main() {
     }
 
     renderList(docksEl, list, d =>
-      `<li><button type="button" data-dock-id="${d.id}" class="relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${d.id === selectedDockId ? ' op100! bg-active border-base! color-base' : ''}" title="${d.title}">${dockIcon(d)}<span class="truncate">${d.title}</span></button></li>`)
+      `<li><button type="button" data-dock-id="${d.id}" class="relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${d.id === selectedDockId ? ' op100! bg-active border-base! color-base' : ''}" title="${d.title}">${dockIcon(d)}<span class="truncate">${d.title}</span>${d.badge ? `<span class="ml-auto shrink-0 rounded bg-active px1 py0.5 text-[0.6rem] font-mono color-base">${d.badge}</span>` : ''}</button></li>`)
 
     void applySelection(list)
   }
