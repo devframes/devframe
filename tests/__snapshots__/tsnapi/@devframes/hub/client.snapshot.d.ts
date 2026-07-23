@@ -21,6 +21,7 @@ export interface DevframeClientHostOptions {
   clientType?: DockClientType;
   loadClientScripts?: boolean;
   renderers?: Record<string, DockRenderer>;
+  categoryOrder?: Record<string, number>;
 }
 export interface DockClientScriptContext extends DocksContext {
   current: DockEntryState;

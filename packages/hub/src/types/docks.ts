@@ -375,6 +375,29 @@ export interface DevframeViewGroup extends DevframeDockEntryBase {
    * opens until a member is chosen.
    */
   defaultChildId?: string
+  /**
+   * Per-group override of the in-group sub-category ordering — a map of
+   * sub-category id → ordering weight (lower sorts earlier), mirroring the
+   * shape of {@link import('../constants').DEFAULT_CATEGORIES_ORDER}.
+   *
+   * A member's own {@link DevframeDockEntryBase.category} is reinterpreted as
+   * its IN-GROUP sub-category, and members are sub-divided and sorted by those
+   * sub-categories. By default that sort follows the hub-wide
+   * `DEFAULT_CATEGORIES_ORDER`; set this to reorder the sub-categories **inside
+   * this group only**, leaving the outer dock-bar ordering (and every other
+   * group) untouched.
+   *
+   * Keys are merged over the defaults, so you only list the sub-categories you
+   * want to move; any sub-category absent from the map keeps its default weight
+   * (falling back to `0`).
+   *
+   * @example
+   * ```ts
+   * // In the "nuxt" group, surface `app` tools before `framework` internals.
+   * { type: 'group', id: 'nuxt', categoryOrder: { app: -200 } }
+   * ```
+   */
+  categoryOrder?: Record<string, number>
 }
 
 /**
