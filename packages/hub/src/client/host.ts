@@ -10,6 +10,7 @@ import type {
   ClientScriptEntry,
   DevframeDockEntriesGrouped,
   DevframeDockEntry,
+  DevframeViewIframe,
 } from '../types/docks'
 import type { DevframeDocksUserSettings } from '../types/settings'
 import type { DockClientScriptContext } from './client-script'
@@ -27,6 +28,7 @@ import { connectDevframe } from 'devframe/client'
 import { createEventEmitter } from 'devframe/utils/events'
 import { DEFAULT_CATEGORIES_ORDER, DEFAULT_STATE_USER_SETTINGS } from '../constants'
 import { getDevframeClientContext, setDevframeClientContext } from './context'
+import { attachFrameNavClient } from './frame-nav'
 import { createMessagesClient } from './messages'
 
 const DOCKS_STATE_KEY = 'devframe:docks'
@@ -102,6 +104,9 @@ export async function createDevframeClientHost(
   // into the `devframe:docks` shared state (client-only), and are merged with
   // the server entries — a client dock overriding a server one of the same id.
   const clientDocks = new Map<string, DevframeDockEntry>()
+  // Live frame-nav adapters for shared-frame anchors, keyed by frameId, so we
+  // attach one adapter per shared iframe and tear them all down on dispose.
+  const frameNavAdapters = new Map<string, () => void>()
   const loadScriptsEnabled = options.loadClientScripts ?? true
 
   const panel = createPanelContext(clientType)
@@ -186,6 +191,8 @@ export async function createDevframeClientHost(
     context,
     dispose() {
       for (const off of disposers.splice(0)) off()
+      for (const disposeAdapter of frameNavAdapters.values()) disposeAdapter()
+      frameNavAdapters.clear()
       if (mountedRenderers) {
         for (const disposeMount of [...mountedRenderers]) disposeMount()
       }
@@ -205,6 +212,27 @@ export async function createDevframeClientHost(
       domElements: {},
       events: createEventEmitter(),
     }
+  }
+
+  // Auto-attach the frame-nav adapter to a shared-frame anchor iframe once its
+  // iframe element mounts, so a `subTabs` plugin's tabs surface as client-only
+  // member docks with soft navigation. One adapter per `frameId`.
+  function maybeAttachFrameNav(meta: DevframeDockEntry, state: DockEntryState): void {
+    if (meta.type !== 'iframe')
+      return
+    const anchor = meta as DevframeViewIframe
+    if (!anchor.subTabs)
+      return
+    const frameId = anchor.frameId ?? anchor.id
+    const start = (iframe: HTMLIFrameElement): void => {
+      if (frameNavAdapters.has(frameId))
+        return
+      const adapter = attachFrameNavClient({ frameId, anchor, iframe, docks })
+      frameNavAdapters.set(frameId, adapter.dispose)
+    }
+    if (state.domElements.iframe)
+      start(state.domElements.iframe)
+    state.events.on('dom:iframe:mounted', start)
   }
 
   // The merged dock list: server entries from shared state overlaid with any
@@ -243,7 +271,9 @@ export async function createDevframeClientHost(
       seen.add(meta.id)
       const existing = entryToStateMap.get(meta.id)
       if (!existing) {
-        entryToStateMap.set(meta.id, createDockEntryState(meta))
+        const state = createDockEntryState(meta)
+        entryToStateMap.set(meta.id, state)
+        maybeAttachFrameNav(meta, state)
       }
       else if (existing.entryMeta !== meta) {
         existing.entryMeta = meta
@@ -251,8 +281,17 @@ export async function createDevframeClientHost(
       }
     }
     for (const id of [...entryToStateMap.keys()]) {
-      if (!seen.has(id))
-        entryToStateMap.delete(id)
+      if (seen.has(id))
+        continue
+      const removed = entryToStateMap.get(id)
+      entryToStateMap.delete(id)
+      // Tear down a shared-frame adapter when its anchor iframe goes away.
+      const removedMeta = removed?.entryMeta as DevframeViewIframe | undefined
+      if (removedMeta?.type === 'iframe' && removedMeta.subTabs) {
+        const frameId = removedMeta.frameId ?? id
+        frameNavAdapters.get(frameId)?.()
+        frameNavAdapters.delete(frameId)
+      }
     }
 
     docks.entries = entries

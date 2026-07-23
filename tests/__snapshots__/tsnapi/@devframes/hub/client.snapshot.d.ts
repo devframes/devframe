@@ -103,6 +103,42 @@ export interface DocksPanelContext {
   isResizing: boolean;
   readonly isVertical: boolean;
 }
+export interface FrameNavClient {
+  readonly ready: boolean;
+  readonly currentTabId: string | null;
+  dispose: () => void;
+}
+export interface FrameNavClientOptions {
+  frameId: string;
+  anchor: DevframeViewIframe;
+  iframe: Pick<HTMLIFrameElement, 'contentWindow' | 'src'>;
+  docks: Pick<DocksEntriesContext, 'register' | 'switchEntry' | 'getStateById'>;
+  window?: FrameNavListenTarget;
+  origin?: string;
+  handshakeTimeoutMs?: number;
+}
+export interface FrameNavEnvelope {
+  channel: typeof FRAME_NAV_CHANNEL;
+  v: typeof FRAME_NAV_VERSION;
+  frameId: string;
+  from: 'host' | 'frame';
+}
+export interface FrameNavListenTarget {
+  addEventListener: (_: 'message', _: (_: MessageEvent) => void) => void;
+  removeEventListener: (_: 'message', _: (_: MessageEvent) => void) => void;
+}
+export interface FrameTab {
+  id: string;
+  title: string;
+  icon?: DevframeDockEntryIcon;
+  navTarget: NavTarget;
+  fallbackUrl?: string;
+  badge?: string;
+  order?: number;
+  category?: string;
+  when?: string;
+  groupId?: string;
+}
 export interface MessagesClientOptions {
   defaults?: Partial<DevframeMessageEntryInput>;
 }
@@ -116,9 +152,35 @@ export type ConnectRemoteDevframeOptions = Omit<DevframeRpcClientOptions, 'conne
 export type DevframeClientContext = DocksContext;
 export type DockClientType = 'embedded' | 'standalone';
 export type DockRenderer = (_: DockRendererMountOptions) => DockRendererInstance | Promise<DockRendererInstance>;
+export type FrameNavFrameMessage = FrameNavEnvelope & {
+  from: 'frame';
+} & ({
+  type: 'ready';
+  tabs: FrameTab[];
+  current?: string;
+} | {
+  type: 'manifest';
+  tabs: FrameTab[];
+  current?: string;
+} | {
+  type: 'navigated';
+  tabId?: string;
+  navTarget?: NavTarget;
+});
+export type FrameNavHostMessage = FrameNavEnvelope & {
+  from: 'host';
+} & FrameNavHostPayload;
+export type FrameNavHostPayload = {
+  type: 'hello';
+} | {
+  type: 'navigate';
+  tabId: string;
+  navTarget: NavTarget;
+};
 // #endregion
 
 // #region Functions
+export declare function attachFrameNavClient(_: FrameNavClientOptions): FrameNavClient;
 export declare function connectRemoteDevframe(_?: ConnectRemoteDevframeOptions): Promise<DevframeRpcClient>;
 export declare function createDevframeClientHost(_?: DevframeClientHostOptions): Promise<DevframeClientHost>;
 export declare function createMessagesClient(_: DevframeRpcClient, _?: MessagesClientOptions): DevframeMessagesClient;
@@ -129,6 +191,8 @@ export declare function setDevframeClientContext(_: DevframeClientContext | unde
 
 // #region Variables
 export declare const CLIENT_CONTEXT_KEY: string;
+export declare const FRAME_NAV_CHANNEL: string;
+export declare const FRAME_NAV_VERSION: number;
 // #endregion
 
 // #region Re-exports

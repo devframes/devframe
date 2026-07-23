@@ -1,8 +1,10 @@
 # Design: Shared-iframe docks with soft navigation
 
-**Status:** Proposal / design hand-off
+**Status:** Hub side implemented — hand-off spec for the Vite DevTools UI
 **Audience:** Vite DevTools (`@vitejs/devtools-kit`) UI implementers + `@devframes/hub` maintainers
 **Driving use case:** hosting a foreign multi-tab devtool (e.g. **Nuxt DevTools**) as a set of first-class hub docks that all share **one** live iframe and switch between views via **client-side (soft) navigation**, for a unified experience.
+
+> **Landed foundations.** [#129](https://github.com/devframes/devframe/pull/129) shipped client-only `docks.register()`/`docks.update()`; [#130](https://github.com/devframes/devframe/pull/130) reinterpreted a grouped entry's `category` as an in-group sub-category (outer bucket = the group's category) and made `framework` sort first. This spec and the hub-side implementation (types + the frame-nav adapter) build directly on both.
 
 ---
 
@@ -40,6 +42,8 @@ The embedded app stays maximally decoupled: **~30 lines of `postMessage` shim** 
 - `groupId` = *dock-bar UX only* (collapse members under one button), the existing flat-membership grouping ([`packages/hub/src/types/docks.ts:98`](../packages/hub/src/types/docks.ts)).
 
 Members sharing a `frameId` **may** all sit in one group (the Nuxt-tabs case), be spread across several groups, or have **no group at all** (several top-level docks that happen to share one iframe and soft-nav between each other). The viewer adapter keys iframe-sharing and the soft-nav loop **purely on `frameId`**; grouping never enters that logic. `group.defaultChildId` only applies when a group exists; otherwise boot uses the anchor's own URL as the initial view.
+
+Note the [#130](https://github.com/devframes/devframe/pull/130) rule when members *are* grouped: a member's outer dock-bar bucket becomes the **group's** `category`, and the member's own `category` is reinterpreted as an **in-group sub-category** used to sub-divide/sort members inside the group. So a `FrameTab.category` sub-divides tabs *within* the group, not the group's placement on the bar.
 
 ---
 
@@ -131,22 +135,31 @@ ctx.docks.register({
 
 `state` is dropped when a target is expressed as a URL (boot deep-link / hard-nav fallback), because history state cannot ride a URL. It survives only on the soft-nav (`postMessage`) path.
 
-### 4.2 Client-only docks via `context.docks.register(...)`
+### 4.2 Client-only docks via `context.docks.register(...)` (shipped in #129)
 
-The **client** `DevframeClientContext.docks` gains a `register()` mirroring the node host's shape ([`packages/hub/src/types/docks.ts:4`](../packages/hub/src/types/docks.ts)). Entries registered here are **client-only**:
+The **client** `DevframeClientContext.docks` has `register()`/`update()` ([`packages/hub/src/client/docks.ts:115`](../packages/hub/src/client/docks.ts)). Entries registered here are **client-only**:
 
-- They merge into the client's `entries`, `groupedEntries`, and `entryToStateMap` alongside server docks (`reconcileEntries` merges *server entries from `devframe:docks`* + *client-registered entries*).
+- They merge into the client's `entries`, `groupedEntries`, and `entryToStateMap` alongside server docks (`reconcileEntries` merges *server entries from `devframe:docks`* + *client-registered entries*; a client dock overrides a server one of the same id).
 - They are **never** written back to the `devframe:docks` shared state (no server round-trip; nothing to persist server-side).
 - Their ids are **namespaced** to avoid clashing with server docks — convention `"<frameId>:<tabId>"`.
+
+The merged surface (matching what the adapter uses):
 
 ```ts
 interface DocksEntriesContext {
   // ... existing surface ...
-  /** Register a CLIENT-ONLY dock (not projected to the server). */
-  register: <T extends DevframeDockUserEntry>(entry: T) => {
-    update: (patch: Partial<T>) => void
-    remove: () => void
-  }
+  /** Register a CLIENT-ONLY dock (not projected to the server). Throws on a
+   *  duplicate client id unless `force`. */
+  register: <T extends DevframeDockEntry>(entry: T, force?: boolean) => DockRegistration<T>
+  /** Replace a previously client-registered dock, keyed by id. */
+  update: (entry: DevframeDockUserEntry) => void
+}
+
+interface DockRegistration<T> {
+  /** Patch in place; `id` is immutable. */
+  update: (patch: Partial<T>) => void
+  /** Remove the client dock from the local merge. */
+  dispose: () => void
 }
 ```
 
@@ -293,17 +306,24 @@ Do **not** assume members share a group. Group them by `groupId` if present (the
 
 ---
 
-## 7. Part D — the hub-shipped viewer adapter
+## 7. Part D — the hub-shipped viewer adapter (implemented)
 
-Auto-attached by `createDevframeClientHost` when it sees an iframe entry with `subTabs` set and that entry's iframe mounts (`dom:iframe:mounted`). Conceptually:
+Auto-attached by `createDevframeClientHost` when it sees an iframe entry with `subTabs` set and that entry's iframe mounts (`dom:iframe:mounted`). Shipped as `attachFrameNavClient` from `@devframes/hub/client` ([`packages/hub/src/client/frame-nav.ts`](../packages/hub/src/client/frame-nav.ts)):
 
 ```ts
 // @devframes/hub/client
-function attachFrameNavAdapter(opts: {
-  context: DevframeClientContext
-  anchor: DockEntryState          // the subTabs anchor; domElements.iframe present
-}): () => void
+function attachFrameNavClient(options: {
+  frameId: string
+  anchor: DevframeViewIframe
+  iframe: Pick<HTMLIFrameElement, 'contentWindow' | 'src'>
+  docks: Pick<DocksEntriesContext, 'register' | 'switchEntry' | 'getStateById'>
+  window?: FrameNavListenTarget // defaults to globalThis (the host page window)
+  origin?: string               // else derived from the anchor URL
+  handshakeTimeoutMs?: number   // default 3000
+}): FrameNavClient // { ready, currentTabId, dispose() }
 ```
+
+The host wires this automatically (`maybeAttachFrameNav` in `host.ts`), one adapter per `frameId`, disposed when the anchor is removed or the host tears down. Viewers get soft-nav for free once they satisfy §6.
 
 ### 7.1 Handshake & readiness (server-relay-free)
 
@@ -408,15 +428,15 @@ onTabsChanged(() => post({ type: 'manifest', tabs: tabsSnapshot(), current: curr
 ## 11. Implementation checklist
 
 **`@devframes/hub` (data model + adapter):**
-- [ ] Add `navTarget` + `subTabs` to `DevframeViewIframe`; add `NavTarget`, `FrameSubTabsConfig` ([`packages/hub/src/types/docks.ts`](../packages/hub/src/types/docks.ts)).
-- [ ] Add client-only `docks.register()` to the client `DocksEntriesContext`; merge client entries into `reconcileEntries`/`groupedEntries`/`entryToStateMap` ([`packages/hub/src/client/host.ts`](../packages/hub/src/client/host.ts), [`docks.ts`](../packages/hub/src/client/docks.ts)).
-- [ ] Ship the frame-nav adapter; auto-attach on `dom:iframe:mounted` for `subTabs` anchors.
-- [ ] Diagnostics (`DF81xx` docks range, [`packages/hub/src/node/diagnostics.ts`](../packages/hub/src/node/diagnostics.ts)) for malformed manifests / origin mismatches (client-side stays `console.*` per the node/client split).
-- [ ] Tests: reconcile add/update/remove, echo-guard, timeout→no-shim, active-removed→null.
+- [x] Client-only `docks.register()`/`update()` on the client `DocksEntriesContext` — **#129**.
+- [x] Add `navTarget` + `subTabs` to `DevframeViewIframe`; add `NavTarget`, `FrameSubTabsConfig` ([`packages/hub/src/types/docks.ts`](../packages/hub/src/types/docks.ts)).
+- [x] Ship the frame-nav adapter (`attachFrameNavClient`, [`packages/hub/src/client/frame-nav.ts`](../packages/hub/src/client/frame-nav.ts)); auto-attach on `dom:iframe:mounted` for `subTabs` anchors ([`host.ts`](../packages/hub/src/client/host.ts)).
+- [x] Tests: handshake, manifest reconcile add/remove, echo-guard, internal-nav highlight, origin-lock, timeout→no-shim, active-removed→null ([`frame-nav.test.ts`](../packages/hub/src/client/__tests__/frame-nav.test.ts)).
+- [ ] Follow-up: a worked example (wire a `subTabs` anchor + a demo shim in `examples/minimal-vite-devframe-hub`) and a Client Context guide section.
 
 **Vite DevTools (UI contract):**
 - [ ] One kept-alive iframe per `frameId`; hide/show, never re-`src`.
-- [ ] Populate `domElements.iframe` + emit `dom:iframe:mounted`.
+- [ ] Populate `domElements.iframe` + emit `dom:iframe:mounted` on the anchor entry.
 - [ ] Render member docks (grouped or not) through the normal selection path.
 
 **Embedded app (Nuxt DevTools):**
