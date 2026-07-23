@@ -16,7 +16,7 @@ Package: `minimal-next-devframe-hub` · framework: **React (Next.js)**
 - The built-in `hub:commands:execute` RPC dispatches any registered server command, regardless of how the host was constructed.
 - The browser-side `connectDevframe({ baseURL: '/__hub/' })` discovers the WS endpoint via the Next route handler at `/__hub/__connection.json`, which starts the singleton host on demand.
 - The [JSON-render](/guide/json-render) hub integration with **registry replacement**: the host authors a view and projects it onto a `json-render` dock, and the React client renders it with a small in-example React registry (rather than the Vue `@devframes/json-render-ui`) — the path a non-Vue host uses.
-- [Client-only docks](/guide/client-context#client-only-docks) the page registers itself with `context.docks.register()`: an iframe dock rendered from a Blob URL, and a `json-render` dock whose spec is authored in the browser and seeded into a client-local shared state — rendered by the same React registry as the server-authored view, yet never syncing to the hub or other viewers.
+- [Client-only docks](/guide/client-context#client-only-docks) the page registers itself with `context.docks.register()`: an iframe dock rendered from a Blob URL, and a `json-render` dock whose spec is authored in the browser and carried inline in the dock entry (`view: { spec }`) — rendered by the same React registry as the server-authored view, with no shared state, yet never syncing to the hub or other viewers.
 
 ## Run it
 

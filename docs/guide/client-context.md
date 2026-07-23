@@ -90,23 +90,21 @@ handle.dispose() // remove it
 
 Client-only docks merge into the same `docks.entries` list, group, select, and load their client scripts exactly like server docks — they just never sync to the hub or other viewers. A client dock sharing an id with a server dock overrides it locally. `ctx.docks.update(entry)` replaces a previously registered client dock wholesale. Registering an id that a client dock already owns throws unless you pass `register(entry, true)`.
 
-A client-only dock can render a [JSON-render](./json-render) view the page authors itself. Seed the spec as this client's local value for the dock's `stateKey` — passing only `initialValue` and never mutating it keeps the spec local to this page — then register a `json-render` dock pointing at that key. With a `json-render` renderer registered at boot, it renders through the same path as a server-authored view:
+A client-only dock can render a [JSON-render](./json-render) view the page authors itself. Carry the spec **inline** in the dock's `view` — no shared state, no server round-trip — and register a `json-render` dock. With a `json-render` renderer registered at boot, it renders through the same path as a server-authored view:
 
 ```ts
-import { JSON_RENDER_UPSTREAM_VERSION } from '@devframes/json-render'
-
-await ctx.rpc.sharedState.get('client:json-render:metrics', {
-  initialValue: spec, // a DevframeJsonRenderSpec built in the browser
-})
+const spec = { /* a DevframeJsonRenderSpec built in the browser */ }
 
 ctx.docks.register({
   id: 'client-metrics',
   title: 'Client Metrics',
   icon: 'ph:gauge-duotone',
   type: 'json-render',
-  view: { stateKey: 'client:json-render:metrics', upstreamVersion: JSON_RENDER_UPSTREAM_VERSION },
+  view: { spec },
 })
 ```
+
+The `view` field accepts either `{ spec }` (rendered inline, static) or `{ stateKey }` (subscribed to a live shared state, the shape `createJsonRenderView` produces server-side).
 
 ## Dock client scripts
 

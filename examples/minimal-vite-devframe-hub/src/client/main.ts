@@ -8,7 +8,6 @@ import type {
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { connectDevframe, createDevframeClientHost } from '@devframes/hub/client'
-import { JSON_RENDER_UPSTREAM_VERSION } from '@devframes/json-render'
 import { createJsonRenderDockRenderer } from '@devframes/json-render-ui'
 import { iconClass } from './icons'
 import 'virtual:uno.css'
@@ -82,11 +81,6 @@ function createClientNotesUrl(): string {
   <code>badge</code> was set that way), or remove it with <code>dispose()</code>.</p>`
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 }
-
-// The shared-state key the client-only json-render dock renders from. It uses a
-// `client:` prefix rather than the server's `devframe:json-render:<scope>:<id>`
-// namespace to signal it is authored here, not by a node `createJsonRenderView`.
-const CLIENT_JSON_RENDER_KEY = 'client:json-render:metrics'
 
 // A json-render spec synthesized entirely in the browser — the client-only
 // counterpart to a server-authored view. It reads real values captured from the
@@ -165,20 +159,16 @@ async function main() {
   clientDock.update({ badge: host.context.clientType })
 
   // Register a second client-only dock — this one a *json-render* view the page
-  // authors itself, the richer sibling of the iframe dock above. First seed the
-  // spec as this client's local value for the dock's `stateKey`: because we only
-  // pass `initialValue` and never mutate it, the spec stays local to this page —
-  // it never syncs to the hub server or other viewers. The `json-render` dock
-  // renderer registered above then reads that same state and renders it.
-  await rpc.sharedState.get<DevframeJsonRenderSpec>(CLIENT_JSON_RENDER_KEY, {
-    initialValue: createClientMetricsSpec(host.context.clientType),
-  })
+  // authors itself, the richer sibling of the iframe dock above. Its spec is
+  // carried **inline** in the dock entry (`view.spec`), so it needs no shared
+  // state at all: it lives only in this page yet renders through the very same
+  // `json-render` dock renderer registered above as a server-authored view.
   host.context.docks.register<DevframeJsonRenderDockEntry>({
     id: 'client-metrics',
     title: 'Client Metrics',
     icon: 'ph:gauge-duotone',
     type: 'json-render',
-    view: { stateKey: CLIENT_JSON_RENDER_KEY, upstreamVersion: JSON_RENDER_UPSTREAM_VERSION },
+    view: { spec: createClientMetricsSpec(host.context.clientType) },
     category: 'app',
   })
 

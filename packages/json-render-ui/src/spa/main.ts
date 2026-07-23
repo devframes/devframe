@@ -123,7 +123,6 @@ async function main(): Promise<void> {
               spec: spec ?? null,
               rpc: rpc as unknown as ActionBridgeRpc,
               viewId: activeEntry.stateKey,
-              upstreamVersion: activeEntry.upstreamVersion,
               interactive,
               loading: spec === undefined,
             }),
