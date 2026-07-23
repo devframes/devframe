@@ -199,6 +199,8 @@ ctx.docks.register({
 
 `groupId` lives on every entry kind, so iframes, launchers, custom-render views, and integration-contributed types (e.g. json-render panels) all join groups the same way. The group and its members stay independent top-level entries in `devframe:docks`; a downstream UI derives the visual collapse by matching each member's `groupId` to the group's `id` and renders members in a popover or sub-navigation. `defaultChildId` names the member opened when the group button is activated.
 
+Grouping is about the dock bar; it does not share an iframe. When several iframe docks should render into **one** live iframe and switch views by soft navigation — a multi-tab tool like Nuxt DevTools hosted as first-class docks — give them a shared `frameId` and mark the anchor with `subTabs`. `frameId` is an axis independent of `groupId`, so shared-iframe members may sit in a group, across groups, or ungrouped. See [Shared-iframe soft navigation](./client-context#shared-iframe-soft-navigation).
+
 ### The dual role of `category`
 
 `category` decides an entry's outer bucket on the dock bar (ordered by `DEFAULT_CATEGORIES_ORDER`) — but its meaning shifts once an entry joins a group:
@@ -260,6 +262,8 @@ Two minimal, copyable hubs mount every built-in plugin (git, terminals, code-ser
 
 - [`examples/minimal-vite-devframe-hub/`](https://github.com/devframes/devframe/tree/main/examples/minimal-vite-devframe-hub) — a ~120-line Vite plugin host with a vanilla DOM UI.
 - [`examples/minimal-next-devframe-hub/`](https://github.com/devframes/devframe/tree/main/examples/minimal-next-devframe-hub) — the same protocol hosted from a Next.js App Router app.
+
+Both also mount a "Tabbed Tool" that demonstrates [shared-iframe soft navigation](./client-context#shared-iframe-soft-navigation) — one SPA whose tabs surface as separate docks sharing a single iframe.
 
 Every framework's hub host follows the same shape: a thin `DevframeHost` adapter over the framework's dev server, with the dock/commands/messages/terminals protocol unchanged above it.
 

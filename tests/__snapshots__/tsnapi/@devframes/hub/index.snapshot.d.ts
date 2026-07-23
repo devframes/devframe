@@ -87,9 +87,11 @@ export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }
 export { EventUnsubscribe }
+export { FrameSubTabsConfig }
 export { JsonRenderElement }
 export { JsonRenderer }
 export { JsonRenderSpec }
+export { NavTarget }
 export { PartialWithoutId }
 export { RemoteConnectionInfo }
 export { RemoteDockOptions }

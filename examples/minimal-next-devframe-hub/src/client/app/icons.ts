@@ -13,6 +13,14 @@ const ICON_CLASS: Record<string, string> = {
   'ph:rocket-duotone': 'i-ph-rocket-duotone',
   'ph:wrench-duotone': 'i-ph-wrench-duotone',
   'ph:plug-duotone': 'i-ph-plug-duotone',
+  'ph:layout-duotone': 'i-ph-layout-duotone',
+  'ph:note-pencil-duotone': 'i-ph-note-pencil-duotone',
+  'ph:squares-four-duotone': 'i-ph-squares-four-duotone',
+  'ph:house-duotone': 'i-ph-house-duotone',
+  'ph:puzzle-piece-duotone': 'i-ph-puzzle-piece-duotone',
+  'ph:clock-duotone': 'i-ph-clock-duotone',
+  'ph:gear-duotone': 'i-ph-gear-duotone',
+  'ph:sliders-horizontal-duotone': 'i-ph-sliders-horizontal-duotone',
 }
 
 /**

@@ -7,7 +7,7 @@ import type {
 } from '@devframes/hub/types'
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
-import { connectDevframe, createDevframeClientHost } from '@devframes/hub/client'
+import { connectDevframe, createDevframeClientHost, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
 import { createJsonRenderDockRenderer } from '@devframes/json-render-ui'
 import { iconClass } from './icons'
 import 'virtual:uno.css'
@@ -21,10 +21,9 @@ const commandsEl = document.querySelector<HTMLElement>('#commands')!
 const messagesEl = document.querySelector<HTMLElement>('#messages')!
 const terminalsEl = document.querySelector<HTMLElement>('#terminals')!
 const pingBtn = document.querySelector<HTMLButtonElement>('#ping')!
-const iframeEl = document.querySelector<HTMLIFrameElement>('#dock-iframe')!
+const stageEl = document.querySelector<HTMLElement>('#dock-stage')!
 const panelEl = document.querySelector<HTMLElement>('#dock-panel')!
 
-let selectedDockId: string | null = null
 // Disposer for the currently mounted renderer dock (e.g. json-render).
 let disposePanel: (() => void) | null = null
 
@@ -207,70 +206,117 @@ async function main() {
   })
 
   // 1. Docks — the merged list from the client host: server docks (projected
-  // from `devframe:docks` shared state) plus the client-only dock above. We
-  // still subscribe to the shared state to re-render when server docks change.
+  // from `devframe:docks` shared state) plus the client-only docks above and
+  // any the frame-nav adapter materializes for a shared-frame anchor.
   const docks = await rpc.sharedState.get<DevframeDockEntry[]>(
     'devframe:docks',
     { initialValue: [] },
   )
 
-  // The dock currently mounted into the viewport (iframe or renderer panel).
-  let mountedDockId: string | null = null
+  // Selection is owned by the client host (`switchEntry`), not a local variable.
+  // That is what lets the frame-nav adapter hear a dock's `entry:activated` and
+  // drive soft-navigation for shared-frame member docks.
+  const docksCtx = host.context.docks
 
-  async function applySelection(list: DevframeDockEntry[]): Promise<void> {
-    if (selectedDockId === mountedDockId)
-      return
-    mountedDockId = selectedDockId
-    // Tear down any active renderer mount (json-render) before switching.
-    disposePanel?.()
-    disposePanel = null
+  // Keep-alive iframe pool: one iframe per `frameId` (shared-frame docks) or per
+  // dock id (plain iframe docks). Switching docks toggles visibility instead of
+  // reloading — and shared-frame member docks reuse the same element, soft-
+  // navigating via the adapter rather than re-`src`-ing.
+  const iframePool = new Map<string, HTMLIFrameElement>()
+  const frameKeyOf = (e: DevframeDockEntry): string =>
+    (e as DevframeViewIframe).frameId ?? e.id
+  let mountedRendererId: string | null = null
 
-    const entry = list.find(d => d.id === selectedDockId) ?? null
-    if (!entry) {
-      iframeEl.hidden = false
-      iframeEl.src = 'about:blank'
-      panelEl.hidden = true
-      return
+  function ensureIframe(entry: DevframeDockEntry & { url: string }): HTMLIFrameElement {
+    const key = frameKeyOf(entry)
+    let el = iframePool.get(key)
+    if (!el) {
+      el = document.createElement('iframe')
+      el.title = entry.title
+      el.className = 'absolute inset-0 block h-full w-full border-0 bg-base'
+      el.hidden = true
+      el.src = entry.url
+      stageEl.appendChild(el)
+      iframePool.set(key, el)
+      // Hand the element to the client host: setting it on the dock's
+      // DockEntryState and emitting `dom:iframe:mounted` is the seam that lets
+      // the frame-nav adapter attach to a `subTabs` anchor (plan §6.2).
+      const state = docksCtx.getStateById(entry.id)
+      if (state) {
+        state.domElements.iframe = el
+        state.events.emit('dom:iframe:mounted', el)
+      }
     }
-    if (isIframeDock(entry)) {
+    return el
+  }
+
+  async function showSelection(list: DevframeDockEntry[]): Promise<void> {
+    const entry = docksCtx.selectedId
+      ? list.find(d => d.id === docksCtx.selectedId) ?? null
+      : null
+
+    if (!entry || isIframeDock(entry)) {
+      if (mountedRendererId) {
+        disposePanel?.()
+        disposePanel = null
+        mountedRendererId = null
+      }
       panelEl.hidden = true
-      panelEl.innerHTML = ''
-      iframeEl.hidden = false
-      iframeEl.src = entry.url
+    }
+
+    if (entry && isIframeDock(entry)) {
+      const active = ensureIframe(entry)
+      for (const el of iframePool.values()) el.hidden = el !== active
     }
     else {
+      for (const el of iframePool.values()) el.hidden = true
+    }
+
+    if (entry && !isIframeDock(entry) && mountedRendererId !== entry.id) {
       // A renderer dock (json-render): mount it into the panel via the client
       // host's renderer registry. The Vue app subscribes to the view's shared
       // state and updates live.
-      iframeEl.hidden = true
-      iframeEl.src = 'about:blank'
+      disposePanel?.()
       panelEl.hidden = false
       panelEl.innerHTML = ''
+      mountedRendererId = entry.id
       disposePanel = await host.context.renderers.mount(entry, panelEl)
     }
   }
 
-  const renderDocks = () => {
-    const list = host.context.docks.entries.filter(isRenderableDock)
+  // Subscribe each dock's state once, so a selection change (from a click, or
+  // from the frame-nav adapter reacting to in-frame navigation) re-renders.
+  const wired = new Set<string>()
+  function wireSelection(list: DevframeDockEntry[]): void {
+    for (const entry of list) {
+      if (wired.has(entry.id))
+        continue
+      const state = docksCtx.getStateById(entry.id)
+      if (!state)
+        continue
+      wired.add(entry.id)
+      state.events.on('entry:activated', render)
+    }
+  }
 
-    if (selectedDockId && !list.some(d => d.id === selectedDockId))
-      selectedDockId = null
-    if (!selectedDockId && list.length > 0)
-      selectedDockId = list[0].id
+  function render(): void {
+    const list = docksCtx.entries.filter(isRenderableDock)
+
+    if (!docksCtx.selectedId && list.length > 0)
+      void docksCtx.switchEntry(list[0].id)
+
+    wireSelection(list)
 
     if (!list.length) {
       docksEl.innerHTML = '<li class="op-mute px2 text-sm">No docks</li>'
-      mountedDockId = null
-      disposePanel?.()
-      disposePanel = null
-      iframeEl.src = 'about:blank'
+      void showSelection(list)
       return
     }
 
     renderList(docksEl, list, d =>
-      `<li><button type="button" data-dock-id="${d.id}" class="relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${d.id === selectedDockId ? ' op100! bg-active border-base! color-base' : ''}" title="${d.title}">${dockIcon(d)}<span class="truncate">${d.title}</span>${d.badge ? `<span class="ml-auto shrink-0 rounded bg-active px1 py0.5 text-[0.6rem] font-mono color-base">${d.badge}</span>` : ''}</button></li>`)
+      `<li><button type="button" data-dock-id="${d.id}" class="relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${d.id === docksCtx.selectedId ? ' op100! bg-active border-base! color-base' : ''}" title="${d.title}">${dockIcon(d)}<span class="truncate">${d.title}</span>${d.badge ? `<span class="ml-auto shrink-0 rounded bg-active px1 py0.5 text-[0.6rem] font-mono color-base">${d.badge}</span>` : ''}</button></li>`)
 
-    void applySelection(list)
+    void showSelection(list)
   }
 
   docksEl.addEventListener('click', (event) => {
@@ -278,14 +324,21 @@ async function main() {
     if (!target)
       return
     const id = target.dataset.dockId
-    if (!id || id === selectedDockId)
+    if (!id || id === docksCtx.selectedId)
       return
-    selectedDockId = id
-    renderDocks()
+    void docksCtx.switchEntry(id)
   })
 
-  docks.on('updated', renderDocks)
-  renderDocks()
+  docks.on('updated', render)
+  // The frame-nav adapter registers/updates client-only member docks in
+  // response to the anchor iframe's manifest; re-render (after the adapter has
+  // reconciled, hence the microtask) so those docks appear in the list.
+  window.addEventListener('message', (event) => {
+    const data = event.data as { channel?: string, from?: string } | undefined
+    if (data?.channel === FRAME_NAV_CHANNEL && data.from === 'frame')
+      queueMicrotask(render)
+  })
+  render()
 
   // 2. Commands — read from `devframe:commands` shared state.
   const commands = await rpc.sharedState.get<DevframeCommandEntry[]>(

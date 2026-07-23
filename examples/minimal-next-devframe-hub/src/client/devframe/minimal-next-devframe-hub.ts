@@ -13,6 +13,7 @@ import { createDashboardView } from 'minimal-json-render/dashboard'
 import { dirname, join } from 'pathe'
 import demoDevframe from './demo-devframe'
 import demoDevframeB from './demo-devframe-b'
+import tabbedDevframe from './tabbed-devframe'
 
 /**
  * Built-in plugin packages dogfooded through the hub mount path.
@@ -255,6 +256,19 @@ export async function minimalNextDevframeHub(
     icon: 'ph:layout-duotone',
     category: 'app',
   }))
+
+  // Shared-iframe soft-navigation demo. mountDevframe serves the SPA and
+  // registers its iframe dock; the `dock` override marks it a `subTabs` anchor
+  // (a shared `frameId` + the postmessage protocol) so the client host attaches
+  // the frame-nav adapter, materializing one client-only dock per tab the SPA's
+  // shim reports — all sharing this one iframe.
+  await mountDevframe(context, tabbedDevframe, {
+    dock: {
+      category: 'app',
+      frameId: 'next-tabbed-tool',
+      subTabs: { protocol: 'postmessage' },
+    },
+  })
 
   const started = await startHttpAndWs({
     context,

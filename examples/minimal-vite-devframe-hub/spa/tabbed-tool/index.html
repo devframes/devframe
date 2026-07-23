@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tabbed Tool</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, sans-serif;
+        --fg: #1c2024;
+        --muted: #6b7280;
+        --line: #e4e6ea;
+        --accent: #3a6a45;
+        --panel: #f6f7f8;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root { --fg: #e6e8ea; --muted: #9aa2ad; --line: #2a2d31; --accent: #7fb98a; --panel: #17191c; }
+        body { background: #0f1113; }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; color: var(--fg); }
+      header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+      header .brand { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+      header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+      nav { display: flex; gap: 4px; margin-left: 8px; }
+      nav button {
+        appearance: none; border: 1px solid transparent; background: transparent; color: var(--muted);
+        font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 7px; cursor: pointer;
+      }
+      nav button:hover { color: var(--fg); background: var(--panel); }
+      nav button[aria-current="true"] { color: var(--fg); background: var(--panel); border-color: var(--line); }
+      main { padding: 24px; }
+      h1 { margin: 0 0 6px; font-size: 18px; }
+      p { max-width: 60ch; line-height: 1.6; color: var(--muted); }
+      code { font-family: ui-monospace, monospace; background: rgba(127, 127, 127, 0.16); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+      .view { display: none; }
+      .view[data-active="true"] { display: block; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 16px; }
+      .card { border: 1px solid var(--line); border-radius: 10px; padding: 14px; background: var(--panel); }
+      .card b { display: block; font-size: 13px; }
+      .card span { font-size: 12px; color: var(--muted); }
+      ol { padding-left: 18px; }
+      ol li { margin: 6px 0; }
+      .tag { display: inline-block; font-size: 11px; font-family: ui-monospace, monospace; color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="brand"><span class="dot"></span>Tabbed Tool</span>
+      <nav id="tabs"></nav>
+    </header>
+    <main>
+      <section class="view" data-view="overview">
+        <h1>Overview</h1>
+        <p>
+          One iframe, many hub docks. This SPA hosts its own internal views
+          (<span class="tag">Overview · Components · Timeline · Settings</span>)
+          and exposes each as a first-class hub dock that shares
+          <em>this single iframe</em>. Switching docks soft-navigates here — no
+          reload — via the <code>devframe:frame-nav</code> postMessage protocol.
+        </p>
+        <div class="grid">
+          <div class="card"><b>Shared frame</b><span>frameId · tabbed-tool</span></div>
+          <div class="card"><b>Transport</b><span>window.postMessage</span></div>
+          <div class="card"><b>Docks</b><span>client-only, from manifest</span></div>
+          <div class="card"><b>Nav</b><span>bidirectional</span></div>
+        </div>
+      </section>
+
+      <section class="view" data-view="components">
+        <h1>Components</h1>
+        <p>A stand-in view. Selecting the <b>Components</b> dock in the hub posts
+          <code>navigate</code> to this frame, which routes here client-side.</p>
+        <div class="grid">
+          <div class="card"><b>&lt;Button /&gt;</b><span>12 usages</span></div>
+          <div class="card"><b>&lt;Dialog /&gt;</b><span>4 usages</span></div>
+          <div class="card"><b>&lt;Tabs /&gt;</b><span>7 usages</span></div>
+        </div>
+      </section>
+
+      <section class="view" data-view="timeline">
+        <h1>Timeline</h1>
+        <p>Navigate <em>inside</em> this frame (the tab bar above) and watch the
+          hub's active dock follow — the frame posts <code>navigated</code> back.</p>
+        <ol>
+          <li>10:02 — build started</li>
+          <li>10:02 — 214 modules transformed</li>
+          <li>10:03 — page reload</li>
+        </ol>
+      </section>
+
+      <section class="view" data-view="settings">
+        <h1>Settings</h1>
+        <p>The manifest each tab reports (<code>title</code>, <code>icon</code>,
+          <code>navTarget</code>) becomes a client-only dock in the hub — never
+          written to the <code>devframe:docks</code> shared state.</p>
+        <div class="grid">
+          <div class="card"><b>Theme</b><span>follows OS</span></div>
+          <div class="card"><b>Telemetry</b><span>off</span></div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // ── The tabbed tool's own tiny router ────────────────────────────────
+      const TABS = [
+        { id: 'overview', title: 'Overview', icon: 'ph:house-duotone', navTarget: { path: '/overview' } },
+        { id: 'components', title: 'Components', icon: 'ph:puzzle-piece-duotone', navTarget: { path: '/components' } },
+        { id: 'timeline', title: 'Timeline', icon: 'ph:clock-duotone', navTarget: { path: '/timeline' } },
+        { id: 'settings', title: 'Settings', icon: 'ph:gear-duotone', navTarget: { path: '/settings' } },
+      ]
+      const pathToTab = path => (path || '/overview').replace(/^#?\/?/, '') || 'overview'
+      let current = pathToTab(location.hash.slice(1))
+      if (!TABS.some(t => t.id === current)) current = 'overview'
+
+      const navEl = document.getElementById('tabs')
+      navEl.innerHTML = TABS.map(t => `<button data-tab="${t.id}">${t.title}</button>`).join('')
+
+      function render() {
+        for (const el of document.querySelectorAll('.view'))
+          el.dataset.active = String(el.dataset.view === current)
+        for (const b of navEl.querySelectorAll('button'))
+          b.setAttribute('aria-current', String(b.dataset.tab === current))
+      }
+
+      // ── The postMessage nav shim (devframe:frame-nav protocol) ───────────
+      const CHANNEL = 'devframe:frame-nav'
+      const VERSION = 1
+      const FRAME_ID = 'tabbed-tool'
+      // Best-effort parent origin so the first (unsolicited) `ready` can be sent
+      // even if the host's `hello` is missed during iframe boot.
+      let hostOrigin
+        = (location.ancestorOrigins && location.ancestorOrigins[0])
+          || (document.referrer ? new URL(document.referrer).origin : '*')
+
+      function post(message) {
+        parent.postMessage({ channel: CHANNEL, v: VERSION, frameId: FRAME_ID, from: 'frame', ...message }, hostOrigin)
+      }
+      const manifest = () => TABS.map(t => ({ id: t.id, title: t.title, icon: t.icon, navTarget: t.navTarget }))
+
+      function setView(id, fromHost) {
+        if (!TABS.some(t => t.id === id)) return
+        current = id
+        location.hash = `/${id}`
+        render()
+        // Report internal navigation so the host highlights the matching dock.
+        // When the host itself asked us to navigate, its idempotent guard makes
+        // this echo a no-op.
+        if (!fromHost) post({ type: 'navigated', tabId: id })
+      }
+
+      addEventListener('message', (e) => {
+        const d = e.data
+        if (!d || d.channel !== CHANNEL || d.v !== VERSION || d.from !== 'host') return
+        if (d.frameId && d.frameId !== FRAME_ID) return
+        hostOrigin = e.origin || hostOrigin
+        if (d.type === 'hello')
+          post({ type: 'ready', tabs: manifest(), current })
+        else if (d.type === 'navigate')
+          setView(pathToTab(d.navTarget && d.navTarget.path), true)
+      })
+
+      // The user clicking a tab inside this frame drives the loop the other way.
+      navEl.addEventListener('click', (e) => {
+        const b = e.target.closest('button[data-tab]')
+        if (b) setView(b.dataset.tab, false)
+      })
+
+      render()
+      // Announce ourselves on load (the host also sends `hello` — either wins).
+      post({ type: 'ready', tabs: manifest(), current })
+    </script>
+  </body>
+</html>

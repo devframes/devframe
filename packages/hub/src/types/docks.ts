@@ -153,12 +153,37 @@ export interface DevframeViewIframe extends DevframeDockEntryBase {
    * The id of the iframe, if multiple tabs is assigned with the same id, the iframe will be shared.
    *
    * When not provided, it would be treated as a unique frame.
+   *
+   * `frameId` is an axis independent of {@link DevframeDockEntryBase.groupId}:
+   * it decides *which* iframe element a dock renders into (and which soft-nav
+   * pool it joins), while `groupId` only affects dock-bar grouping. Docks that
+   * share a `frameId` may live in one group, several groups, or none.
    */
   frameId?: string
   /**
    * Optional client script to import into the iframe
    */
   clientScript?: ClientScriptEntry
+  /**
+   * Soft-navigation target within a shared frame. Set on a **member** dock
+   * (one of several docks sharing a {@link frameId}) to describe which internal
+   * view the embedded app should show. The hub treats {@link NavTarget.path} as
+   * opaque and hands it to the frame's nav shim over `postMessage`; switching to
+   * this dock performs client-side navigation instead of reloading the iframe.
+   *
+   * The anchor dock (the one flagged with {@link subTabs}) leaves this unset.
+   */
+  navTarget?: NavTarget
+  /**
+   * Marks this iframe as a **shared-frame anchor** whose sub-tabs are discovered
+   * at runtime over a host↔iframe `postMessage` protocol. The client host
+   * auto-attaches the frame-nav adapter when this iframe mounts: it runs the
+   * ready handshake, materializes one client-only member dock per reported tab
+   * (grouped/soft-navigated via this anchor's {@link frameId}), and drives the
+   * live navigation loop. Absent a shim, the anchor simply renders as a single
+   * plain iframe dock.
+   */
+  subTabs?: FrameSubTabsConfig
   /**
    * Enable remote-UI mode: the hub injects a connection descriptor
    * (WS URL + pre-approved auth token) into the iframe URL so a hosted
@@ -171,6 +196,40 @@ export interface DevframeViewIframe extends DevframeDockEntryBase {
    * the author provides an explicit `when` clause.
    */
   remote?: boolean | RemoteDockOptions
+}
+
+/**
+ * A structured, soft-navigation target within a shared frame. `path` is opaque
+ * to the hub — the embedded app maps it onto its own router.
+ *
+ * Kept to `path` + `query` so the shape survives shared-state's `Immutable`
+ * projection cleanly (a `DevframeViewIframe` must still narrow back from its
+ * immutable form). An `unknown`/recursive history-`state` field breaks that
+ * round-trip, so richer per-navigation state is intentionally out of scope for
+ * now — carry it in `query` or the app's own store.
+ */
+export interface NavTarget {
+  path: string
+  // `readonly` arrays keep this shape stable under the shared-state `Immutable`
+  // projection, so a `Immutable<DevframeViewIframe>` still narrows back to
+  // `DevframeViewIframe` (a mutable `string[]` would not).
+  query?: Record<string, string | readonly string[]>
+}
+
+/**
+ * Configuration for a {@link DevframeViewIframe.subTabs shared-frame anchor}.
+ */
+export interface FrameSubTabsConfig {
+  /** Transport for tab discovery + the live nav loop. */
+  protocol: 'postmessage'
+  /**
+   * How long (ms) the adapter waits for the shim's `ready` before treating the
+   * frame as having no shim (the anchor renders as a single plain iframe dock,
+   * and a navigation requested before readiness hard-navigates).
+   *
+   * @default 3000
+   */
+  handshakeTimeoutMs?: number
 }
 
 export interface RemoteDockOptions {
