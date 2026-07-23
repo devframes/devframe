@@ -34,15 +34,14 @@ changes are allowed as long as they're marked).
 | 019 | RPC round-trip tests for the inspect plugin | tests | P3 | S | 001 (compl.) | TODO |
 | 020 | Docs pages for the 15 plugin `DP_*` diagnostics | docs | P3 | M | — | TODO |
 | 021 | Document `@devframes/plugin-messages` | docs | P3 | S | — | TODO |
-| 022 | Memoize git commit-log rows | perf | P3 | M | — | TODO |
+| 022 | Memoize git commit-log rows | perf | P3 | M | — | DONE |
 | 023 | Single-pass MessagesView filtering | perf | P3 | M | — | TODO |
 | 024 | Batch stream-replay into one frame | perf | P3 | M | 009 | TODO |
 | 025 | Cache falsy RPC results (presence check) | bug | P3 | S | — | DONE |
 | 026 | Clear dev/docs-only dependency advisories | deps | P3 | S | 002 | TODO |
 | 027 | Spike: `@devframes/next` host-integration package | direction | P3 | M | — | TODO |
-| 028 | Spike: MCP-inspector + OG-viewer plugins | direction | P3 | L | — | TODO |
 | 029 | Bring `@devframes/plugin-git` to the host baseline | direction/dx | P3 | S-M | — | TODO |
-| 030 | Spike: server-side auth enforcement ⚠️ | security | P2 | L | 003, 007, 015 | TODO |
+| 030 | Spike: server-side auth enforcement ⚠️ | security | P2 | L | 003, 007, 015 | DONE |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale).
 
