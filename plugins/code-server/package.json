@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-code-server",
   "type": "module",
-  "version": "0.7.9",
+  "version": "0.7.10",
   "description": "Run VS Code in the browser (code-server, code serve-web, or a tunnel) as a devframe panel — detect a local install, launch it on demand, and embed the editor in an auto-authenticated iframe.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

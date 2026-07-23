@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-a11y",
   "type": "module",
-  "version": "0.7.9",
+  "version": "0.7.10",
   "description": "Devframe a11y inspector — runs axe-core against the host app, surfaces the violations through a Solid panel, and highlights the offending element in the page on hover. Works in dev (WebSocket) and static build modes.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
