@@ -216,6 +216,25 @@ In the example above, `nuxt:overview` renders under the `framework` bucket (from
 
 Grouping is one level deep: members join a group, and a group is always a top-level button. A member whose group is never registered renders as a normal top-level entry, so registration order is free.
 
+#### Known categories
+
+`DEFAULT_CATEGORIES_ORDER` (exported from `@devframes/hub`, `@devframes/hub/node`, `@devframes/hub/client` and `@devframes/hub/constants`) names the buckets the hub orders by default, reading from "closest to your app" toward "peripheral":
+
+| Category | Weight | Typical use |
+|---|---|---|
+| `framework` | `-100` | Framework internals (Vue / Nuxt / Vite). |
+| `default` | `0` | Uncategorized entries. |
+| `app` | `100` | The user's own app tools. |
+| `ui` | `150` | Components, design system, styling. |
+| `data` | `250` | State, storage, queries, database. |
+| `web` | `300` | Network, platform, accessibility. |
+| `performance` | `350` | Profiling, metrics, budgets. |
+| `advanced` | `400` | Power-user / low-level tools. |
+| `docs` | `500` | Documentation, references. |
+| `~builtin` | `1000` | The viewer's own built-in views; always last. |
+
+The gaps are intentional — a kit can interleave its own category ids (or override any weight) without editing this table. An unknown category sorts as weight `0`.
+
 ## The protocol — what the UI sees
 
 A hub-aware UI doesn't import any hub classes; it reads three shared-state keys and one RPC method:

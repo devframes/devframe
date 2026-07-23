@@ -50,15 +50,20 @@ export interface DevframeDocksActiveState {
   activation: DevframeDockActivation | null
 }
 
-// Known categories the hub orders by default. Kits may pass their own
-// category ids; `(string & {})` keeps autocomplete on the known set while
+// Known categories the hub orders by default (see
+// {@link import('../constants').DEFAULT_CATEGORIES_ORDER}). Kits may pass their
+// own category ids; `(string & {})` keeps autocomplete on the known set while
 // allowing arbitrary string values. `~builtin` is reserved for the viewer's
 // own built-in views (see {@link DevframeViewBuiltin}) and always sorts last.
 export type DevframeDockEntryCategory
-  = | 'app'
-    | 'framework'
-    | 'web'
-    | 'advanced'
+  = | 'framework' // framework internals (Vue / Nuxt / Vite)
+    | 'app' // the user's own app tools
+    | 'ui' // components, design system, styling
+    | 'data' // state, storage, queries, database
+    | 'web' // network, platform, accessibility
+    | 'performance' // profiling, metrics, budgets
+    | 'advanced' // power-user / low-level tools
+    | 'docs' // documentation, references
     | 'default'
     | '~builtin'
     | (string & {})
