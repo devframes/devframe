@@ -63,6 +63,28 @@ export interface DevframeClientHostOptions {
    * `@devframes/json-render-ui`). The hub ships none by default.
    */
   renderers?: Record<string, DockRenderer>
+  /**
+   * Hub-wide override of the top-level dock-bar category ordering — a map of
+   * category id → ordering weight (lower sorts earlier), mirroring the shape
+   * of {@link import('../constants').DEFAULT_CATEGORIES_ORDER}.
+   *
+   * This is the OUTER bucket ordering: it governs every ungrouped entry's own
+   * `category` and every group's `category` (see
+   * {@link import('../types/docks').DevframeDockEntryBase.category}). It is
+   * distinct from {@link import('../types/docks').DevframeViewGroup.categoryOrder},
+   * which only reorders the IN-GROUP sub-categories of one specific group.
+   *
+   * Keys are merged over `DEFAULT_CATEGORIES_ORDER`, so the host app only
+   * lists the categories it wants to move; any category absent from the map
+   * keeps its default weight (falling back to `0`).
+   *
+   * @example
+   * ```ts
+   * // Surface `data` tools ahead of `app` tools, hub-wide.
+   * createDevframeClientHost({ categoryOrder: { data: 50 } })
+   * ```
+   */
+  categoryOrder?: Record<string, number>
 }
 
 export interface DevframeClientHost {
