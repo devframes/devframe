@@ -8,7 +8,7 @@ import type {
   DevframeTerminalSession,
   DevframeViewIframe,
 } from '@devframes/hub/types'
-import { connectDevframe, createDevframeClientHost } from '@devframes/hub/client'
+import { connectDevframe, createDevframeClientHost, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createReactJsonRenderDockRenderer } from '../json-render/dock-renderer'
 import { iconClass } from './icons'
@@ -33,6 +33,13 @@ function isIframeDock(d: DevframeDockEntry): d is IframeDock {
 const RENDERER_TYPES = new Set(['json-render'])
 function isRenderableDock(d: DevframeDockEntry): boolean {
   return isIframeDock(d) || RENDERER_TYPES.has(d.type)
+}
+
+// One iframe is kept alive per `frameId` (shared-frame docks) or per dock id
+// (plain iframe docks), so shared-frame member docks reuse the same element and
+// soft-navigate rather than reload.
+function frameKeyOf(e: DevframeDockEntry): string {
+  return (e as DevframeViewIframe).frameId ?? e.id
 }
 
 // A self-contained document for the client-only dock, rendered from a Blob URL
@@ -75,7 +82,12 @@ export default function Page() {
   const [selectedDockId, setSelectedDockId] = useState<string | null>(null)
   const rpcRef = useRef<DevframeRpcClient | null>(null)
   const hostRef = useRef<ClientHost | null>(null)
+  // The stage holds the kept-alive iframe pool; the panel hosts renderer docks.
+  const stageRef = useRef<HTMLDivElement | null>(null)
   const panelRef = useRef<HTMLDivElement | null>(null)
+  const iframePoolRef = useRef<Map<string, HTMLIFrameElement>>(new Map())
+  const rendererMountRef = useRef<{ id: string, dispose: () => void } | null>(null)
+  const wiredRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     let cancelled = false
@@ -101,15 +113,16 @@ export default function Page() {
           renderers: { 'json-render': createReactJsonRenderDockRenderer() },
         })
         hostRef.current = clientHost
+        const ctx = clientHost.context
 
         // Register a *client-only* dock — one this page synthesizes itself.
         // Unlike the server-authored docks, it's registered on the client host
         // context, so it never enters the `devframe:docks` shared state: it
         // stays local to this page and is not synced to the hub server or other
-        // viewers. It merges into `clientHost.context.docks.entries` alongside
-        // the server docks. `force` lets React StrictMode re-run this effect
-        // without tripping the duplicate-id guard.
-        const clientDock = clientHost.context.docks.register<DevframeViewIframe>({
+        // viewers. It merges into `ctx.docks.entries` alongside the server
+        // docks. `force` lets React StrictMode re-run this effect without
+        // tripping the duplicate-id guard.
+        const clientDock = ctx.docks.register<DevframeViewIframe>({
           id: 'client-notes',
           title: 'Client Notes',
           icon: 'ph:note-pencil-duotone',
@@ -118,7 +131,7 @@ export default function Page() {
           category: 'app',
         }, true)
         // Patch it in place with the returned handle (the id is immutable).
-        clientDock.update({ badge: clientHost.context.clientType })
+        clientDock.update({ badge: ctx.clientType })
 
         const docksState = await rpc.sharedState.get<DevframeDockEntry[]>(
           'devframe:docks',
@@ -129,15 +142,32 @@ export default function Page() {
           { initialValue: [] },
         )
 
-        // The merged list from the client host: server docks (projected from
-        // `devframe:docks` shared state) plus the client-only dock above. We
-        // still subscribe to the shared state to re-render on server changes.
-        const renderDocks = () => setDocks([...clientHost.context.docks.entries])
+        // Mirror the merged dock list (server docks + client-only docks) and the
+        // host's current selection into React state. Selection is owned by the
+        // client host (`switchEntry`) — that is what lets the frame-nav adapter
+        // hear a dock's `entry:activated` and drive shared-frame soft-navigation.
+        const syncDocks = () => setDocks([...ctx.docks.entries])
+        const syncSelected = () => setSelectedDockId(ctx.docks.selectedId)
         const renderCommands = () => setCommands([...(commandsState.value() ?? [])] as DevframeCommandEntry[])
-        docksState.on('updated', renderDocks)
+        docksState.on('updated', syncDocks)
         commandsState.on('updated', renderCommands)
-        renderDocks()
+        syncDocks()
+        syncSelected()
         renderCommands()
+
+        // The frame-nav adapter registers/updates client-only member docks in
+        // response to a shared-frame anchor's manifest; re-sync (after it has
+        // reconciled, hence the microtask) so those docks appear in the list.
+        const onMessage = (event: MessageEvent) => {
+          const data = event.data as { channel?: string, from?: string } | undefined
+          if (data?.channel === FRAME_NAV_CHANNEL && data.from === 'frame') {
+            queueMicrotask(() => {
+              syncDocks()
+              syncSelected()
+            })
+          }
+        }
+        window.addEventListener('message', onMessage)
 
         const refreshMessages = async () => {
           const entries = await rpc.call(
@@ -165,9 +195,15 @@ export default function Page() {
 
         cleanup = () => {
           window.clearInterval(interval)
-          // Remove the client-only dock, then tear down the host.
+          window.removeEventListener('message', onMessage)
+          // Remove the client-only dock, then tear down the host + local DOM.
           clientDock.dispose()
           clientHost.dispose()
+          wiredRef.current.clear()
+          for (const el of iframePoolRef.current.values()) el.remove()
+          iframePoolRef.current.clear()
+          rendererMountRef.current?.dispose()
+          rendererMountRef.current = null
         }
       }
       catch (err) {
@@ -187,21 +223,71 @@ export default function Page() {
 
   const renderableDocks = useMemo(() => docks.filter(isRenderableDock), [docks])
 
+  // Wire each dock's state once so a selection change — from a click, or from
+  // the frame-nav adapter reacting to in-frame navigation — updates the UI.
   useEffect(() => {
-    if (selectedDockId && !renderableDocks.some(d => d.id === selectedDockId)) {
-      setSelectedDockId(null)
+    const ctx = hostRef.current?.context
+    if (!ctx)
       return
+    for (const entry of docks) {
+      if (wiredRef.current.has(entry.id))
+        continue
+      const state = ctx.docks.getStateById(entry.id)
+      if (!state)
+        continue
+      wiredRef.current.add(entry.id)
+      state.events.on('entry:activated', () => setSelectedDockId(ctx.docks.selectedId))
     }
+  }, [docks])
+
+  // Drive selection through the client host, and auto-select the first dock.
+  useEffect(() => {
+    const ctx = hostRef.current?.context
+    if (!ctx)
+      return
     if (!selectedDockId && renderableDocks.length > 0)
-      setSelectedDockId(renderableDocks[0].id)
+      void ctx.docks.switchEntry(renderableDocks[0].id)
   }, [renderableDocks, selectedDockId])
 
   const selectedDock = renderableDocks.find(d => d.id === selectedDockId) ?? null
   const selectedIsIframe = selectedDock ? isIframeDock(selectedDock) : false
 
+  // Keep-alive iframe pool: ensure + show the iframe for the selected dock's
+  // frame, hide the rest. Creating an iframe hands it to the client host
+  // (`domElements.iframe` + `dom:iframe:mounted`) so the frame-nav adapter can
+  // attach to a `subTabs` anchor (plan §6.2).
+  useEffect(() => {
+    const ctx = hostRef.current?.context
+    const stage = stageRef.current
+    if (!ctx || !stage)
+      return
+    const pool = iframePoolRef.current
+
+    if (selectedDock && isIframeDock(selectedDock)) {
+      const key = frameKeyOf(selectedDock)
+      let el = pool.get(key)
+      if (!el) {
+        el = document.createElement('iframe')
+        el.title = selectedDock.title
+        el.className = 'absolute inset-0 block h-full w-full border-0 bg-base'
+        el.src = selectedDock.url
+        stage.appendChild(el)
+        pool.set(key, el)
+        const state = ctx.docks.getStateById(selectedDock.id)
+        if (state) {
+          state.domElements.iframe = el
+          state.events.emit('dom:iframe:mounted', el)
+        }
+      }
+      for (const other of pool.values()) other.hidden = other !== el
+    }
+    else {
+      for (const other of pool.values()) other.hidden = true
+    }
+  }, [selectedDockId, docks, selectedDock])
+
   // Mount a renderer dock (json-render) into the panel via the client host's
-  // renderer registry, disposing when the selection changes. Keyed by dock id
-  // so a live view-state update (its own shared state) doesn't remount.
+  // renderer registry, disposing when the selection changes.
   useEffect(() => {
     const host = hostRef.current
     const dock = selectedDock
@@ -263,7 +349,7 @@ export default function Page() {
                   <li key={dock.id}>
                     <button
                       type="button"
-                      onClick={() => setSelectedDockId(dock.id)}
+                      onClick={() => void hostRef.current?.context.docks.switchEntry(dock.id)}
                       className={`relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${dock.id === selectedDockId ? ' op100! bg-active border-base! color-base' : ''}`}
                       title={dock.title}
                     >
@@ -276,20 +362,12 @@ export default function Page() {
           </ul>
         </aside>
 
-        <main className="min-w-0 of-hidden bg-secondary">
-          {selectedIsIframe
-            ? (
-                <iframe
-                  key={selectedDock?.id ?? 'none'}
-                  src={(selectedDock as IframeDock | null)?.url ?? 'about:blank'}
-                  title="Selected dock"
-                  className="block h-full w-full border-0 bg-base"
-                />
-              )
-            : (
-                // Renderer docks (json-render) mount here via the client host.
-                <div key={selectedDock?.id ?? 'none'} ref={panelRef} className="h-full w-full of-auto bg-base p4" />
-              )}
+        <main className="relative min-w-0 of-hidden bg-secondary">
+          {/* Iframe docks are pooled here (one kept-alive iframe per frameId),
+              shown/hidden on switch so shared-frame tabs soft-navigate. */}
+          <div ref={stageRef} hidden={!selectedDock || !selectedIsIframe} className="absolute inset-0" />
+          {/* Renderer docks (json-render) mount here via the client host. */}
+          <div ref={panelRef} hidden={!selectedDock || selectedIsIframe} className="absolute inset-0 of-auto bg-base p4" />
         </main>
       </div>
 

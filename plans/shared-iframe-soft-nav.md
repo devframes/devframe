@@ -431,7 +431,8 @@ onTabsChanged(() => post({ type: 'manifest', tabs: tabsSnapshot(), current: curr
 - [x] Add `navTarget` + `subTabs` to `DevframeViewIframe`; add `NavTarget`, `FrameSubTabsConfig` ([`packages/hub/src/types/docks.ts`](../packages/hub/src/types/docks.ts)).
 - [x] Ship the frame-nav adapter (`attachFrameNavClient`, [`packages/hub/src/client/frame-nav.ts`](../packages/hub/src/client/frame-nav.ts)); auto-attach on `dom:iframe:mounted` for `subTabs` anchors ([`host.ts`](../packages/hub/src/client/host.ts)).
 - [x] Tests: handshake, manifest reconcile add/remove, echo-guard, internal-nav highlight, origin-lock, timeout→no-shim, active-removed→null ([`frame-nav.test.ts`](../packages/hub/src/client/__tests__/frame-nav.test.ts)).
-- [ ] Follow-up: a worked example (wire a `subTabs` anchor + a demo shim in `examples/minimal-vite-devframe-hub`) and a Client Context guide section.
+- [x] Worked examples: a `subTabs` "Tabbed Tool" anchor + a postMessage shim SPA, with keep-alive iframe pooling and `dom:iframe:mounted`, in both `examples/minimal-vite-devframe-hub` and `examples/minimal-next-devframe-hub`.
+- [ ] Follow-up: a Client Context guide section.
 
 **Vite DevTools (UI contract):**
 - [ ] One kept-alive iframe per `frameId`; hide/show, never re-`src`.

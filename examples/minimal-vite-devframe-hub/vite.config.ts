@@ -1,3 +1,4 @@
+import { mountDevframe } from '@devframes/hub/node'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 import a11yDevframe, { a11yAgentBundlePath } from '@devframes/plugin-a11y'
 import codeServerDevframe from '@devframes/plugin-code-server'
@@ -16,6 +17,7 @@ import { alias } from '../../alias'
 import demoDevframe from './src/devframe'
 import demoDevframeB from './src/devframe-b'
 import { minimalViteDevframeHub } from './src/minimal-vite-devframe-hub'
+import tabbedToolDevframe from './src/tabbed-tool'
 
 export default defineConfig({
   resolve: { alias },
@@ -81,7 +83,7 @@ export default defineConfig({
       // Dogfood the opt-in JSON-render hub integration: author a view on the
       // hub context and project it onto a `json-render` dock. The client host
       // (src/client/main.ts) renders it via @devframes/json-render-ui.
-      onContextReady: (context) => {
+      onContextReady: async (context) => {
         const view = createDashboardView(context)
         context.docks.register(toJsonRenderDockEntry(view, {
           id: 'minimal-json-render',
@@ -89,6 +91,19 @@ export default defineConfig({
           icon: 'ph:layout-duotone',
           category: 'app',
         }))
+
+        // Shared-iframe soft-navigation demo. mountDevframe serves the SPA and
+        // registers its iframe dock; the `dock` override marks it a `subTabs`
+        // anchor (a shared `frameId` + the postmessage protocol) so the client
+        // host attaches the frame-nav adapter, materializing one client-only
+        // dock per tab the SPA's shim reports — all sharing this one iframe.
+        await mountDevframe(context, tabbedToolDevframe, {
+          dock: {
+            category: 'app',
+            frameId: 'tabbed-tool',
+            subTabs: { protocol: 'postmessage' },
+          },
+        })
       },
     }),
   ],
