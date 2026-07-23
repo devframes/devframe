@@ -92,3 +92,7 @@ export var hubTerminalsRestart /* const */
 export var hubTerminalsTerminate /* const */
 export var hubTerminalsWrite /* const */
 // #endregion
+
+// #region Other
+export { DEFAULT_CATEGORIES_ORDER }
+// #endregion

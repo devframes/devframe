@@ -136,6 +136,7 @@ export * from "devframe/client";
 // #endregion
 
 // #region Other
+export { DEFAULT_CATEGORIES_ORDER }
 export { DevframeClientRpcHost }
 export { RpcClientEvents }
 // #endregion

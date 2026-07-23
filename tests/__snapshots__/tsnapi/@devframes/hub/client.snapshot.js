@@ -17,3 +17,7 @@ export var CLIENT_CONTEXT_KEY /* const */
 // #region Re-exports
 export * from "devframe/client";
 // #endregion
+
+// #region Other
+export { DEFAULT_CATEGORIES_ORDER }
+// #endregion
