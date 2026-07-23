@@ -1,10 +1,19 @@
-# Design: Shared-iframe docks with soft navigation
+# Shared-iframe docks with soft navigation
 
-**Status:** Hub side implemented — hand-off spec for the Vite DevTools UI
-**Audience:** Vite DevTools (`@vitejs/devtools-kit`) UI implementers + `@devframes/hub` maintainers
 **Driving use case:** hosting a foreign multi-tab devtool (e.g. **Nuxt DevTools**) as a set of first-class hub docks that all share **one** live iframe and switch between views via **client-side (soft) navigation**, for a unified experience.
 
-> **Landed foundations.** [#129](https://github.com/devframes/devframe/pull/129) shipped client-only `docks.register()`/`docks.update()`; [#130](https://github.com/devframes/devframe/pull/130) reinterpreted a grouped entry's `category` as an in-group sub-category (outer bucket = the group's category) and made `framework` sort first. This spec and the hub-side implementation (types + the frame-nav adapter) build directly on both.
+**Status — the hub side is shipped and documented.** This doc is the design record, plus the hand-off spec for the parts that live in other repos: the viewer UI contract (§6) and the embedded-app nav shim (§10).
+
+Shipped in `@devframes/hub`:
+
+- **Data model** — `frameId` + `navTarget` + `subTabs` on `DevframeViewIframe` ([`packages/hub/src/types/docks.ts`](../packages/hub/src/types/docks.ts)).
+- **Client-only docks** — `docks.register()` / `update()` on the client context ([#129](https://github.com/devframes/devframe/pull/129)).
+- **Frame-nav adapter** — `attachFrameNavClient`, auto-attached by `createDevframeClientHost` ([`packages/hub/src/client/frame-nav.ts`](../packages/hub/src/client/frame-nav.ts)).
+- **Docs** — [Shared-iframe soft navigation](../docs/guide/client-context.md#shared-iframe-soft-navigation).
+- **Examples** — the "Tabbed Tool" in both `examples/minimal-{vite,next}-devframe-hub`.
+- **Tests** — [`packages/hub/src/client/__tests__/frame-nav.test.ts`](../packages/hub/src/client/__tests__/frame-nav.test.ts).
+
+Remaining work lives downstream (§11): the Vite DevTools UI contract and the Nuxt DevTools shim.
 
 ---
 
@@ -424,24 +433,16 @@ onTabsChanged(() => post({ type: 'manifest', tabs: tabsSnapshot(), current: curr
 
 ---
 
-## 11. Implementation checklist
+## 11. Remaining work (downstream repos)
 
-**`@devframes/hub` (data model + adapter):**
-- [x] Client-only `docks.register()`/`update()` on the client `DocksEntriesContext` — **#129**.
-- [x] Add `navTarget` + `subTabs` to `DevframeViewIframe`; add `NavTarget`, `FrameSubTabsConfig` ([`packages/hub/src/types/docks.ts`](../packages/hub/src/types/docks.ts)).
-- [x] Ship the frame-nav adapter (`attachFrameNavClient`, [`packages/hub/src/client/frame-nav.ts`](../packages/hub/src/client/frame-nav.ts)); auto-attach on `dom:iframe:mounted` for `subTabs` anchors ([`host.ts`](../packages/hub/src/client/host.ts)).
-- [x] Tests: handshake, manifest reconcile add/remove, echo-guard, internal-nav highlight, origin-lock, timeout→no-shim, active-removed→null ([`frame-nav.test.ts`](../packages/hub/src/client/__tests__/frame-nav.test.ts)).
-- [x] Worked examples: a `subTabs` "Tabbed Tool" anchor + a postMessage shim SPA, with keep-alive iframe pooling and `dom:iframe:mounted`, in both `examples/minimal-vite-devframe-hub` and `examples/minimal-next-devframe-hub`.
-- [ ] Follow-up: a Client Context guide section.
+The `@devframes/hub` side is complete (see the status list at the top). What's left lives in other repos:
 
-**Vite DevTools (UI contract):**
-- [ ] One kept-alive iframe per `frameId`; hide/show, never re-`src`.
-- [ ] Populate `domElements.iframe` + emit `dom:iframe:mounted` on the anchor entry.
-- [ ] Render member docks (grouped or not) through the normal selection path.
+**Vite DevTools — the UI contract (§6):**
+- One kept-alive iframe per `frameId`; hide/show, never re-`src`.
+- Populate `domElements.iframe` + emit `dom:iframe:mounted` on the anchor entry.
+- Render member docks (grouped or not) through the normal selection path.
 
-**Embedded app (Nuxt DevTools):**
-- [ ] Ship the `postMessage` nav shim (§10).
+**Nuxt DevTools — the embedded app:**
+- Ship the `postMessage` nav shim (§10).
 
----
-
-*This design was produced with the help of an agent, from a structured requirements interview.*
+Both minimal hub examples already implement the viewer contract in miniature (vanilla DOM and React), so they double as a reference for the Vite DevTools port.

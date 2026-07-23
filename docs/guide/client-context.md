@@ -153,3 +153,37 @@ The [a11y inspector](/plugins/a11y)'s in-page agent is the canonical client scri
 ## Iframe panels
 
 Dock iframes are their own documents, so they connect themselves instead of reading the host page's context: the panel SPA calls `connectDevframe()`, which discovers `./__connection.json` relative to its own base — `mountDevframe` serves the hub's connection meta under every dock base for exactly this. The client script (host page) and the iframe panel then share the server through RPC and shared state, or a same-origin `BroadcastChannel` when the loop must survive static builds.
+
+## Shared-iframe soft navigation
+
+A tool with many internal views — Nuxt DevTools' tabs, say — can surface each view as its own hub dock while they all share **one** live iframe, switching between them with client-side (soft) navigation instead of reloading. One iframe dock is the **anchor**: it owns a `frameId` and opts in with `subTabs`.
+
+```ts
+await mountDevframe(ctx, nuxtDevtools, {
+  dock: { frameId: 'nuxt-devtools', subTabs: { protocol: 'postmessage' } },
+})
+```
+
+When the anchor's iframe mounts, the client host attaches a **frame-nav adapter** that speaks a small, versioned, origin-locked `postMessage` protocol with the embedded app. The app ships a ~40-line shim on the `devframe:frame-nav` channel:
+
+| Message | Direction | Meaning |
+|---|---|---|
+| `ready` / `manifest` | frame → host | the current tab list (`{ tabs, current }`), on load and whenever it changes |
+| `navigate` | host → frame | show this view (`{ tabId, navTarget }`) — the app routes client-side |
+| `navigated` | frame → host | the app navigated internally, so the host highlights the matching dock |
+
+The adapter materializes one [client-only dock](#client-only-docks) per reported tab (id `<frameId>:<tabId>`), each sharing the anchor's `frameId` and carrying a `navTarget`. Selecting a member soft-navigates the shared iframe; navigating inside the iframe moves the hub's active dock — the loop runs both ways with an idempotent guard against echoes. The embedded app needs no hub or RPC dependency, only the shim; a plain iframe with no shim simply stays a single dock.
+
+`frameId` is independent of [`groupId`](./hub#grouping-dock-entries): members sharing one iframe may live in a group, several groups, or none.
+
+### The viewer's part
+
+A viewer keeps one iframe alive per `frameId` (shown/hidden across switches, never re-`src`'d) and, when it mounts that element, sets it on the anchor's dock state and announces it:
+
+```ts
+const state = ctx.docks.getStateById(anchorId)!
+state.domElements.iframe = iframeEl
+state.events.emit('dom:iframe:mounted', iframeEl)
+```
+
+That announcement is what the adapter attaches to. Both minimal hubs wire this end to end — see the "Tabbed Tool" in [`examples/minimal-vite-devframe-hub`](https://github.com/devframes/devframe/tree/main/examples/minimal-vite-devframe-hub) and [`examples/minimal-next-devframe-hub`](https://github.com/devframes/devframe/tree/main/examples/minimal-next-devframe-hub), including the SPA's `postMessage` shim.
