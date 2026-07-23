@@ -50,7 +50,7 @@ Boot the host once per page: a second boot replaces the published context and lo
 |----------|-------------|
 | `rpc` | The [RPC client](./client) — call server functions, register client-side functions, access shared state. |
 | `clientType` | `'embedded'` (runtime inside your app) or `'standalone'` (independent hub page). |
-| `docks` | Dock entries and selection — `entries`, `selected`, `groupedEntries`, `switchEntry()`, `toggleEntry()`, `getStateById()`. `groupedEntries` buckets entries by outer category (a grouped member takes its group's category; see [Grouping dock entries](./hub#grouping-dock-entries)). |
+| `docks` | Dock entries and selection — `entries`, `selected`, `groupedEntries`, `switchEntry()`, `toggleEntry()`, `getStateById()`, plus `register()` / `update()` for [client-only docks](#client-only-docks). |
 | `panel` | Dock panel state: position, size, drag/resize flags. |
 | `commands` | The command palette: `register()`, `execute()`, `getKeybindings()`. |
 | `renderers` | Dock-renderer registry — `register()`, `get()`, `has()`, `mount(entry, container)`. Routes a dock `type` to a host-registered renderer (e.g. [JSON-Render](./json-render)); the hub ships none. |
@@ -70,6 +70,25 @@ if (ctx) {
   ctx.docks.switchEntry('my-plugin')
 }
 ```
+
+### Client-only docks
+
+The [node hub context](./hub) registers docks that flow into the `devframe:docks` shared state and reach every connected viewer. A client host can also register a dock that lives only in this page, for a view a host page synthesizes itself:
+
+```ts
+const handle = ctx.docks.register({
+  id: 'my-local-view',
+  title: 'Local',
+  icon: 'ph:cube-duotone',
+  type: 'custom-render',
+  renderer: { importFrom: '/my-view.mjs' },
+})
+
+handle.update({ badge: '3' }) // patch it in place (the id is immutable)
+handle.dispose() // remove it
+```
+
+Client-only docks merge into the same `docks.entries` list, group, select, and load their client scripts exactly like server docks — they just never sync to the hub or other viewers. A client dock sharing an id with a server dock overrides it locally. `ctx.docks.update(entry)` replaces a previously registered client dock wholesale. Registering an id that a client dock already owns throws unless you pass `register(entry, true)`.
 
 ## Dock client scripts
 
