@@ -1,7 +1,7 @@
 {
   "name": "minimal-json-render",
   "type": "module",
-  "version": "0.7.10",
+  "version": "0.7.11",
   "private": true,
   "description": "Standalone devframe that serves a JSON-render view — a server-authored spec rendered by @devframes/json-render-ui, with live state and an action bridge.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/minimal-json-render",
