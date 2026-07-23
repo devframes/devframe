@@ -7,7 +7,6 @@ import { createHostContext } from 'devframe/node'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createJsonRenderView } from '../src/node/index'
 import { JSON_RENDER_INDEX_KEY } from '../src/view-index'
-import { JSON_RENDER_UPSTREAM_VERSION } from '../src/view-ref'
 
 function createHost(): DevframeHost {
   const storageDir = mkdtempSync(join(tmpdir(), 'devframe-jr-'))
@@ -40,7 +39,6 @@ describe('createJsonRenderView identity', () => {
     const view = createJsonRenderView(ctx, { id: 'metrics', spec })
     expect(view.ref).toEqual({
       stateKey: 'devframe:json-render:global:metrics',
-      upstreamVersion: JSON_RENDER_UPSTREAM_VERSION,
     })
     expect(JSON.parse(JSON.stringify(view.ref))).toEqual(view.ref)
   })
@@ -107,7 +105,6 @@ describe('createJsonRenderView index', () => {
       scope: 'global',
       stateKey: view.ref.stateKey,
       title: 'metrics',
-      upstreamVersion: JSON_RENDER_UPSTREAM_VERSION,
     })
 
     view.dispose()

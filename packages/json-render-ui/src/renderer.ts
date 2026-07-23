@@ -2,9 +2,9 @@ import type { Spec } from '@devframes/json-render'
 import type { ComponentRegistry } from '@json-render/vue'
 import type { Component, PropType } from 'vue'
 import type { ActionBridgeRpc } from './action-bridge'
-import { basePropSchemas, JSON_RENDER_UPSTREAM_VERSION } from '@devframes/json-render'
+import { basePropSchemas } from '@devframes/json-render'
 import { JSONUIProvider, Renderer } from '@json-render/vue'
-import { computed, defineComponent, h, watch } from 'vue'
+import { computed, defineComponent, h } from 'vue'
 import { createActionBridge } from './action-bridge'
 import { baseRegistry, ERROR_COMPONENT_TYPE, UNSUPPORTED_COMPONENT_TYPE } from './registry'
 
@@ -66,8 +66,7 @@ const surface = 'flex items-center justify-center p4 text-sm color-faint'
  * with the unrestricted {@link createActionBridge action bridge}, seeds
  * `spec.state`, isolates invalid elements, surfaces action errors, and owns
  * reset semantics: the provider is remounted (state reseeded) when the view
- * identity or upstream version changes, and preserved across ordinary
- * spec/state updates.
+ * identity changes, and preserved across ordinary spec/state updates.
  */
 export const JsonRenderView = defineComponent({
   name: 'JsonRenderView',
@@ -76,7 +75,6 @@ export const JsonRenderView = defineComponent({
     rpc: { type: Object as PropType<ActionBridgeRpc>, required: true },
     registry: { type: Object as PropType<ComponentRegistry>, default: () => baseRegistry },
     viewId: { type: String, default: 'default' },
-    upstreamVersion: { type: String, default: undefined },
     interactive: { type: Boolean, default: true },
     loading: { type: Boolean, default: false },
     connectionError: { type: String as PropType<string | null>, default: null },
@@ -84,22 +82,8 @@ export const JsonRenderView = defineComponent({
   setup(props) {
     const bridge = createActionBridge(props.rpc, { interactive: props.interactive })
 
-    // A renderer/upstream-version mismatch warns rather than blocking.
-    watch(
-      () => props.upstreamVersion,
-      (version) => {
-        if (version && version !== JSON_RENDER_UPSTREAM_VERSION) {
-          console.warn(
-            `[@devframes/json-render-ui] view "${props.viewId}" was authored against @json-render ${version}, `
-            + `but this renderer bundles ${JSON_RENDER_UPSTREAM_VERSION}. Rendering anyway.`,
-          )
-        }
-      },
-      { immediate: true },
-    )
-
-    // Reset the provider (reseed state) only on identity / version change.
-    const resetKey = computed(() => `${props.viewId}::${props.upstreamVersion ?? JSON_RENDER_UPSTREAM_VERSION}`)
+    // Reset the provider (reseed state) only on identity change.
+    const resetKey = computed(() => props.viewId)
     const effectiveSpec = computed(() => (props.spec ? sanitizeSpec(props.spec, props.registry) : null))
 
     return () => {

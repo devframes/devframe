@@ -24,8 +24,6 @@ export interface JsonRenderIndexEntry {
   stateKey: string
   /** Human-facing label for the view (defaults to `id`). */
   title: string
-  /** Upstream `@json-render/*` version the view was authored against. */
-  upstreamVersion: string
 }
 
 /** The shape of the view-index shared state: entries keyed by `stateKey`. */

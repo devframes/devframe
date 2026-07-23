@@ -7,7 +7,6 @@ export interface JsonRenderIndexEntry {
   scope: string;
   stateKey: string;
   title: string;
-  upstreamVersion: string;
 }
 // #endregion
 
@@ -333,9 +332,10 @@ export declare const TreePropsSchema: z.ZodObject<{
 export { Catalog }
 export { DevframeJsonRenderSpec }
 export { InferComponentProps }
-export { JSON_RENDER_UPSTREAM_VERSION }
 export { JsonRenderView }
+export { JsonRenderViewInlineRef }
 export { JsonRenderViewRef }
+export { JsonRenderViewStateRef }
 export { Spec }
 export { StateModel }
 export { StateStore }

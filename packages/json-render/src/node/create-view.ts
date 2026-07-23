@@ -5,7 +5,6 @@ import type { JsonRenderIndex } from '../view-index'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { basePropSchemas } from '../prop-schemas'
 import { JSON_RENDER_INDEX_KEY } from '../view-index'
-import { JSON_RENDER_UPSTREAM_VERSION } from '../view-ref'
 import { diagnostics } from './diagnostics'
 
 /** Options for {@link createJsonRenderView}. */
@@ -153,7 +152,7 @@ export function createJsonRenderView(
   // Publish the view into the shared index so a frontend can discover it.
   const index = indexStateFor(baseCtx)
   index.mutate((idx) => {
-    idx[stateKey] = { id, scope, stateKey, title, upstreamVersion: JSON_RENDER_UPSTREAM_VERSION }
+    idx[stateKey] = { id, scope, stateKey, title }
   })
 
   let disposed = false
@@ -165,7 +164,7 @@ export function createJsonRenderView(
   return {
     id,
     title,
-    ref: { stateKey, upstreamVersion: JSON_RENDER_UPSTREAM_VERSION },
+    ref: { stateKey },
     value: () => state.value() as DevframeJsonRenderSpec,
     update(spec) {
       assertLive()

@@ -1,5 +1,5 @@
 import type { Spec } from '@json-render/core'
-import type { JsonRenderViewRef } from './view-ref'
+import type { JsonRenderViewStateRef } from './view-ref'
 
 /**
  * A Devframes JSON-render spec **is** an `@json-render/core` `Spec`: a flat
@@ -24,7 +24,7 @@ export interface JsonRenderStatePatch {
 /**
  * A JSON-render view handle, returned by `createJsonRenderView`. Owns a
  * server-side shared state carrying the live spec + state, and exposes the
- * serializable {@link JsonRenderViewRef} that a hub dock (or any client
+ * serializable {@link JsonRenderViewStateRef} that a hub dock (or any client
  * transport) uses to locate it.
  */
 export interface JsonRenderView {
@@ -33,7 +33,7 @@ export interface JsonRenderView {
   /** Human-facing label published in the view index (defaults to `id`). */
   readonly title: string
   /** The serializable reference clients subscribe through. */
-  readonly ref: JsonRenderViewRef
+  readonly ref: JsonRenderViewStateRef
   /** Replace the entire spec (a structural change replaces the whole spec). */
   update: (spec: DevframeJsonRenderSpec) => void
   /**

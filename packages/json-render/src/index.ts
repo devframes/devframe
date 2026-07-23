@@ -38,5 +38,4 @@ export { JSON_RENDER_INDEX_KEY } from './view-index'
 
 export type { JsonRenderIndex, JsonRenderIndexEntry } from './view-index'
 // ── Serializable view reference ──────────────────────────────────────────
-export { JSON_RENDER_UPSTREAM_VERSION } from './view-ref'
-export type { JsonRenderViewRef } from './view-ref'
+export type { JsonRenderViewInlineRef, JsonRenderViewRef, JsonRenderViewStateRef } from './view-ref'

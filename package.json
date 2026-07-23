@@ -17,6 +17,7 @@
     "build": "turbo run build --concurrency=3",
     "watch": "pnpm -r run watch",
     "play": "tsx scripts/play.ts",
+    "dev": "tsx scripts/play.ts",
     "docs": "pnpm -C docs run docs",
     "docs:build": "pnpm -C docs run docs:build",
     "docs:serve": "pnpm -C docs run docs:serve",

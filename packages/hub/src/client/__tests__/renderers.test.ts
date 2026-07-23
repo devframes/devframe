@@ -49,7 +49,7 @@ const jsonRenderEntry = {
   title: 'Metrics',
   icon: 'ph:cube',
   type: 'json-render',
-  view: { stateKey: 'devframe:json-render:global:metrics', upstreamVersion: '0.19.0' },
+  view: { stateKey: 'devframe:json-render:global:metrics' },
 } as unknown as DevframeDockEntry
 
 const container = {} as HTMLElement
