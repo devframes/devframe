@@ -1,13 +1,15 @@
-import type { Accessor } from 'solid-js'
-import type { Impact, ScanReport } from '../../shared/protocol.ts'
+import type { Impact } from '../../shared/protocol.ts'
 import { For, Show } from 'solid-js'
-import { IMPACT_ORDER } from '../../shared/protocol.ts'
-import { button, nav, navBrand } from '../design'
+import { button, nav, navBrand, tab, tabsList } from '../design'
 import { IMPACT_COLOR, IMPACT_LABEL } from '../lib/impact.ts'
+
+export type TabId = 'dashboard' | 'violations'
 
 interface HeaderProps {
   agentReady: boolean
   scanning: boolean
+  activeTab: TabId
+  onTab: (tab: TabId) => void
   onRescan: () => void
 }
 
@@ -21,12 +23,36 @@ export function Header(props: HeaderProps) {
         ? 'status__dot status__dot--scanning'
         : 'status__dot status__dot--live'
 
+  const tabs: { id: TabId, label: string, icon: string }[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'i-ph-gauge-duotone' },
+    { id: 'violations', label: 'Violations', icon: 'i-ph-list-checks-duotone' },
+  ]
+
   return (
     <header class={nav()}>
       <span class={navBrand()}>
         <span class="i-ph-person-arms-spread-duotone text-base color-active" />
         <span>A11y Inspector</span>
       </span>
+
+      <div class={tabsList('ml-2')} role="tablist">
+        <For each={tabs}>
+          {t => (
+            <button
+              type="button"
+              role="tab"
+              class={tab()}
+              data-state={props.activeTab === t.id ? 'active' : 'inactive'}
+              aria-selected={props.activeTab === t.id}
+              onClick={() => props.onTab(t.id)}
+            >
+              <span class={t.icon} />
+              {t.label}
+            </button>
+          )}
+        </For>
+      </div>
+
       <span class="flex-1" />
       <span class="status">
         <span class={dotClass()} />
@@ -45,11 +71,15 @@ export function Header(props: HeaderProps) {
   )
 }
 
-export function MetaLine(props: {
-  report: Accessor<ScanReport | null>
-  backend: Accessor<string | null>
-  status?: Accessor<string | null>
-}) {
+interface MetaLineProps {
+  url?: string
+  route?: string
+  engine?: string
+  backend: () => string | null
+  status?: () => string | null
+}
+
+export function MetaLine(props: MetaLineProps) {
   // The backend is optional here, so a degraded connection is shown as a quiet
   // tag rather than taking over the panel.
   const degraded = () => {
@@ -57,20 +87,20 @@ export function MetaLine(props: {
     return s === 'disconnected' || s === 'unauthorized' || s === 'error' ? s : null
   }
   return (
-    <Show when={props.report()}>
-      {report => (
-        <div class="meta">
-          <span class="meta__url" title={report().url}>{report().url}</span>
-          <Show when={degraded()} fallback={<Show when={props.backend()}>{b => <span class="meta__tag">{b()}</span>}</Show>}>
-            {s => <span class="meta__tag meta__tag--warn" title="devframe backend connection">{s()}</span>}
-          </Show>
+    <Show when={props.url}>
+      <div class="meta">
+        <span class="meta__url" title={props.url}>{props.url}</span>
+        <Show when={degraded()} fallback={<Show when={props.backend()}>{b => <span class="meta__tag">{b()}</span>}</Show>}>
+          {s => <span class="meta__tag meta__tag--warn" title="devframe backend connection">{s()}</span>}
+        </Show>
+        <Show when={props.engine}>
           <span class="meta__tag">
             axe
             {' '}
-            {report().engine}
+            {props.engine}
           </span>
-        </div>
-      )}
+        </Show>
+      </div>
     </Show>
   )
 }
@@ -81,10 +111,11 @@ interface SummaryProps {
   onToggle: (impact: Impact) => void
 }
 
+/** The severity summary chips — also serve as the impact filter. */
 export function Summary(props: SummaryProps) {
   return (
     <div class="summary">
-      <For each={IMPACT_ORDER}>
+      <For each={(['critical', 'serious', 'moderate', 'minor'] satisfies Impact[])}>
         {(impact) => {
           const count = () => props.counts[impact]
           return (

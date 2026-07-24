@@ -10,6 +10,20 @@
  * by the terminals and code-server plugins for `ctx.terminals`.
  */
 import type { Impact, ScanReport } from '../shared/protocol.ts'
+import { A11Y_DEFAULT_DOCK_ID } from '../shared/protocol.ts'
+
+/**
+ * Structural slice of the hub's `DevframeMessageAction` the agent emits — a
+ * labeled control that, when clicked in the messages panel, activates a dock
+ * (deep-linking via `params`). Kept as a discriminated union so future action
+ * kinds can be added without reshaping the field.
+ */
+export interface HubMessageAction {
+  id: string
+  label: string
+  kind: 'activate'
+  activate: { dockId: string, params?: Record<string, unknown> }
+}
 
 /** Structural slice of the hub's `DevframeMessageEntryInput` the agent emits. */
 export interface HubMessageInput {
@@ -23,6 +37,7 @@ export interface HubMessageInput {
     boundingBox?: { x: number, y: number, width: number, height: number }
     description?: string
   }
+  actions?: HubMessageAction[]
   status?: 'loading' | 'idle'
 }
 
@@ -68,6 +83,11 @@ export interface MessagesReporterOptions {
    * box is fine: each re-scan refreshes the entry.
    */
   resolveBoundingBox?: (target: string[]) => { x: number, y: number, width: number, height: number } | undefined
+  /**
+   * The dock id the navigation actions target. Read at call time so a config
+   * update (custom devframe id) takes effect on the next scan.
+   */
+  dockId?: () => string
 }
 
 /**
@@ -86,6 +106,7 @@ export function createMessagesReporter(
   // Fire-and-forget: the feed is a mirror, never a gate for the scan loop.
   const send = (input: HubMessageInput) => void messages.add(input).catch(() => {})
   const drop = (id: string) => void messages.remove(id).catch(() => {})
+  const dockId = () => options.dockId?.() ?? A11Y_DEFAULT_DOCK_ID
 
   return {
     scanning() {
@@ -107,6 +128,12 @@ export function createMessagesReporter(
           : `${nodeCount} accessibility issue${nodeCount === 1 ? '' : 's'} across ${ruleCount} rule${ruleCount === 1 ? '' : 's'}`,
         description: report.url,
         level: nodeCount === 0 ? 'success' : 'warn',
+        actions: [{
+          id: 'dashboard',
+          label: 'Open a11y dashboard',
+          kind: 'activate',
+          activate: { dockId: dockId(), params: { tab: 'dashboard' } },
+        }],
         status: 'idle',
       })
 
@@ -127,6 +154,15 @@ export function createMessagesReporter(
                 description: first.failureSummary,
               }
             : undefined,
+          actions: [{
+            id: 'view',
+            label: 'View in a11y inspector',
+            kind: 'activate',
+            activate: {
+              dockId: dockId(),
+              params: { tab: 'violations', ruleId: violation.ruleId, route: report.route },
+            },
+          }],
         })
       }
       for (const ruleId of reportedRules) {

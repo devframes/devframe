@@ -8,6 +8,13 @@ export interface A11yDevframeOptions {
   icon?: string;
   basePath?: string;
   port?: number;
+  autoScan?: boolean;
+  logIssues?: boolean;
+  defaultHighlight?: boolean;
+  axe?: {
+    tags?: string[];
+    runOptions?: Record<string, unknown>;
+  };
 }
 // #endregion
 
