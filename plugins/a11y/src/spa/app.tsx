@@ -1,15 +1,17 @@
 import type { Impact, PinTarget, Violation, ViolationNode } from '../shared/protocol.ts'
-import type { SelectedItem } from './components/fix-prompts.tsx'
-import type { RouteGroupModel, SelectionApi } from './components/violations.tsx'
+import type { SelectedItem } from './lib/fix-prompt.ts'
+import type { RouteGroupModel, SelectionApi } from './lib/violation-view.ts'
 import { batch, createEffect, createMemo, createSignal, Match, on, Show, Switch } from 'solid-js'
 import { emptyCounts } from '../shared/protocol.ts'
-import { FixPromptsDialog } from './components/fix-prompts.tsx'
-import { Header, MetaLine } from './components/header.tsx'
-import { CheckCircle, PlugIcon } from './components/icons.tsx'
-import { SummaryBar } from './components/summary.tsx'
-import { ruleCardId, ViolationList } from './components/violations.tsx'
+import { EmptyState } from './components/EmptyState.tsx'
+import { FixPromptsDialog } from './components/FixPromptsDialog.tsx'
+import { Header } from './components/Header.tsx'
+import { MetaLine } from './components/MetaLine.tsx'
+import { SummaryBar } from './components/SummaryBar.tsx'
+import { ViolationList } from './components/ViolationList.tsx'
 import { createA11yChannel } from './lib/channel.ts'
 import { connectDevframeState } from './lib/devframe.ts'
+import { ruleCardId } from './lib/violation-view.ts'
 
 const SNIPPET = '<script type="module" src="…/inject.js"></script>'
 const AUTOSCAN_KEY = 'devframes:plugin:a11y:autoscan'
@@ -223,7 +225,7 @@ export function App() {
 
     // A dashboard/summary activation (or one with no target) just scrolls to top.
     if (params.tab === 'dashboard' || !route) {
-      document.querySelector('.scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
+      document.querySelector('#a11y-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
 
@@ -270,7 +272,7 @@ export function App() {
   }
 
   return (
-    <div class="app">
+    <div class="flex flex-col h-full min-h-0 bg-base color-base font-sans">
       <Header
         agentReady={channel.agentReady()}
         scanning={channel.scanning()}
@@ -280,48 +282,42 @@ export function App() {
       />
       <MetaLine
         url={activeReport()?.url}
-        route={activeReport()?.route}
         engine={engine()}
         backend={devframe.backend}
         status={devframe.status}
       />
 
-      <p class="visually-hidden" aria-live="polite">{announce()}</p>
+      <p class="sr-only" aria-live="polite">{announce()}</p>
 
-      <div class="scroll">
+      <div id="a11y-scroll" class="a11y-scroll flex-1 min-h-0 overflow-y-auto px-4 pb-5">
         <Switch>
           {/* No agent has announced itself on this origin yet. */}
           <Match when={!channel.state() && !channel.agentReady()}>
-            <div class="state">
-              <PlugIcon class="state__glyph" />
-              <p class="state__title">No page connected</p>
-              <p class="state__body">
-                Load the inspector agent in the app you want to check, then this
-                panel will list its accessibility issues live.
-              </p>
-              <code class="state__code">{SNIPPET}</code>
-            </div>
+            <EmptyState
+              icon="i-ph-plugs-duotone text-4xl"
+              title="No page connected"
+              body="Load the inspector agent in the app you want to check, then this panel will list its accessibility issues live."
+              code={SNIPPET}
+            />
           </Match>
 
           {/* Agent present, first state not in yet. */}
           <Match when={!channel.state()}>
-            <div class="state">
-              <PlugIcon class="state__glyph" />
-              <p class="state__title">Scanning the page…</p>
-              <p class="state__body">Running axe-core against the connected document.</p>
-            </div>
+            <EmptyState
+              icon="i-ph-plugs-duotone text-4xl"
+              title="Scanning the page…"
+              body="Running axe-core against the connected document."
+            />
           </Match>
 
           {/* Report in, nothing to flag. */}
           <Match when={totalFilterable() === 0}>
-            <div class="state state--clean">
-              <CheckCircle class="state__glyph" />
-              <p class="state__title">No violations</p>
-              <p class="state__body">
-                axe-core found nothing to flag across the tracked routes. Re-run
-                after changes to keep it that way.
-              </p>
-            </div>
+            <EmptyState
+              clean
+              icon="i-ph-check-circle-duotone text-4xl"
+              title="No violations"
+              body="axe-core found nothing to flag across the tracked routes. Re-run after changes to keep it that way."
+            />
           </Match>
 
           {/* Single page: summary band + grouped violations. */}
@@ -344,16 +340,19 @@ export function App() {
             <Show
               when={shownViolations() > 0}
               fallback={(
-                <div class="state">
-                  <CheckCircle class="state__glyph" />
-                  <p class="state__title">Nothing matches the filter</p>
-                  <p class="state__body">
-                    {totalFilterable()}
-                    {' '}
-                    {totalFilterable() === 1 ? 'rule' : 'rules'}
-                    {' at other severities. Clear the filter to see them.'}
-                  </p>
-                </div>
+                <EmptyState
+                  clean
+                  icon="i-ph-check-circle-duotone text-4xl"
+                  title="Nothing matches the filter"
+                  body={(
+                    <>
+                      {totalFilterable()}
+                      {' '}
+                      {totalFilterable() === 1 ? 'rule' : 'rules'}
+                      {' at other severities. Clear the filter to see them.'}
+                    </>
+                  )}
+                />
               )}
             >
               <ViolationList

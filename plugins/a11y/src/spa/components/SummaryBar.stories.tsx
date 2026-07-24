@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from 'storybook-solidjs-vite'
-import { SummaryBar } from './summary.tsx'
-import '../styles.css'
+import { SummaryBar } from './SummaryBar.tsx'
 
 // The single-page summary band: severity chips (impact filter), a one-line
-// count, and the scan / best-practice / clear controls. Presentational.
+// count, and the scan / best-practice / clear controls.
 const meta = {
   title: 'A11y/SummaryBar',
   component: SummaryBar,
@@ -14,7 +13,6 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 function noop() {}
-
 const base = {
   counts: { critical: 3, serious: 5, moderate: 2, minor: 8 },
   filter: null,
@@ -30,8 +28,5 @@ const base = {
   onClearAll: noop,
 }
 
-/** A spread of violations across several tracked routes. */
 export const Overview: Story = { args: base }
-
-/** One severity selected as the active filter. */
 export const Filtered: Story = { args: { ...base, filter: 'serious' } }

@@ -1,0 +1,58 @@
+import type { Impact } from '../../shared/protocol.ts'
+import { Summary } from './Summary.tsx'
+import { Switch } from './Switch.tsx'
+
+interface SummaryBarProps {
+  counts: Record<Impact, number>
+  filter: Impact | null
+  onToggleFilter: (impact: Impact) => void
+  onHoverImpact: (impact: Impact | null) => void
+  totalNodes: number
+  totalRules: number
+  routeCount: number
+  autoScan: boolean
+  onToggleAutoScan: (enabled: boolean) => void
+  showBestPractice: boolean
+  onToggleBestPractice: (show: boolean) => void
+  onClearAll: () => void
+}
+
+/**
+ * The compact, sticky summary band that heads the single-page panel: the
+ * severity chips (doubling as the impact filter), a one-line count, and the
+ * scan / best-practice / clear controls.
+ */
+export function SummaryBar(props: SummaryBarProps) {
+  const plural = (n: number, one: string) => `${n} ${n === 1 ? one : `${one}s`}`
+  return (
+    <div class="flex flex-col gap-2 pt-3 pb-2.5 sticky top-0 z-[2] bg-base">
+      <Summary counts={props.counts} active={props.filter} onToggle={props.onToggleFilter} onHover={props.onHoverImpact} />
+
+      <div class="flex items-center gap-3 flex-wrap">
+        <span class="text-[11.5px] color-muted tabular-nums">
+          {plural(props.totalNodes, 'issue')}
+          {' · '}
+          {plural(props.totalRules, 'rule')}
+          {' · '}
+          {plural(props.routeCount, 'route')}
+        </span>
+
+        <span class="flex-1" />
+
+        <Switch label="Best-practice" checked={props.showBestPractice} onChange={props.onToggleBestPractice} />
+        <Switch label="Auto-scan" checked={props.autoScan} onChange={props.onToggleAutoScan} />
+
+        <button
+          type="button"
+          class="inline-flex items-center gap-1.5 text-xs color-muted bg-secondary border border-base rounded-md px-2.5 py-1 cursor-pointer transition hover:text-error hover:border-error/50 disabled:op-40 disabled:cursor-default"
+          disabled={props.routeCount === 0}
+          onClick={() => props.onClearAll()}
+          title="Clear all tracked routes"
+        >
+          <span aria-hidden class="i-ph-trash-duotone shrink-0" />
+          Clear
+        </button>
+      </div>
+    </div>
+  )
+}
