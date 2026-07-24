@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DevframeMessageEntry } from '@devframes/hub/types'
 import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/client'
+import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import FormSearchField from '@antfu/design/components/Form/FormSearchField.vue'
 import LayoutToolbar from '@antfu/design/components/Layout/LayoutToolbar.vue'
 import { computed, onBeforeUnmount, ref } from 'vue'
@@ -92,13 +93,23 @@ async function onOpenFile(entry: DevframeMessageEntry): Promise<void> {
       </div>
 
       <template #search>
-        <FormSearchField
-          v-if="!connState"
-          v-model="filters.search"
-          size="sm"
-          placeholder="Search messages…"
-          class="max-w-64"
-        />
+        <div class="flex gap-2 items-center">
+          <FormSearchField
+            v-if="!connState"
+            v-model="filters.search"
+            size="sm"
+            placeholder="Search messages…"
+            class="max-w-64"
+          />
+          <DisplayBadge v-if="filters.totalCount > 0" :color="false" class="text-xs font-mono">
+            <template v-if="filters.filteredCount !== filters.totalCount">
+              {{ filters.filteredCount }}/{{ filters.totalCount }}
+            </template>
+            <template v-else>
+              {{ filters.totalCount }}
+            </template>
+          </DisplayBadge>
+        </div>
       </template>
 
       <template #end>

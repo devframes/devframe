@@ -27,11 +27,11 @@ function isDimmed(active: Set<string>, item: string): boolean {
       v-for="item of items"
       :key="item"
       type="button"
-      class="rounded flex items-center transition hover:bg-active"
+      class="rounded flex items-center transition"
       :class="[
         badge ? 'p-0.5' : 'px-1.5 py-0.5 gap-0.5 text-xs',
         !badge && !isDimmed(active, item) ? (styles?.[item]?.color || '') : '',
-        isDimmed(active, item) ? 'op30' : '',
+        isDimmed(active, item) ? 'op30 saturate-50' : '',
       ]"
       @click="$emit('toggle', item)"
     >

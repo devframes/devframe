@@ -2,7 +2,6 @@
 import type { MessageFilters } from '../composables/useMessageFilters'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
-import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import LayoutSeparator from '@antfu/design/components/Layout/LayoutSeparator.vue'
 
 const props = defineProps<{
@@ -27,15 +26,6 @@ const { filters } = props
     label="Change sort order"
     @click="filters.cycleSortMode"
   />
-
-  <DisplayBadge v-if="filters.totalCount > 0" :color="false" class="text-xs font-mono">
-    <template v-if="filters.filteredCount !== filters.totalCount">
-      {{ filters.filteredCount }}/{{ filters.totalCount }}
-    </template>
-    <template v-else>
-      {{ filters.totalCount }}
-    </template>
-  </DisplayBadge>
 
   <template v-if="filters.hasActiveFilter">
     <ActionButton
