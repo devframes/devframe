@@ -13,6 +13,8 @@ minimumReleaseAgeExclude:
   - '@antfu/design@0.3.0 || 0.3.2'
   - crossws@0.4.8
   - iframe-pane@1.1.0
+  - tsdown@0.22.14
+  - verkit@0.3.0
 shamefullyHoist: true
 shellEmulator: true
 strictPeerDependencies: false
@@ -26,27 +28,31 @@ packages:
   - examples/*
   - storybook
   - docs
+
+refs:
+  nuxt: &nuxt ^4.5.0
+  storybook: &storybook ^10.5.3
+  unocss: &unocss ^66.7.5
+  vueuse: &vueuse ^14.3.0
+
 overrides:
   chokidar: ^5.0.0
   crossws: ^0.4.10
   semver: ^7.8.5
   shell-quote: ^1.10.0
 catalog:
-  '@discoveryjs/discovery': 1.0.0-beta.99
-  '@types/codemirror': ^5.60.17
-  jora: 1.0.0-beta.16
-  splitpanes: ^4.1.2
+
 catalogs:
   build:
-    '@antfu/ni': ^30.2.0
+    '@antfu/ni': ^30.3.0
     '@nuxt/kit': ^4.5.0
     '@preact/preset-vite': ^2.10.6
     '@vitejs/plugin-vue': ^6.0.8
     mlly: ^1.8.2
     nuxt: ^4.5.0
-    tsdown: ^0.22.12
+    tsdown: ^0.22.14
     tsx: ^4.23.1
-    turbo: ^2.10.5
+    turbo: ^2.10.6
     vite: ^8.1.5
     vite-plugin-solid: ^2.11.13
   deps:
@@ -58,15 +64,16 @@ catalogs:
     crossws: ^0.4.10
     destr: ^2.0.5
     get-port-please: ^3.2.0
-    h3: 2.0.1-rc.22
+    h3: ^2.0.1-rc.22
     immer: ^11.1.15
+    jora: ^1.0.0-beta.16
     launch-editor: ^2.14.1
     mrmime: ^2.0.1
     nostics: ^1.2.0
     obug: ^2.1.4
     ohash: ^2.0.11
     open: ^11.0.0
-    p-limit: ^7.3.0
+    p-limit: ^7.3.1
     parse5: ^7.3.0
     pathe: ^2.0.3
     perfect-debounce: ^2.1.0
@@ -78,23 +85,24 @@ catalogs:
     whenexpr: ^0.1.2
     ws: ^8.21.1
     zigpty: ^0.2.1
-    zod: ^4.3.6
+    zod: ^4.4.3
   docs:
     mermaid: ^11.16.0
     vitepress: ^2.0.0-alpha.18
     vitepress-plugin-mermaid: ^2.0.17
   frontend:
     '@antfu/design': ^0.3.2
+    '@discoveryjs/discovery': 1.0.0-beta.99
     '@floating-ui/react': ^0.27.20
     '@iconify-json/catppuccin': ^1.2.17
     '@iconify-json/ph': ^1.2.2
     '@json-render/react': ^0.19.0
     '@json-render/vue': ^0.19.0
     '@pierre/diffs': ^1.2.12
-    '@radix-ui/react-scroll-area': ^1.2.15
-    '@radix-ui/react-separator': ^1.1.12
-    '@radix-ui/react-slot': ^1.3.0
-    '@radix-ui/react-tabs': ^1.1.18
+    '@radix-ui/react-scroll-area': ^1.2.16
+    '@radix-ui/react-separator': ^1.1.13
+    '@radix-ui/react-slot': ^1.3.1
+    '@radix-ui/react-tabs': ^1.1.19
     '@sveltejs/vite-plugin-svelte': ^7.2.0
     '@unocss/postcss': ^66.7.5
     '@unocss/preset-icons': ^66.7.5
@@ -108,13 +116,14 @@ catalogs:
     dompurify: ^3.4.12
     floating-vue: ^5.2.2
     iframe-pane: ^1.1.0
-    next: ^16.2.10
+    next: ^16.2.11
     preact: ^10.29.7
-    react: ^19.2.7
-    react-dom: ^19.2.7
+    react: ^19.2.8
+    react-dom: ^19.2.8
     reka-ui: ^2.10.1
     solid-js: ^1.9.14
-    svelte: ^5.56.6
+    splitpanes: ^4.1.2
+    svelte: ^5.56.7
     tailwind-merge: ^3.6.0
     unocss: ^66.7.5
     vite-plugin-css-injected-by-js: ^5.0.2
@@ -123,21 +132,21 @@ catalogs:
     '@antfu/utils': ^9.3.0
     ua-parser-modern: ^0.1.1
   storybook:
-    '@storybook/addon-a11y': ^10.5.2
-    '@storybook/addon-docs': ^10.5.2
-    '@storybook/html-vite': ^10.5.2
-    '@storybook/react-vite': ^10.5.2
-    '@storybook/svelte-vite': ^10.5.2
-    '@storybook/vue3-vite': ^10.5.2
+    '@storybook/addon-a11y': ^10.5.3
+    '@storybook/addon-docs': ^10.5.3
+    '@storybook/html-vite': ^10.5.3
+    '@storybook/react-vite': ^10.5.3
+    '@storybook/svelte-vite': ^10.5.3
+    '@storybook/vue3-vite': ^10.5.3
     '@vitejs/plugin-react-oxc': ^0.4.3
-    storybook: ^10.5.2
+    storybook: ^10.5.3
     storybook-solidjs-vite: ^10.6.0
   testing:
     '@playwright/test': ^1.61.1
-    tsnapi: ^1.0.0
+    tsnapi: ^1.2.0
     vitest: ^4.1.10
   tooling:
-    '@antfu/eslint-config': ^9.1.0
+    '@antfu/eslint-config': ^9.2.0
     bumpp: ^11.1.0
     eslint: ^10.7.0
     nano-staged: ^1.0.2
@@ -146,6 +155,7 @@ catalogs:
     skills-npm: ^1.2.0
     typescript: ^6.0.3
   types:
+    '@types/codemirror': ^5.60.17
     '@types/node': ^26.1.1
     '@types/prompts': ^2.4.9
     '@types/react': ^19.2.17
