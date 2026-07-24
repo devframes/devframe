@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-terminals",
   "type": "module",
-  "version": "0.7.12",
+  "version": "0.7.13",
   "description": "Portable, hub-native terminal panel for devframe — readonly output streaming and fully interactive PTY shells (TUI-capable).",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
