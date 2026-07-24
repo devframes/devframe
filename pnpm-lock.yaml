@@ -1456,12 +1456,6 @@ importers:
 
   plugins/terminals:
     dependencies:
-      '@xterm/addon-fit':
-        specifier: catalog:frontend
-        version: 0.11.0
-      '@xterm/xterm':
-        specifier: catalog:frontend
-        version: 6.0.0
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -1493,6 +1487,12 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 26.1.1
+      '@xterm/addon-fit':
+        specifier: catalog:frontend
+        version: 0.11.0
+      '@xterm/xterm':
+        specifier: catalog:frontend
+        version: 6.0.0
       colorjs.io:
         specifier: catalog:frontend
         version: 0.7.0
