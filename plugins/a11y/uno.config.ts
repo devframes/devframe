@@ -14,5 +14,8 @@ export default mergeConfigs([
         include: [/\.(?:[cm]?[jt]sx?|html)($|\?)/],
       },
     },
+    safelist: [
+      'sr-only',
+    ],
   },
 ])
