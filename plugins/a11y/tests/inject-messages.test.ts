@@ -38,9 +38,10 @@ function violation(ruleId: string, impact: Violation['impact'], nodes = 1): Viol
   }
 }
 
-function report(violations: Violation[]): ScanReport {
+function report(violations: Violation[], route = '/'): ScanReport {
   return {
-    url: 'https://example.test/',
+    route,
+    url: `https://example.test${route}`,
     scannedAt: 1,
     engine: 'axe-test',
     violations,
@@ -65,6 +66,7 @@ describe('createMessagesReporter', () => {
       id: 'devframes:plugin:a11y:scan',
       message: 'No accessibility issues found',
       level: 'success',
+      category: 'a11y',
       status: 'idle',
     })
   })
@@ -88,6 +90,7 @@ describe('createMessagesReporter', () => {
     expect(imageAlt).toMatchObject({
       message: 'Fix image-alt (2)',
       level: 'error',
+      category: 'a11y',
       labels: ['critical', 'wcag2a'],
       elementPosition: {
         selector: '#image-alt-0',
@@ -102,6 +105,38 @@ describe('createMessagesReporter', () => {
     // No resolver hit — the box is simply absent, never a throw.
     expect(added.find(m => m.id === 'devframes:plugin:a11y:rule:label')?.elementPosition?.boundingBox)
       .toBeUndefined()
+  })
+
+  it('carries dock-navigation actions deep-linked to the rule + route, and the summary to the dashboard', () => {
+    const { client, added } = createStubMessages()
+    const reporter = createMessagesReporter(client, { dockId: () => 'custom_a11y' })
+
+    reporter.report(report([violation('image-alt', 'critical')], '/about'))
+
+    const summary = added.find(m => m.id === 'devframes:plugin:a11y:scan')
+    expect(summary?.actions).toEqual([{
+      id: 'dashboard',
+      label: 'Open a11y dashboard',
+      kind: 'activate',
+      activate: { dockId: 'custom_a11y', params: { tab: 'dashboard' } },
+    }])
+
+    const rule = added.find(m => m.id === 'devframes:plugin:a11y:rule:image-alt')
+    expect(rule?.actions).toEqual([{
+      id: 'view',
+      label: 'View in a11y inspector',
+      kind: 'activate',
+      activate: { dockId: 'custom_a11y', params: { tab: 'violations', ruleId: 'image-alt', route: '/about' } },
+    }])
+  })
+
+  it('falls back to the default dock id when none is configured', () => {
+    const { client, added } = createStubMessages()
+    const reporter = createMessagesReporter(client)
+
+    reporter.report(report([violation('image-alt', 'critical')]))
+    const rule = added.find(m => m.id === 'devframes:plugin:a11y:rule:image-alt')
+    expect(rule?.actions?.[0]?.activate.dockId).toBe('devframes_plugin_a11y')
   })
 
   it('removes entries for rules that no longer violate on re-scan', () => {

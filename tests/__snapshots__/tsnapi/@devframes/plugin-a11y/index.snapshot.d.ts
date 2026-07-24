@@ -8,8 +8,16 @@ export interface A11yDevframeOptions {
   icon?: string;
   basePath?: string;
   port?: number;
+  autoScan?: boolean;
+  logIssues?: boolean;
+  defaultHighlight?: boolean;
+  axe?: {
+    tags?: string[];
+    runOptions?: Record<string, unknown>;
+  };
 }
 export interface ScanReport {
+  route: string;
   url: string;
   scannedAt: number;
   engine: string;
@@ -23,6 +31,7 @@ export interface Violation {
   description: string;
   helpUrl: string;
   tags?: string[];
+  bestPractice?: boolean;
   nodes: ViolationNode[];
 }
 export interface ViolationNode {

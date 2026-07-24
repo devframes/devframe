@@ -1,6 +1,6 @@
 import type { ScanReport, Violation, ViolationNode } from '../shared/protocol.ts'
 import axe from 'axe-core'
-import { A11Y_NODE_ATTR, emptyCounts, IMPACT_ORDER } from '../shared/protocol.ts'
+import { A11Y_NODE_ATTR, DEFAULT_AXE_TAGS, emptyCounts, IMPACT_ORDER } from '../shared/protocol.ts'
 
 const IMPACTS = new Set<string>(IMPACT_ORDER)
 let counter = 0
@@ -51,20 +51,29 @@ function stamp(el: Element): string {
   return id
 }
 
+export interface ScanOptions {
+  /** axe rule tags to run (defaults to {@link DEFAULT_AXE_TAGS}). */
+  tags?: string[]
+  /** Extra axe `run` options merged over the defaults. */
+  runOptions?: Record<string, unknown>
+}
+
 /**
  * Run axe against the live document and shape the result into a {@link ScanReport}.
  * Stamps each violating element with {@link A11Y_NODE_ATTR} as a side effect.
  */
-export async function scan(): Promise<ScanReport> {
+export async function scan(options: ScanOptions = {}): Promise<ScanReport> {
+  const tags = options.tags?.length ? options.tags : [...DEFAULT_AXE_TAGS]
   const results = await axe.run(document, {
     resultTypes: ['violations'],
-    // Keep the report focused on real failures; skip best-practice noise that
-    // would bury the actionable items for a first-pass tool.
-    runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+    // Broadened past strict WCAG A/AA to WCAG 2.2 + best-practice; the panel
+    // tags best-practice rules and can filter them back out.
+    runOnly: { type: 'tag', values: tags },
     // Stay in the host document — don't descend into the devtools panel's own
     // iframe (or any other frame), which would mix unrelated nodes into the
     // report and risk scanning ourselves.
     iframes: false,
+    ...options.runOptions,
   })
 
   const counts = emptyCounts()
@@ -89,6 +98,7 @@ export async function scan(): Promise<ScanReport> {
       description: rule.description,
       helpUrl: rule.helpUrl,
       tags: rule.tags.filter(tag => tag.startsWith('wcag')),
+      bestPractice: rule.tags.includes('best-practice'),
       nodes,
     }
   })
@@ -97,6 +107,7 @@ export async function scan(): Promise<ScanReport> {
   violations.sort((a, b) => IMPACT_ORDER.indexOf(a.impact) - IMPACT_ORDER.indexOf(b.impact))
 
   return {
+    route: location.pathname,
     url: location.href,
     scannedAt: Date.now(),
     engine: results.testEngine?.version ?? 'unknown',

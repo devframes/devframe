@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DevframeMessageEntry, DevframeMessageEntryFrom } from '@devframes/hub/types'
+import type { DevframeMessageAction, DevframeMessageEntry, DevframeMessageEntryFrom } from '@devframes/hub/types'
 import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
 import FeedbackSpinner from '@antfu/design/components/Feedback/FeedbackSpinner.vue'
 import LayoutSeparator from '@antfu/design/components/Layout/LayoutSeparator.vue'
@@ -12,12 +12,15 @@ const props = defineProps<{
   entry: DevframeMessageEntry
   /** Show the "open file" affordance for entries with a `filePosition`. */
   canOpenFile?: boolean
+  /** Show entry `actions` (dock navigation works only under a hub host). */
+  canActivate?: boolean
 }>()
 
 const emit = defineEmits<{
   close: []
   dismiss: [id: string]
   openFile: [entry: DevframeMessageEntry]
+  activate: [action: DevframeMessageAction]
   toggleCategory: [category: string]
   toggleLabel: [label: string]
 }>()
@@ -94,6 +97,20 @@ function filePositionLabel(pos: NonNullable<DevframeMessageEntry['filePosition']
     <div v-if="entry.category || entry.labels?.length" class="flex flex-wrap gap-1 mb-3">
       <MessageTag v-if="entry.category" :text="entry.category" kind="category" as="button" class="cursor-pointer" @click="emit('toggleCategory', entry.category)" />
       <MessageTag v-for="label of entry.labels" :key="label" :text="label" kind="label" as="button" class="cursor-pointer" @click="emit('toggleLabel', label)" />
+    </div>
+
+    <!-- Actions (e.g. navigate to a dock) -->
+    <div v-if="canActivate && entry.actions?.length" class="flex flex-wrap gap-1.5 mb-3">
+      <button
+        v-for="action of entry.actions"
+        :key="action.id"
+        type="button"
+        class="flex items-center gap-1.5 text-sm px-2 py-1 rounded border border-base hover:bg-active transition"
+        @click="emit('activate', action)"
+      >
+        <div class="i-ph:arrow-square-out-duotone w-3.5 h-3.5" />
+        {{ action.label }}
+      </button>
     </div>
 
     <!-- File position -->

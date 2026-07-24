@@ -1,0 +1,27 @@
+{
+  "name": "a11y-messages-playground",
+  "type": "module",
+  "version": "0.7.12",
+  "private": true,
+  "description": "A focused hub playground that pairs @devframes/plugin-a11y with @devframes/plugin-messages over an intentionally-broken, multi-route app under test — for exercising a11y scanning, route tracking, and message→dock navigation.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/a11y-messages-playground",
+  "scripts": {
+    "dev": "pnpm -C ../.. run build && vite --host",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@antfu/design": "catalog:frontend",
+    "@devframes/hub": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "devframe": "workspace:*"
+  },
+  "devDependencies": {
+    "@iconify-json/ph": "catalog:frontend",
+    "get-port-please": "catalog:deps",
+    "pathe": "catalog:deps",
+    "unocss": "catalog:frontend",
+    "vite": "catalog:build"
+  }
+}

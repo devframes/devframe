@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DevframeMessageEntry } from '@devframes/hub/types'
+import type { DevframeMessageAction, DevframeMessageEntry } from '@devframes/hub/types'
 import type { MessageFilters } from '../composables/useMessageFilters'
 import { computed, ref, watch } from 'vue'
 import MessageDetail from './MessageDetail.vue'
@@ -20,6 +20,8 @@ const props = defineProps<{
   filters: MessageFilters
   /** Show the "open file" affordance for entries with a `filePosition`. */
   canOpenFile?: boolean
+  /** Show entry `actions` (dock navigation works only under a hub host). */
+  canActivate?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -29,6 +31,8 @@ const emit = defineEmits<{
   openFile: [entry: DevframeMessageEntry]
   /** Cancel an entry's `autoDelete` timer (viewing it pins it). */
   persist: [id: string]
+  /** Run one of the entry's actions (e.g. navigate to a dock). */
+  activate: [action: DevframeMessageAction]
 }>()
 
 const selectedId = ref<string | null>(null)
@@ -69,9 +73,11 @@ function removeEntry(id: string): void {
         v-if="selectedEntry"
         :entry="selectedEntry"
         :can-open-file="canOpenFile"
+        :can-activate="canActivate"
         @close="selectedId = null"
         @dismiss="removeEntry"
         @open-file="emit('openFile', $event)"
+        @activate="emit('activate', $event)"
         @toggle-category="filters.toggleCategory"
         @toggle-label="filters.toggleLabel"
       />

@@ -126,6 +126,15 @@ export interface DevframeHubContext extends DevframeNodeContext {
   commands: DevframeCommandsHost;
   createJsonRenderer: (_: JsonRenderSpec) => JsonRenderer;
 }
+export interface DevframeMessageActivateAction {
+  id: string;
+  label: string;
+  kind: 'activate';
+  activate: {
+    dockId: string;
+    params?: Record<string, unknown>;
+  };
+}
 export interface DevframeMessageElementPosition {
   selector?: string;
   boundingBox?: {
@@ -148,6 +157,7 @@ export interface DevframeMessageEntry {
   from: DevframeMessageEntryFrom;
   category?: string;
   labels?: string[];
+  actions?: DevframeMessageAction[];
   autoDismiss?: number;
   autoDelete?: number;
   timestamp: number;
@@ -342,6 +352,7 @@ export type DevframeDockEntryIcon = string | {
   dark: string;
 };
 export type DevframeDockUserEntry = DevframeDockEntryRegistry[keyof DevframeDockEntryRegistry];
+export type DevframeMessageAction = DevframeMessageActivateAction;
 export type DevframeMessageEntryFrom = 'server' | 'browser';
 export type DevframeMessageEntryInput = Omit<DevframeMessageEntry, 'id' | 'timestamp' | 'from'> & {
   id?: string;

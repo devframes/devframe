@@ -40,6 +40,25 @@ export interface A11yDevframeOptions {
   basePath?: string
   /** Preferred standalone CLI port. */
   port?: number
+  /**
+   * Rescan on debounced user interaction (mouse/keyboard/touch), on top of the
+   * DOM MutationObserver. Default `true`.
+   */
+  autoScan?: boolean
+  /** Log newly-appeared violations to the browser console. Default `true`. */
+  logIssues?: boolean
+  /**
+   * Auto-pin all of a route's violations the first time it's scanned.
+   * Default `false`.
+   */
+  defaultHighlight?: boolean
+  /** axe-core configuration. */
+  axe?: {
+    /** Rule tags to run (defaults to the broadened WCAG 2.0–2.2 + best-practice set). */
+    tags?: string[]
+    /** Extra axe `run` options merged over the defaults. */
+    runOptions?: Record<string, unknown>
+  }
 }
 
 /**
@@ -61,7 +80,7 @@ export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeD
     packageName: pkg.name,
     homepage: pkg.homepage,
     description: pkg.description,
-    icon: options.icon ?? 'ph:wheelchair-duotone',
+    icon: options.icon ?? 'ph:person-simple-circle-duotone',
     basePath: options.basePath ?? BASE_PATH,
     cli: {
       command: id,
@@ -70,7 +89,13 @@ export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeD
     },
     spa: { loader: 'none' },
     setup(ctx) {
-      setupA11y(ctx)
+      setupA11y(ctx, {
+        dockId: id,
+        autoScan: options.autoScan,
+        logIssues: options.logIssues,
+        defaultHighlight: options.defaultHighlight,
+        axe: options.axe,
+      })
     },
   })
 }
