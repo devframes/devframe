@@ -1,11 +1,10 @@
 import type { Impact, PinTarget, ScanReport, Violation, ViolationNode } from '../shared/protocol.ts'
-import type { TabId } from './components/header.tsx'
 import type { PinsApi, RouteGroupModel } from './components/violations.tsx'
 import { batch, createEffect, createMemo, createSignal, Match, on, Show, Switch } from 'solid-js'
 import { emptyCounts } from '../shared/protocol.ts'
-import { Dashboard } from './components/dashboard.tsx'
 import { Header, MetaLine } from './components/header.tsx'
 import { CheckCircle, PlugIcon } from './components/icons.tsx'
+import { SummaryBar } from './components/summary.tsx'
 import { ruleCardId, ViolationList } from './components/violations.tsx'
 import { createA11yChannel } from './lib/channel.ts'
 import { connectDevframeState } from './lib/devframe.ts'
@@ -24,7 +23,6 @@ export function App() {
   const channel = createA11yChannel()
   const devframe = connectDevframeState()
 
-  const [activeTab, setActiveTab] = createSignal<TabId>('dashboard')
   const [filter, setFilter] = createSignal<Impact | null>(null)
   const [showBestPractice, setShowBestPractice] = createSignal(true)
   const [expandedRoutes, setExpandedRoutes] = createSignal<Set<string>>(new Set())
@@ -68,16 +66,7 @@ export function App() {
   const totalRules = createMemo(() =>
     routes().reduce((n, r) => n + r.violations.filter(includeViolation).length, 0))
 
-  const routeSummaries = createMemo(() =>
-    routes().map(r => ({
-      route: r.route,
-      active: r.route === activeRoute(),
-      ruleCount: r.violations.filter(includeViolation).length,
-      nodeCount: r.violations.filter(includeViolation).reduce((m, v) => m + v.nodes.length, 0),
-    })))
-
-  // Grouped, filtered violations for the Violations tab — active route first,
-  // empty groups dropped.
+  // Grouped, filtered violations — active route first, empty groups dropped.
   const groups = createMemo<RouteGroupModel[]>(() => {
     const models = routes().map(r => ({
       report: r,
@@ -183,14 +172,15 @@ export function App() {
     if (cfg && act.dockId !== cfg.dockId)
       return
     const params = act.params ?? {}
-    const tab = params.tab === 'dashboard' ? 'dashboard' : 'violations'
-    setActiveTab(tab)
-    if (tab === 'dashboard')
-      return
     const route = typeof params.route === 'string' ? params.route : undefined
     const ruleId = typeof params.ruleId === 'string' ? params.ruleId : undefined
-    if (!route)
+
+    // A dashboard/summary activation (or one with no target) just scrolls to top.
+    if (params.tab === 'dashboard' || !route) {
+      document.querySelector('.scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
       return
+    }
+
     batch(() => {
       setExpandedRoutes(prev => new Set(prev).add(route))
       if (ruleId)
@@ -205,7 +195,6 @@ export function App() {
           return [...prev, ...v.nodes.filter(n => !have.has(n.id)).map(n => nodePin(v, n))]
         })
       }
-      // Scroll the card into view once it has rendered.
       setTimeout(() => document.getElementById(ruleCardId(route, ruleId))?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 60)
     }
   }, { defer: true }))
@@ -234,11 +223,6 @@ export function App() {
       return next
     })
   }
-  function selectRoute(route: string) {
-    setActiveTab('violations')
-    setExpandedRoutes(prev => new Set(prev).add(route))
-    setTimeout(() => document.getElementById(`group-${encodeURIComponent(route)}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 60)
-  }
 
   const announce = () => {
     if (!channel.state())
@@ -251,8 +235,6 @@ export function App() {
       <Header
         agentReady={channel.agentReady()}
         scanning={channel.scanning()}
-        activeTab={activeTab()}
-        onTab={setActiveTab}
         onRescan={channel.rescan}
       />
       <MetaLine
@@ -289,25 +271,7 @@ export function App() {
             </div>
           </Match>
 
-          {/* Dashboard. */}
-          <Match when={activeTab() === 'dashboard'}>
-            <Dashboard
-              counts={chipCounts()}
-              filter={filter()}
-              onToggleFilter={toggleFilter}
-              totalNodes={totalNodes()}
-              totalRules={totalRules()}
-              routes={routeSummaries()}
-              onSelectRoute={selectRoute}
-              autoScan={autoScan()}
-              onToggleAutoScan={setAutoScan}
-              showBestPractice={showBestPractice()}
-              onToggleBestPractice={setShowBestPractice}
-              onClearAll={channel.clearAll}
-            />
-          </Match>
-
-          {/* Violations — clean. */}
+          {/* Report in, nothing to flag. */}
           <Match when={totalFilterable() === 0}>
             <div class="state state--clean">
               <CheckCircle class="state__glyph" />
@@ -319,43 +283,48 @@ export function App() {
             </div>
           </Match>
 
-          {/* Violations — filtered to empty. */}
-          <Match when={shownViolations() === 0}>
-            <div class="state">
-              <CheckCircle class="state__glyph" />
-              <p class="state__title">Nothing matches the filter</p>
-              <p class="state__body">
-                {totalFilterable()}
-                {' '}
-                {totalFilterable() === 1 ? 'rule' : 'rules'}
-                {' '}
-                at other severities. Clear the filter to see them.
-              </p>
-            </div>
-          </Match>
-
-          {/* Violations — grouped list. */}
-          <Match when={shownViolations() > 0}>
-            <Show when={shownViolations() !== totalFilterable()}>
-              <p class="filtered-note">
-                Showing
-                {' '}
-                {shownViolations()}
-                {' of '}
-                {totalFilterable()}
-                {' rules'}
-              </p>
-            </Show>
-            <ViolationList
-              groups={groups()}
-              collapsedRoutes={collapsedRoutes()}
-              onToggleGroup={toggleGroup}
-              onClearRoute={channel.clearRoute}
-              expandedRules={expandedRules()}
-              onToggleRule={toggleRule}
-              channel={channel}
-              pins={pinsApi}
+          {/* Single page: summary band + grouped violations. */}
+          <Match when={totalFilterable() > 0}>
+            <SummaryBar
+              counts={chipCounts()}
+              filter={filter()}
+              onToggleFilter={toggleFilter}
+              totalNodes={totalNodes()}
+              totalRules={totalRules()}
+              routeCount={routes().length}
+              autoScan={autoScan()}
+              onToggleAutoScan={setAutoScan}
+              showBestPractice={showBestPractice()}
+              onToggleBestPractice={setShowBestPractice}
+              onClearAll={channel.clearAll}
             />
+
+            <Show
+              when={shownViolations() > 0}
+              fallback={(
+                <div class="state">
+                  <CheckCircle class="state__glyph" />
+                  <p class="state__title">Nothing matches the filter</p>
+                  <p class="state__body">
+                    {totalFilterable()}
+                    {' '}
+                    {totalFilterable() === 1 ? 'rule' : 'rules'}
+                    {' at other severities. Clear the filter to see them.'}
+                  </p>
+                </div>
+              )}
+            >
+              <ViolationList
+                groups={groups()}
+                collapsedRoutes={collapsedRoutes()}
+                onToggleGroup={toggleGroup}
+                onClearRoute={channel.clearRoute}
+                expandedRules={expandedRules()}
+                onToggleRule={toggleRule}
+                channel={channel}
+                pins={pinsApi}
+              />
+            </Show>
           </Match>
         </Switch>
       </div>

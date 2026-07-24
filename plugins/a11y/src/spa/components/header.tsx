@@ -1,15 +1,11 @@
 import type { Impact } from '../../shared/protocol.ts'
 import { For, Show } from 'solid-js'
-import { button, nav, navBrand, tab, tabsList } from '../design'
+import { button, nav, navBrand } from '../design'
 import { IMPACT_COLOR, IMPACT_LABEL } from '../lib/impact.ts'
-
-export type TabId = 'dashboard' | 'violations'
 
 interface HeaderProps {
   agentReady: boolean
   scanning: boolean
-  activeTab: TabId
-  onTab: (tab: TabId) => void
   onRescan: () => void
 }
 
@@ -23,36 +19,12 @@ export function Header(props: HeaderProps) {
         ? 'status__dot status__dot--scanning'
         : 'status__dot status__dot--live'
 
-  const tabs: { id: TabId, label: string, icon: string }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'i-ph-gauge-duotone' },
-    { id: 'violations', label: 'Violations', icon: 'i-ph-list-checks-duotone' },
-  ]
-
   return (
     <header class={nav()}>
       <span class={navBrand()}>
-        <span class="i-ph-person-arms-spread-duotone text-base color-active" />
+        <span aria-hidden class="i-ph-person-arms-spread-duotone text-base color-active" />
         <span>A11y Inspector</span>
       </span>
-
-      <div class={tabsList('ml-2')} role="tablist">
-        <For each={tabs}>
-          {t => (
-            <button
-              type="button"
-              role="tab"
-              class={tab()}
-              data-state={props.activeTab === t.id ? 'active' : 'inactive'}
-              aria-selected={props.activeTab === t.id}
-              onClick={() => props.onTab(t.id)}
-            >
-              <span class={t.icon} />
-              {t.label}
-            </button>
-          )}
-        </For>
-      </div>
-
       <span class="flex-1" />
       <span class="status">
         <span class={dotClass()} />
@@ -64,7 +36,7 @@ export function Header(props: HeaderProps) {
         onClick={() => props.onRescan()}
         disabled={!props.agentReady || props.scanning}
       >
-        <span class="i-ph-arrows-clockwise" classList={{ 'animate-spin': props.scanning }} />
+        <span aria-hidden class="i-ph-arrows-clockwise shrink-0" classList={{ 'animate-spin': props.scanning }} />
         Rescan
       </button>
     </header>

@@ -75,7 +75,7 @@ function ViolationRow(props: RowProps) {
         onClick={() => props.pins.toggleRule(v())}
         onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), props.pins.toggleRule(v()))}
       >
-        <span class="i-ph-push-pin-duotone" />
+        <span aria-hidden class="i-ph-push-pin-duotone shrink-0" />
       </span>
 
       <Show when={props.expanded}>
@@ -160,7 +160,7 @@ function RouteGroup(props: GroupProps) {
           title="Clear this route's history"
           onClick={() => props.onClearRoute()}
         >
-          <span class="i-ph-trash-duotone" />
+          <span aria-hidden class="i-ph-trash-duotone shrink-0" />
         </button>
       </div>
       <Show when={!props.collapsed}>

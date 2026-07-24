@@ -66,6 +66,7 @@ describe('createMessagesReporter', () => {
       id: 'devframes:plugin:a11y:scan',
       message: 'No accessibility issues found',
       level: 'success',
+      category: 'a11y',
       status: 'idle',
     })
   })
@@ -89,6 +90,7 @@ describe('createMessagesReporter', () => {
     expect(imageAlt).toMatchObject({
       message: 'Fix image-alt (2)',
       level: 'error',
+      category: 'a11y',
       labels: ['critical', 'wcag2a'],
       elementPosition: {
         selector: '#image-alt-0',

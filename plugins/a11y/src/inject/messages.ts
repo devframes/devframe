@@ -31,6 +31,12 @@ export interface HubMessageInput {
   message: string
   description?: string
   level: 'info' | 'warn' | 'error' | 'success' | 'debug'
+  /**
+   * Grouping category shown in the messages panel. Set explicitly to a short
+   * `'a11y'` label — the hub client host otherwise defaults it to the dock id
+   * (e.g. `devframes_plugin_a11y`), and input fields win over that default.
+   */
+  category?: string
   labels?: string[]
   elementPosition?: {
     selector?: string
@@ -55,6 +61,8 @@ export interface A11yAgentContext {
   messages?: HubMessagesClient
 }
 
+/** Short, human-facing grouping label shown in the messages panel. */
+const MESSAGE_CATEGORY = 'a11y'
 /** One deduplicated summary entry tracks the scan lifecycle. */
 const SCAN_MESSAGE_ID = 'devframes:plugin:a11y:scan'
 /** One deduplicated entry per violated rule; removed when the rule clears. */
@@ -104,7 +112,9 @@ export function createMessagesReporter(
 ): MessagesReporter {
   let reportedRules = new Set<string>()
   // Fire-and-forget: the feed is a mirror, never a gate for the scan loop.
-  const send = (input: HubMessageInput) => void messages.add(input).catch(() => {})
+  // Every entry is grouped under the short `a11y` category.
+  const send = (input: HubMessageInput) =>
+    void messages.add({ category: MESSAGE_CATEGORY, ...input }).catch(() => {})
   const drop = (id: string) => void messages.remove(id).catch(() => {})
   const dockId = () => options.dockId?.() ?? A11Y_DEFAULT_DOCK_ID
 
