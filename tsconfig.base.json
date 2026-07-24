@@ -289,9 +289,6 @@
       "@devframes/plugin-messages/constants": [
         "./plugins/messages/src/constants.ts"
       ],
-      "@devframes/plugin-messages/types": [
-        "./plugins/messages/src/types.ts"
-      ],
       "@devframes/plugin-messages/rpc": [
         "./plugins/messages/src/rpc/index.ts"
       ],

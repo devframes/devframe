@@ -1,4 +1,4 @@
-import type { DevframeMessagesListDelta } from '../../types'
+import type { DevframeMessagesListDelta } from '@devframes/hub/types'
 import { defineMessagesRpc, getMessagesHost } from './_define'
 
 /**

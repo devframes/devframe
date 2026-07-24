@@ -1,4 +1,4 @@
-import type { DevframeMessageEntry, DevframeMessageEntryInput } from '../../types'
+import type { DevframeMessageEntry, DevframeMessageEntryInput } from '@devframes/hub/types'
 import { defineMessagesRpc, getMessagesHost } from './_define'
 
 /**

@@ -1,6 +1,6 @@
+import type { DevframeMessageEntry, DevframeMessagesListDelta } from '@devframes/hub/types'
 import type { DevframeRpcClient } from 'devframe/client'
 import type { Reactive } from 'vue'
-import type { DevframeMessageEntry, DevframeMessagesListDelta } from '../../types'
 import { reactive } from 'vue'
 import { MESSAGES_UPDATED_EVENT } from '../../constants'
 

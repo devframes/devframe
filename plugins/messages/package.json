@@ -27,7 +27,6 @@
     "./constants": "./dist/constants.mjs",
     "./node": "./dist/node/index.mjs",
     "./rpc": "./dist/rpc/index.mjs",
-    "./types": "./dist/types.mjs",
     "./vite": "./dist/vite.mjs",
     "./package.json": "./package.json"
   },
@@ -75,6 +74,7 @@
     "@vueuse/core": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
+    "floating-vue": "catalog:frontend",
     "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
     "storybook": "catalog:storybook",

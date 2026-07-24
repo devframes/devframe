@@ -1,4 +1,4 @@
-import type { DevframeMessageEntryFrom, DevframeMessageLevel } from '../../types'
+import type { DevframeMessageEntryFrom, DevframeMessageLevel } from '@devframes/hub/types'
 
 // @unocss-include
 
@@ -35,16 +35,4 @@ export const levelPriority: Record<DevframeMessageLevel, number> = {
   info: 2,
   success: 3,
   debug: 4,
-}
-
-/**
- * Deterministic hue from a string, for category/label badges. Fixed
- * saturation/lightness reads acceptably on both schemes.
- */
-export function getHashColorFromString(name: string, opacity: number = 1): string {
-  let hash = 0
-  for (let i = 0; i < name.length; i++)
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  const h = hash % 360
-  return `hsla(${h}, 55%, 55%, ${opacity})`
 }
