@@ -3,7 +3,7 @@
 // the offline Phosphor set renders without a runtime icon library. UnoCSS only
 // emits classes it can see in source, hence the literal map.
 const ICONS: Record<string, string> = {
-  'ph:wheelchair-duotone': 'i-ph-wheelchair-duotone',
+  'ph:person-simple-circle-duotone': 'i-ph-person-simple-circle-duotone',
   'ph:notification-duotone': 'i-ph-notification-duotone',
 }
 

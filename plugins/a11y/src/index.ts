@@ -80,7 +80,7 @@ export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeD
     packageName: pkg.name,
     homepage: pkg.homepage,
     description: pkg.description,
-    icon: options.icon ?? 'ph:wheelchair-duotone',
+    icon: options.icon ?? 'ph:person-simple-circle-duotone',
     basePath: options.basePath ?? BASE_PATH,
     cli: {
       command: id,

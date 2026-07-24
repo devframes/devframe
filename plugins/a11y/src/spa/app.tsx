@@ -31,6 +31,9 @@ export function App() {
   // and the "Generate fix prompts" dialog.
   const [selected, setSelected] = createSignal<Set<string>>(new Set())
   const [dialogOpen, setDialogOpen] = createSignal(false)
+  // Transient severity preview: hovering a summary chip lights up every element
+  // of that impact, overriding the selection highlight until the hover ends.
+  const [hoverImpact, setHoverImpact] = createSignal<Impact | null>(null)
 
   const storedAuto = (() => {
     try {
@@ -109,6 +112,20 @@ export function App() {
     return out
   })
 
+  // Every element of a given impact (across routes), for the chip-hover preview.
+  const impactPins = (impact: Impact): PinTarget[] => {
+    const out: PinTarget[] = []
+    for (const report of routes()) {
+      for (const v of report.violations) {
+        if (includeViolation(v) && v.impact === impact) {
+          for (const node of v.nodes)
+            out.push(nodePin(v, node))
+        }
+      }
+    }
+    return out
+  }
+
   const selectedItems = createMemo<SelectedItem[]>(() => {
     const sel = selected()
     const out: SelectedItem[] = []
@@ -170,8 +187,12 @@ export function App() {
       setExpandedRoutes(prev => (prev.has(r) ? prev : new Set(prev).add(r)))
   })
 
-  // Push the highlight set (derived from the selection) to the in-page agent.
-  createEffect(() => channel.setPins(selectedPins()))
+  // Push the highlight set to the in-page agent: the hovered impact's elements
+  // while a summary chip is hovered, otherwise the selection.
+  createEffect(() => {
+    const hov = hoverImpact()
+    channel.setPins(hov ? impactPins(hov) : selectedPins())
+  })
 
   // defaultHighlight: select all of a route's violations the first time it's scanned.
   const highlighted = new Set<string>()
@@ -309,6 +330,7 @@ export function App() {
               counts={chipCounts()}
               filter={filter()}
               onToggleFilter={toggleFilter}
+              onHoverImpact={setHoverImpact}
               totalNodes={totalNodes()}
               totalRules={totalRules()}
               routeCount={routes().length}

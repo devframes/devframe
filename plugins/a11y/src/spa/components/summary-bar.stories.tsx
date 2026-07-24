@@ -19,6 +19,7 @@ const base = {
   counts: { critical: 3, serious: 5, moderate: 2, minor: 8 },
   filter: null,
   onToggleFilter: noop,
+  onHoverImpact: noop,
   totalNodes: 18,
   totalRules: 7,
   routeCount: 3,

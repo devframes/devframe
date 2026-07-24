@@ -24,7 +24,7 @@ export function Header(props: HeaderProps) {
   return (
     <header class={nav()}>
       <span class={navBrand()}>
-        <span aria-hidden class="i-ph-person-arms-spread-duotone text-base color-active" />
+        <span aria-hidden class="i-ph-person-simple-circle-duotone text-base color-active" />
         <span>A11y Inspector</span>
       </span>
       <span class="flex-1" />
@@ -96,6 +96,8 @@ interface SummaryProps {
   counts: Record<Impact, number>
   active: Impact | null
   onToggle: (impact: Impact) => void
+  /** Hover/focus a chip to preview every element of that impact in the page. */
+  onHover?: (impact: Impact | null) => void
 }
 
 /** The severity summary chips — also serve as the impact filter. */
@@ -111,8 +113,12 @@ export function Summary(props: SummaryProps) {
               class={`chip${count() === 0 ? ' chip--zero' : ''}`}
               style={{ '--impact': IMPACT_COLOR[impact] }}
               aria-pressed={props.active === impact}
-              aria-label={`${count()} ${IMPACT_LABEL[impact]} issues — filter`}
+              aria-label={`${count()} ${IMPACT_LABEL[impact]} issues — filter and highlight`}
               onClick={() => props.onToggle(impact)}
+              onMouseEnter={() => props.onHover?.(impact)}
+              onMouseLeave={() => props.onHover?.(null)}
+              onFocus={() => props.onHover?.(impact)}
+              onBlur={() => props.onHover?.(null)}
             >
               <span class="chip__count">{count()}</span>
               <span class="chip__label">{IMPACT_LABEL[impact]}</span>

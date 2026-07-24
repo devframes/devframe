@@ -5,6 +5,7 @@ interface SummaryBarProps {
   counts: Record<Impact, number>
   filter: Impact | null
   onToggleFilter: (impact: Impact) => void
+  onHoverImpact: (impact: Impact | null) => void
   totalNodes: number
   totalRules: number
   routeCount: number
@@ -23,7 +24,7 @@ interface SummaryBarProps {
 export function SummaryBar(props: SummaryBarProps) {
   return (
     <div class="summary-bar">
-      <Summary counts={props.counts} active={props.filter} onToggle={props.onToggleFilter} />
+      <Summary counts={props.counts} active={props.filter} onToggle={props.onToggleFilter} onHover={props.onHoverImpact} />
 
       <div class="summary-bar__toolbar">
         <span class="summary-bar__stat">
