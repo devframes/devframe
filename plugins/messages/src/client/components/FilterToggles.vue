@@ -31,7 +31,7 @@ function isDimmed(active: Set<string>, item: string): boolean {
       :class="[
         tag ? 'p-0.5' : 'px-1.5 py-0.5 gap-0.5 text-xs',
         !tag && !isDimmed(active, item) ? (styles?.[item]?.color || '') : '',
-        isDimmed(active, item) ? 'op30 saturate-50' : '',
+        isDimmed(active, item) ? 'op50 saturate-10 hover:op85 hover:saturate-50' : 'op85 hover:op100',
       ]"
       @click="$emit('toggle', item)"
     >

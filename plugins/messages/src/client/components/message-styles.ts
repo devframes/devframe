@@ -20,7 +20,7 @@ export const levels: Record<DevframeMessageLevel, LevelStyle> = {
   warn: { icon: 'i-ph:warning-duotone', color: 'dark:text-amber-200 text-amber-600', bg: 'bg-amber', label: 'Warning' },
   error: { icon: 'i-ph:x-circle-duotone', color: 'dark:text-red-200 text-red-600', bg: 'bg-red', label: 'Error' },
   success: { icon: 'i-ph:check-circle-duotone', color: 'dark:text-green-200 text-green-600', bg: 'bg-green', label: 'Success' },
-  debug: { icon: 'i-ph:bug-duotone', color: 'dark:text-gray-200 text-gray-600', bg: 'bg-gray', label: 'Debug' },
+  debug: { icon: 'i-ph:bug-duotone', color: 'dark:text-violet-200 text-violet-600', bg: 'bg-violet', label: 'Debug' },
 }
 
 export const fromEntries: Record<DevframeMessageEntryFrom, FromStyle> = {

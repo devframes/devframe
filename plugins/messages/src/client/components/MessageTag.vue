@@ -16,8 +16,8 @@ defineProps<{
   <DisplayBadge
     :text="text"
     :as="as"
-    :rounded="kind === 'label' ? 'full' : 'md'"
+    :rounded="kind === 'label' ? 'full' : kind === 'category' ? 0.4 : 'md'"
     class="text-xs"
-    :class="kind === 'category' ? 'border-l-2!' : ''"
+    :class="kind === 'category' ? 'border-l-3!' : ''"
   />
 </template>
