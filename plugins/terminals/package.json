@@ -59,8 +59,6 @@
     }
   },
   "dependencies": {
-    "@xterm/addon-fit": "catalog:frontend",
-    "@xterm/xterm": "catalog:frontend",
     "cac": "catalog:deps",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
@@ -73,6 +71,8 @@
     "@storybook/svelte-vite": "catalog:storybook",
     "@sveltejs/vite-plugin-svelte": "catalog:frontend",
     "@types/node": "catalog:types",
+    "@xterm/addon-fit": "catalog:frontend",
+    "@xterm/xterm": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
     "get-port-please": "catalog:deps",

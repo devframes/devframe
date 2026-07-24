@@ -7,7 +7,7 @@ export interface MessagesHandle {
   dispose: () => void;
 }
 export interface MessagesState {
-  entries: DevframeMessageEntry[];
+  entries: DevframeMessageEntry$1[];
 }
 export interface MountMessagesOptions {
   rpc?: DevframeRpcClient;

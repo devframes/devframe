@@ -16,7 +16,6 @@ const serverEntries = {
   'cli': 'src/cli.ts',
   'vite': 'src/vite.ts',
   'constants': 'src/constants.ts',
-  'types': 'src/types.ts',
   'node/index': 'src/node/index.ts',
   'rpc/index': 'src/rpc/index.ts',
 }

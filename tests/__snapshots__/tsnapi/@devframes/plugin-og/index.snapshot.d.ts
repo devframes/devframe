@@ -12,6 +12,26 @@ export interface OgDevframeOptions {
   defaultUrl?: string;
   fetch?: OgFetch;
 }
+export interface OgHeadTag {
+  tag: OgHeadTagName;
+  name: string;
+  value: string;
+}
+export interface OgResolveInput {
+  url?: string;
+}
+export interface OgSnapshot {
+  requestedUrl: string;
+  url: string;
+  status: number;
+  fetchedAt: number;
+  tags: OgHeadTag[];
+}
+// #endregion
+
+// #region Types
+export type OgFetch = (_: string, _: RequestInit) => Promise<Response>;
+export type OgHeadTagName = 'html' | 'link' | 'meta' | 'title';
 // #endregion
 
 // #region Functions
@@ -21,12 +41,4 @@ export declare function createOgDevframe(_?: OgDevframeOptions): DevframeDefinit
 // #region Default Export
 declare const _default: DevframeDefinition;
 export default _default
-// #endregion
-
-// #region Other
-export { OgFetch }
-export { OgHeadTag }
-export { OgHeadTagName }
-export { OgResolveInput }
-export { OgSnapshot }
 // #endregion

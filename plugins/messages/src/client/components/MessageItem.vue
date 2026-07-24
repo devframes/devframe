@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { DevframeMessageEntry } from '../../types'
+import type { DevframeMessageEntry } from '@devframes/hub/types'
+import FeedbackSpinner from '@antfu/design/components/Feedback/FeedbackSpinner.vue'
 import { useTimeAgo } from '@vueuse/core'
-import HashBadge from './HashBadge.vue'
-import { levels } from './MessageItemConstants'
+import { levels } from './message-styles'
+import MessageTag from './MessageTag.vue'
 
 const props = defineProps<{
   entry: DevframeMessageEntry
@@ -16,9 +17,10 @@ const timeAgo = useTimeAgo(() => props.entry.timestamp)
   <div class="flex items-start gap-2 relative">
     <div class="w-2px flex-none absolute left-0 top-4px bottom-4px rounded-r" :class="[levels[entry.level]?.bg || 'bg-gray']" />
 
-    <div
+    <FeedbackSpinner
       v-if="entry.status === 'loading'"
-      class="flex-none mt-0.5 border-2 border-current border-t-transparent rounded-full animate-spin op50 w-4 h-4"
+      size="1rem"
+      class="flex-none mt-0.5 op50"
     />
     <div
       v-else
@@ -37,9 +39,9 @@ const timeAgo = useTimeAgo(() => props.entry.timestamp)
       <div v-if="entry.description" class="text-xs op80 whitespace-pre-wrap">
         {{ entry.description }}
       </div>
-      <div v-if="!compact" class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-        <HashBadge v-if="entry.category" :label="entry.category" />
-        <HashBadge v-for="label of entry.labels" :key="label" :label="label" />
+      <div v-if="!compact && (entry.category || entry.labels?.length)" class="flex flex-wrap items-center gap-1">
+        <MessageTag v-if="entry.category" :text="entry.category" kind="category" />
+        <MessageTag v-for="label of entry.labels" :key="label" :text="label" kind="label" />
       </div>
     </div>
   </div>

@@ -16,18 +16,21 @@ export interface MessagesDevframeOptions {
 export declare function createMessagesDevframe(_?: MessagesDevframeOptions): DevframeDefinition;
 // #endregion
 
+// #region Variables
+export declare const DEFAULT_PORT: number;
+export declare const MESSAGES_UPDATED_EVENT: string;
+export declare const PLUGIN_ID: string;
+// #endregion
+
 // #region Default Export
 declare const _default: DevframeDefinition;
 export default _default
 // #endregion
 
 // #region Other
-export { DEFAULT_PORT }
 export { DevframeMessageEntry }
 export { DevframeMessageEntryFrom }
 export { DevframeMessageEntryInput }
 export { DevframeMessageLevel }
 export { DevframeMessagesListDelta }
-export { MESSAGES_UPDATED_EVENT }
-export { PLUGIN_ID }
 // #endregion

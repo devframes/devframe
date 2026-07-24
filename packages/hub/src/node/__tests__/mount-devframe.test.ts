@@ -71,6 +71,19 @@ describe('mountDevframe', () => {
     })
   })
 
+  it('applies the definition-level dock `visibility` default to the synthesized entry, independent of `when`', async () => {
+    const ctx = createContext()
+    await mountDevframe(ctx, makeDevframe({
+      dock: { when: 'clientType == embedded', visibility: 'false' },
+    }))
+
+    expect(ctx.docks.views.get('demo')).toMatchObject({
+      id: 'demo',
+      when: 'clientType == embedded',
+      visibility: 'false',
+    })
+  })
+
   it('lets per-mount dock overrides win over the definition dock defaults', async () => {
     const ctx = createContext()
     await mountDevframe(

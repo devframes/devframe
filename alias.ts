@@ -101,7 +101,6 @@ export const alias = {
   '@devframes/plugin-messages/client': p('messages/src/client/index.ts'),
   '@devframes/plugin-messages/node': p('messages/src/node/index.ts'),
   '@devframes/plugin-messages/constants': p('messages/src/constants.ts'),
-  '@devframes/plugin-messages/types': p('messages/src/types.ts'),
   '@devframes/plugin-messages/rpc': p('messages/src/rpc/index.ts'),
   '@devframes/plugin-messages/cli': p('messages/src/cli.ts'),
   '@devframes/plugin-messages/vite': p('messages/src/vite.ts'),

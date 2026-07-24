@@ -16,6 +16,34 @@ export interface A11yDevframeOptions {
     runOptions?: Record<string, unknown>;
   };
 }
+export interface ScanReport {
+  route: string;
+  url: string;
+  scannedAt: number;
+  engine: string;
+  violations: Violation[];
+  counts: Record<Impact, number>;
+}
+export interface Violation {
+  ruleId: string;
+  impact: Impact;
+  help: string;
+  description: string;
+  helpUrl: string;
+  tags?: string[];
+  bestPractice?: boolean;
+  nodes: ViolationNode[];
+}
+export interface ViolationNode {
+  id: string;
+  target: string[];
+  html: string;
+  failureSummary: string;
+}
+// #endregion
+
+// #region Types
+export type Impact = (typeof IMPACT_ORDER)[number];
 // #endregion
 
 // #region Functions
@@ -29,11 +57,4 @@ export declare const a11yAgentBundlePath: string;
 // #region Default Export
 declare const _default: DevframeDefinition;
 export default _default
-// #endregion
-
-// #region Other
-export { Impact }
-export { ScanReport }
-export { Violation }
-export { ViolationNode }
 // #endregion
