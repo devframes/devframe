@@ -1,7 +1,7 @@
 {
   "name": "a11y-messages-playground",
   "type": "module",
-  "version": "0.7.12",
+  "version": "0.7.14",
   "private": true,
   "description": "A focused hub playground that pairs @devframes/plugin-a11y with @devframes/plugin-messages over an intentionally-broken, multi-route app under test — for exercising a11y scanning, route tracking, and message→dock navigation.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/a11y-messages-playground",
