@@ -140,6 +140,36 @@ export function App() {
     return out
   })
 
+  // Keys of the currently-visible (filtered) violations, for bulk selection.
+  const visibleKeys = createMemo(() =>
+    groups().flatMap(g => g.violations.map(v => selKey(g.report.route, v.ruleId))))
+  const allVisibleSelected = createMemo(() => {
+    const keys = visibleKeys()
+    return keys.length > 0 && keys.every(k => selected().has(k))
+  })
+
+  // Select all / unselect all — toggles the whole visible set at once.
+  function toggleSelectAll() {
+    const keys = visibleKeys()
+    if (keys.length === 0)
+      return
+    const allSel = keys.every(k => selected().has(k))
+    setSelected((prev) => {
+      const next = new Set(prev)
+      for (const k of keys) {
+        if (allSel)
+          next.delete(k)
+        else
+          next.add(k)
+      }
+      return next
+    })
+  }
+  // Clear the entire selection, including any hidden by the current filter.
+  function clearSelection() {
+    setSelected(new Set<string>())
+  }
+
   const selectionApi: SelectionApi = {
     isSelected: (route, ruleId) => selected().has(selKey(route, ruleId)),
     toggle: (route, ruleId) => {
@@ -330,6 +360,10 @@ export function App() {
               totalNodes={totalNodes()}
               totalRules={totalRules()}
               routeCount={routes().length}
+              selectedCount={selectedItems().length}
+              allSelected={allVisibleSelected()}
+              onToggleSelectAll={toggleSelectAll}
+              onClearSelection={clearSelection}
               autoScan={autoScan()}
               onToggleAutoScan={setAutoScan}
               showBestPractice={showBestPractice()}

@@ -21,6 +21,10 @@ const base = {
   totalNodes: 18,
   totalRules: 7,
   routeCount: 3,
+  selectedCount: 0,
+  allSelected: false,
+  onToggleSelectAll: noop,
+  onClearSelection: noop,
   autoScan: true,
   onToggleAutoScan: noop,
   showBestPractice: true,
@@ -30,3 +34,5 @@ const base = {
 
 export const Overview: Story = { args: base }
 export const Filtered: Story = { args: { ...base, filter: 'serious' } }
+export const WithSelection: Story = { args: { ...base, selectedCount: 4 } }
+export const AllSelected: Story = { args: { ...base, selectedCount: 7, allSelected: true } }
