@@ -32,6 +32,7 @@ export interface JsonRenderDockRendererOptions {
 // #endregion
 
 // #region Types
+export type JrComponent<P = Record<string, unknown>> = (_: BaseComponentProps<P>) => VNodeChild;
 export type JsonRenderDockRenderer = (_: JsonRenderDockMountOptions) => Promise<{
   dispose?: () => void;
 }>;
@@ -49,8 +50,17 @@ export declare function sanitizeSpec(_: Spec, _?: ComponentRegistry): Spec;
 // #endregion
 
 // #region Variables
+export declare const Badge: JrComponent<BadgeProps>;
 export declare const baseRegistry: ComponentRegistry;
+export declare const Button: JrComponent<ButtonProps>;
+export declare const Card: JrComponent<CardProps>;
+export declare const CodeBlock: JrComponent<CodeBlockProps>;
+export declare const DataTable: JrComponent<DataTableProps>;
+export declare const Divider: JrComponent<{
+  label?: string;
+}>;
 export declare const ERROR_COMPONENT_TYPE: string;
+export declare const Icon: JrComponent<IconProps>;
 export declare const JsonRenderView: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
   spec: {
     type: PropType<Spec | null>;
@@ -119,23 +129,12 @@ export declare const JsonRenderView: import("vue").DefineComponent<import("vue")
   loading: boolean;
   connectionError: string | null;
 }, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+export declare const KeyValueTable: JrComponent<KeyValueTableProps>;
+export declare const Progress: JrComponent<ProgressProps>;
+export declare const Stack: JrComponent<StackProps>;
+export declare const Switch: JrComponent<SwitchProps>;
+export declare const Text: JrComponent<TextProps>;
+export declare const TextInput: JrComponent<TextInputProps>;
+export declare const Tree: JrComponent<TreeProps>;
 export declare const UNSUPPORTED_COMPONENT_TYPE: string;
-// #endregion
-
-// #region Other
-export { Badge }
-export { Button }
-export { Card }
-export { CodeBlock }
-export { DataTable }
-export { Divider }
-export { Icon }
-export { JrComponent }
-export { KeyValueTable }
-export { Progress }
-export { Stack }
-export { Switch }
-export { Text }
-export { TextInput }
-export { Tree }
 // #endregion

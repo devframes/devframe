@@ -9,25 +9,22 @@ export function sanitizeSpec(_, _) {}
 // #endregion
 
 // #region Variables
+export var Badge /* const */
 export var baseRegistry /* const */
+export var Button /* const */
+export var Card /* const */
+export var CodeBlock /* const */
+export var DataTable /* const */
+export var Divider /* const */
 export var ERROR_COMPONENT_TYPE /* const */
+export var Icon /* const */
 export var JsonRenderView /* const */
+export var KeyValueTable /* const */
+export var Progress /* const */
+export var Stack /* const */
+export var Switch /* const */
+export var Text /* const */
+export var TextInput /* const */
+export var Tree /* const */
 export var UNSUPPORTED_COMPONENT_TYPE /* const */
-// #endregion
-
-// #region Other
-export { Badge }
-export { Button }
-export { Card }
-export { CodeBlock }
-export { DataTable }
-export { Divider }
-export { Icon }
-export { KeyValueTable }
-export { Progress }
-export { Stack }
-export { Switch }
-export { Text }
-export { TextInput }
-export { Tree }
 // #endregion

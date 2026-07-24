@@ -8,11 +8,28 @@ export interface JsonRenderIndexEntry {
   stateKey: string;
   title: string;
 }
+export interface JsonRenderView {
+  readonly id: string;
+  readonly title: string;
+  readonly ref: JsonRenderViewStateRef;
+  update: (_: DevframeJsonRenderSpec) => void;
+  patchState: (_: JsonRenderStatePatch[]) => void;
+  value: () => DevframeJsonRenderSpec;
+  dispose: () => void;
+}
+export interface JsonRenderViewInlineRef {
+  spec: DevframeJsonRenderSpec;
+}
+export interface JsonRenderViewStateRef {
+  stateKey: string;
+}
 // #endregion
 
 // #region Types
 export type BaseComponentName = keyof typeof basePropSchemas;
+export type DevframeJsonRenderSpec = Spec;
 export type JsonRenderIndex = Record<string, JsonRenderIndexEntry>;
+export type JsonRenderViewRef = JsonRenderViewStateRef | JsonRenderViewInlineRef;
 // #endregion
 
 // #region Variables
@@ -330,12 +347,7 @@ export declare const TreePropsSchema: z.ZodObject<{
 
 // #region Other
 export { Catalog }
-export { DevframeJsonRenderSpec }
 export { InferComponentProps }
-export { JsonRenderView }
-export { JsonRenderViewInlineRef }
-export { JsonRenderViewRef }
-export { JsonRenderViewStateRef }
 export { Spec }
 export { StateModel }
 export { StateStore }
