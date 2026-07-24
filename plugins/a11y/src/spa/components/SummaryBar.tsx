@@ -15,8 +15,10 @@ interface SummaryBarProps {
   selectedCount: number
   /** Whether every currently-visible violation is selected. */
   allSelected: boolean
-  /** Select all visible violations, or unselect them when all are selected. */
-  onToggleSelectAll: () => void
+  /** Select all visible violations. */
+  onSelectAll: () => void
+  /** Invert the selection across the visible violations. */
+  onInvertSelection: () => void
   /** Clear the entire selection (including any hidden by the filter). */
   onClearSelection: () => void
   autoScan: boolean
@@ -51,11 +53,22 @@ export function SummaryBar(props: SummaryBarProps) {
         <button
           type="button"
           class={ACTION}
-          onClick={() => props.onToggleSelectAll()}
-          title={props.allSelected ? 'Unselect all visible violations' : 'Select all visible violations'}
+          onClick={() => props.onSelectAll()}
+          disabled={props.allSelected}
+          title="Select all visible violations"
         >
-          <span aria-hidden class={`shrink-0 ${props.allSelected ? 'i-ph-check-square-duotone' : 'i-ph-square-duotone'}`} />
-          {props.allSelected ? 'Unselect all' : 'Select all'}
+          <span aria-hidden class="i-ph-check-square-duotone shrink-0" />
+          Select all
+        </button>
+
+        <button
+          type="button"
+          class={ACTION}
+          onClick={() => props.onInvertSelection()}
+          title="Invert the selection across the visible violations"
+        >
+          <span aria-hidden class="i-ph-selection-inverse-duotone shrink-0" />
+          Invert
         </button>
 
         <Show when={props.selectedCount > 0}>

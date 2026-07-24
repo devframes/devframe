@@ -148,16 +148,27 @@ export function App() {
     return keys.length > 0 && keys.every(k => selected().has(k))
   })
 
-  // Select all / unselect all — toggles the whole visible set at once.
-  function toggleSelectAll() {
+  // Select every visible (filtered) violation.
+  function selectAll() {
     const keys = visibleKeys()
     if (keys.length === 0)
       return
-    const allSel = keys.every(k => selected().has(k))
+    setSelected((prev) => {
+      const next = new Set(prev)
+      for (const k of keys)
+        next.add(k)
+      return next
+    })
+  }
+  // Invert the selection across the visible violations (selected ↔ unselected).
+  function invertSelection() {
+    const keys = visibleKeys()
+    if (keys.length === 0)
+      return
     setSelected((prev) => {
       const next = new Set(prev)
       for (const k of keys) {
-        if (allSel)
+        if (next.has(k))
           next.delete(k)
         else
           next.add(k)
@@ -362,7 +373,8 @@ export function App() {
               routeCount={routes().length}
               selectedCount={selectedItems().length}
               allSelected={allVisibleSelected()}
-              onToggleSelectAll={toggleSelectAll}
+              onSelectAll={selectAll}
+              onInvertSelection={invertSelection}
               onClearSelection={clearSelection}
               autoScan={autoScan()}
               onToggleAutoScan={setAutoScan}
