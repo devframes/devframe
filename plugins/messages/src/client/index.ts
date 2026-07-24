@@ -4,6 +4,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 
 import 'virtual:uno.css'
+import 'floating-vue/dist/style.css'
 import '@antfu/design/styles.css'
 import './style.css'
 
@@ -51,12 +52,12 @@ export async function mountMessages(
   }
 }
 
+export { useMessages } from './state/messages'
+export type { MessagesState } from './state/messages'
 export type {
   DevframeMessageEntry,
   DevframeMessageEntryFrom,
   DevframeMessageEntryInput,
   DevframeMessageLevel,
   DevframeMessagesListDelta,
-} from '../types'
-export { useMessages } from './state/messages'
-export type { MessagesState } from './state/messages'
+} from '@devframes/hub/types'

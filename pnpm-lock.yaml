@@ -1368,6 +1368,9 @@ importers:
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
+      floating-vue:
+        specifier: catalog:frontend
+        version: 5.2.2(vue@3.5.40(typescript@6.0.3))
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0

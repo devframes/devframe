@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { DevframeMessageEntry } from '@devframes/hub/types'
 import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/client'
-import type { DevframeMessageEntry } from '../types'
+import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
+import FormSearchField from '@antfu/design/components/Form/FormSearchField.vue'
 import LayoutToolbar from '@antfu/design/components/Layout/LayoutToolbar.vue'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import {
@@ -13,6 +15,8 @@ import {
   connectionTitle,
 } from '../../../../design/design'
 import MessagesView from './components/MessagesView.vue'
+import MessageToolbarActions from './components/MessageToolbarActions.vue'
+import { useMessageFilters } from './composables/useMessageFilters'
 import { useMessages } from './state/messages'
 
 const props = defineProps<{
@@ -20,6 +24,10 @@ const props = defineProps<{
 }>()
 
 const state = useMessages(props.rpc)
+
+// Search / sort / filter state lives here (not in the view) so the nav bar's
+// search field + actions and the view's filter bar share one source of truth.
+const filters = useMessageFilters(() => state.entries)
 
 // The live feed rides on shared-state over the socket, so a dropped socket or
 // refused auth is surfaced instead of silently freezing the list. The client
@@ -50,9 +58,9 @@ async function onDismiss(id: string): Promise<void> {
   await props.rpc.call('devframes:plugin:messages:remove', id)
 }
 
-async function onDismissMany(ids: string[]): Promise<void> {
-  for (const id of ids)
-    await props.rpc.call('devframes:plugin:messages:remove', id)
+async function onDismissFiltered(): Promise<void> {
+  for (const entry of filters.filteredEntries)
+    await props.rpc.call('devframes:plugin:messages:remove', entry.id)
 }
 
 async function onClear(): Promise<void> {
@@ -85,16 +93,35 @@ async function onOpenFile(entry: DevframeMessageEntry): Promise<void> {
       </div>
 
       <template #search>
-        <div />
+        <div class="flex gap-2 items-center">
+          <FormSearchField
+            v-if="!connState"
+            v-model="filters.search"
+            size="sm"
+            placeholder="Search messages…"
+            class="max-w-64"
+          />
+          <DisplayBadge v-if="filters.totalCount > 0" :color="false" class="text-xs font-mono">
+            <template v-if="filters.filteredCount !== filters.totalCount">
+              {{ filters.filteredCount }}/{{ filters.totalCount }}
+            </template>
+            <template v-else>
+              {{ filters.totalCount }}
+            </template>
+          </DisplayBadge>
+        </div>
       </template>
 
       <template #end>
+        <MessageToolbarActions
+          v-if="!connState"
+          :filters
+          @dismiss-filtered="onDismissFiltered"
+          @clear="onClear"
+        />
         <span v-if="conn" :class="conn.class">
           <span :class="conn.dot" />
           {{ conn.label }}
-        </span>
-        <span v-if="state.entries.length > 0" class="badge-muted font-mono">
-          {{ state.entries.length }}
         </span>
       </template>
     </LayoutToolbar>
@@ -122,11 +149,9 @@ async function onOpenFile(entry: DevframeMessageEntry): Promise<void> {
       </div>
       <MessagesView
         v-else
-        :entries="state.entries"
+        :filters
         :can-open-file="canOpenFile"
         @dismiss="onDismiss"
-        @dismiss-many="onDismissMany"
-        @clear="onClear"
         @persist="onPersist"
         @open-file="onOpenFile"
       />

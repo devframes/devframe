@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import FilterToggles from './FilterToggles.vue'
-import { getHashColorFromString, levels } from './MessageItemConstants'
+import { levels } from './message-styles'
 
 const meta = {
   title: 'Messages/FilterToggles',
@@ -32,11 +32,20 @@ export const LevelsFiltered: Story = {
   },
 }
 
-export const HashColored: Story = {
+export const CategoryTags: Story = {
   args: {
     label: 'Category',
     items: ['a11y', 'lint', 'runtime', 'build'],
     active: new Set<string>(),
-    hashColor: getHashColorFromString,
+    tag: 'category',
+  },
+}
+
+export const LabelTags: Story = {
+  args: {
+    label: 'Labels',
+    items: ['axe', 'eslint', 'vite', 'hmr'],
+    active: new Set<string>(),
+    tag: 'label',
   },
 }
