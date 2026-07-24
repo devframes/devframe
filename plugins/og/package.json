@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-og",
   "type": "module",
-  "version": "0.7.11",
+  "version": "0.7.12",
   "description": "Devframe plugin for inspecting Open Graph metadata and previewing social cards for any URL.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
