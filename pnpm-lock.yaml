@@ -429,6 +429,40 @@ importers:
         specifier: catalog:docs
         version: 2.0.17(mermaid@11.16.0)(vitepress@2.0.0-alpha.18(@types/node@26.1.1)(change-case@5.4.4)(esbuild@0.28.0)(fuse.js@7.5.0)(jiti@2.7.0)(postcss@8.5.16)(terser@5.47.1)(tsx@4.23.1)(typescript@6.0.3)(yaml@2.9.0))
 
+  examples/a11y-messages-playground:
+    dependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.3.2(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(dompurify@3.4.12)(floating-vue@5.2.2(vue@3.5.40(typescript@6.0.3)))(playwright@1.61.1)(reka-ui@2.10.1(vue@3.5.40(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.19))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+    devDependencies:
+      '@iconify-json/ph':
+        specifier: catalog:frontend
+        version: 1.2.2
+      get-port-please:
+        specifier: catalog:deps
+        version: 3.2.0
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
+      unocss:
+        specifier: catalog:frontend
+        version: 66.7.5(@unocss/postcss@66.7.5(postcss@8.5.19))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))
+      vite:
+        specifier: catalog:build
+        version: 8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)
+
   examples/files-inspector:
     dependencies:
       '@antfu/design':
@@ -13004,7 +13038,7 @@ snapshots:
       pathe: 2.0.3
       perfect-debounce: 2.1.0
       tinyglobby: 0.2.17
-      unplugin-utils: 0.3.1
+      unplugin-utils: 0.3.2
 
   '@unocss/config@66.7.5':
     dependencies:
@@ -13133,7 +13167,7 @@ snapshots:
       magic-string: 0.30.21
       pathe: 2.0.3
       tinyglobby: 0.2.17
-      unplugin-utils: 0.3.1
+      unplugin-utils: 0.3.2
       vite: 8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)
 
   '@upsetjs/venn.js@2.0.0':

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A11y × Messages Playground</title>
+    <script>
+      // Follow the OS theme without a toggle (@antfu/design dark: is class-based).
+      document.documentElement.classList.toggle(
+        'dark',
+        window.matchMedia('(prefers-color-scheme: dark)').matches,
+      )
+    </script>
+    <style>
+      /* Bespoke styling for the app-under-test pane. Deliberately plain so the
+         a11y findings come from its markup, not from missing structure. */
+      .aut-nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+      .aut-tab {
+        font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 7px;
+        border: 1px solid rgba(127, 127, 127, 0.3); background: transparent;
+        color: inherit; cursor: pointer;
+      }
+      .aut-tab--active { background: rgba(127, 127, 127, 0.16); font-weight: 600; }
+      .aut-hint {
+        font: 12px/1.5 ui-monospace, monospace; opacity: 0.7; margin: 0 0 16px;
+      }
+      .aut-main { max-width: 60ch; }
+      .aut-main h1 { font-size: 22px; margin: 0 0 10px; }
+      .aut-main h4 { margin: 12px 0 6px; }
+      .aut-main p { line-height: 1.55; }
+      .aut-main code { font-family: ui-monospace, monospace; font-size: 0.9em; }
+    </style>
+  </head>
+  <body class="h-full m0 of-hidden bg-base color-base">
+    <div class="h-full flex flex-col">
+      <header class="shrink-0 flex items-center gap-3 h-nav px-3 border-b border-base bg-base">
+        <h1 class="m0 flex items-center gap-1.5 shrink-0 text-sm font-semibold select-none">
+          <span class="i-ph-wheelchair-duotone text-base color-active"></span>
+          <span>A11y × Messages Playground</span>
+        </h1>
+        <p id="status" class="m0 text-xs font-mono op-fade"><span id="conn">Connecting…</span></p>
+      </header>
+
+      <div class="grid grid-cols-[1fr_1.1fr] min-h-0 flex-1">
+        <!-- Left: the app under test — plain page content the a11y agent scans -->
+        <section class="min-w-0 of-auto border-r border-base p5">
+          <p class="mt0 mb3 text-[0.68rem] uppercase tracking-wider color-muted">App under test</p>
+          <div id="app-under-test"></div>
+        </section>
+
+        <!-- Right: the devtools — a11y + messages docks -->
+        <div class="grid grid-cols-[210px_1fr] min-w-0 min-h-0">
+          <aside class="flex flex-col gap-0.5 of-auto border-r border-base bg-secondary p2">
+            <h2 class="px2 py1 text-[0.68rem] uppercase tracking-wider color-muted">Docks</h2>
+            <ul id="docks" class="m0 flex flex-col list-none gap-0.5 p0">
+              <li class="op-mute px2 text-sm">Waiting for docks…</li>
+            </ul>
+          </aside>
+          <main class="relative min-w-0 of-hidden bg-secondary">
+            <div id="dock-stage" class="absolute inset-0"></div>
+          </main>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/client/main.ts"></script>
+  </body>
+</html>
