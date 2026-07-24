@@ -16,8 +16,12 @@ export function defineCommand<const W extends string = ''>(
 export function defineDockEntry<
   const T extends DevframeDockUserEntry,
   const W extends string = '',
+  const V extends string = '',
 >(
-  entry: Omit<T, 'when'> & { when?: WhenExpression<WhenContext, W> },
+  entry: Omit<T, 'when' | 'visibility'> & {
+    when?: WhenExpression<WhenContext, W>
+    visibility?: WhenExpression<WhenContext, V>
+  },
 ): T {
   return entry as unknown as T
 }
