@@ -27,8 +27,12 @@ export function Summary(props: SummaryProps) {
           return (
             <button
               type="button"
-              class="flex items-baseline gap-1.5 px-2.5 py-1.5 text-left bg-secondary border border-base border-l-3 border-l-[color:var(--impact)] rounded-md cursor-pointer transition hover:bg-active outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
-              classList={{ 'bg-[color-mix(in_srgb,var(--impact)_16%,transparent)]! border-[color:var(--impact)]!': pressed() }}
+              class="flex items-baseline gap-1.5 px-3 py-2 text-left bg-secondary border border-base border-l-3 border-l-[color:var(--impact)] cursor-pointer transition hover:bg-active outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
+              classList={{
+                'bg-[color-mix(in_srgb,var(--impact)_16%,transparent)]! border-[color:var(--impact)]!': pressed(),
+                'color-[var(--impact)]': count() > 0,
+                'color-muted': count() === 0,
+              }}
               style={{ '--impact': IMPACT_COLOR[impact] }}
               aria-pressed={pressed()}
               aria-label={`${count()} ${IMPACT_LABEL[impact]} issues — filter and highlight`}
@@ -38,10 +42,10 @@ export function Summary(props: SummaryProps) {
               onFocus={() => props.onHover?.(impact)}
               onBlur={() => props.onHover?.(null)}
             >
-              <span class={`text-base font-bold tabular-nums leading-none ${count() === 0 ? 'color-faint' : 'color-base'}`}>
+              <span class="text-lg font-bold tabular-nums leading-none">
                 {count()}
               </span>
-              <span class={`text-[9.5px] font-semibold tracking-wide uppercase ${count() === 0 ? 'color-faint' : 'text-[color:var(--impact)]'}`}>
+              <span class="text-xs font-semibold tracking-wide uppercase">
                 {IMPACT_LABEL[impact]}
               </span>
             </button>

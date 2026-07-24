@@ -28,7 +28,7 @@ export function ViolationRow(props: ViolationRowProps) {
   return (
     <li
       id={ruleCardId(props.route, v().ruleId)}
-      class="relative bg-secondary border border-base border-l-3 border-l-[color:var(--impact)] rounded-md overflow-hidden transition hover:shadow-md"
+      class="relative bg-secondary border border-base border-l-3 border-l-[color:var(--impact)]  overflow-hidden transition hover:shadow-md"
       classList={{ 'bg-[color-mix(in_srgb,var(--impact)_8%,transparent)]! border-[color:var(--impact)]/60': props.selected }}
       style={{ '--impact': IMPACT_COLOR[v().impact] }}
       onMouseLeave={() => props.channel.clearPreview()}
@@ -36,7 +36,7 @@ export function ViolationRow(props: ViolationRowProps) {
       <div class="flex items-stretch">
         <input
           type="checkbox"
-          class="shrink-0 self-center size-[15px] ml-3 accent-primary-500 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
+          class="shrink-0 self-center size-[15px] ml-3 accent-[var(--impact)] cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
           checked={props.selected}
           aria-label={`Select ${v().ruleId} to highlight and add to fix prompts`}
           onChange={() => props.onToggleSelect()}
@@ -53,7 +53,7 @@ export function ViolationRow(props: ViolationRowProps) {
           onBlur={() => props.channel.clearPreview()}
         >
           <span class="flex items-center gap-1.5">
-            <span class="text-[9px] font-bold tracking-wide uppercase text-[color:var(--impact)]">{IMPACT_LABEL[v().impact]}</span>
+            <span class="text-[9px] font-bold tracking-wide uppercase color-[var(--impact)]">{IMPACT_LABEL[v().impact]}</span>
             <Show when={v().bestPractice}>
               <span class="text-[9.5px] font-bold tracking-wide uppercase color-muted border border-base rounded-full px-1.5" title="axe best-practice rule (not a WCAG success criterion)">best practice</span>
             </Show>
@@ -76,7 +76,7 @@ export function ViolationRow(props: ViolationRowProps) {
               <li>
                 <button
                   type="button"
-                  class="block w-full text-left bg-base border border-base rounded px-2.5 py-1.5 cursor-pointer transition hover:bg-active outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
+                  class="block w-full bg-[#8881] text-left border border-base rounded px-2.5 py-1.5 cursor-pointer transition hover:bg-hover outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
                   onMouseEnter={() => props.channel.preview(node)}
                   onFocus={() => props.channel.preview(node)}
                   onMouseLeave={() => props.channel.clearPreview()}

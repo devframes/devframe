@@ -64,7 +64,7 @@ export function FixPromptsDialog(props: FixPromptsDialogProps) {
           </button>
         </div>
 
-        <textarea class="flex-1 min-h-60 resize-none w-full p-3 bg-base border border-base rounded-lg font-mono text-[11.5px] leading-relaxed color-base whitespace-pre overflow-auto outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40" readonly aria-label="Generated fix prompt">{prompt()}</textarea>
+        <textarea class="flex-1 min-h-60 resize-none w-full p-3 bg-base border border-base rounded-lg font-mono text-[11.5px] leading-relaxed color-base ws-break-spaces overflow-auto outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40" readonly aria-label="Generated fix prompt">{prompt()}</textarea>
 
         <div class="flex items-center gap-2.5">
           <span class="min-w-0 truncate text-[11px] color-faint">

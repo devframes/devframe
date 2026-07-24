@@ -29,7 +29,7 @@ export function Header(props: HeaderProps) {
       </span>
       <button
         type="button"
-        class={button({ variant: 'secondary', size: 'sm' })}
+        class={button({ variant: props.selectedCount === 0 ? 'secondary' : 'primary', size: 'sm' })}
         onClick={() => props.onGenerate()}
         disabled={props.selectedCount === 0}
         title="Generate AI fix prompts for the selected violations"
@@ -44,7 +44,7 @@ export function Header(props: HeaderProps) {
       </button>
       <button
         type="button"
-        class={button({ variant: 'primary', size: 'sm' })}
+        class={button({ variant: 'secondary', size: 'sm' })}
         onClick={() => props.onRescan()}
         disabled={!props.agentReady || props.scanning}
       >
