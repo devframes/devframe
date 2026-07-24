@@ -41,8 +41,10 @@ The window is split in two:
 2. **Route tracking** — click the route tabs in the app under test (`Home`,
    `Images`, `Forms`, `Contrast`). Each navigation is a `history.pushState`,
    which the agent patches — the Violations tab accrues one group per route.
-3. **Pin + highlight** — hover a violation to ring the element in the page; click
-   a rule to pin all its elements with numbered badges.
+3. **Select + highlight** — hover a violation to ring the element in the page;
+   tick a violation's checkbox to highlight all its elements with numbered
+   badges, then hit **Generate fix prompts** in the nav for a paste-ready AI
+   prompt covering everything you selected.
 4. **Message → dock navigation** *(the headline)* — open the **Messages** dock.
    Each scan mirrors a summary entry plus one entry per violated rule, and every
    entry carries a navigation action. Select an entry and click **View in a11y

@@ -271,14 +271,15 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   text-align: left;
   background: none;
   border: 0;
   font: inherit;
   color: inherit;
   cursor: pointer;
-  padding: 7px 34px 7px 14px;
+  padding: 7px 12px 7px 10px;
 }
 
 .rule__toggle:focus-visible {
@@ -695,7 +696,7 @@ body {
   margin-top: 4px;
 }
 
-/* ── rule best-practice tag + pin control ──────────────────────────────── */
+/* ── rule best-practice tag ────────────────────────────────────────────── */
 
 .rule__bp {
   font-size: 9.5px;
@@ -706,36 +707,6 @@ body {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 0 6px;
-}
-
-.rule__pin {
-  position: absolute;
-  top: 5px;
-  right: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  color: var(--faint);
-  cursor: pointer;
-  transition: color 0.12s, background 0.12s;
-}
-
-.rule__pin:hover {
-  color: var(--text);
-  background: var(--surface-2);
-}
-
-.rule__pin--on {
-  color: var(--ring);
-  background: color-mix(in srgb, var(--ring) 14%, transparent);
-}
-
-.rule__pin:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 1px;
 }
 
 .node__row {
@@ -760,9 +731,186 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.node__btn--pinned {
-  border-color: color-mix(in srgb, var(--ring) 55%, var(--line));
-  background: color-mix(in srgb, var(--ring) 8%, var(--ink));
+/* ── selection (checkbox) + selected card state ────────────────────────── */
+
+.rule__lead {
+  display: flex;
+  align-items: stretch;
+}
+
+.rule__check {
+  flex: none;
+  align-self: center;
+  width: 15px;
+  height: 15px;
+  margin: 0 0 0 12px;
+  accent-color: var(--ring);
+  cursor: pointer;
+}
+
+.rule__check:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.rule--selected {
+  border-color: color-mix(in srgb, var(--impact) 60%, var(--line));
+  background: color-mix(in srgb, var(--impact) 8%, var(--surface));
+}
+
+.rule--selected::before {
+  width: 5px;
+}
+
+/* ── "Generate fix prompts" nav count ──────────────────────────────────── */
+
+.nav-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--df-foreground) 18%, transparent);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── fix-prompts modal ─────────────────────────────────────────────────── */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(0 0 0 / 55%);
+  backdrop-filter: blur(2px);
+}
+
+.modal__card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(680px, 100%);
+  max-height: 100%;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 45%);
+}
+
+.modal__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.modal__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.modal__sub {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.modal__close {
+  margin-left: auto;
+  display: inline-flex;
+  padding: 5px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+}
+
+.modal__close:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.modal__close:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+.modal__text {
+  flex: 1;
+  min-height: 240px;
+  resize: none;
+  width: 100%;
+  padding: 12px;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre;
+  overflow: auto;
+}
+
+.modal__text:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+.modal__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal__hint {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.modal__hint code {
+  font-family: var(--font-mono);
+}
+
+.modal__btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--ring);
+  border: 0;
+  border-radius: 7px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: filter 0.12s;
+}
+
+.modal__btn:hover {
+  filter: brightness(1.08);
+}
+
+.modal__btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {

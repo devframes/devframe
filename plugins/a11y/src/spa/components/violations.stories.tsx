@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from 'storybook-solidjs-vite'
 import type { ScanReport, Violation } from '../../shared/protocol.ts'
 import type { A11yChannel } from '../lib/channel.ts'
-import type { PinsApi, RouteGroupModel } from './violations.tsx'
+import type { RouteGroupModel, SelectionApi } from './violations.tsx'
 import { emptyCounts } from '../../shared/protocol.ts'
 import { ViolationList } from './violations.tsx'
 import '../styles.css'
@@ -25,12 +25,10 @@ const channel = {
   clearRoute: noop,
 } as unknown as A11yChannel
 
-const pins: PinsApi = {
-  isPinned: () => false,
-  numberOf: () => null,
-  isRulePinned: () => false,
-  toggleNode: noop,
-  toggleRule: noop,
+const selection: SelectionApi = {
+  isSelected: (_route, ruleId) => ruleId === 'image-alt',
+  toggle: noop,
+  numberOf: nodeId => (nodeId.startsWith('image-alt') ? Number(nodeId.split('-').pop()) + 1 : null),
 }
 
 function violation(ruleId: string, impact: Violation['impact'], nodes = 1, bestPractice = false): Violation {
@@ -78,6 +76,6 @@ export const Grouped: Story = {
     expandedRules: new Set(['/::image-alt']),
     onToggleRule: noop,
     channel,
-    pins,
+    selection,
   },
 }

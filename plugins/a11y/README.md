@@ -14,10 +14,13 @@ surfaces the violations in a [Solid](https://www.solidjs.com/) panel:
 - **Dashboard + grouped violations** — a Dashboard tab (totals, severity
   breakdown, per-route inventory, scan controls) and a Violations tab listing
   every tracked route, grouped, with the active route marked.
-- **Pin + numbered highlights** — hover previews the offending element; clicking a
-  rule pins all its elements (clicking a single element toggles just that one)
-  with globally-numbered badges drawn in the page. `<html>`/`<body>` targets get a
-  corner notice instead of a viewport-filling ring.
+- **Select + highlight** — hover previews the offending element; ticking a
+  violation's checkbox selects it, giving the card a distinct state and drawing
+  globally-numbered badges over all its elements in the page. `<html>`/`<body>`
+  targets get a corner notice instead of a viewport-filling ring.
+- **Generate fix prompts** — a nav button gathers the selected violations (rule
+  metadata, WCAG tags, docs, and each element's selector/markup/failure summary,
+  grouped by route) into one paste-ready AI prompt in a dialog.
 - **Constant scanning** — a DOM `MutationObserver` plus debounced
   mouse/keyboard/touch rescans, toggleable from the Dashboard.
 - **WCAG 2.0–2.2 + best-practice** — the broadened axe tag set, with best-practice

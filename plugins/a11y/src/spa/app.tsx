@@ -1,7 +1,9 @@
-import type { Impact, PinTarget, ScanReport, Violation, ViolationNode } from '../shared/protocol.ts'
-import type { PinsApi, RouteGroupModel } from './components/violations.tsx'
+import type { Impact, PinTarget, Violation, ViolationNode } from '../shared/protocol.ts'
+import type { SelectedItem } from './components/fix-prompts.tsx'
+import type { RouteGroupModel, SelectionApi } from './components/violations.tsx'
 import { batch, createEffect, createMemo, createSignal, Match, on, Show, Switch } from 'solid-js'
 import { emptyCounts } from '../shared/protocol.ts'
+import { FixPromptsDialog } from './components/fix-prompts.tsx'
 import { Header, MetaLine } from './components/header.tsx'
 import { CheckCircle, PlugIcon } from './components/icons.tsx'
 import { SummaryBar } from './components/summary.tsx'
@@ -12,11 +14,9 @@ import { connectDevframeState } from './lib/devframe.ts'
 const SNIPPET = '<script type="module" src="…/inject.js"></script>'
 const AUTOSCAN_KEY = 'devframes:plugin:a11y:autoscan'
 
+const selKey = (route: string, ruleId: string) => `${route}::${ruleId}`
 function nodePin(v: Violation, node: ViolationNode): PinTarget {
   return { nodeId: node.id, target: node.target, impact: v.impact, ruleId: v.ruleId }
-}
-function allPins(report: ScanReport): PinTarget[] {
-  return report.violations.flatMap(v => v.nodes.map(n => nodePin(v, n)))
 }
 
 export function App() {
@@ -27,7 +27,10 @@ export function App() {
   const [showBestPractice, setShowBestPractice] = createSignal(true)
   const [expandedRoutes, setExpandedRoutes] = createSignal<Set<string>>(new Set())
   const [expandedRules, setExpandedRules] = createSignal<Set<string>>(new Set())
-  const [pins, setPins] = createSignal<PinTarget[]>([])
+  // Selected violations (`route::ruleId`) — drives both the in-page highlight
+  // and the "Generate fix prompts" dialog.
+  const [selected, setSelected] = createSignal<Set<string>>(new Set())
+  const [dialogOpen, setDialogOpen] = createSignal(false)
 
   const storedAuto = (() => {
     try {
@@ -90,6 +93,53 @@ export function App() {
     return collapsed
   })
 
+  // ── selection → highlight + fix-prompt context ────────────────────────────
+  // Highlighted nodes, in a stable order, for numbered badges.
+  const selectedPins = createMemo<PinTarget[]>(() => {
+    const sel = selected()
+    const out: PinTarget[] = []
+    for (const report of routes()) {
+      for (const v of report.violations) {
+        if (sel.has(selKey(report.route, v.ruleId))) {
+          for (const node of v.nodes)
+            out.push(nodePin(v, node))
+        }
+      }
+    }
+    return out
+  })
+
+  const selectedItems = createMemo<SelectedItem[]>(() => {
+    const sel = selected()
+    const out: SelectedItem[] = []
+    for (const report of routes()) {
+      for (const v of report.violations) {
+        if (sel.has(selKey(report.route, v.ruleId)))
+          out.push({ route: report.route, url: report.url, violation: v })
+      }
+    }
+    return out
+  })
+
+  const selectionApi: SelectionApi = {
+    isSelected: (route, ruleId) => selected().has(selKey(route, ruleId)),
+    toggle: (route, ruleId) => {
+      const key = selKey(route, ruleId)
+      setSelected((prev) => {
+        const next = new Set(prev)
+        if (next.has(key))
+          next.delete(key)
+        else
+          next.add(key)
+        return next
+      })
+    },
+    numberOf: (nodeId) => {
+      const i = selectedPins().findIndex(p => p.nodeId === nodeId)
+      return i === -1 ? null : i + 1
+    },
+  }
+
   // ── config → agent, and initial auto-scan default ─────────────────────────
   let autoInit = false
   createEffect(() => {
@@ -120,13 +170,10 @@ export function App() {
       setExpandedRoutes(prev => (prev.has(r) ? prev : new Set(prev).add(r)))
   })
 
-  // ── pins ──────────────────────────────────────────────────────────────────
-  createEffect(() => channel.setPins(pins()))
+  // Push the highlight set (derived from the selection) to the in-page agent.
+  createEffect(() => channel.setPins(selectedPins()))
 
-  // Pins reference live DOM, so clear them when the host route changes.
-  createEffect(on(activeRoute, () => setPins([]), { defer: true }))
-
-  // defaultHighlight: pin a route's violations the first time it's scanned.
+  // defaultHighlight: select all of a route's violations the first time it's scanned.
   const highlighted = new Set<string>()
   createEffect(() => {
     const cfg = devframe.config()
@@ -134,35 +181,13 @@ export function App() {
     if (!cfg?.defaultHighlight || !report || highlighted.has(report.route))
       return
     highlighted.add(report.route)
-    setPins(allPins(report))
+    setSelected((prev) => {
+      const next = new Set(prev)
+      for (const v of report.violations)
+        next.add(selKey(report.route, v.ruleId))
+      return next
+    })
   })
-
-  const pinsApi: PinsApi = {
-    isPinned: nodeId => pins().some(p => p.nodeId === nodeId),
-    numberOf: (nodeId) => {
-      const i = pins().findIndex(p => p.nodeId === nodeId)
-      return i === -1 ? null : i + 1
-    },
-    isRulePinned: v => v.nodes.length > 0 && v.nodes.every(n => pins().some(p => p.nodeId === n.id)),
-    toggleNode: (v, node) => {
-      setPins(prev => (prev.some(p => p.nodeId === node.id)
-        ? prev.filter(p => p.nodeId !== node.id)
-        : [...prev, nodePin(v, node)]))
-    },
-    toggleRule: (v) => {
-      const allPinned = v.nodes.length > 0 && v.nodes.every(n => pins().some(p => p.nodeId === n.id))
-      if (allPinned) {
-        const ids = new Set(v.nodes.map(n => n.id))
-        setPins(prev => prev.filter(p => !ids.has(p.nodeId)))
-      }
-      else {
-        setPins((prev) => {
-          const have = new Set(prev.map(p => p.nodeId))
-          return [...prev, ...v.nodes.filter(n => !have.has(n.id)).map(n => nodePin(v, n))]
-        })
-      }
-    },
-  }
 
   // ── deep-linking from other docks (e.g. the messages feed) ────────────────
   createEffect(on(devframe.activation, (act) => {
@@ -183,20 +208,13 @@ export function App() {
 
     batch(() => {
       setExpandedRoutes(prev => new Set(prev).add(route))
-      if (ruleId)
+      if (ruleId) {
         setExpandedRules(prev => new Set(prev).add(`${route}::${ruleId}`))
-    })
-    if (ruleId) {
-      const report = routes().find(r => r.route === route)
-      const v = report?.violations.find(x => x.ruleId === ruleId)
-      if (v) {
-        setPins((prev) => {
-          const have = new Set(prev.map(p => p.nodeId))
-          return [...prev, ...v.nodes.filter(n => !have.has(n.id)).map(n => nodePin(v, n))]
-        })
+        setSelected(prev => new Set(prev).add(selKey(route, ruleId)))
       }
+    })
+    if (ruleId)
       setTimeout(() => document.getElementById(ruleCardId(route, ruleId))?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 60)
-    }
   }, { defer: true }))
 
   function toggleFilter(impact: Impact) {
@@ -235,6 +253,8 @@ export function App() {
       <Header
         agentReady={channel.agentReady()}
         scanning={channel.scanning()}
+        selectedCount={selectedItems().length}
+        onGenerate={() => setDialogOpen(true)}
         onRescan={channel.rescan}
       />
       <MetaLine
@@ -322,12 +342,16 @@ export function App() {
                 expandedRules={expandedRules()}
                 onToggleRule={toggleRule}
                 channel={channel}
-                pins={pinsApi}
+                selection={selectionApi}
               />
             </Show>
           </Match>
         </Switch>
       </div>
+
+      <Show when={dialogOpen() && selectedItems().length > 0}>
+        <FixPromptsDialog items={selectedItems()} onClose={() => setDialogOpen(false)} />
+      </Show>
     </div>
   )
 }

@@ -6,6 +6,8 @@ import { IMPACT_COLOR, IMPACT_LABEL } from '../lib/impact.ts'
 interface HeaderProps {
   agentReady: boolean
   scanning: boolean
+  selectedCount: number
+  onGenerate: () => void
   onRescan: () => void
 }
 
@@ -30,6 +32,19 @@ export function Header(props: HeaderProps) {
         <span class={dotClass()} />
         {statusLabel()}
       </span>
+      <button
+        type="button"
+        class={button({ variant: 'secondary', size: 'sm' })}
+        onClick={() => props.onGenerate()}
+        disabled={props.selectedCount === 0}
+        title="Generate AI fix prompts for the selected violations"
+      >
+        <span aria-hidden class="i-ph-sparkle-duotone shrink-0" />
+        Generate fix prompts
+        <Show when={props.selectedCount > 0}>
+          <span class="nav-count">{props.selectedCount}</span>
+        </Show>
+      </button>
       <button
         type="button"
         class={button({ variant: 'primary', size: 'sm' })}

@@ -1,17 +1,15 @@
-import type { ScanReport, Violation, ViolationNode } from '../../shared/protocol.ts'
+import type { ScanReport, Violation } from '../../shared/protocol.ts'
 import type { A11yChannel } from '../lib/channel.ts'
-import { createMemo, For, Show } from 'solid-js'
+import { For, Show } from 'solid-js'
 import { IMPACT_COLOR, IMPACT_LABEL } from '../lib/impact.ts'
 import { Chevron } from './icons.tsx'
 
-/** Controller the list uses to read/mutate the shared pin set. */
-export interface PinsApi {
-  isPinned: (nodeId: string) => boolean
-  /** 1-based badge number for a pinned node, or `null`. */
+/** Controller the list uses to read/mutate the violation selection. */
+export interface SelectionApi {
+  isSelected: (route: string, ruleId: string) => boolean
+  toggle: (route: string, ruleId: string) => void
+  /** 1-based badge number for a highlighted node, or `null`. */
   numberOf: (nodeId: string) => number | null
-  isRulePinned: (v: Violation) => boolean
-  toggleNode: (v: Violation, node: ViolationNode) => void
-  toggleRule: (v: Violation) => void
 }
 
 /** Stable DOM id for a rule card, used by deep-link scroll-into-view. */
@@ -23,60 +21,61 @@ interface RowProps {
   route: string
   violation: Violation
   expanded: boolean
+  selected: boolean
   onToggle: () => void
+  onToggleSelect: () => void
   channel: A11yChannel
-  pins: PinsApi
+  numberOf: (nodeId: string) => number | null
 }
 
 function ViolationRow(props: RowProps) {
   const v = () => props.violation
-  const panelId = createMemo(() => `nodes-${ruleCardId(props.route, v().ruleId)}`)
+  const panelId = () => `nodes-${ruleCardId(props.route, v().ruleId)}`
   const first = () => v().nodes[0]
 
   return (
     <li
       id={ruleCardId(props.route, v().ruleId)}
       class="rule"
+      classList={{ 'rule--selected': props.selected }}
       style={{ '--impact': IMPACT_COLOR[v().impact] }}
       onMouseLeave={() => props.channel.clearPreview()}
     >
-      <button
-        type="button"
-        class="rule__toggle"
-        aria-expanded={props.expanded}
-        aria-controls={panelId()}
-        onClick={() => props.onToggle()}
-        onMouseEnter={() => first() && props.channel.preview(first())}
-        onFocus={() => first() && props.channel.preview(first())}
-        onBlur={() => props.channel.clearPreview()}
-      >
-        <span class="rule__head">
-          <span class="rule__impact">{IMPACT_LABEL[v().impact]}</span>
-          <Show when={v().bestPractice}>
-            <span class="rule__bp" title="axe best-practice rule (not a WCAG success criterion)">best practice</span>
-          </Show>
-          <code class="rule__id">{v().ruleId}</code>
-          <span class="rule__count">
-            {v().nodes.length}
-            {' '}
-            {v().nodes.length === 1 ? 'element' : 'elements'}
-            <Chevron class={`rule__chevron${props.expanded ? ' rule__chevron--open' : ''}`} />
+      <div class="rule__lead">
+        <input
+          type="checkbox"
+          class="rule__check"
+          checked={props.selected}
+          aria-label={`Select ${v().ruleId} to highlight and add to fix prompts`}
+          onChange={() => props.onToggleSelect()}
+          onMouseEnter={() => first() && props.channel.preview(first())}
+        />
+        <button
+          type="button"
+          class="rule__toggle"
+          aria-expanded={props.expanded}
+          aria-controls={panelId()}
+          onClick={() => props.onToggle()}
+          onMouseEnter={() => first() && props.channel.preview(first())}
+          onFocus={() => first() && props.channel.preview(first())}
+          onBlur={() => props.channel.clearPreview()}
+        >
+          <span class="rule__head">
+            <span class="rule__impact">{IMPACT_LABEL[v().impact]}</span>
+            <Show when={v().bestPractice}>
+              <span class="rule__bp" title="axe best-practice rule (not a WCAG success criterion)">best practice</span>
+            </Show>
+            <code class="rule__id">{v().ruleId}</code>
+            <span class="rule__count">
+              {v().nodes.length}
+              {' '}
+              {v().nodes.length === 1 ? 'element' : 'elements'}
+              <Chevron class={`rule__chevron${props.expanded ? ' rule__chevron--open' : ''}`} />
+            </span>
           </span>
-        </span>
-        <span class="rule__help">{v().help}</span>
-      </button>
-
-      <span
-        role="button"
-        tabindex="0"
-        class={`rule__pin${props.pins.isRulePinned(v()) ? ' rule__pin--on' : ''}`}
-        aria-pressed={props.pins.isRulePinned(v())}
-        title={props.pins.isRulePinned(v()) ? 'Unpin all elements' : 'Pin all elements'}
-        onClick={() => props.pins.toggleRule(v())}
-        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), props.pins.toggleRule(v()))}
-      >
-        <span aria-hidden class="i-ph-push-pin-duotone shrink-0" />
-      </span>
+          <span class="rule__help">{v().help}</span>
+        </button>
+      </div>
 
       <Show when={props.expanded}>
         <ul class="nodes" id={panelId()}>
@@ -85,15 +84,14 @@ function ViolationRow(props: RowProps) {
               <li class="node">
                 <button
                   type="button"
-                  class={`node__btn${props.pins.isPinned(node.id) ? ' node__btn--pinned' : ''}`}
+                  class="node__btn"
                   onMouseEnter={() => props.channel.preview(node)}
                   onFocus={() => props.channel.preview(node)}
                   onMouseLeave={() => props.channel.clearPreview()}
                   onBlur={() => props.channel.clearPreview()}
-                  onClick={() => props.pins.toggleNode(v(), node)}
                 >
                   <span class="node__row">
-                    <Show when={props.pins.numberOf(node.id)}>
+                    <Show when={props.numberOf(node.id)}>
                       {n => <span class="node__badge">{n()}</span>}
                     </Show>
                     <code class="node__html">{node.html}</code>
@@ -130,7 +128,7 @@ interface GroupProps {
   expandedRules: Set<string>
   onToggleRule: (ruleId: string) => void
   channel: A11yChannel
-  pins: PinsApi
+  selection: SelectionApi
 }
 
 function RouteGroup(props: GroupProps) {
@@ -171,9 +169,11 @@ function RouteGroup(props: GroupProps) {
                 route={props.report.route}
                 violation={violation}
                 expanded={props.expandedRules.has(`${props.report.route}::${violation.ruleId}`)}
+                selected={props.selection.isSelected(props.report.route, violation.ruleId)}
                 onToggle={() => props.onToggleRule(violation.ruleId)}
+                onToggleSelect={() => props.selection.toggle(props.report.route, violation.ruleId)}
                 channel={props.channel}
-                pins={props.pins}
+                numberOf={props.selection.numberOf}
               />
             )}
           </For>
@@ -197,7 +197,7 @@ interface ListProps {
   expandedRules: Set<string>
   onToggleRule: (route: string, ruleId: string) => void
   channel: A11yChannel
-  pins: PinsApi
+  selection: SelectionApi
 }
 
 export function ViolationList(props: ListProps) {
@@ -215,7 +215,7 @@ export function ViolationList(props: ListProps) {
             expandedRules={props.expandedRules}
             onToggleRule={ruleId => props.onToggleRule(group.report.route, ruleId)}
             channel={props.channel}
-            pins={props.pins}
+            selection={props.selection}
           />
         )}
       </For>
