@@ -34,6 +34,8 @@ export { DevframeDocksUserSettings }
 export { DevframeDockUserEntry }
 export { DevframeHost }
 export { DevframeHubContext }
+export { DevframeMessageAction }
+export { DevframeMessageActivateAction }
 export { DevframeMessageElementPosition }
 export { DevframeMessageEntry }
 export { DevframeMessageEntryFrom }

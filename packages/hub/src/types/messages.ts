@@ -21,6 +21,27 @@ export interface DevframeMessageFilePosition {
   column?: number
 }
 
+/**
+ * A labeled control a message can carry. Rendered by the messages panel; when
+ * clicked it drives the described intent. Discriminated by `kind` so further
+ * action kinds can be added without reshaping the field.
+ *
+ * `'activate'` requests the viewer switch its focused dock to `activate.dockId`
+ * (deep-linking via the opaque, serializable `activate.params` bag the target
+ * dock interprets), via the hub's `hub:docks:activate` RPC.
+ */
+export interface DevframeMessageActivateAction {
+  /** Stable id for the action within its entry. */
+  id: string
+  /** Button label shown in the messages panel. */
+  label: string
+  kind: 'activate'
+  /** The dock to focus, plus an optional deep-link params bag. */
+  activate: { dockId: string, params?: Record<string, unknown> }
+}
+
+export type DevframeMessageAction = DevframeMessageActivateAction
+
 export interface DevframeMessageEntry {
   /**
    * Unique identifier for this message entry (auto-generated if not provided)
@@ -66,6 +87,11 @@ export interface DevframeMessageEntry {
    * Optional tags/labels for filtering
    */
   labels?: string[]
+  /**
+   * Optional labeled actions (e.g. "navigate to a dock") the panel renders as
+   * clickable controls in the entry's detail view.
+   */
+  actions?: DevframeMessageAction[]
   /**
    * Time in ms to auto-dismiss the toast notification (client-side)
    */

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DevframeMessageEntry, DevframeMessageEntryFrom, DevframeMessageLevel } from '../../types'
+import type { DevframeMessageAction, DevframeMessageEntry, DevframeMessageEntryFrom, DevframeMessageLevel } from '../../types'
 import { useClipboard, useTimeAgo } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import FilterToggles from './FilterToggles.vue'
@@ -20,6 +20,8 @@ const props = defineProps<{
   entries: DevframeMessageEntry[]
   /** Show the "open file" affordance for entries with a `filePosition`. */
   canOpenFile?: boolean
+  /** Show entry `actions` (dock navigation works only under a hub host). */
+  canActivate?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -33,6 +35,8 @@ const emit = defineEmits<{
   openFile: [entry: DevframeMessageEntry]
   /** Cancel an entry's `autoDelete` timer (viewing it pins it) */
   persist: [id: string]
+  /** Run one of the entry's actions (e.g. navigate to a dock) */
+  activate: [action: DevframeMessageAction]
 }>()
 
 function formatAbsoluteTime(ts: number): string {
@@ -385,6 +389,19 @@ function dismissFiltered() {
         <div v-if="selectedEntry.category || (selectedEntry.labels && selectedEntry.labels.length)" class="flex flex-wrap gap-1 mb-3">
           <HashBadge v-if="selectedEntry.category" :label="selectedEntry.category" class="cursor-pointer" @click="toggleCategory(selectedEntry.category)" />
           <HashBadge v-for="label of selectedEntry.labels" :key="label" :label="label" class="cursor-pointer" @click="toggleLabelFilter(label)" />
+        </div>
+
+        <!-- Actions (e.g. navigate to a dock) -->
+        <div v-if="canActivate && selectedEntry.actions && selectedEntry.actions.length" class="flex flex-wrap gap-1.5 mb-3">
+          <button
+            v-for="action of selectedEntry.actions"
+            :key="action.id"
+            class="flex items-center gap-1.5 text-sm px-2 py-1 rounded border border-base hover:bg-active transition"
+            @click="emit('activate', action)"
+          >
+            <div class="i-ph:arrow-square-out-duotone w-3.5 h-3.5" />
+            {{ action.label }}
+          </button>
         </div>
 
         <!-- File position -->

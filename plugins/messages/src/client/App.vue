@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/client'
-import type { DevframeMessageEntry } from '../types'
+import type { DevframeMessageAction, DevframeMessageEntry } from '../types'
 import LayoutToolbar from '@antfu/design/components/Layout/LayoutToolbar.vue'
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
   button,
   connectionBody,
@@ -45,6 +45,29 @@ function reload(): void {
 // plugin registers server-side; static builds have no live server to open
 // an editor with.
 const canOpenFile = computed(() => props.rpc.connectionMeta.backend !== 'static')
+
+// Message actions that navigate to another dock only work under a hub host
+// (the `hub:docks:activate` RPC + `devframe:docks` registry). Probe the docks
+// shared state so the affordance is hidden when there's no hub.
+const canActivate = ref(false)
+onMounted(() => {
+  props.rpc.sharedState
+    .get('devframe:docks', { initialValue: null })
+    .then((state: { value: () => unknown, on: (e: string, cb: (v: unknown) => void) => void }) => {
+      canActivate.value = state.value() != null
+      state.on('updated', v => (canActivate.value = v != null))
+    })
+    .catch(() => {})
+})
+
+async function onActivate(action: DevframeMessageAction): Promise<void> {
+  if (action.kind !== 'activate')
+    return
+  await (props.rpc.callOptional as (name: string, ...args: unknown[]) => Promise<unknown>)(
+    'hub:docks:activate',
+    action.activate,
+  )
+}
 
 async function onDismiss(id: string): Promise<void> {
   await props.rpc.call('devframes:plugin:messages:remove', id)
@@ -124,11 +147,13 @@ async function onOpenFile(entry: DevframeMessageEntry): Promise<void> {
         v-else
         :entries="state.entries"
         :can-open-file="canOpenFile"
+        :can-activate="canActivate"
         @dismiss="onDismiss"
         @dismiss-many="onDismissMany"
         @clear="onClear"
         @persist="onPersist"
         @open-file="onOpenFile"
+        @activate="onActivate"
       />
     </div>
   </div>
