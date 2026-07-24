@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { DevframeMessageEntry, DevframeMessageEntryFrom } from '@devframes/hub/types'
 import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
-import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import FeedbackSpinner from '@antfu/design/components/Feedback/FeedbackSpinner.vue'
 import LayoutSeparator from '@antfu/design/components/Layout/LayoutSeparator.vue'
 import { useClipboard, useTimeAgo } from '@vueuse/core'
 import { computed } from 'vue'
 import { fromEntries, levels } from './message-styles'
+import MessageTag from './MessageTag.vue'
 
 const props = defineProps<{
   entry: DevframeMessageEntry
@@ -92,8 +92,8 @@ function filePositionLabel(pos: NonNullable<DevframeMessageEntry['filePosition']
 
     <!-- Category + Labels -->
     <div v-if="entry.category || entry.labels?.length" class="flex flex-wrap gap-1 mb-3">
-      <DisplayBadge v-if="entry.category" :text="entry.category" as="button" class="text-xs cursor-pointer" @click="emit('toggleCategory', entry.category)" />
-      <DisplayBadge v-for="label of entry.labels" :key="label" :text="label" as="button" class="text-xs cursor-pointer" @click="emit('toggleLabel', label)" />
+      <MessageTag v-if="entry.category" :text="entry.category" kind="category" as="button" class="cursor-pointer" @click="emit('toggleCategory', entry.category)" />
+      <MessageTag v-for="label of entry.labels" :key="label" :text="label" kind="label" as="button" class="cursor-pointer" @click="emit('toggleLabel', label)" />
     </div>
 
     <!-- File position -->

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { DevframeMessageEntry } from '@devframes/hub/types'
-import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import FeedbackSpinner from '@antfu/design/components/Feedback/FeedbackSpinner.vue'
 import { useTimeAgo } from '@vueuse/core'
 import { levels } from './message-styles'
+import MessageTag from './MessageTag.vue'
 
 const props = defineProps<{
   entry: DevframeMessageEntry
@@ -40,8 +40,8 @@ const timeAgo = useTimeAgo(() => props.entry.timestamp)
         {{ entry.description }}
       </div>
       <div v-if="!compact && (entry.category || entry.labels?.length)" class="flex flex-wrap items-center gap-1">
-        <DisplayBadge v-if="entry.category" :text="entry.category" class="text-xs" />
-        <DisplayBadge v-for="label of entry.labels" :key="label" :text="label" class="text-xs" />
+        <MessageTag v-if="entry.category" :text="entry.category" kind="category" />
+        <MessageTag v-for="label of entry.labels" :key="label" :text="label" kind="label" />
       </div>
     </div>
   </div>

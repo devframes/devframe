@@ -32,11 +32,20 @@ export const LevelsFiltered: Story = {
   },
 }
 
-export const BadgeColored: Story = {
+export const CategoryTags: Story = {
   args: {
     label: 'Category',
     items: ['a11y', 'lint', 'runtime', 'build'],
     active: new Set<string>(),
-    badge: true,
+    tag: 'category',
+  },
+}
+
+export const LabelTags: Story = {
+  args: {
+    label: 'Labels',
+    items: ['axe', 'eslint', 'vite', 'hmr'],
+    active: new Set<string>(),
+    tag: 'label',
   },
 }

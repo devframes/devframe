@@ -38,7 +38,7 @@ const { filters } = props
         label="Category"
         :items="filters.allCategories"
         :active="(filters.activeCategories as Set<string>)"
-        badge
+        tag="category"
         @toggle="filters.toggleCategory"
       />
     </template>
@@ -49,7 +49,7 @@ const { filters } = props
         label="Labels"
         :items="filters.allLabels"
         :active="(filters.activeLabels as Set<string>)"
-        badge
+        tag="label"
         @toggle="filters.toggleLabel"
       />
     </template>
