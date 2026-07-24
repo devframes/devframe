@@ -86,7 +86,7 @@
         "@devframes/plugin-a11y#build",
         "@devframes/plugin-messages#build"
       ],
-      "outputs": ["dist/**"]
+      "outputs": ["src/client/.next/**", "!src/client/.next/cache/**"]
     },
     "storybook-hub#build": {
       "outputLogs": "new-only",
