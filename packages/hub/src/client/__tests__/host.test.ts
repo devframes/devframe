@@ -99,6 +99,24 @@ describe('createDevframeClientHost', () => {
     host.dispose()
   })
 
+  it('keeps a `visibility: false` entry in the raw model, activatable by id', async () => {
+    const { rpc, states } = createStubRpc()
+    const host = await createDevframeClientHost({ rpc })
+    states.get('devframe:docks')!.push([
+      iframeEntry('anchor', { subTabs: { protocol: 'postmessage' }, visibility: 'false' }),
+      iframeEntry('visible'),
+    ])
+
+    // `visibility` is a render-only hint for the UI layer — the hub itself
+    // never filters `entries`/`getStateById`/`switchEntry` by it, so the
+    // anchor stays fully reachable.
+    expect(host.context.docks.entries.map(e => e.id)).toEqual(['anchor', 'visible'])
+    expect(host.context.docks.getStateById('anchor')).toBeDefined()
+    expect(await host.context.docks.switchEntry('anchor')).toBe(true)
+    expect(host.context.docks.selected?.id).toBe('anchor')
+    host.dispose()
+  })
+
   it('groups entries by category — grouped members bucket under their group, orphans by their own', async () => {
     const { rpc, states } = createStubRpc()
     const host = await createDevframeClientHost({ rpc })

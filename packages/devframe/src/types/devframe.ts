@@ -219,6 +219,13 @@ export interface DevframeDockDefaults {
    * clauses). Set to `'false'` to hide the entry unconditionally.
    */
   when?: string
+  /**
+   * Render-only visibility expression, same syntax as {@link when}. Hides the
+   * entry's own dock-bar button when it evaluates to `false` while leaving it
+   * registered and reachable (activation, RPC lookups, etc.) — unlike `when`,
+   * which is the general relevance switch for the entry as a whole.
+   */
+  visibility?: string
   /** Badge text rendered on the dock icon (e.g. an unread count). */
   badge?: string
   /** Id of the dock group this entry collapses under, if any. */

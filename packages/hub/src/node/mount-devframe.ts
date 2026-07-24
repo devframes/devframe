@@ -13,9 +13,10 @@ export interface MountDevframeOptions {
   /**
    * Per-mount overrides for the auto-synthesized iframe dock entry. Use
    * this to customize the entry's `category`, override the icon, hide it
-   * via `when`, etc. Takes precedence over the definition's own
-   * {@link DevframeDefinition.dock} defaults. Cannot change `id`, `type`,
-   * or `url` — those are derived from the devframe definition.
+   * via `when` (or only its dock-bar button via `visibility`), etc. Takes
+   * precedence over the definition's own {@link DevframeDefinition.dock}
+   * defaults. Cannot change `id`, `type`, or `url` — those are derived from
+   * the devframe definition.
    */
   dock?: Partial<Omit<DevframeViewIframe, 'id' | 'type' | 'url'>>
 }

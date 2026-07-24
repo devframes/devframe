@@ -40,6 +40,24 @@ ctx.docks.register({
 
 `when: 'false'` hides an entry unconditionally.
 
+### Render-only visibility on dock entries
+
+A dock entry also takes `visibility`, a second expression in the same syntax that hides only the entry's own dock-bar button, leaving the entry registered and reachable — `docks.activate()`/`switchEntry()` by id, RPC lookups, and anything else that walks the raw entry list keep working. `when` remains the general relevance switch for the entry as a whole; reach for `visibility` only when an entry must stay in the model without a button of its own.
+
+The canonical case is a shared-frame anchor (`subTabs`): the anchor iframe must stay registered to keep driving the postMessage nav loop, but only its synthesized member tabs should render as dock-bar buttons.
+
+```ts
+ctx.docks.register({
+  id: 'my-devtool:anchor',
+  title: 'My Devtool',
+  type: 'iframe',
+  icon: 'ph:squares-four-duotone',
+  url: '/__my-devtool/',
+  subTabs: { protocol: 'postmessage' },
+  visibility: 'false', // hide the anchor's own button; its tabs still render
+})
+```
+
 ## Expression syntax
 
 ### Operators

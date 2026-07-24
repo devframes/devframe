@@ -109,6 +109,28 @@ export interface DevframeDockEntryBase {
    */
   when?: string
   /**
+   * Render-only conditional visibility expression, same syntax as {@link when}.
+   * When it evaluates to `false`, a viewer omits the entry from the rendered
+   * dock bar / list, but the entry stays registered and fully reachable —
+   * `docks.activate()`/`switchEntry()` by id, RPC lookups, and anything else
+   * that walks the raw entry list (e.g. the {@link DevframeViewIframe.subTabs}
+   * frame-nav adapter) keep working exactly as if it were visible.
+   *
+   * Use this instead of {@link when} when an entry must remain part of the
+   * model without a dock-bar button of its own — the canonical case is a
+   * shared-frame {@link DevframeViewIframe.subTabs anchor}: set
+   * `visibility: 'false'` on the anchor so only its synthesized member tabs
+   * render, while the anchor itself keeps driving the postMessage nav loop.
+   * `when`, by contrast, is the general relevance switch for the entry as a
+   * whole; reach for `visibility` only for this render-only carve-out.
+   *
+   * Set to `'false'` to unconditionally hide the entry's own dock-bar button.
+   *
+   * @example 'false'
+   * @see {@link import('devframe/utils/when').evaluateWhen}
+   */
+  visibility?: string
+  /**
    * Badge text to display on the dock icon (e.g., unread count)
    */
   badge?: string
@@ -182,6 +204,10 @@ export interface DevframeViewIframe extends DevframeDockEntryBase {
    * (grouped/soft-navigated via this anchor's {@link frameId}), and drives the
    * live navigation loop. Absent a shim, the anchor simply renders as a single
    * plain iframe dock.
+   *
+   * Set {@link DevframeDockEntryBase.visibility} to `'false'` on the anchor to
+   * hide its own dock-bar button once tabs are discovered, surfacing only the
+   * synthesized member docks while the anchor keeps driving the nav loop.
    */
   subTabs?: FrameSubTabsConfig
   /**
