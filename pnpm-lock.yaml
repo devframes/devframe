@@ -562,6 +562,9 @@ importers:
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
+      dompurify:
+        specifier: catalog:frontend
+        version: 3.4.12
       minimal-json-render:
         specifier: workspace:*
         version: link:../minimal-json-render
@@ -647,6 +650,9 @@ importers:
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
+      dompurify:
+        specifier: catalog:frontend
+        version: 3.4.12
       minimal-json-render:
         specifier: workspace:*
         version: link:../minimal-json-render
