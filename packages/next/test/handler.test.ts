@@ -63,4 +63,37 @@ describe('createDevframeNextHandler', () => {
     def.cli = undefined
     expect(() => createDevframeNextHandler(def)).toThrow(/cli\.distDir/)
   })
+
+  it('forwards the mcp option and advertises the side-car endpoint', async () => {
+    const dist = mkdtempSync(join(tmpdir(), 'df-next-mcp-'))
+    writeFileSync(join(dist, 'index.html'), '<!doctype html><title>ok</title>')
+
+    handler = createDevframeNextHandler(makeDef(dist), { host: '127.0.0.1', mcp: true })
+    await handler.ready
+
+    const meta = await handler.fetch(new Request('http://localhost:3000/__test-next/__connection.json'))
+    const body = await meta.json() as {
+      websocket: { port: number, path: string }
+      mcp?: { port: number, path: string }
+    }
+    expect(body.mcp).toEqual({ port: body.websocket.port, path: '/__mcp' })
+
+    // The advertised endpoint answers MCP initialize on the side-car origin.
+    const init = await fetch(`http://127.0.0.1:${body.mcp!.port}${body.mcp!.path}`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'accept': 'application/json, text/event-stream',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'initialize',
+        params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'x', version: '0' } },
+      }),
+    })
+    expect(init.status).toBe(200)
+    expect(init.headers.get('mcp-session-id')).toBeTruthy()
+    await init.body?.cancel()
+  })
 })

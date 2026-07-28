@@ -287,6 +287,34 @@ function resolveMcpConfig(mcp: boolean | McpRouteOptions | undefined): McpRouteO
 }
 
 /**
+ * Resolve the `mcp` entry a `__connection.json` should advertise for a dev
+ * server started with the given `mcp` option (falling back to `def.cli?.mcp`,
+ * exactly like {@link createDevServer}), or `undefined` when the route is
+ * disabled.
+ *
+ * Hosted bridges that hand-roll their connection meta (`viteDevBridge`,
+ * `@devframes/next`'s handler) pass the side-car `port`: the advertised path
+ * becomes absolute (the side-car mounts at `/`) and the client dials
+ * `<page-host>:<port><path>`. Without `port` the path stays relative, resolved
+ * against `__connection.json`'s own location (the same-server default).
+ *
+ * @experimental
+ */
+export function resolveMcpConnectionMeta(
+  def: DevframeDefinition,
+  mcp: boolean | McpRouteOptions | undefined,
+  port?: number,
+): ConnectionMeta['mcp'] {
+  const config = resolveMcpConfig(mcp ?? def.cli?.mcp)
+  if (!config)
+    return undefined
+  const route = withoutLeadingSlash(config.path ?? DEVFRAME_MCP_ROUTE)
+  return port != null
+    ? { path: withLeadingSlash(route), port }
+    : { path: route }
+}
+
+/**
  * Resolve the three WS connection scenarios from the definition / call-site
  * config into a concrete server bind path, optional dedicated port, and the
  * `__connection.json` descriptor the browser resolves.

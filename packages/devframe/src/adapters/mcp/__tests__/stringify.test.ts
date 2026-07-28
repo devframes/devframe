@@ -1,3 +1,4 @@
+import { Diagnostic } from 'nostics'
 import { describe, expect, it } from 'vitest'
 import { formatMcpError, stringifyForMcp } from '../stringify'
 
@@ -109,5 +110,29 @@ describe('formatMcpError', () => {
   it('appends String(cause) for non-Error causes', () => {
     const err = new Error('outer', { cause: 'bad input' })
     expect(formatMcpError(err)).toBe('Error: outer (cause: bad input)')
+  })
+
+  it('emits structured JSON for a nostics Diagnostic', () => {
+    const diagnostic = new Diagnostic({
+      code: 'DF9999',
+      why: 'Something coded went wrong',
+      fix: 'Run the fixer.',
+      docs: 'https://devfra.me/errors/df9999',
+    })
+    expect(JSON.parse(formatMcpError(diagnostic))).toEqual({
+      error: {
+        code: 'DF9999',
+        message: 'Something coded went wrong',
+        fix: 'Run the fixer.',
+        docs: 'https://devfra.me/errors/df9999',
+      },
+    })
+  })
+
+  it('omits absent fix/docs from the structured diagnostic payload', () => {
+    const diagnostic = new Diagnostic({ code: 'DF9998', why: 'No extras' })
+    expect(JSON.parse(formatMcpError(diagnostic))).toEqual({
+      error: { code: 'DF9998', message: 'No extras' },
+    })
   })
 })

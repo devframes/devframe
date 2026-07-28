@@ -4,7 +4,7 @@ import type { DevframeDefinition, DevframeStorageScope } from 'devframe/types'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
-import { createDevServer, resolveDevServerPort } from 'devframe/adapters/dev'
+import { createDevServer, resolveDevServerPort, resolveMcpConnectionMeta } from 'devframe/adapters/dev'
 import { DEVFRAME_WS_ROUTE } from 'devframe/constants'
 import { createDevframeNextHost } from './host'
 
@@ -31,6 +31,16 @@ export interface CreateDevframeNextHandlerOptions {
   resolveOrigin?: () => string
   /** Override where persisted devframe state lives (defaults under the cwd / home). */
   getStorageDir?: (scope: DevframeStorageScope) => string
+  /**
+   * Expose the side-car's route-based MCP server (Streamable-HTTP) and
+   * advertise it in the handler's `__connection.json`. Forwarded to
+   * `createDevServer`: overrides `def.cli?.mcp`, `undefined` falls through to
+   * it, `false` disables the route regardless. The endpoint lives on the
+   * side-car's own port, so the advertised meta carries `{ port, path }`.
+   *
+   * @experimental
+   */
+  mcp?: CreateDevServerOptions['mcp']
 }
 
 export interface DevframeNextHandler {
@@ -118,10 +128,13 @@ export function createDevframeNextHandler(
       flags: options.flags,
       openBrowser: false,
       auth: options.auth ?? false,
+      mcp: options.mcp,
     })
+    const mcpMeta = resolveMcpConnectionMeta(def, options.mcp, port)
     nextHost.setConnectionMeta({
       backend: 'websocket',
       websocket: { port, path: `/${DEVFRAME_WS_ROUTE}` },
+      ...(mcpMeta ? { mcp: mcpMeta } : {}),
     })
   })()
 

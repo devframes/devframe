@@ -120,9 +120,13 @@ export interface ConnectionMeta {
    * (`cli.mcp`). Advertises the MCP Streamable-HTTP route so in-browser
    * tooling (e.g. an MCP inspector) can discover it without guessing the
    * path. `path` is relative to `__connection.json`'s location, like the
-   * WebSocket `path`.
+   * WebSocket `path`. `port` is set when the endpoint lives on a side-car
+   * server on its own port (bridge mode — `viteDevBridge`,
+   * `@devframes/next`): the client combines the page hostname with `port`
+   * and resolves `path` against that origin, mirroring
+   * {@link ConnectionMetaWebsocket.port}.
    */
-  mcp?: { path: string }
+  mcp?: { path: string, port?: number }
   /**
    * Names of RPC functions that have declared `jsonSerializable: true`.
    * Used by the WS / static client to dispatch the per-call wire

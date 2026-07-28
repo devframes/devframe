@@ -28,4 +28,5 @@ export interface ResolveDevServerPortOptions {
 // #region Functions
 export declare function createDevServer(_: DevframeDefinition, _?: CreateDevServerOptions): Promise<StartedServer>;
 export declare function resolveDevServerPort(_: DevframeDefinition, _?: ResolveDevServerPortOptions): Promise<number>;
+export declare function resolveMcpConnectionMeta(_: DevframeDefinition, _: boolean | McpRouteOptions | undefined, _?: number): ConnectionMeta['mcp'];
 // #endregion

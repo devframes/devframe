@@ -10,6 +10,7 @@ export interface CreateDevframeNextHandlerOptions {
   auth?: CreateDevServerOptions['auth'];
   resolveOrigin?: () => string;
   getStorageDir?: (_: DevframeStorageScope) => string;
+  mcp?: CreateDevServerOptions['mcp'];
 }
 export interface CreateDevframeNextHostOptions {
   resolveOrigin: () => string;

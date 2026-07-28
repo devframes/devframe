@@ -1,9 +1,9 @@
 import type { DevframeAuthHandler } from '../node/auth/handler'
-import type { DevframeDefinition } from '../types/devframe'
+import type { DevframeDefinition, McpRouteOptions } from '../types/devframe'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { resolve } from 'pathe'
 import { normalizeBasePath, resolveBasePath } from '../adapters/_shared'
-import { createDevServer, resolveDevServerPort } from '../adapters/dev'
+import { createDevServer, resolveDevServerPort, resolveMcpConnectionMeta } from '../adapters/dev'
 import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_WS_ROUTE } from '../constants'
 import { diagnostics } from '../node/diagnostics'
 
@@ -50,6 +50,19 @@ export interface ViteDevBridgeOptions {
    * @default false
    */
   auth?: boolean | DevframeAuthHandler
+  /**
+   * Expose the side-car's route-based MCP server (Streamable-HTTP) and
+   * advertise it in the bridge's `__connection.json`. Forwarded to
+   * {@link createDevServer}: overrides `def.cli?.mcp`, `undefined` falls
+   * through to it, `false` disables the route regardless. Only applies in
+   * bridge mode (`devMiddleware`); the static-mount mode starts no server.
+   *
+   * The endpoint lives on the side-car's own port, so the advertised meta
+   * carries `{ port, path }` — see `ConnectionMeta['mcp']`.
+   *
+   * @experimental
+   */
+  mcp?: boolean | McpRouteOptions
 }
 
 export interface DevframeVitePlugin {
@@ -126,6 +139,7 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
           // Hosted adapter: the host owns auth, so the bridged devframe's own
           // gate stays off unless the caller explicitly opts back in.
           auth: options.auth ?? false,
+          mcp: options.mcp,
         })
       }
       catch (e) {
@@ -136,13 +150,16 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
       // The side-car listens on its own port, so the browser must target that
       // port explicitly (it can't reach the WS on Vite's origin). The route is
       // `/__devframe_ws` — the bridge `createDevServer` mounts the SPA at `/`, so its WS
-      // upgrade handler is bound there.
+      // upgrade handler is bound there. The MCP route (when enabled) lives on
+      // the same side-car origin, advertised with the same explicit port.
+      const mcpMeta = resolveMcpConnectionMeta(d, options.mcp, port)
       const metaPath = `${base}${DEVFRAME_CONNECTION_META_FILENAME}`
       server.middlewares.use(metaPath, (_req: unknown, res: any) => {
         res.setHeader('Content-Type', 'application/json')
         res.end(JSON.stringify({
           backend: 'websocket',
           websocket: { port, path: `/${DEVFRAME_WS_ROUTE}` },
+          ...(mcpMeta ? { mcp: mcpMeta } : {}),
         }))
       })
 
