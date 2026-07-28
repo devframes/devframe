@@ -17,3 +17,9 @@ export {
   type CreateMcpServerOptions,
   type McpServerHandle,
 } from './build-server'
+
+export {
+  createMcpFetchHandler,
+  type CreateMcpFetchHandlerOptions,
+  type McpFetchHandler,
+} from './fetch'

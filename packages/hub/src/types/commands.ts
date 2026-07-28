@@ -1,4 +1,5 @@
 import type { EventEmitter } from 'devframe/types'
+import type { GenericSchema } from 'valibot'
 import type { DevframeDockEntryIcon } from './docks'
 
 export interface DevframeCommandKeybinding {
@@ -44,6 +45,43 @@ export interface DevframeCommandBase {
 }
 
 /**
+ * Opt-in agent exposure for a server command — mirrors the `agent` field on
+ * `defineRpcFunction`. A command carrying this field (and a `handler`) is
+ * projected into `ctx.agent` as a callable tool, reaching MCP clients through
+ * the devframe MCP adapter.
+ *
+ * `when` clauses are evaluated client-side only and are **not** enforced for
+ * agent calls — opt in a `when`-gated command only if running it outside its
+ * UI context is safe.
+ *
+ * @experimental The agent-native surface is experimental and may change
+ * without a major version bump until it stabilizes.
+ */
+export interface DevframeCommandAgentOptions {
+  /**
+   * Description shown to the agent. Write it as a prompt: state when to call
+   * the command, not just what it does.
+   */
+  description: string
+  /** Display title (falls back to the command's `title`). */
+  title?: string
+  /**
+   * Safety classification — drives MCP hint annotations.
+   * @default 'action'
+   */
+  safety?: 'read' | 'action' | 'destructive'
+  /** Free-form tags for grouping/filtering. */
+  tags?: readonly string[]
+  /**
+   * Positional valibot schemas for the handler's arguments, converted to the
+   * tool's JSON-Schema input (a single `v.object(...)` schema is unwrapped —
+   * the friendliest shape at the agent boundary). Omitted: the tool takes no
+   * arguments.
+   */
+  args?: readonly GenericSchema[]
+}
+
+/**
  * Server command input — what plugins pass to `ctx.commands.register()`.
  */
 export interface DevframeServerCommandInput extends DevframeCommandBase {
@@ -51,6 +89,13 @@ export interface DevframeServerCommandInput extends DevframeCommandBase {
    * Handler for this command. Optional if the command only serves as a group for children.
    */
   handler?: (...args: any[]) => any | Promise<any>
+  /**
+   * Opt this command in to the agent surface (`ctx.agent` → MCP). Requires a
+   * `handler`. See {@link DevframeCommandAgentOptions}.
+   *
+   * @experimental
+   */
+  agent?: DevframeCommandAgentOptions
   /**
    * Static sub-commands. Two levels max (parent → children).
    * Each child must have a globally unique `id`.

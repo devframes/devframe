@@ -1,6 +1,7 @@
 import type { GitContext } from '../context.ts'
 import type { FileStatusCode } from './status.ts'
 import { defineRpcFunction } from 'devframe'
+import * as v from 'valibot'
 import { isSafeRevision, splitClean, tryGit, UNIT } from '../../node/git.ts'
 import { getGitContext } from '../context.ts'
 
@@ -49,6 +50,47 @@ export interface CommitDetail {
   /** `true` when `patch` was clipped to {@link PATCH_CHAR_LIMIT}. */
   truncated: boolean
 }
+
+const fileStatusCodeSchema = v.picklist([
+  'modified',
+  'added',
+  'deleted',
+  'renamed',
+  'copied',
+  'type-changed',
+  'unmerged',
+  'unknown',
+])
+
+const commitFileSchema = v.object({
+  path: v.string(),
+  additions: v.number(),
+  deletions: v.number(),
+  binary: v.boolean(),
+  status: fileStatusCodeSchema,
+})
+
+const commitDetailSchema = v.object({
+  isRepo: v.boolean(),
+  found: v.boolean(),
+  hash: v.string(),
+  shortHash: v.string(),
+  author: v.string(),
+  email: v.string(),
+  date: v.number(),
+  committer: v.string(),
+  committerEmail: v.string(),
+  commitDate: v.number(),
+  subject: v.string(),
+  body: v.string(),
+  parents: v.array(v.string()),
+  refs: v.array(v.string()),
+  files: v.array(commitFileSchema),
+  totalAdditions: v.number(),
+  totalDeletions: v.number(),
+  patch: v.nullable(v.string()),
+  truncated: v.boolean(),
+})
 
 export interface ShowArgs {
   /** Commit-ish to inspect (full or short hash). */
@@ -210,10 +252,19 @@ export const show = defineRpcFunction({
   name: 'devframes:plugin:git:show',
   type: 'query',
   jsonSerializable: true,
+  args: [v.object({
+    hash: v.string(),
+    patch: v.optional(v.boolean()),
+  })],
+  returns: commitDetailSchema,
+  agent: {
+    description: 'Full detail of one commit by hash (from the git log tool): metadata, changed files, and the unified patch (pass patch: false to skip it for large commits). Safe to call freely.',
+    title: 'Git show',
+  },
   // Static builds can't run git per click, so bake one record per commit in the
   // same window `devframes:plugin:git:log` snapshots. Patches are omitted from the baked records
   // to keep the bundle bounded — static detail panels show metadata + files.
-  dump: async (ctx, _handler: (args: ShowArgs) => Promise<CommitDetail>) => {
+  dump: async (ctx, _handler: (args: ShowArgs) => CommitDetail | Promise<CommitDetail>) => {
     const git = getGitContext(ctx)
     const root = await git.resolveRoot()
     if (!root)

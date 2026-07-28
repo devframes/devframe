@@ -49,7 +49,8 @@
   "dependencies": {
     "cac": "catalog:deps",
     "devframe": "workspace:*",
-    "pathe": "catalog:deps"
+    "pathe": "catalog:deps",
+    "valibot": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",

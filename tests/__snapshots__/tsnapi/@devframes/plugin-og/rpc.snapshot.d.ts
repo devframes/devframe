@@ -36,7 +36,7 @@ export declare const serverFunctions: readonly [{
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     url?: string | undefined;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     requestedUrl: string;
     url: string;
     status: number;
@@ -46,10 +46,10 @@ export declare const serverFunctions: readonly [{
       name: string;
       value: string;
     }[];
-  }>>) | undefined;
+  }>>>) | undefined;
   handler?: ((args_0: {
     url?: string | undefined;
-  }) => {
+  }) => import("devframe/rpc").Thenable<{
     requestedUrl: string;
     url: string;
     status: number;
@@ -59,10 +59,10 @@ export declare const serverFunctions: readonly [{
       name: string;
       value: string;
     }[];
-  }) | undefined;
+  }>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     url?: string | undefined;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     requestedUrl: string;
     url: string;
     status: number;
@@ -72,11 +72,24 @@ export declare const serverFunctions: readonly [{
       name: string;
       value: string;
     }[];
-  }, import("devframe").DevframeNodeContext> | undefined;
+  }>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     url?: string | undefined;
-  }], {
+  }], import("devframe/rpc").Thenable<{
+    requestedUrl: string;
+    url: string;
+    status: number;
+    fetchedAt: number;
+    tags: {
+      tag: "html" | "link" | "meta" | "title";
+      name: string;
+      value: string;
+    }[];
+  }>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
+    url?: string | undefined;
+  }], import("devframe/rpc").Thenable<{
     requestedUrl: string;
     url: string;
     status: number;
@@ -87,19 +100,6 @@ export declare const serverFunctions: readonly [{
       value: string;
     }[];
   }>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
-    url?: string | undefined;
-  }], {
-    requestedUrl: string;
-    url: string;
-    status: number;
-    fetchedAt: number;
-    tags: {
-      tag: "html" | "link" | "meta" | "title";
-      name: string;
-      value: string;
-    }[];
-  }>> | undefined;
 }];
 // #endregion
 

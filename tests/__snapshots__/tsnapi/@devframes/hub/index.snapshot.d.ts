@@ -37,6 +37,13 @@ export interface DevframeClientCommand extends DevframeCommandBase {
   action?: (..._: any[]) => void | DevframeClientCommand[] | Promise<void | DevframeClientCommand[]>;
   children?: DevframeClientCommand[];
 }
+export interface DevframeCommandAgentOptions {
+  description: string;
+  title?: string;
+  safety?: 'read' | 'action' | 'destructive';
+  tags?: readonly string[];
+  args?: readonly GenericSchema[];
+}
 export interface DevframeCommandBase {
   id: string;
   title: string;
@@ -230,6 +237,7 @@ export interface DevframeServerCommandEntry extends DevframeCommandBase {
 }
 export interface DevframeServerCommandInput extends DevframeCommandBase {
   handler?: (..._: any[]) => any | Promise<any>;
+  agent?: DevframeCommandAgentOptions;
   children?: DevframeServerCommandInput[];
 }
 export interface DevframeTerminalSession extends DevframeTerminalSessionBase {
