@@ -1,4 +1,4 @@
-import type { DevframeDockEntry } from '@devframes/hub/types'
+import type { DevframeDockEntry, DevframeViewLauncher } from '@devframes/hub/types'
 import { connectDevframe } from '@devframes/hub/client'
 import { createIframePanes } from 'iframe-pane'
 import { iconClass } from './icons'
@@ -7,13 +7,16 @@ import '@antfu/design/styles.css'
 
 const HUB_BASE = '/__hub/'
 
-// Mirror of the host's `storybook-hub:ensure` return shape.
+// Mirror of the launch command's return shape (`storybook-hub:launch:<id>`,
+// dispatched over `hub:commands:execute`).
 type EnsureResult
   = | { ok: true, kind: 'port', port: number }
     | { ok: true, kind: 'path', url: string }
     | { ok: false, error: string }
 
 type IframeDock = DevframeDockEntry & { type: 'iframe', url: string }
+type LauncherDock = DevframeViewLauncher
+type Dock = IframeDock | LauncherDock
 
 /** Sidebar section order; anything else follows alphabetically. */
 const CATEGORY_ORDER = ['Storybooks', 'Plugins']
@@ -28,13 +31,14 @@ interface DockRuntime {
   error?: string
 }
 
-// Every opened dock's iframe is parked here for its whole lifetime — switching
+// Every launched dock's iframe is parked here for its whole lifetime — switching
 // tabs only mounts/unmounts the pane over `#stage`, so background docks keep
 // their state (Storybook's own routing, scroll, etc.) intact.
 const panes = createIframePanes({ container: stageEl })
 const runtimes = new Map<string, DockRuntime>()
-let docks: IframeDock[] = []
+let docks: Dock[] = []
 let selectedId: string | null = null
+let rpc: Awaited<ReturnType<typeof connectDevframe>>
 
 function setStatus(text: string, kind?: 'ready' | 'error') {
   const dot = kind === 'ready' ? 'bg-success' : kind === 'error' ? 'bg-error' : 'bg-neutral-400'
@@ -45,8 +49,8 @@ function isIframeDock(d: DevframeDockEntry): d is IframeDock {
   return d.type === 'iframe' && typeof (d as { url?: unknown }).url === 'string'
 }
 
-function isStorybookDock(id: string): boolean {
-  return id.startsWith('sb-')
+function isLauncherDock(d: DevframeDockEntry): d is LauncherDock {
+  return d.type === 'launcher'
 }
 
 function runtimeFor(id: string): DockRuntime {
@@ -66,14 +70,23 @@ function dockIcon(entry: DevframeDockEntry): string {
   return `<span class="grid h-5 w-5 shrink-0 place-items-center rounded bg-active text-[0.7rem] font-bold">${initial}</span>`
 }
 
-function overlay(kind: 'spin' | 'error' | 'idle', title: string, detail = '') {
-  const glyph = kind === 'spin'
-    ? '<span class="i-ph-circle-notch animate-spin text-3xl color-active"></span>'
-    : kind === 'error'
-      ? '<span class="i-ph-warning-duotone text-3xl text-error"></span>'
-      : '<span class="i-ph-books-duotone text-3xl op-fade"></span>'
+function overlay(html: string) {
   overlayEl.style.display = 'flex'
-  overlayEl.innerHTML = `<div class="flex flex-col items-center gap-3 text-center px6">${glyph}<div class="text-sm font-medium">${title}</div>${detail ? `<div class="text-xs font-mono op-mute max-w-md break-words">${detail}</div>` : ''}</div>`
+  overlayEl.innerHTML = `<div class="flex flex-col items-center gap-4 text-center px6 max-w-md">${html}</div>`
+}
+
+/** The idle launcher tile: a start button that lazily boots the Storybook. */
+function launcherTile(entry: LauncherDock): string {
+  const l = entry.launcher
+  const cls = iconClass(l.icon ?? entry.icon)
+  const glyph = cls ? `<span class="${cls} text-4xl color-active"></span>` : '<span class="i-ph-books-duotone text-4xl op-fade"></span>'
+  return `
+    ${glyph}
+    <div class="text-base font-medium">${l.title}</div>
+    ${l.description ? `<div class="text-sm color-muted">${l.description}</div>` : ''}
+    <button type="button" data-launch="${entry.id}" class="btn-primary">
+      <span class="i-ph-play-duotone"></span>${l.buttonStart ?? 'Start'}
+    </button>`
 }
 
 function updateStage() {
@@ -85,57 +98,90 @@ function updateStage() {
   }
 
   if (!selectedId) {
-    overlay('idle', 'No dock selected')
+    overlay('<span class="i-ph-books-duotone text-3xl op-fade"></span><div class="text-sm font-medium">No dock selected</div>')
     return
   }
-  const rt = runtimes.get(selectedId)
-  const title = docks.find(d => d.id === selectedId)?.title ?? selectedId
-  if (!rt || rt.status === 'starting' || (rt.status !== 'error' && !panes.has(selectedId))) {
-    overlay('spin', isStorybookDock(selectedId) ? `Starting ${title} Storybook…` : `Loading ${title}…`)
+
+  const entry = docks.find(d => d.id === selectedId)
+  const rt = runtimeFor(selectedId)
+  const title = entry?.title ?? selectedId
+
+  // A launched pane is mounted — hide the overlay and show the live iframe.
+  if (rt.status === 'ready' && panes.has(selectedId)) {
+    overlayEl.style.display = 'none'
     return
   }
+
   if (rt.status === 'error') {
-    overlay('error', `Failed to start ${title}`, rt.error)
+    overlay(`
+      <span class="i-ph-warning-duotone text-4xl text-error"></span>
+      <div class="text-sm font-medium">Failed to start ${title}</div>
+      ${rt.error ? `<div class="text-xs font-mono op-mute break-words">${rt.error}</div>` : ''}
+      ${entry && isLauncherDock(entry) ? `<button type="button" data-launch="${entry.id}" class="btn-action"><span class="i-ph-arrow-clockwise-duotone"></span>Retry</button>` : ''}`)
     return
   }
-  overlayEl.style.display = 'none'
+
+  // A launcher: idle shows its start tile; starting mirrors the live `digest`
+  // (the tail of the `storybook dev` output the host streams onto the tile).
+  if (entry && isLauncherDock(entry)) {
+    if (rt.status === 'starting') {
+      const digest = entry.launcher.digest
+      overlay(`
+        <span class="i-ph-circle-notch animate-spin text-3xl color-active"></span>
+        <div class="text-sm font-medium">Starting ${title}…</div>
+        ${digest ? `<div class="text-xs font-mono op-mute break-words">${digest}</div>` : ''}
+        <button type="button" data-terminals class="btn-action text-xs"><span class="i-ph-terminal-window-duotone"></span>Watch output in Terminals</button>`)
+    }
+    else {
+      overlay(launcherTile(entry))
+    }
+    return
+  }
+
+  // A plain iframe dock (the live terminals plugin) is still booting.
+  overlay(`<span class="i-ph-circle-notch animate-spin text-3xl color-active"></span><div class="text-sm font-medium">Loading ${title}…</div>`)
 }
 
-async function ensureUrl(rpc: Awaited<ReturnType<typeof connectDevframe>>, entry: IframeDock): Promise<string> {
-  // Live plugin docks already carry a hub-served URL; only Storybook docks are
-  // resolved on demand (spawned in dev, static in build).
-  if (!isStorybookDock(entry.id))
-    return entry.url
-
-  const result = await rpc.call('storybook-hub:ensure' as any, { id: entry.id.slice(3) }) as EnsureResult
-  if (!result.ok)
-    throw new Error(result.error)
+/** Resolve the URL an EnsureResult points at (spawned dev port, or static path). */
+function resultUrl(result: Extract<EnsureResult, { ok: true }>): string {
   return result.kind === 'path'
     ? result.url
     : `${location.protocol}//${location.hostname}:${result.port}/`
 }
 
-function initDock(rpc: Awaited<ReturnType<typeof connectDevframe>>, entry: IframeDock) {
+function embedIframe(entry: Dock, url: string) {
   const rt = runtimeFor(entry.id)
-  if (rt.status !== 'idle')
-    return
+  panes.ensure(entry.id, {
+    src: url,
+    attrs: { title: entry.title, allow: 'clipboard-read; clipboard-write' },
+    style: { border: '0' },
+    onCreated: (iframe) => {
+      iframe.addEventListener('load', () => {
+        rt.status = 'ready'
+        updateStage()
+      })
+    },
+  })
+  updateStage()
+}
+
+/** Launch a Storybook: dispatch its bound command, then iframe the result. */
+function launch(entry: LauncherDock) {
+  const rt = runtimeFor(entry.id)
   rt.status = 'starting'
+  rt.error = undefined
   updateStage()
 
-  ensureUrl(rpc, entry)
-    .then((url) => {
-      panes.ensure(entry.id, {
-        src: url,
-        attrs: { title: entry.title, allow: 'clipboard-read; clipboard-write' },
-        style: { border: '0' },
-        onCreated: (iframe) => {
-          iframe.addEventListener('load', () => {
-            rt.status = 'ready'
-            updateStage()
-          })
-        },
-      })
-      updateStage()
+  const command = entry.launcher.command
+  const dispatch = command
+    ? rpc.call('hub:commands:execute' as any, command) as Promise<EnsureResult>
+    : Promise.reject(new Error('Launcher has no bound command'))
+
+  dispatch
+    .then((result) => {
+      if (!result.ok)
+        throw new Error(result.error)
+      embedIframe(entry, resultUrl(result))
     })
     .catch((err: Error) => {
       rt.status = 'error'
@@ -144,19 +190,30 @@ function initDock(rpc: Awaited<ReturnType<typeof connectDevframe>>, entry: Ifram
     })
 }
 
+/** A plain iframe dock (the live terminals plugin) mounts its URL directly. */
+function openIframe(entry: IframeDock) {
+  const rt = runtimeFor(entry.id)
+  if (rt.status !== 'idle')
+    return
+  rt.status = 'starting'
+  embedIframe(entry, entry.url)
+}
+
 async function main() {
   setStatus('Connecting…')
-  const rpc = await connectDevframe({ baseURL: HUB_BASE })
+  rpc = await connectDevframe({ baseURL: HUB_BASE })
   setStatus(`Connected · backend=${rpc.connectionMeta.backend}`, 'ready')
 
   const switchTo = (id: string) => {
-    if (!docks.some(d => d.id === id))
+    const entry = docks.find(d => d.id === id)
+    if (!entry)
       return
     selectedId = id
     renderSidebar()
-    const rt = runtimeFor(id)
-    if (rt.status === 'idle')
-      initDock(rpc, docks.find(d => d.id === id)!)
+    // Plain iframe docks open on select; launcher docks wait for their Start
+    // button (the lazy trigger) — so opening a Storybook dock doesn't spawn it.
+    if (isIframeDock(entry))
+      openIframe(entry)
     updateStage()
   }
 
@@ -180,20 +237,21 @@ async function main() {
     }).join('')
   }
 
-  // Docks — read from `devframe:docks` shared state.
+  // Docks — read from `devframe:docks` shared state, keeping launcher (Storybook)
+  // and iframe (live plugin) entries.
   const docksState = await rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks', { initialValue: [] })
   const syncDocks = () => {
-    docks = (docksState.value() ?? []).filter(isIframeDock)
+    docks = (docksState.value() ?? []).filter((d): d is Dock => isIframeDock(d) || isLauncherDock(d))
     if (selectedId && !docks.some(d => d.id === selectedId))
       selectedId = null
     if (!selectedId && docks.length)
       selectedId = docks[0].id
     renderSidebar()
-    if (selectedId) {
-      const rt = runtimeFor(selectedId)
-      if (rt.status === 'idle')
-        initDock(rpc, docks.find(d => d.id === selectedId)!)
-    }
+    // Auto-open plain iframe docks (terminals plugin); launcher docks stay idle
+    // until the user starts them.
+    const entry = selectedId ? docks.find(d => d.id === selectedId) : undefined
+    if (entry && isIframeDock(entry) && runtimeFor(entry.id).status === 'idle')
+      openIframe(entry)
     updateStage()
   }
   docksState.on('updated', syncDocks)
@@ -203,6 +261,24 @@ async function main() {
     if (target?.dataset.dockId)
       switchTo(target.dataset.dockId)
   })
+
+  overlayEl.addEventListener('click', (event) => {
+    const el = event.target as HTMLElement
+    const launchId = el.closest<HTMLButtonElement>('button[data-launch]')?.dataset.launch
+    if (launchId) {
+      const entry = docks.find(d => d.id === launchId)
+      if (entry && isLauncherDock(entry))
+        launch(entry)
+      return
+    }
+    if (el.closest('button[data-terminals]')) {
+      // Jump to the live terminals plugin to watch the spawned dev server stream.
+      const terminals = docks.find(d => isIframeDock(d) && (d.category ?? '') === 'Plugins')
+      if (terminals)
+        switchTo(terminals.id)
+    }
+  })
+
   syncDocks()
 }
 

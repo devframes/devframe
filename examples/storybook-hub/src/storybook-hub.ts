@@ -1,13 +1,13 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
-import type { DevframeChildProcessTerminalSession } from '@devframes/hub/types'
+import type { DevframeChildProcessTerminalSession, DevframeViewLauncher } from '@devframes/hub/types'
 import type { DevframeHost } from 'devframe/types'
+import type { Buffer } from 'node:buffer'
 import type { Plugin, PreviewServer, ResolvedConfig, ViteDevServer } from 'vite'
 import { existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
-import { defineHubRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import terminalsDevframe from '@devframes/plugin-terminals'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
@@ -45,6 +45,17 @@ const pluginDir = (id: string): string => join(repoRoot, 'plugins', id)
 const storybookConfigDir = (id: string): string => join(pluginDir(id), '.storybook')
 const storybookStaticDir = (id: string): string => join(repoRoot, 'storybook', 'storybook-static', id)
 const sessionIdFor = (id: string): string => `storybook-hub:${id}`
+const dockIdFor = (id: string): string => `sb-${id}`
+const launchCommandFor = (id: string): string => `storybook-hub:launch:${id}`
+
+// eslint-disable-next-line no-control-regex
+const ANSI = /\u001B\[[0-9;]*[A-Z]/gi
+
+/** Last non-empty, ANSI-stripped line of a chunk — the launcher's `digest`. */
+function lastLine(chunk: string): string | undefined {
+  const lines = chunk.replace(ANSI, '').split(/\r?\n/).map(l => l.trim()).filter(Boolean)
+  return lines.at(-1)
+}
 
 /** What the client needs to point a dock's iframe at the right place. */
 export type EnsureStorybookResult
@@ -63,18 +74,23 @@ export interface StorybookHubOptions {
  * A Vite plugin that turns a Vite dev/preview server into a devframe hub whose
  * docks are the built-in plugins' Storybooks — plus the live terminals plugin.
  *
- * Each Storybook dock's iframe is created lazily, only when the dock is first
- * opened (mirroring how the code-server plugin embeds its editor on demand):
+ * Each Storybook is a first-class `type: 'launcher'` dock: a process-control
+ * tile that starts its Storybook lazily, only when the user hits **Start**. The
+ * launch button binds a `ctx.commands` command (`storybook-hub:launch:<id>`),
+ * so a viewer dispatches it over the serializable `hub:commands:execute` path.
+ * The command:
  *
- *  - **dev** (`vite`): the plugin's `storybook dev` server is spawned on first
- *    open — through `ctx.terminals`, so it lives as a read-only hub terminal
- *    session whose output streams into the Terminals dock — and the dock
- *    iframes it live (HMR).
- *  - **build** (`vite preview`): the pre-built `storybook/storybook-static/<id>`
- *    is served by the hub and the dock iframes that single origin.
+ *  - **dev** (`vite`): spawns the plugin's `storybook dev` through
+ *    `ctx.terminals`, so the process lives as a read-only hub terminal session
+ *    whose output streams into the Terminals dock. As it boots, the tail of
+ *    that output is patched onto the launcher's `digest`, and the session id
+ *    onto `terminalSessionId`; on ready the launcher flips to `success` and the
+ *    command returns the live dev-server URL for the client to iframe (HMR).
+ *  - **build** (`vite preview`): the launch resolves immediately to the
+ *    pre-built `storybook/storybook-static/<id>` the hub serves on one origin.
  *
- * Both paths are unified behind the `storybook-hub:ensure` RPC, so the client
- * has one flow regardless of mode.
+ * Either way the command returns an {@link EnsureStorybookResult}, so the
+ * client swaps the launcher tile in place for the resolved iframe.
  */
 export function storybookHub(options: StorybookHubOptions = {}): Plugin {
   const base = normalizeBase(options.base ?? '/__hub/')
@@ -93,9 +109,14 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
    * answers on its port. Concurrent callers await the same boot. The process
    * is owned by the hub's terminals subsystem (`ctx.terminals`), so it shows
    * up as a read-only session — proper title + icon, output streamed live —
-   * in the Terminals dock.
+   * in the Terminals dock. `reportDigest` receives the tail of that output so
+   * the caller can surface boot progress on the launcher.
    */
-  async function ensureDevServer(ctx: DevframeHubContext, meta: StorybookMeta): Promise<number> {
+  async function ensureDevServer(
+    ctx: DevframeHubContext,
+    meta: StorybookMeta,
+    reportDigest?: (line: string) => void,
+  ): Promise<number> {
     const existing = devServers.get(meta.id)
     if (existing)
       return existing.ready
@@ -114,7 +135,7 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
     const session = await ctx.terminals.startChildProcess(
       {
         command: process.execPath,
-        args: [storybookBin, 'dev', '--config-dir', storybookConfigDir(meta.id), '--port', String(port), '--host', '0.0.0.0', '--no-open', '--quiet'],
+        args: [storybookBin, 'dev', '--config-dir', storybookConfigDir(meta.id), '--port', String(port), '--host', '0.0.0.0', '--no-open'],
         cwd: pluginDir(meta.id),
         env: { STORYBOOK_DISABLE_TELEMETRY: '1' },
       },
@@ -127,6 +148,17 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
     )
 
     const child = session.getChildProcess()
+    // Stream the tail of the boot output to the launcher's digest. The full
+    // stream still lands in the Terminals dock via `ctx.terminals`.
+    if (reportDigest) {
+      const onData = (chunk: Buffer | string): void => {
+        const line = lastLine(chunk.toString())
+        if (line)
+          reportDigest(line)
+      }
+      child?.stdout?.on('data', onData)
+      child?.stderr?.on('data', onData)
+    }
     const ready = new Promise<number>((resolvePort, reject) => {
       // Fail fast when the process dies before serving.
       child?.once('exit', (code) => {
@@ -185,41 +217,11 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
       },
     }
 
-    // Ensure a Storybook is reachable and hand its URL back to the client. In
-    // dev this spawns the plugin's `storybook dev` on demand; in build it points
-    // at the pre-built static bundle the hub serves.
-    const storybookHubEnsure = defineHubRpcFunction({
-      name: 'storybook-hub:ensure',
-      type: 'action',
-      jsonSerializable: true,
-      setup: (ctx: DevframeHubContext) => ({
-        async handler(input?: { id?: string }): Promise<EnsureStorybookResult> {
-          const meta = STORYBOOKS.find(s => s.id === input?.id)
-          if (!meta)
-            return { ok: false, error: `Unknown storybook "${input?.id}"` }
-
-          if (mode === 'build') {
-            if (!existsSync(storybookStaticDir(meta.id)))
-              return { ok: false, error: 'Storybook not built. Run `pnpm storybook:build` first.' }
-            return { ok: true, kind: 'path', url: `/__sb-${meta.id}/` }
-          }
-
-          try {
-            return { ok: true, kind: 'port', port: await ensureDevServer(ctx, meta) }
-          }
-          catch (error) {
-            return { ok: false, error: (error as Error).message }
-          }
-        },
-      }),
-    })
-
     const context = await createHubContext({
       cwd,
       workspaceRoot: cwd,
       mode,
       host,
-      builtinRpcDeclarations: [storybookHubEnsure],
     })
 
     // In build mode, serve each pre-built Storybook so its dock iframe resolves
@@ -231,18 +233,81 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
       }
     }
 
-    // One dock per plugin Storybook. `url` is only the build-mode static path;
-    // the client routes these through `storybook-hub:ensure`, so in dev it is
-    // superseded by the spawned dev-server URL.
+    // Live launcher handles, so the launch command can patch each tile's
+    // status/digest/terminalSessionId as the process boots.
+    const launchers = new Map<string, { update: (patch: Partial<DevframeViewLauncher>) => void }>()
+
+    /** The full launcher payload for a tile (patched wholesale — `update` shallow-merges). */
+    const launcherState = (
+      meta: StorybookMeta,
+      patch: Partial<DevframeViewLauncher['launcher']>,
+    ): DevframeViewLauncher['launcher'] => ({
+      icon: meta.icon,
+      title: `${meta.title} Storybook`,
+      description: mode === 'build'
+        ? `Open the pre-built ${meta.title} Storybook`
+        : `Start the ${meta.title} plugin's Storybook dev server`,
+      command: launchCommandFor(meta.id),
+      buttonStart: mode === 'build' ? 'Open Storybook' : 'Start Storybook',
+      buttonLoading: 'Starting…',
+      status: 'idle',
+      ...patch,
+    })
+
+    /**
+     * The launch handler bound to each launcher's command. Spawns the dev
+     * server through `ctx.terminals` (in dev), patches the tile as it boots,
+     * and returns the resolved URL for the client to iframe in place.
+     */
+    const launchStorybook = async (meta: StorybookMeta): Promise<EnsureStorybookResult> => {
+      const handle = launchers.get(meta.id)
+      const patch = (p: Partial<DevframeViewLauncher['launcher']>): void =>
+        handle?.update({ launcher: launcherState(meta, p) })
+
+      if (mode === 'build') {
+        if (!existsSync(storybookStaticDir(meta.id))) {
+          const error = 'Storybook not built. Run `pnpm storybook:build` first.'
+          patch({ status: 'error', error })
+          return { ok: false, error }
+        }
+        patch({ status: 'success' })
+        return { ok: true, kind: 'path', url: `/__sb-${meta.id}/` }
+      }
+
+      patch({ status: 'loading', digest: 'Starting Storybook dev server…' })
+      try {
+        const port = await ensureDevServer(context, meta, line =>
+          patch({ status: 'loading', terminalSessionId: sessionIdFor(meta.id), digest: line }))
+        patch({ status: 'success', terminalSessionId: sessionIdFor(meta.id), digest: `Ready on port ${port}` })
+        return { ok: true, kind: 'port', port }
+      }
+      catch (error) {
+        const message = (error as Error).message
+        patch({ status: 'error', terminalSessionId: sessionIdFor(meta.id), error: message })
+        return { ok: false, error: message }
+      }
+    }
+
+    // One launcher dock per plugin Storybook, each bound to a command. A viewer
+    // dispatches the command over `hub:commands:execute` (the serializable
+    // path — the handler is stripped when the entry crosses into shared state),
+    // and reads back the {@link EnsureStorybookResult} to iframe the result.
     for (const meta of STORYBOOKS) {
-      context.docks.register({
-        id: `sb-${meta.id}`,
+      context.commands.register({
+        id: launchCommandFor(meta.id),
+        title: `${mode === 'build' ? 'Open' : 'Start'} ${meta.title} Storybook`,
+        icon: meta.icon,
+        category: 'Storybooks',
+        handler: () => launchStorybook(meta),
+      })
+      launchers.set(meta.id, context.docks.register<DevframeViewLauncher>({
+        id: dockIdFor(meta.id),
         title: meta.title,
         icon: meta.icon,
         category: 'Storybooks',
-        type: 'iframe',
-        url: `/__sb-${meta.id}/`,
-      })
+        type: 'launcher',
+        launcher: launcherState(meta, { status: 'idle' }),
+      }))
     }
 
     // The live terminals plugin — a real integration docked alongside the
