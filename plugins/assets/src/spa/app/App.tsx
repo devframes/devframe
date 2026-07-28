@@ -107,33 +107,34 @@ export function App() {
 
   return (
     <div class="flex h-screen flex-col bg-base color-base">
-      <header class={nav()}>
+      <header class={nav('gap-3')}>
         <span class={navBrand()}>
           <span class="i-ph-image-square-duotone text-base color-active" />
           <span>Assets</span>
         </span>
         {isStatic && <Badge variant="secondary">static</Badge>}
         {!canWrite && !loading && <Badge variant="outline">read-only</Badge>}
-        <span class="flex-1" />
-        {error && <span class="text-xs text-error">{error}</span>}
+        <Toolbar
+          search={search}
+          onSearchChange={setSearch}
+          extensions={extensions.map(name => ({ name, checked: extensionState[name] !== false }))}
+          onToggleExtension={toggleExtension}
+          view={view}
+          onViewChange={setView}
+          total={assets?.length ?? 0}
+          filtered={filtered.length}
+          canWrite={canWrite}
+          onUpload={() => setDropzoneOpen(true)}
+          onNewFolder={() => setMkdirOpen(true)}
+          selectedCount={selectedPaths.size}
+          onBulkDelete={() => setBulkDeleteOpen(true)}
+          onClearSelection={() => setSelectedPaths(new Set())}
+        />
       </header>
 
-      <Toolbar
-        search={search}
-        onSearchChange={setSearch}
-        extensions={extensions.map(name => ({ name, checked: extensionState[name] !== false }))}
-        onToggleExtension={toggleExtension}
-        view={view}
-        onViewChange={setView}
-        total={assets?.length ?? 0}
-        filtered={filtered.length}
-        canWrite={canWrite}
-        onUpload={() => setDropzoneOpen(true)}
-        onNewFolder={() => setMkdirOpen(true)}
-        selectedCount={selectedPaths.size}
-        onBulkDelete={() => setBulkDeleteOpen(true)}
-        onClearSelection={() => setSelectedPaths(new Set())}
-      />
+      {error && (
+        <div class="shrink-0 border-b border-base bg-error/10 px-3 py-1 text-xs text-error">{error}</div>
+      )}
 
       <main class="min-h-0 flex-1 overflow-auto">
         {loading
@@ -177,6 +178,7 @@ export function App() {
       <DropZone
         open={dropzoneOpen}
         onClose={() => setDropzoneOpen(false)}
+        enabled={canWrite}
         folder=""
         uploading={uploading}
         errors={uploadErrors}

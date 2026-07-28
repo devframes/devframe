@@ -1,5 +1,5 @@
 import type { QueuedFile } from '../hooks/useUpload'
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useRef, useState } from 'preact/hooks'
 import { Button } from './ui/Button'
 import { IconButton } from './ui/IconButton'
 import { TextInput } from './ui/TextInput'
@@ -7,6 +7,11 @@ import { TextInput } from './ui/TextInput'
 export interface DropZoneProps {
   open: boolean
   onClose: () => void
+  /**
+   * Whether drag-and-drop upload is active. When `false` (read-only mode)
+   * the whole-frame drag listeners are never attached.
+   */
+  enabled: boolean
   /** Root-relative folder new uploads land in, with a trailing slash — `''` for the root. */
   folder: string
   uploading: boolean
@@ -14,31 +19,70 @@ export interface DropZoneProps {
   onUpload: (files: QueuedFile[]) => Promise<string[]>
 }
 
-export function DropZone({ open, onClose, folder, uploading, errors, onUpload }: DropZoneProps) {
+/** A drag carries files (not a text selection or an in-page element drag). */
+function dragHasFiles(e: DragEvent): boolean {
+  return Array.from(e.dataTransfer?.types ?? []).includes('Files')
+}
+
+export function DropZone({ open, onClose, enabled, folder, uploading, errors, onUpload }: DropZoneProps) {
   const [files, setFiles] = useState<File[]>([])
+  const [dragging, setDragging] = useState(false)
+  // `dragenter`/`dragleave` fire per child element as the cursor moves over
+  // the page; a depth counter keeps the overlay from flickering.
+  const dragDepth = useRef(0)
 
   useEffect(() => {
-    if (!open)
+    if (!enabled)
       return
-    function onDragOver(e: DragEvent) {
+    function onDragEnter(e: DragEvent) {
+      if (!dragHasFiles(e))
+        return
       e.preventDefault()
+      dragDepth.current++
+      setDragging(true)
+    }
+    function onDragOver(e: DragEvent) {
+      if (dragHasFiles(e))
+        e.preventDefault()
+    }
+    function onDragLeave(e: DragEvent) {
+      if (!dragHasFiles(e))
+        return
+      dragDepth.current = Math.max(0, dragDepth.current - 1)
+      if (dragDepth.current === 0)
+        setDragging(false)
     }
     function onDrop(e: DragEvent) {
+      if (!dragHasFiles(e))
+        return
       e.preventDefault()
+      dragDepth.current = 0
+      setDragging(false)
       addFiles(e.dataTransfer?.files ?? null)
     }
+    window.addEventListener('dragenter', onDragEnter)
     window.addEventListener('dragover', onDragOver)
+    window.addEventListener('dragleave', onDragLeave)
     window.addEventListener('drop', onDrop)
     return () => {
+      window.removeEventListener('dragenter', onDragEnter)
       window.removeEventListener('dragover', onDragOver)
+      window.removeEventListener('dragleave', onDragLeave)
       window.removeEventListener('drop', onDrop)
     }
-  }, [open])
+  }, [enabled])
 
   function addFiles(list: FileList | null): void {
     if (!list)
       return
     setFiles(prev => [...prev, ...Array.from(list)])
+  }
+
+  function handleClose(): void {
+    setFiles([])
+    setDragging(false)
+    dragDepth.current = 0
+    onClose()
   }
 
   function removeFile(index: number): void {
@@ -58,18 +102,19 @@ export function DropZone({ open, onClose, folder, uploading, errors, onUpload }:
 
   async function submit(): Promise<void> {
     const failed = await onUpload(files.map(file => ({ file, targetPath: `${folder}${file.name}` })))
-    if (failed.length === 0) {
-      setFiles([])
-      onClose()
-    }
+    if (failed.length === 0)
+      handleClose()
   }
 
-  if (!open)
+  // Visible on the explicit Upload button, while files are being dragged
+  // anywhere over the frame, or once files are queued for upload.
+  const visible = enabled && (open || dragging || files.length > 0)
+  if (!visible)
     return null
 
   return (
     <div class="fixed inset-0 z-drawer-content bg-base/95 backdrop-blur-xl">
-      <IconButton icon="i-ph-x" title="Close" variant="ghost" class="absolute right-5 top-5 z-1 text-xl" onClick={onClose} />
+      <IconButton icon="i-ph-x" title="Close" variant="ghost" class="absolute right-5 top-5 z-1 text-xl" onClick={handleClose} />
       {files.length === 0
         ? (
             <label class="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2 text-2xl hover:color-active">

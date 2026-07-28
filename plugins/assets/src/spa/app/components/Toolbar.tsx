@@ -1,5 +1,4 @@
 import type { ExtensionFilterItem } from './ExtensionFilter'
-import { toolbar } from '../design'
 import { ExtensionFilter } from './ExtensionFilter'
 import { Button } from './ui/Button'
 import { IconButton } from './ui/IconButton'
@@ -22,11 +21,16 @@ export interface ToolbarProps {
   onClearSelection: () => void
 }
 
+/**
+ * The search box, asset count, and actions — rendered inline in the top
+ * nav bar (see `App`). Swaps to a selection action bar while assets are
+ * multi-selected.
+ */
 export function Toolbar(props: ToolbarProps) {
   if (props.selectedCount > 0) {
     return (
-      <div class={toolbar('justify-between')}>
-        <span class="font-medium">
+      <div class="flex flex-1 items-center justify-between gap-3">
+        <span class="text-sm font-medium">
           {props.selectedCount}
           {' '}
           selected
@@ -44,14 +48,14 @@ export function Toolbar(props: ToolbarProps) {
   }
 
   return (
-    <div class={toolbar('gap-3')}>
+    <div class="flex min-w-0 flex-1 items-center gap-3">
       <TextInput
         placeholder="Search assets…"
         value={props.search}
         onInput={e => props.onSearchChange((e.target as HTMLInputElement).value)}
         class="max-w-60"
       />
-      <span class="op-fade text-xs whitespace-nowrap">
+      <span class="op-fade whitespace-nowrap text-xs">
         {props.search ? `${props.filtered} matched · ` : ''}
         {props.total}
         {' '}
