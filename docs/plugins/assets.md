@@ -10,7 +10,7 @@ Package: `@devframes/plugin-assets` · framework: **Preact**
 
 ## What it does
 
-Search and filter by extension, switch between a thumbnail grid (grouped by folder) and a file tree, and open a details panel with a live preview (image, video, audio, font, or text), file metadata, and ready-to-copy usage snippets (`<img>`, CSS `background-image`, `@font-face`, a download link). Drag-and-drop files to upload them, or select multiple assets to delete them together. A live file watcher keeps every connected client's listing in sync with changes made outside the UI.
+Search by name and filter by type from an inline chip row, switch between a thumbnail grid (grouped by folder) and a file tree, and open a right-hand details panel with a live preview (image, video, audio, font, or text), file metadata, and ready-to-copy usage snippets (`<img>`, CSS `background-image`, `@font-face`, a download link). Drop files anywhere on the frame to upload them, or select multiple assets to delete them together. A live file watcher keeps every connected client's listing in sync with changes made outside the UI.
 
 The standalone server requires devframe's trust handshake by default because it can read, write, and delete real files. Uploads, renames, deletes, and folder creation are enabled by default — pass `{ write: false }` (or `--read-only` on the standalone CLI) for a browse-only deployment.
 

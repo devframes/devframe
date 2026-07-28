@@ -12,12 +12,6 @@ type Story = StoryObj<typeof Toolbar>
 const base = {
   search: '',
   onSearchChange: () => {},
-  extensions: [
-    { name: 'png', checked: true },
-    { name: 'svg', checked: true },
-    { name: 'mp4', checked: false },
-  ],
-  onToggleExtension: () => {},
   view: 'grid' as const,
   onViewChange: () => {},
   total: 42,

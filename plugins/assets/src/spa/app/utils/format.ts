@@ -29,11 +29,6 @@ export function formatTimeAgo(mtime: number): string {
   return `${Math.floor(seconds / (60 * 60 * 24 * 365))}y ago`
 }
 
-export function extensionOf(path: string): string | undefined {
-  const match = /\.([^./]+)$/.exec(path)
-  return match?.[1]?.toLowerCase()
-}
-
 export function fileNameOf(path: string): string {
   return path.split('/').pop() ?? path
 }

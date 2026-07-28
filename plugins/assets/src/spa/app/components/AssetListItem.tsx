@@ -1,16 +1,8 @@
 import type { TreeNode } from '../utils/tree'
 import { useState } from 'preact/hooks'
+import { TYPE_META } from '../utils/assetType'
 import { Checkbox } from './ui/Checkbox'
 import { Icon } from './ui/Icon'
-
-const TYPE_ICON: Record<string, string> = {
-  image: 'i-ph-image-duotone',
-  video: 'i-ph-video-duotone',
-  audio: 'i-ph-speaker-high-duotone',
-  font: 'i-ph-text-aa-duotone',
-  text: 'i-ph-file-text-duotone',
-  other: 'i-ph-file-duotone',
-}
 
 export interface AssetListItemProps {
   node: TreeNode
@@ -24,7 +16,7 @@ export interface AssetListItemProps {
 
 export function AssetListItem({ node, depth = 0, selectedPath, selectable, selectedPaths, onSelectToggle, onSelect }: AssetListItemProps) {
   const [open, setOpen] = useState(true)
-  const icon = node.isFolder ? 'i-ph-folder-duotone' : TYPE_ICON[node.asset?.type ?? 'other']
+  const icon = node.isFolder ? 'i-ph-folder-duotone' : TYPE_META[node.asset?.type ?? 'other'].icon
   const isActive = !node.isFolder && node.asset?.path === selectedPath
 
   return (

@@ -1,5 +1,3 @@
-import type { ExtensionFilterItem } from './ExtensionFilter'
-import { ExtensionFilter } from './ExtensionFilter'
 import { Button } from './ui/Button'
 import { IconButton } from './ui/IconButton'
 import { TextInput } from './ui/TextInput'
@@ -7,8 +5,6 @@ import { TextInput } from './ui/TextInput'
 export interface ToolbarProps {
   search: string
   onSearchChange: (value: string) => void
-  extensions: ExtensionFilterItem[]
-  onToggleExtension: (name: string) => void
   view: 'grid' | 'list'
   onViewChange: (view: 'grid' | 'list') => void
   total: number
@@ -68,7 +64,6 @@ export function Toolbar(props: ToolbarProps) {
           <IconButton icon="i-ph-cloud-arrow-up-duotone" title="Upload" variant="ghost" onClick={props.onUpload} />
         </>
       )}
-      <ExtensionFilter extensions={props.extensions} onToggle={props.onToggleExtension} />
       <IconButton
         icon={props.view === 'grid' ? 'i-ph-list-duotone' : 'i-ph-grid-four-duotone'}
         title="Toggle view"

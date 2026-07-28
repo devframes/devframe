@@ -1,27 +1,27 @@
-import type { AssetInfo } from '../../types'
+import type { AssetInfo, AssetType } from '../../types'
 import { useMemo, useState } from 'preact/hooks'
 import { AssetDetails } from './components/AssetDetails'
 import { AssetGrid } from './components/AssetGrid'
 import { AssetTree } from './components/AssetTree'
 import { DropZone } from './components/DropZone'
 import { Toolbar } from './components/Toolbar'
+import { TypeFilter } from './components/TypeFilter'
 import { Badge } from './components/ui/Badge'
 import { Button } from './components/ui/Button'
 import { Dialog } from './components/ui/Dialog'
-import { Drawer } from './components/ui/Drawer'
 import { TextInput } from './components/ui/TextInput'
 import { connectionBody, connectionGlyph, connectionPanel, connectionState, connectionTitle, nav, navBrand } from './design'
 import { useAssets } from './hooks/useAssets'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { useUpload } from './hooks/useUpload'
-import { extensionOf } from './utils/format'
+import { ASSET_TYPES } from './utils/assetType'
 
 type ViewMode = 'grid' | 'list'
 
 export function App() {
   const { assets, capabilities, loading, error, isStatic, refresh, rpc } = useAssets()
   const [view, setView] = useLocalStorage<ViewMode>('devframes:plugin:assets:view', 'grid')
-  const [extensionState, setExtensionState] = useState<Record<string, boolean>>({})
+  const [typeState, setTypeState] = useState<Partial<Record<AssetType, boolean>>>({})
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<AssetInfo | undefined>()
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set())
@@ -34,31 +34,30 @@ export function App() {
 
   const canWrite = capabilities?.write ?? false
 
-  const extensions = useMemo(() => {
-    const seen = new Set<string>()
-    for (const asset of assets ?? []) {
-      const ext = extensionOf(asset.path)
-      if (ext)
-        seen.add(ext)
-    }
-    return Array.from(seen).sort()
-  }, [assets])
+  // Types present in the listing, with counts, in canonical display order.
+  const typeItems = useMemo(() => {
+    const counts = new Map<AssetType, number>()
+    for (const asset of assets ?? [])
+      counts.set(asset.type, (counts.get(asset.type) ?? 0) + 1)
+    return ASSET_TYPES
+      .filter(type => counts.has(type))
+      .map(type => ({ type, count: counts.get(type)!, checked: typeState[type] !== false }))
+  }, [assets, typeState])
 
   const filtered = useMemo(() => {
     const list = assets ?? []
     const query = search.trim().toLowerCase()
     return list.filter((asset) => {
-      const ext = extensionOf(asset.path)
-      if (ext && extensionState[ext] === false)
+      if (typeState[asset.type] === false)
         return false
       if (query && !asset.path.toLowerCase().includes(query))
         return false
       return true
     })
-  }, [assets, search, extensionState])
+  }, [assets, search, typeState])
 
-  function toggleExtension(name: string): void {
-    setExtensionState(prev => ({ ...prev, [name]: prev[name] === false }))
+  function toggleType(type: AssetType): void {
+    setTypeState(prev => ({ ...prev, [type]: prev[type] === false }))
   }
 
   function toggleSelect(path: string): void {
@@ -117,8 +116,6 @@ export function App() {
         <Toolbar
           search={search}
           onSearchChange={setSearch}
-          extensions={extensions.map(name => ({ name, checked: extensionState[name] !== false }))}
-          onToggleExtension={toggleExtension}
           view={view}
           onViewChange={setView}
           total={assets?.length ?? 0}
@@ -132,48 +129,52 @@ export function App() {
         />
       </header>
 
+      <TypeFilter items={typeItems} onToggle={toggleType} />
+
       {error && (
         <div class="shrink-0 border-b border-base bg-error/10 px-3 py-1 text-xs text-error">{error}</div>
       )}
 
-      <main class="min-h-0 flex-1 overflow-auto">
-        {loading
-          ? <div class="flex h-full items-center justify-center op-fade text-sm">Loading assets…</div>
-          : filtered.length === 0
-            ? <div class="flex h-full items-center justify-center op-fade text-sm">No assets found.</div>
-            : view === 'grid'
-              ? (
-                  <AssetGrid
-                    assets={filtered}
-                    selectable={canWrite}
-                    selectedPaths={selectedPaths}
-                    onSelectToggle={toggleSelect}
-                    onSelect={setSelected}
-                  />
-                )
-              : (
-                  <AssetTree
-                    assets={filtered}
-                    selectedPath={selected?.path}
-                    selectable={canWrite}
-                    selectedPaths={selectedPaths}
-                    onSelectToggle={toggleSelect}
-                    onSelect={setSelected}
-                  />
-                )}
-      </main>
+      <div class="flex min-h-0 flex-1">
+        <main class="min-h-0 flex-1 overflow-auto">
+          {loading
+            ? <div class="flex h-full items-center justify-center op-fade text-sm">Loading assets…</div>
+            : filtered.length === 0
+              ? <div class="flex h-full items-center justify-center op-fade text-sm">No assets found.</div>
+              : view === 'grid'
+                ? (
+                    <AssetGrid
+                      assets={filtered}
+                      selectable={canWrite}
+                      selectedPaths={selectedPaths}
+                      onSelectToggle={toggleSelect}
+                      onSelect={setSelected}
+                    />
+                  )
+                : (
+                    <AssetTree
+                      assets={filtered}
+                      selectedPath={selected?.path}
+                      selectable={canWrite}
+                      selectedPaths={selectedPaths}
+                      onSelectToggle={toggleSelect}
+                      onSelect={setSelected}
+                    />
+                  )}
+        </main>
 
-      <Drawer open={!!selected} onClose={() => setSelected(undefined)}>
         {selected && (
-          <AssetDetails
-            asset={selected}
-            rpc={rpc}
-            canWrite={canWrite}
-            onClose={() => setSelected(undefined)}
-            onChanged={() => void refresh()}
-          />
+          <aside class="min-h-0 w-96 shrink-0 overflow-y-auto border-l border-base bg-base">
+            <AssetDetails
+              asset={selected}
+              rpc={rpc}
+              canWrite={canWrite}
+              onClose={() => setSelected(undefined)}
+              onChanged={() => void refresh()}
+            />
+          </aside>
         )}
-      </Drawer>
+      </div>
 
       <DropZone
         open={dropzoneOpen}
