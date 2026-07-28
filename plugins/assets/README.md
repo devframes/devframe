@@ -1,6 +1,6 @@
 # `@devframes/plugin-assets`
 
-Browse, preview, upload, rename, and delete the files in a directory — a framework-neutral port of Nuxt DevTools' Assets tab, built as a **Preact** SPA.
+Browse, preview, upload, rename, and delete the files in a directory — a framework-neutral port of Nuxt DevTools' Assets tab, built as a **Vue** SPA on `@antfu/design`.
 
 ```sh
 pnpx @devframes/plugin-assets

@@ -1,19 +1,16 @@
-import type { Decorator, Preview } from '@storybook/preact-vite'
-import { useEffect } from 'preact/hooks'
-import '@antfu/design/styles.css'
+import type { Decorator, Preview } from '@storybook/vue3-vite'
+import { h } from 'vue'
 import 'virtual:uno.css'
+import 'floating-vue/dist/style.css'
+import '@antfu/design/styles.css'
 
-const withTheme: Decorator = (Story, context) => {
+const withTheme: Decorator = (story, context) => {
   const theme = context.globals.theme ?? 'dark'
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-  }, [theme])
-  return (
-    <div class="flex h-svh justify-center bg-base p-6 color-base font-sans">
-      <div class="flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-base p-3">
-        <Story />
-      </div>
-    </div>
+  document.documentElement.classList.toggle('dark', theme !== 'light')
+  return () => h(
+    'div',
+    { class: 'flex h-svh justify-center bg-base p-6 color-base font-sans' },
+    [h('div', { class: 'flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-base p-3' }, [h(story())])],
   )
 }
 

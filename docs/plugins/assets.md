@@ -4,9 +4,9 @@ outline: deep
 
 # Assets
 
-Browse, preview, upload, rename, and delete the files in a directory, built as a **Preact** SPA — a framework-neutral port of Nuxt DevTools' Assets tab.
+Browse, preview, upload, rename, and delete the files in a directory, built as a **Vue** SPA on `@antfu/design` — a framework-neutral port of Nuxt DevTools' Assets tab.
 
-Package: `@devframes/plugin-assets` · framework: **Preact**
+Package: `@devframes/plugin-assets` · framework: **Vue + @antfu/design**
 
 ## What it does
 

@@ -8,7 +8,7 @@ export default mergeConfigs([
   {
     content: {
       pipeline: {
-        include: [/\.(?:[cm]?[jt]sx?|html)($|\?)/],
+        include: [/\.(?:vue|[cm]?[jt]sx?|html)($|\?)/],
       },
     },
   },

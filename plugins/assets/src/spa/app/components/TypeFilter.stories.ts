@@ -1,13 +1,15 @@
-import type { Meta, StoryObj } from '@storybook/preact-vite'
-import { TypeFilter } from './TypeFilter'
+import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import TypeFilter from './TypeFilter.vue'
 
-const meta: Meta<typeof TypeFilter> = {
+const meta = {
   title: 'Assets/TypeFilter',
   component: TypeFilter,
-}
-export default meta
+  tags: ['autodocs'],
+  argTypes: { onToggle: { action: 'toggle' } },
+} satisfies Meta<typeof TypeFilter>
 
-type Story = StoryObj<typeof TypeFilter>
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
@@ -18,7 +20,6 @@ export const Default: Story = {
       { type: 'text', count: 8, checked: true },
       { type: 'other', count: 1, checked: true },
     ],
-    onToggle: () => {},
   },
 }
 
@@ -31,6 +32,5 @@ export const SomeDeselected: Story = {
       { type: 'text', count: 8, checked: true },
       { type: 'other', count: 1, checked: true },
     ],
-    onToggle: () => {},
   },
 }

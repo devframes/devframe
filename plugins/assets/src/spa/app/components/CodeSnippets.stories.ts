@@ -1,13 +1,14 @@
-import type { Meta, StoryObj } from '@storybook/preact-vite'
-import { CodeSnippets } from './CodeSnippets'
+import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import CodeSnippets from './CodeSnippets.vue'
 
-const meta: Meta<typeof CodeSnippets> = {
+const meta = {
   title: 'Assets/CodeSnippets',
   component: CodeSnippets,
-}
-export default meta
+  tags: ['autodocs'],
+} satisfies Meta<typeof CodeSnippets>
 
-type Story = StoryObj<typeof CodeSnippets>
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const ImageAsset: Story = {
   args: {

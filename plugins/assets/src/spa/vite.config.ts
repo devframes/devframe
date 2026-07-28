@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
-import preact from '@preact/preset-vite'
+import vue from '@vitejs/plugin-vue'
 import { resolve } from 'pathe'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
@@ -19,10 +19,12 @@ export default defineConfig(({ command }) => ({
   publicDir: command === 'serve' ? resolve(process.cwd(), 'public') : false,
   resolve: { alias },
   plugins: [
-    preact(),
+    vue(),
     UnoCSS(),
     assetsVitePlugin({ devMiddleware: true, base: '/' }),
   ],
+  // `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile
+  // its SFCs instead of esbuild pre-bundling them.
   optimizeDeps: { exclude: ['@antfu/design'] },
   build: {
     outDir: fileURLToPath(new URL('../../dist/spa', import.meta.url)),
