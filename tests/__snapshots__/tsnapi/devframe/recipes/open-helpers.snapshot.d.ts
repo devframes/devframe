@@ -8,16 +8,16 @@ export declare const openInEditor: {
   name: "devframe:open-in-editor";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [v.StringSchema<undefined>, v.OptionalSchema<v.PicklistSchema<readonly ["atom", "subl", "sublime", "sublime_text", "wstorm", "charm", "zed", "notepad++", "vim", "mvim", "joe", "gvim", "emacs", "emacsclient", "rmate", "mate", "code", "code-insiders", "codium", "vscodium", "trae", "antigravity", "cursor", "appcode", "clion", "idea", "phpstorm", "pycharm", "rubymine", "webstorm", "goland", "rider"], undefined>, undefined>];
+  args: readonly [v.StringSchema<undefined>, v.OptionalSchema<v.PicklistSchema<KnownEditor[], undefined>, undefined>];
   returns: v.VoidSchema<undefined>;
   jsonSerializable?: boolean;
   agent?: RpcFunctionAgentOptions;
-  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string, "atom" | "subl" | "sublime" | "sublime_text" | "wstorm" | "charm" | "zed" | "notepad++" | "vim" | "mvim" | "joe" | "gvim" | "emacs" | "emacsclient" | "rmate" | "mate" | "code" | "code-insiders" | "codium" | "vscodium" | "trae" | "antigravity" | "cursor" | "appcode" | "clion" | "idea" | "phpstorm" | "pycharm" | "rubymine" | "webstorm" | "goland" | "rider" | undefined], void>>) | undefined;
-  handler?: ((args_0: string, args_1: "atom" | "subl" | "sublime" | "sublime_text" | "wstorm" | "charm" | "zed" | "notepad++" | "vim" | "mvim" | "joe" | "gvim" | "emacs" | "emacsclient" | "rmate" | "mate" | "code" | "code-insiders" | "codium" | "vscodium" | "trae" | "antigravity" | "cursor" | "appcode" | "clion" | "idea" | "phpstorm" | "pycharm" | "rubymine" | "webstorm" | "goland" | "rider" | undefined) => void) | undefined;
-  dump?: RpcDump<[string, "atom" | "subl" | "sublime" | "sublime_text" | "wstorm" | "charm" | "zed" | "notepad++" | "vim" | "mvim" | "joe" | "gvim" | "emacs" | "emacsclient" | "rmate" | "mate" | "code" | "code-insiders" | "codium" | "vscodium" | "trae" | "antigravity" | "cursor" | "appcode" | "clion" | "idea" | "phpstorm" | "pycharm" | "rubymine" | "webstorm" | "goland" | "rider" | undefined], void, undefined> | undefined;
+  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], void>>) | undefined;
+  handler?: ((args_0: string, args_1: KnownEditor | undefined) => void) | undefined;
+  dump?: RpcDump<[string, KnownEditor | undefined], void, undefined> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string, "atom" | "subl" | "sublime" | "sublime_text" | "wstorm" | "charm" | "zed" | "notepad++" | "vim" | "mvim" | "joe" | "gvim" | "emacs" | "emacsclient" | "rmate" | "mate" | "code" | "code-insiders" | "codium" | "vscodium" | "trae" | "antigravity" | "cursor" | "appcode" | "clion" | "idea" | "phpstorm" | "pycharm" | "rubymine" | "webstorm" | "goland" | "rider" | undefined], void>>> | undefined;
-  __promise?: Thenable<RpcFunctionSetupResult<[string, "atom" | "subl" | "sublime" | "sublime_text" | "wstorm" | "charm" | "zed" | "notepad++" | "vim" | "mvim" | "joe" | "gvim" | "emacs" | "emacsclient" | "rmate" | "mate" | "code" | "code-insiders" | "codium" | "vscodium" | "trae" | "antigravity" | "cursor" | "appcode" | "clion" | "idea" | "phpstorm" | "pycharm" | "rubymine" | "webstorm" | "goland" | "rider" | undefined], void>> | undefined;
+  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], void>>> | undefined;
+  __promise?: Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], void>> | undefined;
 };
 export declare const openInFinder: {
   name: "devframe:open-in-finder";

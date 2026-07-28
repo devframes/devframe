@@ -43,7 +43,7 @@ export type KnownEditor
     | 'rider'
 
 /** Runtime list of every {@link KnownEditor}, in the order `v.picklist` reports them. */
-export const KNOWN_EDITORS = [
+export const KNOWN_EDITORS: KnownEditor[] = [
   'atom',
   'subl',
   'sublime',
@@ -76,7 +76,7 @@ export const KNOWN_EDITORS = [
   'webstorm',
   'goland',
   'rider',
-] as const satisfies readonly KnownEditor[]
+]
 
 /**
  * Prebuilt RPC action that opens a file in the user's configured editor.
@@ -103,7 +103,7 @@ export const openInEditor = defineRpcFunction({
   name: 'devframe:open-in-editor',
   type: 'action',
   jsonSerializable: true,
-  args: [v.string(), v.optional(v.picklist(KNOWN_EDITORS))],
+  args: [v.string(), v.optional(v.picklist<KnownEditor[]>(KNOWN_EDITORS))],
   returns: v.void(),
   async handler(filename: string, editor?: KnownEditor) {
     const { launchEditor } = await import('devframe/utils/launch-editor')
