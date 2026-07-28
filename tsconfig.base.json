@@ -151,8 +151,8 @@
       "@devframes/json-render-ui": [
         "./packages/json-render-ui/src/index.ts"
       ],
-      "minimal-json-render/dashboard": [
-        "./examples/minimal-json-render/src/dashboard.ts"
+      "json-render/dashboard": [
+        "./examples/json-render/src/dashboard.ts"
       ],
       "@devframes/plugin-code-server/client": [
         "./plugins/code-server/src/client/index.ts"

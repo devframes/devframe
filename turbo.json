@@ -62,7 +62,7 @@
       "dependsOn": ["devframe#build", "@devframes/hub#build"],
       "outputs": ["dist/**"]
     },
-    "minimal-vite-devframe-hub#build": {
+    "vite-devframe-hub#build": {
       "outputLogs": "new-only",
       "dependsOn": [
         "@devframes/hub#build",
@@ -78,7 +78,7 @@
       ],
       "outputs": ["dist/**"]
     },
-    "minimal-next-devframe-hub#build": {
+    "next-devframe-hub#build": {
       "outputLogs": "new-only",
       "dependsOn": [
         "@devframes/hub#build",

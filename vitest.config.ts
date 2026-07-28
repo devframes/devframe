@@ -22,7 +22,7 @@ export default defineConfig({
       'plugins/git',
       'plugins/a11y',
       'plugins/messages',
-      'examples/minimal-next-devframe-hub',
+      'examples/next-devframe-hub',
       'packages/next',
       {
         test: {

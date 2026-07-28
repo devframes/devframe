@@ -79,11 +79,11 @@ function examplesItems(prefix: string) {
     { text: 'Overview', link: `${prefix}/examples/` },
     { text: 'Built with Devframe', link: `${prefix}/examples/built-with` },
     { text: 'files-inspector', link: `${prefix}/examples/files-inspector` },
-    { text: 'minimal-json-render', link: `${prefix}/examples/minimal-json-render` },
+    { text: 'json-render', link: `${prefix}/examples/json-render` },
     { text: 'streaming-chat', link: `${prefix}/examples/streaming-chat` },
     { text: 'next-runtime-snapshot', link: `${prefix}/examples/next-runtime-snapshot` },
-    { text: 'minimal-vite-devframe-hub', link: `${prefix}/examples/minimal-vite-devframe-hub` },
-    { text: 'minimal-next-devframe-hub', link: `${prefix}/examples/minimal-next-devframe-hub` },
+    { text: 'vite-devframe-hub', link: `${prefix}/examples/vite-devframe-hub` },
+    { text: 'next-devframe-hub', link: `${prefix}/examples/next-devframe-hub` },
   ] satisfies DefaultTheme.NavItemWithLink[]
 }
 
@@ -114,17 +114,21 @@ export function devframeSidebar(prefix = ''): DefaultTheme.SidebarItem[] {
 
 export function devframeNav(prefix = ''): DefaultTheme.NavItem[] {
   return [
-    { text: 'Guide', items: guideItems(prefix) },
-    { text: 'Adapters', items: adaptersItems(prefix) },
     {
-      text: 'Resources',
+      text: 'Guide',
       items: [
-        { text: 'Examples', link: `${prefix}/examples/` },
-        { text: 'Built with Devframe', link: `${prefix}/examples/built-with` },
-        { text: 'Helpers', items: helpersItems(prefix) },
-        { text: 'Plugins', items: pluginsItems(prefix) },
+        ...guideItems(prefix),
+        { text: 'Examples', items: examplesItems(prefix) },
       ],
     },
+    {
+      text: 'Adapters',
+      items: [
+        ...adaptersItems(prefix),
+        { text: 'Helpers', items: helpersItems(prefix) },
+      ],
+    },
+    { text: 'Plugins', items: pluginsItems(prefix) },
     { text: 'Errors', link: `${prefix}/errors/` },
     {
       text: `v${pkg.version}`,

@@ -27,7 +27,7 @@ export interface A11yMessagesPlaygroundOptions {
 
 /**
  * A tiny Vite plugin that runs `@devframes/hub` inside the Vite dev server —
- * the same shape as `examples/minimal-vite-devframe-hub`, trimmed to the two
+ * the same shape as `examples/vite-devframe-hub`, trimmed to the two
  * plugins this playground pairs (a11y + messages). It creates a hub context,
  * implements the framework-neutral `DevframeHost` surface, mounts each devframe
  * as a dock (attaching the a11y agent as its client script), and exposes the

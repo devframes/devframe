@@ -1,0 +1,30 @@
+{
+  "name": "json-render",
+  "type": "module",
+  "version": "0.7.14",
+  "private": true,
+  "description": "Standalone devframe that serves a JSON-render view — a server-authored spec rendered by @devframes/json-render-ui, with live state and an action bridge.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/json-render",
+  "exports": {
+    ".": "./src/devframe.ts",
+    "./dashboard": "./src/dashboard.ts"
+  },
+  "main": "src/devframe.ts",
+  "bin": {
+    "json-render": "./bin.mjs"
+  },
+  "scripts": {
+    "dev": "node bin.mjs",
+    "cli:build": "node bin.mjs build --out-dir dist/static",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devframes/json-render": "workspace:*",
+    "@devframes/json-render-ui": "workspace:*",
+    "cac": "catalog:deps",
+    "devframe": "workspace:*"
+  },
+  "devDependencies": {
+    "get-port-please": "catalog:deps"
+  }
+}

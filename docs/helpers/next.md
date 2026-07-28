@@ -131,4 +131,4 @@ Route handlers that call `fetch` pin `export const runtime = 'nodejs'`: the stat
 
 - [Vite Bridge](./vite-bridge) — the equivalent for Vite-based hosts
 - [Hub](/guide/hub) — `createHubContext`, `mountDevframe`, and `DevframeHost`
-- [minimal-next-devframe-hub](/examples/minimal-next-devframe-hub) — a full working host
+- [next-devframe-hub](/examples/next-devframe-hub) — a full working host
