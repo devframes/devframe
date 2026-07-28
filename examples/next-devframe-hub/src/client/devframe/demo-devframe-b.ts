@@ -7,7 +7,7 @@ import pkg from '../../../package.json' with { type: 'json' }
 const HERE = dirname(fileURLToPath(import.meta.url))
 
 export default defineDevframe({
-  id: 'next-demo-tool-b',
+  id: 'example:next-demo-tool-b',
   name: 'Next Demo Tool B',
   version: pkg.version,
   packageName: pkg.name,
@@ -22,7 +22,7 @@ export default defineDevframe({
     const ctx = rawCtx as unknown as DevframeHubContext
 
     ctx.commands.register({
-      id: 'next-demo-tool-b:say-hello',
+      id: 'example:next-demo-tool-b:say-hello',
       title: 'Next Demo Tool B: Say Hello',
       icon: 'ph:hand-waving-duotone',
       category: 'demo',

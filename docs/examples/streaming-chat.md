@@ -10,7 +10,7 @@ Package: `streaming-chat-example` · framework: **Preact + Vite**
 
 ## What it shows
 
-- A scoped context (`ctx.scope('devframe-streaming-chat')`) auto-namespaces every id.
+- A scoped context (`ctx.scope('example:streaming-chat')`) auto-namespaces every id.
 - `my.rpc.streaming.create('tokens', …)` registers a streaming channel for low-latency token rendering.
 - `my.rpc.sharedState('history', …)` keeps the message log on the server; each `send` appends a user + assistant pair atomically.
 - The producer streams tokens live, then commits the joined content back to shared state when done — so refreshes and new clients see the finished message immediately.

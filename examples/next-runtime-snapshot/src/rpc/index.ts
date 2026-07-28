@@ -3,7 +3,7 @@ import { env } from './functions/env.ts'
 import { memory } from './functions/memory.ts'
 import { system } from './functions/system.ts'
 
-export const NAMESPACE = 'next-runtime-snapshot'
+export const NAMESPACE = 'example:next-runtime-snapshot'
 
 export const serverFunctions = [system, memory, env] as const
 

@@ -11,7 +11,7 @@ const BASE_PATH = '/__devframe-streaming-chat/'
 const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))
 
 export default defineDevframe({
-  id: 'devframe-streaming-chat',
+  id: 'example:streaming-chat',
   name: 'Streaming Chat',
   version: pkg.version,
   packageName: pkg.name,
@@ -32,10 +32,10 @@ export default defineDevframe({
     // A scoped context auto-namespaces channel + state ids with `NAMESPACE:`.
     const my = ctx.scope(NAMESPACE)
 
-    const channel = my.rpc.streaming.create<string>(CHANNEL, { // -> devframe-streaming-chat:tokens
+    const channel = my.rpc.streaming.create<string>(CHANNEL, { // -> example:streaming-chat:tokens
       replayWindow: 1024,
     })
-    const history = await my.rpc.sharedState(HISTORY, { // -> devframe-streaming-chat:history
+    const history = await my.rpc.sharedState(HISTORY, { // -> example:streaming-chat:history
       initialValue: { messages: [] },
     })
 

@@ -33,7 +33,7 @@ describe('next-devframe-hub (example)', () => {
 
     const docks = server.context.docks.values()
     const dockIds = docks.map(d => d.id)
-    expect(dockIds).toContain('next-demo-tool')
+    expect(dockIds).toContain('example:next-demo-tool')
     // The hub synthesizes no built-in docks; the integration registers the
     // settings tab itself, declaring the `~builtin` category explicitly.
     expect(dockIds).toContain('~settings')
@@ -47,7 +47,7 @@ describe('next-devframe-hub (example)', () => {
     server = await nextDevframeHub({ host: '127.0.0.1' })
 
     const rpc = bootRpc(server.port)
-    const messages = await rpc.$call('next-devframe-hub:messages:list') as { message: string }[]
+    const messages = await rpc.$call('example:next-devframe-hub:messages:list') as { message: string }[]
     expect(messages.map(m => m.message)).toContain('Next Devframe Hub started')
     expect(messages.map(m => m.message)).toContain('Next demo devframe loaded')
   })
@@ -57,7 +57,7 @@ describe('next-devframe-hub (example)', () => {
 
     const rpc = bootRpc(server.port)
     await expect(
-      rpc.$call('hub:commands:execute', 'next-devframe-hub:ping'),
+      rpc.$call('hub:commands:execute', 'example:next-devframe-hub:ping'),
     ).resolves.toBe('pong')
   })
 })

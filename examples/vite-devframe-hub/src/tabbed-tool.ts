@@ -13,7 +13,7 @@ import pkg from '../package.json' with { type: 'json' }
  * multi-tab tool like Nuxt DevTools.
  */
 export default defineDevframe({
-  id: 'tabbed-tool',
+  id: 'example:tabbed-tool',
   name: 'Tabbed Tool',
   version: pkg.version,
   packageName: pkg.name,

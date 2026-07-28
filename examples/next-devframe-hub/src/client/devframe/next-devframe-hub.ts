@@ -103,7 +103,7 @@ export interface StartedNextDevframeHub extends StartedServer {
 }
 
 const nextHubMessagesList = defineHubRpcFunction({
-  name: 'next-devframe-hub:messages:list',
+  name: 'example:next-devframe-hub:messages:list',
   type: 'static',
   jsonSerializable: true,
   setup: (ctx: DevframeHubContext) => ({
@@ -114,7 +114,7 @@ const nextHubMessagesList = defineHubRpcFunction({
 })
 
 const nextHubTerminalsList = defineHubRpcFunction({
-  name: 'next-devframe-hub:terminals:list',
+  name: 'example:next-devframe-hub:terminals:list',
   type: 'static',
   jsonSerializable: true,
   setup: (ctx: DevframeHubContext) => ({
@@ -170,7 +170,7 @@ export async function nextDevframeHub(
   })
 
   context.commands.register({
-    id: 'next-devframe-hub:ping',
+    id: 'example:next-devframe-hub:ping',
     title: 'Next Hub: Ping',
     icon: 'ph:bell-duotone',
     category: 'hub',
@@ -219,7 +219,7 @@ export async function nextDevframeHub(
   // renders it with a mini React registry (registry replacement).
   const jsonRenderView = createDashboardView(context)
   context.docks.register(toJsonRenderDockEntry(jsonRenderView, {
-    id: 'json-render',
+    id: 'example:json-render',
     title: 'JSON Render',
     icon: 'ph:layout-duotone',
     category: 'app',

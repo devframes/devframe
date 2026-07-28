@@ -34,7 +34,7 @@ describe('next-runtime-snapshot (example)', () => {
 
   it('returns system info from the static RPC', async () => {
     const rpc = bootRpc(server.port)
-    const info = await rpc.$call('next-runtime-snapshot:system') as SystemInfo
+    const info = await rpc.$call('example:next-runtime-snapshot:system') as SystemInfo
     expect(info.node).toBe(process.version)
     expect(info.platform).toBe(process.platform)
     expect(info.arch).toBe(process.arch)
@@ -45,7 +45,7 @@ describe('next-runtime-snapshot (example)', () => {
 
   it('returns a memory snapshot with the expected shape', async () => {
     const rpc = bootRpc(server.port)
-    const snap = await rpc.$call('next-runtime-snapshot:memory') as MemorySnapshot
+    const snap = await rpc.$call('example:next-runtime-snapshot:memory') as MemorySnapshot
     expect(snap.memory.rss).toBeGreaterThan(0)
     expect(snap.memory.heapTotal).toBeGreaterThan(0)
     expect(snap.memory.heapUsed).toBeGreaterThan(0)
@@ -55,9 +55,9 @@ describe('next-runtime-snapshot (example)', () => {
 
   it('refreshing memory yields monotonically non-decreasing uptime', async () => {
     const rpc = bootRpc(server.port)
-    const first = await rpc.$call('next-runtime-snapshot:memory') as MemorySnapshot
+    const first = await rpc.$call('example:next-runtime-snapshot:memory') as MemorySnapshot
     await new Promise(r => setTimeout(r, 30))
-    const second = await rpc.$call('next-runtime-snapshot:memory') as MemorySnapshot
+    const second = await rpc.$call('example:next-runtime-snapshot:memory') as MemorySnapshot
     expect(second.uptimeSeconds).toBeGreaterThanOrEqual(first.uptimeSeconds)
     expect(second.capturedAt).toBeGreaterThanOrEqual(first.capturedAt)
   })
@@ -67,7 +67,7 @@ describe('next-runtime-snapshot (example)', () => {
     // Seed an env var that is guaranteed to match the filter.
     process.env.DEVFRAME_TEST_MARKER = 'present'
     try {
-      const snap = await rpc.$call('next-runtime-snapshot:env', { pattern: 'devframe_test_marker' }) as EnvSnapshot
+      const snap = await rpc.$call('example:next-runtime-snapshot:env', { pattern: 'devframe_test_marker' }) as EnvSnapshot
       expect(snap.pattern).toBe('devframe_test_marker')
       expect(snap.total).toBe(1)
       const entry = snap.entries.find(e => e.key === 'DEVFRAME_TEST_MARKER')
@@ -85,7 +85,7 @@ describe('next-runtime-snapshot (example)', () => {
     process.env.DEVFRAME_TEST_API_KEY = 'sk-xyz-123'
     process.env.DEVFRAME_TEST_SECRET_PAYLOAD = 'shh'
     try {
-      const snap = await rpc.$call('next-runtime-snapshot:env', { pattern: 'DEVFRAME_TEST_' }) as EnvSnapshot
+      const snap = await rpc.$call('example:next-runtime-snapshot:env', { pattern: 'DEVFRAME_TEST_' }) as EnvSnapshot
       const apiKey = snap.entries.find(e => e.key === 'DEVFRAME_TEST_API_KEY')!
       const secret = snap.entries.find(e => e.key === 'DEVFRAME_TEST_SECRET_PAYLOAD')!
       expect(apiKey.redacted).toBe(true)
@@ -101,7 +101,7 @@ describe('next-runtime-snapshot (example)', () => {
 
   it('returns all env vars when no pattern is supplied (up to the limit)', async () => {
     const rpc = bootRpc(server.port)
-    const snap = await rpc.$call('next-runtime-snapshot:env', { pattern: '', limit: 5 }) as EnvSnapshot
+    const snap = await rpc.$call('example:next-runtime-snapshot:env', { pattern: '', limit: 5 }) as EnvSnapshot
     expect(snap.entries.length).toBeLessThanOrEqual(5)
     expect(snap.total).toBeGreaterThan(0)
     expect(snap.total).toBeGreaterThanOrEqual(snap.entries.length)
@@ -110,7 +110,7 @@ describe('next-runtime-snapshot (example)', () => {
   it('matches nothing on an invalid regex pattern', async () => {
     const rpc = bootRpc(server.port)
     // '[' is unterminated — `new RegExp('[', 'i')` throws SyntaxError.
-    const snap = await rpc.$call('next-runtime-snapshot:env', { pattern: '[' }) as EnvSnapshot
+    const snap = await rpc.$call('example:next-runtime-snapshot:env', { pattern: '[' }) as EnvSnapshot
     expect(snap.entries).toEqual([])
     expect(snap.total).toBe(0)
     expect(snap.pattern).toBe('[')
@@ -118,8 +118,8 @@ describe('next-runtime-snapshot (example)', () => {
 
   it('respects the limit cap on the entries slice', async () => {
     const rpc = bootRpc(server.port)
-    const small = await rpc.$call('next-runtime-snapshot:env', { pattern: '', limit: 2 }) as EnvSnapshot
-    const big = await rpc.$call('next-runtime-snapshot:env', { pattern: '', limit: 100 }) as EnvSnapshot
+    const small = await rpc.$call('example:next-runtime-snapshot:env', { pattern: '', limit: 2 }) as EnvSnapshot
+    const big = await rpc.$call('example:next-runtime-snapshot:env', { pattern: '', limit: 100 }) as EnvSnapshot
     expect(small.entries.length).toBeLessThanOrEqual(2)
     expect(big.entries.length).toBeGreaterThanOrEqual(small.entries.length)
     expect(big.total).toBe(small.total)

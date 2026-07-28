@@ -6,6 +6,6 @@ export const VIEW_ID = 'dashboard'
 
 // Spec action names dispatched by the bridge — each is an RPC method the server
 // registers.
-export const REFRESH_ACTION = 'json-render:refresh'
-export const DEPLOY_ACTION = 'json-render:deploy'
-export const SAVE_ACTION = 'json-render:save'
+export const REFRESH_ACTION = 'example:json-render:refresh'
+export const DEPLOY_ACTION = 'example:json-render:deploy'
+export const SAVE_ACTION = 'example:json-render:save'

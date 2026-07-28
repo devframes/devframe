@@ -86,7 +86,7 @@ export default defineConfig({
       onContextReady: async (context) => {
         const view = createDashboardView(context)
         context.docks.register(toJsonRenderDockEntry(view, {
-          id: 'json-render',
+          id: 'example:json-render',
           title: 'JSON Render',
           icon: 'ph:layout-duotone',
           category: 'app',

@@ -7,17 +7,17 @@ type-safe RPC.
 
 ## What it shows
 
-- `next-runtime-snapshot:system` — a `static` RPC function. Runs once at
+- `example:next-runtime-snapshot:system` — a `static` RPC function. Runs once at
   build time when baked into a static dump, otherwise resolved live over
   WebSocket. Returns Node version, platform/arch, pid, cwd, start time.
-- `next-runtime-snapshot:memory` — a `query` RPC function. Re-runnable;
+- `example:next-runtime-snapshot:memory` — a `query` RPC function. Re-runnable;
   the UI has a refresh button that re-invokes the handler.
-- `next-runtime-snapshot:env` — a `query` RPC function with valibot-validated
+- `example:next-runtime-snapshot:env` — a `query` RPC function with valibot-validated
   args (`pattern`, `limit`). Lists environment variables matching a regex,
   redacting keys that look secret.
 - Next.js App Router with `'use client'` components calling
   `connectDevframe()` once, then sharing the scoped client
-  (`client.scope('next-runtime-snapshot')`) through React context.
+  (`client.scope('example:next-runtime-snapshot')`) through React context.
 
 ## Run it
 

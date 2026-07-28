@@ -5,7 +5,7 @@ import { nav, navBrand, tab as tabClass, tabsList } from './design'
 import { About } from './routes/about'
 import { Home } from './routes/home'
 
-const NAMESPACE = 'devframe-files-inspector'
+const NAMESPACE = 'example:files-inspector'
 export type InspectorCtx = DevframeScopedClientContext<typeof NAMESPACE>
 
 const NAV_ITEMS = [

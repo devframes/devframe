@@ -391,7 +391,7 @@ async function main() {
   //    to refresh on broadcast; this minimal example polls instead.
   const refreshMessages = async () => {
     const entries = await rpc.call(
-      'vite-devframe-hub:messages:list' as any,
+      'example:vite-devframe-hub:messages:list' as any,
     ) as DevframeMessageEntry[]
     renderList(messagesEl, entries, m =>
       `<li class="rounded-lg border border-base bg-base px2.5 py1.5 text-xs font-mono"><span class="op-fade">[${m.level}]</span> ${m.message}</li>`)
@@ -401,7 +401,7 @@ async function main() {
   // 4. Terminals — same pattern as messages.
   const refreshTerminals = async () => {
     const sessions = await rpc.call(
-      'vite-devframe-hub:terminals:list' as any,
+      'example:vite-devframe-hub:terminals:list' as any,
     ) as Pick<DevframeTerminalSession, 'id' | 'title' | 'status' | 'description'>[]
     renderList(terminalsEl, sessions, t =>
       `<li class="rounded-lg border border-base bg-base px2.5 py1.5 text-xs font-mono">${t.title} <code class="op-fade">${t.id}</code> · ${t.status}</li>`)
@@ -419,7 +419,7 @@ async function main() {
     try {
       const result = await rpc.call(
         'hub:commands:execute' as any,
-        'vite-devframe-hub:ping',
+        'example:vite-devframe-hub:ping',
       )
       pingBtn.textContent = `Ping returned ${JSON.stringify(result)}`
     }

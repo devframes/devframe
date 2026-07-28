@@ -7,7 +7,7 @@ const BASE_PATH = '/__devframe-files-inspector/'
 const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))
 
 export default defineDevframe({
-  id: 'devframe-files-inspector',
+  id: 'example:files-inspector',
   name: 'Files Inspector',
   version: pkg.version,
   packageName: pkg.name,

@@ -59,10 +59,10 @@ describe('dev-server (CLI surface)', () => {
     })
     const rpc = createRpcClient<any, any>({}, { channel })
 
-    const cwdResult = await rpc.$call('devframe-files-inspector:get-cwd')
+    const cwdResult = await rpc.$call('example:files-inspector:get-cwd')
     expect(cwdResult).toEqual({ cwd })
 
-    const files = await rpc.$call('devframe-files-inspector:list-files')
+    const files = await rpc.$call('example:files-inspector:list-files')
     expect(files).toEqual(['README.md', 'package.json', 'sample.txt'])
   })
 })

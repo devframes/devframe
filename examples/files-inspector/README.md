@@ -1,4 +1,4 @@
-# devframe-files-inspector
+# files-inspector
 
 A simplified [node-modules-inspector](https://github.com/antfu/node-modules-inspector)-style example built on [devframe](../../packages/devframe). Lists files in the current working directory and renders them through a Preact SPA. Exercises every devframe surface end-to-end:
 

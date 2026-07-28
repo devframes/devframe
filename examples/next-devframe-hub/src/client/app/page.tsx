@@ -284,7 +284,7 @@ export default function Page() {
 
         const refreshMessages = async () => {
           const entries = await rpc.call(
-            'next-devframe-hub:messages:list' as any,
+            'example:next-devframe-hub:messages:list' as any,
           ) as DevframeMessageEntry[]
           if (!cancelled)
             setMessages(entries)
@@ -292,7 +292,7 @@ export default function Page() {
 
         const refreshTerminals = async () => {
           const sessions = await rpc.call(
-            'next-devframe-hub:terminals:list' as any,
+            'example:next-devframe-hub:terminals:list' as any,
           ) as TerminalSummary[]
           if (!cancelled)
             setTerminals(sessions)
@@ -427,7 +427,7 @@ export default function Page() {
     try {
       const result = await rpcRef.current.call(
         'hub:commands:execute' as any,
-        'next-devframe-hub:ping',
+        'example:next-devframe-hub:ping',
       )
       setPingResult(`Ping returned ${JSON.stringify(result)}`)
     }

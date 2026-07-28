@@ -7,7 +7,7 @@ import { useMemo } from 'react'
 
 // Inlined (not imported from the server `rpc/index.ts`) so the client
 // bundle stays free of node-only server code.
-const NAMESPACE = 'next-runtime-snapshot'
+const NAMESPACE = 'example:next-runtime-snapshot'
 
 export type SnapshotCtx = DevframeScopedClientContext<typeof NAMESPACE>
 

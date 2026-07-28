@@ -48,7 +48,7 @@ function sanitizeSpec(spec: Spec): Spec {
       if (!result.success) {
         changed = true
         const issues = result.error.issues.map(i => `${i.path.join('.') || '(root)'}: ${i.message}`).join('; ')
-        console.warn(`[next-devframe-hub] invalid props on element "${key}" (${element.type}): ${issues}`)
+        console.warn(`[example:next-devframe-hub] invalid props on element "${key}" (${element.type}): ${issues}`)
         elements[key] = { ...element, type: ERROR_COMPONENT_TYPE, props: { message: `${element.type}: ${issues}` } }
         continue
       }

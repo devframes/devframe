@@ -4,7 +4,7 @@ import { defineDevframe } from 'devframe/types'
 import pkg from '../package.json' with { type: 'json' }
 
 export default defineDevframe({
-  id: 'demo-tool-b',
+  id: 'example:demo-tool-b',
   name: 'Demo Tool B',
   version: pkg.version,
   packageName: pkg.name,
@@ -19,7 +19,7 @@ export default defineDevframe({
     const ctx = rawCtx as unknown as DevframeHubContext
 
     ctx.commands.register({
-      id: 'demo-tool-b:say-hello',
+      id: 'example:demo-tool-b:say-hello',
       title: 'Demo B · Say Hello',
       icon: 'ph:hand-waving-duotone',
       category: 'demo',

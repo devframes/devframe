@@ -35,7 +35,7 @@ export interface ViteDevframeHubOptions {
 // Minimal hub-local RPCs — used by the UI for read-side data. A more
 // ambitious hub host might hoist these into `@devframes/hub` itself.
 const viteHubMessagesList = defineHubRpcFunction({
-  name: 'vite-devframe-hub:messages:list',
+  name: 'example:vite-devframe-hub:messages:list',
   type: 'static',
   jsonSerializable: true,
   setup: (ctx: DevframeHubContext) => ({
@@ -46,7 +46,7 @@ const viteHubMessagesList = defineHubRpcFunction({
 })
 
 const viteHubTerminalsList = defineHubRpcFunction({
-  name: 'vite-devframe-hub:terminals:list',
+  name: 'example:vite-devframe-hub:terminals:list',
   type: 'static',
   jsonSerializable: true,
   setup: (ctx: DevframeHubContext) => ({
@@ -147,7 +147,7 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       // Seed a sample command directly on the hub so the UI
       // shows something even without any plugged-in devframes.
       context.commands.register({
-        id: 'vite-devframe-hub:ping',
+        id: 'example:vite-devframe-hub:ping',
         title: 'Vite Hub · Ping',
         icon: 'ph:bell-duotone',
         category: 'kit',
