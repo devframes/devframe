@@ -10,12 +10,12 @@ export declare const openHelpers: readonly [{
   returns: v.VoidSchema<undefined>;
   jsonSerializable?: boolean;
   agent?: RpcFunctionAgentOptions;
-  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], void>>) | undefined;
-  handler?: ((args_0: string) => void) | undefined;
-  dump?: RpcDump<[string], void, undefined> | undefined;
+  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], Thenable<void>>>) | undefined;
+  handler?: ((args_0: string) => Thenable<void>) | undefined;
+  dump?: RpcDump<[string], Thenable<void>, undefined> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], void>>> | undefined;
-  __promise?: Thenable<RpcFunctionSetupResult<[string], void>> | undefined;
+  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], Thenable<void>>>> | undefined;
+  __promise?: Thenable<RpcFunctionSetupResult<[string], Thenable<void>>> | undefined;
 }, {
   name: "devframe:open-in-finder";
   type?: "action" | undefined;
@@ -24,12 +24,12 @@ export declare const openHelpers: readonly [{
   returns: v.VoidSchema<undefined>;
   jsonSerializable?: boolean;
   agent?: RpcFunctionAgentOptions;
-  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], void>>) | undefined;
-  handler?: ((args_0: string) => void) | undefined;
-  dump?: RpcDump<[string], void, undefined> | undefined;
+  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], Thenable<void>>>) | undefined;
+  handler?: ((args_0: string) => Thenable<void>) | undefined;
+  dump?: RpcDump<[string], Thenable<void>, undefined> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], void>>> | undefined;
-  __promise?: Thenable<RpcFunctionSetupResult<[string], void>> | undefined;
+  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], Thenable<void>>>> | undefined;
+  __promise?: Thenable<RpcFunctionSetupResult<[string], Thenable<void>>> | undefined;
 }];
 export declare const openInEditor: {
   name: "devframe:open-in-editor";
@@ -39,12 +39,12 @@ export declare const openInEditor: {
   returns: v.VoidSchema<undefined>;
   jsonSerializable?: boolean;
   agent?: RpcFunctionAgentOptions;
-  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], void>>) | undefined;
-  handler?: ((args_0: string) => void) | undefined;
-  dump?: RpcDump<[string], void, undefined> | undefined;
+  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], Thenable<void>>>) | undefined;
+  handler?: ((args_0: string) => Thenable<void>) | undefined;
+  dump?: RpcDump<[string], Thenable<void>, undefined> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], void>>> | undefined;
-  __promise?: Thenable<RpcFunctionSetupResult<[string], void>> | undefined;
+  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], Thenable<void>>>> | undefined;
+  __promise?: Thenable<RpcFunctionSetupResult<[string], Thenable<void>>> | undefined;
 };
 export declare const openInFinder: {
   name: "devframe:open-in-finder";
@@ -54,11 +54,11 @@ export declare const openInFinder: {
   returns: v.VoidSchema<undefined>;
   jsonSerializable?: boolean;
   agent?: RpcFunctionAgentOptions;
-  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], void>>) | undefined;
-  handler?: ((args_0: string) => void) | undefined;
-  dump?: RpcDump<[string], void, undefined> | undefined;
+  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], Thenable<void>>>) | undefined;
+  handler?: ((args_0: string) => Thenable<void>) | undefined;
+  dump?: RpcDump<[string], Thenable<void>, undefined> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], void>>> | undefined;
-  __promise?: Thenable<RpcFunctionSetupResult<[string], void>> | undefined;
+  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], Thenable<void>>>> | undefined;
+  __promise?: Thenable<RpcFunctionSetupResult<[string], Thenable<void>>> | undefined;
 };
 // #endregion

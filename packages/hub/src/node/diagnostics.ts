@@ -80,5 +80,9 @@ export const diagnostics = defineDiagnostics({
       why: (p: { id: string }) => `Command id "${p.id}" is already used by another command or child command`,
       fix: 'Use globally unique command ids for top-level commands and all child commands.',
     },
+    DF8404: {
+      why: (p: { id: string }) => `Command "${p.id}" declares agent exposure but has no handler`,
+      fix: 'Agent-exposed commands must be executable server-side. Add a `handler` to the command, or move the `agent` field to an executable child command.',
+    },
   },
 })

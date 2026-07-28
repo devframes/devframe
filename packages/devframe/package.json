@@ -54,6 +54,7 @@
     "./utils/shared-state": "./dist/utils/shared-state.mjs",
     "./utils/streaming-channel": "./dist/utils/streaming-channel.mjs",
     "./utils/structured-clone": "./dist/utils/structured-clone.mjs",
+    "./utils/valibot-json-schema": "./dist/utils/valibot-json-schema.mjs",
     "./utils/when": "./dist/utils/when.mjs",
     "./package.json": "./package.json"
   },

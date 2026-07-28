@@ -48,6 +48,7 @@
     "pathe": "catalog:deps",
     "perfect-debounce": "catalog:deps",
     "tinyexec": "catalog:deps",
+    "valibot": "catalog:deps",
     "zigpty": "catalog:deps"
   },
   "devDependencies": {

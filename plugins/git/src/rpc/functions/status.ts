@@ -168,6 +168,10 @@ export const status = defineRpcFunction({
   type: 'query',
   snapshot: true,
   jsonSerializable: true,
+  agent: {
+    description: 'Working-tree status of the inspected repository: current branch, ahead/behind counts, and every staged/unstaged/untracked file. Call this first to orient before reading diffs or history. Safe to call freely.',
+    title: 'Git status',
+  },
   setup: (ctx) => {
     const git = getGitContext(ctx)
     return {

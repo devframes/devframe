@@ -176,4 +176,84 @@ describe('mcp adapter (in-memory)', () => {
       await cleanup()
     }
   })
+
+  it('exposes shared state through the built-in read_state tool', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      await ctx.rpc.sharedState.get('my-plugin:counter', {
+        initialValue: { count: 7 },
+      })
+
+      const listed = await client.listTools()
+      const tool = listed.tools.find(t => t.name === 'read_state')
+      expect(tool).toBeDefined()
+      expect(tool!.annotations?.readOnlyHint).toBe(true)
+
+      // No key → key list.
+      const keys = await client.callTool({ name: 'read_state', arguments: {} })
+      expect(keys.structuredContent).toEqual({ keys: ['my-plugin:counter'] })
+
+      // With key → the value.
+      const value = await client.callTool({ name: 'read_state', arguments: { key: 'my-plugin:counter' } })
+      expect(value.structuredContent).toEqual({ key: 'my-plugin:counter', value: { count: 7 } })
+
+      // Unknown key → agent-actionable error.
+      const missing = await client.callTool({ name: 'read_state', arguments: { key: 'nope' } })
+      expect(missing.isError).toBe(true)
+      const content = missing.content as Array<{ text: string }>
+      expect(content[0]!.text).toContain('unknown shared-state key')
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('hides read_state when shared-state exposure is disabled', async () => {
+    const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
+    const { server, dispose } = buildMcpServerFromContext(ctx, {
+      serverName: 'test',
+      serverVersion: '0.0.0-test',
+      exposeSharedState: false,
+    })
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    await server.connect(serverTransport)
+    const client = new Client({ name: 'test-client', version: '0.0.0' })
+    await client.connect(clientTransport)
+    try {
+      const listed = await client.listTools()
+      expect(listed.tools.map(t => t.name)).not.toContain('read_state')
+    }
+    finally {
+      dispose()
+      await client.close()
+      await server.close()
+    }
+  })
+
+  it('respects the shared-state filter in read_state', async () => {
+    const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
+    await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
+    await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
+    const { server, dispose } = buildMcpServerFromContext(ctx, {
+      serverName: 'test',
+      serverVersion: '0.0.0-test',
+      exposeSharedState: key => key.startsWith('visible:'),
+    })
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    await server.connect(serverTransport)
+    const client = new Client({ name: 'test-client', version: '0.0.0' })
+    await client.connect(clientTransport)
+    try {
+      const keys = await client.callTool({ name: 'read_state', arguments: {} })
+      expect(keys.structuredContent).toEqual({ keys: ['visible:key'] })
+
+      const hidden = await client.callTool({ name: 'read_state', arguments: { key: 'hidden:key' } })
+      expect(hidden.isError).toBe(true)
+    }
+    finally {
+      dispose()
+      await client.close()
+      await server.close()
+    }
+  })
 })

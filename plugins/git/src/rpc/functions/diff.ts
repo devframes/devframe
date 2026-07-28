@@ -1,4 +1,5 @@
 import { defineRpcFunction } from 'devframe'
+import * as v from 'valibot'
 import { runGit, splitClean, tryGit } from '../../node/git.ts'
 import { getGitContext } from '../context.ts'
 
@@ -25,6 +26,24 @@ export interface GitDiff {
   truncated: boolean
 }
 
+const diffFileSchema = v.object({
+  path: v.string(),
+  additions: v.number(),
+  deletions: v.number(),
+  binary: v.boolean(),
+})
+
+const gitDiffSchema = v.object({
+  isRepo: v.boolean(),
+  staged: v.boolean(),
+  path: v.nullable(v.string()),
+  files: v.array(diffFileSchema),
+  totalAdditions: v.number(),
+  totalDeletions: v.number(),
+  patch: v.nullable(v.string()),
+  truncated: v.boolean(),
+})
+
 export interface DiffArgs {
   /** Limit the diff to a single path; omit for the whole tree. */
   path?: string
@@ -50,6 +69,15 @@ export const diff = defineRpcFunction({
   type: 'query',
   snapshot: true,
   jsonSerializable: true,
+  args: [v.object({
+    path: v.optional(v.string()),
+    staged: v.optional(v.boolean()),
+  })],
+  returns: gitDiffSchema,
+  agent: {
+    description: 'Unified diff of uncommitted changes in the inspected repository — the working tree by default, the index with staged: true, one file with path. Call before summarizing or reviewing in-progress work. Safe to call freely.',
+    title: 'Git diff',
+  },
   setup: (ctx) => {
     const git = getGitContext(ctx)
     return {

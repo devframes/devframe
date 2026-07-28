@@ -68,7 +68,7 @@ export function buildMcpServerFromContext(
     },
   )
 
-  registerToolHandlers(server, ctx)
+  registerToolHandlers(server, ctx, options.exposeSharedState)
   registerResourceHandlers(server, ctx, options.exposeSharedState)
 
   const notify = (method: string): void => {
@@ -151,15 +151,85 @@ export async function createMcpServer(
   }
 }
 
-function registerToolHandlers(server: Server, ctx: DevframeNodeContext): void {
+/**
+ * Name of the built-in shared-state read tool. Tool-shaped access matters
+ * because many MCP clients only consume tools — the parallel
+ * `devframe://state/<key>` resource projection stays for the clients that do
+ * read resources.
+ */
+const READ_STATE_TOOL = 'read_state'
+
+function sharedStateFilter(exposeSharedState: boolean | ((key: string) => boolean)): ((key: string) => boolean) | undefined {
+  if (exposeSharedState === false)
+    return undefined
+  return typeof exposeSharedState === 'function' ? exposeSharedState : () => true
+}
+
+function readStateToolProjection(): Record<string, unknown> {
+  return {
+    name: READ_STATE_TOOL,
+    title: 'Read shared state',
+    description: 'Read this devtool\'s live shared state. Call without arguments to list the available keys, then with a key to get that value as JSON. Safe to call freely.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        key: {
+          type: 'string',
+          description: 'A shared-state key from the key list. Omit to list all keys.',
+        },
+      },
+    },
+    annotations: {
+      title: 'Read shared state',
+      readOnlyHint: true,
+      destructiveHint: false,
+    },
+  }
+}
+
+async function readStateResult(
+  ctx: DevframeNodeContext,
+  filter: (key: string) => boolean,
+  key: string | undefined,
+): Promise<unknown> {
+  const keys = ctx.rpc.sharedState.keys().filter(filter)
+  if (key === undefined)
+    return { keys }
+  if (!keys.includes(key))
+    throw new Error(`unknown shared-state key "${key}" — call ${READ_STATE_TOOL} without arguments to list the available keys`)
+  const state = await ctx.rpc.sharedState.get(key)
+  return { key, value: state.value() }
+}
+
+function registerToolHandlers(
+  server: Server,
+  ctx: DevframeNodeContext,
+  exposeSharedState: boolean | ((key: string) => boolean),
+): void {
+  const stateFilter = sharedStateFilter(exposeSharedState)
+
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     const tools = ctx.agent.list().tools.map(tool => projectTool(tool, ctx))
+    // A registered agent tool of the same name wins over the built-in.
+    if (stateFilter && !ctx.agent.getTool(READ_STATE_TOOL))
+      tools.push(readStateToolProjection())
     return { tools }
   })
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params
     try {
+      // Built-in shared-state read. A registered agent tool of the same
+      // name wins (mirroring the list projection above); plugin tools keep
+      // namespaced ids (`<plugin>:<tool>`), so collisions are deliberate.
+      if (stateFilter && name === READ_STATE_TOOL && !ctx.agent.getTool(READ_STATE_TOOL)) {
+        const key = (args as { key?: string } | undefined)?.key
+        const result = await readStateResult(ctx, stateFilter, key)
+        return {
+          content: [{ type: 'text', text: stringifyForMcp(result) }],
+          structuredContent: result as Record<string, unknown>,
+        }
+      }
       const tool = ctx.agent.getTool(name)
       const outputSchema = tool
         ? tool.outputSchema ?? computeOutputSchema(tool, ctx)

@@ -303,11 +303,15 @@ export type RpcFunctionDefinition<
          */
         agent?: RpcFunctionAgentOptions
         /** Setup function called with context to initialize handler and dump */
-        setup?: (context: CONTEXT) => Thenable<RpcFunctionSetupResult<InferArgsType<AS>, InferReturnType<RS>>>
-        /** Function implementation (required if setup doesn't provide one) */
-        handler?: (...args: InferArgsType<AS>) => InferReturnType<RS>
+        setup?: (context: CONTEXT) => Thenable<RpcFunctionSetupResult<InferArgsType<AS>, Thenable<InferReturnType<RS>>>>
+        /**
+         * Function implementation (required if setup doesn't provide one).
+         * The declared `returns` schema describes the *resolved* value —
+         * async handlers return a promise of it (the runtime always awaits).
+         */
+        handler?: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>
         /** Dump definition (setup dump takes priority) */
-        dump?: RpcDump<InferArgsType<AS>, InferReturnType<RS>, CONTEXT>
+        dump?: RpcDump<InferArgsType<AS>, Thenable<InferReturnType<RS>>, CONTEXT>
         /**
          * Sugar for "query in dev, single baked snapshot in build": when
          * `true` and no `dump` is provided, the build adapter runs the
@@ -318,9 +322,9 @@ export type RpcFunctionDefinition<
          */
         snapshot?: boolean
         /** Per-context setup-result cache, populated by `getRpcResolvedSetupResult`. @internal */
-        __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<InferArgsType<AS>, InferReturnType<RS>>>>
+        __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<InferArgsType<AS>, Thenable<InferReturnType<RS>>>>>
         /** Single-slot fallback for primitive contexts. @internal */
-        __promise?: Thenable<RpcFunctionSetupResult<InferArgsType<AS>, InferReturnType<RS>>>
+        __promise?: Thenable<RpcFunctionSetupResult<InferArgsType<AS>, Thenable<InferReturnType<RS>>>>
       }
 
 export type RpcFunctionDefinitionToFunction<T extends RpcFunctionDefinitionAny>

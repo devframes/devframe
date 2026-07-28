@@ -79,6 +79,8 @@ ctx.agent.registerResource({
 
 Every `ctx.rpc.sharedState` key is also automatically exposed to MCP as `devframe://state/<key>`. Pass `exposeSharedState: false` (or a filter function) to `createMcpServer` to opt out.
 
+Shared state is additionally reachable through the built-in **`read_state` tool** — call it without arguments for the key list, with a `key` for that value — since many MCP clients only consume tools. It honors the same `exposeSharedState` filter as the resource projection.
+
 ## Starting the MCP server
 
 The simplest path is the CLI:

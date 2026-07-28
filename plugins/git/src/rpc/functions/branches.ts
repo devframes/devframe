@@ -46,6 +46,10 @@ export const branches = defineRpcFunction({
   type: 'query',
   snapshot: true,
   jsonSerializable: true,
+  agent: {
+    description: 'List local and remote branches of the inspected repository with tracking state (ahead/behind, gone upstreams) and the current branch. Safe to call freely.',
+    title: 'Git branches',
+  },
   setup: (ctx) => {
     const git = getGitContext(ctx)
     return {

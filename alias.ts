@@ -31,6 +31,7 @@ export const alias = {
   'devframe/utils/shared-state': r('devframe/src/utils/shared-state.ts'),
   'devframe/utils/streaming-channel': r('devframe/src/utils/streaming-channel.ts'),
   'devframe/utils/structured-clone': r('devframe/src/utils/structured-clone.ts'),
+  'devframe/utils/valibot-json-schema': r('devframe/src/utils/valibot-json-schema.ts'),
   'devframe/utils/when': r('devframe/src/utils/when.ts'),
   'devframe/adapters/cac': r('devframe/src/adapters/cac.ts'),
   'devframe/adapters/cli': r('devframe/src/adapters/cli.ts'),

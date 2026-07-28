@@ -79,6 +79,9 @@
       "devframe/utils/structured-clone": [
         "./packages/devframe/src/utils/structured-clone.ts"
       ],
+      "devframe/utils/valibot-json-schema": [
+        "./packages/devframe/src/utils/valibot-json-schema.ts"
+      ],
       "devframe/utils/when": [
         "./packages/devframe/src/utils/when.ts"
       ],

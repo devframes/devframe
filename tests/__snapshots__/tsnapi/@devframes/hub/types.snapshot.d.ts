@@ -11,6 +11,7 @@ export { DevframeChildProcessOutput }
 export { DevframeChildProcessResult }
 export { DevframeChildProcessTerminalSession }
 export { DevframeClientCommand }
+export { DevframeCommandAgentOptions }
 export { DevframeCommandBase }
 export { DevframeCommandEntry }
 export { DevframeCommandHandle }

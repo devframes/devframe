@@ -30,6 +30,24 @@ Every hub context auto-registers these RPC functions so framework kits don't rei
 
 Host-specific capabilities (open in editor, reveal in finder, …) ship as kit-registered RPC functions rather than as part of the hub surface.
 
+## Commands as agent tools
+
+A server command opts into the [agent surface](./agent-native) with an `agent` field — the same default-deny convention as `defineRpcFunction`. Agent-flagged, handler-bearing commands are projected into `ctx.agent` as callable tools and reach MCP clients through the devframe MCP adapter:
+
+```ts
+ctx.commands.register({
+  id: 'app:build',
+  title: 'Run build',
+  agent: {
+    description: 'Run the production build. Call after config or dependency changes to verify the app still builds.',
+    args: [v.object({ configFile: v.optional(v.string()) })],
+  },
+  handler: (opts?: { configFile?: string }) => runBuild(opts),
+})
+```
+
+`args` takes positional valibot schemas (a single `v.object(...)` is unwrapped into the tool's input object); omit it for a zero-argument tool. `safety` defaults to `'action'`. `when` clauses evaluate client-side only and are not enforced for agent calls — opt in a `when`-gated command only if running it outside its UI context is safe.
+
 ## Cross-iframe dock activation
 
 The viewer's active dock is client-local state — which dock is on screen lives in the shell page, not in shared state. A mounted devframe runs in its own iframe on its own RPC client, so it can't reach that selection directly. `hub:docks:activate` bridges the gap: any connected client asks the hub to switch the active dock, and the hub relays the request to the shell.

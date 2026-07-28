@@ -13,6 +13,7 @@ export declare class DevframeCommandsHost implements DevframeCommandsHost$1 {
   readonly context: DevframeHubContext;
   readonly commands: DevframeCommandsHost$1['commands'];
   readonly events: DevframeCommandsHost$1['events'];
+  private readonly agentHandles;
   constructor(_: DevframeHubContext);
   register(_: DevframeServerCommandInput): DevframeCommandHandle;
   unregister(_: string): boolean;
@@ -20,6 +21,9 @@ export declare class DevframeCommandsHost implements DevframeCommandsHost$1 {
   list(): DevframeServerCommandEntry[];
   private findCommand;
   private toSerializable;
+  private validateAgentExposure;
+  private registerAgentTools;
+  private unregisterAgentTools;
 }
 export declare class DevframeDocksHost implements DevframeDocksHost$1 {
   readonly context: DevframeHubContext;
