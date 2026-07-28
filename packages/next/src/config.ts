@@ -22,7 +22,7 @@ export interface DevframeNextConfig {
  * import { withDevframe } from '@devframes/next'
  *
  * export default withDevframe({
- *   transpilePackages: ['@antfu/design'],
+ *   // ...your own Next config
  * })
  * ```
  */

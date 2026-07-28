@@ -124,6 +124,12 @@
       "@devframes/nuxt": [
         "./packages/nuxt/src/index.ts"
       ],
+      "@devframes/next/client": [
+        "./packages/next/src/client.tsx"
+      ],
+      "@devframes/next": [
+        "./packages/next/src/index.ts"
+      ],
       "@devframes/json-render/core": [
         "./packages/json-render/src/core.ts"
       ],

@@ -111,7 +111,13 @@ export function createDevframeNextHost(
       return Response.json(connectionMeta)
     }
 
-    return app.fetch(request)
+    const response = await app.fetch(request)
+    // Normalize a miss to a bare 404. An unmounted path falls through to h3's
+    // default handler, which returns a JSON error body; for an asset host a
+    // body-less 404 is cleaner and matches a plain static server.
+    if (response.status === 404)
+      return new Response(null, { status: 404 })
+    return response
   }
 
   return {

@@ -5,30 +5,58 @@ outline: deep
 # Next Helper
 
 > [!WARNING]
-> Experimental. `@devframes/next` ships as an in-repo spike ([plan 027](https://github.com/devframes/devframe/blob/main/plans/notes/devframes-next-proposal.md)) and isn't published to npm yet. The API described here is the proposed surface; expect changes before a stable release.
+> Experimental. `@devframes/next` is published under the `experimental` npm tag (`npm i @devframes/next@experimental`) while its API settles. Expect changes before a stable release.
 
-The `@devframes/next` package hosts one or more devframes from a Next.js App Router app. Next runs on webpack/Turbopack rather than Vite, so it hosts through a route handler instead of the [Vite Bridge](./vite-bridge): the package hands you a `DevframeHost` plus a single `fetch` handler your catch-all route delegates to.
+`@devframes/next` hosts devframes from a Next.js App Router app. Next runs on webpack/Turbopack rather than Vite, so it hosts through a route handler instead of the [Vite Bridge](./vite-bridge): the package serves each devframe's SPA and its `__connection.json` from a single `fetch` handler your catch-all route delegates to, reusing devframe's own [`serveStaticHandler`](/adapters/dev) for SPA fallback, content types, and path-traversal guarding.
 
-It handles the two things a Next.js host needs:
+It comes in three parts:
 
-1. **Static + connection serving.** `createDevframeNextHost()` returns a `DevframeHost` whose `mountStatic` / `mountConnectionMeta` calls accumulate into one WHATWG-`fetch` handler that serves every mounted SPA — reusing devframe's own [`serveStaticHandler`](/adapters/dev) for SPA fallback, content types, and path-traversal guarding — and answers each `<base>/__connection.json`.
-2. **Host-mode Next config.** `withDevframe()` applies the one Next setting a devframe host requires.
+1. **`withDevframe()`** — applies the one Next config setting a devframe host needs.
+2. **`createDevframeNextHandler()`** — hosts a single devframe (the common case).
+3. **`createDevframeNextHost()`** — the lower-level primitive for a hub mounting many devframes at once.
 
-## Install
+Plus a React client surface at `@devframes/next/client`.
+
+## Config
 
 ```ts [next.config.mjs]
 import { withDevframe } from '@devframes/next'
 
 export default withDevframe({
-  transpilePackages: ['@antfu/design'],
+  // ...your own Next config
 })
 ```
 
-`withDevframe` sets `skipTrailingSlashRedirect: true` and preserves the rest of your config. Mounted SPAs are served at `/__<id>/` and reference their assets relatively (`./_next/…`); Next's default trailing-slash redirect (`/__git/` → `/__git`) would re-root those paths and 404 every asset, so a host serves the base verbatim.
+`withDevframe` sets `skipTrailingSlashRedirect: true` and preserves the rest. Mounted SPAs are served at `/__<id>/` and reference their assets relatively (`./_next/…`); Next's default trailing-slash redirect (`/__git/` → `/__git`) would re-root those paths and 404 every asset, so a host serves the base verbatim.
 
-## Hosting a devframe
+## Hosting a single devframe
 
-Build the host once (a module-level singleton, since App Router invokes route handlers per request), then delegate both routes to its `fetch`:
+`createDevframeNextHandler(definition)` statically serves the devframe's built SPA and starts a side-car RPC/WebSocket server, advertising it at `<base>/__connection.json`. Delegate your catch-all route to its `fetch`:
+
+```ts [app/__my-tool/[[...path]]/route.ts]
+import { createDevframeNextHandler } from '@devframes/next'
+import myDevframe from '@/devframe'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+const handler = createDevframeNextHandler(myDevframe)
+export const GET = handler.fetch
+```
+
+The base defaults to `def.basePath ?? '/__<id>/'`. `close()` shuts the side-car down; `ready` resolves once it's listening.
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `base` | `def.basePath ?? '/__<id>/'` | Mount path for the SPA. |
+| `host` | `def.cli?.host ?? 'localhost'` | Side-car bind host. |
+| `port` | resolved from `def.cli?.port` | Side-car port. |
+| `flags` | — | Forwarded to `def.setup(ctx, { flags })`. |
+| `auth` | `false` | `true` for devframe's OTP gate, or a handler. The Next app owns auth by default. |
+
+## Hosting a hub
+
+For many devframes at once, use `createDevframeNextHost()` with [`@devframes/hub`](/guide/hub). Its `host` accumulates every `mountStatic` / `mountConnectionMeta` call into one `fetch` handler:
 
 ```ts [devframe/host.ts]
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
@@ -59,31 +87,40 @@ export async function GET(request: Request): Promise<Response> {
 }
 ```
 
-The same `fetch` answers the hub's own `__hub/__connection.json` — register `/__hub` with `mountConnectionMeta` and one route body covers both.
-
-## API
-
-### `createDevframeNextHost(options)`
-
-| Option | Description |
-|--------|-------------|
-| `resolveOrigin` | Returns the public origin the app is reachable at, for docks needing an absolute iframe URL. |
-| `getStorageDir` | Resolves a directory for persisted state per `scope` (`workspace` / `project` / `global`). |
-| `connectionMeta` | Optional initial meta; usually published later via `setConnectionMeta`. |
-
-Returns `{ host, fetch, setConnectionMeta }`:
+`createDevframeNextHost` returns `{ host, fetch, setConnectionMeta }`:
 
 - **`host`** — the [`DevframeHost`](/guide/hub) to pass to `createHubContext` / `createHostContext`.
-- **`fetch(request)`** — the WHATWG-`fetch` handler your route delegates to. Connection meta is matched before the static handler, so an SPA fallback never swallows a `<base>/__connection.json` discovery fetch.
+- **`fetch(request)`** — the handler your route delegates to. Connection meta is matched before the static handler, so an SPA fallback never swallows a `<base>/__connection.json` discovery fetch; a miss returns a bare `404`.
 - **`setConnectionMeta(meta)`** — publish the live meta once the RPC/WS port is known. Until then, meta requests answer `503` so a racing client retries rather than caching a wrong endpoint.
 
-### `withDevframe(nextConfig)`
+## React client
 
-Returns a Next config with `skipTrailingSlashRedirect: true` applied, preserving everything else.
+`@devframes/next/client` connects to the RPC backend and provides the client to your component tree — the React counterpart to `@devframes/nuxt`'s `$rpc` plugin.
+
+```tsx [app/providers.tsx]
+'use client'
+import { RpcProvider } from '@devframes/next/client'
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <RpcProvider baseURL="/__my-tool/">{children}</RpcProvider>
+}
+```
+
+```tsx [app/panel.tsx]
+'use client'
+import { useRpc } from '@devframes/next/client'
+
+export function Panel() {
+  const rpc = useRpc().scope('my-tool:')
+  // rpc.call('get-payload'), rpc.sharedState, …
+}
+```
+
+`RpcProvider` renders its `fallback` (default `null`) until the client connects, so `useRpc()` always returns a live client. Theming and layout stay app-owned.
 
 ## Runtime
 
-Route handlers that call `fetch` pin `export const runtime = 'nodejs'`: the static handler streams built SPA files from disk, and the side-car RPC/WS server the hub starts is a Node process.
+Route handlers that call `fetch` pin `export const runtime = 'nodejs'`: the static handler streams built SPA files from disk, and the side-car RPC/WS server is a Node process.
 
 ## See also
 

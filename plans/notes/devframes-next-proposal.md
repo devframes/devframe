@@ -1,9 +1,9 @@
 # Proposal: `@devframes/next` host-integration package
 
-> Spike output for plan 027. Status: **prototype landed** as a private package
-> (`packages/next`) and proven by refactoring `examples/minimal-next-devframe-hub`
-> onto it. This document is the design write-up + open questions a follow-up plan
-> uses to promote it to a published package.
+> Origin: spike for plan 027. Status: **promoted** — `@devframes/next` now ships
+> as a published (experimental-tag) package with the single-plugin handler, the
+> React client surface, and API snapshots in place. This document is the design
+> write-up; the "Promotion" section below records how each open question landed.
 
 ## Problem
 
@@ -122,37 +122,42 @@ STOP condition (contract divergence) does not trip.
   `503`→`200` after `setConnectionMeta`, and meta taking precedence over SPA
   fallback for both the plugin and hub bases.
 
-## Open questions (for the promotion plan)
+## Promotion (how each open question landed)
 
-1. **`createDevframeNextHandler(definition)` convenience wrapper.** The
-   single-plugin case (mount one `def.cli.distDir` + run a side-car dev server,
-   mirroring `viteDevBridge`'s two modes) is not implemented — there is no
-   single-plugin Next example to test it against, so building it now would be
-   untested code. Add it (and an example) when `plugins/git` grows a `/next`
-   entry (the sibling of plan 029's `/vite` work).
-2. **Client surface.** Nuxt ships a client plugin exposing `$rpc`. The Next
-   equivalent — a shipped `RpcProvider` / `useRpc` React context wrapping
-   `connectDevframe()`, and a `<DevframeThemeScript>` / layout helper — is
-   deferred; the hub example still hand-writes its provider in `page.tsx`. Decide
-   whether these belong in `@devframes/next` (React peer) or stay app-owned.
-3. **Publishing shape.** Currently `private: true`. To publish: drop `private`,
-   which pulls it into the `tsnapi` API snapshot (`tests/exports.test.ts` filters
-   out private packages) — a snapshot will need to be generated and reviewed.
-   Confirm `next` as an optional peer (already declared) and the export map
-   mirrors the Axis-A baseline.
-4. **404 body.** h3's default handler returns a small JSON error body for an
-   unmounted path; the old route returned an empty 404. Harmless for asset loads,
-   but decide whether to install a bare-404 error handler for parity.
+1. **`createDevframeNextHandler(definition, options)` — implemented.** The
+   single-plugin wrapper composes `createDevframeNextHost` (SPA + meta serving)
+   with a bridge-mode `createDevServer` side-car (WS on its own port, advertised
+   at `<base>/__connection.json`), mirroring `viteDevBridge`'s bridge mode. It
+   returns `{ fetch, ready, close }` and throws early when `cli.distDir` is
+   missing. Covered by `packages/next/test/handler.test.ts` (boots a real
+   side-car against a temp `distDir` and asserts SPA serving, SPA fallback, the
+   WS-port meta, and a bare 404).
+2. **Client surface — implemented** at `@devframes/next/client` (React peer,
+   optional). `RpcProvider` calls `connectDevframe()` once and provides the
+   client; `useRpc()` reads it (throwing outside a provider). The `'use client'`
+   directive is preserved through the browser build. A theme/layout helper was
+   deliberately left out — theming is design-system-specific and stays
+   app-owned.
+3. **Publishing shape — done.** `private` dropped; `publishConfig.tag:
+   "experimental"` publishes under the `experimental` tag, not `latest`. `next`
+   and `react` are optional peers; exports are `.` (Node) + `./client`
+   (browser). tsnapi snapshots generated under
+   `tests/__snapshots__/tsnapi/@devframes/next/` (`index` + `client`).
+4. **404 body — parity added.** The host `fetch` normalizes any miss to a
+   body-less `404`, matching a plain static server (h3's default JSON error body
+   is dropped).
 5. **`next-runtime-snapshot` needs no bridge.** It uses Next only as a static-SPA
    builder while devframe owns the server via `createCac`/`createBuild`; the
-   bridge doesn't apply. Leave it as-is (documented here so a future reader
-   doesn't try to "unify" the two Next examples).
+   bridge doesn't apply. Left as-is (recorded so a future reader doesn't try to
+   "unify" the two Next examples).
 
 ## Files
 
-- `packages/next/` — `src/host.ts` (`createDevframeNextHost`), `src/config.ts`
-  (`withDevframe`), `src/index.ts`, plus `package.json` / `tsconfig.json` /
-  `tsdown.config.ts` mirroring `packages/nuxt`.
-- `tsconfig.base.json` — `@devframes/next` source alias.
+- `packages/next/` — `src/host.ts` (`createDevframeNextHost`), `src/handler.ts`
+  (`createDevframeNextHandler`), `src/client.tsx` (`RpcProvider` / `useRpc`),
+  `src/config.ts` (`withDevframe`), `src/index.ts`, plus `package.json` (public,
+  experimental tag) / `tsconfig.json` / `tsdown.config.ts` (node + browser).
+- `tsconfig.base.json` + `alias.ts` — `@devframes/next` and `/client` source aliases.
+- `vitest.config.ts` — `packages/next` project; `tests/__snapshots__/tsnapi/@devframes/next/` API snapshots.
 - `examples/minimal-next-devframe-hub/` — host module, both route handlers, and
-  `next.config.mjs` refactored onto the bridge; `@devframes/next` added as a dep.
+  `next.config.mjs` on the bridge; `@devframes/next` as a dep.

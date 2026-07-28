@@ -2,8 +2,7 @@
   "name": "@devframes/next",
   "type": "module",
   "version": "0.7.14",
-  "private": true,
-  "description": "Next.js host integration for Devframe — serve mounted devframe SPAs and connection meta from an App Router route (SPIKE / proposed, plan 027)",
+  "description": "Next.js host integration for Devframe — serve mounted devframe SPAs and connection meta from an App Router route (experimental)",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/devframes/devframe#readme",
@@ -25,12 +24,20 @@
       "types": "./dist/index.d.mts",
       "default": "./dist/index.mjs"
     },
+    "./client": {
+      "types": "./dist/client.d.mts",
+      "default": "./dist/client.mjs"
+    },
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public",
+    "tag": "experimental"
+  },
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch",
@@ -39,10 +46,14 @@
   },
   "peerDependencies": {
     "devframe": "workspace:*",
-    "next": "^14.0.0 || ^15.0.0"
+    "next": "^14.0.0 || ^15.0.0 || ^16.0.0",
+    "react": "^18.0.0 || ^19.0.0"
   },
   "peerDependenciesMeta": {
     "next": {
+      "optional": true
+    },
+    "react": {
       "optional": true
     }
   },
@@ -51,7 +62,9 @@
   },
   "devDependencies": {
     "@types/node": "catalog:types",
+    "@types/react": "catalog:types",
     "devframe": "workspace:*",
+    "react": "catalog:frontend",
     "tsdown": "catalog:build"
   }
 }
