@@ -11,7 +11,7 @@ Package: `minimal-next-devframe-hub` · framework: **React (Next.js)**
 ## What it proves
 
 - `createHubContext()` boots a hub without any Vite-specific code path.
-- A `DevframeHost` implementation plugs the Next host specifics into the hub uniformly.
+- The [`@devframes/next`](/helpers/next) bridge supplies the `DevframeHost` and a single `fetch` handler both route handlers delegate to — serving every mounted SPA and its connection meta through devframe's own static handler.
 - `mountDevframe(ctx, def)` registers any `DevframeDefinition` as a dock.
 - The built-in `hub:commands:execute` RPC dispatches any registered server command, regardless of how the host was constructed.
 - The browser-side `connectDevframe({ baseURL: '/__hub/' })` discovers the WS endpoint via the Next route handler at `/__hub/__connection.json`, which starts the singleton host on demand.
@@ -26,6 +26,10 @@ pnpm --filter minimal-next-devframe-hub dev
 ```
 
 Open the printed URL to see the docks, commands, messages, and terminals lists, plus a button that dispatches a sample command through `hub:commands:execute`.
+
+## See also
+
+- [Next Helper](/helpers/next) — the `@devframes/next` host bridge this example runs on
 
 ## Source
 

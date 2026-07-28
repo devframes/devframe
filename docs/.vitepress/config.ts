@@ -55,6 +55,7 @@ function helpersItems(prefix: string) {
     { text: 'Utilities', link: `${prefix}/helpers/utilities` },
     { text: 'Vite Bridge', link: `${prefix}/helpers/vite-bridge` },
     { text: 'Nuxt Module', link: `${prefix}/helpers/nuxt` },
+    { text: 'Next Helper', link: `${prefix}/helpers/next` },
     { text: 'Open Helpers', link: `${prefix}/helpers/open-helpers` },
     { text: 'Interactive Auth', link: `${prefix}/helpers/interactive-auth` },
   ] satisfies DefaultTheme.NavItemWithLink[]
