@@ -205,6 +205,9 @@
       "devframe/recipes/interactive-auth": [
         "./packages/devframe/src/recipes/interactive-auth.ts"
       ],
+      "devframe/recipes/common-rpc-functions": [
+        "./packages/devframe/src/recipes/common-rpc-functions.ts"
+      ],
       "devframe/recipes/open-helpers": [
         "./packages/devframe/src/recipes/open-helpers.ts"
       ],

@@ -560,7 +560,7 @@ Devframe re-exports a curated set of helpers under `devframe/utils/*`. They are 
 | `createStreamSink` / `createStreamReader` from `devframe/utils/streaming-channel` | — | Low-level streaming primitives |
 | `evaluateWhen` / `WhenExpression` from `devframe/utils/when` | `whenexpr` | When-clause expressions |
 
-For "open file in editor" + "reveal in finder", prefer the prebuilt `openHelpers` RPC recipe — it wires the two utilities into named RPC functions ready to register.
+For "open file in editor" + "reveal in finder", prefer the prebuilt `commonRpcFunctions` RPC recipe (`devframe/recipes/common-rpc-functions`) — it wires the two utilities into named RPC functions ready to register.
 
 ## Security (secure by default)
 

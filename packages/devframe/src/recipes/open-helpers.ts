@@ -1,66 +1,12 @@
-import { launchEditor } from 'devframe/utils/launch-editor'
-import { open } from 'devframe/utils/open'
-import * as v from 'valibot'
-import { defineRpcFunction } from '../rpc/define'
+// Deprecated compatibility shim for the open helpers recipe.
+//
+// Prefer the canonical `devframe/recipes/common-rpc-functions` entry. This
+// module re-exports the same implementation under the historical name so
+// existing imports keep working. It will be removed in a future major
+// release.
+import { commonRpcFunctions } from './common-rpc-functions'
 
-/**
- * Prebuilt RPC action that opens a file in the user's configured editor.
- *
- * Registered name: `devframe:open-in-editor`.
- *
- * ```ts
- * import { openInEditor } from 'devframe/recipes/open-helpers'
- *
- * defineDevframe({
- *   id: 'my-tool',
- *   name: 'My Tool',
- *   setup(ctx) {
- *     ctx.rpc.register(openInEditor)
- *   },
- * })
- * ```
- */
-export const openInEditor = defineRpcFunction({
-  name: 'devframe:open-in-editor',
-  type: 'action',
-  jsonSerializable: true,
-  args: [v.string()],
-  returns: v.void(),
-  async handler(filename: string) {
-    launchEditor(filename)
-  },
-})
+export { openInEditor, openInFinder } from './common-rpc-functions'
 
-/**
- * Prebuilt RPC action that reveals a path in the OS file explorer.
- *
- * Registered name: `devframe:open-in-finder`.
- *
- * ```ts
- * import { openInFinder } from 'devframe/recipes/open-helpers'
- *
- * ctx.rpc.register(openInFinder)
- * ```
- */
-export const openInFinder = defineRpcFunction({
-  name: 'devframe:open-in-finder',
-  type: 'action',
-  jsonSerializable: true,
-  args: [v.string()],
-  returns: v.void(),
-  async handler(path: string) {
-    await open(path)
-  },
-})
-
-/**
- * Convenience array bundling both helpers so callers can register them
- * in a single `forEach`.
- *
- * ```ts
- * import { openHelpers } from 'devframe/recipes/open-helpers'
- *
- * openHelpers.forEach(fn => ctx.rpc.register(fn))
- * ```
- */
-export const openHelpers = [openInEditor, openInFinder] as const
+/** @deprecated Use `commonRpcFunctions` from `devframe/recipes/common-rpc-functions` instead. */
+export const openHelpers: typeof commonRpcFunctions = commonRpcFunctions

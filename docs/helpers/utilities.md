@@ -46,7 +46,7 @@ launchEditor('src/main.ts:42:7')
 launchEditor('src/main.ts:42:7', 'code')
 ```
 
-The auto-detection reads the `LAUNCH_EDITOR` environment variable and falls back to common defaults. Most devframes consume this through the prebuilt `openInEditor` recipe — see [Open helpers](./open-helpers).
+The auto-detection reads the `LAUNCH_EDITOR` environment variable and falls back to common defaults. Most devframes consume this through the prebuilt `openInEditor` recipe — see [Common RPC Functions](./common-rpc-functions).
 
 ### `devframe/utils/hash`
 

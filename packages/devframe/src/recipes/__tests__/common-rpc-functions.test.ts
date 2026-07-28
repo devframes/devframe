@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { openHelpers, openInEditor, openInFinder } from '../open-helpers'
+import { commonRpcFunctions, openInEditor, openInFinder } from '../common-rpc-functions'
+import { openHelpers } from '../open-helpers'
 
-describe('recipes/open-helpers', () => {
+describe('recipes/common-rpc-functions', () => {
   it('exposes `openInEditor` as a devframe-namespaced action', () => {
     expect(openInEditor.name).toBe('devframe:open-in-editor')
     expect(openInEditor.type).toBe('action')
@@ -16,9 +17,13 @@ describe('recipes/open-helpers', () => {
     expect(typeof openInFinder.handler).toBe('function')
   })
 
-  it('bundles both helpers in `openHelpers`', () => {
-    expect(openHelpers).toHaveLength(2)
-    expect(openHelpers).toContain(openInEditor)
-    expect(openHelpers).toContain(openInFinder)
+  it('bundles both helpers in `commonRpcFunctions`', () => {
+    expect(commonRpcFunctions).toHaveLength(2)
+    expect(commonRpcFunctions).toContain(openInEditor)
+    expect(commonRpcFunctions).toContain(openInFinder)
+  })
+
+  it('keeps the deprecated `devframe/recipes/open-helpers` entry working as an alias', () => {
+    expect(openHelpers).toBe(commonRpcFunctions)
   })
 })

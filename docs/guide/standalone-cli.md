@@ -199,9 +199,9 @@ defineDevframe({
 
 The adapter derives each flag's CAC option from its schema — booleans become `--verbose` / `--no-verbose`; everything else becomes `--depth <value>`. Keys are camelCase in TypeScript, kebab-case on the command line (`configFile` → `--config-file`). Flags that aren't in your schema (`--host`, `--port`, or anything added via `cli.configure`) still pass through untouched.
 
-## Open helpers
+## Common RPC functions
 
-For the two actions every CLI devtool needs — open a file in the editor, reveal a path in the OS file explorer — use the prebuilt recipes from `devframe/recipes/open-helpers` instead of re-implementing them. See [Helpers → Open Helpers](/helpers/open-helpers) for the full reference.
+For the two actions every CLI devtool needs — open a file in the editor, reveal a path in the OS file explorer — use the prebuilt recipes from `devframe/recipes/common-rpc-functions` instead of re-implementing them. See [Helpers → Common RPC Functions](/helpers/common-rpc-functions) for the full reference.
 
 ## Snapshot queries for static builds
 

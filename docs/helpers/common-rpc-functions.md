@@ -2,18 +2,18 @@
 outline: deep
 ---
 
-# Open Helpers
+# Common RPC Functions
 
 Prebuilt RPC actions for the two file-system actions every CLI devtool needs — opening a file in the editor, revealing a path in the OS file explorer. Use the recipe instead of re-implementing them so every devframe converges on the same registered names and payload shape.
 
 ```ts
-import { openHelpers } from 'devframe/recipes/open-helpers'
+import { commonRpcFunctions } from 'devframe/recipes/common-rpc-functions'
 
 defineDevframe({
   id: 'my-tool',
   name: 'My Tool',
   setup(ctx) {
-    openHelpers.forEach(fn => ctx.rpc.register(fn))
+    commonRpcFunctions.forEach(fn => ctx.rpc.register(fn))
   },
 })
 ```
@@ -24,16 +24,18 @@ defineDevframe({
 |--------|------------------|------|------|---------|
 | `openInEditor` | `devframe:open-in-editor` | `action` | `[filename: string]` | Open the file in the user's editor via [`launchEditor`](./utilities#devframe-utils-launch-editor). Accepts `file`, `file:line`, or `file:line:column`. |
 | `openInFinder` | `devframe:open-in-finder` | `action` | `[path: string]` | Reveal the path in the OS file explorer via [`open`](./utilities#devframe-utils-open). |
-| `openHelpers` | — | `readonly [openInEditor, openInFinder]` | — | Convenience array for batch registration. |
+| `commonRpcFunctions` | — | `readonly [openInEditor, openInFinder]` | — | Convenience array for batch registration. |
 
 Both functions are `action`-type RPCs returning `void` and use `valibot` schemas (`v.string()`) for their single argument.
+
+The `devframe/recipes/open-helpers` entry (`openHelpers`) remains as a deprecated alias for this module — new code should import `commonRpcFunctions` from `devframe/recipes/common-rpc-functions`.
 
 ## Pick and choose
 
 Register only the helper you need rather than the whole array:
 
 ```ts
-import { openInEditor } from 'devframe/recipes/open-helpers'
+import { openInEditor } from 'devframe/recipes/common-rpc-functions'
 
 defineDevframe({
   id: 'my-tool',
