@@ -1,7 +1,7 @@
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
-import { alias } from '../../alias'
-import { storybookHub } from './src/storybook-hub'
+import { alias } from '../alias'
+import { storybookHub } from './src/hub'
 
 export default defineConfig({
   resolve: { alias },

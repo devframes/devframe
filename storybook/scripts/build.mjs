@@ -1,12 +1,12 @@
-// Builds the unified Storybook: the host shell into `storybook-static/`, then
-// each plugin's Storybook into a subfolder so the host's production refs
-// (`./git`, `./inspect`, …) resolve on a single origin. Serve `storybook-static/`
-// (e.g. `npx sirv-cli storybook-static`) to view the composed result.
+// Builds each plugin's Storybook into `storybook-static/<id>/` so the hub's
+// build/preview mode (`vite preview`) can serve them statically on one origin.
+// The hub UI itself is built separately with `vite build` (→ `dist/`); together
+// they give a fully static preview. In dev the hub spawns `storybook dev` on
+// demand instead, so this step is only needed for the static preview.
 import { spawnSync } from 'node:child_process'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
-const pkgRoot = fileURLToPath(new URL('..', import.meta.url))
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url))
 const outDir = fileURLToPath(new URL('../storybook-static', import.meta.url))
 
@@ -25,11 +25,8 @@ function build(label, cwd, args) {
   }
 }
 
-// 1) Host shell → storybook-static/ (this also cleans the output directory).
-build('host', pkgRoot, ['--output-dir', outDir])
-
-// 2) Each plugin → storybook-static/<id>/ (created after the host build, so they
-//    survive the host's clean).
+// Each plugin → storybook-static/<id>/, built from the plugin's own `.storybook`
+// config so the hub can serve `/__sb-<id>/` from a single origin in preview.
 for (const id of plugins) {
   build(id, `${repoRoot}plugins/${id}`, [
     '--config-dir',
@@ -39,4 +36,4 @@ for (const id of plugins) {
   ])
 }
 
-console.warn(`\n✓ unified Storybook built → ${outDir}`)
+console.warn(`\n✓ plugin Storybooks built → ${outDir}`)

@@ -1,0 +1,58 @@
+# @devframes/storybook
+
+The unified Storybook host, built as a **devframe hub** on `@devframes/hub`: the
+hub is the shell and each built-in plugin's Storybook is its own dock, alongside
+the live terminals plugin running as a real integration.
+
+## How it works
+
+The whole host is one Vite plugin (`src/hub.ts`): it creates a hub context,
+implements the framework-neutral `DevframeHost`, registers a launcher dock (and
+a bound command) per plugin Storybook, mounts the terminals plugin via
+`mountDevframe`, and starts a side-car RPC/WS server.
+
+Each Storybook dock is a `type: 'launcher'` tile with a **Start** button — the
+lazy trigger. The button binds a `ctx.commands` command (`storybook:launch:<id>`),
+so the client dispatches it over the serializable `hub:commands:execute` path.
+Once launched, the tile swaps in place for the running Storybook's iframe, kept
+mounted so its state survives tab switches. Where the iframe points depends on
+the mode:
+
+- **dev** (`vite`) — the launch command spawns the plugin's `storybook dev`
+  through `ctx.terminals`, the hub's terminals subsystem, so each Storybook is a
+  read-only terminal session (open the **Terminals** dock to watch its output
+  stream live). As it boots, the tail of that output is patched onto the
+  launcher's `digest`; on ready the command returns the live dev-server URL the
+  client iframes (HMR).
+- **build** (`vite preview`) — the launch resolves immediately to the pre-built
+  `storybook-static/<id>` the hub serves on one origin.
+
+## Run it
+
+Build the plugin SPAs the hub mounts (terminals) once:
+
+```sh
+pnpm build
+```
+
+### Dev — Storybooks spawned on demand
+
+```sh
+pnpm storybook
+```
+
+Open the printed URL, pick a Storybook in the sidebar, and hit **Start**; its
+dev server boots on demand (subsequent opens are instant). The dev servers
+listen on their own ports, so reaching them from a remote browser needs those
+ports forwarded.
+
+### Preview — pre-built Storybooks on one origin
+
+```sh
+pnpm storybook:build                       # produces storybook-static/<plugin>
+pnpm --filter @devframes/storybook build    # builds the hub UI → dist/
+pnpm --filter @devframes/storybook preview
+```
+
+Everything is served from the single preview origin, so one forwarded port
+reaches the whole hub.

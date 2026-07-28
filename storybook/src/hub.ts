@@ -34,9 +34,9 @@ const STORYBOOKS: StorybookMeta[] = [
   { id: 'a11y', title: 'A11y', icon: 'ph:person-arms-spread-duotone' },
 ]
 
-// Repo root, resolved from this file (…/examples/storybook-hub/src/) so paths
-// hold regardless of the process cwd.
-const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
+// Repo root, resolved from this file (…/storybook/src/) so paths hold
+// regardless of the process cwd.
+const repoRoot = fileURLToPath(new URL('../../', import.meta.url))
 const require = createRequire(import.meta.url)
 // Storybook's CLI entry — run with `node` so we don't depend on PATH/.bin.
 const storybookBin = join(dirname(require.resolve('storybook/package.json')), 'dist/bin/dispatcher.js')
@@ -44,9 +44,9 @@ const storybookBin = join(dirname(require.resolve('storybook/package.json')), 'd
 const pluginDir = (id: string): string => join(repoRoot, 'plugins', id)
 const storybookConfigDir = (id: string): string => join(pluginDir(id), '.storybook')
 const storybookStaticDir = (id: string): string => join(repoRoot, 'storybook', 'storybook-static', id)
-const sessionIdFor = (id: string): string => `storybook-hub:${id}`
+const sessionIdFor = (id: string): string => `storybook:${id}`
 const dockIdFor = (id: string): string => `sb-${id}`
-const launchCommandFor = (id: string): string => `storybook-hub:launch:${id}`
+const launchCommandFor = (id: string): string => `storybook:launch:${id}`
 
 // eslint-disable-next-line no-control-regex
 const ANSI = /\u001B\[[0-9;]*[A-Z]/gi
@@ -71,14 +71,16 @@ export interface StorybookHubOptions {
 }
 
 /**
- * A Vite plugin that turns a Vite dev/preview server into a devframe hub whose
- * docks are the built-in plugins' Storybooks — plus the live terminals plugin.
+ * A Vite plugin that turns this package's Vite dev/preview server into a
+ * devframe hub whose docks are the built-in plugins' Storybooks — plus the live
+ * terminals plugin. It's the unified Storybook host, built as a devframe hub
+ * rather than via Storybook Composition.
  *
  * Each Storybook is a first-class `type: 'launcher'` dock: a process-control
  * tile that starts its Storybook lazily, only when the user hits **Start**. The
- * launch button binds a `ctx.commands` command (`storybook-hub:launch:<id>`),
- * so a viewer dispatches it over the serializable `hub:commands:execute` path.
- * The command:
+ * launch button binds a `ctx.commands` command (`storybook:launch:<id>`), so a
+ * viewer dispatches it over the serializable `hub:commands:execute` path. The
+ * command:
  *
  *  - **dev** (`vite`): spawns the plugin's `storybook dev` through
  *    `ctx.terminals`, so the process lives as a read-only hub terminal session
@@ -212,8 +214,8 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
         if (scope === 'workspace')
           return join(cwd, '.devframe')
         if (scope === 'project')
-          return join(cwd, 'node_modules/.storybook-hub')
-        return join(homedir(), '.storybook-hub')
+          return join(cwd, 'node_modules/.devframe-storybook')
+        return join(homedir(), '.devframe-storybook')
       },
     }
 
@@ -330,7 +332,7 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
   }
 
   return {
-    name: 'storybook-hub',
+    name: 'devframe-storybook-hub',
 
     configResolved(config) {
       viteConfig = config

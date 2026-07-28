@@ -7,7 +7,7 @@ import '@antfu/design/styles.css'
 
 const HUB_BASE = '/__hub/'
 
-// Mirror of the launch command's return shape (`storybook-hub:launch:<id>`,
+// Mirror of the launch command's return shape (`storybook:launch:<id>`,
 // dispatched over `hub:commands:execute`).
 type EnsureResult
   = | { ok: true, kind: 'port', port: number }

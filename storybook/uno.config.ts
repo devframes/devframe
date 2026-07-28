@@ -1,17 +1,13 @@
 import { mergeConfigs } from 'unocss'
 import { designConfig } from '../design/uno.config'
 
-// The unified host's own welcome/overview surface composes the shared devframe
-// base (see `design/uno.config.ts`). Only the host shell reads this config; each
-// composed plugin generates its own CSS from its own `uno.config.ts`. The
-// welcome page is hand-written vanilla `.ts`, so `.ts` is opted into extraction.
+// The unified Storybook host is a devframe hub; its UI composes the shared
+// devframe base (see `design/uno.config.ts`). Pair with `@antfu/design/styles.css`
+// (imported in `src/client/main.ts`). `.ts` is opted into extraction since the
+// hub authors its class strings in vanilla `src/client/main.ts`.
 export default mergeConfigs([
   designConfig,
   {
-    content: {
-      pipeline: {
-        include: [/\.(?:[cm]?[jt]sx?|html)($|\?)/],
-      },
-    },
+    content: { pipeline: { include: [/\.(?:[cm]?[jt]sx?|html)($|\?)/] } },
   },
 ])
