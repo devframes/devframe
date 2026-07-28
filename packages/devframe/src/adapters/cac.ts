@@ -108,14 +108,19 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
     })
   })
 
-  cli
-    .command('build', 'Build a self-contained static deploy of the devframe')
-    .option('--out-dir <outDir>', 'Output directory', { default: 'dist-static' })
-    .option('--base <base>', 'URL base', { default: '/' })
-    .option('--pretty', 'Pretty-print dump JSON (larger on disk)')
-    .action(async (flags: { outDir: string, base?: string, pretty?: boolean }) => {
-      await createBuild(d, { outDir: flags.outDir, base: flags.base, pretty: flags.pretty })
-    })
+  // `capabilities.build === false` opts a devframe out of the `build`
+  // subcommand entirely, rather than registering it only to have it
+  // produce a broken or misleading static export.
+  if (d.capabilities?.build !== false) {
+    cli
+      .command('build', 'Build a self-contained static deploy of the devframe')
+      .option('--out-dir <outDir>', 'Output directory', { default: 'dist-static' })
+      .option('--base <base>', 'URL base', { default: '/' })
+      .option('--pretty', 'Pretty-print dump JSON (larger on disk)')
+      .action(async (flags: { outDir: string, base?: string, pretty?: boolean }) => {
+        await createBuild(d, { outDir: flags.outDir, base: flags.base, pretty: flags.pretty })
+      })
+  }
 
   cli
     .command('mcp', 'Start an MCP server exposing agent-facing tools (stdio) [experimental]')

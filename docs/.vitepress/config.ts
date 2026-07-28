@@ -70,6 +70,7 @@ function pluginsItems(prefix: string) {
     { text: 'Git', link: `${prefix}/plugins/git` },
     { text: 'Terminals', link: `${prefix}/plugins/terminals` },
     { text: 'Code Server', link: `${prefix}/plugins/code-server` },
+    { text: 'Assets', link: `${prefix}/plugins/assets` },
   ] satisfies DefaultTheme.NavItemWithLink[]
 }
 

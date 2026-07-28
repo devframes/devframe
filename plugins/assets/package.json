@@ -1,0 +1,89 @@
+{
+  "name": "@devframes/plugin-assets",
+  "type": "module",
+  "version": "0.7.14",
+  "description": "Devframe plugin for browsing, previewing, uploading, and managing static assets in a directory — a framework-neutral port of Nuxt DevTools' Assets tab.",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/devframes/devframe#readme",
+  "repository": {
+    "directory": "plugins/assets",
+    "type": "git",
+    "url": "git+https://github.com/devframes/devframe.git"
+  },
+  "bugs": "https://github.com/devframes/devframe/issues",
+  "keywords": [
+    "devframe",
+    "devframe-plugin",
+    "devtools",
+    "assets",
+    "static-files"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./client": "./dist/client/index.mjs",
+    "./cli": "./dist/cli.mjs",
+    "./node": "./dist/node/index.mjs",
+    "./rpc": "./dist/rpc/index.mjs",
+    "./vite": "./dist/vite.mjs",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.mts",
+  "bin": {
+    "devframe-assets": "./bin.mjs"
+  },
+  "files": [
+    "bin.mjs",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown && vite build --config src/spa/vite.config.ts",
+    "dev": "vite --config src/spa/vite.config.ts --host 0.0.0.0",
+    "watch": "tsdown --watch",
+    "storybook": "storybook dev -p 6013",
+    "storybook:build": "storybook build",
+    "prepack": "pnpm build",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "devframe": "workspace:*",
+    "vite": "^7.0.0 || ^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "cac": "catalog:deps",
+    "chokidar": "catalog:deps",
+    "image-meta": "catalog:deps",
+    "nostics": "catalog:deps",
+    "pathe": "catalog:deps",
+    "perfect-debounce": "catalog:deps",
+    "tinyglobby": "catalog:deps",
+    "ufo": "catalog:deps",
+    "valibot": "catalog:deps"
+  },
+  "devDependencies": {
+    "@antfu/design": "catalog:frontend",
+    "@iconify-json/ph": "catalog:frontend",
+    "@preact/preset-vite": "catalog:build",
+    "@storybook/addon-a11y": "catalog:storybook",
+    "@storybook/addon-docs": "catalog:storybook",
+    "@storybook/preact-vite": "catalog:storybook",
+    "@types/node": "catalog:types",
+    "devframe": "workspace:*",
+    "get-port-please": "catalog:deps",
+    "h3": "catalog:deps",
+    "preact": "catalog:frontend",
+    "storybook": "catalog:storybook",
+    "tsdown": "catalog:build",
+    "unocss": "catalog:frontend",
+    "vite": "catalog:build",
+    "vitest": "catalog:testing",
+    "ws": "catalog:deps"
+  }
+}

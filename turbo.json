@@ -58,6 +58,11 @@
       "dependsOn": ["devframe#build", "@devframes/hub#build"],
       "outputs": ["dist/**"]
     },
+    "@devframes/plugin-assets#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe#build"],
+      "outputs": ["dist/**"]
+    },
     "minimal-vite-devframe-hub#build": {
       "outputLogs": "new-only",
       "dependsOn": [
@@ -70,7 +75,8 @@
         "@devframes/plugin-og#build",
         "@devframes/plugin-data-inspector#build",
         "@devframes/plugin-a11y#build",
-        "@devframes/plugin-messages#build"
+        "@devframes/plugin-messages#build",
+        "@devframes/plugin-assets#build"
       ],
       "outputs": ["dist/**"]
     },

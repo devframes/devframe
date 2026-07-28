@@ -296,6 +296,16 @@ export interface DevframeDefinition {
    * @default 'warn'
    */
   duplicationStrategy?: DevframeDuplicationStrategy
+  /**
+   * Declares which runtimes meaningfully support this devframe. Consulted
+   * by adapters that can act on a plain `false` before doing any work:
+   * `createCac` skips registering the `build` subcommand entirely when
+   * `capabilities.build` is `false` — useful for a devframe whose value is
+   * inherently live (e.g. it manages real files on disk), so a static
+   * export would only ever produce a broken, write-less shell of the tool.
+   * The `Record<string, boolean>` shape is reserved for finer-grained
+   * sub-capabilities and currently unconsumed by any adapter.
+   */
   capabilities?: {
     dev?: boolean | Record<string, boolean>
     build?: boolean | Record<string, boolean>

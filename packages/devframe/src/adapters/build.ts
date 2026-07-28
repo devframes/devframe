@@ -12,6 +12,7 @@ import {
   DEVFRAME_RPC_DUMP_MANIFEST_FILENAME,
 } from '../constants'
 import { createHostContext } from '../node/context'
+import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { collectStaticRpcDump } from '../rpc/dump/static'
 import { strictJsonStringify } from '../rpc/serialization'
@@ -34,6 +35,13 @@ export interface CreateBuildOptions {
    * minified. Set `true` when you need to diff / read the dumps by hand.
    */
   pretty?: boolean
+  /**
+   * Proceed even when the definition declares `capabilities.build: false`.
+   * `createCac` already skips registering the `build` subcommand for such
+   * a definition — this only matters for a caller invoking `createBuild`
+   * directly, bypassing the CLI.
+   */
+  force?: boolean
 }
 
 /**
@@ -50,6 +58,9 @@ export interface CreateBuildOptions {
  *     works at `/`, `/devframe/`, or any base, no rewriting required.
  */
 export async function createBuild(d: DevframeDefinition, options: CreateBuildOptions = {}): Promise<void> {
+  if (d.capabilities?.build === false && !options.force)
+    throw diagnostics.DF0042({ id: d.id })
+
   const outDir = resolve(options.outDir ?? 'dist-static')
   const distDir = options.distDir ?? d.cli?.distDir
   if (!distDir)
