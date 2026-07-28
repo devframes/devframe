@@ -18,5 +18,4 @@ export { serverFunctions }
 export { upload }
 export { UPLOAD_CHANNEL }
 export { writeFunctions }
-export { writeText }
 // #endregion

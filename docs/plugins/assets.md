@@ -10,7 +10,7 @@ Package: `@devframes/plugin-assets` · framework: **Preact**
 
 ## What it does
 
-Search by name and filter by type from an inline chip row, switch between a thumbnail grid (grouped by folder) and a file tree, and open a right-hand details panel with a live preview (image, video, audio, font, or text), file metadata, and ready-to-copy usage snippets (`<img>`, CSS `background-image`, `@font-face`, a download link). Drop files anywhere on the frame to upload them, or select multiple assets to delete them together. A live file watcher keeps every connected client's listing in sync with changes made outside the UI.
+Search by name and filter by type from an inline chip row, switch between a thumbnail grid (grouped by folder) and a file tree, and open a resizable right-hand details panel with a live preview (image, video, audio, font, or text), file metadata, and ready-to-copy usage snippets (`<img>`, CSS `background-image`, `@font-face`, a download link). Upload files with the toolbar button (native file picker) or by dropping them anywhere on the frame, and select multiple assets to delete them together. A live file watcher keeps every connected client's listing in sync with changes made outside the UI.
 
 The standalone server requires devframe's trust handshake by default because it can read, write, and delete real files. Uploads, renames, deletes, and folder creation are enabled by default — pass `{ write: false }` (or `--read-only` on the standalone CLI) for a browse-only deployment.
 
@@ -72,15 +72,14 @@ All functions are namespaced `devframes:plugin:assets:*`:
 | `list` | `query`, `snapshot: true` | Every file under the managed directory, with type, size, and last-modified time. |
 | `capabilities` | `query`, `snapshot: true` | Whether write actions are enabled, and the upload allow-list — lets the UI gate itself proactively. |
 | `read-image-meta` | `query` | Width, height, and orientation for an image asset. |
-| `read-text` | `query` | Truncated text content, for preview or editing. |
+| `read-text` | `query` | Truncated text content, for preview. |
 | `upload` | `action` | Allocates a streaming upload slot; the client pipes the file's bytes over the paired channel. |
 | `rename` | `action` | Renames an asset within its folder, preserving its extension. |
 | `delete` | `action` | Deletes one or more assets in a single call. |
 | `mkdir` | `action` | Creates a folder, including missing parents. |
-| `write-text` | `action` | Overwrites a text asset's content in place (the details panel's inline editor). |
 | `open-in-editor` / `reveal-in-folder` | `action` | Launch the asset in your editor, or reveal its containing folder in the OS file manager. Always registered, regardless of `write`. |
 
-`upload` / `rename` / `delete` / `mkdir` / `write-text` are registered only when `write` is enabled.
+`upload` / `rename` / `delete` / `mkdir` are registered only when `write` is enabled.
 
 ## Static export
 

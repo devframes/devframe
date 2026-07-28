@@ -9,7 +9,6 @@ import { readText } from './functions/read-text'
 import { rename } from './functions/rename'
 import { revealInFolder } from './functions/reveal-in-folder'
 import { upload } from './functions/upload'
-import { writeText } from './functions/write-text'
 
 /** Read-only RPC — always registered. */
 export const readFunctions = [list, readImageMeta, readText, capabilities] as const
@@ -21,7 +20,7 @@ export const readFunctions = [list, readImageMeta, readText, capabilities] as co
 export const alwaysFunctions = [openInEditor, revealInFolder] as const
 
 /** Mutating RPC — registered only when write actions are enabled. */
-export const writeFunctions = [upload, rename, deleteAssets, mkdir, writeText] as const
+export const writeFunctions = [upload, rename, deleteAssets, mkdir] as const
 
 export const serverFunctions = [...readFunctions, ...alwaysFunctions, ...writeFunctions] as const
 
@@ -41,4 +40,3 @@ export type { RenameArgs } from './functions/rename'
 export { rename } from './functions/rename'
 export { revealInFolder } from './functions/reveal-in-folder'
 export { upload, UPLOAD_CHANNEL } from './functions/upload'
-export { writeText } from './functions/write-text'

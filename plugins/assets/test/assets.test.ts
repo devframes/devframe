@@ -90,15 +90,6 @@ describe('assets plugin', () => {
     expect(content).toBe('hello world')
   })
 
-  it('overwrites a text asset via write-text', async () => {
-    await fsp.writeFile(join(dir, 'notes.txt'), 'before', 'utf-8')
-    server = await startAssetsServer(dir)
-    client = bootClient(server.port)
-
-    await call(client, 'devframes:plugin:assets:write-text', { path: 'notes.txt', content: 'after' })
-    expect(await fsp.readFile(join(dir, 'notes.txt'), 'utf-8')).toBe('after')
-  })
-
   it('renames an asset within its folder', async () => {
     await fsp.mkdir(join(dir, 'icons'), { recursive: true })
     await fsp.writeFile(join(dir, 'icons/old.txt'), 'x', 'utf-8')
@@ -160,14 +151,16 @@ describe('assets plugin', () => {
   })
 
   it('still registers open-in-editor and reveal-in-folder when write is disabled', async () => {
-    await fsp.writeFile(join(dir, 'a.txt'), 'a', 'utf-8')
     server = await startAssetsServer(dir, { write: false })
-    client = bootClient(server.port)
 
-    // These launch external apps rather than mutate the filesystem — they
-    // may fail in a headless CI sandbox (no editor / file manager
-    // installed), but they must be *registered* regardless of `write`.
-    await call(client, 'devframes:plugin:assets:open-in-editor', 'a.txt').catch(() => {})
+    // open-in-editor / reveal-in-folder launch external OS apps, so assert
+    // they're *registered* on the server context rather than invoking them
+    // (a real launch would spawn a process and hang the test runner). They
+    // must be available regardless of `write`; the write actions must not.
+    const defs = server.ctx.rpc.definitions
+    expect(defs.has('devframes:plugin:assets:open-in-editor')).toBe(true)
+    expect(defs.has('devframes:plugin:assets:reveal-in-folder')).toBe(true)
+    expect(defs.has('devframes:plugin:assets:mkdir')).toBe(false)
   })
 
   it('broadcasts a change event when a file is added on disk', async () => {

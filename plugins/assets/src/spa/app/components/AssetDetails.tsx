@@ -30,9 +30,7 @@ export function AssetDetails({ asset, rpc, canWrite, onClose, onChanged }: Asset
   const [textContent, setTextContent] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [renameOpen, setRenameOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
   const [newName, setNewName] = useState('')
-  const [draftContent, setDraftContent] = useState('')
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<{ kind: 'success' | 'error', message: string } | null>(null)
 
@@ -44,12 +42,8 @@ export function AssetDetails({ asset, rpc, canWrite, onClose, onChanged }: Asset
       return
     if (asset.type === 'image')
       void rpc.call('devframes:plugin:assets:read-image-meta', asset.path).then(setImageMeta)
-    if (asset.type === 'text') {
-      void rpc.call('devframes:plugin:assets:read-text', asset.path, 5000).then((content) => {
-        setTextContent(content)
-        setDraftContent(content ?? '')
-      })
-    }
+    if (asset.type === 'text')
+      void rpc.call('devframes:plugin:assets:read-text', asset.path, 5000).then(setTextContent)
   }, [rpc, asset.path, asset.type])
 
   const aspectRatio = (() => {
@@ -93,15 +87,6 @@ export function AssetDetails({ asset, rpc, canWrite, onClose, onChanged }: Asset
       onChanged()
       onClose()
     }, 'Renamed')
-  }
-
-  async function handleSaveText(): Promise<void> {
-    await withNotice(async () => {
-      await rpc!.call('devframes:plugin:assets:write-text', { path: asset.path, content: draftContent })
-      setEditOpen(false)
-      setTextContent(draftContent)
-      onChanged()
-    }, 'Saved')
   }
 
   async function handleOpenInEditor(): Promise<void> {
@@ -184,13 +169,6 @@ export function AssetDetails({ asset, rpc, canWrite, onClose, onChanged }: Asset
           {' '}
           Reveal in Folder
         </Button>
-        {canWrite && asset.type === 'text' && (
-          <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
-            <span class="i-ph-pencil-simple-duotone" />
-            {' '}
-            Edit
-          </Button>
-        )}
         {canWrite && (
           <Button variant="secondary" size="sm" onClick={() => openRenameDialog()}>
             <span class="i-ph-text-aa-duotone" />
@@ -238,18 +216,6 @@ export function AssetDetails({ asset, rpc, canWrite, onClose, onChanged }: Asset
         <div class="flex justify-end gap-2">
           <Button variant="ghost" onClick={() => setRenameOpen(false)}>Cancel</Button>
           <Button variant="primary" onClick={handleRename} disabled={busy || !newName.trim()}>Rename</Button>
-        </div>
-      </Dialog>
-
-      <Dialog open={editOpen} onClose={() => setEditOpen(false)} class="max-w-2xl">
-        <textarea
-          value={draftContent}
-          onInput={e => setDraftContent((e.target as HTMLTextAreaElement).value)}
-          class="h-80 w-full rounded border border-base bg-base p-3 font-mono text-sm outline-none"
-        />
-        <div class="flex justify-end gap-2">
-          <Button variant="ghost" onClick={() => setEditOpen(false)}>Cancel</Button>
-          <Button variant="primary" onClick={handleSaveText} disabled={busy}>Save</Button>
         </div>
       </Dialog>
     </div>
