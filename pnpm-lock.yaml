@@ -505,7 +505,7 @@ importers:
         specifier: catalog:deps
         version: 8.21.1
 
-  examples/minimal-json-render:
+  examples/json-render:
     dependencies:
       '@devframes/json-render':
         specifier: workspace:*
@@ -524,17 +524,20 @@ importers:
         specifier: catalog:deps
         version: 3.2.0
 
-  examples/minimal-next-devframe-hub:
+  examples/next-devframe-hub:
     dependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.3.2(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.0)(dompurify@3.4.12)(floating-vue@5.2.2(vue@3.5.40(typescript@6.0.3)))(playwright@1.61.1)(reka-ui@2.10.1(vue@3.5.40(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.16))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))
+        version: 0.3.2(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.0)(dompurify@3.4.12)(floating-vue@5.2.2(vue@3.5.40(typescript@6.0.3)))(playwright@1.61.1)(reka-ui@2.10.1(vue@3.5.40(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.19))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
       '@devframes/json-render':
         specifier: workspace:*
         version: link:../../packages/json-render
+      '@devframes/next':
+        specifier: workspace:*
+        version: link:../../packages/next
       '@devframes/plugin-a11y':
         specifier: workspace:*
         version: link:../../plugins/a11y
@@ -565,9 +568,9 @@ importers:
       dompurify:
         specifier: catalog:frontend
         version: 3.4.12
-      minimal-json-render:
+      json-render:
         specifier: workspace:*
-        version: link:../minimal-json-render
+        version: link:../json-render
       next:
         specifier: catalog:frontend
         version: 16.2.11(@babel/core@7.29.0(supports-color@10.2.2))(@playwright/test@1.61.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -589,86 +592,7 @@ importers:
         version: 19.2.3(@types/react@19.2.17)
       '@unocss/postcss':
         specifier: catalog:frontend
-        version: 66.7.5(postcss@8.5.16)
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
-      pathe:
-        specifier: catalog:deps
-        version: 2.0.3
-      unocss:
-        specifier: catalog:frontend
-        version: 66.7.5(@unocss/postcss@66.7.5(postcss@8.5.16))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))
-      vitest:
-        specifier: catalog:testing
-        version: 4.1.10(@types/node@26.1.1)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))
-      ws:
-        specifier: catalog:deps
-        version: 8.21.1
-
-  examples/minimal-vite-devframe-hub:
-    dependencies:
-      '@antfu/design':
-        specifier: catalog:frontend
-        version: 0.3.2(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.0)(dompurify@3.4.12)(floating-vue@5.2.2(vue@3.5.40(typescript@6.0.3)))(playwright@1.61.1)(reka-ui@2.10.1(vue@3.5.40(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.19))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))
-      '@devframes/hub':
-        specifier: workspace:*
-        version: link:../../packages/hub
-      '@devframes/json-render':
-        specifier: workspace:*
-        version: link:../../packages/json-render
-      '@devframes/json-render-ui':
-        specifier: workspace:*
-        version: link:../../packages/json-render-ui
-      '@devframes/plugin-a11y':
-        specifier: workspace:*
-        version: link:../../plugins/a11y
-      '@devframes/plugin-assets':
-        specifier: workspace:*
-        version: link:../../plugins/assets
-      '@devframes/plugin-code-server':
-        specifier: workspace:*
-        version: link:../../plugins/code-server
-      '@devframes/plugin-data-inspector':
-        specifier: workspace:*
-        version: link:../../plugins/data-inspector
-      '@devframes/plugin-git':
-        specifier: workspace:*
-        version: link:../../plugins/git
-      '@devframes/plugin-inspect':
-        specifier: workspace:*
-        version: link:../../plugins/inspect
-      '@devframes/plugin-messages':
-        specifier: workspace:*
-        version: link:../../plugins/messages
-      '@devframes/plugin-og':
-        specifier: workspace:*
-        version: link:../../plugins/og
-      '@devframes/plugin-terminals':
-        specifier: workspace:*
-        version: link:../../plugins/terminals
-      colorjs.io:
-        specifier: catalog:frontend
-        version: 0.7.0
-      devframe:
-        specifier: workspace:*
-        version: link:../../packages/devframe
-      dompurify:
-        specifier: catalog:frontend
-        version: 3.4.12
-      minimal-json-render:
-        specifier: workspace:*
-        version: link:../minimal-json-render
-      vue:
-        specifier: catalog:frontend
-        version: 3.5.40(typescript@6.0.3)
-    devDependencies:
-      '@iconify-json/ph':
-        specifier: catalog:frontend
-        version: 1.2.2
-      '@vitejs/plugin-vue':
-        specifier: catalog:build
-        version: 6.0.8(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))(vue@3.5.40(typescript@6.0.3))
+        version: 66.7.5(postcss@8.5.19)
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0
@@ -678,15 +602,21 @@ importers:
       unocss:
         specifier: catalog:frontend
         version: 66.7.5(@unocss/postcss@66.7.5(postcss@8.5.19))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))
-      vite:
-        specifier: catalog:build
-        version: 8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)
+      vitest:
+        specifier: catalog:testing
+        version: 4.1.10(@types/node@26.1.1)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))
+      ws:
+        specifier: catalog:deps
+        version: 8.21.1
 
   examples/next-runtime-snapshot:
     dependencies:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.2(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.0)(dompurify@3.4.12)(floating-vue@5.2.2(vue@3.5.40(typescript@6.0.3)))(playwright@1.61.1)(reka-ui@2.10.1(vue@3.5.40(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.16))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))
+      '@devframes/next':
+        specifier: workspace:*
+        version: link:../../packages/next
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -770,6 +700,82 @@ importers:
       ws:
         specifier: catalog:deps
         version: 8.21.1
+
+  examples/vite-devframe-hub:
+    dependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.3.2(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.0)(dompurify@3.4.12)(floating-vue@5.2.2(vue@3.5.40(typescript@6.0.3)))(playwright@1.61.1)(reka-ui@2.10.1(vue@3.5.40(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.19))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@devframes/json-render':
+        specifier: workspace:*
+        version: link:../../packages/json-render
+      '@devframes/json-render-ui':
+        specifier: workspace:*
+        version: link:../../packages/json-render-ui
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
+      '@devframes/plugin-inspect':
+        specifier: workspace:*
+        version: link:../../plugins/inspect
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.7.0
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      dompurify:
+        specifier: catalog:frontend
+        version: 3.4.12
+      json-render:
+        specifier: workspace:*
+        version: link:../json-render
+      vue:
+        specifier: catalog:frontend
+        version: 3.5.40(typescript@6.0.3)
+    devDependencies:
+      '@iconify-json/ph':
+        specifier: catalog:frontend
+        version: 1.2.2
+      '@vitejs/plugin-vue':
+        specifier: catalog:build
+        version: 6.0.8(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))(vue@3.5.40(typescript@6.0.3))
+      get-port-please:
+        specifier: catalog:deps
+        version: 3.2.0
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
+      unocss:
+        specifier: catalog:frontend
+        version: 66.7.5(@unocss/postcss@66.7.5(postcss@8.5.19))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))
+      vite:
+        specifier: catalog:build
+        version: 8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0)
 
   packages/devframe:
     dependencies:
@@ -966,6 +972,31 @@ importers:
       vue:
         specifier: catalog:frontend
         version: 3.5.40(typescript@5.9.3)
+
+  packages/next:
+    dependencies:
+      h3:
+        specifier: catalog:deps
+        version: 2.0.1-rc.22(crossws@0.4.10(srvx@0.11.22))
+      next:
+        specifier: ^14.0.0 || ^15.0.0 || ^16.0.0
+        version: 16.2.11(@babel/core@7.29.0(supports-color@10.2.2))(@playwright/test@1.61.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+    devDependencies:
+      '@types/node':
+        specifier: catalog:types
+        version: 26.1.1
+      '@types/react':
+        specifier: catalog:types
+        version: 19.2.17
+      devframe:
+        specifier: workspace:*
+        version: link:../devframe
+      react:
+        specifier: catalog:frontend
+        version: 19.2.8
+      tsdown:
+        specifier: catalog:build
+        version: 0.22.14(@volar/typescript@2.4.28)(oxc-resolver@11.21.3)(tsx@4.23.1)(typescript@6.0.3)
 
   packages/nuxt:
     devDependencies:
@@ -8405,11 +8436,6 @@ packages:
     resolution: {integrity: sha512-aEZ9qP+/M+58x2qgfSFEWH1BxLyHe5+qkLNJOZQb5iGS017jpbRnoKhNRrXPeA6RfBrZO5wZrT9DMC1UqE1f1w==}
     engines: {node: ^20.9.0 || >=22}
 
-  react-dom@19.2.7:
-    resolution: {integrity: sha512-t0BRVXvbiE/o20Hfw669rLbMCDWtYZLvmJigy2f0MxsXF+71pxhR3xOkspmsO8h3ZlNzyibAmtCa3l4lYKk6gQ==}
-    peerDependencies:
-      react: ^19.2.7
-
   react-dom@19.2.8:
     resolution: {integrity: sha512-rVprimfGBG3DR+Tq0IQG2DT5PxKth1WIGDmj5yPmlzr4YBe7uyE+Du4oVqTDXZSHGGGXRtTJEGSSePyQCMBglQ==}
     peerDependencies:
@@ -8417,10 +8443,6 @@ packages:
 
   react-is@17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
-
-  react@19.2.7:
-    resolution: {integrity: sha512-HNe9WslTbXmFK8o8cmwgAeJFSBvt1bPdHCVKtaaV+WlAN36mpT4hcRpwbf3fY56ar2oIXzsBpOAiIRHAdY0OlQ==}
-    engines: {node: '>=0.10.0'}
 
   react@19.2.8:
     resolution: {integrity: sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw==}
@@ -10884,11 +10906,11 @@ snapshots:
       - encoding
       - supports-color
 
-  '@mdx-js/react@3.1.1(@types/react@19.2.17)(react@19.2.7)':
+  '@mdx-js/react@3.1.1(@types/react@19.2.17)(react@19.2.8)':
     dependencies:
       '@types/mdx': 2.0.14
       '@types/react': 19.2.17
-      react: 19.2.7
+      react: 19.2.8
 
   '@mermaid-js/mermaid-mindmap@9.3.0':
     dependencies:
@@ -12348,12 +12370,12 @@ snapshots:
 
   '@storybook/addon-docs@10.5.3(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.0)(rollup@4.60.3)(storybook@10.5.3(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))':
     dependencies:
-      '@mdx-js/react': 3.1.1(@types/react@19.2.17)(react@19.2.7)
+      '@mdx-js/react': 3.1.1(@types/react@19.2.17)(react@19.2.8)
       '@storybook/csf-plugin': 10.5.3(esbuild@0.28.0)(rollup@4.60.3)(storybook@10.5.3(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.1)(yaml@2.9.0))
-      '@storybook/icons': 2.0.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@storybook/react-dom-shim': 10.5.3(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(storybook@10.5.3(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
-      react: 19.2.7
-      react-dom: 19.2.7(react@19.2.7)
+      '@storybook/icons': 2.0.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@storybook/react-dom-shim': 10.5.3(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.5.3(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
       storybook: 10.5.3(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       ts-dedent: 2.2.0
     optionalDependencies:
@@ -12407,24 +12429,10 @@ snapshots:
 
   '@storybook/global@5.0.0': {}
 
-  '@storybook/icons@2.0.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
-    dependencies:
-      react: 19.2.7
-      react-dom: 19.2.7(react@19.2.7)
-
   '@storybook/icons@2.0.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
-
-  '@storybook/react-dom-shim@10.5.3(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(storybook@10.5.3(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))':
-    dependencies:
-      react: 19.2.7
-      react-dom: 19.2.7(react@19.2.7)
-      storybook: 10.5.3(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-    optionalDependencies:
-      '@types/react': 19.2.17
-      '@types/react-dom': 19.2.3(@types/react@19.2.17)
 
   '@storybook/react-dom-shim@10.5.3(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.5.3(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))':
     dependencies:
@@ -13110,7 +13118,6 @@ snapshots:
       css-tree: 3.2.1
       postcss: 8.5.19
       tinyglobby: 0.2.17
-    optional: true
 
   '@unocss/preset-attributify@66.7.5':
     dependencies:
@@ -17245,19 +17252,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  react-dom@19.2.7(react@19.2.7):
-    dependencies:
-      react: 19.2.7
-      scheduler: 0.27.0
-
   react-dom@19.2.8(react@19.2.8):
     dependencies:
       react: 19.2.8
       scheduler: 0.27.0
 
   react-is@17.0.2: {}
-
-  react@19.2.7: {}
 
   react@19.2.8: {}
 

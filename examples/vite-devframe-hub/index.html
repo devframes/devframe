@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite Devframe Hub</title>
+    <script>
+      // Follow the OS theme without a toggle (@antfu/design dark: is class-based).
+      document.documentElement.classList.toggle(
+        'dark',
+        window.matchMedia('(prefers-color-scheme: dark)').matches,
+      )
+    </script>
+  </head>
+  <body class="h-full m0 of-hidden bg-base color-base">
+    <div class="h-full flex flex-col">
+      <header class="shrink-0 flex items-center gap-3 h-nav px-3 border-b border-base bg-base">
+        <h1 class="m0 flex items-center gap-1.5 shrink-0 text-sm font-semibold select-none">
+          <span class="i-ph-squares-four-duotone text-base color-active"></span>
+          <span>Vite Devframe Hub</span>
+        </h1>
+        <p id="status" class="m0 text-xs font-mono op-fade"><span id="conn">Connecting…</span></p>
+      </header>
+
+      <div class="grid grid-cols-[244px_1fr] min-h-0 flex-1">
+        <aside class="flex flex-col gap-0.5 of-auto border-r border-base bg-secondary p2">
+          <h2 class="px2 py1 text-[0.68rem] uppercase tracking-wider color-muted">Docks</h2>
+          <ul id="docks" class="m0 flex flex-col list-none gap-0.5 p0">
+            <li class="op-mute px2 text-sm">Waiting for snapshot…</li>
+          </ul>
+        </aside>
+
+        <main class="relative min-w-0 of-hidden bg-secondary">
+          <!-- Iframe docks are pooled here (one kept-alive iframe per frameId),
+               shown/hidden on switch so shared-frame tabs soft-navigate. -->
+          <div id="dock-stage" class="absolute inset-0"></div>
+          <!-- Renderer docks (e.g. json-render) mount here instead. -->
+          <div id="dock-panel" hidden class="absolute inset-0 of-auto bg-base p4"></div>
+        </main>
+      </div>
+
+      <footer class="grid grid-cols-3 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto">
+        <section class="min-w-0">
+          <h2 class="mb2 text-[0.68rem] uppercase tracking-wider color-muted">Commands</h2>
+          <ul id="commands" class="m0 flex flex-col list-none gap-1.5 p0"><li class="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">Waiting for snapshot…</li></ul>
+          <div class="mt2.5">
+            <button id="ping" class="btn-action text-sm">Dispatch <code class="font-mono op-fade">vite-devframe-hub:ping</code></button>
+          </div>
+        </section>
+
+        <section class="min-w-0">
+          <h2 class="mb2 text-[0.68rem] uppercase tracking-wider color-muted">Messages</h2>
+          <ul id="messages" class="m0 flex flex-col list-none gap-1.5 p0"><li class="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">No messages yet.</li></ul>
+        </section>
+
+        <section class="min-w-0">
+          <h2 class="mb2 text-[0.68rem] uppercase tracking-wider color-muted">Terminals</h2>
+          <ul id="terminals" class="m0 flex flex-col list-none gap-1.5 p0"><li class="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">No terminal sessions.</li></ul>
+        </section>
+      </footer>
+    </div>
+    <script type="module" src="/src/client/main.ts"></script>
+  </body>
+</html>

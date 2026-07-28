@@ -102,7 +102,7 @@ describe('static serve (deployed SPA contract)', () => {
       const manifest = await manifestRes.json() as Record<string, any>
 
       // get-cwd: static entry → its `path` is fetchable.
-      const getCwdEntry = manifest['devframe-files-inspector:get-cwd']
+      const getCwdEntry = manifest['example:files-inspector:get-cwd']
       expect(getCwdEntry?.type).toBe('static')
       const getCwdRes = await fetch(`${server.origin}${mountBase}${getCwdEntry.path}`)
       expect(getCwdRes.status).toBe(200)
@@ -110,7 +110,7 @@ describe('static serve (deployed SPA contract)', () => {
       expect(getCwdRecord.output.cwd).toBe(cwd)
 
       // list-files: query entry → exactly one record matching the fixture.
-      const listEntry = manifest['devframe-files-inspector:list-files']
+      const listEntry = manifest['example:files-inspector:list-files']
       expect(listEntry?.type).toBe('query')
       const recordPaths = Object.values(listEntry.records) as string[]
       expect(recordPaths).toHaveLength(1)

@@ -1,5 +1,5 @@
 import type { DevframeNodeContext } from 'devframe/types'
-import { openHelpers } from 'devframe/recipes/open-helpers'
+import { commonRpcFunctions } from 'devframe/recipes/common-rpc-functions'
 import { PLUGIN_ID } from '../constants'
 import { diagnostics } from '../diagnostics'
 import { getMessagesHost } from '../rpc/functions/_define'
@@ -26,7 +26,7 @@ export function setupMessages(ctx: DevframeNodeContext): void {
   // may have registered the helpers already — skip those. The recipes are
   // context-free (`SetupContext = undefined`, plain handlers); widening to
   // the node collector's context is safe.
-  for (const fn of openHelpers) {
+  for (const fn of commonRpcFunctions) {
     if (!ctx.rpc.definitions.has(fn.name))
       ctx.rpc.register(fn as unknown as Parameters<typeof ctx.rpc.register>[0])
   }

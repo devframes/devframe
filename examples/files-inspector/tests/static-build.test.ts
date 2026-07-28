@@ -75,11 +75,11 @@ describe('static build (CLI build surface)', () => {
       ),
     ) as DumpManifest
 
-    expect(manifest['devframe-files-inspector:get-cwd']).toMatchObject({ type: 'static' })
-    expect(manifest['devframe-files-inspector:list-files']).toMatchObject({ type: 'query' })
+    expect(manifest['example:files-inspector:get-cwd']).toMatchObject({ type: 'static' })
+    expect(manifest['example:files-inspector:list-files']).toMatchObject({ type: 'query' })
 
     // The list-files dump records the cwd-fixture's contents.
-    const listEntry = manifest['devframe-files-inspector:list-files']
+    const listEntry = manifest['example:files-inspector:list-files']
     if (!('records' in listEntry))
       throw new Error('expected query manifest entry')
     const recordPaths = Object.values(listEntry.records)

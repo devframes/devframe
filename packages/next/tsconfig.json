@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["esnext", "dom"],
+    "types": ["node", "react"]
+  },
+  "include": ["src", "tsdown.config.ts"],
+  "exclude": ["dist", "node_modules"]
+}

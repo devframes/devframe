@@ -23,7 +23,8 @@ export default defineConfig({
       'plugins/a11y',
       'plugins/messages',
       'plugins/assets',
-      'examples/minimal-next-devframe-hub',
+      'examples/next-devframe-hub',
+      'packages/next',
       {
         test: {
           name: 'tests',

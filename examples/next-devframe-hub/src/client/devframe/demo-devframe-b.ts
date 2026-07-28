@@ -1,0 +1,38 @@
+import type { DevframeHubContext } from '@devframes/hub/node'
+import { fileURLToPath } from 'node:url'
+import { defineDevframe } from 'devframe/types'
+import { dirname, resolve } from 'pathe'
+import pkg from '../../../package.json' with { type: 'json' }
+
+const HERE = dirname(fileURLToPath(import.meta.url))
+
+export default defineDevframe({
+  id: 'example:next-demo-tool-b',
+  name: 'Next Demo Tool B',
+  version: pkg.version,
+  packageName: pkg.name,
+  homepage: pkg.homepage,
+  description: 'A second demo devframe — proves the dock switcher has more than one option.',
+  icon: 'ph:wrench-duotone',
+  basePath: '/__next-demo-tool-b/',
+  cli: {
+    distDir: resolve(HERE, '../../../spa/next-demo-tool-b'),
+  },
+  async setup(rawCtx) {
+    const ctx = rawCtx as unknown as DevframeHubContext
+
+    ctx.commands.register({
+      id: 'example:next-demo-tool-b:say-hello',
+      title: 'Next Demo Tool B: Say Hello',
+      icon: 'ph:hand-waving-duotone',
+      category: 'demo',
+      handler: () => 'Hello from next-demo-tool-b!',
+    })
+
+    await ctx.messages.add({
+      level: 'info',
+      message: 'Second Next demo devframe loaded',
+      description: 'A second mountDevframe() call — proves the switcher has more than one option.',
+    })
+  },
+})

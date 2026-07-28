@@ -10,8 +10,8 @@ import { startStreamingChatServer } from './_utils'
 
 vi.stubGlobal('WebSocket', WebSocket)
 
-const CHANNEL = 'devframe-streaming-chat:tokens'
-const HISTORY_KEY = 'devframe-streaming-chat:history' as const
+const CHANNEL = 'example:streaming-chat:tokens'
+const HISTORY_KEY = 'example:streaming-chat:history' as const
 
 interface FakeClient {
   rpc: ReturnType<typeof createRpcClient>
@@ -66,7 +66,7 @@ interface SendResult {
 }
 
 async function send(client: FakeClient, prompt: string, intervalMs = 1): Promise<SendResult> {
-  return await (client.rpc as any).$call('devframe-streaming-chat:send', {
+  return await (client.rpc as any).$call('example:streaming-chat:send', {
     prompt,
     intervalMs,
   }) as SendResult
@@ -84,7 +84,7 @@ async function getHistory(ctx: DevframeNodeContext): Promise<ChatHistory> {
   return state.value() as ChatHistory
 }
 
-describe('devframe-streaming-chat (example)', () => {
+describe('streaming-chat (example)', () => {
   let server: StartedServer & { basePath: string, ctx: DevframeNodeContext }
 
   beforeEach(async () => {
@@ -189,7 +189,7 @@ describe('devframe-streaming-chat (example)', () => {
 
     expect((await getHistory(server.ctx)).messages).toHaveLength(2)
 
-    await (client.rpc as any).$call('devframe-streaming-chat:clear')
+    await (client.rpc as any).$call('example:streaming-chat:clear')
     await new Promise(r => setTimeout(r, 30))
 
     expect((await getHistory(server.ctx)).messages).toHaveLength(0)

@@ -124,6 +124,12 @@
       "@devframes/nuxt": [
         "./packages/nuxt/src/index.ts"
       ],
+      "@devframes/next/client": [
+        "./packages/next/src/client.tsx"
+      ],
+      "@devframes/next": [
+        "./packages/next/src/index.ts"
+      ],
       "@devframes/json-render/core": [
         "./packages/json-render/src/core.ts"
       ],
@@ -145,8 +151,8 @@
       "@devframes/json-render-ui": [
         "./packages/json-render-ui/src/index.ts"
       ],
-      "minimal-json-render/dashboard": [
-        "./examples/minimal-json-render/src/dashboard.ts"
+      "json-render/dashboard": [
+        "./examples/json-render/src/dashboard.ts"
       ],
       "@devframes/plugin-code-server/client": [
         "./plugins/code-server/src/client/index.ts"
@@ -198,6 +204,9 @@
       ],
       "devframe/recipes/interactive-auth": [
         "./packages/devframe/src/recipes/interactive-auth.ts"
+      ],
+      "devframe/recipes/common-rpc-functions": [
+        "./packages/devframe/src/recipes/common-rpc-functions.ts"
       ],
       "devframe/recipes/open-helpers": [
         "./packages/devframe/src/recipes/open-helpers.ts"

@@ -2,7 +2,7 @@ import type { RpcDefinitionsToFunctionsWithNamespace } from 'devframe/rpc'
 import { getCwd } from './functions/get-cwd.ts'
 import { listFiles } from './functions/list-files.ts'
 
-export const NAMESPACE = 'devframe-files-inspector'
+export const NAMESPACE = 'example:files-inspector'
 
 export const serverFunctions = [getCwd, listFiles] as const
 

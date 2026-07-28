@@ -18,6 +18,10 @@
       "outputLogs": "new-only",
       "outputs": ["dist/**"]
     },
+    "@devframes/next#build": {
+      "outputLogs": "new-only",
+      "outputs": ["dist/**"]
+    },
     "@devframes/json-render#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build", "@devframes/hub#build"],
@@ -63,7 +67,7 @@
       "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
     },
-    "minimal-vite-devframe-hub#build": {
+    "vite-devframe-hub#build": {
       "outputLogs": "new-only",
       "dependsOn": [
         "@devframes/hub#build",
@@ -80,11 +84,12 @@
       ],
       "outputs": ["dist/**"]
     },
-    "minimal-next-devframe-hub#build": {
+    "next-devframe-hub#build": {
       "outputLogs": "new-only",
       "dependsOn": [
         "@devframes/hub#build",
         "devframe#build",
+        "@devframes/next#build",
         "@devframes/plugin-git#build",
         "@devframes/plugin-terminals#build",
         "@devframes/plugin-code-server#build",
@@ -111,7 +116,7 @@
     },
     "next-runtime-snapshot-example#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build"],
+      "dependsOn": ["devframe#build", "@devframes/next#build"],
       "outputs": ["dist/**"]
     },
     "@devframes/plugin-git#build": {

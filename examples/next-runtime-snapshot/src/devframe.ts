@@ -11,7 +11,7 @@ const BASE_PATH = '/__next-runtime-snapshot/'
 const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))
 
 export default defineDevframe({
-  id: 'next-runtime-snapshot',
+  id: 'example:next-runtime-snapshot',
   name: 'Next Runtime Snapshot',
   version: pkg.version,
   packageName: pkg.name,

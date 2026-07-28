@@ -4,7 +4,7 @@ A focused hub playground for testing **[`@devframes/plugin-a11y`](../../plugins/
 alongside **[`@devframes/plugin-messages`](../../plugins/messages)** — and, above
 all, the **message → dock navigation** they share.
 
-Where [`minimal-vite-devframe-hub`](../minimal-vite-devframe-hub) mounts every
+Where [`vite-devframe-hub`](../vite-devframe-hub) mounts every
 built-in plugin against the hub's own (mostly accessible) UI, this example ships a
 deliberately **inaccessible, multi-route app under test** so the a11y scanner
 always has real violations to find, track per route, and link back to from the

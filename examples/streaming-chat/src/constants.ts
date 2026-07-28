@@ -1,4 +1,4 @@
-export const NAMESPACE = 'devframe-streaming-chat'
+export const NAMESPACE = 'example:streaming-chat'
 
 // Bare ids — pass these to the scoped context, which namespaces them.
 export const CHANNEL = 'tokens'
