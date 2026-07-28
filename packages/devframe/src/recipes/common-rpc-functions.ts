@@ -5,9 +5,44 @@ import { defineRpcFunction } from '../rpc/define'
  * Editor commands that `launch-editor` (the library behind
  * `devframe/utils/launch-editor`) recognizes with a tailored
  * `file:line:column` invocation. `openInEditor`'s optional second argument
- * is restricted to this list, so the RPC surface can't be used to spawn an
+ * is restricted to this union, so the RPC surface can't be used to spawn an
  * arbitrary command.
  */
+export type KnownEditor
+  = | 'atom'
+    | 'subl'
+    | 'sublime'
+    | 'sublime_text'
+    | 'wstorm'
+    | 'charm'
+    | 'zed'
+    | 'notepad++'
+    | 'vim'
+    | 'mvim'
+    | 'joe'
+    | 'gvim'
+    | 'emacs'
+    | 'emacsclient'
+    | 'rmate'
+    | 'mate'
+    | 'code'
+    | 'code-insiders'
+    | 'codium'
+    | 'vscodium'
+    | 'trae'
+    | 'antigravity'
+    | 'cursor'
+    | 'appcode'
+    | 'clion'
+    | 'idea'
+    | 'phpstorm'
+    | 'pycharm'
+    | 'rubymine'
+    | 'webstorm'
+    | 'goland'
+    | 'rider'
+
+/** Runtime list of every {@link KnownEditor}, in the order `v.picklist` reports them. */
 export const KNOWN_EDITORS = [
   'atom',
   'subl',
@@ -41,10 +76,7 @@ export const KNOWN_EDITORS = [
   'webstorm',
   'goland',
   'rider',
-] as const
-
-/** One of the editor commands in {@link KNOWN_EDITORS}. */
-export type KnownEditor = (typeof KNOWN_EDITORS)[number]
+] as const satisfies readonly KnownEditor[]
 
 /**
  * Prebuilt RPC action that opens a file in the user's configured editor.
