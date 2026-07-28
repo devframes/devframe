@@ -47,6 +47,7 @@ const viewTabs = [
         v-model="search"
         icon="i-ph-magnifying-glass"
         placeholder="Search assets…"
+        size="sm"
         clearable
         class="max-w-80 w-full"
       />
@@ -55,7 +56,7 @@ const viewTabs = [
     <template #end>
       <template v-if="selectedCount > 0">
         <span class="whitespace-nowrap text-sm font-medium">{{ selectedCount }} selected</span>
-        <ActionButton class="text-error border-error/30!" icon="i-ph-trash-duotone" @click="emit('bulkDelete')">
+        <ActionButton size="sm" class="h-7! py-0! text-error border-error/30!" icon="i-ph-trash-duotone" @click="emit('bulkDelete')">
           Delete
         </ActionButton>
         <ActionButton variant="text" @click="emit('clearSelection')">

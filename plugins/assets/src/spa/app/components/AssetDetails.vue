@@ -27,12 +27,12 @@ const deleteOpen = ref(false)
 const renameOpen = ref(false)
 const newName = ref('')
 const busy = ref(false)
-const notice = ref<{ kind: 'success' | 'error', message: string } | null>(null)
+const errorNotice = ref<string | null>(null)
 
 watch(() => props.asset.path, (path) => {
   imageMeta.value = null
   textContent.value = null
-  notice.value = null
+  errorNotice.value = null
   const rpc = props.rpc
   if (!rpc)
     return
@@ -57,16 +57,16 @@ const aspectRatio = computed(() => {
 const snippets = computed(() => buildSnippets(props.asset, imageMeta.value))
 const supportsPreview = computed(() => SUPPORTS_PREVIEW.has(props.asset.type))
 
-async function withNotice(fn: () => Promise<void>, successMessage: string): Promise<void> {
+async function runAction(fn: () => Promise<void>): Promise<void> {
   if (!props.rpc)
     return
+  errorNotice.value = null
   busy.value = true
   try {
     await fn()
-    notice.value = { kind: 'success', message: successMessage }
   }
   catch (cause) {
-    notice.value = { kind: 'error', message: cause instanceof Error ? cause.message : String(cause) }
+    errorNotice.value = cause instanceof Error ? cause.message : String(cause)
   }
   finally {
     busy.value = false
@@ -74,33 +74,33 @@ async function withNotice(fn: () => Promise<void>, successMessage: string): Prom
 }
 
 async function handleDelete(): Promise<void> {
-  await withNotice(async () => {
+  await runAction(async () => {
     await props.rpc!.call('devframes:plugin:assets:delete', { paths: [props.asset.path] })
     deleteOpen.value = false
     emit('changed')
     emit('close')
-  }, 'Deleted')
+  })
 }
 
 async function handleRename(): Promise<void> {
-  await withNotice(async () => {
+  await runAction(async () => {
     await props.rpc!.call('devframes:plugin:assets:rename', { path: props.asset.path, newName: newName.value })
     renameOpen.value = false
     emit('changed')
     emit('close')
-  }, 'Renamed')
+  })
 }
 
 async function handleOpenInEditor(): Promise<void> {
-  await withNotice(async () => {
+  await runAction(async () => {
     await props.rpc!.call('devframes:plugin:assets:open-in-editor', props.asset.path)
-  }, 'Opened in editor')
+  })
 }
 
 async function handleRevealInFolder(): Promise<void> {
-  await withNotice(async () => {
+  await runAction(async () => {
     await props.rpc!.call('devframes:plugin:assets:reveal-in-folder', props.asset.path)
-  }, 'Revealed in folder manager')
+  })
 }
 
 function openRenameDialog(): void {
@@ -206,8 +206,8 @@ function openInBrowser(): void {
       </ActionButton>
     </div>
 
-    <div v-if="notice" class="text-xs" :class="notice.kind === 'error' ? 'text-error' : 'text-success'">
-      {{ notice.message }}
+    <div v-if="errorNotice" class="text-xs text-error">
+      {{ errorNotice }}
     </div>
 
     <div class="flex-1" />
