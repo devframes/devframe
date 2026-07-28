@@ -148,7 +148,12 @@ export class DevframeDocksHost implements DevframeDocksHostType {
         if (patch.id && patch.id !== view.id) {
           throw diagnostics.DF8101({ id: view.id, attempted: patch.id })
         }
-        this.update(Object.assign(this.views.get(view.id)!, patch))
+        // Merge into a fresh object rather than mutating the stored entry in
+        // place: once projected into the `devframe:docks` shared state, the
+        // stored entry is deep-frozen by Immer, so an in-place `Object.assign`
+        // would throw "Cannot assign to read only property". A new object is
+        // always writable, and `update()` swaps it into the registry.
+        this.update({ ...this.views.get(view.id)!, ...patch } as DevframeDockUserEntry)
       },
     }
   }
