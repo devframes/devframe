@@ -26,31 +26,31 @@ export function guessAssetType(path: string): AssetType {
   return 'other'
 }
 
-function toPublicPath(rawBase: string, posixPath: string): string {
+function toPublicPath(baseURL: string, posixPath: string): string {
   const encoded = posixPath.split('/').map(encodeURIComponent).join('/')
-  return joinURL(rawBase, encoded)
+  return joinURL(baseURL, encoded)
 }
 
 /** Builds an {@link AssetInfo} from an already-resolved `fs.Stats`. */
-export function statToAssetInfo(dir: string, rawBase: string, relPath: string, stat: Stats): AssetInfo {
+export function statToAssetInfo(dir: string, baseURL: string, relPath: string, stat: Stats): AssetInfo {
   const posixPath = relPath.replace(/\\/g, '/')
   return {
     path: posixPath,
     type: guessAssetType(posixPath),
-    publicPath: toPublicPath(rawBase, posixPath),
+    publicPath: toPublicPath(baseURL, posixPath),
     size: stat.size,
     mtime: stat.mtimeMs,
   }
 }
 
 /** Recursively lists every file under `dir`, sorted alphabetically by path. */
-export async function scanAssets(dir: string, rawBase: string): Promise<AssetInfo[]> {
+export async function scanAssets(dir: string, baseURL: string): Promise<AssetInfo[]> {
   const files = await glob(['**/*'], { cwd: dir, onlyFiles: true, dot: false })
 
   const infos = await Promise.all(files.map(async (relPath): Promise<AssetInfo | undefined> => {
     try {
       const stat = await fsp.lstat(join(dir, relPath))
-      return statToAssetInfo(dir, rawBase, relPath, stat)
+      return statToAssetInfo(dir, baseURL, relPath, stat)
     }
     catch {
       // Removed between the glob scan and the stat call — drop it silently,

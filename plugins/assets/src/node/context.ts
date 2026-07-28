@@ -8,8 +8,12 @@ export interface AssetsConfig {
   write: boolean
   /** Extensions `upload` accepts, or `'*'` to accept any. */
   uploadExtensions: readonly string[] | '*'
-  /** URL prefix the raw bytes are mounted at (live adapters only). */
-  rawBase: string
+  /**
+   * URL base the managed directory is served at. Normally the host
+   * (Vite / Nuxt / …) serves `public/` at `/`, so asset `publicPath`s are
+   * `joinURL(baseURL, path)` and the plugin serves nothing itself.
+   */
+  baseURL: string
   /** The upload streaming channel, created once in `setupAssets` when `write` is enabled. */
   uploadChannel?: RpcStreamingChannel<Uint8Array>
 }
@@ -47,7 +51,7 @@ export function getAssetsContext(ctx: DevframeNodeContext): AssetsContext {
     dir,
     write: config?.write ?? true,
     uploadExtensions: config?.uploadExtensions ?? '*',
-    rawBase: config?.rawBase ?? '/__devframes_plugin_assets_raw/',
+    baseURL: config?.baseURL ?? '/',
     uploadChannel: config?.uploadChannel,
     resolvePath: (relativePath: string) => resolveAssetPath(dir, relativePath),
   }

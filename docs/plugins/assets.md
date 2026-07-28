@@ -44,6 +44,7 @@ import { createAssetsDevframe } from '@devframes/plugin-assets'
 
 export default createAssetsDevframe({
   dir: 'static', // defaults to `<cwd>/public`
+  baseURL: '/', // the URL the host serves `dir` at
   write: true,
   uploadExtensions: ['png', 'jpg', 'svg', 'webp'], // defaults to Nuxt DevTools' own allow-list, or '*' for any
 })
@@ -52,9 +53,15 @@ export default createAssetsDevframe({
 | Option | Default | Description |
 |--------|---------|-------------|
 | `dir` | `<cwd>/public` | Directory this devframe manages. |
+| `baseURL` | `/` | URL base the host serves `dir` at — each asset's `publicPath` is `baseURL` + its path. Match a non-root deployment base (e.g. Nuxt's `app.baseURL`). |
 | `write` | `true` | Enable upload, rename, delete, and folder creation from the UI. |
 | `uploadExtensions` | Nuxt DevTools' allow-list | Extensions `upload` accepts, or `'*'` for any. |
+| `serveStatic` | `false` | Serve the directory's bytes from this devframe itself. Left off when mounted into a host that already serves `public/`; the standalone CLI turns it on. |
 | `build` | `false` | Register the `build` CLI subcommand. See [why it's off by default](#static-export) below. |
+
+## How previews are served
+
+Asset previews (`<img>`, `<video>`, download links) load the files by their **public URL**, and the host the plugin is mounted into serves those files — Vite, Nuxt, and most frameworks already serve their `public/` folder at `/`. The plugin never stands up its own byte-serving route; it just resolves each asset's `publicPath` as `baseURL` + the file's path. Point `baseURL` at wherever the host serves `dir` (the default `/` matches the usual `public/` convention). The standalone CLI (`pnpx @devframes/plugin-assets`) is its own host, so it flips `serveStatic` on and serves the directory under a dedicated base.
 
 ## RPC surface
 
@@ -77,7 +84,7 @@ All functions are namespaced `devframes:plugin:assets:*`:
 
 ## Static export
 
-Every devframe's `build` CLI subcommand is disabled here by default (`capabilities: { build: false }`). Real byte serving for previews goes through `ctx.views.hostStatic()`, which only mounts real files under a live adapter (`cli` / `vite` / `embedded`) — a static export can never copy those bytes, and every write action is inherently excluded from a static dump. Rather than ship a broken, preview-less, write-less shell of the tool, the `build` command is simply not registered. Pass `{ build: true }` to `createAssetsDevframe()` (and `{ force: true }` if calling `createBuild()` directly) if that degraded export is still useful to you — the file listing itself still bakes into the static RPC dump.
+Every devframe's `build` CLI subcommand is disabled here by default (`capabilities: { build: false }`). A static export has no live host serving the files, and every write action is inherently excluded from a static dump. Rather than ship a broken, preview-less, write-less shell of the tool, the `build` command is simply not registered. Pass `{ build: true }` to `createAssetsDevframe()` (and `{ force: true }` if calling `createBuild()` directly) if that degraded export is still useful to you — the file listing itself still bakes into the static RPC dump.
 
 ## Source
 

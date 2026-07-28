@@ -52,7 +52,7 @@ export const rename = defineAssetsRpc({
 
         if (from === to) {
           const stat = await fsp.lstat(from)
-          return statToAssetInfo(assets.dir, assets.rawBase, path, stat)
+          return statToAssetInfo(assets.dir, assets.baseURL, path, stat)
         }
 
         const targetExists = await fsp.access(to).then(() => true).catch(() => false)
@@ -70,7 +70,7 @@ export const rename = defineAssetsRpc({
         }
 
         const stat = await fsp.lstat(to)
-        return statToAssetInfo(assets.dir, assets.rawBase, nextRelPath, stat)
+        return statToAssetInfo(assets.dir, assets.baseURL, nextRelPath, stat)
       }) as any,
     }
   },

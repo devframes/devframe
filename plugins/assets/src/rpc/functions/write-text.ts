@@ -34,7 +34,7 @@ export const writeText = defineAssetsRpc({
       handler: (async ({ path, content }: { path: string, content: string }): Promise<AssetInfo> => {
         const absolute = assets.resolvePath(path)
         await fsp.writeFile(absolute, content, 'utf-8')
-        return statToAssetInfo(assets.dir, assets.rawBase, path, await fsp.lstat(absolute))
+        return statToAssetInfo(assets.dir, assets.baseURL, path, await fsp.lstat(absolute))
       }) as any,
     }
   },

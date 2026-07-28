@@ -13,17 +13,32 @@ export interface SetupAssetsOptions {
   write: boolean
   /** Extensions `upload` accepts, or `'*'` to accept any. */
   uploadExtensions: readonly string[] | '*'
-  /** URL prefix the raw bytes are mounted at (live adapters only). */
-  rawBase: string
+  /**
+   * URL base the managed directory is served at — the base every asset's
+   * `publicPath` is resolved against.
+   */
+  baseURL: string
+  /**
+   * Whether this devframe should serve the managed directory's bytes
+   * itself. Left `false` when mounted into a host (Vite / Nuxt / …) that
+   * already serves `public/` at {@link baseURL}; set `true` only for the
+   * standalone CLI, which is its own host.
+   */
+  serveStatic: boolean
 }
 
 const watchers = new WeakMap<DevframeNodeContext, () => Promise<void>>()
 
 /**
  * Register the assets RPC surface on a devframe node context: ensures the
- * managed directory exists, hosts it for raw byte access, registers the
- * read RPCs (always) and write RPCs (when enabled), and starts a live
- * file watcher in dev mode.
+ * managed directory exists, registers the read RPCs (always) and write
+ * RPCs (when enabled), and starts a live file watcher in dev mode.
+ *
+ * Raw asset bytes (for `<img>`/`<video>`/download previews) are served by
+ * the **host** the plugin is attached to — Vite, Nuxt, or any framework
+ * already serves its `public/` dir at {@link SetupAssetsOptions.baseURL}.
+ * The plugin only serves them itself when `serveStatic` is set (the
+ * standalone CLI, which is its own host).
  *
  * Called from the definition's `setup(ctx)` and reusable by host adapters
  * that wire their own context.
@@ -38,11 +53,12 @@ export async function setupAssets(ctx: DevframeNodeContext, options: SetupAssets
 
   configureAssets(ctx, { ...options, uploadChannel })
 
-  // Real byte serving for `<img>`/`<video>`/`<a download>` etc. Only
-  // meaningful under a live adapter (cli / vite / embedded) — a no-op
-  // under `mode: 'build'`, which this plugin opts out of by default via
-  // `capabilities.build: false` anyway.
-  ctx.views.hostStatic(options.rawBase, options.dir)
+  // Only self-serve when this devframe is its own host (the standalone
+  // CLI). When attached to a Vite/Nuxt/etc. dev server, that host already
+  // serves the managed directory at `baseURL`, so we reference its URLs
+  // rather than mounting our own route.
+  if (options.serveStatic)
+    ctx.views.hostStatic(options.baseURL, options.dir)
 
   for (const fn of readFunctions)
     ctx.rpc.register(fn)

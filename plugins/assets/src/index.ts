@@ -28,6 +28,22 @@ export interface AssetsDevframeOptions {
    * own `cwd`.
    */
   dir?: string
+  /**
+   * URL base the **host** serves the managed directory at, used to build
+   * each asset's `publicPath`. Defaults to `/` — Vite, Nuxt, and most
+   * frameworks serve their `public/` folder at the site root. Set this to
+   * match a non-root deployment base (e.g. Nuxt's `app.baseURL`).
+   */
+  baseURL?: string
+  /**
+   * Serve the managed directory's bytes from this devframe itself.
+   * Defaults to `false`: when mounted into a host (Vite/Nuxt/…) that host
+   * already serves `public/` at {@link baseURL}, so the plugin references
+   * those URLs instead of standing up its own route. The standalone CLI
+   * sets this to `true` (it is its own host), serving the directory under
+   * a dedicated base so it doesn't collide with the SPA at `/`.
+   */
+  serveStatic?: boolean
   basePath?: string
   distDir?: string
   /** Preferred standalone CLI port (default 9015). */
@@ -50,11 +66,11 @@ export interface AssetsDevframeOptions {
   auth?: boolean
   /**
    * Register the `build` CLI subcommand. Disabled by default: a static
-   * export can only ever list file metadata from a baked snapshot — real
-   * previews need `ctx.views.hostStatic()`'s live byte serving, and every
-   * write action is inherently excluded from a static dump — so the
-   * command would produce a broken, write-less shell of the tool. Opt
-   * back in if that degraded export is still useful to you.
+   * export can only ever list file metadata from a baked snapshot — there
+   * is no live host serving the files, and every write action is inherently
+   * excluded from a static dump — so the command would produce a broken,
+   * write-less shell of the tool. Opt back in if that degraded export is
+   * still useful to you.
    */
   build?: boolean
 }
@@ -71,7 +87,11 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
   const id = options.id ?? DEFAULT_ID
   const distDir = options.distDir ?? resolve(PKG_ROOT, 'dist/spa')
   const write = options.write ?? true
-  const rawBase = `/__${id}-raw/`
+  const serveStatic = options.serveStatic ?? false
+  // When self-serving (standalone CLI), mount under a dedicated base so the
+  // asset bytes don't collide with the SPA served at `/`. Otherwise trust the
+  // host to serve `public/` at `baseURL` (default `/`).
+  const baseURL = options.baseURL ?? (serveStatic ? `/__${id}-raw/` : '/')
 
   return defineDevframe({
     id,
@@ -101,7 +121,8 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
         dir,
         write: readOnlyFlag ? false : write,
         uploadExtensions: options.uploadExtensions ?? DEFAULT_ALLOWED_UPLOAD_EXTENSIONS,
-        rawBase,
+        baseURL,
+        serveStatic,
       })
     },
   })

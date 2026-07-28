@@ -6,7 +6,8 @@ export interface SetupAssetsOptions {
   dir: string;
   write: boolean;
   uploadExtensions: readonly string[] | '*';
-  rawBase: string;
+  baseURL: string;
+  serveStatic: boolean;
 }
 // #endregion
 

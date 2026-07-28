@@ -19,6 +19,8 @@ export interface AssetsDevframeOptions {
   name?: string;
   icon?: string;
   dir?: string;
+  baseURL?: string;
+  serveStatic?: boolean;
   basePath?: string;
   distDir?: string;
   port?: number;

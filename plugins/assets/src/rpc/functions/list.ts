@@ -34,7 +34,7 @@ export const list = defineAssetsRpc({
       // The RPC runtime awaits handlers before validating `returns`; its
       // public setup type currently models schema-backed returns as
       // synchronous.
-      handler: (async (): Promise<AssetInfo[]> => scanAssets(assets.dir, assets.rawBase)) as any,
+      handler: (async (): Promise<AssetInfo[]> => scanAssets(assets.dir, assets.baseURL)) as any,
     }
   },
 })
