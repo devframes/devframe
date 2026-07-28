@@ -34,10 +34,6 @@
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "access": "public",
-    "tag": "experimental"
-  },
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch",

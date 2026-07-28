@@ -5,7 +5,7 @@ outline: deep
 # Next Helper
 
 > [!WARNING]
-> Experimental. `@devframes/next` is published under the `experimental` npm tag (`npm i @devframes/next@experimental`) while its API settles. Expect changes before a stable release.
+> Experimental. `@devframes/next`'s API is still settling — expect changes before a stable release.
 
 `@devframes/next` hosts devframes from a Next.js App Router app. Next runs on webpack/Turbopack rather than Vite, so it hosts through a route handler instead of the [Vite Bridge](./vite-bridge): the package serves each devframe's SPA and its `__connection.json` from a single `fetch` handler your catch-all route delegates to, reusing devframe's own [`serveStaticHandler`](/adapters/dev) for SPA fallback, content types, and path-traversal guarding.
 
@@ -95,7 +95,7 @@ export async function GET(request: Request): Promise<Response> {
 
 ## React client
 
-`@devframes/next/client` connects to the RPC backend and provides the client to your component tree — the React counterpart to `@devframes/nuxt`'s `$rpc` plugin.
+`@devframes/next/client` connects to the RPC backend and provides the client to your component tree — the React counterpart to `@devframes/nuxt`'s `$rpc` plugin. Children render immediately, so your shell and a connection indicator stay visible while the client connects.
 
 ```tsx [app/providers.tsx]
 'use client'
@@ -106,17 +106,22 @@ export function Providers({ children }: { children: React.ReactNode }) {
 }
 ```
 
+`useRpc()` returns the connected `DevframeRpcClient`, or `null` while connecting; scope it to your tool's namespace. `useRpcStatus()` returns the live `{ status, error }` for a connection indicator.
+
 ```tsx [app/panel.tsx]
 'use client'
-import { useRpc } from '@devframes/next/client'
+import { useRpc, useRpcStatus } from '@devframes/next/client'
 
 export function Panel() {
-  const rpc = useRpc().scope('my-tool:')
-  // rpc.call('get-payload'), rpc.sharedState, …
+  const rpc = useRpc()?.scope('my-tool:')
+  const { status, error } = useRpcStatus()
+  if (!rpc)
+    return <p>{error ? `connection failed — ${error.message}` : 'connecting…'}</p>
+  // rpc.rpc.call('get-payload'), rpc.sharedState, …
 }
 ```
 
-`RpcProvider` renders its `fallback` (default `null`) until the client connects, so `useRpc()` always returns a live client. Theming and layout stay app-owned.
+Both hooks throw outside a `<RpcProvider>`. Theming and layout stay app-owned.
 
 ## Runtime
 

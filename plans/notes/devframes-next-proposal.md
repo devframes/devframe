@@ -133,23 +133,28 @@ STOP condition (contract divergence) does not trip.
    side-car against a temp `distDir` and asserts SPA serving, SPA fallback, the
    WS-port meta, and a bare 404).
 2. **Client surface — implemented** at `@devframes/next/client` (React peer,
-   optional). `RpcProvider` calls `connectDevframe()` once and provides the
-   client; `useRpc()` reads it (throwing outside a provider). The `'use client'`
-   directive is preserved through the browser build. A theme/layout helper was
-   deliberately left out — theming is design-system-specific and stays
-   app-owned.
-3. **Publishing shape — done.** `private` dropped; `publishConfig.tag:
-   "experimental"` publishes under the `experimental` tag, not `latest`. `next`
-   and `react` are optional peers; exports are `.` (Node) + `./client`
-   (browser). tsnapi snapshots generated under
+   optional). `RpcProvider` calls `connectDevframe()` once and renders children
+   eagerly (so a shell + connection indicator stay visible while connecting);
+   `useRpc()` returns the client or `null`, and `useRpcStatus()` exposes the live
+   `{ status, error }` (subscribed to the client's `connection:status` /
+   `connection:error` events). The `'use client'` directive is preserved through
+   the browser build. A theme/layout helper was deliberately left out — theming
+   is design-system-specific and stays app-owned.
+3. **Publishing shape — done.** `private` dropped so the package publishes with
+   the rest of the workspace; it's flagged experimental in its description and
+   the docs (no npm dist-tag). `next` and `react` are optional peers; exports are
+   `.` (Node) + `./client` (browser). tsnapi snapshots generated under
    `tests/__snapshots__/tsnapi/@devframes/next/` (`index` + `client`).
 4. **404 body — parity added.** The host `fetch` normalizes any miss to a
    body-less `404`, matching a plain static server (h3's default JSON error body
    is dropped).
-5. **`next-runtime-snapshot` needs no bridge.** It uses Next only as a static-SPA
-   builder while devframe owns the server via `createCac`/`createBuild`; the
-   bridge doesn't apply. Left as-is (recorded so a future reader doesn't try to
-   "unify" the two Next examples).
+5. **`next-runtime-snapshot` — client surface adopted; host part N/A.** It uses
+   Next only as a static-SPA builder while devframe owns the server via
+   `createCac`/`createBuild`, so the host/handler adapter (route handlers) still
+   doesn't apply. Its hand-rolled connect provider, however, was migrated onto
+   `@devframes/next/client`: `connect.tsx` is now a thin adapter that delegates
+   connect + status to the package and only scopes the client to the example's
+   namespace — a second consumer that validated the eager-render + status API.
 
 ## Files
 

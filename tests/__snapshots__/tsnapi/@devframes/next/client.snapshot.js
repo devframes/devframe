@@ -4,4 +4,5 @@
 // #region Functions
 export function RpcProvider(_) {}
 export function useRpc() {}
+export function useRpcStatus() {}
 // #endregion

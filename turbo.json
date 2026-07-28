@@ -110,7 +110,7 @@
     },
     "next-runtime-snapshot-example#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build"],
+      "dependsOn": ["devframe#build", "@devframes/next#build"],
       "outputs": ["dist/**"]
     },
     "@devframes/plugin-git#build": {

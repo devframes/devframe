@@ -1,12 +1,23 @@
 'use client'
 
-import type { DevframeRpcClient } from 'devframe/client'
+import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/client'
 import type { ConnectionMeta } from 'devframe/types'
 import type { ReactNode } from 'react'
 import { connectDevframe } from 'devframe/client'
 import { createContext, useContext, useEffect, useState } from 'react'
 
-const RpcContext = createContext<DevframeRpcClient | null>(null)
+export interface DevframeRpcState {
+  /** The connected client, or `null` while the initial connect is in flight. */
+  rpc: DevframeRpcClient | null
+  /** Live connection status — `'connecting'` until the client resolves. */
+  status: DevframeConnectionStatus
+  /** The latest connection error, or `null`. */
+  error: Error | null
+}
+
+const RpcContext = createContext<DevframeRpcState | null>(null)
+
+const INITIAL: DevframeRpcState = { rpc: null, status: 'connecting', error: null }
 
 export interface RpcProviderProps {
   children: ReactNode
@@ -21,21 +32,16 @@ export interface RpcProviderProps {
    * fetch entirely (e.g. when the host already knows the WS endpoint).
    */
   connectionMeta?: ConnectionMeta
-  /**
-   * Rendered while the client is connecting. Children mount only once the RPC
-   * client is ready, so {@link useRpc} always returns a live client. Defaults
-   * to `null`.
-   */
-  fallback?: ReactNode
 }
 
 /**
- * Connect to the devframe RPC backend once and provide the client to the tree.
+ * Connect to the devframe RPC backend once and provide the client — plus live
+ * connection status — to the tree. The React counterpart to `@devframes/nuxt`'s
+ * client plugin.
  *
- * The React counterpart to `@devframes/nuxt`'s client plugin: it calls
- * `connectDevframe()` on mount and exposes the result through {@link useRpc}.
- * Being a client component, drop it into a Next layout or page and read the
- * client from any descendant.
+ * Children render immediately (before the connection resolves), so your shell
+ * and a connection indicator stay visible throughout; read the client with
+ * {@link useRpc} and the status with {@link useRpcStatus}.
  *
  * ```tsx
  * 'use client'
@@ -50,37 +56,66 @@ export function RpcProvider({
   children,
   baseURL = './',
   connectionMeta,
-  fallback = null,
 }: RpcProviderProps): ReactNode {
-  const [rpc, setRpc] = useState<DevframeRpcClient | null>(null)
+  const [state, setState] = useState<DevframeRpcState>(INITIAL)
 
   useEffect(() => {
     let active = true
-    void connectDevframe({ baseURL, connectionMeta }).then((client) => {
-      if (active)
-        setRpc(client)
-    })
+    let client: DevframeRpcClient | undefined
+    const sync = (): void => {
+      if (active && client)
+        setState({ rpc: client, status: client.status, error: client.connectionError })
+    }
+
+    const offs: Array<() => void> = []
+    void connectDevframe({ baseURL, connectionMeta }).then(
+      (c) => {
+        if (!active)
+          return
+        client = c
+        sync()
+        offs.push(c.events.on('connection:status', sync))
+        offs.push(c.events.on('connection:error', sync))
+      },
+      (err: unknown) => {
+        if (active)
+          setState({ rpc: null, status: 'error', error: err instanceof Error ? err : new Error(String(err)) })
+      },
+    )
+
     return () => {
       active = false
+      for (const off of offs)
+        off()
     }
     // `connectionMeta` is a plain descriptor; re-connect only when the base changes.
   }, [baseURL])
 
-  if (!rpc)
-    return fallback
+  return <RpcContext.Provider value={state}>{children}</RpcContext.Provider>
+}
 
-  return <RpcContext.Provider value={rpc}>{children}</RpcContext.Provider>
+function useDevframeState(): DevframeRpcState {
+  const state = useContext(RpcContext)
+  if (!state)
+    throw new Error('[@devframes/next] useRpc()/useRpcStatus() must be called inside a <RpcProvider>.')
+  return state
 }
 
 /**
- * Read the connected {@link DevframeRpcClient} provided by {@link RpcProvider}.
- * Scope it to your tool's RPC namespace with `useRpc().scope('my-tool:…')`.
+ * Read the connected {@link DevframeRpcClient}, or `null` while connecting.
+ * Scope it to your tool's RPC namespace with `useRpc()?.scope('my-tool:')`.
  *
  * Throws when called outside a `<RpcProvider>`.
  */
-export function useRpc(): DevframeRpcClient {
-  const rpc = useContext(RpcContext)
-  if (!rpc)
-    throw new Error('[@devframes/next] useRpc() must be called inside a <RpcProvider>.')
-  return rpc
+export function useRpc(): DevframeRpcClient | null {
+  return useDevframeState().rpc
+}
+
+/**
+ * Read the live connection `status` and latest `error`, for a connection
+ * indicator. Throws when called outside a `<RpcProvider>`.
+ */
+export function useRpcStatus(): { status: DevframeConnectionStatus, error: Error | null } {
+  const { status, error } = useDevframeState()
+  return { status, error }
 }

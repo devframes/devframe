@@ -2,8 +2,8 @@
 
 import type { DevframeScopedClientContext } from 'devframe/client'
 import type { ReactNode } from 'react'
-import { connectDevframe } from 'devframe/client'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { RpcProvider as DevframeRpcProvider, useRpc as useDevframeRpc, useRpcStatus } from '@devframes/next/client'
+import { useMemo } from 'react'
 
 // Inlined (not imported from the server `rpc/index.ts`) so the client
 // bundle stays free of node-only server code.
@@ -16,33 +16,20 @@ interface ConnectionState {
   error: string | null
 }
 
-const RpcContext = createContext<ConnectionState>({ ctx: null, error: null })
-
-export function useRpc(): ConnectionState {
-  return useContext(RpcContext)
+/**
+ * Connect to the RPC backend via `@devframes/next/client` — the connect +
+ * status machinery lives in the package now; this file only scopes the client
+ * to this tool's namespace and reshapes the status for the local UI.
+ */
+export function RpcProvider({ children }: { children: ReactNode }) {
+  return <DevframeRpcProvider>{children}</DevframeRpcProvider>
 }
 
-export function RpcProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<ConnectionState>({ ctx: null, error: null })
-
-  useEffect(() => {
-    let cancelled = false
-    connectDevframe().then(
-      (rpc) => {
-        if (!cancelled)
-          setState({ ctx: rpc.scope(NAMESPACE), error: null })
-      },
-      (err: unknown) => {
-        if (cancelled)
-          return
-        const message = err instanceof Error ? err.message : String(err)
-        setState({ ctx: null, error: message })
-      },
-    )
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  return <RpcContext.Provider value={state}>{children}</RpcContext.Provider>
+export function useRpc(): ConnectionState {
+  const rpc = useDevframeRpc()
+  const { error } = useRpcStatus()
+  // `rpc` is stable once resolved, so memoizing on it keeps `ctx` referentially
+  // stable across renders (the snapshot components depend on `ctx` identity).
+  const ctx = useMemo(() => (rpc ? rpc.scope(NAMESPACE) : null), [rpc])
+  return { ctx, error: error ? error.message : null }
 }
