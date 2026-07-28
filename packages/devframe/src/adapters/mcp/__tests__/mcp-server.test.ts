@@ -176,6 +176,31 @@ describe('mcp adapter (in-memory)', () => {
     }
   })
 
+  it('omits non-object output schemas (MCP requires type: "object")', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.agent.registerTool({
+        id: 'void-tool',
+        description: 'Returns nothing.',
+        // What a valibot `v.void()` returns schema converts to.
+        outputSchema: { type: 'null' },
+        handler: () => undefined,
+      })
+
+      const listed = await client.listTools()
+      const tool = listed.tools.find(t => t.name === 'void-tool')!
+      expect(tool.outputSchema).toBeUndefined()
+
+      // The call still succeeds with plain text content.
+      const result = await client.callTool({ name: 'void-tool', arguments: {} })
+      expect(result.isError).toBeFalsy()
+      expect(result.structuredContent).toBeUndefined()
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
   it('exposes shared state through the built-in read_state tool', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {

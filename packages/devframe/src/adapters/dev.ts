@@ -13,6 +13,7 @@ import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_MCP_ROUTE, DEVFRAME_WS_ROUT
 import { createHostContext } from '../node/context'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
+import { registerDevframeInstance } from '../node/instance-registry'
 import { startHttpAndWs } from '../node/server'
 import { normalizeHttpServerUrl } from '../node/utils'
 import { createInteractiveAuth } from '../recipes/interactive-auth'
@@ -263,14 +264,28 @@ export async function createDevServer(
     },
   })
 
-  // Fold MCP session teardown into the server's close so callers get a single
-  // graceful-shutdown handle.
-  if (mcpDispose) {
-    const closeServer = started.close
-    started.close = async () => {
-      await mcpDispose!()
-      await closeServer()
-    }
+  // Record the instance in the global registry so discovery tooling
+  // (`devframe connect`) finds it without port guessing. Registration never
+  // throws; a crash-orphaned record is pruned by readers on a failed probe.
+  const registration = registerDevframeInstance({
+    pid: process.pid,
+    port: started.port,
+    origin: normalizeHttpServerUrl(host, started.port),
+    basePath,
+    id: def.id,
+    name: def.name,
+    rootDir: process.cwd(),
+    mcp: mcpConfig ? { path: joinURL(basePath, withoutLeadingSlash(mcpConfig.path ?? DEVFRAME_MCP_ROUTE)) } : null,
+    startedAt: Date.now(),
+  })
+
+  // Fold MCP session teardown and registry removal into the server's close so
+  // callers get a single graceful-shutdown handle.
+  const closeServer = started.close
+  started.close = async () => {
+    registration.unregister()
+    await mcpDispose?.()
+    await closeServer()
   }
 
   return started

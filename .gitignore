@@ -18,6 +18,7 @@ temp
 packages/devframe/skills
 test-results
 playwright-report
+tests/e2e/.registries
 playwright/.cache
 blob-report
 .ecosystem

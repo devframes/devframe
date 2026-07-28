@@ -176,4 +176,6 @@ Agents can act on `fix` directly and follow `docs` for detail — prefer throwin
 
 | Command | Description |
 |---------|-------------|
-| `devframe mcp` | Start an MCP server on `stdio`. |
+| `<your-app> mcp` | Start your app's MCP server on `stdio` (from the `createCac` shell). |
+| `<your-app> dev --mcp` | Serve the agent surface on the dev server's `/__mcp` route. |
+| `devframe connect` | Run the app-independent MCP connector: discover running devframes and proxy their tools — see [MCP adapter](/adapters/mcp#discovery-devframe-connect). |

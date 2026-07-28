@@ -123,18 +123,20 @@ literal "/_next/mcp" shape on devframe primitives.
 
 ## Done criteria
 
-- [ ] Phase 1: both bridges forward + advertise MCP; `formatMcpError` emits
+- [x] Phase 1: both bridges forward + advertise MCP; `formatMcpError` emits
       `{ error: { code, message, fix?, docs? } }` for diagnostics; stale
-      comment gone; conventions documented.
-- [ ] Phase 2: `createMcpFetchHandler` public; `read_state` tool live;
+      comment gone; conventions documented. (PR 1)
+- [x] Phase 2: `createMcpFetchHandler` public; `read_state` tool live;
       agent-flagged hub commands appear as MCP tools; git read-only five are
-      agent-visible with schemas.
-- [ ] Phase 3: instances self-register and prune; `devframe connect` indexes
+      agent-visible with schemas. (PR 2)
+- [x] Phase 3: instances self-register and prune; `devframe connect` indexes
       and calls a live app over stdio; Next host serves in-process MCP; both
-      e2e gates green in CI.
-- [ ] Every phase: full gate green, API snapshots updated deliberately, new
-      node-side errors use coded diagnostics with docs pages.
-- [ ] `plans/README.md` row updated per phase.
+      e2e gates green in CI. (PR 3)
+- [x] Every phase: full gate green, API snapshots updated deliberately, new
+      node-side errors use coded diagnostics with docs pages (`DF0042`,
+      `DF0043`, `DF8404` — note: DF00xx numbers are allocated across
+      packages; check `docs/errors/` for the next free code).
+- [ ] `plans/README.md` row set to DONE once the three PRs merge.
 
 ## STOP conditions
 

@@ -9,7 +9,7 @@ import { defineHubRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { createDevframeNextHost } from '@devframes/next'
-import { startHttpAndWs } from 'devframe/node'
+import { registerDevframeInstance, startHttpAndWs } from 'devframe/node'
 import { getPort } from 'get-port-please'
 import { createDashboardView } from 'json-render/dashboard'
 import { dirname, join } from 'pathe'
@@ -153,13 +153,14 @@ export async function nextDevframeHub(
 ): Promise<StartedNextDevframeHub> {
   const cwd = options.cwd ?? process.cwd()
   const hostName = options.host ?? 'localhost'
+  const nextPort = Number(process.env.PORT ?? 3000)
 
   // The Next host bridge: its `host` accumulates every `mountStatic` /
   // `mountConnectionMeta` call into a single `fetch` handler (backed by
   // devframe's shared `serveStaticHandler`), which the App Router routes
   // delegate to — no hand-rolled static serving or path matching here.
   const nextHost = createDevframeNextHost({
-    resolveOrigin: () => `http://${hostName}:3000`,
+    resolveOrigin: () => `http://${hostName}:${nextPort}`,
     getStorageDir(scope) {
       if (scope === 'workspace')
         return join(cwd, '.devframe')
@@ -193,6 +194,12 @@ export async function nextDevframeHub(
     title: 'Next Hub: Ping',
     icon: 'ph:bell-duotone',
     category: 'hub',
+    // Opt this command into the agent surface: it shows up as an MCP tool
+    // on the in-process endpoint mounted below.
+    agent: {
+      description: 'Ping the hub to confirm it is alive. Returns "pong". Safe to call freely.',
+      safety: 'read',
+    },
     handler: () => 'pong',
   })
 
@@ -264,13 +271,44 @@ export async function nextDevframeHub(
     auth: false,
   })
 
+  // Serve MCP in-process on the Next app's own origin (the `/_next/mcp`
+  // shape): the hub's agent surface — agent-flagged commands, plugin tools
+  // (git status/log/diff, terminals), `read_state` — over the same catch-all
+  // route as the SPAs, no side-car port involved.
+  const mcpPath = '/__hub/__mcp'
+  await nextHost.mountMcp(context, mcpPath, {
+    serverName: 'minimal-next-devframe-hub',
+  })
+
   const connectionMeta = {
     backend: 'websocket' as const,
     websocket: started.port,
+    mcp: { path: mcpPath },
   }
   // Publish the live meta to the bridge now the WS port is known, so every
   // registered `<base>/__connection.json` (hub + mounted devframes) resolves.
   nextHost.setConnectionMeta(connectionMeta)
+
+  // Record the instance in the global registry so `devframe connect`
+  // discovers this hub — running inside the Next dev server — like any
+  // standalone devframe. In-process hosts register explicitly; the origin is
+  // the Next app's own.
+  const registration = registerDevframeInstance({
+    pid: process.pid,
+    port: nextPort,
+    origin: `http://${hostName}:${nextPort}`,
+    basePath: '/__hub/',
+    id: 'minimal-next-devframe-hub',
+    name: 'Minimal Next Devframe Hub',
+    rootDir: cwd,
+    mcp: { path: mcpPath },
+    startedAt: Date.now(),
+  })
+  const closeStarted = started.close
+  started.close = async () => {
+    registration.unregister()
+    await closeStarted()
+  }
 
   return Object.assign(started, {
     context,

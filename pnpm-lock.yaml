@@ -379,6 +379,9 @@ importers:
       '@antfu/utils':
         specifier: catalog:inlined
         version: 9.3.0
+      '@modelcontextprotocol/sdk':
+        specifier: catalog:deps
+        version: 1.29.0(supports-color@10.2.2)(zod@4.4.3)
       '@playwright/test':
         specifier: catalog:testing
         version: 1.62.0

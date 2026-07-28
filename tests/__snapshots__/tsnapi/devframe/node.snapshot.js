@@ -9,13 +9,20 @@ export { createRpcSharedStateServerHost }
 export { createRpcStreamingServerHost }
 export { createScopedNodeContext }
 export { createStorage }
+export { DEVFRAME_DISABLE_INSTANCE_REGISTRY_ENV }
+export { DEVFRAME_INSTANCES_DIR_ENV }
 export { DevframeAgentHost }
 export { DevframeDiagnosticsHost }
 export { DevframeServicesHostImpl }
 export { DevframeViewHost }
 export { formatHostForUrl }
 export { isObject }
+export { listLiveDevframeInstances }
 export { normalizeHttpServerUrl }
+export { probeDevframeInstance }
+export { readDevframeInstances }
+export { registerDevframeInstance }
+export { resolveInstancesDir }
 export { startHttpAndWs }
 export { toDialableHost }
 // #endregion

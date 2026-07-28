@@ -60,7 +60,11 @@
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
+  "bin": {
+    "devframe": "./bin/devframe.mjs"
+  },
   "files": [
+    "bin",
     "dist",
     "skills"
   ],

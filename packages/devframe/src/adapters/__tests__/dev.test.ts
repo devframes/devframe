@@ -569,4 +569,45 @@ describe('adapters/dev', () => {
     })
     expect(port).toBe(override)
   })
+
+  it('registers the instance in the registry and unregisters on close', async () => {
+    const registryDir = mkdtempSync(join(tmpdir(), 'devframe-registry-'))
+    vi.stubEnv('DEVFRAME_INSTANCES_DIR', registryDir)
+    // The global vitest setup disables registration for every other test.
+    vi.stubEnv('DEVFRAME_DISABLE_INSTANCE_REGISTRY', '0')
+    try {
+      const devframe = defineDevframe({
+        id: 'devframe-test-registry',
+        name: 'Registry Test',
+        version: '0.0.0',
+        packageName: 'devframe-test',
+        homepage: 'https://example.test',
+        description: 'Test devframe.',
+        setup: () => {},
+      })
+      const server = await createDevServer(devframe, {
+        host: '127.0.0.1',
+        port: 0,
+        auth: false,
+        mcp: true,
+      })
+
+      const { readDevframeInstances } = await import('../../node/instance-registry')
+      const records = readDevframeInstances({ instancesDir: registryDir })
+      expect(records).toHaveLength(1)
+      expect(records[0]).toMatchObject({
+        id: 'devframe-test-registry',
+        port: server.port,
+        basePath: '/',
+        mcp: { path: '/__mcp' },
+      })
+      expect(records[0]!.origin).toContain(`:${server.port}`)
+
+      await server.close()
+      expect(readDevframeInstances({ instancesDir: registryDir })).toEqual([])
+    }
+    finally {
+      vi.unstubAllEnvs()
+    }
+  })
 })

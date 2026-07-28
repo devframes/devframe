@@ -1,5 +1,11 @@
+import process from 'node:process'
 import { defineConfig } from 'vitest/config'
 import { alias } from './alias'
+
+// Unit tests boot real dev servers; keep them out of the user's global
+// devframe instance registry. Registry-specific tests re-enable it with
+// `vi.stubEnv` + an explicit `instancesDir`.
+process.env.DEVFRAME_DISABLE_INSTANCE_REGISTRY ??= '1'
 
 export default defineConfig({
   resolve: {

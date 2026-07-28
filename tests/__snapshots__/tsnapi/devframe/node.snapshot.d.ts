@@ -22,6 +22,23 @@ export interface CreateStorageOptions<T extends object> {
   mergeInitialValue?: false | ((_: T, _: T) => T);
   debounce?: number;
 }
+export interface DevframeInstanceRecord {
+  pid: number;
+  port: number;
+  origin: string;
+  basePath: string;
+  id: string;
+  name?: string;
+  rootDir: string;
+  mcp: {
+    path: string;
+  } | null;
+  startedAt: number;
+}
+export interface DevframeInstanceRegistration {
+  readonly file: string;
+  unregister: () => void;
+}
 // #endregion
 
 // #region Classes
@@ -86,8 +103,30 @@ export declare function createScopedNodeContext<NS extends string = string>(_: D
 export declare function createStorage<T extends object>(_: CreateStorageOptions<T>): SharedState<T>;
 export declare function formatHostForUrl(_: string): string;
 export declare function isObject(_: unknown): value is Record<string, any>;
+export declare function listLiveDevframeInstances(_?: {
+  instancesDir?: string;
+  timeoutMs?: number;
+}): Promise<{
+  live: DevframeInstanceRecord[];
+  pruned: DevframeInstanceRecord[];
+}>;
 export declare function normalizeHttpServerUrl(_: string, _: number | string): string;
+export declare function probeDevframeInstance(_: DevframeInstanceRecord, _?: {
+  timeoutMs?: number;
+}): Promise<string | null>;
+export declare function readDevframeInstances(_?: {
+  instancesDir?: string;
+}): DevframeInstanceRecord[];
+export declare function registerDevframeInstance(_: DevframeInstanceRecord, _?: {
+  instancesDir?: string;
+}): DevframeInstanceRegistration;
+export declare function resolveInstancesDir(_?: string): string;
 export declare function toDialableHost(_: string): string;
+// #endregion
+
+// #region Variables
+export declare const DEVFRAME_DISABLE_INSTANCE_REGISTRY_ENV: string;
+export declare const DEVFRAME_INSTANCES_DIR_ENV: string;
 // #endregion
 
 // #region Other

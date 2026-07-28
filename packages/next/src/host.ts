@@ -1,4 +1,4 @@
-import type { ConnectionMeta, DevframeHost, DevframeStorageScope } from 'devframe/types'
+import type { ConnectionMeta, DevframeHost, DevframeNodeContext, DevframeStorageScope } from 'devframe/types'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { serveStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
@@ -22,6 +22,20 @@ export interface CreateDevframeNextHostOptions {
    * {@link DevframeNextHost.setConnectionMeta}.
    */
   connectionMeta?: ConnectionMeta
+}
+
+export interface DevframeNextHostMcpOptions {
+  /** Name reported in the MCP handshake. Default: `'devframe (next)'`. */
+  serverName?: string
+  /** Version reported in the MCP handshake. Default: `'0.0.0'`. */
+  serverVersion?: string
+  /** Expose shared-state keys as MCP resources / `read_state`. Default: `true`. */
+  exposeSharedState?: boolean | ((key: string) => boolean)
+  /**
+   * Origin allow-list beyond the loopback default. `false` disables the
+   * origin gate entirely.
+   */
+  allowedOrigins?: readonly string[] | false
 }
 
 export interface DevframeNextHost {
@@ -51,6 +65,22 @@ export interface DevframeNextHost {
    * `503` so a racing client retries rather than caching a wrong endpoint.
    */
   setConnectionMeta: (meta: ConnectionMeta) => void
+  /**
+   * Serve an MCP Streamable-HTTP endpoint at `path` **in-process** — on the
+   * Next app's own origin, through the same catch-all route as the SPAs (the
+   * `/_next/mcp` shape). Built on `createMcpFetchHandler` from
+   * `devframe/adapters/mcp` (imported lazily: `@modelcontextprotocol/sdk`
+   * stays an optional peer). Advertise the path in the connection meta
+   * (`mcp: { path }` — same origin, no port) and register the instance via
+   * `registerDevframeInstance` so `devframe connect` can discover it.
+   *
+   * @experimental
+   */
+  mountMcp: (
+    ctx: DevframeNodeContext,
+    path: string,
+    options?: DevframeNextHostMcpOptions,
+  ) => Promise<{ dispose: () => Promise<void> }>
 }
 
 const META_SUFFIX = `/${DEVFRAME_CONNECTION_META_FILENAME}`
@@ -80,6 +110,7 @@ export function createDevframeNextHost(
 ): DevframeNextHost {
   const app = new H3()
   const metaBases = new Set<string>()
+  const mcpMounts = new Map<string, { fetch: (request: Request) => Promise<Response> }>()
   let connectionMeta = options.connectionMeta
 
   const host: DevframeHost = {
@@ -100,6 +131,12 @@ export function createDevframeNextHost(
 
   async function fetch(request: Request): Promise<Response> {
     const { pathname } = new URL(request.url)
+
+    // MCP endpoints answer before the static handler for the same reason as
+    // the connection meta below: SPA fallback must not swallow them.
+    const mcp = mcpMounts.get(stripTrailingSlash(pathname))
+    if (mcp)
+      return mcp.fetch(request)
 
     // Answer `<base>/__connection.json` before the static handler runs — a
     // mounted SPA's SPA-fallback would otherwise resolve the miss to
@@ -125,6 +162,23 @@ export function createDevframeNextHost(
     fetch,
     setConnectionMeta(meta) {
       connectionMeta = meta
+    },
+    async mountMcp(ctx, path, mcpOptions = {}) {
+      const { createMcpFetchHandler } = await import('devframe/adapters/mcp')
+      const handler = createMcpFetchHandler(ctx, {
+        serverName: mcpOptions.serverName ?? 'devframe (next)',
+        serverVersion: mcpOptions.serverVersion ?? '0.0.0',
+        exposeSharedState: mcpOptions.exposeSharedState ?? true,
+        allowedOrigins: mcpOptions.allowedOrigins,
+      })
+      const key = stripTrailingSlash(path)
+      mcpMounts.set(key, handler)
+      return {
+        dispose: async () => {
+          mcpMounts.delete(key)
+          await handler.dispose()
+        },
+      }
     },
   }
 }

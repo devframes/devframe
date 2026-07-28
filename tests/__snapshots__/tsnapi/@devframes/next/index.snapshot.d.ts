@@ -30,6 +30,9 @@ export interface DevframeNextHost {
   host: DevframeHost;
   fetch: (_: Request) => Promise<Response>;
   setConnectionMeta: (_: ConnectionMeta) => void;
+  mountMcp: (_: DevframeNodeContext, _: string, _?: DevframeNextHostMcpOptions) => Promise<{
+    dispose: () => Promise<void>;
+  }>;
 }
 // #endregion
 

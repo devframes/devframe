@@ -19,12 +19,13 @@ describe('next-devframe-hub (example)', () => {
     server = undefined
   })
 
-  it('returns connection meta pointing at the WS backend', async () => {
+  it('returns connection meta pointing at the WS backend and in-process MCP', async () => {
     server = await nextDevframeHub({ host: '127.0.0.1' })
 
     expect(server.connectionMeta).toEqual({
       backend: 'websocket',
       websocket: server.port,
+      mcp: { path: '/__hub/__mcp' },
     })
   })
 

@@ -5,6 +5,12 @@ import { defineConfig, devices } from '@playwright/test'
 const fixtureCwd = fileURLToPath(new URL('./tests/e2e/fixtures', import.meta.url))
 const serveStatic = fileURLToPath(new URL('./tests/e2e/_support/serve-static.mjs', import.meta.url))
 
+// Hermetic per-suite instance-registry dirs so the `devframe connect` specs
+// see exactly the instance they booted (and local runs never touch
+// `~/.devframe/instances`). Servers without a connect spec opt out entirely.
+const filesInspectorRegistry = fileURLToPath(new URL('./tests/e2e/.registries/files-inspector', import.meta.url))
+const nextHubRegistry = fileURLToPath(new URL('./tests/e2e/.registries/next-hub', import.meta.url))
+
 export default defineConfig({
   testDir: './tests/e2e',
   testIgnore: ['_support/**'],
@@ -23,9 +29,12 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'node bin.mjs',
+      // Explicit IPv4 bind: the connect spec's registry probe and MCP client
+      // dial the recorded origin directly, and a bare `localhost` bind is
+      // family-ambiguous across environments.
+      command: 'node bin.mjs --host 127.0.0.1',
       cwd: 'examples/files-inspector',
-      env: { DEVFRAME_E2E_CWD: fixtureCwd },
+      env: { DEVFRAME_E2E_CWD: fixtureCwd, DEVFRAME_INSTANCES_DIR: filesInspectorRegistry },
       url: 'http://localhost:9876/__devframe-files-inspector/',
       timeout: 60_000,
       reuseExistingServer: !process.env.CI,
@@ -35,6 +44,7 @@ export default defineConfig({
     {
       command: 'node bin.mjs',
       cwd: 'examples/streaming-chat',
+      env: { DEVFRAME_DISABLE_INSTANCE_REGISTRY: '1' },
       url: 'http://localhost:9897/__devframe-streaming-chat/',
       timeout: 60_000,
       reuseExistingServer: !process.env.CI,
@@ -63,8 +73,19 @@ export default defineConfig({
     {
       command: 'node bin.mjs',
       cwd: 'examples/next-runtime-snapshot',
+      env: { DEVFRAME_DISABLE_INSTANCE_REGISTRY: '1' },
       url: 'http://localhost:9899/__next-runtime-snapshot/',
       timeout: 60_000,
+      reuseExistingServer: !process.env.CI,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    },
+    {
+      command: 'pnpm exec next dev src/client -p 9878',
+      cwd: 'examples/minimal-next-devframe-hub',
+      env: { PORT: '9878', DEVFRAME_INSTANCES_DIR: nextHubRegistry },
+      url: 'http://localhost:9878/',
+      timeout: 120_000,
       reuseExistingServer: !process.env.CI,
       stdout: 'pipe',
       stderr: 'pipe',
