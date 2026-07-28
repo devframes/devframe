@@ -13,7 +13,7 @@ import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { connectDevframe, createDevframeClientHost, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createReactJsonRenderDockRenderer } from '../json-render/dock-renderer'
-import { iconClass } from './icons'
+import { dockIconSvg } from './icons'
 
 const HUB_BASE = '/__hub/'
 
@@ -138,11 +138,32 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
   }
 }
 
-/** Render a dock icon, falling back to the title's initial when unmapped. */
+/** Fetches (and caches, for the component's lifetime) a dock icon's sanitized SVG. */
+function useDockIconSvg(icon: DevframeDockEntry['icon']): string | undefined {
+  const [svg, setSvg] = useState<string | undefined>(undefined)
+  const key = typeof icon === 'string' ? icon : icon?.light
+
+  useEffect(() => {
+    let cancelled = false
+    setSvg(undefined)
+    void dockIconSvg(icon).then((resolved) => {
+      if (!cancelled)
+        setSvg(resolved)
+    })
+    return () => {
+      cancelled = true
+    }
+    // Re-fetch only when the icon id itself changes, not on every `icon` object identity.
+  }, [key])
+
+  return svg
+}
+
+/** Render a dock icon, falling back to the title's initial while it loads or when unmapped. */
 function DockIcon({ entry }: { entry: DevframeDockEntry }) {
-  const cls = iconClass(entry.icon)
-  if (cls)
-    return <span className={`${cls} shrink-0 text-lg`} />
+  const svg = useDockIconSvg(entry.icon)
+  if (svg)
+    return <span className="h-5 w-5 shrink-0 text-lg" dangerouslySetInnerHTML={{ __html: svg }} />
   const initial = (entry.title?.[0] ?? '?').toUpperCase()
   return <span className="grid h-5 w-5 shrink-0 place-items-center rounded bg-active text-[0.7rem] font-bold">{initial}</span>
 }

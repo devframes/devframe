@@ -23,6 +23,7 @@
     "@json-render/react": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
+    "dompurify": "catalog:frontend",
     "minimal-json-render": "workspace:*",
     "next": "catalog:frontend",
     "react": "catalog:frontend",

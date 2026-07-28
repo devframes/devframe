@@ -9,7 +9,7 @@ import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { connectDevframe, createDevframeClientHost, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
 import { createJsonRenderDockRenderer } from '@devframes/json-render-ui'
-import { iconClass } from './icons'
+import { dockIconSvg } from './icons'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
 
@@ -40,13 +40,48 @@ function renderList<T>(host: HTMLElement, items: readonly T[], render: (item: T)
   host.innerHTML = items.map(render).join('')
 }
 
-/** Render a dock icon, falling back to the title's initial when unknown. */
+// Session-lifetime cache of resolved dock-icon SVGs, keyed by the icon id
+// (e.g. `ph:git-branch-duotone`) — `dockIconSvg` itself caches per fetch, this
+// just lets a re-render (e.g. a badge update) paint an already-resolved icon
+// synchronously instead of flashing the fallback initial again.
+const dockIconCache = new Map<string, string | null>()
+
+function dockIconKey(icon: DevframeDockEntry['icon']): string | undefined {
+  return typeof icon === 'string' ? icon : icon?.light
+}
+
+/** Render a dock icon's placeholder markup: a resolved SVG if cached, else the title's initial. */
 function dockIcon(entry: DevframeDockEntry): string {
-  const cls = iconClass(entry.icon)
-  if (cls)
-    return `<span class="${cls} shrink-0 text-lg"></span>`
+  const key = entry.icon ? dockIconKey(entry.icon) : undefined
+  const cached = key ? dockIconCache.get(key) : undefined
+  if (cached)
+    return `<span class="h-5 w-5 shrink-0 text-lg" data-dock-icon="${entry.id}">${cached}</span>`
   const initial = (entry.title?.[0] ?? '?').toUpperCase()
-  return `<span class="grid h-5 w-5 shrink-0 place-items-center rounded bg-active text-[0.7rem] font-bold">${initial}</span>`
+  return `<span class="grid h-5 w-5 shrink-0 place-items-center rounded bg-active text-[0.7rem] font-bold" data-dock-icon="${entry.id}">${initial}</span>`
+}
+
+/**
+ * Resolve (and cache) each unresolved dock's icon SVG, then patch just that
+ * dock's `[data-dock-icon]` element in place — no full re-render, since the
+ * fetch is async and the dock list may already be showing by the time it
+ * settles. A dock with no icon or an unparsable/failed fetch keeps its
+ * fallback initial.
+ */
+async function hydrateDockIcons(list: readonly DevframeDockEntry[]): Promise<void> {
+  await Promise.all(list.map(async (entry) => {
+    const key = entry.icon ? dockIconKey(entry.icon) : undefined
+    if (!key || dockIconCache.has(key))
+      return
+    const svg = await dockIconSvg(entry.icon) ?? null
+    dockIconCache.set(key, svg)
+    if (!svg)
+      return
+    const el = docksEl.querySelector<HTMLElement>(`[data-dock-icon="${entry.id}"]`)
+    if (el) {
+      el.className = 'h-5 w-5 shrink-0 text-lg'
+      el.innerHTML = svg
+    }
+  }))
 }
 
 function isIframeDock(d: DevframeDockEntry): d is DevframeDockEntry & { type: 'iframe', url: string } {
@@ -315,6 +350,7 @@ async function main() {
 
     renderList(docksEl, list, d =>
       `<li><button type="button" data-dock-id="${d.id}" class="relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${d.id === docksCtx.selectedId ? ' op100! bg-active border-base! color-base' : ''}" title="${d.title}">${dockIcon(d)}<span class="truncate">${d.title}</span>${d.badge ? `<span class="ml-auto shrink-0 rounded bg-active px1 py0.5 text-[0.6rem] font-mono color-base">${d.badge}</span>` : ''}</button></li>`)
+    void hydrateDockIcons(list)
 
     void showSelection(list)
   }

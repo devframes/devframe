@@ -94,7 +94,7 @@
       ],
       "outputs": ["src/client/.next/**", "!src/client/.next/cache/**"]
     },
-    "storybook-hub#build": {
+    "@devframes/storybook#build": {
       "outputLogs": "new-only",
       "dependsOn": ["@devframes/hub#build", "devframe#build", "@devframes/plugin-terminals#build"],
       "outputs": ["dist/**"]

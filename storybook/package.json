@@ -3,16 +3,26 @@
   "type": "module",
   "version": "0.7.14",
   "private": true,
-  "description": "Unified Storybook host — composes every devframe plugin's Storybook (React, Vue, Svelte, Solid, vanilla) into one UI, each plugin its own section.",
+  "description": "Unified Storybook host — a devframe hub that docks every plugin's Storybook (React, Vue, Svelte, Solid, vanilla), spawning each `storybook dev` on demand.",
   "scripts": {
-    "storybook": "storybook dev -p 6006 --host 0.0.0.0",
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview",
     "storybook:build": "node scripts/build.mjs",
     "typecheck": "tsc --noEmit"
   },
-  "devDependencies": {
+  "dependencies": {
     "@antfu/design": "catalog:frontend",
+    "@devframes/hub": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
+    "colorjs.io": "catalog:frontend",
+    "devframe": "workspace:*",
+    "iframe-pane": "catalog:frontend"
+  },
+  "devDependencies": {
     "@iconify-json/ph": "catalog:frontend",
-    "@storybook/html-vite": "catalog:storybook",
+    "get-port-please": "catalog:deps",
+    "pathe": "catalog:deps",
     "storybook": "catalog:storybook",
     "unocss": "catalog:frontend",
     "vite": "catalog:build"

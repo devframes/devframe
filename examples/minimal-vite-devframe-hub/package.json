@@ -26,6 +26,7 @@
     "@devframes/plugin-terminals": "workspace:*",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
+    "dompurify": "catalog:frontend",
     "minimal-json-render": "workspace:*",
     "vue": "catalog:frontend"
   },

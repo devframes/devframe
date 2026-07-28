@@ -1,3 +1,4 @@
+import type { DevframeViewLauncher } from '../../types/docks'
 import type { DevframeHubContext } from '../context'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -304,5 +305,31 @@ describe('devframeDockHost ~builtin category', () => {
     const updatedLauncher = updated.type === 'launcher' ? updated.launcher : undefined
     expect(updatedLauncher?.digest).toBe('done')
     expect(updatedLauncher?.status).toBe('success')
+  })
+
+  it('updates a registered entry whose stored view was frozen (Immer-projected shared state)', () => {
+    const host = new DevframeDocksHost(createContext())
+    const handle = host.register<DevframeViewLauncher>({
+      type: 'launcher',
+      id: 'app:build',
+      title: 'Build',
+      icon: 'ph:hammer-duotone',
+      launcher: { title: 'Run build', status: 'idle', command: 'app:run-build' },
+    })
+
+    // Projecting the entry into `devframe:docks` shared state runs it through
+    // Immer's `produce`, which deep-freezes the very object the registry holds.
+    Object.freeze(host.values()[0])
+
+    // The launch handler patches the launcher as the process boots; the update
+    // must not throw "Cannot assign to read only property" on the frozen entry.
+    expect(() => handle.update({
+      launcher: { title: 'Run build', status: 'loading', command: 'app:run-build', terminalSessionId: 'build-session', digest: 'compiling…' },
+    })).not.toThrow()
+
+    const entry = host.values()[0]
+    const launcher = entry.type === 'launcher' ? entry.launcher : undefined
+    expect(launcher?.status).toBe('loading')
+    expect(launcher?.digest).toBe('compiling…')
   })
 })

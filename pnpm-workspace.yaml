@@ -40,7 +40,6 @@ overrides:
   crossws: ^0.4.10
   semver: ^7.8.5
   shell-quote: ^1.10.0
-catalog:
 
 catalogs:
   build:
@@ -136,7 +135,6 @@ catalogs:
   storybook:
     '@storybook/addon-a11y': ^10.5.3
     '@storybook/addon-docs': ^10.5.3
-    '@storybook/html-vite': ^10.5.3
     '@storybook/preact-vite': ^10.5.3
     '@storybook/react-vite': ^10.5.3
     '@storybook/svelte-vite': ^10.5.3
