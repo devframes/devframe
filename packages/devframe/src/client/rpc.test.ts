@@ -56,13 +56,42 @@ describe('getDevframeRpcClient — connection meta base', () => {
 
   it('publishes the meta annotated with the absolute base it resolved from', async () => {
     const served: ConnectionMeta = { backend: 'websocket', websocket: { path: '__ws' } }
-    vi.stubGlobal('fetch', vi.fn(async () => ({ json: async () => served }) as any))
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => served,
+    }) as any))
 
     await getDevframeRpcClient({ baseURL: '/__foo/', otpParam: false })
 
     const published = (globalThis as any)[CONNECTION_META_KEY] as ConnectionMeta
     expect(published.baseUrl).toBe('http://localhost:5173/__foo/__connection.json')
     // The publisher itself dials the endpoint relative to its own base.
+    expect(lastWsUrl()).toBe('ws://localhost:5173/__foo/__ws')
+  })
+
+  it('falls back when a base returns a non-successful JSON response', async () => {
+    const served: ConnectionMeta = { backend: 'websocket', websocket: { path: '__ws' } }
+    const fetchSpy = vi.fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => ({ status: 404, error: 'Not Found' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => served,
+      })
+    vi.stubGlobal('fetch', fetchSpy)
+
+    await getDevframeRpcClient({
+      baseURL: ['/__missing/', '/__foo/'],
+      otpParam: false,
+    })
+
+    expect(fetchSpy).toHaveBeenNthCalledWith(1, '/__missing/__connection.json')
+    expect(fetchSpy).toHaveBeenNthCalledWith(2, '/__foo/__connection.json')
     expect(lastWsUrl()).toBe('ws://localhost:5173/__foo/__ws')
   })
 
