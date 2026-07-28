@@ -3,6 +3,7 @@
  */
 // #region Variables
 export var commonRpcFunctions /* const */
+export var KNOWN_EDITORS /* const */
 export var openInEditor /* const */
 export var openInFinder /* const */
 // #endregion

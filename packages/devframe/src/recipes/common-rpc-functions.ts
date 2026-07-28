@@ -1,12 +1,59 @@
-import { launchEditor } from 'devframe/utils/launch-editor'
-import { open } from 'devframe/utils/open'
 import * as v from 'valibot'
 import { defineRpcFunction } from '../rpc/define'
+
+/**
+ * Editor commands that `launch-editor` (the library behind
+ * `devframe/utils/launch-editor`) recognizes with a tailored
+ * `file:line:column` invocation. `openInEditor`'s optional second argument
+ * is restricted to this list, so the RPC surface can't be used to spawn an
+ * arbitrary command.
+ */
+export const KNOWN_EDITORS = [
+  'atom',
+  'subl',
+  'sublime',
+  'sublime_text',
+  'wstorm',
+  'charm',
+  'zed',
+  'notepad++',
+  'vim',
+  'mvim',
+  'joe',
+  'gvim',
+  'emacs',
+  'emacsclient',
+  'rmate',
+  'mate',
+  'code',
+  'code-insiders',
+  'codium',
+  'vscodium',
+  'trae',
+  'antigravity',
+  'cursor',
+  'appcode',
+  'clion',
+  'idea',
+  'phpstorm',
+  'pycharm',
+  'rubymine',
+  'webstorm',
+  'goland',
+  'rider',
+] as const
+
+/** One of the editor commands in {@link KNOWN_EDITORS}. */
+export type KnownEditor = (typeof KNOWN_EDITORS)[number]
 
 /**
  * Prebuilt RPC action that opens a file in the user's configured editor.
  *
  * Registered name: `devframe:open-in-editor`.
+ *
+ * The optional second argument picks the editor command explicitly (must be
+ * one of {@link KNOWN_EDITORS}); otherwise it's auto-detected per
+ * `devframe/utils/launch-editor`.
  *
  * ```ts
  * import { openInEditor } from 'devframe/recipes/common-rpc-functions'
@@ -24,10 +71,11 @@ export const openInEditor = defineRpcFunction({
   name: 'devframe:open-in-editor',
   type: 'action',
   jsonSerializable: true,
-  args: [v.string()],
+  args: [v.string(), v.optional(v.picklist(KNOWN_EDITORS))],
   returns: v.void(),
-  async handler(filename: string) {
-    launchEditor(filename)
+  async handler(filename: string, editor?: KnownEditor) {
+    const { launchEditor } = await import('devframe/utils/launch-editor')
+    launchEditor(filename, editor)
   },
 })
 
@@ -49,6 +97,7 @@ export const openInFinder = defineRpcFunction({
   args: [v.string()],
   returns: v.void(),
   async handler(path: string) {
+    const { open } = await import('devframe/utils/open')
     await open(path)
   },
 })
