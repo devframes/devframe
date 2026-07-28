@@ -9,6 +9,9 @@ const ICON_CLASS: Record<string, string> = {
   'ph:code-duotone': 'i-ph-code-duotone',
   'ph:terminal-window-duotone': 'i-ph-terminal-window-duotone',
   'ph:person-arms-spread-duotone': 'i-ph-person-arms-spread-duotone',
+  'ph:database-duotone': 'i-ph-database-duotone',
+  'ph:image-square-duotone': 'i-ph-image-square-duotone',
+  'ph:notification-duotone': 'i-ph-notification-duotone',
   'ph:books-duotone': 'i-ph-books-duotone',
   'ph:plug-duotone': 'i-ph-plug-duotone',
 }

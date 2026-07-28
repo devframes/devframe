@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url'
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url))
 const outDir = fileURLToPath(new URL('../storybook-static', import.meta.url))
 
-const plugins = ['git', 'inspect', 'code-server', 'terminals', 'a11y']
+const plugins = ['git', 'inspect', 'code-server', 'terminals', 'a11y', 'data-inspector', 'og', 'messages']
 
 function build(label, cwd, args) {
   console.warn(`\n▶ building ${label} Storybook…`)

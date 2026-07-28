@@ -32,6 +32,9 @@ const STORYBOOKS: StorybookMeta[] = [
   { id: 'code-server', title: 'Code Server', icon: 'ph:code-duotone' },
   { id: 'terminals', title: 'Terminals', icon: 'ph:terminal-window-duotone' },
   { id: 'a11y', title: 'A11y', icon: 'ph:person-arms-spread-duotone' },
+  { id: 'data-inspector', title: 'Data Inspector', icon: 'ph:database-duotone' },
+  { id: 'og', title: 'Open Graph', icon: 'ph:image-square-duotone' },
+  { id: 'messages', title: 'Messages', icon: 'ph:notification-duotone' },
 ]
 
 // Repo root, resolved from this file (…/storybook/src/) so paths hold
