@@ -1,12 +1,13 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
+import type { DevframeNextHost } from '@devframes/next'
 import type { StartedServer } from 'devframe/node'
-import type { ConnectionMeta, DevframeDefinition, DevframeHost } from 'devframe/types'
+import type { ConnectionMeta, DevframeDefinition } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { defineHubRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
-import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
+import { createDevframeNextHost } from '@devframes/next'
 import { startHttpAndWs } from 'devframe/node'
 import { getPort } from 'get-port-please'
 import { createDashboardView } from 'minimal-json-render/dashboard'
@@ -79,44 +80,6 @@ async function loadA11yAgentMount(): Promise<A11yAgentMount | null> {
   }
 }
 
-const STATIC_MOUNTS = new Map<string, string>()
-
-export interface StaticMountHit {
-  distDir: string
-  relative: string
-}
-
-export function getStaticMount(pathname: string): StaticMountHit | null {
-  let best: { base: string, distDir: string } | null = null
-  for (const [base, distDir] of STATIC_MOUNTS) {
-    if (pathname === base || pathname.startsWith(`${base}/`)) {
-      if (!best || base.length > best.base.length)
-        best = { base, distDir }
-    }
-  }
-  if (!best)
-    return null
-  const relative = pathname.slice(best.base.length) || '/'
-  return { distDir: best.distDir, relative }
-}
-
-// Bases (without trailing slash, e.g. `/__git`) under which the catch-all
-// route should serve the hub's connection meta at `<base>/__connection.json`.
-const CONNECTION_META_BASES = new Set<string>()
-const META_SUFFIX = `/${DEVFRAME_CONNECTION_META_FILENAME}`
-
-/**
- * If `pathname` is a `<base>/__connection.json` request for a base the hub
- * registered via `DevframeHost.mountConnectionMeta`, return that base;
- * otherwise `null`. The catch-all route uses this to answer the connection-meta
- * fetch a mounted devframe SPA makes from inside its iframe.
- */
-export function isConnectionMetaPath(pathname: string): boolean {
-  if (!pathname.endsWith(META_SUFFIX))
-    return false
-  return CONNECTION_META_BASES.has(pathname.slice(0, -META_SUFFIX.length))
-}
-
 export interface MinimalNextDevframeHubOptions {
   /** Preferred port for the side-car RPC/WS server. Default: a free port near 9877. */
   port?: number
@@ -131,6 +94,12 @@ export interface MinimalNextDevframeHubOptions {
 export interface StartedMinimalNextDevframeHub extends StartedServer {
   context: DevframeHubContext
   connectionMeta: ConnectionMeta & { backend: 'websocket', websocket: number }
+  /**
+   * The bridge's WHATWG-`fetch` handler. Both the catch-all SPA route and the
+   * `__hub/__connection.json` route delegate to it — it serves every mounted
+   * SPA and answers `<base>/__connection.json` for the hub and each devframe.
+   */
+  fetch: DevframeNextHost['fetch']
 }
 
 const minimalNextHubMessagesList = defineHubRpcFunction({
@@ -166,19 +135,12 @@ export async function minimalNextDevframeHub(
   const cwd = options.cwd ?? process.cwd()
   const hostName = options.host ?? 'localhost'
 
-  const host: DevframeHost = {
-    mountStatic(base, distDir) {
-      STATIC_MOUNTS.set(base.replace(/\/$/, ''), distDir)
-    },
-    // Record the base so the catch-all route can answer `<base>/__connection.json`
-    // with the hub's connection meta — letting the mounted SPA connect without
-    // relying on same-origin parent-window inheritance.
-    mountConnectionMeta(base) {
-      CONNECTION_META_BASES.add(base.replace(/\/$/, ''))
-    },
-    resolveOrigin() {
-      return `http://${hostName}:3000`
-    },
+  // The Next host bridge: its `host` accumulates every `mountStatic` /
+  // `mountConnectionMeta` call into a single `fetch` handler (backed by
+  // devframe's shared `serveStaticHandler`), which the App Router routes
+  // delegate to — no hand-rolled static serving or path matching here.
+  const nextHost = createDevframeNextHost({
+    resolveOrigin: () => `http://${hostName}:3000`,
     getStorageDir(scope) {
       if (scope === 'workspace')
         return join(cwd, '.devframe')
@@ -186,7 +148,13 @@ export async function minimalNextDevframeHub(
         return join(cwd, 'node_modules/.minimal-next-devframe-hub')
       return join(homedir(), '.minimal-next-devframe-hub')
     },
-  }
+  })
+  const host = nextHost.host
+
+  // Register the hub's own connection base so the hub client (app/page.tsx)
+  // can discover the side-car WS via `<base>/__connection.json`; the mounted
+  // devframes each register their own base through `mountDevframe`.
+  host.mountConnectionMeta?.('/__hub')
 
   const port = options.port ?? await getPort({ host: hostName, port: 9877, random: false })
 
@@ -277,12 +245,18 @@ export async function minimalNextDevframeHub(
     auth: false,
   })
 
+  const connectionMeta = {
+    backend: 'websocket' as const,
+    websocket: started.port,
+  }
+  // Publish the live meta to the bridge now the WS port is known, so every
+  // registered `<base>/__connection.json` (hub + mounted devframes) resolves.
+  nextHost.setConnectionMeta(connectionMeta)
+
   return Object.assign(started, {
     context,
-    connectionMeta: {
-      backend: 'websocket' as const,
-      websocket: started.port,
-    },
+    connectionMeta,
+    fetch: nextHost.fetch,
   })
 }
 

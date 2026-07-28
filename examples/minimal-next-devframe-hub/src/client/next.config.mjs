@@ -1,5 +1,10 @@
+import { withDevframe } from '@devframes/next'
+
+// `withDevframe` applies the settings a devframe host requires (currently
+// `skipTrailingSlashRedirect: true`, so mounted SPAs' relative assets under
+// `/__<id>/` resolve instead of 404-ing on Next's trailing-slash redirect).
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig = withDevframe({
   images: { unoptimized: true },
   // @antfu/design ships raw, uncompiled `.ts`/`.vue` source (see its README —
   // "no bundling, your build compiles it"). `dockIconSvg` (design/dock-icon.ts)
@@ -9,12 +14,6 @@ const nextConfig = {
   transpilePackages: ['@antfu/design'],
   // The workspace typecheck owns source-level project references.
   typescript: { ignoreBuildErrors: true },
-  // Mounted devframe SPAs are served at `/__<id>/` and reference their assets
-  // relatively (`./_next/…`, `./assets/…`). Next's default trailing-slash
-  // redirect (`/__git/` → `/__git`) would re-root those relative paths and 404
-  // every asset, leaving the panel unstyled and unable to connect. Serving the
-  // base path verbatim keeps the SPA's relative asset resolution intact.
-  skipTrailingSlashRedirect: true,
-}
+})
 
 export default nextConfig

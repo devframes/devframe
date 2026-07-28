@@ -3,7 +3,13 @@ import { ensureMinimalNextDevframeHub } from '../../../devframe/minimal-next-dev
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+/**
+ * The hub client (`app/page.tsx`) discovers the side-car WS endpoint here. The
+ * `@devframes/next` bridge answers it — `/__hub` is registered as a connection
+ * base in the host setup — so this delegates to the same `fetch` as the
+ * catch-all SPA route.
+ */
+export async function GET(request: Request): Promise<Response> {
   const hub = await ensureMinimalNextDevframeHub()
-  return Response.json(hub.connectionMeta)
+  return hub.fetch(request)
 }

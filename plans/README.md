@@ -39,7 +39,7 @@ changes are allowed as long as they're marked).
 | 024 | Batch stream-replay into one frame | perf | P3 | M | 009 | TODO |
 | 025 | Cache falsy RPC results (presence check) | bug | P3 | S | — | DONE |
 | 026 | Clear dev/docs-only dependency advisories | deps | P3 | S | 002 | TODO |
-| 027 | Spike: `@devframes/next` host-integration package | direction | P3 | M | — | TODO |
+| 027 | Spike: `@devframes/next` host-integration package | direction | P3 | M | — | DONE (spike — proposal `plans/notes/devframes-next-proposal.md`; prototype `packages/next` (private), hub example refactored onto it) |
 | 029 | Bring `@devframes/plugin-git` to the host baseline | direction/dx | P3 | S-M | — | TODO |
 | 030 | Spike: server-side auth enforcement ⚠️ | security | P2 | L | 003, 007, 015 | DONE |
 
