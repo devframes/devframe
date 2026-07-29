@@ -42,19 +42,20 @@
     "devframe": "workspace:*"
   },
   "dependencies": {
+    "@standard-schema/spec": "catalog:deps",
     "birpc": "catalog:deps",
     "destr": "catalog:deps",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
     "perfect-debounce": "catalog:deps",
     "tinyexec": "catalog:deps",
-    "valibot": "catalog:deps",
     "zigpty": "catalog:deps"
   },
   "devDependencies": {
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "mlly": "catalog:build",
-    "tsdown": "catalog:build"
+    "tsdown": "catalog:build",
+    "valibot": "catalog:deps"
   }
 }

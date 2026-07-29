@@ -9,7 +9,10 @@ export type { RpcFunctionsHost } from './host-functions'
 export * from './host-h3'
 export * from './host-services'
 export * from './host-views'
-export * from './instance-registry'
+// Only registration is public — custom hosts (e.g. @devframes/next) record
+// themselves; the read/probe/prune helpers stay internal to the connector.
+export { registerDevframeInstance } from './instance-registry'
+export type { DevframeInstanceRecord, DevframeInstanceRegistration } from './instance-registry'
 export * from './rpc-shared-state'
 export * from './rpc-streaming'
 export * from './scope'

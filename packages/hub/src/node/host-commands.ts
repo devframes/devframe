@@ -1,5 +1,6 @@
 import type { AgentToolInput, AgentToolProviderHandle } from 'devframe/types'
 import type {
+  DevframeCommandAgentOptions,
   DevframeCommandHandle,
   DevframeCommandsHost as DevframeCommandsHostType,
   DevframeServerCommandEntry,
@@ -7,7 +8,6 @@ import type {
 } from '../types/commands'
 import type { DevframeHubContext } from './context'
 import { createEventEmitter } from 'devframe/utils/events'
-import { valibotArgsToJsonSchema } from 'devframe/utils/valibot-json-schema'
 import { diagnostics } from './diagnostics'
 
 function findChildCommand(command: DevframeServerCommandInput, id: string): DevframeServerCommandInput | undefined {
@@ -145,7 +145,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
   }
 
   private toSerializable(cmd: DevframeServerCommandInput): DevframeServerCommandEntry {
-    // `agent` stays server-side: it carries valibot schemas (not wire-safe)
+    // `agent` stays server-side: it carries Standard Schema validators (not wire-safe)
     // and only concerns the agent projection, not the palette.
     const { handler: _, agent: __, children, ...rest } = cmd
     return {
@@ -179,16 +179,16 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
     const walk = (command: DevframeServerCommandInput): void => {
       const agent = command.agent
       if (agent && command.handler) {
-        const { schema, unwrapped } = valibotArgsToJsonSchema(agent.args)
         tools.push({
           id: command.id,
           title: agent.title ?? command.title,
           description: agent.description,
           safety: agent.safety ?? 'action',
           tags: agent.tags,
-          inputSchema: schema,
+          // The agent host derives the tool's JSON-Schema input from these.
+          args: agent.args,
           handler: async (args: unknown) =>
-            this.execute(command.id, ...coercePositionalArgs(args, agent.args, unwrapped)),
+            this.execute(command.id, ...coercePositionalArgs(args, agent.args)),
         })
       }
       for (const child of command.children ?? [])
@@ -201,20 +201,17 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
 }
 
 /**
- * Map the single-object args an MCP client sends onto the command handler's
- * positional parameters, mirroring the agent host's RPC coercion: no declared
- * schemas → zero-arg call; a single unwrapped object schema → the object
- * itself; positional schemas → `arg0..argN` keys in order.
+ * Map the `arg0`/`arg1`/… keyed object an MCP client sends onto the command
+ * handler's positional parameters — mirroring the agent host's RPC
+ * coercion: no declared schemas → zero-arg call; each declared schema reads
+ * its own `argN` key, in order.
  */
 function coercePositionalArgs(
   args: unknown,
-  schemas: readonly unknown[] | undefined,
-  unwrapped: boolean,
+  schemas: DevframeCommandAgentOptions['args'],
 ): unknown[] {
   if (!schemas || schemas.length === 0)
     return []
-  if (unwrapped)
-    return [args ?? {}]
   const obj = (args ?? {}) as Record<string, unknown>
   return schemas.map((_, i) => obj[`arg${i}`])
 }

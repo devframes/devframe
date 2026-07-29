@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { RpcFunctionAgentOptions } from '../rpc/types'
 import type { EventEmitter } from './events'
 
@@ -24,6 +25,14 @@ export interface AgentTool {
   tags?: readonly string[]
   /** Present for `kind === 'rpc'` — points to the RPC function name. */
   rpcName?: string
+  /**
+   * Positional Standard Schemas describing a `kind: 'tool'` entry's
+   * arguments — carried on the tool itself (mirroring how `rpcName` defers
+   * an RPC-backed tool's schemas to `ctx.rpc.definitions`) so consumers
+   * (e.g. the MCP adapter) convert Standard Schema → JSON Schema on demand,
+   * same as RPC `args`.
+   */
+  args?: readonly StandardSchemaV1[]
   /** JSON Schema describing the input (positional args synthesized to an object). */
   inputSchema?: unknown
   /** JSON Schema describing the output. */
@@ -44,6 +53,17 @@ export interface AgentToolInput {
   description: string
   safety?: 'read' | 'action' | 'destructive'
   tags?: readonly string[]
+  /**
+   * Positional Standard Schemas describing the tool's arguments — the same
+   * shape RPC definitions carry (any [Standard Schema](https://standardschema.dev/)
+   * validator: valibot, zod, arktype, devframe's built-in `s` builder, …).
+   * Each is advertised under `arg0` / `arg1` / … on the tool's JSON-Schema
+   * input, matching how the agent bridge coerces the incoming payload back
+   * into positional arguments. Purely descriptive: the handler still
+   * receives the caller's args object as-is.
+   */
+  args?: readonly StandardSchemaV1[]
+  /** Raw JSON-Schema input override. Prefer {@link args}. */
   inputSchema?: unknown
   outputSchema?: unknown
   examples?: readonly { args: unknown[], description?: string }[]

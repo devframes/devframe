@@ -270,6 +270,39 @@ describe('devToolsAgentHost', () => {
     })
   })
 
+  describe('valibot args on tool inputs', () => {
+    it('derives the JSON-Schema input from a single object schema (unwrapped)', async () => {
+      const v = await import('valibot')
+      const ctx = createContext()
+      ctx.agent.registerTool({
+        id: 'schema:tool',
+        description: 'Schema-typed.',
+        args: [v.object({ name: v.optional(v.string()) })],
+        handler: args => args,
+      })
+
+      const tool = ctx.agent.getTool('schema:tool')!
+      const schema = tool.inputSchema as { type: string, properties: Record<string, unknown> }
+      expect(schema.type).toBe('object')
+      expect(Object.keys(schema.properties)).toEqual(['name'])
+    })
+
+    it('an explicit inputSchema override wins over args', async () => {
+      const v = await import('valibot')
+      const ctx = createContext()
+      ctx.agent.registerTool({
+        id: 'override:tool',
+        description: 'Override.',
+        args: [v.object({ ignored: v.string() })],
+        inputSchema: { type: 'object', properties: { custom: { type: 'string' } } },
+        handler: () => {},
+      })
+
+      const schema = ctx.agent.getTool('override:tool')!.inputSchema as { properties: Record<string, unknown> }
+      expect(Object.keys(schema.properties)).toEqual(['custom'])
+    })
+  })
+
   describe('registerToolProvider()', () => {
     it('queries the provider lazily on list/getTool/invoke', async () => {
       const ctx = createContext()

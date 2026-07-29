@@ -50,6 +50,7 @@ export interface AgentToolInput {
   description: string;
   safety?: 'read' | 'action' | 'destructive';
   tags?: readonly string[];
+  args?: readonly GenericSchema[];
   inputSchema?: unknown;
   outputSchema?: unknown;
   examples?: readonly {

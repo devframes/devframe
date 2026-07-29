@@ -69,8 +69,9 @@ literal "/_next/mcp" shape on devframe primitives.
    resource projection (which stays — many clients only consume tools).
 7. **Hub commands → agent bridge** — opt-in `agent?: { description, safety?,
    args? }` on `DevframeServerCommandInput` (mirrors the RPC convention;
-   description required; optional valibot args schema reusing
-   `valibotArgsToJsonSchema`, zero-arg default). `createHubContext` projects
+   description required; optional valibot args schemas carried through
+   `AgentToolInput.args` — JSON-Schema conversion stays an internal detail of
+   the agent host/MCP adapter; zero-arg default). `createHubContext` projects
    agent-flagged, handler-bearing server commands into `ctx.agent` tools,
    tracking register/update/unregister. `when` clauses evaluate client-side
    only and are **not** enforced for agent calls — documented caveat.

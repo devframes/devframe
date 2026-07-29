@@ -110,9 +110,10 @@ describe('devframeCommandsHost agent bridge', () => {
     expect((tool.inputSchema as { type: string }).type).toBe('object')
     expect(agent.list().tools.map(t => t.id)).toEqual(['demo:greet'])
 
-    // A single object args schema is unwrapped — the MCP args object lands
-    // as the handler's first positional argument.
-    await expect(agent.invoke('demo:greet', { name: 'devframe' })).resolves.toBe('done')
+    // Each declared arg schema is advertised (and read back) under its own
+    // `argN` key — the MCP args object's `arg0` becomes the handler's first
+    // positional argument.
+    await expect(agent.invoke('demo:greet', { arg0: { name: 'devframe' } })).resolves.toBe('done')
     expect(calls).toEqual([[{ name: 'devframe' }]])
   })
 

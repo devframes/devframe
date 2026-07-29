@@ -348,6 +348,8 @@ function projectTool(tool: AgentTool, ctx: DevframeNodeContext): Tool {
 }
 
 function computeInputSchema(tool: AgentTool, ctx: DevframeNodeContext): unknown {
+  if (tool.kind === 'tool')
+    return argsToJsonSchema(tool.args).schema
   if (tool.kind !== 'rpc' || !tool.rpcName)
     return { type: 'object', properties: {} }
   const def = ctx.rpc.definitions.get(tool.rpcName) as RpcFunctionDefinitionAnyWithContext<DevframeNodeContext> | undefined

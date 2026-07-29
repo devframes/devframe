@@ -1,5 +1,5 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { EventEmitter } from 'devframe/types'
-import type { GenericSchema } from 'valibot'
 import type { DevframeDockEntryIcon } from './docks'
 
 export interface DevframeCommandKeybinding {
@@ -73,12 +73,13 @@ export interface DevframeCommandAgentOptions {
   /** Free-form tags for grouping/filtering. */
   tags?: readonly string[]
   /**
-   * Positional valibot schemas for the handler's arguments, converted to the
-   * tool's JSON-Schema input (a single `v.object(...)` schema is unwrapped —
-   * the friendliest shape at the agent boundary). Omitted: the tool takes no
-   * arguments.
+   * Positional [Standard Schema](https://standardschema.dev/) validators for
+   * the handler's arguments — the same shape RPC definitions carry (valibot,
+   * zod, arktype, devframe's built-in `s` builder, …). Each is advertised
+   * under `arg0` / `arg1` / … on the tool's JSON-Schema input. Omitted: the
+   * tool takes no arguments.
    */
-  args?: readonly GenericSchema[]
+  args?: readonly StandardSchemaV1[]
 }
 
 /**
