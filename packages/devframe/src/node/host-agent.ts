@@ -7,6 +7,8 @@ import type {
   AgentResourceInput,
   AgentTool,
   AgentToolInput,
+  AgentToolProvider,
+  AgentToolProviderHandle,
   DevframeAgentHostEvents,
   DevframeAgentHost as DevframeAgentHostType,
   DevframeNodeContext,
@@ -39,6 +41,7 @@ export class DevframeAgentHost implements DevframeAgentHostType {
 
   private readonly tools = new Map<string, RegisteredTool>()
   private readonly resources = new Map<string, RegisteredResource>()
+  private readonly providers = new Set<AgentToolProvider>()
   private _rpcUnsubscribe: (() => void) | undefined
 
   constructor(
@@ -70,6 +73,23 @@ export class DevframeAgentHost implements DevframeAgentHostType {
       this.events.emit('agent:manifest:changed')
     }
     return existed
+  }
+
+  registerToolProvider(provider: AgentToolProvider): AgentToolProviderHandle {
+    this.providers.add(provider)
+    this.events.emit('agent:manifest:changed')
+
+    const notifyChanged = (): void => {
+      if (this.providers.has(provider))
+        this.events.emit('agent:manifest:changed')
+    }
+    return {
+      notifyChanged,
+      unregister: () => {
+        if (this.providers.delete(provider))
+          this.events.emit('agent:manifest:changed')
+      },
+    }
   }
 
   registerResource(input: AgentResourceInput): AgentHandle {
@@ -105,8 +125,19 @@ export class DevframeAgentHost implements DevframeAgentHostType {
     const rpcTools = this._collectRpcTools()
     const plainTools = Array.from(this.tools.values()).map(t => t.tool)
     const resources = Array.from(this.resources.values()).map(r => r.resource)
+
+    // Provider tools are queried lazily; earlier sources win on id collision.
+    const seen = new Set([...rpcTools, ...plainTools].map(t => t.id))
+    const providerTools: AgentTool[] = []
+    for (const { tool } of this._collectProviderTools()) {
+      if (seen.has(tool.id))
+        continue
+      seen.add(tool.id)
+      providerTools.push(tool)
+    }
+
     return {
-      tools: [...rpcTools, ...plainTools],
+      tools: [...rpcTools, ...plainTools, ...providerTools],
       resources,
     }
   }
@@ -115,7 +146,10 @@ export class DevframeAgentHost implements DevframeAgentHostType {
     const plain = this.tools.get(id)
     if (plain)
       return plain.tool
-    return this._collectRpcTools().find(t => t.id === id)
+    const rpc = this._collectRpcTools().find(t => t.id === id)
+    if (rpc)
+      return rpc
+    return this._collectProviderTools().find(t => t.tool.id === id)?.tool
   }
 
   getResource(id: string): AgentResource | undefined {
@@ -134,6 +168,11 @@ export class DevframeAgentHost implements DevframeAgentHostType {
       // (what the MCP adapter sends after flattening), or a plain array.
       const positional = this._coercePositionalArgs(args, rpcDef)
       return await this.context.rpc.invokeLocal(id as any, ...(positional as any))
+    }
+
+    const provided = this._collectProviderTools().find(t => t.tool.id === id)
+    if (provided) {
+      return await provided.input.handler(args)
     }
 
     throw new Error(`[devframe/agent] tool "${id}" not found`)
@@ -176,6 +215,16 @@ export class DevframeAgentHost implements DevframeAgentHostType {
       outputSchema: input.outputSchema,
       examples: input.examples,
     }
+  }
+
+  /** Query every registered provider, projecting inputs to serializable tools. */
+  private _collectProviderTools(): { input: AgentToolInput, tool: AgentTool }[] {
+    const out: { input: AgentToolInput, tool: AgentTool }[] = []
+    for (const provider of this.providers) {
+      for (const input of provider())
+        out.push({ input, tool: this._projectTool(input) })
+    }
+    return out
   }
 
   private _collectRpcTools(): AgentTool[] {

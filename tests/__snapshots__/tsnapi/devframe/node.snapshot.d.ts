@@ -47,10 +47,12 @@ export declare class DevframeAgentHost implements DevframeAgentHost$1 {
   readonly events: EventEmitter<DevframeAgentHostEvents>;
   private readonly tools;
   private readonly resources;
+  private readonly providers;
   private _rpcUnsubscribe;
   constructor(_: DevframeNodeContext);
   registerTool(_: AgentToolInput): AgentHandle;
   unregisterTool(_: string): boolean;
+  registerToolProvider(_: AgentToolProvider): AgentToolProviderHandle;
   registerResource(_: AgentResourceInput): AgentHandle;
   unregisterResource(_: string): boolean;
   list(): AgentManifest;
@@ -61,6 +63,7 @@ export declare class DevframeAgentHost implements DevframeAgentHost$1 {
   _dispose(): void;
   private _validateToolId;
   private _projectTool;
+  private _collectProviderTools;
   private _collectRpcTools;
   private _findRpcDefinition;
   private _coercePositionalArgs;

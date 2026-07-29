@@ -58,6 +58,9 @@ export interface AgentToolInput {
   }[];
   handler: (_: any) => unknown | Promise<unknown>;
 }
+export interface AgentToolProviderHandle extends AgentHandle {
+  notifyChanged: () => void;
+}
 export interface ConnectionMeta {
   backend: 'websocket' | 'static';
   websocket?: number | string | ConnectionMetaWebsocket;
@@ -78,6 +81,7 @@ export interface DevframeAgentHost {
   readonly events: EventEmitter<DevframeAgentHostEvents>;
   registerTool: (_: AgentToolInput) => AgentHandle;
   unregisterTool: (_: string) => boolean;
+  registerToolProvider: (_: AgentToolProvider) => AgentToolProviderHandle;
   registerResource: (_: AgentResourceInput) => AgentHandle;
   unregisterResource: (_: string) => boolean;
   list: () => AgentManifest;
@@ -389,6 +393,7 @@ export interface ScopedBroadcastOptions<METHOD, Args extends any[]> {
 // #endregion
 
 // #region Types
+export type AgentToolProvider = () => readonly AgentToolInput[];
 export type DevframeDeploymentKind = 'standalone' | 'hosted';
 export type DevframeDiagnosticsDefinition = ReturnType<typeof defineDiagnostics<any, any>>;
 export type DevframeDiagnosticsLogger = Record<string, any>;

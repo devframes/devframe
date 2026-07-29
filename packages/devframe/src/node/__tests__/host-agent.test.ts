@@ -269,4 +269,57 @@ describe('devToolsAgentHost', () => {
       await expect(ctx.agent.read('ghost')).rejects.toThrow(/ghost/)
     })
   })
+
+  describe('registerToolProvider()', () => {
+    it('queries the provider lazily on list/getTool/invoke', async () => {
+      const ctx = createContext()
+      const handler = vi.fn(async (args: unknown) => args)
+      let exposed = false
+      ctx.agent.registerToolProvider(() => exposed
+        ? [{ id: 'derived:tool', description: 'Derived.', safety: 'read', handler }]
+        : [])
+
+      // The provider's source of truth changes; no re-registration needed.
+      expect(ctx.agent.getTool('derived:tool')).toBeUndefined()
+      exposed = true
+      expect(ctx.agent.getTool('derived:tool')).toMatchObject({
+        id: 'derived:tool',
+        kind: 'tool',
+        safety: 'read',
+      })
+      expect(ctx.agent.list().tools.map(t => t.id)).toEqual(['derived:tool'])
+
+      await expect(ctx.agent.invoke('derived:tool', { a: 1 })).resolves.toEqual({ a: 1 })
+      expect(handler).toHaveBeenCalledWith({ a: 1 })
+    })
+
+    it('earlier sources win on id collision', () => {
+      const ctx = createContext()
+      ctx.agent.registerTool({ id: 'shared:id', description: 'Registered.', handler: () => 'plain' })
+      ctx.agent.registerToolProvider(() => [
+        { id: 'shared:id', description: 'Provided.', handler: () => 'provided' },
+      ])
+
+      expect(ctx.agent.getTool('shared:id')!.description).toBe('Registered.')
+      expect(ctx.agent.list().tools.filter(t => t.id === 'shared:id')).toHaveLength(1)
+    })
+
+    it('notifyChanged and unregister fire agent:manifest:changed', () => {
+      const ctx = createContext()
+      const manifestHandler = vi.fn()
+      const handle = ctx.agent.registerToolProvider(() => [])
+      ctx.agent.events.on('agent:manifest:changed', manifestHandler)
+
+      handle.notifyChanged()
+      expect(manifestHandler).toHaveBeenCalledTimes(1)
+
+      handle.unregister()
+      expect(manifestHandler).toHaveBeenCalledTimes(2)
+
+      // After unregistration the handle goes quiet.
+      handle.notifyChanged()
+      handle.unregister()
+      expect(manifestHandler).toHaveBeenCalledTimes(2)
+    })
+  })
 })

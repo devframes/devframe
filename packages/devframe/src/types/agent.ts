@@ -115,6 +115,35 @@ export interface AgentHandle {
 }
 
 /**
+ * A lazy source of agent tools, queried at `list()` / `getTool()` /
+ * `invoke()` time — the same on-demand projection the host applies to
+ * `agent`-flagged RPC definitions. Use a provider when tools *derive from*
+ * other state (a command registry, a plugin catalog): the underlying state
+ * stays the single source of truth and nothing needs to be kept in sync.
+ *
+ * Providers should namespace tool ids like any other tool; on an id
+ * collision the earlier source wins (registered tools, then RPC tools,
+ * then providers in registration order).
+ *
+ * @experimental
+ */
+export type AgentToolProvider = () => readonly AgentToolInput[]
+
+/**
+ * Handle returned by `registerToolProvider`.
+ *
+ * @experimental
+ */
+export interface AgentToolProviderHandle extends AgentHandle {
+  /**
+   * Signal that the provider's tool set changed. Fires
+   * `agent:manifest:changed` so protocol adapters (e.g. MCP) emit
+   * `tools/list_changed`.
+   */
+  notifyChanged: () => void
+}
+
+/**
  * Events emitted by `DevframeAgentHost`.
  *
  * @experimental
@@ -151,6 +180,12 @@ export interface DevframeAgentHost {
   registerTool: (tool: AgentToolInput) => AgentHandle
   /** Unregister a previously registered tool by id. */
   unregisterTool: (id: string) => boolean
+
+  /**
+   * Register a lazy tool source, queried on demand — see
+   * {@link AgentToolProvider}.
+   */
+  registerToolProvider: (provider: AgentToolProvider) => AgentToolProviderHandle
 
   /** Register a readable resource. */
   registerResource: (resource: AgentResourceInput) => AgentHandle

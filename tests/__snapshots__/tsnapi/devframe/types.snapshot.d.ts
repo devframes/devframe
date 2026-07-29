@@ -9,6 +9,8 @@ export { AgentResourceContent }
 export { AgentResourceInput }
 export { AgentTool }
 export { AgentToolInput }
+export { AgentToolProvider }
+export { AgentToolProviderHandle }
 export { ConnectionMeta }
 export { ConnectionMetaWebsocket }
 export { defineDevframe }

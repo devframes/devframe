@@ -1,5 +1,6 @@
-import type { AgentToolInput } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe/types'
 import type { DevframeHubContext } from '../context'
+import { DevframeAgentHost } from 'devframe/node'
 import * as v from 'valibot'
 import { describe, expect, it } from 'vitest'
 import { DevframeCommandsHost } from '../host-commands'
@@ -64,22 +65,20 @@ describe('devframeCommandsHost command id validation', () => {
   })
 })
 
-function createAgentContext(): { context: DevframeHubContext, tools: Map<string, AgentToolInput> } {
-  const tools = new Map<string, AgentToolInput>()
-  const context = {
-    agent: {
-      registerTool: (input: AgentToolInput) => {
-        tools.set(input.id, input)
-        return { unregister: () => tools.delete(input.id) }
-      },
-    },
-  } as unknown as DevframeHubContext
-  return { context, tools }
+function createAgentContext(): { context: DevframeHubContext, agent: DevframeAgentHost } {
+  // A real agent host over a minimal base context — the bridge is a lazy
+  // provider, so the test exercises the actual list/getTool/invoke paths.
+  const base = {
+    rpc: { onChanged: () => () => {}, definitions: new Map() },
+  } as unknown as DevframeNodeContext
+  const agent = new DevframeAgentHost(base)
+  const context = { rpc: base.rpc, agent } as unknown as DevframeHubContext
+  return { context, agent }
 }
 
 describe('devframeCommandsHost agent bridge', () => {
   it('projects agent-flagged commands (incl. children) into ctx.agent', async () => {
-    const { context, tools } = createAgentContext()
+    const { context, agent } = createAgentContext()
     const host = new DevframeCommandsHost(context)
     const calls: unknown[][] = []
 
@@ -103,21 +102,22 @@ describe('devframeCommandsHost agent bridge', () => {
     })
 
     // Group-only parent stays off the agent surface; the child projects.
-    expect(tools.has('demo:parent')).toBe(false)
-    const tool = tools.get('demo:greet')!
+    expect(agent.getTool('demo:parent')).toBeUndefined()
+    const tool = agent.getTool('demo:greet')!
     expect(tool.description).toBe('Greet someone by name.')
     expect(tool.title).toBe('Greet')
     expect(tool.safety).toBe('action')
     expect((tool.inputSchema as { type: string }).type).toBe('object')
+    expect(agent.list().tools.map(t => t.id)).toEqual(['demo:greet'])
 
     // A single object args schema is unwrapped — the MCP args object lands
     // as the handler's first positional argument.
-    await expect(tool.handler({ name: 'devframe' })).resolves.toBe('done')
+    await expect(agent.invoke('demo:greet', { name: 'devframe' })).resolves.toBe('done')
     expect(calls).toEqual([[{ name: 'devframe' }]])
   })
 
-  it('registers zero-arg tools for commands without an args schema', async () => {
-    const { context, tools } = createAgentContext()
+  it('projects zero-arg tools for commands without an args schema', async () => {
+    const { context, agent } = createAgentContext()
     const host = new DevframeCommandsHost(context)
     const calls: unknown[][] = []
 
@@ -130,15 +130,16 @@ describe('devframeCommandsHost agent bridge', () => {
       },
     })
 
-    const tool = tools.get('demo:ping')!
-    expect(tool.safety).toBe('read')
-    await tool.handler({ stray: true })
+    expect(agent.getTool('demo:ping')!.safety).toBe('read')
+    await agent.invoke('demo:ping', { stray: true })
     expect(calls).toEqual([[]])
   })
 
-  it('re-syncs the projection on update and drops it on unregister', () => {
-    const { context, tools } = createAgentContext()
+  it('reflects updates and unregistration without any re-sync bookkeeping', () => {
+    const { context, agent } = createAgentContext()
     const host = new DevframeCommandsHost(context)
+    let manifestChanges = 0
+    agent.events.on('agent:manifest:changed', () => manifestChanges++)
 
     const handle = host.register({
       id: 'demo:sync',
@@ -146,13 +147,17 @@ describe('devframeCommandsHost agent bridge', () => {
       agent: { description: 'Initial description.' },
       handler: () => {},
     })
-    expect(tools.get('demo:sync')!.description).toBe('Initial description.')
+    expect(agent.getTool('demo:sync')!.description).toBe('Initial description.')
 
     handle.update({ agent: { description: 'Patched description.' } })
-    expect(tools.get('demo:sync')!.description).toBe('Patched description.')
+    expect(agent.getTool('demo:sync')!.description).toBe('Patched description.')
 
     handle.unregister()
-    expect(tools.has('demo:sync')).toBe(false)
+    expect(agent.getTool('demo:sync')).toBeUndefined()
+
+    // register + update + unregister each notified the manifest listeners
+    // (drives MCP tools/list_changed).
+    expect(manifestChanges).toBe(3)
   })
 
   it('rejects agent exposure on handler-less commands', () => {

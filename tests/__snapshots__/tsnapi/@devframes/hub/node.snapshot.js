@@ -6,7 +6,7 @@ export class DevframeCommandsHost {
   context
   commands
   events
-  agentHandles
+  agentProvider
   constructor(_) {}
   register(_) {}
   unregister(_) {}
@@ -15,8 +15,7 @@ export class DevframeCommandsHost {
   findCommand(_) {}
   toSerializable(_) {}
   validateAgentExposure(_) {}
-  registerAgentTools(_) {}
-  unregisterAgentTools(_) {}
+  collectAgentTools() {}
 }
 export class DevframeDocksHost {
   context

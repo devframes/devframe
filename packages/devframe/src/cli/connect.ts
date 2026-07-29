@@ -38,19 +38,19 @@ interface IndexedInstance {
   hint?: string
 }
 
-const INDEX_TOOL = 'devframe_index'
-const CALL_TOOL = 'devframe_call'
+const INDEX_TOOL = 'devframe:connect:list-instances'
+const CALL_TOOL = 'devframe:connect:call-tool'
 
 const MCP_DISABLED_HINT
-  = 'This instance runs without an MCP route. Restart it with the --mcp flag (or set `cli.mcp: true` on its definition) to expose its tools, then call devframe_index again.'
+  = 'This instance runs without an MCP route. Restart it with the --mcp flag (or set `cli.mcp: true` on its definition) to expose its tools, then list instances again.'
 
 /**
  * Start the devframe MCP connector on stdio: a thin discovery + proxy server
  * in the shape next-devtools-mcp validated. It exposes two gateway tools —
- * `devframe_index` (discover running devframe instances via the instance
- * registry and list each one's MCP tools) and `devframe_call` (invoke one
- * tool on one instance over its Streamable-HTTP endpoint) — and holds no
- * domain knowledge of its own.
+ * `devframe:connect:list-instances` (discover running devframe instances via
+ * the instance registry and list each one's MCP tools) and
+ * `devframe:connect:call-tool` (invoke one tool on one instance over its
+ * Streamable-HTTP endpoint) — and holds no domain knowledge of its own.
  *
  * @experimental
  */
@@ -67,18 +67,18 @@ export async function startConnectServer(options: ConnectServerOptions = {}): Pr
       {
         name: INDEX_TOOL,
         title: 'Discover running devframes',
-        description: 'Discover every running devframe dev server on this machine and list each one\'s MCP tools. Call this FIRST, before assuming which devtools are available — the result names the instance (id, project root, origin) and the port to pass to devframe_call. Safe to call freely.',
+        description: 'Discover every running devframe dev server on this machine and list each one\'s MCP tools. Call this FIRST, before assuming which devtools are available — the result names the instance (id, project root, origin) and the port to pass to the call tool. Safe to call freely.',
         inputSchema: { type: 'object', properties: {} },
         annotations: { readOnlyHint: true, destructiveHint: false },
       },
       {
         name: CALL_TOOL,
         title: 'Call a devframe tool',
-        description: 'Invoke one MCP tool on one running devframe instance discovered via devframe_index. Pass the instance\'s port, the tool name, and the tool\'s arguments object.',
+        description: 'Invoke one MCP tool on one running devframe instance discovered via the list-instances tool. Pass the instance\'s port, the tool name, and the tool\'s arguments object.',
         inputSchema: {
           type: 'object',
           properties: {
-            port: { type: 'number', description: 'The instance\'s port, from devframe_index.' },
+            port: { type: 'number', description: 'The instance\'s port, from the list-instances tool.' },
             tool: { type: 'string', description: 'Tool name, from the instance\'s tool list.' },
             args: { type: 'object', description: 'Arguments object for the tool. Omit for zero-argument tools.' },
           },
@@ -235,7 +235,7 @@ async function call(
   args: { port?: number, tool?: string, args?: Record<string, unknown> },
 ): Promise<unknown> {
   if (typeof args.port !== 'number' || typeof args.tool !== 'string') {
-    throw Object.assign(new Error('devframe_call requires { port: number, tool: string }'), {
+    throw Object.assign(new Error(`${CALL_TOOL} requires { port: number, tool: string }`), {
       fix: `Call ${INDEX_TOOL} to get the port and tool names, then retry.`,
     })
   }

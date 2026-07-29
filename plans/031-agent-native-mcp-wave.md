@@ -63,8 +63,8 @@ literal "/_next/mcp" shape on devframe primitives.
    `createMcpFetchHandler(ctx, options)` (web `Request` → `Response`, owns the
    session map + origin gate) and a thin h3 wrapper. Enables non-h3 hosts —
    `@devframes/next`'s host serves via `app.fetch` already.
-6. **Core `read_state` tool** — one built-in MCP tool in
-   `buildMcpServerFromContext`: `read_state(key?)`; no key → key list, with
+6. **Core `devframe:state:read` tool** — one built-in MCP tool in
+   `buildMcpServerFromContext`: `devframe:state:read` (`key?`); no key → key list, with
    key → JSON value. Honors the same `exposeSharedState` filter as the
    resource projection (which stays — many clients only consume tools).
 7. **Hub commands → agent bridge** — opt-in `agent?: { description, safety?,
@@ -91,11 +91,11 @@ literal "/_next/mcp" shape on devframe primitives.
    `createDevframeNextHost` calls it explicitly for the in-process path.
 10. **`devframe` bin + `connect`** — first real bin on the `devframe` package.
     `devframe connect` runs a stdio MCP server exposing two gateway tools:
-    - `devframe_index` — list live instances (registry read + liveness probe +
-      prune) and each MCP-enabled instance's tools; instances with `mcp: null`
-      carry a funnel hint ("restart with `--mcp`…").
-    - `devframe_call` — invoke one tool on one instance (SDK client over
-      Streamable-HTTP to the instance's advertised `mcp` endpoint).
+    - `devframe:connect:list-instances` — list live instances (registry read +
+      liveness probe + prune) and each MCP-enabled instance's tools; instances
+      with `mcp: null` carry a funnel hint ("restart with `--mcp`…").
+    - `devframe:connect:call-tool` — invoke one tool on one instance (SDK client
+      over Streamable-HTTP to the instance's advertised `mcp` endpoint).
     `--port <n>` probes an explicit port besides the registry. Requires the
     optional `@modelcontextprotocol/sdk` peer; a missing peer produces a coded
     diagnostic with install instructions.
@@ -106,7 +106,7 @@ literal "/_next/mcp" shape on devframe primitives.
 12. **Proof (CI e2e, both gates)**:
     - `examples/files-inspector`: register one gateway tool; e2e boots
       `dev --mcp`, runs `devframe connect` over stdio (MCP SDK client),
-      asserts `devframe_index` discovers it and `devframe_call` round-trips.
+      asserts the connector discovers it and a proxied call round-trips.
     - `examples/minimal-next-devframe-hub`: e2e boots the Next dev server,
       asserts the connector discovers the in-process hub endpoint.
 13. **Docs** — `docs/adapters/mcp.md` (+ agent-native guide): `devframe
@@ -126,7 +126,7 @@ literal "/_next/mcp" shape on devframe primitives.
 - [x] Phase 1: both bridges forward + advertise MCP; `formatMcpError` emits
       `{ error: { code, message, fix?, docs? } }` for diagnostics; stale
       comment gone; conventions documented. (PR 1)
-- [x] Phase 2: `createMcpFetchHandler` public; `read_state` tool live;
+- [x] Phase 2: `createMcpFetchHandler` public; `devframe:state:read` tool live;
       agent-flagged hub commands appear as MCP tools; git read-only five are
       agent-visible with schemas. (PR 2)
 - [x] Phase 3: instances self-register and prune; `devframe connect` indexes

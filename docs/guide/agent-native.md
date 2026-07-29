@@ -63,6 +63,23 @@ export default defineDevframe({
 })
 ```
 
+## Deriving tools from other state
+
+When tools derive from state you already maintain — a command registry, a plugin catalog — register a **provider** instead of mirroring registrations. The host queries it at list/invoke time (the same lazy projection it applies to `agent`-flagged RPCs), so your source of truth stays the only copy:
+
+```ts
+const handle = ctx.agent.registerToolProvider(() =>
+  currentCommands()
+    .filter(command => command.agent)
+    .map(command => toAgentTool(command)),
+)
+
+// After the underlying state changes, nudge connected MCP clients:
+handle.notifyChanged() // fires tools/list_changed
+```
+
+The hub's commands host uses exactly this to project agent-flagged palette commands.
+
 ## Registering a resource
 
 Resources surface readable snapshots of state, identified by URI:
@@ -79,7 +96,7 @@ ctx.agent.registerResource({
 
 Every `ctx.rpc.sharedState` key is also automatically exposed to MCP as `devframe://state/<key>`. Pass `exposeSharedState: false` (or a filter function) to `createMcpServer` to opt out.
 
-Shared state is additionally reachable through the built-in **`read_state` tool** — call it without arguments for the key list, with a `key` for that value — since many MCP clients only consume tools. It honors the same `exposeSharedState` filter as the resource projection.
+Shared state is additionally reachable through the built-in **`devframe:state:read` tool** — call it without arguments for the key list, with a `key` for that value — since many MCP clients only consume tools. It honors the same `exposeSharedState` filter as the resource projection.
 
 ## Starting the MCP server
 

@@ -29,7 +29,7 @@ export interface DevframeNextHostMcpOptions {
   serverName?: string
   /** Version reported in the MCP handshake. Default: `'0.0.0'`. */
   serverVersion?: string
-  /** Expose shared-state keys as MCP resources / `read_state`. Default: `true`. */
+  /** Expose shared-state keys as MCP resources / `devframe:state:read`. Default: `true`. */
   exposeSharedState?: boolean | ((key: string) => boolean)
   /**
    * Origin allow-list beyond the loopback default. `false` disables the

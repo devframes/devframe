@@ -1,4 +1,4 @@
-import type { AgentHandle } from 'devframe/types'
+import type { AgentToolInput, AgentToolProviderHandle } from 'devframe/types'
 import type {
   DevframeCommandHandle,
   DevframeCommandsHost as DevframeCommandsHostType,
@@ -56,12 +56,18 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
   public readonly commands: DevframeCommandsHostType['commands'] = new Map()
   public readonly events: DevframeCommandsHostType['events'] = createEventEmitter()
 
-  /** Agent-tool handles per command id (incl. children), for teardown/re-sync. */
-  private readonly agentHandles = new Map<string, AgentHandle>()
+  /**
+   * Lazy agent projection: `ctx.agent` queries this provider at list/invoke
+   * time, deriving tools from {@link commands} on demand — the commands map
+   * stays the single source of truth, nothing is mirrored or kept in sync.
+   */
+  private readonly agentProvider: AgentToolProviderHandle | undefined
 
   constructor(
     public readonly context: DevframeHubContext,
-  ) {}
+  ) {
+    this.agentProvider = context.agent?.registerToolProvider(() => this.collectAgentTools())
+  }
 
   register(command: DevframeServerCommandInput): DevframeCommandHandle {
     if (this.commands.has(command.id)) {
@@ -71,7 +77,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
     this.validateAgentExposure(command)
     this.commands.set(command.id, command)
     this.events.emit('command:registered', this.toSerializable(command))
-    this.registerAgentTools(command)
+    this.agentProvider?.notifyChanged()
 
     return {
       id: command.id,
@@ -90,24 +96,19 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
         }
         validateCommandIds(this.commands, next, existing.id)
         this.validateAgentExposure(next)
-        // Re-sync the agent projection: drop the old tree's tools before the
-        // patch lands, re-register from the patched command below.
-        this.unregisterAgentTools(existing)
         Object.assign(existing, patch)
         this.events.emit('command:registered', this.toSerializable(existing))
-        this.registerAgentTools(existing)
+        this.agentProvider?.notifyChanged()
       },
       unregister: () => this.unregister(command.id),
     }
   }
 
   unregister(id: string): boolean {
-    const command = this.commands.get(id)
     const deleted = this.commands.delete(id)
     if (deleted) {
-      if (command)
-        this.unregisterAgentTools(command)
       this.events.emit('command:unregistered', id)
+      this.agentProvider?.notifyChanged()
     }
     return deleted
   }
@@ -166,39 +167,36 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
   }
 
   /**
-   * Project every agent-flagged command in the tree into `ctx.agent` as a
-   * callable tool. `when` clauses evaluate client-side only and are not
+   * Derive the agent-tool projection of the current command trees: every
+   * agent-flagged, handler-bearing command (children included) becomes a
+   * callable tool. Queried lazily by the provider registered in the
+   * constructor. `when` clauses evaluate client-side only and are not
    * enforced here — opting in a `when`-gated command is a deliberate author
    * decision (documented on `DevframeCommandAgentOptions`).
    */
-  private registerAgentTools(command: DevframeServerCommandInput): void {
-    const agent = command.agent
-    if (agent && command.handler) {
-      const { schema, unwrapped } = valibotArgsToJsonSchema(agent.args)
-      const handle = this.context.agent.registerTool({
-        id: command.id,
-        title: agent.title ?? command.title,
-        description: agent.description,
-        safety: agent.safety ?? 'action',
-        tags: agent.tags,
-        inputSchema: schema,
-        handler: async (args: unknown) =>
-          this.execute(command.id, ...coercePositionalArgs(args, agent.args, unwrapped)),
-      })
-      this.agentHandles.set(command.id, handle)
-    }
-    for (const child of command.children ?? [])
-      this.registerAgentTools(child)
-  }
-
-  private unregisterAgentTools(command: DevframeServerCommandInput): void {
-    for (const id of collectCommandIds(command)) {
-      const handle = this.agentHandles.get(id)
-      if (handle) {
-        this.agentHandles.delete(id)
-        handle.unregister()
+  private collectAgentTools(): AgentToolInput[] {
+    const tools: AgentToolInput[] = []
+    const walk = (command: DevframeServerCommandInput): void => {
+      const agent = command.agent
+      if (agent && command.handler) {
+        const { schema, unwrapped } = valibotArgsToJsonSchema(agent.args)
+        tools.push({
+          id: command.id,
+          title: agent.title ?? command.title,
+          description: agent.description,
+          safety: agent.safety ?? 'action',
+          tags: agent.tags,
+          inputSchema: schema,
+          handler: async (args: unknown) =>
+            this.execute(command.id, ...coercePositionalArgs(args, agent.args, unwrapped)),
+        })
       }
+      for (const child of command.children ?? [])
+        walk(child)
     }
+    for (const command of this.commands.values())
+      walk(command)
+    return tools
   }
 }
 

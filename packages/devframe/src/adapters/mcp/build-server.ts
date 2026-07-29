@@ -147,10 +147,10 @@ export async function createMcpServer(
 }
 
 /**
- * Name of the built-in shared-state read tool. Tool-shaped access matters
- * because many MCP clients only consume tools — the parallel
- * `devframe://state/<key>` resource projection stays for the clients that do
- * read resources.
+ * Name of the built-in shared-state read tool — namespaced like every other
+ * built-in (`devframe:<area>:<fn>`). Tool-shaped access matters because many
+ * MCP clients only consume tools — the parallel `devframe://state/<key>`
+ * resource projection stays for the clients that do read resources.
  */
 const READ_STATE_TOOL = 'devframe:state:read'
 
@@ -215,8 +215,8 @@ function registerToolHandlers(
     const { name, arguments: args } = request.params
     try {
       // Built-in shared-state read. A registered agent tool of the same
-      // name wins (mirroring the list projection above); plugin tools keep
-      // namespaced ids (`<plugin>:<tool>`), so collisions are deliberate.
+      // name wins (mirroring the list projection above) — ids are
+      // namespaced, so a collision is a deliberate override.
       if (stateFilter && name === READ_STATE_TOOL && !ctx.agent.getTool(READ_STATE_TOOL)) {
         const key = (args as { key?: string } | undefined)?.key
         const result = await readStateResult(ctx, stateFilter, key)

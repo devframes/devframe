@@ -273,7 +273,7 @@ export async function nextDevframeHub(
 
   // Serve MCP in-process on the Next app's own origin (the `/_next/mcp`
   // shape): the hub's agent surface — agent-flagged commands, plugin tools
-  // (git status/log/diff, terminals), `read_state` — over the same catch-all
+  // (git status/log/diff, terminals), `devframe:state:read` — over the same catch-all
   // route as the SPAs, no side-car port involved.
   const mcpPath = '/__hub/__mcp'
   await nextHost.mountMcp(context, mcpPath, {

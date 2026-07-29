@@ -201,7 +201,7 @@ describe('mcp adapter (in-memory)', () => {
     }
   })
 
-  it('exposes shared state through the built-in read_state tool', async () => {
+  it('exposes shared state through the built-in devframe:state:read tool', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {
       await ctx.rpc.sharedState.get('my-plugin:counter', {
@@ -209,20 +209,20 @@ describe('mcp adapter (in-memory)', () => {
       })
 
       const listed = await client.listTools()
-      const tool = listed.tools.find(t => t.name === 'read_state')
+      const tool = listed.tools.find(t => t.name === 'devframe:state:read')
       expect(tool).toBeDefined()
       expect(tool!.annotations?.readOnlyHint).toBe(true)
 
       // No key → key list.
-      const keys = await client.callTool({ name: 'read_state', arguments: {} })
+      const keys = await client.callTool({ name: 'devframe:state:read', arguments: {} })
       expect(keys.structuredContent).toEqual({ keys: ['my-plugin:counter'] })
 
       // With key → the value.
-      const value = await client.callTool({ name: 'read_state', arguments: { key: 'my-plugin:counter' } })
+      const value = await client.callTool({ name: 'devframe:state:read', arguments: { key: 'my-plugin:counter' } })
       expect(value.structuredContent).toEqual({ key: 'my-plugin:counter', value: { count: 7 } })
 
       // Unknown key → agent-actionable error.
-      const missing = await client.callTool({ name: 'read_state', arguments: { key: 'nope' } })
+      const missing = await client.callTool({ name: 'devframe:state:read', arguments: { key: 'nope' } })
       expect(missing.isError).toBe(true)
       const content = missing.content as Array<{ text: string }>
       expect(content[0]!.text).toContain('unknown shared-state key')
@@ -232,7 +232,7 @@ describe('mcp adapter (in-memory)', () => {
     }
   })
 
-  it('hides read_state when shared-state exposure is disabled', async () => {
+  it('hides devframe:state:read when shared-state exposure is disabled', async () => {
     const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
     const { server, dispose } = buildMcpServerFromContext(ctx, {
       serverName: 'test',
@@ -245,7 +245,7 @@ describe('mcp adapter (in-memory)', () => {
     await client.connect(clientTransport)
     try {
       const listed = await client.listTools()
-      expect(listed.tools.map(t => t.name)).not.toContain('read_state')
+      expect(listed.tools.map(t => t.name)).not.toContain('devframe:state:read')
     }
     finally {
       dispose()
@@ -254,7 +254,7 @@ describe('mcp adapter (in-memory)', () => {
     }
   })
 
-  it('respects the shared-state filter in read_state', async () => {
+  it('respects the shared-state filter in devframe:state:read', async () => {
     const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
     await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
     await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
@@ -268,10 +268,10 @@ describe('mcp adapter (in-memory)', () => {
     const client = new Client({ name: 'test-client', version: '0.0.0' })
     await client.connect(clientTransport)
     try {
-      const keys = await client.callTool({ name: 'read_state', arguments: {} })
+      const keys = await client.callTool({ name: 'devframe:state:read', arguments: {} })
       expect(keys.structuredContent).toEqual({ keys: ['visible:key'] })
 
-      const hidden = await client.callTool({ name: 'read_state', arguments: { key: 'hidden:key' } })
+      const hidden = await client.callTool({ name: 'devframe:state:read', arguments: { key: 'hidden:key' } })
       expect(hidden.isError).toBe(true)
     }
     finally {
