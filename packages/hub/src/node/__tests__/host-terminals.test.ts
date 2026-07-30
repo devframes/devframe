@@ -436,3 +436,82 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
     expect(() => session.resize(100, 30)).not.toThrow()
   })
 })
+
+describe('devframeTerminalHost PTY status lifecycle', () => {
+  itPty('marks status stopped and emits an update on a clean exit', async () => {
+    const { host } = createTerminalHost()
+    const updates: string[] = []
+    host.events.on('terminal:session:updated', s => updates.push(s.status))
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.exit(0)'],
+    }, { id: 'pty-status', title: 'PTY status' })
+
+    await waitUntil(() => {
+      expect(session.status).toBe('stopped')
+    })
+    expect(updates).toContain('stopped')
+  })
+
+  itPty('marks status error on a non-zero exit', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.exit(3)'],
+    }, { id: 'pty-status-error', title: 'PTY status error' })
+
+    await waitUntil(() => {
+      expect(session.status).toBe('error')
+    })
+  })
+
+  itPty('marks status stopped on terminate() rather than error', async () => {
+    const { host, sinks } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'setInterval(() => {}, 4000)'],
+    }, { id: 'pty-status-terminate', title: 'PTY status terminate' })
+
+    expect(session.status).toBe('running')
+    await session.terminate()
+
+    await waitUntil(() => {
+      expect(sinks.get('pty-status-terminate')?.closed).toBe(true)
+    })
+    expect(session.status).toBe('stopped')
+  })
+
+  itPty('returns to running after restart() without an error flash', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'setInterval(() => {}, 4000)'],
+    }, { id: 'pty-status-restart', title: 'PTY status restart' })
+
+    await session.restart()
+    expect(session.status).toBe('running')
+
+    await session.terminate()
+  })
+
+  itPty('keeps status stopped when restart() is called after the process exited', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.exit(0)'],
+    }, { id: 'pty-status-restart-exited', title: 'PTY status restart exited' })
+
+    await waitUntil(() => {
+      expect(session.status).toBe('stopped')
+    })
+    // The stream is closed for good, so `restart()` is a no-op — the session
+    // stays reported as stopped rather than flipping back to running.
+    await session.restart()
+    expect(session.status).toBe('stopped')
+  })
+})

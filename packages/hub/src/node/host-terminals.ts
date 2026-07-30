@@ -366,6 +366,18 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     let pty: IPty | undefined
     let runId = 0
     let streamClosed = false
+    let session: DevframePtyTerminalSession
+
+    // Keep the registered session's `status` in step with the process
+    // lifecycle so a hub-aware client (and any launcher tracking this session)
+    // sees `running` → `stopped`/`error` transitions instead of a value frozen
+    // at spawn time.
+    const markStatus = (next: DevframeTerminalSession['status']): void => {
+      if (session.status === next)
+        return
+      session.status = next
+      this.events.emit('terminal:session:updated', session)
+    }
 
     const closeStream = () => {
       if (streamClosed)
@@ -422,9 +434,14 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
           return
         controller?.enqueue(typeof data === 'string' ? data : data.toString('utf8'))
       })
-      proc.onExit(() => {
-        if (currentRun === runId)
-          closeStream()
+      proc.onExit(({ exitCode, signal }) => {
+        if (currentRun !== runId)
+          return
+        closeStream()
+        // A signal kill (terminate()/restart()) is a deliberate stop; a clean
+        // exit is a deliberate stop too. Only an unsignalled non-zero exit
+        // code is a crash, matching the child-process comment above.
+        markStatus(signal === 0 && exitCode !== 0 ? 'error' : 'stopped')
       })
       return proc
     }
@@ -440,7 +457,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       })
     }
 
-    const session: DevframePtyTerminalSession = {
+    session = {
       ...terminal,
       status: 'running',
       interactive: true,
@@ -476,12 +493,14 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         pty?.kill()
         pty = undefined
         closeStream()
+        markStatus('stopped')
       },
       restart: async () => {
         if (streamClosed)
           return
         pty?.kill()
         pty = spawnPty()
+        markStatus('running')
       },
     }
     this.register(session)
