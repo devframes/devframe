@@ -15,7 +15,7 @@ test.describe('devframe connect (files-inspector)', () => {
       // MCP endpoint and tool list.
       const index = parseToolText(await client.callTool({ name: 'devframe:connect:list-instances', arguments: {} }))
       const instance = index.instances.find(
-        (entry: any) => entry.id === 'devframe-files-inspector' && entry.port === 9876,
+        (entry: any) => entry.id === 'example:files-inspector' && entry.port === 9876,
       )
       expect(instance).toBeDefined()
       // The probe may adopt an explicit address family for a `localhost`
@@ -23,12 +23,12 @@ test.describe('devframe connect (files-inspector)', () => {
       expect(instance.mcp.url).toMatch(/^http:\/\/(?:localhost|127\.0\.0\.1):9876\/__devframe-files-inspector\/__mcp$/)
       const toolNames = instance.mcp.tools.map((t: any) => t.name)
       expect(toolNames).toContain('devframe:state:read')
-      expect(toolNames).toContain('devframe-files-inspector:docs')
+      expect(toolNames).toContain('example:files-inspector:docs')
 
       // Call: proxy the gateway tool through the connector.
       const call = parseToolText(await client.callTool({
         name: 'devframe:connect:call-tool',
-        arguments: { port: 9876, tool: 'devframe-files-inspector:docs' },
+        arguments: { port: 9876, tool: 'example:files-inspector:docs' },
       }))
       expect(call.isError).toBe(false)
       const inner = JSON.parse(call.content[0].text)

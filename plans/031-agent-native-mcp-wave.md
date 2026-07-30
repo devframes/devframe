@@ -108,7 +108,7 @@ literal "/_next/mcp" shape on devframe primitives.
     - `examples/files-inspector`: register one gateway tool; e2e boots
       `dev --mcp`, runs `devframe connect` over stdio (MCP SDK client),
       asserts the connector discovers it and a proxied call round-trips.
-    - `examples/minimal-next-devframe-hub`: e2e boots the Next dev server,
+    - `examples/next-devframe-hub`: e2e boots the Next dev server,
       asserts the connector discovers the in-process hub endpoint.
 13. **Docs** — `docs/adapters/mcp.md` (+ agent-native guide): `devframe
     connect` client config, the registry contract, `mountMcp` for custom

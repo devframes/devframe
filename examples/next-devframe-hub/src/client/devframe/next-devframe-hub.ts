@@ -277,7 +277,7 @@ export async function nextDevframeHub(
   // route as the SPAs, no side-car port involved.
   const mcpPath = '/__hub/__mcp'
   await nextHost.mountMcp(context, mcpPath, {
-    serverName: 'minimal-next-devframe-hub',
+    serverName: 'example:next-devframe-hub',
   })
 
   const connectionMeta = {
@@ -298,8 +298,8 @@ export async function nextDevframeHub(
     port: nextPort,
     origin: `http://${hostName}:${nextPort}`,
     basePath: '/__hub/',
-    id: 'minimal-next-devframe-hub',
-    name: 'Minimal Next Devframe Hub',
+    id: 'example:next-devframe-hub',
+    name: 'Next Devframe Hub',
     rootDir: cwd,
     mcp: { path: mcpPath },
     startedAt: Date.now(),

@@ -5,7 +5,7 @@ import { parseToolText, withConnectClient } from './_support/mcp-connect'
 const ORIGIN = 'http://localhost:9878'
 const REGISTRY = fileURLToPath(new URL('./.registries/next-hub', import.meta.url))
 
-test.describe('devframe connect (minimal-next-devframe-hub)', () => {
+test.describe('devframe connect (next-devframe-hub)', () => {
   test('discovers the in-process hub endpoint and calls an agent-flagged command', async () => {
     test.setTimeout(180_000)
 
@@ -32,7 +32,7 @@ test.describe('devframe connect (minimal-next-devframe-hub)', () => {
       // Index: the hub registered itself (explicitly — it runs in-process,
       // not via createDevServer) with the Next server's own origin.
       const index = parseToolText(await client.callTool({ name: 'devframe:connect:list-instances', arguments: {} }))
-      const hub = index.instances.find((entry: any) => entry.id === 'minimal-next-devframe-hub')
+      const hub = index.instances.find((entry: any) => entry.id === 'example:next-devframe-hub')
       expect(hub).toBeDefined()
       // The probe may adopt an explicit address family for the recorded
       // `localhost` origin — accept either spelling.
@@ -41,14 +41,14 @@ test.describe('devframe connect (minimal-next-devframe-hub)', () => {
       // The hub's agent surface flows through: the agent-flagged hub command,
       // the built-in devframe:state:read, and the git plugin's agent-flagged reads.
       const toolNames = hub.mcp.tools.map((t: any) => t.name)
-      expect(toolNames).toContain('minimal-next-devframe-hub:ping')
+      expect(toolNames).toContain('example:next-devframe-hub:ping')
       expect(toolNames).toContain('devframe:state:read')
       expect(toolNames).toContain('devframes:plugin:git:status')
 
       // Call the agent-flagged hub command through the connector.
       const ping = parseToolText(await client.callTool({
         name: 'devframe:connect:call-tool',
-        arguments: { port: 9878, tool: 'minimal-next-devframe-hub:ping' },
+        arguments: { port: 9878, tool: 'example:next-devframe-hub:ping' },
       }))
       expect(ping.isError).toBe(false)
       expect(ping.content[0].text).toBe('pong')
