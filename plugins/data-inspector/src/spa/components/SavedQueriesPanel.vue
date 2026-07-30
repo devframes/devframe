@@ -98,7 +98,7 @@ function filterBadges(entry: Query): FilterBadge[] {
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2 min-h-0">
     <div class="flex items-center gap-2">
       <div class="font-semibold text-xs op-fade uppercase tracking-wide select-none">
         Saved Queries
@@ -110,7 +110,7 @@ function filterBadges(entry: Query): FilterBadge[] {
       </ActionButton>
     </div>
 
-    <div v-if="entries.length" class="overflow-auto min-h-0 max-h-200 grid grid-cols-[repeat(auto-fit,minmax(20rem,1fr))] gap-2">
+    <div v-if="entries.length" class="flex-1 overflow-auto min-h-0 max-h-200 grid grid-cols-[repeat(auto-fit,minmax(20rem,1fr))] gap-2">
       <div
         v-for="entry in entries"
         :key="entry.key"
