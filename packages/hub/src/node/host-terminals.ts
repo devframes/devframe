@@ -410,6 +410,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         rows,
         cwd: executeOptions.cwd ?? process.cwd(),
         env: {
+          ...process.env,
           TERM: PTY_TERM_NAME,
           COLORTERM: 'truecolor',
           FORCE_COLOR: '1',

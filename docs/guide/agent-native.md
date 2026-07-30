@@ -16,7 +16,7 @@ Three building blocks:
 
 1. **An `agent` field on `defineRpcFunction`.** Add `agent: { description, ... }` to opt a function in. Functions without the field stay private.
 2. **`ctx.agent`** — a host exposed on `DevframeNodeContext`. Plugins register tools that aren't backed by an RPC, and expose readable resources (e.g. a Markdown build summary).
-3. **The MCP adapter** (`devframe/adapters/mcp`) — translates the agent host into a [Model Context Protocol](https://modelcontextprotocol.io) server, currently over `stdio`.
+3. **The MCP adapter** (`devframe/adapters/mcp`) — translates the agent host into a [Model Context Protocol](https://modelcontextprotocol.io) server, over `stdio` (`devframe mcp`) or as a Streamable-HTTP route on the dev server (`--mcp`, advertised in `__connection.json`).
 
 ## Exposing an RPC function
 
@@ -117,6 +117,52 @@ Add an entry to `claude_desktop_config.json`:
 ```
 
 Restart Claude Desktop. The tools you flagged with `agent: { ... }` (plus any `registerTool` calls) show up in the MCP tool drawer. Resources are reachable as `devframe://resource/<id>` and `devframe://state/<key>` URIs.
+
+## Writing descriptions agents act on
+
+A tool description is a prompt, not documentation. The agent decides *when* to call your tool from the description alone, so tell it — state when to reach for the tool, not just what it returns:
+
+<!-- eslint-skip -->
+
+```ts
+// ✗ Bad: describes the mechanism
+agent: { description: 'Returns the session summary object.' }
+// ✓ Good: tells the agent when and why
+agent: { description: 'Summarize the current build session — durations, chunk counts, warnings. Call this before proposing any build-config change.' }
+```
+
+Two conventions:
+
+- **Lead with the action and the trigger.** "Call this before/after/when …" steers proactive use; a bare noun phrase gets ignored.
+- **State freshness and cost.** "Safe to call freely" / "expensive, call once per session" lets the agent budget calls.
+
+## Gateway tools
+
+A gateway tool returns *instructions and locations* instead of doing the work — the pattern for anything the agent can do better directly (reading bundled docs, running a CLI it has shell access to):
+
+```ts
+ctx.agent.registerTool({
+  id: 'my-plugin:docs',
+  description: 'Locate the version-accurate docs for this tool. Call before answering questions about its config format.',
+  safety: 'read',
+  handler: () => ({
+    docsPath: resolveInstalledDocsDir(),
+    hint: 'Read the file matching your topic; do not rely on training-data knowledge of this config format.',
+  }),
+})
+```
+
+The agent gets a path and a next step; the actual reading happens with its own tools, which are faster and keep large content out of the MCP payload.
+
+## Structured errors
+
+A coded devframe diagnostic thrown from a tool handler crosses the MCP boundary as structured JSON rather than a flattened message:
+
+```json
+{ "error": { "code": "DF0017", "message": "…", "fix": "…", "docs": "https://devfra.me/errors/df0017" } }
+```
+
+Agents can act on `fix` directly and follow `docs` for detail — prefer throwing coded diagnostics from anything agent-reachable.
 
 ## Safety model
 

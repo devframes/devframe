@@ -23,6 +23,7 @@ export interface ViteDevBridgeOptions {
     flags?: Record<string, unknown>;
   };
   auth?: boolean | DevframeAuthHandler;
+  mcp?: boolean | McpRouteOptions;
 }
 // #endregion
 

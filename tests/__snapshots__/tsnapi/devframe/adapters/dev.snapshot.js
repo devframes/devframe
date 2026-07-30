@@ -4,4 +4,5 @@
 // #region Other
 export { createDevServer }
 export { resolveDevServerPort }
+export { resolveMcpConnectionMeta }
 // #endregion

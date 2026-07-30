@@ -305,8 +305,10 @@ export async function getDevframeRpcClient(
     const errors: Error[] = []
     for (const base of bases) {
       try {
-        connectionMeta = await fetch(withBase(DEVFRAME_CONNECTION_META_FILENAME, base))
-          .then(r => r.json()) as ConnectionMeta
+        const response = await fetch(withBase(DEVFRAME_CONNECTION_META_FILENAME, base))
+        if (!response.ok)
+          throw new Error(`Failed to fetch connection meta: ${response.status}`)
+        connectionMeta = await response.json() as ConnectionMeta
         resolvedBaseURL = base
         // Publish the meta annotated with the absolute base it was resolved
         // against (`baseUrl`), so a same-origin child mounted at another base

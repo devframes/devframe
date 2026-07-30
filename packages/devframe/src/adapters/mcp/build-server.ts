@@ -18,8 +18,10 @@ import { valibotArgsToJsonSchema, valibotReturnToJsonSchema } from './to-json-sc
 
 export interface CreateMcpServerOptions {
   /**
-   * Transport to use. Only `'stdio'` is implemented today; HTTP support
-   * is planned in a follow-up PR.
+   * Transport to use. `createMcpServer` itself runs `'stdio'` (a standalone
+   * process with its own host context); the Streamable-HTTP transport is
+   * served route-based by the dev server instead — see `mountMcpHttp` and
+   * the `mcp` option on `createDevServer` / `createCac`'s `--mcp` flag.
    */
   transport?: 'stdio'
   /**

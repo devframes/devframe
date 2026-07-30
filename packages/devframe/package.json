@@ -1,7 +1,7 @@
 {
   "name": "devframe",
   "type": "module",
-  "version": "0.7.14",
+  "version": "0.7.15",
   "description": "Framework for building generic devframes",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
@@ -111,32 +111,5 @@
     "ua-parser-modern": "catalog:inlined",
     "whenexpr": "catalog:deps",
     "ws": "catalog:deps"
-  },
-  "inlinedDependencies": {
-    "bundle-name": "4.1.0",
-    "default-browser": "5.5.0",
-    "default-browser-id": "5.0.1",
-    "define-lazy-prop": "3.0.0",
-    "get-port-please": "3.2.0",
-    "immer": "11.1.8",
-    "is-docker": "3.0.0",
-    "is-in-ssh": "1.0.0",
-    "is-inside-container": "1.0.0",
-    "is-wsl": "3.1.1",
-    "launch-editor": "2.13.2",
-    "obug": "2.1.1",
-    "ohash": "2.0.11",
-    "open": "11.0.0",
-    "p-limit": "7.3.0",
-    "perfect-debounce": "2.1.0",
-    "picocolors": "1.1.1",
-    "powershell-utils": "0.1.0",
-    "run-applescript": "7.1.0",
-    "shell-quote": "1.8.3",
-    "structured-clone-es": "2.0.0",
-    "ua-parser-modern": "0.1.1",
-    "whenexpr": "0.1.2",
-    "wsl-utils": "0.3.1",
-    "yocto-queue": "1.2.2"
   }
 }

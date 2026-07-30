@@ -63,6 +63,7 @@ export interface ConnectionMeta {
   websocket?: number | string | ConnectionMetaWebsocket;
   mcp?: {
     path: string;
+    port?: number;
   };
   jsonSerializableMethods?: string[];
   baseUrl?: string;

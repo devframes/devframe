@@ -333,6 +333,40 @@ describe('devframeTerminalHost child-process status lifecycle', () => {
 })
 
 describe('devframeTerminalHost interactive PTY sessions', () => {
+  itPty('inherits the parent process environment', async () => {
+    expect.assertions(1)
+
+    const environmentVariable = 'DEVFRAME_PTY_INHERITED_ENV'
+    const previousValue = process.env[environmentVariable]
+    process.env[environmentVariable] = 'inherited'
+
+    let session: Awaited<ReturnType<DevframeTerminalsHost['startPtySession']>> | undefined
+    try {
+      const { host, sinks } = createTerminalHost()
+      session = await host.startPtySession({
+        command: NODE,
+        args: ['-e', `process.stdout.write(process.env.${environmentVariable} ?? "missing")`],
+      }, {
+        id: 'pty-environment',
+        title: 'PTY environment',
+      })
+
+      await waitUntil(() => {
+        if (!sinks.get('pty-environment')?.closed)
+          throw new Error('PTY stream is still open')
+      })
+
+      expect(session.buffer?.join('')).toContain('inherited')
+    }
+    finally {
+      await session?.terminate()
+      if (previousValue === undefined)
+        delete process.env[environmentVariable]
+      else
+        process.env[environmentVariable] = previousValue
+    }
+  })
+
   itPosixPty('spawns an interactive PTY that accepts input and is marked interactive', async () => {
     const { host, sinks } = createTerminalHost()
 

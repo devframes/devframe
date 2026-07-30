@@ -1,3 +1,5 @@
+import { Diagnostic } from 'nostics'
+
 /**
  * JSON-coercing serializer for MCP text payloads.
  *
@@ -55,11 +57,25 @@ export function stringifyForMcp(value: unknown): string {
 }
 
 /**
- * Format a thrown value for an MCP `isError` text payload. Surfaces the
- * `Error.name`/`message`, and one level of `cause.message` so context
- * isn't dropped silently.
+ * Format a thrown value for an MCP `isError` text payload.
+ *
+ * A nostics `Diagnostic` (every coded devframe error) becomes structured
+ * JSON — `{ error: { code, message, fix?, docs? } }` — so an agent receives
+ * the actionable next step (`fix`) and the docs URL instead of a bare
+ * message string. Other errors surface `Error.name`/`message`, plus one
+ * level of `cause.message` so context isn't dropped silently.
  */
 export function formatMcpError(error: unknown): string {
+  if (error instanceof Diagnostic) {
+    return JSON.stringify({
+      error: {
+        code: error.code,
+        message: error.message,
+        ...(error.fix ? { fix: error.fix } : {}),
+        ...(error.docs ? { docs: error.docs } : {}),
+      },
+    }, null, 2)
+  }
   if (!(error instanceof Error))
     return String(error)
   const cause = (error as { cause?: unknown }).cause
