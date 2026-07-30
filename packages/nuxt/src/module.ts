@@ -139,6 +139,12 @@ export default defineNuxtModule<ModuleOptions>({
         ?? (nuxt.options.devServer as any)?.host
         ?? options.devframe.cli?.host
 
+      // Client build only: the browser talks to Nuxt's client dev server,
+      // so the RPC/WS bridge and its `__connection.json` middleware must
+      // live there. Adding it to the server (Nitro/SSR) build too would
+      // spin up a second, redundant bridge + file watcher inside the SSR
+      // build context — wasted resources at best, and a source of dev-server
+      // instability at worst.
       addVitePlugin(viteDevBridge(options.devframe, {
         base: options.baseURL ?? './',
         devMiddleware: {
@@ -146,7 +152,7 @@ export default defineNuxtModule<ModuleOptions>({
           host,
           flags: mw.flags,
         },
-      }) as any)
+      }) as any, { server: false })
     }
   },
 })

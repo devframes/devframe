@@ -1,6 +1,7 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import { existsSync } from 'node:fs'
 import fsp from 'node:fs/promises'
+import { resolve } from 'pathe'
 import { UPLOAD_CHANNEL } from '../rpc/functions/upload'
 import { alwaysFunctions, readFunctions, writeFunctions } from '../rpc/index'
 import { configureAssets } from './context'
@@ -27,7 +28,14 @@ export interface SetupAssetsOptions {
   serveStatic: boolean
 }
 
-const watchers = new WeakMap<DevframeNodeContext, () => Promise<void>>()
+// Keyed by absolute managed directory, not by context: a host (Nuxt / Vite)
+// recreates the dev bridge — and thus a fresh `DevframeNodeContext` — on every
+// config reload and once per build environment. Keying by directory caps live
+// watchers at one per directory no matter how many times setup re-runs, so
+// they can't accumulate and exhaust the heap. `ctxToDir` lets a specific
+// context dispose its own watcher (tests).
+const watchersByDir = new Map<string, () => Promise<void>>()
+const ctxToDir = new WeakMap<DevframeNodeContext, string>()
 
 /**
  * Register the assets RPC surface on a devframe node context: ensures the
@@ -69,8 +77,14 @@ export async function setupAssets(ctx: DevframeNodeContext, options: SetupAssets
       ctx.rpc.register(fn)
   }
 
-  if (ctx.mode === 'dev')
-    watchers.set(ctx, watchAssetsDir(ctx, options.dir))
+  if (ctx.mode === 'dev') {
+    const dir = resolve(options.dir)
+    // Replace any watcher left over from a prior dev-bridge cycle on the
+    // same directory before starting a fresh one bound to this context.
+    await watchersByDir.get(dir)?.()
+    watchersByDir.set(dir, watchAssetsDir(ctx, options.dir))
+    ctxToDir.set(ctx, dir)
+  }
 }
 
 /**
@@ -79,10 +93,14 @@ export async function setupAssets(ctx: DevframeNodeContext, options: SetupAssets
  * leaked chokidar watcher doesn't keep the process alive.
  */
 export async function disposeAssetsWatcher(ctx: DevframeNodeContext): Promise<void> {
-  const dispose = watchers.get(ctx)
+  const dir = ctxToDir.get(ctx)
+  if (!dir)
+    return
+  ctxToDir.delete(ctx)
+  const dispose = watchersByDir.get(dir)
   if (!dispose)
     return
-  watchers.delete(ctx)
+  watchersByDir.delete(dir)
   await dispose()
 }
 
