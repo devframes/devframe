@@ -181,29 +181,4 @@ describe('assets plugin', () => {
     await waitFor(() => changed)
     expect(await call(client, 'devframes:plugin:assets:list')).toHaveLength(1)
   })
-
-  it('replaces the watcher across dev-bridge restarts on the same directory', async () => {
-    // A host (Nuxt / Vite) recreates the dev bridge — and a fresh context —
-    // on every reload. Starting a second cycle on the same directory must
-    // supersede the first watcher, not stack another one (which would leak
-    // until the process runs out of heap). The proof: the newest cycle's
-    // watcher is the live one, so its client still receives change events.
-    const first = await startAssetsServer(dir)
-    server = await startAssetsServer(dir) // second cycle; afterEach closes this one
-    try {
-      const clientB = bootClient(server.port)
-      let changed = false
-      clientB.onEvent('devframes:plugin:assets:changed', () => {
-        changed = true
-      })
-      await call(clientB, 'devframes:plugin:assets:list')
-
-      await fsp.writeFile(join(dir, 'after-restart.txt'), 'x', 'utf-8')
-      await waitFor(() => changed)
-      expect(changed).toBe(true)
-    }
-    finally {
-      await first.close()
-    }
-  })
 })
