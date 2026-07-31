@@ -50,7 +50,6 @@ export function resolveWsUrl(
   metaBaseUrl: string,
   loc: WsUrlLocation,
 ): string {
-  const wsProtocol = loc.protocol === 'https:' ? 'wss:' : 'ws:'
   const base = (() => {
     try {
       return new URL(metaBaseUrl, loc.href)
@@ -59,6 +58,7 @@ export function resolveWsUrl(
       return new URL(loc.href)
     }
   })()
+  const wsProtocol = base.protocol === 'https:' ? 'wss:' : 'ws:'
 
   // Object form — the proxy-flexible default.
   if (websocket && typeof websocket === 'object') {
@@ -67,7 +67,7 @@ export function resolveWsUrl(
     // meta file sits. Otherwise stay same-origin and resolve the path relative
     // to the meta base so a reverse-proxied subpath is honored.
     if (websocket.host != null || websocket.port != null) {
-      const host = websocket.host ?? `${loc.hostname}:${websocket.port}`
+      const host = websocket.host ?? `${base.hostname}:${websocket.port}`
       const target = new URL(websocket.path ?? '/', `${wsProtocol}//${host}`)
       target.protocol = wsProtocol
       return target.href
@@ -77,9 +77,10 @@ export function resolveWsUrl(
     return target.href
   }
 
-  // Legacy numeric port — page hostname, explicit port.
+  // Legacy numeric port — metadata hostname, explicit port. External viewers
+  // (such as browser extensions) have their own unrelated location hostname.
   if (typeof websocket === 'number')
-    return `${wsProtocol}//${loc.hostname}:${websocket}`
+    return `${wsProtocol}//${base.hostname}:${websocket}`
 
   const str = websocket ?? ''
   // Full WS URL — used verbatim.

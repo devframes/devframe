@@ -1,4 +1,5 @@
 import type { ConnectionMeta } from 'devframe/types'
+import { DEVFRAME_CONNECTION_KEY } from 'devframe/constants'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getDevframeRpcClient } from './rpc'
 
@@ -45,6 +46,7 @@ describe('getDevframeRpcClient — connection meta base', () => {
     })
     delete (globalThis as any)[CONNECTION_META_KEY]
     delete (globalThis as any)[CONNECTION_AUTH_TOKEN_KEY]
+    delete (globalThis as any)[DEVFRAME_CONNECTION_KEY]
   })
 
   afterEach(() => {
@@ -52,6 +54,7 @@ describe('getDevframeRpcClient — connection meta base', () => {
     vi.unstubAllGlobals()
     delete (globalThis as any)[CONNECTION_META_KEY]
     delete (globalThis as any)[CONNECTION_AUTH_TOKEN_KEY]
+    delete (globalThis as any)[DEVFRAME_CONNECTION_KEY]
   })
 
   it('publishes the meta annotated with the absolute base it resolved from', async () => {

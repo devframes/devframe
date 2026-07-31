@@ -2,16 +2,15 @@ import type { BirpcOptions, BirpcReturn } from 'birpc'
 import type { RpcCacheOptions, RpcFunctionsCollector } from 'devframe/rpc'
 import type { WsRpcChannelOptions } from 'devframe/rpc/transports/ws-client'
 import type { ConnectionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, EventEmitter, RpcSharedStateHost, SettingsForNamespace } from 'devframe/types'
-import type { DevframeConnectionStatus } from './connection'
+import type { DevframeConnection, DevframeConnectionStatus, SetupDevframeConnectionOptions } from './connection'
 import type { RpcStreamingClientHost } from './rpc-streaming'
 import type { DevframeScopedClientContext } from './scope'
-import {
-  DEVFRAME_CONNECTION_META_FILENAME,
-  DEVFRAME_OTP_URL_PARAM,
-} from 'devframe/constants'
+import { DEVFRAME_OTP_URL_PARAM } from 'devframe/constants'
 import { RpcCacheManager, RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createEventEmitter } from 'devframe/utils/events'
 import { withBase } from 'ufo'
+import { setupDevframeConnection } from './connection'
+import { storeAuthToken } from './connection-storage'
 import { authenticateWithUrlOtp } from './otp'
 import { createRpcSharedStateClientHost } from './rpc-shared-state'
 import { createStaticRpcClientMode } from './rpc-static'
@@ -47,12 +46,7 @@ export interface RpcClientEvents {
   'rpc:error': (error: Error, method: string) => void
 }
 
-const CONNECTION_META_KEY = '__DEVFRAME_CONNECTION_META__'
-const CONNECTION_AUTH_TOKEN_KEY = '__DEVFRAME_CONNECTION_AUTH_TOKEN__'
-
-export interface DevframeRpcClientOptions {
-  connectionMeta?: ConnectionMeta
-  baseURL?: string | string[]
+export interface DevframeRpcClientOptions extends SetupDevframeConnectionOptions {
   /**
    * The auth token to use for the client
    */
@@ -120,7 +114,12 @@ export interface DevframeRpcClient {
    */
   readonly connectionError: Error | null
   /**
-   * The connection meta
+   * The complete connection used by this client, including the metadata source
+   * URL external viewers use to resolve relative resources.
+   */
+  readonly connection: DevframeConnection
+  /**
+   * The server-advertised connection metadata.
    */
   readonly connectionMeta: ConnectionMeta
   /**
@@ -215,54 +214,6 @@ export interface DevframeRpcClientMode {
   callOptional: DevframeRpcClient['callOptional']
 }
 
-function getStoredAuthToken(userAuthToken?: string): string | undefined {
-  const getters = [
-    () => userAuthToken,
-    () => localStorage.getItem(CONNECTION_AUTH_TOKEN_KEY) ?? undefined,
-    () => (window as any)?.[CONNECTION_AUTH_TOKEN_KEY],
-    () => (globalThis as any)?.[CONNECTION_AUTH_TOKEN_KEY],
-    () => (parent.window as any)?.[CONNECTION_AUTH_TOKEN_KEY],
-  ]
-
-  for (const getter of getters) {
-    try {
-      const value = getter()
-      if (value)
-        return value
-    }
-    catch {}
-  }
-
-  // No token yet — the client is unauthenticated and must exchange a one-time
-  // code (see `requestTrustWithCode`) to obtain a node-issued token.
-  return undefined
-}
-
-function persistAuthToken(token: string): void {
-  try {
-    localStorage.setItem(CONNECTION_AUTH_TOKEN_KEY, token)
-  }
-  catch {}
-  ;(globalThis as any)[CONNECTION_AUTH_TOKEN_KEY] = token
-}
-
-function findConnectionMetaFromWindows(): ConnectionMeta | undefined {
-  const getters = [
-    () => (window as any)?.[CONNECTION_META_KEY],
-    () => (globalThis as any)?.[CONNECTION_META_KEY],
-    () => (parent.window as any)?.[CONNECTION_META_KEY],
-  ]
-
-  for (const getter of getters) {
-    try {
-      const value = getter()
-      if (value)
-        return value
-    }
-    catch {}
-  }
-}
-
 export async function getDevframeRpcClient(
   options: DevframeRpcClientOptions = {},
 ): Promise<DevframeRpcClient> {
@@ -278,73 +229,18 @@ export async function getDevframeRpcClient(
   } = options
   const events = createEventEmitter<RpcClientEvents>()
   const bases = Array.isArray(baseURL) ? baseURL : [baseURL]
-  let connectionMeta: ConnectionMeta | undefined = options.connectionMeta || findConnectionMetaFromWindows()
+  let connection = await setupDevframeConnection(options)
+  const { connectionMeta, metaBaseUrl, authToken } = connection
   let resolvedBaseURL = bases[0] ?? './'
-  // When the meta is inherited from a same-origin parent, it carries the base
-  // it was resolved against (`baseUrl`); reuse it so a relative `websocket.path`
-  // resolves against the publisher's mount rather than this SPA's own
-  // (possibly different) base.
-  const inheritedMetaBaseUrl = options.connectionMeta ? undefined : connectionMeta?.baseUrl
-
-  // Absolute URL of where `__connection.json` lives, used to resolve a
-  // relative WS path against the SPA's own origin (proxy-safe). Falls back to
-  // the page location when running outside a browser document.
-  function resolveMetaBaseUrl(): string {
-    if (inheritedMetaBaseUrl)
-      return inheritedMetaBaseUrl
-    const metaPath = withBase(DEVFRAME_CONNECTION_META_FILENAME, resolvedBaseURL)
-    try {
-      return new URL(metaPath, globalThis.location?.href).href
-    }
-    catch {
-      return metaPath
-    }
+  try {
+    resolvedBaseURL = new URL('.', metaBaseUrl).href
   }
-
-  if (!connectionMeta) {
-    const errors: Error[] = []
-    for (const base of bases) {
-      try {
-        const response = await fetch(withBase(DEVFRAME_CONNECTION_META_FILENAME, base))
-        if (!response.ok)
-          throw new Error(`Failed to fetch connection meta: ${response.status}`)
-        connectionMeta = await response.json() as ConnectionMeta
-        resolvedBaseURL = base
-        // Publish the meta annotated with the absolute base it was resolved
-        // against (`baseUrl`), so a same-origin child mounted at another base
-        // inherits a dialable endpoint instead of resolving the relative WS
-        // path against its own mount.
-        ;(globalThis as any)[CONNECTION_META_KEY] = {
-          ...connectionMeta,
-          baseUrl: resolveMetaBaseUrl(),
-        } satisfies ConnectionMeta
-        break
-      }
-      catch (e) {
-        errors.push(e as Error)
-      }
-    }
-    if (!connectionMeta) {
-      throw new Error(`Failed to get connection meta from ${bases.join(', ')}`, {
-        cause: errors,
-      })
-    }
-  }
+  catch {}
 
   const cacheManager = new RpcCacheManager({ functions: [], ...(typeof options.cacheOptions === 'object' ? options.cacheOptions : {}) })
   const context: DevframeRpcContext = {
     rpc: undefined!,
   }
-  // An explicit option wins, then a token baked into the (hub-served) meta —
-  // the cross-origin channel a framed plugin relies on since it can't read the
-  // hub's `localStorage` — then this origin's own stored token.
-  const authToken = getStoredAuthToken(options.authToken || connectionMeta.authToken)
-  // Persist a resolved token so one supplied out-of-band — e.g. a host that
-  // bootstraps trust by passing `authToken` (read from its own page URL query)
-  // — survives reconnects. The token is still sent to the server via the WS
-  // URL query param (`?devframe_auth_token=`) by the transport.
-  if (authToken)
-    persistAuthToken(authToken)
   const clientRpc: DevframeClientRpcHost = new RpcFunctionsCollectorBase<DevframeRpcClientFunctions, DevframeRpcContext>(context)
 
   async function fetchJsonFromBases(path: string): Promise<any> {
@@ -380,7 +276,7 @@ export async function getDevframeRpcClient(
     : createWsRpcClientMode({
         authToken,
         connectionMeta,
-        metaBaseUrl: resolveMetaBaseUrl(),
+        metaBaseUrl,
         events,
         clientRpc,
         callTimeout: options.callTimeout,
@@ -445,12 +341,16 @@ export async function getDevframeRpcClient(
     get connectionError() {
       return mode.connectionError
     },
+    get connection() {
+      return connection
+    },
     connectionMeta,
     ensureTrusted: mode.ensureTrusted,
     requestTrust: mode.requestTrust,
     requestTrustWithToken: async (token: string) => {
       // Update stored token for future reconnections
-      persistAuthToken(token)
+      storeAuthToken(token)
+      connection = { ...connection, authToken: token }
       return mode.requestTrustWithToken(token)
     },
     requestTrustWithCode: async (code: string) => {
@@ -459,7 +359,8 @@ export async function getDevframeRpcClient(
         return false
       // Persist the node-issued token and share it with sibling tabs so they
       // become trusted without re-entering the code.
-      persistAuthToken(token)
+      storeAuthToken(token)
+      connection = { ...connection, authToken: token }
       try {
         authChannel?.postMessage({ type: 'auth-update', authToken: token })
       }
