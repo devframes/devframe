@@ -17,7 +17,7 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { cac } from 'cac'
 import { createDevServer } from 'devframe/adapters/dev'
-import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
+import { DEVFRAME_AUTH_TOKEN_QUERY_PARAM, DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import pkg from '../package.json' with { type: 'json' }
@@ -103,7 +103,7 @@ export function createDataInspectorCli() {
         })
       })
       await new Promise<void>(done => server.listen(port, flags.host, done))
-      const url = `http://${flags.host}:${port}/${token ? `?di_token=${token}` : ''}`
+      const url = `http://${flags.host}:${port}/${token ? `?${DEVFRAME_AUTH_TOKEN_QUERY_PARAM}=${token}` : ''}`
       console.log(`data-inspector attached to ${websocket}`)
       console.log(`open ${url}`)
     })

@@ -26,6 +26,7 @@ import type {
   SuggestOutcome,
 } from '../../engine'
 import { connectDevframe } from 'devframe/client'
+import { DEVFRAME_AUTH_TOKEN_QUERY_PARAM } from 'devframe/constants'
 import { reactive, shallowRef } from 'vue'
 import { runQuery, runQueryAtPath, skeletonOf, suggest as suggestQuery } from '../../engine'
 
@@ -163,14 +164,15 @@ function createStaticBackend(dataset: StaticDataset): DataBackend {
 
 /**
  * Read and strip the pre-shared auth token the attach CLI appends to the SPA
- * URL (`?di_token=…`), so it never lingers in the address bar or history.
+ * URL (`?devframe_auth_token=…`), so it never lingers in the address bar or
+ * history.
  */
 function consumeAuthToken(): string | undefined {
   const params = new URLSearchParams(location.search)
-  const token = params.get('di_token')
+  const token = params.get(DEVFRAME_AUTH_TOKEN_QUERY_PARAM)
   if (!token)
     return undefined
-  params.delete('di_token')
+  params.delete(DEVFRAME_AUTH_TOKEN_QUERY_PARAM)
   const search = params.toString()
   history.replaceState(null, '', search ? `?${search}` : location.pathname)
   return token
