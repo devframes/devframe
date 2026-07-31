@@ -110,11 +110,11 @@ function filterBadges(entry: Query): FilterBadge[] {
       </ActionButton>
     </div>
 
-    <div v-if="entries.length" class="flex-1 overflow-auto min-h-0 max-h-200 grid grid-cols-[repeat(auto-fit,minmax(20rem,1fr))] gap-2">
+    <div v-if="entries.length" class="flex-1 overflow-auto min-h-0 max-h-80 grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-1">
       <div
         v-for="entry in entries"
         :key="entry.key"
-        class="group flex items-center gap-2 px-2 py-1.5 border border-base rounded-lg hover:bg-active cursor-pointer"
+        class="group flex items-center gap-2 px1.5 py-1 border border-base rounded hover:bg-active cursor-pointer"
         :title="entry.recipe.description ?? entry.recipe.query"
         @click="emit('load', entry.recipe)"
       >

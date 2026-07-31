@@ -43,8 +43,8 @@
     "build": "tsdown && vite build --config src/spa/vite.config.ts",
     "watch": "tsdown --watch",
     "typecheck": "tsc --noEmit",
-    "dev": "vite --config src/spa/vite.config.ts --host 0.0.0.0",
-    "storybook": "storybook dev -p 6013 --host 0.0.0.0",
+    "dev": "vite --config src/spa/vite.config.ts",
+    "storybook": "storybook dev -p 6013",
     "build-storybook": "storybook build",
     "test": "vitest run",
     "prepack": "pnpm run build"

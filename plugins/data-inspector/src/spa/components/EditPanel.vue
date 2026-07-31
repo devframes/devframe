@@ -232,7 +232,7 @@ function applyDelete(): void {
 </script>
 
 <template>
-  <div class="flex flex-col h-full min-h-0 bg-base border-l border-base w-85">
+  <div class="flex flex-col h-full min-h-0 bg-base border-l border-base w-100">
     <div class="flex items-center gap-2 px3 py2 border-b border-base select-none">
       <span class="i-ph:pencil-simple-duotone color-active" />
       <div class="font-semibold text-xs op-fade uppercase tracking-wide">
@@ -398,7 +398,7 @@ function applyDelete(): void {
           @click="applyDelete"
           @blur="confirmingDelete = false"
         >
-          <span>{{ confirmingDelete ? 'Really delete?' : 'Delete' }}</span>
+          <span>{{ confirmingDelete ? 'Confirm Delete?' : 'Delete Key' }}</span>
         </Button>
       </section>
     </div>

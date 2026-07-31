@@ -43,7 +43,7 @@
     "build": "tsdown && vite build --config src/client/vite.config.ts && vite build --config src/spa/vite.config.ts",
     "watch": "tsdown --watch",
     "dev": "node bin.mjs",
-    "storybook": "storybook dev -p 6014 --host 0.0.0.0",
+    "storybook": "storybook dev -p 6014",
     "build-storybook": "storybook build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",

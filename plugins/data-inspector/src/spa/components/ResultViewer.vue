@@ -87,29 +87,29 @@ function copyResult(): void {
 
 <template>
   <div class="flex flex-col h-full min-h-0">
-    <div class="flex items-center gap-3 px-3 py-1.5 border-b border-base min-h-9 text-xs color-muted font-mono tabular-nums" :class="{ 'op-fade': statsStale }">
+    <div class="flex items-center gap-3 px-3 py-1.5 border-b border-base min-h-9 text-xs ws-nowrap color-muted font-mono tabular-nums flex-wrap" :class="{ 'op-fade': statsStale }">
       <template v-if="stats">
         <span class="flex items-center gap-1"><span class="op50">jora</span> <DisplayDuration :ms="stats.queryMs" colorize /></span>
-        <div class="h-full border-r border-base" />
-        <span class="flex items-center gap-1"><span class="op50">normalize</span> <DisplayDuration :ms="stats.normalize.ms" colorize /></span>
-        <div class="h-full border-r border-base" />
+        <div class="h-5 border-r border-base" />
+        <span class="flex items-center gap-1"><span class="op50">norm</span> <DisplayDuration :ms="stats.normalize.ms" colorize /></span>
+        <div class="h-5 border-r border-base" />
         <span class="flex items-center gap-1"><span class="op50">rpc</span> <DisplayDuration :ms="stats.rpcMs" colorize /></span>
-        <div class="h-full border-r border-base" />
-        <span class="flex items-center gap-1"><span class="op50">payload</span> <DisplayBytes :bytes="stats.payloadBytes" colorize /></span>
-        <div class="h-full border-r border-base" />
+        <div class="h-5 border-r border-base" />
+        <span class="flex items-center gap-1"><DisplayBytes :bytes="stats.payloadBytes" colorize /></span>
+        <div class="h-5 border-r border-base" />
         <span>{{ stats.normalize.nodes }} <span class="op50">nodes</span></span>
         <template v-if="stats.normalize.refs">
-          <div class="h-full border-r border-base" />
+          <div class="h-5 border-r border-base" />
           <span>{{ stats.normalize.refs }} <span class="op50">refs</span></span>
         </template>
         <DisplayBadge v-if="stats.normalize.truncatedEntries || stats.normalize.truncatedDepth" :color="12" text="truncated" />
         <template v-if="lastRunAt">
-          <div class="h-full border-r border-base" />
-          <span class="flex items-center gap-1"><span class="op50">ran</span> <DisplayDate :date="lastRunAt" live /></span>
+          <div class="h-5 border-r border-base" />
+          <span class="flex items-center gap-1"><DisplayDate :date="lastRunAt" live /></span>
         </template>
       </template>
       <span v-else class="op-fade select-none">no query run yet</span>
-      <div class="flex-1" />
+      <div class="flex-auto" />
       <span v-if="running" class="flex items-center gap-1.5 color-faint">
         <span class="i-ph:circle-notch animate-spin" />
         running

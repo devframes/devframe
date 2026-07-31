@@ -36,6 +36,7 @@ function copyQuery(): void {
         <span class="i-ph:question-duotone" />
       </a>
       <div class="flex-auto" />
+      <!-- TODO: move auto rerun check here. -->
       <ActionIconButton
         v-if="wb.query.value"
         class="text-sm"

@@ -33,7 +33,7 @@ function iconOf(source: DataSourceMeta | undefined): string {
         <span class="truncate font-semibold text-primary">{{ active?.title ?? placeholder ?? 'Data source' }}</span>
       </span>
       <SelectIcon class="op-fade shrink-0">
-        <span class="i-ph:caret-down" aria-hidden="true" />
+        <div class="i-ph:caret-down" aria-hidden="true" />
       </SelectIcon>
     </SelectTrigger>
     <SelectPortal>
@@ -50,7 +50,7 @@ function iconOf(source: DataSourceMeta | undefined): string {
             class="text-sm color-base py-1.5 pl-2 pr-2 outline-none rounded-md flex gap-2 cursor-pointer select-none transition items-start relative data-[highlighted]:bg-active"
           >
             <DisplayIconifyRemoteIcon :icon="iconOf(source)" class="shrink-0 mt-0.5 w-3.5 h-3.5 color-active [&_svg]:h-full [&_svg]:w-full" aria-hidden="true" />
-            <span class="flex flex-col min-w-0 flex-1">
+            <span class="flex flex-col min-w-0 flex-1 of-hidden">
               <span class="flex items-center gap-1.5">
                 <span class="truncate font-medium">{{ source.title }}</span>
                 <span v-if="source.static" class="shrink-0 text-10px op-fade border border-base rounded px-1">static</span>

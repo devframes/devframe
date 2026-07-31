@@ -39,9 +39,9 @@
   ],
   "scripts": {
     "build": "tsdown && vite build --config src/spa/vite.config.ts",
-    "dev": "vite --config src/spa/vite.config.ts --host 0.0.0.0",
+    "dev": "vite --config src/spa/vite.config.ts",
     "watch": "tsdown --watch",
-    "storybook": "storybook dev -p 6017 --host 0.0.0.0",
+    "storybook": "storybook dev -p 6017",
     "build-storybook": "storybook build",
     "cli:build": "node bin.mjs build --out-dir dist/static",
     "prepack": "pnpm build",

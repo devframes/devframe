@@ -43,7 +43,7 @@
     "build:inject": "vite build --config src/inject/vite.config.ts",
     "watch": "tsdown --watch",
     "dev": "node bin.mjs",
-    "storybook": "storybook dev -p 6015 --host 0.0.0.0",
+    "storybook": "storybook dev -p 6015",
     "build-storybook": "storybook build",
     "cli:build": "node bin.mjs build --out-dir dist/static",
     "demo": "node demo/server.mjs",

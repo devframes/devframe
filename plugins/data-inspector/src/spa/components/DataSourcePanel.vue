@@ -14,7 +14,7 @@ const showDetails = ref(false)
 <template>
   <div class="px3 py2 border-b border-base flex flex-col gap-2 shrink-0">
     <div class="flex items-center gap-2">
-      <div class="font-semibold text-xs op-fade uppercase tracking-wide select-none">
+      <div class="font-semibold text-xs op-fade uppercase tracking-wide select-none ws-nowrap">
         Data Source
       </div>
       <DataSourceSelect v-model="wb.sourceId.value" :sources="wb.sources.value" placeholder="Data source" />
