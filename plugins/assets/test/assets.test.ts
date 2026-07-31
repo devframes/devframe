@@ -2,7 +2,8 @@ import type { AssetsServer, TestClient } from './_utils'
 import { Buffer } from 'node:buffer'
 import fsp from 'node:fs/promises'
 import { join } from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import process from 'node:process'
+import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { bootClient, call, cleanupTempDir, createTempDir, startAssetsServer } from './_utils'
 
 // A minimal, valid 1x1 PNG.
@@ -36,31 +37,44 @@ describe('assets plugin', () => {
   let server: AssetsServer
   let client: TestClient
 
+  // Every managed temp dir this file creates, deleted once at the very end
+  // rather than per-test. On Windows, closing a live chokidar watcher
+  // doesn't guarantee libuv has retired the outstanding
+  // ReadDirectoryChangesW request — deleting the directory it watched right
+  // after close() can trip a native assertion and hard-crash the process
+  // (see `watchAssetsDir`'s disposer). Deferring every directory's removal
+  // well past its server's shutdown keeps that race out of this suite.
+  const tempDirs: string[] = []
+
   beforeEach(async () => {
     dir = await createTempDir()
+    tempDirs.push(dir)
   })
 
   afterEach(async () => {
     await server?.close()
-    await cleanupTempDir(dir)
+  })
+
+  afterAll(async () => {
+    await Promise.all(tempDirs.map(cleanupTempDir))
   })
 
   it('lists no assets in an empty directory', async () => {
-    server = await startAssetsServer(dir)
+    server = await startAssetsServer(dir, { watch: false })
     client = bootClient(server.port)
     const list = await call(client, 'devframes:plugin:assets:list')
     expect(list).toEqual([])
   })
 
   it('reports write capabilities by default', async () => {
-    server = await startAssetsServer(dir)
+    server = await startAssetsServer(dir, { watch: false })
     client = bootClient(server.port)
     const caps = await call(client, 'devframes:plugin:assets:capabilities')
     expect(caps).toEqual({ write: true, uploadExtensions: expect.any(Array) })
   })
 
   it('creates a folder and uploads a file into it via the streaming channel', async () => {
-    server = await startAssetsServer(dir)
+    server = await startAssetsServer(dir, { watch: false })
     client = bootClient(server.port)
 
     await call(client, 'devframes:plugin:assets:mkdir', { path: 'icons' })
@@ -73,7 +87,7 @@ describe('assets plugin', () => {
   })
 
   it('reads image dimensions for an uploaded image', async () => {
-    server = await startAssetsServer(dir)
+    server = await startAssetsServer(dir, { watch: false })
     client = bootClient(server.port)
     await upload(client, 'logo.png', ONE_PIXEL_PNG)
 
@@ -83,7 +97,7 @@ describe('assets plugin', () => {
 
   it('reads text content for a text asset', async () => {
     await fsp.writeFile(join(dir, 'notes.txt'), 'hello world', 'utf-8')
-    server = await startAssetsServer(dir)
+    server = await startAssetsServer(dir, { watch: false })
     client = bootClient(server.port)
 
     const content = await call(client, 'devframes:plugin:assets:read-text', 'notes.txt')
@@ -93,7 +107,7 @@ describe('assets plugin', () => {
   it('renames an asset within its folder', async () => {
     await fsp.mkdir(join(dir, 'icons'), { recursive: true })
     await fsp.writeFile(join(dir, 'icons/old.txt'), 'x', 'utf-8')
-    server = await startAssetsServer(dir)
+    server = await startAssetsServer(dir, { watch: false })
     client = bootClient(server.port)
 
     const renamed = await call(client, 'devframes:plugin:assets:rename', { path: 'icons/old.txt', newName: 'new' })
@@ -105,7 +119,7 @@ describe('assets plugin', () => {
   it('rejects renaming onto an existing file', async () => {
     await fsp.writeFile(join(dir, 'a.txt'), 'a', 'utf-8')
     await fsp.writeFile(join(dir, 'b.txt'), 'b', 'utf-8')
-    server = await startAssetsServer(dir)
+    server = await startAssetsServer(dir, { watch: false })
     client = bootClient(server.port)
 
     await expect(call(client, 'devframes:plugin:assets:rename', { path: 'a.txt', newName: 'b' })).rejects.toThrow()
@@ -114,7 +128,7 @@ describe('assets plugin', () => {
   it('deletes one or more assets in a single call', async () => {
     await fsp.writeFile(join(dir, 'a.txt'), 'a', 'utf-8')
     await fsp.writeFile(join(dir, 'b.txt'), 'b', 'utf-8')
-    server = await startAssetsServer(dir)
+    server = await startAssetsServer(dir, { watch: false })
     client = bootClient(server.port)
 
     const result = await call(client, 'devframes:plugin:assets:delete', { paths: ['a.txt', 'b.txt', 'missing.txt'] })
@@ -123,7 +137,7 @@ describe('assets plugin', () => {
   })
 
   it('rejects paths that escape the managed directory', async () => {
-    server = await startAssetsServer(dir)
+    server = await startAssetsServer(dir, { watch: false })
     client = bootClient(server.port)
 
     await expect(call(client, 'devframes:plugin:assets:read-text', '../../etc/passwd')).resolves.toBeNull()
@@ -133,7 +147,7 @@ describe('assets plugin', () => {
   })
 
   it('rejects uploads with a disallowed extension', async () => {
-    server = await startAssetsServer(dir, { uploadExtensions: ['png'] })
+    server = await startAssetsServer(dir, { uploadExtensions: ['png'], watch: false })
     client = bootClient(server.port)
 
     await expect(
@@ -142,7 +156,7 @@ describe('assets plugin', () => {
   })
 
   it('does not register write actions when write is disabled', async () => {
-    server = await startAssetsServer(dir, { write: false })
+    server = await startAssetsServer(dir, { write: false, watch: false })
     client = bootClient(server.port)
 
     const caps = await call(client, 'devframes:plugin:assets:capabilities')
@@ -151,7 +165,7 @@ describe('assets plugin', () => {
   })
 
   it('still registers open-in-editor and reveal-in-folder when write is disabled', async () => {
-    server = await startAssetsServer(dir, { write: false })
+    server = await startAssetsServer(dir, { write: false, watch: false })
 
     // open-in-editor / reveal-in-folder launch external OS apps, so assert
     // they're *registered* on the server context rather than invoking them
@@ -163,7 +177,22 @@ describe('assets plugin', () => {
     expect(defs.has('devframes:plugin:assets:mkdir')).toBe(false)
   })
 
-  it('broadcasts a change event when a file is added on disk', async () => {
+  // The one test that needs the live watcher — every other test above opts
+  // out of it (`watch: false`) so this is the only native fs watch handle
+  // this file ever opens, close()s, and deletes the directory of.
+  //
+  // Skipped on Windows: opening a real `ReadDirectoryChangesW` watch and
+  // then closing + deleting its directory shortly after is a known
+  // trigger for a native libuv assertion on Windows CI runners —
+  // `Assertion failed: !_wcsnicmp(filename, dir, dirlen), file
+  // src\win\fs-event.c, line 72` — that hard-aborts the process outright
+  // (no JS-catchable error). It isn't reliably avoidable with a delay: it
+  // reproduces intermittently regardless of how long the teardown waits,
+  // consistent with Windows Defender's real-time scanning racing the
+  // directory watch/delete (a widely reported Node/libuv interaction on
+  // hosted Windows runners). The live-watcher behavior is still fully
+  // covered on Linux/macOS.
+  it.skipIf(process.platform === 'win32')('broadcasts a change event when a file is added on disk', async () => {
     server = await startAssetsServer(dir)
     client = bootClient(server.port)
 
