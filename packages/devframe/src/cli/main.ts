@@ -28,5 +28,14 @@ export async function runDevframeCli(argv: string[] = process.argv): Promise<voi
 
   cli.help()
   cli.parse(argv, { run: false })
+  // A bare `devframe` (no subcommand) also leaves `matchedCommand` unset —
+  // same as `-h`/`--help`, which cac already prints help for internally.
+  // Only step in for the *other* unset case (no help flag, no command) so
+  // `--help` doesn't print twice.
+  if (!cli.matchedCommand) {
+    if (!cli.options.help)
+      cli.outputHelp()
+    return
+  }
   await cli.runMatchedCommand()
 }
