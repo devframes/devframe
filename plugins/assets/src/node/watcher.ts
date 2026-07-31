@@ -34,14 +34,14 @@ export function watchAssetsDir(ctx: DevframeNodeContext, dir: string): () => Pro
     await watcher.close()
     // On Windows, closing a chokidar/fs.watch handle doesn't guarantee the
     // OS has fully retired the outstanding ReadDirectoryChangesW request —
-    // ftruncate/close returns before libuv's IOCP completion drains. If the
-    // watched directory is deleted immediately after (as every test's
-    // `afterEach` does), that stale completion can reach
+    // close() returns before libuv's IOCP completion drains. If the watched
+    // directory is deleted right after (as a caller tearing down a
+    // short-lived context typically does), that stale completion can reach
     // `uv__fs_event_process` after the fact and trip its directory-prefix
     // sanity check, hard-crashing the process with
     // `Assertion failed: !_wcsnicmp(filename, dir, dirlen)` in fs-event.c.
-    // A short grace period gives the pending I/O time to actually settle.
+    // A grace period gives the pending I/O time to actually settle first.
     if (process.platform === 'win32')
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise(resolve => setTimeout(resolve, 200))
   }
 }
