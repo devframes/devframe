@@ -3,6 +3,7 @@
  */
 // #region Other
 export { createExampleDataSource }
+export { DATA_CHANGED_EVENT }
 export { EXAMPLE_SOURCE_ID }
 export { serverFunctions }
 export { setupDataInspector }

@@ -8,6 +8,7 @@ export interface DataSourceMeta {
   description?: string;
   icon?: string;
   static: boolean;
+  writable: boolean;
   queries?: Query[];
 }
 export interface FilterOptions {
@@ -72,6 +73,9 @@ export interface SuggestOutcome {
   statMs: number;
   error?: string;
 }
+export interface WriteApplyOptions {
+  excludeFunctions?: boolean;
+}
 // #endregion
 
 // #region Types
@@ -102,9 +106,42 @@ export type SkeletonOutcome = {
     message: string;
   };
 };
+export type WriteOutcome = {
+  ok: true;
+} | {
+  ok: false;
+  error: {
+    name: string;
+    message: string;
+  };
+};
+export type WriteRequest = {
+  op: 'set';
+  path: NodePath;
+  value: WriteValue;
+} | {
+  op: 'delete';
+  path: NodePath;
+} | {
+  op: 'add';
+  path: NodePath;
+  key?: WriteValue;
+  value: WriteValue;
+} | {
+  op: 'rename';
+  path: NodePath;
+  key: WriteValue;
+};
+export type WriteValue = {
+  kind: 'json';
+  value: unknown;
+} | {
+  kind: 'undefined';
+};
 // #endregion
 
 // #region Functions
+export declare function applyWrite(_: unknown, _: WriteRequest, _?: WriteApplyOptions): WriteOutcome;
 export declare function isExcludedKey(_: string, _: Pick<NormalizeOptions, 'excludeUnderscoreProps' | 'excludeDollarProps'>): boolean;
 export declare function navigate(_: unknown, _: NodePath, _?: Pick<NormalizeOptions, 'excludeFunctions'>): unknown;
 export declare function normalize(_: unknown, _?: NormalizeOptions): {

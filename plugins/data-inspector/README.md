@@ -26,6 +26,27 @@ ctx.services.whenAvailable('devframes:plugin:data-inspector:sources', (sources) 
 })
 ```
 
+## Writable sources
+
+Sources opt into live edits with `writable: true`: on the root view (`$`), every value grows an edit affordance that opens a side panel — set a value (string / number / boolean / null / undefined / JSON), add or delete entries, rename keys — and the mutation is applied **in place to the live object** through the `write` RPC. Read-only stays the default; `static: true` sources are memoized snapshots and always stay read-only (declaring both reports `DP_DATA_INSPECTOR_0004`).
+
+`registerDataSource` returns a handle; call `notifyChanged()` whenever the data changes outside the inspector so connected views re-run, or hand the plugin a bridge to the source's own change signal via `subscribe`:
+
+```ts
+const handle = registerDataSource({
+  id: 'my-plugin:state',
+  title: 'My plugin state',
+  data: () => store,
+  writable: true, // opt-in: the inspector may mutate the live object
+  subscribe: (notify) => { // optional: push the source's own change signal
+    store.on('change', notify)
+    return () => store.off('change', notify)
+  },
+})
+
+handle.notifyChanged() // or notify imperatively
+```
+
 ## Mount
 
 ```ts

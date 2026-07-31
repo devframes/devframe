@@ -10,6 +10,7 @@ export const sampleSources: DataSourceMeta[] = [
     description: 'Runtime context, OS and process info, plus a playground graph.',
     icon: 'i-ph:cube-duotone',
     static: false,
+    writable: true,
     queries: [
       { query: 'playground.requests.entries.mapEntries().value.sort(hits desc)', title: 'Top requests' },
       { query: 'playground.build.modules.[sizeKb > 80].({ id, sizeKb })', title: 'Heavy modules' },
@@ -21,6 +22,7 @@ export const sampleSources: DataSourceMeta[] = [
     description: 'The production module graph from the last build.',
     icon: 'i-ph:package-duotone',
     static: true,
+    writable: false,
   },
 ]
 

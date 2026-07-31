@@ -27,6 +27,7 @@
  * ```
  */
 import type { DataSourceMeta, Query } from '../engine/contract'
+import { diagnostics } from '../node/diagnostics'
 
 export interface DataSourceEntry {
   /** Unique id — namespace it with your plugin id (`my-plugin:thing`). */
@@ -46,17 +47,40 @@ export interface DataSourceEntry {
    * value is memoized (default `false`).
    */
   static?: boolean
+  /**
+   * Opt this source into live edits (default `false`): connected inspectors
+   * may mutate the resolved object in place through the `write` RPC.
+   * Contradicts `static: true` — a memoized snapshot is read-only, so the
+   * combination reports a diagnostic and stays read-only.
+   */
+  writable?: boolean
+  /**
+   * Bridge the source's own change signal: called with a `notify` function
+   * that broadcasts a `data:changed` event to connected clients (same signal
+   * a successful `write` emits). Return a dispose function to unhook; it runs
+   * when the source is unregistered or replaced.
+   */
+  subscribe?: (notify: () => void) => (() => void) | void
   /** Suggested queries, surfaced read-only next to saved ones. */
   queries?: Query[]
 }
 
+/** Handle returned by `registerDataSource` — notify clients or unregister. */
+export interface DataSourceHandle {
+  /** Broadcast that this source's data changed, so connected UIs re-run. */
+  notifyChanged: () => void
+  /** Remove this source from the registry. */
+  unregister: () => void
+}
+
 /** The service provided on `ctx.services` (same store as the module API). */
 export interface DataSourcesService {
-  register: (entry: DataSourceEntry) => () => void
+  register: (entry: DataSourceEntry) => DataSourceHandle
   unregister: (id: string) => void
   list: () => DataSourceMeta[]
   get: (id: string) => DataSourceEntry | undefined
   onChanged: (listener: () => void) => () => void
+  onDataChanged: (listener: (sourceId: string) => void) => () => void
 }
 
 /** Id under which the registry is provided on `ctx.services`. */
@@ -72,6 +96,9 @@ interface RegistryStore {
   entries: Map<string, DataSourceEntry>
   staticCache: Map<string, Promise<unknown>>
   listeners: Set<() => void>
+  dataListeners: Set<(sourceId: string) => void>
+  /** Dispose functions for wired `entry.subscribe` hooks, per source id. */
+  subscriptions: Map<string, () => void>
 }
 
 const GLOBAL_KEY = Symbol.for('devframes:plugin:data-inspector:registry@1')
@@ -80,9 +107,12 @@ function store(): RegistryStore {
   const holder = globalThis as Record<PropertyKey, unknown>
   let value = holder[GLOBAL_KEY] as RegistryStore | undefined
   if (!value) {
-    value = { entries: new Map(), staticCache: new Map(), listeners: new Set() }
+    value = { entries: new Map(), staticCache: new Map(), listeners: new Set(), dataListeners: new Set(), subscriptions: new Map() }
     holder[GLOBAL_KEY] = value
   }
+  // Stores minted by an older copy of this module may predate these fields.
+  value.dataListeners ??= new Set()
+  value.subscriptions ??= new Map()
   return value
 }
 
@@ -91,17 +121,53 @@ function notify(registry: RegistryStore): void {
     listener()
 }
 
-/** Register (or replace) a data source. Returns an unregister function. */
-export function registerDataSource(entry: DataSourceEntry): () => void {
+/** Broadcast that a source's data changed to every data-changed listener. */
+export function notifyDataSourceChanged(id: string): void {
   const registry = store()
+  for (const listener of registry.dataListeners)
+    listener(id)
+}
+
+/** Effective writability of an entry: opt-in, and never on a static source. */
+export function isWritableEntry(entry: DataSourceEntry): boolean {
+  return (entry.writable ?? false) && !entry.static
+}
+
+function unwireSubscription(registry: RegistryStore, id: string): void {
+  const dispose = registry.subscriptions.get(id)
+  if (dispose) {
+    registry.subscriptions.delete(id)
+    try {
+      dispose()
+    }
+    catch {}
+  }
+}
+
+/** Register (or replace) a data source. Returns a handle to the registration. */
+export function registerDataSource(entry: DataSourceEntry): DataSourceHandle {
+  const registry = store()
+  if (entry.static && entry.writable)
+    diagnostics.DP_DATA_INSPECTOR_0004({ id: entry.id })
+  unwireSubscription(registry, entry.id)
   registry.entries.set(entry.id, entry)
   registry.staticCache.delete(entry.id)
+  const notifyChanged = (): void => notifyDataSourceChanged(entry.id)
+  if (entry.subscribe) {
+    const dispose = entry.subscribe(notifyChanged)
+    if (dispose)
+      registry.subscriptions.set(entry.id, dispose)
+  }
   notify(registry)
-  return () => unregisterDataSource(entry.id)
+  return {
+    notifyChanged,
+    unregister: () => unregisterDataSource(entry.id),
+  }
 }
 
 export function unregisterDataSource(id: string): void {
   const registry = store()
+  unwireSubscription(registry, id)
   if (registry.entries.delete(id)) {
     registry.staticCache.delete(id)
     notify(registry)
@@ -115,6 +181,7 @@ export function listDataSources(): DataSourceMeta[] {
     description: entry.description,
     icon: entry.icon,
     static: entry.static ?? false,
+    writable: isWritableEntry(entry),
     queries: entry.queries,
   }))
 }
@@ -150,9 +217,23 @@ export function onDataSourcesChanged(listener: () => void): () => void {
   }
 }
 
+/**
+ * Subscribe to data-changed notifications (writes, `notifyChanged` handles,
+ * `subscribe` bridges). The listener receives the source id.
+ */
+export function onDataSourceDataChanged(listener: (sourceId: string) => void): () => void {
+  const registry = store()
+  registry.dataListeners.add(listener)
+  return () => {
+    registry.dataListeners.delete(listener)
+  }
+}
+
 /** Drop every registration and cache — test isolation helper. */
 export function resetDataSources(): void {
   const registry = store()
+  for (const id of [...registry.subscriptions.keys()])
+    unwireSubscription(registry, id)
   registry.entries.clear()
   registry.staticCache.clear()
   notify(registry)
@@ -166,5 +247,6 @@ export function createDataSourcesService(): DataSourcesService {
     list: listDataSources,
     get: getDataSource,
     onChanged: onDataSourcesChanged,
+    onDataChanged: onDataSourceDataChanged,
   }
 }

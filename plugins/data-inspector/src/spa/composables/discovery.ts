@@ -11,7 +11,7 @@ import type { ColorScheme } from './scheme'
 import { ViewModel } from '@discoveryjs/discovery'
 import discoveryCss from '@discoveryjs/discovery/dist/discovery.css?inline'
 import { onMounted, onUnmounted, shallowRef, watch } from 'vue'
-import { decodeExpandHref, keyBadges, objectBadges, prepareForDisplay } from './display-transform'
+import { childNodePaths, decodeEditHref, decodeExpandHref, encodeEditHref, keyBadges, nodePaths, objectBadges, prepareForDisplay } from './display-transform'
 
 // Bridge discovery's theme custom props to the design tokens (see style.css
 // for the `.di-result-host` values that flip with `.dark`), zero out the
@@ -50,6 +50,18 @@ const themeBridge = `
   }
   .di-type-lazy.di-lazy-loading { cursor: progress; opacity: 0.6; }
   .di-type-lazy.di-lazy-error { --di-badge-color: #c25577; }
+
+  /* Edit affordance on writable-source nodes: quiet until hovered. */
+  .view-struct .di-type-edit {
+    --di-badge-color: #5f9e6e;
+    cursor: pointer;
+    text-decoration: none;
+    opacity: 0.3;
+  }
+  .view-struct .di-type-edit:hover {
+    opacity: 1;
+    background: color-mix(in srgb, var(--di-badge-color) 26%, transparent) !important;
+  }
 
   /* Lazily fetched subtree, spliced in below its truncation marker. */
   .di-lazy-children {
@@ -126,16 +138,53 @@ export interface DiscoveryLazyExpand {
   onExpand: (path: NodePath) => Promise<unknown>
 }
 
+export interface DiscoveryEdit {
+  /** Whether editing currently applies (writable source + identity view). */
+  enabled: () => boolean
+  /** A node's edit affordance was clicked; open the edit panel at `path`. */
+  onEdit: (path: NodePath) => void
+}
+
 export function useDiscoveryViewer(
   container: Readonly<ShallowRef<HTMLElement | null>>,
   scheme: Ref<ColorScheme>,
   viewConfig: Record<string, unknown> = { view: 'struct', expanded: 2 },
   actions: DiscoveryQueryActions = {},
   lazy?: DiscoveryLazyExpand,
+  edit?: DiscoveryEdit,
 ) {
   const host = shallowRef<ViewModel | null>(null)
   let pendingData: { data: unknown } | null = null
-  const structConfig: Record<string, unknown> = { annotations: [typeAnnotation], ...viewConfig }
+
+  /**
+   * Pencil-link badge on every display node whose source `NodePath` the
+   * display transform recorded (writable source, identity view only).
+   */
+  function editAnnotation(value: unknown, context?: AnnotationContext): AnnotationBadge | undefined {
+    if (!edit?.enabled())
+      return undefined
+    let path: NodePath | undefined
+    if (value && typeof value === 'object') {
+      path = nodePaths.get(value as object)
+    }
+    else {
+      const parent = context?.host
+      if (parent && typeof parent === 'object' && context?.key !== undefined)
+        path = childNodePaths.get(parent as object)?.[context.key]
+    }
+    if (!path)
+      return undefined
+    return {
+      place: 'after',
+      style: 'badge',
+      text: '✎',
+      className: 'di-type-badge di-type-edit',
+      href: encodeEditHref(path),
+      tooltip: { content: 'text:"Edit this value"' },
+    }
+  }
+
+  const structConfig: Record<string, unknown> = { annotations: [typeAnnotation, editAnnotation], ...viewConfig }
 
   /**
    * Delegate clicks on the "load deeper" link badges the display transform
@@ -170,7 +219,7 @@ export function useDiscoveryViewer(
           const childrenEl = document.createElement('div')
           childrenEl.className = 'di-lazy-children'
           anchorLine(link).after(childrenEl)
-          vm.view.render(childrenEl, structConfig as never, prepareForDisplay(subtree, path))
+          vm.view.render(childrenEl, structConfig as never, prepareForDisplay(subtree, path, edit?.enabled() ?? false))
         })
         .catch((error: unknown) => {
           link.classList.remove('di-lazy-loading')
@@ -180,6 +229,22 @@ export function useDiscoveryViewer(
           errorEl.textContent = error instanceof Error ? error.message : String(error)
           anchorLine(link).after(errorEl)
         })
+    })
+  }
+
+  /** Delegate clicks on the pencil badges to the edit panel opener. */
+  function wireEdit(el: HTMLElement, onEdit: (path: NodePath) => void): void {
+    el.addEventListener('click', (event) => {
+      const link = event.composedPath().find(
+        (node): node is HTMLAnchorElement => node instanceof HTMLElement && node.matches('a.di-type-edit'),
+      )
+      if (!link)
+        return
+      event.preventDefault()
+      event.stopPropagation()
+      const path = decodeEditHref(link.getAttribute('href') ?? '')
+      if (path)
+        onEdit(path)
     })
   }
 
@@ -195,6 +260,8 @@ export function useDiscoveryViewer(
     vm.page.define('default', structConfig as never)
     if (lazy)
       wireLazyExpand(container.value, vm, lazy.onExpand)
+    if (edit)
+      wireEdit(container.value, edit.onEdit)
     // Opting into discovery's built-in query actions makes the struct view's
     // per-value actions popup offer "query this key" entries; the callbacks
     // receive a ready-made jora path (host.pathToQuery).

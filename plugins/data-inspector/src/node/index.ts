@@ -1,10 +1,17 @@
 import type { DevframeNodeContext } from 'devframe/types'
-import { createDataSourcesService, DATA_SOURCES_SERVICE_ID, getDataSource, onDataSourcesChanged, registerDataSource } from '../registry/index'
+import { createDataSourcesService, DATA_SOURCES_SERVICE_ID, getDataSource, onDataSourceDataChanged, onDataSourcesChanged, registerDataSource } from '../registry/index'
 import { serverFunctions } from '../rpc/index'
 import { createExampleDataSource, EXAMPLE_SOURCE_ID } from './example-source'
 
 /** Broadcast whenever the source registry changes (register/unregister). */
 export const SOURCES_CHANGED_EVENT = 'devframes:plugin:data-inspector:sources:changed'
+
+/**
+ * Broadcast whenever a source's DATA changes — a successful `write`, a
+ * `notifyChanged()` handle call, or a source's own `subscribe` bridge.
+ * Carries the source id so clients refresh only the affected view.
+ */
+export const DATA_CHANGED_EVENT = 'devframes:plugin:data-inspector:data:changed'
 
 export interface SetupDataInspectorOptions {
   /** Register the built-in example source (default `true`). */
@@ -34,7 +41,11 @@ export function setupDataInspector(ctx: DevframeNodeContext, options: SetupDataI
     registerDataSource(createExampleDataSource(ctx))
 
   onDataSourcesChanged(() => {
-    ctx.rpc.broadcast(SOURCES_CHANGED_EVENT as never)
+    void ctx.rpc.broadcast({ method: SOURCES_CHANGED_EVENT, args: [] } as never)
+  })
+
+  onDataSourceDataChanged((sourceId) => {
+    void ctx.rpc.broadcast({ method: DATA_CHANGED_EVENT, args: [sourceId] } as never)
   })
 }
 

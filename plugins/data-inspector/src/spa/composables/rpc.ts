@@ -24,6 +24,8 @@ import type {
   SaveQueryInput,
   SkeletonOutcome,
   SuggestOutcome,
+  WriteOutcome,
+  WriteRequest,
 } from '../../engine'
 import { connectDevframe } from 'devframe/client'
 import { reactive, shallowRef } from 'vue'
@@ -55,8 +57,12 @@ export interface DataBackend {
   savedList: () => Promise<SavedQuery[]>
   savedSave: (input: SaveQueryInput) => Promise<SavedQuery>
   savedDelete: (id: string, scope: SavedQueryScope) => Promise<void>
+  /** Mutate a writable source's live object (rpc mode only). */
+  write: (sourceId: string, request: WriteRequest, options: FilterOptions) => Promise<WriteOutcome>
   /** Fires when the server's source registry changes (rpc mode only). */
   onSourcesChanged: (listener: () => void) => void
+  /** Fires when a source's data changes (writes, server-side notifications). */
+  onDataChanged: (listener: (sourceId: string) => void) => void
 }
 
 const backendRef = shallowRef<DataBackend | null>(null)
@@ -91,10 +97,21 @@ function createRpcBackend(client: DevframeRpcClient): DataBackend {
     savedDelete: async (id, scope) => {
       await call('devframes:plugin:data-inspector:saved:delete', id, scope)
     },
+    write: (sourceId, request, options) =>
+      call<WriteOutcome>('devframes:plugin:data-inspector:write', sourceId, request, options),
     onSourcesChanged: (listener) => {
       // The node side broadcasts this client event on register/unregister.
       client.client.register({
         name: 'devframes:plugin:data-inspector:sources:changed' as never,
+        type: 'event',
+        handler: listener,
+      } as never)
+    },
+    onDataChanged: (listener) => {
+      // The node side broadcasts this client event on writes and
+      // source-driven change notifications, with the source id as payload.
+      client.client.register({
+        name: 'devframes:plugin:data-inspector:data:changed' as never,
         type: 'event',
         handler: listener,
       } as never)
@@ -155,7 +172,11 @@ function createStaticBackend(dataset: StaticDataset): DataBackend {
     async savedDelete() {
       throw new Error('saved queries are unavailable in static mode')
     },
+    async write() {
+      throw new Error('editing is unavailable in static mode')
+    },
     onSourcesChanged: () => {}, // a static dataset never changes
+    onDataChanged: () => {},
   }
 }
 

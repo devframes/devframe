@@ -34,6 +34,8 @@ onMounted(async () => {
   await Promise.all([wb.loadSources(), savedApi.refresh()])
   // Sources registered/unregistered after boot refresh the picker live.
   backend().onSourcesChanged(() => void wb.loadSources())
+  // Data changes (writes, server-side notifications) refresh the active view.
+  backend().onDataChanged(sourceId => wb.handleDataChanged(sourceId))
   // An empty query runs `$`: the workbench lands on the full source object.
   void wb.runNow()
   void wb.loadSkeleton()
@@ -83,6 +85,8 @@ function saveCurrent(input: { title?: string, description?: string, scope: Saved
             :error="wb.serverError.value"
             :running="wb.running.value"
             :last-run-at="wb.lastRunAt.value"
+            :can-edit="wb.canEdit.value"
+            :edit-hint="wb.editHint.value"
             :expand="wb.expandNode"
             @rerun="wb.runNow()"
             @query-subquery="wb.applySubquery($event)"

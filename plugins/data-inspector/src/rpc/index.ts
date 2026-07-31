@@ -5,6 +5,7 @@ import { savedDelete, savedList, savedSave } from './functions/saved'
 import { skeleton } from './functions/skeleton'
 import { sources } from './functions/sources'
 import { suggest } from './functions/suggest'
+import { write } from './functions/write'
 
 /**
  * The RPC functions registered by the data-inspector plugin.
@@ -19,6 +20,7 @@ export const serverFunctions = [
   savedList,
   savedSave,
   savedDelete,
+  write,
 ] as const
 
 declare module 'devframe' {

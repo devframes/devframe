@@ -13,6 +13,7 @@ export declare function setupDataInspector(_: DevframeNodeContext, _?: SetupData
 // #endregion
 
 // #region Variables
+export declare const DATA_CHANGED_EVENT: string;
 export declare const EXAMPLE_SOURCE_ID: string;
 export declare const serverFunctions: readonly [{
   name: "devframes:plugin:data-inspector:sources";
@@ -156,6 +157,20 @@ export declare const serverFunctions: readonly [{
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, scope: SavedQueryScope], Promise<boolean>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, scope: SavedQueryScope], Promise<boolean>>> | undefined;
+}, {
+  name: "devframes:plugin:data-inspector:write";
+  type?: "action" | undefined;
+  cacheable?: boolean;
+  args?: undefined;
+  returns?: undefined;
+  jsonSerializable?: boolean;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[sourceId: string, request: WriteRequest, options?: WriteApplyOptions | undefined], Promise<WriteOutcome>>>) | undefined;
+  handler?: ((sourceId: string, request: WriteRequest, options?: WriteApplyOptions | undefined) => Promise<WriteOutcome>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[sourceId: string, request: WriteRequest, options?: WriteApplyOptions | undefined], Promise<WriteOutcome>, import("devframe").DevframeNodeContext> | undefined;
+  snapshot?: boolean;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[sourceId: string, request: WriteRequest, options?: WriteApplyOptions | undefined], Promise<WriteOutcome>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[sourceId: string, request: WriteRequest, options?: WriteApplyOptions | undefined], Promise<WriteOutcome>>> | undefined;
 }];
 export declare const SOURCES_CHANGED_EVENT: string;
 // #endregion

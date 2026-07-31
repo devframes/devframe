@@ -7,10 +7,10 @@
  * An empty query runs `$` (the root), so every source lands on a full view.
  */
 import type { InjectionKey } from 'vue'
-import type { DataSourceMeta, FilterOptions, NodePath, QueryOutcome, QueryStats, SkeletonOutcome, SuggestItem, SuggestOutcome } from '../../engine'
+import type { DataSourceMeta, FilterOptions, NodePath, QueryOutcome, QueryStats, SkeletonOutcome, SuggestItem, SuggestOutcome, WriteOutcome, WriteRequest } from '../../engine'
 import jora from 'jora'
 import { computed, inject, reactive, ref, shallowRef, watch } from 'vue'
-import { backend } from './rpc'
+import { backend, connection } from './rpc'
 
 export type SyntaxState
   = | { kind: 'ok' }
@@ -160,6 +160,31 @@ export function useWorkbench() {
 
   const activeSource = computed(() => sources.value.find(s => s.id === sourceId.value))
 
+  /**
+   * The result maps 1:1 onto the live source only for the identity query —
+   * a derived jora result (map/group/...) has no address back into the
+   * source, so edit paths are only provable on the root view.
+   */
+  const isIdentityQuery = computed(() => {
+    const text = query.value.trim()
+    return !text || text === '$'
+  })
+
+  /** Live edits apply: rpc mode, a writable source, and the identity view. */
+  const canEdit = computed(() =>
+    connection.mode === 'rpc' && !!activeSource.value?.writable && isIdentityQuery.value)
+
+  /** Why editing is absent right now — drives the viewer's lock hint. */
+  const editHint = computed<'readonly-source' | 'derived-view' | null>(() => {
+    if (connection.mode !== 'rpc' || !activeSource.value)
+      return null
+    if (!activeSource.value.writable)
+      return 'readonly-source'
+    if (!isIdentityQuery.value)
+      return 'derived-view'
+    return null
+  })
+
   async function loadSources(): Promise<void> {
     sources.value = await backend().sources()
     if (!sourceId.value || !sources.value.some(s => s.id === sourceId.value))
@@ -278,6 +303,48 @@ export function useWorkbench() {
     if (!outcome.ok)
       throw new Error(`${outcome.error.name}: ${outcome.error.message}`)
     return outcome.result
+  }
+
+  /**
+   * Apply one edit to the live source and refresh the whole view on success
+   * (the query result AND the skeleton reflect reality immediately). Returns
+   * the outcome so the edit panel can surface a failure inline.
+   */
+  async function applyEdit(request: WriteRequest): Promise<WriteOutcome> {
+    if (!sourceId.value)
+      return { ok: false, error: { name: 'NoSource', message: 'no source selected' } }
+    let outcome: WriteOutcome
+    try {
+      // Only excludeFunctions shifts array indices server-side; thread it so
+      // `['i', n]` steps line up with what is rendered.
+      outcome = await backend().write(sourceId.value, request, { excludeFunctions: settings.excludeFunctions })
+    }
+    catch (error) {
+      return { ok: false, error: { name: 'RpcError', message: error instanceof Error ? error.message : String(error) } }
+    }
+    if (outcome.ok) {
+      void runNow()
+      void loadSkeleton()
+    }
+    return outcome
+  }
+
+  // ── data-changed reactions (writes elsewhere, server notifications) ─
+  // Auto re-run behind a trailing throttle so bursts from a chatty source
+  // collapse into one refresh.
+  const DATA_CHANGED_THROTTLE = 300
+  let dataChangedTimer: ReturnType<typeof setTimeout> | undefined
+
+  function handleDataChanged(changedSourceId: string): void {
+    if (changedSourceId !== sourceId.value || dataChangedTimer)
+      return
+    dataChangedTimer = setTimeout(() => {
+      dataChangedTimer = undefined
+      if (running.value || syntax.value.kind === 'error')
+        return
+      void runNow()
+      void loadSkeleton()
+    }, DATA_CHANGED_THROTTLE)
   }
 
   // ── skeleton: what data are available (query-independent) ──────────
@@ -425,6 +492,11 @@ export function useWorkbench() {
     skeleton,
     skeletonError,
     skeletonLoading,
+    isIdentityQuery,
+    canEdit,
+    editHint,
+    applyEdit,
+    handleDataChanged,
     loadSources,
     loadSkeleton,
     expandNode,

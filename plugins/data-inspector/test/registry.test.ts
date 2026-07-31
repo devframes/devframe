@@ -3,6 +3,7 @@ import {
   createDataSourcesService,
   getDataSource,
   listDataSources,
+  onDataSourceDataChanged,
   onDataSourcesChanged,
   registerDataSource,
   resetDataSources,
@@ -14,10 +15,10 @@ afterEach(() => resetDataSources())
 
 describe('data source registry (process-global)', () => {
   it('registers, lists, gets and unregisters', () => {
-    const dispose = registerDataSource({ id: 'a:x', title: 'X', data: 1 })
-    expect(listDataSources()).toMatchObject([{ id: 'a:x', title: 'X', static: false }])
+    const handle = registerDataSource({ id: 'a:x', title: 'X', data: 1 })
+    expect(listDataSources()).toMatchObject([{ id: 'a:x', title: 'X', static: false, writable: false }])
     expect(getDataSource('a:x')?.title).toBe('X')
-    dispose()
+    handle.unregister()
     expect(listDataSources()).toEqual([])
   })
 
@@ -92,6 +93,60 @@ describe('data source registry (process-global)', () => {
     expect(listDataSources().map(s => s.id)).toContain('svc:x')
     service.unregister('svc:x')
     expect(listDataSources()).toEqual([])
+  })
+
+  it('writable is opt-in and mirrored onto the meta', () => {
+    registerDataSource({ id: 'ro', title: 'ro', data: {} })
+    registerDataSource({ id: 'rw', title: 'rw', data: {}, writable: true })
+    const byId = Object.fromEntries(listDataSources().map(s => [s.id, s]))
+    expect(byId.ro.writable).toBe(false)
+    expect(byId.rw.writable).toBe(true)
+  })
+
+  it('static + writable warns and stays read-only', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      registerDataSource({ id: 'st', title: 'st', static: true, writable: true, data: () => ({}) })
+      expect(warn).toHaveBeenCalled()
+      expect(warn.mock.calls.flat().map(String).join('\n')).toContain('DP_DATA_INSPECTOR_0004')
+      expect(listDataSources()[0].writable).toBe(false)
+    }
+    finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('the handle broadcasts data-changed to subscribed listeners', () => {
+    const changes: string[] = []
+    const off = onDataSourceDataChanged(id => changes.push(id))
+    const handle = registerDataSource({ id: 'a:x', title: 'X', data: {} })
+    handle.notifyChanged()
+    handle.notifyChanged()
+    expect(changes).toEqual(['a:x', 'a:x'])
+    off()
+    handle.notifyChanged()
+    expect(changes).toHaveLength(2)
+  })
+
+  it('wires entry.subscribe to the data-changed signal and disposes it', () => {
+    const changes: string[] = []
+    const off = onDataSourceDataChanged(id => changes.push(id))
+    let push: (() => void) | undefined
+    const dispose = vi.fn()
+    registerDataSource({
+      id: 'sub',
+      title: 'sub',
+      data: {},
+      subscribe: (notify) => {
+        push = notify
+        return dispose
+      },
+    })
+    push!()
+    expect(changes).toEqual(['sub'])
+    unregisterDataSource('sub')
+    expect(dispose).toHaveBeenCalledOnce()
+    off()
   })
 })
 

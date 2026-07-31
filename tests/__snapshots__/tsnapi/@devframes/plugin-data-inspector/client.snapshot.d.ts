@@ -8,6 +8,7 @@ export interface DataSourceMeta {
   description?: string;
   icon?: string;
   static: boolean;
+  writable: boolean;
   queries?: Query[];
 }
 export interface FilterOptions {

@@ -85,5 +85,5 @@ export function createDataInspectorDevframe(options: DataInspectorDevframeOption
 }
 
 export default createDataInspectorDevframe()
-export type { DataSourceEntry, DataSourcesService } from './registry/index'
+export type { DataSourceEntry, DataSourceHandle, DataSourcesService } from './registry/index'
 export { DATA_SOURCES_SERVICE_ID, registerDataSource } from './registry/index'

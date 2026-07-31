@@ -105,6 +105,9 @@ export function createExampleDataSource(ctx?: DevframeNodeContext): DataSourceEn
     description: 'Devframe context, OS and process info, plus a playground graph.',
     icon: 'i-ph:flask-duotone',
     data: () => data ??= createExampleData(ctx),
+    // The factory memoizes, so live edits stick between queries — the
+    // playground doubles as a demo of writable sources.
+    writable: true,
     queries: [
       ...(ctx
         ? [{

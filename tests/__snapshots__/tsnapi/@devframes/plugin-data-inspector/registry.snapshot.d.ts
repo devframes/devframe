@@ -9,23 +9,33 @@ export interface DataSourceEntry {
   icon?: string;
   data: unknown | (() => unknown | Promise<unknown>);
   static?: boolean;
+  writable?: boolean;
+  subscribe?: (_: () => void) => (() => void) | void;
   queries?: Query[];
 }
+export interface DataSourceHandle {
+  notifyChanged: () => void;
+  unregister: () => void;
+}
 export interface DataSourcesService {
-  register: (_: DataSourceEntry) => () => void;
+  register: (_: DataSourceEntry) => DataSourceHandle;
   unregister: (_: string) => void;
   list: () => DataSourceMeta[];
   get: (_: string) => DataSourceEntry | undefined;
   onChanged: (_: () => void) => () => void;
+  onDataChanged: (_: (_: string) => void) => () => void;
 }
 // #endregion
 
 // #region Functions
 export declare function createDataSourcesService(): DataSourcesService;
 export declare function getDataSource(_: string): DataSourceEntry | undefined;
+export declare function isWritableEntry(_: DataSourceEntry): boolean;
 export declare function listDataSources(): DataSourceMeta[];
+export declare function notifyDataSourceChanged(_: string): void;
+export declare function onDataSourceDataChanged(_: (_: string) => void): () => void;
 export declare function onDataSourcesChanged(_: () => void): () => void;
-export declare function registerDataSource(_: DataSourceEntry): () => void;
+export declare function registerDataSource(_: DataSourceEntry): DataSourceHandle;
 export declare function resetDataSources(): void;
 export declare function resolveSourceData(_: DataSourceEntry): Promise<unknown>;
 export declare function unregisterDataSource(_: string): void;

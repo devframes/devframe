@@ -3,14 +3,14 @@
  */
 // #region Functions
 export function createDataInspectorDevframe(_) {}
+export function registerDataSource(_) {}
+// #endregion
+
+// #region Variables
+export var DATA_SOURCES_SERVICE_ID /* const */
 // #endregion
 
 // #region Default Export
 var _default
 export default _default
-// #endregion
-
-// #region Other
-export { DATA_SOURCES_SERVICE_ID }
-export { registerDataSource }
 // #endregion

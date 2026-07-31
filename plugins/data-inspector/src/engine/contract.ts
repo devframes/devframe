@@ -47,9 +47,42 @@ export interface DataSourceMeta {
   icon?: string
   /** Data never changes; the server memoizes the resolved value. */
   static: boolean
+  /** The source opted into live edits through the `write` RPC. */
+  writable: boolean
   /** Suggested queries provided by the source (shown read-only). */
   queries?: Query[]
 }
+
+/**
+ * A value carried inside a write request. JSON can't express `undefined`,
+ * so the payload is discriminated instead of raw.
+ */
+export type WriteValue
+  = | { kind: 'json', value: unknown }
+    | { kind: 'undefined' }
+
+/**
+ * One mutation of a writable source's live object. Ops are container-generic:
+ * the server resolves the path and dispatches on what it finds there
+ * (object / array / Map / Set).
+ *
+ *   - `set`    — replace the value at `path`.
+ *   - `delete` — remove the node at `path` from its container.
+ *   - `add`    — `path` addresses the CONTAINER; insert `key`/`value`
+ *                (objects and Maps need `key`; arrays take an optional index
+ *                `key` to splice at, else append; Sets take just `value`).
+ *   - `rename` — re-key the node at `path` under `key`, atomically
+ *                (objects and Maps; the renamed key lands last).
+ */
+export type WriteRequest
+  = | { op: 'set', path: NodePath, value: WriteValue }
+    | { op: 'delete', path: NodePath }
+    | { op: 'add', path: NodePath, key?: WriteValue, value: WriteValue }
+    | { op: 'rename', path: NodePath, key: WriteValue }
+
+export type WriteOutcome
+  = | { ok: true }
+    | { ok: false, error: { name: string, message: string } }
 
 /** One completion candidate: replace [from, to) with `value`. */
 export interface SuggestItem {
