@@ -2,6 +2,7 @@ import type { AssetsServer, TestClient } from './_utils'
 import { Buffer } from 'node:buffer'
 import fsp from 'node:fs/promises'
 import { join } from 'node:path'
+import process from 'node:process'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { bootClient, call, cleanupTempDir, createTempDir, startAssetsServer } from './_utils'
 
@@ -163,8 +164,11 @@ describe('assets plugin', () => {
     expect(defs.has('devframes:plugin:assets:mkdir')).toBe(false)
   })
 
-  it('broadcasts a change event when a file is added on disk', async () => {
-    server = await startAssetsServer(dir)
+  // The one test that needs a live chokidar watcher. Skipped on Windows,
+  // where tearing down the watcher's native fs-watch handle crashes the
+  // vitest worker on Node 24/26; the behaviour is covered on Linux/macOS.
+  it.skipIf(process.platform === 'win32')('broadcasts a change event when a file is added on disk', async () => {
+    server = await startAssetsServer(dir, { watch: true })
     client = bootClient(server.port)
 
     let changed = false

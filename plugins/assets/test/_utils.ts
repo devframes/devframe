@@ -34,7 +34,10 @@ export async function startAssetsServer(
   dir: string,
   options: AssetsDevframeOptions = {},
 ): Promise<AssetsServer> {
-  const definition = createAssetsDevframe({ dir, ...options })
+  // Default the live file watcher off so tests don't spin up chokidar unless
+  // they explicitly exercise it — a lingering native fs-watch handle crashes
+  // the vitest worker on teardown on some platforms (Windows + Node 24/26).
+  const definition = createAssetsDevframe({ dir, watch: false, ...options })
   const host = '127.0.0.1'
   const port = await getPort({ host, random: true })
 
