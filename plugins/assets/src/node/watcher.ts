@@ -1,4 +1,5 @@
 import type { DevframeNodeContext } from 'devframe/types'
+import process from 'node:process'
 import { watch } from 'chokidar'
 import { debounce } from 'perfect-debounce'
 import { CHANGED_EVENT } from '../constants'
@@ -29,5 +30,18 @@ export function watchAssetsDir(ctx: DevframeNodeContext, dir: string): () => Pro
     .on('unlinkDir', () => void notify())
     .on('change', () => void notify())
 
-  return () => watcher.close()
+  return async () => {
+    await watcher.close()
+    // On Windows, closing a chokidar/fs.watch handle doesn't guarantee the
+    // OS has fully retired the outstanding ReadDirectoryChangesW request —
+    // ftruncate/close returns before libuv's IOCP completion drains. If the
+    // watched directory is deleted immediately after (as every test's
+    // `afterEach` does), that stale completion can reach
+    // `uv__fs_event_process` after the fact and trip its directory-prefix
+    // sanity check, hard-crashing the process with
+    // `Assertion failed: !_wcsnicmp(filename, dir, dirlen)` in fs-event.c.
+    // A short grace period gives the pending I/O time to actually settle.
+    if (process.platform === 'win32')
+      await new Promise(resolve => setTimeout(resolve, 50))
+  }
 }
