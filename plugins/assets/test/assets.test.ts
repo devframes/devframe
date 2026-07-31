@@ -2,6 +2,7 @@ import type { AssetsServer, TestClient } from './_utils'
 import { Buffer } from 'node:buffer'
 import fsp from 'node:fs/promises'
 import { join } from 'node:path'
+import process from 'node:process'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { bootClient, call, cleanupTempDir, createTempDir, startAssetsServer } from './_utils'
 
@@ -179,7 +180,19 @@ describe('assets plugin', () => {
   // The one test that needs the live watcher — every other test above opts
   // out of it (`watch: false`) so this is the only native fs watch handle
   // this file ever opens, close()s, and deletes the directory of.
-  it('broadcasts a change event when a file is added on disk', async () => {
+  //
+  // Skipped on Windows: opening a real `ReadDirectoryChangesW` watch and
+  // then closing + deleting its directory shortly after is a known
+  // trigger for a native libuv assertion on Windows CI runners —
+  // `Assertion failed: !_wcsnicmp(filename, dir, dirlen), file
+  // src\win\fs-event.c, line 72` — that hard-aborts the process outright
+  // (no JS-catchable error). It isn't reliably avoidable with a delay: it
+  // reproduces intermittently regardless of how long the teardown waits,
+  // consistent with Windows Defender's real-time scanning racing the
+  // directory watch/delete (a widely reported Node/libuv interaction on
+  // hosted Windows runners). The live-watcher behavior is still fully
+  // covered on Linux/macOS.
+  it.skipIf(process.platform === 'win32')('broadcasts a change event when a file is added on disk', async () => {
     server = await startAssetsServer(dir)
     client = bootClient(server.port)
 
