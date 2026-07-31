@@ -1,21 +1,16 @@
-import type { GenericSchema } from 'valibot'
+import type { StandardJSONSchemaV1, StandardSchemaV1 } from '@standard-schema/spec'
 import { toJsonSchema } from '@valibot/to-json-schema'
 
 const FALLBACK_OBJECT_SCHEMA = Object.freeze({ type: 'object', additionalProperties: true })
 
 /**
- * Convert a valibot return schema to JSON Schema.
+ * Convert a Standard Schema return schema to JSON Schema.
  * @internal
  */
-export function valibotReturnToJsonSchema(schema: GenericSchema | undefined): unknown {
+export function returnToJsonSchema(schema: StandardSchemaV1 | undefined): unknown {
   if (!schema)
     return undefined
-  try {
-    return toJsonSchema(schema as any)
-  }
-  catch {
-    return FALLBACK_OBJECT_SCHEMA
-  }
+  return safeToJsonSchema(schema)
 }
 
 /**
@@ -27,8 +22,8 @@ export function valibotReturnToJsonSchema(schema: GenericSchema | undefined): un
  * as `{ type: 'object', properties: {} }`).
  * @internal
  */
-export function valibotArgsToJsonSchema(
-  args: readonly GenericSchema[] | undefined,
+export function argsToJsonSchema(
+  args: readonly StandardSchemaV1[] | undefined,
 ): { schema: unknown, unwrapped: boolean } {
   if (!args || args.length === 0)
     return { schema: { type: 'object', properties: {} }, unwrapped: false }
@@ -47,8 +42,8 @@ export function valibotArgsToJsonSchema(
     const key = `arg${i}`
     const s = safeToJsonSchema(args[i]!)
     properties[key] = s
-    // Conservatively mark every positional arg as required — the RPC
-    // layer validates against valibot anyway.
+    // Positional args carry no optionality signal at this layer, so every
+    // one is conservatively marked required.
     required.push(key)
   }
 
@@ -63,8 +58,13 @@ export function valibotArgsToJsonSchema(
   }
 }
 
-function safeToJsonSchema(schema: GenericSchema): unknown {
+type StandardSchemaProps = StandardSchemaV1['~standard'] & Partial<StandardJSONSchemaV1['~standard']>
+
+function safeToJsonSchema(schema: StandardSchemaV1): unknown {
+  const standard = schema['~standard'] as StandardSchemaProps
   try {
+    if (standard.jsonSchema)
+      return standard.jsonSchema.input({ target: 'draft-2020-12' })
     return toJsonSchema(schema as any)
   }
   catch {

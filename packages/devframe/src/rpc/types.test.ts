@@ -1,4 +1,5 @@
 /* eslint-disable unused-imports/no-unused-vars */
+import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type {
   RpcDefinitionsToFunctions,
   RpcFunctionDefinitionToFunction,
@@ -7,6 +8,18 @@ import type { AssertEqual } from './utils'
 import * as v from 'valibot'
 import { describe, it } from 'vitest'
 import { defineRpcFunction } from '.'
+
+/** Minimal Standard Schema implementation, for asserting inference works for any vendor. */
+function fakeSchema<Input>(): StandardSchemaV1<Input> {
+  return {
+    '~standard': {
+      version: 1,
+      vendor: 'fake',
+      validate: (value: unknown) => ({ value: value as Input }),
+      types: { input: undefined as Input, output: undefined as Input },
+    },
+  }
+}
 
 describe('rpcFunctionDefinitionToFunction', () => {
   it('should infer types from generic parameters when no schemas', () => {
@@ -73,6 +86,20 @@ describe('rpcFunctionDefinitionToFunction', () => {
 
     type Result = RpcFunctionDefinitionToFunction<typeof fn>
     type _Test = AssertEqual<Result, (arg_0: { id: string }) => string[]>
+  })
+
+  it('should infer types from a non-valibot Standard Schema', () => {
+    const fn = defineRpcFunction({
+      name: 'standardSchema',
+      args: [fakeSchema<string>(), fakeSchema<number>()],
+      returns: fakeSchema<boolean>(),
+      handler: (a, b) => {
+        return a.length > b
+      },
+    })
+
+    type Result = RpcFunctionDefinitionToFunction<typeof fn>
+    type _Test = AssertEqual<Result, (arg_0: string, arg_1: number) => boolean>
   })
 })
 

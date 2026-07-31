@@ -1,4 +1,4 @@
-import type { GenericSchema } from 'valibot'
+import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { InferArgsType, InferReturnType } from './utils'
 
 export type { BirpcFn, BirpcReturn } from 'birpc'
@@ -93,10 +93,10 @@ export interface RpcFunctionSetupResult<
   dump?: RpcDumpDefinition<ARGS, RETURN>
 }
 
-/** Valibot schema array for validating function arguments */
-export type RpcArgsSchema = readonly GenericSchema[]
-/** Valibot schema for validating function return value */
-export type RpcReturnSchema = GenericSchema
+/** Standard Schema array (valibot, zod, …) for validating function arguments */
+export type RpcArgsSchema = readonly StandardSchemaV1[]
+/** Standard Schema (valibot, zod, …) for validating function return value */
+export type RpcReturnSchema = StandardSchemaV1
 
 /**
  * Serialized representation of a thrown value in a dump record.
@@ -233,9 +233,9 @@ export type RpcFunctionDefinition<
         type?: TYPE
         /** Whether the function results should be cached */
         cacheable?: boolean
-        /** Valibot schema array for validating function arguments */
+        /** Standard Schema array (valibot, zod, …) for validating function arguments */
         args?: AS
-        /** Valibot schema for validating function return value */
+        /** Standard Schema (valibot, zod, …) for validating function return value */
         returns?: RS
         /**
          * Declares whether this function's args/return are JSON-serializable
@@ -281,9 +281,9 @@ export type RpcFunctionDefinition<
         type?: TYPE
         /** Whether the function results should be cached */
         cacheable?: boolean
-        /** Valibot schema array for validating function arguments */
+        /** Standard Schema array (valibot, zod, …) for validating function arguments */
         args: AS
-        /** Valibot schema for validating function return value */
+        /** Standard Schema (valibot, zod, …) for validating function return value */
         returns: RS
         /**
          * Declares whether this function's args/return are JSON-serializable
