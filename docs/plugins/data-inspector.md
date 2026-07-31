@@ -10,7 +10,7 @@ Package: `@devframes/plugin-data-inspector` · framework: **Vue + Vite**
 
 ## What it does
 
-- **Query workbench** — a CodeMirror jora editor with syntax highlighting and server-computed autocomplete; queries auto-run as you type, with a client-side syntax gate so malformed input never hits the wire. A toolbar copies the query, and the editor pairs with expand-all / collapse-all and copy-as-JSON controls over the results. Source, query, filters, and the auto-rerun setting persist in the URL, so any workbench state is shareable.
+- **Query workbench** — a CodeMirror jora editor with syntax highlighting and server-computed autocomplete; queries auto-run as you type, with a client-side syntax gate so malformed input never hits the wire. A toolbar copies the query, and the editor pairs with expand-all / collapse-all and copy-as-JSON controls over the results. Source, query, filters, and the auto-rerun setting persist in the URL hash, so any workbench state is shareable (see [Deep linking](#deep-linking)).
 - **Auto rerun** — an optional poller under the filters (`auto rerun every N seconds`) re-runs the current query against the live object on a fixed period, so a value that changes over time updates on its own. Ticks are skipped while a run is in flight or the query is syntactically broken.
 - **Result viewer** — results normalize to strict JSON (circulars become `$ref` markers; Maps, Sets, class instances, functions, and Dates get type badges) with per-query stats: jora / normalize / rpc timings, payload size, node count. The value-actions popup copies paths and turns any key into a query.
 - **Lazy expansion** — deep graphs return one level at a time: a node past the depth cap renders a `load deeper` link that fetches just that subtree with a fresh budget and splices it in place, so a huge object stays responsive and loads on demand.
@@ -69,6 +69,19 @@ ctx.services.whenAvailable('devframes:plugin:data-inspector:sources', (sources) 
 
 > [!WARNING]
 > Queries are eval-grade access to registered objects: jora can invoke any function reachable as an own property and fires own getters. Register live objects with that in mind, and keep inspector endpoints on loopback.
+
+## Deep linking
+
+The whole workbench state lives in the URL hash — `#source=<id>&query=<jora>` plus the filter and auto-rerun flags — so a copied link reproduces an exact query result. It's read on load and kept in sync (via `replaceState`) as you work, and a `hashchange` listener re-applies it on back/forward and manual edits. The handshake token rides the query string (`?devframe_auth_token=`) and is scrubbed on read, so it never lands in a link you share.
+
+Mounted in a hub, another dock can jump the user straight to a source through [dock activation](../guide/deep-linking#focusing-a-dock-inside-a-hub) — an activation targeting `devframes:plugin:data-inspector` with a `sourceId` selects that source, waiting for it to register if it hasn't yet:
+
+```ts
+await rpc.call('hub:docks:activate', {
+  dockId: 'devframes:plugin:data-inspector',
+  params: { sourceId: 'my-plugin:store' },
+})
+```
 
 ## Standalone
 

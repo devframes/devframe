@@ -64,9 +64,9 @@ function clampSeconds(value: number): number {
   return Math.min(MAX_AUTO_RERUN_SECONDS, Math.max(MIN_AUTO_RERUN_SECONDS, Math.round(value)))
 }
 
-/** Read the shareable workbench state from the page URL. */
+/** Read the shareable workbench state from the page URL hash. */
 function readUrlState(): { sourceId: string, query: string, filters: FilterOptions, autoRun: boolean, autoRunSeconds: number } {
-  const params = new URLSearchParams(location.search)
+  const params = new URLSearchParams(location.hash.replace(/^#/, ''))
   const filters: FilterOptions = {}
   for (const key of FILTER_KEYS) {
     if (params.get(key) === '1')
@@ -120,6 +120,11 @@ export function useWorkbench() {
   const autoRunSeconds = ref(initial.autoRunSeconds)
 
   // ── URL persistence: source, query, and filters stay shareable ──────
+  // State lives in the hash (`#source=…&query=…`) so a copied link carries the
+  // whole workbench without touching the query string the server handshake
+  // (`?devframe_auth_token=`) rides on. `replaceState` keeps every keystroke
+  // out of the history stack; the write is guarded so a no-op change (e.g. the
+  // debounced write after a `hashchange` re-apply) never rewrites the URL.
   let urlTimer: ReturnType<typeof setTimeout> | undefined
   function syncUrl(): void {
     clearTimeout(urlTimer)
@@ -137,9 +142,29 @@ export function useWorkbench() {
         params.set('autorun', '1')
         params.set('autorunSecs', String(autoRunSeconds.value))
       }
-      const search = params.toString()
-      history.replaceState(null, '', search ? `?${search}` : location.pathname)
+      const hash = params.toString()
+      if (location.hash.replace(/^#/, '') === hash)
+        return
+      history.replaceState(history.state, '', hash ? `#${hash}` : location.pathname + location.search)
     }, URL_SYNC_DEBOUNCE)
+  }
+
+  /**
+   * Re-apply the full workbench state from the URL hash — the live reaction to
+   * back/forward and manual address-bar edits (`hashchange`). Source is set
+   * first so its draft-restore runs before the shared query overwrites it; an
+   * unknown source id is left for `loadSources` to pick up. `replaceState`
+   * writes never fire `hashchange`, so this can't loop with `syncUrl`.
+   */
+  function applyUrlState(): void {
+    const next = readUrlState()
+    if (next.sourceId && next.sourceId !== sourceId.value && sources.value.some(s => s.id === next.sourceId))
+      sourceId.value = next.sourceId
+    query.value = next.query
+    for (const key of FILTER_KEYS)
+      settings[key] = next.filters[key] ?? false
+    autoRun.value = next.autoRun
+    autoRunSeconds.value = next.autoRunSeconds
   }
 
   const syntax = ref<SyntaxState>({ kind: 'ok' })
@@ -160,14 +185,37 @@ export function useWorkbench() {
 
   const activeSource = computed(() => sources.value.find(s => s.id === sourceId.value))
 
+  // A dock-activation focus (`focusSource`) that names a source not yet
+  // registered waits here until `loadSources` sees it arrive — then fires once.
+  let pendingFocusId: string | null = null
+
   async function loadSources(): Promise<void> {
     sources.value = await backend().sources()
+    if (pendingFocusId && sources.value.some(s => s.id === pendingFocusId)) {
+      sourceId.value = pendingFocusId
+      pendingFocusId = null
+    }
     if (!sourceId.value || !sources.value.some(s => s.id === sourceId.value))
       sourceId.value = sources.value[0]?.id ?? ''
     // A query arriving via the URL becomes the draft for its source, so the
     // source-switch restore below can never clobber a shared link.
     if (initial.query)
       saveDraft()
+  }
+
+  /**
+   * Select a source by id — the deep-link target of the hub's dock activation
+   * (`params.sourceId`). If the source isn't registered yet, remember it and
+   * converge the moment it appears (one-shot), mirroring the terminals dock.
+   */
+  function focusSource(id: string): void {
+    if (sources.value.some(s => s.id === id)) {
+      sourceId.value = id
+      pendingFocusId = null
+    }
+    else {
+      pendingFocusId = id
+    }
   }
 
   // ── auto-run with syntax gate + stale-drop ─────────────────────────
@@ -384,6 +432,10 @@ export function useWorkbench() {
   if (autoRun.value)
     restartAutoRerun()
 
+  // Live reaction: back/forward and manual hash edits re-apply the full state.
+  if (typeof window !== 'undefined')
+    window.addEventListener('hashchange', applyUrlState)
+
   // ── query composition helpers ──────────────────────────────────────
   /** Set the query to a single top-level key (from the data-shape panel). */
   function queryProp(key: string): void {
@@ -427,6 +479,7 @@ export function useWorkbench() {
     skeletonLoading,
     loadSources,
     loadSkeleton,
+    focusSource,
     expandNode,
     runNow,
     requestSuggestions,
