@@ -4,6 +4,7 @@ import type { StartedServer } from 'devframe/node'
 import type { ConnectionMeta, DevframeDefinition } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 import { defineHubRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
@@ -43,6 +44,24 @@ async function loadBuiltinPlugins(): Promise<DevframeDefinition[]> {
     ),
   )
   return mods.map(mod => mod.default as DevframeDefinition)
+}
+
+/**
+ * Load the assets plugin and point its managed directory at this Next app's
+ * `public/` (`src/client/public`) — the exact directory Next serves at `/`,
+ * so the tab's previews resolve to real host URLs. Loaded through the same
+ * bundler-ignored dynamic `import()` as the other plugins (its node code and
+ * `import.meta.url`-based SPA-dist lookup don't survive static bundling), and
+ * mounted with `watch: false` so no background file watcher lingers when the
+ * hub is booted in a short-lived context (e.g. the example's own test).
+ */
+async function loadAssetsDevframe(): Promise<DevframeDefinition> {
+  const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-assets')
+  // String path ops on the module path (not `new URL('../public', …)`, which
+  // Turbopack eagerly resolves as an asset import and fails on a directory) —
+  // `src/client/devframe/` → `src/client/public`, the dir Next serves at `/`.
+  const dir = join(dirname(fileURLToPath(import.meta.url)), '../public')
+  return (mod.createAssetsDevframe as (options: { dir: string, watch: boolean }) => DevframeDefinition)({ dir, watch: false })
 }
 
 /** URL base the a11y agent module is served under (same-origin, catch-all route). */
@@ -190,7 +209,7 @@ export async function nextDevframeHub(
 
   // Demo devframes alongside the dogfooded built-in plugin packages.
   const devframes = options.devframes
-    ?? [demoDevframe, demoDevframeB, ...await loadBuiltinPlugins()]
+    ?? [demoDevframe, demoDevframeB, ...await loadBuiltinPlugins(), await loadAssetsDevframe()]
 
   await context.messages.add({
     level: 'success',

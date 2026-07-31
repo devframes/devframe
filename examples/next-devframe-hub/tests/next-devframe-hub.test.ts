@@ -41,6 +41,8 @@ describe('next-devframe-hub (example)', () => {
     // The dogfooded built-in plugin packages mount their own docks.
     expect(dockIds).toContain('devframes_plugin_terminals')
     expect(dockIds).toContain('devframes_plugin_messages')
+    // The assets plugin is mounted with its dir pointed at Next's public/.
+    expect(dockIds).toContain('devframes_plugin_assets')
   })
 
   it('lists startup and demo messages through the kit-local RPC', async () => {

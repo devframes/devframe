@@ -1,0 +1,11 @@
+:root {
+  --color-primary: #3a6a45;
+  --color-surface: #ffffff;
+  --radius: 0.5rem;
+}
+
+.button {
+  background: var(--color-primary);
+  border-radius: var(--radius);
+  color: #fff;
+}

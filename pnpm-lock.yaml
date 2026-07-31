@@ -541,6 +541,9 @@ importers:
       '@devframes/plugin-a11y':
         specifier: workspace:*
         version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
       '@devframes/plugin-code-server':
         specifier: workspace:*
         version: link:../../plugins/code-server

@@ -95,7 +95,8 @@
         "@devframes/plugin-code-server#build",
         "@devframes/plugin-inspect#build",
         "@devframes/plugin-a11y#build",
-        "@devframes/plugin-messages#build"
+        "@devframes/plugin-messages#build",
+        "@devframes/plugin-assets#build"
       ],
       "outputs": ["src/client/.next/**", "!src/client/.next/cache/**"]
     },

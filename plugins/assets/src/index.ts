@@ -60,6 +60,14 @@ export interface AssetsDevframeOptions {
    */
   uploadExtensions?: readonly string[] | '*'
   /**
+   * Watch the managed directory in dev mode and push live listing updates.
+   * Enabled by default. Set `false` to skip the file watcher — useful when a
+   * host mounts the devframe in a short-lived or repeatedly-recreated
+   * context (tests, some SSR dev servers) where a background watcher isn't
+   * wanted.
+   */
+  watch?: boolean
+  /**
    * Require the trust handshake on the standalone server. Enabled by
    * default — this devframe can read, write, and delete real files.
    */
@@ -123,6 +131,7 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
         uploadExtensions: options.uploadExtensions ?? DEFAULT_ALLOWED_UPLOAD_EXTENSIONS,
         baseURL,
         serveStatic,
+        watch: options.watch ?? true,
       })
     },
   })

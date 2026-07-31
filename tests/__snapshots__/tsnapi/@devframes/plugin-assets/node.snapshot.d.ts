@@ -8,6 +8,7 @@ export interface SetupAssetsOptions {
   uploadExtensions: readonly string[] | '*';
   baseURL: string;
   serveStatic: boolean;
+  watch: boolean;
 }
 // #endregion
 

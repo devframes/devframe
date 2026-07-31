@@ -26,6 +26,7 @@ export interface AssetsDevframeOptions {
   port?: number;
   write?: boolean;
   uploadExtensions?: readonly string[] | '*';
+  watch?: boolean;
   auth?: boolean;
   build?: boolean;
 }

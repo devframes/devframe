@@ -25,6 +25,8 @@ export interface SetupAssetsOptions {
    * standalone CLI, which is its own host.
    */
   serveStatic: boolean
+  /** Start the live file watcher (dev mode only). */
+  watch: boolean
 }
 
 const watchers = new WeakMap<DevframeNodeContext, () => Promise<void>>()
@@ -69,7 +71,7 @@ export async function setupAssets(ctx: DevframeNodeContext, options: SetupAssets
       ctx.rpc.register(fn)
   }
 
-  if (ctx.mode === 'dev')
+  if (ctx.mode === 'dev' && options.watch)
     watchers.set(ctx, watchAssetsDir(ctx, options.dir))
 }
 
