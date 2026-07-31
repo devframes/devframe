@@ -1,0 +1,45 @@
+import type { DevframeNodeContext } from 'devframe/types'
+import fsp from 'node:fs/promises'
+import { createDefineWrapperWithContext } from 'devframe/rpc'
+import * as v from 'valibot'
+import { getAssetsContext } from '../../node/context'
+
+const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
+
+/** One request covers both single- and multi-select delete. */
+export const deleteAssets = defineAssetsRpc({
+  name: 'devframes:plugin:assets:delete',
+  type: 'action',
+  jsonSerializable: true,
+  args: [v.object({ paths: v.array(v.string()) })],
+  returns: v.object({ deleted: v.array(v.string()) }),
+  agent: {
+    title: 'Delete assets',
+    description: 'Delete one or more assets from the managed directory.',
+    safety: 'destructive',
+    tags: ['assets'],
+  },
+  setup: (ctx) => {
+    const assets = getAssetsContext(ctx)
+    return {
+      // See `list.ts` for why the async handler is cast.
+      handler: (async ({ paths }: { paths: string[] }): Promise<{ deleted: string[] }> => {
+        const deleted: string[] = []
+        for (const path of paths) {
+          const absolute = assets.resolvePath(path)
+          try {
+            await fsp.unlink(absolute)
+            deleted.push(path)
+          }
+          catch (error) {
+            // A stale listing pointing at an already-removed file is not
+            // exceptional for a bulk delete — skip it and keep going.
+            if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
+              throw error
+          }
+        }
+        return { deleted }
+      }) as any,
+    }
+  },
+})

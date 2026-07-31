@@ -15,9 +15,11 @@ export function consumeOtpFromUrl(_) {}
 export function createClientSettings(_, _) {}
 export function createRpcStreamingClientHost(_) {}
 export function createScopedClientContext(_, _) {}
+export function getDevframeConnection() {}
 export async function getDevframeRpcClient(_) {}
 export function isCallableStatus(_) {}
 export function readOtpFromUrl(_) {}
+export async function setupDevframeConnection(_) {}
 // #endregion
 
 // #region Variables

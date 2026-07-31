@@ -17,6 +17,13 @@ const httpsProxyLoc: WsUrlLocation = {
   href: 'https://devtools.example.com/app/__foo/index.html',
 }
 
+const extensionLoc: WsUrlLocation = {
+  protocol: 'chrome-extension:',
+  host: 'abcdefghijklmnopabcdefghijklmnop',
+  hostname: 'abcdefghijklmnopabcdefghijklmnop',
+  href: 'chrome-extension://abcdefghijklmnopabcdefghijklmnop/devtools-panel.html',
+}
+
 describe('resolveWsUrl', () => {
   it('resolves a relative path against the meta base, same-origin', () => {
     const url = resolveWsUrl(
@@ -55,9 +62,17 @@ describe('resolveWsUrl', () => {
     expect(url).toBe('ws://inner:1234/__devframe_ws')
   })
 
-  it('keeps the legacy numeric-port form (page hostname)', () => {
+  it('keeps the legacy numeric-port form on the metadata hostname', () => {
     expect(resolveWsUrl(9999, './', httpLoc)).toBe('ws://localhost:9999')
     expect(resolveWsUrl(9999, './', httpsProxyLoc)).toBe('wss://devtools.example.com:9999')
+  })
+
+  it('anchors a numeric port to the metadata host for external viewers', () => {
+    expect(resolveWsUrl(
+      7812,
+      'http://localhost:3000/__devtools/__connection.json',
+      extensionLoc,
+    )).toBe('ws://localhost:7812')
   })
 
   it('uses a full ws/wss URL verbatim', () => {

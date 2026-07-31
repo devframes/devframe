@@ -22,6 +22,7 @@ export default defineConfig({
       'plugins/git',
       'plugins/a11y',
       'plugins/messages',
+      'plugins/assets',
       'examples/next-devframe-hub',
       'packages/next',
       {

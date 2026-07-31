@@ -1,3 +1,165 @@
+import type { ConnectionMeta } from 'devframe/types'
+import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
+import { withBase } from 'ufo'
+import {
+  readStoredAuthToken,
+  readStoredConnection,
+  readStoredConnectionMeta,
+  storeConnection,
+} from './connection-storage'
+
+export interface DevframeConnection {
+  /** Server-advertised transport and serialization metadata. */
+  connectionMeta: ConnectionMeta
+  /**
+   * Absolute URL of the `__connection.json` that produced
+   * {@link connectionMeta}. Relative transport paths and side-car ports are
+   * resolved from this URL, rather than from an external viewer's location.
+   */
+  metaBaseUrl: string
+  /** Previously issued bearer token, when the connection is already trusted. */
+  authToken?: string
+}
+
+export interface SetupDevframeConnectionOptions {
+  /** Reuse a complete connection prepared in another viewer or JavaScript realm. */
+  connection?: DevframeConnection
+  /** Use a pre-known descriptor while deriving its source URL from `baseURL`. */
+  connectionMeta?: ConnectionMeta
+  /** Base URL, or fallback list, used to locate `__connection.json`. */
+  baseURL?: string | string[]
+  /** Override the locally stored auth token. */
+  authToken?: string
+}
+
+function resolveMetaBaseUrl(baseURL: string): string {
+  const metaPath = withBase(DEVFRAME_CONNECTION_META_FILENAME, baseURL)
+  try {
+    return new URL(metaPath, globalThis.location?.href).href
+  }
+  catch {
+    return metaPath
+  }
+}
+
+function withAuthToken(
+  connection: DevframeConnection,
+  authToken: string | undefined,
+): DevframeConnection {
+  return authToken && authToken !== connection.authToken
+    ? { ...connection, authToken }
+    : connection
+}
+
+/**
+ * Return connection information previously prepared in this window or an
+ * accessible parent window.
+ */
+export function getDevframeConnection(): DevframeConnection | undefined {
+  const connection = readStoredConnection()
+  if (connection) {
+    return withAuthToken(
+      connection,
+      readStoredAuthToken()
+      ?? connection.authToken
+      ?? connection.connectionMeta.authToken,
+    )
+  }
+
+  const connectionMeta = readStoredConnectionMeta()
+  if (!connectionMeta)
+    return undefined
+
+  return {
+    connectionMeta,
+    metaBaseUrl: connectionMeta.baseUrl ?? resolveMetaBaseUrl('./'),
+    authToken: readStoredAuthToken(connectionMeta.authToken),
+  }
+}
+
+/**
+ * Prepare the connection information shared by a devframe client and external
+ * viewers. Reuses an explicit or previously prepared connection before
+ * fetching `__connection.json` from the configured base URLs.
+ */
+export async function setupDevframeConnection(
+  options: SetupDevframeConnectionOptions = {},
+): Promise<DevframeConnection> {
+  if (options.connection) {
+    const connection = withAuthToken(
+      options.connection,
+      readStoredAuthToken(
+        options.authToken
+        ?? options.connection.authToken
+        ?? options.connection.connectionMeta.authToken,
+      ),
+    )
+    storeConnection(connection)
+    return connection
+  }
+
+  const bases = Array.isArray(options.baseURL)
+    ? options.baseURL
+    : [options.baseURL ?? './']
+
+  if (options.connectionMeta) {
+    const connection: DevframeConnection = {
+      connectionMeta: options.connectionMeta,
+      // Preserve the established connectionMeta behavior: an explicitly
+      // supplied descriptor resolves from the caller's explicit base.
+      metaBaseUrl: resolveMetaBaseUrl(bases[0] ?? './'),
+      authToken: readStoredAuthToken(
+        options.authToken ?? options.connectionMeta.authToken,
+      ),
+    }
+    storeConnection(connection)
+    return connection
+  }
+
+  const existing = getDevframeConnection()
+  if (existing) {
+    const connection = withAuthToken(
+      existing,
+      readStoredAuthToken(
+        options.authToken
+        ?? existing.authToken
+        ?? existing.connectionMeta.authToken,
+      ),
+    )
+    storeConnection(connection)
+    return connection
+  }
+
+  const errors: Error[] = []
+  for (const base of bases) {
+    const metaPath = withBase(DEVFRAME_CONNECTION_META_FILENAME, base)
+    const metaUrl = resolveMetaBaseUrl(base)
+    try {
+      const response = await fetch(metaPath)
+      if (!response.ok)
+        throw new Error(`Failed to fetch connection meta from ${metaUrl}: ${response.status}`)
+
+      const connectionMeta = await response.json() as ConnectionMeta
+      const connection: DevframeConnection = {
+        connectionMeta,
+        metaBaseUrl: response.url || metaUrl,
+        authToken: readStoredAuthToken(
+          options.authToken ?? connectionMeta.authToken,
+        ),
+      }
+      storeConnection(connection)
+      return connection
+    }
+    catch (error) {
+      errors.push(error as Error)
+    }
+  }
+
+  throw new Error(`Failed to get connection meta from ${bases.join(', ')}`, {
+    cause: errors,
+  })
+}
+
 /**
  * The connection lifecycle of a devframe client, as a single value a UI can
  * render from. Derived from the transport (WebSocket open/close/error) and the

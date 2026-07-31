@@ -61,10 +61,12 @@ catalogs:
     '@valibot/to-json-schema': ^1.7.1
     birpc: ^4.0.0
     cac: ^7.0.0
+    chokidar: ^5.0.0
     crossws: ^0.4.10
     destr: ^2.0.5
     get-port-please: ^3.2.0
     h3: ^2.0.1-rc.26
+    image-meta: ^0.2.2
     immer: ^11.1.15
     jora: ^1.0.0-beta.16
     launch-editor: ^2.14.1

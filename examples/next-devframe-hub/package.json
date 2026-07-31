@@ -16,6 +16,7 @@
     "@devframes/json-render": "workspace:*",
     "@devframes/next": "workspace:*",
     "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-assets": "workspace:*",
     "@devframes/plugin-code-server": "workspace:*",
     "@devframes/plugin-git": "workspace:*",
     "@devframes/plugin-inspect": "workspace:*",

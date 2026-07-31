@@ -72,6 +72,10 @@ await rpc.call('hub:docks:activate', {
 
 It works whether the panel is already open (it reacts to the `devframe:docks:active` shared-state slot) or mounts in response to the switch (it reads the slot on start and converges). Focus is one-shot: an unknown or not-yet-arrived session id waits for that session to appear, and the user's own tab clicks are always honored afterward. A session id that never appears is a no-op — the default selection (most-recent session) stands.
 
+## Deep linking
+
+Running standalone, the panel keeps the selected session in the URL hash as `#id=<sessionId>`: it selects that session on load if the id is live (otherwise the most-recent one), writes the hash with `replaceState` as tabs change, and honors back/forward and manual edits through a `hashchange` listener. So a copied link reopens on the same terminal. See the [deep-linking guide](/guide/deep-linking) for the pattern across devframes.
+
 ## RPC surface
 
 All functions are namespaced `devframes:plugin:terminals:*`:

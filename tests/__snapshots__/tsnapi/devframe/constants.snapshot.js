@@ -8,6 +8,7 @@ export function isAnonymousRpcMethod(_) {}
 // #region Variables
 export var ANONYMOUS_RPC_PREFIX /* const */
 export var DEVFRAME_AUTH_TOKEN_QUERY_PARAM /* const */
+export var DEVFRAME_CONNECTION_KEY /* const */
 export var DEVFRAME_CONNECTION_META_FILENAME /* const */
 export var DEVFRAME_DIRNAME /* const */
 export var DEVFRAME_DOCK_IMPORTS_FILENAME /* const */

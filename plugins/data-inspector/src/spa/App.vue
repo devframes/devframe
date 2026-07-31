@@ -9,7 +9,7 @@ import DataSourcePanel from './components/DataSourcePanel.vue'
 import QueryPanel from './components/QueryPanel.vue'
 import ResultViewer from './components/ResultViewer.vue'
 import SavedQueriesPanel from './components/SavedQueriesPanel.vue'
-import { backend, connect, connection } from './composables/rpc'
+import { backend, connect, connection, onDockActivation } from './composables/rpc'
 import { useSavedQueries } from './composables/saved'
 import { colorScheme } from './composables/scheme'
 import { useWorkbench, workbenchKey } from './composables/workbench'
@@ -36,6 +36,9 @@ onMounted(async () => {
   backend().onSourcesChanged(() => void wb.loadSources())
   // Data changes (writes, server-side notifications) refresh the active view.
   backend().onDataChanged(sourceId => wb.handleDataChanged(sourceId))
+  // In a hub, another dock can deep-link straight to a source via dock
+  // activation (`hub:docks:activate` with `params.sourceId`); focus it.
+  void onDockActivation('devframes:plugin:data-inspector', id => wb.focusSource(id))
   // An empty query runs `$`: the workbench lands on the full source object.
   void wb.runNow()
   void wb.loadSkeleton()

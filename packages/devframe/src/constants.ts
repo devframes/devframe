@@ -6,6 +6,13 @@ export const DEVFRAME_DIRNAME = '__devframe'
 export const DEVFRAME_CONNECTION_META_FILENAME = '__connection.json'
 
 /**
+ * Global key holding the serializable connection prepared by
+ * `setupDevframeConnection()`. External viewers can use this key to read the
+ * connection from another JavaScript realm.
+ */
+export const DEVFRAME_CONNECTION_KEY = '__DEVFRAME_CONNECTION__'
+
+/**
  * Route the WebSocket RPC endpoint is bound to, relative to a devframe's
  * base path. Sits next to `__connection.json` so the deployed SPA can reach
  * it on the same origin it loaded from — the dev server shares one port for

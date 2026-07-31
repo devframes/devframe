@@ -1,0 +1,12 @@
+{
+  "name": "Devframe Assets",
+  "description": "Sample fixtures for the assets plugin dev server.",
+  "theme": {
+    "primary": "#3a6a45",
+    "surface": "#ffffff"
+  },
+  "nav": [
+    { "label": "Home", "href": "/" },
+    { "label": "Docs", "href": "/docs" }
+  ]
+}

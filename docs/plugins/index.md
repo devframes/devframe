@@ -17,6 +17,7 @@ Each plugin is built with a **different UI framework**. That is deliberate: devf
 | [Git](./git) | React (Next.js) | A repository dashboard — status, a commit graph, branches, and diffs, with optional staging and committing. |
 | [Terminals](./terminals) | Svelte | Stream read-only command output and run fully interactive PTY shells in the browser. |
 | [Code Server](./code-server) | Vue | Launch VS Code in the browser (code-server, `code serve-web`, or a tunnel) on demand and embed it in an auto-authenticated iframe. |
+| [Assets](./assets) | Vue | Browse, preview, upload, rename, and delete the files in a managed directory. |
 
 ## One client, any framework
 
@@ -32,6 +33,7 @@ Most plugins publish a `bin`, so the quickest path is `pnpx`:
 pnpx @devframes/plugin-inspect      # the Devframe Inspector, standalone
 pnpx @devframes/plugin-og           # inspect Open Graph metadata and social cards
 pnpx @devframes/plugin-git          # the Git dashboard against the current repo
+pnpx @devframes/plugin-assets       # manage the files under <cwd>/public
 ```
 
 Each also exports a `create…Devframe` factory (or, for the Accessibility Inspector, a ready-made definition) you can drive through any adapter — see the individual pages for the factory name, options, and host-mount snippets.

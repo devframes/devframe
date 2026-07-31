@@ -1,6 +1,7 @@
 import { mountDevframe } from '@devframes/hub/node'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 import a11yDevframe, { a11yAgentBundlePath } from '@devframes/plugin-a11y'
+import assetsDevframe from '@devframes/plugin-assets'
 import codeServerDevframe from '@devframes/plugin-code-server'
 import dataInspectorDevframe from '@devframes/plugin-data-inspector'
 import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
@@ -72,6 +73,7 @@ export default defineConfig({
         a11yDevframe,
         messagesDevframe,
         ogDevframe,
+        assetsDevframe,
       ],
       // Attach the a11y inspector's in-page agent as its dock's client script.
       // The hub client runtime (booted in src/client/main.ts) imports it into

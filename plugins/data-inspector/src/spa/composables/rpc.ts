@@ -28,6 +28,7 @@ import type {
   WriteRequest,
 } from '../../engine'
 import { connectDevframe } from 'devframe/client'
+import { DEVFRAME_AUTH_TOKEN_QUERY_PARAM } from 'devframe/constants'
 import { reactive, shallowRef } from 'vue'
 import { runQuery, runQueryAtPath, skeletonOf, suggest as suggestQuery } from '../../engine'
 
@@ -72,6 +73,48 @@ export function backend(): DataBackend {
   if (!backendRef.value)
     throw new Error('not connected')
   return backendRef.value
+}
+
+// ── dock activation (deep-link focus, hub only) ──────────────────────
+
+/** The hub mirrors the latest dock-activation intent into this shared-state slot. */
+const DOCKS_ACTIVE_STATE_KEY = 'devframe:docks:active'
+
+/** The live client, kept for the shared-state subscription below (rpc mode). */
+let rpcClient: DevframeRpcClient | null = null
+
+/**
+ * Subscribe to the hub's dock-activation slot. When an activation targets this
+ * dock (`dockId`) and carries a `sourceId`, invoke `apply` with it — the
+ * deep-link path that lets another dock (e.g. a messages feed) jump the user
+ * straight to a data source. Reads the slot once on subscribe (so a dock that
+ * mounts *because* of the activation still converges) and on every update.
+ * Inert outside a hub — static mode or no shared state simply never fires.
+ */
+export async function onDockActivation(dockId: string, apply: (sourceId: string) => void): Promise<void> {
+  const client = rpcClient
+  if (!client)
+    return
+  interface Activation { dockId?: string, params?: Record<string, unknown> }
+  const handle = (v: { activation?: Activation | null } | undefined): void => {
+    const activation = v?.activation
+    if (!activation || activation.dockId !== dockId)
+      return
+    const sourceId = activation.params?.sourceId
+    if (typeof sourceId === 'string')
+      apply(sourceId)
+  }
+  try {
+    const slot = await client.sharedState.get(DOCKS_ACTIVE_STATE_KEY, { initialValue: { activation: null } }) as {
+      value: () => { activation?: Activation | null }
+      on: (event: string, cb: (v: { activation?: Activation | null }) => void) => void
+    }
+    handle(slot.value())
+    slot.on('updated', handle)
+  }
+  catch {
+    // No hub / no shared state — deep-linking simply stays inert.
+  }
 }
 
 // ── rpc backend ──────────────────────────────────────────────────────
@@ -184,14 +227,15 @@ function createStaticBackend(dataset: StaticDataset): DataBackend {
 
 /**
  * Read and strip the pre-shared auth token the attach CLI appends to the SPA
- * URL (`?di_token=…`), so it never lingers in the address bar or history.
+ * URL (`?devframe_auth_token=…`), so it never lingers in the address bar or
+ * history.
  */
 function consumeAuthToken(): string | undefined {
   const params = new URLSearchParams(location.search)
-  const token = params.get('di_token')
+  const token = params.get(DEVFRAME_AUTH_TOKEN_QUERY_PARAM)
   if (!token)
     return undefined
-  params.delete('di_token')
+  params.delete(DEVFRAME_AUTH_TOKEN_QUERY_PARAM)
   const search = params.toString()
   history.replaceState(null, '', search ? `?${search}` : location.pathname)
   return token
@@ -240,6 +284,7 @@ export async function connect(): Promise<void> {
       return
     }
     const client = await connectDevframe({ baseURL: './', authToken })
+    rpcClient = client
     backendRef.value = createRpcBackend(client)
     applyStatus(client)
     client.events.on('connection:status', () => applyStatus(client))

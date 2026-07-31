@@ -64,6 +64,12 @@ These reinforce devframe's positioning as "the container for one devtool integra
 - **SPAs own their basePath at runtime.** Build SPAs with relative asset paths (`vite.base: './'`); discover the effective base in the browser from the executing script's location / `document.baseURI`. `createBuild` / `createSpa` copy SPA output verbatim — no HTML rewriting, no build-time `--base` injection. The client (`connectDevframe`) resolves `.connection.json` relative to the runtime base automatically.
 - **CLI flags compose from both sides.** The `cac` instance backing `createCac` is exposed both to the `DevframeDefinition` (`cli.configure(cli)`) — for capabilities contributed by the tool itself — and to the `createCac` caller — for flags added at the final assembly stage. Parsed flag values are forwarded to `setup(ctx, { flags })`. Never hardcode domain-specific flags into `createCac`.
 
+### Hub example parity
+
+`examples/vite-devframe-hub/` (Vite plugin + vanilla client) and `examples/next-devframe-hub/` (Next.js App Router + React client) are the two reference hosts, and they stay at **feature parity**. They mount the same set of plugins and demo devframes, expose the same dock rail / iframe stage / subsystem drawer, and speak the same hub protocol — the only differences should be the host framework's own plumbing (how static assets are mounted, how the side-car server starts, how the client is rendered).
+
+Any change to one lands in the other in the same PR: adding a dock, wiring a new hub subsystem, changing the drawer layout, adopting a new client-runtime API. Their READMEs mirror each other too. If a capability genuinely can't exist on one host, say so explicitly in both READMEs rather than letting the examples silently drift.
+
 ## Structured Diagnostics (Error Codes)
 
 All node-side warnings and errors use structured diagnostics via [`nostics`](https://www.npmjs.com/package/nostics). Never use raw `console.warn`, `console.error`, or `throw new Error` with ad-hoc messages in node-side code — always define a coded diagnostic.

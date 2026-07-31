@@ -272,6 +272,7 @@ export interface DevframeViewGroup extends DevframeDockEntryBase {
   type: 'group';
   defaultChildId?: string;
   categoryOrder?: Record<string, number>;
+  accentColor?: string;
 }
 export interface DevframeViewIframe extends DevframeDockEntryBase {
   type: 'iframe';

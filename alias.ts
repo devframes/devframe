@@ -108,6 +108,12 @@ export const alias = {
   '@devframes/plugin-messages/cli': p('messages/src/cli.ts'),
   '@devframes/plugin-messages/vite': p('messages/src/vite.ts'),
   '@devframes/plugin-messages': p('messages/src/index.ts'),
+  '@devframes/plugin-assets/client': p('assets/src/client/index.ts'),
+  '@devframes/plugin-assets/node': p('assets/src/node/index.ts'),
+  '@devframes/plugin-assets/rpc': p('assets/src/rpc/index.ts'),
+  '@devframes/plugin-assets/cli': p('assets/src/cli.ts'),
+  '@devframes/plugin-assets/vite': p('assets/src/vite.ts'),
+  '@devframes/plugin-assets': p('assets/src/index.ts'),
 }
 
 // update tsconfig.base.json — CSS aliases exist for Vite resolution only;

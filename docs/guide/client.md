@@ -32,10 +32,42 @@ For SPA authors, that means:
 
 That's how `createBuild` deploys SPA output verbatim under any URL — no build-time HTML rewriting needed.
 
+### Sharing a connection with an external viewer
+
+`setupDevframeConnection()` prepares a serializable connection independently
+of an RPC client. It records the metadata URL alongside the descriptor so a
+viewer running on another origin resolves relative paths and side-car ports
+against the Devframe server:
+
+```ts
+import { setupDevframeConnection } from 'devframe/client'
+
+const connection = await setupDevframeConnection({
+  baseURL: '/__devframe/',
+})
+```
+
+Pass that connection to `connectDevframe()` in the viewer:
+
+```ts
+import { connectDevframe } from 'devframe/client'
+
+const rpc = await connectDevframe({ connection })
+```
+
+The RPC client retains the complete connection as `rpc.connection`, including
+the metadata source URL external viewers use to resolve relative resources.
+
+`getDevframeConnection()` returns the prepared connection in the current
+window or an accessible parent window. Cross-realm viewers can read the
+serializable value through `DEVFRAME_CONNECTION_KEY` from
+`devframe/constants`.
+
 ### Options
 
 ```ts
 await connectDevframe({
+  connection, // prepared by setupDevframeConnection()
   baseURL: './', // string or string[] fallback list — see notes below
   authToken: 'user-provided-token',
   cacheOptions: true, // enable response caching
@@ -46,6 +78,7 @@ await connectDevframe({
 
 | Option | Description |
 |--------|-------------|
+| `connection` | A connection prepared by `setupDevframeConnection()`. Includes metadata, its source URL, and an optional auth token. |
 | `baseURL` | Mount path to probe for `__connection.json`. Accepts an array for fallback. Default: `'./'` — resolved relative to `document.baseURI` so the SPA finds its meta wherever it was deployed. Pass an explicit absolute path (e.g. `'/__devframe/'`) when calling from outside the SPA — say, an embedded webcomponent injected into a host app. |
 | `authToken` | Override the auth token. Defaults to a locally-persisted human-readable id. |
 | `cacheOptions` | `true` to enable caching with defaults, or an options object. |

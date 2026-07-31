@@ -424,6 +424,12 @@ export interface DevframeViewGroup extends DevframeDockEntryBase {
    * ```
    */
   categoryOrder?: Record<string, number>
+  /**
+   * Optional accent color for the group button. When set, the viewer may use
+   * it to style the group button and/or its popover. When unset, the viewer
+   * falls back to its own default styling.
+   */
+  accentColor?: string
 }
 
 /**
