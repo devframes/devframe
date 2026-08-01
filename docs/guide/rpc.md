@@ -94,6 +94,9 @@ defineRpcFunction({
 
 Prefer a single object argument (`args: [v.object({ ... })]`) over positional args — property names are self-describing and agents/IDEs work best with object shapes.
 
+> [!WARNING]
+> Declared `args`/`returns` schemas are enforced at runtime — a call whose arguments, or a handler whose return value, fail the schema is rejected with `DF0043` / `DF0044`. Make sure each schema matches what the function actually accepts and returns; a schema stricter than reality will now reject calls that previously ran.
+
 ### Setup vs handler
 
 Two ways to wire a handler:
