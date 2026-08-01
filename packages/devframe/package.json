@@ -82,6 +82,7 @@
     }
   },
   "dependencies": {
+    "@standard-schema/spec": "catalog:deps",
     "@valibot/to-json-schema": "catalog:deps",
     "birpc": "catalog:deps",
     "crossws": "catalog:deps",

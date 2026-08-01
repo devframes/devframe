@@ -52,4 +52,6 @@ export { STRUCTURED_CLONE_PREFIX }
 export { Thenable }
 export { validateDefinition }
 export { validateDefinitions }
+export { validateRpcArgs }
+export { validateRpcReturn }
 // #endregion

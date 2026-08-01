@@ -41,5 +41,15 @@ export const diagnostics = defineDiagnostics({
       why: (p: { name: string, type: string }) => `Function "${p.name}" with type "${p.type}" cannot use \`snapshot: true\`. Only "query" functions support this sugar; "static" functions have equivalent default behavior already.`,
       fix: 'Remove `snapshot: true`, or change the function type to `query`.',
     },
+    DF0043: {
+      why: (p: { name: string, index: number, issues: string }) =>
+        `RPC function "${p.name}" received an invalid argument at position ${p.index}: ${p.issues}`,
+      fix: 'Pass a value that satisfies the `args` schema declared for this function.',
+    },
+    DF0044: {
+      why: (p: { name: string, issues: string }) =>
+        `RPC function "${p.name}" returned a value that failed its \`returns\` schema: ${p.issues}`,
+      fix: 'Make the handler return a value that satisfies the `returns` schema, or relax the schema.',
+    },
   },
 })

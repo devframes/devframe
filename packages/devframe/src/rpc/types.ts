@@ -1,4 +1,4 @@
-import type { GenericSchema } from 'valibot'
+import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { InferArgsType, InferReturnType } from './utils'
 
 export type { BirpcFn, BirpcReturn } from 'birpc'
@@ -93,10 +93,20 @@ export interface RpcFunctionSetupResult<
   dump?: RpcDumpDefinition<ARGS, RETURN>
 }
 
-/** Valibot schema array for validating function arguments */
-export type RpcArgsSchema = readonly GenericSchema[]
-/** Valibot schema for validating function return value */
-export type RpcReturnSchema = GenericSchema
+/**
+ * Positional argument schemas for an RPC function. Each entry is any
+ * [Standard Schema](https://standardschema.dev)-compliant validator
+ * (valibot, zod, arktype, …); the entry at index `i` validates argument
+ * `i` at call time and drives that argument's inferred type.
+ */
+export type RpcArgsSchema = readonly StandardSchemaV1[]
+/**
+ * Return-value schema for an RPC function. Any
+ * [Standard Schema](https://standardschema.dev)-compliant validator; it
+ * validates the handler's resolved return value and drives its inferred
+ * type.
+ */
+export type RpcReturnSchema = StandardSchemaV1
 
 /**
  * Serialized representation of a thrown value in a dump record.
@@ -233,9 +243,9 @@ export type RpcFunctionDefinition<
         type?: TYPE
         /** Whether the function results should be cached */
         cacheable?: boolean
-        /** Valibot schema array for validating function arguments */
+        /** Standard Schema array validating (and typing) the arguments */
         args?: AS
-        /** Valibot schema for validating function return value */
+        /** Standard Schema validating (and typing) the return value */
         returns?: RS
         /**
          * Declares whether this function's args/return are JSON-serializable
@@ -281,9 +291,9 @@ export type RpcFunctionDefinition<
         type?: TYPE
         /** Whether the function results should be cached */
         cacheable?: boolean
-        /** Valibot schema array for validating function arguments */
+        /** Standard Schema array validating (and typing) the arguments */
         args: AS
-        /** Valibot schema for validating function return value */
+        /** Standard Schema validating (and typing) the return value */
         returns: RS
         /**
          * Declares whether this function's args/return are JSON-serializable

@@ -1,5 +1,6 @@
 import type { RpcFunctionDefinition, RpcFunctionSetupResult, RpcFunctionType } from './types'
 import { diagnostics } from './diagnostics'
+import { validateRpcArgs, validateRpcReturn } from './validate-io'
 
 export async function getRpcResolvedSetupResult<
   NAME extends string,
@@ -58,12 +59,31 @@ export async function getRpcHandler<
   definition: RpcFunctionDefinition<NAME, TYPE, ARGS, RETURN, any, any, CONTEXT>,
   context: CONTEXT,
 ): Promise<(...args: ARGS) => RETURN> {
-  if (definition.handler) {
-    return definition.handler
+  let handler = definition.handler
+  if (!handler) {
+    const result = await getRpcResolvedSetupResult(definition, context)
+    if (!result.handler) {
+      throw diagnostics.DF0024({ name: definition.name })
+    }
+    handler = result.handler
   }
-  const result = await getRpcResolvedSetupResult(definition, context)
-  if (!result.handler) {
-    throw diagnostics.DF0024({ name: definition.name })
+
+  // When `args`/`returns` Standard Schemas are declared, validate inputs
+  // before the handler runs and the output after it returns (guard-only —
+  // payloads are never rewritten). Wrapping here means every invocation
+  // path — local, over-the-wire, and the agent/MCP bridge — funnels
+  // through the same validation.
+  const argsSchema = definition.args
+  const returnSchema = definition.returns
+  if (!argsSchema && !returnSchema) {
+    return handler
   }
-  return result.handler
+
+  const inner = handler
+  const validating = async (...args: ARGS): Promise<RETURN> => {
+    const validatedArgs = await validateRpcArgs(definition.name, argsSchema, args)
+    const output = await inner(...(validatedArgs as ARGS))
+    return await validateRpcReturn(definition.name, returnSchema, output) as RETURN
+  }
+  return validating as (...args: ARGS) => RETURN
 }

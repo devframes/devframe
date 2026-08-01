@@ -55,4 +55,6 @@ export { strictJsonStringify }
 export { STRUCTURED_CLONE_PREFIX }
 export { validateDefinition }
 export { validateDefinitions }
+export { validateRpcArgs }
+export { validateRpcReturn }
 // #endregion

@@ -1,6 +1,6 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { RpcFunctionDefinitionAnyWithContext } from 'devframe/rpc'
 import type { AgentTool, DevframeDefinition, DevframeHost, DevframeNodeContext } from 'devframe/types'
-import type { GenericSchema } from 'valibot'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
@@ -14,7 +14,7 @@ import { createHostContext } from 'devframe/node'
 import { join } from 'pathe'
 import { diagnostics } from '../../node/diagnostics'
 import { formatMcpError, stringifyForMcp } from './stringify'
-import { valibotArgsToJsonSchema, valibotReturnToJsonSchema } from './to-json-schema'
+import { argsToJsonSchema, returnToJsonSchema } from './to-json-schema'
 
 export interface CreateMcpServerOptions {
   /**
@@ -276,8 +276,8 @@ function computeInputSchema(tool: AgentTool, ctx: DevframeNodeContext): unknown 
   const def = ctx.rpc.definitions.get(tool.rpcName) as RpcFunctionDefinitionAnyWithContext<DevframeNodeContext> | undefined
   if (!def)
     return { type: 'object', properties: {} }
-  const args = def.args as readonly GenericSchema[] | undefined
-  return valibotArgsToJsonSchema(args).schema
+  const args = def.args as readonly StandardSchemaV1[] | undefined
+  return argsToJsonSchema(args).schema
 }
 
 function computeOutputSchema(tool: AgentTool, ctx: DevframeNodeContext): unknown {
@@ -286,7 +286,7 @@ function computeOutputSchema(tool: AgentTool, ctx: DevframeNodeContext): unknown
   const def = ctx.rpc.definitions.get(tool.rpcName) as RpcFunctionDefinitionAnyWithContext<DevframeNodeContext> | undefined
   if (!def)
     return undefined
-  return valibotReturnToJsonSchema(def.returns as GenericSchema | undefined)
+  return returnToJsonSchema(def.returns as StandardSchemaV1 | undefined)
 }
 
 function parseResourceUri(uri: string): { kind: 'resource', id: string } | { kind: 'state', key: string } | { kind: 'unknown' } {

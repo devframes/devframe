@@ -199,7 +199,8 @@ export class DevframeAgentHost implements DevframeAgentHostType {
         rpcName: name,
         examples: agent.examples,
         // Schemas are carried by the definition itself — consumers
-        // (e.g. the MCP adapter) convert valibot → JSON Schema on demand.
+        // (e.g. the MCP adapter) convert the Standard Schema → JSON Schema
+        // on demand.
       })
     }
     return out

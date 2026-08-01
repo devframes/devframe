@@ -26,6 +26,7 @@ export * from './define'
 export * from './handler'
 export * from './serialization'
 export * from './types'
+export * from './validate-io'
 export * from './validation'
 
 /** @deprecated Import from `devframe/rpc/dump` instead. */

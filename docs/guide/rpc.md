@@ -4,7 +4,7 @@ outline: deep
 
 # RPC
 
-Devframe's RPC layer is type-safe bidirectional communication between your server (Node.js) and client (browser), built on [`birpc`](https://github.com/antfu/birpc) and validated at runtime with [`valibot`](https://valibot.dev/). In dev mode it runs over WebSocket; in build / SPA mode it serves a pre-computed static dump so the client still works offline.
+Devframe's RPC layer is type-safe bidirectional communication between your server (Node.js) and client (browser), built on [`birpc`](https://github.com/antfu/birpc) and validated at runtime against any [Standard Schema](https://standardschema.dev/) validator — valibot, zod, arktype, and others all work. In dev mode it runs over WebSocket; in build / SPA mode it serves a pre-computed static dump so the client still works offline.
 
 ## Overview
 
@@ -75,7 +75,7 @@ Use `static` for data collected once during `setup` and shipped to read-only sta
 
 ### Handler arguments
 
-Handlers accept any serializable arguments. With `args` valibot schemas, arguments are validated at the boundary:
+Handlers accept any serializable arguments. Declare `args` schemas — any [Standard Schema](https://standardschema.dev/) validator, valibot below — and each argument is validated at the boundary before the handler runs; a mismatch is rejected with a coded diagnostic. Validation guards the payload without rewriting it, so extra object fields the schema doesn't mention still reach the handler:
 
 ```ts
 defineRpcFunction({

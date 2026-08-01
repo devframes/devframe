@@ -1,34 +1,33 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { GenericSchema } from 'valibot'
 import { toJsonSchema } from '@valibot/to-json-schema'
 
 const FALLBACK_OBJECT_SCHEMA = Object.freeze({ type: 'object', additionalProperties: true })
 
 /**
- * Convert a valibot return schema to JSON Schema.
+ * Convert a Standard Schema return value to JSON Schema for the agent
+ * surface. valibot schemas convert precisely; other Standard Schema
+ * vendors (zod, arktype, …) have no universal JSON Schema mapping and
+ * fall back to a permissive object schema.
  * @internal
  */
-export function valibotReturnToJsonSchema(schema: GenericSchema | undefined): unknown {
+export function returnToJsonSchema(schema: StandardSchemaV1 | undefined): unknown {
   if (!schema)
     return undefined
-  try {
-    return toJsonSchema(schema as any)
-  }
-  catch {
-    return FALLBACK_OBJECT_SCHEMA
-  }
+  return safeToJsonSchema(schema)
 }
 
 /**
  * Convert positional RPC args schemas to a single MCP-friendly object
- * schema. When the RPC declares `args: [v.object(...)]`, unwrap the
- * single-object schema directly (nicer agent UX than `{ arg0: {...} }`).
+ * schema. When the RPC declares `args: [object(...)]`, unwrap the single
+ * object schema directly (nicer agent UX than `{ arg0: {...} }`).
  *
  * Returns `undefined` when there are no args (the MCP SDK treats this
  * as `{ type: 'object', properties: {} }`).
  * @internal
  */
-export function valibotArgsToJsonSchema(
-  args: readonly GenericSchema[] | undefined,
+export function argsToJsonSchema(
+  args: readonly StandardSchemaV1[] | undefined,
 ): { schema: unknown, unwrapped: boolean } {
   if (!args || args.length === 0)
     return { schema: { type: 'object', properties: {} }, unwrapped: false }
@@ -48,7 +47,7 @@ export function valibotArgsToJsonSchema(
     const s = safeToJsonSchema(args[i]!)
     properties[key] = s
     // Conservatively mark every positional arg as required — the RPC
-    // layer validates against valibot anyway.
+    // layer validates against the declared schema anyway.
     required.push(key)
   }
 
@@ -63,9 +62,13 @@ export function valibotArgsToJsonSchema(
   }
 }
 
-function safeToJsonSchema(schema: GenericSchema): unknown {
+function safeToJsonSchema(schema: StandardSchemaV1): unknown {
+  // Only valibot exposes a JSON Schema converter; other vendors degrade
+  // to a permissive object schema rather than throwing.
+  if (schema['~standard']?.vendor !== 'valibot')
+    return FALLBACK_OBJECT_SCHEMA
   try {
-    return toJsonSchema(schema as any)
+    return toJsonSchema(schema as unknown as GenericSchema)
   }
   catch {
     return FALLBACK_OBJECT_SCHEMA
