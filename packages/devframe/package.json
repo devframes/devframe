@@ -70,11 +70,11 @@
     "prepack": "pnpm build && mkdir -p ./skills && cp -r ../../skills/devframe ./skills/devframe"
   },
   "peerDependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
     "cac": "^7.0.0"
   },
   "peerDependenciesMeta": {
-    "@modelcontextprotocol/sdk": {
+    "@modelcontextprotocol/server": {
       "optional": true
     },
     "cac": {
@@ -94,7 +94,8 @@
     "valibot": "catalog:deps"
   },
   "devDependencies": {
-    "@modelcontextprotocol/sdk": "catalog:deps",
+    "@modelcontextprotocol/client": "catalog:deps",
+    "@modelcontextprotocol/server": "catalog:deps",
     "cac": "catalog:deps",
     "get-port-please": "catalog:deps",
     "immer": "catalog:deps",

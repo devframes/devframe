@@ -57,7 +57,8 @@ catalogs:
     vite-plugin-solid: ^2.11.14
   deps:
     '@json-render/core': ^0.19.0
-    '@modelcontextprotocol/sdk': ^1.30.0
+    '@modelcontextprotocol/client': ^2.0.0
+    '@modelcontextprotocol/server': ^2.0.0
     '@valibot/to-json-schema': ^1.7.1
     birpc: ^4.0.0
     cac: ^7.0.0

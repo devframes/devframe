@@ -43,9 +43,12 @@ catalogs:
     '@json-render/core':
       specifier: ^0.19.0
       version: 0.19.0
-    '@modelcontextprotocol/sdk':
-      specifier: ^1.30.0
-      version: 1.30.0
+    '@modelcontextprotocol/client':
+      specifier: ^2.0.0
+      version: 2.0.0
+    '@modelcontextprotocol/server':
+      specifier: ^2.0.0
+      version: 2.0.0
     '@valibot/to-json-schema':
       specifier: ^1.7.1
       version: 1.7.1
@@ -813,9 +816,12 @@ importers:
         specifier: catalog:deps
         version: 1.4.2(typescript@6.0.3)
     devDependencies:
-      '@modelcontextprotocol/sdk':
+      '@modelcontextprotocol/client':
         specifier: catalog:deps
-        version: 1.30.0(supports-color@10.2.2)(zod@4.4.3)
+        version: 2.0.0
+      '@modelcontextprotocol/server':
+        specifier: catalog:deps
+        version: 2.0.0
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -2650,6 +2656,14 @@ packages:
   '@mermaid-js/parser@1.2.0':
     resolution: {integrity: sha512-oYPyv8A4As1yH5Bx+04iQEQxXuIQDe0GKCNSRgao6z8AM9jixXIfP0vsppRLvGf+nKIOb9/LdpWA4YuJiVvESA==}
 
+  '@modelcontextprotocol/client@2.0.0':
+    resolution: {integrity: sha512-8f1OghQ2rjzIOfqgUCP+8GiUWqRs89njoWLNqAe8kWmDePv3s1fZXseej+QXemssEuuOvLLmLO/kqM3IQHtISw==}
+    engines: {node: '>=20'}
+
+  '@modelcontextprotocol/core@2.0.0':
+    resolution: {integrity: sha512-pJCEwGG7Lfr/+PQp9ZTwKXNeO5wzbfKL7H3MYpCorM4oFBoQrdjnBgEoqG+RjhsvS1FKrDbKux+M1HhlnGWqcA==}
+    engines: {node: '>=20'}
+
   '@modelcontextprotocol/sdk@1.30.0':
     resolution: {integrity: sha512-xKd8OIzlqNzcqcNumGAa6g+PW2kjD5vrpcKOnfldAUPP3j7lnqMPwlTXQm8gF+UwH72z0lqaRbjr9hqGz0eITA==}
     engines: {node: '>=18'}
@@ -2659,6 +2673,10 @@ packages:
     peerDependenciesMeta:
       '@cfworker/json-schema':
         optional: true
+
+  '@modelcontextprotocol/server@2.0.0':
+    resolution: {integrity: sha512-YhHWdHfpFMQfd0prsEnxKeS3Qz3ytIGmsS0sth4KDjnacIT7hxk6hXHkJ9KysxlkvTM+WZAtQbbcUhdoP4Hvtw==}
+    engines: {node: '>=20'}
 
   '@napi-rs/wasm-runtime@1.1.6':
     resolution: {integrity: sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg==}
@@ -10317,6 +10335,7 @@ snapshots:
   '@hono/node-server@1.19.14(hono@4.12.18)':
     dependencies:
       hono: 4.12.18
+    optional: true
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -10565,6 +10584,20 @@ snapshots:
     dependencies:
       '@chevrotain/types': 11.1.2
 
+  '@modelcontextprotocol/client@2.0.0':
+    dependencies:
+      '@modelcontextprotocol/core': 2.0.0
+      cross-spawn: 7.0.6
+      eventsource: 3.0.7
+      eventsource-parser: 3.0.8
+      jose: 6.2.3
+      pkce-challenge: 5.0.1
+      zod: 4.4.3
+
+  '@modelcontextprotocol/core@2.0.0':
+    dependencies:
+      zod: 4.4.3
+
   '@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.4.3)':
     dependencies:
       '@hono/node-server': 1.19.14(hono@4.12.18)
@@ -10586,6 +10619,12 @@ snapshots:
       zod-to-json-schema: 3.25.2(zod@4.4.3)
     transitivePeerDependencies:
       - supports-color
+    optional: true
+
+  '@modelcontextprotocol/server@2.0.0':
+    dependencies:
+      '@modelcontextprotocol/core': 2.0.0
+      zod: 4.4.3
 
   '@napi-rs/wasm-runtime@1.1.6(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
@@ -13131,6 +13170,7 @@ snapshots:
     dependencies:
       mime-types: 3.0.2
       negotiator: 1.0.0
+    optional: true
 
   acorn-import-attributes@1.9.5(acorn@8.16.0):
     dependencies:
@@ -13149,6 +13189,7 @@ snapshots:
   ajv-formats@3.0.1(ajv@8.20.0):
     optionalDependencies:
       ajv: 8.20.0
+    optional: true
 
   ajv@6.15.0:
     dependencies:
@@ -13163,6 +13204,7 @@ snapshots:
       fast-uri: 3.1.2
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
+    optional: true
 
   alien-signals@3.2.1: {}
 
@@ -13356,6 +13398,7 @@ snapshots:
       type-is: 2.0.1
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   boolbase@1.0.0: {}
 
@@ -13406,7 +13449,8 @@ snapshots:
     dependencies:
       run-applescript: 7.1.0
 
-  bytes@3.1.2: {}
+  bytes@3.1.2:
+    optional: true
 
   c12@3.3.4(magicast@0.5.2):
     dependencies:
@@ -13556,9 +13600,11 @@ snapshots:
       '@babel/parser': 7.29.7
       '@babel/types': 7.29.7
 
-  content-disposition@1.1.0: {}
+  content-disposition@1.1.0:
+    optional: true
 
-  content-type@1.0.5: {}
+  content-type@1.0.5:
+    optional: true
 
   convert-hrtime@5.0.0: {}
 
@@ -13570,9 +13616,11 @@ snapshots:
 
   cookie-es@3.1.1: {}
 
-  cookie-signature@1.2.2: {}
+  cookie-signature@1.2.2:
+    optional: true
 
-  cookie@0.7.2: {}
+  cookie@0.7.2:
+    optional: true
 
   core-js-compat@3.49.0:
     dependencies:
@@ -13584,6 +13632,7 @@ snapshots:
     dependencies:
       object-assign: 4.1.1
       vary: 1.1.2
+    optional: true
 
   cose-base@1.0.3:
     dependencies:
@@ -14412,6 +14461,7 @@ snapshots:
     dependencies:
       express: 5.2.1(supports-color@10.2.2)
       ip-address: 10.2.0
+    optional: true
 
   express@5.2.1(supports-color@10.2.2):
     dependencies:
@@ -14445,6 +14495,7 @@ snapshots:
       vary: 1.1.2
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   exsolve@1.1.0: {}
 
@@ -14476,7 +14527,8 @@ snapshots:
     dependencies:
       fast-string-truncated-width: 3.0.3
 
-  fast-uri@3.1.2: {}
+  fast-uri@3.1.2:
+    optional: true
 
   fast-wrap-ansi@0.2.0:
     dependencies:
@@ -14514,6 +14566,7 @@ snapshots:
       statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   find-up-simple@1.0.1: {}
 
@@ -14555,7 +14608,8 @@ snapshots:
 
   format@0.2.2: {}
 
-  forwarded@0.2.0: {}
+  forwarded@0.2.0:
+    optional: true
 
   fraction.js@5.3.4: {}
 
@@ -14746,7 +14800,8 @@ snapshots:
     dependencies:
       ansi-styles: 3.2.1
 
-  hono@4.12.18: {}
+  hono@4.12.18:
+    optional: true
 
   hookable@5.5.3: {}
 
@@ -14786,6 +14841,7 @@ snapshots:
   iconv-lite@0.7.2:
     dependencies:
       safer-buffer: 2.1.2
+    optional: true
 
   identifier-regex@1.1.0:
     dependencies:
@@ -14853,9 +14909,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ip-address@10.2.0: {}
+  ip-address@10.2.0:
+    optional: true
 
-  ipaddr.js@1.9.1: {}
+  ipaddr.js@1.9.1:
+    optional: true
 
   iron-webcrypto@1.2.1: {}
 
@@ -14908,7 +14966,8 @@ snapshots:
 
   is-promise@2.2.2: {}
 
-  is-promise@4.0.0: {}
+  is-promise@4.0.0:
+    optional: true
 
   is-reference@1.2.1:
     dependencies:
@@ -14980,9 +15039,11 @@ snapshots:
 
   json-schema-traverse@0.4.1: {}
 
-  json-schema-traverse@1.0.0: {}
+  json-schema-traverse@1.0.0:
+    optional: true
 
-  json-schema-typed@8.0.2: {}
+  json-schema-typed@8.0.2:
+    optional: true
 
   json-stable-stringify-without-jsonify@1.0.1: {}
 
@@ -15359,13 +15420,15 @@ snapshots:
 
   mdn-data@2.28.1: {}
 
-  media-typer@1.1.0: {}
+  media-typer@1.1.0:
+    optional: true
 
   merge-anything@5.1.7:
     dependencies:
       is-what: 4.1.16
 
-  merge-descriptors@2.0.0: {}
+  merge-descriptors@2.0.0:
+    optional: true
 
   merge-stream@2.0.0: {}
 
@@ -15669,7 +15732,8 @@ snapshots:
 
   natural-orderby@5.0.0: {}
 
-  negotiator@1.0.0: {}
+  negotiator@1.0.0:
+    optional: true
 
   next@16.2.12(@babel/core@7.29.0(supports-color@10.2.2))(@playwright/test@1.62.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
@@ -16004,7 +16068,8 @@ snapshots:
 
   object-identity@0.2.3: {}
 
-  object-inspect@1.13.4: {}
+  object-inspect@1.13.4:
+    optional: true
 
   obug@2.1.4: {}
 
@@ -16027,6 +16092,7 @@ snapshots:
   once@1.4.0:
     dependencies:
       wrappy: 1.0.2
+    optional: true
 
   onetime@6.0.0:
     dependencies:
@@ -16270,7 +16336,8 @@ snapshots:
       lru-cache: 11.3.6
       minipass: 7.1.3
 
-  path-to-regexp@8.4.2: {}
+  path-to-regexp@8.4.2:
+    optional: true
 
   pathe@1.1.2: {}
 
@@ -16530,6 +16597,7 @@ snapshots:
     dependencies:
       forwarded: 0.2.0
       ipaddr.js: 1.9.1
+    optional: true
 
   pug-attrs@3.0.0:
     dependencies:
@@ -16603,6 +16671,7 @@ snapshots:
   qs@6.15.1:
     dependencies:
       side-channel: 1.1.0
+    optional: true
 
   quansync@0.2.11: {}
 
@@ -16622,6 +16691,7 @@ snapshots:
       http-errors: 2.0.1
       iconv-lite: 0.7.2
       unpipe: 1.0.0
+    optional: true
 
   rc9@3.0.1:
     dependencies:
@@ -16757,7 +16827,8 @@ snapshots:
     transitivePeerDependencies:
       - '@vue/composition-api'
 
-  require-from-string@2.0.2: {}
+  require-from-string@2.0.2:
+    optional: true
 
   reserved-identifiers@1.2.0: {}
 
@@ -16915,6 +16986,7 @@ snapshots:
       path-to-regexp: 8.4.2
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   run-applescript@7.1.0: {}
 
@@ -17043,6 +17115,7 @@ snapshots:
     dependencies:
       es-errors: 1.3.0
       object-inspect: 1.13.4
+    optional: true
 
   side-channel-map@1.0.1:
     dependencies:
@@ -17050,6 +17123,7 @@ snapshots:
       es-errors: 1.3.0
       get-intrinsic: 1.3.0
       object-inspect: 1.13.4
+    optional: true
 
   side-channel-weakmap@1.0.2:
     dependencies:
@@ -17058,6 +17132,7 @@ snapshots:
       get-intrinsic: 1.3.0
       object-inspect: 1.13.4
       side-channel-map: 1.0.1
+    optional: true
 
   side-channel@1.1.0:
     dependencies:
@@ -17066,6 +17141,7 @@ snapshots:
       side-channel-list: 1.0.1
       side-channel-map: 1.0.1
       side-channel-weakmap: 1.0.2
+    optional: true
 
   siginfo@2.0.0: {}
 
@@ -17555,6 +17631,7 @@ snapshots:
       content-type: 1.0.5
       media-typer: 1.1.0
       mime-types: 3.0.2
+    optional: true
 
   type-level-regexp@0.1.17: {}
 
@@ -17713,7 +17790,8 @@ snapshots:
     transitivePeerDependencies:
       - vite
 
-  unpipe@1.0.0: {}
+  unpipe@1.0.0:
+    optional: true
 
   unplugin-utils@0.3.2:
     dependencies:
@@ -17806,7 +17884,8 @@ snapshots:
     optionalDependencies:
       typescript: 6.0.3
 
-  vary@1.1.2: {}
+  vary@1.1.2:
+    optional: true
 
   verkit@0.1.2: {}
 
@@ -18226,7 +18305,8 @@ snapshots:
       string-width: 7.2.0
       strip-ansi: 7.2.0
 
-  wrappy@1.0.2: {}
+  wrappy@1.0.2:
+    optional: true
 
   ws@8.21.1: {}
 
@@ -18334,6 +18414,7 @@ snapshots:
   zod-to-json-schema@3.25.2(zod@4.4.3):
     dependencies:
       zod: 4.4.3
+    optional: true
 
   zod@4.4.3: {}
 

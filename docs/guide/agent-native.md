@@ -99,7 +99,7 @@ const devframe = defineDevframe({ /* … */ })
 await createMcpServer(devframe, { transport: 'stdio' })
 ```
 
-`@modelcontextprotocol/sdk` is a peer dependency — add it to your package when you want to ship an MCP-enabled devframe.
+`@modelcontextprotocol/server` is a peer dependency — add it to your package when you want to ship an MCP-enabled devframe.
 
 ## Connecting Claude Desktop
 

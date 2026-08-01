@@ -16,7 +16,7 @@ import devframe from './devframe'
 await createMcpServer(devframe, { transport: 'stdio' })
 ```
 
-`@modelcontextprotocol/sdk` is a peer dependency — install it when shipping MCP support. `createMcpServer` speaks the `stdio` transport, spawned per session by the client.
+`@modelcontextprotocol/server` is a peer dependency — install it when shipping MCP support. `createMcpServer` speaks the `stdio` transport, spawned per session by the client.
 
 ## Route-based server
 

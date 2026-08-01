@@ -1,6 +1,5 @@
 import type { DevframeDefinition } from '../../types/devframe'
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import { getPort } from 'get-port-please'
 import { afterEach, describe, expect, it } from 'vitest'
 import { viteDevBridge } from '../vite'
