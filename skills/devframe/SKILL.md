@@ -485,7 +485,7 @@ import { createMcpServer } from 'devframe/adapters/mcp'
 await createMcpServer(devframe, { transport: 'stdio' })
 ```
 
-`@modelcontextprotocol/sdk` is a peer dependency. The CLI adapter also exposes `my-devframe mcp` — route host logs to stderr (stdout is the MCP transport). Safety classifications (`'read' | 'action' | 'destructive'`) drive MCP hint annotations that agent clients use to prompt for confirmation.
+`@modelcontextprotocol/server` is a peer dependency. The CLI adapter also exposes `my-devframe mcp` — route host logs to stderr (stdout is the MCP transport). Safety classifications (`'read' | 'action' | 'destructive'`) drive MCP hint annotations that agent clients use to prompt for confirmation.
 
 ## Author SPA
 

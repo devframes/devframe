@@ -40,7 +40,7 @@ Devframe keeps its surface focused on one tool, so the same definition stays por
 pnpm add devframe
 ```
 
-`devframe` ships ESM-only and has no Vite dependency. Adapters with optional peers (the MCP adapter needs `@modelcontextprotocol/sdk`) surface the requirement at import time.
+`devframe` ships ESM-only and has no Vite dependency. Adapters with optional peers (the MCP adapter needs `@modelcontextprotocol/server`) surface the requirement at import time.
 
 ## Hello, Devframe
 

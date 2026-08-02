@@ -1,15 +1,10 @@
+import type { Tool } from '@modelcontextprotocol/server'
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { RpcFunctionDefinitionAnyWithContext } from 'devframe/rpc'
 import type { AgentTool, DevframeDefinition, DevframeHost, DevframeNodeContext } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
-import { Server } from '@modelcontextprotocol/sdk/server/index.js'
-import {
-  CallToolRequestSchema,
-  ListResourcesRequestSchema,
-  ListToolsRequestSchema,
-  ReadResourceRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js'
+import { Server } from '@modelcontextprotocol/server'
 import { createHostContext } from 'devframe/node'
 import { join } from 'pathe'
 import { diagnostics } from '../../node/diagnostics'
@@ -152,12 +147,12 @@ export async function createMcpServer(
 }
 
 function registerToolHandlers(server: Server, ctx: DevframeNodeContext): void {
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
+  server.setRequestHandler('tools/list', async () => {
     const tools = ctx.agent.list().tools.map(tool => projectTool(tool, ctx))
     return { tools }
   })
 
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler('tools/call', async (request) => {
     const { name, arguments: args } = request.params
     try {
       const tool = ctx.agent.getTool(name)
@@ -194,7 +189,7 @@ function registerResourceHandlers(
   ctx: DevframeNodeContext,
   exposeSharedState: boolean | ((key: string) => boolean),
 ): void {
-  server.setRequestHandler(ListResourcesRequestSchema, async () => {
+  server.setRequestHandler('resources/list', async () => {
     const resources = ctx.agent.list().resources.map(resource => ({
       uri: resource.uri,
       name: resource.name,
@@ -219,7 +214,7 @@ function registerResourceHandlers(
     return { resources }
   })
 
-  server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  server.setRequestHandler('resources/read', async (request) => {
     const { uri } = request.params
     const parsed = parseResourceUri(uri)
 
@@ -253,7 +248,7 @@ function registerResourceHandlers(
   })
 }
 
-function projectTool(tool: AgentTool, ctx: DevframeNodeContext): Record<string, unknown> {
+function projectTool(tool: AgentTool, ctx: DevframeNodeContext): Tool {
   const inputSchema = tool.inputSchema ?? computeInputSchema(tool, ctx)
   const outputSchema = tool.outputSchema ?? computeOutputSchema(tool, ctx)
   return {
@@ -267,7 +262,7 @@ function projectTool(tool: AgentTool, ctx: DevframeNodeContext): Record<string, 
       readOnlyHint: tool.safety === 'read',
       destructiveHint: tool.safety === 'destructive',
     },
-  }
+  } as Tool
 }
 
 function computeInputSchema(tool: AgentTool, ctx: DevframeNodeContext): unknown {

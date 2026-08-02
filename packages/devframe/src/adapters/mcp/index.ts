@@ -5,7 +5,7 @@
 //   import { createMcpServer } from 'devframe/adapters/mcp'
 //   await createMcpServer(definition, { transport: 'stdio' })
 //
-// Requires `@modelcontextprotocol/sdk` to be installed as a peer
+// Requires `@modelcontextprotocol/server` to be installed as a peer
 // dependency. Importing this entry without the SDK throws at load time
 // with the usual Node module-not-found error.
 //
