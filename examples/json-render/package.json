@@ -23,8 +23,5 @@
     "@devframes/json-render-ui": "workspace:*",
     "cac": "catalog:deps",
     "devframe": "workspace:*"
-  },
-  "devDependencies": {
-    "get-port-please": "catalog:deps"
   }
 }

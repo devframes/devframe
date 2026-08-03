@@ -43,7 +43,6 @@
   },
   "dependencies": {
     "@standard-schema/spec": "catalog:deps",
-    "birpc": "catalog:deps",
     "destr": "catalog:deps",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",

@@ -25,7 +25,8 @@
     "devframe": "workspace:*",
     "next": "catalog:frontend",
     "react": "catalog:frontend",
-    "react-dom": "catalog:frontend"
+    "react-dom": "catalog:frontend",
+    "valibot": "catalog:deps"
   },
   "devDependencies": {
     "@types/react": "catalog:types",

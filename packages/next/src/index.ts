@@ -10,5 +10,6 @@ export { createDevframeNextHandler } from './handler'
 export type {
   CreateDevframeNextHostOptions,
   DevframeNextHost,
+  DevframeNextHostMcpOptions,
 } from './host'
 export { createDevframeNextHost } from './host'

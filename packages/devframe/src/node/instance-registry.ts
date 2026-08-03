@@ -47,20 +47,24 @@ export interface DevframeInstanceRegistration {
   unregister: () => void
 }
 
+// The env var names below are documented (READMEs, `docs/adapters/mcp.md`)
+// as plain strings a user sets — nothing needs to import the constant, so
+// they (and the read/probe helpers) stay internal to this module rather
+// than joining the `devframe/node` public surface; see the barrel comment
+// in `./index.ts`.
+
 /** Environment variable overriding the registry directory (tests, CI). */
-export const DEVFRAME_INSTANCES_DIR_ENV = 'DEVFRAME_INSTANCES_DIR'
+const DEVFRAME_INSTANCES_DIR_ENV = 'DEVFRAME_INSTANCES_DIR'
 /** Environment variable disabling instance registration entirely. */
-export const DEVFRAME_DISABLE_INSTANCE_REGISTRY_ENV = 'DEVFRAME_DISABLE_INSTANCE_REGISTRY'
+const DEVFRAME_DISABLE_INSTANCE_REGISTRY_ENV = 'DEVFRAME_DISABLE_INSTANCE_REGISTRY'
 
 /**
  * Resolve the registry directory: `~/.devframe/instances/` by default —
  * the framework's own global dir, deliberately outside the per-app
  * `~/.<appName>/devframe/` storage convention since the registry spans apps —
  * overridable via `DEVFRAME_INSTANCES_DIR`.
- *
- * @experimental
  */
-export function resolveInstancesDir(override?: string): string {
+function resolveInstancesDir(override?: string): string {
   return override
     ?? process.env[DEVFRAME_INSTANCES_DIR_ENV]
     ?? join(homedir(), '.devframe', 'instances')
@@ -225,10 +229,8 @@ export async function probeDevframeOrigin(
  * Returns the **dialable origin** that answered (for `localhost` records
  * this may be an explicit `127.0.0.1` / `[::1]` origin), or `null` when
  * unreachable.
- *
- * @experimental
  */
-export async function probeDevframeInstance(
+async function probeDevframeInstance(
   record: DevframeInstanceRecord,
   options: { timeoutMs?: number } = {},
 ): Promise<string | null> {

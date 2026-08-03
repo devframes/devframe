@@ -41,7 +41,7 @@ export interface GitStatus {
   canWrite: boolean
 }
 
-export const EMPTY_STATUS: GitStatus = {
+const EMPTY_STATUS: GitStatus = {
   isRepo: false,
   root: null,
   branch: null,

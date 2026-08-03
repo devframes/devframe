@@ -1,0 +1,159 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+  // `tests/__snapshots__/tsnapi/**` is `tsnapi`'s generated API-snapshot
+  // fixture content (see `tests/exports.test.ts` and the root AGENTS.md
+  // "Development" section) — compared byte-for-byte against a fresh build,
+  // never imported. Not source to analyze.
+  "ignore": ["tests/__snapshots__/tsnapi/**"],
+  // `@iconify-json/*` icon collections and `@unocss/preset-icons` are
+  // resolved by UnoCSS's `presetIcons()` at build time by package presence
+  // (scanning `i-ph:*` classes against the installed collection), never
+  // imported in source — the same false-positive class knip's own docs
+  // describe for icon-collection dependencies.
+  "ignoreDependencies": ["@iconify-json/.+", "@unocss/preset-icons"],
+  "workspaces": {
+    ".": {
+      // `design/*.ts` is the shared design system (AGENTS.md § "Design
+      // system") consumed by every plugin/example's own `uno.config.ts` and
+      // `design.ts` via relative imports (`../../design/uno.config`). Those
+      // are UnoCSS/plugin config files, not part of the reachability graph
+      // knip builds for "unused files", so the shared source is otherwise
+      // reported as unused from the root workspace.
+      //
+      // `skills/devframe/templates/*.ts` are the devframe-authoring skill's
+      // copy-and-run reference snippets (`skills/devframe/SKILL.md`) — each
+      // one a standalone, runnable example, not imported by anything else.
+      "entry": ["design/*.ts", "skills/devframe/templates/*.ts"],
+      // `spa-devframe.ts` imports `valibot` to illustrate schema validation
+      // for a consumer's own devframe — it's a dependency of the example a
+      // reader copies out, not of this repo's root tooling.
+      "ignoreDependencies": ["valibot"]
+    },
+    "docs": {
+      // `devframe` is referenced only inside fenced code samples in the
+      // guide markdown (e.g. `docs/guide/rpc.md`), which knip doesn't parse
+      // as source — not a real unused dependency.
+      "ignoreDependencies": ["devframe"]
+    },
+    "examples/next-devframe-hub": {
+      // The React client build's root sits at `src/client` (`next dev
+      // src/client`), not the workspace root, so knip's default PostCSS
+      // config glob (workspace-root `postcss.config.*`) misses it.
+      "postcss": {
+        "config": ["src/client/postcss.config.mjs"]
+      },
+      // `BUILTIN_PLUGIN_PACKAGES` (`src/client/devframe/next-devframe-hub.ts`)
+      // lists these as string literals and loads them via a runtime
+      // `import()` carrying `webpackIgnore`/`turbopackIgnore` comments —
+      // deliberately invisible to bundlers (and knip) so Next never inlines
+      // their node-only code. They're genuinely used at runtime.
+      "ignoreDependencies": [
+        "@devframes/plugin-code-server",
+        "@devframes/plugin-git",
+        "@devframes/plugin-inspect",
+        "@devframes/plugin-messages",
+        "@devframes/plugin-terminals"
+      ]
+    },
+    "examples/next-runtime-snapshot": {
+      // Same nested Next.js client root as `next-devframe-hub` above.
+      "postcss": {
+        "config": ["src/client/postcss.config.mjs"]
+      }
+    },
+    "packages/devframe": {
+      // Every `package.json#exports` subpath maps to one of these source
+      // files (see `tsdown.config.ts`'s `serverEntries`/`clientEntries`).
+      // Knip's package.json→dist→src source mapping needs `outDir` set on
+      // the workspace `tsconfig.json`, but this repo's packages resolve
+      // each other's `src/*.ts` directly across workspaces (via the `paths`
+      // aliases in `tsconfig.base.json`), and `outDir` breaks `tsc`'s
+      // `rootDir` inference for every consumer that does — so entries are
+      // listed explicitly instead. Keep this in sync with the `exports` map.
+      "entry": [
+        "src/{index,constants}.ts",
+        "src/helpers/vite.ts",
+        "src/adapters/{build,cac,cli,dev,embedded}.ts",
+        "src/adapters/mcp/index.ts",
+        "src/client/index.ts",
+        "src/node/index.ts",
+        "src/node/{auth,hub-internals}/index.ts",
+        "src/recipes/{common-rpc-functions,interactive-auth,open-helpers}.ts",
+        "src/rpc/{index,client,server}.ts",
+        "src/rpc/dump/index.ts",
+        "src/rpc/transports/{ws-client,ws-server}.ts",
+        "src/types/index.ts",
+        "src/utils/*.ts"
+      ]
+    },
+    "packages/hub": {
+      "entry": ["src/{index,constants}.ts", "src/{client,node,types}/index.ts"]
+    },
+    "packages/json-render": {
+      // `src/node/index.ts` is already picked up via `tsdown.config.ts`
+      // (its literal `entry` object parses cleanly); only `core.ts`/`hub.ts`
+      // need to be declared explicitly.
+      "entry": ["src/{index,core,hub}.ts"]
+    },
+    "packages/nuxt": {
+      // `@nuxt/kit`'s own `defineNuxtModule` return type resolves through
+      // `@nuxt/schema`; tsdown's dts bundler inlines that as a lazy
+      // `import("@nuxt/schema")` type reference in the built
+      // `dist/module.d.mts` (visible only once this workspace has been
+      // built locally) — a transitive type-only leak from a dependency's
+      // own dependency, not a real gap in this package's own manifest.
+      "ignoreDependencies": ["@nuxt/schema"]
+    },
+    "packages/json-render-ui": {
+      // `src/components/index.ts` is already picked up via
+      // `tsdown.config.ts`; only `spa.ts` needs to be declared explicitly.
+      "entry": ["src/{index,spa}.ts"],
+      // The standalone SPA's own Vite config (`src/spa/vite.config.ts`)
+      // mounts `unocss/vite` with no explicit config path, so UnoCSS
+      // discovers this nested `uno.config.ts` by directory proximity to
+      // `root` — not an import knip's graph can see. Keep the package-root
+      // config the Storybook build uses alongside it.
+      "unocss": {
+        "config": ["uno.config.ts", "src/spa/uno.config.ts"]
+      }
+    },
+    // Every built-in plugin ships the same entry shape (see each
+    // `tsdown.config.ts`'s `serverEntries`/`clientEntries`): a root
+    // `index.ts`, an optional `cli.ts`/`vite.ts`/`constants.ts`/`types.ts`,
+    // and `client|node|rpc|inject|engine|registry/index.ts` subdirectories.
+    // One shared pattern covers them all — see `packages/devframe` above for
+    // why this is explicit instead of relying on source mapping.
+    "plugins/*": {
+      "entry": [
+        "src/{index,cli,vite,constants,types}.ts",
+        "src/{client,node,rpc,inject,engine,registry}/index.ts"
+      ]
+    },
+    "plugins/a11y": {
+      // `storybook-solidjs-vite` (not an official `@storybook/*` framework
+      // package) doesn't match knip's Storybook plugin trigger, so it never
+      // auto-enables here. Mirror the plugin's own defaults by hand.
+      "storybook": {
+        "config": [".storybook/main.ts"],
+        "entry": [".storybook/preview.tsx"],
+        "project": [".storybook/**/*.{js,jsx,ts,tsx,mts}"]
+      },
+      // A workspace-specific `entry` replaces (rather than merges with) the
+      // `plugins/*` glob's `entry` above, so repeat that pattern here
+      // alongside the stories.
+      "entry": [
+        "src/{index,cli,vite,constants,types}.ts",
+        "src/{client,node,rpc,inject,engine,registry}/index.ts",
+        "src/**/*.stories.tsx"
+      ]
+    },
+    "plugins/git": {
+      // The React client build's root sits at `src/client` (`next dev
+      // src/client`), not the workspace root, so knip's default PostCSS
+      // config glob (workspace-root `postcss.config.*`) misses it.
+      "postcss": {
+        "config": ["src/client/postcss.config.mjs"]
+      }
+    }
+  }
+}

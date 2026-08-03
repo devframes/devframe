@@ -2,7 +2,7 @@ import type { JrComponent } from './_shared'
 import { h } from 'vue'
 
 /** Format a list of prop keys as a compact gist, e.g. `{ foo, bar }`. */
-export function formatPropKeys(keys: readonly string[]): string {
+function formatPropKeys(keys: readonly string[]): string {
   return keys.length ? `{ ${keys.join(', ')} }` : '{}'
 }
 

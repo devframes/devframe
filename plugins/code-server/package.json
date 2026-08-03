@@ -72,13 +72,11 @@
     "@vitejs/plugin-vue": "catalog:build",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
-    "h3": "catalog:deps",
     "storybook": "catalog:storybook",
     "tsdown": "catalog:build",
     "unocss": "catalog:frontend",
     "vite": "catalog:build",
     "vitest": "catalog:testing",
-    "vue": "catalog:frontend",
-    "ws": "catalog:deps"
+    "vue": "catalog:frontend"
   }
 }

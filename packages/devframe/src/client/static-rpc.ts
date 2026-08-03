@@ -20,7 +20,7 @@ export interface StaticRpcManifestQueryEntry {
   serialization?: StaticRpcSerialization
 }
 
-export type StaticRpcManifestEntry
+type StaticRpcManifestEntry
   = | StaticRpcManifestStaticEntry
     | StaticRpcManifestQueryEntry
     | any

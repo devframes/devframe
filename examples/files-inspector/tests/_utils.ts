@@ -19,7 +19,7 @@ import { resolve } from 'pathe'
 import devframe from '../src/devframe'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
-export const CLIENT_DIST = resolve(HERE, '../dist/client')
+const CLIENT_DIST = resolve(HERE, '../dist/client')
 
 /**
  * Asserts the Preact client has been built. Tests boot a dev server

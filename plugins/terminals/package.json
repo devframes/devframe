@@ -61,7 +61,6 @@
   "dependencies": {
     "cac": "catalog:deps",
     "nostics": "catalog:deps",
-    "pathe": "catalog:deps",
     "zigpty": "catalog:deps"
   },
   "devDependencies": {

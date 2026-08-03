@@ -27,10 +27,6 @@ const STATUS_COLOR: Record<FileStatusCode, string> = {
   'unknown': 'color-muted',
 }
 
-export function statusLabel(code: FileStatusCode): string {
-  return STATUS_LABEL[code]
-}
-
 export function StatusMark({ code, className }: { code: FileStatusCode, className?: string }) {
   return (
     <span

@@ -3,7 +3,7 @@ import type { MaybeRefOrGetter } from 'vue'
 import { computed, reactive, ref, toValue } from 'vue'
 import { fromEntries, levelPriority, levels } from '../components/message-styles'
 
-export type SortMode = 'newest' | 'oldest' | 'level'
+type SortMode = 'newest' | 'oldest' | 'level'
 
 const SORT_MODES: SortMode[] = ['newest', 'oldest', 'level']
 

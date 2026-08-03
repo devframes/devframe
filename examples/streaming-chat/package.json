@@ -21,7 +21,8 @@
     "cac": "catalog:deps",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
-    "preact": "catalog:frontend"
+    "preact": "catalog:frontend",
+    "valibot": "catalog:deps"
   },
   "devDependencies": {
     "@preact/preset-vite": "catalog:build",

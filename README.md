@@ -30,6 +30,10 @@ Framework-neutral foundation for building devframes.
   </a>
 </p>
 
+## Credits
+
+The `devframe connect` MCP connector (discovery + gateway tools + agent-steering errors) follows the architecture Vercel's [`next-devtools-mcp`](https://github.com/vercel/next-devtools-mcp) validated: the real MCP endpoint lives inside the framework, and a thin external connector discovers and proxies it.
+
 ## License
 
 [MIT](./LICENSE.md) License © [Anthony Fu](https://github.com/antfu)

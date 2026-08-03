@@ -18,7 +18,7 @@ import { A11Y_DEFAULT_DOCK_ID } from '../shared/protocol.ts'
  * (deep-linking via `params`). Kept as a discriminated union so future action
  * kinds can be added without reshaping the field.
  */
-export interface HubMessageAction {
+interface HubMessageAction {
   id: string
   label: string
   kind: 'activate'

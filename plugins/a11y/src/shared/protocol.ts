@@ -156,61 +156,61 @@ export interface AgentConfig {
 
 /* ── agent → panel ─────────────────────────────────────────────────────── */
 
-export interface AgentReadyMessage {
+interface AgentReadyMessage {
   type: 'a11y:agent-ready'
   url: string
   route: string
 }
-export interface StateMessage {
+interface StateMessage {
   type: 'a11y:state'
   state: A11yState
 }
-export interface ScanningMessage {
+interface ScanningMessage {
   type: 'a11y:scanning'
   route: string
 }
 
-export type AgentToPanel = AgentReadyMessage | StateMessage | ScanningMessage
+type AgentToPanel = AgentReadyMessage | StateMessage | ScanningMessage
 
 /* ── panel → agent ─────────────────────────────────────────────────────── */
 
-export interface PanelReadyMessage {
+interface PanelReadyMessage {
   type: 'a11y:panel-ready'
 }
-export interface ConfigMessage {
+interface ConfigMessage {
   type: 'a11y:config'
   config: AgentConfig
 }
-export interface HighlightMessage {
+interface HighlightMessage {
   type: 'a11y:highlight'
   /** Node id from {@link ViolationNode.id}; falls back to the first target. */
   nodeId: string
   target: string[]
 }
-export interface ClearHighlightMessage {
+interface ClearHighlightMessage {
   type: 'a11y:clear'
 }
-export interface PinsMessage {
+interface PinsMessage {
   type: 'a11y:pins'
   /** The full desired pin set; the agent draws numbered rings in this order. */
   pins: PinTarget[]
 }
-export interface RescanMessage {
+interface RescanMessage {
   type: 'a11y:rescan'
 }
-export interface SetAutoScanMessage {
+interface SetAutoScanMessage {
   type: 'a11y:set-autoscan'
   enabled: boolean
 }
-export interface ClearRouteMessage {
+interface ClearRouteMessage {
   type: 'a11y:clear-route'
   route: string
 }
-export interface ClearAllMessage {
+interface ClearAllMessage {
   type: 'a11y:clear-all'
 }
 
-export type PanelToAgent
+type PanelToAgent
   = | PanelReadyMessage
     | ConfigMessage
     | HighlightMessage

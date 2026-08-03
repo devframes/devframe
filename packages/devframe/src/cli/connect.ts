@@ -77,7 +77,9 @@ const GATEWAY_TOOLS: Tool[] = [
 
 /**
  * Start the devframe MCP connector on stdio: a thin discovery + proxy server
- * in the shape next-devtools-mcp validated. It exposes two gateway tools —
+ * in the shape Vercel's next-devtools-mcp (https://github.com/vercel/next-devtools-mcp)
+ * validated — credit due there for the architecture this connector follows.
+ * It exposes two gateway tools —
  * `devframe_connect_list-instances` (discover running devframe instances via
  * the instance registry and list each one's MCP tools) and
  * `devframe_connect_call-tool` (invoke one tool on one instance over its

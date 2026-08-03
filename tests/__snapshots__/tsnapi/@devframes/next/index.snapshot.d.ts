@@ -34,6 +34,12 @@ export interface DevframeNextHost {
     dispose: () => Promise<void>;
   }>;
 }
+export interface DevframeNextHostMcpOptions {
+  serverName?: string;
+  serverVersion?: string;
+  exposeSharedState?: boolean | ((_: string) => boolean);
+  allowedOrigins?: readonly string[] | false;
+}
 // #endregion
 
 // #region Functions

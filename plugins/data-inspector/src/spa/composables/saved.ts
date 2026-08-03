@@ -23,5 +23,3 @@ export function useSavedQueries() {
 
   return { saved, refresh, save, remove }
 }
-
-export type SavedQueriesApi = ReturnType<typeof useSavedQueries>

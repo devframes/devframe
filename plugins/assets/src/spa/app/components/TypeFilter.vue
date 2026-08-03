@@ -2,7 +2,7 @@
 import type { AssetType } from '../../../types'
 import { TYPE_META } from '../utils/assetType'
 
-export interface TypeFilterItem {
+interface TypeFilterItem {
   type: AssetType
   count: number
   checked: boolean

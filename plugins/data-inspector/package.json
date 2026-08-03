@@ -72,6 +72,7 @@
     "@storybook/vue3-vite": "catalog:storybook",
     "@types/codemirror": "catalog:types",
     "@vitejs/plugin-vue": "catalog:build",
+    "@vueuse/core": "catalog:frontend",
     "devframe": "workspace:*",
     "dompurify": "catalog:frontend",
     "floating-vue": "catalog:frontend",

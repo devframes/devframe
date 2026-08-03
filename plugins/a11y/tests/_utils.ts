@@ -12,7 +12,7 @@ import { resolve } from 'pathe'
 import devframe from '../src/index'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
-export const SPA_DIST = resolve(HERE, '../dist/spa')
+const SPA_DIST = resolve(HERE, '../dist/spa')
 
 /** Loud failure if the Solid panel hasn't been built — tests serve `dist/spa`. */
 export function assertClientBuilt(): void {

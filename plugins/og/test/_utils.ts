@@ -22,7 +22,7 @@ export async function testFetch(_url: string): Promise<Response> {
   })
 }
 
-export const testDevframe = createOgDevframe({ fetch: testFetch })
+const testDevframe = createOgDevframe({ fetch: testFetch })
 
 export function assertSpaBuilt(): void {
   const distDir = testDevframe.cli!.distDir

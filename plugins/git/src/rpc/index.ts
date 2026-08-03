@@ -14,8 +14,6 @@ export const readFunctions = [status, log, show, branches, diff] as const
 /** Mutating RPC — registered only when write actions are enabled. */
 export const writeFunctions = [stage, unstage, commit] as const
 
-export const serverFunctions = [status, log, show, branches, diff, stage, unstage, commit] as const
-
 declare module 'devframe' {
-  interface DevframeRpcServerFunctions extends RpcDefinitionsToFunctions<typeof serverFunctions> {}
+  interface DevframeRpcServerFunctions extends RpcDefinitionsToFunctions<[...typeof readFunctions, ...typeof writeFunctions]> {}
 }
