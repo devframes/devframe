@@ -270,21 +270,25 @@ describe('devToolsAgentHost', () => {
     })
   })
 
-  describe('valibot args on tool inputs', () => {
-    it('derives the JSON-Schema input from a single object schema (unwrapped)', async () => {
+  describe('standard schema args on tool inputs', () => {
+    it('carries args raw on the projected tool — conversion is deferred to protocol adapters', async () => {
       const v = await import('valibot')
       const ctx = createContext()
+      const schema = v.object({ name: v.optional(v.string()) })
       ctx.agent.registerTool({
         id: 'schema:tool',
         description: 'Schema-typed.',
-        args: [v.object({ name: v.optional(v.string()) })],
+        args: [schema],
         handler: args => args,
       })
 
       const tool = ctx.agent.getTool('schema:tool')!
-      const schema = tool.inputSchema as { type: string, properties: Record<string, unknown> }
-      expect(schema.type).toBe('object')
-      expect(Object.keys(schema.properties)).toEqual(['name'])
+      // Mirrors how an RPC-backed tool defers to `ctx.rpc.definitions` — the
+      // agent host itself never converts Standard Schema → JSON Schema (that
+      // stays a protocol-adapter concern, e.g. the MCP adapter), so no
+      // eager `inputSchema` is computed here.
+      expect(tool.inputSchema).toBeUndefined()
+      expect(tool.args).toEqual([schema])
     })
 
     it('an explicit inputSchema override wins over args', async () => {

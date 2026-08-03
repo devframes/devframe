@@ -69,7 +69,7 @@ export interface DevframeNextHost {
    * Serve an MCP Streamable-HTTP endpoint at `path` **in-process** — on the
    * Next app's own origin, through the same catch-all route as the SPAs (the
    * `/_next/mcp` shape). Built on `createMcpFetchHandler` from
-   * `devframe/adapters/mcp` (imported lazily: `@modelcontextprotocol/sdk`
+   * `devframe/adapters/mcp` (imported lazily: `@modelcontextprotocol/server`
    * stays an optional peer). Advertise the path in the connection meta
    * (`mcp: { path }` — same origin, no port) and register the instance via
    * `registerDevframeInstance` so `devframe connect` can discover it.

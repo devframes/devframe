@@ -37,6 +37,7 @@ export interface AgentTool {
   safety: 'read' | 'action' | 'destructive';
   tags?: readonly string[];
   rpcName?: string;
+  args?: readonly StandardSchemaV1[];
   inputSchema?: unknown;
   outputSchema?: unknown;
   examples?: readonly {
@@ -50,7 +51,7 @@ export interface AgentToolInput {
   description: string;
   safety?: 'read' | 'action' | 'destructive';
   tags?: readonly string[];
-  args?: readonly GenericSchema[];
+  args?: readonly StandardSchemaV1[];
   inputSchema?: unknown;
   outputSchema?: unknown;
   examples?: readonly {

@@ -37,7 +37,7 @@
     "@antfu/eslint-config": "catalog:tooling",
     "@antfu/ni": "catalog:build",
     "@antfu/utils": "catalog:inlined",
-    "@modelcontextprotocol/sdk": "catalog:deps",
+    "@modelcontextprotocol/client": "catalog:deps",
     "@playwright/test": "catalog:testing",
     "@types/node": "catalog:types",
     "@types/prompts": "catalog:types",

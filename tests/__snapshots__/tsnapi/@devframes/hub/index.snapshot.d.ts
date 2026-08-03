@@ -42,7 +42,7 @@ export interface DevframeCommandAgentOptions {
   title?: string;
   safety?: 'read' | 'action' | 'destructive';
   tags?: readonly string[];
-  args?: readonly GenericSchema[];
+  args?: readonly StandardSchemaV1[];
 }
 export interface DevframeCommandBase {
   id: string;

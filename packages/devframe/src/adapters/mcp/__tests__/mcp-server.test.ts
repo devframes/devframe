@@ -60,6 +60,38 @@ describe('mcp adapter (in-memory)', () => {
     }
   })
 
+  it('converts a registered tool\'s Standard Schema args to JSON Schema over the wire', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      const v = await import('valibot')
+      ctx.agent.registerTool({
+        id: 'schema-tool',
+        description: 'Takes a schema-typed arg.',
+        args: [v.object({ name: v.optional(v.string()) })],
+        handler: args => args,
+      })
+
+      const listed = await client.listTools()
+      const tool = listed.tools.find(t => t.name === 'schema-tool')!
+      // Each positional arg is advertised under `arg0`/`arg1`/… — the
+      // project-wide Standard Schema convention (no single-arg unwrapping).
+      const schema = tool.inputSchema as { type: string, properties: Record<string, unknown> }
+      expect(schema.type).toBe('object')
+      expect(Object.keys(schema.properties)).toEqual(['arg0'])
+
+      // `args` is purely descriptive for a plain registered tool — the
+      // handler receives the caller's payload as-is, unlike RPC-backed
+      // tools (or hub commands) which coerce `arg0`/`arg1`/… into
+      // positional parameters.
+      const result = await client.callTool({ name: 'schema-tool', arguments: { arg0: { name: 'devframe' } } })
+      const content = result.content as Array<{ type: string, text: string }>
+      expect(JSON.parse(content[0]!.text)).toEqual({ arg0: { name: 'devframe' } })
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
   it('returns text and structured content for a tool with an output schema', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {

@@ -107,7 +107,9 @@ describe('devframeCommandsHost agent bridge', () => {
     expect(tool.description).toBe('Greet someone by name.')
     expect(tool.title).toBe('Greet')
     expect(tool.safety).toBe('action')
-    expect((tool.inputSchema as { type: string }).type).toBe('object')
+    // The Standard Schema is carried raw — protocol adapters (e.g. the MCP
+    // adapter) convert to JSON Schema on demand, mirroring RPC-backed tools.
+    expect(tool.args).toHaveLength(1)
     expect(agent.list().tools.map(t => t.id)).toEqual(['demo:greet'])
 
     // Each declared arg schema is advertised (and read back) under its own

@@ -160,7 +160,7 @@ function sharedStateFilter(exposeSharedState: boolean | ((key: string) => boolea
   return typeof exposeSharedState === 'function' ? exposeSharedState : () => true
 }
 
-function readStateToolProjection(): Record<string, unknown> {
+function readStateToolProjection(): Tool {
   return {
     name: READ_STATE_TOOL,
     title: 'Read shared state',
@@ -179,7 +179,7 @@ function readStateToolProjection(): Record<string, unknown> {
       readOnlyHint: true,
       destructiveHint: false,
     },
-  }
+  } as Tool
 }
 
 async function readStateResult(

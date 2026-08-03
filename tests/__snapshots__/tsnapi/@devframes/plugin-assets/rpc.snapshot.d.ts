@@ -21,12 +21,12 @@ export declare const alwaysFunctions: readonly [{
   returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
-  handler?: ((args_0: string) => void) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], void, import("devframe").DevframeNodeContext> | undefined;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>>) | undefined;
+  handler?: ((args_0: string) => import("devframe/rpc").Thenable<void>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], import("devframe/rpc").Thenable<void>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>> | undefined;
 }, {
   name: "devframes:plugin:assets:reveal-in-folder";
   type?: "action" | undefined;
@@ -35,12 +35,12 @@ export declare const alwaysFunctions: readonly [{
   returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
-  handler?: ((args_0: string) => void) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], void, import("devframe").DevframeNodeContext> | undefined;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>>) | undefined;
+  handler?: ((args_0: string) => import("devframe/rpc").Thenable<void>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], import("devframe/rpc").Thenable<void>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>> | undefined;
 }];
 export declare const assetInfoSchema: import("devframe/utils/simple-schema").SimpleSchema<{
   path: string;
@@ -69,27 +69,27 @@ export declare const capabilities: {
   }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     write: boolean;
     uploadExtensions: string[] | "*";
-  }>>) | undefined;
-  handler?: (() => {
+  }>>>) | undefined;
+  handler?: (() => import("devframe/rpc").Thenable<{
     write: boolean;
     uploadExtensions: string[] | "*";
-  }) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[], {
+  }>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[], import("devframe/rpc").Thenable<{
     write: boolean;
     uploadExtensions: string[] | "*";
-  }, DevframeNodeContext> | undefined;
+  }>, DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
+    write: boolean;
+    uploadExtensions: string[] | "*";
+  }>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     write: boolean;
     uploadExtensions: string[] | "*";
   }>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
-    write: boolean;
-    uploadExtensions: string[] | "*";
-  }>> | undefined;
 };
 export declare const deleteAssets: {
   name: "devframes:plugin:assets:delete";
@@ -109,30 +109,30 @@ export declare const deleteAssets: {
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
-  }], {
+  }], import("devframe/rpc").Thenable<{
     deleted: string[];
-  }>>) | undefined;
+  }>>>) | undefined;
   handler?: ((args_0: {
     paths: string[];
-  }) => {
+  }) => import("devframe/rpc").Thenable<{
     deleted: string[];
-  }) | undefined;
+  }>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     paths: string[];
-  }], {
+  }], import("devframe/rpc").Thenable<{
     deleted: string[];
-  }, DevframeNodeContext> | undefined;
+  }>, DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
-  }], {
+  }], import("devframe/rpc").Thenable<{
     deleted: string[];
-  }>>> | undefined;
+  }>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
-  }], {
+  }], import("devframe/rpc").Thenable<{
     deleted: string[];
-  }>> | undefined;
+  }>>> | undefined;
 };
 export declare const list: {
   name: "devframes:plugin:assets:list";
@@ -154,42 +154,42 @@ export declare const list: {
   }[]>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }[]>>) | undefined;
-  handler?: (() => {
+  }[]>>>) | undefined;
+  handler?: (() => import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }[]) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[], {
+  }[]>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }[], DevframeNodeContext> | undefined;
+  }[]>, DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }[]>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }[]>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
-    path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
-    publicPath: string;
-    size: number;
-    mtime: number;
-  }[]>> | undefined;
 };
 export declare const mkdir: {
   name: "devframes:plugin:assets:mkdir";
@@ -205,20 +205,20 @@ export declare const mkdir: {
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], void>>) | undefined;
+  }], import("devframe/rpc").Thenable<void>>>) | undefined;
   handler?: ((args_0: {
     path: string;
-  }) => void) | undefined;
+  }) => import("devframe/rpc").Thenable<void>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     path: string;
-  }], void, DevframeNodeContext> | undefined;
+  }], import("devframe/rpc").Thenable<void>, DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], void>>> | undefined;
+  }], import("devframe/rpc").Thenable<void>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], void>> | undefined;
+  }], import("devframe/rpc").Thenable<void>>> | undefined;
 };
 export declare const openInEditor: {
   name: "devframes:plugin:assets:open-in-editor";
@@ -228,12 +228,12 @@ export declare const openInEditor: {
   returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
-  handler?: ((args_0: string) => void) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], void, DevframeNodeContext> | undefined;
+  setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>>) | undefined;
+  handler?: ((args_0: string) => import("devframe/rpc").Thenable<void>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], import("devframe/rpc").Thenable<void>, DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>> | undefined;
 };
 export declare const readFunctions: readonly [{
   name: "devframes:plugin:assets:list";
@@ -255,42 +255,42 @@ export declare const readFunctions: readonly [{
   }[]>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }[]>>) | undefined;
-  handler?: (() => {
+  }[]>>>) | undefined;
+  handler?: (() => import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }[]) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[], {
+  }[]>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }[], import("devframe").DevframeNodeContext> | undefined;
+  }[]>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }[]>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }[]>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
-    path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
-    publicPath: string;
-    size: number;
-    mtime: number;
-  }[]>> | undefined;
 }, {
   name: "devframes:plugin:assets:read-image-meta";
   type?: "query" | undefined;
@@ -307,32 +307,32 @@ export declare const readFunctions: readonly [{
   } | null>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
-  } | null>>) | undefined;
-  handler?: ((args_0: string) => {
+  } | null>>>) | undefined;
+  handler?: ((args_0: string) => import("devframe/rpc").Thenable<{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
-  } | null) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], {
+  } | null>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], import("devframe/rpc").Thenable<{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
-  } | null, import("devframe").DevframeNodeContext> | undefined;
+  } | null>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<{
+    width?: number | undefined;
+    height?: number | undefined;
+    orientation?: number | undefined;
+  } | null>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
   } | null>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
-    width?: number | undefined;
-    height?: number | undefined;
-    orientation?: number | undefined;
-  } | null>> | undefined;
 }, {
   name: "devframes:plugin:assets:read-text";
   type?: "query" | undefined;
@@ -341,12 +341,12 @@ export declare const readFunctions: readonly [{
   returns: import("devframe/utils/simple-schema").SimpleSchema<string | null, string | null>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>) | undefined;
-  handler?: ((args_0: string, args_1: number | undefined) => string | null) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string, number | undefined], string | null, import("devframe").DevframeNodeContext> | undefined;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], import("devframe/rpc").Thenable<string | null>>>) | undefined;
+  handler?: ((args_0: string, args_1: number | undefined) => import("devframe/rpc").Thenable<string | null>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string, number | undefined], import("devframe/rpc").Thenable<string | null>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], import("devframe/rpc").Thenable<string | null>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], import("devframe/rpc").Thenable<string | null>>> | undefined;
 }, {
   name: "devframes:plugin:assets:capabilities";
   type?: "query" | undefined;
@@ -361,27 +361,27 @@ export declare const readFunctions: readonly [{
   }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     write: boolean;
     uploadExtensions: string[] | "*";
-  }>>) | undefined;
-  handler?: (() => {
+  }>>>) | undefined;
+  handler?: (() => import("devframe/rpc").Thenable<{
     write: boolean;
     uploadExtensions: string[] | "*";
-  }) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[], {
+  }>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[], import("devframe/rpc").Thenable<{
     write: boolean;
     uploadExtensions: string[] | "*";
-  }, import("devframe").DevframeNodeContext> | undefined;
+  }>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
+    write: boolean;
+    uploadExtensions: string[] | "*";
+  }>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     write: boolean;
     uploadExtensions: string[] | "*";
   }>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
-    write: boolean;
-    uploadExtensions: string[] | "*";
-  }>> | undefined;
 }];
 export declare const readImageMeta: {
   name: "devframes:plugin:assets:read-image-meta";
@@ -399,32 +399,32 @@ export declare const readImageMeta: {
   } | null>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
+  setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
-  } | null>>) | undefined;
-  handler?: ((args_0: string) => {
+  } | null>>>) | undefined;
+  handler?: ((args_0: string) => import("devframe/rpc").Thenable<{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
-  } | null) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], {
+  } | null>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], import("devframe/rpc").Thenable<{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
-  } | null, DevframeNodeContext> | undefined;
+  } | null>, DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<{
+    width?: number | undefined;
+    height?: number | undefined;
+    orientation?: number | undefined;
+  } | null>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
   } | null>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
-    width?: number | undefined;
-    height?: number | undefined;
-    orientation?: number | undefined;
-  } | null>> | undefined;
 };
 export declare const readText: {
   name: "devframes:plugin:assets:read-text";
@@ -434,12 +434,12 @@ export declare const readText: {
   returns: import("devframe/utils/simple-schema").SimpleSchema<string | null, string | null>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>) | undefined;
-  handler?: ((args_0: string, args_1: number | undefined) => string | null) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string, number | undefined], string | null, DevframeNodeContext> | undefined;
+  setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], import("devframe/rpc").Thenable<string | null>>>) | undefined;
+  handler?: ((args_0: string, args_1: number | undefined) => import("devframe/rpc").Thenable<string | null>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string, number | undefined], import("devframe/rpc").Thenable<string | null>, DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], import("devframe/rpc").Thenable<string | null>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], import("devframe/rpc").Thenable<string | null>>> | undefined;
 };
 export declare const rename: {
   name: "devframes:plugin:assets:rename";
@@ -470,54 +470,54 @@ export declare const rename: {
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
     newName: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }>>) | undefined;
+  }>>>) | undefined;
   handler?: ((args_0: {
     path: string;
     newName: string;
-  }) => {
+  }) => import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }) | undefined;
+  }>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     path: string;
     newName: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }, DevframeNodeContext> | undefined;
+  }>, DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
     newName: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
+    path: string;
+    newName: string;
+  }], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
-    path: string;
-    newName: string;
-  }], {
-    path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
-    publicPath: string;
-    size: number;
-    mtime: number;
-  }>> | undefined;
 };
 export declare const revealInFolder: {
   name: "devframes:plugin:assets:reveal-in-folder";
@@ -527,12 +527,12 @@ export declare const revealInFolder: {
   returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
-  handler?: ((args_0: string) => void) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], void, DevframeNodeContext> | undefined;
+  setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>>) | undefined;
+  handler?: ((args_0: string) => import("devframe/rpc").Thenable<void>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], import("devframe/rpc").Thenable<void>, DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>> | undefined;
 };
 export declare const serverFunctions: readonly [{
   name: "devframes:plugin:assets:list";
@@ -554,42 +554,42 @@ export declare const serverFunctions: readonly [{
   }[]>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }[]>>) | undefined;
-  handler?: (() => {
+  }[]>>>) | undefined;
+  handler?: (() => import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }[]) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[], {
+  }[]>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }[], import("devframe").DevframeNodeContext> | undefined;
+  }[]>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }[]>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }[]>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
-    path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
-    publicPath: string;
-    size: number;
-    mtime: number;
-  }[]>> | undefined;
 }, {
   name: "devframes:plugin:assets:read-image-meta";
   type?: "query" | undefined;
@@ -606,32 +606,32 @@ export declare const serverFunctions: readonly [{
   } | null>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
-  } | null>>) | undefined;
-  handler?: ((args_0: string) => {
+  } | null>>>) | undefined;
+  handler?: ((args_0: string) => import("devframe/rpc").Thenable<{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
-  } | null) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], {
+  } | null>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], import("devframe/rpc").Thenable<{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
-  } | null, import("devframe").DevframeNodeContext> | undefined;
+  } | null>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<{
+    width?: number | undefined;
+    height?: number | undefined;
+    orientation?: number | undefined;
+  } | null>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
   } | null>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
-    width?: number | undefined;
-    height?: number | undefined;
-    orientation?: number | undefined;
-  } | null>> | undefined;
 }, {
   name: "devframes:plugin:assets:read-text";
   type?: "query" | undefined;
@@ -640,12 +640,12 @@ export declare const serverFunctions: readonly [{
   returns: import("devframe/utils/simple-schema").SimpleSchema<string | null, string | null>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>) | undefined;
-  handler?: ((args_0: string, args_1: number | undefined) => string | null) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string, number | undefined], string | null, import("devframe").DevframeNodeContext> | undefined;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], import("devframe/rpc").Thenable<string | null>>>) | undefined;
+  handler?: ((args_0: string, args_1: number | undefined) => import("devframe/rpc").Thenable<string | null>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string, number | undefined], import("devframe/rpc").Thenable<string | null>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], import("devframe/rpc").Thenable<string | null>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], import("devframe/rpc").Thenable<string | null>>> | undefined;
 }, {
   name: "devframes:plugin:assets:capabilities";
   type?: "query" | undefined;
@@ -660,27 +660,27 @@ export declare const serverFunctions: readonly [{
   }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     write: boolean;
     uploadExtensions: string[] | "*";
-  }>>) | undefined;
-  handler?: (() => {
+  }>>>) | undefined;
+  handler?: (() => import("devframe/rpc").Thenable<{
     write: boolean;
     uploadExtensions: string[] | "*";
-  }) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[], {
+  }>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[], import("devframe/rpc").Thenable<{
     write: boolean;
     uploadExtensions: string[] | "*";
-  }, import("devframe").DevframeNodeContext> | undefined;
+  }>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
+    write: boolean;
+    uploadExtensions: string[] | "*";
+  }>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     write: boolean;
     uploadExtensions: string[] | "*";
   }>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
-    write: boolean;
-    uploadExtensions: string[] | "*";
-  }>> | undefined;
 }, {
   name: "devframes:plugin:assets:open-in-editor";
   type?: "action" | undefined;
@@ -689,12 +689,12 @@ export declare const serverFunctions: readonly [{
   returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
-  handler?: ((args_0: string) => void) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], void, import("devframe").DevframeNodeContext> | undefined;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>>) | undefined;
+  handler?: ((args_0: string) => import("devframe/rpc").Thenable<void>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], import("devframe/rpc").Thenable<void>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>> | undefined;
 }, {
   name: "devframes:plugin:assets:reveal-in-folder";
   type?: "action" | undefined;
@@ -703,12 +703,12 @@ export declare const serverFunctions: readonly [{
   returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
-  handler?: ((args_0: string) => void) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], void, import("devframe").DevframeNodeContext> | undefined;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>>) | undefined;
+  handler?: ((args_0: string) => import("devframe/rpc").Thenable<void>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], import("devframe/rpc").Thenable<void>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], import("devframe/rpc").Thenable<void>>> | undefined;
 }, {
   name: "devframes:plugin:assets:upload";
   type?: "action" | undefined;
@@ -727,30 +727,30 @@ export declare const serverFunctions: readonly [{
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     uploadId: string;
-  }>>) | undefined;
+  }>>>) | undefined;
   handler?: ((args_0: {
     path: string;
-  }) => {
+  }) => import("devframe/rpc").Thenable<{
     uploadId: string;
-  }) | undefined;
+  }>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     path: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     uploadId: string;
-  }, import("devframe").DevframeNodeContext> | undefined;
+  }>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     uploadId: string;
-  }>>> | undefined;
+  }>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     uploadId: string;
-  }>> | undefined;
+  }>>> | undefined;
 }, {
   name: "devframes:plugin:assets:rename";
   type?: "action" | undefined;
@@ -780,54 +780,54 @@ export declare const serverFunctions: readonly [{
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
     newName: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }>>) | undefined;
+  }>>>) | undefined;
   handler?: ((args_0: {
     path: string;
     newName: string;
-  }) => {
+  }) => import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }) | undefined;
+  }>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     path: string;
     newName: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }, import("devframe").DevframeNodeContext> | undefined;
+  }>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
     newName: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
+    path: string;
+    newName: string;
+  }], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
-    path: string;
-    newName: string;
-  }], {
-    path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
-    publicPath: string;
-    size: number;
-    mtime: number;
-  }>> | undefined;
 }, {
   name: "devframes:plugin:assets:delete";
   type?: "action" | undefined;
@@ -846,30 +846,30 @@ export declare const serverFunctions: readonly [{
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
-  }], {
+  }], import("devframe/rpc").Thenable<{
     deleted: string[];
-  }>>) | undefined;
+  }>>>) | undefined;
   handler?: ((args_0: {
     paths: string[];
-  }) => {
+  }) => import("devframe/rpc").Thenable<{
     deleted: string[];
-  }) | undefined;
+  }>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     paths: string[];
-  }], {
+  }], import("devframe/rpc").Thenable<{
     deleted: string[];
-  }, import("devframe").DevframeNodeContext> | undefined;
+  }>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
-  }], {
+  }], import("devframe/rpc").Thenable<{
     deleted: string[];
-  }>>> | undefined;
+  }>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
-  }], {
+  }], import("devframe/rpc").Thenable<{
     deleted: string[];
-  }>> | undefined;
+  }>>> | undefined;
 }, {
   name: "devframes:plugin:assets:mkdir";
   type?: "action" | undefined;
@@ -884,20 +884,20 @@ export declare const serverFunctions: readonly [{
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], void>>) | undefined;
+  }], import("devframe/rpc").Thenable<void>>>) | undefined;
   handler?: ((args_0: {
     path: string;
-  }) => void) | undefined;
+  }) => import("devframe/rpc").Thenable<void>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     path: string;
-  }], void, import("devframe").DevframeNodeContext> | undefined;
+  }], import("devframe/rpc").Thenable<void>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], void>>> | undefined;
+  }], import("devframe/rpc").Thenable<void>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], void>> | undefined;
+  }], import("devframe/rpc").Thenable<void>>> | undefined;
 }];
 export declare const upload: {
   name: "devframes:plugin:assets:upload";
@@ -917,30 +917,30 @@ export declare const upload: {
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     uploadId: string;
-  }>>) | undefined;
+  }>>>) | undefined;
   handler?: ((args_0: {
     path: string;
-  }) => {
+  }) => import("devframe/rpc").Thenable<{
     uploadId: string;
-  }) | undefined;
+  }>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     path: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     uploadId: string;
-  }, DevframeNodeContext> | undefined;
+  }>, DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     uploadId: string;
-  }>>> | undefined;
+  }>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     uploadId: string;
-  }>> | undefined;
+  }>>> | undefined;
 };
 export declare const UPLOAD_CHANNEL: string;
 export declare const writeFunctions: readonly [{
@@ -961,30 +961,30 @@ export declare const writeFunctions: readonly [{
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     uploadId: string;
-  }>>) | undefined;
+  }>>>) | undefined;
   handler?: ((args_0: {
     path: string;
-  }) => {
+  }) => import("devframe/rpc").Thenable<{
     uploadId: string;
-  }) | undefined;
+  }>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     path: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     uploadId: string;
-  }, import("devframe").DevframeNodeContext> | undefined;
+  }>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     uploadId: string;
-  }>>> | undefined;
+  }>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     uploadId: string;
-  }>> | undefined;
+  }>>> | undefined;
 }, {
   name: "devframes:plugin:assets:rename";
   type?: "action" | undefined;
@@ -1014,54 +1014,54 @@ export declare const writeFunctions: readonly [{
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
     newName: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }>>) | undefined;
+  }>>>) | undefined;
   handler?: ((args_0: {
     path: string;
     newName: string;
-  }) => {
+  }) => import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }) | undefined;
+  }>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     path: string;
     newName: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
-  }, import("devframe").DevframeNodeContext> | undefined;
+  }>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
     newName: string;
-  }], {
+  }], import("devframe/rpc").Thenable<{
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
+    path: string;
+    newName: string;
+  }], import("devframe/rpc").Thenable<{
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
-    path: string;
-    newName: string;
-  }], {
-    path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
-    publicPath: string;
-    size: number;
-    mtime: number;
-  }>> | undefined;
 }, {
   name: "devframes:plugin:assets:delete";
   type?: "action" | undefined;
@@ -1080,30 +1080,30 @@ export declare const writeFunctions: readonly [{
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
-  }], {
+  }], import("devframe/rpc").Thenable<{
     deleted: string[];
-  }>>) | undefined;
+  }>>>) | undefined;
   handler?: ((args_0: {
     paths: string[];
-  }) => {
+  }) => import("devframe/rpc").Thenable<{
     deleted: string[];
-  }) | undefined;
+  }>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     paths: string[];
-  }], {
+  }], import("devframe/rpc").Thenable<{
     deleted: string[];
-  }, import("devframe").DevframeNodeContext> | undefined;
+  }>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
-  }], {
+  }], import("devframe/rpc").Thenable<{
     deleted: string[];
-  }>>> | undefined;
+  }>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
-  }], {
+  }], import("devframe/rpc").Thenable<{
     deleted: string[];
-  }>> | undefined;
+  }>>> | undefined;
 }, {
   name: "devframes:plugin:assets:mkdir";
   type?: "action" | undefined;
@@ -1118,19 +1118,19 @@ export declare const writeFunctions: readonly [{
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], void>>) | undefined;
+  }], import("devframe/rpc").Thenable<void>>>) | undefined;
   handler?: ((args_0: {
     path: string;
-  }) => void) | undefined;
+  }) => import("devframe/rpc").Thenable<void>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     path: string;
-  }], void, import("devframe").DevframeNodeContext> | undefined;
+  }], import("devframe/rpc").Thenable<void>, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], void>>> | undefined;
+  }], import("devframe/rpc").Thenable<void>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
-  }], void>> | undefined;
+  }], import("devframe/rpc").Thenable<void>>> | undefined;
 }];
 // #endregion

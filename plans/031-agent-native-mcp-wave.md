@@ -98,8 +98,8 @@ literal "/_next/mcp" shape on devframe primitives.
     - `devframe:connect:call-tool` — invoke one tool on one instance (SDK client
       over Streamable-HTTP to the instance's advertised `mcp` endpoint).
     `--port <n>` probes an explicit port besides the registry. Requires the
-    optional `@modelcontextprotocol/sdk` peer; a missing peer produces a coded
-    diagnostic with install instructions.
+    optional `@modelcontextprotocol/server` peer; a missing peer produces a
+    coded diagnostic with install instructions.
 11. **In-process MCP for `@devframes/next`** — `createDevframeNextHost` gains
     `mountMcp(ctx, base, options?)` built on `createMcpFetchHandler`, so a
     Next app serves MCP from its own origin (the `/_next/mcp` shape). The hub
