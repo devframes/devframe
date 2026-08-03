@@ -137,21 +137,21 @@ export declare const list: {
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }[]>>) | undefined;
   handler?: (() => {
     path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }[]) | undefined;
   dump?: import("devframe/rpc").RpcDump<[], {
     path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -159,14 +159,14 @@ export declare const list: {
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }[]>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -425,7 +425,7 @@ export declare const rename: {
     newName: string;
   }], {
     path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -435,7 +435,7 @@ export declare const rename: {
     newName: string;
   }) => {
     path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -445,7 +445,7 @@ export declare const rename: {
     newName: string;
   }], {
     path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -456,7 +456,7 @@ export declare const rename: {
     newName: string;
   }], {
     path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -466,7 +466,7 @@ export declare const rename: {
     newName: string;
   }], {
     path: string;
-    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
     publicPath: string;
     size: number;
     mtime: number;

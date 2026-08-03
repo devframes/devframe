@@ -791,9 +791,6 @@ importers:
       '@standard-schema/spec':
         specifier: catalog:deps
         version: 1.1.0
-      '@valibot/to-json-schema':
-        specifier: catalog:deps
-        version: 1.7.1(valibot@1.4.2(typescript@6.0.3))
       birpc:
         specifier: catalog:deps
         version: 4.0.0
@@ -818,9 +815,6 @@ importers:
       ufo:
         specifier: catalog:deps
         version: 1.6.4
-      valibot:
-        specifier: catalog:deps
-        version: 1.4.2(typescript@6.0.3)
     devDependencies:
       '@modelcontextprotocol/client':
         specifier: catalog:deps
@@ -870,6 +864,9 @@ importers:
       ua-parser-modern:
         specifier: catalog:inlined
         version: 0.1.1
+      valibot:
+        specifier: catalog:deps
+        version: 1.4.2(typescript@6.0.3)
       whenexpr:
         specifier: catalog:deps
         version: 0.1.2

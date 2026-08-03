@@ -50,6 +50,7 @@
     "./utils/nanoid": "./dist/utils/nanoid.mjs",
     "./utils/open": "./dist/utils/open.mjs",
     "./utils/promise": "./dist/utils/promise.mjs",
+    "./utils/schema": "./dist/utils/schema.mjs",
     "./utils/scope": "./dist/utils/scope.mjs",
     "./utils/serve-static": "./dist/utils/serve-static.mjs",
     "./utils/shared-state": "./dist/utils/shared-state.mjs",
@@ -83,7 +84,6 @@
   },
   "dependencies": {
     "@standard-schema/spec": "catalog:deps",
-    "@valibot/to-json-schema": "catalog:deps",
     "birpc": "catalog:deps",
     "crossws": "catalog:deps",
     "destr": "catalog:deps",
@@ -91,8 +91,7 @@
     "mrmime": "catalog:deps",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
-    "ufo": "catalog:deps",
-    "valibot": "catalog:deps"
+    "ufo": "catalog:deps"
   },
   "devDependencies": {
     "@modelcontextprotocol/client": "catalog:deps",
@@ -111,6 +110,7 @@
     "tinyglobby": "catalog:deps",
     "tsdown": "catalog:build",
     "ua-parser-modern": "catalog:inlined",
+    "valibot": "catalog:deps",
     "whenexpr": "catalog:deps",
     "ws": "catalog:deps"
   }

@@ -22,13 +22,13 @@ sequenceDiagram
 
 ```ts
 import { defineRpcFunction } from 'devframe'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/schema' // or bring your own: valibot / zod / arktype
 
 export const getModules = defineRpcFunction({
   name: 'get-modules', // bare — the scope namespaces it to `my-devframe:get-modules`
   type: 'query',
-  args: [v.object({ limit: v.number() })],
-  returns: v.array(v.object({ id: v.string(), size: v.number() })),
+  args: [s.object({ limit: s.number() })],
+  returns: s.array(s.object({ id: s.string(), size: s.number() })),
   setup: ctx => ({
     handler: async ({ limit }) => {
       // `ctx` is the full DevframeNodeContext.
@@ -75,14 +75,16 @@ Use `static` for data collected once during `setup` and shipped to read-only sta
 
 ### Handler arguments
 
-Handlers accept any serializable arguments. Declare `args` schemas — any [Standard Schema](https://standardschema.dev/) validator, valibot below — and each argument is validated at the boundary before the handler runs; a mismatch is rejected with a coded diagnostic. Validation guards the payload without rewriting it, so extra object fields the schema doesn't mention still reach the handler:
+Handlers accept any serializable arguments. Declare `args` schemas — any [Standard Schema](https://standardschema.dev/) validator (valibot, zod, arktype, …) — and each argument is validated at the boundary before the handler runs; a mismatch is rejected with a coded diagnostic. Validation guards the payload without rewriting it, so extra object fields the schema doesn't mention still reach the handler.
+
+Devframe forces no validator on you. Bring the one you already use, or reach for the built-in zero-dependency builder at `devframe/utils/schema` (imported as `s` below):
 
 ```ts
 defineRpcFunction({
   name: 'get-file',
   type: 'query',
-  args: [v.object({ path: v.string(), includeSource: v.optional(v.boolean()) })],
-  returns: v.object({ path: v.string(), source: v.optional(v.string()) }),
+  args: [s.object({ path: s.string(), includeSource: s.optional(s.boolean()) })],
+  returns: s.object({ path: s.string(), source: s.optional(s.string()) }),
   setup: () => ({
     handler: async ({ path, includeSource }) => ({
       path,
@@ -92,7 +94,7 @@ defineRpcFunction({
 })
 ```
 
-Prefer a single object argument (`args: [v.object({ ... })]`) over positional args — property names are self-describing and agents/IDEs work best with object shapes.
+Prefer a single object argument (`args: [s.object({ ... })]`) over positional args — property names are self-describing and agents/IDEs work best with object shapes.
 
 > [!WARNING]
 > Declared `args`/`returns` schemas are enforced at runtime — a call whose arguments, or a handler whose return value, fail the schema is rejected with `DF0043` / `DF0044`. Make sure each schema matches what the function actually accepts and returns; a schema stricter than reality will now reject calls that previously ran.
@@ -245,7 +247,7 @@ defineRpcFunction({
   name: 'build-meta',
   type: 'static',
   args: [],
-  returns: v.object({ version: v.string(), builtAt: v.number() }),
+  returns: s.object({ version: s.string(), builtAt: s.number() }),
   setup: () => ({
     handler: async () => ({ version: '1.0.0', builtAt: Date.now() }),
   }),
@@ -309,8 +311,8 @@ defineRpcFunction({
   name: 'get-modules',
   type: 'query',
   jsonSerializable: true,
-  args: [v.object({ limit: v.number() })],
-  returns: v.array(v.object({ id: v.string(), size: v.number() })),
+  args: [s.object({ limit: s.number() })],
+  returns: s.array(s.object({ id: s.string(), size: s.number() })),
   agent: {
     description: 'List the N largest modules in the current build. Safe to call freely.',
     title: 'List modules',

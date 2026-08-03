@@ -1,29 +1,27 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
-import type { GenericSchema } from 'valibot'
-import { toJsonSchema } from '@valibot/to-json-schema'
 
 const FALLBACK_OBJECT_SCHEMA = Object.freeze({ type: 'object', additionalProperties: true })
 
 /**
- * Convert a Standard Schema return value to JSON Schema for the agent
- * surface. valibot schemas convert precisely; other Standard Schema
- * vendors (zod, arktype, …) have no universal JSON Schema mapping and
- * fall back to a permissive object schema.
+ * JSON Schema for an RPC return value on the agent/MCP surface.
+ *
+ * [Standard Schema](https://standardschema.dev/) deliberately exposes no
+ * JSON Schema, and devframe stays validator-neutral, so a declared return
+ * schema advertises a permissive object rather than a precise shape.
  * @internal
  */
 export function returnToJsonSchema(schema: StandardSchemaV1 | undefined): unknown {
-  if (!schema)
-    return undefined
-  return safeToJsonSchema(schema)
+  return schema ? FALLBACK_OBJECT_SCHEMA : undefined
 }
 
 /**
- * Convert positional RPC args schemas to a single MCP-friendly object
- * schema. When the RPC declares `args: [object(...)]`, unwrap the single
- * object schema directly (nicer agent UX than `{ arg0: {...} }`).
+ * JSON Schema for an RPC function's positional args on the agent/MCP
+ * surface. Each positional arg is advertised as a permissive object under
+ * `arg0` / `arg1` / … — matching how the agent bridge coerces the incoming
+ * object payload back into positional arguments.
  *
- * Returns `undefined` when there are no args (the MCP SDK treats this
- * as `{ type: 'object', properties: {} }`).
+ * Returns `{ type: 'object', properties: {} }` when there are no args (the
+ * MCP SDK treats this as "no input").
  * @internal
  */
 export function argsToJsonSchema(
@@ -32,22 +30,11 @@ export function argsToJsonSchema(
   if (!args || args.length === 0)
     return { schema: { type: 'object', properties: {} }, unwrapped: false }
 
-  // Single-object arg: unwrap.
-  if (args.length === 1) {
-    const inner = safeToJsonSchema(args[0]!)
-    if (isObjectJsonSchema(inner))
-      return { schema: inner, unwrapped: true }
-    // Non-object single arg (e.g. a string): fall through to arg0 shape.
-  }
-
   const properties: Record<string, unknown> = {}
   const required: string[] = []
   for (let i = 0; i < args.length; i++) {
     const key = `arg${i}`
-    const s = safeToJsonSchema(args[i]!)
-    properties[key] = s
-    // Conservatively mark every positional arg as required — the RPC
-    // layer validates against the declared schema anyway.
+    properties[key] = FALLBACK_OBJECT_SCHEMA
     required.push(key)
   }
 
@@ -60,25 +47,4 @@ export function argsToJsonSchema(
     },
     unwrapped: false,
   }
-}
-
-function safeToJsonSchema(schema: StandardSchemaV1): unknown {
-  // Only valibot exposes a JSON Schema converter; other vendors degrade
-  // to a permissive object schema rather than throwing.
-  if (schema['~standard']?.vendor !== 'valibot')
-    return FALLBACK_OBJECT_SCHEMA
-  try {
-    return toJsonSchema(schema as unknown as GenericSchema)
-  }
-  catch {
-    return FALLBACK_OBJECT_SCHEMA
-  }
-}
-
-function isObjectJsonSchema(value: unknown): boolean {
-  return (
-    !!value
-    && typeof value === 'object'
-    && (value as { type?: unknown }).type === 'object'
-  )
 }

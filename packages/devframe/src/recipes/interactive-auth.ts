@@ -1,7 +1,7 @@
 import type { DevframeNodeContext, DevframeNodeRpcSession } from 'devframe/types'
 import type { DevframeAuthHandler } from '../node/auth'
 import { colors } from 'devframe/utils/colors'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/schema'
 import { DEVFRAME_AUTH_TOKEN_QUERY_PARAM, isAnonymousRpcMethod } from '../constants'
 import { buildOtpAuthUrl, exchangeTempAuthCode, getTempAuthCode, verifyAuthToken } from '../node/auth/state'
 import { getInternalContext } from '../node/hub-internals/context'
@@ -86,12 +86,12 @@ export function createInteractiveAuth(
     name: 'anonymous:devframe:auth',
     type: 'action',
     jsonSerializable: true,
-    args: [v.object({
-      authToken: v.string(),
-      ua: v.string(),
-      origin: v.string(),
+    args: [s.object({
+      authToken: s.string(),
+      ua: s.string(),
+      origin: s.string(),
     })],
-    returns: v.object({ isTrusted: v.boolean() }),
+    returns: s.object({ isTrusted: s.boolean() }),
     handler(params) {
       const session = context.rpc.getCurrentRpcSession()
       if (!session)
@@ -111,12 +111,12 @@ export function createInteractiveAuth(
     name: 'anonymous:devframe:auth:exchange',
     type: 'action',
     jsonSerializable: true,
-    args: [v.object({
-      code: v.string(),
-      ua: v.string(),
-      origin: v.string(),
+    args: [s.object({
+      code: s.string(),
+      ua: s.string(),
+      origin: s.string(),
     })],
-    returns: v.object({ authToken: v.nullable(v.string()) }),
+    returns: s.object({ authToken: s.nullable(s.string()) }),
     handler(params) {
       const session = context.rpc.getCurrentRpcSession()
       if (!session)
@@ -134,7 +134,7 @@ export function createInteractiveAuth(
     type: 'action',
     jsonSerializable: true,
     args: [],
-    returns: v.void(),
+    returns: s.void(),
     async handler() {
       const session = context.rpc.getCurrentRpcSession()
       const token = session?.meta.clientAuthToken

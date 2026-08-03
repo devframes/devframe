@@ -1,4 +1,4 @@
-import * as v from 'valibot'
+import { s } from 'devframe/utils/schema'
 import { defineRpcFunction } from '../rpc/define'
 
 /**
@@ -42,7 +42,7 @@ export type KnownEditor
     | 'goland'
     | 'rider'
 
-/** Runtime list of every {@link KnownEditor}, in the order `v.picklist` reports them. */
+/** Runtime list of every {@link KnownEditor}. */
 export const KNOWN_EDITORS: KnownEditor[] = [
   'atom',
   'subl',
@@ -103,8 +103,8 @@ export const openInEditor = defineRpcFunction({
   name: 'devframe:open-in-editor',
   type: 'action',
   jsonSerializable: true,
-  args: [v.string(), v.optional(v.picklist<KnownEditor[]>(KNOWN_EDITORS))],
-  returns: v.void(),
+  args: [s.string(), s.optional(s.picklist(KNOWN_EDITORS))],
+  returns: s.void(),
   async handler(filename: string, editor?: KnownEditor) {
     const { launchEditor } = await import('devframe/utils/launch-editor')
     launchEditor(filename, editor)
@@ -126,8 +126,8 @@ export const openInFinder = defineRpcFunction({
   name: 'devframe:open-in-finder',
   type: 'action',
   jsonSerializable: true,
-  args: [v.string()],
-  returns: v.void(),
+  args: [s.string()],
+  returns: s.void(),
   async handler(path: string) {
     const { open } = await import('devframe/utils/open')
     await open(path)

@@ -64,6 +64,9 @@
       "devframe/utils/promise": [
         "./packages/devframe/src/utils/promise.ts"
       ],
+      "devframe/utils/schema": [
+        "./packages/devframe/src/utils/schema.ts"
+      ],
       "devframe/utils/scope": [
         "./packages/devframe/src/utils/scope.ts"
       ],

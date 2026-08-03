@@ -163,10 +163,11 @@ export interface DevframeCliOptions {
    */
   configure?: (cli: CAC) => void
   /**
-   * Typed CLI flags for the default `dev` command, backed by valibot
-   * schemas. The adapter registers matching `--kebab-key` options on
-   * CAC, validates the parsed values, and forwards the typed bag to
-   * `setup(ctx, { flags })`.
+   * Typed CLI flags for the default `dev` command, backed by any
+   * [Standard Schema](https://standardschema.dev/) validator (valibot,
+   * zod, arktype, or devframe's built-in `s`). The adapter registers
+   * matching `--kebab-key` options on CAC, validates the parsed values,
+   * and forwards the typed bag to `setup(ctx, { flags })`.
    *
    * Use {@link defineCliFlags} to preserve the literal schema-map
    * shape, and {@link InferCliFlags} to recover the typed output at the

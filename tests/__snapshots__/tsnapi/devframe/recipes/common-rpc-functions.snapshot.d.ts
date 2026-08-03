@@ -10,8 +10,8 @@ export declare const commonRpcFunctions: readonly [{
   name: "devframe:open-in-editor";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [v.StringSchema<undefined>, v.OptionalSchema<v.PicklistSchema<KnownEditor[], undefined>, undefined>];
-  returns: v.VoidSchema<undefined>;
+  args: readonly [DevframeSchema<string, string>, DevframeSchema<KnownEditor | undefined, KnownEditor | undefined>];
+  returns: DevframeSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: RpcFunctionAgentOptions;
   setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], void>>) | undefined;
@@ -24,8 +24,8 @@ export declare const commonRpcFunctions: readonly [{
   name: "devframe:open-in-finder";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [v.StringSchema<undefined>];
-  returns: v.VoidSchema<undefined>;
+  args: readonly [DevframeSchema<string, string>];
+  returns: DevframeSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: RpcFunctionAgentOptions;
   setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], void>>) | undefined;
@@ -40,8 +40,8 @@ export declare const openInEditor: {
   name: "devframe:open-in-editor";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [v.StringSchema<undefined>, v.OptionalSchema<v.PicklistSchema<KnownEditor[], undefined>, undefined>];
-  returns: v.VoidSchema<undefined>;
+  args: readonly [DevframeSchema<string, string>, DevframeSchema<KnownEditor | undefined, KnownEditor | undefined>];
+  returns: DevframeSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: RpcFunctionAgentOptions;
   setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], void>>) | undefined;
@@ -55,8 +55,8 @@ export declare const openInFinder: {
   name: "devframe:open-in-finder";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [v.StringSchema<undefined>];
-  returns: v.VoidSchema<undefined>;
+  args: readonly [DevframeSchema<string, string>];
+  returns: DevframeSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: RpcFunctionAgentOptions;
   setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], void>>) | undefined;
