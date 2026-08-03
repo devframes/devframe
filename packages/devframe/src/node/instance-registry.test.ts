@@ -3,7 +3,7 @@ import type { DevframeInstanceRecord } from './instance-registry'
 import { existsSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join } from 'pathe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   listLiveDevframeInstances,
