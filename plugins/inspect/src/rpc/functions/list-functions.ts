@@ -46,8 +46,8 @@ export const listFunctions = defineInspectRpc({
           hasHandler: !!fn.handler,
           invokable: INVOKABLE_TYPES.has(type),
           agent,
-          argsSchema: await argsSchemaToJson(fn.args as readonly unknown[] | undefined),
-          returnsSchema: await returnSchemaToJson(fn.returns),
+          argsSchema: argsSchemaToJson(fn.args as readonly unknown[] | undefined),
+          returnsSchema: returnSchemaToJson(fn.returns),
         })
       }
       out.sort((a, b) => a.name.localeCompare(b.name))

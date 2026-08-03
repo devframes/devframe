@@ -148,7 +148,7 @@ export async function createMcpServer(
 
 function registerToolHandlers(server: Server, ctx: DevframeNodeContext): void {
   server.setRequestHandler('tools/list', async () => {
-    const tools = await Promise.all(ctx.agent.list().tools.map(tool => projectTool(tool, ctx)))
+    const tools = ctx.agent.list().tools.map(tool => projectTool(tool, ctx))
     return { tools }
   })
 
@@ -157,7 +157,7 @@ function registerToolHandlers(server: Server, ctx: DevframeNodeContext): void {
     try {
       const tool = ctx.agent.getTool(name)
       const outputSchema = tool
-        ? tool.outputSchema ?? await computeOutputSchema(tool, ctx)
+        ? tool.outputSchema ?? computeOutputSchema(tool, ctx)
         : undefined
       const result = await ctx.agent.invoke(name, args ?? {})
       return {
@@ -248,9 +248,9 @@ function registerResourceHandlers(
   })
 }
 
-async function projectTool(tool: AgentTool, ctx: DevframeNodeContext): Promise<Tool> {
-  const inputSchema = tool.inputSchema ?? await computeInputSchema(tool, ctx)
-  const outputSchema = tool.outputSchema ?? await computeOutputSchema(tool, ctx)
+function projectTool(tool: AgentTool, ctx: DevframeNodeContext): Tool {
+  const inputSchema = tool.inputSchema ?? computeInputSchema(tool, ctx)
+  const outputSchema = tool.outputSchema ?? computeOutputSchema(tool, ctx)
   return {
     name: tool.id,
     title: tool.title,
@@ -265,17 +265,17 @@ async function projectTool(tool: AgentTool, ctx: DevframeNodeContext): Promise<T
   } as Tool
 }
 
-async function computeInputSchema(tool: AgentTool, ctx: DevframeNodeContext): Promise<unknown> {
+function computeInputSchema(tool: AgentTool, ctx: DevframeNodeContext): unknown {
   if (tool.kind !== 'rpc' || !tool.rpcName)
     return { type: 'object', properties: {} }
   const def = ctx.rpc.definitions.get(tool.rpcName) as RpcFunctionDefinitionAnyWithContext<DevframeNodeContext> | undefined
   if (!def)
     return { type: 'object', properties: {} }
   const args = def.args as readonly StandardSchemaV1[] | undefined
-  return (await argsToJsonSchema(args)).schema
+  return argsToJsonSchema(args).schema
 }
 
-async function computeOutputSchema(tool: AgentTool, ctx: DevframeNodeContext): Promise<unknown> {
+function computeOutputSchema(tool: AgentTool, ctx: DevframeNodeContext): unknown {
   if (tool.kind !== 'rpc' || !tool.rpcName)
     return undefined
   const def = ctx.rpc.definitions.get(tool.rpcName) as RpcFunctionDefinitionAnyWithContext<DevframeNodeContext> | undefined

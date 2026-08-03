@@ -1,33 +1,37 @@
-import type { StandardSchemaV1 } from '@standard-schema/spec'
-import { toJsonSchema } from '@standard-community/standard-json'
+import type { StandardJSONSchemaV1, StandardSchemaV1 } from '@standard-schema/spec'
 
 const FALLBACK_OBJECT_SCHEMA = Object.freeze({ type: 'object', additionalProperties: true })
+
+/** A `~standard` prop that may also carry the Standard JSON Schema converter. */
+type MaybeJsonSchema = StandardSchemaV1['~standard'] & Partial<StandardJSONSchemaV1['~standard']>
 
 /**
  * Convert a Standard Schema to JSON Schema for the agent/MCP surface.
  *
- * `@standard-community/standard-json` dispatches on the schema's
- * `~standard` vendor (valibot, zod, arktype, …) and lazily loads that
- * vendor's converter, so precise schemas require the matching converter
- * to be installed (e.g. `@valibot/to-json-schema`, `zod-to-json-schema`).
- * When no converter is available — or conversion fails — we degrade to a
- * permissive object schema so the surface never throws and no validator is
- * forced.
+ * Devframe stays validator-neutral, so conversion uses the schema's own
+ * [Standard JSON Schema](https://standardschema.dev/) converter
+ * (`~standard.jsonSchema`) when the validator provides one — zod 4 does,
+ * for example. Validators without a native converter (e.g. valibot) degrade
+ * to a permissive object schema rather than pulling in a converter library.
  */
-async function safeToJsonSchema(schema: StandardSchemaV1): Promise<unknown> {
-  try {
-    return await toJsonSchema(schema)
+function safeToJsonSchema(schema: StandardSchemaV1): unknown {
+  const standard = schema['~standard'] as MaybeJsonSchema
+  if (standard.jsonSchema) {
+    try {
+      return standard.jsonSchema.input({ target: 'draft-2020-12' })
+    }
+    catch {
+      return FALLBACK_OBJECT_SCHEMA
+    }
   }
-  catch {
-    return FALLBACK_OBJECT_SCHEMA
-  }
+  return FALLBACK_OBJECT_SCHEMA
 }
 
 /**
  * JSON Schema for an RPC return value on the agent/MCP surface.
  * @internal
  */
-export async function returnToJsonSchema(schema: StandardSchemaV1 | undefined): Promise<unknown> {
+export function returnToJsonSchema(schema: StandardSchemaV1 | undefined): unknown {
   if (!schema)
     return undefined
   return safeToJsonSchema(schema)
@@ -42,9 +46,9 @@ export async function returnToJsonSchema(schema: StandardSchemaV1 | undefined): 
  * Returns `{ type: 'object', properties: {} }` when there are no args.
  * @internal
  */
-export async function argsToJsonSchema(
+export function argsToJsonSchema(
   args: readonly StandardSchemaV1[] | undefined,
-): Promise<{ schema: unknown, unwrapped: boolean }> {
+): { schema: unknown, unwrapped: boolean } {
   if (!args || args.length === 0)
     return { schema: { type: 'object', properties: {} }, unwrapped: false }
 
@@ -52,7 +56,7 @@ export async function argsToJsonSchema(
   const required: string[] = []
   for (let i = 0; i < args.length; i++) {
     const key = `arg${i}`
-    properties[key] = await safeToJsonSchema(args[i]!)
+    properties[key] = safeToJsonSchema(args[i]!)
     required.push(key)
   }
 

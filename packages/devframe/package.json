@@ -83,7 +83,6 @@
     }
   },
   "dependencies": {
-    "@standard-community/standard-json": "catalog:deps",
     "@standard-schema/spec": "catalog:deps",
     "birpc": "catalog:deps",
     "crossws": "catalog:deps",
@@ -92,7 +91,6 @@
     "mrmime": "catalog:deps",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
-    "quansync": "catalog:deps",
     "ufo": "catalog:deps"
   },
   "devDependencies": {
