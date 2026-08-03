@@ -1,7 +1,7 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import fsp from 'node:fs/promises'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { diagnostics } from '../../diagnostics'
 import { getAssetsContext } from '../../node/context'
 
@@ -11,8 +11,8 @@ export const mkdir = defineAssetsRpc({
   name: 'devframes:plugin:assets:mkdir',
   type: 'action',
   jsonSerializable: true,
-  args: [v.object({ path: v.string() })],
-  returns: v.void(),
+  args: [s.object({ path: s.string() })],
+  returns: s.void(),
   agent: {
     title: 'Create a folder',
     description: 'Create a folder under the managed directory, including any missing parent folders.',

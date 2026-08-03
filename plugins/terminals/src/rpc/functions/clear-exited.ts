@@ -1,5 +1,5 @@
 import { defineRpcFunction } from 'devframe'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { getTerminalManager } from '../../node/context'
 
 export const clearExited = defineRpcFunction({
@@ -7,7 +7,7 @@ export const clearExited = defineRpcFunction({
   type: 'action',
   jsonSerializable: true,
   args: [],
-  returns: v.void(),
+  returns: s.void(),
   agent: {
     description: 'Discard every stopped (exited or errored) terminal session at once. Running sessions are left untouched.',
     safety: 'destructive',

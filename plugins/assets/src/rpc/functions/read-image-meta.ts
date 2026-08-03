@@ -2,8 +2,8 @@ import type { DevframeNodeContext } from 'devframe/types'
 import type { AssetImageMeta } from '../../types'
 import fsp from 'node:fs/promises'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
+import { s } from 'devframe/utils/simple-schema'
 import { imageMeta } from 'image-meta'
-import * as v from 'valibot'
 import { getAssetsContext } from '../../node/context'
 
 const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
@@ -12,11 +12,11 @@ export const readImageMeta = defineAssetsRpc({
   name: 'devframes:plugin:assets:read-image-meta',
   type: 'query',
   jsonSerializable: true,
-  args: [v.string()],
-  returns: v.nullable(v.object({
-    width: v.optional(v.number()),
-    height: v.optional(v.number()),
-    orientation: v.optional(v.number()),
+  args: [s.string()],
+  returns: s.nullable(s.object({
+    width: s.optional(s.number()),
+    height: s.optional(s.number()),
+    orientation: s.optional(s.number()),
   })),
   agent: {
     title: 'Read image dimensions',

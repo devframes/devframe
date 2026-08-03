@@ -1,13 +1,13 @@
 import { defineRpcFunction } from 'devframe'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { getTerminalManager } from '../../node/context'
 
 export const terminate = defineRpcFunction({
   name: 'devframes:plugin:terminals:terminate',
   type: 'action',
   jsonSerializable: true,
-  args: [v.object({ id: v.string() })],
-  returns: v.void(),
+  args: [s.object({ id: s.string() })],
+  returns: s.void(),
   agent: {
     description: 'Terminate a terminal session\'s running process. The session and its scrollback are kept; use restart to run it again.',
     safety: 'destructive',

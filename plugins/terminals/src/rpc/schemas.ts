@@ -1,45 +1,45 @@
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 
-export const terminalModeSchema = v.picklist(['interactive', 'readonly'])
+export const terminalModeSchema = s.picklist(['interactive', 'readonly'])
 
-export const spawnRequestSchema = v.object({
-  presetId: v.optional(v.string()),
-  command: v.optional(v.string()),
-  args: v.optional(v.array(v.string())),
-  cwd: v.optional(v.string()),
-  mode: v.optional(terminalModeSchema),
-  title: v.optional(v.string()),
-  cols: v.optional(v.number()),
-  rows: v.optional(v.number()),
-  env: v.optional(v.record(v.string(), v.string())),
+export const spawnRequestSchema = s.object({
+  presetId: s.optional(s.string()),
+  command: s.optional(s.string()),
+  args: s.optional(s.array(s.string())),
+  cwd: s.optional(s.string()),
+  mode: s.optional(terminalModeSchema),
+  title: s.optional(s.string()),
+  cols: s.optional(s.number()),
+  rows: s.optional(s.number()),
+  env: s.optional(s.record(s.string(), s.string())),
 })
 
-export const sessionInfoSchema = v.object({
-  id: v.string(),
-  title: v.string(),
-  processName: v.optional(v.string()),
-  customTitle: v.optional(v.string()),
+export const sessionInfoSchema = s.object({
+  id: s.string(),
+  title: s.string(),
+  processName: s.optional(s.string()),
+  customTitle: s.optional(s.string()),
   mode: terminalModeSchema,
-  status: v.picklist(['running', 'exited', 'error']),
-  backend: v.picklist(['pty', 'pipe']),
-  command: v.string(),
-  args: v.array(v.string()),
-  cwd: v.string(),
-  cols: v.number(),
-  rows: v.number(),
-  pid: v.optional(v.number()),
-  exitCode: v.optional(v.number()),
-  icon: v.optional(v.string()),
-  channel: v.optional(v.string()),
-  presetId: v.optional(v.string()),
-  createdAt: v.number(),
+  status: s.picklist(['running', 'exited', 'error']),
+  backend: s.picklist(['pty', 'pipe']),
+  command: s.string(),
+  args: s.array(s.string()),
+  cwd: s.string(),
+  cols: s.number(),
+  rows: s.number(),
+  pid: s.optional(s.number()),
+  exitCode: s.optional(s.number()),
+  icon: s.optional(s.string()),
+  channel: s.optional(s.string()),
+  presetId: s.optional(s.string()),
+  createdAt: s.number(),
 })
 
-export const presetSchema = v.object({
-  id: v.string(),
-  title: v.string(),
-  command: v.string(),
-  args: v.array(v.string()),
+export const presetSchema = s.object({
+  id: s.string(),
+  title: s.string(),
+  command: s.string(),
+  args: s.array(s.string()),
   mode: terminalModeSchema,
-  icon: v.optional(v.string()),
+  icon: s.optional(s.string()),
 })

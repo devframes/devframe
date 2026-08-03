@@ -28,7 +28,7 @@ defineDevframe({
 | `KNOWN_EDITORS` | — | `readonly string[]` | — | The editor commands `openInEditor`'s `editor` argument accepts (`code`, `vim`, `subl`, `idea`, …). |
 | `KnownEditor` | — | type | — | Union of `KNOWN_EDITORS`. |
 
-Both functions are `action`-type RPCs returning `void` and declare their arguments with devframe's built-in zero-dependency `s` builder from `devframe/utils/schema` — `openInEditor`'s `editor` argument is `s.optional(s.picklist(KNOWN_EDITORS))`, so a value outside `KNOWN_EDITORS` fails validation rather than reaching the underlying `launch-editor` process spawn. Both handlers dynamically `import()` their underlying `devframe/utils/*` implementation, so the `launch-editor` and `open` dependencies only load when the recipe actually runs.
+Both functions are `action`-type RPCs returning `void`, and their arguments are schema-validated — `openInEditor`'s `editor` argument is restricted to `KNOWN_EDITORS`, so a value outside that list fails validation rather than reaching the underlying `launch-editor` process spawn. Both handlers dynamically `import()` their underlying `devframe/utils/*` implementation, so the `launch-editor` and `open` dependencies only load when the recipe actually runs.
 
 The `devframe/recipes/open-helpers` entry (`openHelpers`) remains as a deprecated alias for this module — new code should import `commonRpcFunctions` from `devframe/recipes/common-rpc-functions`.
 

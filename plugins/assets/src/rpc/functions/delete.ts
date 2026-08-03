@@ -1,7 +1,7 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import fsp from 'node:fs/promises'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { getAssetsContext } from '../../node/context'
 
 const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
@@ -11,8 +11,8 @@ export const deleteAssets = defineAssetsRpc({
   name: 'devframes:plugin:assets:delete',
   type: 'action',
   jsonSerializable: true,
-  args: [v.object({ paths: v.array(v.string()) })],
-  returns: v.object({ deleted: v.array(v.string()) }),
+  args: [s.object({ paths: s.array(s.string()) })],
+  returns: s.object({ deleted: s.array(s.string()) }),
   agent: {
     title: 'Delete assets',
     description: 'Delete one or more assets from the managed directory.',

@@ -62,7 +62,6 @@
     "cac": "catalog:deps",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
-    "valibot": "catalog:deps",
     "zigpty": "catalog:deps"
   },
   "devDependencies": {

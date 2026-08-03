@@ -1,6 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import { describe, expect, it } from 'vitest'
-import { s } from './schema'
+import { s } from './simple-schema'
 
 function run<T extends StandardSchemaV1>(schema: T, value: unknown): StandardSchemaV1.Result<StandardSchemaV1.InferOutput<T>> {
   const result = schema['~standard'].validate(value)
@@ -13,7 +13,7 @@ function accepts(schema: StandardSchemaV1, value: unknown): boolean {
   return !run(schema, value).issues
 }
 
-describe('utils/schema builder', () => {
+describe('utils/simple-schema builder', () => {
   it('produces valid Standard Schema objects', () => {
     const schema = s.string()
     expect(schema['~standard'].version).toBe(1)

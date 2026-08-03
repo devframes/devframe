@@ -1106,9 +1106,6 @@ importers:
       ufo:
         specifier: catalog:deps
         version: 1.6.4
-      valibot:
-        specifier: catalog:deps
-        version: 1.4.2(typescript@6.0.3)
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -1559,9 +1556,6 @@ importers:
       parse5:
         specifier: catalog:deps
         version: 8.0.1
-      valibot:
-        specifier: catalog:deps
-        version: 1.4.2(typescript@6.0.3)
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -1623,9 +1617,6 @@ importers:
       pathe:
         specifier: catalog:deps
         version: 2.0.3
-      valibot:
-        specifier: catalog:deps
-        version: 1.4.2(typescript@6.0.3)
       zigpty:
         specifier: catalog:deps
         version: 0.2.1

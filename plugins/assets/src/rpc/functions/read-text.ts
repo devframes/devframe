@@ -1,7 +1,7 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import fsp from 'node:fs/promises'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { getAssetsContext } from '../../node/context'
 
 const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
@@ -12,8 +12,8 @@ export const readText = defineAssetsRpc({
   name: 'devframes:plugin:assets:read-text',
   type: 'query',
   jsonSerializable: true,
-  args: [v.string(), v.optional(v.number())],
-  returns: v.nullable(v.string()),
+  args: [s.string(), s.optional(s.number())],
+  returns: s.nullable(s.string()),
   agent: {
     title: 'Read a text asset',
     description: 'Read the (possibly truncated) text content of a text-type asset, for preview or editing.',

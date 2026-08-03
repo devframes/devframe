@@ -1,13 +1,13 @@
 import { defineRpcFunction } from 'devframe'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { getTerminalManager } from '../../node/context'
 
 export const rename = defineRpcFunction({
   name: 'devframes:plugin:terminals:rename',
   type: 'action',
   jsonSerializable: true,
-  args: [v.object({ id: v.string(), title: v.string() })],
-  returns: v.void(),
+  args: [s.object({ id: s.string(), title: s.string() })],
+  returns: s.void(),
   setup: ctx => ({
     handler: ({ id, title }) => {
       getTerminalManager(ctx).rename(id, title)

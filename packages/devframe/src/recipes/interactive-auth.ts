@@ -1,7 +1,7 @@
 import type { DevframeNodeContext, DevframeNodeRpcSession } from 'devframe/types'
 import type { DevframeAuthHandler } from '../node/auth'
 import { colors } from 'devframe/utils/colors'
-import { s } from 'devframe/utils/schema'
+import { s } from 'devframe/utils/simple-schema'
 import { DEVFRAME_AUTH_TOKEN_QUERY_PARAM, isAnonymousRpcMethod } from '../constants'
 import { buildOtpAuthUrl, exchangeTempAuthCode, getTempAuthCode, verifyAuthToken } from '../node/auth/state'
 import { getInternalContext } from '../node/hub-internals/context'

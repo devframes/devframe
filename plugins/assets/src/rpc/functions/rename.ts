@@ -2,8 +2,8 @@ import type { DevframeNodeContext } from 'devframe/types'
 import type { AssetInfo } from '../../types'
 import fsp from 'node:fs/promises'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
+import { s } from 'devframe/utils/simple-schema'
 import { dirname, extname } from 'pathe'
-import * as v from 'valibot'
 import { diagnostics } from '../../diagnostics'
 import { getAssetsContext } from '../../node/context'
 import { statToAssetInfo } from '../../node/scanner'
@@ -27,7 +27,7 @@ export const rename = defineAssetsRpc({
   name: 'devframes:plugin:assets:rename',
   type: 'action',
   jsonSerializable: true,
-  args: [v.object({ path: v.string(), newName: v.string() })],
+  args: [s.object({ path: s.string(), newName: s.string() })],
   returns: assetInfoSchema,
   agent: {
     title: 'Rename an asset',

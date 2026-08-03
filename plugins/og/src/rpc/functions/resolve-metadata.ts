@@ -1,7 +1,7 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import type { OgFetch, OgSnapshot } from '../../types'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { diagnostics } from '../../diagnostics'
 import { fetchOgMetadata } from '../../node/metadata'
 
@@ -18,18 +18,18 @@ const EMPTY_SNAPSHOT: OgSnapshot = {
   tags: [],
 }
 
-const tagSchema = v.object({
-  tag: v.picklist(['html', 'link', 'meta', 'title']),
-  name: v.string(),
-  value: v.string(),
+const tagSchema = s.object({
+  tag: s.picklist(['html', 'link', 'meta', 'title']),
+  name: s.string(),
+  value: s.string(),
 })
 
-const snapshotSchema = v.object({
-  requestedUrl: v.string(),
-  url: v.string(),
-  status: v.number(),
-  fetchedAt: v.number(),
-  tags: v.array(tagSchema),
+const snapshotSchema = s.object({
+  requestedUrl: s.string(),
+  url: s.string(),
+  status: s.number(),
+  fetchedAt: s.number(),
+  tags: s.array(tagSchema),
 })
 
 const defineOgRpc = createDefineWrapperWithContext<DevframeNodeContext>()
@@ -39,7 +39,7 @@ export function createResolveMetadataRpc(options: ResolveMetadataOptions = {}) {
     name: 'devframes:plugin:og:resolve-metadata',
     type: 'query',
     jsonSerializable: true,
-    args: [v.object({ url: v.optional(v.string()) })],
+    args: [s.object({ url: s.optional(s.string()) })],
     returns: snapshotSchema,
     agent: {
       title: 'Inspect Open Graph metadata',

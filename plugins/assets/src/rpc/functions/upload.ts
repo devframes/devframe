@@ -2,8 +2,8 @@ import type { DevframeNodeContext } from 'devframe/types'
 import { createWriteStream } from 'node:fs'
 import fsp from 'node:fs/promises'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
+import { s } from 'devframe/utils/simple-schema'
 import { dirname, extname } from 'pathe'
-import * as v from 'valibot'
 import { diagnostics } from '../../diagnostics'
 import { getAssetsContext } from '../../node/context'
 
@@ -28,8 +28,8 @@ export const upload = defineAssetsRpc({
   name: 'devframes:plugin:assets:upload',
   type: 'action',
   jsonSerializable: true,
-  args: [v.object({ path: v.string() })],
-  returns: v.object({ uploadId: v.string() }),
+  args: [s.object({ path: s.string() })],
+  returns: s.object({ uploadId: s.string() }),
   agent: {
     title: 'Upload an asset',
     description: 'Allocate an upload slot for a new file at the given path. The caller streams the bytes over the paired upload channel.',

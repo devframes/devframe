@@ -29,7 +29,7 @@ Create the channel once in `setup`. Channels are framework-neutral, so the same 
 
 ```ts
 import { defineDevframe, defineRpcFunction } from 'devframe'
-import * as v from 'valibot'
+import * as v from 'valibot' // npm i valibot
 
 export default defineDevframe({
   id: 'my-devframe',

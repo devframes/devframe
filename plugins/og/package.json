@@ -60,8 +60,7 @@
   "dependencies": {
     "cac": "catalog:deps",
     "nostics": "catalog:deps",
-    "parse5": "catalog:deps",
-    "valibot": "catalog:deps"
+    "parse5": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",

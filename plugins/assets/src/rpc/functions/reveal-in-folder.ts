@@ -1,8 +1,8 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
 import { open } from 'devframe/utils/open'
+import { s } from 'devframe/utils/simple-schema'
 import { dirname } from 'pathe'
-import * as v from 'valibot'
 import { getAssetsContext } from '../../node/context'
 
 const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
@@ -17,8 +17,8 @@ export const revealInFolder = defineAssetsRpc({
   name: 'devframes:plugin:assets:reveal-in-folder',
   type: 'action',
   jsonSerializable: true,
-  args: [v.string()],
-  returns: v.void(),
+  args: [s.string()],
+  returns: s.void(),
   agent: {
     title: 'Reveal an asset in the file manager',
     description: 'Open the OS file manager at the asset\'s containing folder.',

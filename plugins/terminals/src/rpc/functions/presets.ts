@@ -1,5 +1,5 @@
 import { defineRpcFunction } from 'devframe'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { getTerminalManager } from '../../node/context'
 import { presetSchema } from '../schemas'
 
@@ -9,7 +9,7 @@ export const presets = defineRpcFunction({
   jsonSerializable: true,
   snapshot: true,
   args: [],
-  returns: v.array(presetSchema),
+  returns: s.array(presetSchema),
   setup: ctx => ({
     handler: () => getTerminalManager(ctx).getPresets().map(p => ({
       id: p.id,

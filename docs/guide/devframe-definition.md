@@ -10,7 +10,7 @@ Every Devframe tool starts with a single `defineDevframe` call. The returned `De
 
 ```ts twoslash
 import { defineDevframe, defineRpcFunction } from 'devframe'
-import * as v from 'valibot'
+import * as v from 'valibot' // npm i valibot
 
 export default defineDevframe({
   id: 'my-devframe',

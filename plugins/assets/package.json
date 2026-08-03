@@ -64,8 +64,7 @@
     "pathe": "catalog:deps",
     "perfect-debounce": "catalog:deps",
     "tinyglobby": "catalog:deps",
-    "ufo": "catalog:deps",
-    "valibot": "catalog:deps"
+    "ufo": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",

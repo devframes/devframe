@@ -8,8 +8,8 @@ export declare const openInEditor: {
   name: "devframe:open-in-editor";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [DevframeSchema<string, string>, DevframeSchema<KnownEditor | undefined, KnownEditor | undefined>];
-  returns: DevframeSchema<void, void>;
+  args: readonly [SimpleSchema<string, string>, SimpleSchema<KnownEditor | undefined, KnownEditor | undefined>];
+  returns: SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: RpcFunctionAgentOptions;
   setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], void>>) | undefined;
@@ -23,8 +23,8 @@ export declare const openInFinder: {
   name: "devframe:open-in-finder";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [DevframeSchema<string, string>];
-  returns: DevframeSchema<void, void>;
+  args: readonly [SimpleSchema<string, string>];
+  returns: SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: RpcFunctionAgentOptions;
   setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], void>>) | undefined;

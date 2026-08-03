@@ -1,7 +1,7 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
 import { launchEditor } from 'devframe/utils/launch-editor'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { getAssetsContext } from '../../node/context'
 
 const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
@@ -16,8 +16,8 @@ export const openInEditor = defineAssetsRpc({
   name: 'devframes:plugin:assets:open-in-editor',
   type: 'action',
   jsonSerializable: true,
-  args: [v.string()],
-  returns: v.void(),
+  args: [s.string()],
+  returns: s.void(),
   agent: {
     title: 'Open an asset in the editor',
     description: 'Open an asset in the user\'s configured editor.',

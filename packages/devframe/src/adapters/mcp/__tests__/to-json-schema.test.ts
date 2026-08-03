@@ -1,4 +1,4 @@
-import { s } from 'devframe/utils/schema'
+import { s } from 'devframe/utils/simple-schema'
 import { describe, expect, it } from 'vitest'
 import { argsToJsonSchema, returnToJsonSchema } from '../to-json-schema'
 

@@ -7,33 +7,50 @@ export declare const serverFunctions: readonly [{
   type?: "query" | undefined;
   cacheable?: boolean;
   args: readonly [];
-  returns: import("valibot").ArraySchema<import("valibot").ObjectSchema<{
-    readonly id: import("valibot").StringSchema<undefined>;
-    readonly title: import("valibot").StringSchema<undefined>;
-    readonly processName: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly customTitle: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly mode: import("valibot").PicklistSchema<["interactive", "readonly"], undefined>;
-    readonly status: import("valibot").PicklistSchema<["running", "exited", "error"], undefined>;
-    readonly backend: import("valibot").PicklistSchema<["pty", "pipe"], undefined>;
-    readonly command: import("valibot").StringSchema<undefined>;
-    readonly args: import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly cwd: import("valibot").StringSchema<undefined>;
-    readonly cols: import("valibot").NumberSchema<undefined>;
-    readonly rows: import("valibot").NumberSchema<undefined>;
-    readonly pid: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-    readonly exitCode: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-    readonly icon: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly channel: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly presetId: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly createdAt: import("valibot").NumberSchema<undefined>;
-  }, undefined>, undefined>;
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    id: string;
+    title: string;
+    mode: "interactive" | "readonly";
+    status: "running" | "exited" | "error";
+    backend: "pty" | "pipe";
+    command: string;
+    args: string[];
+    cwd: string;
+    cols: number;
+    rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
+    pid?: number | undefined;
+    exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
+    presetId?: string | undefined;
+  }[], {
+    id: string;
+    title: string;
+    mode: "interactive" | "readonly";
+    status: "running" | "exited" | "error";
+    backend: "pty" | "pipe";
+    command: string;
+    args: string[];
+    cwd: string;
+    cols: number;
+    rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
+    pid?: number | undefined;
+    exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
+    presetId?: string | undefined;
+  }[]>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -42,18 +59,18 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }[]>>) | undefined;
   handler?: (() => {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -62,18 +79,18 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }[]) | undefined;
   dump?: import("devframe/rpc").RpcDump<[], {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -82,19 +99,19 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }[], import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -103,18 +120,18 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }[]>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -123,26 +140,35 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }[]>> | undefined;
 }, {
   name: "devframes:plugin:terminals:presets";
   type?: "query" | undefined;
   cacheable?: boolean;
   args: readonly [];
-  returns: import("valibot").ArraySchema<import("valibot").ObjectSchema<{
-    readonly id: import("valibot").StringSchema<undefined>;
-    readonly title: import("valibot").StringSchema<undefined>;
-    readonly command: import("valibot").StringSchema<undefined>;
-    readonly args: import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly mode: import("valibot").PicklistSchema<["interactive", "readonly"], undefined>;
-    readonly icon: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-  }, undefined>, undefined>;
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    id: string;
+    title: string;
+    command: string;
+    args: string[];
+    mode: "interactive" | "readonly";
+    icon?: string | undefined;
+  }[], {
+    id: string;
+    title: string;
+    command: string;
+    args: string[];
+    mode: "interactive" | "readonly";
+    icon?: string | undefined;
+  }[]>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
@@ -190,37 +216,66 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:terminals:spawn";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly presetId: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly command: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly args: import("valibot").OptionalSchema<import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>, undefined>;
-    readonly cwd: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly mode: import("valibot").OptionalSchema<import("valibot").PicklistSchema<["interactive", "readonly"], undefined>, undefined>;
-    readonly title: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly cols: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-    readonly rows: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-    readonly env: import("valibot").OptionalSchema<import("valibot").RecordSchema<import("valibot").StringSchema<undefined>, import("valibot").StringSchema<undefined>, undefined>, undefined>;
-  }, undefined>];
-  returns: import("valibot").ObjectSchema<{
-    readonly id: import("valibot").StringSchema<undefined>;
-    readonly title: import("valibot").StringSchema<undefined>;
-    readonly processName: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly customTitle: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly mode: import("valibot").PicklistSchema<["interactive", "readonly"], undefined>;
-    readonly status: import("valibot").PicklistSchema<["running", "exited", "error"], undefined>;
-    readonly backend: import("valibot").PicklistSchema<["pty", "pipe"], undefined>;
-    readonly command: import("valibot").StringSchema<undefined>;
-    readonly args: import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly cwd: import("valibot").StringSchema<undefined>;
-    readonly cols: import("valibot").NumberSchema<undefined>;
-    readonly rows: import("valibot").NumberSchema<undefined>;
-    readonly pid: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-    readonly exitCode: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-    readonly icon: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly channel: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly presetId: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly createdAt: import("valibot").NumberSchema<undefined>;
-  }, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    presetId?: string | undefined;
+    command?: string | undefined;
+    args?: string[] | undefined;
+    cwd?: string | undefined;
+    mode?: "interactive" | "readonly" | undefined;
+    title?: string | undefined;
+    cols?: number | undefined;
+    rows?: number | undefined;
+    env?: Record<string, string> | undefined;
+  }, {
+    presetId?: string | undefined;
+    command?: string | undefined;
+    args?: string[] | undefined;
+    cwd?: string | undefined;
+    mode?: "interactive" | "readonly" | undefined;
+    title?: string | undefined;
+    cols?: number | undefined;
+    rows?: number | undefined;
+    env?: Record<string, string> | undefined;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    id: string;
+    title: string;
+    mode: "interactive" | "readonly";
+    status: "running" | "exited" | "error";
+    backend: "pty" | "pipe";
+    command: string;
+    args: string[];
+    cwd: string;
+    cols: number;
+    rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
+    pid?: number | undefined;
+    exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
+    presetId?: string | undefined;
+  }, {
+    id: string;
+    title: string;
+    mode: "interactive" | "readonly";
+    status: "running" | "exited" | "error";
+    backend: "pty" | "pipe";
+    command: string;
+    args: string[];
+    cwd: string;
+    cols: number;
+    rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
+    pid?: number | undefined;
+    exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
+    presetId?: string | undefined;
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -232,14 +287,10 @@ export declare const serverFunctions: readonly [{
     title?: string | undefined;
     cols?: number | undefined;
     rows?: number | undefined;
-    env?: {
-      [x: string]: string;
-    } | undefined;
+    env?: Record<string, string> | undefined;
   }], {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -248,12 +299,14 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }>>) | undefined;
   handler?: ((args_0: {
     presetId?: string | undefined;
@@ -264,14 +317,10 @@ export declare const serverFunctions: readonly [{
     title?: string | undefined;
     cols?: number | undefined;
     rows?: number | undefined;
-    env?: {
-      [x: string]: string;
-    } | undefined;
+    env?: Record<string, string> | undefined;
   }) => {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -280,12 +329,14 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     presetId?: string | undefined;
@@ -296,14 +347,10 @@ export declare const serverFunctions: readonly [{
     title?: string | undefined;
     cols?: number | undefined;
     rows?: number | undefined;
-    env?: {
-      [x: string]: string;
-    } | undefined;
+    env?: Record<string, string> | undefined;
   }], {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -312,12 +359,14 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -329,14 +378,10 @@ export declare const serverFunctions: readonly [{
     title?: string | undefined;
     cols?: number | undefined;
     rows?: number | undefined;
-    env?: {
-      [x: string]: string;
-    } | undefined;
+    env?: Record<string, string> | undefined;
   }], {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -345,12 +390,14 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     presetId?: string | undefined;
@@ -361,14 +408,10 @@ export declare const serverFunctions: readonly [{
     title?: string | undefined;
     cols?: number | undefined;
     rows?: number | undefined;
-    env?: {
-      [x: string]: string;
-    } | undefined;
+    env?: Record<string, string> | undefined;
   }], {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -377,22 +420,27 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }>> | undefined;
 }, {
   name: "devframes:plugin:terminals:write";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly id: import("valibot").StringSchema<undefined>;
-    readonly data: import("valibot").StringSchema<undefined>;
-  }, undefined>];
-  returns: import("valibot").VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    id: string;
+    data: string;
+  }, {
+    id: string;
+    data: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -420,12 +468,16 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:terminals:resize";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly id: import("valibot").StringSchema<undefined>;
-    readonly cols: import("valibot").SchemaWithPipe<readonly [import("valibot").NumberSchema<undefined>, import("valibot").IntegerAction<number, undefined>, import("valibot").MinValueAction<number, 1, undefined>]>;
-    readonly rows: import("valibot").SchemaWithPipe<readonly [import("valibot").NumberSchema<undefined>, import("valibot").IntegerAction<number, undefined>, import("valibot").MinValueAction<number, 1, undefined>]>;
-  }, undefined>];
-  returns: import("valibot").VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    id: string;
+    cols: number;
+    rows: number;
+  }, {
+    id: string;
+    cols: number;
+    rows: number;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -458,10 +510,12 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:terminals:terminate";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly id: import("valibot").StringSchema<undefined>;
-  }, undefined>];
-  returns: import("valibot").VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    id: string;
+  }, {
+    id: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -484,29 +538,50 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:terminals:restart";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly id: import("valibot").StringSchema<undefined>;
-  }, undefined>];
-  returns: import("valibot").ObjectSchema<{
-    readonly id: import("valibot").StringSchema<undefined>;
-    readonly title: import("valibot").StringSchema<undefined>;
-    readonly processName: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly customTitle: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly mode: import("valibot").PicklistSchema<["interactive", "readonly"], undefined>;
-    readonly status: import("valibot").PicklistSchema<["running", "exited", "error"], undefined>;
-    readonly backend: import("valibot").PicklistSchema<["pty", "pipe"], undefined>;
-    readonly command: import("valibot").StringSchema<undefined>;
-    readonly args: import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly cwd: import("valibot").StringSchema<undefined>;
-    readonly cols: import("valibot").NumberSchema<undefined>;
-    readonly rows: import("valibot").NumberSchema<undefined>;
-    readonly pid: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-    readonly exitCode: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-    readonly icon: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly channel: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly presetId: import("valibot").OptionalSchema<import("valibot").StringSchema<undefined>, undefined>;
-    readonly createdAt: import("valibot").NumberSchema<undefined>;
-  }, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    id: string;
+  }, {
+    id: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    id: string;
+    title: string;
+    mode: "interactive" | "readonly";
+    status: "running" | "exited" | "error";
+    backend: "pty" | "pipe";
+    command: string;
+    args: string[];
+    cwd: string;
+    cols: number;
+    rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
+    pid?: number | undefined;
+    exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
+    presetId?: string | undefined;
+  }, {
+    id: string;
+    title: string;
+    mode: "interactive" | "readonly";
+    status: "running" | "exited" | "error";
+    backend: "pty" | "pipe";
+    command: string;
+    args: string[];
+    cwd: string;
+    cols: number;
+    rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
+    pid?: number | undefined;
+    exitCode?: number | undefined;
+    icon?: string | undefined;
+    channel?: string | undefined;
+    presetId?: string | undefined;
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -514,8 +589,6 @@ export declare const serverFunctions: readonly [{
   }], {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -524,20 +597,20 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }>>) | undefined;
   handler?: ((args_0: {
     id: string;
   }) => {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -546,20 +619,20 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     id: string;
   }], {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -568,12 +641,14 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -581,8 +656,6 @@ export declare const serverFunctions: readonly [{
   }], {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -591,20 +664,20 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     id: string;
   }], {
     id: string;
     title: string;
-    processName?: string | undefined;
-    customTitle?: string | undefined;
     mode: "interactive" | "readonly";
     status: "running" | "exited" | "error";
     backend: "pty" | "pipe";
@@ -613,22 +686,27 @@ export declare const serverFunctions: readonly [{
     cwd: string;
     cols: number;
     rows: number;
+    createdAt: number;
+    processName?: string | undefined;
+    customTitle?: string | undefined;
     pid?: number | undefined;
     exitCode?: number | undefined;
     icon?: string | undefined;
     channel?: string | undefined;
     presetId?: string | undefined;
-    createdAt: number;
   }>> | undefined;
 }, {
   name: "devframes:plugin:terminals:rename";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly id: import("valibot").StringSchema<undefined>;
-    readonly title: import("valibot").StringSchema<undefined>;
-  }, undefined>];
-  returns: import("valibot").VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    id: string;
+    title: string;
+  }, {
+    id: string;
+    title: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -656,10 +734,12 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:terminals:remove";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly id: import("valibot").StringSchema<undefined>;
-  }, undefined>];
-  returns: import("valibot").VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    id: string;
+  }, {
+    id: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -683,7 +763,7 @@ export declare const serverFunctions: readonly [{
   type?: "action" | undefined;
   cacheable?: boolean;
   args: readonly [];
-  returns: import("valibot").VoidSchema<undefined>;
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], void>>) | undefined;

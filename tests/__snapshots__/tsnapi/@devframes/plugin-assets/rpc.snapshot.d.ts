@@ -17,8 +17,8 @@ export declare const alwaysFunctions: readonly [{
   name: "devframes:plugin:assets:open-in-editor";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").StringSchema<undefined>];
-  returns: import("valibot").VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
@@ -31,8 +31,8 @@ export declare const alwaysFunctions: readonly [{
   name: "devframes:plugin:assets:reveal-in-folder";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").StringSchema<undefined>];
-  returns: import("valibot").VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
@@ -42,22 +42,31 @@ export declare const alwaysFunctions: readonly [{
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>> | undefined;
 }];
-export declare const assetInfoSchema: v.ObjectSchema<{
-  readonly path: v.StringSchema<undefined>;
-  readonly type: v.PicklistSchema<["image", "font", "video", "audio", "text", "other"], undefined>;
-  readonly publicPath: v.StringSchema<undefined>;
-  readonly size: v.NumberSchema<undefined>;
-  readonly mtime: v.NumberSchema<undefined>;
-}, undefined>;
+export declare const assetInfoSchema: import("devframe/utils/simple-schema").SimpleSchema<{
+  path: string;
+  type: "text" | "image" | "font" | "video" | "audio" | "other";
+  publicPath: string;
+  size: number;
+  mtime: number;
+}, {
+  path: string;
+  type: "text" | "image" | "font" | "video" | "audio" | "other";
+  publicPath: string;
+  size: number;
+  mtime: number;
+}>;
 export declare const capabilities: {
   name: "devframes:plugin:assets:capabilities";
   type?: "query" | undefined;
   cacheable?: boolean;
   args: readonly [];
-  returns: v.ObjectSchema<{
-    readonly write: v.BooleanSchema<undefined>;
-    readonly uploadExtensions: v.UnionSchema<[v.ArraySchema<v.StringSchema<undefined>, undefined>, v.LiteralSchema<"*", undefined>], undefined>;
-  }, undefined>;
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    write: boolean;
+    uploadExtensions: string[] | "*";
+  }, {
+    write: boolean;
+    uploadExtensions: string[] | "*";
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
@@ -86,12 +95,16 @@ export declare const deleteAssets: {
   name: "devframes:plugin:assets:delete";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [v.ObjectSchema<{
-    readonly paths: v.ArraySchema<v.StringSchema<undefined>, undefined>;
-  }, undefined>];
-  returns: v.ObjectSchema<{
-    readonly deleted: v.ArraySchema<v.StringSchema<undefined>, undefined>;
-  }, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    paths: string[];
+  }, {
+    paths: string[];
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    deleted: string[];
+  }, {
+    deleted: string[];
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -126,13 +139,19 @@ export declare const list: {
   type?: "query" | undefined;
   cacheable?: boolean;
   args: readonly [];
-  returns: v.ArraySchema<v.ObjectSchema<{
-    readonly path: v.StringSchema<undefined>;
-    readonly type: v.PicklistSchema<["image", "font", "video", "audio", "text", "other"], undefined>;
-    readonly publicPath: v.StringSchema<undefined>;
-    readonly size: v.NumberSchema<undefined>;
-    readonly mtime: v.NumberSchema<undefined>;
-  }, undefined>, undefined>;
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }[], {
+    path: string;
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }[]>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
@@ -176,10 +195,12 @@ export declare const mkdir: {
   name: "devframes:plugin:assets:mkdir";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [v.ObjectSchema<{
-    readonly path: v.StringSchema<undefined>;
-  }, undefined>];
-  returns: v.VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+  }, {
+    path: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -203,8 +224,8 @@ export declare const openInEditor: {
   name: "devframes:plugin:assets:open-in-editor";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [v.StringSchema<undefined>];
-  returns: v.VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
@@ -219,13 +240,19 @@ export declare const readFunctions: readonly [{
   type?: "query" | undefined;
   cacheable?: boolean;
   args: readonly [];
-  returns: import("valibot").ArraySchema<import("valibot").ObjectSchema<{
-    readonly path: import("valibot").StringSchema<undefined>;
-    readonly type: import("valibot").PicklistSchema<["image", "font", "video", "audio", "text", "other"], undefined>;
-    readonly publicPath: import("valibot").StringSchema<undefined>;
-    readonly size: import("valibot").NumberSchema<undefined>;
-    readonly mtime: import("valibot").NumberSchema<undefined>;
-  }, undefined>, undefined>;
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }[], {
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }[]>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
@@ -268,12 +295,16 @@ export declare const readFunctions: readonly [{
   name: "devframes:plugin:assets:read-image-meta";
   type?: "query" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").StringSchema<undefined>];
-  returns: import("valibot").NullableSchema<import("valibot").ObjectSchema<{
-    readonly width: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-    readonly height: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-    readonly orientation: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-  }, undefined>, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    width?: number | undefined;
+    height?: number | undefined;
+    orientation?: number | undefined;
+  } | null, {
+    width?: number | undefined;
+    height?: number | undefined;
+    orientation?: number | undefined;
+  } | null>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
@@ -306,8 +337,8 @@ export declare const readFunctions: readonly [{
   name: "devframes:plugin:assets:read-text";
   type?: "query" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").StringSchema<undefined>, import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>];
-  returns: import("valibot").NullableSchema<import("valibot").StringSchema<undefined>, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>, import("devframe/utils/simple-schema").SimpleSchema<number | undefined, number | undefined>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<string | null, string | null>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>) | undefined;
@@ -321,10 +352,13 @@ export declare const readFunctions: readonly [{
   type?: "query" | undefined;
   cacheable?: boolean;
   args: readonly [];
-  returns: import("valibot").ObjectSchema<{
-    readonly write: import("valibot").BooleanSchema<undefined>;
-    readonly uploadExtensions: import("valibot").UnionSchema<[import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>, import("valibot").LiteralSchema<"*", undefined>], undefined>;
-  }, undefined>;
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    write: boolean;
+    uploadExtensions: string[] | "*";
+  }, {
+    write: boolean;
+    uploadExtensions: string[] | "*";
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
@@ -353,12 +387,16 @@ export declare const readImageMeta: {
   name: "devframes:plugin:assets:read-image-meta";
   type?: "query" | undefined;
   cacheable?: boolean;
-  args: readonly [v.StringSchema<undefined>];
-  returns: v.NullableSchema<v.ObjectSchema<{
-    readonly width: v.OptionalSchema<v.NumberSchema<undefined>, undefined>;
-    readonly height: v.OptionalSchema<v.NumberSchema<undefined>, undefined>;
-    readonly orientation: v.OptionalSchema<v.NumberSchema<undefined>, undefined>;
-  }, undefined>, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    width?: number | undefined;
+    height?: number | undefined;
+    orientation?: number | undefined;
+  } | null, {
+    width?: number | undefined;
+    height?: number | undefined;
+    orientation?: number | undefined;
+  } | null>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
@@ -392,8 +430,8 @@ export declare const readText: {
   name: "devframes:plugin:assets:read-text";
   type?: "query" | undefined;
   cacheable?: boolean;
-  args: readonly [v.StringSchema<undefined>, v.OptionalSchema<v.NumberSchema<undefined>, undefined>];
-  returns: v.NullableSchema<v.StringSchema<undefined>, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>, import("devframe/utils/simple-schema").SimpleSchema<number | undefined, number | undefined>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<string | null, string | null>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>) | undefined;
@@ -407,17 +445,26 @@ export declare const rename: {
   name: "devframes:plugin:assets:rename";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [v.ObjectSchema<{
-    readonly path: v.StringSchema<undefined>;
-    readonly newName: v.StringSchema<undefined>;
-  }, undefined>];
-  returns: v.ObjectSchema<{
-    readonly path: v.StringSchema<undefined>;
-    readonly type: v.PicklistSchema<["image", "font", "video", "audio", "text", "other"], undefined>;
-    readonly publicPath: v.StringSchema<undefined>;
-    readonly size: v.NumberSchema<undefined>;
-    readonly mtime: v.NumberSchema<undefined>;
-  }, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+    newName: string;
+  }, {
+    path: string;
+    newName: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }, {
+    path: string;
+    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -476,8 +523,8 @@ export declare const revealInFolder: {
   name: "devframes:plugin:assets:reveal-in-folder";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [v.StringSchema<undefined>];
-  returns: v.VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
@@ -492,13 +539,19 @@ export declare const serverFunctions: readonly [{
   type?: "query" | undefined;
   cacheable?: boolean;
   args: readonly [];
-  returns: import("valibot").ArraySchema<import("valibot").ObjectSchema<{
-    readonly path: import("valibot").StringSchema<undefined>;
-    readonly type: import("valibot").PicklistSchema<["image", "font", "video", "audio", "text", "other"], undefined>;
-    readonly publicPath: import("valibot").StringSchema<undefined>;
-    readonly size: import("valibot").NumberSchema<undefined>;
-    readonly mtime: import("valibot").NumberSchema<undefined>;
-  }, undefined>, undefined>;
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }[], {
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }[]>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
@@ -541,12 +594,16 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:assets:read-image-meta";
   type?: "query" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").StringSchema<undefined>];
-  returns: import("valibot").NullableSchema<import("valibot").ObjectSchema<{
-    readonly width: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-    readonly height: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-    readonly orientation: import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>;
-  }, undefined>, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    width?: number | undefined;
+    height?: number | undefined;
+    orientation?: number | undefined;
+  } | null, {
+    width?: number | undefined;
+    height?: number | undefined;
+    orientation?: number | undefined;
+  } | null>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
@@ -579,8 +636,8 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:assets:read-text";
   type?: "query" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").StringSchema<undefined>, import("valibot").OptionalSchema<import("valibot").NumberSchema<undefined>, undefined>];
-  returns: import("valibot").NullableSchema<import("valibot").StringSchema<undefined>, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>, import("devframe/utils/simple-schema").SimpleSchema<number | undefined, number | undefined>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<string | null, string | null>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>) | undefined;
@@ -594,10 +651,13 @@ export declare const serverFunctions: readonly [{
   type?: "query" | undefined;
   cacheable?: boolean;
   args: readonly [];
-  returns: import("valibot").ObjectSchema<{
-    readonly write: import("valibot").BooleanSchema<undefined>;
-    readonly uploadExtensions: import("valibot").UnionSchema<[import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>, import("valibot").LiteralSchema<"*", undefined>], undefined>;
-  }, undefined>;
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    write: boolean;
+    uploadExtensions: string[] | "*";
+  }, {
+    write: boolean;
+    uploadExtensions: string[] | "*";
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
@@ -625,8 +685,8 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:assets:open-in-editor";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").StringSchema<undefined>];
-  returns: import("valibot").VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
@@ -639,8 +699,8 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:assets:reveal-in-folder";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").StringSchema<undefined>];
-  returns: import("valibot").VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
@@ -653,12 +713,16 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:assets:upload";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly path: import("valibot").StringSchema<undefined>;
-  }, undefined>];
-  returns: import("valibot").ObjectSchema<{
-    readonly uploadId: import("valibot").StringSchema<undefined>;
-  }, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+  }, {
+    path: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    uploadId: string;
+  }, {
+    uploadId: string;
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -691,17 +755,26 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:assets:rename";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly path: import("valibot").StringSchema<undefined>;
-    readonly newName: import("valibot").StringSchema<undefined>;
-  }, undefined>];
-  returns: import("valibot").ObjectSchema<{
-    readonly path: import("valibot").StringSchema<undefined>;
-    readonly type: import("valibot").PicklistSchema<["image", "font", "video", "audio", "text", "other"], undefined>;
-    readonly publicPath: import("valibot").StringSchema<undefined>;
-    readonly size: import("valibot").NumberSchema<undefined>;
-    readonly mtime: import("valibot").NumberSchema<undefined>;
-  }, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+    newName: string;
+  }, {
+    path: string;
+    newName: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }, {
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -759,12 +832,16 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:assets:delete";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly paths: import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>;
-  }, undefined>];
-  returns: import("valibot").ObjectSchema<{
-    readonly deleted: import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>;
-  }, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    paths: string[];
+  }, {
+    paths: string[];
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    deleted: string[];
+  }, {
+    deleted: string[];
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -797,10 +874,12 @@ export declare const serverFunctions: readonly [{
   name: "devframes:plugin:assets:mkdir";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly path: import("valibot").StringSchema<undefined>;
-  }, undefined>];
-  returns: import("valibot").VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+  }, {
+    path: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -824,12 +903,16 @@ export declare const upload: {
   name: "devframes:plugin:assets:upload";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [v.ObjectSchema<{
-    readonly path: v.StringSchema<undefined>;
-  }, undefined>];
-  returns: v.ObjectSchema<{
-    readonly uploadId: v.StringSchema<undefined>;
-  }, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+  }, {
+    path: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    uploadId: string;
+  }, {
+    uploadId: string;
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -864,12 +947,16 @@ export declare const writeFunctions: readonly [{
   name: "devframes:plugin:assets:upload";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly path: import("valibot").StringSchema<undefined>;
-  }, undefined>];
-  returns: import("valibot").ObjectSchema<{
-    readonly uploadId: import("valibot").StringSchema<undefined>;
-  }, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+  }, {
+    path: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    uploadId: string;
+  }, {
+    uploadId: string;
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -902,17 +989,26 @@ export declare const writeFunctions: readonly [{
   name: "devframes:plugin:assets:rename";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly path: import("valibot").StringSchema<undefined>;
-    readonly newName: import("valibot").StringSchema<undefined>;
-  }, undefined>];
-  returns: import("valibot").ObjectSchema<{
-    readonly path: import("valibot").StringSchema<undefined>;
-    readonly type: import("valibot").PicklistSchema<["image", "font", "video", "audio", "text", "other"], undefined>;
-    readonly publicPath: import("valibot").StringSchema<undefined>;
-    readonly size: import("valibot").NumberSchema<undefined>;
-    readonly mtime: import("valibot").NumberSchema<undefined>;
-  }, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+    newName: string;
+  }, {
+    path: string;
+    newName: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }, {
+    path: string;
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
+    publicPath: string;
+    size: number;
+    mtime: number;
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -970,12 +1066,16 @@ export declare const writeFunctions: readonly [{
   name: "devframes:plugin:assets:delete";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly paths: import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>;
-  }, undefined>];
-  returns: import("valibot").ObjectSchema<{
-    readonly deleted: import("valibot").ArraySchema<import("valibot").StringSchema<undefined>, undefined>;
-  }, undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    paths: string[];
+  }, {
+    paths: string[];
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<{
+    deleted: string[];
+  }, {
+    deleted: string[];
+  }>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
@@ -1008,10 +1108,12 @@ export declare const writeFunctions: readonly [{
   name: "devframes:plugin:assets:mkdir";
   type?: "action" | undefined;
   cacheable?: boolean;
-  args: readonly [import("valibot").ObjectSchema<{
-    readonly path: import("valibot").StringSchema<undefined>;
-  }, undefined>];
-  returns: import("valibot").VoidSchema<undefined>;
+  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
+    path: string;
+  }, {
+    path: string;
+  }>];
+  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{

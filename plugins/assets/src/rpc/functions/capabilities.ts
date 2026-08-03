@@ -1,6 +1,6 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { getAssetsContext } from '../../node/context'
 
 const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
@@ -22,9 +22,9 @@ export const capabilities = defineAssetsRpc({
   snapshot: true,
   jsonSerializable: true,
   args: [],
-  returns: v.object({
-    write: v.boolean(),
-    uploadExtensions: v.union([v.array(v.string()), v.literal('*')]),
+  returns: s.object({
+    write: s.boolean(),
+    uploadExtensions: s.union([s.array(s.string()), s.literal('*')]),
   }),
   agent: {
     title: 'Read assets capabilities',
