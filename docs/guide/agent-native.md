@@ -56,7 +56,7 @@ devframes:plugin:git:status  → devframes_plugin_git_status
 my-plugin:summarize          → my-plugin_summarize
 ```
 
-The convention applies uniformly to `agent`-flagged RPCs, tools registered via `registerTool` / `registerToolProvider`, and the hub's command-derived tools — keep registering with namespaced ids and let the boundary derive the name. `toAgentToolName` (from `devframe/node`) computes the mapping when you need to predict a wire name (e.g. in a client config or a test). Calls resolve back to the id at the boundary; two ids that sanitize to the same wire name keep the first registration and hide the later one with a `DF0047` warning.
+The convention applies uniformly to `agent`-flagged RPCs, tools registered via `registerTool` / `registerToolProvider`, and the hub's command-derived tools — keep registering with namespaced ids and let the boundary derive the name. `toAgentToolName` (from `devframe/utils/agent-tool-name` — a plain string transform, safe to import client-side too, e.g. from a UI that displays a tool's id) computes the mapping when you need to predict a wire name (e.g. in a client config, a test, or an inspector view). Calls resolve back to the id at the boundary; two ids that sanitize to the same wire name keep the first registration and hide the later one with a `DF0047` warning.
 
 ## Registering a plugin tool
 

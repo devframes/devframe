@@ -19,6 +19,5 @@ export { isObject }
 export { normalizeHttpServerUrl }
 export { registerDevframeInstance }
 export { startHttpAndWs }
-export { toAgentToolName }
 export { toDialableHost }
 // #endregion

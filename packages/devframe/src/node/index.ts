@@ -1,6 +1,8 @@
 // Node-side public API for consumers that wire up their own runtime.
+// `toAgentToolName` lives at `devframe/utils/agent-tool-name` instead — a
+// plain string transform, client-safe (the inspect plugin's UI imports it
+// too), not node-specific.
 export * from './agent-args'
-export * from './agent-tool-name'
 export * from './context'
 export * from './host-agent'
 export * from './host-diagnostics'

@@ -19,7 +19,9 @@ export const Default: Story = {
     manifest: {
       tools: [
         {
-          id: 'tool1',
+          // Colon-namespaced — demonstrates the id vs. sanitized MCP wire
+          // name distinction the card renders (`toAgentToolName`).
+          id: 'devframes:plugin:demo:tool1',
           kind: 'rpc',
           title: 'Tool 1',
           description: 'A sample tool',
@@ -48,8 +50,8 @@ export const Default: Story = {
     },
     isStatic: false,
     results: {
-      tool1: { ok: true, result: { bar: 'qux' }, durationMs: 15 },
-      res1: { ok: false, error: { name: 'Error', message: 'Not found' }, durationMs: 2 },
+      'devframes:plugin:demo:tool1': { ok: true, result: { bar: 'qux' }, durationMs: 15 },
+      'res1': { ok: false, error: { name: 'Error', message: 'Not found' }, durationMs: 2 },
     },
     pending: {
       tool2: true,

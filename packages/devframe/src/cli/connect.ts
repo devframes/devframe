@@ -1,9 +1,9 @@
 import type { Tool } from '@modelcontextprotocol/server'
 import type { DevframeInstanceRecord } from '../node/instance-registry'
 import process from 'node:process'
+import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { Diagnostic } from 'nostics'
 import { joinURL } from 'ufo'
-import { toAgentToolName } from '../node/agent-tool-name'
 import { diagnostics } from '../node/diagnostics'
 import { listLiveDevframeInstances, probeDevframeOrigin } from '../node/instance-registry'
 

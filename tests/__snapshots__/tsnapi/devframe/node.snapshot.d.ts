@@ -114,7 +114,6 @@ export declare function normalizeHttpServerUrl(_: string, _: number | string): s
 export declare function registerDevframeInstance(_: DevframeInstanceRecord, _?: {
   instancesDir?: string;
 }): DevframeInstanceRegistration;
-export declare function toAgentToolName(_: string): string;
 export declare function toDialableHost(_: string): string;
 // #endregion
 

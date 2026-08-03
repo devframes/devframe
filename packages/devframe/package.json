@@ -42,6 +42,7 @@
     "./rpc/transports/ws-client": "./dist/rpc/transports/ws-client.mjs",
     "./rpc/transports/ws-server": "./dist/rpc/transports/ws-server.mjs",
     "./types": "./dist/types/index.mjs",
+    "./utils/agent-tool-name": "./dist/utils/agent-tool-name.mjs",
     "./utils/colors": "./dist/utils/colors.mjs",
     "./utils/crypto-token": "./dist/utils/crypto-token.mjs",
     "./utils/events": "./dist/utils/events.mjs",

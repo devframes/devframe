@@ -607,6 +607,17 @@ textarea.args:focus {
   word-break: break-all;
 }
 
+/* Shown only when the sanitized MCP wire name (`.id`, above) differs from
+   the tool's internal registration id — see `toAgentToolName`. */
+.card .id-note {
+  font-family: var(--df-mono);
+  font-size: 10px;
+  color: var(--df-fg-faint);
+  opacity: 0.7;
+  word-break: break-all;
+  margin-top: 1px;
+}
+
 .card .desc {
   color: var(--df-fg-dim);
   font-size: 12px;

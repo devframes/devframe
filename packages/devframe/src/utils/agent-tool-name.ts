@@ -20,6 +20,10 @@ const MAX_TOOL_NAME_LENGTH = 128
  * devframes:plugin:git:status  → devframes_plugin_git_status
  * ```
  *
+ * A plain string transform with no node dependency, so browser-side UIs
+ * that display a tool's id (e.g. the inspect plugin's agent view) can
+ * import it too and show the name a client actually calls.
+ *
  * @experimental The agent-native surface is experimental and may change
  * without a major version bump until it stabilizes.
  */

@@ -18,6 +18,7 @@ export const alias = {
   'devframe/node/hub-internals': r('devframe/src/node/hub-internals/index.ts'),
   'devframe/node': r('devframe/src/node/index.ts'),
   'devframe/constants': r('devframe/src/constants.ts'),
+  'devframe/utils/agent-tool-name': r('devframe/src/utils/agent-tool-name.ts'),
   'devframe/utils/colors': r('devframe/src/utils/colors.ts'),
   'devframe/utils/crypto-token': r('devframe/src/utils/crypto-token.ts'),
   'devframe/utils/events': r('devframe/src/utils/events.ts'),

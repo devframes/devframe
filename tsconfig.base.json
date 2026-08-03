@@ -40,6 +40,9 @@
       "devframe/constants": [
         "./packages/devframe/src/constants.ts"
       ],
+      "devframe/utils/agent-tool-name": [
+        "./packages/devframe/src/utils/agent-tool-name.ts"
+      ],
       "devframe/utils/colors": [
         "./packages/devframe/src/utils/colors.ts"
       ],

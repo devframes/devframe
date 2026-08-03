@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AgentManifest, InvokeResult } from '@devframes/plugin-inspect/client'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
+import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { reactive, ref } from 'vue'
 import JsonView from './JsonView.vue'
 
@@ -65,7 +66,10 @@ function readResource(id: string) {
             <span class="badge" :class="`safety-${tool.safety}`">{{ tool.safety }}</span>
           </div>
           <div class="id">
-            {{ tool.id }}
+            {{ toAgentToolName(tool.id) }}
+          </div>
+          <div v-if="toAgentToolName(tool.id) !== tool.id" class="id-note">
+            internal id: {{ tool.id }}
           </div>
           <p class="desc">
             {{ tool.description }}
