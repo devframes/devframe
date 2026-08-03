@@ -43,6 +43,21 @@ export const getSessionSummary = defineRpcFunction({
 
 Agent tools take a single object input. The MCP adapter synthesises `arg0`, `arg1`, … from positional args (`args: [A, B]`); a single object schema (`args: [v.object({ ... })]`) reads better at the agent boundary because property names are self-describing.
 
+## Tool ids and wire names
+
+Every agent tool has two names:
+
+- **The id** — how the tool is registered and invoked inside devframe. Ids are colon-namespaced by convention: `devframes:plugin:<slug>:<fn>` for plugin RPCs, `devframe:<area>:<fn>` for built-ins, and command ids for hub-command-derived tools.
+- **The wire name** — what MCP clients see and call. Clients constrain tool names to `^[a-zA-Z0-9_-]{1,128}$`, so the MCP adapter derives the wire name automatically: every run of characters outside `[a-zA-Z0-9_-]` becomes a single `_`, truncated to 128 characters.
+
+```
+devframe:state:read          → devframe_state_read
+devframes:plugin:git:status  → devframes_plugin_git_status
+my-plugin:summarize          → my-plugin_summarize
+```
+
+The convention applies uniformly to `agent`-flagged RPCs, tools registered via `registerTool` / `registerToolProvider`, and the hub's command-derived tools — keep registering with namespaced ids and let the boundary derive the name. `toAgentToolName` (from `devframe/node`) computes the mapping when you need to predict a wire name (e.g. in a client config or a test). Calls resolve back to the id at the boundary; two ids that sanitize to the same wire name keep the first registration and hide the later one with a `DF0047` warning.
+
 ## Registering a plugin tool
 
 For tools without a matching RPC — say, an on-demand narrative summary — register them directly:
@@ -96,7 +111,7 @@ ctx.agent.registerResource({
 
 Every `ctx.rpc.sharedState` key is also automatically exposed to MCP as `devframe://state/<key>`. Pass `exposeSharedState: false` (or a filter function) to `createMcpServer` to opt out.
 
-Shared state is additionally reachable through the built-in **`devframe:state:read` tool** — call it without arguments for the key list, with a `key` for that value — since many MCP clients only consume tools. It honors the same `exposeSharedState` filter as the resource projection.
+Shared state is additionally reachable through the built-in **`devframe:state:read` tool** (wire name `devframe_state_read`) — call it without arguments for the key list, with a `key` for that value — since many MCP clients only consume tools. It honors the same `exposeSharedState` filter as the resource projection.
 
 ## Starting the MCP server
 

@@ -1,5 +1,5 @@
 import { defineRpcFunction } from 'devframe'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { runGit, splitClean, tryGit } from '../../node/git.ts'
 import { getGitContext } from '../context.ts'
 
@@ -26,22 +26,22 @@ export interface GitDiff {
   truncated: boolean
 }
 
-const diffFileSchema = v.object({
-  path: v.string(),
-  additions: v.number(),
-  deletions: v.number(),
-  binary: v.boolean(),
+const diffFileSchema = s.object({
+  path: s.string(),
+  additions: s.number(),
+  deletions: s.number(),
+  binary: s.boolean(),
 })
 
-const gitDiffSchema = v.object({
-  isRepo: v.boolean(),
-  staged: v.boolean(),
-  path: v.nullable(v.string()),
-  files: v.array(diffFileSchema),
-  totalAdditions: v.number(),
-  totalDeletions: v.number(),
-  patch: v.nullable(v.string()),
-  truncated: v.boolean(),
+const gitDiffSchema = s.object({
+  isRepo: s.boolean(),
+  staged: s.boolean(),
+  path: s.nullable(s.string()),
+  files: s.array(diffFileSchema),
+  totalAdditions: s.number(),
+  totalDeletions: s.number(),
+  patch: s.nullable(s.string()),
+  truncated: s.boolean(),
 })
 
 export interface DiffArgs {
@@ -69,9 +69,9 @@ export const diff = defineRpcFunction({
   type: 'query',
   snapshot: true,
   jsonSerializable: true,
-  args: [v.object({
-    path: v.optional(v.string()),
-    staged: v.optional(v.boolean()),
+  args: [s.object({
+    path: s.optional(s.string()),
+    staged: s.optional(s.boolean()),
   })],
   returns: gitDiffSchema,
   agent: {

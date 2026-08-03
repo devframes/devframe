@@ -85,13 +85,17 @@ literal "/_next/mcp" shape on devframe primitives.
 9. **Instance registry** — `registerDevframeInstance(record)` exported from
    `devframe/node`: atomic per-instance JSON at
    `~/.devframe/instances/<pid>-<port>.json`
-   (`{ pid, port, host, basePath, name, id, rootDir, mcp: { path } | null,
-   startedAt }`), removed on close, pruned on read by failed
+   (`{ pid, port, origin, basePath, name, id, rootDir, mcp: { path } | null,
+   startedAt }` — `origin` instead of a bare `host` so records carry a
+   dialable URL), removed on close, pruned on read by failed
    `__connection.json` probes. `createDevServer` registers automatically
    (covers CLI dev, vite bridge, and the Next side-car);
    `createDevframeNextHost` calls it explicitly for the in-process path.
 10. **`devframe` bin + `connect`** — first real bin on the `devframe` package.
-    `devframe connect` runs a stdio MCP server exposing two gateway tools:
+    `devframe connect` runs a stdio MCP server exposing two gateway tools
+    (ids `devframe:connect:*`; MCP clients see the auto-derived wire names,
+    `devframe_connect_list-instances` / `devframe_connect_call-tool` — the
+    tool-name convention documented in the agent-native guide):
     - `devframe:connect:list-instances` — list live instances (registry read +
       liveness probe + prune) and each MCP-enabled instance's tools; instances
       with `mcp: null` carry a funnel hint ("restart with `--mcp`…").
@@ -134,10 +138,11 @@ literal "/_next/mcp" shape on devframe primitives.
       and calls a live app over stdio; Next host serves in-process MCP; both
       e2e gates green in CI. (PR 3)
 - [x] Every phase: full gate green, API snapshots updated deliberately, new
-      node-side errors use coded diagnostics with docs pages (`DF0042`,
-      `DF0043`, `DF8404` — note: DF00xx numbers are allocated across
+      node-side errors use coded diagnostics with docs pages (`DF0045`–`DF0051`,
+      `DF8404` — note: DF00xx numbers are allocated across
       packages; check `docs/errors/` for the next free code).
-- [ ] `plans/README.md` row set to DONE once the three PRs merge.
+- [x] `plans/README.md` row updated as phases landed; set to DONE once the
+      wave PR merges.
 
 ## STOP conditions
 

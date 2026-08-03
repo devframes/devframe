@@ -91,5 +91,26 @@ export const diagnostics = defineDiagnostics({
       why: (p: { reason: string }) => `\`devframe connect\` requires the optional peer dependency @modelcontextprotocol/server: ${p.reason}`,
       fix: 'Install it next to devframe (e.g. `npm install @modelcontextprotocol/server`) and run `devframe connect` again.',
     },
+    DF0047: {
+      why: (p: { name: string, id: string, existing: string }) =>
+        `Agent tool "${p.id}" is hidden from the MCP surface: its wire name "${p.name}" collides with the tool "${p.existing}".`,
+      fix: 'Wire names derive from tool ids (characters outside [a-zA-Z0-9_-] become "_"). Rename one of the two ids so they sanitize to distinct names.',
+    },
+    DF0048: {
+      why: (p: { key: string }) => `Unknown shared-state key "${p.key}".`,
+      fix: 'Call the devframe_state_read tool without arguments to list the available keys, then retry with one of them.',
+    },
+    DF0049: {
+      why: 'The devframe_connect_call-tool tool requires { port: number, tool: string }.',
+      fix: 'Call devframe_connect_list-instances to get the port and tool names, then retry.',
+    },
+    DF0050: {
+      why: (p: { port: number }) => `No running devframe instance on port ${p.port}.`,
+      fix: 'Call devframe_connect_list-instances for the current instance list — the instance may have stopped or changed port.',
+    },
+    DF0051: {
+      why: (p: { port: number }) => `The devframe instance on port ${p.port} has no MCP endpoint.`,
+      fix: 'Restart the instance with the --mcp flag (or set `cli.mcp: true` on its definition) to expose its tools, then list instances again.',
+    },
   },
 })

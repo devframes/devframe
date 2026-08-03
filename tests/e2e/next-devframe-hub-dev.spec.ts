@@ -31,7 +31,7 @@ test.describe('devframe connect (next-devframe-hub)', () => {
     await withConnectClient(REGISTRY, async (client) => {
       // Index: the hub registered itself (explicitly — it runs in-process,
       // not via createDevServer) with the Next server's own origin.
-      const index = parseToolText(await client.callTool({ name: 'devframe:connect:list-instances', arguments: {} }))
+      const index = parseToolText(await client.callTool({ name: 'devframe_connect_list-instances', arguments: {} }))
       const hub = index.instances.find((entry: any) => entry.id === 'example:next-devframe-hub')
       expect(hub).toBeDefined()
       // The probe may adopt an explicit address family for the recorded
@@ -39,16 +39,16 @@ test.describe('devframe connect (next-devframe-hub)', () => {
       expect(hub.mcp.url).toMatch(/^http:\/\/(?:localhost|127\.0\.0\.1):9878\/__hub\/__mcp$/)
 
       // The hub's agent surface flows through: the agent-flagged hub command,
-      // the built-in devframe:state:read, and the git plugin's agent-flagged reads.
+      // the built-in devframe_state_read, and the git plugin's agent-flagged reads.
       const toolNames = hub.mcp.tools.map((t: any) => t.name)
-      expect(toolNames).toContain('example:next-devframe-hub:ping')
-      expect(toolNames).toContain('devframe:state:read')
-      expect(toolNames).toContain('devframes:plugin:git:status')
+      expect(toolNames).toContain('example_next-devframe-hub_ping')
+      expect(toolNames).toContain('devframe_state_read')
+      expect(toolNames).toContain('devframes_plugin_git_status')
 
       // Call the agent-flagged hub command through the connector.
       const ping = parseToolText(await client.callTool({
-        name: 'devframe:connect:call-tool',
-        arguments: { port: 9878, tool: 'example:next-devframe-hub:ping' },
+        name: 'devframe_connect_call-tool',
+        arguments: { port: 9878, tool: 'example_next-devframe-hub_ping' },
       }))
       expect(ping.isError).toBe(false)
       expect(ping.content[0].text).toBe('pong')

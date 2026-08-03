@@ -85,10 +85,10 @@ The `devframe` bin ships an MCP **connector** — a thin discovery + proxy serve
 }
 ```
 
-It exposes two gateway tools:
+It exposes two gateway tools (the wire names of the `devframe:connect:*` ids — see [tool ids and wire names](/guide/agent-native#tool-ids-and-wire-names)):
 
-- **`devframe:connect:list-instances`** — discover running devframe dev servers and list each one's MCP tools. Instances running without an MCP route are listed with a hint to restart with `--mcp`.
-- **`devframe:connect:call-tool`** — invoke one tool on one instance (`{ port, tool, args }`) over its Streamable-HTTP endpoint.
+- **`devframe_connect_list-instances`** — discover running devframe dev servers and list each one's MCP tools. Instances running without an MCP route are listed with a hint to restart with `--mcp`.
+- **`devframe_connect_call-tool`** — invoke one tool on one instance (`{ port, tool, args }`) over its Streamable-HTTP endpoint.
 
 Discovery reads the **instance registry**: every `createDevServer` (CLI `dev`, `viteDevBridge`, `@devframes/next`'s handler) writes a record to `~/.devframe/instances/<pid>-<port>.json` on boot and removes it on close; readers prune records whose liveness probe fails. In-process hosts register explicitly with `registerDevframeInstance` from `devframe/node` — see `createDevframeNextHost().mountMcp` for serving MCP on a Next app's own origin. `--port <n>` probes an explicit port besides the registry; `DEVFRAME_INSTANCES_DIR` relocates the registry and `DEVFRAME_DISABLE_INSTANCE_REGISTRY=1` opts a server out.
 

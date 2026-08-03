@@ -1,8 +1,11 @@
+import type { Tool } from '@modelcontextprotocol/server'
 import type { DevframeInstanceRecord } from '../node/instance-registry'
 import process from 'node:process'
+import { Diagnostic } from 'nostics'
 import { joinURL } from 'ufo'
+import { toAgentToolName } from '../node/agent-tool-name'
 import { diagnostics } from '../node/diagnostics'
-import { listLiveDevframeInstances } from '../node/instance-registry'
+import { listLiveDevframeInstances, probeDevframeOrigin } from '../node/instance-registry'
 
 export interface ConnectServerOptions {
   /**
@@ -21,15 +24,8 @@ export interface ConnectServerHandle {
   stop: () => Promise<void>
 }
 
-interface IndexedInstance {
-  id: string
-  name?: string
-  pid: number
-  port: number
-  origin: string
-  basePath: string
-  rootDir: string
-  startedAt: number
+/** One discovered instance in the `list-instances` payload: the registry record plus its probed MCP surface. */
+interface IndexedInstance extends Omit<DevframeInstanceRecord, 'mcp'> {
   mcp: {
     url: string
     tools?: { name: string, description?: string }[]
@@ -38,18 +34,53 @@ interface IndexedInstance {
   hint?: string
 }
 
-const INDEX_TOOL = 'devframe:connect:list-instances'
-const CALL_TOOL = 'devframe:connect:call-tool'
+/** The lazily imported MCP SDK surface `devframe connect` needs. */
+interface ConnectSdk {
+  Server: typeof import('@modelcontextprotocol/server').Server
+  StdioServerTransport: typeof import('@modelcontextprotocol/server/stdio').StdioServerTransport
+  Client: typeof import('@modelcontextprotocol/client').Client
+  StreamableHTTPClientTransport: typeof import('@modelcontextprotocol/client').StreamableHTTPClientTransport
+}
+
+// Gateway tool ids follow the `devframe:<area>:<fn>` convention; the wire
+// names are their sanitized forms (`devframe_connect_list-instances`, …).
+const INDEX_TOOL = toAgentToolName('devframe:connect:list-instances')
+const CALL_TOOL = toAgentToolName('devframe:connect:call-tool')
 
 const MCP_DISABLED_HINT
   = 'This instance runs without an MCP route. Restart it with the --mcp flag (or set `cli.mcp: true` on its definition) to expose its tools, then list instances again.'
 
+const GATEWAY_TOOLS: Tool[] = [
+  {
+    name: INDEX_TOOL,
+    title: 'Discover running devframes',
+    description: 'Discover every running devframe dev server on this machine and list each one\'s MCP tools. Call this FIRST, before assuming which devtools are available — the result names the instance (id, project root, origin) and the port to pass to the call tool. Safe to call freely.',
+    inputSchema: { type: 'object', properties: {} },
+    annotations: { readOnlyHint: true, destructiveHint: false },
+  },
+  {
+    name: CALL_TOOL,
+    title: 'Call a devframe tool',
+    description: 'Invoke one MCP tool on one running devframe instance discovered via the list-instances tool. Pass the instance\'s port, the tool name, and the tool\'s arguments object.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        port: { type: 'number', description: 'The instance\'s port, from the list-instances tool.' },
+        tool: { type: 'string', description: 'Tool name, from the instance\'s tool list.' },
+        args: { type: 'object', description: 'Arguments object for the tool. Omit for zero-argument tools.' },
+      },
+      required: ['port', 'tool'],
+      additionalProperties: false,
+    },
+  },
+]
+
 /**
  * Start the devframe MCP connector on stdio: a thin discovery + proxy server
  * in the shape next-devtools-mcp validated. It exposes two gateway tools —
- * `devframe:connect:list-instances` (discover running devframe instances via
+ * `devframe_connect_list-instances` (discover running devframe instances via
  * the instance registry and list each one's MCP tools) and
- * `devframe:connect:call-tool` (invoke one tool on one instance over its
+ * `devframe_connect_call-tool` (invoke one tool on one instance over its
  * Streamable-HTTP endpoint) — and holds no domain knowledge of its own.
  *
  * @experimental
@@ -62,32 +93,7 @@ export async function startConnectServer(options: ConnectServerOptions = {}): Pr
     { capabilities: { tools: {} } },
   )
 
-  server.setRequestHandler('tools/list', async () => ({
-    tools: [
-      {
-        name: INDEX_TOOL,
-        title: 'Discover running devframes',
-        description: 'Discover every running devframe dev server on this machine and list each one\'s MCP tools. Call this FIRST, before assuming which devtools are available — the result names the instance (id, project root, origin) and the port to pass to the call tool. Safe to call freely.',
-        inputSchema: { type: 'object', properties: {} },
-        annotations: { readOnlyHint: true, destructiveHint: false },
-      },
-      {
-        name: CALL_TOOL,
-        title: 'Call a devframe tool',
-        description: 'Invoke one MCP tool on one running devframe instance discovered via the list-instances tool. Pass the instance\'s port, the tool name, and the tool\'s arguments object.',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            port: { type: 'number', description: 'The instance\'s port, from the list-instances tool.' },
-            tool: { type: 'string', description: 'Tool name, from the instance\'s tool list.' },
-            args: { type: 'object', description: 'Arguments object for the tool. Omit for zero-argument tools.' },
-          },
-          required: ['port', 'tool'],
-          additionalProperties: false,
-        },
-      },
-    ],
-  }))
+  server.setRequestHandler('tools/list', async () => ({ tools: GATEWAY_TOOLS }))
 
   server.setRequestHandler('tools/call', async (request: any) => {
     const { name, arguments: args } = request.params
@@ -99,10 +105,7 @@ export async function startConnectServer(options: ConnectServerOptions = {}): Pr
       return errorResult({ message: `unknown tool "${name}"`, fix: `Call ${INDEX_TOOL} or ${CALL_TOOL}.` })
     }
     catch (error) {
-      return errorResult({
-        message: error instanceof Error ? error.message : String(error),
-        ...(error && typeof error === 'object' && 'fix' in error && typeof error.fix === 'string' ? { fix: error.fix } : {}),
-      })
+      return errorResult(toErrorPayload(error))
     }
   })
 
@@ -116,7 +119,7 @@ export async function startConnectServer(options: ConnectServerOptions = {}): Pr
   }
 }
 
-async function importSdk(): Promise<any> {
+async function importSdk(): Promise<ConnectSdk> {
   try {
     const [serverMod, stdioMod, clientMod] = await Promise.all([
       import('@modelcontextprotocol/server'),
@@ -137,7 +140,7 @@ async function importSdk(): Promise<any> {
 }
 
 /** Discover instances: registry (prune-on-read) + explicit port probes. */
-async function index(sdk: any, options: ConnectServerOptions): Promise<unknown> {
+async function index(sdk: ConnectSdk, options: ConnectServerOptions): Promise<unknown> {
   const { live } = await listLiveDevframeInstances({
     instancesDir: options.instancesDir,
     timeoutMs: options.timeoutMs,
@@ -153,22 +156,13 @@ async function index(sdk: any, options: ConnectServerOptions): Promise<unknown> 
   }
 
   const instances: IndexedInstance[] = await Promise.all(records.map(async (record) => {
-    const entry: IndexedInstance = {
-      id: record.id,
-      name: record.name,
-      pid: record.pid,
-      port: record.port,
-      origin: record.origin,
-      basePath: record.basePath,
-      rootDir: record.rootDir,
-      startedAt: record.startedAt,
-      mcp: null,
-    }
-    if (!record.mcp) {
+    const { mcp, ...rest } = record
+    const entry: IndexedInstance = { ...rest, mcp: null }
+    if (!mcp) {
       entry.hint = MCP_DISABLED_HINT
       return entry
     }
-    const url = `${record.origin}${record.mcp.path}`
+    const url = `${record.origin}${mcp.path}`
     try {
       entry.mcp = { url, tools: await listInstanceTools(sdk, url) }
     }
@@ -187,39 +181,28 @@ async function index(sdk: any, options: ConnectServerOptions): Promise<unknown> 
 }
 
 /**
- * Probe an explicit port for a devframe serving `__connection.json` at `/`.
- * Tries the explicit address families too — a `localhost`-bound server may
- * listen on either.
+ * Probe an explicit port for a devframe serving `__connection.json` at `/`,
+ * reusing the registry's origin-candidate probe (a `localhost`-bound server
+ * may listen on either address family).
  */
 async function probePort(port: number, timeoutMs?: number): Promise<DevframeInstanceRecord | null> {
-  for (const origin of [`http://127.0.0.1:${port}`, `http://localhost:${port}`, `http://[::1]:${port}`]) {
-    try {
-      const response = await fetch(`${origin}/__connection.json`, {
-        signal: AbortSignal.timeout(timeoutMs ?? 1000),
-      })
-      if (!response.ok)
-        continue
-      const meta = await response.json() as { mcp?: { path: string, port?: number } }
-      const mcpPath = meta.mcp ? joinURL('/', meta.mcp.path) : null
-      return {
-        pid: -1,
-        port,
-        origin,
-        basePath: '/',
-        id: `port-${port}`,
-        rootDir: '',
-        mcp: mcpPath ? { path: mcpPath } : null,
-        startedAt: 0,
-      }
-    }
-    catch {
-      // Try the next candidate.
-    }
+  const probed = await probeDevframeOrigin(`http://localhost:${port}`, '/', timeoutMs)
+  if (!probed)
+    return null
+  const mcpPath = probed.meta.mcp ? joinURL('/', probed.meta.mcp.path) : null
+  return {
+    pid: -1,
+    port,
+    origin: probed.origin,
+    basePath: '/',
+    id: `port-${port}`,
+    rootDir: '',
+    mcp: mcpPath ? { path: mcpPath } : null,
+    startedAt: 0,
   }
-  return null
 }
 
-async function listInstanceTools(sdk: any, url: string): Promise<{ name: string, description?: string }[]> {
+async function listInstanceTools(sdk: ConnectSdk, url: string): Promise<{ name: string, description?: string }[]> {
   return withInstanceClient(sdk, url, async (client) => {
     const listed = await client.listTools()
     return listed.tools.map((tool: { name: string, description?: string }) => ({
@@ -230,35 +213,26 @@ async function listInstanceTools(sdk: any, url: string): Promise<{ name: string,
 }
 
 async function call(
-  sdk: any,
+  sdk: ConnectSdk,
   options: ConnectServerOptions,
   args: { port?: number, tool?: string, args?: Record<string, unknown> },
 ): Promise<unknown> {
-  if (typeof args.port !== 'number' || typeof args.tool !== 'string') {
-    throw Object.assign(new Error(`${CALL_TOOL} requires { port: number, tool: string }`), {
-      fix: `Call ${INDEX_TOOL} to get the port and tool names, then retry.`,
-    })
-  }
+  if (typeof args.port !== 'number' || typeof args.tool !== 'string')
+    throw diagnostics.DF0049()
 
   const { live } = await listLiveDevframeInstances({
     instancesDir: options.instancesDir,
     timeoutMs: options.timeoutMs,
   })
   const record = live.find(r => r.port === args.port) ?? await probePort(args.port, options.timeoutMs)
-  if (!record) {
-    throw Object.assign(new Error(`no running devframe instance on port ${args.port}`), {
-      fix: `Call ${INDEX_TOOL} for the current instance list — the instance may have stopped or changed port.`,
-    })
-  }
-  if (!record.mcp) {
-    throw Object.assign(new Error(`the devframe instance on port ${args.port} has no MCP endpoint`), {
-      fix: MCP_DISABLED_HINT,
-    })
-  }
+  if (!record)
+    throw diagnostics.DF0050({ port: args.port })
+  if (!record.mcp)
+    throw diagnostics.DF0051({ port: args.port })
 
   const url = `${record.origin}${record.mcp.path}`
   return withInstanceClient(sdk, url, async (client) => {
-    const result = await client.callTool({ name: args.tool, arguments: args.args ?? {} })
+    const result = await client.callTool({ name: args.tool!, arguments: args.args ?? {} })
     return {
       instance: { id: record.id, port: record.port },
       tool: args.tool,
@@ -269,7 +243,11 @@ async function call(
   })
 }
 
-async function withInstanceClient<T>(sdk: any, url: string, fn: (client: any) => Promise<T>): Promise<T> {
+async function withInstanceClient<T>(
+  sdk: ConnectSdk,
+  url: string,
+  fn: (client: InstanceType<ConnectSdk['Client']>) => Promise<T>,
+): Promise<T> {
   const transport = new sdk.StreamableHTTPClientTransport(new URL(url))
   const client = new sdk.Client({ name: 'devframe-connect', version: '0.0.0' })
   await client.connect(transport)
@@ -285,7 +263,34 @@ function textResult(value: unknown): { content: { type: 'text', text: string }[]
   return { content: [{ type: 'text', text: JSON.stringify(value, null, 2) }] }
 }
 
-function errorResult(error: { message: string, fix?: string }): {
+interface ConnectErrorPayload {
+  code?: string
+  message: string
+  fix?: string
+  docs?: string
+}
+
+/**
+ * Project a thrown value into the connector's structured error payload. A
+ * nostics `Diagnostic` carries its code, `fix`, and docs URL across so the
+ * calling agent gets the actionable next step.
+ */
+function toErrorPayload(error: unknown): ConnectErrorPayload {
+  if (error instanceof Diagnostic) {
+    return {
+      code: error.code,
+      message: error.message,
+      ...(error.fix ? { fix: error.fix } : {}),
+      ...(error.docs ? { docs: error.docs } : {}),
+    }
+  }
+  return {
+    message: error instanceof Error ? error.message : String(error),
+    ...(error && typeof error === 'object' && 'fix' in error && typeof error.fix === 'string' ? { fix: error.fix } : {}),
+  }
+}
+
+function errorResult(error: ConnectErrorPayload): {
   isError: true
   content: { type: 'text', text: string }[]
 } {

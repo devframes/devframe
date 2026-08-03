@@ -1,12 +1,12 @@
 import type { AgentToolInput, AgentToolProviderHandle } from 'devframe/types'
 import type {
-  DevframeCommandAgentOptions,
   DevframeCommandHandle,
   DevframeCommandsHost as DevframeCommandsHostType,
   DevframeServerCommandEntry,
   DevframeServerCommandInput,
 } from '../types/commands'
 import type { DevframeHubContext } from './context'
+import { coerceAgentPositionalArgs } from 'devframe/node'
 import { createEventEmitter } from 'devframe/utils/events'
 import { diagnostics } from './diagnostics'
 
@@ -187,8 +187,10 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
           tags: agent.tags,
           // The agent host derives the tool's JSON-Schema input from these.
           args: agent.args,
+          // A command handler's positional parameters come solely from its
+          // declared `agent.args` schemas — undeclared payload is dropped.
           handler: async (args: unknown) =>
-            this.execute(command.id, ...coercePositionalArgs(args, agent.args)),
+            this.execute(command.id, ...coerceAgentPositionalArgs(args, agent.args, 'drop')),
         })
       }
       for (const child of command.children ?? [])
@@ -198,20 +200,4 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
       walk(command)
     return tools
   }
-}
-
-/**
- * Map the `arg0`/`arg1`/… keyed object an MCP client sends onto the command
- * handler's positional parameters — mirroring the agent host's RPC
- * coercion: no declared schemas → zero-arg call; each declared schema reads
- * its own `argN` key, in order.
- */
-function coercePositionalArgs(
-  args: unknown,
-  schemas: DevframeCommandAgentOptions['args'],
-): unknown[] {
-  if (!schemas || schemas.length === 0)
-    return []
-  const obj = (args ?? {}) as Record<string, unknown>
-  return schemas.map((_, i) => obj[`arg${i}`])
 }

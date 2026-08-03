@@ -1,7 +1,7 @@
 import type { GitContext } from '../context.ts'
 import type { FileStatusCode } from './status.ts'
 import { defineRpcFunction } from 'devframe'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { isSafeRevision, splitClean, tryGit, UNIT } from '../../node/git.ts'
 import { getGitContext } from '../context.ts'
 
@@ -51,7 +51,7 @@ export interface CommitDetail {
   truncated: boolean
 }
 
-const fileStatusCodeSchema = v.picklist([
+const fileStatusCodeSchema = s.picklist([
   'modified',
   'added',
   'deleted',
@@ -62,34 +62,34 @@ const fileStatusCodeSchema = v.picklist([
   'unknown',
 ])
 
-const commitFileSchema = v.object({
-  path: v.string(),
-  additions: v.number(),
-  deletions: v.number(),
-  binary: v.boolean(),
+const commitFileSchema = s.object({
+  path: s.string(),
+  additions: s.number(),
+  deletions: s.number(),
+  binary: s.boolean(),
   status: fileStatusCodeSchema,
 })
 
-const commitDetailSchema = v.object({
-  isRepo: v.boolean(),
-  found: v.boolean(),
-  hash: v.string(),
-  shortHash: v.string(),
-  author: v.string(),
-  email: v.string(),
-  date: v.number(),
-  committer: v.string(),
-  committerEmail: v.string(),
-  commitDate: v.number(),
-  subject: v.string(),
-  body: v.string(),
-  parents: v.array(v.string()),
-  refs: v.array(v.string()),
-  files: v.array(commitFileSchema),
-  totalAdditions: v.number(),
-  totalDeletions: v.number(),
-  patch: v.nullable(v.string()),
-  truncated: v.boolean(),
+const commitDetailSchema = s.object({
+  isRepo: s.boolean(),
+  found: s.boolean(),
+  hash: s.string(),
+  shortHash: s.string(),
+  author: s.string(),
+  email: s.string(),
+  date: s.number(),
+  committer: s.string(),
+  committerEmail: s.string(),
+  commitDate: s.number(),
+  subject: s.string(),
+  body: s.string(),
+  parents: s.array(s.string()),
+  refs: s.array(s.string()),
+  files: s.array(commitFileSchema),
+  totalAdditions: s.number(),
+  totalDeletions: s.number(),
+  patch: s.nullable(s.string()),
+  truncated: s.boolean(),
 })
 
 export interface ShowArgs {
@@ -252,9 +252,9 @@ export const show = defineRpcFunction({
   name: 'devframes:plugin:git:show',
   type: 'query',
   jsonSerializable: true,
-  args: [v.object({
-    hash: v.string(),
-    patch: v.optional(v.boolean()),
+  args: [s.object({
+    hash: s.string(),
+    patch: s.optional(s.boolean()),
   })],
   returns: commitDetailSchema,
   agent: {

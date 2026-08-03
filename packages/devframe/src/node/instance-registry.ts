@@ -177,6 +177,50 @@ function originCandidates(origin: string): string[] {
 }
 
 /**
+ * A successful `__connection.json` probe: the dialable origin that
+ * answered plus the parsed connection meta it served.
+ *
+ * @internal
+ */
+export interface ProbedDevframeOrigin {
+  /** The origin that answered (may be an explicit address family for a `localhost` bind). */
+  origin: string
+  /** The parsed `__connection.json` payload (`{}` when unparseable). */
+  meta: { mcp?: { path: string, port?: number } }
+}
+
+/**
+ * Probe `<origin><basePath>__connection.json`, trying each dialable
+ * candidate for the origin (see {@link originCandidates}). The single
+ * probe primitive behind both registry liveness checks and the
+ * connector's explicit `--port` probes.
+ *
+ * @internal
+ */
+export async function probeDevframeOrigin(
+  origin: string,
+  basePath: string,
+  timeoutMs?: number,
+): Promise<ProbedDevframeOrigin | null> {
+  const base = basePath.endsWith('/') ? basePath : `${basePath}/`
+  for (const candidate of originCandidates(origin)) {
+    try {
+      const response = await fetch(`${candidate}${base}__connection.json`, {
+        signal: AbortSignal.timeout(timeoutMs ?? 1000),
+      })
+      if (!response.ok)
+        continue
+      const meta = await response.json().catch(() => ({})) as ProbedDevframeOrigin['meta']
+      return { origin: candidate, meta }
+    }
+    catch {
+      // Try the next candidate.
+    }
+  }
+  return null
+}
+
+/**
  * Probe a record's `__connection.json` to check the instance is alive.
  * Returns the **dialable origin** that answered (for `localhost` records
  * this may be an explicit `127.0.0.1` / `[::1]` origin), or `null` when
@@ -188,20 +232,8 @@ export async function probeDevframeInstance(
   record: DevframeInstanceRecord,
   options: { timeoutMs?: number } = {},
 ): Promise<string | null> {
-  const base = record.basePath.endsWith('/') ? record.basePath : `${record.basePath}/`
-  for (const origin of originCandidates(record.origin)) {
-    try {
-      const response = await fetch(`${origin}${base}__connection.json`, {
-        signal: AbortSignal.timeout(options.timeoutMs ?? 1000),
-      })
-      if (response.ok)
-        return origin
-    }
-    catch {
-      // Try the next candidate.
-    }
-  }
-  return null
+  const probed = await probeDevframeOrigin(record.origin, record.basePath, options.timeoutMs)
+  return probed?.origin ?? null
 }
 
 /**

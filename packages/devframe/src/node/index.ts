@@ -1,4 +1,6 @@
 // Node-side public API for consumers that wire up their own runtime.
+export * from './agent-args'
+export * from './agent-tool-name'
 export * from './context'
 export * from './host-agent'
 export * from './host-diagnostics'

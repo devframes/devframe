@@ -42,7 +42,7 @@ changes are allowed as long as they're marked).
 | 027 | Spike: `@devframes/next` host-integration package | direction | P3 | M | — | DONE (shipped `@devframes/next`, experimental — see `docs/helpers/next.md`; hub + next-runtime-snapshot examples adopt it) |
 | 029 | Bring `@devframes/plugin-git` to the host baseline | direction/dx | P3 | S-M | — | TODO |
 | 030 | Spike: server-side auth enforcement ⚠️ | security | P2 | L | 003, 007, 015 | DONE |
-| 031 | Agent-native MCP wave (bridges, core surface, connector) | direction | P2 | L | — | IN PROGRESS |
+| 031 | Agent-native MCP wave (bridges, core surface, connector) | direction | P2 | L | — | IN PROGRESS (phases 1–3 implemented on PR #145; DONE at merge) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale).
 

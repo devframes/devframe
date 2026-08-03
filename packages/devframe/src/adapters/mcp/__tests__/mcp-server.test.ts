@@ -92,6 +92,54 @@ describe('mcp adapter (in-memory)', () => {
     }
   })
 
+  it('advertises colon-namespaced ids under their derived wire name and resolves calls back', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.agent.registerTool({
+        id: 'devframes:plugin:demo:greet',
+        description: 'Say hello.',
+        safety: 'read',
+        handler: () => ({ greeting: 'hi' }),
+      })
+
+      const listed = await client.listTools()
+      const names = listed.tools.map(t => t.name)
+      expect(names).toContain('devframes_plugin_demo_greet')
+      expect(names).not.toContain('devframes:plugin:demo:greet')
+
+      const result = await client.callTool({ name: 'devframes_plugin_demo_greet', arguments: {} })
+      const content = result.content as Array<{ type: string, text: string }>
+      expect(JSON.parse(content[0]!.text)).toEqual({ greeting: 'hi' })
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('hides a later tool whose wire name collides with an earlier one', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.agent.registerTool({
+        id: 'demo:greet',
+        description: 'First.',
+        handler: () => 'first',
+      })
+      ctx.agent.registerTool({
+        id: 'demo_greet',
+        description: 'Second — sanitizes to the same wire name.',
+        handler: () => 'second',
+      })
+
+      const listed = await client.listTools()
+      const matches = listed.tools.filter(t => t.name === 'demo_greet')
+      expect(matches).toHaveLength(1)
+      expect(matches[0]!.description).toBe('First.')
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
   it('returns text and structured content for a tool with an output schema', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {
@@ -233,7 +281,7 @@ describe('mcp adapter (in-memory)', () => {
     }
   })
 
-  it('exposes shared state through the built-in devframe:state:read tool', async () => {
+  it('exposes shared state through the built-in devframe_state_read tool', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {
       await ctx.rpc.sharedState.get('my-plugin:counter', {
@@ -241,23 +289,23 @@ describe('mcp adapter (in-memory)', () => {
       })
 
       const listed = await client.listTools()
-      const tool = listed.tools.find(t => t.name === 'devframe:state:read')
+      const tool = listed.tools.find(t => t.name === 'devframe_state_read')
       expect(tool).toBeDefined()
       expect(tool!.annotations?.readOnlyHint).toBe(true)
 
       // No key → key list.
-      const keys = await client.callTool({ name: 'devframe:state:read', arguments: {} })
+      const keys = await client.callTool({ name: 'devframe_state_read', arguments: {} })
       expect(keys.structuredContent).toEqual({ keys: ['my-plugin:counter'] })
 
       // With key → the value.
-      const value = await client.callTool({ name: 'devframe:state:read', arguments: { key: 'my-plugin:counter' } })
+      const value = await client.callTool({ name: 'devframe_state_read', arguments: { key: 'my-plugin:counter' } })
       expect(value.structuredContent).toEqual({ key: 'my-plugin:counter', value: { count: 7 } })
 
       // Unknown key → agent-actionable error.
-      const missing = await client.callTool({ name: 'devframe:state:read', arguments: { key: 'nope' } })
+      const missing = await client.callTool({ name: 'devframe_state_read', arguments: { key: 'nope' } })
       expect(missing.isError).toBe(true)
       const content = missing.content as Array<{ text: string }>
-      expect(content[0]!.text).toContain('unknown shared-state key')
+      expect(content[0]!.text).toContain('Unknown shared-state key')
     }
     finally {
       await cleanup()
@@ -277,7 +325,7 @@ describe('mcp adapter (in-memory)', () => {
     await client.connect(clientTransport)
     try {
       const listed = await client.listTools()
-      expect(listed.tools.map(t => t.name)).not.toContain('devframe:state:read')
+      expect(listed.tools.map(t => t.name)).not.toContain('devframe_state_read')
     }
     finally {
       dispose()
@@ -300,10 +348,10 @@ describe('mcp adapter (in-memory)', () => {
     const client = new Client({ name: 'test-client', version: '0.0.0' })
     await client.connect(clientTransport)
     try {
-      const keys = await client.callTool({ name: 'devframe:state:read', arguments: {} })
+      const keys = await client.callTool({ name: 'devframe_state_read', arguments: {} })
       expect(keys.structuredContent).toEqual({ keys: ['visible:key'] })
 
-      const hidden = await client.callTool({ name: 'devframe:state:read', arguments: { key: 'hidden:key' } })
+      const hidden = await client.callTool({ name: 'devframe_state_read', arguments: { key: 'hidden:key' } })
       expect(hidden.isError).toBe(true)
     }
     finally {

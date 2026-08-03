@@ -16,6 +16,7 @@ import type {
   RpcFunctionAgentOptions,
 } from 'devframe/types'
 import { createEventEmitter } from 'devframe/utils/events'
+import { coerceAgentPositionalArgs } from './agent-args'
 import { diagnostics } from './diagnostics'
 
 interface RegisteredTool {
@@ -166,7 +167,9 @@ export class DevframeAgentHost implements DevframeAgentHostType {
     if (rpcDef) {
       // RPC args are positional. Accept an object keyed by `arg0..argN`
       // (what the MCP adapter sends after flattening), or a plain array.
-      const positional = this._coercePositionalArgs(args, rpcDef)
+      // An untyped RPC may take a single raw object, so undeclared object
+      // payload wraps into one positional argument.
+      const positional = coerceAgentPositionalArgs(args, rpcDef.args as readonly unknown[] | undefined, 'wrap')
       return await this.context.rpc.invokeLocal(id as any, ...(positional as any))
     }
 
@@ -266,41 +269,10 @@ export class DevframeAgentHost implements DevframeAgentHostType {
       return def
     return undefined
   }
-
-  private _coercePositionalArgs(
-    args: unknown,
-    def: RpcFunctionDefinitionAnyWithContext<DevframeNodeContext>,
-  ): unknown[] {
-    if (Array.isArray(args))
-      return args
-    if (args === undefined || args === null)
-      return []
-    if (args && typeof args === 'object') {
-      const obj = args as Record<string, unknown>
-      const schemas = def.args as readonly unknown[] | undefined
-      if (schemas && schemas.length)
-        return schemas.map((_, i) => obj[`arg${i}`])
-      // Fallback: detect arg0/arg1/... keys even without schemas.
-      if (hasPositionalKeys(obj)) {
-        const out: unknown[] = []
-        let i = 0
-        while (`arg${i}` in obj) {
-          out.push(obj[`arg${i}`])
-          i++
-        }
-        return out
-      }
-    }
-    return [args]
-  }
 }
 
 function inferSafety(type: RpcFunctionType): 'read' | 'action' | 'destructive' {
   if (type === 'static' || type === 'query')
     return 'read'
   return 'action'
-}
-
-function hasPositionalKeys(obj: Record<string, unknown>): boolean {
-  return 'arg0' in obj
 }

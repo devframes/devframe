@@ -1,5 +1,5 @@
 import { defineRpcFunction } from 'devframe'
-import * as v from 'valibot'
+import { s } from 'devframe/utils/simple-schema'
 import { isSafeRevision, RECORD, splitClean, tryGit, UNIT } from '../../node/git.ts'
 import { getGitContext } from '../context.ts'
 
@@ -27,24 +27,24 @@ export interface GitLog {
   hasMore: boolean
 }
 
-const commitSchema = v.object({
-  hash: v.string(),
-  shortHash: v.string(),
-  author: v.string(),
-  email: v.string(),
-  date: v.number(),
-  subject: v.string(),
-  body: v.string(),
-  refs: v.array(v.string()),
-  parents: v.array(v.string()),
+const commitSchema = s.object({
+  hash: s.string(),
+  shortHash: s.string(),
+  author: s.string(),
+  email: s.string(),
+  date: s.number(),
+  subject: s.string(),
+  body: s.string(),
+  refs: s.array(s.string()),
+  parents: s.array(s.string()),
 })
 
-const gitLogSchema = v.object({
-  isRepo: v.boolean(),
-  commits: v.array(commitSchema),
-  limit: v.number(),
-  skip: v.number(),
-  hasMore: v.boolean(),
+const gitLogSchema = s.object({
+  isRepo: s.boolean(),
+  commits: s.array(commitSchema),
+  limit: s.number(),
+  skip: s.number(),
+  hasMore: s.boolean(),
 })
 
 export interface LogArgs {
@@ -100,10 +100,10 @@ export const log = defineRpcFunction({
   name: 'devframes:plugin:git:log',
   type: 'query',
   jsonSerializable: true,
-  args: [v.object({
-    limit: v.optional(v.number()),
-    skip: v.optional(v.number()),
-    ref: v.optional(v.string()),
+  args: [s.object({
+    limit: s.optional(s.number()),
+    skip: s.optional(s.number()),
+    ref: s.optional(s.string()),
   })],
   returns: gitLogSchema,
   agent: {

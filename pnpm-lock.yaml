@@ -1334,9 +1334,6 @@ importers:
       pathe:
         specifier: catalog:deps
         version: 2.0.3
-      valibot:
-        specifier: catalog:deps
-        version: 1.4.2(typescript@6.0.3)
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
