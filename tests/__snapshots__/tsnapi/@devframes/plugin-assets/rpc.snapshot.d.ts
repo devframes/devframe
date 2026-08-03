@@ -20,10 +20,10 @@ export declare const alwaysFunctions: readonly [{
   args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
   returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
   handler?: ((args_0: string) => void) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], void, import("devframe/types").DevframeNodeContext> | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], void, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>> | undefined;
@@ -34,10 +34,10 @@ export declare const alwaysFunctions: readonly [{
   args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
   returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
   handler?: ((args_0: string) => void) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], void, import("devframe/types").DevframeNodeContext> | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], void, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>> | undefined;
@@ -254,8 +254,8 @@ export declare const readFunctions: readonly [{
     mtime: number;
   }[]>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
@@ -275,7 +275,7 @@ export declare const readFunctions: readonly [{
     publicPath: string;
     size: number;
     mtime: number;
-  }[], import("devframe/types").DevframeNodeContext> | undefined;
+  }[], import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     path: string;
@@ -306,8 +306,8 @@ export declare const readFunctions: readonly [{
     orientation?: number | undefined;
   } | null>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
@@ -321,7 +321,7 @@ export declare const readFunctions: readonly [{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
-  } | null, import("devframe/types").DevframeNodeContext> | undefined;
+  } | null, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
     width?: number | undefined;
@@ -340,10 +340,10 @@ export declare const readFunctions: readonly [{
   args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>, import("devframe/utils/simple-schema").SimpleSchema<number | undefined, number | undefined>];
   returns: import("devframe/utils/simple-schema").SimpleSchema<string | null, string | null>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>) | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>) | undefined;
   handler?: ((args_0: string, args_1: number | undefined) => string | null) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string, number | undefined], string | null, import("devframe/types").DevframeNodeContext> | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string, number | undefined], string | null, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>> | undefined;
@@ -360,8 +360,8 @@ export declare const readFunctions: readonly [{
     uploadExtensions: string[] | "*";
   }>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     write: boolean;
     uploadExtensions: string[] | "*";
   }>>) | undefined;
@@ -372,7 +372,7 @@ export declare const readFunctions: readonly [{
   dump?: import("devframe/rpc").RpcDump<[], {
     write: boolean;
     uploadExtensions: string[] | "*";
-  }, import("devframe/types").DevframeNodeContext> | undefined;
+  }, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     write: boolean;
@@ -553,8 +553,8 @@ export declare const serverFunctions: readonly [{
     mtime: number;
   }[]>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     path: string;
     type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
@@ -574,7 +574,7 @@ export declare const serverFunctions: readonly [{
     publicPath: string;
     size: number;
     mtime: number;
-  }[], import("devframe/types").DevframeNodeContext> | undefined;
+  }[], import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     path: string;
@@ -605,8 +605,8 @@ export declare const serverFunctions: readonly [{
     orientation?: number | undefined;
   } | null>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
@@ -620,7 +620,7 @@ export declare const serverFunctions: readonly [{
     width?: number | undefined;
     height?: number | undefined;
     orientation?: number | undefined;
-  } | null, import("devframe/types").DevframeNodeContext> | undefined;
+  } | null, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], {
     width?: number | undefined;
@@ -639,10 +639,10 @@ export declare const serverFunctions: readonly [{
   args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>, import("devframe/utils/simple-schema").SimpleSchema<number | undefined, number | undefined>];
   returns: import("devframe/utils/simple-schema").SimpleSchema<string | null, string | null>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>) | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>) | undefined;
   handler?: ((args_0: string, args_1: number | undefined) => string | null) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string, number | undefined], string | null, import("devframe/types").DevframeNodeContext> | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string, number | undefined], string | null, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string, number | undefined], string | null>> | undefined;
@@ -659,8 +659,8 @@ export declare const serverFunctions: readonly [{
     uploadExtensions: string[] | "*";
   }>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     write: boolean;
     uploadExtensions: string[] | "*";
   }>>) | undefined;
@@ -671,7 +671,7 @@ export declare const serverFunctions: readonly [{
   dump?: import("devframe/rpc").RpcDump<[], {
     write: boolean;
     uploadExtensions: string[] | "*";
-  }, import("devframe/types").DevframeNodeContext> | undefined;
+  }, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], {
     write: boolean;
@@ -688,10 +688,10 @@ export declare const serverFunctions: readonly [{
   args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
   returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
   handler?: ((args_0: string) => void) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], void, import("devframe/types").DevframeNodeContext> | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], void, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>> | undefined;
@@ -702,10 +702,10 @@ export declare const serverFunctions: readonly [{
   args: readonly [import("devframe/utils/simple-schema").SimpleSchema<string, string>];
   returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>) | undefined;
   handler?: ((args_0: string) => void) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[string], void, import("devframe/types").DevframeNodeContext> | undefined;
+  dump?: import("devframe/rpc").RpcDump<[string], void, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[string], void>> | undefined;
@@ -724,8 +724,8 @@ export declare const serverFunctions: readonly [{
     uploadId: string;
   }>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
   }], {
     uploadId: string;
@@ -739,7 +739,7 @@ export declare const serverFunctions: readonly [{
     path: string;
   }], {
     uploadId: string;
-  }, import("devframe/types").DevframeNodeContext> | undefined;
+  }, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
@@ -776,8 +776,8 @@ export declare const serverFunctions: readonly [{
     mtime: number;
   }>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
     newName: string;
   }], {
@@ -806,7 +806,7 @@ export declare const serverFunctions: readonly [{
     publicPath: string;
     size: number;
     mtime: number;
-  }, import("devframe/types").DevframeNodeContext> | undefined;
+  }, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
@@ -843,8 +843,8 @@ export declare const serverFunctions: readonly [{
     deleted: string[];
   }>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
   }], {
     deleted: string[];
@@ -858,7 +858,7 @@ export declare const serverFunctions: readonly [{
     paths: string[];
   }], {
     deleted: string[];
-  }, import("devframe/types").DevframeNodeContext> | undefined;
+  }, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
@@ -881,8 +881,8 @@ export declare const serverFunctions: readonly [{
   }>];
   returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
   }], void>>) | undefined;
   handler?: ((args_0: {
@@ -890,7 +890,7 @@ export declare const serverFunctions: readonly [{
   }) => void) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     path: string;
-  }], void, import("devframe/types").DevframeNodeContext> | undefined;
+  }], void, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
@@ -958,8 +958,8 @@ export declare const writeFunctions: readonly [{
     uploadId: string;
   }>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
   }], {
     uploadId: string;
@@ -973,7 +973,7 @@ export declare const writeFunctions: readonly [{
     path: string;
   }], {
     uploadId: string;
-  }, import("devframe/types").DevframeNodeContext> | undefined;
+  }, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
@@ -1010,8 +1010,8 @@ export declare const writeFunctions: readonly [{
     mtime: number;
   }>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
     newName: string;
   }], {
@@ -1040,7 +1040,7 @@ export declare const writeFunctions: readonly [{
     publicPath: string;
     size: number;
     mtime: number;
-  }, import("devframe/types").DevframeNodeContext> | undefined;
+  }, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
@@ -1077,8 +1077,8 @@ export declare const writeFunctions: readonly [{
     deleted: string[];
   }>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
   }], {
     deleted: string[];
@@ -1092,7 +1092,7 @@ export declare const writeFunctions: readonly [{
     paths: string[];
   }], {
     deleted: string[];
-  }, import("devframe/types").DevframeNodeContext> | undefined;
+  }, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     paths: string[];
@@ -1115,8 +1115,8 @@ export declare const writeFunctions: readonly [{
   }>];
   returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
   jsonSerializable?: boolean;
-  agent?: import("devframe/rpc").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe/types").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
   }], void>>) | undefined;
   handler?: ((args_0: {
@@ -1124,7 +1124,7 @@ export declare const writeFunctions: readonly [{
   }) => void) | undefined;
   dump?: import("devframe/rpc").RpcDump<[{
     path: string;
-  }], void, import("devframe/types").DevframeNodeContext> | undefined;
+  }], void, import("devframe").DevframeNodeContext> | undefined;
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
     path: string;
