@@ -2,7 +2,7 @@ import type { DevframeRpcClient } from 'devframe/client'
 import type { Ref } from 'vue'
 import { ref } from 'vue'
 
-export interface QueuedFile {
+interface QueuedFile {
   file: File
   /** Root-relative destination path (folder + possibly-renamed file name). */
   targetPath: string

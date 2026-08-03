@@ -24,6 +24,7 @@ pnpm dev          # tsdown --watch
 pnpm test         # pnpm build && vitest (api snapshot guards against stale dist)
 pnpm typecheck    # turbo run typecheck (per-package tsc --noEmit)
 pnpm lint --fix   # ESLint via @antfu/eslint-config
+pnpm knip         # unused files/dependencies/exports across every workspace
 pnpm start        # tsx src/index.ts
 ```
 
@@ -32,6 +33,8 @@ The `pnpm test` script intentionally runs `build` first so `tsnapi` snapshots co
 `pnpm typecheck` fans out through Turbo: every workspace package owns a `"typecheck": "tsc --noEmit"` script and its own `tsconfig.json` (extending `tsconfig.base.json` with an explicit `include`). Cross-package imports resolve to source through the `paths` aliases in `tsconfig.base.json`, so no prior build is needed. Any package added under `packages/*` or `plugins/*` is typechecked automatically once it ships that `typecheck` script — add one to every new package so it can't silently skip type errors.
 
 `pnpm typecheck` runs `scripts/verify-typecheck-coverage.ts` first — it fails the command (and CI, since CI just runs `pnpm typecheck`) if any workspace package has a `tsconfig.json` but no `typecheck` script, so a new package can't silently join the same blind spot. A package that genuinely can't typecheck yet needs a documented exception in that script, not a missing script.
+
+`pnpm knip` finds unused files, dependencies, and exports across every workspace (config in `knip.jsonc`). It runs against source directly — no prior build needed. Most workspaces need no configuration; `knip.jsonc` only carries per-workspace overrides for cases knip's defaults can't infer on their own: a package's non-`index.ts` `exports` subpaths (knip's package.json→`dist`→`src` source mapping needs a workspace `tsconfig.json` `outDir`, which conflicts with this repo's cross-workspace `src/*.ts` imports, so multi-entry packages list their `exports`-mapped entry files explicitly instead — keep that list in sync with each `tsdown.config.ts`), config files knip's plugins don't discover in a nested location (a Next.js app rooted below the workspace root, `storybook-solidjs-vite` not matching the Storybook plugin trigger), and dependencies referenced dynamically outside its static import graph (icon collections consumed by UnoCSS at build time, plugin packages loaded via a runtime `import()` string). Prefer fixing the underlying gap or a scoped `ignoreDependencies`/`entry` override over a blanket `ignore`.
 
 ## Conventions
 
@@ -145,7 +148,7 @@ Range allocation:
 ## Before PRs
 
 ```sh
-pnpm lint && pnpm test && pnpm typecheck && pnpm build
+pnpm lint && pnpm knip && pnpm test && pnpm typecheck && pnpm build
 ```
 
 Follow conventional commits (`feat:`, `fix:`, etc.).

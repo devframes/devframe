@@ -26,7 +26,7 @@ export const sparseTags: OgHeadTag[] = [
   { tag: 'meta', name: 'description', value: 'A page with only the basics filled in.' },
 ]
 
-export function snapshotFrom(tags: OgHeadTag[]): OgSnapshot {
+function snapshotFrom(tags: OgHeadTag[]): OgSnapshot {
   return {
     requestedUrl: 'https://devfra.me/',
     url: 'https://devfra.me/',

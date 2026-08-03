@@ -5,13 +5,13 @@ import { connectDevframe } from 'devframe/client'
 import { createSignal } from 'solid-js'
 import { A11Y_DOCKS_ACTIVE_KEY } from '../../shared/protocol.ts'
 
-export interface ImpactMeta {
+interface ImpactMeta {
   id: Impact
   label: string
   blurb: string
 }
 
-export interface A11yConfig {
+interface A11yConfig {
   channel: string
   nodeAttr: string
   docsBase: string
@@ -25,7 +25,7 @@ export interface A11yConfig {
 }
 
 /** A dock-activation intent the hub mirrors into shared state. */
-export interface DockActivation {
+interface DockActivation {
   dockId: string
   params?: Record<string, unknown>
 }

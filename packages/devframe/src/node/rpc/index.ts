@@ -3,8 +3,6 @@ import { agentListResources } from './agent-list-resources'
 import { agentListTools } from './agent-list-tools'
 import { agentReadResource } from './agent-read-resource'
 
-export { agentInvokeTool, agentListResources, agentListTools, agentReadResource }
-
 /**
  * Built-in agent introspection RPC functions. Registered automatically
  * by `createHostContext`. Not themselves agent-exposed (no `agent`

@@ -61,7 +61,7 @@ function lastLine(chunk: string): string | undefined {
 }
 
 /** What the client needs to point a dock's iframe at the right place. */
-export type EnsureStorybookResult
+type EnsureStorybookResult
   = | { ok: true, kind: 'port', port: number }
     | { ok: true, kind: 'path', url: string }
     | { ok: false, error: string }

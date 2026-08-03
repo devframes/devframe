@@ -49,5 +49,3 @@ export const designConfig = defineConfig({
     'z-drawer-content': 'z-[90]',
   },
 })
-
-export default designConfig

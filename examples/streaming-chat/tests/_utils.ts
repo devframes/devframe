@@ -3,7 +3,6 @@ import type { DevframeNodeContext } from 'devframe/types'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
-import { fileURLToPath } from 'node:url'
 import {
   DEVFRAME_CONNECTION_META_FILENAME,
 } from 'devframe/constants'
@@ -17,9 +16,6 @@ import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import devframe from '../src/devframe'
-
-const HERE = fileURLToPath(new URL('.', import.meta.url))
-export const CLIENT_DIST = resolve(HERE, '../dist/client')
 
 /**
  * Boot the streaming-chat server in-process for tests. Mirrors the

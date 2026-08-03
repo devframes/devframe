@@ -29,10 +29,10 @@ export interface DisplayBadge {
 }
 
 /** href scheme used by the lazy-expand link badge on depth-truncation markers. */
-export const EXPAND_HREF_PREFIX = 'di-expand:'
+const EXPAND_HREF_PREFIX = 'di-expand:'
 
 /** href scheme used by the edit link badge on writable-source nodes. */
-export const EDIT_HREF_PREFIX = 'di-edit:'
+const EDIT_HREF_PREFIX = 'di-edit:'
 
 /** Encode a node path into the edit link href. */
 export function encodeEditHref(path: NodePath): string {
@@ -52,7 +52,7 @@ export function decodeEditHref(href: string): NodePath | null {
 }
 
 /** Encode a node path into the lazy-expand link href. */
-export function encodeExpandHref(path: NodePath): string {
+function encodeExpandHref(path: NodePath): string {
   return EXPAND_HREF_PREFIX + encodeURIComponent(JSON.stringify(path))
 }
 

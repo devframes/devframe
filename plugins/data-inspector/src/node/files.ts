@@ -9,7 +9,7 @@ import { basename, extname, resolve } from 'node:path'
 import process from 'node:process'
 import { diagnostics } from './diagnostics'
 
-export const SUPPORTED_DATA_EXTENSIONS = ['.json', '.jsonl', '.ndjson'] as const
+const SUPPORTED_DATA_EXTENSIONS = ['.json', '.jsonl', '.ndjson'] as const
 
 /** Parse a data file into the value a source exposes. */
 export async function loadDataFile(filepath: string): Promise<unknown> {

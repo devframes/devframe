@@ -1,6 +1,5 @@
 import type { StartedServer } from 'devframe/node'
 import process from 'node:process'
-import { fileURLToPath } from 'node:url'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import {
   createH3DevframeHost,
@@ -12,9 +11,6 @@ import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import devframe from '../src/devframe'
-
-const HERE = fileURLToPath(new URL('.', import.meta.url))
-export const CLIENT_DIST = resolve(HERE, '../dist/client')
 
 export interface SnapshotServer extends StartedServer {
   basePath: string

@@ -8,7 +8,7 @@ export interface GraphInput {
   parents: string[]
 }
 
-export interface GraphLink {
+interface GraphLink {
   /** Column at the top of the half. */
   from: number
   /** Column at the bottom of the half. */
@@ -36,7 +36,7 @@ export interface CommitGraph {
 // Lane palette tuned to read clearly in both themes: a blue leads (the mainline
 // / current branch tends to land in lane 0), then warm tones — orange, red —
 // pick up branches as they fan out, so adjacent lanes stay distinct.
-export const GRAPH_COLORS = [
+const GRAPH_COLORS = [
   '#3b82f6', // blue
   '#f59e0b', // amber / orange
   '#ef4444', // red

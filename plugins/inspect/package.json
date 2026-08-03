@@ -64,6 +64,7 @@
     "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
+    "@standard-schema/spec": "catalog:deps",
     "@storybook/addon-docs": "catalog:storybook",
     "@storybook/vue3-vite": "catalog:storybook",
     "@unocss/preset-icons": "catalog:frontend",

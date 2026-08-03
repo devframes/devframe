@@ -8,7 +8,7 @@ import process from 'node:process'
 import { createHostContext } from 'devframe/node'
 
 /** Minimal in-memory host — enough to drive RPC + shared state in tests. */
-export function createTestHost(): DevframeHost {
+function createTestHost(): DevframeHost {
   return {
     mountStatic: () => {},
     resolveOrigin: () => 'http://127.0.0.1',

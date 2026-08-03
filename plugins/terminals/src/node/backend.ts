@@ -68,7 +68,7 @@ export async function isPtyAvailable(): Promise<boolean> {
  * reflects which one the session got. Returns `undefined` when the module
  * itself is unavailable or spawning throws.
  */
-export async function spawnPty(options: SpawnBackendOptions): Promise<TerminalProcess | undefined> {
+async function spawnPty(options: SpawnBackendOptions): Promise<TerminalProcess | undefined> {
   const zigpty = await loadZigpty()
   if (!zigpty)
     return undefined
@@ -143,7 +143,7 @@ export async function spawnPty(options: SpawnBackendOptions): Promise<TerminalPr
  * interactive fallback when zigpty is unavailable entirely. stdout/stderr
  * are merged into a single ordered text stream.
  */
-export function spawnPipe(options: SpawnBackendOptions): TerminalProcess {
+function spawnPipe(options: SpawnBackendOptions): TerminalProcess {
   const dataCbs: ((data: string) => void)[] = []
   const exitCbs: ((code: number) => void)[] = []
   let exited = false

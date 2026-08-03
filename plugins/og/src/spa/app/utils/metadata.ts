@@ -1,6 +1,6 @@
 import type { OgHeadTag, OgSnapshot } from '../../../types'
 
-export type Suggestion = 'optional' | 'recommended' | 'required'
+type Suggestion = 'optional' | 'recommended' | 'required'
 
 export interface OgTagDefinition {
   name: string
@@ -89,7 +89,7 @@ export const tagDefinitions: OgTagDefinition[] = [
   },
 ]
 
-export function findTag(tags: OgHeadTag[], ...names: string[]): string {
+function findTag(tags: OgHeadTag[], ...names: string[]): string {
   for (const name of names) {
     const value = tags.find(tag => tag.name === name)?.value
     if (value)

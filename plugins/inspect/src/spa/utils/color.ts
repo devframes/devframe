@@ -1,4 +1,4 @@
-export function getHashColorFromString(
+function getHashColorFromString(
   name: string,
   opacity: number | string = 1,
 ) {
@@ -9,7 +9,7 @@ export function getHashColorFromString(
   return getHsla(h, opacity)
 }
 
-export function getHsla(
+function getHsla(
   hue: number,
   opacity: number | string = 1,
 ) {

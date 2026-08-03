@@ -1,6 +1,6 @@
 import { s } from 'devframe/utils/simple-schema'
 
-export const terminalModeSchema = s.picklist(['interactive', 'readonly'])
+const terminalModeSchema = s.picklist(['interactive', 'readonly'])
 
 export const spawnRequestSchema = s.object({
   presetId: s.optional(s.string()),

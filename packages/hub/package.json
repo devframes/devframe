@@ -42,7 +42,6 @@
     "devframe": "workspace:*"
   },
   "dependencies": {
-    "birpc": "catalog:deps",
     "destr": "catalog:deps",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",

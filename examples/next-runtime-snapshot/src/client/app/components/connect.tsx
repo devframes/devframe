@@ -9,7 +9,7 @@ import { useMemo } from 'react'
 // bundle stays free of node-only server code.
 const NAMESPACE = 'example:next-runtime-snapshot'
 
-export type SnapshotCtx = DevframeScopedClientContext<typeof NAMESPACE>
+type SnapshotCtx = DevframeScopedClientContext<typeof NAMESPACE>
 
 interface ConnectionState {
   ctx: SnapshotCtx | null

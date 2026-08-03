@@ -4,7 +4,7 @@ import { IMPACT_COLOR } from '../shared/protocol.ts'
 const PREFERS_REDUCED_MOTION
   = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
 
-export interface HighlightInfo {
+interface HighlightInfo {
   ruleId: string
   impact: Impact
 }

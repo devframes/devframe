@@ -85,7 +85,6 @@
     "unocss": "catalog:frontend",
     "vite": "catalog:build",
     "vitest": "catalog:testing",
-    "vue": "catalog:frontend",
-    "ws": "catalog:deps"
+    "vue": "catalog:frontend"
   }
 }
