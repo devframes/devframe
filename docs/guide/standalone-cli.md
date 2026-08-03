@@ -168,7 +168,7 @@ const payload = await my.rpc.call('get-payload')
 
 ## Typed CLI flags
 
-For flags that are specific to your tool, declare them with any [Standard Schema](https://standardschema.dev/) validator (valibot below — `npm i valibot` — or zod / arktype) so they're validated at parse time and typed at the call site:
+For flags that are specific to your tool, declare them with any [Standard Schema](https://standardschema.dev/) validator (valibot below — `npm i valibot`, the lightest option — or zod / arktype) so they're validated at parse time and typed at the call site. If you already depend on zod through the JSON-render or MCP integrations, prefer zod here to avoid adding a second validator:
 
 ```ts
 import type { InferCliFlags } from 'devframe/adapters/cac'

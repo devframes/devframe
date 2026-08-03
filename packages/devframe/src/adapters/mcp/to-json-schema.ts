@@ -1,32 +1,50 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
+import { toJsonSchema } from '@standard-community/standard-json'
 
 const FALLBACK_OBJECT_SCHEMA = Object.freeze({ type: 'object', additionalProperties: true })
 
 /**
- * JSON Schema for an RPC return value on the agent/MCP surface.
+ * Convert a Standard Schema to JSON Schema for the agent/MCP surface.
  *
- * [Standard Schema](https://standardschema.dev/) deliberately exposes no
- * JSON Schema, and devframe stays validator-neutral, so a declared return
- * schema advertises a permissive object rather than a precise shape.
+ * `@standard-community/standard-json` dispatches on the schema's
+ * `~standard` vendor (valibot, zod, arktype, …) and lazily loads that
+ * vendor's converter, so precise schemas require the matching converter
+ * to be installed (e.g. `@valibot/to-json-schema`, `zod-to-json-schema`).
+ * When no converter is available — or conversion fails — we degrade to a
+ * permissive object schema so the surface never throws and no validator is
+ * forced.
+ */
+async function safeToJsonSchema(schema: StandardSchemaV1): Promise<unknown> {
+  try {
+    return await toJsonSchema(schema)
+  }
+  catch {
+    return FALLBACK_OBJECT_SCHEMA
+  }
+}
+
+/**
+ * JSON Schema for an RPC return value on the agent/MCP surface.
  * @internal
  */
-export function returnToJsonSchema(schema: StandardSchemaV1 | undefined): unknown {
-  return schema ? FALLBACK_OBJECT_SCHEMA : undefined
+export async function returnToJsonSchema(schema: StandardSchemaV1 | undefined): Promise<unknown> {
+  if (!schema)
+    return undefined
+  return safeToJsonSchema(schema)
 }
 
 /**
  * JSON Schema for an RPC function's positional args on the agent/MCP
- * surface. Each positional arg is advertised as a permissive object under
- * `arg0` / `arg1` / … — matching how the agent bridge coerces the incoming
- * object payload back into positional arguments.
+ * surface. Each positional arg is advertised under `arg0` / `arg1` / … —
+ * matching how the agent bridge coerces the incoming object payload back
+ * into positional arguments.
  *
- * Returns `{ type: 'object', properties: {} }` when there are no args (the
- * MCP SDK treats this as "no input").
+ * Returns `{ type: 'object', properties: {} }` when there are no args.
  * @internal
  */
-export function argsToJsonSchema(
+export async function argsToJsonSchema(
   args: readonly StandardSchemaV1[] | undefined,
-): { schema: unknown, unwrapped: boolean } {
+): Promise<{ schema: unknown, unwrapped: boolean }> {
   if (!args || args.length === 0)
     return { schema: { type: 'object', properties: {} }, unwrapped: false }
 
@@ -34,7 +52,7 @@ export function argsToJsonSchema(
   const required: string[] = []
   for (let i = 0; i < args.length; i++) {
     const key = `arg${i}`
-    properties[key] = FALLBACK_OBJECT_SCHEMA
+    properties[key] = await safeToJsonSchema(args[i]!)
     required.push(key)
   }
 

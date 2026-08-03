@@ -59,6 +59,7 @@ catalogs:
     '@json-render/core': ^0.19.0
     '@modelcontextprotocol/client': ^2.0.0
     '@modelcontextprotocol/server': ^2.0.0
+    '@standard-community/standard-json': ^0.3.5
     '@standard-schema/spec': ^1.1.0
     '@valibot/to-json-schema': ^1.7.1
     birpc: ^4.0.0
@@ -81,6 +82,7 @@ catalogs:
     parse5: ^8.0.1
     pathe: ^2.0.3
     perfect-debounce: ^2.1.0
+    quansync: ^0.2.11
     structured-clone-es: ^2.0.1
     tinyexec: ^1.2.4
     tinyglobby: ^0.2.17

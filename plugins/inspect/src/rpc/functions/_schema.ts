@@ -1,17 +1,11 @@
-import { toJsonSchema } from '@valibot/to-json-schema'
+import type { StandardSchemaV1 } from '@standard-schema/spec'
+import { toJsonSchema } from '@standard-community/standard-json'
 
 const FALLBACK_SCHEMA = Object.freeze({ type: 'object', additionalProperties: true })
 
-/**
- * Convert a valibot return schema to JSON Schema, swallowing
- * conversion failures (unsupported valibot actions) into a permissive
- * fallback so introspection never throws.
- */
-export function returnSchemaToJson(schema: unknown): unknown {
-  if (!schema)
-    return undefined
+async function convert(schema: unknown): Promise<unknown> {
   try {
-    return toJsonSchema(schema as never)
+    return await toJsonSchema(schema as StandardSchemaV1)
   }
   catch {
     return FALLBACK_SCHEMA
@@ -19,22 +13,30 @@ export function returnSchemaToJson(schema: unknown): unknown {
 }
 
 /**
- * Convert the positional args valibot schemas to a single JSON Schema
- * tuple (`type: 'array'` + `prefixItems`). Returns `undefined` when the
- * function declares no args.
+ * Convert an RPC return schema to JSON Schema, swallowing conversion
+ * failures (unsupported vendor / missing converter) into a permissive
+ * fallback so introspection never throws.
+ *
+ * Conversion is vendor-neutral via `@standard-community/standard-json`,
+ * which loads the matching per-vendor converter on demand (valibot, zod,
+ * arktype, …) — install the converter for the vendor you inspect.
  */
-export function argsSchemaToJson(args: readonly unknown[] | undefined): unknown {
+export async function returnSchemaToJson(schema: unknown): Promise<unknown> {
+  if (!schema)
+    return undefined
+  return convert(schema)
+}
+
+/**
+ * Convert positional args schemas to a single JSON Schema tuple
+ * (`type: 'array'` + `prefixItems`). Returns `undefined` when the function
+ * declares no args.
+ */
+export async function argsSchemaToJson(args: readonly unknown[] | undefined): Promise<unknown> {
   if (!args || args.length === 0)
     return undefined
   return {
     type: 'array',
-    prefixItems: args.map((arg) => {
-      try {
-        return toJsonSchema(arg as never)
-      }
-      catch {
-        return FALLBACK_SCHEMA
-      }
-    }),
+    prefixItems: await Promise.all(args.map(arg => convert(arg))),
   }
 }

@@ -77,7 +77,10 @@ Use `static` for data collected once during `setup` and shipped to read-only sta
 
 Handlers accept any serializable arguments. Declare `args` schemas — any [Standard Schema](https://standardschema.dev/) validator (valibot, zod, arktype, …) — and each argument is validated at the boundary before the handler runs; a mismatch is rejected with a coded diagnostic. Validation guards the payload without rewriting it, so extra object fields the schema doesn't mention still reach the handler.
 
-Devframe forces no validator on you: bring whichever [Standard Schema](https://standardschema.dev/) validator you prefer (valibot, zod, arktype) and install it yourself. The examples here use valibot (`npm i valibot`):
+Devframe forces no validator on you: bring whichever [Standard Schema](https://standardschema.dev/) validator you prefer (valibot, zod, arktype) and install it yourself. The examples here use valibot (`npm i valibot`) — it's the lightest option and a good default.
+
+> [!TIP]
+> If your app already pulls in **zod** — the JSON-render integration and the MCP server both use it — prefer zod for your RPC schemas too, and you'll reuse a dependency you're already shipping instead of adding valibot. Any Standard Schema validator works either way; this is purely about dependency reuse.
 
 ```ts
 defineRpcFunction({

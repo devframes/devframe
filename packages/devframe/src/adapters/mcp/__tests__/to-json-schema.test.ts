@@ -1,18 +1,18 @@
-import { s } from 'devframe/utils/simple-schema'
+import * as v from 'valibot'
 import { describe, expect, it } from 'vitest'
 import { argsToJsonSchema, returnToJsonSchema } from '../to-json-schema'
 
 const PERMISSIVE = { type: 'object', additionalProperties: true }
 
 describe('argsToJsonSchema', () => {
-  it('returns an empty object schema when no args', () => {
-    const { schema, unwrapped } = argsToJsonSchema(undefined)
+  it('returns an empty object schema when no args', async () => {
+    const { schema, unwrapped } = await argsToJsonSchema(undefined)
     expect(unwrapped).toBe(false)
     expect(schema).toEqual({ type: 'object', properties: {} })
   })
 
-  it('advertises each positional arg as a permissive object under arg0/arg1/...', () => {
-    const { schema, unwrapped } = argsToJsonSchema([s.string(), s.number()])
+  it('advertises each positional arg under arg0/arg1/... with precise per-vendor conversion', async () => {
+    const { schema, unwrapped } = await argsToJsonSchema([v.string(), v.number()])
     expect(unwrapped).toBe(false)
     expect(schema).toMatchObject({
       type: 'object',
@@ -20,32 +20,28 @@ describe('argsToJsonSchema', () => {
       additionalProperties: false,
     })
     const props = (schema as any).properties
-    expect(props.arg0).toEqual(PERMISSIVE)
-    expect(props.arg1).toEqual(PERMISSIVE)
+    // valibot vendor → precise conversion via @standard-community/standard-json.
+    expect(props.arg0).toMatchObject({ type: 'string' })
+    expect(props.arg1).toMatchObject({ type: 'number' })
   })
 
-  it('wraps a single arg under arg0 (no vendor-specific unwrapping)', () => {
-    const { schema, unwrapped } = argsToJsonSchema([s.object({ name: s.string() })])
-    expect(unwrapped).toBe(false)
-    expect(schema).toMatchObject({ type: 'object', required: ['arg0'] })
-    expect((schema as any).properties.arg0).toEqual(PERMISSIVE)
-  })
-
-  it('works with any Standard Schema vendor (falls back the same way)', () => {
+  it('falls back to a permissive object for vendors without a converter', async () => {
     const foreign = {
       '~standard': { version: 1 as const, vendor: 'acme', validate: (value: unknown) => ({ value }) },
     }
-    const { schema } = argsToJsonSchema([foreign])
+    const { schema } = await argsToJsonSchema([foreign])
     expect((schema as any).properties.arg0).toEqual(PERMISSIVE)
   })
 })
 
 describe('returnToJsonSchema', () => {
-  it('returns undefined when no schema is provided', () => {
-    expect(returnToJsonSchema(undefined)).toBeUndefined()
+  it('returns undefined when no schema is provided', async () => {
+    expect(await returnToJsonSchema(undefined)).toBeUndefined()
   })
 
-  it('advertises a permissive object for any declared return schema', () => {
-    expect(returnToJsonSchema(s.object({ ok: s.boolean() }))).toEqual(PERMISSIVE)
+  it('converts a declared return schema precisely for known vendors', async () => {
+    const schema = await returnToJsonSchema(v.object({ ok: v.boolean() }))
+    expect((schema as any).type).toBe('object')
+    expect((schema as any).properties.ok).toMatchObject({ type: 'boolean' })
   })
 })
