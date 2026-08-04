@@ -99,3 +99,25 @@ Higher-level integrations can drive their own authentication UI instead: disable
 - **Authorize every handler.** A registered function is callable by any trusted client. Validate inputs, and mark state-changing functions `type: 'destructive'` so MCP and agent clients prompt before invoking them.
 - **Origin-lock remote docks.** When a hub embeds a remote-UI dock, enable `originLock` so a dock token is only honored from its expected origin.
 - **Serve encrypted off-machine.** Use `https://`/`wss://` for any surface reachable beyond `localhost`.
+
+## External viewer origins
+
+WebSocket handshakes from browser extensions and other external viewers carry the viewer's own `Origin` header. A host can authorize that origin through a live registry:
+
+```ts
+import { createWsOriginRegistry } from 'devframe/rpc/transports/ws-server'
+
+const viewerOrigins = createWsOriginRegistry({
+  validateOrigin: origin => origin.startsWith('chrome-extension://')
+    || origin.startsWith('moz-extension://'),
+})
+
+attachWsRpcTransport(rpc, {
+  server,
+  allowedOrigins: viewerOrigins,
+})
+```
+
+Include `viewerOrigins.token` as `viewerOriginToken` in the connection metadata. In the connection metadata handler, call `viewerOrigins.registerFromUrl(request.url)`. When it returns an origin, set `Access-Control-Allow-Origin` to that value. The external viewer then calls `registerDevframeViewerOrigin(connection)` before connecting.
+
+The registration token grants access through the transport's origin check. RPC authentication still authorizes the session and every non-anonymous method. Keep metadata containing this token same-origin until the registration request has been verified.

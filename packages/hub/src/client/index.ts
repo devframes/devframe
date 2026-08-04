@@ -3,6 +3,7 @@
 export { DEFAULT_CATEGORIES_ORDER } from '../constants'
 export * from './client-script'
 export * from './context'
+export * from './dock-resources'
 export * from './docks'
 export * from './frame-nav'
 export * from './host'

@@ -19,6 +19,8 @@ export var DEVFRAME_MOUNT_PATH_NO_TRAILING_SLASH /* const */
 export var DEVFRAME_OTP_URL_PARAM /* const */
 export var DEVFRAME_RPC_DUMP_DIRNAME /* const */
 export var DEVFRAME_RPC_DUMP_MANIFEST_FILENAME /* const */
+export var DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM /* const */
+export var DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM /* const */
 export var DEVFRAME_WS_ROUTE /* const */
 export var REMOTE_CONNECTION_KEY /* const */
 // #endregion

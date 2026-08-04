@@ -279,6 +279,8 @@ Plus broadcast notifications (`devframe:docks:activate`, `devframe:terminals:upd
 
 The hub also ships a headless browser runtime, `createDevframeClientHost()` from `@devframes/hub/client`. Booted in the host page, it assembles the shared client context from the protocol above and imports each dock entry's client script into that page — how a plugin like the a11y inspector runs code inside the page being inspected. See [Client Scripts & Client Context](./client-context) for the boot flow, the context surface, and the dock-script contract.
 
+External viewers resolve dock resources against the connection that delivered the dock entries. `resolveDockUrl(url, connection)` keeps iframe paths on the Devframe server, while `resolveDockIcon(icon, connection)` handles both string icons and `{ light, dark }` pairs. Absolute URLs, data URLs, and Iconify names remain unchanged.
+
 ## Example
 
 Two minimal, copyable hubs mount every built-in plugin (git, terminals, code-server, inspect, a11y) behind an icon dock — the same shape [vite-devtools](https://github.com/vitejs/devtools) wears as the full Vite viewer, shrunk to the smallest thing you can build your own viewer from:

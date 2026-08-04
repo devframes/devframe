@@ -2,10 +2,11 @@ import { createServer } from 'node:http'
 import { getPort } from 'get-port-please'
 import { describe, expect, it, vi } from 'vitest'
 import { WebSocket, WebSocketServer } from 'ws'
+import { registerDevframeViewerOrigin } from '../../client/connection'
 import { createRpcClient } from '../client'
 import { createRpcServer } from '../server'
 import { createWsRpcChannel } from './ws-client'
-import { attachWsRpcTransport, isAllowedOrigin, isLoopbackHostname } from './ws-server'
+import { attachWsRpcTransport, createWsOriginRegistry, isAllowedOrigin, isLoopbackHostname } from './ws-server'
 
 vi.stubGlobal('WebSocket', WebSocket)
 
@@ -390,6 +391,74 @@ describe('ws origin check', () => {
       expect(result).toBe('open')
     }
     finally {
+      await close()
+    }
+  })
+
+  it('registers an exact external viewer origin with a bearer token', async () => {
+    const registry = createWsOriginRegistry()
+    const registrationUrl = (origin: string, token = registry.token) => {
+      const params = new URLSearchParams({
+        devframe_viewer_origin: origin,
+        devframe_viewer_origin_token: token,
+      })
+      return `/__connection.json?${params}`
+    }
+    expect(registry.isAllowed('chrome-extension://abcdefghijklmnop')).toBe(false)
+    expect(registry.registerFromUrl(registrationUrl('chrome-extension://abcdefghijklmnop/path'))).toBeUndefined()
+    expect(registry.registerFromUrl(registrationUrl('chrome-extension://abcdefghijklmnop', 'wrong'))).toBeUndefined()
+    expect(registry.registerFromUrl(registrationUrl('chrome-extension://abcdefghijklmnop')))
+      .toBe('chrome-extension://abcdefghijklmnop')
+    expect(registry.isAllowed('chrome-extension://abcdefghijklmnop')).toBe(true)
+  })
+
+  it('registers from the standard bootstrap query parameters', () => {
+    const registry = createWsOriginRegistry({
+      validateOrigin: origin => origin.startsWith('moz-extension://'),
+    })
+    const params = new URLSearchParams({
+      devframe_viewer_origin: 'moz-extension://abcdefghijklmnop',
+      devframe_viewer_origin_token: registry.token,
+    })
+    expect(registry.registerFromUrl(`/__connection.json?${params}`))
+      .toBe('moz-extension://abcdefghijklmnop')
+    expect(registry.isAllowed('moz-extension://abcdefghijklmnop')).toBe(true)
+
+    params.set('devframe_viewer_origin', 'https://viewer.example')
+    expect(registry.registerFromUrl(`/__connection.json?${params}`)).toBeUndefined()
+  })
+
+  it('allows a WebSocket upgrade after the client registers its viewer origin', async () => {
+    const HOST = '127.0.0.1'
+    const PORT = await getPort({ host: HOST, random: true })
+    const origin = 'chrome-extension://abcdefghijklmnop'
+    const registry = createWsOriginRegistry({
+      validateOrigin: value => value.startsWith('chrome-extension://'),
+    })
+    const server = createRpcServer<Record<string, never>, Record<string, never>>({})
+    const { close } = attachWsRpcTransport(server, {
+      port: PORT,
+      host: HOST,
+      allowedOrigins: registry,
+    })
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const registered = registry.registerFromUrl(String(input))
+      return new Response(null, { status: registered ? 204 : 403 })
+    })
+
+    try {
+      await expect(connectRaw(`ws://${HOST}:${PORT}`, origin)).resolves.toBe('closed')
+      await expect(registerDevframeViewerOrigin({
+        connectionMeta: {
+          backend: 'websocket',
+          viewerOriginToken: registry.token,
+        },
+        metaBaseUrl: `http://${HOST}:${PORT}/__connection.json`,
+      }, origin)).resolves.toBe(true)
+      await expect(connectRaw(`ws://${HOST}:${PORT}`, origin)).resolves.toBe('open')
+    }
+    finally {
+      fetchMock.mockRestore()
       await close()
     }
   })

@@ -10,12 +10,12 @@ import type {
 } from '../types/docks'
 import type { DevframeDocksUserSettings } from '../types/settings'
 import type { DevframeHubContext } from './context'
-import { REMOTE_CONNECTION_KEY } from 'devframe/constants'
 import { createStorage } from 'devframe/node'
 import { getInternalContext } from 'devframe/node/hub-internals'
 import { createEventEmitter } from 'devframe/utils/events'
 import { join } from 'pathe'
 import { DEFAULT_STATE_USER_SETTINGS } from '../constants'
+import { buildRemoteConnectionUrl } from '../remote-url'
 import { diagnostics } from './diagnostics'
 
 interface RemoteDockRecord {
@@ -29,56 +29,6 @@ function normaliseRemoteOptions(remote: true | RemoteDockOptions): Required<Remo
     transport: opts.transport ?? 'fragment',
     originLock: opts.originLock ?? true,
   }
-}
-
-function base64UrlEncode(value: string): string {
-  // URL-safe base64 without padding so the descriptor is compact and safe to
-  // drop into a URL without escaping.
-  const bytes = new TextEncoder().encode(value)
-  let binary = ''
-  for (const byte of bytes)
-    binary += String.fromCharCode(byte)
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
-
-function buildRemoteUrl(baseUrl: string, payload: RemoteConnectionInfo, transport: 'fragment' | 'query'): string {
-  const encoded = base64UrlEncode(JSON.stringify(payload))
-  const param = `${REMOTE_CONNECTION_KEY}=${encoded}`
-  if (transport === 'fragment') {
-    // Replace any existing fragment/query descriptor bearing our key; otherwise append.
-    const hashIdx = baseUrl.indexOf('#')
-    if (hashIdx === -1)
-      return `${baseUrl}#${param}`
-    const before = baseUrl.slice(0, hashIdx)
-    const rawHash = baseUrl.slice(hashIdx + 1)
-    if (!rawHash)
-      return `${before}#${param}`
-    const routeQueryIdx = rawHash.indexOf('?')
-    if (routeQueryIdx !== -1) {
-      const beforeQuery = rawHash.slice(0, routeQueryIdx + 1)
-      const params = new URLSearchParams(rawHash.slice(routeQueryIdx + 1))
-      params.set(REMOTE_CONNECTION_KEY, encoded)
-      return `${before}#${beforeQuery}${params.toString()}`
-    }
-
-    const parts = rawHash.split('&')
-    const existingIdx = parts.findIndex((part) => {
-      const [key] = part.split('=')
-      return key === REMOTE_CONNECTION_KEY
-    })
-    if (existingIdx >= 0) {
-      parts[existingIdx] = param
-      return `${before}#${parts.join('&')}`
-    }
-    return `${before}#${rawHash}&${param}`
-  }
-  // query
-  const qIdx = baseUrl.indexOf('?')
-  const hashIdx = baseUrl.indexOf('#')
-  const hash = hashIdx === -1 ? '' : baseUrl.slice(hashIdx)
-  const beforeHash = hashIdx === -1 ? baseUrl : baseUrl.slice(0, hashIdx)
-  const sep = qIdx === -1 || qIdx >= (hashIdx === -1 ? beforeHash.length : hashIdx) ? '?' : '&'
-  return `${beforeHash}${sep}${param}${hash}`
 }
 
 export class DevframeDocksHost implements DevframeDocksHostType {
@@ -124,7 +74,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     }
     return {
       ...view,
-      url: buildRemoteUrl(view.url, payload, record.options.transport),
+      url: buildRemoteConnectionUrl(view.url, payload, record.options.transport),
     } satisfies DevframeViewIframe
   }
 

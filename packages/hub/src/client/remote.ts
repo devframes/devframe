@@ -1,8 +1,11 @@
-import type { DevframeRpcClient, DevframeRpcClientOptions } from 'devframe/client'
+import type { DevframeConnection, DevframeRpcClient, DevframeRpcClientOptions } from 'devframe/client'
 import type { RemoteConnectionInfo } from '../types'
 import { destr } from 'destr'
-import { getDevframeRpcClient } from 'devframe/client'
+import { getDevframeRpcClient, resolveWsUrl } from 'devframe/client'
 import { REMOTE_CONNECTION_KEY } from 'devframe/constants'
+import { buildRemoteConnectionUrl } from '../remote-url'
+
+export { stripRemoteConnectionFromUrl } from '../remote-url'
 
 export type ConnectRemoteDevframeOptions = Omit<DevframeRpcClientOptions, 'connectionMeta' | 'authToken'>
 
@@ -16,14 +19,43 @@ function base64UrlDecode(value: string): string {
   return new TextDecoder().decode(bytes)
 }
 
+/**
+ * Build an external viewer URL from an existing trusted Devframe connection.
+ * Returns the original URL if the connection has no auth token, does not use
+ * WebSockets, or has an invalid metadata URL.
+ */
+export function buildRemoteDevframeUrl(
+  url: string,
+  connection: DevframeConnection,
+): string {
+  if (!connection.authToken || connection.connectionMeta.backend !== 'websocket')
+    return url
+
+  let base: URL
+  try {
+    base = new URL(connection.metaBaseUrl)
+  }
+  catch {
+    return url
+  }
+
+  const websocket = resolveWsUrl(connection.connectionMeta.websocket, connection.metaBaseUrl, base)
+  return buildRemoteConnectionUrl(url, {
+    v: 1,
+    backend: 'websocket',
+    websocket,
+    authToken: connection.authToken,
+    origin: base.origin,
+  })
+}
+
 function extractKeyFromFragment(hash: string): string | null {
   if (!hash)
     return null
   const raw = hash.startsWith('#') ? hash.slice(1) : hash
   const queryIdx = raw.indexOf('?')
   if (queryIdx !== -1) {
-    const params = new URLSearchParams(raw.slice(queryIdx + 1))
-    const value = params.get(REMOTE_CONNECTION_KEY)
+    const value = new URLSearchParams(raw.slice(queryIdx + 1)).get(REMOTE_CONNECTION_KEY)
     if (value)
       return value
   }
@@ -39,8 +71,8 @@ function extractKeyFromFragment(hash: string): string | null {
 function extractKeyFromQuery(search: string): string | null {
   if (!search)
     return null
-  const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
-  return params.get(REMOTE_CONNECTION_KEY)
+  return new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
+    .get(REMOTE_CONNECTION_KEY)
 }
 
 /**
@@ -66,7 +98,7 @@ export function parseRemoteConnection(input?: string): RemoteConnectionInfo | nu
       search = parsed.search
     }
     catch {
-      // Treat as raw fragment or query string.
+      // Treat as a raw fragment or query string.
       if (input.startsWith('#'))
         hash = input
       else if (input.startsWith('?'))

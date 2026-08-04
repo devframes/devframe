@@ -1,6 +1,7 @@
 import type { BirpcGroup, EventOptions } from 'birpc'
 import type { Peer } from 'crossws'
 import type { NodeAdapter } from 'crossws/adapters/node'
+import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
 import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
 import type { Server as NodeHttpServer } from 'node:http'
 import type { DevframeAuthHandler } from './auth'
@@ -102,7 +103,7 @@ export interface StartHttpAndWsOptions {
    * from another host. Pass `false` to disable origin checking entirely
    * (not recommended). Default: loopback-only.
    */
-  allowedOrigins?: readonly string[] | false
+  allowedOrigins?: readonly string[] | WsOriginRegistry | false
   /**
    * Called once the WS server is bound so callers can mount static
    * handlers whose origin depends on the resolved port, or print their

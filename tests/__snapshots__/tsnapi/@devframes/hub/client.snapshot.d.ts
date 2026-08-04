@@ -182,12 +182,16 @@ export type FrameNavHostPayload = {
 
 // #region Functions
 export declare function attachFrameNavClient(_: FrameNavClientOptions): FrameNavClient;
+export declare function buildRemoteDevframeUrl(_: string, _: DevframeConnection): string;
 export declare function connectRemoteDevframe(_?: ConnectRemoteDevframeOptions): Promise<DevframeRpcClient>;
 export declare function createDevframeClientHost(_?: DevframeClientHostOptions): Promise<DevframeClientHost>;
 export declare function createMessagesClient(_: DevframeRpcClient, _?: MessagesClientOptions): DevframeMessagesClient;
 export declare function getDevframeClientContext(): DevframeClientContext | undefined;
 export declare function parseRemoteConnection(_?: string): RemoteConnectionInfo | null;
+export declare function resolveDockIcon(_: DevframeDockEntryIcon, _: DevframeConnection): DevframeDockEntryIcon;
+export declare function resolveDockUrl(_: string, _: DevframeConnection): string;
 export declare function setDevframeClientContext(_: DevframeClientContext | undefined): void;
+export declare function stripRemoteConnectionFromUrl(_: string): string;
 // #endregion
 
 // #region Variables

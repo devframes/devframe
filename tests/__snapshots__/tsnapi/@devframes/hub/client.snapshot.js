@@ -3,11 +3,14 @@
  */
 // #region Functions
 export function attachFrameNavClient(_) {}
+export function buildRemoteDevframeUrl(_, _) {}
 export async function connectRemoteDevframe(_) {}
 export async function createDevframeClientHost(_) {}
 export function createMessagesClient(_, _) {}
 export function getDevframeClientContext() {}
 export function parseRemoteConnection(_) {}
+export function resolveDockIcon(_, _) {}
+export function resolveDockUrl(_, _) {}
 export function setDevframeClientContext(_) {}
 // #endregion
 
@@ -23,4 +26,5 @@ export * from "devframe/client";
 
 // #region Other
 export { DEFAULT_CATEGORIES_ORDER }
+export { stripRemoteConnectionFromUrl }
 // #endregion

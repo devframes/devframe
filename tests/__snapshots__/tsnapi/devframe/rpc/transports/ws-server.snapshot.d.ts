@@ -3,9 +3,12 @@
  */
 // #region Other
 export { attachWsRpcTransport }
+export { createWsOriginRegistry }
+export { CreateWsOriginRegistryOptions }
 export { DevframeNodeRpcSessionMeta }
 export { isAllowedOrigin }
 export { isLoopbackHostname }
+export { WsOriginRegistry }
 export { WsRpcTransport }
 export { WsRpcTransportOptions }
 // #endregion

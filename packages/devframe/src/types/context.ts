@@ -160,4 +160,13 @@ export interface ConnectionMeta {
    * > from a publicly reachable static `__connection.json`.
    */
   authToken?: string
+  /**
+   * Session-scoped token that lets a trusted external viewer register its
+   * browser origin before opening the WebSocket. The host includes it in the
+   * connection metadata, which the viewer obtains through the host page.
+   *
+   * Treat this as a bearer credential. Keep connection metadata containing the
+   * token same-origin until the requesting origin has been verified.
+   */
+  viewerOriginToken?: string
 }

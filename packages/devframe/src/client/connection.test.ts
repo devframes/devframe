@@ -1,7 +1,7 @@
 import type { ConnectionMeta } from 'devframe/types'
 import { DEVFRAME_CONNECTION_KEY } from 'devframe/constants'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getDevframeConnection, setupDevframeConnection } from './connection'
+import { getDevframeConnection, registerDevframeViewerOrigin, setupDevframeConnection } from './connection'
 import { getDevframeRpcClient } from './rpc'
 
 const CONNECTION_META_KEY = '__DEVFRAME_CONNECTION_META__'
@@ -207,5 +207,35 @@ describe('setupDevframeConnection', () => {
         }),
       ],
     })
+  })
+})
+
+describe('registerDevframeViewerOrigin', () => {
+  it('registers the exact origin with the advertised bootstrap token', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+    const registered = await registerDevframeViewerOrigin({
+      connectionMeta: {
+        backend: 'websocket',
+        viewerOriginToken: 'bootstrap-secret',
+      },
+      metaBaseUrl: 'http://localhost:5173/__connection.json',
+    }, 'chrome-extension://abcdefghijklmnop')
+
+    expect(registered).toBe(true)
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(String(url)).toContain('devframe_viewer_origin=chrome-extension%3A%2F%2Fabcdefghijklmnop')
+    expect(String(url)).toContain('devframe_viewer_origin_token=bootstrap-secret')
+    expect(init).toEqual({ cache: 'no-store' })
+  })
+
+  it('does nothing when the host did not advertise registration', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(registerDevframeViewerOrigin({
+      connectionMeta: { backend: 'websocket' },
+      metaBaseUrl: 'http://localhost:5173/__connection.json',
+    }, 'chrome-extension://abcdefghijklmnop')).resolves.toBe(false)
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

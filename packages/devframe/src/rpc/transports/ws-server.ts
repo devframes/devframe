@@ -9,6 +9,8 @@ import type { RpcFunctionDefinitionAny } from '../types'
 import { createServer as createHttpServer } from 'node:http'
 import { createServer as createHttpsServer } from 'node:https'
 import crossws from 'crossws/adapters/node'
+import { DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM, DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM } from 'devframe/constants'
+import { randomToken, timingSafeEqual } from 'devframe/utils/crypto-token'
 import { structuredCloneParse, structuredCloneStringify } from 'devframe/utils/structured-clone'
 import { strictJsonStringify, STRUCTURED_CLONE_PREFIX } from '../serialization'
 
@@ -70,7 +72,7 @@ export interface WsRpcTransportOptions {
    * Pass `false` to disable origin checking entirely (not recommended).
    * Default: loopback-only.
    */
-  allowedOrigins?: readonly string[] | false
+  allowedOrigins?: readonly string[] | WsOriginRegistry | false
   /**
    * RPC function definitions, used by the per-call wire serializer to
    * dispatch between strict-JSON and structured-clone encoding based
@@ -86,6 +88,78 @@ export interface WsRpcTransportOptions {
   serialize?: ChannelOptions['serialize']
   /** Override the default per-call deserializer. Most callers should leave this unset. */
   deserialize?: ChannelOptions['deserialize']
+}
+
+export interface CreateWsOriginRegistryOptions {
+  /** Origins allowed before any external viewers are registered. */
+  allowedOrigins?: readonly string[]
+  /** Additional validation to run after the registration token is verified. */
+  validateOrigin?: (origin: string) => boolean
+}
+
+export interface WsOriginRegistry {
+  /** Registration token to include in connection metadata. */
+  readonly token: string
+  /** Read and register an origin from a connection bootstrap URL. */
+  registerFromUrl: (url: string) => string | undefined
+  /** Check whether an origin is currently allowed. */
+  isAllowed: (origin: string | undefined) => boolean
+}
+
+/**
+ * Create a live, token-protected origin allowlist for external browser
+ * viewers. Pass it to {@link WsRpcTransportOptions.allowedOrigins}, then use
+ * `registerFromUrl()` in the connection metadata handler to authorize a
+ * viewer without sharing a mutable array or disabling DNS-rebinding protection.
+ */
+export function createWsOriginRegistry(
+  options: CreateWsOriginRegistryOptions = {},
+): WsOriginRegistry {
+  const token = randomToken()
+  const origins = new Set(options.allowedOrigins ?? [])
+
+  function normalizeOrigin(origin: string | undefined): string | undefined {
+    if (!origin)
+      return
+    try {
+      const url = new URL(origin)
+      const normalized = url.origin === 'null'
+        ? `${url.protocol}//${url.host}`
+        : url.origin
+      return origin === normalized ? normalized : undefined
+    }
+    catch {}
+  }
+
+  function registerOrigin(origin: string | undefined, candidateToken: string | undefined): boolean {
+    const normalized = normalizeOrigin(origin)
+    if (!normalized || !candidateToken || !timingSafeEqual(token, candidateToken))
+      return false
+    if (options.validateOrigin && !options.validateOrigin(normalized))
+      return false
+    origins.add(normalized)
+    return true
+  }
+
+  const registry: WsOriginRegistry = {
+    token,
+    registerFromUrl(url) {
+      let parsed: URL
+      try {
+        parsed = new URL(url, 'http://localhost')
+      }
+      catch {
+        return
+      }
+      const origin = parsed.searchParams.get(DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM) ?? undefined
+      const candidateToken = parsed.searchParams.get(DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM) ?? undefined
+      return registerOrigin(origin, candidateToken) ? origin : undefined
+    },
+    isAllowed(origin) {
+      return isAllowedOrigin(origin, [...origins])
+    },
+  }
+  return registry
 }
 
 export interface WsRpcTransport {
@@ -142,6 +216,12 @@ export function isAllowedOrigin(origin: string | undefined, allowedOrigins: read
   }
 }
 
+function isWsOriginRegistry(
+  value: readonly string[] | WsOriginRegistry | false | undefined,
+): value is WsOriginRegistry {
+  return !!value && !Array.isArray(value)
+}
+
 /**
  * Route `upgrade` events on a server to the crossws adapter, optionally
  * filtered to a single `path`. Non-matching requests are left untouched so
@@ -154,7 +234,7 @@ function routeUpgrades(
   ws: NodeAdapter,
   path: string | undefined,
   destroyUnmatched: boolean,
-  allowedOrigins: readonly string[] | false | undefined,
+  allowedOrigins: readonly string[] | WsOriginRegistry | false | undefined,
 ): () => void {
   const listener = (req: IncomingMessage, socket: Duplex, head: Buffer) => {
     socket.on('error', () => {
@@ -176,7 +256,10 @@ function routeUpgrades(
         return
       }
     }
-    if (allowedOrigins !== false && !isAllowedOrigin(req.headers.origin, allowedOrigins ?? [])) {
+    const originAllowed = isWsOriginRegistry(allowedOrigins)
+      ? allowedOrigins.isAllowed(req.headers.origin)
+      : isAllowedOrigin(req.headers.origin, allowedOrigins || [])
+    if (allowedOrigins !== false && !originAllowed) {
       socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n')
       socket.destroy()
       return

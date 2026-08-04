@@ -58,6 +58,12 @@ export const DEVFRAME_OTP_URL_PARAM = 'devframe_otp'
  */
 export const DEVFRAME_AUTH_TOKEN_QUERY_PARAM = 'devframe_auth_token'
 
+/** External viewer origin requested during connection bootstrap. */
+export const DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM = 'devframe_viewer_origin'
+
+/** Token that authorizes an external viewer origin registration. */
+export const DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM = 'devframe_viewer_origin_token'
+
 /**
  * Prefix that marks an RPC method as callable before a connection is
  * trusted. This is the *only* rule the pre-trust gate applies — there is no

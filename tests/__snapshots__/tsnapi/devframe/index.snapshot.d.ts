@@ -73,6 +73,7 @@ export interface ConnectionMeta {
   jsonSerializableMethods?: string[];
   baseUrl?: string;
   authToken?: string;
+  viewerOriginToken?: string;
 }
 export interface ConnectionMetaWebsocket {
   path?: string;

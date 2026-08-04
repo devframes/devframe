@@ -1,5 +1,9 @@
 import type { ConnectionMeta } from 'devframe/types'
-import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
+import {
+  DEVFRAME_CONNECTION_META_FILENAME,
+  DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM,
+  DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM,
+} from 'devframe/constants'
 import { withBase } from 'ufo'
 import {
   readStoredAuthToken,
@@ -30,6 +34,28 @@ export interface SetupDevframeConnectionOptions {
   baseURL?: string | string[]
   /** Override the locally stored auth token. */
   authToken?: string
+}
+
+/**
+ * Allow an external viewer to connect by registering its browser origin with
+ * the Devframe host. Returns `false` if the host did not provide an origin
+ * registration token.
+ */
+export async function registerDevframeViewerOrigin(
+  connection: DevframeConnection,
+  origin = globalThis.location?.origin,
+): Promise<boolean> {
+  const token = connection.connectionMeta.viewerOriginToken
+  if (!token || !origin)
+    return false
+
+  const url = new URL(connection.metaBaseUrl)
+  url.searchParams.set(DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM, origin)
+  url.searchParams.set(DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM, token)
+  const response = await fetch(url, { cache: 'no-store' })
+  if (!response.ok)
+    throw new Error(`Failed to register external viewer origin (${response.status}).`)
+  return true
 }
 
 function resolveMetaBaseUrl(baseURL: string): string {

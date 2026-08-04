@@ -63,6 +63,16 @@ window or an accessible parent window. Cross-realm viewers can read the
 serializable value through `DEVFRAME_CONNECTION_KEY` from
 `devframe/constants`.
 
+An external browser viewer can register its origin before opening the WebSocket:
+
+```ts
+import { registerDevframeViewerOrigin } from 'devframe/client'
+
+await registerDevframeViewerOrigin(connection)
+```
+
+The host provides `viewerOriginToken` in its connection metadata to enable registration. The token-protected server registry is described in [External viewer origins](/guide/security#external-viewer-origins).
+
 ### Options
 
 ```ts
@@ -252,7 +262,7 @@ await connectDevframe({
 
 ## Remote docks
 
-Remote docks are a host-side feature — hosts that support them (Vite DevTools is one; see [its remote-client docs](https://devtools.vite.dev/kit/remote-client) for that implementation) inject a connection descriptor into the iframe URL. On the hosted page, `connectDevframe` auto-detects the descriptor from the URL fragment / query string — call it as usual:
+Remote docks are a host-side feature — hosts that support them (Vite DevTools is one; see [its remote-client docs](https://devtools.vite.dev/kit/remote-client) for that implementation) inject a connection descriptor into the iframe URL. On the hosted page, `connectDevframe` auto-detects the descriptor from the URL fragment or query string — call it as usual:
 
 ```ts
 import { connectDevframe } from 'devframe/client'
@@ -262,6 +272,20 @@ const rpc = await connectDevframe()
 ```
 
 The descriptor carries a session-only, pre-approved auth token, so `ensureTrusted()` resolves immediately.
+
+An external hub can build a viewer URL from an existing trusted connection:
+
+```ts
+import {
+  buildRemoteDevframeUrl,
+  stripRemoteConnectionFromUrl,
+} from '@devframes/hub/client'
+
+const viewerUrl = buildRemoteDevframeUrl('/viewer/', connection)
+const displayUrl = stripRemoteConnectionFromUrl(viewerUrl)
+```
+
+`buildRemoteDevframeUrl()` stores the descriptor in the URL fragment, keeping its token out of HTTP requests and referrer headers. Hub-managed remote docks continue to support their configured descriptor transport.
 
 ## Events
 

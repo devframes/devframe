@@ -108,6 +108,12 @@ export interface SetupDevframeConnectionOptions {
 export interface StreamingSubscribeOptions {
   highWaterMark?: number;
 }
+export interface WsUrlLocation {
+  protocol: string;
+  host: string;
+  hostname: string;
+  href: string;
+}
 // #endregion
 
 // #region Types
@@ -141,6 +147,8 @@ export declare function getDevframeConnection(): DevframeConnection | undefined;
 export declare function getDevframeRpcClient(_?: DevframeRpcClientOptions): Promise<DevframeRpcClient>;
 export declare function isCallableStatus(_: DevframeConnectionStatus): boolean;
 export declare function readOtpFromUrl(_?: string): string | undefined;
+export declare function registerDevframeViewerOrigin(_: DevframeConnection, _?: any): Promise<boolean>;
+export declare function resolveWsUrl(_: ConnectionMeta['websocket'], _: string, _: WsUrlLocation): string;
 export declare function setupDevframeConnection(_?: SetupDevframeConnectionOptions): Promise<DevframeConnection>;
 // #endregion
 
