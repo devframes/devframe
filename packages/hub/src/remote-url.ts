@@ -9,6 +9,16 @@ function base64UrlEncode(value: string): string {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
+function setRemoteConnectionParam(value: string, param: string): string {
+  const parts = value ? value.split('&') : []
+  const existingIdx = parts.findIndex(part => part.split('=')[0] === REMOTE_CONNECTION_KEY)
+  if (existingIdx >= 0)
+    parts[existingIdx] = param
+  else
+    parts.push(param)
+  return parts.join('&')
+}
+
 /** Encode a remote connection descriptor into an external viewer URL. */
 export function buildRemoteConnectionUrl(
   baseUrl: string,
@@ -31,18 +41,11 @@ export function buildRemoteConnectionUrl(
     const routeQueryIdx = rawHash.indexOf('?')
     if (routeQueryIdx !== -1) {
       const route = rawHash.slice(0, routeQueryIdx + 1)
-      const params = new URLSearchParams(rawHash.slice(routeQueryIdx + 1))
-      params.set(REMOTE_CONNECTION_KEY, encoded)
-      return `${beforeHash}#${route}${params}`
+      const query = setRemoteConnectionParam(rawHash.slice(routeQueryIdx + 1), param)
+      return `${beforeHash}#${route}${query}`
     }
 
-    const parts = rawHash.split('&')
-    const existingIdx = parts.findIndex(part => part.split('=')[0] === REMOTE_CONNECTION_KEY)
-    if (existingIdx >= 0)
-      parts[existingIdx] = param
-    else
-      parts.push(param)
-    return `${beforeHash}#${parts.join('&')}`
+    return `${beforeHash}#${setRemoteConnectionParam(rawHash, param)}`
   }
 
   const hashIdx = baseUrl.indexOf('#')

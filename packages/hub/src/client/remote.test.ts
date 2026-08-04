@@ -74,8 +74,9 @@ describe('remote connection URLs', () => {
   })
 
   it('preserves the original encoding of hash-route parameters', () => {
-    expect(stripRemoteConnectionFromUrl(
-      'https://viewer.example/#/inspect?tab=a%20b&devframe-remote-connection=descriptor',
-    )).toBe('https://viewer.example/#/inspect?tab=a%20b')
+    const baseUrl = 'https://viewer.example/#/inspect?tab=a%20b&filter=a+b'
+    const url = buildRemoteDevframeUrl(baseUrl, connection)
+    expect(url).toContain('#/inspect?tab=a%20b&filter=a+b&devframe-remote-connection=')
+    expect(stripRemoteConnectionFromUrl(url)).toBe(baseUrl)
   })
 })

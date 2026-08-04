@@ -105,7 +105,7 @@ Higher-level integrations can drive their own authentication UI instead: disable
 WebSocket handshakes from browser extensions and other external viewers carry the viewer's own `Origin` header. A host can authorize that origin through a live registry:
 
 ```ts
-import { createWsOriginRegistry } from 'devframe/rpc/transports/ws-server'
+import { attachWsRpcTransport, createWsOriginRegistry } from 'devframe/rpc/transports/ws-server'
 
 const viewerOrigins = createWsOriginRegistry({
   validateOrigin: origin => origin.startsWith('chrome-extension://')
