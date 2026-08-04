@@ -110,6 +110,13 @@ export declare function createScopedNodeContext<NS extends string = string>(_: D
 export declare function createStorage<T extends object>(_: CreateStorageOptions<T>): SharedState<T>;
 export declare function formatHostForUrl(_: string): string;
 export declare function isObject(_: unknown): value is Record<string, any>;
+export declare function listLiveDevframeInstances(_?: {
+  instancesDir?: string;
+  timeoutMs?: number;
+}): Promise<{
+  live: DevframeInstanceRecord[];
+  pruned: DevframeInstanceRecord[];
+}>;
 export declare function normalizeHttpServerUrl(_: string, _: number | string): string;
 export declare function registerDevframeInstance(_: DevframeInstanceRecord, _?: {
   instancesDir?: string;

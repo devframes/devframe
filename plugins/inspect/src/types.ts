@@ -74,6 +74,38 @@ export interface DevframeInspectCommandInfo {
 }
 
 /**
+ * Serializable projection of a single running devframe instance discovered
+ * in the machine-wide instance registry (`~/.devframe/instances/`), returned
+ * by `devframes:plugin:inspect:list-instances`. A live, node-only view — the
+ * inspector's Instances tab renders these as a read-only directory of the
+ * other devframes running alongside this one.
+ */
+export interface DevframeInspectInstanceInfo {
+  /** Definition id of the running instance. */
+  id: string
+  /** Definition display name, when the instance declares one. */
+  name?: string
+  /** Listening port. */
+  port: number
+  /** Dialable HTTP origin, e.g. `http://127.0.0.1:9876`. */
+  origin: string
+  /** Base path the devframe is mounted at (trailing slash). */
+  basePath: string
+  /** Full SPA URL (`origin` + `basePath`) — the link the tab opens. */
+  url: string
+  /** Process id of the instance's dev server. */
+  pid: number
+  /** Working directory the instance was started from. */
+  rootDir: string
+  /** Epoch-ms timestamp of registration (used to compute uptime). */
+  startedAt: number
+  /** Whether the instance exposes an MCP endpoint. */
+  hasMcp: boolean
+  /** Whether this is the inspector's own instance (matched by pid). */
+  isCurrent: boolean
+}
+
+/**
  * Result envelope for `devframes:plugin:inspect:invoke`. Errors are
  * normalized to a serializable shape rather than thrown so the inspector
  * UI can render failures inline alongside successes.

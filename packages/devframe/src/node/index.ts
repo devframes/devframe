@@ -13,9 +13,11 @@ export type { RpcFunctionsHost } from './host-functions'
 export * from './host-h3'
 export * from './host-services'
 export * from './host-views'
-// Only registration is public — custom hosts (e.g. @devframes/next) record
-// themselves; the read/probe/prune helpers stay internal to the connector.
-export { registerDevframeInstance } from './instance-registry'
+// Registration is public — custom hosts (e.g. @devframes/next) record
+// themselves — and live discovery is public too, so surfaces like the
+// inspect plugin's Instances tab can enumerate running instances. The
+// lower-level read/probe/prune helpers stay internal to the connector.
+export { listLiveDevframeInstances, registerDevframeInstance } from './instance-registry'
 export type { DevframeInstanceRecord, DevframeInstanceRegistration } from './instance-registry'
 export * from './rpc-shared-state'
 export * from './rpc-streaming'

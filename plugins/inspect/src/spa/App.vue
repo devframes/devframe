@@ -17,11 +17,12 @@ import AgentSmart from './components/AgentSmart.vue'
 import CommandsSmart from './components/CommandsSmart.vue'
 import FunctionsSmart from './components/FunctionsSmart.vue'
 import HistorySmart from './components/HistorySmart.vue'
+import InstancesSmart from './components/InstancesSmart.vue'
 import StateSmart from './components/StateSmart.vue'
 import { useRefresh } from './composables/refresh'
-import { connect, connection } from './composables/rpc'
+import { connect, connection, isStatic } from './composables/rpc'
 
-type Tab = 'functions' | 'state' | 'agent' | 'commands' | 'history'
+type Tab = 'functions' | 'state' | 'agent' | 'commands' | 'history' | 'instances'
 
 const tab = ref<Tab>('functions')
 const { refresh, loading } = useRefresh()
@@ -34,13 +35,19 @@ const conn = computed(() => connectionIndicator(connection.status))
 // is connected.
 const connState = computed(() => connectionState(connection.status))
 
-const tabs: { value: Tab, label: string, icon: string }[] = [
+const allTabs: { value: Tab, label: string, icon: string }[] = [
   { value: 'functions', label: 'Functions', icon: 'i-ph-function-duotone' },
   { value: 'state', label: 'State', icon: 'i-ph-database-duotone' },
   { value: 'agent', label: 'Agent', icon: 'i-ph-robot-duotone' },
   { value: 'commands', label: 'Commands', icon: 'i-ph-terminal-window-duotone' },
   { value: 'history', label: 'History', icon: 'i-ph-clock-counter-clockwise-duotone' },
+  { value: 'instances', label: 'Instances', icon: 'i-ph-broadcast-duotone' },
 ]
+
+// The Instances tab lists running devframe dev servers via a live node-side
+// RPC — meaningless in a static `build`/`spa` dump (no backend to query), so
+// it only appears when connected to a live backend.
+const tabs = computed(() => isStatic() ? allTabs.filter(t => t.value !== 'instances') : allTabs)
 
 onMounted(connect)
 
@@ -106,6 +113,7 @@ function reload(): void {
         <AgentSmart v-else-if="tab === 'agent'" />
         <CommandsSmart v-else-if="tab === 'commands'" />
         <HistorySmart v-else-if="tab === 'history'" />
+        <InstancesSmart v-else-if="tab === 'instances'" />
       </template>
     </main>
   </div>

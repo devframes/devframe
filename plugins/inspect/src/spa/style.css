@@ -645,3 +645,59 @@ textarea.args:focus {
   padding: 14px;
   font-style: italic;
 }
+
+/* ---- instances view ---- */
+.inst-url {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  margin-top: 8px;
+  font-family: var(--df-mono);
+  font-size: 12px;
+  color: var(--df-accent);
+  text-decoration: none;
+}
+
+.inst-url:hover {
+  text-decoration: underline;
+}
+
+.inst-url-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inst-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin: 12px 0 0;
+}
+
+.inst-meta > div {
+  min-width: 0;
+}
+
+.inst-meta-wide {
+  grid-column: 1 / -1;
+}
+
+.inst-meta dt {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--df-fg-faint);
+  font-weight: 600;
+}
+
+.inst-meta dd {
+  margin: 2px 0 0;
+  font-family: var(--df-mono);
+  font-size: 12px;
+  color: var(--df-fg-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

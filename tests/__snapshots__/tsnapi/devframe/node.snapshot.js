@@ -16,6 +16,7 @@ export { DevframeServicesHostImpl }
 export { DevframeViewHost }
 export { formatHostForUrl }
 export { isObject }
+export { listLiveDevframeInstances }
 export { normalizeHttpServerUrl }
 export { registerDevframeInstance }
 export { startHttpAndWs }

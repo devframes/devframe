@@ -5,6 +5,7 @@ import { invoke } from './functions/invoke'
 import { invokeAgentTool } from './functions/invoke-agent-tool'
 import { listCommands } from './functions/list-commands'
 import { listFunctions } from './functions/list-functions'
+import { listInstances } from './functions/list-instances'
 import { listStateKeys } from './functions/list-state-keys'
 import { readAgentResource } from './functions/read-agent-resource'
 
@@ -21,6 +22,7 @@ export const serverFunctions = [
   readAgentResource,
   listCommands,
   executeCommand,
+  listInstances,
 ] as const
 
 declare module 'devframe' {

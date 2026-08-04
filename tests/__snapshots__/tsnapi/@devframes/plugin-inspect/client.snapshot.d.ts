@@ -9,6 +9,7 @@ export declare function connectInspect(_?: DevframeRpcClientOptions): Promise<De
 export { AgentManifest }
 export { DevframeConnectionStatus }
 export { DevframeInspectCommandInfo }
+export { DevframeInspectInstanceInfo }
 export { DevframeRpcClient }
 export { InvokeResult }
 export { RpcFunctionAgentInfo }
