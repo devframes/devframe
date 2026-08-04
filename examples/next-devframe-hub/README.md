@@ -20,6 +20,8 @@ Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's
 
 The A11y Inspector shows a live axe-core report of this hub's own page: the host serves the plugin's in-page agent module (`a11yAgentBundlePath`) same-origin through the catch-all route and attaches it as the a11y dock's `clientScript`; the hub client runtime — `createDevframeClientHost()` booted in `app/page.tsx` — imports it into the page, so the docked panel and the agent share the origin their BroadcastChannel rides.
 
+The **RPC & State Inspector** carries an **Instances** tab that lists every devframe dev server running on your machine. The host registers itself in the shared registry (`~/.devframe/instances/`) on startup via `registerDevframeInstance()`, so it shows up as "this instance"; start another example (e.g. `pnpm --filter vite-devframe-hub dev`, or any `node bin.mjs` CLI example) in a second terminal and it appears there too, each linking to its own SPA.
+
 ## What the example proves
 
 - `createHubContext()` boots a hub with no Vite-specific code path; a `DevframeHost` impl plugs Next specifics (static mounts, connection meta, storage, origin) in uniformly
@@ -35,7 +37,7 @@ The plugins run node-side (child processes, the native `zigpty` PTY backend) and
 
 | File | Role |
 |---|---|
-| `src/client/devframe/next-devframe-hub.ts` | The Next host — hub context, static-mount registry (incl. the a11y agent), side-car WS |
+| `src/client/devframe/next-devframe-hub.ts` | The Next host — hub context, static-mount registry (incl. the a11y agent), side-car WS, instance-registry registration |
 | `src/client/app/%5F_hub/%5F_connection.json/route.ts` | Boots the singleton host and serves `/__hub/__connection.json` |
 | `src/client/app/%5F_[id]/[[...path]]/route.ts` | Serves each mounted SPA and its connection meta under `/__<id>/` |
 | `src/client/app/page.tsx` | The browser UI that consumes the hub protocol |

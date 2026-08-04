@@ -78,7 +78,7 @@ the focused dock — the same path a manual dock click takes.
 
 | File | Role |
 |---|---|
-| `src/a11y-messages-playground.ts` | The Vite host — hub context, static + connection-meta mounts, side-car WS |
+| `src/a11y-messages-playground.ts` | The Vite host — hub context, static + connection-meta mounts, side-car WS, instance-registry registration |
 | `vite.config.ts` | Mounts a11y + messages; attaches the a11y agent as its dock's `clientScript` |
 | `src/client/main.ts` | Boots the client host, renders the dock rail + iframe stage |
 | `src/client/app-under-test.ts` | The intentionally-broken, multi-route app the agent scans |

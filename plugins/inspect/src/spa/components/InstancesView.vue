@@ -34,13 +34,29 @@ function formatUptime(startedAt: number): string {
   <div class="pane">
     <div class="toolbar">
       <span class="muted">{{ (instances ?? []).length }} running {{ (instances ?? []).length === 1 ? 'instance' : 'instances' }}</span>
+      <span class="muted">Devframe dev servers running on this machine, discovered via the shared registry (<code>~/.devframe/instances/</code>).</span>
     </div>
 
     <div v-if="!instances" class="center">
       Discovering instances…
     </div>
-    <div v-else-if="instances.length === 0" class="empty">
-      No running devframe instances discovered. Each dev server registers itself while it runs — start one to see it here.
+    <div v-else-if="instances.length === 0" class="inst-empty">
+      <span class="i-ph-broadcast-duotone inst-empty-icon" />
+      <p class="inst-empty-title">
+        No devframe instances discovered
+      </p>
+      <p>
+        This tab lists every devframe dev server running on your machine, so you
+        can jump between them. Each server registers itself in
+        <code>~/.devframe/instances/</code> while it runs.
+      </p>
+      <p>
+        Nothing shows up when only static/build servers are running, when
+        discovery is turned off (<code>DEVFRAME_DISABLE_INSTANCE_REGISTRY=1</code>),
+        or when an in-process host hasn't opted in. Start another
+        <code>devframe</code> dev server — or a hub host that calls
+        <code>registerDevframeInstance()</code> — then hit refresh.
+      </p>
     </div>
 
     <div v-else class="cards">

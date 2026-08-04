@@ -20,6 +20,8 @@ Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's
 
 The A11y Inspector shows a live axe-core report of this hub's own page. `vite.config.ts` attaches the plugin's in-page agent as the a11y dock's `clientScript` (served via `/@fs/`), and the hub client runtime — `createDevframeClientHost()` booted in `src/client/main.ts` — imports it into the host page. Panel and agent share the Vite origin their BroadcastChannel rides; hover a violation to ring the offending element in the hub UI.
 
+The **RPC & State Inspector** carries an **Instances** tab that lists every devframe dev server running on your machine. The host registers itself in the shared registry (`~/.devframe/instances/`) on startup via `registerDevframeInstance()`, so it shows up as "this instance"; start another example (`pnpm --filter a11y-messages-playground dev`, or any `node bin.mjs` CLI example) in a second terminal and it appears there too, each linking to its own SPA.
+
 ## What the example proves
 
 - `createHubContext()` boots a hub with no Vite-specific code path; a `DevframeHost` impl plugs framework specifics (static mounts, connection meta, storage, origin) in uniformly
@@ -36,7 +38,7 @@ The dock UI is plain DOM in `src/client/`. To skin your own viewer, read the sam
 
 | File | Role |
 |---|---|
-| `src/vite-devframe-hub.ts` | The Vite host — hub context, static + connection-meta mounts, side-car WS |
+| `src/vite-devframe-hub.ts` | The Vite host — hub context, static + connection-meta mounts, side-car WS, instance-registry registration |
 | `vite.config.ts` | Mounts the built-in plugins via the host's `devframes` option; attaches the a11y agent as its dock's `clientScript` |
 | `src/client/main.ts` | The browser UI that consumes the hub protocol |
 | `src/client/icons.ts` | Offline Phosphor icons for the dock |

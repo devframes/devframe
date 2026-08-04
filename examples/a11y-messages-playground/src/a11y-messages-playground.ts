@@ -1,11 +1,13 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
 import type { ClientScriptEntry } from '@devframes/hub/types'
+import type { DevframeInstanceRegistration } from 'devframe/node'
 import type { DevframeDefinition, DevframeHost } from 'devframe/types'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { homedir } from 'node:os'
+import process from 'node:process'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
-import { startHttpAndWs } from 'devframe/node'
+import { registerDevframeInstance, startHttpAndWs } from 'devframe/node'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { join } from 'pathe'
@@ -37,6 +39,7 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
   const base = normalizeBase(options.base ?? '/__hub/')
   let viteConfig: ResolvedConfig | undefined
   let started: { close: () => Promise<void> } | undefined
+  let registration: DevframeInstanceRegistration | undefined
 
   return {
     name: 'a11y-messages-playground',
@@ -48,9 +51,12 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
 
     async configureServer(server: ViteDevServer) {
       // Vite re-invokes `configureServer` on restart — tear the old server down
-      // so we don't leak the WS port.
+      // so we don't leak the WS port, and drop the previous registry record so
+      // a restart doesn't leave a ghost instance behind.
       await started?.close().catch(() => {})
       started = undefined
+      registration?.unregister()
+      registration = undefined
 
       const cwd = viteConfig!.root
       const port = options.port ?? await getPort({ port: 9878, portRange: [9878, 9978] })
@@ -102,6 +108,37 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
 
       // Tell the hub UI (served at `base`) where to find the WS endpoint.
       serveConnectionMeta(base)
+
+      // Register this playground in the global instance registry
+      // (`~/.devframe/instances/`) so discovery tooling — `devframe connect`
+      // and the inspector's Instances tab — lists it like any standalone
+      // devframe. See `examples/vite-devframe-hub` for the same pattern.
+      const register = (): void => {
+        const origin = host.resolveOrigin()
+        const url = new URL(origin)
+        registration = registerDevframeInstance({
+          pid: process.pid,
+          port: Number(url.port) || (url.protocol === 'https:' ? 443 : 80),
+          origin,
+          basePath: base,
+          id: 'example:a11y-messages-playground',
+          name: 'A11y + Messages Playground',
+          rootDir: cwd,
+          mcp: null,
+          startedAt: Date.now(),
+        })
+      }
+      if (server.httpServer?.listening)
+        register()
+      else
+        server.httpServer?.once('listening', register)
+
+      const closeStarted = started.close
+      started.close = async () => {
+        registration?.unregister()
+        registration = undefined
+        await closeStarted()
+      }
 
       server.httpServer?.once('close', () => {
         void started?.close().catch(() => {})
