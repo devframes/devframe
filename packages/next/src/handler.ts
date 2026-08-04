@@ -55,14 +55,6 @@ export interface DevframeNextHandler {
   fetch: (request: Request) => Promise<Response>
   /** Resolves once the side-car RPC/WS server is listening. */
   ready: Promise<void>
-  /**
-   * Bearer token the side-car's MCP route requires (`Authorization: Bearer
-   * <token>`), or `undefined` when no MCP route is mounted. Available after
-   * {@link DevframeNextHandler.ready} resolves; recorded in the instance
-   * registry for `devframe connect`, and read here by a caller that dials the
-   * endpoint directly.
-   */
-  readonly mcpAuthToken?: string
   /** Shut the side-car server down (call from an app-lifecycle hook / test). */
   close: () => Promise<void>
 }
@@ -156,9 +148,6 @@ export function createDevframeNextHandler(
       return nextHost.fetch(request)
     },
     ready,
-    get mcpAuthToken() {
-      return started?.mcpAuthToken
-    },
     async close() {
       await ready.catch(() => {})
       await started?.close()

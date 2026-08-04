@@ -79,13 +79,14 @@ describe('createDevframeNextHandler', () => {
     expect(body.mcp).toEqual({ port: body.websocket.port, path: '/__mcp' })
 
     // The advertised endpoint answers MCP initialize on the side-car origin
-    // once the required bearer token is presented.
-    const init = await fetch(`http://127.0.0.1:${body.mcp!.port}${body.mcp!.path}`, {
+    // when a loopback Origin (required by the route's gate) is presented.
+    const sidecarOrigin = `http://127.0.0.1:${body.mcp!.port}`
+    const init = await fetch(`${sidecarOrigin}${body.mcp!.path}`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
         'accept': 'application/json, text/event-stream',
-        'Authorization': `Bearer ${handler.mcpAuthToken}`,
+        'origin': sidecarOrigin,
       },
       body: JSON.stringify({
         jsonrpc: '2.0',
@@ -98,8 +99,8 @@ describe('createDevframeNextHandler', () => {
     expect(init.headers.get('mcp-session-id')).toBeTruthy()
     await init.body?.cancel()
 
-    // Without the token the same request is rejected.
-    const unauthed = await fetch(`http://127.0.0.1:${body.mcp!.port}${body.mcp!.path}`, {
+    // Without an Origin header the same request is rejected.
+    const unauthed = await fetch(`${sidecarOrigin}${body.mcp!.path}`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -113,6 +114,6 @@ describe('createDevframeNextHandler', () => {
       }),
     })
     await unauthed.body?.cancel()
-    expect(unauthed.status).toBe(401)
+    expect(unauthed.status).toBe(403)
   })
 })

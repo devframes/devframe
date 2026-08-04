@@ -573,7 +573,7 @@ RPC handlers run with the full privileges of the host process, so the boundary t
 - **Tokens are secrets.** The bearer token rides the WS URL (`?devframe_auth_token=…`) — serve over `wss://`/`https://` beyond loopback. Never log the token or code, never bake them into build output. Revoke via `revokeAuthToken(...)`; clients drop to untrusted on `devframe:auth:revoked`.
 - **Authorize handlers.** Any trusted client can call any registered function — validate inputs, and mark state-changing functions `type: 'destructive'` so MCP/agent clients prompt first.
 - **Origin-lock remote docks** (`originLock`, on by default) so a dock's session token is honored only on a connection whose `Origin` matches the dock — the connect-time gate enforces it.
-- **The MCP route needs a token.** The route-based MCP server (`cli.mcp`, `viteDevBridge`/Next handler `mcp`, `createMcpFetchHandler`'s `authToken`) requires `Authorization: Bearer <token>` — the origin gate only constrains browsers. The dev server mints one per instance and records it (registry file, mode `0600`) so `devframe connect` presents it automatically.
+- **The MCP route requires an Origin.** The route-based MCP server (`cli.mcp`, `viteDevBridge`/Next handler `mcp`, `createMcpFetchHandler`) rejects `Origin`-less requests — a request must carry a loopback (or allow-listed) `Origin`, so it isn't reachable by an arbitrary local process. `devframe connect` sends each instance's own loopback origin automatically.
 
 See [Security](https://devfra.me/security) for the full reference.
 

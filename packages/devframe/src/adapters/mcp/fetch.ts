@@ -2,7 +2,6 @@ import type { DevframeNodeContext } from 'devframe/types'
 import { randomUUID } from 'node:crypto'
 import { isInitializeRequest, WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/server'
 import { isAllowedOrigin } from 'devframe/rpc/transports/ws-server'
-import { timingSafeEqual } from 'devframe/utils/crypto-token'
 import { buildMcpServerFromContext } from './build-server'
 
 export interface CreateMcpFetchHandlerOptions {
@@ -14,20 +13,14 @@ export interface CreateMcpFetchHandlerOptions {
   exposeSharedState: boolean | ((key: string) => boolean)
   /**
    * Origin allow-list beyond the loopback default. `false` disables the
-   * origin gate entirely. Default: loopback-only (mirrors the WS transport).
+   * origin gate entirely. Default: loopback-only.
+   *
+   * Unlike the WS transport, the MCP route does **not** allow `Origin`-less
+   * requests: a route-based endpoint is reachable by any local process, so a
+   * request must carry an `Origin` that passes the gate. Native clients
+   * (e.g. `devframe connect`) send their loopback origin explicitly.
    */
   allowedOrigins?: readonly string[] | false
-  /**
-   * Bearer token every request must present as `Authorization: Bearer
-   * <token>`. This is the endpoint's real authentication: the origin gate
-   * only ever constrains browsers (a non-browser client can omit or spoof the
-   * `Origin` header), so without a token any local process could reach every
-   * tool. Callers that expose the route mint a high-entropy token and hand it
-   * to trusted clients out-of-band (devframe records it in the instance
-   * registry so `devframe connect` can present it). Leave unset only for a
-   * transport that is already authenticated by other means.
-   */
-  authToken?: string
 }
 
 export interface McpFetchHandler {
@@ -56,12 +49,10 @@ interface McpSession {
  * and MCP server (built from the shared, live `ctx` via
  * `buildMcpServerFromContext`), correlated by the `Mcp-Session-Id` header: an
  * `initialize` POST spins up a session; later requests route to it; a `DELETE`
- * (or client disconnect) tears it down. Two gates guard every request: the
- * origin gate applies devframe's loopback-default DNS-rebinding protection
- * (identical semantics to the WS upgrade's `isAllowedOrigin`, and only ever
- * constrains browsers), and — when {@link CreateMcpFetchHandlerOptions.authToken}
- * is set — a constant-time `Authorization: Bearer` check that is the endpoint's
- * real authentication for non-browser clients.
+ * (or client disconnect) tears it down. The origin gate guards every request:
+ * loopback-default DNS-rebinding protection that — unlike the WS upgrade's
+ * `isAllowedOrigin` — also rejects `Origin`-less requests, so a route-based
+ * endpoint isn't reachable by an arbitrary local process.
  *
  * @experimental
  */
@@ -71,22 +62,6 @@ export function createMcpFetchHandler(
 ): McpFetchHandler {
   const sessions = new Map<string, McpSession>()
   const allowedOrigins = options.allowedOrigins
-  const authToken = options.authToken
-
-  /**
-   * Constant-time check of the request's `Authorization: Bearer <token>`
-   * against the expected token. Returns `true` when no token is configured
-   * (the caller opted out of endpoint auth).
-   */
-  function isAuthorized(req: Request): boolean {
-    if (!authToken)
-      return true
-    const header = req.headers.get('authorization') ?? ''
-    const prefix = 'bearer '
-    if (header.slice(0, prefix.length).toLowerCase() !== prefix)
-      return false
-    return timingSafeEqual(header.slice(prefix.length).trim(), authToken)
-  }
 
   function drop(sessionId: string): void {
     const session = sessions.get(sessionId)
@@ -136,17 +111,14 @@ export function createMcpFetchHandler(
   }
 
   async function handle(req: Request): Promise<Response> {
-    // Origin gate — identical semantics to the WS upgrade's `isAllowedOrigin`
-    // (loopback + `Origin`-less native clients + the configured allow-list).
-    // This is the endpoint's DNS-rebinding protection.
+    // Origin gate — the endpoint's DNS-rebinding protection and its guard
+    // against arbitrary local processes. Unlike the WS transport, an
+    // `Origin`-less request is rejected: a route-based MCP endpoint would
+    // otherwise be reachable by any local process. A request must carry an
+    // `Origin` that is loopback or on the configured allow-list.
     const origin = req.headers.get('origin') ?? undefined
-    if (allowedOrigins !== false && !isAllowedOrigin(origin, allowedOrigins ?? []))
-      return new Response('Forbidden: origin not allowed', { status: 403 })
-
-    // Bearer-token gate — the actual authentication (see `authToken` above).
-    // The origin gate above is defense-in-depth against browsers only.
-    if (!isAuthorized(req))
-      return new Response('Unauthorized: missing or invalid bearer token', { status: 401 })
+    if (allowedOrigins !== false && (origin === undefined || !isAllowedOrigin(origin, allowedOrigins ?? [])))
+      return new Response('Forbidden: origin required', { status: 403 })
 
     const sessionId = req.headers.get('mcp-session-id') ?? undefined
     let session = sessionId ? sessions.get(sessionId) : undefined

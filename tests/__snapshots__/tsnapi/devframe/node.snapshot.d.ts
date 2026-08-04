@@ -32,7 +32,6 @@ export interface DevframeInstanceRecord {
   rootDir: string;
   mcp: {
     path: string;
-    token?: string;
   } | null;
   startedAt: number;
 }

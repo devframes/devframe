@@ -7,7 +7,6 @@ export interface CreateMcpFetchHandlerOptions {
   serverVersion: string;
   exposeSharedState: boolean | ((_: string) => boolean);
   allowedOrigins?: readonly string[] | false;
-  authToken?: string;
 }
 export interface CreateMcpServerOptions {
   transport?: 'stdio';

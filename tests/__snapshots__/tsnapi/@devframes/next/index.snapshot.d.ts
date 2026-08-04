@@ -24,7 +24,6 @@ export interface DevframeNextConfig {
 export interface DevframeNextHandler {
   fetch: (_: Request) => Promise<Response>;
   ready: Promise<void>;
-  readonly mcpAuthToken?: string;
   close: () => Promise<void>;
 }
 export interface DevframeNextHost {
@@ -33,7 +32,6 @@ export interface DevframeNextHost {
   setConnectionMeta: (_: ConnectionMeta) => void;
   mountMcp: (_: DevframeNodeContext, _: string, _?: DevframeNextHostMcpOptions) => Promise<{
     dispose: () => Promise<void>;
-    authToken: string;
   }>;
 }
 export interface DevframeNextHostMcpOptions {
@@ -41,7 +39,6 @@ export interface DevframeNextHostMcpOptions {
   serverVersion?: string;
   exposeSharedState?: boolean | ((_: string) => boolean);
   allowedOrigins?: readonly string[] | false;
-  authToken?: string;
 }
 // #endregion
 

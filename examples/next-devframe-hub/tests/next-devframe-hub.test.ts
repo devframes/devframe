@@ -6,8 +6,8 @@ import { nextDevframeHub } from '../src/client/devframe/next-devframe-hub'
 
 vi.stubGlobal('WebSocket', WebSocket)
 
-function bootRpc(port: number, authToken?: string) {
-  const channel = createWsRpcChannel({ url: `ws://127.0.0.1:${port}`, authToken })
+function bootRpc(port: number) {
+  const channel = createWsRpcChannel({ url: `ws://127.0.0.1:${port}` })
   return createRpcClient<any, any>({}, { channel })
 }
 
@@ -19,24 +19,14 @@ describe('next-devframe-hub (example)', () => {
     server = undefined
   })
 
-  it('returns connection meta pointing at the WS backend, in-process MCP, and a host-injected auth token', async () => {
+  it('returns connection meta pointing at the WS backend and in-process MCP', async () => {
     server = await nextDevframeHub({ host: '127.0.0.1' })
 
-    expect(server.connectionMeta.backend).toBe('websocket')
-    expect(server.connectionMeta.websocket).toBe(server.port)
-    expect(server.connectionMeta.mcp).toEqual({ path: '/__hub/__mcp' })
-    // The gated side-car hands its own SPA a pre-shared token via the meta.
-    expect(server.connectionMeta.authToken).toBeTypeOf('string')
-    expect(server.connectionMeta.authToken!.length).toBeGreaterThanOrEqual(32)
-  })
-
-  it('rejects a connection that does not present the host auth token', async () => {
-    server = await nextDevframeHub({ host: '127.0.0.1' })
-
-    const rpc = bootRpc(server.port)
-    await expect(
-      rpc.$call('example:next-devframe-hub:messages:list'),
-    ).rejects.toThrow()
+    expect(server.connectionMeta).toEqual({
+      backend: 'websocket',
+      websocket: server.port,
+      mcp: { path: '/__hub/__mcp' },
+    })
   })
 
   it('registers a hub-owned settings dock and the mounted plugin docks', async () => {
@@ -59,7 +49,7 @@ describe('next-devframe-hub (example)', () => {
   it('lists startup and demo messages through the kit-local RPC', async () => {
     server = await nextDevframeHub({ host: '127.0.0.1' })
 
-    const rpc = bootRpc(server.port, server.connectionMeta.authToken)
+    const rpc = bootRpc(server.port)
     const messages = await rpc.$call('example:next-devframe-hub:messages:list') as { message: string }[]
     expect(messages.map(m => m.message)).toContain('Next Devframe Hub started')
     expect(messages.map(m => m.message)).toContain('Next demo devframe loaded')
@@ -68,7 +58,7 @@ describe('next-devframe-hub (example)', () => {
   it('executes the ping command through the hub command RPC', async () => {
     server = await nextDevframeHub({ host: '127.0.0.1' })
 
-    const rpc = bootRpc(server.port, server.connectionMeta.authToken)
+    const rpc = bootRpc(server.port)
     await expect(
       rpc.$call('hub:commands:execute', 'example:next-devframe-hub:ping'),
     ).resolves.toBe('pong')

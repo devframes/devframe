@@ -1,13 +1,9 @@
 import type { DevframeDefinition } from '../../types/devframe'
-import { mkdtempSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { readDevframeInstances } from '../../node/instance-registry'
+import { afterEach, describe, expect, it } from 'vitest'
 import { viteDevBridge } from '../vite'
 
 function defineTestDef(): DevframeDefinition {
@@ -60,25 +56,15 @@ describe('viteDevBridge (bridge mode mcp)', () => {
   afterEach(async () => {
     await bridge?.closeBundle?.()
     bridge = undefined
-    vi.unstubAllEnvs()
   })
 
   it('forwards the mcp option and advertises the side-car endpoint in the meta', async () => {
-    // Point the instance registry at a temp dir so we can read back the
-    // per-instance MCP bearer token the side-car minted (never advertised in
-    // the meta) and present it, exactly as `devframe connect` does.
-    const registryDir = mkdtempSync(join(tmpdir(), 'df-vite-bridge-registry-'))
-    vi.stubEnv('DEVFRAME_INSTANCES_DIR', registryDir)
-    // The test harness disables the registry globally; re-enable it here so the
-    // side-car writes the record carrying the MCP token.
-    vi.stubEnv('DEVFRAME_DISABLE_INSTANCE_REGISTRY', '0')
-
     const port = await getPort({ port: 19710, host: '127.0.0.1' })
     bridge = viteDevBridge(defineTestDef(), {
       devMiddleware: { port, host: '127.0.0.1' },
       mcp: true,
       // The bridge now gates by default; opt out here so this test can dial
-      // the WS/MCP side-car directly. (MCP still requires its bearer token.)
+      // the WS/MCP side-car directly.
       auth: false,
     })
 
@@ -91,16 +77,11 @@ describe('viteDevBridge (bridge mode mcp)', () => {
     expect(meta.backend).toBe('websocket')
     expect(meta.websocket).toEqual({ port, path: '/__devframe_ws' })
     expect(meta.mcp).toEqual({ port, path: '/__mcp' })
-    // The token is never advertised in the meta.
-    expect(meta.mcp.token).toBeUndefined()
 
-    const token = readDevframeInstances({ instancesDir: registryDir }).find(r => r.port === port)?.mcp?.token
-    expect(token).toBeTypeOf('string')
-
-    // The advertised endpoint is live: a real MCP client presenting the
-    // registry-recorded bearer token can connect and list the agent tools.
+    // The advertised endpoint is live: a real MCP client presenting a loopback
+    // Origin (required by the route's gate) can connect and list agent tools.
     const transport = new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${port}/__mcp`), {
-      requestInit: { headers: { Authorization: `Bearer ${token}` } },
+      requestInit: { headers: { origin: `http://127.0.0.1:${port}` } },
     })
     const client = new Client({ name: 'test-client', version: '0.0.0' })
     try {
