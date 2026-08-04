@@ -166,7 +166,7 @@ async function index(sdk: ConnectSdk, options: ConnectServerOptions): Promise<un
     }
     const url = `${record.origin}${mcp.path}`
     try {
-      entry.mcp = { url, tools: await listInstanceTools(sdk, url) }
+      entry.mcp = { url, tools: await listInstanceTools(sdk, url, mcp.token) }
     }
     catch (error) {
       entry.mcp = { url, error: error instanceof Error ? error.message : String(error) }
@@ -204,8 +204,8 @@ async function probePort(port: number, timeoutMs?: number): Promise<DevframeInst
   }
 }
 
-async function listInstanceTools(sdk: ConnectSdk, url: string): Promise<{ name: string, description?: string }[]> {
-  return withInstanceClient(sdk, url, async (client) => {
+async function listInstanceTools(sdk: ConnectSdk, url: string, token?: string): Promise<{ name: string, description?: string }[]> {
+  return withInstanceClient(sdk, url, token, async (client) => {
     const listed = await client.listTools()
     return listed.tools.map((tool: { name: string, description?: string }) => ({
       name: tool.name,
@@ -233,7 +233,7 @@ async function call(
     throw diagnostics.DF0051({ port: args.port })
 
   const url = `${record.origin}${record.mcp.path}`
-  return withInstanceClient(sdk, url, async (client) => {
+  return withInstanceClient(sdk, url, record.mcp.token, async (client) => {
     const result = await client.callTool({ name: args.tool!, arguments: args.args ?? {} })
     return {
       instance: { id: record.id, port: record.port },
@@ -248,9 +248,15 @@ async function call(
 async function withInstanceClient<T>(
   sdk: ConnectSdk,
   url: string,
+  token: string | undefined,
   fn: (client: InstanceType<ConnectSdk['Client']>) => Promise<T>,
 ): Promise<T> {
-  const transport = new sdk.StreamableHTTPClientTransport(new URL(url))
+  // Present the instance's MCP bearer token (recorded in the registry) so the
+  // route's `Authorization: Bearer` gate accepts this Origin-less client.
+  const transport = new sdk.StreamableHTTPClientTransport(
+    new URL(url),
+    token ? { requestInit: { headers: { Authorization: `Bearer ${token}` } } } : undefined,
+  )
   const client = new sdk.Client({ name: 'devframe-connect', version: '0.0.0' })
   await client.connect(transport)
   try {

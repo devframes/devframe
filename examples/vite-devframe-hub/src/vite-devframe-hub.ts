@@ -9,6 +9,8 @@ import { defineHubRpcFunction } from '@devframes/hub'
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { registerDevframeInstance, startHttpAndWs } from 'devframe/node'
+import { createInteractiveAuth } from 'devframe/recipes/interactive-auth'
+import { randomToken } from 'devframe/utils/crypto-token'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { join } from 'pathe'
@@ -101,6 +103,14 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       // port. Clients discover whatever was chosen via `__connection.json`.
       const port = options.port ?? await getPort({ port: 9777, portRange: [9777, 9877] })
 
+      // Gate the side-car RPC/WS server: the hub owns the trust boundary, so it
+      // mints a per-boot bearer token, accepts it as a pre-shared
+      // `clientAuthToken`, and hands it to its own SPA through the connection
+      // meta below. `connectDevframe` presents it automatically — the host
+      // trusts its own origin with no code prompt, while an arbitrary
+      // connection is rejected.
+      const clientAuthToken = randomToken()
+
       // Serve the side-car's connection meta (`__connection.json`) at a URL
       // base so a browser loaded there can discover the WS endpoint via
       // `connectDevframe()`'s relative `./__connection.json` fetch.
@@ -108,7 +118,7 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
         const metaPath = `${metaBase}${DEVFRAME_CONNECTION_META_FILENAME}`
         server.middlewares.use(metaPath, (_req, res) => {
           res.setHeader('Content-Type', 'application/json')
-          res.end(JSON.stringify({ backend: 'websocket', websocket: port }))
+          res.end(JSON.stringify({ backend: 'websocket', websocket: port, authToken: clientAuthToken }))
         })
       }
 
@@ -175,7 +185,7 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       started = await startHttpAndWs({
         context,
         port,
-        auth: false,
+        auth: createInteractiveAuth(context, { clientAuthTokens: [clientAuthToken] }),
       })
 
       // Tell the hub UI (served at `base`) where to find the WS endpoint.

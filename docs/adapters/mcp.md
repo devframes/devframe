@@ -35,7 +35,7 @@ export default defineDevframe({
 
 The endpoint speaks the MCP Streamable-HTTP transport at `/__mcp` (relative to the base path — `/__<id>/__mcp` under a host), sharing the dev server's origin and port. The `--mcp` and `--no-mcp` flags override the definition per run. `__connection.json` advertises the route so in-browser tooling can discover it.
 
-Each client session gets its own MCP server built from the live context, correlated by the `Mcp-Session-Id` header, so `tools/list_changed` and `resources/list_changed` notifications reach connected clients as the tool evolves. The endpoint binds to the same loopback host as the dev server and applies the shared loopback origin gate; widen it for a tunnel or LAN origin:
+Each client session gets its own MCP server built from the live context, correlated by the `Mcp-Session-Id` header, so `tools/list_changed` and `resources/list_changed` notifications reach connected clients as the tool evolves. The dev server mints a per-instance bearer token and the endpoint requires it as `Authorization: Bearer <token>` — the real authentication, since the origin gate only ever constrains browsers (a non-browser client can omit or spoof the `Origin` header). The token is recorded in the instance registry (a user-private file, mode `0600`) so `devframe connect` presents it automatically; a client dialing the route directly reads it from `StartedServer.mcpAuthToken`. The endpoint binds to the same loopback host as the dev server and keeps the shared loopback origin gate as defense-in-depth; widen it for a tunnel or LAN origin:
 
 ```ts
 defineDevframe({
@@ -64,11 +64,16 @@ createDevframeNextHandler(devframe, { mcp: true })
 
 ```ts
 import { createMcpFetchHandler } from 'devframe/adapters/mcp'
+import { randomToken } from 'devframe/utils/crypto-token'
 
+const authToken = randomToken()
 const mcp = createMcpFetchHandler(ctx, {
   serverName: 'my-tool (devframe)',
   serverVersion: '1.0.0',
   exposeSharedState: true,
+  // Required for every request as `Authorization: Bearer <token>`. Hand it to
+  // trusted clients out-of-band — e.g. record it in the instance registry.
+  authToken,
 })
 // route every method on /__mcp to mcp.fetch(request)
 ```
@@ -90,6 +95,6 @@ It exposes two gateway tools (the wire names of the `devframe:connect:*` ids —
 - **`devframe_connect_list-instances`** — discover running devframe dev servers and list each one's MCP tools. Instances running without an MCP route are listed with a hint to restart with `--mcp`.
 - **`devframe_connect_call-tool`** — invoke one tool on one instance (`{ port, tool, args }`) over its Streamable-HTTP endpoint.
 
-Discovery reads the **instance registry**: every `createDevServer` (CLI `dev`, `viteDevBridge`, `@devframes/next`'s handler) writes a record to `~/.devframe/instances/<pid>-<port>.json` on boot and removes it on close; readers prune records whose liveness probe fails. In-process hosts register explicitly with `registerDevframeInstance` from `devframe/node` — see `createDevframeNextHost().mountMcp` for serving MCP on a Next app's own origin. `--port <n>` probes an explicit port besides the registry; `DEVFRAME_INSTANCES_DIR` relocates the registry and `DEVFRAME_DISABLE_INSTANCE_REGISTRY=1` opts a server out.
+Discovery reads the **instance registry**: every `createDevServer` (CLI `dev`, `viteDevBridge`, `@devframes/next`'s handler) writes a record to `~/.devframe/instances/<pid>-<port>.json` on boot and removes it on close; readers prune records whose liveness probe fails. The record carries the instance's MCP bearer token (in a file written mode `0600`), which the connector presents on every call — so `devframe connect` reaches a token-gated route without any configuration. In-process hosts register explicitly with `registerDevframeInstance` from `devframe/node` — see `createDevframeNextHost().mountMcp`, which mints and returns the token to record, for serving MCP on a Next app's own origin. `--port <n>` probes an explicit port besides the registry; `DEVFRAME_INSTANCES_DIR` relocates the registry and `DEVFRAME_DISABLE_INSTANCE_REGISTRY=1` opts a server out.
 
 See the [Agent-Native](/guide/agent-native) page for the full API, safety model, and Claude Desktop integration example.

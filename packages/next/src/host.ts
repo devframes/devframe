@@ -1,5 +1,6 @@
 import type { ConnectionMeta, DevframeHost, DevframeNodeContext, DevframeStorageScope } from 'devframe/types'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
+import { randomToken } from 'devframe/utils/crypto-token'
 import { serveStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 
@@ -36,6 +37,14 @@ export interface DevframeNextHostMcpOptions {
    * origin gate entirely.
    */
   allowedOrigins?: readonly string[] | false
+  /**
+   * Bearer token the endpoint requires as `Authorization: Bearer <token>` —
+   * the route's real authentication (the origin gate only ever constrains
+   * browsers). When omitted a high-entropy token is minted and returned by
+   * {@link DevframeNextHost.mountMcp}; record it in the instance registry (see
+   * `registerDevframeInstance`) so `devframe connect` can present it.
+   */
+  authToken?: string
 }
 
 export interface DevframeNextHost {
@@ -72,7 +81,8 @@ export interface DevframeNextHost {
    * `devframe/adapters/mcp` (imported lazily: `@modelcontextprotocol/server`
    * stays an optional peer). Advertise the path in the connection meta
    * (`mcp: { path }` — same origin, no port) and register the instance via
-   * `registerDevframeInstance` so `devframe connect` can discover it.
+   * `registerDevframeInstance` (with the returned `authToken` in its `mcp`
+   * record) so `devframe connect` can discover it and present the token.
    *
    * @experimental
    */
@@ -80,7 +90,7 @@ export interface DevframeNextHost {
     ctx: DevframeNodeContext,
     path: string,
     options?: DevframeNextHostMcpOptions,
-  ) => Promise<{ dispose: () => Promise<void> }>
+  ) => Promise<{ dispose: () => Promise<void>, authToken: string }>
 }
 
 const META_SUFFIX = `/${DEVFRAME_CONNECTION_META_FILENAME}`
@@ -165,11 +175,16 @@ export function createDevframeNextHost(
     },
     async mountMcp(ctx, path, mcpOptions = {}) {
       const { createMcpFetchHandler } = await import('devframe/adapters/mcp')
+      // The route requires a bearer token (the origin gate only constrains
+      // browsers). Mint one when the caller doesn't supply it, and return it
+      // so the host can record it in the instance registry for `devframe connect`.
+      const authToken = mcpOptions.authToken ?? randomToken()
       const handler = createMcpFetchHandler(ctx, {
         serverName: mcpOptions.serverName ?? 'devframe (next)',
         serverVersion: mcpOptions.serverVersion ?? '0.0.0',
         exposeSharedState: mcpOptions.exposeSharedState ?? true,
         allowedOrigins: mcpOptions.allowedOrigins,
+        authToken,
       })
       const key = stripTrailingSlash(path)
       mcpMounts.set(key, handler)
@@ -178,6 +193,7 @@ export function createDevframeNextHost(
           mcpMounts.delete(key)
           await handler.dispose()
         },
+        authToken,
       }
     },
   }

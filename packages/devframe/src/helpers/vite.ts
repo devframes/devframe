@@ -38,16 +38,17 @@ export interface ViteDevBridgeOptions {
     flags?: Record<string, unknown>
   }
   /**
-   * Whether the bridged devframe runs its own auth gate. This is a **hosted**
-   * adapter — the devframe shares the host app's origin and the host owns
-   * authentication — so it defaults to `false`: the plugin's own gate never
-   * fires and its `cli.auth` default is ignored (matching devframe's
-   * hosted-deployment contract). Pass `true` to force devframe's interactive
-   * OTP gate on, or a {@link DevframeAuthHandler} to install a custom scheme.
-   * Only applies in bridge mode (`devMiddleware`); the static-mount mode
+   * Whether the bridged devframe runs its own auth gate. The side-car RPC
+   * server is reachable by anything that can open its socket, so it **gates by
+   * default**: when unset, authentication resolves through `createDevServer`
+   * (devframe's interactive OTP gate unless the definition's `cli.auth` opts
+   * out), and the side-car prints its code/link banner to stdout. Pass a
+   * {@link DevframeAuthHandler} to install a custom scheme, or `false` to opt
+   * out for a single-user localhost host that owns the trust boundary another
+   * way. Only applies in bridge mode (`devMiddleware`); the static-mount mode
    * starts no RPC server.
    *
-   * @default false
+   * @default gated (devframe's interactive OTP, unless `cli.auth` opts out)
    */
   auth?: boolean | DevframeAuthHandler
   /**
@@ -89,11 +90,11 @@ export interface DevframeVitePlugin {
  *     host-served SPA can discover the WS endpoint via
  *     {@link connectDevframe}.
  *
- * As a hosted adapter the bridge defers authentication to the host: its
- * side-car RPC server runs with the plugin's own auth gate **off** by
- * default (ignoring `def.cli?.auth`), so a plugin mounted this way never
- * triggers its standalone OTP prompt. Opt back in per-mount with
- * `options.auth` (`true` for devframe's interactive gate, or a handler).
+ * The side-car RPC server **gates by default** (devframe's interactive OTP
+ * unless the definition's `cli.auth` opts out), printing its code/link banner
+ * to stdout, so a bridged devframe isn't silently reachable by anything that
+ * can open its socket. Pass `options.auth: false` to opt out for a single-user
+ * localhost host, or a {@link DevframeAuthHandler} for a custom scheme.
  *
  * Use bridge mode when integrating with frameworks that own the SPA
  * (Nuxt, Astro, SolidStart, plain Vite apps). For the all-in-one
@@ -136,9 +137,10 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
           port,
           flags: mw.flags,
           openBrowser: false,
-          // Hosted adapter: the host owns auth, so the bridged devframe's own
-          // gate stays off unless the caller explicitly opts back in.
-          auth: options.auth ?? false,
+          // Gate by default: an unset `auth` defers to `createDevServer`
+          // (devframe's interactive OTP unless `cli.auth` opts out) rather than
+          // leaving the side-car socket ungated. `false` opts out explicitly.
+          auth: options.auth,
           mcp: options.mcp,
         })
       }

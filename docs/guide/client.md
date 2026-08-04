@@ -125,7 +125,7 @@ const ok = await rpc.requestTrustWithCode('047204')
 
 The code is single-use, expires after five minutes, and is rotated after repeated wrong attempts, so re-display the current code if an exchange fails.
 
-To authenticate without typing, a host can print a link embedding the code (`buildOtpAuthUrl(origin)`); `connectDevframe` reads the `devframe_otp` query parameter, exchanges it, and strips it from the URL. Rename it with the `otpParam` option, or set `otpParam: false` and drive authentication yourself with the exposed `authenticateWithUrlOtp(rpc)` / `consumeOtpFromUrl()` utilities.
+To authenticate without typing, a host can print a link embedding the code (`buildOtpAuthUrl(origin)`); `connectDevframe` reads the `devframe_otp` fragment parameter (`#devframe_otp=…`, kept out of server logs and `Referer`), exchanges it, and strips it from the URL. Rename it with the `otpParam` option, or set `otpParam: false` and drive authentication yourself with the exposed `authenticateWithUrlOtp(rpc)` / `consumeOtpFromUrl()` utilities.
 
 ### Re-using an existing token
 

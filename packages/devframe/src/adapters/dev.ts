@@ -3,6 +3,7 @@ import type { StartedServer } from '../node/server'
 import type { ConnectionMeta } from '../types/context'
 import type { DevframeDefinition, DevframeSetupInfo, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
 import process from 'node:process'
+import { randomToken } from 'devframe/utils/crypto-token'
 import { open } from 'devframe/utils/open'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
@@ -182,7 +183,12 @@ export async function createDevServer(
   const mcpConfig = resolveMcpConfig(options.mcp ?? def.cli?.mcp)
   let mcpDispose: (() => Promise<void>) | undefined
   let mcpMeta: ConnectionMeta['mcp']
+  // Bearer token guarding the MCP route (see `createMcpFetchHandler`). Minted
+  // per-instance, handed to local discovery tools via the registry record —
+  // never advertised in `__connection.json`.
+  let mcpAuthToken: string | undefined
   if (mcpConfig) {
+    mcpAuthToken = randomToken()
     const mcpRoute = withoutLeadingSlash(mcpConfig.path ?? DEVFRAME_MCP_ROUTE)
     const mcpPath = joinURL(basePath, mcpRoute)
     let mountMcpHttp: typeof import('./mcp/http').mountMcpHttp
@@ -198,6 +204,7 @@ export async function createDevServer(
       serverVersion: def.version ?? '0.0.0',
       exposeSharedState: true,
       allowedOrigins: mcpConfig.allowedOrigins,
+      authToken: mcpAuthToken,
     })
     mcpDispose = mounted.dispose
     mcpMeta = { path: mcpRoute }
@@ -275,9 +282,15 @@ export async function createDevServer(
     id: def.id,
     name: def.name,
     rootDir: process.cwd(),
-    mcp: mcpConfig ? { path: joinURL(basePath, withoutLeadingSlash(mcpConfig.path ?? DEVFRAME_MCP_ROUTE)) } : null,
+    mcp: mcpConfig
+      ? { path: joinURL(basePath, withoutLeadingSlash(mcpConfig.path ?? DEVFRAME_MCP_ROUTE)), token: mcpAuthToken }
+      : null,
     startedAt: Date.now(),
   })
+
+  // Surface the MCP bearer token on the handle so a host that needs to present
+  // or forward it (tests, a custom launcher) can read it.
+  started.mcpAuthToken = mcpAuthToken
 
   // Fold MCP session teardown and registry removal into the server's close so
   // callers get a single graceful-shutdown handle.

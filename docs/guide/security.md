@@ -84,18 +84,19 @@ Client methods (`devframe/client`): `requestTrustWithCode(code)` (exchange a cod
 To skip typing, a host can print a link that embeds the code and open the browser straight into an authenticated session. The standalone CLI (`createCac` / `createDevServer`) does this automatically for `--open`: when the server is auth-gated, the browser it launches already carries the current code, so the tab lands authenticated with no prompt at all. Build the link yourself from the current code with `buildOtpAuthUrl(origin)` (devframe stays headless, so the host prints its own banner):
 
 ```
-Devtools ready — authenticate this browser: http://localhost:3000/?devframe_otp=123456
+Devtools ready — authenticate this browser: http://localhost:3000/#devframe_otp=123456
 ```
 
-`connectDevframe` reads the `devframe_otp` parameter, exchanges it, and removes it from the URL before anything else. Only the short-lived, single-use **code** ever rides the URL — the resulting bearer token is stored, never written back to it. Because the link grants trust to whoever opens it within the code's lifetime, print it only to a trusted channel (the terminal), exactly as you would the bare code.
+The code rides the URL **fragment** (`#devframe_otp=…`), which the browser never sends to the server — so the single-use code stays out of access logs and `Referer` headers. `connectDevframe` reads the `devframe_otp` fragment parameter, exchanges it, and removes it from the URL before anything else. Only the short-lived, single-use **code** ever rides the URL — the resulting bearer token is stored, never written back to it. Because the link grants trust to whoever opens it within the code's lifetime, print it only to a trusted channel (the terminal), exactly as you would the bare code.
 
 Higher-level integrations can drive their own authentication UI instead: disable the built-in handling with the `otpParam: false` client option, then call the exposed `authenticateWithUrlOtp(rpc)` (consume the code from the URL and exchange it) or `consumeOtpFromUrl()` (read and strip the code) from `devframe/client`.
 
 ## Practices for tools built on devframe
 
 - **Stay on loopback.** The default bind host is `localhost`. Bind to a routable address only when you intend to, and require authentication when you do.
-- **Keep `auth: false` local.** Reach for it only for single-user localhost tools; leave the default in place anywhere a connection could originate elsewhere.
+- **Keep `auth: false` local.** Reach for it only for single-user localhost tools; leave the default in place anywhere a connection could originate elsewhere. The hosted bridges (`viteDevBridge`, `@devframes/next`'s handler) gate their side-car by default too — a host that owns the trust boundary another way opts out with `auth: false` explicitly.
+- **The MCP route carries its own token.** The route-based MCP server requires a per-instance `Authorization: Bearer` token (recorded in the instance registry for `devframe connect`), because its origin gate only constrains browsers — see [MCP](/adapters/mcp).
 - **Treat tokens as secrets.** Never log the bearer token or the one-time code, and never bake either into build output.
 - **Authorize every handler.** A registered function is callable by any trusted client. Validate inputs, and mark state-changing functions `type: 'destructive'` so MCP and agent clients prompt before invoking them.
-- **Origin-lock remote docks.** When a hub embeds a remote-UI dock, enable `originLock` so a dock token is only honored from its expected origin.
+- **Origin-lock remote docks.** When a hub embeds a remote-UI dock, keep `originLock` on (the default) so its session token is only honored on a connection whose `Origin` matches the dock's own — the connect-time gate verifies the token against the recorded origin before the connection is trusted.
 - **Serve encrypted off-machine.** Use `https://`/`wss://` for any surface reachable beyond `localhost`.

@@ -41,11 +41,14 @@ export const DEVFRAME_RPC_DUMP_DIRNAME = '__rpc-dump'
 export const REMOTE_CONNECTION_KEY = 'devframe-remote-connection'
 
 /**
- * Page-URL query parameter carrying a one-time authentication code (OTP) for
- * "magic link" auth. A host can print a link like `<origin>/?devframe_otp=<code>`;
- * the client reads the code, exchanges it for a token, and strips the parameter
- * from the URL. See `buildOtpAuthUrl` (node) and the `authenticateWithUrlOtp` /
- * `consumeOtpFromUrl` client utilities (or `connectDevframe`'s `otpParam`).
+ * Page-URL **fragment** parameter carrying a one-time authentication code (OTP)
+ * for "magic link" auth. A host can print a link like
+ * `<origin>/#devframe_otp=<code>`; the client reads the code, exchanges it for a
+ * token, and strips the parameter from the URL. The code rides the fragment
+ * (never the query string) so the browser never transmits it to the server,
+ * keeping it out of access logs and `Referer` headers. See `buildOtpAuthUrl`
+ * (node) and the `authenticateWithUrlOtp` / `consumeOtpFromUrl` client utilities
+ * (or `connectDevframe`'s `otpParam`).
  */
 export const DEVFRAME_OTP_URL_PARAM = 'devframe_otp'
 

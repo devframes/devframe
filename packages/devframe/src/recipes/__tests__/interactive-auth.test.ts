@@ -8,6 +8,7 @@ import { getPort } from 'get-port-please'
 import { describe, expect, it } from 'vitest'
 import { getTempAuthCode } from '../../node/auth/state'
 import { createHostContext } from '../../node/context'
+import { getInternalContext } from '../../node/hub-internals/context'
 import { startHttpAndWs } from '../../node/server'
 import { createInteractiveAuth } from '../interactive-auth'
 
@@ -148,6 +149,65 @@ describe('recipes/interactive-auth', () => {
     finally {
       await server.close()
     }
+  })
+
+  describe('remote-dock tokens (onConnect)', () => {
+    // Minimal stand-in for the crossws `Peer` — `onConnect` only reads
+    // `request.url` and `request.headers.get('origin')`.
+    function fakePeer(token: string, origin?: string): any {
+      return {
+        request: {
+          url: `/?devframe_auth_token=${encodeURIComponent(token)}`,
+          headers: { get: (name: string) => (name.toLowerCase() === 'origin' ? origin ?? null : null) },
+        },
+      }
+    }
+
+    it('trusts a valid remote-dock token when originLock is off, regardless of origin', async () => {
+      const context = await createTestContext()
+      const auth = createInteractiveAuth(context)
+      const token = getInternalContext(context).allocateRemoteToken('dock-1', 'http://localhost:5173', false)
+
+      const session = { meta: {} } as any
+      auth.onConnect(fakePeer(token, 'http://anywhere.example'), session)
+      expect(session.meta.isTrusted).toBe(true)
+      expect(session.meta.clientAuthToken).toBe(token)
+    })
+
+    it('honors originLock: trusts only when the request Origin matches the dock origin', async () => {
+      const context = await createTestContext()
+      const auth = createInteractiveAuth(context)
+      const dockOrigin = 'http://localhost:5173'
+      const token = getInternalContext(context).allocateRemoteToken('dock-2', dockOrigin, true)
+
+      const matching = { meta: {} } as any
+      auth.onConnect(fakePeer(token, dockOrigin), matching)
+      expect(matching.meta.isTrusted).toBe(true)
+
+      const mismatched = { meta: {} } as any
+      auth.onConnect(fakePeer(token, 'http://evil.example'), mismatched)
+      expect(mismatched.meta.isTrusted).toBeUndefined()
+
+      const noOrigin = { meta: {} } as any
+      auth.onConnect(fakePeer(token), noOrigin)
+      expect(noOrigin.meta.isTrusted).toBeUndefined()
+    })
+
+    it('does not trust an unknown or revoked remote token', async () => {
+      const context = await createTestContext()
+      const auth = createInteractiveAuth(context)
+      const internal = getInternalContext(context)
+      const token = internal.allocateRemoteToken('dock-3', 'http://localhost:5173', false)
+      internal.revokeRemoteTokensForDock('dock-3')
+
+      const session = { meta: {} } as any
+      auth.onConnect(fakePeer(token, 'http://localhost:5173'), session)
+      expect(session.meta.isTrusted).toBeUndefined()
+
+      const unknown = { meta: {} } as any
+      auth.onConnect(fakePeer('deadbeef', 'http://localhost:5173'), unknown)
+      expect(unknown.meta.isTrusted).toBeUndefined()
+    })
   })
 
   it('self-revoke: devframe:auth:revoke drops the caller to untrusted and invalidates the token', async () => {

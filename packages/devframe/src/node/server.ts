@@ -127,6 +127,14 @@ export interface StartedServer {
    * registered on `context.rpc`.
    */
   connectionMeta: () => ConnectionMeta
+  /**
+   * Bearer token required on the MCP Streamable-HTTP route, when one is
+   * mounted (set by {@link createDevServer} once it enables the route).
+   * `undefined` when the instance runs without MCP. A host that needs to
+   * present or forward the token (tests, a custom launcher) reads it here;
+   * it is never advertised over HTTP.
+   */
+  mcpAuthToken?: string
   close: () => Promise<void>
 }
 

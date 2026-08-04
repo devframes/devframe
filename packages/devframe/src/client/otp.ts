@@ -2,17 +2,21 @@ import type { DevframeRpcClient } from './rpc'
 import { DEVFRAME_OTP_URL_PARAM } from 'devframe/constants'
 
 // Browser-only helpers for "magic link" authentication: a host prints a URL
-// carrying a one-time authentication code (OTP), and the client reads it,
-// exchanges it for a token, and removes it from the address bar. Only the
-// short-lived, single-use OTP ever rides the URL — never the resulting token.
+// carrying a one-time authentication code (OTP) in its fragment, and the client
+// reads it, exchanges it for a token, and removes it from the address bar. Only
+// the short-lived, single-use OTP ever rides the URL — never the resulting
+// token — and it rides the fragment (`#devframe_otp=…`), which the browser
+// never sends to the server, so it can't leak into an access log or `Referer`.
 
 /**
- * Read a one-time authentication code (OTP) from the current page URL's query
- * string, without side effects. Returns `undefined` when the parameter is absent.
+ * Read a one-time authentication code (OTP) from the current page URL's
+ * fragment, without side effects. Returns `undefined` when the parameter is
+ * absent.
  */
 export function readOtpFromUrl(param: string = DEVFRAME_OTP_URL_PARAM): string | undefined {
   try {
-    return new URLSearchParams(globalThis.location?.search).get(param) || undefined
+    const hash = globalThis.location?.hash?.replace(/^#/, '') ?? ''
+    return new URLSearchParams(hash).get(param) || undefined
   }
   catch {
     return undefined
@@ -22,19 +26,22 @@ export function readOtpFromUrl(param: string = DEVFRAME_OTP_URL_PARAM): string |
 function stripParamFromUrl(param: string): void {
   try {
     const url = new URL(globalThis.location!.href)
-    if (!url.searchParams.has(param))
+    const fragment = new URLSearchParams(url.hash.replace(/^#/, ''))
+    if (!fragment.has(param))
       return
-    url.searchParams.delete(param)
+    fragment.delete(param)
+    // An empty fragment clears the `#` entirely rather than leaving a bare one.
+    url.hash = fragment.toString()
     globalThis.history?.replaceState(globalThis.history.state, '', url.href)
   }
   catch {}
 }
 
 /**
- * Read the one-time code from the page URL and remove it from the address bar
- * (and the current history entry), so the single-use code isn't left in the
- * URL, browser history, or a `Referer`. Returns the code, or `undefined` when
- * absent.
+ * Read the one-time code from the page URL fragment and remove it from the
+ * address bar (and the current history entry), so the single-use code isn't
+ * left in the URL, browser history, or a `Referer`. Returns the code, or
+ * `undefined` when absent.
  */
 export function consumeOtpFromUrl(param: string = DEVFRAME_OTP_URL_PARAM): string | undefined {
   const code = readOtpFromUrl(param)

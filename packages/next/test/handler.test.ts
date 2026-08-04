@@ -78,8 +78,28 @@ describe('createDevframeNextHandler', () => {
     }
     expect(body.mcp).toEqual({ port: body.websocket.port, path: '/__mcp' })
 
-    // The advertised endpoint answers MCP initialize on the side-car origin.
+    // The advertised endpoint answers MCP initialize on the side-car origin
+    // once the required bearer token is presented.
     const init = await fetch(`http://127.0.0.1:${body.mcp!.port}${body.mcp!.path}`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'accept': 'application/json, text/event-stream',
+        'Authorization': `Bearer ${handler.mcpAuthToken}`,
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'initialize',
+        params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'x', version: '0' } },
+      }),
+    })
+    expect(init.status).toBe(200)
+    expect(init.headers.get('mcp-session-id')).toBeTruthy()
+    await init.body?.cancel()
+
+    // Without the token the same request is rejected.
+    const unauthed = await fetch(`http://127.0.0.1:${body.mcp!.port}${body.mcp!.path}`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -92,8 +112,7 @@ describe('createDevframeNextHandler', () => {
         params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'x', version: '0' } },
       }),
     })
-    expect(init.status).toBe(200)
-    expect(init.headers.get('mcp-session-id')).toBeTruthy()
-    await init.body?.cancel()
+    await unauthed.body?.cancel()
+    expect(unauthed.status).toBe(401)
   })
 })

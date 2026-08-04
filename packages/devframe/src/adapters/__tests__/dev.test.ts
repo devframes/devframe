@@ -349,7 +349,7 @@ describe('adapters/dev', () => {
     try {
       expect(mockedOpen).toHaveBeenCalledTimes(1)
       const [target] = mockedOpen.mock.calls[0]
-      expect(target).toBe(`http://localhost:${port}/?devframe_otp=${code}`)
+      expect(target).toBe(`http://localhost:${port}/#devframe_otp=${code}`)
     }
     finally {
       spy.mockRestore()

@@ -60,9 +60,21 @@ describe('mcp adapter (streamable http route)', () => {
     expect(meta.mcp).toBeUndefined()
   })
 
+  function authTransport(started: StartedServer): StreamableHTTPClientTransport {
+    return new StreamableHTTPClientTransport(new URL(`${started.origin}/__mcp`), {
+      requestInit: { headers: { Authorization: `Bearer ${started.mcpAuthToken}` } },
+    })
+  }
+
+  it('mints a bearer token and exposes it on the server handle', async () => {
+    const started = await boot()
+    expect(started.mcpAuthToken).toBeTypeOf('string')
+    expect(started.mcpAuthToken!.length).toBeGreaterThanOrEqual(32)
+  })
+
   it('establishes a stateful session and lists agent tools', async () => {
     const started = await boot()
-    const transport = new StreamableHTTPClientTransport(new URL(`${started.origin}/__mcp`))
+    const transport = authTransport(started)
     const client = new Client({ name: 'test-client', version: '0.0.0' })
     try {
       await client.connect(transport)
@@ -88,11 +100,13 @@ describe('mcp adapter (streamable http route)', () => {
 
     // Initialize over raw HTTP to capture the issued session id from the
     // response header (the body is an SSE stream we can discard).
+    const authHeader = { Authorization: `Bearer ${started.mcpAuthToken}` }
     const init = await fetch(url, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
         'accept': 'application/json, text/event-stream',
+        ...authHeader,
       },
       body: JSON.stringify({
         jsonrpc: '2.0',
@@ -108,7 +122,7 @@ describe('mcp adapter (streamable http route)', () => {
     // DELETE ends the session.
     const del = await fetch(url, {
       method: 'DELETE',
-      headers: { 'mcp-session-id': sessionId! },
+      headers: { 'mcp-session-id': sessionId!, ...authHeader },
     })
     await del.body?.cancel()
     expect(del.status).toBeLessThan(300)
@@ -121,11 +135,39 @@ describe('mcp adapter (streamable http route)', () => {
         'content-type': 'application/json',
         'accept': 'application/json, text/event-stream',
         'mcp-session-id': sessionId!,
+        ...authHeader,
       },
       body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list' }),
     })
     await stale.body?.cancel()
     expect(stale.status).toBe(404)
+  })
+
+  it('rejects a request with a missing or invalid bearer token', async () => {
+    const started = await boot()
+    const url = `${started.origin}/__mcp`
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'x', version: '0' } },
+    })
+    const headers = { 'content-type': 'application/json', 'accept': 'application/json, text/event-stream' }
+
+    // No Authorization header — the origin gate passes (loopback / Origin-less)
+    // but the bearer gate rejects.
+    const missing = await fetch(url, { method: 'POST', headers, body })
+    await missing.body?.cancel()
+    expect(missing.status).toBe(401)
+
+    // Wrong token.
+    const wrong = await fetch(url, {
+      method: 'POST',
+      headers: { ...headers, Authorization: 'Bearer not-the-real-token' },
+      body,
+    })
+    await wrong.body?.cancel()
+    expect(wrong.status).toBe(401)
   })
 
   it('rejects a disallowed cross-origin request', async () => {

@@ -45,14 +45,21 @@ export function refreshTempAuthCode(): string {
 }
 
 /**
- * Build a "magic link" authentication URL that embeds a one-time code (OTP) as
- * a query parameter. Opening it authenticates the client without typing — print
- * it on startup (devframe stays headless, so the host prints its own banner).
- * Defaults to the current code; the link is subject to the same TTL.
+ * Build a "magic link" authentication URL that embeds a one-time code (OTP) in
+ * the URL **fragment**. Opening it authenticates the client without typing —
+ * print it on startup (devframe stays headless, so the host prints its own
+ * banner). Defaults to the current code; the link is subject to the same TTL.
+ *
+ * The code rides the fragment (`#devframe_otp=…`), not the query string, so it
+ * is never sent to the server, written to an access log, or leaked in a
+ * `Referer` header — the browser client reads it locally (see
+ * `consumeOtpFromUrl`). Any existing fragment parameters are preserved.
  */
 export function buildOtpAuthUrl(baseUrl: string, code: string = tempAuthCode): string {
   const url = new URL(baseUrl)
-  url.searchParams.set(DEVFRAME_OTP_URL_PARAM, code)
+  const fragment = new URLSearchParams(url.hash.replace(/^#/, ''))
+  fragment.set(DEVFRAME_OTP_URL_PARAM, code)
+  url.hash = fragment.toString()
   return url.href
 }
 

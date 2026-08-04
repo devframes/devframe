@@ -149,11 +149,19 @@ export function createInteractiveAuth(
     return !!session.meta.isTrusted
   }
 
-  function onConnect(peer: { request?: { url: string } }, session: DevframeNodeRpcSession): void {
+  function onConnect(
+    peer: { request?: { url?: string, headers?: { get?: (name: string) => string | null } } },
+    session: DevframeNodeRpcSession,
+  ): void {
     let token: string | undefined
+    let requestOrigin: string | undefined
     try {
       const url = new URL(peer.request?.url ?? '', 'http://localhost')
       token = url.searchParams.get(DEVFRAME_AUTH_TOKEN_QUERY_PARAM) ?? undefined
+    }
+    catch {}
+    try {
+      requestOrigin = peer.request?.headers?.get?.('origin') ?? undefined
     }
     catch {}
     if (!token)
@@ -163,7 +171,17 @@ export function createInteractiveAuth(
       session.meta.isTrusted = true
       return
     }
-    verifyAuthToken(token, session, storage)
+    // A persisted bearer minted by the code exchange (returning browser).
+    if (verifyAuthToken(token, session, storage))
+      return
+    // A session-only remote-UI dock token (see `allocateRemoteToken`). These
+    // never enter the persisted store, so `verifyAuthToken` can't see them —
+    // check them here so a remote dock's iframe actually authenticates, and so
+    // `originLock` binds the token to the dock's recorded origin.
+    if (internal.isRemoteTokenTrusted(token, requestOrigin)) {
+      session.meta.clientAuthToken = token
+      session.meta.isTrusted = true
+    }
   }
 
   function buildOpenUrl(url: string): string {

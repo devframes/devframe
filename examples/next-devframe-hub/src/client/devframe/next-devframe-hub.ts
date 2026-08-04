@@ -10,6 +10,8 @@ import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { createDevframeNextHost } from '@devframes/next'
 import { registerDevframeInstance, startHttpAndWs } from 'devframe/node'
+import { createInteractiveAuth } from 'devframe/recipes/interactive-auth'
+import { randomToken } from 'devframe/utils/crypto-token'
 import { getPort } from 'get-port-please'
 import { createDashboardView } from 'json-render/dashboard'
 import { dirname, join } from 'pathe'
@@ -264,19 +266,27 @@ export async function nextDevframeHub(
     },
   })
 
+  // Gate the side-car RPC/WS server instead of leaving it open: the hub owns
+  // the trust boundary, so it mints a per-boot bearer token, accepts it as a
+  // pre-shared `clientAuthToken`, and hands it to its own SPA through the
+  // connection meta it serves (`authToken` below). `connectDevframe` presents
+  // it automatically — the host authenticates its own trusted origin with no
+  // code prompt, while an arbitrary connection is rejected.
+  const clientAuthToken = randomToken()
   const started = await startHttpAndWs({
     context,
     host: hostName,
     port,
-    auth: false,
+    auth: createInteractiveAuth(context, { clientAuthTokens: [clientAuthToken] }),
   })
 
   // Serve MCP in-process on the Next app's own origin (the `/_next/mcp`
   // shape): the hub's agent surface — agent-flagged commands, plugin tools
   // (git status/log/diff, terminals), `devframe:state:read` — over the same catch-all
-  // route as the SPAs, no side-car port involved.
+  // route as the SPAs, no side-car port involved. `mountMcp` mints the bearer
+  // token the route requires and returns it for the registry record below.
   const mcpPath = '/__hub/__mcp'
-  await nextHost.mountMcp(context, mcpPath, {
+  const mcp = await nextHost.mountMcp(context, mcpPath, {
     serverName: 'example:next-devframe-hub',
   })
 
@@ -284,6 +294,7 @@ export async function nextDevframeHub(
     backend: 'websocket' as const,
     websocket: started.port,
     mcp: { path: mcpPath },
+    authToken: clientAuthToken,
   }
   // Publish the live meta to the bridge now the WS port is known, so every
   // registered `<base>/__connection.json` (hub + mounted devframes) resolves.
@@ -301,12 +312,13 @@ export async function nextDevframeHub(
     id: 'example:next-devframe-hub',
     name: 'Next Devframe Hub',
     rootDir: cwd,
-    mcp: { path: mcpPath },
+    mcp: { path: mcpPath, token: mcp.authToken },
     startedAt: Date.now(),
   })
   const closeStarted = started.close
   started.close = async () => {
     registration.unregister()
+    await mcp.dispose()
     await closeStarted()
   }
 

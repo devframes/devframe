@@ -27,10 +27,13 @@ export interface DevframeInstanceRecord {
   /** Working directory the instance was started from. */
   rootDir: string
   /**
-   * Absolute URL path of the MCP Streamable-HTTP endpoint on `origin`, or
-   * `null` when the instance runs without an MCP route.
+   * The MCP Streamable-HTTP endpoint on `origin`, or `null` when the instance
+   * runs without an MCP route. `token` is the bearer credential the endpoint
+   * requires (`Authorization: Bearer <token>`); it lives only in this
+   * user-private registry file (written mode `0600`) so local discovery tools
+   * like `devframe connect` can present it, and is never advertised over HTTP.
    */
-  mcp: { path: string } | null
+  mcp: { path: string, token?: string } | null
   /** Epoch-ms timestamp of registration. */
   startedAt: number
 }
@@ -101,12 +104,16 @@ export function registerDevframeInstance(
 
   if (!isRegistryDisabled()) {
     try {
-      mkdirSync(dir, { recursive: true })
+      // The record can carry the MCP bearer token, so keep the directory and
+      // file readable only by the owner (`0700`/`0600`) — the token is a
+      // secret shared out-of-band with local discovery tools, never a
+      // world-readable value.
+      mkdirSync(dir, { recursive: true, mode: 0o700 })
       // Atomic publish: write a temp file *in the same directory* (a rename
       // is only atomic — and only possible — within one filesystem), then
       // rename into place.
       const tmp = join(dir, `.${record.pid}-${record.port}.${Date.now()}.tmp`)
-      writeFileSync(tmp, `${JSON.stringify(record, null, 2)}\n`)
+      writeFileSync(tmp, `${JSON.stringify(record, null, 2)}\n`, { mode: 0o600 })
       renameSync(tmp, file)
     }
     catch (error) {
