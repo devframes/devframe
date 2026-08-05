@@ -163,7 +163,7 @@ describe('devframeTerminalHost stream lifecycle', () => {
     expect(session.buffer!.includes('line-0')).toBe(false)
   })
 
-  it('does not restart a terminated child-process session', async () => {
+  it('rejects restarting a terminated child-process session', async () => {
     const { host, sinks } = createTerminalHost()
     const session = await host.startChildProcess(
       { command: process.execPath, args: ['-e', 'setInterval(() => {}, 1000)'] },
@@ -173,7 +173,7 @@ describe('devframeTerminalHost stream lifecycle', () => {
     await waitUntil(() => {
       expect(sinks.get('child')?.closed).toBe(true)
     })
-    await session.restart()
+    await expect(session.restart()).rejects.toThrow(expect.objectContaining({ code: 'DF8206' }))
     // Stream stays closed; no orphan output stream.
     expect(sinks.get('child')?.closed).toBe(true)
   })
@@ -509,9 +509,9 @@ describe('devframeTerminalHost PTY status lifecycle', () => {
     await waitUntil(() => {
       expect(session.status).toBe('stopped')
     })
-    // The stream is closed for good, so `restart()` is a no-op — the session
+    // The stream is closed for good, so `restart()` rejects — the session
     // stays reported as stopped rather than flipping back to running.
-    await session.restart()
+    await expect(session.restart()).rejects.toThrow(expect.objectContaining({ code: 'DF8206' }))
     expect(session.status).toBe('stopped')
   })
 })

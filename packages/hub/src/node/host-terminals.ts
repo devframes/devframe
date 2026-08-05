@@ -322,7 +322,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
 
     const restart = async () => {
       if (streamClosed)
-        return
+        throw diagnostics.DF8206({ id: terminal.id })
       cp?.kill()
       cp = createChildProcess()
       markStatus('running')
@@ -497,7 +497,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       },
       restart: async () => {
         if (streamClosed)
-          return
+          throw diagnostics.DF8206({ id: terminal.id })
         pty?.kill()
         pty = spawnPty()
         markStatus('running')
