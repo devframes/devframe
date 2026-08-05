@@ -114,7 +114,7 @@ export interface DevframeChildProcessTerminalSession extends DevframeTerminalSes
    */
   getResult: () => DevframeChildProcessResult
   terminate: () => Promise<void>
-  /** Throws `DF8206` once the session's output stream has closed (after a natural exit or `terminate()`) — `remove()` it and start a fresh session instead. */
+  /** Throws `DF8206` once the session's output stream has closed (after a natural exit or `terminate()`) — drop it with `ctx.terminals.remove(session)` and start a fresh session instead. */
   restart: () => Promise<void>
 }
 
@@ -140,6 +140,6 @@ export interface DevframePtyTerminalSession extends DevframeTerminalSession {
   /** Current foreground process name, when the backend can resolve it. */
   getProcessName: () => string | undefined
   terminate: () => Promise<void>
-  /** Throws `DF8206` once the session's output stream has closed (after a natural exit or `terminate()`) — `remove()` it and start a fresh session instead. */
+  /** Throws `DF8206` once the session's output stream has closed (after a natural exit or `terminate()`) — drop it with `ctx.terminals.remove(session)` and start a fresh session instead. */
   restart: () => Promise<void>
 }

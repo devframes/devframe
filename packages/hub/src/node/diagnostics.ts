@@ -69,7 +69,7 @@ export const diagnostics = defineDiagnostics({
     },
     DF8206: {
       why: (p: { id: string }) => `Terminal session "${p.id}" cannot be restarted — its output stream is already closed`,
-      fix: 'The session already exited (or was terminated) and its stream is spent. `ctx.terminals.remove(session)` then re-`startChildProcess()`/`startPtySession()` with a fresh id instead.',
+      fix: 'The session already exited (or was terminated) and its stream is spent. Drop it with `ctx.terminals.remove(session)`, then spawn a replacement via `ctx.terminals.startChildProcess()` or `ctx.terminals.startPtySession()` with a fresh id.',
     },
     DF8400: {
       why: (p: { id: string }) => `Command "${p.id}" is already registered`,
