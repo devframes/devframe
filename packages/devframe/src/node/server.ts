@@ -232,8 +232,8 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
         }
       : undefined,
     onDisconnected: (peer, meta) => {
-      rpcHost._emitSessionDisconnected(meta)
       options.onPeerDisconnect?.(peer, meta)
+      rpcHost._emitSessionDisconnected(meta)
     },
   })
 
