@@ -272,7 +272,12 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
       // The WS transport is already attached above, so tear it down before
       // surfacing the failure rather than leaking it and its peers.
       await closeWs().catch(() => {})
-      throw diagnostics.DF0052({ host: bindHost, port, reason: (error as Error).message, cause: error as Error })
+      throw diagnostics.DF0052({
+        host: bindHost,
+        port,
+        reason: error instanceof Error ? error.message : String(error),
+        cause: error,
+      })
     }
   }
 
