@@ -112,5 +112,9 @@ export const diagnostics = defineDiagnostics({
       why: (p: { port: number }) => `The devframe instance on port ${p.port} has no MCP endpoint.`,
       fix: 'Restart the instance with the --mcp flag (or set `cli.mcp: true` on its definition) to expose its tools, then list instances again.',
     },
+    DF0052: {
+      why: (p: { host: string, port: number, reason: string }) => `Failed to listen on ${p.host}:${p.port}: ${p.reason}`,
+      fix: 'The port is likely already taken by another process (often a previous devframe instance). Free it, or pick another via `--port`, `cli.port` / `cli.portRange` on the definition, or `devMiddleware.port` on `viteDevBridge`. The original node error is available as `error.cause`.',
+    },
   },
 })
