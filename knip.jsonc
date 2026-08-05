@@ -61,6 +61,18 @@
         "config": ["src/client/postcss.config.mjs"]
       }
     },
+    "examples/rsbuild-devframe-hub": {
+      // The root-level PostCSS config drives `@unocss/postcss`; knip's postcss
+      // plugin only treats it as an entry once the config location is declared.
+      "postcss": {
+        "config": ["postcss.config.mjs"]
+      },
+      // The mini React json-render registry is imported from the Next hub
+      // example's source (shared verbatim). Knip attributes `@json-render/react`
+      // usage to that workspace, but this example bundles it and depends on it
+      // at runtime.
+      "ignoreDependencies": ["@json-render/react"]
+    },
     "packages/devframe": {
       // Every `package.json#exports` subpath maps to one of these source
       // files (see `tsdown.config.ts`'s `serverEntries`/`clientEntries`).

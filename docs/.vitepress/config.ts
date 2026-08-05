@@ -86,6 +86,7 @@ function examplesItems(prefix: string) {
     { text: 'next-runtime-snapshot', link: `${prefix}/examples/next-runtime-snapshot` },
     { text: 'vite-devframe-hub', link: `${prefix}/examples/vite-devframe-hub` },
     { text: 'next-devframe-hub', link: `${prefix}/examples/next-devframe-hub` },
+    { text: 'rsbuild-devframe-hub', link: `${prefix}/examples/rsbuild-devframe-hub` },
   ] satisfies DefaultTheme.NavItemWithLink[]
 }
 

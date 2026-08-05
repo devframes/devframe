@@ -1,0 +1,35 @@
+import type { DevframeHubContext } from '@devframes/hub/node'
+import { fileURLToPath } from 'node:url'
+import { defineDevframe } from 'devframe/types'
+import pkg from '../package.json' with { type: 'json' }
+
+export default defineDevframe({
+  id: 'example:rsbuild-demo-tool-b',
+  name: 'Rsbuild Demo Tool B',
+  version: pkg.version,
+  packageName: pkg.name,
+  homepage: pkg.homepage,
+  description: 'A second demo devframe — proves the dock switcher has more than one option.',
+  icon: 'ph:wrench-duotone',
+  basePath: '/__rsbuild-demo-tool-b/',
+  cli: {
+    distDir: fileURLToPath(new URL('../spa/rsbuild-demo-tool-b/', import.meta.url)),
+  },
+  async setup(rawCtx) {
+    const ctx = rawCtx as unknown as DevframeHubContext
+
+    ctx.commands.register({
+      id: 'example:rsbuild-demo-tool-b:say-hello',
+      title: 'Demo B · Say Hello',
+      icon: 'ph:hand-waving-duotone',
+      category: 'demo',
+      handler: () => 'Hello from rsbuild-demo-tool-b!',
+    })
+
+    await ctx.messages.add({
+      level: 'info',
+      message: 'Second demo devframe loaded',
+      description: 'A second mountDevframe() call — proves the switcher has more than one option.',
+    })
+  },
+})

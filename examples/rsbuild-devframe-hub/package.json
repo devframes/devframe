@@ -1,0 +1,45 @@
+{
+  "name": "rsbuild-devframe-hub",
+  "type": "module",
+  "version": "0.8.1",
+  "private": true,
+  "description": "Protocol-witness example — a tiny Rsbuild Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/rsbuild-devframe-hub",
+  "scripts": {
+    "dev": "pnpm -C ../.. run build && rsbuild dev",
+    "build": "rsbuild build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@antfu/design": "catalog:frontend",
+    "@devframes/hub": "workspace:*",
+    "@devframes/json-render": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-assets": "workspace:*",
+    "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-data-inspector": "workspace:*",
+    "@devframes/plugin-git": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "@devframes/plugin-og": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
+    "@json-render/react": "catalog:frontend",
+    "colorjs.io": "catalog:frontend",
+    "devframe": "workspace:*",
+    "dompurify": "catalog:frontend",
+    "json-render": "workspace:*",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@iconify-json/ph": "catalog:frontend",
+    "@rsbuild/core": "catalog:build",
+    "@rsbuild/plugin-react": "catalog:build",
+    "@types/react": "catalog:types",
+    "@types/react-dom": "catalog:types",
+    "@unocss/postcss": "catalog:frontend",
+    "get-port-please": "catalog:deps",
+    "pathe": "catalog:deps",
+    "unocss": "catalog:frontend"
+  }
+}

@@ -1,0 +1,7 @@
+/* The hub UI's design tokens, base layer, and semantic class vocabulary come
+   from @antfu/design. `@unocss` is replaced by UnoCSS (via `@unocss/postcss`,
+   see ../../postcss.config.mjs) with the generated preflights + utilities;
+   `@antfu/design/styles.css` (imported after this file in index.tsx) supplies
+   the token values + base element styling. */
+
+@unocss;

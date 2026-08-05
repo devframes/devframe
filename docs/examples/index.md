@@ -14,6 +14,7 @@ End-to-end examples that exercise the full adapter surface, each a runnable app 
 | [next-runtime-snapshot](./next-runtime-snapshot) | React (Next.js) | A Next.js App Router SPA over RPC, surfacing the host Node runtime. |
 | [vite-devframe-hub](./vite-devframe-hub) | Vanilla TypeScript (Vite) | A ~120-line Vite host wiring `@devframes/hub` end to end. |
 | [next-devframe-hub](./next-devframe-hub) | React (Next.js) | The same hub protocol, hosted from a Next.js route handler. |
+| [rsbuild-devframe-hub](./rsbuild-devframe-hub) | React (Rsbuild) | The same hub protocol, hosted from an Rsbuild (Rspack) dev server. |
 
 ## Run any example
 

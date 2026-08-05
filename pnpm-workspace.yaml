@@ -16,6 +16,21 @@ minimumReleaseAgeExclude:
   - tsdown@0.22.14
   - verkit@0.3.0
   - structured-clone-es@2.0.1
+  - '@rsbuild/core@2.1.10'
+  - '@rspack/binding-darwin-arm64@2.1.8'
+  - '@rspack/binding-darwin-x64@2.1.8'
+  - '@rspack/binding-linux-arm64-gnu@2.1.8'
+  - '@rspack/binding-linux-arm64-musl@2.1.8'
+  - '@rspack/binding-linux-riscv64-gnu@2.1.8'
+  - '@rspack/binding-linux-riscv64-musl@2.1.8'
+  - '@rspack/binding-linux-x64-gnu@2.1.8'
+  - '@rspack/binding-linux-x64-musl@2.1.8'
+  - '@rspack/binding-wasm32-wasi@2.1.8'
+  - '@rspack/binding-win32-arm64-msvc@2.1.8'
+  - '@rspack/binding-win32-ia32-msvc@2.1.8'
+  - '@rspack/binding-win32-x64-msvc@2.1.8'
+  - '@rspack/binding@2.1.8'
+  - '@rspack/core@2.1.8'
 shamefullyHoist: true
 shellEmulator: true
 strictPeerDependencies: false
@@ -61,6 +76,8 @@ catalogs:
   build:
     '@nuxt/kit': *nuxt
     '@preact/preset-vite': ^2.10.6
+    '@rsbuild/core': ^2.1.10
+    '@rsbuild/plugin-react': ^2.1.0
     '@vitejs/plugin-vue': ^6.0.8
     mlly: ^1.8.2
     nuxt: ^4.5.1
