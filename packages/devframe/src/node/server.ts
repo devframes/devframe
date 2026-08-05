@@ -83,6 +83,13 @@ export interface StartHttpAndWsOptions {
    */
   onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
   /**
+   * Called once per closed WS connection, right after the transport's own
+   * disconnect bookkeeping runs. Unlike {@link onPeerConnect} this receives
+   * the raw session meta, not a wrapped session — by the time a peer
+   * disconnects there is no live RPC client left to attach.
+   */
+  onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+  /**
    * Forwarded verbatim to the internal `createRpcServer`'s birpc
    * `rpcOptions`, alongside the resolver `startHttpAndWs` installs for
    * auth/session wiring. Use this so a host that owns its own structured
@@ -224,8 +231,9 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
           options.onPeerConnect?.(peer, session)
         }
       : undefined,
-    onDisconnected: (_peer, meta) => {
+    onDisconnected: (peer, meta) => {
       rpcHost._emitSessionDisconnected(meta)
+      options.onPeerDisconnect?.(peer, meta)
     },
   })
 

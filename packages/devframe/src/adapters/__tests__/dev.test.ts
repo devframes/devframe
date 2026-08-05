@@ -535,6 +535,50 @@ describe('adapters/dev', () => {
     }
   })
 
+  it('forwards onPeerConnect/onPeerDisconnect to the underlying startHttpAndWs', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-peer-hooks',
+      name: 'Peer Hooks',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      setup: () => {},
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19470, host })
+    const onPeerConnect = vi.fn()
+    const onPeerDisconnect = vi.fn()
+    const handle = await createDevServer(devframe, {
+      host,
+      port,
+      openBrowser: false,
+      auth: false,
+      onPeerConnect,
+      onPeerDisconnect,
+    })
+
+    try {
+      const ws = new WebSocket(`ws://${host}:${port}/__devframe_ws`)
+      await new Promise<void>((resolve, reject) => {
+        ws.on('open', () => resolve())
+        ws.on('error', reject)
+      })
+      await vi.waitFor(() => {
+        expect(onPeerConnect).toHaveBeenCalledTimes(1)
+      })
+      expect(onPeerDisconnect).not.toHaveBeenCalled()
+
+      ws.close()
+      await vi.waitFor(() => {
+        expect(onPeerDisconnect).toHaveBeenCalledTimes(1)
+      })
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
   it('resolveDevServerPort honors def.cli.port as the preferred default', async () => {
     const preferred = await getPort({ port: 19500, host: '127.0.0.1' })
     const devframe = defineDevframe({

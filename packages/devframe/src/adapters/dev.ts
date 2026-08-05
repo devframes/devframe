@@ -1,7 +1,9 @@
+import type { Peer } from 'crossws'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/server'
 import type { ConnectionMeta } from '../types/context'
 import type { DevframeDefinition, DevframeSetupInfo, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
+import type { DevframeNodeRpcSession, DevframeNodeRpcSessionMeta } from '../types/rpc'
 import process from 'node:process'
 import { open } from 'devframe/utils/open'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
@@ -87,6 +89,17 @@ export interface CreateDevServerOptions {
    * {@link McpRouteOptions}.
    */
   mcp?: boolean | McpRouteOptions
+  /**
+   * Called once per new WS connection, right after its session is created.
+   * Forwarded verbatim to the underlying `startHttpAndWs`.
+   */
+  onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
+  /**
+   * Called once per closed WS connection, right after its session's
+   * disconnect bookkeeping runs. Forwarded verbatim to the underlying
+   * `startHttpAndWs`.
+   */
+  onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
   /**
    * Called once the WS server is bound. Devframe stays headless
    * otherwise — wire this if you want a startup banner.
@@ -255,6 +268,8 @@ export async function createDevServer(
     path: bindPath,
     wsPort,
     auth: resolvedAuth,
+    onPeerConnect: options.onPeerConnect,
+    onPeerDisconnect: options.onPeerDisconnect,
     onReady: async (info) => {
       // Print the auth banner before the caller's own onReady / browser open
       // so the code is on screen by the time a browser lands on the page.
