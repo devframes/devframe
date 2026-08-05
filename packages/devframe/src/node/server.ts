@@ -111,11 +111,13 @@ export interface StartHttpAndWsOptions {
    */
   onReady?: (info: { origin: string, port: number, app: H3 }) => void | Promise<void>
   /**
-   * Called for any error the owned HTTP server emits after it starts
+   * Called for any error the HTTP server devframe owns emits after it starts
    * listening — e.g. a transient `EMFILE` while accepting a connection.
-   * Ignored when a `server` is supplied — the caller already owns that
-   * object and can listen on it directly. Without this, a post-bind error
-   * has no listener and crashes the process.
+   * Without it such an error has no listener and crashes the process.
+   *
+   * Applies only to a server devframe created itself. When `server` is
+   * supplied the caller owns that object and attaches to it directly, so
+   * devframe leaves its error handling alone.
    */
   onServerError?: (error: Error) => void
 }
