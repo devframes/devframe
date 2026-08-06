@@ -106,7 +106,7 @@ const serverEntries = {
   'adapters/dev': 'src/adapters/dev.ts',
   'adapters/build': 'src/adapters/build.ts',
   'adapters/embedded': 'src/adapters/embedded.ts',
-  'adapters/handler': 'src/adapters/handler.ts',
+  'adapters/initiate': 'src/adapters/initiate.ts',
   'adapters/mcp': 'src/adapters/mcp/index.ts',
   'cli/main': 'src/cli/main.ts',
   'helpers/vite': 'src/helpers/vite.ts',

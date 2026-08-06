@@ -4,7 +4,7 @@ import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from '
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/server'
 import type { DevframeDefinition, DevframeSetupInfo, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
-import type { BunWsTier } from './handler-bun'
+import type { BunWsTier } from './initiate-bun'
 import process from 'node:process'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3, toNodeHandler } from 'h3'
@@ -19,7 +19,7 @@ import { createInteractiveAuth } from '../recipes/interactive-auth'
 import { normalizeBasePath, resolveBasePath } from './_shared'
 import { resolveDevServerPort, resolveMcpConnectionMeta } from './dev'
 
-export interface CreateHandlerOptions {
+export interface InitDevframeOptions {
   /**
    * Mount base the handler answers under. Defaults to
    * `resolveBasePath(def, 'hosted')` (i.e. `def.basePath` or `/__<id>/`) —
@@ -39,8 +39,8 @@ export interface CreateHandlerOptions {
    * omitted (and no `ws.url`/`ws.port` is given), an **eager side-car**
    * WebSocket server starts on its own port at handler creation. Under Bun,
    * the default is the fetch-upgrade tier instead — no side-car; pass the
-   * `Bun.serve` server as `fetch`'s second argument and wire
-   * {@link DevframeHandler.websocket}.
+   * `Bun.serve` server as `handler`'s second argument and wire
+   * {@link DevframeInstance.websocket}.
    */
   server?: NodeHttpServer
   /**
@@ -52,7 +52,7 @@ export interface CreateHandlerOptions {
    * pattern, where the relay forwards to the locally-bound socket — and
    * when neither is given, the handler starts **no transport of its own**
    * (run `startHttpAndWs({ context, server, path })` against
-   * {@link DevframeHandler.context} to serve RPC from your own server).
+   * {@link DevframeInstance.context} to serve RPC from your own server).
    */
   ws?: DevframeWsOptions
   /**
@@ -80,7 +80,7 @@ export interface CreateHandlerOptions {
   /**
    * Memoize the handler on `globalThis` under this key. Dev servers that
    * re-evaluate modules on the fly (Next.js, Nitro, SvelteKit HMR) re-run
-   * `createHandler` on every reload — without a key each run would leak an
+   * `initDevframe` on every reload — without a key each run would leak an
    * eager side-car WebSocket server. With a key, a re-run returns the live
    * instance; if the options changed, the old instance is closed and
    * replaced (reported as `DF0053`).
@@ -110,24 +110,24 @@ export interface CreateHandlerOptions {
  * dependency on Bun's types — cast to Bun's `WebSocketHandler` at the
  * `Bun.serve` call site if your host file typechecks against `bun-types`.
  */
-export interface DevframeHandlerWebSocket {
+export interface DevframeInstanceWebSocket {
   open: (ws: unknown) => void
   message: (ws: unknown, message: unknown) => void
   close: (ws: unknown, code?: number, reason?: string) => void
   drain: (ws: unknown) => void
 }
 
-export interface DevframeHandler {
+export interface DevframeInstance {
   /**
    * Web-standard request handler — mount it on a catch-all route under
-   * {@link CreateHandlerOptions.base} (Next.js route handler, SvelteKit
+   * {@link InitDevframeOptions.base} (Next.js route handler, SvelteKit
    * `+server.ts`, Hono `c.req.raw`, Nitro `toWebRequest(event)`, …).
    * Requests outside the base 404. Under Bun, pass the `Bun.serve` server
    * as the second argument so WS upgrade requests can be completed (an
    * upgraded request resolves to `undefined` per Bun's contract, typed as
    * `Response` for drop-in route-handler compatibility).
    */
-  fetch: (request: Request, server?: unknown) => Promise<Response>
+  handler: (request: Request, server?: unknown) => Promise<Response>
   /**
    * Connect/Express-style middleware over the same surface — for
    * `viteServer.middlewares.use(handler.nodeMiddleware)` or any other
@@ -135,11 +135,11 @@ export interface DevframeHandler {
    * call `next()` so the rest of the stack keeps working.
    */
   nodeMiddleware: (req: IncomingMessage, res: ServerResponse, next?: (err?: unknown) => void) => void
-  /** See {@link DevframeHandlerWebSocket}. */
-  websocket: DevframeHandlerWebSocket
+  /** See {@link DevframeInstanceWebSocket}. */
+  websocket: DevframeInstanceWebSocket
   /**
    * Resolves once `def.setup` has run and the WebSocket binding is live.
-   * `fetch`/`nodeMiddleware` await it internally, so hosts never race
+   * `handler`/`nodeMiddleware` await it internally, so hosts never race
    * initialization — await it yourself only when you need the timing.
    */
   ready: Promise<void>
@@ -154,15 +154,15 @@ export interface DevframeHandler {
   close: () => Promise<void>
 }
 
-interface HandlerRegistryEntry {
+interface InstanceRegistryEntry {
   hash: string
-  handler: DevframeHandler
+  handler: DevframeInstance
 }
 
-const REGISTRY_KEY = Symbol.for('devframe:handler-registry')
+const REGISTRY_KEY = Symbol.for('devframe:instance-registry')
 
-function handlerRegistry(): Map<string, HandlerRegistryEntry> {
-  const holder = globalThis as { [REGISTRY_KEY]?: Map<string, HandlerRegistryEntry> }
+function instanceRegistry(): Map<string, InstanceRegistryEntry> {
+  const holder = globalThis as { [REGISTRY_KEY]?: Map<string, InstanceRegistryEntry> }
   holder[REGISTRY_KEY] ??= new Map()
   return holder[REGISTRY_KEY]
 }
@@ -174,7 +174,7 @@ function handlerRegistry(): Map<string, HandlerRegistryEntry> {
  * object on every module re-evaluation would defeat memoization, which is
  * exactly the scenario `key` exists for.
  */
-function optionsHash(def: DevframeDefinition, options: CreateHandlerOptions): string {
+function optionsHash(def: DevframeDefinition, options: InitDevframeOptions): string {
   return JSON.stringify({
     id: def.id,
     base: options.base,
@@ -199,22 +199,22 @@ function samePath(a: string, b: string): boolean {
  * Serve a devframe through one framework-agnostic, web-standard handler —
  * the SPA, `__connection.json` discovery, the WebSocket RPC endpoint, the
  * auth gate, and the optional MCP route, all under a single mount base.
- * Mount `fetch` on any framework's catch-all route (or `nodeMiddleware` on
+ * Mount `handler` on any framework's catch-all route (or `nodeMiddleware` on
  * a connect stack) and the devframe is live inside that app.
  *
  * The factory is synchronous and kicks off initialization eagerly;
- * `fetch`/`nodeMiddleware` await readiness internally. How the WebSocket is
+ * `handler`/`nodeMiddleware` await readiness internally. How the WebSocket is
  * bound resolves in precedence order — `ws.url` (external, advertise-only)
  * > `ws.port` (explicit side-car) > `server` (shared upgrade at
  * `<base>__ws`) > Bun fetch-upgrade (under Bun) > an eager side-car on a
  * free port — and `__connection.json` reflects whichever tier is active.
  */
-export function createHandler(
+export function initDevframe(
   def: DevframeDefinition,
-  options: CreateHandlerOptions = {},
-): DevframeHandler {
+  options: InitDevframeOptions = {},
+): DevframeInstance {
   if (options.key) {
-    const registry = handlerRegistry()
+    const registry = instanceRegistry()
     const hash = optionsHash(def, options)
     const existing = registry.get(options.key)
     if (existing) {
@@ -223,17 +223,17 @@ export function createHandler(
       diagnostics.DF0053({ key: options.key, id: def.id })
       void existing.handler.close().catch(() => {})
     }
-    const handler = instantiateHandler(def, options)
+    const handler = instantiateDevframe(def, options)
     registry.set(options.key, { hash, handler })
     return handler
   }
-  return instantiateHandler(def, options)
+  return instantiateDevframe(def, options)
 }
 
-function instantiateHandler(
+function instantiateDevframe(
   def: DevframeDefinition,
-  options: CreateHandlerOptions,
-): DevframeHandler {
+  options: InitDevframeOptions,
+): DevframeInstance {
   const base = options.base ? normalizeBasePath(options.base) : resolveBasePath(def, 'hosted')
   const baseNoSlash = withoutTrailingSlash(base)
   const distDir = options.distDir ?? def.cli?.distDir
@@ -379,8 +379,8 @@ function instantiateHandler(
     }
     else {
       // Bun fetch-upgrade — same-origin upgrades completed through
-      // `fetch(request, server)`, handlers exposed via `websocket`.
-      const { attachBunWsTransport } = await import('./handler-bun')
+      // `handler(request, server)`, hooks exposed via `websocket`.
+      const { attachBunWsTransport } = await import('./initiate-bun')
       const { createContextRpcServer } = await import('../node/rpc-core')
       const core = createContextRpcServer({ context: ctx, auth: resolvedAuth })
       bunTier = await attachBunWsTransport(core, { allowedOrigins: options.allowedOrigins })
@@ -410,13 +410,13 @@ function instantiateHandler(
   }
 
   const initPromise = init()
-  // Surface init failures through `ready`/`fetch`, never as an unhandled
+  // Surface init failures through `ready`/`handler`, never as an unhandled
   // rejection from the eager kick-off.
   initPromise.catch(() => {})
   const contextPromise = initPromise.then(() => ctx)
   contextPromise.catch(() => {})
 
-  async function fetch(request: Request, server?: unknown): Promise<Response> {
+  async function handleRequest(request: Request, server?: unknown): Promise<Response> {
     await initPromise
     const url = new URL(request.url)
     noteOrigin(url.origin)
@@ -424,12 +424,12 @@ function instantiateHandler(
       && request.headers.get('upgrade')?.toLowerCase() === 'websocket') {
       if (!server) {
         return new Response(
-          'Upgrade Required: pass the Bun server as the second argument to handler.fetch(request, server)',
+          'Upgrade Required: pass the Bun server as the second argument to instance.handler(request, server)',
           { status: 426 },
         )
       }
       // An upgraded request resolves to `undefined` per Bun's contract; the
-      // cast keeps `fetch` drop-in assignable to route handlers that expect
+      // cast keeps `handler` drop-in assignable to route handlers that expect
       // a `Response`.
       return await bunTier.handleUpgrade(request, server) as Response
     }
@@ -477,15 +477,15 @@ function instantiateHandler(
       })
   }
 
-  const websocket: DevframeHandlerWebSocket = {
+  const websocket: DevframeInstanceWebSocket = {
     open: ws => void bunTier?.websocket.open?.(ws),
     message: (ws, message) => void bunTier?.websocket.message(ws, message),
     close: (ws, code, reason) => void bunTier?.websocket.close?.(ws, code, reason),
     drain: ws => void bunTier?.websocket.drain?.(ws),
   }
 
-  const handler: DevframeHandler = {
-    fetch,
+  const handler: DevframeInstance = {
+    handler: handleRequest,
     nodeMiddleware,
     websocket,
     ready: initPromise,
@@ -497,7 +497,7 @@ function instantiateHandler(
     },
     close: async () => {
       if (options.key) {
-        const registry = handlerRegistry()
+        const registry = instanceRegistry()
         if (registry.get(options.key)?.handler === handler)
           registry.delete(options.key)
       }

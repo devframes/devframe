@@ -18,8 +18,8 @@ SvelteKit), running on Node ≥ 20 and Bun. The hub stays headless; UI is a comp
 
 | Import | Serves | Default base |
 |---|---|---|
-| `devframe/handler` | **One devframe**: its SPA (`distDir`; omitted → bridge mode serving only meta + WS), `__connection.json`, `__mcp`, WS RPC, auth. Own isolated context, one `def.setup(ctx)`. | `/__<id>/` (hosted rule) |
-| `@devframes/hub/handler` | **Multi-frame, headless**: shared hub context (docks/terminals/messages/commands + hub built-in RPCs + shared-state slots); every frame's `setup(ctx)` runs against it → one merged RPC registry, one WS endpoint, **one hub Auth**, one aggregate MCP. Frames auto-registered as iframe docks. | `/__devframes/` |
+| `devframe/initiate` | **One devframe**: its SPA (`distDir`; omitted → bridge mode serving only meta + WS), `__connection.json`, `__mcp`, WS RPC, auth. Own isolated context, one `def.setup(ctx)`. | `/__<id>/` (hosted rule) |
+| `@devframes/hub/initiate` | **Multi-frame, headless**: shared hub context (docks/terminals/messages/commands + hub built-in RPCs + shared-state slots); every frame's `setup(ctx)` runs against it → one merged RPC registry, one WS endpoint, **one hub Auth**, one aggregate MCP. Frames auto-registered as iframe docks. | `/__devframes/` |
 
 **`DevframeHubUi` slot** (type lives in `@devframes/hub`; data-first, zero policy):
 
@@ -139,13 +139,13 @@ fetching `<base>__connection.json`. The differences are environmental:
 
 ## Delivery: 5-PR GitHub stack (bottom → top, merge bottom-up)
 
-1. **`feat/handler-core`** — this plan doc; `devframe/handler`: `createHandler` (fetch/node/Bun
+1. **`feat/handler-core`** — this plan doc; `devframe/initiate`: `createHandler` (fetch/node/Bun
    shapes, four WS resolutions, auth gate, per-frame MCP, `key` memo), `__ws` constants,
    new `DF00xx` diagnostics + `docs/errors/` pages, vitest coverage (fetch, middleware,
    WS tiers + meta correctness per resolution, auth gating).
 2. **`feat/handler-adapters`** — `createDevServer` / `viteDevBridge` / `@devframes/next`
    rebuilt on the handler; api-snapshot updates.
-3. **`feat/hub-handler`** — `@devframes/hub/handler`: internal `DevframeHost` impl, frame
+3. **`feat/hub-handler`** — `@devframes/hub/initiate`: internal `DevframeHost` impl, frame
    mounting at `<base><id>/`, `ui` slot + `DevframeHubUi` type, `__index.json`,
    `__client-imports.js`, aggregate MCP, `devframes`/`context`/`configure` options,
    `DF8xxx` diagnostics, tests incl. reserved-path guards, cross-frame RPC visibility,
