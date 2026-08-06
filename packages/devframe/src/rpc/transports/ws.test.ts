@@ -183,6 +183,30 @@ describe('ws client post on a non-open socket', () => {
 })
 
 describe('devframe rpc', () => {
+  it('atomically allocates unique ports for concurrent standalone transports', async () => {
+    const HOST = '127.0.0.1'
+    const transports = Array.from({ length: 3 }, () => {
+      const server = createRpcServer<Record<string, never>, Record<string, never>>({})
+      return attachWsRpcTransport(server, { host: HOST })
+    })
+
+    try {
+      await Promise.all(transports.map(transport => transport.ready))
+      const ports = transports.map((transport) => {
+        const address = transport.address()
+        if (!address || typeof address === 'string')
+          throw new TypeError('Expected an IP socket address')
+        return address.port
+      })
+
+      expect(ports.every(port => port > 0)).toBe(true)
+      expect(new Set(ports).size).toBe(transports.length)
+    }
+    finally {
+      await Promise.all(transports.map(transport => transport.close()))
+    }
+  })
+
   it('should work w/ ws transport', async () => {
     // Use 127.0.0.1 on both client and server so they agree on the
     // address family — `localhost` resolution is ambiguous (IPv4 vs IPv6)

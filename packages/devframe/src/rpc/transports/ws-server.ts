@@ -4,6 +4,7 @@ import type { NodeAdapter } from 'crossws/adapters/node'
 import type { Buffer } from 'node:buffer'
 import type { Server as HttpServer, IncomingMessage } from 'node:http'
 import type { Server as HttpsServer, ServerOptions as HttpsServerOptions } from 'node:https'
+import type { AddressInfo } from 'node:net'
 import type { Duplex } from 'node:stream'
 import type { RpcFunctionDefinitionAny } from '../types'
 import { createServer as createHttpServer } from 'node:http'
@@ -44,9 +45,12 @@ export interface WsRpcTransportOptions {
    * this transport detaches the upgrade listener without closing the server.
    */
   server?: HttpServer | HttpsServer
-  /** Port for a newly-created standalone WS server. */
+  /**
+   * Port for the standalone WebSocket server. Defaults to `0`, which lets the
+   * operating system assign an available port.
+   */
   port?: number
-  /** Host for a newly-created standalone WS server. Defaults to `localhost`. */
+  /** Host for the standalone WebSocket server. Defaults to `localhost`. */
   host?: string
   /**
    * Restrict the WS endpoint to a single upgrade route (e.g. `/__devframe_ws`). When
@@ -168,6 +172,10 @@ export interface WsRpcTransport {
    * `peers` and pub/sub. See https://crossws.h3.dev.
    */
   ws: NodeAdapter
+  /** Resolves when the transport-owned server is listening. */
+  ready: Promise<void>
+  /** Returns the bound address, or `null` when the server is not listening. */
+  address: () => AddressInfo | string | null
   /** Remove the upgrade listener from a shared `server` (a no-op otherwise). */
   detach: () => void
   /**
@@ -183,6 +191,27 @@ let sessionId = 0
 const EMPTY_DEFS: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>> = new Map()
 
 function NOOP() {}
+
+function listen(
+  server: HttpServer | HttpsServer,
+  port: number,
+  host: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const onError = (error: Error) => reject(error)
+    server.once('error', onError)
+    try {
+      server.listen(port, host, () => {
+        server.off('error', onError)
+        resolve()
+      })
+    }
+    catch (error) {
+      server.off('error', onError)
+      reject(error)
+    }
+  })
+}
 
 /** Compare two URL paths ignoring a trailing slash. */
 function pathMatches(a: string, b: string): boolean {
@@ -276,9 +305,9 @@ function routeUpgrades(
  * `server` (sharing its port, optionally scoped to a `path`), or let this
  * helper create a standalone server from `port` / `host` / `https`.
  *
- * Returns the crossws node adapter plus `detach` (remove the upgrade
- * listener from a shared `server`) and `close` (full deterministic
- * teardown).
+ * Returns the crossws node adapter, standalone-server readiness/address
+ * accessors, `detach` (remove the upgrade listener from a shared `server`),
+ * and `close` (full deterministic teardown).
  */
 export function attachWsRpcTransport<
   ClientFunctions extends object,
@@ -388,6 +417,7 @@ export function attachWsRpcTransport<
   })
 
   let detach = NOOP
+  let ready = Promise.resolve()
   // A server created (and thus owned) by this transport. Nothing else
   // handles its upgrades, so off-route clients are rejected promptly.
   let ownedServer: HttpServer | HttpsServer | undefined
@@ -399,7 +429,7 @@ export function attachWsRpcTransport<
   else if (https) {
     ownedServer = createHttpsServer(https)
     detach = routeUpgrades(ownedServer, ws, path, true, allowedOrigins)
-    ownedServer.listen(port, host)
+    ready = listen(ownedServer, port ?? 0, host)
   }
   else {
     // Standalone server on its own port. Plain HTTP requests get the
@@ -409,11 +439,15 @@ export function attachWsRpcTransport<
       res.end('Upgrade Required')
     })
     detach = routeUpgrades(ownedServer, ws, path, true, allowedOrigins)
-    ownedServer.listen(port, host)
+    ready = listen(ownedServer, port ?? 0, host)
   }
+
+  const activeServer = server ?? ownedServer
 
   return {
     ws,
+    ready,
+    address: () => activeServer?.address() ?? null,
     detach,
     async close() {
       // Detach our upgrade listener first so a shared host server stops
@@ -425,6 +459,9 @@ export function attachWsRpcTransport<
       ws.closeAll(undefined, undefined, true)
       if (ownedServer) {
         const srv = ownedServer
+        await ready.catch(() => {})
+        if (!srv.listening)
+          return
         await new Promise<void>(r => srv.close(() => r()))
       }
     },
