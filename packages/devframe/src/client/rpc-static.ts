@@ -35,5 +35,7 @@ export async function createStaticRpcClientMode(
       args[0] as string,
       args.slice(1),
     ),
+    // No live socket to close — every call is a local fetch.
+    close: () => {},
   }
 }

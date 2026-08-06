@@ -37,6 +37,8 @@ vi.mock('./rpc-ws', () => ({
     call: fakeMode.call as DevframeRpcClientMode['call'],
     callOptional: fakeMode.callOptional as DevframeRpcClientMode['callOptional'],
     callEvent: fakeMode.callEvent as DevframeRpcClientMode['callEvent'],
+    // No `close` here on purpose — `close` is optional precisely so a mode written before it
+    // existed (this one) still satisfies the interface.
   })),
 }))
 
@@ -136,5 +138,18 @@ describe('getDevframeRpcClient — auth bootstrap gates outbound calls', () => {
     await rpc.call('test:probe' as any)
     // Sent straight through — no more waiting once bootstrap is over.
     expect(fakeMode.call).toHaveBeenCalledTimes(1)
+  })
+
+  it('close() is a no-op, not a throw, against a mode that predates it', async () => {
+    const { getDevframeRpcClient } = await import('./rpc')
+    const rpc = await getDevframeRpcClient({
+      connectionMeta,
+      otpParam: false,
+      simpleAuth: false,
+    })
+
+    // The mocked mode above has no `close` at all — exactly the pre-existing-mode case
+    // `close?:` exists to keep working.
+    expect(() => rpc.close?.()).not.toThrow()
   })
 })

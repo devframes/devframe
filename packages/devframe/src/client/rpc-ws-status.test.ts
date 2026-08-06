@@ -148,4 +148,13 @@ describe('ws client connection status', () => {
     expect(rpcErrors[0].error).toBeInstanceOf(DevframeConnectionError)
     expect(rpcErrors[0].method).toBe('demo:method')
   })
+
+  it('close() closes the underlying socket', () => {
+    const { mode, ws } = setup()
+    const closeSpy = vi.spyOn(ws, 'close')
+
+    mode.close?.()
+
+    expect(closeSpy).toHaveBeenCalledTimes(1)
+  })
 })
