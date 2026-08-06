@@ -1,5 +1,5 @@
 import type { BirpcGroup, ChannelOptions } from 'birpc'
-import type { Peer } from 'crossws'
+import type { Hooks, Peer } from 'crossws'
 import type { NodeAdapter } from 'crossws/adapters/node'
 import type { Buffer } from 'node:buffer'
 import type { Server as HttpServer, IncomingMessage } from 'node:http'
@@ -49,7 +49,7 @@ export interface WsRpcTransportOptions {
   /** Host for a newly-created standalone WS server. Defaults to `localhost`. */
   host?: string
   /**
-   * Restrict the WS endpoint to a single upgrade route (e.g. `/__devframe_ws`). When
+   * Restrict the WS endpoint to a single upgrade route (e.g. `/__ws`). When
    * sharing a `server`, non-matching upgrade requests are left untouched for
    * other listeners to handle, so devframe's socket can sit alongside
    * framework sockets (Vite HMR, etc.).
@@ -271,6 +271,113 @@ function routeUpgrades(
 }
 
 /**
+ * The per-peer lifecycle hooks driving a devframe RPC WebSocket, shaped for
+ * any [crossws](https://crossws.h3.dev) adapter. {@link attachWsRpcTransport}
+ * feeds them to the Node adapter; runtime-specific attachments (e.g. Bun's
+ * fetch-upgrade adapter) reuse the same hooks so every transport speaks the
+ * identical wire protocol — one birpc channel per peer, per-method
+ * `jsonSerializable` dispatch between strict JSON and structured-clone.
+ */
+export function createWsRpcPeerHooks<
+  ClientFunctions extends object,
+  ServerFunctions extends object,
+>(
+  rpcGroup: BirpcGroup<ClientFunctions, ServerFunctions, false>,
+  options: Pick<WsRpcTransportOptions, 'onConnected' | 'onDisconnected' | 'definitions' | 'serialize' | 'deserialize'> = {},
+): Partial<Hooks> {
+  const {
+    onConnected = NOOP,
+    onDisconnected = NOOP,
+    definitions = EMPTY_DEFS,
+    serialize: serializeOverride,
+    deserialize: deserializeOverride,
+  } = options
+
+  interface PeerState {
+    meta: DevframeNodeRpcSessionMeta
+    channel: ChannelOptions
+    /** birpc's inbound-message handler, registered via the channel's `on`. */
+    onMessage?: (data: string) => void
+  }
+  const states = new WeakMap<Peer, PeerState>()
+
+  return {
+    open: (peer) => {
+      const meta: DevframeNodeRpcSessionMeta = {
+        id: sessionId++,
+        peer,
+        subscribedStates: new Set(),
+      }
+
+      // Per-connection state: maps an incoming request id to its method
+      // name so the matching outgoing response can look the method back
+      // up in `definitions` and pick the right encoder. One map per
+      // session — request-id spaces don't collide across sessions.
+      const pendingRequestMethods = new Map<string, string>()
+      const state: PeerState = { meta, channel: undefined as unknown as ChannelOptions }
+      const channel: ChannelOptions = {
+        post: (data) => {
+          peer.send(data)
+        },
+        on: (fn) => {
+          state.onMessage = fn
+        },
+        serialize: serializeOverride ?? ((msg: any): string => {
+          let method: string | undefined
+          if (msg.t === 'q') {
+            method = msg.m
+          }
+          else {
+            method = pendingRequestMethods.get(msg.i)
+            pendingRequestMethods.delete(msg.i)
+          }
+          // `jsonSerializable` constrains the return-value path (args + return).
+          // Error envelopes (`{ t: 's', i, e }`) carry a thrown value — fall back
+          // to structured-clone so they round-trip instead of crashing the serializer.
+          // Detect via `'e' in msg` so `throw undefined` still routes through SC.
+          const isErrorResponse = msg.t === 's' && 'e' in msg
+          const useJson = !isErrorResponse && !!method && definitions.get(method)?.jsonSerializable === true
+          if (useJson)
+            return strictJsonStringify(msg, method ?? '')
+          return `${STRUCTURED_CLONE_PREFIX}${structuredCloneStringify(msg)}`
+        }),
+        deserialize: deserializeOverride ?? ((raw: string): any => {
+          const msg: any = raw.startsWith(STRUCTURED_CLONE_PREFIX)
+            ? structuredCloneParse(raw.slice(STRUCTURED_CLONE_PREFIX.length))
+            : JSON.parse(raw)
+          if (msg.t === 'q' && msg.i && msg.m)
+            pendingRequestMethods.set(msg.i, msg.m)
+          return msg
+        }),
+        meta,
+      }
+      state.channel = channel
+      states.set(peer, state)
+
+      rpcGroup.updateChannels((channels) => {
+        channels.push(channel)
+      })
+      onConnected(peer, meta)
+    },
+    message: (peer, message) => {
+      states.get(peer)?.onMessage?.(message.text())
+    },
+    close: (peer) => {
+      const state = states.get(peer)
+      if (!state)
+        return
+      states.delete(peer)
+      rpcGroup.updateChannels((channels) => {
+        const index = channels.indexOf(state.channel)
+        if (index >= 0)
+          channels.splice(index, 1)
+      })
+      onDisconnected(peer, state.meta)
+    },
+  }
+}
+
+/**
  * Attach a WebSocket transport to an existing RPC group, powered by
  * [crossws](https://crossws.h3.dev). Either attach to an existing HTTP(S)
  * `server` (sharing its port, optionally scoped to a `path`), or let this
@@ -295,96 +402,10 @@ export function attachWsRpcTransport<
     destroyUnmatched = false,
     https,
     allowedOrigins,
-    onConnected = NOOP,
-    onDisconnected = NOOP,
-    definitions = EMPTY_DEFS,
-    serialize: serializeOverride,
-    deserialize: deserializeOverride,
   } = options
 
-  interface PeerState {
-    meta: DevframeNodeRpcSessionMeta
-    channel: ChannelOptions
-    /** birpc's inbound-message handler, registered via the channel's `on`. */
-    onMessage?: (data: string) => void
-  }
-  const states = new WeakMap<Peer, PeerState>()
-
   const ws = crossws({
-    hooks: {
-      open: (peer) => {
-        const meta: DevframeNodeRpcSessionMeta = {
-          id: sessionId++,
-          peer,
-          subscribedStates: new Set(),
-        }
-
-        // Per-connection state: maps an incoming request id to its method
-        // name so the matching outgoing response can look the method back
-        // up in `definitions` and pick the right encoder. One map per
-        // session — request-id spaces don't collide across sessions.
-        const pendingRequestMethods = new Map<string, string>()
-        const state: PeerState = { meta, channel: undefined as unknown as ChannelOptions }
-        const channel: ChannelOptions = {
-          post: (data) => {
-            peer.send(data)
-          },
-          on: (fn) => {
-            state.onMessage = fn
-          },
-          serialize: serializeOverride ?? ((msg: any): string => {
-            let method: string | undefined
-            if (msg.t === 'q') {
-              method = msg.m
-            }
-            else {
-              method = pendingRequestMethods.get(msg.i)
-              pendingRequestMethods.delete(msg.i)
-            }
-            // `jsonSerializable` constrains the return-value path (args + return).
-            // Error envelopes (`{ t: 's', i, e }`) carry a thrown value — fall back
-            // to structured-clone so they round-trip instead of crashing the serializer.
-            // Detect via `'e' in msg` so `throw undefined` still routes through SC.
-            const isErrorResponse = msg.t === 's' && 'e' in msg
-            const useJson = !isErrorResponse && !!method && definitions.get(method)?.jsonSerializable === true
-            if (useJson)
-              return strictJsonStringify(msg, method ?? '')
-            return `${STRUCTURED_CLONE_PREFIX}${structuredCloneStringify(msg)}`
-          }),
-          deserialize: deserializeOverride ?? ((raw: string): any => {
-            const msg: any = raw.startsWith(STRUCTURED_CLONE_PREFIX)
-              ? structuredCloneParse(raw.slice(STRUCTURED_CLONE_PREFIX.length))
-              : JSON.parse(raw)
-            if (msg.t === 'q' && msg.i && msg.m)
-              pendingRequestMethods.set(msg.i, msg.m)
-            return msg
-          }),
-          meta,
-        }
-        state.channel = channel
-        states.set(peer, state)
-
-        rpcGroup.updateChannels((channels) => {
-          channels.push(channel)
-        })
-        onConnected(peer, meta)
-      },
-      message: (peer, message) => {
-        states.get(peer)?.onMessage?.(message.text())
-      },
-      close: (peer) => {
-        const state = states.get(peer)
-        if (!state)
-          return
-        states.delete(peer)
-        rpcGroup.updateChannels((channels) => {
-          const index = channels.indexOf(state.channel)
-          if (index >= 0)
-            channels.splice(index, 1)
-        })
-        onDisconnected(peer, state.meta)
-      },
-    },
+    hooks: createWsRpcPeerHooks(rpcGroup, options),
   })
 
   let detach = NOOP

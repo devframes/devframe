@@ -1,0 +1,151 @@
+import type { BirpcGroup, EventOptions } from 'birpc'
+import type { Peer } from 'crossws'
+import type { DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
+import type { DevframeAuthHandler } from './auth'
+import type { RpcFunctionsHostImpl } from './host-functions'
+import { AsyncLocalStorage } from 'node:async_hooks'
+import { createRpcServer } from 'devframe/rpc/server'
+import { diagnostics } from './diagnostics'
+
+export interface CreateContextRpcServerOptions {
+  context: DevframeNodeContext
+  /** See `StartHttpAndWsOptions.auth` — same contract, transport-agnostic. */
+  auth?: boolean | DevframeAuthHandler
+  /** See `StartHttpAndWsOptions.authorize`. */
+  authorize?: (methodName: string, session: DevframeNodeRpcSession) => boolean
+  /** See `StartHttpAndWsOptions.onPeerConnect`. */
+  onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
+  /** See `StartHttpAndWsOptions.onPeerDisconnect`. */
+  onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+  /** See `StartHttpAndWsOptions.rpcOptions`. */
+  rpcOptions?: Pick<
+    EventOptions<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>,
+    'onFunctionError' | 'onGeneralError'
+  >
+}
+
+export interface ContextRpcServer {
+  rpcGroup: BirpcGroup<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>
+  /** The resolved auth handler when `auth` was passed as one. */
+  authHandler?: DevframeAuthHandler
+  /**
+   * Peer lifecycle handlers to wire into a WS transport
+   * (`attachWsRpcTransport`'s `onConnected` / `onDisconnected`, or any other
+   * crossws adapter's peer hooks via `createWsRpcPeerHooks`).
+   */
+  onConnected?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+  onDisconnected: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+}
+
+/**
+ * Bind a devframe context's registered RPC functions to a birpc group,
+ * transport-agnostically — the shared core under `startHttpAndWs` (Node
+ * http + WS) and the Bun fetch-upgrade tier of `createHandler`.
+ *
+ * Owns everything about serving RPC that is independent of *how* peers
+ * connect: the auth handler's function registration, the
+ * `AsyncLocalStorage`-based session resolver (so
+ * `ctx.rpc.getCurrentRpcSession()` works inside handlers), the
+ * `authorize` gate, and the `auth: false` auto-trust handshake shim.
+ */
+export function createContextRpcServer(options: CreateContextRpcServerOptions): ContextRpcServer {
+  const { context } = options
+  const rpcHost = context.rpc as unknown as RpcFunctionsHostImpl
+
+  const asyncStorage = new AsyncLocalStorage<DevframeNodeRpcSession>()
+
+  // A full auth handler (e.g. from `createInteractiveAuth`) registers its own
+  // RPC functions and supplies both the resolver gate and the connect-time
+  // trust hook. `authorize`/`onPeerConnect` are the lower-level escape
+  // hatches for callers not using a full handler.
+  const authHandler: DevframeAuthHandler | undefined = typeof options.auth === 'object' ? options.auth : undefined
+  const effectiveAuthorize = options.authorize ?? authHandler?.authorize
+
+  if (authHandler) {
+    for (const fn of authHandler.rpcFunctions) {
+      if (!rpcHost.definitions.has(fn.name))
+        rpcHost.register(fn)
+    }
+  }
+
+  const rpcGroup = createRpcServer<DevframeRpcClientFunctions, DevframeRpcServerFunctions>(
+    rpcHost.functions,
+    {
+      rpcOptions: {
+        // Forwarded as-is so a host with its own structured diagnostics
+        // keeps seeing RPC failures; see `StartHttpAndWsOptions.rpcOptions`.
+        onFunctionError: options.rpcOptions?.onFunctionError,
+        onGeneralError: options.rpcOptions?.onGeneralError,
+        // Wrap each RPC handler in an AsyncLocalStorage context so
+        // `ctx.rpc.getCurrentRpcSession()` works inside handlers (used
+        // by streaming subscribe/unsubscribe/cancel and shared-state
+        // sync), and — when an `authorize` gate is configured — reject
+        // the call before it ever reaches the handler. Mirrors
+        // `packages/core/src/node/ws.ts`'s resolver.
+        resolver(name, fn) {
+          // eslint-disable-next-line ts/no-this-alias
+          const rpc = this
+          if (!fn)
+            return undefined
+          return async function (this: any, ...args) {
+            const meta = rpc.$meta as DevframeNodeRpcSessionMeta
+            if (effectiveAuthorize && !effectiveAuthorize(name, { meta, rpc: rpc as any }))
+              throw diagnostics.DF0036({ name })
+            return await asyncStorage.run({
+              rpc,
+              meta,
+            }, async () => {
+              return (await fn).apply(this, args)
+            })
+          }
+        },
+      },
+    },
+  )
+
+  ;(rpcHost as any)._rpcGroup = rpcGroup
+  ;(rpcHost as any)._asyncStorage = asyncStorage
+  ;(rpcHost as any)._authDisabled = options.auth === false
+
+  // The browser client unconditionally calls `anonymous:devframe:auth` on
+  // connect (see `client/rpc-ws.ts`). When `auth: false` is set on the
+  // standalone server, register a noop handler that auto-trusts so the
+  // client's hardcoded handshake succeeds. A host passing a full
+  // `DevframeAuthHandler` already registered the real handler above, and
+  // never opts into `auth: false`, so the two paths never overlap.
+  if (options.auth === false && !rpcHost.definitions.has('anonymous:devframe:auth')) {
+    rpcHost.register({
+      name: 'anonymous:devframe:auth',
+      type: 'action',
+      handler: () => {
+        const session = rpcHost.getCurrentRpcSession()
+        if (session)
+          session.meta.isTrusted = true
+        return { isTrusted: true }
+      },
+    })
+  }
+
+  const onConnected = (authHandler || options.onPeerConnect)
+    ? (peer: Peer, meta: DevframeNodeRpcSessionMeta) => {
+        const session: DevframeNodeRpcSession = {
+          meta,
+          rpc: rpcGroup.clients.find(client => (client as any).$meta === meta) as any,
+        }
+        authHandler?.onConnect(peer, session)
+        options.onPeerConnect?.(peer, session)
+      }
+    : undefined
+
+  const onDisconnected = (peer: Peer, meta: DevframeNodeRpcSessionMeta): void => {
+    options.onPeerDisconnect?.(peer, meta)
+    rpcHost._emitSessionDisconnected(meta)
+  }
+
+  return {
+    rpcGroup,
+    authHandler,
+    onConnected,
+    onDisconnected,
+  }
+}

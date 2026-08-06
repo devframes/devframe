@@ -6,13 +6,12 @@ import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, Devfr
 import type { Server as NodeHttpServer } from 'node:http'
 import type { DevframeAuthHandler } from './auth'
 import type { RpcFunctionsHostImpl } from './host-functions'
-import { AsyncLocalStorage } from 'node:async_hooks'
 import { createServer } from 'node:http'
-import { createRpcServer } from 'devframe/rpc/server'
 import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
 import { H3, toNodeHandler } from 'h3'
 import { diagnostics } from './diagnostics'
 import { getInternalContext } from './hub-internals/context'
+import { createContextRpcServer } from './rpc-core'
 import { formatHostForUrl, normalizeHttpServerUrl } from './utils'
 
 export interface StartHttpAndWsOptions {
@@ -26,7 +25,7 @@ export interface StartHttpAndWsOptions {
    */
   app?: H3
   /**
-   * Bind the WS endpoint to a single upgrade route (e.g. `/__devframe_ws`) instead of
+   * Bind the WS endpoint to a single upgrade route (e.g. `/__ws`) instead of
    * claiming every upgrade on the port. This lets the socket share a server
    * with other upgrade handlers (Vite HMR, a host framework's own sockets)
    * and is what the SPA's `__connection.json` points at. When omitted, the WS
@@ -163,56 +162,16 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
   const httpServer = options.server ?? createServer(toNodeHandler(app))
   const rpcHost = context.rpc as unknown as RpcFunctionsHostImpl
 
-  const asyncStorage = new AsyncLocalStorage<DevframeNodeRpcSession>()
-
-  // A full auth handler (e.g. from `createInteractiveAuth`) registers its own
-  // RPC functions and supplies both the resolver gate and the connect-time
-  // trust hook. `authorize`/`onPeerConnect` are the lower-level escape
-  // hatches for callers not using a full handler.
-  const authHandler: DevframeAuthHandler | undefined = typeof options.auth === 'object' ? options.auth : undefined
-  const effectiveAuthorize = options.authorize ?? authHandler?.authorize
-
-  if (authHandler) {
-    for (const fn of authHandler.rpcFunctions) {
-      if (!rpcHost.definitions.has(fn.name))
-        rpcHost.register(fn)
-    }
-  }
-
-  const rpcGroup = createRpcServer<DevframeRpcClientFunctions, DevframeRpcServerFunctions>(
-    rpcHost.functions,
-    {
-      rpcOptions: {
-        // Forwarded as-is so a host with its own structured diagnostics
-        // keeps seeing RPC failures; see `StartHttpAndWsOptions.rpcOptions`.
-        onFunctionError: options.rpcOptions?.onFunctionError,
-        onGeneralError: options.rpcOptions?.onGeneralError,
-        // Wrap each RPC handler in an AsyncLocalStorage context so
-        // `ctx.rpc.getCurrentRpcSession()` works inside handlers (used
-        // by streaming subscribe/unsubscribe/cancel and shared-state
-        // sync), and — when an `authorize` gate is configured — reject
-        // the call before it ever reaches the handler. Mirrors
-        // `packages/core/src/node/ws.ts`'s resolver.
-        resolver(name, fn) {
-          // eslint-disable-next-line ts/no-this-alias
-          const rpc = this
-          if (!fn)
-            return undefined
-          return async function (this: any, ...args) {
-            const meta = rpc.$meta as DevframeNodeRpcSessionMeta
-            if (effectiveAuthorize && !effectiveAuthorize(name, { meta, rpc: rpc as any }))
-              throw diagnostics.DF0036({ name })
-            return await asyncStorage.run({
-              rpc,
-              meta,
-            }, async () => {
-              return (await fn).apply(this, args)
-            })
-          }
-        },
-      },
-    },
-  )
+  // Transport-agnostic RPC core: auth wiring, session resolver, and the
+  // peer lifecycle handlers the WS transport below plugs into.
+  const { rpcGroup, onConnected, onDisconnected } = createContextRpcServer({
+    context,
+    auth: options.auth,
+    authorize: options.authorize,
+    onPeerConnect: options.onPeerConnect,
+    onPeerDisconnect: options.onPeerDisconnect,
+    rpcOptions: options.rpcOptions,
+  })
 
   // A dedicated WS port (the "different port" scenario) only applies when we
   // own the HTTP server — a shared host server already dictates the port.
@@ -231,44 +190,9 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
     // other sockets, so leave non-matching upgrades for them.
     destroyUnmatched: ownsHttpServer,
     allowedOrigins: options.allowedOrigins,
-    onConnected: (authHandler || options.onPeerConnect)
-      ? (peer, meta) => {
-          const session: DevframeNodeRpcSession = {
-            meta,
-            rpc: rpcGroup.clients.find(client => (client as any).$meta === meta) as any,
-          }
-          authHandler?.onConnect(peer, session)
-          options.onPeerConnect?.(peer, session)
-        }
-      : undefined,
-    onDisconnected: (peer, meta) => {
-      options.onPeerDisconnect?.(peer, meta)
-      rpcHost._emitSessionDisconnected(meta)
-    },
+    onConnected,
+    onDisconnected,
   })
-
-  ;(rpcHost as any)._rpcGroup = rpcGroup
-  ;(rpcHost as any)._asyncStorage = asyncStorage
-  ;(rpcHost as any)._authDisabled = options.auth === false
-
-  // The browser client unconditionally calls `anonymous:devframe:auth` on
-  // connect (see `client/rpc-ws.ts`). When `auth: false` is set on the
-  // standalone server, register a noop handler that auto-trusts so the
-  // client's hardcoded handshake succeeds. A host passing a full
-  // `DevframeAuthHandler` already registered the real handler above, and
-  // never opts into `auth: false`, so the two paths never overlap.
-  if (options.auth === false && !rpcHost.definitions.has('anonymous:devframe:auth')) {
-    rpcHost.register({
-      name: 'anonymous:devframe:auth',
-      type: 'action',
-      handler: () => {
-        const session = rpcHost.getCurrentRpcSession()
-        if (session)
-          session.meta.isTrusted = true
-        return { isTrusted: true }
-      },
-    })
-  }
 
   // Only start listening on a server we created. A shared server is already
   // (or about to be) listening under the caller's control.
