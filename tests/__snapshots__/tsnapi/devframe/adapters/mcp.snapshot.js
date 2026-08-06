@@ -4,4 +4,5 @@
 // #region Other
 export { createMcpFetchHandler }
 export { createMcpServer }
+export { mountMcpHttp }
 // #endregion

@@ -81,13 +81,13 @@
         "src/recipes/{common-rpc-functions,interactive-auth,open-helpers}.ts",
         "src/rpc/{index,client,server}.ts",
         "src/rpc/dump/index.ts",
-        "src/rpc/transports/{ws-client,ws-server}.ts",
+        "src/rpc/transports/{ws-bun,ws-client,ws-server}.ts",
         "src/types/index.ts",
         "src/utils/*.ts"
       ]
     },
     "packages/hub": {
-      "entry": ["src/{index,constants}.ts", "src/{client,node,types}/index.ts"]
+      "entry": ["src/{index,constants}.ts", "src/{client,node,types}/index.ts", "src/node/initiate.ts"]
     },
     "packages/json-render": {
       // `src/node/index.ts` is already picked up via `tsdown.config.ts`

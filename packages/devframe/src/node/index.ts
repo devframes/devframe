@@ -19,6 +19,10 @@ export * from './host-views'
 // lower-level read/probe/prune helpers stay internal to the connector.
 export { listLiveDevframeInstances, registerDevframeInstance } from './instance-registry'
 export type { DevframeInstanceRecord, DevframeInstanceRegistration } from './instance-registry'
+// The transport-agnostic RPC core is public so hosts that bind their own
+// transports (a Bun fetch-upgrade route, a custom relay) reuse the exact
+// session/auth wiring `startHttpAndWs` uses — see `createContextRpcServer`.
+export * from './rpc-core'
 export * from './rpc-shared-state'
 export * from './rpc-streaming'
 export * from './scope'

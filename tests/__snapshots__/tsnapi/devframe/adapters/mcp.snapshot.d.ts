@@ -24,9 +24,14 @@ export interface McpFetchHandler {
 export interface McpServerHandle {
   stop: () => Promise<void>;
 }
+export interface MountedMcpHttp {
+  dispose: () => Promise<void>;
+}
+export interface MountMcpHttpOptions extends CreateMcpFetchHandlerOptions {}
 // #endregion
 
 // #region Functions
 export declare function createMcpFetchHandler(_: DevframeNodeContext, _: CreateMcpFetchHandlerOptions): McpFetchHandler;
 export declare function createMcpServer(_: DevframeDefinition, _?: CreateMcpServerOptions): Promise<McpServerHandle>;
+export declare function mountMcpHttp(_: H3, _: DevframeNodeContext, _: string, _: MountMcpHttpOptions): MountedMcpHttp;
 // #endregion

@@ -7,6 +7,7 @@ const r = (path: string) => fileURLToPath(new URL(`./packages/${path}`, import.m
 const p = (path: string) => fileURLToPath(new URL(`./plugins/${path}`, import.meta.url))
 
 export const alias = {
+  'devframe/rpc/transports/ws-bun': r('devframe/src/rpc/transports/ws-bun.ts'),
   'devframe/rpc/transports/ws-server': r('devframe/src/rpc/transports/ws-server.ts'),
   'devframe/rpc/transports/ws-client': r('devframe/src/rpc/transports/ws-client.ts'),
   'devframe/rpc/client': r('devframe/src/rpc/client.ts'),
@@ -44,6 +45,7 @@ export const alias = {
   'devframe/adapters/mcp': r('devframe/src/adapters/mcp/index.ts'),
   '@devframes/hub/client': r('hub/src/client/index.ts'),
   '@devframes/hub/constants': r('hub/src/constants.ts'),
+  '@devframes/hub/initiate': r('hub/src/node/initiate.ts'),
   '@devframes/hub/node': r('hub/src/node/index.ts'),
   '@devframes/hub/types': r('hub/src/types/index.ts'),
   '@devframes/hub': r('hub/src/index.ts'),

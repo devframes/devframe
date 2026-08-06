@@ -3,6 +3,7 @@
  */
 // #region Other
 export { coerceAgentPositionalArgs }
+export { createContextRpcServer }
 export { createH3DevframeHost }
 export { createHostContext }
 export { createNodeSettings }

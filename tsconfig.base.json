@@ -7,6 +7,9 @@
     "module": "esnext",
     "moduleResolution": "Bundler",
     "paths": {
+      "devframe/rpc/transports/ws-bun": [
+        "./packages/devframe/src/rpc/transports/ws-bun.ts"
+      ],
       "devframe/rpc/transports/ws-server": [
         "./packages/devframe/src/rpc/transports/ws-server.ts"
       ],
@@ -117,6 +120,9 @@
       ],
       "@devframes/hub/constants": [
         "./packages/hub/src/constants.ts"
+      ],
+      "@devframes/hub/initiate": [
+        "./packages/hub/src/node/initiate.ts"
       ],
       "@devframes/hub/node": [
         "./packages/hub/src/node/index.ts"

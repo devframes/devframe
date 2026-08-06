@@ -24,6 +24,7 @@
     ".": "./dist/index.mjs",
     "./client": "./dist/client/index.mjs",
     "./constants": "./dist/constants.mjs",
+    "./initiate": "./dist/node/initiate.mjs",
     "./node": "./dist/node/index.mjs",
     "./types": "./dist/types/index.mjs",
     "./package.json": "./package.json"
@@ -44,15 +45,18 @@
   "dependencies": {
     "@standard-schema/spec": "catalog:deps",
     "destr": "catalog:deps",
+    "h3": "catalog:deps",
     "nostics": "catalog:deps",
     "pathe": "catalog:deps",
     "perfect-debounce": "catalog:deps",
     "tinyexec": "catalog:deps",
+    "ufo": "catalog:deps",
     "zigpty": "catalog:deps"
   },
   "devDependencies": {
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
+    "get-port-please": "catalog:deps",
     "mlly": "catalog:build",
     "tsdown": "catalog:build",
     "valibot": "catalog:deps"

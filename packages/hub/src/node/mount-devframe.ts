@@ -74,17 +74,21 @@ export async function mountDevframe(
       : resolveBasePath({ ...d, id, basePath: undefined }, 'hosted'))
 
   if (d.cli?.distDir) {
-    ctx.views.hostStatic(base, resolve(d.cli.distDir))
     // Serve the hub's connection meta under the devframe's base so its SPA
     // discovers the RPC/WS endpoint via `connectDevframe()`'s relative
     // `./__connection.json` fetch — instead of relying on inheriting it from a
     // same-origin parent window (which breaks for cross-origin / sandboxed
     // iframes). A host that omits the hook turns this into silent breakage
     // (empty panels / stuck-loading SPAs), so surface it rather than no-op away.
+    //
+    // Mounted *before* the SPA statics: route-ordered hosts (h3) resolve the
+    // exact meta route ahead of the static catch-all, and connect-style hosts
+    // are order-agnostic (their static middleware `next()`s on a miss).
     if (ctx.host.mountConnectionMeta)
       await ctx.host.mountConnectionMeta(base)
     else
       diagnostics.DF8106({ id, name: d.name, base })
+    ctx.views.hostStatic(base, resolve(d.cli.distDir))
   }
 
   ctx.docks.register({

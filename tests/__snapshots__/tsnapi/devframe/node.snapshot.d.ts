@@ -125,6 +125,9 @@ export declare function toDialableHost(_: string): string;
 // #endregion
 
 // #region Other
+export { ContextRpcServer }
+export { createContextRpcServer }
+export { CreateContextRpcServerOptions }
 export { RpcFunctionsHost }
 export { StartedServer }
 export { startHttpAndWs }

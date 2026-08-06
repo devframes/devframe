@@ -23,3 +23,9 @@ export {
   type CreateMcpFetchHandlerOptions,
   type McpFetchHandler,
 } from './fetch'
+
+export {
+  type MountedMcpHttp,
+  mountMcpHttp,
+  type MountMcpHttpOptions,
+} from './http'

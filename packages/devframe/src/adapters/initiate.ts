@@ -4,8 +4,8 @@ import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, Devfr
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/server'
+import type { BunWsTier } from '../rpc/transports/ws-bun'
 import type { DevframeDefinition, DevframeSetupInfo, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
-import type { BunWsTier } from './initiate-bun'
 import process from 'node:process'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3, toNodeHandler } from 'h3'
@@ -456,7 +456,7 @@ function instantiateDevframe(
     else {
       // Bun fetch-upgrade — same-origin upgrades completed through
       // `handler(request, server)`, hooks exposed via `websocket`.
-      const { attachBunWsTransport } = await import('./initiate-bun')
+      const { attachBunWsTransport } = await import('../rpc/transports/ws-bun')
       const { createContextRpcServer } = await import('../node/rpc-core')
       const core = createContextRpcServer({
         context: ctx,

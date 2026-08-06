@@ -1,6 +1,6 @@
-import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
-import type { ContextRpcServer } from '../node/rpc-core'
-import { createWsRpcPeerHooks, isAllowedOrigin } from 'devframe/rpc/transports/ws-server'
+import type { ContextRpcServer } from '../../node/rpc-core'
+import type { WsOriginRegistry } from './ws-server'
+import { createWsRpcPeerHooks, isAllowedOrigin } from './ws-server'
 
 export interface AttachBunWsTransportOptions {
   /** Same contract as `WsRpcTransportOptions.allowedOrigins`. */
@@ -12,7 +12,7 @@ export interface AttachBunWsTransportOptions {
  * crossws Bun adapter produces — typed loosely so devframe carries no
  * dependency on Bun's own types.
  */
-interface BunWsTierWebSocket {
+export interface BunWsTierWebSocket {
   open?: (ws: unknown) => unknown
   message: (ws: unknown, message: unknown) => unknown
   close?: (ws: unknown, code?: number, reason?: string) => unknown
@@ -28,11 +28,11 @@ export interface BunWsTier {
 }
 
 /**
- * The Bun fetch-upgrade WebSocket tier for `createHandler` — the same RPC
- * peer wiring as `attachWsRpcTransport`, driven by crossws's Bun adapter so
- * upgrades complete through `fetch(request, server)` on the app's own
- * origin, with no side-car server. Loaded dynamically so the Bun adapter
- * never enters a Node-only bundle path.
+ * The Bun fetch-upgrade WebSocket tier for `initDevframe` / `initHub` — the
+ * same RPC peer wiring as `attachWsRpcTransport`, driven by crossws's Bun
+ * adapter so upgrades complete through `handler(request, server)` on the
+ * app's own origin, with no side-car server. Load it dynamically so the Bun
+ * adapter never enters a Node-only bundle path.
  */
 export async function attachBunWsTransport(
   core: ContextRpcServer,
