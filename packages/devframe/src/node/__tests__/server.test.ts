@@ -144,3 +144,19 @@ describe('startHttpAndWs onPeerConnect / onPeerDisconnect', () => {
     }
   })
 })
+
+describe('startHttpAndWs listen failures', () => {
+  it('rejects when the port is already taken instead of hanging', async () => {
+    const host = '127.0.0.1'
+    const first = await startHttpAndWs({ context: await createTestContext(), host, port: 0, auth: false })
+
+    try {
+      await expect(
+        startHttpAndWs({ context: await createTestContext(), host, port: first.port, auth: false }),
+      ).rejects.toThrow(expect.objectContaining({ code: 'DF0052' }))
+    }
+    finally {
+      await first.close()
+    }
+  })
+})

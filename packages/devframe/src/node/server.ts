@@ -263,9 +263,30 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
   // Only start listening on a server we created. A shared server is already
   // (or about to be) listening under the caller's control.
   if (ownsHttpServer) {
-    await new Promise<void>((resolveListen) => {
-      httpServer.listen(port, bindHost, () => resolveListen())
-    })
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const onError = (error: Error): void => reject(error)
+        // Without this listener a failed bind emits `error` with nobody
+        // attached — an uncaughtException — and the `listen` callback never
+        // fires, so this promise never settles.
+        httpServer.once('error', onError)
+        httpServer.listen(port, bindHost, () => {
+          httpServer.removeListener('error', onError)
+          resolve()
+        })
+      })
+    }
+    catch (error) {
+      // The WS transport is already attached above, so tear it down before
+      // surfacing the failure rather than leaking it and its peers.
+      await closeWs().catch(() => {})
+      throw diagnostics.DF0052({
+        host: bindHost,
+        port,
+        reason: error instanceof Error ? error.message : String(error),
+        cause: error,
+      })
+    }
   }
 
   const address = httpServer.address()
