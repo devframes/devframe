@@ -44,13 +44,13 @@ export declare const alwaysFunctions: readonly [{
 }];
 export declare const assetInfoSchema: import("devframe/utils/simple-schema").SimpleSchema<{
   path: string;
-  type: "text" | "image" | "font" | "video" | "audio" | "other";
+  type: "image" | "font" | "video" | "audio" | "text" | "other";
   publicPath: string;
   size: number;
   mtime: number;
 }, {
   path: string;
-  type: "text" | "image" | "font" | "video" | "audio" | "other";
+  type: "image" | "font" | "video" | "audio" | "text" | "other";
   publicPath: string;
   size: number;
   mtime: number;
@@ -141,13 +141,13 @@ export declare const list: {
   args: readonly [];
   returns: import("devframe/utils/simple-schema").SimpleSchema<{
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }[], {
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -156,21 +156,21 @@ export declare const list: {
   agent?: import("devframe").RpcFunctionAgentOptions;
   setup?: ((context: DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }[]>>>) | undefined;
   handler?: (() => import("devframe/rpc").Thenable<{
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }[]>) | undefined;
   dump?: import("devframe/rpc").RpcDump<[], import("devframe/rpc").Thenable<{
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -178,14 +178,14 @@ export declare const list: {
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }[]>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], import("devframe/rpc").Thenable<{
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -454,13 +454,13 @@ export declare const rename: {
   }>];
   returns: import("devframe/utils/simple-schema").SimpleSchema<{
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
   }, {
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -472,7 +472,7 @@ export declare const rename: {
     newName: string;
   }], import("devframe/rpc").Thenable<{
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -482,7 +482,7 @@ export declare const rename: {
     newName: string;
   }) => import("devframe/rpc").Thenable<{
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -492,7 +492,7 @@ export declare const rename: {
     newName: string;
   }], import("devframe/rpc").Thenable<{
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -503,7 +503,7 @@ export declare const rename: {
     newName: string;
   }], import("devframe/rpc").Thenable<{
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
@@ -513,7 +513,7 @@ export declare const rename: {
     newName: string;
   }], import("devframe/rpc").Thenable<{
     path: string;
-    type: "text" | "image" | "font" | "video" | "audio" | "other";
+    type: "image" | "font" | "video" | "audio" | "text" | "other";
     publicPath: string;
     size: number;
     mtime: number;
