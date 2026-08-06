@@ -73,7 +73,7 @@
       "entry": [
         "src/{index,constants}.ts",
         "src/helpers/vite.ts",
-        "src/adapters/{build,cac,cli,dev,embedded}.ts",
+        "src/adapters/{build,cac,cli,dev,embedded,handler}.ts",
         "src/adapters/mcp/index.ts",
         "src/client/index.ts",
         "src/node/index.ts",

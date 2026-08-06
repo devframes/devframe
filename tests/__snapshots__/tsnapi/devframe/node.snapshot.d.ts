@@ -4,7 +4,7 @@
 // #region Interfaces
 export interface CreateH3DevframeHostOptions {
   app?: unknown;
-  origin: string;
+  origin: string | (() => string);
   mount?: (_: string, _: string) => void | Promise<void>;
   appName: string;
   workspaceRoot?: string;

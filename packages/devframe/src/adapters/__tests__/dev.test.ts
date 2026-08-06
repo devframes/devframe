@@ -19,7 +19,7 @@ vi.mock('devframe/utils/open', () => ({ open: vi.fn(async () => {}) }))
 function connectWsClient(host: string, port: number, authToken?: string) {
   return createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>(
     {} as DevframeRpcClientFunctions,
-    { channel: createWsRpcChannel({ url: `ws://${host}:${port}/__devframe_ws`, authToken }) },
+    { channel: createWsRpcChannel({ url: `ws://${host}:${port}/__ws`, authToken }) },
   )
 }
 
@@ -64,7 +64,7 @@ describe('adapters/dev', () => {
       const meta = await res.json()
       // Proxy-safe: the WS endpoint is advertised as a same-origin route
       // relative to `__connection.json`, never a baked-in host/port.
-      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__devframe_ws' } })
+      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' } })
     }
     finally {
       await handle.close()
@@ -129,7 +129,7 @@ describe('adapters/dev', () => {
 
     try {
       // Connects on the bound route.
-      const ok = new WebSocket(`ws://${host}:${port}/__devframe_ws`)
+      const ok = new WebSocket(`ws://${host}:${port}/__ws`)
       await expect(new Promise((resolve, reject) => {
         ok.on('open', () => resolve('open'))
         ok.on('error', reject)
@@ -205,11 +205,11 @@ describe('adapters/dev', () => {
       const meta = await (await fetch(`http://${host}:${port}/__connection.json`)).json()
       expect(meta).toEqual({
         backend: 'websocket',
-        websocket: { port: wsPort, path: '__devframe_ws' },
+        websocket: { port: wsPort, path: '__ws' },
       })
 
       // The socket is reachable on its own port, rooted at `/<route>`.
-      const ok = new WebSocket(`ws://${host}:${wsPort}/__devframe_ws`)
+      const ok = new WebSocket(`ws://${host}:${wsPort}/__ws`)
       await expect(new Promise((resolve, reject) => {
         ok.on('open', () => resolve('open'))
         ok.on('error', reject)
@@ -234,7 +234,7 @@ describe('adapters/dev', () => {
       homepage: 'https://example.test',
       description: 'Test devframe.',
       setup: () => {},
-      cli: { ws: { url: 'wss://devtools.example.com/relay/__devframe_ws' } },
+      cli: { ws: { url: 'wss://devtools.example.com/relay/__ws' } },
     })
     const host = '127.0.0.1'
     const port = await getPort({ port: 19860, host })
@@ -244,7 +244,7 @@ describe('adapters/dev', () => {
       const meta = await (await fetch(`http://${host}:${port}/__connection.json`)).json()
       expect(meta).toEqual({
         backend: 'websocket',
-        websocket: 'wss://devtools.example.com/relay/__devframe_ws',
+        websocket: 'wss://devtools.example.com/relay/__ws',
       })
     }
     finally {
@@ -276,7 +276,7 @@ describe('adapters/dev', () => {
       const res = await fetch(`http://${host}:${port}/__connection.json`)
       expect(res.ok).toBe(true)
       const meta = await res.json()
-      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__devframe_ws' } })
+      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' } })
 
       // The SPA mount is absent — without a distDir, no static handler
       // is wired, so the basePath returns a 404 from h3 instead of an
@@ -559,7 +559,7 @@ describe('adapters/dev', () => {
     })
 
     try {
-      const ws = new WebSocket(`ws://${host}:${port}/__devframe_ws`)
+      const ws = new WebSocket(`ws://${host}:${port}/__ws`)
       await new Promise<void>((resolve, reject) => {
         ws.on('open', () => resolve())
         ws.on('error', reject)

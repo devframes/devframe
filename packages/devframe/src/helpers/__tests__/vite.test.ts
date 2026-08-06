@@ -75,7 +75,7 @@ describe('viteDevBridge (bridge mode mcp)', () => {
     expect(metaHandler).toBeDefined()
     const meta = await readJsonMiddleware(metaHandler)
     expect(meta.backend).toBe('websocket')
-    expect(meta.websocket).toEqual({ port, path: '/__devframe_ws' })
+    expect(meta.websocket).toEqual({ port, path: '/__ws' })
     expect(meta.mcp).toEqual({ port, path: '/__mcp' })
 
     // The advertised endpoint is live: a real MCP client presenting a loopback
@@ -120,7 +120,7 @@ describe('viteDevBridge (auth default)', () => {
   /** Handshake result on a fresh, unauthenticated WS connection. */
   async function handshakeIsTrusted(port: number): Promise<boolean> {
     const rpc = createRpcClient<any, any>({}, {
-      channel: createWsRpcChannel({ url: `ws://127.0.0.1:${port}/__devframe_ws` }),
+      channel: createWsRpcChannel({ url: `ws://127.0.0.1:${port}/__ws` }),
     })
     try {
       const res = await rpc.$call('anonymous:devframe:auth', { authToken: '', ua: 'test', origin: 'http://localhost' }) as { isTrusted: boolean }

@@ -1,8 +1,4 @@
 // Devframe runtime routes and static output conventions.
-export const DEVFRAME_MOUNT_PATH = '/__devframe/'
-export const DEVFRAME_MOUNT_PATH_NO_TRAILING_SLASH = '/__devframe'
-export const DEVFRAME_DIRNAME = '__devframe'
-
 export const DEVFRAME_CONNECTION_META_FILENAME = '__connection.json'
 
 /**
@@ -19,7 +15,7 @@ export const DEVFRAME_CONNECTION_KEY = '__DEVFRAME_CONNECTION__'
  * both HTTP and WS, and a host server (Vite, etc.) can mount the WS upgrade
  * handler here without colliding with its own routes (HMR, asset serving).
  */
-export const DEVFRAME_WS_ROUTE = '__devframe_ws'
+export const DEVFRAME_WS_ROUTE = '__ws'
 
 /**
  * Route the Streamable-HTTP MCP endpoint is bound to, relative to a

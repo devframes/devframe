@@ -27,39 +27,39 @@ const extensionLoc: WsUrlLocation = {
 describe('resolveWsUrl', () => {
   it('resolves a relative path against the meta base, same-origin', () => {
     const url = resolveWsUrl(
-      { path: '__devframe_ws' },
+      { path: '__ws' },
       'http://localhost:5173/__foo/__connection.json',
       httpLoc,
     )
-    expect(url).toBe('ws://localhost:5173/__foo/__devframe_ws')
+    expect(url).toBe('ws://localhost:5173/__foo/__ws')
   })
 
   it('follows the page origin through a proxy (host + subpath + tls)', () => {
     // The server has no idea about the proxy's host — the client reuses its own.
     const url = resolveWsUrl(
-      { path: '__devframe_ws' },
+      { path: '__ws' },
       'https://devtools.example.com/app/__foo/__connection.json',
       httpsProxyLoc,
     )
-    expect(url).toBe('wss://devtools.example.com/app/__foo/__devframe_ws')
+    expect(url).toBe('wss://devtools.example.com/app/__foo/__ws')
   })
 
   it('roots an explicit-port endpoint at the page hostname (side-car)', () => {
     const url = resolveWsUrl(
-      { port: 9777, path: '/__devframe_ws' },
+      { port: 9777, path: '/__ws' },
       'http://localhost:5173/__hub/__connection.json',
       httpLoc,
     )
-    expect(url).toBe('ws://localhost:9777/__devframe_ws')
+    expect(url).toBe('ws://localhost:9777/__ws')
   })
 
   it('honors an explicit host override', () => {
     const url = resolveWsUrl(
-      { host: 'inner:1234', path: '/__devframe_ws' },
+      { host: 'inner:1234', path: '/__ws' },
       'http://localhost:5173/__connection.json',
       httpLoc,
     )
-    expect(url).toBe('ws://inner:1234/__devframe_ws')
+    expect(url).toBe('ws://inner:1234/__ws')
   })
 
   it('keeps the legacy numeric-port form on the metadata hostname', () => {

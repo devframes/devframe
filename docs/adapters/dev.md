@@ -35,18 +35,18 @@ process.on('SIGINT', () => handle.close().then(() => process.exit(0)))
 
 ## WebSocket endpoint
 
-By default the RPC socket shares the HTTP server's port and binds to the `__devframe_ws` route next to `__connection.json`. The descriptor advertises a *relative* path, so the client connects to its own origin — the link follows the page through a reverse proxy that rewrites the domain, port, or subpath. Configure the three connection scenarios via `def.cli.ws` (or the `ws` call-site option):
+By default the RPC socket shares the HTTP server's port and binds to the `__ws` route next to `__connection.json`. The descriptor advertises a *relative* path, so the client connects to its own origin — the link follows the page through a reverse proxy that rewrites the domain, port, or subpath. Configure the three connection scenarios via `def.cli.ws` (or the `ws` call-site option):
 
 ```ts
 defineDevframe({
-  // 1. Same server, a custom route (default route is `__devframe_ws`):
+  // 1. Same server, a custom route (default route is `__ws`):
   cli: { ws: { route: '__sockets' } },
 
   // 2. A dedicated port on the same host:
   cli: { ws: { port: 9788 } },
 
   // 3. A remote, fully-qualified endpoint (e.g. a tunnel/relay):
-  cli: { ws: { url: 'wss://devtools.example.com/relay/__devframe_ws' } },
+  cli: { ws: { url: 'wss://devtools.example.com/relay/__ws' } },
 })
 ```
 

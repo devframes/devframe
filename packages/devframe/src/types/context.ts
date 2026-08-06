@@ -92,8 +92,8 @@ export interface DevframeNodeContext {
  */
 export interface ConnectionMetaWebsocket {
   /**
-   * Path to the WS endpoint. Relative paths (the default, e.g. `__devframe_ws`) are
-   * resolved against `__connection.json`'s location; absolute paths (`/__devframe_ws`)
+   * Path to the WS endpoint. Relative paths (the default, e.g. `__ws`) are
+   * resolved against `__connection.json`'s location; absolute paths (`/__ws`)
    * resolve against the page origin.
    */
   path?: string

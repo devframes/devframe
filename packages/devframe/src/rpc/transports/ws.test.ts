@@ -250,11 +250,11 @@ describe('devframe rpc', () => {
 
     const serverFunctions = { ping: () => 'pong' }
     const server = createRpcServer<Record<string, never>, typeof serverFunctions>(serverFunctions)
-    const { close } = attachWsRpcTransport(server, { server: httpServer, path: '/__devframe_ws' })
+    const { close } = attachWsRpcTransport(server, { server: httpServer, path: '/__ws' })
 
     try {
       const client = createRpcClient<typeof serverFunctions, Record<string, never>>({}, {
-        channel: createWsRpcChannel({ url: `ws://${HOST}:${PORT}/__devframe_ws` }),
+        channel: createWsRpcChannel({ url: `ws://${HOST}:${PORT}/__ws` }),
       })
       expect(await client.$call('ping')).toBe('pong')
 

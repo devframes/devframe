@@ -151,7 +151,7 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
 
       // The side-car listens on its own port, so the browser must target that
       // port explicitly (it can't reach the WS on Vite's origin). The route is
-      // `/__devframe_ws` — the bridge `createDevServer` mounts the SPA at `/`, so its WS
+      // `/__ws` — the bridge `createDevServer` mounts the SPA at `/`, so its WS
       // upgrade handler is bound there. The MCP route (when enabled) lives on
       // the same side-car origin, advertised with the same explicit port.
       const mcpMeta = resolveMcpConnectionMeta(d, options.mcp, port)

@@ -33,7 +33,7 @@ export type DevframeDuplicationStrategy = 'warn' | 'silent' | 'throw' | 'duplica
  *
  *   1. **Same server, different route** (default) — leave `port`/`url` unset.
  *      The socket shares the HTTP server's port and binds to `route`
- *      (`__devframe_ws`). The client connects to its own origin, so the link
+ *      (`__ws`). The client connects to its own origin, so the link
  *      survives a reverse proxy that rewrites the host/port/subpath.
  *
  *   2. **Different port** — set `port`. The socket binds on its own port on the
@@ -45,7 +45,7 @@ export type DevframeDuplicationStrategy = 'warn' | 'silent' | 'throw' | 'duplica
 export interface DevframeWsOptions {
   /**
    * Upgrade route segment the socket binds to and is advertised at, relative
-   * to the SPA base. Default: `__devframe_ws`.
+   * to the SPA base. Default: `__ws`.
    */
   route?: string
   /**
@@ -150,7 +150,7 @@ export interface DevframeCliOptions {
   distDir?: string
   /**
    * How the browser reaches the RPC WebSocket. Defaults to sharing the HTTP
-   * port on the `__devframe_ws` route. See {@link DevframeWsOptions} for the
+   * port on the `__ws` route. See {@link DevframeWsOptions} for the
    * different-port and remote-origin variants.
    */
   ws?: DevframeWsOptions

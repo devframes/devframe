@@ -9,8 +9,10 @@ export interface CreateH3DevframeHostOptions {
   /**
    * Host the standalone server listens on, e.g. `http://localhost:9999`.
    * Consumed by `resolveOrigin` for dock entries that need an absolute URL.
+   * Pass a function for hosts that only learn their public origin later
+   * (e.g. `createHandler` derives it from the first incoming request).
    */
-  origin: string
+  origin: string | (() => string)
   /**
    * Register a static-file handler at `base` serving files from `distDir`.
    * Wired into the h3 app once the CLI adapter lands (commit 5). For now
@@ -43,7 +45,7 @@ export function createH3DevframeHost(options: CreateH3DevframeHostOptions): Devf
       return options.mount?.(base, distDir)
     },
     resolveOrigin() {
-      return options.origin
+      return typeof options.origin === 'function' ? options.origin() : options.origin
     },
     getStorageDir(scope) {
       const namespace = `.${options.appName}/devframe`

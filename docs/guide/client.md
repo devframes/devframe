@@ -229,12 +229,12 @@ With caching on, `query` / `static` function responses are memoized per argument
 
 ## Discovery (`__connection.json`)
 
-Devframe writes a JSON descriptor at `<base>/__connection.json` so the client knows where to connect. The dev server shares one port for HTTP and the WebSocket — the socket is bound to a route (`<base>__devframe_ws`) next to the meta file — and advertises it as a relative path:
+Devframe writes a JSON descriptor at `<base>/__connection.json` so the client knows where to connect. The dev server shares one port for HTTP and the WebSocket — the socket is bound to a route (`<base>__ws`) next to the meta file — and advertises it as a relative path:
 
 ```json
 {
   "backend": "websocket",
-  "websocket": { "path": "__devframe_ws" }
+  "websocket": { "path": "__ws" }
 }
 ```
 

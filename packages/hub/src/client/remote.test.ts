@@ -8,7 +8,7 @@ import {
 } from './remote'
 
 const connection: DevframeConnection = {
-  connectionMeta: { backend: 'websocket', websocket: { path: '__devframe_ws' } },
+  connectionMeta: { backend: 'websocket', websocket: { path: '__ws' } },
   metaBaseUrl: 'http://localhost:5173/__devtools/__connection.json',
   authToken: 'secret',
 }
@@ -19,7 +19,7 @@ describe('remote connection URLs', () => {
     expect(parseRemoteConnection(url)).toEqual({
       v: 1,
       backend: 'websocket',
-      websocket: 'ws://localhost:5173/__devtools/__devframe_ws',
+      websocket: 'ws://localhost:5173/__devtools/__ws',
       authToken: 'secret',
       origin: 'http://localhost:5173',
     })
@@ -39,7 +39,7 @@ describe('remote connection URLs', () => {
       {
         v: 1,
         backend: 'websocket',
-        websocket: 'ws://localhost:5173/__devtools/__devframe_ws',
+        websocket: 'ws://localhost:5173/__devtools/__ws',
         authToken: 'secret',
         origin: 'http://localhost:5173',
       },
@@ -66,7 +66,7 @@ describe('remote connection URLs', () => {
     const query = buildRemoteConnectionUrl('https://viewer.example/?tab=state#section', {
       v: 1,
       backend: 'websocket',
-      websocket: 'ws://localhost:5173/__devtools/__devframe_ws',
+      websocket: 'ws://localhost:5173/__devtools/__ws',
       authToken: 'secret',
       origin: 'http://localhost:5173',
     }, 'query')

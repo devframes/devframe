@@ -56,7 +56,7 @@ class FakeWebSocket {
 
 const connectionMeta: ConnectionMeta = {
   backend: 'websocket',
-  websocket: { path: '__devframe_ws' },
+  websocket: { path: '__ws' },
 }
 
 function setup(callTimeout?: number) {

@@ -5,6 +5,7 @@
 export { attachWsRpcTransport }
 export { createWsOriginRegistry }
 export { CreateWsOriginRegistryOptions }
+export { createWsRpcPeerHooks }
 export { DevframeNodeRpcSessionMeta }
 export { isAllowedOrigin }
 export { isLoopbackHostname }

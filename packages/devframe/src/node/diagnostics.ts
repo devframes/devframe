@@ -116,5 +116,13 @@ export const diagnostics = defineDiagnostics({
       why: (p: { host: string, port: number, reason: string }) => `Failed to listen on ${p.host}:${p.port}: ${p.reason}`,
       fix: 'The port is likely already taken by another process (often a previous devframe instance). Free it, or pick another via `--port`, `cli.port` / `cli.portRange` on the definition, or `devMiddleware.port` on `viteDevBridge`. The original node error is available as `error.cause`.',
     },
+    DF0053: {
+      why: (p: { key: string, id: string }) => `createHandler("${p.id}") replaced the live handler memoized under key "${p.key}": its options changed since the previous call.`,
+      fix: 'A dev-time module reload re-ran createHandler with different options, so the old instance (and its side-car WebSocket server) was closed and a new one started. If this is unexpected, keep the options stable across reloads — or use distinct keys for genuinely different handlers.',
+    },
+    DF0054: {
+      why: (p: { id: string }) => `connectionMeta() was called before createHandler("${p.id}") finished initializing.`,
+      fix: 'Await `handler.ready` (or any `handler.fetch` call) before reading `connectionMeta()` — the WebSocket binding it describes is only known once initialization completes.',
+    },
   },
 })

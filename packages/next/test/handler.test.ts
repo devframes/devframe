@@ -50,7 +50,7 @@ describe('createDevframeNextHandler', () => {
     const body = await meta.json() as { backend: string, websocket: { port: number, path: string } }
     expect(body.backend).toBe('websocket')
     expect(typeof body.websocket.port).toBe('number')
-    expect(body.websocket.path).toBe('/__devframe_ws')
+    expect(body.websocket.path).toBe('/__ws')
 
     // Unmounted base → bare 404.
     const miss = await handler.fetch(new Request(`${origin}/__other/x`))
