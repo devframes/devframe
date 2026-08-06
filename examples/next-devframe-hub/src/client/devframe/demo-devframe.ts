@@ -7,7 +7,9 @@ import pkg from '../../../package.json' with { type: 'json' }
 const HERE = dirname(fileURLToPath(import.meta.url))
 
 export default defineDevframe({
-  id: 'example:next-demo-tool',
+  // Colon-free: the hub instance derives the mount path (`/__devframes/<id>/`)
+  // from the id, and `:` is a route-param marker to the router underneath.
+  id: 'next-demo-tool',
   name: 'Next Demo Tool',
   version: pkg.version,
   packageName: pkg.name,

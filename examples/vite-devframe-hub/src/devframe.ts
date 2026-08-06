@@ -13,7 +13,9 @@ import pkg from '../package.json' with { type: 'json' }
  * threads a hub-augmented context through `d.setup`.
  */
 export default defineDevframe({
-  id: 'example:demo-tool',
+  // Colon-free: the hub instance derives the mount path (`/__devframes/<id>/`)
+  // from the id, and `:` is a route-param marker to the router underneath.
+  id: 'demo-tool',
   name: 'Demo Tool',
   version: pkg.version,
   packageName: pkg.name,

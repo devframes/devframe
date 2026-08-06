@@ -40,6 +40,9 @@ catalogs:
       specifier: ^2.11.14
       version: 2.11.14
   deps:
+    '@hono/node-server':
+      specifier: ^1.19.9
+      version: 1.19.17
     '@json-render/core':
       specifier: ^0.19.0
       version: 0.19.0
@@ -70,6 +73,9 @@ catalogs:
     h3:
       specifier: ^2.0.1-rc.26
       version: 2.0.1-rc.26
+    hono:
+      specifier: ^4.11.9
+      version: 4.13.0
     image-meta:
       specifier: ^0.2.2
       version: 0.2.2
@@ -85,6 +91,9 @@ catalogs:
     mrmime:
       specifier: ^2.0.1
       version: 2.0.1
+    nitro:
+      specifier: ^3.0.260610-beta
+      version: 3.0.260610-beta
     nostics:
       specifier: ^1.2.0
       version: 1.2.0
@@ -532,6 +541,37 @@ importers:
         specifier: catalog:deps
         version: 8.21.2
 
+  examples/hono-devframe-hub:
+    dependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@devframes/hub-ui':
+        specifier: workspace:*
+        version: link:../../packages/hub-ui
+      '@devframes/plugin-inspect':
+        specifier: workspace:*
+        version: link:../../plugins/inspect
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
+      '@hono/node-server':
+        specifier: catalog:deps
+        version: 1.19.17(hono@4.13.0)
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      hono:
+        specifier: catalog:deps
+        version: 4.13.0
+    devDependencies:
+      '@types/node':
+        specifier: catalog:types
+        version: 26.1.2
+      tsx:
+        specifier: catalog:build
+        version: 4.23.6
+
   examples/json-render:
     dependencies:
       '@devframes/json-render':
@@ -690,6 +730,31 @@ importers:
         specifier: catalog:deps
         version: 8.21.2
 
+  examples/nitro-devframe-hub:
+    dependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@devframes/hub-ui':
+        specifier: workspace:*
+        version: link:../../packages/hub-ui
+      '@devframes/plugin-inspect':
+        specifier: workspace:*
+        version: link:../../plugins/inspect
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      nitro:
+        specifier: catalog:deps
+        version: 3.0.260610-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.3.6)(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0))
+    devDependencies:
+      '@types/node':
+        specifier: catalog:types
+        version: 26.1.2
+
   examples/streaming-chat:
     dependencies:
       '@antfu/design':
@@ -796,9 +861,6 @@ importers:
       '@vitejs/plugin-vue':
         specifier: catalog:build
         version: 6.0.8(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0))(vue@3.5.40(typescript@6.0.3))
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
       pathe:
         specifier: catalog:deps
         version: 2.0.3
@@ -2449,6 +2511,12 @@ packages:
 
   '@floating-ui/vue@1.1.11':
     resolution: {integrity: sha512-HzHKCNVxnGS35r9fCHBc3+uCnjw9IWIlCPL683cGgM9Kgj2BiAl8x1mS7vtvP6F9S/e/q4O6MApwSHj8hNLGfw==}
+
+  '@hono/node-server@1.19.17':
+    resolution: {integrity: sha512-dSneS5qhiauZWGDCeK4o695Xd9nUNjviSZCMQrj10eetr8Uln1ucn6bbphOM6UynAMMtNIzZNSpL9vnASJwrPQ==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -6426,6 +6494,24 @@ packages:
     resolution: {integrity: sha512-zwfzJecQ/Uej6tusMqwAqU/6KL2XaB2VZ2Jg54Je6ahNBGNH6Ek6g3jjNCF0fG9EWQKGZNddNjU5F1ZQn/sBnA==}
     engines: {node: '>=20.19.0'}
 
+  env-runner@0.1.16:
+    resolution: {integrity: sha512-2LRJM4P2KLX6J83QZZrMqvgCDt/D5ea7wPcI3yYiy5cG/9rX5QwdwZFx0D7ktWnjdRyZxYjttGGorb5nFqb1CA==}
+    hasBin: true
+    peerDependencies:
+      '@netlify/runtime': ^4.1.23
+      '@vercel/queue': '>=0.2.0'
+      miniflare: ^4.20260515.0
+      wrangler: ^4.0.0
+    peerDependenciesMeta:
+      '@netlify/runtime':
+        optional: true
+      '@vercel/queue':
+        optional: true
+      miniflare:
+        optional: true
+      wrangler:
+        optional: true
+
   error-stack-parser-es@1.0.5:
     resolution: {integrity: sha512-5qucVt2XcuGMcEGgWI7i+yZpmpByQ8J1lHhcL7PwqCwu9FPP3VUXzT4ltHe5i2z9dePwEHcDVOAfSnHsOlCXRA==}
 
@@ -6964,6 +7050,16 @@ packages:
   h3@1.15.11:
     resolution: {integrity: sha512-L3THSe2MPeBwgIZVSH5zLdBBU90TOxarvhK9d04IDY2AmVS8j2Jz2LIWtwsGOU3lu2I5jCN7FNvVfY2+XyF+mg==}
 
+  h3@2.0.1-rc.22:
+    resolution: {integrity: sha512-Esv0DMIuPkCTSWCA0vO73vcTqwzH1wjSrAO1TXNu/K3up1sZHa9EKMapbmxCDYBeymC3fVTk4qxp7ogQWQ+KgA==}
+    engines: {node: '>=20.11.1'}
+    hasBin: true
+    peerDependencies:
+      crossws: ^0.4.10
+    peerDependenciesMeta:
+      crossws:
+        optional: true
+
   h3@2.0.1-rc.26:
     resolution: {integrity: sha512-GDxlvDsKxgjRvG5UBRJYyGJTMWLV30CJ4cV+e7QCTgftDHihrvio1fVPbNembhEr6J4WNm8IWy3fookgyTweLw==}
     engines: {node: '>=20.11.1'}
@@ -7006,6 +7102,10 @@ packages:
     resolution: {integrity: sha512-H7ph5MF3lrc8BE47hhyHi+ZgoRiGi5kqxnA5Ou6rg9dVHtPnmUU8/Man19X/H3Cj1C/DF+jsN/ch9eV7nfpzMQ==}
     engines: {node: '>=8.0.0'}
 
+  hono@4.13.0:
+    resolution: {integrity: sha512-jhunvfHWxd7J5EFfSgH4xsYJzSe/lfqbUCxiyyeaQasUsXeEHXtzVid+7EOGByc5JnFa23SSFL3Y2RV/z1T+eQ==}
+    engines: {node: '>=16.9.0'}
+
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
 
@@ -7035,6 +7135,9 @@ packages:
 
   httpxy@0.5.1:
     resolution: {integrity: sha512-JPhqYiixe1A1I+MXDewWDZqeudBGU8Q9jCHYN8ML+779RQzLjTi78HBvWz4jMxUD6h2/vUL12g4q/mFM0OUw1A==}
+
+  httpxy@0.5.5:
+    resolution: {integrity: sha512-uDjmnPyp1q4Sgzf3w+J/Fc6UqcCEj0x4Wjp7OqK5dGhNeDgpyrAmnS6ey8QWrX3SWDon2DMKf9sBa5X9+CVyMA==}
 
   human-signals@5.0.0:
     resolution: {integrity: sha512-AXcZb6vzzrFAUE61HnN4mpLqd/cSIwNQjtNWR0euPm6y0iqx3G4gOXaIDdtdDwZmhwe82LA6+zinmW4UBWVePQ==}
@@ -7797,6 +7900,40 @@ packages:
       sass:
         optional: true
 
+  nf3@0.3.23:
+    resolution: {integrity: sha512-RWVLAWozmVD3AaDmaU3qMGB3v+yNlH5d9qqStI4e/WLlNQVnJ4YErGDbYCIrGFyrHdbF6I6Baf0Ae6c7tFYmSg==}
+
+  nitro@3.0.260610-beta:
+    resolution: {integrity: sha512-KPb4L5yaF/Rx/xoGMpgHRJvZhbhGiqbRKOwwPLCH9jKTKTsEUHLjnJas85AeCzaswqa8Wi52eQBtRsODC4PS0Q==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    hasBin: true
+    peerDependencies:
+      '@vercel/queue': ^0.3.0
+      dotenv: '*'
+      giget: '*'
+      jiti: ^2.7.0
+      rollup: ^4.61.1
+      vite: ^7 || ^8
+      xml2js: ^0.6.2
+      zephyr-agent: ^0.2.0
+    peerDependenciesMeta:
+      '@vercel/queue':
+        optional: true
+      dotenv:
+        optional: true
+      giget:
+        optional: true
+      jiti:
+        optional: true
+      rollup:
+        optional: true
+      vite:
+        optional: true
+      xml2js:
+        optional: true
+      zephyr-agent:
+        optional: true
+
   nitropack@2.13.4:
     resolution: {integrity: sha512-tX7bT6zxNeMwkc6hxHiZeUoTOjVrcjoh1Z3cmxOlodIqjl4HISgqfGOmkWSayky3Nv9Z5+KQH52F8nmXJY5AAA==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -7897,6 +8034,9 @@ packages:
   obug@2.1.4:
     resolution: {integrity: sha512-4a+OsYv9UktOJKE+l1A4OufDgdRF9PifWj+tJnHURo/P+WOxpG4GzUFL9qCalmWauao6ogiG+QvnCovwPoyAWA==}
     engines: {node: '>=12.20.0'}
+
+  ocache@0.1.5:
+    resolution: {integrity: sha512-kNNnkkVQup/QDvmTz8Q84wc2ntiyoVHDxa6eHWKt5qdGAmFRBIxy83rxgCYEjW0x06UJ9E3P6VgM2yY4rOBH4w==}
 
   ofetch@1.5.1:
     resolution: {integrity: sha512-2W4oUZlVaqAPAil6FUg/difl6YhqhUR7x2eZY4bQCko22UXg3hptq9KLQdqFClV+Wu85UX7hNtdGTngi/1BxcA==}
@@ -8550,6 +8690,9 @@ packages:
     resolution: {integrity: sha512-pAQK9HalE84QSm4Po3EmWIZPd3FnjkShVkiMlz1iligWYkWQ7wHYd1PF/T7QZ5TVSD6uSTon5gBVMSM4JfBV+A==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
+
+  rou3@0.8.1:
+    resolution: {integrity: sha512-ePa+XGk00/3HuCqrEnK3LxJW7I0SdNg6EFzKUJG73hMAdDcOUC/i/aSz7LSDwLrGr33kal/rqOGydzwl6U7zBA==}
 
   rou3@0.9.1:
     resolution: {integrity: sha512-z/sSmzvtwMDDnxsPVhfWMuG6F6mbmhFDXoVqLmMfbpDD9qfV3GDmSQpf0+W296/ZDIpW2wcMmBfpVFzcnOi/nA==}
@@ -9333,6 +9476,80 @@ packages:
       idb-keyval:
         optional: true
       ioredis:
+        optional: true
+      uploadthing:
+        optional: true
+
+  unstorage@2.0.0-alpha.7:
+    resolution: {integrity: sha512-ELPztchk2zgFJnakyodVY3vJWGW9jy//keJ32IOJVGUMyaPydwcA1FtVvWqT0TNRch9H+cMNEGllfVFfScImog==}
+    peerDependencies:
+      '@azure/app-configuration': ^1.11.0
+      '@azure/cosmos': ^4.9.1
+      '@azure/data-tables': ^13.3.2
+      '@azure/identity': ^4.13.0
+      '@azure/keyvault-secrets': ^4.10.0
+      '@azure/storage-blob': ^12.31.0
+      '@capacitor/preferences': ^6 || ^7 || ^8
+      '@deno/kv': '>=0.13.0'
+      '@netlify/blobs': ^6.5.0 || ^7.0.0 || ^8.1.0 || ^9.0.0 || ^10.0.0
+      '@planetscale/database': ^1.19.0
+      '@upstash/redis': ^1.36.2
+      '@vercel/blob': '>=0.27.3'
+      '@vercel/functions': ^2.2.12 || ^3.0.0
+      '@vercel/kv': ^1.0.1
+      aws4fetch: ^1.0.20
+      chokidar: ^5.0.0
+      db0: '>=0.3.4'
+      idb-keyval: ^6.2.2
+      ioredis: ^5.9.3
+      lru-cache: ^11.2.6
+      mongodb: ^6 || ^7
+      ofetch: '*'
+      uploadthing: ^7.7.4
+    peerDependenciesMeta:
+      '@azure/app-configuration':
+        optional: true
+      '@azure/cosmos':
+        optional: true
+      '@azure/data-tables':
+        optional: true
+      '@azure/identity':
+        optional: true
+      '@azure/keyvault-secrets':
+        optional: true
+      '@azure/storage-blob':
+        optional: true
+      '@capacitor/preferences':
+        optional: true
+      '@deno/kv':
+        optional: true
+      '@netlify/blobs':
+        optional: true
+      '@planetscale/database':
+        optional: true
+      '@upstash/redis':
+        optional: true
+      '@vercel/blob':
+        optional: true
+      '@vercel/functions':
+        optional: true
+      '@vercel/kv':
+        optional: true
+      aws4fetch:
+        optional: true
+      chokidar:
+        optional: true
+      db0:
+        optional: true
+      idb-keyval:
+        optional: true
+      ioredis:
+        optional: true
+      lru-cache:
+        optional: true
+      mongodb:
+        optional: true
+      ofetch:
         optional: true
       uploadthing:
         optional: true
@@ -10484,6 +10701,10 @@ snapshots:
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
+
+  '@hono/node-server@1.19.17(hono@4.13.0)':
+    dependencies:
+      hono: 4.13.0
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -14275,6 +14496,13 @@ snapshots:
 
   entities@8.0.0: {}
 
+  env-runner@0.1.16:
+    dependencies:
+      crossws: 0.4.10(srvx@0.11.22)
+      exsolve: 1.1.0
+      httpxy: 0.5.5
+      srvx: 0.11.22
+
   error-stack-parser-es@1.0.5: {}
 
   errx@0.1.0: {}
@@ -14886,6 +15114,13 @@ snapshots:
     transitivePeerDependencies:
       - srvx
 
+  h3@2.0.1-rc.22(crossws@0.4.10(srvx@0.11.22)):
+    dependencies:
+      rou3: 0.8.1
+      srvx: 0.11.22
+    optionalDependencies:
+      crossws: 0.4.10(srvx@0.11.22)
+
   h3@2.0.1-rc.26(crossws@0.4.10(srvx@0.12.4)):
     dependencies:
       rou3: 0.9.1
@@ -14931,6 +15166,8 @@ snapshots:
     dependencies:
       ansi-styles: 3.2.1
 
+  hono@4.13.0: {}
+
   hookable@5.5.3: {}
 
   hookable@6.1.1: {}
@@ -14959,6 +15196,8 @@ snapshots:
       - supports-color
 
   httpxy@0.5.1: {}
+
+  httpxy@0.5.5: {}
 
   human-signals@5.0.0: {}
 
@@ -15901,6 +16140,61 @@ snapshots:
       - '@types/node'
       - babel-plugin-macros
 
+  nf3@0.3.23: {}
+
+  nitro@3.0.260610-beta(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.3.6)(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0)):
+    dependencies:
+      consola: 3.4.2
+      crossws: 0.4.10(srvx@0.11.22)
+      db0: 0.3.4
+      env-runner: 0.1.16
+      h3: 2.0.1-rc.22(crossws@0.4.10(srvx@0.11.22))
+      hookable: 6.1.1
+      nf3: 0.3.23
+      ocache: 0.1.5
+      ofetch: 2.0.0-alpha.3
+      ohash: 2.0.11
+      rolldown: 1.2.0
+      srvx: 0.11.22
+      unenv: 2.0.0-rc.24
+      unstorage: 2.0.0-alpha.7(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.1(supports-color@10.2.2))(lru-cache@11.3.6)(ofetch@2.0.0-alpha.3)
+    optionalDependencies:
+      dotenv: 17.4.2
+      giget: 3.3.0
+      jiti: 2.7.0
+      vite: 8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0)
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@deno/kv'
+      - '@electric-sql/pglite'
+      - '@libsql/client'
+      - '@netlify/blobs'
+      - '@netlify/runtime'
+      - '@planetscale/database'
+      - '@upstash/redis'
+      - '@vercel/blob'
+      - '@vercel/functions'
+      - '@vercel/kv'
+      - aws4fetch
+      - better-sqlite3
+      - chokidar
+      - drizzle-orm
+      - idb-keyval
+      - ioredis
+      - lru-cache
+      - miniflare
+      - mongodb
+      - mysql2
+      - sqlite3
+      - uploadthing
+      - wrangler
+
   nitropack@2.13.4(oxc-parser@0.140.0)(rolldown@1.2.0)(srvx@0.11.22)(supports-color@10.2.2)(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0)):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.2
@@ -16209,6 +16503,10 @@ snapshots:
   object-identity@0.2.3: {}
 
   obug@2.1.4: {}
+
+  ocache@0.1.5:
+    dependencies:
+      ohash: 2.0.11
 
   ofetch@1.5.1:
     dependencies:
@@ -17061,6 +17359,8 @@ snapshots:
       '@rollup/rollup-win32-x64-gnu': 4.60.3
       '@rollup/rollup-win32-x64-msvc': 4.60.3
       fsevents: 2.3.3
+
+  rou3@0.8.1: {}
 
   rou3@0.9.1: {}
 
@@ -17925,6 +18225,14 @@ snapshots:
       ioredis: 5.10.1(supports-color@10.2.2)
     transitivePeerDependencies:
       - srvx
+
+  unstorage@2.0.0-alpha.7(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.1(supports-color@10.2.2))(lru-cache@11.3.6)(ofetch@2.0.0-alpha.3):
+    optionalDependencies:
+      chokidar: 5.0.0
+      db0: 0.3.4
+      ioredis: 5.10.1(supports-color@10.2.2)
+      lru-cache: 11.3.6
+      ofetch: 2.0.0-alpha.3
 
   untun@0.1.3:
     dependencies:

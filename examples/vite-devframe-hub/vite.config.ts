@@ -1,9 +1,8 @@
-import { mountDevframe } from '@devframes/hub/node'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 import a11yDevframe, { a11yAgentBundlePath } from '@devframes/plugin-a11y'
 import assetsDevframe from '@devframes/plugin-assets'
 import codeServerDevframe from '@devframes/plugin-code-server'
-import dataInspectorDevframe from '@devframes/plugin-data-inspector'
+import { createDataInspectorDevframe } from '@devframes/plugin-data-inspector'
 import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
 import gitDevframe from '@devframes/plugin-git'
 import inspectDevframe from '@devframes/plugin-inspect'
@@ -19,6 +18,12 @@ import demoDevframe from './src/devframe'
 import demoDevframeB from './src/devframe-b'
 import tabbedToolDevframe from './src/tabbed-tool'
 import { viteDevframeHub } from './src/vite-devframe-hub'
+
+// Colon-free id override: the hub instance derives each frame's mount path
+// (`/__devframes/<id>/`) from its id, and `:` — which the plugin's default id
+// (`devframes:plugin:data-inspector`) carries — is a route-param marker to
+// the router underneath.
+const dataInspectorDevframe = createDataInspectorDevframe({ id: 'devframes_plugin_data-inspector' })
 
 export default defineConfig({
   resolve: { alias },
@@ -74,6 +79,20 @@ export default defineConfig({
         messagesDevframe,
         ogDevframe,
         assetsDevframe,
+        // Shared-iframe soft-navigation demo. The hub instance serves the SPA
+        // and registers its iframe dock; the `dock` override marks it a
+        // `subTabs` anchor (a shared `frameId` + the postmessage protocol) so
+        // the client host attaches the frame-nav adapter, materializing one
+        // client-only dock per tab the SPA's shim reports — all sharing this
+        // one iframe.
+        {
+          devframe: tabbedToolDevframe,
+          dock: {
+            category: 'app',
+            frameId: 'tabbed-tool',
+            subTabs: { protocol: 'postmessage' },
+          },
+        },
       ],
       // Attach the a11y inspector's in-page agent as its dock's client script.
       // The hub client runtime (booted in src/client/main.ts) imports it into
@@ -85,7 +104,7 @@ export default defineConfig({
       // Dogfood the opt-in JSON-render hub integration: author a view on the
       // hub context and project it onto a `json-render` dock. The client host
       // (src/client/main.ts) renders it via @devframes/json-render-ui.
-      onContextReady: async (context) => {
+      onContextReady: (context) => {
         const view = createDashboardView(context)
         context.docks.register(toJsonRenderDockEntry(view, {
           id: 'example:json-render',
@@ -93,19 +112,6 @@ export default defineConfig({
           icon: 'ph:layout-duotone',
           category: 'app',
         }))
-
-        // Shared-iframe soft-navigation demo. mountDevframe serves the SPA and
-        // registers its iframe dock; the `dock` override marks it a `subTabs`
-        // anchor (a shared `frameId` + the postmessage protocol) so the client
-        // host attaches the frame-nav adapter, materializing one client-only
-        // dock per tab the SPA's shim reports — all sharing this one iframe.
-        await mountDevframe(context, tabbedToolDevframe, {
-          dock: {
-            category: 'app',
-            frameId: 'tabbed-tool',
-            subTabs: { protocol: 'postmessage' },
-          },
-        })
       },
     }),
   ],

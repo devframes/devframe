@@ -15,7 +15,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createReactJsonRenderDockRenderer } from '../json-render/dock-renderer'
 import { dockIconSvg } from './icons'
 
-const HUB_BASE = '/__hub/'
+const HUB_BASE = '/__devframes/'
 
 interface Status {
   text: string

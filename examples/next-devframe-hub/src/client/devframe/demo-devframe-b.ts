@@ -7,7 +7,7 @@ import pkg from '../../../package.json' with { type: 'json' }
 const HERE = dirname(fileURLToPath(import.meta.url))
 
 export default defineDevframe({
-  id: 'example:next-demo-tool-b',
+  id: 'next-demo-tool-b',
   name: 'Next Demo Tool B',
   version: pkg.version,
   packageName: pkg.name,

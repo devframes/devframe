@@ -13,7 +13,7 @@ import { dockIconSvg } from './icons'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
 
-const HUB_BASE = '/__hub/'
+const HUB_BASE = '/__devframes/'
 
 const connEl = document.querySelector<HTMLElement>('#conn')!
 const docksEl = document.querySelector<HTMLElement>('#docks')!

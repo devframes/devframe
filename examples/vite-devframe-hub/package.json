@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.8.2",
   "private": true,
-  "description": "Protocol-witness example — a tiny Vite Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
+  "description": "Protocol-witness example \u2014 a tiny Vite Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/vite-devframe-hub",
   "scripts": {
     "dev": "pnpm -C ../.. run build && vite",
@@ -33,7 +33,6 @@
   "devDependencies": {
     "@iconify-json/ph": "catalog:frontend",
     "@vitejs/plugin-vue": "catalog:build",
-    "get-port-please": "catalog:deps",
     "pathe": "catalog:deps",
     "unocss": "catalog:frontend",
     "vite": "catalog:build"

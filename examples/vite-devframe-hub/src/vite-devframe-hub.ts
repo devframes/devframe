@@ -1,25 +1,33 @@
+import type { HubDevframeEntry, HubInstance } from '@devframes/hub/initiate'
 import type { DevframeHubContext } from '@devframes/hub/node'
 import type { ClientScriptEntry } from '@devframes/hub/types'
 import type { DevframeInstanceRegistration } from 'devframe/node'
-import type { DevframeDefinition, DevframeHost } from 'devframe/types'
+import type { DevframeDefinition } from 'devframe/types'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
+import { Server as NodeHttpServer } from 'node:http'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { defineHubRpcFunction } from '@devframes/hub'
-import { createHubContext, mountDevframe } from '@devframes/hub/node'
-import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
-import { registerDevframeInstance, startHttpAndWs } from 'devframe/node'
-import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
-import { getPort } from 'get-port-please'
+import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
+import { registerDevframeInstance } from 'devframe/node'
 import { join } from 'pathe'
 
 export interface ViteDevframeHubOptions {
-  /** Mount path for the hub's connection-meta endpoint. Default: `/__hub/`. */
+  /**
+   * Mount base the hub answers under — every frame lives at `<base><id>/`.
+   * Default: `/__devframes/`.
+   */
   base?: string
-  /** Preferred port for the side-car RPC/WS server. Default: a free port near 9777. */
+  /**
+   * Pin a side-car port for the RPC/WS server. By default the WebSocket
+   * shares Vite's own http server, upgrading at `<base>__ws`.
+   */
   port?: number
-  /** Devframes to mount as docks. */
-  devframes?: DevframeDefinition[]
+  /**
+   * Devframes to mount as docks. Wrap an entry in `{ devframe, dock }` to
+   * customize its synthesized iframe dock (category, `frameId`, `subTabs`, …).
+   */
+  devframes?: (DevframeDefinition | HubDevframeEntry)[]
   /**
    * Per-dock client scripts, keyed by devframe id. Attached to the mounted
    * iframe dock so the hub client runtime imports them into the host page
@@ -28,8 +36,9 @@ export interface ViteDevframeHubOptions {
   clientScripts?: Record<string, ClientScriptEntry>
   /**
    * Called once the hub context is created (after devframes are mounted),
-   * before the server starts. Lets the composition register extra surfaces on
-   * the context — e.g. a `json-render` dock via `@devframes/json-render`.
+   * inside `initHub`'s `configure` step. Lets the composition register extra
+   * surfaces on the context — e.g. a `json-render` dock via
+   * `@devframes/json-render`.
    */
   onContextReady?: (context: DevframeHubContext) => void | Promise<void>
 }
@@ -65,18 +74,30 @@ const viteHubTerminalsList = defineHubRpcFunction({
 
 /**
  * A deliberately tiny Vite plugin that wires `@devframes/hub` into a Vite
- * dev server: creates a hub context, implements the framework-neutral
- * `DevframeHost` surface, and exposes the side-car WS endpoint to the
- * browser via Vite middleware at `<base>__connection.json`.
+ * dev server: one `initHub()` call assembles the whole hub — every devframe
+ * mounted under `<base><id>/`, one merged RPC registry on one WebSocket
+ * (upgrading on Vite's own server at `<base>__ws`), and the discovery
+ * endpoints (`__connection.json`, `__index.json`, `__client-imports.js`) —
+ * behind one connect-style middleware that self-filters by the base.
  *
  * This file is the entire Vite host — every other framework's hub host is
  * the same shape: a thin layer that adapts a framework's dev server to the hub.
  */
 export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
-  const base = normalizeBase(options.base ?? '/__hub/')
+  const base = normalizeBase(options.base ?? DEVFRAMES_HUB_BASE)
   let viteConfig: ResolvedConfig | undefined
-  let started: { close: () => Promise<void> } | undefined
+  let instance: HubInstance | undefined
   let registration: DevframeInstanceRegistration | undefined
+
+  // Every teardown path funnels here: drop the instance-registry record,
+  // then close the hub (WS binding / side-car, mounted frames' resources).
+  const teardown = async (): Promise<void> => {
+    registration?.unregister()
+    registration = undefined
+    const previous = instance
+    instance = undefined
+    await previous?.close().catch(() => {})
+  }
 
   return {
     name: 'vite-devframe-hub',
@@ -88,44 +109,43 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
 
     async configureServer(server: ViteDevServer) {
       // Vite re-invokes `configureServer` on each restart. Tear down the
-      // previous server so we don't leak the WS port, and drop the previous
-      // registry record so a restart doesn't leave a ghost instance behind.
-      await started?.close().catch(() => {})
-      started = undefined
-      registration?.unregister()
-      registration = undefined
+      // previous instance so we don't leak the WS binding, and drop the
+      // previous registry record so a restart doesn't leave a ghost instance.
+      await teardown()
 
       const cwd = viteConfig!.root
-      // Prefer 9777 but keep booting when it's taken (e.g. a lingering
-      // previous instance) — walk the range, then fall back to a random free
-      // port. Clients discover whatever was chosen via `__connection.json`.
-      const port = options.port ?? await getPort({ port: 9777, portRange: [9777, 9877] })
 
-      // Serve the side-car's connection meta (`__connection.json`) at a URL
-      // base so a browser loaded there can discover the WS endpoint via
-      // `connectDevframe()`'s relative `./__connection.json` fetch.
-      const serveConnectionMeta = (metaBase: string): void => {
-        const metaPath = `${metaBase}${DEVFRAME_CONNECTION_META_FILENAME}`
-        server.middlewares.use(metaPath, (_req, res) => {
-          res.setHeader('Content-Type', 'application/json')
-          res.end(JSON.stringify({ backend: 'websocket', websocket: port }))
-        })
-      }
+      // Attach each configured client script to its devframe's mount entry,
+      // so the hub client runtime imports it into the host page.
+      const devframes = (options.devframes ?? []).map<DevframeDefinition | HubDevframeEntry>((entry) => {
+        const def = 'devframe' in entry ? entry.devframe : entry
+        const clientScript = options.clientScripts?.[def.id]
+        if (!clientScript)
+          return entry
+        return 'devframe' in entry
+          ? { ...entry, dock: { clientScript, ...entry.dock } }
+          : { devframe: def, dock: { clientScript } }
+      })
 
-      const host: DevframeHost = {
-        mountStatic(base, distDir) {
-          server.middlewares.use(base, serveStaticNodeMiddleware(distDir))
-        },
-        // Serve `<base>__connection.json` for each mounted devframe so its
-        // SPA connects to the hub without relying on same-origin parent-window
-        // inheritance — which breaks for cross-origin / sandboxed iframes.
-        mountConnectionMeta(base) {
-          serveConnectionMeta(base)
-        },
-        resolveOrigin() {
+      const hub = initHub({
+        base,
+        cwd,
+        // Resolved lazily — Vite knows its local URL only once listening.
+        origin: () => {
           const resolved = server.resolvedUrls?.local?.[0]
           return resolved ? new URL(resolved).origin : 'http://localhost:5173'
         },
+        // Single-user localhost demo: the hub is reachable only on loopback,
+        // so it opts out of the gate for a no-friction dev experience. A hub
+        // reachable beyond localhost should gate (see `docs/guide/security.md`).
+        auth: false,
+        // Share Vite's own http server for the WebSocket upgrade at
+        // `<base>__ws` — no side-car port to discover. A `port` option pins
+        // a side-car server instead, and an https/http2 dev server (where
+        // Vite hands us a non-`node:http` server) falls back to `initHub`'s
+        // eager side-car — clients discover either via `__connection.json`.
+        server: server.httpServer instanceof NodeHttpServer ? server.httpServer : undefined,
+        ...(options.port != null ? { ws: { port: options.port } } : {}),
         getStorageDir(scope) {
           if (scope === 'workspace')
             return join(cwd, '.devframe')
@@ -133,14 +153,7 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
             return join(cwd, 'node_modules/.vite-devframe-hub')
           return join(homedir(), '.vite-devframe-hub')
         },
-      }
-
-      const context = await createHubContext({
-        cwd,
-        workspaceRoot: cwd,
-        mode: 'dev',
-        host,
-        builtinRpcDeclarations: [
+        rpcDeclarations: [
           // The minimal hub ships its own `messages:list` and `terminals:list`
           // RPCs so the UI has something to read. A full hub kit would
           // likely standardise these (alongside the built-in
@@ -148,42 +161,33 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
           viteHubMessagesList,
           viteHubTerminalsList,
         ],
+        devframes,
+        async configure(ctx) {
+          // Seed a sample command directly on the hub so the UI
+          // shows something even without any plugged-in devframes.
+          ctx.commands.register({
+            id: 'example:vite-devframe-hub:ping',
+            title: 'Vite Hub · Ping',
+            icon: 'ph:bell-duotone',
+            category: 'kit',
+            handler: () => 'pong',
+          })
+          await ctx.messages.add({
+            level: 'success',
+            message: 'Vite Devframe Hub started',
+            description: options.port != null
+              ? `Side-car WS on port ${options.port}. ${devframes.length} devframe(s) mounted under ${base}.`
+              : `WS shared on the Vite server at ${base}__ws. ${devframes.length} devframe(s) mounted under ${base}.`,
+          })
+
+          await options.onContextReady?.(ctx)
+        },
       })
+      instance = hub
 
-      // Seed a sample command directly on the hub so the UI
-      // shows something even without any plugged-in devframes.
-      context.commands.register({
-        id: 'example:vite-devframe-hub:ping',
-        title: 'Vite Hub · Ping',
-        icon: 'ph:bell-duotone',
-        category: 'kit',
-        handler: () => 'pong',
-      })
-      await context.messages.add({
-        level: 'success',
-        message: 'Vite Devframe Hub started',
-        description: `Side-car WS on port ${port}. ${options.devframes?.length ?? 0} devframe(s) registered.`,
-      })
-
-      for (const def of options.devframes ?? []) {
-        const clientScript = options.clientScripts?.[def.id]
-        await mountDevframe(context, def, clientScript ? { dock: { clientScript } } : undefined)
-      }
-
-      await options.onContextReady?.(context)
-
-      started = await startHttpAndWs({
-        context,
-        port,
-        // Single-user localhost demo: the side-car is reachable only on
-        // loopback, so it opts out of the gate for a no-friction dev
-        // experience. A hub reachable beyond localhost should gate (see
-        // `docs/guide/security.md`).
-        auth: false,
-      })
-
-      // Tell the hub UI (served at `base`) where to find the WS endpoint.
-      serveConnectionMeta(base)
+      // One namespace, one catch-all: the middleware serves everything under
+      // `base` and `next()`s the rest back to Vite.
+      server.middlewares.use(hub.nodeMiddleware)
 
       // Record this hub in the global instance registry (`~/.devframe/instances/`)
       // so discovery tooling — `devframe connect` and the inspector's Instances
@@ -191,10 +195,13 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       // automatically; an in-process host like this one registers explicitly,
       // reusing the Vite dev server's own origin (where `<base>__connection.json`
       // is served). Registration waits for the server to be listening so the
-      // origin/port are known. Folded into `started.close` so every teardown
-      // path (restart, httpServer close, `closeBundle`) also unregisters.
+      // origin/port are known; `teardown` unregisters on every close path
+      // (restart, httpServer close, `closeBundle`).
       const register = (): void => {
-        const origin = host.resolveOrigin()
+        if (instance !== hub)
+          return
+        const resolved = server.resolvedUrls?.local?.[0]
+        const origin = resolved ? new URL(resolved).origin : 'http://localhost:5173'
         const url = new URL(origin)
         registration = registerDevframeInstance({
           pid: process.pid,
@@ -213,21 +220,15 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       else
         server.httpServer?.once('listening', register)
 
-      const closeStarted = started.close
-      started.close = async () => {
-        registration?.unregister()
-        registration = undefined
-        await closeStarted()
-      }
-
       server.httpServer?.once('close', () => {
-        void started?.close().catch(() => {})
+        if (instance !== hub)
+          return
+        void teardown()
       })
     },
 
     async closeBundle() {
-      await started?.close().catch(() => {})
-      started = undefined
+      await teardown()
     },
   }
 }

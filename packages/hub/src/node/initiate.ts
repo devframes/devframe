@@ -5,10 +5,10 @@ import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
 import type { ConnectionMeta, DevframeDefinition, DevframeStorageScope, DevframeWsOptions, McpRouteOptions } from 'devframe/types'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { ClientScriptEntry } from '../types/docks'
-import type { DevframeHubContext } from './context'
-import { createReadStream } from 'node:fs'
+import type { CreateHubContextOptions, DevframeHubContext } from './context'
+import type { MountDevframeOptions } from './mount-devframe'
+import { readFile } from 'node:fs/promises'
 import process from 'node:process'
-import { Readable } from 'node:stream'
 import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_DOCK_IMPORTS_FILENAME, DEVFRAME_MCP_ROUTE, DEVFRAME_WS_ROUTE } from 'devframe/constants'
 import { createH3DevframeHost, startHttpAndWs } from 'devframe/node'
 import { createInteractiveAuth } from 'devframe/recipes/interactive-auth'
@@ -20,6 +20,17 @@ import { cleanDoubleSlashes, joinURL, withLeadingSlash, withoutLeadingSlash, wit
 import { createHubContext } from './context'
 import { diagnostics } from './diagnostics'
 import { mountDevframe } from './mount-devframe'
+
+/** A `devframes` entry with per-mount dock customization. */
+export interface HubDevframeEntry {
+  devframe: DevframeDefinition
+  /** Per-mount overrides for the auto-synthesized iframe dock entry. */
+  dock?: MountDevframeOptions['dock']
+}
+
+function normalizeDevframeEntry(entry: DevframeDefinition | HubDevframeEntry): HubDevframeEntry {
+  return 'devframe' in entry ? entry : { devframe: entry }
+}
 
 /** Default mount base for a hub instance — one namespace, one catch-all. */
 export const DEVFRAMES_HUB_BASE = '/__devframes/'
@@ -73,8 +84,17 @@ export interface InitHubOptions {
    * Devframes to mount: each runs its `setup()` against the shared hub
    * context (one merged RPC registry, one WebSocket, one auth gate), serves
    * its SPA at `<base><id>/`, and is auto-registered as an iframe dock.
+   * Wrap an entry in `{ devframe, dock }` to customize its synthesized dock
+   * (category, icon, a `clientScript` to run in the host page, …).
    */
-  devframes?: DevframeDefinition[]
+  devframes?: (DevframeDefinition | HubDevframeEntry)[]
+  /**
+   * Extra RPC declarations registered at context creation, alongside the
+   * hub built-ins — forwarded to `createHubContext`'s
+   * `builtinRpcDeclarations`. Declarative mode only (a pre-built `context`
+   * already made this choice).
+   */
+  rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations']
   /**
    * Bring your own hub context instead of `devframes` — for hosts that
    * assemble `createHubContext` + `mountDevframe` themselves (with their own
@@ -185,7 +205,7 @@ function hubRegistry(): Map<string, HubRegistryEntry> {
 function optionsHash(options: InitHubOptions): string {
   return JSON.stringify({
     base: options.base,
-    devframes: options.devframes?.map(d => d.id),
+    devframes: options.devframes?.map(entry => normalizeDevframeEntry(entry).devframe.id),
     context: options.context != null,
     ui: options.ui && {
       viewer: options.ui.viewer?.distDir,
@@ -327,17 +347,29 @@ function instantiateHub(options: InitHubOptions): HubInstance {
           app.use(joinURL(frameBase, DEVFRAME_CONNECTION_META_FILENAME), () => meta)
         },
       }
-      ctx = await createHubContext({ cwd, workspaceRoot: cwd, mode: 'dev', host })
+      ctx = await createHubContext({
+        cwd,
+        workspaceRoot: cwd,
+        mode: 'dev',
+        host,
+        ...(options.rpcDeclarations ? { builtinRpcDeclarations: options.rpcDeclarations } : {}),
+      })
     }
 
     // Mount each devframe under `<base><id>/` — its SPA, its meta, and its
     // auto-registered iframe dock — after guarding the id against the
     // reserved hub filenames that live directly under the base.
-    for (const def of options.devframes ?? []) {
+    for (const entry of options.devframes ?? []) {
+      const { devframe: def, dock } = normalizeDevframeEntry(entry)
       if ((RESERVED_HUB_PATHS as readonly string[]).includes(def.id))
         throw diagnostics.DF8000({ id: def.id })
+      // The id becomes a URL segment (`<base><id>/`) routed by h3 — `:` and
+      // `*` are route-pattern markers there, and separators would escape the
+      // segment entirely.
+      if (!/^[\w.-]+$/.test(def.id))
+        throw diagnostics.DF8004({ id: def.id })
       const frameBase = withTrailingSlash(joinURL(base, def.id))
-      await mountDevframe(ctx, def, { base: frameBase })
+      await mountDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
       frames.push({ id: def.id, base: frameBase, title: def.name })
     }
 
@@ -413,15 +445,31 @@ function instantiateHub(options: InitHubOptions): HubInstance {
       websocketMeta = ws.url
     }
     else if (typeof (globalThis as any).Bun === 'undefined') {
-      const port = await getPort({ port: 9777, portRange: [9777, 9877], host: options.host ?? 'localhost' })
-      started = await startHttpAndWs({
-        context: ctx,
-        host: options.host ?? 'localhost',
-        port,
-        path: withLeadingSlash(route),
-        auth: resolvedAuth,
-        allowedOrigins: options.allowedOrigins,
-      })
+      // Eager auto side-car. `getPort` probes and the bind can still race
+      // (or disagree across the v4/v6 duals of `localhost`), so a failed
+      // bind retries on a fresh random port instead of failing init.
+      const sidecarHost = options.host ?? 'localhost'
+      let lastError: unknown
+      for (let attempt = 0; attempt < 3 && !started; attempt++) {
+        const port = attempt === 0
+          ? await getPort({ port: 9777, portRange: [9777, 9877], host: sidecarHost })
+          : await getPort({ random: true, host: sidecarHost })
+        try {
+          started = await startHttpAndWs({
+            context: ctx,
+            host: sidecarHost,
+            port,
+            path: withLeadingSlash(route),
+            auth: resolvedAuth,
+            allowedOrigins: options.allowedOrigins,
+          })
+        }
+        catch (error) {
+          lastError = error
+        }
+      }
+      if (!started)
+        throw lastError
       websocketMeta = { port: started.port, path: route }
     }
     else {
@@ -467,10 +515,13 @@ function instantiateHub(options: InitHubOptions): HubInstance {
 
     if (options.ui?.embedded) {
       const entry = resolve(options.ui.embedded.entry)
-      app.use(joinURL(base, 'embedded.js'), (event) => {
+      // Buffered rather than streamed: the bootstrap is a single ~1 MB file
+      // read per request in dev, and a buffered body survives every host's
+      // request bridging (dev-server worker proxies included).
+      app.use(joinURL(base, 'embedded.js'), async (event) => {
         event.res.headers.set('Content-Type', 'text/javascript; charset=utf-8')
         event.res.headers.set('Cache-Control', 'no-store')
-        return Readable.toWeb(createReadStream(entry)) as ReadableStream
+        return await readFile(entry)
       })
     }
 

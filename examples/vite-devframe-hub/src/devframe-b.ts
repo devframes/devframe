@@ -4,7 +4,9 @@ import { defineDevframe } from 'devframe/types'
 import pkg from '../package.json' with { type: 'json' }
 
 export default defineDevframe({
-  id: 'example:demo-tool-b',
+  // Colon-free: the hub instance derives the mount path (`/__devframes/<id>/`)
+  // from the id, and `:` is a route-param marker to the router underneath.
+  id: 'demo-tool-b',
   name: 'Demo Tool B',
   version: pkg.version,
   packageName: pkg.name,

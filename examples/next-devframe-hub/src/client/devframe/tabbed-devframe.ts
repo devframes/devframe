@@ -15,7 +15,7 @@ const HERE = dirname(fileURLToPath(import.meta.url))
  * and switching docks soft-navigates inside it instead of reloading.
  */
 export default defineDevframe({
-  id: 'example:next-tabbed-tool',
+  id: 'next-tabbed-tool',
   name: 'Next Tabbed Tool',
   version: pkg.version,
   packageName: pkg.name,

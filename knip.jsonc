@@ -23,7 +23,7 @@
       // `skills/devframe/templates/*.ts` are the devframe-authoring skill's
       // copy-and-run reference snippets (`skills/devframe/SKILL.md`) — each
       // one a standalone, runnable example, not imported by anything else.
-      "entry": ["design/*.ts", "skills/devframe/templates/*.ts"],
+      "entry": ["design/*.ts", "skills/devframe/templates/*.ts", "scripts/smoke-bun.ts"],
       // `spa-devframe.ts` imports `valibot` to illustrate schema validation
       // for a consumer's own devframe — it's a dependency of the example a
       // reader copies out, not of this repo's root tooling.
@@ -87,7 +87,7 @@
       ]
     },
     "packages/hub": {
-      "entry": ["src/{index,constants}.ts", "src/{client,node,types}/index.ts", "src/node/initiate.ts"]
+      "entry": ["src/{index,constants}.ts", "src/{client,node,types}/index.ts", "src/node/{index,initiate}.ts"]
     },
     "packages/json-render": {
       // `src/node/index.ts` is already picked up via `tsdown.config.ts`

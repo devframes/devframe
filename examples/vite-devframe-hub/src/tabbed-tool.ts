@@ -13,7 +13,9 @@ import pkg from '../package.json' with { type: 'json' }
  * multi-tab tool like Nuxt DevTools.
  */
 export default defineDevframe({
-  id: 'example:tabbed-tool',
+  // Colon-free: the hub instance derives the mount path (`/__devframes/<id>/`)
+  // from the id, and `:` is a route-param marker to the router underneath.
+  id: 'tabbed-tool',
   name: 'Tabbed Tool',
   version: pkg.version,
   packageName: pkg.name,

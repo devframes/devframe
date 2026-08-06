@@ -10,6 +10,10 @@ export interface DevframeHubUi {
     entry: string;
   };
 }
+export interface HubDevframeEntry {
+  devframe: DevframeDefinition;
+  dock?: MountDevframeOptions['dock'];
+}
 export interface HubInstance {
   handler: (_: Request, _?: unknown) => Promise<Response>;
   nodeMiddleware: (_: IncomingMessage, _: ServerResponse, _?: (_?: unknown) => void) => void;
@@ -26,7 +30,8 @@ export interface HubInstance {
 }
 export interface InitHubOptions {
   base?: string;
-  devframes?: DevframeDefinition[];
+  devframes?: (DevframeDefinition | HubDevframeEntry)[];
+  rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations'];
   context?: DevframeHubContext;
   configure?: (_: DevframeHubContext) => void | Promise<void>;
   ui?: DevframeHubUi;

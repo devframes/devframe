@@ -2,7 +2,8 @@ import { withDevframe } from '@devframes/next'
 
 // `withDevframe` applies the settings a devframe host requires (currently
 // `skipTrailingSlashRedirect: true`, so mounted SPAs' relative assets under
-// `/__<id>/` resolve instead of 404-ing on Next's trailing-slash redirect).
+// `/__devframes/<id>/` resolve instead of 404-ing on Next's trailing-slash
+// redirect).
 /** @type {import('next').NextConfig} */
 const nextConfig = withDevframe({
   images: { unoptimized: true },
