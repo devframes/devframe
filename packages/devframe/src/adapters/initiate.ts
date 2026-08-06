@@ -1,5 +1,6 @@
+import type { Peer } from 'crossws'
 import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
-import type { ConnectionMeta, DevframeNodeContext } from 'devframe/types'
+import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeStorageScope } from 'devframe/types'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/server'
@@ -27,11 +28,12 @@ export interface InitDevframeOptions {
    */
   base?: string
   /**
-   * Override `def.cli?.distDir`. When neither is set the handler runs in
-   * **bridge mode** — only `__connection.json`, the WS endpoint, and the MCP
+   * Override `def.cli?.distDir`. When neither is set — or `false` is passed
+   * to suppress the definition's own `distDir` — the handler runs in
+   * **bridge mode**: only `__connection.json`, the WS endpoint, and the MCP
    * route (when enabled) are served; the SPA is hosted elsewhere.
    */
-  distDir?: string
+  distDir?: string | false
   /**
    * Share the host's `node:http` server for the WebSocket RPC endpoint: the
    * upgrade listener binds to `<base>__ws` on this server, so no extra port
@@ -87,11 +89,13 @@ export interface InitDevframeOptions {
    */
   key?: string
   /**
-   * Public origin the host app is reachable at (e.g. `http://localhost:3000`).
-   * When omitted, it is derived lazily from the first request the handler
-   * serves — used for the auth banner's magic link and absolute dock URLs.
+   * Public origin the host app is reachable at (e.g. `http://localhost:3000`),
+   * or a getter for hosts that resolve it late. When omitted (or the getter
+   * returns a falsy value), it is derived lazily from the first request the
+   * handler serves — used for the auth banner's magic link and absolute dock
+   * URLs.
    */
-  origin?: string
+  origin?: string | (() => string)
   /** Parsed flag bag forwarded to `def.setup(ctx, { flags })`. */
   flags?: Record<string, unknown>
   /**
@@ -101,6 +105,38 @@ export interface InitDevframeOptions {
    * recommended). Default: loopback-only.
    */
   allowedOrigins?: readonly string[] | WsOriginRegistry | false
+  /**
+   * h3 app to mount the handler's routes on. When omitted a fresh internal
+   * app is created — the common middleware case. An adapter that owns the
+   * whole server (e.g. `createDevServer`) passes its own app so callers can
+   * compose custom routes ahead of devframe's.
+   */
+  app?: H3
+  /**
+   * Override where persisted devframe state lives, per
+   * `DevframeHost.getStorageDir`. Defaults to the standalone host layout
+   * (`.devframe/`, `node_modules/.<id>/devframe/`, `~/.<id>/devframe/`).
+   */
+  getStorageDir?: (scope: DevframeStorageScope) => string
+  /**
+   * Destroy upgrade requests on a shared `server` that don't match the WS
+   * route, instead of leaving them for the host's own upgrade handlers.
+   * Enable when devframe's adapter owns the server outright (nothing else
+   * handles its upgrades) so off-route clients are rejected promptly.
+   * Default: `false` (coexist-friendly).
+   */
+  destroyUnmatchedUpgrades?: boolean
+  /**
+   * Called once per new WS connection, right after its session is created.
+   * Forwarded verbatim to the underlying transport (see
+   * `StartHttpAndWsOptions.onPeerConnect`).
+   */
+  onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
+  /**
+   * Called once per closed WS connection, right after the transport's own
+   * disconnect bookkeeping runs (see `StartHttpAndWsOptions.onPeerDisconnect`).
+   */
+  onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
 }
 
 /**
@@ -180,12 +216,15 @@ function optionsHash(def: DevframeDefinition, options: InitDevframeOptions): str
     base: options.base,
     distDir: options.distDir,
     host: options.host,
-    origin: options.origin,
+    origin: typeof options.origin === 'function' ? 'getter' : options.origin,
     ws: options.ws,
     server: options.server != null,
+    app: options.app != null,
     auth: typeof options.auth === 'object' ? 'custom' : options.auth,
     mcp: options.mcp,
     allowedOrigins: Array.isArray(options.allowedOrigins) ? options.allowedOrigins : typeof options.allowedOrigins,
+    getStorageDir: options.getStorageDir != null,
+    destroyUnmatchedUpgrades: options.destroyUnmatchedUpgrades,
     cwd: process.cwd(),
   })
 }
@@ -196,6 +235,27 @@ function samePath(a: string, b: string): boolean {
 }
 
 /**
+ * Live internals of a handler, for the first-party adapters built on it
+ * (`createDevServer` exposes the transport's `ws`/`rpcGroup` through its
+ * `StartedServer` contract).
+ *
+ * @internal
+ */
+export interface DevframeInstanceInternals {
+  /** The `startHttpAndWs` handle backing the side-car / shared-server WS tiers. */
+  readonly started?: StartedServer
+  /** The resolved auth handler when the gate is active. */
+  readonly authHandler?: DevframeAuthHandler
+}
+
+const INSTANCE_INTERNALS = new WeakMap<object, DevframeInstanceInternals>()
+
+/** @internal */
+export function getInstanceInternals(handler: object): DevframeInstanceInternals {
+  return INSTANCE_INTERNALS.get(handler) ?? {}
+}
+
+/**
  * Serve a devframe through one framework-agnostic, web-standard handler —
  * the SPA, `__connection.json` discovery, the WebSocket RPC endpoint, the
  * auth gate, and the optional MCP route, all under a single mount base.
@@ -203,11 +263,13 @@ function samePath(a: string, b: string): boolean {
  * a connect stack) and the devframe is live inside that app.
  *
  * The factory is synchronous and kicks off initialization eagerly;
- * `handler`/`nodeMiddleware` await readiness internally. How the WebSocket is
- * bound resolves in precedence order — `ws.url` (external, advertise-only)
- * > `ws.port` (explicit side-car) > `server` (shared upgrade at
- * `<base>__ws`) > Bun fetch-upgrade (under Bun) > an eager side-car on a
- * free port — and `__connection.json` reflects whichever tier is active.
+ * `handler`/`nodeMiddleware` await readiness internally. The WebSocket
+ * binding resolves in precedence order — `ws.port` (explicit side-car) >
+ * `server` (shared upgrade at `<base>__ws`) > `ws.url` alone (no local
+ * transport; an external server owns it) > Bun fetch-upgrade (under Bun) >
+ * an eager side-car on a free port — while `ws.url`, when set, always
+ * overrides the *advertised* endpoint (the tunnel pattern).
+ * `__connection.json` reflects whichever combination is active.
  */
 export function initDevframe(
   def: DevframeDefinition,
@@ -236,23 +298,27 @@ function instantiateDevframe(
 ): DevframeInstance {
   const base = options.base ? normalizeBasePath(options.base) : resolveBasePath(def, 'hosted')
   const baseNoSlash = withoutTrailingSlash(base)
-  const distDir = options.distDir ?? def.cli?.distDir
-  const app = new H3()
+  const distDir = options.distDir === false ? undefined : options.distDir ?? def.cli?.distDir
+  const app = options.app ?? new H3()
 
   // The public origin is often unknowable at creation (the host app owns the
   // listener) — derive it from the first request and let the auth banner
-  // wait for it, unless the caller pinned one.
-  let resolvedOrigin: string | undefined = options.origin
+  // wait for it, unless the caller pinned one (as a string or a getter).
+  let derivedOrigin: string | undefined
+  function currentOrigin(): string | undefined {
+    const explicit = typeof options.origin === 'function' ? options.origin() : options.origin
+    return explicit || derivedOrigin
+  }
   let authHandler: DevframeAuthHandler | undefined
   let bannerPrinted = false
   function maybePrintBanner(): void {
-    if (bannerPrinted || !authHandler || !resolvedOrigin)
+    if (bannerPrinted || !authHandler || !currentOrigin())
       return
     bannerPrinted = true
     authHandler.printBanner()
   }
   function noteOrigin(origin: string): void {
-    resolvedOrigin ??= origin
+    derivedOrigin ??= origin
     maybePrintBanner()
   }
 
@@ -264,13 +330,16 @@ function instantiateDevframe(
   let ctx: DevframeNodeContext
 
   async function init(): Promise<void> {
-    const host = createH3DevframeHost({
-      origin: () => resolvedOrigin ?? 'http://localhost',
+    const h3Host = createH3DevframeHost({
+      origin: () => currentOrigin() ?? 'http://localhost',
       appName: def.id,
       mount: (mountBase, dir) => {
         mountStaticHandler(app, mountBase, dir)
       },
     })
+    const host = options.getStorageDir
+      ? { ...h3Host, getStorageDir: options.getStorageDir }
+      : h3Host
     ctx = await createHostContext({
       cwd: process.cwd(),
       mode: 'dev',
@@ -341,6 +410,8 @@ function instantiateDevframe(
         path: withLeadingSlash(route),
         auth: resolvedAuth,
         allowedOrigins: options.allowedOrigins,
+        onPeerConnect: options.onPeerConnect,
+        onPeerDisconnect: options.onPeerDisconnect,
       })
       websocketMeta = { port: started.port, path: route }
     }
@@ -354,6 +425,9 @@ function instantiateDevframe(
         path: joinURL(base, route),
         auth: resolvedAuth,
         allowedOrigins: options.allowedOrigins,
+        onPeerConnect: options.onPeerConnect,
+        onPeerDisconnect: options.onPeerDisconnect,
+        destroyUnmatched: options.destroyUnmatchedUpgrades,
       })
       websocketMeta = { path: route }
     }
@@ -374,6 +448,8 @@ function instantiateDevframe(
         path: withLeadingSlash(route),
         auth: resolvedAuth,
         allowedOrigins: options.allowedOrigins,
+        onPeerConnect: options.onPeerConnect,
+        onPeerDisconnect: options.onPeerDisconnect,
       })
       websocketMeta = { port: started.port, path: route }
     }
@@ -382,7 +458,12 @@ function instantiateDevframe(
       // `handler(request, server)`, hooks exposed via `websocket`.
       const { attachBunWsTransport } = await import('./initiate-bun')
       const { createContextRpcServer } = await import('../node/rpc-core')
-      const core = createContextRpcServer({ context: ctx, auth: resolvedAuth })
+      const core = createContextRpcServer({
+        context: ctx,
+        auth: resolvedAuth,
+        onPeerConnect: options.onPeerConnect,
+        onPeerDisconnect: options.onPeerDisconnect,
+      })
       bunTier = await attachBunWsTransport(core, { allowedOrigins: options.allowedOrigins })
       bunUpgradePath = joinURL(base, route)
       websocketMeta = { path: route }
@@ -507,5 +588,13 @@ function instantiateDevframe(
       await bunTier?.close()
     },
   }
+  INSTANCE_INTERNALS.set(handler, {
+    get started() {
+      return started
+    },
+    get authHandler() {
+      return authHandler
+    },
+  })
   return handler
 }

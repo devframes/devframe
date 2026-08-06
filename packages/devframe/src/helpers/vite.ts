@@ -1,10 +1,11 @@
+import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
+import type { DevframeInstance } from '../adapters/initiate'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeDefinition, McpRouteOptions } from '../types/devframe'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { resolve } from 'pathe'
 import { normalizeBasePath, resolveBasePath } from '../adapters/_shared'
-import { createDevServer, resolveDevServerPort, resolveMcpConnectionMeta } from '../adapters/dev'
-import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_WS_ROUTE } from '../constants'
+import { initDevframe } from '../adapters/initiate'
 import { diagnostics } from '../node/diagnostics'
 
 export interface ViteDevBridgeOptions {
@@ -19,30 +20,36 @@ export interface ViteDevBridgeOptions {
   base?: string
   /**
    * Dev-time middleware mode. When set, the host app owns the SPA and
-   * devframe spins up a separate RPC + WS server on a resolved port,
-   * registering Vite middleware at `<base>__connection.json` so the
-   * host-served SPA can discover the WS endpoint.
+   * devframe serves the RPC surface through the Vite dev server itself —
+   * `<base>__connection.json` for discovery and the WebSocket upgrade at
+   * `<base>__ws` on Vite's own HTTP server (zero extra ports, proxy/HTTPS
+   * friendly). When Vite runs in middleware mode (no `httpServer`) — or a
+   * `port` is pinned — the socket falls back to a side-car server on its
+   * own port instead.
    *
    *  - `false` (default) — static-mount the SPA at `base` with SPA
    *    fallback. No RPC server is started.
-   *  - `true` — bridge mode with all defaults (port from
-   *    {@link resolveDevServerPort}, host from `def.cli?.host`).
+   *  - `true` — bridge mode with all defaults.
    *  - object — bridge mode with explicit overrides.
    */
   devMiddleware?: boolean | {
-    /** Override the bridge port. Default: {@link resolveDevServerPort}. */
+    /**
+     * Pin a side-car port for the RPC socket instead of sharing Vite's
+     * server. Default: share Vite's HTTP server (side-car only when Vite
+     * has none).
+     */
     port?: number
-    /** Override the bridge bind host. Default: `def.cli?.host ?? 'localhost'`. */
+    /** Override the side-car bind host. Default: `def.cli?.host ?? 'localhost'`. */
     host?: string
     /** Flag bag forwarded to `def.setup(ctx, { flags })`. */
     flags?: Record<string, unknown>
   }
   /**
-   * Whether the bridged devframe runs its own auth gate. The side-car RPC
-   * server is reachable by anything that can open its socket, so it **gates by
-   * default**: when unset, authentication resolves through `createDevServer`
-   * (devframe's interactive OTP gate unless the definition's `cli.auth` opts
-   * out), and the side-car prints its code/link banner to stdout. Pass a
+   * Whether the bridged devframe runs its own auth gate. The RPC endpoint is
+   * reachable by anything that can open its socket, so it **gates by
+   * default**: when unset, authentication resolves through devframe's
+   * interactive OTP gate (unless the definition's `cli.auth` opts out), and
+   * the bridge prints its code/link banner to stdout. Pass a
    * {@link DevframeAuthHandler} to install a custom scheme, or `false` to opt
    * out for a single-user localhost host that owns the trust boundary another
    * way. Only applies in bridge mode (`devMiddleware`); the static-mount mode
@@ -52,27 +59,30 @@ export interface ViteDevBridgeOptions {
    */
   auth?: boolean | DevframeAuthHandler
   /**
-   * Expose the side-car's route-based MCP server (Streamable-HTTP) and
-   * advertise it in the bridge's `__connection.json`. Forwarded to
-   * {@link createDevServer}: overrides `def.cli?.mcp`, `undefined` falls
-   * through to it, `false` disables the route regardless. Only applies in
-   * bridge mode (`devMiddleware`); the static-mount mode starts no server.
-   *
-   * The endpoint lives on the side-car's own port, so the advertised meta
-   * carries `{ port, path }` — see `ConnectionMeta['mcp']`.
+   * Expose the bridge's route-based MCP server (Streamable-HTTP) at
+   * `<base>__mcp` — on the Vite app's own origin — and advertise it in the
+   * bridge's `__connection.json`. Overrides `def.cli?.mcp`, `undefined`
+   * falls through to it, `false` disables the route regardless. Only applies
+   * in bridge mode (`devMiddleware`); the static-mount mode starts no server.
    *
    * @experimental
    */
   mcp?: boolean | McpRouteOptions
 }
 
+/** The slice of a Vite dev server the bridge plugin touches. */
+export interface DevframeViteDevServerLike {
+  middlewares: {
+    use: ((path: string, handler: (req: IncomingMessage, res: ServerResponse, next?: (err?: unknown) => void) => void) => void)
+      & ((handler: (req: IncomingMessage, res: ServerResponse, next?: (err?: unknown) => void) => void) => void)
+  }
+  httpServer?: NodeHttpServer | null
+}
+
 export interface DevframeVitePlugin {
   name: string
   apply: 'serve'
-  configureServer: (server: {
-    middlewares: { use: (path: string, handler: any) => void }
-    httpServer?: { once: (event: 'close', cb: () => void) => void } | null
-  }) => void | Promise<void>
+  configureServer: (server: DevframeViteDevServerLike) => void | Promise<void>
   closeBundle?: () => void | Promise<void>
 }
 
@@ -84,16 +94,16 @@ export interface DevframeVitePlugin {
  *     `options.base` with SPA fallback enabled. No RPC server is started.
  *
  *   - **bridge mode** (`devMiddleware: true | {…}`) — skips the static
- *     mount; the host app owns the SPA. Devframe starts a separate
- *     RPC + WS dev server (via {@link createDevServer} in bridge mode)
- *     and registers Vite middleware at `<base>__connection.json` so the
- *     host-served SPA can discover the WS endpoint via
- *     {@link connectDevframe}.
+ *     mount; the host app owns the SPA. Devframe serves discovery
+ *     (`<base>__connection.json`), the WebSocket RPC upgrade
+ *     (`<base>__ws`, shared on Vite's own HTTP server), and the optional
+ *     MCP route through {@link initDevframe}'s node middleware, so the
+ *     host-served SPA can discover the endpoint via {@link connectDevframe}.
  *
- * The side-car RPC server **gates by default** (devframe's interactive OTP
- * unless the definition's `cli.auth` opts out), printing its code/link banner
- * to stdout, so a bridged devframe isn't silently reachable by anything that
- * can open its socket. Pass `options.auth: false` to opt out for a single-user
+ * The bridge **gates by default** (devframe's interactive OTP unless the
+ * definition's `cli.auth` opts out), printing its code/link banner to stdout,
+ * so a bridged devframe isn't silently reachable by anything that can open
+ * its socket. Pass `options.auth: false` to opt out for a single-user
  * localhost host, or a {@link DevframeAuthHandler} for a custom scheme.
  *
  * Use bridge mode when integrating with frameworks that own the SPA
@@ -117,62 +127,57 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
   }
 
   const mw = options.devMiddleware === true ? {} : options.devMiddleware
-  let started: Awaited<ReturnType<typeof createDevServer>> | undefined
+  let instance: DevframeInstance | undefined
 
   return {
     name: `devframe:${d.id}`,
     apply: 'serve',
     async configureServer(server) {
       // Vite re-invokes `configureServer` on each restart cycle; close
-      // the prior handle so we don't leak the WS server. Silent catch —
+      // the prior handle so we don't leak the WS transport. Silent catch —
       // a stale handle's close failure shouldn't block a fresh start.
-      await started?.close().catch(() => {})
-      started = undefined
+      await instance?.close().catch(() => {})
+      instance = undefined
 
-      let port: number
       try {
-        port = mw.port ?? await resolveDevServerPort(d, { host: mw.host })
-        started = await createDevServer(d, {
-          host: mw.host,
-          port,
+        const created = initDevframe(d, {
+          base,
+          // The host app owns the SPA in bridge mode — never mount the
+          // definition's own distDir here.
+          distDir: false,
           flags: mw.flags,
-          openBrowser: false,
-          // Gate by default: an unset `auth` defers to `createDevServer`
-          // (devframe's interactive OTP unless `cli.auth` opts out) rather than
-          // leaving the side-car socket ungated. `false` opts out explicitly.
+          host: mw.host,
+          // Pinned port → explicit side-car. Otherwise share Vite's own
+          // HTTP server; a middleware-mode Vite (no httpServer) falls back
+          // to the handler's eager auto side-car.
+          ...(mw.port != null
+            ? { ws: { port: mw.port } }
+            : server.httpServer
+              ? { server: server.httpServer }
+              : {}),
+          // Gate by default: an unset `auth` defers to the handler
+          // (devframe's interactive OTP unless `cli.auth` opts out) rather
+          // than leaving the socket ungated. `false` opts out explicitly.
           auth: options.auth,
           mcp: options.mcp,
         })
+        server.middlewares.use(created.nodeMiddleware)
+        await created.ready
+        instance = created
       }
       catch (e) {
         diagnostics.DF0033({ id: d.id, reason: String(e), cause: e as Error }, { method: 'warn' })
         return
       }
 
-      // The side-car listens on its own port, so the browser must target that
-      // port explicitly (it can't reach the WS on Vite's origin). The route is
-      // `/__ws` — the bridge `createDevServer` mounts the SPA at `/`, so its WS
-      // upgrade handler is bound there. The MCP route (when enabled) lives on
-      // the same side-car origin, advertised with the same explicit port.
-      const mcpMeta = resolveMcpConnectionMeta(d, options.mcp, port)
-      const metaPath = `${base}${DEVFRAME_CONNECTION_META_FILENAME}`
-      server.middlewares.use(metaPath, (_req: unknown, res: any) => {
-        res.setHeader('Content-Type', 'application/json')
-        res.end(JSON.stringify({
-          backend: 'websocket',
-          websocket: { port, path: `/${DEVFRAME_WS_ROUTE}` },
-          ...(mcpMeta ? { mcp: mcpMeta } : {}),
-        }))
-      })
-
       server.httpServer?.once('close', () => {
-        void started?.close().catch(() => {})
+        void instance?.close().catch(() => {})
       })
     },
 
     async closeBundle() {
-      await started?.close().catch(() => {})
-      started = undefined
+      await instance?.close().catch(() => {})
+      instance = undefined
     },
   }
 }

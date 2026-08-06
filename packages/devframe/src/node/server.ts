@@ -50,6 +50,14 @@ export interface StartHttpAndWsOptions {
    */
   server?: NodeHttpServer
   /**
+   * Destroy upgrade requests on a shared `server` that don't match `path`,
+   * instead of leaving them for the caller's other upgrade handlers. Enable
+   * when the caller owns the server outright but composes it through the
+   * shared-`server` path (e.g. `createDevServer` over `createHandler`).
+   * Defaults to whether this call created the server itself.
+   */
+  destroyUnmatched?: boolean
+  /**
    * Authentication for the server:
    *
    *   - `true` (default) — no gate; every registered method is callable
@@ -187,8 +195,9 @@ export async function startHttpAndWs(options: StartHttpAndWsOptions): Promise<St
     path: options.path,
     // When we own the server nothing else handles its upgrades, so reject
     // off-route attempts promptly. A shared (caller-owned) server may host
-    // other sockets, so leave non-matching upgrades for them.
-    destroyUnmatched: ownsHttpServer,
+    // other sockets, so leave non-matching upgrades for them — unless the
+    // caller says otherwise.
+    destroyUnmatched: options.destroyUnmatched ?? ownsHttpServer,
     allowedOrigins: options.allowedOrigins,
     onConnected,
     onDisconnected,

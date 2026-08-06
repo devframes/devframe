@@ -21,14 +21,14 @@ export interface CreateDevServerOptions {
     app: H3;
   }) => void | Promise<void>;
 }
-export interface ResolveDevServerPortOptions {
-  host?: string;
-  defaultPort?: number;
-}
 // #endregion
 
 // #region Functions
 export declare function createDevServer(_: DevframeDefinition, _?: CreateDevServerOptions): Promise<StartedServer>;
-export declare function resolveDevServerPort(_: DevframeDefinition, _?: ResolveDevServerPortOptions): Promise<number>;
-export declare function resolveMcpConnectionMeta(_: DevframeDefinition, _: boolean | McpRouteOptions | undefined, _?: number): ConnectionMeta['mcp'];
+// #endregion
+
+// #region Other
+export { resolveDevServerPort }
+export { ResolveDevServerPortOptions }
+export { resolveMcpConnectionMeta }
 // #endregion

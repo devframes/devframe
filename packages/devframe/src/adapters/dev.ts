@@ -1,27 +1,22 @@
 import type { Peer } from 'crossws'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/server'
-import type { ConnectionMeta } from '../types/context'
-import type { DevframeDefinition, DevframeSetupInfo, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
+import type { DevframeDefinition, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
 import type { DevframeNodeRpcSession, DevframeNodeRpcSessionMeta } from '../types/rpc'
+import { createServer } from 'node:http'
 import process from 'node:process'
 import { open } from 'devframe/utils/open'
-import { mountStaticHandler } from 'devframe/utils/serve-static'
-import { getPort } from 'get-port-please'
-import { H3 } from 'h3'
-import { resolve } from 'pathe'
-import { joinURL, withBase, withLeadingSlash, withoutLeadingSlash } from 'ufo'
-import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_MCP_ROUTE, DEVFRAME_WS_ROUTE } from '../constants'
-import { createHostContext } from '../node/context'
+import { H3, toNodeHandler } from 'h3'
+import { joinURL, withBase, withoutLeadingSlash } from 'ufo'
+import { DEVFRAME_MCP_ROUTE } from '../constants'
 import { diagnostics } from '../node/diagnostics'
-import { createH3DevframeHost } from '../node/host-h3'
 import { registerDevframeInstance } from '../node/instance-registry'
-import { startHttpAndWs } from '../node/server'
 import { normalizeHttpServerUrl } from '../node/utils'
-import { createInteractiveAuth } from '../recipes/interactive-auth'
-import { normalizeBasePath, resolveBasePath } from './_shared'
+import { normalizeBasePath, resolveBasePath, resolveDevServerPort, resolveMcpConfig } from './_shared'
+import { getInstanceInternals, initDevframe } from './initiate'
 
-const DEFAULT_PORT = 9999
+export { resolveDevServerPort, resolveMcpConnectionMeta } from './_shared'
+export type { ResolveDevServerPortOptions } from './_shared'
 
 export interface CreateDevServerOptions {
   /** Bind host. Default: `def.cli?.host ?? 'localhost'`. */
@@ -107,37 +102,6 @@ export interface CreateDevServerOptions {
   onReady?: (info: { origin: string, port: number, app: H3 }) => void | Promise<void>
 }
 
-export interface ResolveDevServerPortOptions {
-  /** Bind host (passed to `get-port-please` for in-use detection). */
-  host?: string
-  /** Override the preferred port. Default: `def.cli?.port ?? 9999`. */
-  defaultPort?: number
-}
-
-/**
- * Resolve the listening port for {@link createDevServer}, honoring the
- * definition's `cli.port` / `cli.portRange` / `cli.random` settings.
- * Exposed separately so authors who run their own argv parsing can
- * resolve a port up-front (to print it, log it, etc.) before starting
- * the server.
- */
-export async function resolveDevServerPort(
-  def: DevframeDefinition,
-  options: ResolveDevServerPortOptions = {},
-): Promise<number> {
-  const host = options.host ?? def.cli?.host ?? 'localhost'
-  const port = options.defaultPort ?? def.cli?.port ?? DEFAULT_PORT
-  // Only include optional fields when set — `get-port-please` spreads
-  // user options over its defaults, so `portRange: undefined` would
-  // wipe out the internal `[]` and crash on iteration.
-  const portOptions: Parameters<typeof getPort>[0] = { port, host }
-  if (def.cli?.portRange)
-    portOptions.portRange = def.cli.portRange
-  if (def.cli?.random)
-    portOptions.random = def.cli.random
-  return getPort(portOptions)
-}
-
 /**
  * Start a devframe dev server for a {@link DevframeDefinition} —
  * h3 + WebSocket RPC + (optionally) the author's SPA mounted at the
@@ -160,132 +124,90 @@ export async function createDevServer(
   def: DevframeDefinition,
   options: CreateDevServerOptions = {},
 ): Promise<StartedServer> {
-  const distDir = options.distDir ?? def.cli?.distDir
-
   const host = options.host ?? def.cli?.host ?? 'localhost'
-  const port = options.port ?? await resolveDevServerPort(def, { host })
+  const requestedPort = options.port ?? await resolveDevServerPort(def, { host })
   const flags = options.flags ?? {}
   const basePath = options.basePath ? normalizeBasePath(options.basePath) : resolveBasePath(def, 'standalone')
   const app = options.app ?? new H3()
+
+  // The dev server is `initDevframe` plus a node listener: the instance owns
+  // the whole surface (setup, MCP, meta, SPA, WS binding, auth), mounted on
+  // this server's app; listening starts first so the shared WS tier — and
+  // the advertised origin — reflect the real bound port (`port: 0` binds an
+  // ephemeral one).
+  const server = createServer(toNodeHandler(app))
+  try {
+    await new Promise<void>((resolveListen, rejectListen) => {
+      const onError = (error: Error): void => rejectListen(error)
+      // Without this listener a failed bind emits `error` with nobody
+      // attached — an uncaughtException — and the `listen` callback never
+      // fires, so this promise never settles.
+      server.once('error', onError)
+      server.listen(requestedPort, host, () => {
+        server.removeListener('error', onError)
+        resolveListen()
+      })
+    })
+  }
+  catch (error) {
+    throw diagnostics.DF0052({
+      host,
+      port: requestedPort,
+      reason: error instanceof Error ? error.message : String(error),
+      cause: error,
+    })
+  }
+  const address = server.address()
+  const port = typeof address === 'object' && address ? address.port : requestedPort
   // A wildcard bind host (`0.0.0.0` / `::`) isn't dialable from a browser, so
   // advertise a loopback origin for anything that hands a client an absolute URL.
   const origin = normalizeHttpServerUrl(host, port)
 
-  const h3Host = createH3DevframeHost({
-    origin,
-    appName: def.id,
-    mount: (base, dir) => {
-      mountStaticHandler(app, base, dir)
-    },
-  })
-
-  const ctx = await createHostContext({
-    cwd: process.cwd(),
-    mode: 'dev',
-    host: h3Host,
-  })
-  const setupInfo: DevframeSetupInfo = { flags }
-  await def.setup(ctx, setupInfo)
-
-  // Route-based MCP server (opt-in via `cli.mcp` / the `mcp` option). Mounted
-  // before the SPA static catch-all so the exact `/__mcp` route wins, and
-  // advertised in `__connection.json` so in-browser tooling can discover it.
-  // The MCP SDK is an optional peer dep, so its code is only pulled in
-  // (dynamically) when the route is enabled.
-  const mcpConfig = resolveMcpConfig(options.mcp ?? def.cli?.mcp)
-  let mcpDispose: (() => Promise<void>) | undefined
-  let mcpMeta: ConnectionMeta['mcp']
-  if (mcpConfig) {
-    const mcpRoute = withoutLeadingSlash(mcpConfig.path ?? DEVFRAME_MCP_ROUTE)
-    const mcpPath = joinURL(basePath, mcpRoute)
-    let mountMcpHttp: typeof import('./mcp/http').mountMcpHttp
-    try {
-      ;({ mountMcpHttp } = await import('./mcp/http'))
-    }
-    catch (error) {
-      const reason = error instanceof Error ? error.message : String(error)
-      throw diagnostics.DF0017({ transport: 'http', reason, cause: error })
-    }
-    const mounted = mountMcpHttp(app, ctx, mcpPath, {
-      serverName: `${def.id} (devframe)`,
-      serverVersion: def.version ?? '0.0.0',
-      exposeSharedState: true,
-      allowedOrigins: mcpConfig.allowedOrigins,
-    })
-    mcpDispose = mounted.dispose
-    mcpMeta = { path: mcpRoute }
-  }
-
-  // Connection meta — the SPA fetches this to discover the RPC backend. How
-  // the WS endpoint is bound and advertised follows the resolved ws config:
-  // a same-origin route (default, proxy-safe), a dedicated port, or a remote
-  // origin. Both files sit at the SPA root so the deployed SPA discovers them
-  // via relative `./__connection.json` / `./<route>` fetches.
-  const { bindPath, wsPort, meta } = resolveWsConnection(def, options, basePath)
-  const connectionMetaPath = joinURL(basePath, DEVFRAME_CONNECTION_META_FILENAME)
-  app.use(connectionMetaPath, () => ({
-    backend: 'websocket',
-    websocket: meta,
-    ...(mcpMeta ? { mcp: mcpMeta } : {}),
-  }))
-
-  if (distDir)
-    mountStaticHandler(app, basePath, resolve(distDir))
-
-  // Resolve authentication. The standalone dev server gates by default: when
-  // the author leaves `auth` unset (or `true`), auto-wire devframe's
-  // interactive OTP handler and print its code + magic-link banner once the
-  // server is listening (a gate is useless without surfacing the code). A
-  // `false` (including the `--no-auth` flag) opts out; a handler object is
-  // passed straight through to `startHttpAndWs`. An explicit `options.auth`
-  // wins over the definition default — a hosted adapter (e.g. `viteDevBridge`)
-  // passes `false` so the plugin's own gate never fires and the host owns auth
-  // — but the `--no-auth` flag can still force the gate off.
-  const authOption = flags.auth === false
-    ? false
-    : options.auth !== undefined
-      ? options.auth
-      : def.cli?.auth
-  let authHandler: DevframeAuthHandler | undefined
-  let resolvedAuth: boolean | DevframeAuthHandler
-  if (authOption === false) {
-    resolvedAuth = false
-  }
-  else if (typeof authOption === 'object') {
-    authHandler = authOption
-    resolvedAuth = authOption
-  }
-  else {
-    authHandler = createInteractiveAuth(ctx)
-    resolvedAuth = authHandler
-  }
-
-  const started = await startHttpAndWs({
-    context: ctx,
-    host,
-    port,
+  const devframe = initDevframe(def, {
+    base: basePath,
+    distDir: options.distDir,
     app,
-    path: bindPath,
-    wsPort,
-    auth: resolvedAuth,
+    server,
+    host,
+    origin,
+    ws: options.ws,
+    // The `--no-auth` flag forces the gate off regardless of the `auth`
+    // option / definition default (which the instance resolves itself).
+    auth: flags.auth === false ? false : options.auth,
+    mcp: options.mcp,
+    flags,
     onPeerConnect: options.onPeerConnect,
     onPeerDisconnect: options.onPeerDisconnect,
-    onReady: async (info) => {
-      // Print the auth banner before the caller's own onReady / browser open
-      // so the code is on screen by the time a browser lands on the page.
-      authHandler?.printBanner()
-      await options.onReady?.(info)
-      await maybeOpenBrowser(def, flags, `${info.origin}${basePath}`, options.openBrowser, authHandler)
-    },
+    // This server is devframe's own — nothing else handles its upgrades, so
+    // off-route upgrade attempts are rejected promptly.
+    destroyUnmatchedUpgrades: true,
   })
+
+  try {
+    await devframe.ready
+  }
+  catch (error) {
+    await new Promise<void>(resolveClose => server.close(() => resolveClose()))
+    throw error
+  }
+
+  const internals = getInstanceInternals(devframe)
+  // Every dev-server configuration binds a local transport (`server` is
+  // always passed), so the startHttpAndWs handle is always present.
+  const transport = internals.started!
+
+  await options.onReady?.({ origin, port, app })
+  await maybeOpenBrowser(def, flags, `${origin}${basePath}`, options.openBrowser, internals.authHandler)
+
+  const mcpConfig = resolveMcpConfig(options.mcp ?? def.cli?.mcp)
 
   // Record the instance in the global registry so discovery tooling
   // (`devframe connect`) finds it without port guessing. Registration never
   // throws; a crash-orphaned record is pruned by readers on a failed probe.
   const registration = registerDevframeInstance({
     pid: process.pid,
-    port: started.port,
-    origin: normalizeHttpServerUrl(host, started.port),
+    port,
+    origin,
     basePath,
     id: def.id,
     name: def.name,
@@ -294,84 +216,22 @@ export async function createDevServer(
     startedAt: Date.now(),
   })
 
-  // Fold MCP session teardown and registry removal into the server's close so
-  // callers get a single graceful-shutdown handle.
-  const closeServer = started.close
-  started.close = async () => {
-    registration.unregister()
-    await mcpDispose?.()
-    await closeServer()
+  return {
+    origin,
+    port,
+    app,
+    ws: transport.ws,
+    rpcGroup: transport.rpcGroup,
+    connectionMeta: transport.connectionMeta,
+    async close() {
+      registration.unregister()
+      // Instance teardown detaches the WS transport (and closes any
+      // dedicated-port socket server) and disposes MCP sessions; the HTTP
+      // server is this function's own to close.
+      await devframe.close()
+      await new Promise<void>(resolveClose => server.close(() => resolveClose()))
+    },
   }
-
-  return started
-}
-
-/**
- * Normalize the `cli.mcp` / `mcp` option (`boolean | McpRouteOptions`) into
- * concrete options, or `undefined` when the MCP route is disabled.
- */
-function resolveMcpConfig(mcp: boolean | McpRouteOptions | undefined): McpRouteOptions | undefined {
-  if (!mcp)
-    return undefined
-  return mcp === true ? {} : mcp
-}
-
-/**
- * Resolve the `mcp` entry a `__connection.json` should advertise for a dev
- * server started with the given `mcp` option (falling back to `def.cli?.mcp`,
- * exactly like {@link createDevServer}), or `undefined` when the route is
- * disabled.
- *
- * Hosted bridges that hand-roll their connection meta (`viteDevBridge`,
- * `@devframes/next`'s handler) pass the side-car `port`: the advertised path
- * becomes absolute (the side-car mounts at `/`) and the client dials
- * `<page-host>:<port><path>`. Without `port` the path stays relative, resolved
- * against `__connection.json`'s own location (the same-server default).
- *
- * @experimental
- */
-export function resolveMcpConnectionMeta(
-  def: DevframeDefinition,
-  mcp: boolean | McpRouteOptions | undefined,
-  port?: number,
-): ConnectionMeta['mcp'] {
-  const config = resolveMcpConfig(mcp ?? def.cli?.mcp)
-  if (!config)
-    return undefined
-  const route = withoutLeadingSlash(config.path ?? DEVFRAME_MCP_ROUTE)
-  return port != null
-    ? { path: withLeadingSlash(route), port }
-    : { path: route }
-}
-
-/**
- * Resolve the three WS connection scenarios from the definition / call-site
- * config into a concrete server bind path, optional dedicated port, and the
- * `__connection.json` descriptor the browser resolves.
- */
-function resolveWsConnection(
-  def: DevframeDefinition,
-  options: CreateDevServerOptions,
-  basePath: string,
-): { bindPath: string, wsPort: number | undefined, meta: ConnectionMeta['websocket'] } {
-  const ws = options.ws ?? def.cli?.ws ?? {}
-  // Normalize the route to a bare segment; the meta carries it relative so the
-  // client resolves it against its own origin (proxy-safe).
-  const route = withoutLeadingSlash(ws.route ?? DEVFRAME_WS_ROUTE)
-
-  // (3) Remote origin — host the socket locally on the shared route, but tell
-  // the browser to dial the fully-qualified endpoint (a tunnel/relay) verbatim.
-  if (ws.url)
-    return { bindPath: joinURL(basePath, route), wsPort: undefined, meta: ws.url }
-
-  // (2) Different port — a standalone socket server on its own port, rooted at
-  // `/<route>`. The client targets `ws(s)://<page-host>:<port>/<route>`.
-  if (ws.port != null)
-    return { bindPath: withLeadingSlash(route), wsPort: ws.port, meta: { port: ws.port, path: route } }
-
-  // (1) Same server, different route (default) — share the HTTP port; advertise
-  // a relative same-origin path.
-  return { bindPath: joinURL(basePath, route), wsPort: undefined, meta: { path: route } }
 }
 
 async function maybeOpenBrowser(

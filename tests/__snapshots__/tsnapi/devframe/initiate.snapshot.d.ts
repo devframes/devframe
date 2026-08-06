@@ -11,6 +11,10 @@ export interface DevframeInstance {
   connectionMeta: () => ConnectionMeta;
   close: () => Promise<void>;
 }
+export interface DevframeInstanceInternals {
+  readonly started?: StartedServer;
+  readonly authHandler?: DevframeAuthHandler;
+}
 export interface DevframeInstanceWebSocket {
   open: (_: unknown) => void;
   message: (_: unknown, _: unknown) => void;
@@ -19,19 +23,25 @@ export interface DevframeInstanceWebSocket {
 }
 export interface InitDevframeOptions {
   base?: string;
-  distDir?: string;
+  distDir?: string | false;
   server?: Server;
   ws?: DevframeWsOptions;
   host?: string;
   auth?: boolean | DevframeAuthHandler;
   mcp?: boolean | McpRouteOptions;
   key?: string;
-  origin?: string;
+  origin?: string | (() => string);
   flags?: Record<string, unknown>;
   allowedOrigins?: readonly string[] | WsOriginRegistry | false;
+  app?: H3;
+  getStorageDir?: (_: DevframeStorageScope) => string;
+  destroyUnmatchedUpgrades?: boolean;
+  onPeerConnect?: (_: Peer, _: DevframeNodeRpcSession) => void;
+  onPeerDisconnect?: (_: Peer, _: DevframeNodeRpcSessionMeta) => void;
 }
 // #endregion
 
 // #region Functions
+export declare function getInstanceInternals(_: object): DevframeInstanceInternals;
 export declare function initDevframe(_: DevframeDefinition, _?: InitDevframeOptions): DevframeInstance;
 // #endregion

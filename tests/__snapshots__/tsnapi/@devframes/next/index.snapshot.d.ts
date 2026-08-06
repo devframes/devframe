@@ -7,10 +7,11 @@ export interface CreateDevframeNextHandlerOptions {
   host?: string;
   port?: number;
   flags?: Record<string, unknown>;
-  auth?: CreateDevServerOptions['auth'];
+  auth?: InitDevframeOptions['auth'];
   resolveOrigin?: () => string;
   getStorageDir?: (_: DevframeStorageScope) => string;
-  mcp?: CreateDevServerOptions['mcp'];
+  mcp?: InitDevframeOptions['mcp'];
+  key?: string;
 }
 export interface CreateDevframeNextHostOptions {
   resolveOrigin: () => string;
