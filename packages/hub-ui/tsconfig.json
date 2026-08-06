@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "types": ["vite/client"]
+  },
+  "include": ["src", "scripts", "*.config.ts"],
+  "exclude": ["dist", "node_modules"]
+}

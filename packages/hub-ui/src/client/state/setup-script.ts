@@ -1,0 +1,57 @@
+import type { ClientScriptEntry, DevframeDockUserEntry } from '@devframes/hub'
+import type { DockClientScriptContext } from '@devframes/hub/client'
+
+/**
+ * Resolve the {@link ClientScriptEntry} a dock entry carries — an `action`'s
+ * `action`, a `custom-render`'s `renderer`, or an iframe's `clientScript`.
+ */
+function clientScriptOf(entry: DevframeDockUserEntry): ClientScriptEntry | undefined {
+  switch (entry.type) {
+    case 'action':
+      return entry.action
+    case 'custom-render':
+      return entry.renderer
+    case 'iframe':
+      return entry.clientScript
+    default:
+      return undefined
+  }
+}
+
+async function _executeSetupScript(
+  entry: DevframeDockUserEntry,
+  context: DockClientScriptContext,
+): Promise<void> {
+  const script = clientScriptOf(entry)
+  if (!script?.importFrom)
+    throw new Error(`[@devframes/hub-ui] Dock entry "${entry.id}" carries no client script to run`)
+  try {
+    // Keep this a *native* dynamic import in every bundler — the specifier is
+    // a runtime URL served by the hub, not a build-time module. Mirrors the
+    // client-script loading of `@devframes/hub`'s `createDevframeClientHost`.
+    const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ script.importFrom)
+    const fn = mod[script.importName ?? 'default']
+    if (typeof fn !== 'function')
+      throw new Error(`[@devframes/hub-ui] "${script.importFrom}" exports no callable "${script.importName ?? 'default'}"`)
+    await fn(context)
+  }
+  catch (error) {
+    // TODO: maybe popup a error toast here?
+    // TODO: A unified logger API
+    console.error('[@devframes/hub-ui] Error executing client script', error)
+    throw error
+  }
+}
+const _setupPromises = new Map<string, Promise<void>>()
+export function executeSetupScript(
+  entry: DevframeDockUserEntry,
+  context: DockClientScriptContext,
+): Promise<void> {
+  // Actions should re-execute on every click; only cache non-action scripts
+  if (entry.type !== 'action' && _setupPromises.has(entry.id))
+    return _setupPromises.get(entry.id)!
+  const promise = _executeSetupScript(entry, context)
+  if (entry.type !== 'action')
+    _setupPromises.set(entry.id, promise)
+  return promise
+}

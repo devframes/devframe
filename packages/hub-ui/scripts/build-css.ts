@@ -1,0 +1,63 @@
+import fs from 'node:fs/promises'
+import { createRequire } from 'node:module'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { colors as c } from 'devframe/utils/colors'
+import MagicString from 'magic-string'
+import { glob } from 'tinyglobby'
+import { createGenerator } from 'unocss'
+import config from '../uno.config'
+
+// Compile the components' UnoCSS output ahead of time into a plain string
+// module (`src/client/.generated/css.ts`) that `defineCustomElement` adopts
+// into each shadow root — the dock stays fully styled inside any host page
+// without a global stylesheet, and the host page's own styles can't leak in.
+const SRC_DIR = fileURLToPath(new URL('../src/client', import.meta.url))
+const GLOBS = ['components/**/*.{ts,vue}', 'state/**/*.ts', 'embedded/**/*.ts', 'standalone/**/*.{ts,html}']
+// Story-only utility classes must not leak into the shipped stylesheet.
+const IGNORE = ['**/*.stories.*', '**/__tests__/**']
+const USER_STYLE = join(SRC_DIR, 'style.css')
+const GENERATED_CSS = join(SRC_DIR, '.generated/css.ts')
+
+export async function buildCSS(): Promise<void> {
+  const require = createRequire(import.meta.url)
+  const reset = await fs.readFile(require.resolve('@unocss/reset/tailwind.css'), 'utf-8')
+  const files = await glob(GLOBS, {
+    cwd: SRC_DIR,
+    absolute: true,
+    ignore: IGNORE,
+  })
+
+  const generator = await createGenerator(config)
+
+  const tokens = new Set<string>()
+  for (const file of files) {
+    const content = await fs.readFile(file, 'utf-8')
+    await generator.applyExtractors(content, file, tokens)
+  }
+
+  // The hand-written stylesheet may use `--at-apply` — run it through the
+  // configured transformers (directives, variant groups) before merging.
+  const userStyle = new MagicString(await fs.readFile(USER_STYLE, 'utf-8').catch(() => ''))
+  for (const transformer of generator.config.transformers ?? []) {
+    await transformer.transform(userStyle, USER_STYLE, { uno: generator } as any)
+  }
+
+  const unoResult = await generator.generate(tokens)
+  const css = [
+    reset,
+    userStyle.toString(),
+    unoResult.css,
+  ].join('\n')
+
+  await fs.mkdir(join(SRC_DIR, '.generated'), { recursive: true })
+  await fs.writeFile(GENERATED_CSS, [
+    `/* eslint-disable eslint-comments/no-unlimited-disable */`,
+    `/* eslint-disable */`,
+    `export default ${JSON.stringify(String(css))}`,
+    '',
+  ].join('\n'))
+  console.log(`${c.green('✓')} CSS built (${files.length} sources, ${(css.length / 1024).toFixed(1)} kB)`)
+}
+
+await buildCSS()

@@ -27,6 +27,11 @@
       "dependsOn": ["devframe#build", "@devframes/hub#build"],
       "outputs": ["dist/**"]
     },
+    "@devframes/hub-ui#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe#build", "@devframes/hub#build"],
+      "outputs": ["dist/**"]
+    },
     "@devframes/json-render-ui#build": {
       "outputLogs": "new-only",
       "dependsOn": ["@devframes/json-render#build"],

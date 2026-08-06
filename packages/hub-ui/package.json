@@ -1,0 +1,70 @@
+{
+  "name": "@devframes/hub-ui",
+  "type": "module",
+  "version": "0.8.1",
+  "description": "Reference UI for @devframes/hub \u2014 the floating dock and standalone viewer filling the hub's ui slot.",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/devframes/devframe#readme",
+  "repository": {
+    "directory": "packages/hub-ui",
+    "type": "git",
+    "url": "git+https://github.com/devframes/devframe.git"
+  },
+  "bugs": "https://github.com/devframes/devframe/issues",
+  "keywords": [
+    "devtools",
+    "devframe",
+    "hub",
+    "dock",
+    "ui"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run build:css && pnpm run build:node && pnpm run build:embedded && pnpm run build:standalone",
+    "build:css": "tsx scripts/build-css.ts",
+    "build:node": "tsdown",
+    "build:embedded": "vite build --config vite.embedded.config.ts",
+    "build:standalone": "vite build --config src/client/standalone/vite.config.ts",
+    "typecheck": "tsc --noEmit",
+    "prepack": "pnpm build",
+    "storybook": "storybook dev -p 6014",
+    "build-storybook": "storybook build"
+  },
+  "peerDependencies": {
+    "@devframes/hub": "workspace:*",
+    "devframe": "workspace:*"
+  },
+  "devDependencies": {
+    "@devframes/hub": "workspace:*",
+    "@iconify-json/ph": "catalog:frontend",
+    "@json-render/core": "catalog:deps",
+    "@json-render/vue": "catalog:frontend",
+    "@storybook/addon-docs": "catalog:storybook",
+    "@storybook/vue3-vite": "catalog:storybook",
+    "@types/node": "catalog:types",
+    "@unocss/reset": "catalog:frontend",
+    "@vitejs/plugin-vue": "catalog:build",
+    "@vueuse/core": "catalog:frontend",
+    "devframe": "workspace:*",
+    "dompurify": "catalog:frontend",
+    "fuse.js": "catalog:frontend",
+    "iframe-pane": "catalog:frontend",
+    "magic-string": "catalog:build",
+    "storybook": "catalog:storybook",
+    "tinyglobby": "catalog:deps",
+    "tsdown": "catalog:build",
+    "tsx": "catalog:build",
+    "unocss": "catalog:frontend",
+    "vite": "catalog:build",
+    "vue": "catalog:frontend"
+  }
+}

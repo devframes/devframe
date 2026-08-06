@@ -49,6 +49,7 @@ export const alias = {
   '@devframes/hub/node': r('hub/src/node/index.ts'),
   '@devframes/hub/types': r('hub/src/types/index.ts'),
   '@devframes/hub': r('hub/src/index.ts'),
+  '@devframes/hub-ui': r('hub-ui/src/index.ts'),
   '@devframes/nuxt/runtime/plugin.client': r('nuxt/src/runtime/plugin.client.ts'),
   '@devframes/nuxt': r('nuxt/src/index.ts'),
   '@devframes/next/client': r('next/src/client.tsx'),

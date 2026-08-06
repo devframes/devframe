@@ -1,0 +1,135 @@
+:root {
+  --un-text-opacity: 100%;
+}
+
+/*
+ * Thin/transparent scrollbar, matching packages/ui/src/styles/global.css —
+ * that stylesheet only reaches the Nuxt plugin apps, not this injected
+ * webcomponents shell, which otherwise falls back to the browser default
+ * (thick, opaque-gutter) scrollbar clashing with the translucent dock.
+ * `:host`, not `:root` — this stylesheet is adopted into the dock's shadow
+ * root (`defineCustomElement(..., { shadowRoot: true, styles: [css] })`),
+ * where `:root` only ever matches the top-level document's <html>.
+ * Rules below are unscoped (not `#devframes-anchor ...`) since the
+ * shadow boundary already keeps them from leaking onto the host page, and
+ * scoping under the anchor's id would miss edge-docked mode entirely
+ * (`DockEmbedded.vue` renders `DockEdge`/`#devframes-edge-panel` and
+ * `Dock`/`#devframes-anchor` as mutually exclusive siblings).
+ */
+:host {
+  --app-scrollbar-size: 6px;
+  --app-scrollbar-radius: 1px;
+  --app-scrollbar-thumb: #8884;
+  --app-scrollbar-thumb-hover: #8885;
+}
+
+::-webkit-scrollbar {
+  width: var(--app-scrollbar-size);
+}
+
+::-webkit-scrollbar:horizontal {
+  height: var(--app-scrollbar-size);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--app-scrollbar-thumb);
+  transition: background 0.2s ease;
+  border-radius: var(--app-scrollbar-radius);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--app-scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-track {
+  border-radius: var(--app-scrollbar-radius);
+  background: transparent;
+}
+
+#devframes-anchor {
+  --uno: w-0 z-floating-anchor fixed origin-center font-sans text-[15px] box-border;
+  transform: translate(-50%, -50%) rotate(0);
+}
+
+#devframes-anchor #devframes-dock-container {
+  --uno: absolute left-0 top-0 w-max flex;
+  height: var(--devframes-dock-height, 40px);
+  min-width: var(--devframes-dock-min-width, 100px);
+  transform: translate(-50%, -50%);
+}
+
+#devframes-anchor.devframes-vertical #devframes-dock-container {
+  transform: translate(-50%, -50%) rotate(90deg);
+  --uno: transition-all duration-500;
+}
+
+#devframes-anchor #devframes-dock {
+  --uno: h-full rounded-full select-none touch-none ma;
+  --uno: "shadow text-[#333] dark:text-white  bg-glass:80";
+  --uno: transition-all duration-500;
+  height: var(--devframes-dock-height, 40px);
+  width: calc-size(max-content, size);
+}
+
+#devframes-anchor.devframes-minimized #devframes-dock {
+  --uno: px-0 py-[2px];
+  width: var(--devframes-dock-minimized-size, 22px);
+  height: var(--devframes-dock-minimized-size, 22px);
+}
+
+#devframes-anchor.devframes-minimized .devframes-dock-bracket {
+  --uno: w-1.5 op50;
+}
+
+#devframes-anchor:hover #devframes-glowing {
+  --uno: opacity-60;
+}
+
+#devframes-anchor #devframes-glowing {
+  --uno: absolute left-0 top-0 opacity-0 transition-all duration-[1000ms] ease-out pointer-events-none -z-[1] rounded-full;
+  width: var(--devframes-dock-glow-size, 160px);
+  height: var(--devframes-dock-glow-size, 160px);
+  filter: blur(var(--devframes-dock-glow-blur, 60px));
+  transform: translate(-50%, -50%);
+  background-image: linear-gradient(45deg, #61d9ff, #6b84fd, #715ebd);
+}
+
+@media print {
+  #devframes-anchor {
+    --uno: hidden;
+  }
+}
+
+.devframes-resize-handle-horizontal {
+  --uno: absolute left-[6px] right-[6px] h-[10px] -my-[5px] cursor-ns-resize rounded-md;
+}
+.devframes-resize-handle-vertical {
+  --uno: absolute top-[6px] bottom-0 w-[10px] -mx-[5px] cursor-ew-resize rounded-md;
+}
+.devframes-resize-handle-corner {
+  --uno: absolute w-[14px] h-[14px] -m-[6px] rounded-md;
+}
+.devframes-resize-handle {
+  --uno: z-viewframe-resizer;
+}
+.devframes-resize-handle:hover {
+  --uno: bg-gray-400:10;
+}
+
+@keyframes devframes-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+.devframes-shake {
+  animation: devframes-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@media (prefers-reduced-motion: reduce) {
+  .devframes-shake {
+    animation: none;
+  }
+}
