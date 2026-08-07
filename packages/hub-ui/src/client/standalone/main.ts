@@ -20,9 +20,12 @@ watchEffect(() => {
 
 async function main(): Promise<void> {
   // Served at the hub base with relative assets: `./__connection.json`
-  // resolves against the page URL first, the module URL second.
+  // resolves against the page URL first, the module URL second. Read
+  // import.meta.url through a variable so Vite's build doesn't rewrite the
+  // literal `new URL('...', import.meta.url)` asset pattern into a data URL.
+  const moduleUrl = import.meta.url
   const rpc = await getDevframeRpcClient({
-    baseURL: ['./', new URL('./', import.meta.url).href],
+    baseURL: ['./', new URL('./', moduleUrl).href],
     simpleAuth: false,
   })
 
