@@ -75,11 +75,14 @@ export interface DevframeHubUi {
 
 export interface InitHubOptions {
   /**
-   * Mount base the hub answers under. Default: `/__devframes/` — every
-   * mounted devframe lives at `<base><id>/`, so the host app needs exactly
-   * one catch-all route.
+   * Mount base the hub answers under — required so the mount path is
+   * explicit at the call site (pass the exported {@link DEVFRAMES_HUB_BASE}
+   * for the conventional `/__devframes/`). Every mounted devframe lives at
+   * `<base><id>/`, so the host app needs exactly one catch-all route. The
+   * resolved value is echoed back as {@link HubInstance.base} so route and
+   * middleware code references it instead of repeating the string.
    */
-  base?: string
+  base: string
   /**
    * Devframes to mount: each runs its `setup()` against the shared hub
    * context (one merged RPC registry, one WebSocket, one auth gate), serves
@@ -165,8 +168,14 @@ export interface InitHubOptions {
 
 export interface HubInstance {
   /**
+   * The normalized mount base this hub answers under (leading and trailing
+   * slash, e.g. `/__devframes/`). Reference it when wiring the mount — route
+   * guards, middleware path checks — instead of repeating the string literal.
+   */
+  base: string
+  /**
    * Web-standard request handler for the whole hub — mount it on one
-   * catch-all route under {@link InitHubOptions.base}. Under Bun, pass the
+   * catch-all route under {@link HubInstance.base}. Under Bun, pass the
    * `Bun.serve` server as the second argument so WS upgrades complete.
    */
   handler: (request: Request, server?: unknown) => Promise<Response>
@@ -269,7 +278,7 @@ function renderClientImportsModule(ctx: DevframeHubContext): string {
  * the aggregate MCP route, and whatever the {@link DevframeHubUi} slot
  * provides — the hub itself stays headless.
  */
-export function initHub(options: InitHubOptions = {}): HubInstance {
+export function initHub(options: InitHubOptions): HubInstance {
   if (options.key) {
     const registry = hubRegistry()
     const hash = optionsHash(options)
@@ -288,7 +297,7 @@ export function initHub(options: InitHubOptions = {}): HubInstance {
 }
 
 function instantiateHub(options: InitHubOptions): HubInstance {
-  const base = normalizeBase(options.base ?? DEVFRAMES_HUB_BASE)
+  const base = normalizeBase(options.base)
   const baseNoSlash = withoutTrailingSlash(base)
   const app = new H3()
   const cwd = options.cwd ?? process.cwd()
@@ -600,6 +609,7 @@ function instantiateHub(options: InitHubOptions): HubInstance {
   }
 
   const instance: HubInstance = {
+    base,
     handler: handleRequest,
     nodeMiddleware,
     websocket: {

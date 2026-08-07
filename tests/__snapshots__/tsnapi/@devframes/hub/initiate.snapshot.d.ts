@@ -15,6 +15,7 @@ export interface HubDevframeEntry {
   dock?: MountDevframeOptions['dock'];
 }
 export interface HubInstance {
+  base: string;
   handler: (_: Request, _?: unknown) => Promise<Response>;
   nodeMiddleware: (_: IncomingMessage, _: ServerResponse, _?: (_?: unknown) => void) => void;
   websocket: {
@@ -29,7 +30,7 @@ export interface HubInstance {
   close: () => Promise<void>;
 }
 export interface InitHubOptions {
-  base?: string;
+  base: string;
   devframes?: (DevframeDefinition | HubDevframeEntry)[];
   rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations'];
   context?: DevframeHubContext;
@@ -50,7 +51,7 @@ export interface InitHubOptions {
 // #endregion
 
 // #region Functions
-export declare function initHub(_?: InitHubOptions): HubInstance;
+export declare function initHub(_: InitHubOptions): HubInstance;
 // #endregion
 
 // #region Variables

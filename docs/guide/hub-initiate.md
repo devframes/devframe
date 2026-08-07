@@ -1,15 +1,16 @@
 # Serve a Hub Anywhere
 
-`initHub()` from `@devframes/hub/initiate` puts a whole multi-devframe devtools installation behind one web-standard handler: mount it on a single catch-all route and every frame, the shared RPC socket, the single auth gate, discovery, and the optional UI are live under one namespace (default `/__devframes/`).
+`initHub()` from `@devframes/hub/initiate` puts a whole multi-devframe devtools installation behind one web-standard handler: mount it on a single catch-all route and every frame, the shared RPC socket, the single auth gate, discovery, and the optional UI are live under one namespace.
 
 ```ts
 import { createUi } from '@devframes/hub-ui'
-import { initHub } from '@devframes/hub/initiate'
+import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
 import { createInspectDevframe } from '@devframes/plugin-inspect'
 import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 
 export const hub = initHub({
   key: 'devtools',
+  base: DEVFRAMES_HUB_BASE, // required — the conventional `/__devframes/`
   devframes: [createInspectDevframe(), createTerminalsDevframe()],
   ui: createUi(),
   configure(ctx) {
@@ -18,7 +19,7 @@ export const hub = initHub({
 })
 ```
 
-Every mounted devframe runs its `setup()` against the **shared hub context**: one merged RPC registry (frames can call each other's functions), one shared-state store, one WebSocket transport, one Auth. The instance mirrors `initDevframe`'s surface — `handler`, `nodeMiddleware`, `websocket` (Bun), `ready`, `context`, `connectionMeta()`, `close()` — and the same mount snippets apply with the base swapped to `/__devframes/`; see [the initiate adapter](../adapters/initiate#mount-the-handler).
+`base` is required so the mount path is explicit; pass the exported `DEVFRAMES_HUB_BASE` for the conventional `/__devframes/`. The instance echoes the normalized value back as `hub.base`, so route guards and middleware reference it instead of repeating the string. Every mounted devframe runs its `setup()` against the **shared hub context**: one merged RPC registry (frames can call each other's functions), one shared-state store, one WebSocket transport, one Auth. The instance mirrors `initDevframe`'s surface — `base`, `handler`, `nodeMiddleware`, `websocket` (Bun), `ready`, `context`, `connectionMeta()`, `close()` — and the same mount snippets apply; see [the initiate adapter](../adapters/initiate#mount-the-handler).
 
 ## The namespace
 
@@ -72,7 +73,7 @@ A devframe's SPA and RPC client code are byte-identical in both cases — that i
 Hosts that assemble `createHubContext` + `mountDevframe` themselves (with their own `DevframeHost` serving the frames) pass the finished context instead of a `devframes` list:
 
 ```ts
-const hub = initHub({ context: ctx })
+const hub = initHub({ base: DEVFRAMES_HUB_BASE, context: ctx })
 ```
 
-The instance then serves the hub-level endpoints and transport only; serve each frame's meta from `hub.connectionMeta()` yourself. The two reference examples — `examples/vite-devframe-hub` and `examples/next-devframe-hub` — use the declarative mode with their own hand-built viewer UIs, and `examples/nitro-devframe-hub` / `examples/hono-devframe-hub` show the minimal `createUi()` mounts (the Hono one on Node and Bun).
+The instance then serves the hub-level endpoints and transport only; serve each frame's meta from `hub.connectionMeta()` yourself. The two reference examples — `examples/hub-vite` and `examples/hub-next` — use the declarative mode with their own hand-built viewer UIs, while the `hub-*-minimal` family (`hub-vite-minimal`, `hub-next-minimal`, `hub-nitro-minimal`, `hub-hono-minimal`, `hub-rsbuild-minimal`) shows the minimal `createUi()` mount across frameworks (the Hono one on Node and Bun).

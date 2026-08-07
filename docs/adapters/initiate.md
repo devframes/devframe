@@ -1,17 +1,17 @@
 # Initiate (standard middleware)
 
-Serve a devframe from inside any app that can mount a catch-all route: `initDevframe(def)` returns a live instance whose `.handler` — a web-standard `(request: Request) => Promise<Response>` — carries the whole surface (the SPA, `__connection.json` discovery, the WebSocket RPC endpoint, the auth gate, and the optional MCP route) under one mount base.
+Serve a devframe from inside any app that can mount a catch-all route: `initDevframe(def, { base })` returns a live instance whose `.handler` — a web-standard `(request: Request) => Promise<Response>` — carries the whole surface (the SPA, `__connection.json` discovery, the WebSocket RPC endpoint, the auth gate, and the optional MCP route) under one mount base.
 
 ```ts
 import { initDevframe } from 'devframe/initiate'
 import myDevframe from './devframe'
 
-const devtools = initDevframe(myDevframe, { key: 'my-tool' })
-// devtools.handler, devtools.nodeMiddleware, devtools.websocket,
+const devtools = initDevframe(myDevframe, { base: '/__my-tool/', key: 'my-tool' })
+// devtools.base, devtools.handler, devtools.nodeMiddleware, devtools.websocket,
 // devtools.ready, devtools.context, devtools.connectionMeta(), devtools.close()
 ```
 
-The factory is synchronous and initializes eagerly; `handler`/`nodeMiddleware` await readiness internally, so hosts never race the boot. The default base is the hosted rule — `def.basePath` or `/__<id>/`.
+`base` is required, so the mount path is explicit at the call site — pass the conventional `resolveBasePath(def, 'hosted')` (i.e. `def.basePath ?? /__<id>/`) if you don't want to pick one. The instance echoes the normalized value back as `devtools.base`, so route guards and middleware reference it instead of repeating the string. The factory is synchronous and initializes eagerly; `handler`/`nodeMiddleware` await readiness internally, so hosts never race the boot.
 
 ## Mount the handler
 
@@ -29,6 +29,7 @@ export default defineConfig({
     apply: 'serve',
     configureServer(server) {
       const devtools = initDevframe(myDevframe, {
+        base: '/__my-tool/',
         key: 'my-tool',
         server: server.httpServer ?? undefined,
       })
@@ -65,7 +66,7 @@ import myDevframe from '@/devframe'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const devtools = initDevframe(myDevframe, { key: 'my-tool' })
+const devtools = initDevframe(myDevframe, { base: '/__my-tool/', key: 'my-tool' })
 export const GET = devtools.handler
 ```
 
@@ -75,7 +76,8 @@ import { devtools } from '../devtools'
 
 export default defineEventHandler((event) => {
   const { pathname } = new URL(toWebRequest(event).url)
-  if (pathname === '/__my-tool' || pathname.startsWith('/__my-tool/'))
+  // `devtools.base` is the normalized mount base — no repeated string.
+  if (pathname.startsWith(devtools.base) || pathname === devtools.base.slice(0, -1))
     return devtools.handler(toWebRequest(event))
 })
 ```
@@ -85,7 +87,7 @@ export default defineEventHandler((event) => {
 import myDevframe from '$lib/devframe'
 import { initDevframe } from 'devframe/initiate'
 
-const devtools = initDevframe(myDevframe, { key: 'my-tool' })
+const devtools = initDevframe(myDevframe, { base: '/__my-tool/', key: 'my-tool' })
 export const GET = ({ request }) => devtools.handler(request)
 ```
 
