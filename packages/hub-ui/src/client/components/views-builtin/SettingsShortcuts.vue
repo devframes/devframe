@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { DevframeCommandEntry, DevframeCommandKeybinding } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
+import DisplayKbd from '@antfu/design/components/Display/DisplayKbd.vue'
 import { computed, nextTick, ref, watch } from 'vue'
 import { sharedStateToRef } from '../../state/docks'
 import { filterCommandsByWhen, formatKeybinding, isKeybindingOverrideDifferentFromDefault, isMac, KNOWN_BROWSER_SHORTCUTS } from '../../state/keybindings'
-import KeybindingBadge from '../command-palette/KeybindingBadge.vue'
 import DockIcon from '../dock/DockIcon.vue'
 
 const props = defineProps<{
@@ -300,7 +300,7 @@ watch(editorOpen, async (v) => {
             title="Click to edit"
             @click="openEditor(row.command.id)"
           >
-            <KeybindingBadge :key-string="kb.key" />
+            <DisplayKbd :keys="kb.key" />
           </button>
         </template>
         <button

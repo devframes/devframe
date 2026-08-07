@@ -948,6 +948,9 @@ importers:
 
   packages/hub-ui:
     devDependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.3.3(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@5.9.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.40(typescript@5.9.3)))(playwright@1.62.1)(reka-ui@2.10.1(vue@3.5.40(typescript@5.9.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@5.9.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.23))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0)))(vue@3.5.40(typescript@5.9.3))
       '@devframes/hub':
         specifier: workspace:*
         version: link:../hub
@@ -5315,11 +5318,6 @@ packages:
   '@vue/shared@3.5.40':
     resolution: {integrity: sha512-WxnBtruIqOoV3rA4jeKDWzrYI5h7Cp4+pjwDi8kWGHz+IslhiN+wguLVVhtv2l8VoU02rzDCVfDjgCl1lNpZVg==}
 
-  '@vueuse/core@14.3.0':
-    resolution: {integrity: sha512-aHfz47g0ZhMtTVHmIzMVpJy8ePhhOy68GY5bv110+5DVtZ+W7BsOx+m61UNQqfrWyPztIHIanWa3E2tib3NFIw==}
-    peerDependencies:
-      vue: ^3.5.0
-
   '@vueuse/core@14.4.0':
     resolution: {integrity: sha512-X4WHz1HlCzCBoYXesUkifzzWBAcZgXG8Fi5iNPQg/epdzOB3gu8Fawj3hvuwYR1nGcXGnvxwYYcUC/71++svtQ==}
     peerDependencies:
@@ -5367,16 +5365,8 @@ packages:
       universal-cookie:
         optional: true
 
-  '@vueuse/metadata@14.3.0':
-    resolution: {integrity: sha512-BwxmbAzwAVF50+MW57GXOUEV61nFBGnlBvrTqj49PqWJu3uw7hdu72ztXeZ33RdZtDY6kO+bfCAE1PCn88Tktw==}
-
   '@vueuse/metadata@14.4.0':
     resolution: {integrity: sha512-swx/255R6JyHZFJhx845iz5CRWDZdCfvkZOpACWc5+c5WHcG24mv8gUT1WIdFQaHt6dq79rvILd9QnCWiyVm9g==}
-
-  '@vueuse/shared@14.3.0':
-    resolution: {integrity: sha512-bZpge9eSXwa4ToSiqJ7j6KRwhAsneMFoSz3LMWKQDkqimm3D/tbFlrklrs/IOqC8tEcYmXQZJ6N0UrjhBirVCg==}
-    peerDependencies:
-      vue: ^3.5.0
 
   '@vueuse/shared@14.4.0':
     resolution: {integrity: sha512-JRgY90Sz8DDtPMsaDflvPMp9xYk69JZAmbuDvAquUVXKr2gEjqtzGNTTthLfckH0BzBqvnu31gb4a8TGLRe79g==}
@@ -9833,9 +9823,26 @@ snapshots:
 
   '@adobe/css-tools@4.5.0': {}
 
+  '@antfu/design@0.3.3(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@5.9.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.40(typescript@5.9.3)))(playwright@1.62.1)(reka-ui@2.10.1(vue@3.5.40(typescript@5.9.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@5.9.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.23))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0)))(vue@3.5.40(typescript@5.9.3))':
+    dependencies:
+      '@vueuse/core': 14.4.0(vue@3.5.40(typescript@5.9.3))
+      unocss: 66.7.5(@unocss/postcss@66.7.5(postcss@8.5.23))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0))
+      vue: 3.5.40(typescript@5.9.3)
+    optionalDependencies:
+      '@antfu/utils': 9.3.0
+      '@iconify-json/catppuccin': 1.2.17
+      '@tanstack/vue-virtual': 3.13.30(vue@3.5.40(typescript@5.9.3))
+      '@unocss/core': 66.7.5
+      colorjs.io: 0.6.1
+      dompurify: 3.4.13
+      floating-vue: 5.2.2(vue@3.5.40(typescript@5.9.3))
+      playwright: 1.62.1
+      reka-ui: 2.10.1(vue@3.5.40(typescript@5.9.3))
+      splitpanes: 4.1.2(vue@3.5.40(typescript@5.9.3))
+
   '@antfu/design@0.3.3(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.40(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.1(vue@3.5.40(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.23))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))':
     dependencies:
-      '@vueuse/core': 14.3.0(vue@3.5.40(typescript@6.0.3))
+      '@vueuse/core': 14.4.0(vue@3.5.40(typescript@6.0.3))
       unocss: 66.7.5(@unocss/postcss@66.7.5(postcss@8.5.23))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0))
       vue: 3.5.40(typescript@6.0.3)
     optionalDependencies:
@@ -9852,7 +9859,7 @@ snapshots:
 
   '@antfu/design@0.3.3(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.40(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.1(vue@3.5.40(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.23))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))':
     dependencies:
-      '@vueuse/core': 14.3.0(vue@3.5.40(typescript@6.0.3))
+      '@vueuse/core': 14.4.0(vue@3.5.40(typescript@6.0.3))
       unocss: 66.7.5(@unocss/postcss@66.7.5(postcss@8.5.23))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0))
       vue: 3.5.40(typescript@6.0.3)
     optionalDependencies:
@@ -10475,6 +10482,16 @@ snapshots:
       tabbable: 6.5.0
 
   '@floating-ui/utils@0.2.12': {}
+
+  '@floating-ui/vue@1.1.11(vue@3.5.40(typescript@5.9.3))':
+    dependencies:
+      '@floating-ui/dom': 1.8.0
+      '@floating-ui/utils': 0.2.12
+      vue-demi: 0.14.10(vue@3.5.40(typescript@5.9.3))
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+    optional: true
 
   '@floating-ui/vue@1.1.11(vue@3.5.40(typescript@6.0.3))':
     dependencies:
@@ -12452,6 +12469,12 @@ snapshots:
 
   '@tanstack/virtual-core@3.17.2': {}
 
+  '@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@5.9.3))':
+    dependencies:
+      '@tanstack/virtual-core': 3.17.2
+      vue: 3.5.40(typescript@5.9.3)
+    optional: true
+
   '@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@6.0.3))':
     dependencies:
       '@tanstack/virtual-core': 3.17.2
@@ -13307,13 +13330,6 @@ snapshots:
 
   '@vue/shared@3.5.40': {}
 
-  '@vueuse/core@14.3.0(vue@3.5.40(typescript@6.0.3))':
-    dependencies:
-      '@types/web-bluetooth': 0.0.21
-      '@vueuse/metadata': 14.3.0
-      '@vueuse/shared': 14.3.0(vue@3.5.40(typescript@6.0.3))
-      vue: 3.5.40(typescript@6.0.3)
-
   '@vueuse/core@14.4.0(vue@3.5.40(typescript@5.9.3))':
     dependencies:
       '@types/web-bluetooth': 0.0.21
@@ -13338,13 +13354,7 @@ snapshots:
       focus-trap: 8.2.2
       fuse.js: 7.5.0
 
-  '@vueuse/metadata@14.3.0': {}
-
   '@vueuse/metadata@14.4.0': {}
-
-  '@vueuse/shared@14.3.0(vue@3.5.40(typescript@6.0.3))':
-    dependencies:
-      vue: 3.5.40(typescript@6.0.3)
 
   '@vueuse/shared@14.4.0(vue@3.5.40(typescript@5.9.3))':
     dependencies:
@@ -14725,6 +14735,13 @@ snapshots:
       keyv: 4.5.4
 
   flatted@3.4.2: {}
+
+  floating-vue@5.2.2(vue@3.5.40(typescript@5.9.3)):
+    dependencies:
+      '@floating-ui/dom': 1.1.1
+      vue: 3.5.40(typescript@5.9.3)
+      vue-resize: 2.0.0-alpha.1(vue@3.5.40(typescript@5.9.3))
+    optional: true
 
   floating-vue@5.2.2(vue@3.5.40(typescript@6.0.3)):
     dependencies:
@@ -16929,6 +16946,23 @@ snapshots:
     dependencies:
       jsesc: 3.1.0
 
+  reka-ui@2.10.1(vue@3.5.40(typescript@5.9.3)):
+    dependencies:
+      '@floating-ui/dom': 1.8.0
+      '@floating-ui/vue': 1.1.11(vue@3.5.40(typescript@5.9.3))
+      '@internationalized/date': 3.12.2
+      '@internationalized/number': 3.6.7
+      '@tanstack/vue-virtual': 3.13.30(vue@3.5.40(typescript@5.9.3))
+      '@vueuse/core': 14.4.0(vue@3.5.40(typescript@5.9.3))
+      '@vueuse/shared': 14.4.0(vue@3.5.40(typescript@5.9.3))
+      aria-hidden: 1.2.6
+      defu: 6.1.7
+      ohash: 2.0.11
+      vue: 3.5.40(typescript@5.9.3)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+    optional: true
+
   reka-ui@2.10.1(vue@3.5.40(typescript@6.0.3)):
     dependencies:
       '@floating-ui/dom': 1.8.0
@@ -17322,6 +17356,11 @@ snapshots:
       spdx-license-ids: 3.0.23
 
   spdx-license-ids@3.0.23: {}
+
+  splitpanes@4.1.2(vue@3.5.40(typescript@5.9.3)):
+    dependencies:
+      vue: 3.5.40(typescript@5.9.3)
+    optional: true
 
   splitpanes@4.1.2(vue@3.5.40(typescript@6.0.3)):
     dependencies:
@@ -18210,6 +18249,11 @@ snapshots:
 
   vue-component-type-helpers@3.3.5: {}
 
+  vue-demi@0.14.10(vue@3.5.40(typescript@5.9.3)):
+    dependencies:
+      vue: 3.5.40(typescript@5.9.3)
+    optional: true
+
   vue-demi@0.14.10(vue@3.5.40(typescript@6.0.3)):
     dependencies:
       vue: 3.5.40(typescript@6.0.3)
@@ -18267,6 +18311,11 @@ snapshots:
   vue-inbrowser-compiler-independent-utils@4.71.1(vue@3.5.40(typescript@6.0.3)):
     dependencies:
       vue: 3.5.40(typescript@6.0.3)
+
+  vue-resize@2.0.0-alpha.1(vue@3.5.40(typescript@5.9.3)):
+    dependencies:
+      vue: 3.5.40(typescript@5.9.3)
+    optional: true
 
   vue-resize@2.0.0-alpha.1(vue@3.5.40(typescript@6.0.3)):
     dependencies:

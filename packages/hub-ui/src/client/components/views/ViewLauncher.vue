@@ -2,9 +2,9 @@
 import type { DevframeViewLauncherStatus } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import type { HubViewLauncher } from '../../types'
+import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { computed, ref, watch } from 'vue'
 import { TERMINALS_DOCK_ID } from '../../constants'
-import Button from '../display/Button.vue'
 import DockIcon from '../dock/DockIcon.vue'
 
 const props = defineProps<{
@@ -108,18 +108,17 @@ const canLaunch = computed(() => status.value === 'idle' || status.value === 'er
       </select>
     </label>
 
-    <Button
-      class="min-w-40"
-      :variant="status === 'error' ? 'danger' : 'primary'"
+    <ActionButton
+      variant="primary"
+      class="min-w-40 justify-center"
+      :class="status === 'error' ? 'bg-error! border-error!' : ''"
+      :icon="iconsMap[status]"
       :loading="status === 'loading'"
       :disabled="!canLaunch"
       @click="onLaunch"
     >
-      <template #icon>
-        <div class="w-4.5 h-4.5" :class="iconsMap[status]" />
-      </template>
       {{ buttonText }}
-    </Button>
+    </ActionButton>
 
     <!-- Fixed-height action zone: reserves space so the card doesn't shift as
          the status line / navigation toggle across idle → loading → done. -->
@@ -133,17 +132,15 @@ const canLaunch = computed(() => status.value === 'idle' || status.value === 'er
         <span class="truncate">{{ progress }}</span>
       </div>
 
-      <Button
+      <ActionButton
         v-if="terminalSessionId"
-        variant="ghost"
+        variant="text"
         size="sm"
+        icon="i-ph-arrow-square-out-duotone"
         @click="viewInTerminal"
       >
-        <template #icon>
-          <div class="w-3.5 h-3.5 i-ph-arrow-square-out-duotone" />
-        </template>
         View in Terminal
-      </Button>
+      </ActionButton>
     </div>
   </div>
 </template>

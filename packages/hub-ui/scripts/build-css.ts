@@ -28,10 +28,22 @@ export async function buildCSS(): Promise<void> {
     ignore: IGNORE,
   })
 
+  // The dock reuses `@antfu/design`'s Vue components (buttons, badges, …)
+  // directly. UnoCSS ignores `node_modules` by default, so their semantic
+  // shortcut classes (`btn-primary`, `btn-action`, `badge-*`, …) would be
+  // absent from the shadow-root stylesheet — scan the design package's
+  // component sources too so those classes ship in the injected CSS.
+  const designComponentsDir = join(require.resolve('@antfu/design/package.json'), '..', 'components')
+  const designFiles = await glob('**/*.vue', {
+    cwd: designComponentsDir,
+    absolute: true,
+    ignore: IGNORE,
+  })
+
   const generator = await createGenerator(config)
 
   const tokens = new Set<string>()
-  for (const file of files) {
+  for (const file of [...files, ...designFiles]) {
     const content = await fs.readFile(file, 'utf-8')
     await generator.applyExtractors(content, file, tokens)
   }

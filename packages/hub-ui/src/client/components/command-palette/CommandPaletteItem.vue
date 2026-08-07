@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DevframeCommandEntry, DevframeCommandKeybinding } from '@devframes/hub'
+import DisplayKbd from '@antfu/design/components/Display/DisplayKbd.vue'
 import DockIcon from '../dock/DockIcon.vue'
-import KeybindingBadge from './KeybindingBadge.vue'
 
 defineProps<{
   entry: DevframeCommandEntry
@@ -53,10 +53,10 @@ defineEmits<{
       </div>
       <div class="flex items-center gap-1.5 flex-none">
         <!-- Keybinding badges -->
-        <KeybindingBadge
+        <DisplayKbd
           v-for="(kb, ki) in keybindings"
           :key="ki"
-          :key-string="kb.key"
+          :keys="kb.key"
         />
         <!-- Loading indicator -->
         <span v-if="loading" class="i-ph-spinner-gap-duotone w-3.5 h-3.5 animate-spin op50" />

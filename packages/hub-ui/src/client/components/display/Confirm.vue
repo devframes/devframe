@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { useTemplateRef, watchPostEffect } from 'vue'
 import { ConfirmPromise } from '../../state/confirm'
-import Button from './Button.vue'
 
-const confirmButton = useTemplateRef<InstanceType<typeof Button>>('confirmButton')
+const confirmButton = useTemplateRef<InstanceType<typeof ActionButton>>('confirmButton')
 
 watchPostEffect(() => {
-  confirmButton.value?.focus({ preventScroll: true })
+  (confirmButton.value?.$el as HTMLElement | undefined)?.focus({ preventScroll: true })
 })
 
 function resolveConfirm(resolve: (value: boolean) => void, value: boolean) {
@@ -43,12 +43,12 @@ function resolveConfirm(resolve: (value: boolean) => void, value: boolean) {
         </p>
 
         <div class="flex items-center justify-end gap-2 mt-6">
-          <Button variant="ghost" size="sm" @click="resolveConfirm(resolve, false)">
+          <ActionButton variant="text" size="sm" @click="resolveConfirm(resolve, false)">
             {{ options.cancelText ?? 'Cancel' }}
-          </Button>
-          <Button ref="confirmButton" variant="soft" size="sm" @click="resolveConfirm(resolve, true)">
+          </ActionButton>
+          <ActionButton ref="confirmButton" variant="primary" size="sm" @click="resolveConfirm(resolve, true)">
             {{ options.confirmText ?? 'OK' }}
-          </Button>
+          </ActionButton>
         </div>
       </div>
     </div>

@@ -8,8 +8,6 @@ import { BUILTIN_ENTRY_CLIENT_AUTH_NOTICE } from '../../constants'
 import { docksSplitGroupsWithCapacity } from '../../state/dock-settings'
 import { setDocksOverflowPanel } from '../../state/floating-tooltip'
 import { useIsRpcTrusted } from '../../utils/useIsRpcTrusted'
-import BracketLeft from '../icons/BracketLeft.vue'
-import BracketRight from '../icons/BracketRight.vue'
 import BrandMark from '../icons/BrandMark.vue'
 import {
   dockLayoutCssVars,
@@ -262,13 +260,6 @@ onMounted(() => {
         id="devframes-dock"
         @pointerdown="onPointerDown"
       >
-        <BracketLeft
-          class="devframes-dock-bracket absolute left--1 top-1/2 translate-y--1/2 bottom-0 w-2.5 op75 transition-opacity duration-300"
-        />
-        <BracketRight
-          class="devframes-dock-bracket absolute right--1 top-1/2 translate-y--1/2 bottom-0 w-2.5 op75 transition-opacity duration-300"
-          :class="context.panel.isVertical ? 'scale-y--100' : ''"
-        />
         <div
           class="w-3 h-3 absolute left-1/2 top-1/2 translate-x--1/2 translate-y--1/2 transition-opacity duration-300"
           :class="[

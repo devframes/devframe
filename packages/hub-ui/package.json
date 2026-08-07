@@ -44,6 +44,7 @@
     "devframe": "workspace:*"
   },
   "devDependencies": {
+    "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
     "@json-render/core": "catalog:deps",

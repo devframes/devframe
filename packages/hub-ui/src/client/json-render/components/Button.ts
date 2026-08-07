@@ -1,17 +1,27 @@
+import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { defineComponent, h } from 'vue'
-import BaseButton from '../../components/display/Button.vue'
 import DockIcon from '../../components/dock/DockIcon.vue'
 import { registryProps } from './types'
 
 type BaseVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
 const VARIANTS = new Set<BaseVariant>(['primary', 'secondary', 'ghost', 'danger'])
 
+// Maps the JSON-render button variants onto `@antfu/design`'s `ActionButton`
+// variants (`primary`/`action`/`text`); `danger` reuses `action` tinted with
+// the shared error color.
+const VARIANT_MAP: Record<BaseVariant, 'primary' | 'action' | 'text'> = {
+  primary: 'primary',
+  secondary: 'action',
+  ghost: 'text',
+  danger: 'action',
+}
+
 export interface ButtonProps {
   label?: string
   variant?: BaseVariant
   icon?: string
   disabled?: boolean
-  /** Shows `BaseButton`'s spinner in place of `icon` and implies `disabled`. */
+  /** Shows a spinner in place of `icon` and implies `disabled`. */
   loading?: boolean
 }
 
@@ -24,17 +34,18 @@ export const Button = defineComponent({
       const press = ctx.on('press')
       const resolved: BaseVariant = VARIANTS.has(variant) ? variant : 'secondary'
 
-      return h(BaseButton, {
-        variant: resolved,
+      return h(ActionButton, {
+        variant: VARIANT_MAP[resolved],
         size: 'sm',
         disabled,
         loading,
+        class: resolved === 'danger' ? 'text-red-600! dark:text-red-400!' : undefined,
         onClick: () => press.emit(),
       }, {
-        icon: icon
-          ? () => h(DockIcon, { icon, class: 'w-3.5 h-3.5' })
-          : undefined,
-        default: () => label,
+        default: () => [
+          icon && !loading ? h(DockIcon, { icon, class: 'w-3.5 h-3.5' }) : undefined,
+          label,
+        ],
       })
     }
   },

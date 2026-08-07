@@ -81,10 +81,6 @@
   height: var(--devframes-dock-minimized-size, 22px);
 }
 
-#devframes-anchor.devframes-minimized .devframes-dock-bracket {
-  --uno: w-1.5 op50;
-}
-
 #devframes-anchor:hover #devframes-glowing {
   --uno: opacity-60;
 }
@@ -95,7 +91,7 @@
   height: var(--devframes-dock-glow-size, 160px);
   filter: blur(var(--devframes-dock-glow-blur, 60px));
   transform: translate(-50%, -50%);
-  background-image: linear-gradient(45deg, #61d9ff, #6b84fd, #715ebd);
+  background-image: linear-gradient(45deg, #adc77f, #517158, #486954);
 }
 
 @media print {

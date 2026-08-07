@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
+import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { ref, useTemplateRef, watch } from 'vue'
-import Button from '../display/Button.vue'
 import OtpInput from '../display/OtpInput.vue'
 import BrandMark from '../icons/BrandMark.vue'
 
@@ -94,19 +94,16 @@ async function submit() {
             @complete="submit"
           />
 
-          <Button
+          <ActionButton
             type="submit"
             variant="primary"
-            size="lg"
-            block
+            icon="i-ph-shield-check-duotone"
+            class="w-full justify-center text-base py-2!"
             :loading="verifying"
             :disabled="code.length < CODE_LENGTH"
           >
-            <template #icon>
-              <div class="i-ph-shield-check-duotone w-4.5 h-4.5" />
-            </template>
             {{ verifying ? 'Authorizing' : 'Authorize' }}
-          </Button>
+          </ActionButton>
 
           <p
             v-if="error || verifying"
