@@ -1,10 +1,10 @@
-# hono-devframe-hub
+# hub-hono-minimal
 
 The minimal [Hono](https://hono.dev) host for `@devframes/hub` — one `initHub()` call, one catch-all route, and the same app file runs on Node and Bun.
 
 ```sh
-pnpm --filter hono-devframe-hub dev       # Node (tsx)
-pnpm --filter hono-devframe-hub dev:bun   # Bun
+pnpm --filter hub-hono-minimal dev       # Node (tsx)
+pnpm --filter hub-hono-minimal dev:bun   # Bun
 ```
 
 Open <http://localhost:5179> — the host page carries the floating dock via one script tag — or <http://localhost:5179/__devframes/> for the standalone viewer.

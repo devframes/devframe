@@ -8,7 +8,7 @@ outline: deep
 
 <figure class="screenshot">
   <img src="/screenshots/hub-1.png" alt="Hub screenshot" />
-  <figcaption>Hub allows orchestration of multiple devtools through a unified interface (example from <a href="/examples/vite-devframe-hub.html">A Playground</a>)</figcaption>
+  <figcaption>Hub allows orchestration of multiple devtools through a unified interface (example from <a href="/examples/hub-vite.html">A Playground</a>)</figcaption>
 </figure>
 
 ## What the hub adds
@@ -175,7 +175,7 @@ Each mounted SPA is served at `/__<id>/` and references its assets relatively (`
 export default { skipTrailingSlashRedirect: true }
 ```
 
-[`examples/next-devframe-hub/`](https://github.com/devframes/devframe/tree/main/examples/next-devframe-hub) is a working Next.js App Router host that mounts the built-in plugins this way.
+[`examples/hub-next/`](https://github.com/devframes/devframe/tree/main/examples/hub-next) is a working Next.js App Router host that mounts the built-in plugins this way.
 
 ### Duplicate devframes
 
@@ -285,8 +285,8 @@ External viewers resolve dock resources against the connection that delivered th
 
 Two minimal, copyable hubs mount every built-in plugin (git, terminals, code-server, inspect, a11y) behind an icon dock — the same shape [vite-devtools](https://github.com/vitejs/devtools) wears as the full Vite viewer, shrunk to the smallest thing you can build your own viewer from:
 
-- [`examples/vite-devframe-hub/`](https://github.com/devframes/devframe/tree/main/examples/vite-devframe-hub) — a ~120-line Vite plugin host with a vanilla DOM UI.
-- [`examples/next-devframe-hub/`](https://github.com/devframes/devframe/tree/main/examples/next-devframe-hub) — the same protocol hosted from a Next.js App Router app.
+- [`examples/hub-vite/`](https://github.com/devframes/devframe/tree/main/examples/hub-vite) — a ~120-line Vite plugin host with a vanilla DOM UI.
+- [`examples/hub-next/`](https://github.com/devframes/devframe/tree/main/examples/hub-next) — the same protocol hosted from a Next.js App Router app.
 
 Both also mount a "Tabbed Tool" that demonstrates [shared-iframe soft navigation](./client-context#shared-iframe-soft-navigation) — one SPA whose tabs surface as separate docks sharing a single iframe.
 

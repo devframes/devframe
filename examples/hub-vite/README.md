@@ -8,7 +8,7 @@ A tiny, copyable **vite-devtools-style hub**. [vite-devtools](https://github.com
 
 ```sh
 pnpm install
-pnpm --filter vite-devframe-hub dev
+pnpm --filter hub-vite dev
 ```
 
 Open the printed URL. The dock on the left lists every mounted tool with its icon:

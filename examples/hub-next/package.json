@@ -1,10 +1,10 @@
 {
-  "name": "next-devframe-hub",
+  "name": "hub-next",
   "type": "module",
   "version": "0.8.2",
   "private": true,
-  "description": "Protocol-witness example — a tiny Next.js Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
-  "homepage": "https://github.com/devframes/devframe/tree/main/examples/next-devframe-hub",
+  "description": "Protocol-witness example \u2014 a tiny Next.js Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-next",
   "scripts": {
     "dev": "pnpm -C ../.. run build && next dev src/client",
     "build": "next build src/client",

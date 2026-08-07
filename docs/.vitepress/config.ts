@@ -86,8 +86,13 @@ function examplesItems(prefix: string) {
     { text: 'json-render', link: `${prefix}/examples/json-render` },
     { text: 'streaming-chat', link: `${prefix}/examples/streaming-chat` },
     { text: 'next-runtime-snapshot', link: `${prefix}/examples/next-runtime-snapshot` },
-    { text: 'vite-devframe-hub', link: `${prefix}/examples/vite-devframe-hub` },
-    { text: 'next-devframe-hub', link: `${prefix}/examples/next-devframe-hub` },
+    { text: 'hub-vite', link: `${prefix}/examples/hub-vite` },
+    { text: 'hub-next', link: `${prefix}/examples/hub-next` },
+    { text: 'hub-vite-minimal', link: `${prefix}/examples/hub-vite-minimal` },
+    { text: 'hub-next-minimal', link: `${prefix}/examples/hub-next-minimal` },
+    { text: 'hub-nitro-minimal', link: `${prefix}/examples/hub-nitro-minimal` },
+    { text: 'hub-hono-minimal', link: `${prefix}/examples/hub-hono-minimal` },
+    { text: 'hub-rsbuild-minimal', link: `${prefix}/examples/hub-rsbuild-minimal` },
   ] satisfies DefaultTheme.NavItemWithLink[]
 }
 

@@ -11,7 +11,7 @@
  * Prerequisites: `pnpm install && pnpm build` (the hub serves built dists).
  */
 import process from 'node:process'
-import { app, hub } from '../examples/hono-devframe-hub/src/app'
+import { app, hub } from '../examples/hub-hono-minimal/src/app'
 
 function fail(step: string, detail: unknown): never {
   console.error(`✗ ${step}:`, detail)
@@ -63,7 +63,7 @@ const rpc = createRpcClient<any, any>({}, {
 const handshake = await rpc.$call('anonymous:devframe:auth', { authToken: '', ua: 'smoke', origin }) as { isTrusted: boolean }
 if (!handshake.isTrusted)
   fail('handshake', handshake)
-const pong = await rpc.$call('example:hono-devframe-hub:probe')
+const pong = await rpc.$call('example:hub-hono-minimal:probe')
 if (pong !== 'pong')
   fail('rpc probe', pong)
 console.log('✓ WS RPC round-trip over the fetch-upgrade tier: probe →', pong)

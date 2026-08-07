@@ -8,7 +8,7 @@ A tiny, copyable **vite-devtools-style hub on Next.js**. [vite-devtools](https:/
 
 ```sh
 pnpm install
-pnpm --filter next-devframe-hub dev
+pnpm --filter hub-next dev
 ```
 
 Open the printed URL. The dock on the left lists every mounted tool with its icon:
@@ -20,7 +20,7 @@ Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's
 
 The A11y Inspector shows a live axe-core report of this hub's own page: the host serves the plugin's in-page agent module (`a11yAgentBundlePath`) same-origin inside the hub namespace and attaches it as the a11y dock's `clientScript` (the `{ devframe, dock }` entry form); the hub client runtime — `createDevframeClientHost()` booted in `app/page.tsx` — imports it into the page, so the docked panel and the agent share the origin their BroadcastChannel rides.
 
-The **RPC & State Inspector** carries an **Instances** tab that lists every devframe dev server running on your machine. The host registers itself in the shared registry (`~/.devframe/instances/`) on startup via `registerDevframeInstance()`, so it shows up as "this instance"; start another example (e.g. `pnpm --filter vite-devframe-hub dev`, or any `node bin.mjs` CLI example) in a second terminal and it appears there too, each linking to its own SPA.
+The **RPC & State Inspector** carries an **Instances** tab that lists every devframe dev server running on your machine. The host registers itself in the shared registry (`~/.devframe/instances/`) on startup via `registerDevframeInstance()`, so it shows up as "this instance"; start another example (e.g. `pnpm --filter hub-vite dev`, or any `node bin.mjs` CLI example) in a second terminal and it appears there too, each linking to its own SPA.
 
 ## One namespace, one route
 

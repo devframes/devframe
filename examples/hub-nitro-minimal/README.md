@@ -1,9 +1,9 @@
-# nitro-devframe-hub
+# hub-nitro-minimal
 
 The minimal [Nitro](https://nitro.build) host for `@devframes/hub`: one `initHub()` call, one catch-all route, and the whole devtools installation is live under `/__devframes/`.
 
 ```sh
-pnpm --filter nitro-devframe-hub dev
+pnpm --filter hub-nitro-minimal dev
 ```
 
 Open <http://localhost:3000> — the host page carries the floating dock via one script tag — or <http://localhost:3000/__devframes/> for the standalone viewer.

@@ -1,5 +1,5 @@
 import { createUi } from '@devframes/hub-ui'
-import { initHub } from '@devframes/hub/initiate'
+import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
 import { createInspectDevframe } from '@devframes/plugin-inspect'
 import { createMessagesDevframe } from '@devframes/plugin-messages'
 import { Hono } from 'hono'
@@ -12,7 +12,8 @@ import { Hono } from 'hono'
 // `key` memoizes the instance on globalThis so dev-time module reloads
 // return the live hub instead of leaking transports.
 export const hub = initHub({
-  key: 'hono-devframe-hub',
+  key: 'hub-hono-minimal',
+  base: DEVFRAMES_HUB_BASE,
   devframes: [
     createInspectDevframe(),
     createMessagesDevframe(),
@@ -24,14 +25,14 @@ export const hub = initHub({
   auth: false,
   configure(ctx) {
     ctx.commands.register({
-      id: 'example:hono-devframe-hub:ping',
+      id: 'example:hub-hono-minimal:ping',
       title: 'Hono Hub · Ping',
       icon: 'ph:bell-duotone',
       category: 'kit',
       handler: () => 'pong',
     })
     ctx.rpc.register({
-      name: 'example:hono-devframe-hub:probe',
+      name: 'example:hub-hono-minimal:probe',
       type: 'query',
       jsonSerializable: true,
       handler: () => 'pong',
@@ -41,11 +42,12 @@ export const hub = initHub({
 
 export const app = new Hono()
 
-// The whole hub namespace behind one catch-all. On Bun, `c.env` is the
-// `Bun.serve` server — the instance uses it to complete same-origin
-// WebSocket upgrades; on Node it's simply unused.
-app.all('/__devframes', c => hub.handler(c.req.raw, c.env))
-app.all('/__devframes/*', c => hub.handler(c.req.raw, c.env))
+// The whole hub namespace behind one catch-all, keyed off `hub.base` rather
+// than a repeated string. On Bun, `c.env` is the `Bun.serve` server — the
+// instance uses it to complete same-origin WebSocket upgrades; on Node it's
+// simply unused.
+app.all(hub.base.replace(/\/$/, ''), c => hub.handler(c.req.raw, c.env))
+app.all(`${hub.base}*`, c => hub.handler(c.req.raw, c.env))
 
 // The host app: any page becomes devtools-equipped with one script tag.
 app.get('/', c => c.html(

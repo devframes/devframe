@@ -1,10 +1,10 @@
 {
-  "name": "vite-devframe-hub",
+  "name": "hub-vite",
   "type": "module",
   "version": "0.8.2",
   "private": true,
   "description": "Protocol-witness example \u2014 a tiny Vite Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
-  "homepage": "https://github.com/devframes/devframe/tree/main/examples/vite-devframe-hub",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-vite",
   "scripts": {
     "dev": "pnpm -C ../.. run build && vite",
     "build": "vite build",

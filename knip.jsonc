@@ -35,7 +35,7 @@
       // as source — not a real unused dependency.
       "ignoreDependencies": ["devframe"]
     },
-    "examples/next-devframe-hub": {
+    "examples/hub-next": {
       // The React client build's root sits at `src/client` (`next dev
       // src/client`), not the workspace root, so knip's default PostCSS
       // config glob (workspace-root `postcss.config.*`) misses it.
@@ -56,7 +56,7 @@
       ]
     },
     "examples/next-runtime-snapshot": {
-      // Same nested Next.js client root as `next-devframe-hub` above.
+      // Same nested Next.js client root as `hub-next` above.
       "postcss": {
         "config": ["src/client/postcss.config.mjs"]
       }

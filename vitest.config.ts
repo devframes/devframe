@@ -29,7 +29,7 @@ export default defineConfig({
       'plugins/a11y',
       'plugins/messages',
       'plugins/assets',
-      'examples/next-devframe-hub',
+      'examples/hub-next',
       'packages/next',
       {
         test: {
