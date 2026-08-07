@@ -21,7 +21,7 @@ const icon = computed(() => {
 
 <template>
   <BrandMark v-if="icon.light === 'builtin:devframes'" />
-  <div v-else>
+  <div v-else class="flex items-center justify-center">
     <template v-if="icon.light === icon.dark">
       <IconifyIcon :icon="icon.light" :title="title" />
     </template>
