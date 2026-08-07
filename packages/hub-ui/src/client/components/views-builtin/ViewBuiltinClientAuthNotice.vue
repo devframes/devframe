@@ -2,12 +2,15 @@
 import type { DocksContext } from '@devframes/hub/client'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { ref, useTemplateRef, watch } from 'vue'
+import { useBranding } from '../../state/branding'
 import OtpInput from '../display/OtpInput.vue'
 import BrandMark from '../icons/BrandMark.vue'
 
 const props = defineProps<{
   context: DocksContext
 }>()
+
+const branding = useBranding()
 
 const CODE_LENGTH = 6
 
@@ -66,10 +69,10 @@ async function submit() {
       </div>
 
       <h1 class="text-2xl font-bold tracking-tight">
-        Authorize Devframes
+        Authorize {{ branding.productName }}
       </h1>
       <p class="mt2 text-sm op-fade leading-relaxed max-w-92">
-        Devframes can access your server, read your filesystem, and run commands.
+        {{ branding.productName }} can access your server, read your filesystem, and run commands.
         Confirm it's you before continuing.
       </p>
 

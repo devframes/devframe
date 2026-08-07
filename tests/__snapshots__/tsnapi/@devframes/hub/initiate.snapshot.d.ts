@@ -9,6 +9,7 @@ export interface DevframeHubUi {
   embedded?: {
     entry: string;
   };
+  assets?: Record<string, () => string | Uint8Array>;
 }
 export interface HubInstance {
   handler: (_: Request, _?: unknown) => Promise<Response>;

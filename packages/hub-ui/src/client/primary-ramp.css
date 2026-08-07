@@ -1,0 +1,41 @@
+/*
+ * Primary color as a single overridable variable: `--devframe-primary`.
+ *
+ * Appended AFTER the UnoCSS output (see `scripts/build-css.ts`) so this block
+ * wins over Wind4's own `:root, :host` primary declarations, and imported after
+ * `virtual:uno.css` in the Storybook preview for the same reason.
+ *
+ * Each Wind4 stop (`--colors-primary-*`) is derived from `--devframe-primary`
+ * via `color-mix`. When `--devframe-primary` is unset, the intermediate
+ * `--devframe-primary-<stop>` vars become guaranteed-invalid (their `color-mix`
+ * references an unset var with no fallback), so each `--colors-primary-<stop>`
+ * falls back to the exact devframe default hex — the default look is preserved,
+ * and only an explicit override derives a new ramp. The vars inherit through
+ * the tree, so setting `--devframe-primary` on the dock host retints
+ * everything, and setting it on a group's chrome container retints just that
+ * group (the group-accent mechanism).
+ *
+ * `:host` is the effective selector inside the dock's shadow root; `:root` is
+ * for the light-DOM Storybook preview (it matches nothing in the shadow root).
+ *
+ * `.devframes-accent-scope` re-declares the whole block on a group's chrome
+ * container: because custom properties inherit as computed values, a descendant
+ * that only overrides `--devframe-primary` would keep the `:host`-computed
+ * stops — re-running the derivation here recomputes them from the container's
+ * own `--devframe-primary` (a group's `accentColor`), retinting just that group.
+ */
+:root,
+:host,
+.devframes-accent-scope {
+  --devframe-primary-DEFAULT: var(--devframe-primary);
+  --devframe-primary-600: color-mix(in oklab, var(--devframe-primary), white 9%);
+  --devframe-primary-500: color-mix(in oklab, var(--devframe-primary), white 18%);
+  --devframe-primary-400: color-mix(in oklab, var(--devframe-primary), white 34%);
+  --devframe-primary-300: color-mix(in oklab, var(--devframe-primary), white 54%);
+
+  --colors-primary-DEFAULT: var(--devframe-primary-DEFAULT, #3a6a45);
+  --colors-primary-600: var(--devframe-primary-600, #40704b);
+  --colors-primary-500: var(--devframe-primary-500, #578861);
+  --colors-primary-400: var(--devframe-primary-400, #75a67e);
+  --colors-primary-300: var(--devframe-primary-300, #93c69d);
+}

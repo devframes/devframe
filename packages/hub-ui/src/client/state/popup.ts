@@ -1,6 +1,7 @@
 import type { DocksContext } from '@devframes/hub/client'
 import { createEventEmitter } from 'devframe/utils/events'
 import { shallowRef, watch } from 'vue'
+import { applyDocumentHead, useBranding } from './branding'
 import { isDark } from './color-mode'
 import { setDocksOverflowPanel } from './floating-tooltip'
 
@@ -111,7 +112,9 @@ async function mountStandaloneApp(context: DocksContext, popup: Window) {
     '}',
   ].join('\n')
 
-  popup.document.title = 'Devframes'
+  // The popped-out window is a surface the UI owns — brand its head (the
+  // embedded host page's head is never touched).
+  applyDocumentHead(popup.document, useBranding().value)
   popup.document.head?.appendChild(baseStyle)
   popup.document.body.textContent = ''
 

@@ -1,7 +1,10 @@
 import type { DevframeHubUi } from '@devframes/hub/initiate'
+import type { DevframeBranding } from './client/state/branding'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+export type { DevframeBranding } from './client/state/branding'
 
 /**
  * The built client assets live next to the built entry (`dist/index.mjs` →
@@ -24,6 +27,14 @@ export interface CreateUiOptions {
   viewer?: boolean
   /** Serve the floating-dock bootstrap at `<base>embedded.js`. Default: `true`. */
   embedded?: boolean
+  /**
+   * Rebrand the reference UI — logo, product name, primary color, and more.
+   * Published as `<base>branding.json` (via the hub's generic `assets` seam)
+   * and fetched by the dock at boot. Reaches both the embedded dock and the
+   * standalone viewer. A host page can still override any field at runtime via
+   * `window.__DEVFRAME_BRANDING__` / `<script data-*>` / `?query` params.
+   */
+  branding?: DevframeBranding
 }
 
 /**
@@ -51,6 +62,11 @@ export function createUi(options: CreateUiOptions = {}): DevframeHubUi {
       : {}),
     ...(options.embedded !== false
       ? { embedded: { entry: join(client, 'embedded.js') } }
+      : {}),
+    ...(options.branding
+      // Serialized once and served from memory at `<base>branding.json` by the
+      // hub's generic `assets` seam — no build step, no files written.
+      ? { assets: { 'branding.json': () => JSON.stringify(options.branding) } }
       : {}),
   }
 }

@@ -6,6 +6,7 @@ import { computed, h, ref, useTemplateRef } from 'vue'
 import { getGroupMembers, getGroupMembersGrouped, resolveGroupDefaultChild } from '../../state/dock-settings'
 import { sharedStateToRef } from '../../state/docks'
 import { setDocksGroupPanel, useDocksGroupPanel } from '../../state/floating-tooltip'
+import { accentVarStyle } from '../../utils/accent-color'
 import DockEntry from './DockEntry.vue'
 import DockGroupPopover from './DockGroupPopover.vue'
 
@@ -119,7 +120,7 @@ function onClick() {
 </script>
 
 <template>
-  <div ref="groupButton">
+  <div ref="groupButton" :class="group.accentColor ? 'devframes-accent-scope' : ''" :style="accentVarStyle(group.accentColor)">
     <DockEntry
       :context="context"
       :dock="group"
@@ -127,7 +128,6 @@ function onClick() {
       :is-selected="isActive || isPanelVisible"
       :is-dimmed="dimInactive && selected ? !isActive : false"
       :badge="group.badge"
-      :accent-color="group.accentColor"
       @click="onClick"
     />
   </div>

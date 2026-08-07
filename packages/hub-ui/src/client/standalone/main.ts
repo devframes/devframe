@@ -26,12 +26,22 @@ async function main(): Promise<void> {
     simpleAuth: false,
   })
 
+  // Resolve branding before mount; the standalone page owns its own head, so
+  // apply title/favicon/description here too.
+  const { resolveBranding, applyPrimaryColor, applyDocumentHead } = await import('../state/branding')
+  const branding = await resolveBranding({
+    mode: 'standalone',
+    brandingUrl: new URL('branding.json', document.baseURI),
+  })
+  applyDocumentHead(document, branding)
+
   const { createDocksContext } = await import('../state/context')
   const context = await createDocksContext('standalone', rpc)
   setDevframeClientContext(context)
 
   const { DockStandalone } = await import('../components/DockStandalone')
   const el = new DockStandalone({ context }) as unknown as HTMLElement
+  applyPrimaryColor(el, branding.primaryColor)
   document.getElementById('app')!.appendChild(el)
 }
 

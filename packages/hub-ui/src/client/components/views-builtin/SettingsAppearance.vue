@@ -3,6 +3,7 @@ import type { DocksContext } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { HubDocksUserSettings } from '../../state/dock-settings'
 import { computed } from 'vue'
+import { useBranding } from '../../state/branding'
 import { colorSchemePreference, setColorSchemePreference } from '../../state/color-mode'
 import { sharedStateToRef } from '../../state/docks'
 import { isDockPopupSupported, requestDockPopupOpen, useIsDockPopupOpen } from '../../state/popup'
@@ -13,6 +14,7 @@ const props = defineProps<{
 }>()
 
 const settings = sharedStateToRef(props.settingsStore)
+const branding = useBranding()
 const panelStore = props.context.panel.store
 const isEmbedded = props.context.clientType === 'embedded'
 const isDockPopupOpen = useIsDockPopupOpen()
@@ -52,7 +54,7 @@ function setDockMode(mode: string) {
     <div class="flex flex-col gap-2">
       <div class="flex flex-col">
         <span class="text-sm">Color mode</span>
-        <span class="text-xs op50">Theme for Devframes and its inner panels</span>
+        <span class="text-xs op50">Theme for {{ branding.productName }} and its inner panels</span>
       </div>
       <div class="flex items-center gap-1 bg-gray/10 rounded-lg p1 w-fit">
         <button
@@ -74,7 +76,7 @@ function setDockMode(mode: string) {
     <div v-if="isEmbedded && !isDockPopupOpen" class="flex flex-col gap-2">
       <div class="flex flex-col">
         <span class="text-sm">Dock mode</span>
-        <span class="text-xs op50">How the Devframes panel is displayed</span>
+        <span class="text-xs op50">How the {{ branding.productName }} panel is displayed</span>
       </div>
       <div class="flex items-center gap-1 bg-gray/10 rounded-lg p1 w-fit">
         <button
@@ -124,7 +126,7 @@ function setDockMode(mode: string) {
       </button>
       <div class="flex flex-col">
         <span class="text-sm">Close panel on outside click</span>
-        <span class="text-xs op50">Close the Devframes panel when clicking outside of it (embedded mode only)</span>
+        <span class="text-xs op50">Close the {{ branding.productName }} panel when clicking outside of it (embedded mode only)</span>
       </div>
     </label>
   </div>

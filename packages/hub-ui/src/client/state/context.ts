@@ -8,6 +8,7 @@ import { attachFrameNavClient } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS } from '@devframes/hub/constants'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
 import { BUILTIN_ENTRIES, HUB_UI_HIDE_EVENT } from '../constants'
+import { useBranding } from './branding'
 import { createCommandsContext } from './commands'
 import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, getRegisteredGroupIds, resolveCommandIcon, resolveGroupDefaultChild } from './dock-settings'
 import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, sharedStateToRef, useDocksEntries } from './docks'
@@ -376,7 +377,7 @@ export async function createDocksContext(
     {
       id: 'devframes:hide',
       source: 'client',
-      title: 'Hide Devframes',
+      title: `Hide ${useBranding().value.productName}`,
       icon: 'ph:eye-slash-duotone',
       // Only the embedded overlay can be dismissed; the standalone page is an
       // explicit visit and stays mounted.

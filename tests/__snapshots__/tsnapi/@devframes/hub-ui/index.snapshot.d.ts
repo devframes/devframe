@@ -5,6 +5,16 @@
 export interface CreateUiOptions {
   viewer?: boolean;
   embedded?: boolean;
+  branding?: DevframeBranding;
+}
+export interface DevframeBranding {
+  productName?: string;
+  logo?: BrandingLogo;
+  wordmark?: BrandingLogo;
+  primaryColor?: string;
+  tagline?: string;
+  favicon?: string;
+  windowTitle?: string;
 }
 // #endregion
 

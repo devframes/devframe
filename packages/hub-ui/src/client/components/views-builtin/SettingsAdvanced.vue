@@ -3,6 +3,7 @@ import type { DocksContext } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { HubDocksUserSettings } from '../../state/dock-settings'
 import { DEFAULT_STATE_USER_SETTINGS } from '@devframes/hub/constants'
+import { useBranding } from '../../state/branding'
 import { useConfirm } from '../../state/confirm'
 import { sharedStateToRef } from '../../state/docks'
 
@@ -12,6 +13,7 @@ const props = defineProps<{
 }>()
 
 const settings = sharedStateToRef(props.settingsStore)
+const branding = useBranding()
 const confirm = useConfirm()
 
 async function resetAllSettings() {
@@ -54,7 +56,7 @@ async function resetDocks() {
 async function deauthorize() {
   if (await confirm({
     title: 'Revoke Authorization',
-    message: 'Revoke this browser\'s access to Devframes? You\'ll need to authorize again with a new code to reconnect.',
+    message: `Revoke this browser's access to ${branding.value.productName}? You'll need to authorize again with a new code to reconnect.`,
   })) {
     // Revokes this session's bearer token server-side; the server then
     // broadcasts `devframe:auth:revoked`, dropping this (and any sibling)

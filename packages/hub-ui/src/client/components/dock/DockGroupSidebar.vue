@@ -6,7 +6,7 @@ import { computed, h, ref, useTemplateRef } from 'vue'
 import { deriveSidebarCapacity, docksSplitGroupsWithCapacity, getGroupMembersGrouped } from '../../state/dock-settings'
 import { sharedStateToRef } from '../../state/docks'
 import { setDocksSidebarOverflowPanel, setFloatingTooltip, useDocksSidebarOverflowPanel } from '../../state/floating-tooltip'
-import { accentActiveStyle, accentTextStyle } from '../../utils/accent-color'
+import { accentVarStyle } from '../../utils/accent-color'
 import DockGroupPopover from './DockGroupPopover.vue'
 import DockIcon from './DockIcon.vue'
 
@@ -126,22 +126,21 @@ watchDebounced(
 
 // Highlight the button when the hidden selection lives here, or while open.
 const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPanelVisible.value)
-
-// Accent styling, mirroring DockGroupPopover: falls back to the default
-// Uno classes below when the group sets no `accentColor`.
-const anchorStyle = computed(() => accentTextStyle(props.group.accentColor))
-function memberStyle(memberId: string) {
-  return props.selectedId === memberId ? accentActiveStyle(props.group.accentColor) : undefined
-}
-const moreButtonStyle = computed(() => (moreButtonActive.value ? accentActiveStyle(props.group.accentColor) : undefined))
 </script>
 
 <template>
-  <div ref="sidebar" class="devframes-group-sidebar flex flex-col flex-none w-12 h-full border-r border-base of-y-hidden of-x-hidden select-none py1.5 items-center gap-0.5">
+  <!-- The group's accentColor overrides --devframe-primary for the whole rail,
+       so the anchor + selected members' text-primary/bg-active render accent. -->
+  <div
+    ref="sidebar"
+    class="devframes-group-sidebar flex flex-col flex-none w-12 h-full border-r border-base of-y-hidden of-x-hidden select-none py1.5 items-center gap-0.5"
+    :class="group.accentColor ? 'devframes-accent-scope' : ''"
+    :style="accentVarStyle(group.accentColor)"
+  >
     <!-- Group anchor -->
     <div
       class="flex items-center justify-center w-8 h-8 op60"
-      :style="anchorStyle"
+      :class="group.accentColor ? 'color-active' : ''"
       @pointerenter="showTooltip($event, group.title)"
       @pointerleave="hideTooltip"
     >
@@ -158,8 +157,7 @@ const moreButtonStyle = computed(() => (moreButtonActive.value ? accentActiveSty
         :key="member.id"
         :aria-label="member.title"
         class="relative flex items-center justify-center w-8 h-8 rounded-lg transition"
-        :class="selectedId === member.id ? (group.accentColor ? '' : 'text-primary bg-active') : 'op60 hover:op100 hover:bg-active'"
-        :style="memberStyle(member.id)"
+        :class="selectedId === member.id ? 'text-primary bg-active' : 'op60 hover:op100 hover:bg-active'"
         @pointerenter="showTooltip($event, member.title)"
         @pointerleave="hideTooltip"
         @pointerdown="hideTooltip"
@@ -181,8 +179,7 @@ const moreButtonStyle = computed(() => (moreButtonActive.value ? accentActiveSty
       ref="moreButton"
       aria-label="Show more"
       class="relative flex items-center justify-center w-8 h-8 rounded-lg transition mt-auto flex-none"
-      :class="moreButtonActive ? (group.accentColor ? '' : 'text-primary bg-active') : 'op60 hover:op100 hover:bg-active'"
-      :style="moreButtonStyle"
+      :class="moreButtonActive ? 'text-primary bg-active' : 'op60 hover:op100 hover:bg-active'"
       @pointerenter="showTooltip($event, 'Show more')"
       @pointerleave="hideTooltip"
       @pointerdown="hideTooltip"

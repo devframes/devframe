@@ -24,6 +24,21 @@ import { mountDevframe } from './mount-devframe'
 /** Default mount base for a hub instance — one namespace, one catch-all. */
 export const DEVFRAMES_HUB_BASE = '/__devframes/'
 
+/** Content-type for a UI asset key, inferred from its file extension. */
+function assetContentType(key: string): string {
+  if (key.endsWith('.json'))
+    return 'application/json; charset=utf-8'
+  if (key.endsWith('.js') || key.endsWith('.mjs'))
+    return 'text/javascript; charset=utf-8'
+  if (key.endsWith('.css'))
+    return 'text/css; charset=utf-8'
+  if (key.endsWith('.svg'))
+    return 'image/svg+xml'
+  if (key.endsWith('.html'))
+    return 'text/html; charset=utf-8'
+  return 'application/octet-stream'
+}
+
 /** Reserved filenames directly under the hub base — a frame id can't shadow them. */
 const RESERVED_HUB_PATHS = [
   DEVFRAME_CONNECTION_META_FILENAME,
@@ -60,6 +75,14 @@ export interface DevframeHubUi {
     /** File path of the prebuilt single-file module. */
     entry: string
   }
+  /**
+   * Extra UI-owned files the hub serves at `<base><key>`, each produced lazily
+   * from memory. Keys are base-relative paths (e.g. `branding.json`); the
+   * content-type is inferred from the key's extension. A generic seam a viewer
+   * uses to publish small runtime documents (the reference UI serves its
+   * branding this way) without teaching the hub anything about their meaning.
+   */
+  assets?: Record<string, () => string | Uint8Array>
 }
 
 export interface InitHubOptions {
@@ -471,6 +494,17 @@ function instantiateHub(options: InitHubOptions): HubInstance {
         event.res.headers.set('Content-Type', 'text/javascript; charset=utf-8')
         event.res.headers.set('Cache-Control', 'no-store')
         return Readable.toWeb(createReadStream(entry)) as ReadableStream
+      })
+    }
+
+    // UI-owned assets (e.g. the reference viewer's `branding.json`), served
+    // from memory. Registered before the viewer's SPA catch-all so these exact
+    // routes win, mirroring the discovery endpoints above.
+    for (const [key, produce] of Object.entries(options.ui?.assets ?? {})) {
+      app.use(joinURL(base, key), (event) => {
+        event.res.headers.set('Content-Type', assetContentType(key))
+        event.res.headers.set('Cache-Control', 'no-store')
+        return produce()
       })
     }
 

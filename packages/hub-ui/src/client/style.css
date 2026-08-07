@@ -91,7 +91,14 @@
   height: var(--devframes-dock-glow-size, 160px);
   filter: blur(var(--devframes-dock-glow-blur, 60px));
   transform: translate(-50%, -50%);
-  background-image: linear-gradient(45deg, #adc77f, #517158, #486954);
+  /* Follows the brand: derived from the primary ramp (overridable via
+     --devframe-primary), so a rebrand retints the glow automatically. */
+  background-image: linear-gradient(
+    45deg,
+    var(--colors-primary-300, #adc77f),
+    var(--colors-primary-500, #517158),
+    var(--colors-primary-DEFAULT, #486954)
+  );
 }
 
 @media print {

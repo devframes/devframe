@@ -39,12 +39,25 @@ async function mountDock(): Promise<void> {
     { mergeDefaults: true },
   )
 
+  // Resolve branding before the dock exists so the primary color and logo are
+  // in place on the first paint. Fetched from `<base>branding.json` (served
+  // where this script is), then overridden by any host-page channel.
+  const { resolveBranding, applyPrimaryColor } = await import('../state/branding')
+  const branding = await resolveBranding({
+    mode: 'embedded',
+    brandingUrl: new URL('branding.json', import.meta.url),
+  })
+
   const { createDocksContext } = await import('../state/context')
   const context = await createDocksContext('embedded', rpc, state)
   setDevframeClientContext(context)
 
   const { DockEmbedded } = await import('../components/DockEmbedded')
   dockEl = new DockEmbedded({ context }) as unknown as HTMLElement
+  // Inline on the host element — beats the generated `:host` ramp defaults and
+  // inherits through the shadow tree. The embedded bootstrap never touches the
+  // host page's <title>/favicon (it's a guest there).
+  applyPrimaryColor(dockEl, branding.primaryColor)
   document.body.appendChild(dockEl)
 }
 

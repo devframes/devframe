@@ -17,6 +17,11 @@ const GLOBS = ['components/**/*.{ts,vue}', 'state/**/*.ts', 'embedded/**/*.ts', 
 // Story-only utility classes must not leak into the shipped stylesheet.
 const IGNORE = ['**/*.stories.*', '**/__tests__/**']
 const USER_STYLE = join(SRC_DIR, 'style.css')
+// The single-overridable-variable primary ramp. Appended AFTER the UnoCSS
+// output so its `:host` block wins over Wind4's own `:root, :host` primary
+// declarations (kept in its own file so the Storybook preview can import the
+// exact same override after `virtual:uno.css`). See the file's own comment.
+const PRIMARY_RAMP = join(SRC_DIR, 'primary-ramp.css')
 const GENERATED_CSS = join(SRC_DIR, '.generated/css.ts')
 
 export async function buildCSS(): Promise<void> {
@@ -55,11 +60,13 @@ export async function buildCSS(): Promise<void> {
     await transformer.transform(userStyle, USER_STYLE, { uno: generator } as any)
   }
 
+  const primaryRamp = await fs.readFile(PRIMARY_RAMP, 'utf-8')
   const unoResult = await generator.generate(tokens)
   const css = [
     reset,
     userStyle.toString(),
     unoResult.css,
+    primaryRamp,
   ].join('\n')
 
   await fs.mkdir(join(SRC_DIR, '.generated'), { recursive: true })
