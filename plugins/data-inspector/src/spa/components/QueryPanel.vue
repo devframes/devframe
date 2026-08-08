@@ -69,7 +69,7 @@ function copyQuery(): void {
       v-model="wb.query.value"
       :syntax="wb.syntax.value"
       :suggestions="wb.suggestions.value"
-      class="flex-1 min-h-0 mx2"
+      class="flex-1 min-h-32 mx2"
       @run="wb.runNow()"
       @suggest="wb.scheduleSuggestions($event)"
       @accept="wb.acceptSuggestion($event)"

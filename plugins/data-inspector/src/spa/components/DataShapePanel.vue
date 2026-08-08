@@ -87,7 +87,7 @@ const rootLabel = computed(() => {
     </div>
 
     <!-- One-level data shape as a plain code block; click a prop to query it. -->
-    <div class="flex-1 min-h-0 overflow-auto font-mono max-h50 overflow-auto text-xs border border-base rounded-lg px-3 py-2">
+    <div class="flex-1 min-h-0 overflow-auto font-mono max-h50 text-xs border border-base rounded-lg px-3 py-2">
       <template v-if="entries.length">
         <div class="op50 select-none">
           {

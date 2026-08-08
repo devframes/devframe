@@ -110,7 +110,7 @@ function filterBadges(entry: Query): FilterBadge[] {
       </ActionButton>
     </div>
 
-    <div v-if="entries.length" class="flex-1 overflow-auto min-h-0 max-h-80 grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-1">
+    <div v-if="entries.length" class="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-1">
       <div
         v-for="entry in entries"
         :key="entry.key"

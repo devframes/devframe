@@ -65,18 +65,22 @@ function saveCurrent(input: { title?: string, description?: string, scope: Saved
           <div class="flex flex-col h-full overflow-hidden min-h-0">
             <AppHeader />
             <DataSourcePanel />
-            <QueryPanel />
-            <SavedQueriesPanel
-              :saved="savedApi.saved.value"
-              :suggested="wb.activeSource.value?.queries ?? []"
-              :current-query="wb.query.value"
-              :current-filters="wb.settings"
-              :readonly="connection.mode === 'static'"
-              class="px3 py2"
-              @load="wb.applyRecipe($event)"
-              @remove="savedApi.remove($event)"
-              @save="saveCurrent"
-            />
+            <div class="flex-1 min-h-0 overflow-y-auto">
+              <div class="min-h-full flex flex-col">
+                <QueryPanel />
+                <SavedQueriesPanel
+                  :saved="savedApi.saved.value"
+                  :suggested="wb.activeSource.value?.queries ?? []"
+                  :current-query="wb.query.value"
+                  :current-filters="wb.settings"
+                  :readonly="connection.mode === 'static'"
+                  class="px3 py2"
+                  @load="wb.applyRecipe($event)"
+                  @remove="savedApi.remove($event)"
+                  @save="saveCurrent"
+                />
+              </div>
+            </div>
           </div>
         </Pane>
         <Pane class="min-w-0">
