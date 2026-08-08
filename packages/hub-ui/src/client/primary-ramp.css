@@ -38,4 +38,15 @@
   --colors-primary-500: var(--devframe-primary-500, #578861);
   --colors-primary-400: var(--devframe-primary-400, #75a67e);
   --colors-primary-300: var(--devframe-primary-300, #93c69d);
+
+  /*
+   * Bridge the json-render subsystem's accent token to the brand primary.
+   * json-render components (Tabs/Switch/Progress/Link, …) read their accent
+   * from `--jr-primary` (default a standalone blue) via inline styles; because
+   * `ViewJsonRender` renders inside this shadow root, setting it here makes all
+   * rendered plugin content follow `--devframe-primary` / branding. It tracks
+   * the global primary, not per-group accent (the plugin view is intentionally
+   * left out of the group-accent scope).
+   */
+  --jr-primary: var(--colors-primary-DEFAULT, #3a6a45);
 }

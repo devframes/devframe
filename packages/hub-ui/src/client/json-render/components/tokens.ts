@@ -10,7 +10,10 @@ export const borderMuted = 'var(--jr-border, rgba(128,128,128,0.08))'
 export const borderInput = 'var(--jr-border, rgba(128,128,128,0.3))'
 // Interactive-hover border (Card) — a clearer step up than borderInput, without going full `primary`.
 const borderStrong = 'var(--jr-border, rgba(128,128,128,0.5))'
-// Keep in sync with the devframe design primary (design/uno.config.ts).
+// Accent for json-render content. `--jr-primary` is bridged to the brand
+// primary in `primary-ramp.css` (so rendered plugin UI follows `--devframe-primary`
+// / branding); the blue fallback only applies when json-render is used
+// standalone, outside the dock's shadow root.
 export const primary = 'var(--jr-primary, #6b84fd)'
 export const bg = 'var(--jr-bg, inherit)'
 
