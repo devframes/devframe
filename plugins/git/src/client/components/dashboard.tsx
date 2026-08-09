@@ -106,10 +106,10 @@ function ConnectionBadge() {
 }
 
 function ThemeToggle() {
-  const { theme, toggle } = useTheme()
+  const { toggle } = useTheme()
   return (
     <IconButton variant="ghost" size="sm" onClick={toggle} aria-label="Toggle light/dark theme">
-      <Icon name={theme === 'dark' ? 'i-ph-sun-duotone' : 'i-ph-moon-duotone'} className="size-4" />
+      <Icon name="i-ph-sun-duotone dark:i-ph-moon-duotone" className="size-4" />
     </IconButton>
   )
 }
