@@ -20,9 +20,12 @@ export var ERROR_COMPONENT_TYPE /* const */
 export var Icon /* const */
 export var JsonRenderView /* const */
 export var KeyValueTable /* const */
+export var Link /* const */
 export var Progress /* const */
+export var Select /* const */
 export var Stack /* const */
 export var Switch /* const */
+export var Tabs /* const */
 export var Text /* const */
 export var TextInput /* const */
 export var Tree /* const */

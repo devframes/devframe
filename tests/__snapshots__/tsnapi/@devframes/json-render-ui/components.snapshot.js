@@ -10,9 +10,12 @@ export { DataTable }
 export { Divider }
 export { Icon }
 export { KeyValueTable }
+export { Link }
 export { Progress }
+export { Select }
 export { Stack }
 export { Switch }
+export { Tabs }
 export { Text }
 export { TextInput }
 export { Tree }

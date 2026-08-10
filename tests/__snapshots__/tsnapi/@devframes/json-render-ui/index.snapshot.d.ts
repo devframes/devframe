@@ -130,9 +130,12 @@ export declare const JsonRenderView: import("vue").DefineComponent<import("vue")
   connectionError: string | null;
 }, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
 export declare const KeyValueTable: JrComponent<KeyValueTableProps>;
+export declare const Link: JrComponent<LinkProps>;
 export declare const Progress: JrComponent<ProgressProps>;
+export declare const Select: JrComponent<SelectProps>;
 export declare const Stack: JrComponent<StackProps>;
 export declare const Switch: JrComponent<SwitchProps>;
+export declare const Tabs: JrComponent<TabsProps>;
 export declare const Text: JrComponent<TextProps>;
 export declare const TextInput: JrComponent<TextInputProps>;
 export declare const Tree: JrComponent<TreeProps>;

@@ -10,9 +10,12 @@ import {
   Divider,
   Icon,
   KeyValueTable,
+  Link,
   Progress,
+  Select,
   Stack,
   Switch,
+  Tabs,
   Text,
   TextInput,
   Tree,
@@ -27,7 +30,7 @@ export const ERROR_COMPONENT_TYPE = '__jsonRenderError'
 export const UNSUPPORTED_COMPONENT_TYPE = '__jsonRenderUnsupported'
 
 /**
- * The base Vue registry: the fourteen catalog-v1 components ported onto
+ * The base Vue registry: the seventeen catalog-v1 components ported onto
  * `@antfu/design` semantic tokens, wrapped as Vue components via upstream
  * `defineRegistry`. A third party replaces the whole registry (there is no
  * incremental extension in v1).
@@ -48,6 +51,9 @@ export const baseRegistry: ComponentRegistry = defineRegistry(baseCatalog as any
     CodeBlock,
     Progress,
     Tree,
+    Tabs,
+    Link,
+    Select,
     [ERROR_COMPONENT_TYPE]: JsonRenderError,
     [UNSUPPORTED_COMPONENT_TYPE]: JsonRenderUnsupported,
   } as any,
