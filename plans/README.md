@@ -43,6 +43,7 @@ changes are allowed as long as they're marked).
 | 029 | Bring `@devframes/plugin-git` to the host baseline | direction/dx | P3 | S-M | — | TODO |
 | 030 | Spike: server-side auth enforcement ⚠️ | security | P2 | L | 003, 007, 015 | DONE |
 | 031 | Agent-native MCP wave (bridges, core surface, connector) | direction | P2 | L | — | IN PROGRESS (phases 1–3 implemented on PR #145; DONE at merge) |
+| 032 | Reduce the devframe + @devframes/hub public API surface for 0.9 ⚠️ | direction/tech-debt | P2 | L | — | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale).
 
