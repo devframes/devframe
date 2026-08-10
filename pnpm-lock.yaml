@@ -1106,6 +1106,9 @@ importers:
       '@devframes/hub':
         specifier: workspace:*
         version: link:../hub
+      '@devframes/json-render':
+        specifier: workspace:*
+        version: link:../json-render
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
@@ -11158,11 +11161,11 @@ snapshots:
 
   '@internationalized/date@3.12.2':
     dependencies:
-      '@swc/helpers': 0.5.15
+      '@swc/helpers': 0.5.23
 
   '@internationalized/number@3.6.7':
     dependencies:
-      '@swc/helpers': 0.5.15
+      '@swc/helpers': 0.5.23
 
   '@ioredis/commands@1.5.1': {}
 

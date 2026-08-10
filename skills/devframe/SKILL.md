@@ -247,7 +247,7 @@ A [scoped context](#scoped-context-preferred) applies this prefix for you — `c
 | `ctx.host` | Runtime abstraction — `mountStatic`, `resolveOrigin`, `getStorageDir` |
 | `ctx.mode` | `'dev'` or `'build'` — gate setup work per runtime |
 
-> Hosts can augment `ctx` with additional surfaces (e.g. Vite DevTools' `docks`, `terminals`, `messages`, `commands`, `createJsonRenderer`). Consult the host's docs — for Vite DevTools, see the [`vite-devtools-kit` skill](../../skills/vite-devtools-kit).
+> Hosts can augment `ctx` with additional surfaces (e.g. Vite DevTools' `docks`, `terminals`, `messages`, `commands`). Consult the host's docs — for Vite DevTools, see the [`vite-devtools-kit` skill](../../skills/vite-devtools-kit).
 
 ## RPC contracts
 
@@ -539,7 +539,7 @@ At runtime, static clients look up the argument hash in the dump; misses resolve
 | `spa` | Deployable SPA → `./dist-spa/` |
 | `mcp` | stdio MCP server (experimental) |
 
-**Bring your own CLI framework?** `createCac` (`devframe/adapters/cac`) is just a cac wrapper around three peer factories — `createDevServer` (`devframe/adapters/dev`), `createBuild` (`devframe/adapters/build`), and `createMcpServer` (`devframe/adapters/mcp`). Use them directly with commander/yargs/oclif when `createCac`'s baked-in command structure doesn't fit. `cac` is an optional peer dependency pulled in only through `devframe/adapters/cac`, so bring-your-own-CLI tools run without installing it. (The legacy `devframe/adapters/cli` entry / `createCli` remains as a deprecated alias.) `createDevServer` returns a `StartedServer` handle (`origin`, `port`, `app`, `wss`, `close()`) so you can wire SIGINT / hot-reload teardown into the surrounding program. `parseCliFlags(schema, raw)` and `defineCliFlags(...)` (both from `devframe/adapters/cac`) validate an arbitrary flag bag against a `CliFlagsSchema` — the helpers are framework-agnostic.
+**Bring your own CLI framework?** `createCac` (`devframe/adapters/cac`) is just a cac wrapper around three peer factories — `createDevServer` (`devframe/adapters/dev`), `createBuild` (`devframe/adapters/build`), and `createMcpServer` (`devframe/adapters/mcp`). Use them directly with commander/yargs/oclif when `createCac`'s baked-in command structure doesn't fit. `cac` is an optional peer dependency pulled in only through `devframe/adapters/cac`, so bring-your-own-CLI tools run without installing it. `createDevServer` returns a `StartedServer` handle (`origin`, `port`, `app`, `wss`, `close()`) so you can wire SIGINT / hot-reload teardown into the surrounding program. `parseCliFlags(schema, raw)` and `defineCliFlags(...)` (both from `devframe/adapters/cac`) validate an arbitrary flag bag against a `CliFlagsSchema` — the helpers are framework-agnostic.
 
 ## Bundled utilities
 

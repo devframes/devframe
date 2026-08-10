@@ -131,7 +131,6 @@ export interface DevframeHubContext extends DevframeNodeContext {
   terminals: DevframeTerminalsHost;
   messages: DevframeMessagesHost;
   commands: DevframeCommandsHost;
-  createJsonRenderer: (_: JsonRenderSpec) => JsonRenderer;
 }
 export interface DevframeMessageActivateAction {
   id: string;
@@ -291,10 +290,6 @@ export interface DevframeViewIframe extends DevframeDockEntryBase {
   subTabs?: FrameSubTabsConfig;
   remote?: boolean | RemoteDockOptions;
 }
-export interface DevframeViewJsonRender extends DevframeDockEntryBase {
-  type: 'json-render';
-  ui: JsonRenderer;
-}
 export interface DevframeViewLauncher extends DevframeDockEntryBase {
   type: 'launcher';
   launcher: {
@@ -314,25 +309,6 @@ export interface DevframeViewLauncher extends DevframeDockEntryBase {
 export interface FrameSubTabsConfig {
   protocol: 'postmessage';
   handshakeTimeoutMs?: number;
-}
-export interface JsonRenderElement {
-  type: string;
-  props?: Record<string, unknown>;
-  children?: string[];
-  on?: Record<string, unknown>;
-  visible?: unknown;
-  repeat?: unknown;
-  [key: string]: unknown;
-}
-export interface JsonRenderer {
-  updateSpec: (_: JsonRenderSpec) => void | Promise<void>;
-  updateState: (_: Record<string, unknown>) => void | Promise<void>;
-  readonly _stateKey: string;
-}
-export interface JsonRenderSpec {
-  root: string;
-  elements: Record<string, JsonRenderElement>;
-  state?: Record<string, unknown>;
 }
 export interface NavTarget {
   path: string;
@@ -381,8 +357,6 @@ export declare function defineDockEntry<const T extends DevframeDockUserEntry, c
   when?: WhenExpression<WhenContext, W>;
   visibility?: WhenExpression<WhenContext, V>;
 }): T;
-/** @deprecated */
-export declare function defineJsonRenderSpec(_: JsonRenderSpec): JsonRenderSpec;
 // #endregion
 
 // #region Variables

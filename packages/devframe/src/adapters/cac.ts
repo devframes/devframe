@@ -6,9 +6,6 @@
 // without it throws at load time with the usual Node module-not-found
 // error. The typed-flag helpers (`defineCliFlags` / `parseCliFlags`) are
 // re-exported below so they live alongside the CLI adapter.
-//
-// The historical `devframe/adapters/cli` entry (`createCli`) re-exports
-// this module under deprecated aliases for backward compatibility.
 import type { CAC } from 'cac'
 import type { H3 } from 'h3'
 import type { DevframeDefinition } from '../types/devframe'

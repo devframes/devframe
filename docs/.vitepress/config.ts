@@ -146,6 +146,7 @@ export function devframeNav(prefix = ''): DefaultTheme.NavItem[] {
         { text: 'Contributing', link: `${repo}/blob/main/CONTRIBUTING.md` },
         {
           items: [
+            { text: 'Migrating to 0.9', link: `${prefix}/guide/migration-0.9` },
             { text: 'Migrating to 0.7', link: `${prefix}/guide/migration-0.7` },
             { text: 'Migrating to 0.6', link: `${prefix}/guide/migration-0.6` },
           ],

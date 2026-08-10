@@ -1,4 +1,8 @@
-import type { DevframeDockEntryBase, DevframeDocksUserSettings, DevframeViewLauncher, JsonRenderer } from '@devframes/hub/types'
+import type { DevframeDocksUserSettings, DevframeViewLauncher } from '@devframes/hub/types'
+// Importing the hub-mounted json-render integration registers its
+// `'json-render'` dock entry (a serializable `view` ref, not a live handle)
+// on the hub's open dock union via declaration merging.
+import '@devframes/json-render/hub'
 
 /**
  * hub-ui user settings — the hub's {@link DevframeDocksUserSettings} widened
@@ -15,28 +19,6 @@ export interface HubDocksUserSettings extends DevframeDocksUserSettings {
    * dock out of the dock bar until the user opts in from Settings → Advanced.
    */
   showDevframeInspector?: boolean
-}
-
-/**
- * A `json-render` dock entry. `@devframes/hub` ships no json-render variant of
- * its own (json-render is the opt-in `@devframes/json-render` package), so
- * hub-ui contributes this entry to the hub's open dock union.
- *
- * It carries the {@link JsonRenderer} handle from the deprecated
- * `ctx.createJsonRenderer()` on `ui`; the handle's methods are non-enumerable,
- * so only its serializable metadata survives dock projection into shared
- * state, where the client reads `ui._stateKey` to subscribe to the live spec.
- */
-export interface DevframeViewJsonRender extends DevframeDockEntryBase {
-  type: 'json-render'
-  /** The renderer handle created by `ctx.createJsonRenderer()`. */
-  ui: JsonRenderer
-}
-
-declare module '@devframes/hub/types' {
-  interface DevframeDockEntryRegistry {
-    'json-render': DevframeViewJsonRender
-  }
 }
 
 /**

@@ -41,11 +41,13 @@
   },
   "peerDependencies": {
     "@devframes/hub": "workspace:*",
+    "@devframes/json-render": "workspace:*",
     "devframe": "workspace:*"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",
+    "@devframes/json-render": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
     "@json-render/core": "catalog:deps",
     "@json-render/vue": "catalog:frontend",

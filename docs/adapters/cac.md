@@ -28,8 +28,6 @@ const devframe = defineDevframe({
 await createCac(devframe).parse()
 ```
 
-The `devframe/adapters/cli` entry (`createCli`) remains as a deprecated alias for this module — new code should import `createCac` from `devframe/adapters/cac`.
-
 Running the resulting binary:
 
 ```sh

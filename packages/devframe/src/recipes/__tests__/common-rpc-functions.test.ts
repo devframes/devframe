@@ -1,7 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import { describe, expect, it } from 'vitest'
 import { commonRpcFunctions, KNOWN_EDITORS, openInEditor, openInFinder } from '../common-rpc-functions'
-import { openHelpers } from '../open-helpers'
 
 /** Synchronously check whether a value satisfies a Standard Schema. */
 function accepts(schema: StandardSchemaV1, value: unknown): boolean {
@@ -41,9 +40,5 @@ describe('recipes/common-rpc-functions', () => {
     expect(commonRpcFunctions).toHaveLength(2)
     expect(commonRpcFunctions).toContain(openInEditor)
     expect(commonRpcFunctions).toContain(openInFinder)
-  })
-
-  it('keeps the deprecated `devframe/recipes/open-helpers` entry working as an alias', () => {
-    expect(openHelpers).toBe(commonRpcFunctions)
   })
 })

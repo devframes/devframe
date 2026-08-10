@@ -103,7 +103,6 @@ const serverEntries = {
   'utils/open': 'src/utils/open.ts',
   'utils/serve-static': 'src/utils/serve-static.ts',
   'adapters/cac': 'src/adapters/cac.ts',
-  'adapters/cli': 'src/adapters/cli.ts',
   'adapters/dev': 'src/adapters/dev.ts',
   'adapters/build': 'src/adapters/build.ts',
   'adapters/embedded': 'src/adapters/embedded.ts',
@@ -112,7 +111,6 @@ const serverEntries = {
   'cli/main': 'src/cli/main.ts',
   'helpers/vite': 'src/helpers/vite.ts',
   'recipes/common-rpc-functions': 'src/recipes/common-rpc-functions.ts',
-  'recipes/open-helpers': 'src/recipes/open-helpers.ts',
   'recipes/interactive-auth': 'src/recipes/interactive-auth.ts',
 }
 

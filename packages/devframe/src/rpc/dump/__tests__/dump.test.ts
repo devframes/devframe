@@ -1,7 +1,8 @@
 import type { RpcDumpRecord } from '../../types'
 import * as v from 'valibot'
 import { describe, expect, it } from 'vitest'
-import { createClientFromDump, createDefineWrapperWithContext, defineRpcFunction, dumpFunctions } from '../..'
+import { createClientFromDump, dumpFunctions } from '..'
+import { createDefineWrapperWithContext, defineRpcFunction } from '../..'
 
 describe('dumps', () => {
   it('should collect dumps from definition', async () => {

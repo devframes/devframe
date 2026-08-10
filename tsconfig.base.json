@@ -94,9 +94,6 @@
       "devframe/adapters/cac": [
         "./packages/devframe/src/adapters/cac.ts"
       ],
-      "devframe/adapters/cli": [
-        "./packages/devframe/src/adapters/cli.ts"
-      ],
       "devframe/adapters/dev": [
         "./packages/devframe/src/adapters/dev.ts"
       ],
@@ -225,9 +222,6 @@
       ],
       "devframe/recipes/common-rpc-functions": [
         "./packages/devframe/src/recipes/common-rpc-functions.ts"
-      ],
-      "devframe/recipes/open-helpers": [
-        "./packages/devframe/src/recipes/open-helpers.ts"
       ],
       "devframe/client": [
         "./packages/devframe/src/client/index.ts"

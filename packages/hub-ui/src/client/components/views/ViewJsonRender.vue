@@ -1,30 +1,34 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
+import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import type { Spec } from '@json-render/core'
-import type { DevframeViewJsonRender } from '../../types'
 import { JSONUIProvider, Renderer } from '@json-render/vue'
 import { computed, markRaw, onMounted, ref, shallowRef, watch } from 'vue'
 import { devtoolsRegistry, UnsupportedComponent } from '../../json-render/registry'
 
 const props = defineProps<{
   context: DocksContext
-  entry: DevframeViewJsonRender
+  entry: DevframeJsonRenderDockEntry
 }>()
 
 const spec = shallowRef<Spec | null>(null)
 const isLoading = ref(true)
 const error = ref<string | null>(null)
 
-// Resolve spec from entry.ui._stateKey
+// Resolve the spec from the entry's serializable view ref: either a live
+// shared-state key the client subscribes to, or an inline spec rendered as-is.
 async function loadSpec() {
   try {
-    const stateKey = props.entry.ui?._stateKey
-    if (stateKey) {
-      const state = await props.context.rpc.sharedState.get(stateKey as any)
+    const view = props.entry.view
+    if ('stateKey' in view) {
+      const state = await props.context.rpc.sharedState.get(view.stateKey as any)
       spec.value = state.value() as unknown as Spec
       state.on('updated', (newValue) => {
         spec.value = newValue as unknown as Spec
       })
+    }
+    else {
+      spec.value = view.spec as unknown as Spec
     }
   }
   catch (e) {
@@ -83,7 +87,7 @@ const initialState = computed(() => {
 onMounted(loadSpec)
 
 // Re-load when entry changes
-watch(() => props.entry.ui?._stateKey, loadSpec)
+watch(() => props.entry.view, loadSpec)
 </script>
 
 <template>
