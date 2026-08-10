@@ -18,8 +18,8 @@ defineProps<{
   divStyle?: CSSProperties
 }>()
 
-// Lazy load some less frequently used builtin views
-const ViewJsonRender = defineAsyncComponent(() => import('./ViewJsonRender.vue'))
+// Provider-backed view types (json-render, …) render in a swappable iframe.
+const ViewProvider = defineAsyncComponent(() => import('./ViewProvider.vue'))
 </script>
 
 <template>
@@ -62,10 +62,12 @@ const ViewJsonRender = defineAsyncComponent(() => import('./ViewJsonRender.vue')
       :context
       :entry
     />
-    <ViewJsonRender
+    <ViewProvider
       v-else-if="entry.type === 'json-render'"
       :context
       :entry
+      :panes="panes"
+      :iframe-style="iframeStyle"
     />
     <div v-else>
       Unknown entry: {{ entry }}

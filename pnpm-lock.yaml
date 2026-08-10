@@ -1112,12 +1112,6 @@ importers:
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
-      '@json-render/core':
-        specifier: catalog:deps
-        version: 0.19.0(zod@4.4.3)
-      '@json-render/vue':
-        specifier: catalog:frontend
-        version: 0.19.0(vue@3.5.40(typescript@5.9.3))(zod@4.4.3)
       '@storybook/addon-docs':
         specifier: catalog:storybook
         version: 10.5.6(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(esbuild@0.28.0)(rollup@4.60.3)(storybook@10.5.6(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0))
@@ -11224,12 +11218,6 @@ snapshots:
       react: 19.2.8
     transitivePeerDependencies:
       - zod
-
-  '@json-render/vue@0.19.0(vue@3.5.40(typescript@5.9.3))(zod@4.4.3)':
-    dependencies:
-      '@json-render/core': 0.19.0(zod@4.4.3)
-      vue: 3.5.40(typescript@5.9.3)
-      zod: 4.4.3
 
   '@json-render/vue@0.19.0(vue@3.5.40(typescript@6.0.3))(zod@4.4.3)':
     dependencies:

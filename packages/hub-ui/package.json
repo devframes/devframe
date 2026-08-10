@@ -49,8 +49,6 @@
     "@devframes/hub": "workspace:*",
     "@devframes/json-render": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
-    "@json-render/core": "catalog:deps",
-    "@json-render/vue": "catalog:frontend",
     "@storybook/addon-docs": "catalog:storybook",
     "@storybook/vue3-vite": "catalog:storybook",
     "@types/node": "catalog:types",
