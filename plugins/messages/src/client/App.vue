@@ -75,7 +75,7 @@ async function onActivate(action: DevframeMessageAction): Promise<void> {
     return
   }
   if (action.kind === 'command')
-    await callOptional('hub:commands:execute', action.command.id, action.command.params)
+    await callOptional('hub:commands:execute', action.command.id, ...(action.command.params ?? []))
 }
 
 async function onDismiss(id: string): Promise<void> {

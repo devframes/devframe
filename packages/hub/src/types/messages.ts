@@ -42,8 +42,8 @@ export interface DevframeMessageActivateAction {
 
 /**
  * `'command'` invokes a command from the hub's command registry (the same
- * registry backing the command palette) by `command.id`, passing
- * `command.params` through as its argument, via the hub's
+ * registry backing the command palette) by `command.id`, spreading
+ * `command.params` as its positional arguments, via the hub's
  * `hub:commands:execute` RPC.
  */
 export interface DevframeMessageCommandAction {
@@ -52,8 +52,8 @@ export interface DevframeMessageCommandAction {
   /** Button label shown in the messages panel. */
   label: string
   kind: 'command'
-  /** The command to invoke, plus an optional params bag. */
-  command: { id: string, params?: Record<string, unknown> }
+  /** The command to invoke, plus an optional list of positional arguments. */
+  command: { id: string, params?: unknown[] }
 }
 
 export type DevframeMessageAction = DevframeMessageActivateAction | DevframeMessageCommandAction

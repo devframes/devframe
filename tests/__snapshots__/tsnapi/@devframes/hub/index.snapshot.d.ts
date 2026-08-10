@@ -147,7 +147,7 @@ export interface DevframeMessageCommandAction {
   kind: 'command';
   command: {
     id: string;
-    params?: Record<string, unknown>;
+    params?: unknown[];
   };
 }
 export interface DevframeMessageElementPosition {
