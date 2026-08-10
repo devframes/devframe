@@ -1,4 +1,4 @@
-import type { AgentManifest } from 'devframe/types'
+import type { AgentManifest } from 'devframe'
 import { defineInspectRpc } from './_define'
 
 /**

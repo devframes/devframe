@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import { serverFunctions } from '../rpc/index'
 
 /**

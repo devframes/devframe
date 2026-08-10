@@ -271,7 +271,6 @@ export declare const hubTerminalsWrite: {
 // #region Other
 export { createHubContext }
 export { CreateHubContextOptions }
-export { DEFAULT_CATEGORIES_ORDER }
 export { DevframeHubContext }
 export { mountDevframe }
 export { MountDevframeOptions }

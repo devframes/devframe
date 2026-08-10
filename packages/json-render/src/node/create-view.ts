@@ -1,4 +1,4 @@
-import type { DevframeNodeContext, DevframeScopedNodeContext } from 'devframe/types'
+import type { DevframeNodeContext, DevframeScopedNodeContext } from 'devframe'
 import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
 import type { DevframeJsonRenderSpec, JsonRenderStatePatch, JsonRenderView } from '../types'
 import type { JsonRenderIndex } from '../view-index'

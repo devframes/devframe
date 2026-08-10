@@ -11,7 +11,7 @@ import type { SharedState } from 'devframe/utils/shared-state'
 import type { StreamReader, StreamSink } from 'devframe/utils/streaming-channel'
 import type { DevframeRpcClient, DevframeRpcContext } from './rpc'
 import type { StreamingSubscribeOptions } from './rpc-streaming'
-import { isQualifiedName, qualifyName } from 'devframe/utils/scope'
+import { isQualifiedName, qualifyName } from '../utils/scope'
 import { createClientSettings } from './settings'
 
 // Callable guard so `Parameters` / `ReturnType` always have a function to

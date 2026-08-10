@@ -35,7 +35,7 @@ All adapter factories share the shape `createXxx(devframeDef, options?)`.
 | Run the dev server programmatically (any CLI framework) | `createDevServer(def, options?)` | `devframe/adapters/dev` |
 | Self-contained static deploy with baked data | `createBuild(def, options?)` | `devframe/adapters/build` |
 | Mount into a host (Vite DevTools or any compatible host) | `createPluginFromDevframe(def, options?)` | `@vitejs/devtools-kit/node` |
-| Register dynamically at runtime | `createEmbedded(def, { ctx })` | `devframe/adapters/embedded` |
+| Register dynamically at runtime | `await def.setup(ctx)` | — |
 | Expose to coding agents (MCP) | `createMcpServer(def, options?)` | `devframe/adapters/mcp` *(experimental)* |
 
 The same `DevframeDefinition` runs under every adapter — pick based on deployment, not on what the tool does.
@@ -170,7 +170,7 @@ declare module 'devframe' {
 
 ```ts
 // src/devframe.ts
-import { defineDevframe } from 'devframe/types'
+import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { setMyToolContext } from './context'
 import { serverFunctions } from './rpc'
@@ -198,7 +198,7 @@ When per-file RPCs need access to runtime values that `setup(ctx)` constructs on
 
 ```ts
 // src/context.ts
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 
 export interface MyToolContext {
   loaders: { list: () => Promise<string[]> }
@@ -550,11 +550,9 @@ Devframe re-exports a curated set of helpers under `devframe/utils/*`. They are 
 | `colors` from `devframe/utils/colors` | `ansis` | Terminal ANSI colors (`c.red`, `c.green`, tagged templates) |
 | `open` from `devframe/utils/open` | `open` | Open URLs / files in the OS default handler |
 | `launchEditor` from `devframe/utils/launch-editor` | `launch-editor` | Open `file:line:column` in the user's editor (optional `editor` arg) |
-| `hash` from `devframe/utils/hash` | `ohash` | Stable structural hash — cache keys, dedup |
 | `structuredClone{Serialize,Deserialize,Stringify,Parse}` from `devframe/utils/structured-clone` | `structured-clone-es` | JSON-safe round-trip of `Map` / `Set` / `Date` / `BigInt` / cycles |
 | `nanoid` from `devframe/utils/nanoid` | (vendored) | URL-safe random IDs |
 | `randomToken` / `randomDigits` / `timingSafeEqual` from `devframe/utils/crypto-token` | (native WebCrypto) | CSPRNG bearer tokens, one-time codes, constant-time compare |
-| `promiseWithResolver` from `devframe/utils/promise` | — | Externally-controlled `Promise` |
 | `createEventEmitter` from `devframe/utils/events` | — | Typed event bus |
 | `createSharedState` from `devframe/utils/shared-state` | (immer internal) | Immutable state container (see `ctx.rpc.sharedState`) |
 | `createStreamSink` / `createStreamReader` from `devframe/utils/streaming-channel` | — | Low-level streaming primitives |

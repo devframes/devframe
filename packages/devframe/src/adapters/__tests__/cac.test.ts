@@ -1,5 +1,5 @@
+import { defineDevframe } from 'devframe'
 import { describe, expect, it } from 'vitest'
-import { defineDevframe } from '../../types/devframe'
 import { createCac } from '../cac'
 
 function baseDevframe(overrides: Partial<ReturnType<typeof defineDevframe>> = {}) {

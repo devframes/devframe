@@ -1,7 +1,7 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
 import type { ClientScriptEntry } from '@devframes/hub/types'
+import type { DevframeDefinition, DevframeHost } from 'devframe'
 import type { DevframeInstanceRegistration } from 'devframe/node'
-import type { DevframeDefinition, DevframeHost } from 'devframe/types'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { homedir } from 'node:os'
 import process from 'node:process'

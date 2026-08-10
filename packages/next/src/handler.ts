@@ -1,5 +1,5 @@
+import type { DevframeDefinition, DevframeStorageScope } from 'devframe'
 import type { InitDevframeOptions } from 'devframe/initiate'
-import type { DevframeDefinition, DevframeStorageScope } from 'devframe/types'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'

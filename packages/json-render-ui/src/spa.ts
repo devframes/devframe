@@ -1,4 +1,4 @@
-import type { DevframeDefinition } from 'devframe/types'
+import type { DevframeDefinition } from 'devframe'
 import { fileURLToPath } from 'node:url'
 
 /**

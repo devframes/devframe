@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import type { A11yRuntimeConfig } from '../rpc/functions/get-config.ts'
 import { buildServerFunctions, serverFunctions } from '../rpc/index.ts'
 

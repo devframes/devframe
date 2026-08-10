@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import { defineDevframe } from 'devframe/types'
+import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { CHANNEL, HISTORY, MAX_HISTORY, NAMESPACE } from './constants.ts'
 import { setStreamingChatContext } from './context.ts'

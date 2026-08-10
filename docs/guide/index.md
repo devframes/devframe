@@ -15,7 +15,7 @@ Devframe keeps its surface focused on one tool, so the same definition stays por
 - **One tool per definition.** A devframe describes a single integration. Deploy it through any adapter; host-level features that only matter when several tools share a UI (palettes, cross-tool toasts, unified terminals) come from whichever host you mount into — Vite DevTools is one example.
 - **Headless.** Hook into `onReady`, `cli.configure`, and friends to print your own startup banners and styling — Devframe stays out of the way.
 - **App-owned file watching.** Wire your own watcher (chokidar, fs.watch, …) and signal change via `ctx.rpc.sharedState.set(...)` or event-typed RPCs.
-- **Context-aware mount paths.** Standalone adapters (`cli`, `spa`, `build`) serve at `/` by default; hosted adapters (`vite`, `embedded`) serve at `/.<id>/`. Override via `DevframeDefinition.basePath`.
+- **Context-aware mount paths.** Standalone adapters (`cli`, `spa`, `build`) serve at `/` by default; hosted contexts (`vite`, or a host that calls `setup`) serve at `/.<id>/`. Override via `DevframeDefinition.basePath`.
 - **SPAs own their base at runtime.** Build with relative asset paths (`vite.base: './'`); `connectDevframe` discovers the effective base from the executing script's location.
 - **CLI flags compose.** The `cac` instance is exposed to both the devframe (`cli.configure`) and the caller of `createCac`, so capability flags and app flags merge cleanly.
 
@@ -84,7 +84,7 @@ node ./my-devframe.js build  # self-contained static deploy in dist-static/
 node ./my-devframe.js mcp    # stdio MCP server (experimental)
 ```
 
-The CLI adapter serves the SPA at `/` by default. When the same devframe is embedded inside a host (`vite`, `embedded`), the default becomes `/.my-devframe/`. Override either side via `defineDevframe({ basePath })`.
+The CLI adapter serves the SPA at `/` by default. When the same devframe is embedded inside a host (`vite`, or a host that calls `setup`), the default becomes `/.my-devframe/`. Override either side via `defineDevframe({ basePath })`.
 
 ## Adapters at a glance
 
@@ -95,8 +95,9 @@ Devframe deploys the same `DevframeDefinition` through one of these adapters:
 | `cli` | `createCac(d).parse()` | Standalone CLI with dev / build / mcp subcommands |
 | `vite` | `createPluginFromDevframe(d, opts?)` *(from `@vitejs/devtools-kit/node`)* | Mount the devframe into Vite DevTools (or another compatible host) |
 | `build` | `createBuild(d, opts?)` | Self-contained static deploy with baked RPC dumps |
-| `embedded` | `createEmbedded(d, { ctx })` | Runtime registration into an existing host |
 | `mcp` | `createMcpServer(d, opts)` | Model Context Protocol server |
+
+To register a definition into an already-running host, call `await d.setup(ctx)` directly.
 
 See [Adapters](/adapters/) for the full reference.
 

@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import type { TerminalsOptions } from '../types'
 import { serverFunctions } from '../rpc/index'
 import { setTerminalManager } from './context'

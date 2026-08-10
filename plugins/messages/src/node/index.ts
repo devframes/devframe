@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import { commonRpcFunctions } from 'devframe/recipes/common-rpc-functions'
 import { PLUGIN_ID } from '../constants'
 import { diagnostics } from '../diagnostics'

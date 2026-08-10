@@ -41,10 +41,6 @@ export interface DevframeInstanceRegistration {
 }
 // #endregion
 
-// #region Types
-export type AgentArgsFallback = 'wrap' | 'drop';
-// #endregion
-
 // #region Classes
 export declare class DevframeAgentHost implements DevframeAgentHost$1 {
   readonly context: DevframeNodeContext;
@@ -71,44 +67,13 @@ export declare class DevframeAgentHost implements DevframeAgentHost$1 {
   private _collectRpcTools;
   private _findRpcDefinition;
 }
-export declare class DevframeDiagnosticsHost implements DevframeDiagnosticsHost$1 {
-  readonly context: DevframeNodeContext;
-  private _registry;
-  readonly logger: DevframeDiagnosticsLogger;
-  readonly defineDiagnostics: DevframeDiagnosticsHost$1['defineDiagnostics'];
-  constructor(_: DevframeNodeContext, _?: Array<Record<string, unknown>>);
-  register(_: Record<string, unknown>): void;
-}
-export declare class DevframeServicesHostImpl implements DevframeServicesHost {
-  private services;
-  private listeners;
-  provide<ID extends DevframeServiceId>(_: ID, _: DevframeServiceOf<ID>): () => void;
-  get<ID extends DevframeServiceId>(_: ID): DevframeServiceOf<ID> | undefined;
-  has(_: DevframeServiceId): boolean;
-  whenAvailable<ID extends DevframeServiceId>(_: ID, _: (_: DevframeServiceOf<ID>) => void): () => void;
-  keys(): string[];
-}
-export declare class DevframeViewHost implements DevframeViewHost$1 {
-  readonly context: DevframeNodeContext;
-  buildStaticDirs: {
-    baseUrl: string;
-    distDir: string;
-  }[];
-  constructor(_: DevframeNodeContext);
-  hostStatic(_: string, _: string): void;
-}
 // #endregion
 
 // #region Functions
 export declare function coerceAgentPositionalArgs(_: unknown, _: readonly unknown[] | undefined, _?: AgentArgsFallback): unknown[];
 export declare function createH3DevframeHost(_: CreateH3DevframeHostOptions): DevframeHost;
 export declare function createHostContext(_: CreateHostContextOptions): Promise<DevframeNodeContext>;
-export declare function createNodeSettings<T extends Record<string, any> = Record<string, any>>(_: DevframeNodeContext, _: string): DevframeSettings<T>;
-export declare function createRpcSharedStateServerHost(_: RpcFunctionsHost): RpcSharedStateHost;
-export declare function createRpcStreamingServerHost(_: RpcFunctionsHost): RpcStreamingHost;
-export declare function createScopedNodeContext<NS extends string = string>(_: DevframeNodeContext, _: NS): DevframeScopedNodeContext<NS>;
 export declare function createStorage<T extends object>(_: CreateStorageOptions<T>): SharedState<T>;
-export declare function formatHostForUrl(_: string): string;
 export declare function isObject(_: unknown): value is Record<string, any>;
 export declare function listLiveDevframeInstances(_?: {
   instancesDir?: string;
@@ -121,7 +86,6 @@ export declare function normalizeHttpServerUrl(_: string, _: number | string): s
 export declare function registerDevframeInstance(_: DevframeInstanceRecord, _?: {
   instancesDir?: string;
 }): DevframeInstanceRegistration;
-export declare function toDialableHost(_: string): string;
 // #endregion
 
 // #region Other

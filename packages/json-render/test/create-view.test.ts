@@ -1,4 +1,4 @@
-import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
+import type { DevframeHost, DevframeNodeContext } from 'devframe'
 import type { DevframeJsonRenderSpec } from '../src/types'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'

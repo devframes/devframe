@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { Buffer } from 'node:buffer'
 import type { ChildProcess } from 'node:child_process'

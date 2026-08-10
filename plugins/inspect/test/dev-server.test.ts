@@ -1,6 +1,6 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
 import type { DevframeInspectCommandInfo, InvokeResult, RpcFunctionInfo } from '@devframes/plugin-inspect'
-import type { AgentManifest } from 'devframe/types'
+import type { AgentManifest } from 'devframe'
 import type { InspectorServer } from './_utils'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'

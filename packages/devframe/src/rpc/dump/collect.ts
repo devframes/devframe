@@ -7,8 +7,8 @@ import type {
   RpcDumpStore,
   RpcFunctionDefinitionAny,
 } from '../types'
-import { hash } from 'devframe/utils/hash'
 import pLimit from 'p-limit'
+import { hash } from '../../utils/hash'
 import { diagnostics } from '../diagnostics'
 import { validateDefinitions } from '../validation'
 import { reviveDumpError, serializeDumpError } from './error'

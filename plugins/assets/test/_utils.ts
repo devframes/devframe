@@ -1,5 +1,5 @@
+import type { DevframeNodeContext } from 'devframe'
 import type { StartedServer } from 'devframe/node'
-import type { DevframeNodeContext } from 'devframe/types'
 import type { AssetsDevframeOptions } from '../src/index'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'

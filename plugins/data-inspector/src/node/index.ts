@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import { createDataSourcesService, DATA_SOURCES_SERVICE_ID, getDataSource, onDataSourceDataChanged, onDataSourcesChanged, registerDataSource } from '../registry/index'
 import { serverFunctions } from '../rpc/index'
 import { createExampleDataSource, EXAMPLE_SOURCE_ID } from './example-source'

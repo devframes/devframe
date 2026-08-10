@@ -3,9 +3,9 @@ import type { DevframeConnectionStatus } from './connection'
 import type { DevframeClientRpcHost, DevframeRpcClientMode, DevframeRpcClientOptions, RpcClientEvents } from './rpc'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
-import { promiseWithResolver } from 'devframe/utils/promise'
 import { parseUA } from 'ua-parser-modern'
 import { withProtocol } from 'ufo'
+import { promiseWithResolver } from '../utils/promise'
 import { DevframeConnectionError } from './connection'
 
 export interface CreateWsRpcClientModeOptions {

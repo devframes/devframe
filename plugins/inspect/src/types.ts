@@ -1,4 +1,4 @@
-import type { AgentManifest } from 'devframe/types'
+import type { AgentManifest } from 'devframe'
 
 export type { AgentManifest }
 

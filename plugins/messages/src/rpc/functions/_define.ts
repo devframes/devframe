@@ -1,5 +1,5 @@
 import type { DevframeMessagesHost } from '@devframes/hub/types'
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
 
 /**

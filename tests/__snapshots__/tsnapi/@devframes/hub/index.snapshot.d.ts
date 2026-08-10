@@ -360,7 +360,6 @@ export declare function defineDockEntry<const T extends DevframeDockUserEntry, c
 // #endregion
 
 // #region Variables
-export declare const DEFAULT_CATEGORIES_ORDER: Record<string, number>;
 export declare const defineHubRpcFunction: <NAME extends string, TYPE extends import("devframe/rpc").RpcFunctionType, ARGS extends any[], RETURN = void, const AS extends import("devframe/rpc").RpcArgsSchema | undefined = undefined, const RS extends import("devframe/rpc").RpcReturnSchema | undefined = undefined>(definition: import("devframe/rpc").RpcFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS, DevframeHubContext>) => import("devframe/rpc").RpcFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS, DevframeHubContext>;
 // #endregion
 

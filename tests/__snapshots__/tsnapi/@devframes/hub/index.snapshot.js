@@ -7,6 +7,5 @@ export function defineDockEntry(_) {}
 // #endregion
 
 // #region Variables
-export var DEFAULT_CATEGORIES_ORDER /* const */
 export var defineHubRpcFunction /* const */
 // #endregion

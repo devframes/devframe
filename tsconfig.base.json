@@ -55,9 +55,6 @@
       "devframe/utils/events": [
         "./packages/devframe/src/utils/events.ts"
       ],
-      "devframe/utils/hash": [
-        "./packages/devframe/src/utils/hash.ts"
-      ],
       "devframe/utils/launch-editor": [
         "./packages/devframe/src/utils/launch-editor.ts"
       ],
@@ -67,14 +64,8 @@
       "devframe/utils/open": [
         "./packages/devframe/src/utils/open.ts"
       ],
-      "devframe/utils/promise": [
-        "./packages/devframe/src/utils/promise.ts"
-      ],
       "devframe/utils/simple-schema": [
         "./packages/devframe/src/utils/simple-schema.ts"
-      ],
-      "devframe/utils/scope": [
-        "./packages/devframe/src/utils/scope.ts"
       ],
       "devframe/utils/serve-static": [
         "./packages/devframe/src/utils/serve-static.ts"
@@ -102,9 +93,6 @@
       ],
       "devframe/helpers/vite": [
         "./packages/devframe/src/helpers/vite.ts"
-      ],
-      "devframe/adapters/embedded": [
-        "./packages/devframe/src/adapters/embedded.ts"
       ],
       "devframe/initiate": [
         "./packages/devframe/src/adapters/initiate.ts"

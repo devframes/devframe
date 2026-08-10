@@ -1,4 +1,4 @@
-import type { ConnectionMeta, DevframeHost, DevframeNodeContext, DevframeStorageScope } from 'devframe/types'
+import type { ConnectionMeta, DevframeHost, DevframeNodeContext, DevframeStorageScope } from 'devframe'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { serveStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'

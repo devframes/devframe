@@ -1,4 +1,4 @@
-import type { DevframeNodeContext, RpcStreamingChannel } from 'devframe/types'
+import type { DevframeNodeContext, RpcStreamingChannel } from 'devframe'
 import { resolveAssetPath } from './paths'
 
 export interface AssetsConfig {

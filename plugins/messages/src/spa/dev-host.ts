@@ -1,6 +1,6 @@
 import type { DevframeMessagesHost as DevframeMessagesHostType } from '@devframes/hub/types'
-import type { DevframeDefinition, DevframeNodeContext } from 'devframe/types'
-import { defineDevframe } from 'devframe/types'
+import type { DevframeDefinition, DevframeNodeContext } from 'devframe'
+import { defineDevframe } from 'devframe'
 import { MESSAGES_UPDATED_EVENT } from '../constants'
 import { createMessagesDevframe } from '../index'
 

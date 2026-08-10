@@ -1,6 +1,6 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
+import type { DevframeNodeContext } from 'devframe'
 import type { StartedServer } from 'devframe/node'
-import type { DevframeNodeContext } from 'devframe/types'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'

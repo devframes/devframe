@@ -1,7 +1,7 @@
 import type { HubDevframeEntry, HubInstance } from '@devframes/hub/initiate'
 import type { DevframeHubContext } from '@devframes/hub/node'
+import type { DevframeDefinition } from 'devframe'
 import type { DevframeInstanceRegistration } from 'devframe/node'
-import type { DevframeDefinition } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'

@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import { resolveRepoRoot } from '../node/git.ts'
 
 export interface GitConfig {

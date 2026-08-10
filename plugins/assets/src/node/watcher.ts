@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import process from 'node:process'
 import { watch } from 'chokidar'
 import { debounce } from 'perfect-debounce'

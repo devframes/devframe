@@ -1,7 +1,7 @@
 import { DEVFRAME_RPC_DUMP_DIRNAME } from 'devframe/constants'
-import { hash } from 'devframe/utils/hash'
 import { structuredCloneStringify } from 'devframe/utils/structured-clone'
 import { describe, expect, it } from 'vitest'
+import { hash } from '../utils/hash'
 import { createStaticRpcCaller } from './static-rpc'
 
 const DEMO_STATIC_VERSION_PATH = `${DEVFRAME_RPC_DUMP_DIRNAME}/demo~version.static.json`

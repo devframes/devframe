@@ -47,7 +47,6 @@ function adaptersItems(prefix: string) {
     { text: 'Initiate (middleware)', link: `${prefix}/adapters/initiate` },
     { text: 'Build', link: `${prefix}/adapters/build` },
     { text: 'Vite', link: `${prefix}/adapters/vite` },
-    { text: 'Embedded', link: `${prefix}/adapters/embedded` },
     { text: 'MCP', link: `${prefix}/adapters/mcp` },
   ] satisfies DefaultTheme.NavItemWithLink[]
 }

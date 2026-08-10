@@ -4,7 +4,7 @@ outline: deep
 
 # Migrating to 0.9
 
-0.9 removes the compatibility shims that were deprecated across the 0.7 series. Each removed export has a drop-in replacement that has shipped alongside it since 0.7, so migrating is a matter of updating import paths and a handful of call sites. This page covers the changes between 0.8.x and 0.9.
+0.9 removes the compatibility shims that were deprecated across the 0.7 series and trims the public API surface of `devframe` and `@devframes/hub` down to what integrations actually consume. Each change has a drop-in replacement, so migrating is a matter of updating import paths and a handful of call sites. This page covers the changes between 0.8.x and 0.9.
 
 ## `devframe/adapters/cli` is removed
 
@@ -96,3 +96,74 @@ const view = createJsonRenderView(ctx, {
 `createJsonRenderView` returns a view carrying a serializable `ref` (a shared-state key or an inline spec). Project it onto a hub dock with `toJsonRenderDockEntry` from `@devframes/json-render/hub`, which contributes the `'json-render'` dock type to the hub's open dock union. A dock entry now carries that serializable `view` ref rather than a live renderer handle — a client reads `entry.view.stateKey` (or `entry.view.spec`) to render it.
 
 See [JSON-Render](./json-render) for the full integration reference.
+
+## `defineDevframe` moves to the package root
+
+`defineDevframe` — the primary authoring helper — now lives on the `devframe` entry point alongside `defineRpcFunction`. `devframe/types` is now strictly type-only. Import both values and types from `devframe`:
+
+| 0.8.x | 0.9 |
+|-------|-----|
+| `import { defineDevframe } from 'devframe/types'` | `import { defineDevframe } from 'devframe'` |
+| `import type { DevframeNodeContext } from 'devframe/types'` | `import type { DevframeNodeContext } from 'devframe'` |
+
+```ts
+import type { DevframeNodeContext } from 'devframe'
+// 0.9
+import { defineDevframe, defineRpcFunction } from 'devframe'
+```
+
+`devframe/types` still resolves as the type-only subpath — useful for `declare module 'devframe/types'` augmentations — but `devframe` is the canonical import for both values and types.
+
+## `devframe/adapters/embedded` is removed
+
+`createEmbedded(def, { ctx })` was a one-line wrapper around the definition's own `setup`. Call `setup` directly to register a devframe into an already-running host context:
+
+```ts
+// 0.8.x
+import { createEmbedded } from 'devframe/adapters/embedded'
+
+await createEmbedded(def, { ctx })
+```
+
+```ts
+// 0.9
+await def.setup(ctx)
+```
+
+In a hub, `mountDevframe(ctx, def)` (from `@devframes/hub/node`) remains the way to register a devframe with the hub's dock/command wiring.
+
+## `devframe/utils/{hash,promise,scope}` are removed
+
+Three utility subpaths with no integration consumers are removed:
+
+| Removed | Replacement |
+|---------|-------------|
+| `import { promiseWithResolver } from 'devframe/utils/promise'` | `Promise.withResolvers()` (native) |
+| `import { hash } from 'devframe/utils/hash'` | Any structural-hash library (e.g. `ohash`) |
+| `import { isQualifiedName, qualifyName } from 'devframe/utils/scope'` | Inline the check (`name.includes(':')`) |
+
+The other `devframe/utils/*` helpers — `colors`, `open`, `launch-editor`, `nanoid`, `crypto-token`, `structured-clone`, `events`, `shared-state`, `streaming-channel`, `when`, `simple-schema`, `serve-static`, `agent-tool-name` — are unchanged.
+
+## `devframe/node` is slimmed to the server-assembly surface
+
+`devframe/node` keeps the API that hosts wiring up their own runtime actually use — `createHostContext`, `createH3DevframeHost`, `startHttpAndWs`, `createContextRpcServer`, `createStorage`, `registerDevframeInstance` / `listLiveDevframeInstances`, `DevframeAgentHost`, `coerceAgentPositionalArgs`, `isObject`, `normalizeHttpServerUrl`, and the `RpcFunctionsHost` / instance-record types.
+
+The internal host implementations and low-level factories are no longer exported:
+
+| Removed from `devframe/node` | Notes |
+|---|---|
+| `DevframeDiagnosticsHost`, `DevframeServicesHostImpl`, `DevframeViewHost` (classes) | Internal host implementations. The same-named **types** remain on `devframe/types`. |
+| `createRpcSharedStateServerHost`, `createRpcStreamingServerHost` | Wired internally by `createContextRpcServer`. |
+| `createScopedNodeContext`, `createNodeSettings` | Internal to context assembly. |
+| `toDialableHost`, `formatHostForUrl` | Internal host-URL helpers. |
+
+A host that binds its own transport composes from `createContextRpcServer` (`devframe/node`) plus `devframe/rpc/server`, `devframe/rpc/transports/*`, and `devframe/node/hub-internals` — the path `@devframes/hub`'s `initHub` and `@vitejs/devtools` both take.
+
+## `@devframes/hub` category order lives only on `/constants`
+
+`DEFAULT_CATEGORIES_ORDER` is now exported only from `@devframes/hub/constants` (its documented single source of truth). The redundant re-exports from `@devframes/hub`, `@devframes/hub/node`, and `@devframes/hub/client` are removed:
+
+```ts
+// 0.9
+import { DEFAULT_CATEGORIES_ORDER } from '@devframes/hub/constants'
+```

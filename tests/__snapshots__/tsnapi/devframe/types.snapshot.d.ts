@@ -13,7 +13,6 @@ export { AgentToolProvider }
 export { AgentToolProviderHandle }
 export { ConnectionMeta }
 export { ConnectionMetaWebsocket }
-export { defineDevframe }
 export { DevframeAgentHost }
 export { DevframeAgentHostEvents }
 export { DevframeBrowserContext }

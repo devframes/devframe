@@ -1,6 +1,6 @@
 import type { createUi as CreateUi } from '@devframes/hub-ui'
 import type { HubInstance } from '@devframes/hub/initiate'
-import type { DevframeDefinition } from 'devframe/types'
+import type { DevframeDefinition } from 'devframe'
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
 
 // The plugin packages and `@devframes/hub-ui` resolve their prebuilt `dist`

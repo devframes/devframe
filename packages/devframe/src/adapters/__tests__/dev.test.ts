@@ -2,6 +2,7 @@ import type { DevframeNodeContext, DevframeRpcClientFunctions, DevframeRpcServer
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { defineDevframe } from 'devframe'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { open } from 'devframe/utils/open'
@@ -9,7 +10,6 @@ import { getPort } from 'get-port-please'
 import { describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 import { getTempAuthCode } from '../../node/auth/state'
-import { defineDevframe } from '../../types/devframe'
 import { createDevServer, resolveDevServerPort } from '../dev'
 
 // `--open` is exercised directly (asserting the URL handed to the OS opener)

@@ -25,6 +25,5 @@ export * from "devframe/client";
 // #endregion
 
 // #region Other
-export { DEFAULT_CATEGORIES_ORDER }
 export { stripRemoteConnectionFromUrl }
 // #endregion

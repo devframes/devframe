@@ -36,7 +36,7 @@
  * inspectors run eval-grade queries against live objects in this process —
  * treat the endpoint like a debugger port.
  */
-import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
+import type { DevframeHost, DevframeNodeContext } from 'devframe'
 import type { DataSourceEntry } from '../registry/index'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'

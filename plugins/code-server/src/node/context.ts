@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import type { CodeServerSupervisor } from './supervisor'
 import { diagnostics } from './diagnostics'
 

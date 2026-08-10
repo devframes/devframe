@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import type { AssetInfo } from '../../types'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
 import { s } from 'devframe/utils/simple-schema'

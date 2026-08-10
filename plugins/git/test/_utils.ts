@@ -1,5 +1,5 @@
+import type { DevframeNodeContext } from 'devframe'
 import type { StartedServer } from 'devframe/node'
-import type { DevframeNodeContext } from 'devframe/types'
 import type { GitDevframeOptions } from '../src/index'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import {

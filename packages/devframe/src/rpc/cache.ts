@@ -1,4 +1,4 @@
-import { hash } from 'devframe/utils/hash'
+import { hash } from '../utils/hash'
 
 export interface RpcCacheOptions {
   functions: string[]

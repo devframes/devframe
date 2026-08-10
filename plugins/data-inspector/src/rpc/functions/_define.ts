@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
 
 export const defineDataInspectorRpc = createDefineWrapperWithContext<DevframeNodeContext>()

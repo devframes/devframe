@@ -319,7 +319,3 @@ export interface DevframeDefinition {
   cli?: DevframeCliOptions
   spa?: DevframeSpaOptions
 }
-
-export function defineDevframe(d: DevframeDefinition): DevframeDefinition {
-  return d
-}

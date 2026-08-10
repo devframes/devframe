@@ -8,7 +8,6 @@ export function createSimpleClientScript(_) {}
 // #region Other
 export { builtinHubRpcDeclarations }
 export { createHubContext }
-export { DEFAULT_CATEGORIES_ORDER }
 export { DevframeCommandsHost }
 export { DevframeDocksHost }
 export { DevframeMessagesHost }

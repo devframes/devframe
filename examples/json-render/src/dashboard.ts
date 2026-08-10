@@ -1,5 +1,5 @@
 import type { DevframeJsonRenderSpec, JsonRenderView } from '@devframes/json-render'
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import { createJsonRenderView } from '@devframes/json-render/node'
 import { defineRpcFunction } from 'devframe'
 import { DEPLOY_ACTION, REFRESH_ACTION, SAVE_ACTION, VIEW_ID } from './shared.ts'

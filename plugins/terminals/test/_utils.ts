@@ -1,5 +1,5 @@
+import type { DevframeNodeContext } from 'devframe'
 import type { StartedServer } from 'devframe/node'
-import type { DevframeNodeContext } from 'devframe/types'
 import type { TerminalsOptions } from '../src/types'
 import process from 'node:process'
 import { createRpcStreamingClientHost } from 'devframe/client'

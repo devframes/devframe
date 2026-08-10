@@ -1,4 +1,4 @@
-import type { DevframeDefinition } from 'devframe/types'
+import type { DevframeDefinition } from 'devframe'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

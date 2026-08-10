@@ -1,6 +1,6 @@
 import type { RpcFunctionDefinition } from 'devframe/rpc'
 import type { DevframeNodeContext, DevframeScopedNodeContext, DevframeScopedNodeRpc } from 'devframe/types'
-import { isQualifiedName, qualifyName } from 'devframe/utils/scope'
+import { isQualifiedName, qualifyName } from '../utils/scope'
 import { diagnostics } from './diagnostics'
 import { createNodeSettings } from './settings'
 

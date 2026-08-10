@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import { existsSync } from 'node:fs'
 import fsp from 'node:fs/promises'
 import { UPLOAD_CHANNEL } from '../rpc/functions/upload'

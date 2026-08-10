@@ -1,8 +1,8 @@
-import type { DevframeDefinition } from 'devframe/types'
+import type { DevframeDefinition } from 'devframe'
 import type { OgFetch } from './types'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { defineDevframe } from 'devframe/types'
+import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { setupOg } from './node/index'
 

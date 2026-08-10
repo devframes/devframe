@@ -1,7 +1,7 @@
 'use client'
 
+import type { ConnectionMeta } from 'devframe'
 import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/client'
-import type { ConnectionMeta } from 'devframe/types'
 import type { ReactNode } from 'react'
 import { connectDevframe } from 'devframe/client'
 import { createContext, useContext, useEffect, useState } from 'react'

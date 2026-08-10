@@ -6,20 +6,11 @@ export { coerceAgentPositionalArgs }
 export { createContextRpcServer }
 export { createH3DevframeHost }
 export { createHostContext }
-export { createNodeSettings }
-export { createRpcSharedStateServerHost }
-export { createRpcStreamingServerHost }
-export { createScopedNodeContext }
 export { createStorage }
 export { DevframeAgentHost }
-export { DevframeDiagnosticsHost }
-export { DevframeServicesHostImpl }
-export { DevframeViewHost }
-export { formatHostForUrl }
 export { isObject }
 export { listLiveDevframeInstances }
 export { normalizeHttpServerUrl }
 export { registerDevframeInstance }
 export { startHttpAndWs }
-export { toDialableHost }
 // #endregion

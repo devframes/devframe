@@ -1,4 +1,4 @@
-import type { DevframeNodeContext } from 'devframe/types'
+import type { DevframeNodeContext } from 'devframe'
 import type { ResolveMetadataOptions } from '../rpc/functions/resolve-metadata'
 import { createResolveMetadataRpc, resolveMetadata } from '../rpc/functions/resolve-metadata'
 

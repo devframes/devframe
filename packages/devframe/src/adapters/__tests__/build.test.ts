@@ -1,8 +1,8 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { defineDevframe } from 'devframe'
 import { describe, expect, it } from 'vitest'
-import { defineDevframe } from '../../types/devframe'
 import { createBuild } from '../build'
 
 function makeTmpDist(): string {
