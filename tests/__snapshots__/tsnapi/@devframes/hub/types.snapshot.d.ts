@@ -37,6 +37,7 @@ export { DevframeHost }
 export { DevframeHubContext }
 export { DevframeMessageAction }
 export { DevframeMessageActivateAction }
+export { DevframeMessageCommandAction }
 export { DevframeMessageElementPosition }
 export { DevframeMessageEntry }
 export { DevframeMessageEntryFrom }

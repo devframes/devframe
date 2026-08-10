@@ -69,12 +69,13 @@ onMounted(() => {
 })
 
 async function onActivate(action: DevframeMessageAction): Promise<void> {
-  if (action.kind !== 'activate')
+  const callOptional = props.rpc.callOptional as (name: string, ...args: unknown[]) => Promise<unknown>
+  if (action.kind === 'activate') {
+    await callOptional('hub:docks:activate', action.activate)
     return
-  await (props.rpc.callOptional as (name: string, ...args: unknown[]) => Promise<unknown>)(
-    'hub:docks:activate',
-    action.activate,
-  )
+  }
+  if (action.kind === 'command')
+    await callOptional('hub:commands:execute', action.command.id, action.command.params)
 }
 
 async function onDismiss(id: string): Promise<void> {

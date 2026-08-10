@@ -40,7 +40,23 @@ export interface DevframeMessageActivateAction {
   activate: { dockId: string, params?: Record<string, unknown> }
 }
 
-export type DevframeMessageAction = DevframeMessageActivateAction
+/**
+ * `'command'` invokes a command from the hub's command registry (the same
+ * registry backing the command palette) by `command.id`, passing
+ * `command.params` through as its argument, via the hub's
+ * `hub:commands:execute` RPC.
+ */
+export interface DevframeMessageCommandAction {
+  /** Stable id for the action within its entry. */
+  id: string
+  /** Button label shown in the messages panel. */
+  label: string
+  kind: 'command'
+  /** The command to invoke, plus an optional params bag. */
+  command: { id: string, params?: Record<string, unknown> }
+}
+
+export type DevframeMessageAction = DevframeMessageActivateAction | DevframeMessageCommandAction
 
 export interface DevframeMessageEntry {
   /**

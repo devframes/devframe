@@ -141,6 +141,15 @@ export interface DevframeMessageActivateAction {
     params?: Record<string, unknown>;
   };
 }
+export interface DevframeMessageCommandAction {
+  id: string;
+  label: string;
+  kind: 'command';
+  command: {
+    id: string;
+    params?: Record<string, unknown>;
+  };
+}
 export interface DevframeMessageElementPosition {
   selector?: string;
   boundingBox?: {
@@ -337,7 +346,7 @@ export type DevframeDockEntryIcon = string | {
   dark: string;
 };
 export type DevframeDockUserEntry = DevframeDockEntryRegistry[keyof DevframeDockEntryRegistry];
-export type DevframeMessageAction = DevframeMessageActivateAction;
+export type DevframeMessageAction = DevframeMessageActivateAction | DevframeMessageCommandAction;
 export type DevframeMessageEntryFrom = 'server' | 'browser';
 export type DevframeMessageEntryInput = Omit<DevframeMessageEntry, 'id' | 'timestamp' | 'from'> & {
   id?: string;
