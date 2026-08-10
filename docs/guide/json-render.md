@@ -211,8 +211,8 @@ the browser and render it with no shared state at all (see [client-only
 docks](./client-context#client-only-docks)). The client host disposes the
 renderer when the dock deactivates.
 
-Both hub example shells dogfood this end to end: the [Vite hub](/examples/vite-devframe-hub)
-registers `@devframes/json-render-ui` (Vue), and the [Next hub](/examples/next-devframe-hub)
+Both hub example shells dogfood this end to end: the [Vite hub](/examples/hub-vite)
+registers `@devframes/json-render-ui` (Vue), and the [Next hub](/examples/hub-next)
 registers a small in-example React registry — the same dock, two frontends.
 
 ## Swapping the frontend

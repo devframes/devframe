@@ -7,7 +7,7 @@ import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
 import { describe, expect, it } from 'vitest'
-import { initHub } from '../initiate'
+import { DEVFRAMES_HUB_BASE, initHub } from '../initiate'
 
 function makeDist(html: string): string {
   const dir = mkdtempSync(join(tmpdir(), 'hub-initiate-'))
@@ -45,22 +45,22 @@ function connectWsClient(url: string) {
 
 describe('initHub', () => {
   it('connectionMeta() before ready throws DF8003', () => {
-    const hub = initHub({ auth: false })
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false })
     expect(() => hub.connectionMeta()).toThrow(/DF8003|finished initializing/)
     return hub.close()
   })
 
   it('rejects a devframe id that shadows a reserved hub path', async () => {
-    const hub = initHub({ auth: false, devframes: [makeFrame('__mcp')] })
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, devframes: [makeFrame('__mcp')] })
     await expect(hub.ready).rejects.toThrow(/DF8000|reserved hub path/)
     await hub.close()
   })
 
   it('rejects devframes together with a pre-built context', async () => {
-    const hub = initHub({ auth: false })
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false })
     await hub.ready
     const ctx = await hub.context
-    const conflicting = initHub({ auth: false, context: ctx, devframes: [makeFrame('git')] })
+    const conflicting = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, context: ctx, devframes: [makeFrame('git')] })
     await expect(conflicting.ready).rejects.toThrow(/DF8002|mutually exclusive/)
     await conflicting.close()
     await hub.close()
@@ -79,11 +79,7 @@ describe('initHub', () => {
         res.end('host app')
       })
     })
-    hubRef = initHub({
-      auth: false,
-      server,
-      devframes: [makeFrame('alpha', distA), makeFrame('beta', distB)],
-    })
+    hubRef = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, server, devframes: [makeFrame('alpha', distA), makeFrame('beta', distB)] })
     await new Promise<void>(resolve => server.listen(port, host, resolve))
 
     try {
@@ -144,16 +140,10 @@ describe('initHub', () => {
     writeFileSync(embeddedEntry, 'console.log("embedded bootstrap")', 'utf-8')
     const wsPort = await getPort({ port: 18220, host: '127.0.0.1' })
 
-    const hub = initHub({
-      auth: false,
-      host: '127.0.0.1',
-      ws: { port: wsPort },
-      devframes: [makeFrame('alpha', makeDist('<!doctype html><title>frame a</title>'))],
-      ui: {
-        viewer: { distDir: viewerDist },
-        embedded: { entry: embeddedEntry },
-      },
-    })
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, devframes: [makeFrame('alpha', makeDist('<!doctype html><title>frame a</title>'))], ui: {
+      viewer: { distDir: viewerDist },
+      embedded: { entry: embeddedEntry },
+    } })
 
     try {
       await hub.ready
@@ -185,13 +175,7 @@ describe('initHub', () => {
 
   it('aggregate MCP: one endpoint lists tools from every mounted frame', async () => {
     const wsPort = await getPort({ port: 18230, host: '127.0.0.1' })
-    const hub = initHub({
-      auth: false,
-      host: '127.0.0.1',
-      ws: { port: wsPort },
-      mcp: true,
-      devframes: [makeFrame('alpha'), makeFrame('beta')],
-    })
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, mcp: true, devframes: [makeFrame('alpha'), makeFrame('beta')] })
 
     try {
       await hub.ready
@@ -252,11 +236,7 @@ describe('initHub', () => {
 
   it('single hub Auth: one gate covers every frame on the shared socket', async () => {
     const wsPort = await getPort({ port: 18240, host: '127.0.0.1' })
-    const hub = initHub({
-      host: '127.0.0.1',
-      ws: { port: wsPort },
-      devframes: [makeFrame('alpha')],
-    })
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, host: '127.0.0.1', ws: { port: wsPort }, devframes: [makeFrame('alpha')] })
 
     try {
       await hub.ready
@@ -274,8 +254,8 @@ describe('initHub', () => {
 
   it('key memoization returns the live instance', async () => {
     const wsPort = await getPort({ port: 18250, host: '127.0.0.1' })
-    const a = initHub({ auth: false, key: 'hub-memo', host: '127.0.0.1', ws: { port: wsPort } })
-    const b = initHub({ auth: false, key: 'hub-memo', host: '127.0.0.1', ws: { port: wsPort } })
+    const a = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, key: 'hub-memo', host: '127.0.0.1', ws: { port: wsPort } })
+    const b = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, key: 'hub-memo', host: '127.0.0.1', ws: { port: wsPort } })
     expect(b).toBe(a)
     await a.ready
     await a.close()

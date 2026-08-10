@@ -25,7 +25,13 @@ async function mountDock(): Promise<void> {
   // The hub base is wherever this script was served from: the page origin's
   // copy first (the common same-origin mount), the serving origin second
   // (a host page on another backend loading the script cross-origin).
-  const baseUrl = new URL('./', import.meta.url)
+  //
+  // Read import.meta.url through a variable: Vite's lib build rewrites the
+  // literal `new URL('...', import.meta.url)` asset pattern (inlining the
+  // module as a `data:` URL), which would make the base the data URL instead
+  // of the runtime script URL.
+  const moduleUrl = import.meta.url
+  const baseUrl = new URL('./', moduleUrl)
   const rpc = await getDevframeRpcClient({
     baseURL: [baseUrl.pathname, baseUrl.href],
     // The dock ships its own authorization view; skip devframe's native

@@ -1,0 +1,22 @@
+{
+  "name": "hub-nitro-minimal",
+  "type": "module",
+  "version": "0.8.1",
+  "private": true,
+  "description": "Minimal Nitro host for @devframes/hub \u2014 one catch-all route mounts the whole devtools namespace.",
+  "scripts": {
+    "dev": "nitro dev",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "devframe": "workspace:*",
+    "nitro": "catalog:deps"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:types"
+  }
+}

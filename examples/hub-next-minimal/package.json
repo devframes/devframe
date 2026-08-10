@@ -1,0 +1,27 @@
+{
+  "name": "hub-next-minimal",
+  "type": "module",
+  "version": "0.8.2",
+  "private": true,
+  "description": "Minimal Next.js host for @devframes/hub — one initHub() handler on an App Router catch-all, UI from @devframes/hub-ui.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-next-minimal",
+  "scripts": {
+    "dev": "next dev src/client",
+    "build": "next build src/client"
+  },
+  "dependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
+    "@devframes/next": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "devframe": "workspace:*",
+    "next": "catalog:frontend",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:types",
+    "@types/react-dom": "catalog:types"
+  }
+}

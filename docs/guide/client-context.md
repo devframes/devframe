@@ -186,4 +186,4 @@ state.domElements.iframe = iframeEl
 state.events.emit('dom:iframe:mounted', iframeEl)
 ```
 
-That announcement is what the adapter attaches to. Both minimal hubs wire this end to end — see the "Tabbed Tool" in [`examples/vite-devframe-hub`](https://github.com/devframes/devframe/tree/main/examples/vite-devframe-hub) and [`examples/next-devframe-hub`](https://github.com/devframes/devframe/tree/main/examples/next-devframe-hub), including the SPA's `postMessage` shim.
+That announcement is what the adapter attaches to. Both minimal hubs wire this end to end — see the "Tabbed Tool" in [`examples/hub-vite`](https://github.com/devframes/devframe/tree/main/examples/hub-vite) and [`examples/hub-next`](https://github.com/devframes/devframe/tree/main/examples/hub-next), including the SPA's `postMessage` shim.

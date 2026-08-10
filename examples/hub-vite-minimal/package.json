@@ -1,0 +1,23 @@
+{
+  "name": "hub-vite-minimal",
+  "type": "module",
+  "version": "0.8.2",
+  "private": true,
+  "description": "Minimal Vite host for @devframes/hub — one initHub() handler mounted as dev middleware, UI from @devframes/hub-ui.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-vite-minimal",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "devframe": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:types",
+    "vite": "catalog:build"
+  }
+}

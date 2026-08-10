@@ -206,34 +206,37 @@ export function createWsRpcClientMode(
   for (const name of connectionMeta.jsonSerializableMethods ?? [])
     definitions.set(name, { jsonSerializable: true })
 
+  // Hoisted out of the `createRpcClient` call so `close()` below can reach it — birpc's own
+  // `ChannelOptions` carries no reference back to what it was built from.
+  const channel = createWsRpcChannel({
+    url,
+    authToken,
+    definitions,
+    ...wsOptions,
+    onConnected(event) {
+      // Socket open — the trust handshake (already queued) settles the
+      // status to `connected`/`unauthorized`. Stay `connecting` until then.
+      wsOptions.onConnected?.(event)
+    },
+    onError(error) {
+      setStatus('error', error)
+      events.emit('connection:error', error)
+      rejectAllPending(new DevframeConnectionError('connection', '[devframe] Connection to the devframe server failed', { cause: error }))
+      wsOptions.onError?.(error)
+    },
+    onDisconnected(event) {
+      // A clean close after we were connected, or a socket that never
+      // opened — either way calls can no longer be served.
+      if (status !== 'error')
+        setStatus('disconnected')
+      rejectAllPending(new DevframeConnectionError('connection', '[devframe] Disconnected from the devframe server', { cause: connectionError ?? undefined }))
+      wsOptions.onDisconnected?.(event)
+    },
+  })
   const serverRpc = createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>(
     clientRpc.functions,
     {
-      channel: createWsRpcChannel({
-        url,
-        authToken,
-        definitions,
-        ...wsOptions,
-        onConnected(event) {
-          // Socket open — the trust handshake (already queued) settles the
-          // status to `connected`/`unauthorized`. Stay `connecting` until then.
-          wsOptions.onConnected?.(event)
-        },
-        onError(error) {
-          setStatus('error', error)
-          events.emit('connection:error', error)
-          rejectAllPending(new DevframeConnectionError('connection', '[devframe] Connection to the devframe server failed', { cause: error }))
-          wsOptions.onError?.(error)
-        },
-        onDisconnected(event) {
-          // A clean close after we were connected, or a socket that never
-          // opened — either way calls can no longer be served.
-          if (status !== 'error')
-            setStatus('disconnected')
-          rejectAllPending(new DevframeConnectionError('connection', '[devframe] Disconnected from the devframe server', { cause: connectionError ?? undefined }))
-          wsOptions.onDisconnected?.(event)
-        },
-      }),
+      channel,
       rpcOptions,
     },
   )
@@ -401,6 +404,9 @@ export function createWsRpcClientMode(
         ),
         method,
       )
+    },
+    close: () => {
+      channel.close()
     },
   }
 }

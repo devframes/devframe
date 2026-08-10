@@ -158,7 +158,7 @@ fetching `<base>__connection.json`. The differences are environmental:
    convention, typecheck/knip/exports wiring.
 5. **`feat/handler-examples-docs`** — migrate both reference hub examples onto the headless
    hub handler (hand-built UIs kept as protocol demos, parity + README parity maintained);
-   new minimal `examples/nitro-devframe-hub` + `examples/hono-devframe-hub`
+   new minimal `examples/hub-nitro-minimal` + `examples/hub-hono-minimal`
    (`ui: createUi()` + script tag; Hono verified on Node **and** Bun); local `scripts/` Bun
    smoke test (boots the Hono example on Bun: fetch + WS RPC + embedded.js); Comark-style
    mount guides for Vite/Nitro/Hono/Next/Nuxt/SvelteKit; "Singular vs hub mounting" docs page.

@@ -11,7 +11,12 @@ export interface DevframeHubUi {
   };
   assets?: Record<string, () => string | Uint8Array>;
 }
+export interface HubDevframeEntry {
+  devframe: DevframeDefinition;
+  dock?: MountDevframeOptions['dock'];
+}
 export interface HubInstance {
+  base: string;
   handler: (_: Request, _?: unknown) => Promise<Response>;
   nodeMiddleware: (_: IncomingMessage, _: ServerResponse, _?: (_?: unknown) => void) => void;
   websocket: {
@@ -26,8 +31,9 @@ export interface HubInstance {
   close: () => Promise<void>;
 }
 export interface InitHubOptions {
-  base?: string;
-  devframes?: DevframeDefinition[];
+  base: string;
+  devframes?: (DevframeDefinition | HubDevframeEntry)[];
+  rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations'];
   context?: DevframeHubContext;
   configure?: (_: DevframeHubContext) => void | Promise<void>;
   ui?: DevframeHubUi;
@@ -46,7 +52,7 @@ export interface InitHubOptions {
 // #endregion
 
 // #region Functions
-export declare function initHub(_?: InitHubOptions): HubInstance;
+export declare function initHub(_: InitHubOptions): HubInstance;
 // #endregion
 
 // #region Variables

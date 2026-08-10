@@ -159,4 +159,39 @@ describe('getDevframeRpcClient — connection meta base', () => {
     // An explicit meta resolves against the client's own base.
     expect(lastWsUrl()).toBe('ws://localhost:5173/__foo/__ws')
   })
+
+  it('close() closes the underlying socket', async () => {
+    const served: ConnectionMeta = { backend: 'websocket', websocket: { path: '__ws' } }
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => served,
+    }) as any))
+
+    const rpc = await getDevframeRpcClient({ baseURL: '/__foo/', otpParam: false })
+    const ws = FakeWebSocket.instances.at(-1)!
+    const closeSpy = vi.spyOn(ws, 'close')
+
+    rpc.close?.()
+
+    expect(closeSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('close() on a static backend is a no-op, not a throw', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => ({
+      ok: true,
+      status: 200,
+      json: async () => (
+        url.includes('__rpc-dump')
+          ? {} // an empty manifest is a valid (if trivial) StaticRpcManifest
+          : { backend: 'static' } satisfies ConnectionMeta
+      ),
+    }) as any))
+
+    const rpc = await getDevframeRpcClient({ baseURL: '/__foo/', otpParam: false })
+
+    expect(() => rpc.close?.()).not.toThrow()
+    // Static backends never open a socket in the first place.
+    expect(FakeWebSocket.instances).toHaveLength(0)
+  })
 })

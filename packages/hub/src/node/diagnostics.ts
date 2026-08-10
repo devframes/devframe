@@ -30,6 +30,10 @@ export const diagnostics = defineDiagnostics({
       why: 'connectionMeta() was called before initHub finished initializing.',
       fix: 'Await `instance.ready` (or any request through `instance.handler`) before reading `connectionMeta()` — the WebSocket binding it describes is only known once initialization completes.',
     },
+    DF8004: {
+      why: (p: { id: string }) => `Devframe id "${p.id}" is not a mountable URL segment — the hub mounts each frame at \`<base><id>/\`.`,
+      fix: 'Ids become route segments, so they may only contain letters, digits, `_`, `-`, and `.` — `:` and `*` are route-pattern markers to the underlying router, and `/` would escape the segment. Set a route-safe `id` on the definition (e.g. `my_plugin` instead of `my:plugin`).',
+    },
     DF8100: {
       why: (p: { id: string }) => `Dock with id "${p.id}" is already registered`,
       fix: 'Use the `force` parameter to overwrite an existing registration.',

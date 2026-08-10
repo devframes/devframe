@@ -3,6 +3,7 @@
  */
 // #region Interfaces
 export interface DevframeInstance {
+  base: string;
   handler: (_: Request, _?: unknown) => Promise<Response>;
   nodeMiddleware: (_: IncomingMessage, _: ServerResponse, _?: (_?: unknown) => void) => void;
   websocket: DevframeInstanceWebSocket;
@@ -22,7 +23,7 @@ export interface DevframeInstanceWebSocket {
   drain: (_: unknown) => void;
 }
 export interface InitDevframeOptions {
-  base?: string;
+  base: string;
   distDir?: string | false;
   server?: Server;
   ws?: DevframeWsOptions;
@@ -43,5 +44,5 @@ export interface InitDevframeOptions {
 
 // #region Functions
 export declare function getInstanceInternals(_: object): DevframeInstanceInternals;
-export declare function initDevframe(_: DevframeDefinition, _?: InitDevframeOptions): DevframeInstance;
+export declare function initDevframe(_: DevframeDefinition, _: InitDevframeOptions): DevframeInstance;
 // #endregion
