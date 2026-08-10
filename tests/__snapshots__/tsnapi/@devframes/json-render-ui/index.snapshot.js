@@ -3,6 +3,7 @@
  */
 // #region Functions
 export function createActionBridge(_, _) {}
+/** @deprecated */
 export function createJsonRenderDockRenderer(_) {}
 export function createRenderer(_) {}
 export function sanitizeSpec(_, _) {}

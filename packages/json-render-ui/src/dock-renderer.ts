@@ -38,6 +38,12 @@ export interface JsonRenderDockRendererOptions {
  * })
  * ```
  *
+ * @deprecated Prefer the iframe **view-provider** model: register
+ * {@link jsonRenderProvider} with the hub (`initHub({ viewProviders: { 'json-render':
+ * jsonRenderProvider() } })`), which renders json-render in a swappable,
+ * framework-agnostic iframe. This in-process renderer couples the renderer to a
+ * Vue host and is kept only for existing same-framework hosts.
+ *
  * For a shared-state view (`entry.view.stateKey`) it subscribes to the live
  * spec and re-renders on every update; for an inline view (`entry.view.spec`)
  * it renders the embedded spec directly, with no shared-state round-trip — the

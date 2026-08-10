@@ -3,6 +3,7 @@
  */
 // #region Functions
 export function createJsonRenderDevframe(_) {}
+export function jsonRenderProvider(_) {}
 // #endregion
 
 // #region Variables

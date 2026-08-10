@@ -3,6 +3,7 @@
  */
 // #region Functions
 export declare function createJsonRenderDevframe(_: DevframeDefinition): DevframeDefinition;
+export declare function jsonRenderProvider(_?: Partial<DevframeDefinition>): DevframeDefinition;
 // #endregion
 
 // #region Variables

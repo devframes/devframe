@@ -42,6 +42,7 @@ export type JsonRenderDockRenderer = (_: JsonRenderDockMountOptions) => Promise<
 export declare function createActionBridge(_: ActionBridgeRpc, _?: {
   interactive?: boolean;
 }): JsonRenderActionBridge;
+/** @deprecated */
 export declare function createJsonRenderDockRenderer(_?: JsonRenderDockRendererOptions): JsonRenderDockRenderer;
 export declare function createRenderer(_?: CreateRendererOptions): import("vue").DefineComponent<{}, () => import("vue").VNode<import("vue").RendererNode, import("vue").RendererElement, {
   [key: string]: any;

@@ -1,60 +1,72 @@
 import type { DevframeJsonRenderSpec, JsonRenderIndex, JsonRenderIndexEntry } from '@devframes/json-render'
+import type { DevframeRpcClient } from 'devframe/client'
+import type { Ref } from 'vue'
 import type { ActionBridgeRpc } from '../action-bridge'
 import { JSON_RENDER_INDEX_KEY } from '@devframes/json-render'
 import { connectDevframe } from 'devframe/client'
 import { computed, createApp, defineComponent, h, ref, shallowReactive, shallowRef, watch } from 'vue'
 import { JsonRenderView } from '../renderer'
+import { applyBranding, initColorScheme } from './theme'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
+// After uno so the brand-primary override wins (see primary-ramp.css).
+import './primary-ramp.css'
 
-// Shared design tokens flip on the `.dark` class; mirror the OS preference.
-const mq = window.matchMedia('(prefers-color-scheme: dark)')
-function applyScheme(dark: boolean): void {
-  document.documentElement.classList.toggle('dark', dark)
-}
-applyScheme(mq.matches)
-mq.addEventListener('change', e => applyScheme(e.matches))
+// Follow the host's color scheme + brand primary (both best-effort standalone).
+initColorScheme()
+void applyBranding()
 
 const surface = 'flex min-h-screen items-center justify-center color-faint text-sm'
 
-async function main(): Promise<void> {
-  const root = document.getElementById('app')
-  if (!root)
-    throw new Error('#app mount node missing')
+/** Subscribe to a view's live spec, keyed by `stateKey`. */
+function subscribeSpec(
+  rpc: DevframeRpcClient,
+  stateKey: string,
+  into: (spec: DevframeJsonRenderSpec | null) => void,
+): void {
+  void rpc.sharedState
+    .get<DevframeJsonRenderSpec>(stateKey, { initialValue: null as unknown as DevframeJsonRenderSpec })
+    .then((state) => {
+      into(state.value() as DevframeJsonRenderSpec | null)
+      state.on('updated', () => into(state.value() as DevframeJsonRenderSpec | null))
+    })
+}
 
-  const rpc = await connectDevframe()
-  const interactive = rpc.connectionMeta.backend !== 'static'
-
-  // Discover every live view from the single view-index shared state, then
-  // subscribe to each view's own state. The author never wires a view id into
-  // the client — publishing a view is enough for it to appear here.
-  const indexState = await rpc.sharedState.get<JsonRenderIndex>(JSON_RENDER_INDEX_KEY, { initialValue: {} })
-  // Seed the current server value before mounting so an empty tree isn't
-  // mistaken for "no views" during the first round-trip.
-  if (interactive) {
-    try {
-      const value = await rpc.call('devframe:rpc:server-state:get', JSON_RENDER_INDEX_KEY)
-      if (value && typeof value === 'object')
-        indexState.mutate(() => value as JsonRenderIndex)
-    }
-    catch {
-      // Non-fatal: fall back to live 'updated' events below.
-    }
-  }
-
-  const indexRef = shallowRef<JsonRenderIndex>(indexState.value() as JsonRenderIndex)
-  indexState.on('updated', () => {
-    indexRef.value = indexState.value() as JsonRenderIndex
+/**
+ * Single-view mode (`?view=<stateKey>`): render exactly one view, no nav — the
+ * shape the hub's iframe view-provider mounts (one pooled iframe per view).
+ */
+function mountSingleView(root: HTMLElement, rpc: DevframeRpcClient, stateKey: string, interactive: boolean): void {
+  const spec = shallowRef<DevframeJsonRenderSpec | null | undefined>(undefined)
+  subscribeSpec(rpc, stateKey, s => (spec.value = s))
+  const App = defineComponent({
+    name: 'JsonRenderSingleView',
+    setup() {
+      return () => h('div', { class: 'min-h-screen bg-base color-base font-sans p6' }, [
+        h(JsonRenderView, {
+          spec: spec.value ?? null,
+          rpc: rpc as unknown as ActionBridgeRpc,
+          viewId: stateKey,
+          interactive,
+          loading: spec.value === undefined,
+        }),
+      ])
+    },
   })
+  createApp(App).mount(root)
+}
 
+/**
+ * Dashboard mode: discover every live view from the view index and render a
+ * segmented switcher. The standalone experience when no single view is pinned.
+ */
+function mountDashboard(root: HTMLElement, rpc: DevframeRpcClient, indexRef: Ref<JsonRenderIndex>, interactive: boolean): void {
   const App = defineComponent({
     name: 'JsonRenderSpa',
     setup() {
       const entries = computed<JsonRenderIndexEntry[]>(() =>
         Object.values(indexRef.value).sort((a, b) => a.title.localeCompare(b.title)))
 
-      // Per-view specs, keyed by stateKey. `undefined` = subscribing (loading),
-      // `null` = subscribed with no spec yet.
       const specs = shallowReactive<Record<string, DevframeJsonRenderSpec | null | undefined>>({})
       const subscribed = new Set<string>()
       const active = ref<string | null>(null)
@@ -65,14 +77,7 @@ async function main(): Promise<void> {
             continue
           subscribed.add(entry.stateKey)
           specs[entry.stateKey] = undefined
-          void rpc.sharedState
-            .get<DevframeJsonRenderSpec>(entry.stateKey, { initialValue: null as unknown as DevframeJsonRenderSpec })
-            .then((state) => {
-              specs[entry.stateKey] = state.value() as DevframeJsonRenderSpec | null
-              state.on('updated', () => {
-                specs[entry.stateKey] = state.value() as DevframeJsonRenderSpec | null
-              })
-            })
+          subscribeSpec(rpc, entry.stateKey, s => (specs[entry.stateKey] = s))
         }
         if (!active.value || !list.some(e => e.stateKey === active.value))
           active.value = list[0]?.stateKey ?? null
@@ -101,9 +106,6 @@ async function main(): Promise<void> {
 
         const activeEntry = list.find(e => e.stateKey === active.value) ?? list[0]
         const spec = specs[activeEntry.stateKey]
-
-        // A single view renders on its own — no nav. The top bar (brand +
-        // segmented view switcher) only appears once there's more than one.
         const multiple = list.length > 1
 
         return h('div', { class: 'min-h-screen bg-base color-base font-sans' }, [
@@ -131,8 +133,45 @@ async function main(): Promise<void> {
       }
     },
   })
-
   createApp(App).mount(root)
+}
+
+async function main(): Promise<void> {
+  const root = document.getElementById('app')
+  if (!root)
+    throw new Error('#app mount node missing')
+
+  const rpc = await connectDevframe()
+  const interactive = rpc.connectionMeta.backend !== 'static'
+
+  // The hub's iframe view-provider pins one view via `?view=<stateKey>`.
+  const pinned = new URLSearchParams(location.search).get('view')
+  if (pinned) {
+    mountSingleView(root, rpc, pinned, interactive)
+    return
+  }
+
+  // Dashboard: discover every live view from the single view-index shared
+  // state. The author never wires a view id into the client — publishing a
+  // view is enough for it to appear here.
+  const indexState = await rpc.sharedState.get<JsonRenderIndex>(JSON_RENDER_INDEX_KEY, { initialValue: {} })
+  if (interactive) {
+    try {
+      const value = await rpc.call('devframe:rpc:server-state:get', JSON_RENDER_INDEX_KEY)
+      if (value && typeof value === 'object')
+        indexState.mutate(() => value as JsonRenderIndex)
+    }
+    catch {
+      // Non-fatal: fall back to live 'updated' events below.
+    }
+  }
+
+  const indexRef = shallowRef<JsonRenderIndex>(indexState.value() as JsonRenderIndex)
+  indexState.on('updated', () => {
+    indexRef.value = indexState.value() as JsonRenderIndex
+  })
+
+  mountDashboard(root, rpc, indexRef, interactive)
 }
 
 main().catch((error) => {

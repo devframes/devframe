@@ -1,0 +1,24 @@
+/*
+ * Primary color as a single overridable variable, `--devframe-primary`, so the
+ * host's brand (applied in theme.ts from branding.json) retints this provider
+ * SPA. Imported after `virtual:uno.css` so it wins over Wind4's own `:root`
+ * primary declarations. Each stop derives from `--devframe-primary` via
+ * `color-mix`; unset, the intermediate vars are guaranteed-invalid so each
+ * `--colors-primary-*` falls back to the exact devframe default hex.
+ *
+ * Mirrors the same block in `@devframes/hub-ui` (kept in sync deliberately;
+ * the two packages don't share a stylesheet).
+ */
+:root {
+  --devframe-primary-DEFAULT: var(--devframe-primary);
+  --devframe-primary-600: color-mix(in oklab, var(--devframe-primary), white 9%);
+  --devframe-primary-500: color-mix(in oklab, var(--devframe-primary), white 18%);
+  --devframe-primary-400: color-mix(in oklab, var(--devframe-primary), white 34%);
+  --devframe-primary-300: color-mix(in oklab, var(--devframe-primary), white 54%);
+
+  --colors-primary-DEFAULT: var(--devframe-primary-DEFAULT, #3a6a45);
+  --colors-primary-600: var(--devframe-primary-600, #40704b);
+  --colors-primary-500: var(--devframe-primary-500, #578861);
+  --colors-primary-400: var(--devframe-primary-400, #75a67e);
+  --colors-primary-300: var(--devframe-primary-300, #93c69d);
+}
