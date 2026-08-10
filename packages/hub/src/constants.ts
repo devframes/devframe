@@ -3,6 +3,13 @@ import type { DevframeDocksUserSettings } from './types/settings'
 export * from 'devframe/constants'
 
 /**
+ * Read-only shared-state key the hub publishes its view-provider map under
+ * (dock view `type` → {@link DevframeViewProviderMeta}). A UI reads this to
+ * resolve a provider iframe URL and to detect "no provider registered".
+ */
+export const VIEW_PROVIDERS_STATE_KEY = 'devframe:view-providers'
+
+/**
  * The default ordering weight for each known dock category — lower sorts
  * earlier. Downstream viewers (e.g. `@vitejs/devtools-kit`) import this as the
  * single source of truth so the hub and its viewers agree on category order.

@@ -69,6 +69,8 @@ export { DevframeViewHost }
 export { DevframeViewIframe }
 export { DevframeViewLauncher }
 export { DevframeViewLauncherStatus }
+export { DevframeViewProviderMeta }
+export { DevframeViewProviders }
 export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }

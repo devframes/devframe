@@ -19,7 +19,7 @@ import { resolve } from 'pathe'
 import { cleanDoubleSlashes, joinURL, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash, withTrailingSlash } from 'ufo'
 import { createHubContext } from './context'
 import { diagnostics } from './diagnostics'
-import { mountDevframe } from './mount-devframe'
+import { mountDevframe, mountViewProvider } from './mount-devframe'
 
 /** A `devframes` entry with per-mount dock customization. */
 export interface HubDevframeEntry {
@@ -114,6 +114,16 @@ export interface InitHubOptions {
    * (category, icon, a `clientScript` to run in the host page, …).
    */
   devframes?: (DevframeDefinition | HubDevframeEntry)[]
+  /**
+   * View providers to register, keyed by the dock view `type` they render
+   * (e.g. `{ 'json-render': jsonRenderProvider() }`). Each is mounted as an SPA
+   * at `<base><id>/` (no dock of its own) and published to the client, which
+   * renders that dock type in a swappable iframe. A type with no provider
+   * shows the UI's "no provider" placeholder. The hub stays headless: it ships
+   * none, and the reference json-render provider comes from
+   * `@devframes/json-render-ui`.
+   */
+  viewProviders?: Record<string, DevframeDefinition>
   /**
    * Extra RPC declarations registered at context creation, alongside the
    * hub built-ins — forwarded to `createHubContext`'s
@@ -403,6 +413,17 @@ function instantiateHub(options: InitHubOptions): HubInstance {
       const frameBase = withTrailingSlash(joinURL(base, def.id))
       await mountDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
       frames.push({ id: def.id, base: frameBase, title: def.name })
+    }
+
+    // View providers: mounted like frames (SPA + connection meta) but without a
+    // dock of their own, and published to the client via shared state.
+    for (const [type, def] of Object.entries(options.viewProviders ?? {})) {
+      if ((RESERVED_HUB_PATHS as readonly string[]).includes(def.id))
+        throw diagnostics.DF8000({ id: def.id })
+      if (!/^[\w.-]+$/.test(def.id))
+        throw diagnostics.DF8004({ id: def.id })
+      const providerBase = withTrailingSlash(joinURL(base, def.id))
+      await mountViewProvider(ctx, type, def, { base: providerBase })
     }
 
     await options.configure?.(ctx)

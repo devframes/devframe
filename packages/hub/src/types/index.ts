@@ -7,6 +7,7 @@ export * from './docks'
 export * from './messages'
 export * from './settings'
 export * from './terminals'
+export * from './view-providers'
 
 export type { RpcDefinitionsFilter, RpcDefinitionsToFunctions } from 'devframe/rpc'
 

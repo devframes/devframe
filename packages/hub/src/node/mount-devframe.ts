@@ -1,8 +1,10 @@
 import type { DevframeDefinition } from 'devframe/types'
 import type { DevframeViewIframe } from '../types/docks'
+import type { DevframeViewProviders } from '../types/view-providers'
 import type { DevframeHubContext } from './context'
 import { resolveBasePath } from 'devframe/node/hub-internals'
 import { resolve } from 'pathe'
+import { VIEW_PROVIDERS_STATE_KEY } from '../constants'
 import { diagnostics } from './diagnostics'
 
 export interface MountDevframeOptions {
@@ -19,6 +21,13 @@ export interface MountDevframeOptions {
    * the devframe definition.
    */
   dock?: Partial<Omit<DevframeViewIframe, 'id' | 'type' | 'url'>>
+  /**
+   * Register the auto-synthesized iframe dock entry. Default `true`. Set
+   * `false` to serve the SPA + connection meta and run `setup(ctx)` without
+   * adding a dock — used for a {@link mountViewProvider view provider}, whose
+   * SPA renders *other* docks rather than appearing as one itself.
+   */
+  registerDock?: boolean
 }
 
 /**
@@ -91,18 +100,53 @@ export async function mountDevframe(
     ctx.views.hostStatic(base, resolve(d.cli.distDir))
   }
 
-  ctx.docks.register({
-    id,
-    title: d.name,
-    icon: d.icon ?? 'ph:plug-duotone',
-    // Definition-level `dock` defaults sit above the name/icon-derived
-    // defaults; per-mount `options.dock` overrides them; `type`/`url`
-    // (and `id`) stay locked, derived from the definition.
-    ...d.dock,
-    ...options.dock,
-    type: 'iframe',
-    url: base,
-  } as DevframeViewIframe)
+  if (options.registerDock !== false) {
+    ctx.docks.register({
+      id,
+      title: d.name,
+      icon: d.icon ?? 'ph:plug-duotone',
+      // Definition-level `dock` defaults sit above the name/icon-derived
+      // defaults; per-mount `options.dock` overrides them; `type`/`url`
+      // (and `id`) stay locked, derived from the definition.
+      ...d.dock,
+      ...options.dock,
+      type: 'iframe',
+      url: base,
+    } as DevframeViewIframe)
+  }
 
   await d.setup(ctx)
+}
+
+/**
+ * Mount a {@link DevframeDefinition} as a **view provider** for a dock view
+ * `type` (e.g. `json-render`): serves its SPA (no dock of its own) and
+ * publishes `type → { base }` into the read-only `VIEW_PROVIDERS_STATE_KEY`
+ * shared state, so a UI can render that dock type in an iframe at `base` (and
+ * show a placeholder when a type has no provider). Idempotent per type — a
+ * later registration overwrites the earlier `base`.
+ *
+ * ```ts
+ * await mountViewProvider(ctx, 'json-render', jsonRenderProvider(), { base })
+ * ```
+ *
+ * `initHub({ viewProviders })` calls this for each entry; hosts assembling
+ * `createHubContext` + `mountDevframe` themselves call it directly.
+ */
+export async function mountViewProvider(
+  ctx: DevframeHubContext,
+  type: string,
+  d: DevframeDefinition,
+  options: { base?: string } = {},
+): Promise<{ base: string }> {
+  const base = options.base ?? resolveBasePath(d, 'hosted')
+  await mountDevframe(ctx, d, { base, registerDock: false })
+  const state = await ctx.rpc.sharedState.get<DevframeViewProviders>(
+    VIEW_PROVIDERS_STATE_KEY,
+    { initialValue: {} },
+  )
+  state.mutate((map) => {
+    map[type] = { base }
+  })
+  return { base }
 }

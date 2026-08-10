@@ -275,4 +275,5 @@ export { DEFAULT_CATEGORIES_ORDER }
 export { DevframeHubContext }
 export { mountDevframe }
 export { MountDevframeOptions }
+export { mountViewProvider }
 // #endregion

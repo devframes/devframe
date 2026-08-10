@@ -306,6 +306,9 @@ export interface DevframeViewLauncher extends DevframeDockEntryBase {
     onLaunch?: () => Promise<void>;
   };
 }
+export interface DevframeViewProviderMeta {
+  base: string;
+}
 export interface FrameSubTabsConfig {
   protocol: 'postmessage';
   handshakeTimeoutMs?: number;
@@ -347,6 +350,7 @@ export type DevframeMessageLevel = 'info' | 'warn' | 'error' | 'success' | 'debu
 export type DevframeMessageShortcutInput = Omit<DevframeMessageEntryInput, 'message' | 'level'>;
 export type DevframeTerminalStatus = 'running' | 'stopped' | 'error';
 export type DevframeViewLauncherStatus = 'idle' | 'loading' | 'success' | 'error';
+export type DevframeViewProviders = Record<string, DevframeViewProviderMeta>;
 // #endregion
 
 // #region Functions

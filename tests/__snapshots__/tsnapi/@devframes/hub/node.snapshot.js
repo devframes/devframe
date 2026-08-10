@@ -25,4 +25,5 @@ export { hubTerminalsRestart }
 export { hubTerminalsTerminate }
 export { hubTerminalsWrite }
 export { mountDevframe }
+export { mountViewProvider }
 // #endregion

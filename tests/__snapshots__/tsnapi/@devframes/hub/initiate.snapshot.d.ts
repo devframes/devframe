@@ -33,6 +33,7 @@ export interface HubInstance {
 export interface InitHubOptions {
   base: string;
   devframes?: (DevframeDefinition | HubDevframeEntry)[];
+  viewProviders?: Record<string, DevframeDefinition>;
   rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations'];
   context?: DevframeHubContext;
   configure?: (_: DevframeHubContext) => void | Promise<void>;
