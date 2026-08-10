@@ -27,8 +27,11 @@ const EMPTY_DEFS: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerial
 /**
  * Build a birpc `ChannelOptions` object backed by a browser `WebSocket`.
  * Pass the result straight to `createRpcClient`'s `channel` option.
+ *
+ * Also returns `close()`, closing the underlying socket — mirroring the server transport's
+ * existing `WsRpcTransport.close()`. `birpc`'s own `ChannelOptions` has no teardown of its own.
  */
-export function createWsRpcChannel(options: WsRpcChannelOptions): ChannelOptions {
+export function createWsRpcChannel(options: WsRpcChannelOptions): ChannelOptions & { close: () => void } {
   let url = options.url
   if (options.authToken) {
     url = `${url}?${DEVFRAME_AUTH_TOKEN_QUERY_PARAM}=${encodeURIComponent(options.authToken)}`
@@ -59,6 +62,9 @@ export function createWsRpcChannel(options: WsRpcChannelOptions): ChannelOptions
   // method up in `definitions` and pick the right encoder.
   const pendingRequestMethods = new Map<string, string>()
   return {
+    close: () => {
+      ws.close()
+    },
     on: (handler: (data: string) => void) => {
       ws.addEventListener('message', (e) => {
         handler(e.data)

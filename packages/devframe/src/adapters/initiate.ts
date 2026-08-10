@@ -17,16 +17,19 @@ import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { startHttpAndWs } from '../node/server'
 import { createInteractiveAuth } from '../recipes/interactive-auth'
-import { normalizeBasePath, resolveBasePath } from './_shared'
+import { normalizeBasePath } from './_shared'
 import { resolveDevServerPort, resolveMcpConnectionMeta } from './dev'
 
 export interface InitDevframeOptions {
   /**
-   * Mount base the handler answers under. Defaults to
-   * `resolveBasePath(def, 'hosted')` (i.e. `def.basePath` or `/__<id>/`) —
-   * a handler is by definition mounted *inside* a host app's origin.
+   * Mount base the handler answers under (e.g. `/__my-tool/`) — required so
+   * the mount path is explicit at the call site. A handler is by definition
+   * mounted *inside* a host app's origin; the resolved value is echoed back
+   * as {@link DevframeInstance.base} so route/middleware code references it
+   * instead of repeating the string. `resolveBasePath(def, 'hosted')` gives
+   * the conventional `def.basePath ?? /__<id>/`.
    */
-  base?: string
+  base: string
   /**
    * Override `def.cli?.distDir`. When neither is set — or `false` is passed
    * to suppress the definition's own `distDir` — the handler runs in
@@ -155,8 +158,15 @@ export interface DevframeInstanceWebSocket {
 
 export interface DevframeInstance {
   /**
+   * The normalized mount base this instance answers under (leading and
+   * trailing slash, e.g. `/__my-tool/`). Reference it when wiring the mount
+   * — route guards, middleware path checks — instead of repeating the
+   * string literal.
+   */
+  base: string
+  /**
    * Web-standard request handler — mount it on a catch-all route under
-   * {@link InitDevframeOptions.base} (Next.js route handler, SvelteKit
+   * {@link DevframeInstance.base} (Next.js route handler, SvelteKit
    * `+server.ts`, Hono `c.req.raw`, Nitro `toWebRequest(event)`, …).
    * Requests outside the base 404. Under Bun, pass the `Bun.serve` server
    * as the second argument so WS upgrade requests can be completed (an
@@ -273,7 +283,7 @@ export function getInstanceInternals(handler: object): DevframeInstanceInternals
  */
 export function initDevframe(
   def: DevframeDefinition,
-  options: InitDevframeOptions = {},
+  options: InitDevframeOptions,
 ): DevframeInstance {
   if (options.key) {
     const registry = instanceRegistry()
@@ -296,7 +306,7 @@ function instantiateDevframe(
   def: DevframeDefinition,
   options: InitDevframeOptions,
 ): DevframeInstance {
-  const base = options.base ? normalizeBasePath(options.base) : resolveBasePath(def, 'hosted')
+  const base = normalizeBasePath(options.base)
   const baseNoSlash = withoutTrailingSlash(base)
   const distDir = options.distDir === false ? undefined : options.distDir ?? def.cli?.distDir
   const app = options.app ?? new H3()
@@ -566,6 +576,7 @@ function instantiateDevframe(
   }
 
   const handler: DevframeInstance = {
+    base,
     handler: handleRequest,
     nodeMiddleware,
     websocket,

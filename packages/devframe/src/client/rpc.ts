@@ -195,6 +195,20 @@ export interface DevframeRpcClient {
     <NS extends string>(namespace: NS): DevframeScopedClientContext<NS, SettingsForNamespace<NS>>
     (namespace?: null | ''): DevframeRpcClient
   }
+
+  /**
+   * Close the connection. A `static` backend is a no-op (there is no live socket to close);
+   * a `websocket` backend closes the underlying `WebSocket`, which the server observes as a
+   * normal disconnect. Mirrors {@link WsRpcTransport.close} on the server side.
+   *
+   * There is no corresponding "reconnect" — a closed client is done. Discard it and call
+   * {@link getDevframeRpcClient} again to reconnect.
+   *
+   * Optional so a `DevframeRpcClientMode` implemented before this method existed — a custom
+   * transport, a hand-typed mock — still satisfies the interface; an absent `close` is treated
+   * as nothing to close.
+   */
+  close?: () => void
 }
 
 export interface DevframeRpcClientMode {
@@ -212,6 +226,8 @@ export interface DevframeRpcClientMode {
   call: DevframeRpcClient['call']
   callEvent: DevframeRpcClient['callEvent']
   callOptional: DevframeRpcClient['callOptional']
+  /** See {@link DevframeRpcClient.close}. */
+  close?: () => void
 }
 
 export async function getDevframeRpcClient(
@@ -375,6 +391,7 @@ export async function getDevframeRpcClient(
     streaming: undefined!,
     cacheManager,
     scope: undefined!,
+    close: () => mode.close?.(),
   }
 
   rpc.sharedState = createRpcSharedStateClientHost(rpc)

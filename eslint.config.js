@@ -9,6 +9,8 @@ export default antfu({
     '**/dist',
     '**/storybook-static',
     '**/.next',
+    '**/.nitro',
+    '**/.output',
     '**/out',
     '**/next-env.d.ts',
     '**/.vitepress/cache',

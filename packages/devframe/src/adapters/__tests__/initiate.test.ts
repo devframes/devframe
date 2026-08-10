@@ -43,7 +43,7 @@ function defineTestDef(id: string) {
 
 describe('adapters/handler', () => {
   it('connectionMeta() before ready throws DF0054', () => {
-    const devtools = initDevframe(defineTestDef('handler-early'), { auth: false })
+    const devtools = initDevframe(defineTestDef('handler-early'), { base: '/__handler-early/', auth: false })
     expect(() => devtools.connectionMeta()).toThrow(/DF0054|finished initializing/)
     return devtools.close()
   })
@@ -51,12 +51,7 @@ describe('adapters/handler', () => {
   it('default tier: eager side-car — SPA, meta, and WS RPC through fetch', async () => {
     const distDir = makeTmpDist()
     const wsPort = await getPort({ port: 18110, host: '127.0.0.1' })
-    const devtools = initDevframe(defineTestDef('handler-test'), {
-      auth: false,
-      distDir,
-      host: '127.0.0.1',
-      ws: { port: wsPort },
-    })
+    const devtools = initDevframe(defineTestDef('handler-test'), { base: '/__handler-test/', auth: false, distDir, host: '127.0.0.1', ws: { port: wsPort } })
 
     try {
       await devtools.ready
@@ -102,10 +97,7 @@ describe('adapters/handler', () => {
   it('gates by default: untrusted calls reject until the OTP exchange', async () => {
     const wsPort = await getPort({ port: 18120, host: '127.0.0.1' })
     const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    const devtools = initDevframe(defineTestDef('handler-auth'), {
-      host: '127.0.0.1',
-      ws: { port: wsPort },
-    })
+    const devtools = initDevframe(defineTestDef('handler-auth'), { base: '/__handler-auth/', host: '127.0.0.1', ws: { port: wsPort } })
 
     try {
       await devtools.ready
@@ -150,11 +142,7 @@ describe('adapters/handler', () => {
         res.end('host app')
       })
     })
-    devtoolsRef = initDevframe(defineTestDef('handler-shared'), {
-      auth: false,
-      distDir,
-      server,
-    })
+    devtoolsRef = initDevframe(defineTestDef('handler-shared'), { base: '/__handler-shared/', auth: false, distDir, server })
     await new Promise<void>(resolve => server.listen(port, host, resolve))
 
     try {
@@ -212,9 +200,7 @@ describe('adapters/handler', () => {
   })
 
   it('ws.url tier: advertises the external endpoint verbatim, owns no transport', async () => {
-    const devtools = initDevframe(defineTestDef('handler-remote'), {
-      ws: { url: 'wss://devtools.example.com/relay/__ws' },
-    })
+    const devtools = initDevframe(defineTestDef('handler-remote'), { base: '/__handler-remote/', ws: { url: 'wss://devtools.example.com/relay/__ws' } })
 
     try {
       await devtools.ready
@@ -235,11 +221,7 @@ describe('adapters/handler', () => {
     const server = createServer((req, res) => {
       devtoolsRef.nodeMiddleware(req, res)
     })
-    devtoolsRef = initDevframe(defineTestDef('handler-tunnel'), {
-      auth: false,
-      server,
-      ws: { url: 'wss://devtools.example.com/relay/__ws' },
-    })
+    devtoolsRef = initDevframe(defineTestDef('handler-tunnel'), { base: '/__handler-tunnel/', auth: false, server, ws: { url: 'wss://devtools.example.com/relay/__ws' } })
     await new Promise<void>(resolve => server.listen(port, host, resolve))
 
     try {
@@ -260,11 +242,7 @@ describe('adapters/handler', () => {
 
   it('mcp: mounts <base>__mcp and advertises it in the meta', async () => {
     const wsPort = await getPort({ port: 18140, host: '127.0.0.1' })
-    const devtools = initDevframe(defineTestDef('handler-mcp'), {
-      auth: false,
-      mcp: true,
-      ws: { port: wsPort },
-    })
+    const devtools = initDevframe(defineTestDef('handler-mcp'), { base: '/__handler-mcp/', auth: false, mcp: true, ws: { port: wsPort } })
 
     try {
       await devtools.ready
@@ -284,15 +262,15 @@ describe('adapters/handler', () => {
   it('key memoization: re-runs return the live instance; changed options replace it', async () => {
     const def = defineTestDef('handler-memo')
     const wsPort = await getPort({ port: 18150, host: '127.0.0.1' })
-    const a = initDevframe(def, { auth: false, key: 'memo-test', host: '127.0.0.1', ws: { port: wsPort } })
-    const b = initDevframe(def, { auth: false, key: 'memo-test', host: '127.0.0.1', ws: { port: wsPort } })
+    const a = initDevframe(def, { base: '/__handler-memo/', auth: false, key: 'memo-test', host: '127.0.0.1', ws: { port: wsPort } })
+    const b = initDevframe(def, { base: '/__handler-memo/', auth: false, key: 'memo-test', host: '127.0.0.1', ws: { port: wsPort } })
     expect(b).toBe(a)
 
     try {
       await a.ready
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
       const wsPort2 = await getPort({ port: 18151, host: '127.0.0.1' })
-      const c = initDevframe(def, { auth: false, key: 'memo-test', host: '127.0.0.1', ws: { port: wsPort2 } })
+      const c = initDevframe(def, { base: '/__handler-memo/', auth: false, key: 'memo-test', host: '127.0.0.1', ws: { port: wsPort2 } })
       try {
         expect(c).not.toBe(a)
         expect(String(warn.mock.calls)).toContain('DF0053')
@@ -323,10 +301,7 @@ describe('adapters/handler', () => {
 
   it('bridge mode: without a distDir only meta + WS are served', async () => {
     const wsPort = await getPort({ port: 18160, host: '127.0.0.1' })
-    const devtools = initDevframe(defineTestDef('handler-bridge'), {
-      auth: false,
-      ws: { port: wsPort },
-    })
+    const devtools = initDevframe(defineTestDef('handler-bridge'), { base: '/__handler-bridge/', auth: false, ws: { port: wsPort } })
 
     try {
       await devtools.ready

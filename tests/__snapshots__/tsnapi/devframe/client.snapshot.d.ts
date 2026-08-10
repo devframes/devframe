@@ -29,6 +29,7 @@ export interface DevframeRpcClient {
     <NS extends string>(_: NS): DevframeScopedClientContext<NS, SettingsForNamespace<NS>>;
     (_?: null | ''): DevframeRpcClient;
   };
+  close?: () => void;
 }
 export interface DevframeRpcClientMode {
   readonly isTrusted: boolean;
@@ -41,6 +42,7 @@ export interface DevframeRpcClientMode {
   call: DevframeRpcClient['call'];
   callEvent: DevframeRpcClient['callEvent'];
   callOptional: DevframeRpcClient['callOptional'];
+  close?: () => void;
 }
 export interface DevframeRpcClientOptions extends SetupDevframeConnectionOptions {
   authToken?: string;

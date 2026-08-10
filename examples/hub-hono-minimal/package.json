@@ -1,0 +1,25 @@
+{
+  "name": "hub-hono-minimal",
+  "type": "module",
+  "version": "0.8.1",
+  "private": true,
+  "description": "Minimal Hono host for @devframes/hub \u2014 the same app file serves the devtools namespace on Node and Bun.",
+  "scripts": {
+    "dev": "tsx src/node.ts",
+    "dev:bun": "bun src/bun.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "@hono/node-server": "catalog:deps",
+    "devframe": "workspace:*",
+    "hono": "catalog:deps"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:types",
+    "tsx": "catalog:build"
+  }
+}

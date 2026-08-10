@@ -13,7 +13,7 @@ test.describe('devframe connect (next-devframe-hub)', () => {
     // answers 503 until the side-car WS is live and the meta is published.
     await expect.poll(async () => {
       try {
-        const response = await fetch(`${ORIGIN}/__hub/__connection.json`)
+        const response = await fetch(`${ORIGIN}/__devframes/__connection.json`)
         return response.status
       }
       catch {
@@ -23,10 +23,10 @@ test.describe('devframe connect (next-devframe-hub)', () => {
 
     // The meta advertises the in-process MCP endpoint — same origin as the
     // Next app, no side-car port (the `/_next/mcp` shape).
-    const meta = await (await fetch(`${ORIGIN}/__hub/__connection.json`)).json() as {
+    const meta = await (await fetch(`${ORIGIN}/__devframes/__connection.json`)).json() as {
       mcp?: { path: string, port?: number }
     }
-    expect(meta.mcp).toEqual({ path: '/__hub/__mcp' })
+    expect(meta.mcp).toEqual({ path: '__mcp' })
 
     await withConnectClient(REGISTRY, async (client) => {
       // Index: the hub registered itself (explicitly — it runs in-process,
@@ -36,7 +36,7 @@ test.describe('devframe connect (next-devframe-hub)', () => {
       expect(hub).toBeDefined()
       // The probe may adopt an explicit address family for the recorded
       // `localhost` origin — accept either spelling.
-      expect(hub.mcp.url).toMatch(/^http:\/\/(?:localhost|127\.0\.0\.1):9878\/__hub\/__mcp$/)
+      expect(hub.mcp.url).toMatch(/^http:\/\/(?:localhost|127\.0\.0\.1):9878\/__devframes\/__mcp$/)
 
       // The hub's agent surface flows through: the agent-flagged hub command,
       // the built-in devframe_state_read, and the git plugin's agent-flagged reads.

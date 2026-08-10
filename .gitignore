@@ -7,6 +7,9 @@
 *.tsbuildinfo
 coverage
 dist
+.next
+.nitro
+.output
 lib-cov
 logs
 node_modules

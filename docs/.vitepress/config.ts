@@ -32,6 +32,7 @@ function guideItems(prefix: string) {
     { text: 'Security', link: `${prefix}/guide/security` },
     { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
     { text: 'Hub', link: `${prefix}/guide/hub` },
+    { text: 'Serve a Hub Anywhere', link: `${prefix}/guide/hub-initiate` },
     { text: 'Deep Linking', link: `${prefix}/guide/deep-linking` },
     { text: 'Client Scripts & Context', link: `${prefix}/guide/client-context` },
     { text: 'Agent-Native (experimental)', link: `${prefix}/guide/agent-native` },
@@ -43,6 +44,7 @@ function adaptersItems(prefix: string) {
     { text: 'Overview', link: `${prefix}/adapters/` },
     { text: 'CLI (cac)', link: `${prefix}/adapters/cac` },
     { text: 'Dev', link: `${prefix}/adapters/dev` },
+    { text: 'Initiate (middleware)', link: `${prefix}/adapters/initiate` },
     { text: 'Build', link: `${prefix}/adapters/build` },
     { text: 'Vite', link: `${prefix}/adapters/vite` },
     { text: 'Embedded', link: `${prefix}/adapters/embedded` },
@@ -84,8 +86,13 @@ function examplesItems(prefix: string) {
     { text: 'json-render', link: `${prefix}/examples/json-render` },
     { text: 'streaming-chat', link: `${prefix}/examples/streaming-chat` },
     { text: 'next-runtime-snapshot', link: `${prefix}/examples/next-runtime-snapshot` },
-    { text: 'vite-devframe-hub', link: `${prefix}/examples/vite-devframe-hub` },
-    { text: 'next-devframe-hub', link: `${prefix}/examples/next-devframe-hub` },
+    { text: 'hub-vite', link: `${prefix}/examples/hub-vite` },
+    { text: 'hub-next', link: `${prefix}/examples/hub-next` },
+    { text: 'hub-vite-minimal', link: `${prefix}/examples/hub-vite-minimal` },
+    { text: 'hub-next-minimal', link: `${prefix}/examples/hub-next-minimal` },
+    { text: 'hub-nitro-minimal', link: `${prefix}/examples/hub-nitro-minimal` },
+    { text: 'hub-hono-minimal', link: `${prefix}/examples/hub-hono-minimal` },
+    { text: 'hub-rsbuild-minimal', link: `${prefix}/examples/hub-rsbuild-minimal` },
   ] satisfies DefaultTheme.NavItemWithLink[]
 }
 
