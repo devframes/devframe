@@ -43,10 +43,13 @@ const componentDescriptions: Record<keyof typeof basePropSchemas, string> = {
   CodeBlock: 'Preformatted code block with a filename and language label.',
   Progress: 'Determinate progress bar.',
   Tree: 'Recursive object/array viewer with expandable nodes.',
+  Tabs: 'Tabbed container; each child renders under the positionally-matching tab.',
+  Link: 'Hyperlink to a safe-scheme URL with an optional icon.',
+  Select: 'Single-select dropdown bound to a state value, with optional search.',
 }
 
 /**
- * The Devframes base catalog (catalog v1): the fourteen canonical components
+ * The Devframes base catalog (catalog v1): the seventeen canonical components
  * with their Devframes-authored Zod prop schemas and descriptions, and an
  * empty action set (actions are dispatched dynamically via the bridge, they
  * are not declared here). Reference frontend libraries implement this set.

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { baseCatalog, baseComponentNames, basePropSchemas } from '../src/index'
 
 describe('base catalog', () => {
-  it('exposes the fourteen catalog-v1 components', () => {
-    expect(baseComponentNames).toHaveLength(14)
+  it('exposes the seventeen catalog-v1 components', () => {
+    expect(baseComponentNames).toHaveLength(17)
     expect(baseComponentNames).toEqual([
       'Stack',
       'Card',
@@ -19,6 +19,9 @@ describe('base catalog', () => {
       'CodeBlock',
       'Progress',
       'Tree',
+      'Tabs',
+      'Link',
+      'Select',
     ])
   })
 

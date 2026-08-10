@@ -124,9 +124,48 @@ export const TreePropsSchema = z.object({
   defaultExpanded: bool.optional(),
 })
 
+export const TabsPropsSchema = z.object({
+  // `children[i]` renders under `tabs[i]` — the two arrays are positional.
+  tabs: scalar(z.array(z.looseObject({
+    value: z.string(),
+    label: z.string(),
+    icon: z.string().optional(),
+    badge: z.string().optional(),
+    badgeVariant: z.enum(['default', 'info', 'success', 'warning', 'danger']).optional(),
+  }))).optional(),
+  value: str.optional(),
+  defaultValue: str.optional(),
+  orientation: z.enum(['horizontal', 'vertical']).optional(),
+})
+
+export const LinkPropsSchema = z.object({
+  href: str.optional(),
+  label: str.optional(),
+  icon: str.optional(),
+  external: bool.optional(),
+})
+
+export const SelectPropsSchema = z.object({
+  value: str.optional(),
+  options: scalar(z.array(z.union([
+    z.string(),
+    z.looseObject({
+      value: z.string(),
+      label: z.string().optional(),
+      icon: z.string().optional(),
+      description: z.string().optional(),
+    }),
+  ]))).optional(),
+  placeholder: str.optional(),
+  label: str.optional(),
+  disabled: bool.optional(),
+  searchable: bool.optional(),
+})
+
 /**
  * Map of base-catalog component name → Zod prop schema. The keys are the
- * canonical component set (catalog v1).
+ * canonical component set (catalog v1: the original fourteen plus the
+ * additive Tabs/Link/Select).
  */
 export const basePropSchemas = {
   Stack: StackPropsSchema,
@@ -143,6 +182,9 @@ export const basePropSchemas = {
   CodeBlock: CodeBlockPropsSchema,
   Progress: ProgressPropsSchema,
   Tree: TreePropsSchema,
+  Tabs: TabsPropsSchema,
+  Link: LinkPropsSchema,
+  Select: SelectPropsSchema,
 } as const satisfies Record<string, z.ZodType>
 
 /** Canonical base-catalog component name. */

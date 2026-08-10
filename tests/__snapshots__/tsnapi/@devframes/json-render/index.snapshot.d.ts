@@ -202,6 +202,46 @@ export declare const basePropSchemas: {
     data: z.ZodOptional<z.ZodUnknown>;
     defaultExpanded: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
   }, z.core.$strip>;
+  readonly Tabs: z.ZodObject<{
+    tabs: z.ZodOptional<z.ZodUnion<readonly [z.ZodArray<z.ZodObject<{
+      value: z.ZodString;
+      label: z.ZodString;
+      icon: z.ZodOptional<z.ZodString>;
+      badge: z.ZodOptional<z.ZodString>;
+      badgeVariant: z.ZodOptional<z.ZodEnum<{
+        success: "success";
+        default: "default";
+        warning: "warning";
+        danger: "danger";
+        info: "info";
+      }>>;
+    }, z.core.$loose>>, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+    value: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+    defaultValue: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+    orientation: z.ZodOptional<z.ZodEnum<{
+      horizontal: "horizontal";
+      vertical: "vertical";
+    }>>;
+  }, z.core.$strip>;
+  readonly Link: z.ZodObject<{
+    href: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+    label: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+    icon: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+    external: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  }, z.core.$strip>;
+  readonly Select: z.ZodObject<{
+    value: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+    options: z.ZodOptional<z.ZodUnion<readonly [z.ZodArray<z.ZodUnion<readonly [z.ZodString, z.ZodObject<{
+      value: z.ZodString;
+      label: z.ZodOptional<z.ZodString>;
+      icon: z.ZodOptional<z.ZodString>;
+      description: z.ZodOptional<z.ZodString>;
+    }, z.core.$loose>]>>, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+    placeholder: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+    label: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+    disabled: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+    searchable: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  }, z.core.$strip>;
 };
 export declare const baseSchema: import("@json-render/core").Schema<{
   spec: import("@json-render/core").SchemaType<"object", {
@@ -268,10 +308,29 @@ export declare const KeyValueTablePropsSchema: z.ZodObject<{
   data: z.ZodOptional<z.ZodUnion<readonly [z.ZodRecord<z.ZodString, z.ZodUnknown>, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
   loading: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
 }, z.core.$strip>;
+export declare const LinkPropsSchema: z.ZodObject<{
+  href: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  label: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  icon: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  external: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+}, z.core.$strip>;
 export declare const ProgressPropsSchema: z.ZodObject<{
   value: z.ZodOptional<z.ZodUnion<readonly [z.ZodNumber, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
   max: z.ZodOptional<z.ZodUnion<readonly [z.ZodNumber, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
   label: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+}, z.core.$strip>;
+export declare const SelectPropsSchema: z.ZodObject<{
+  value: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  options: z.ZodOptional<z.ZodUnion<readonly [z.ZodArray<z.ZodUnion<readonly [z.ZodString, z.ZodObject<{
+    value: z.ZodString;
+    label: z.ZodOptional<z.ZodString>;
+    icon: z.ZodOptional<z.ZodString>;
+    description: z.ZodOptional<z.ZodString>;
+  }, z.core.$loose>]>>, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  placeholder: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  label: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  disabled: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  searchable: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
 }, z.core.$strip>;
 export declare const StackPropsSchema: z.ZodObject<{
   direction: z.ZodOptional<z.ZodEnum<{
@@ -300,6 +359,27 @@ export declare const SwitchPropsSchema: z.ZodObject<{
   value: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
   label: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
   disabled: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+}, z.core.$strip>;
+export declare const TabsPropsSchema: z.ZodObject<{
+  tabs: z.ZodOptional<z.ZodUnion<readonly [z.ZodArray<z.ZodObject<{
+    value: z.ZodString;
+    label: z.ZodString;
+    icon: z.ZodOptional<z.ZodString>;
+    badge: z.ZodOptional<z.ZodString>;
+    badgeVariant: z.ZodOptional<z.ZodEnum<{
+      success: "success";
+      default: "default";
+      warning: "warning";
+      danger: "danger";
+      info: "info";
+    }>>;
+  }, z.core.$loose>>, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  value: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  defaultValue: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  orientation: z.ZodOptional<z.ZodEnum<{
+    horizontal: "horizontal";
+    vertical: "vertical";
+  }>>;
 }, z.core.$strip>;
 export declare const TextInputPropsSchema: z.ZodObject<{
   value: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;

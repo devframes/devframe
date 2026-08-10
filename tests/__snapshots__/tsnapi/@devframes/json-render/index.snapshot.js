@@ -15,9 +15,12 @@ export var DividerPropsSchema /* const */
 export var IconPropsSchema /* const */
 export var JSON_RENDER_INDEX_KEY /* const */
 export var KeyValueTablePropsSchema /* const */
+export var LinkPropsSchema /* const */
 export var ProgressPropsSchema /* const */
+export var SelectPropsSchema /* const */
 export var StackPropsSchema /* const */
 export var SwitchPropsSchema /* const */
+export var TabsPropsSchema /* const */
 export var TextInputPropsSchema /* const */
 export var TextPropsSchema /* const */
 export var TreePropsSchema /* const */
