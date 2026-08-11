@@ -5,9 +5,5 @@
 export { createH3DevframeHost }
 export { createHostContext }
 export { createStorage }
-export { isObject }
-export { listLiveDevframeInstances }
-export { normalizeHttpServerUrl }
-export { registerDevframeInstance }
 export { startHttpAndWs }
 // #endregion

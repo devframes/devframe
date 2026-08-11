@@ -5,4 +5,8 @@
 export { coerceAgentPositionalArgs }
 export { createContextRpcServer }
 export { DevframeAgentHost }
+export { isObject }
+export { listLiveDevframeInstances }
+export { normalizeHttpServerUrl }
+export { registerDevframeInstance }
 // #endregion

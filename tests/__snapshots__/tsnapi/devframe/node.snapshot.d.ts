@@ -22,41 +22,12 @@ export interface CreateStorageOptions<T extends object> {
   mergeInitialValue?: false | ((_: T, _: T) => T);
   debounce?: number;
 }
-export interface DevframeInstanceRecord {
-  pid: number;
-  port: number;
-  origin: string;
-  basePath: string;
-  id: string;
-  name?: string;
-  rootDir: string;
-  mcp: {
-    path: string;
-  } | null;
-  startedAt: number;
-}
-export interface DevframeInstanceRegistration {
-  readonly file: string;
-  unregister: () => void;
-}
 // #endregion
 
 // #region Functions
 export declare function createH3DevframeHost(_: CreateH3DevframeHostOptions): DevframeHost;
 export declare function createHostContext(_: CreateHostContextOptions): Promise<DevframeNodeContext>;
 export declare function createStorage<T extends object>(_: CreateStorageOptions<T>): SharedState<T>;
-export declare function isObject(_: unknown): value is Record<string, any>;
-export declare function listLiveDevframeInstances(_?: {
-  instancesDir?: string;
-  timeoutMs?: number;
-}): Promise<{
-  live: DevframeInstanceRecord[];
-  pruned: DevframeInstanceRecord[];
-}>;
-export declare function normalizeHttpServerUrl(_: string, _: number | string): string;
-export declare function registerDevframeInstance(_: DevframeInstanceRecord, _?: {
-  instancesDir?: string;
-}): DevframeInstanceRegistration;
 // #endregion
 
 // #region Other

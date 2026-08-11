@@ -1,6 +1,6 @@
 import type { DevframeInspectInstanceInfo } from '../../types'
 import process from 'node:process'
-import { listLiveDevframeInstances } from 'devframe/node'
+import { listLiveDevframeInstances } from 'devframe/internal'
 import { defineInspectRpc } from './_define'
 
 /**
