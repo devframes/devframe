@@ -36,6 +36,7 @@ export const alias = {
   'devframe/adapters/dev': r('devframe/src/adapters/dev.ts'),
   'devframe/adapters/build': r('devframe/src/adapters/build.ts'),
   'devframe/helpers/vite': r('devframe/src/helpers/vite.ts'),
+  'devframe/adapters/embedded': r('devframe/src/adapters/embedded.ts'),
   'devframe/initiate': r('devframe/src/adapters/initiate.ts'),
   'devframe/adapters/mcp': r('devframe/src/adapters/mcp/index.ts'),
   '@devframes/hub/client': r('hub/src/client/index.ts'),

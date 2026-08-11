@@ -102,6 +102,7 @@ const serverEntries = {
   'adapters/cac': 'src/adapters/cac.ts',
   'adapters/dev': 'src/adapters/dev.ts',
   'adapters/build': 'src/adapters/build.ts',
+  'adapters/embedded': 'src/adapters/embedded.ts',
   'adapters/initiate': 'src/adapters/initiate.ts',
   'adapters/mcp': 'src/adapters/mcp/index.ts',
   'cli/main': 'src/cli/main.ts',

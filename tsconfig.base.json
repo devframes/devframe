@@ -94,6 +94,9 @@
       "devframe/helpers/vite": [
         "./packages/devframe/src/helpers/vite.ts"
       ],
+      "devframe/adapters/embedded": [
+        "./packages/devframe/src/adapters/embedded.ts"
+      ],
       "devframe/initiate": [
         "./packages/devframe/src/adapters/initiate.ts"
       ],

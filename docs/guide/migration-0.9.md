@@ -114,24 +114,6 @@ import { defineDevframe, defineRpcFunction } from 'devframe'
 
 `devframe/types` still resolves as the type-only subpath — useful for `declare module 'devframe/types'` augmentations — but `devframe` is the canonical import for both values and types.
 
-## `devframe/adapters/embedded` is removed
-
-`createEmbedded(def, { ctx })` was a one-line wrapper around the definition's own `setup`. Call `setup` directly to register a devframe into an already-running host context:
-
-```ts
-// 0.8.x
-import { createEmbedded } from 'devframe/adapters/embedded'
-
-await createEmbedded(def, { ctx })
-```
-
-```ts
-// 0.9
-await def.setup(ctx)
-```
-
-In a hub, `mountDevframe(ctx, def)` (from `@devframes/hub/node`) remains the way to register a devframe with the hub's dock/command wiring.
-
 ## `devframe/utils/{hash,promise,scope}` are removed
 
 Three utility subpaths with no integration consumers are removed:

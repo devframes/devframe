@@ -35,7 +35,7 @@ All adapter factories share the shape `createXxx(devframeDef, options?)`.
 | Run the dev server programmatically (any CLI framework) | `createDevServer(def, options?)` | `devframe/adapters/dev` |
 | Self-contained static deploy with baked data | `createBuild(def, options?)` | `devframe/adapters/build` |
 | Mount into a host (Vite DevTools or any compatible host) | `createPluginFromDevframe(def, options?)` | `@vitejs/devtools-kit/node` |
-| Register dynamically at runtime | `await def.setup(ctx)` | — |
+| Register dynamically at runtime | `createEmbedded(def, { ctx })` | `devframe/adapters/embedded` |
 | Expose to coding agents (MCP) | `createMcpServer(def, options?)` | `devframe/adapters/mcp` *(experimental)* |
 
 The same `DevframeDefinition` runs under every adapter — pick based on deployment, not on what the tool does.

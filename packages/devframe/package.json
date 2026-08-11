@@ -23,6 +23,7 @@
     "./adapters/build": "./dist/adapters/build.mjs",
     "./adapters/cac": "./dist/adapters/cac.mjs",
     "./adapters/dev": "./dist/adapters/dev.mjs",
+    "./adapters/embedded": "./dist/adapters/embedded.mjs",
     "./adapters/mcp": "./dist/adapters/mcp.mjs",
     "./client": "./dist/client/index.mjs",
     "./constants": "./dist/constants.mjs",
