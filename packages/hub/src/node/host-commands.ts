@@ -6,7 +6,7 @@ import type {
   DevframeServerCommandInput,
 } from '../types/commands'
 import type { DevframeHubContext } from './context'
-import { coerceAgentPositionalArgs } from 'devframe/node'
+import { coerceAgentPositionalArgs } from 'devframe/internal'
 import { createEventEmitter } from 'devframe/utils/events'
 import { diagnostics } from './diagnostics'
 

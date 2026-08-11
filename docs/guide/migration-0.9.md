@@ -114,21 +114,20 @@ import { defineDevframe, defineRpcFunction } from 'devframe'
 
 `devframe/types` still resolves as the type-only subpath — useful for `declare module 'devframe/types'` augmentations — but `devframe` is the canonical import for both values and types.
 
-## `devframe/utils/{hash,promise,scope}` are removed
+## `devframe/utils/{promise,scope}` are removed
 
-Three utility subpaths with no integration consumers are removed:
+Two utility subpaths with no integration consumers are removed:
 
 | Removed | Replacement |
 |---------|-------------|
 | `import { promiseWithResolver } from 'devframe/utils/promise'` | `Promise.withResolvers()` (native) |
-| `import { hash } from 'devframe/utils/hash'` | Any structural-hash library (e.g. `ohash`) |
 | `import { isQualifiedName, qualifyName } from 'devframe/utils/scope'` | Inline the check (`name.includes(':')`) |
 
-The other `devframe/utils/*` helpers — `colors`, `open`, `launch-editor`, `nanoid`, `crypto-token`, `structured-clone`, `events`, `shared-state`, `streaming-channel`, `when`, `simple-schema`, `serve-static`, `agent-tool-name` — are unchanged.
+The other `devframe/utils/*` helpers — `colors`, `open`, `launch-editor`, `hash`, `nanoid`, `crypto-token`, `structured-clone`, `events`, `shared-state`, `streaming-channel`, `when`, `simple-schema`, `serve-static`, `agent-tool-name` — are unchanged.
 
 ## `devframe/node` is slimmed to the server-assembly surface
 
-`devframe/node` keeps the API that hosts wiring up their own runtime actually use — `createHostContext`, `createH3DevframeHost`, `startHttpAndWs`, `createContextRpcServer`, `createStorage`, `registerDevframeInstance` / `listLiveDevframeInstances`, `DevframeAgentHost`, `coerceAgentPositionalArgs`, `isObject`, `normalizeHttpServerUrl`, and the `RpcFunctionsHost` / instance-record types.
+`devframe/node` keeps the API that hosts wiring up their own runtime actually use — `createHostContext`, `createH3DevframeHost`, `startHttpAndWs`, `createStorage`, `registerDevframeInstance` / `listLiveDevframeInstances`, `isObject`, `normalizeHttpServerUrl`, and the `RpcFunctionsHost` / instance-record types.
 
 The internal host implementations and low-level factories are no longer exported:
 
@@ -139,7 +138,17 @@ The internal host implementations and low-level factories are no longer exported
 | `createScopedNodeContext`, `createNodeSettings` | Internal to context assembly. |
 | `toDialableHost`, `formatHostForUrl` | Internal host-URL helpers. |
 
-A host that binds its own transport composes from `createContextRpcServer` (`devframe/node`) plus `devframe/rpc/server`, `devframe/rpc/transports/*`, and `devframe/node/hub-internals` — the path `@devframes/hub`'s `initHub` and `@vitejs/devtools` both take.
+## Cross-package internals move to `devframe/internal`
+
+The low-level primitives that only exist for the `devframe` ↔ `@devframes/hub` boundary now live at the new `devframe/internal` entry point, which is explicitly **unstable** (it can change in any minor release). They were previously on `devframe/node`:
+
+| Moved | From | To |
+|---|---|---|
+| `createContextRpcServer` (+ `ContextRpcServer`, `CreateContextRpcServerOptions`) | `devframe/node` | `devframe/internal` |
+| `DevframeAgentHost` (class) | `devframe/node` | `devframe/internal` |
+| `coerceAgentPositionalArgs` (+ `AgentArgsFallback`) | `devframe/node` | `devframe/internal` |
+
+A host that binds its own transport composes from `createContextRpcServer` (`devframe/internal`) plus `devframe/rpc/server`, `devframe/rpc/transports/*`, and `devframe/node/hub-internals` — the path `@devframes/hub`'s `initHub` takes. Application code should prefer the adapters and `devframe/node`.
 
 ## `@devframes/hub` category order lives only on `/constants`
 

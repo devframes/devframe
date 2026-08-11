@@ -41,36 +41,7 @@ export interface DevframeInstanceRegistration {
 }
 // #endregion
 
-// #region Classes
-export declare class DevframeAgentHost implements DevframeAgentHost$1 {
-  readonly context: DevframeNodeContext;
-  readonly events: EventEmitter<DevframeAgentHostEvents>;
-  private readonly tools;
-  private readonly resources;
-  private readonly providers;
-  private _rpcUnsubscribe;
-  constructor(_: DevframeNodeContext);
-  registerTool(_: AgentToolInput): AgentHandle;
-  unregisterTool(_: string): boolean;
-  registerToolProvider(_: AgentToolProvider): AgentToolProviderHandle;
-  registerResource(_: AgentResourceInput): AgentHandle;
-  unregisterResource(_: string): boolean;
-  list(): AgentManifest;
-  getTool(_: string): AgentTool | undefined;
-  getResource(_: string): AgentResource | undefined;
-  invoke(_: string, _: unknown): Promise<unknown>;
-  read(_: string): Promise<AgentResourceContent>;
-  _dispose(): void;
-  private _validateToolId;
-  private _projectTool;
-  private _collectProviderTools;
-  private _collectRpcTools;
-  private _findRpcDefinition;
-}
-// #endregion
-
 // #region Functions
-export declare function coerceAgentPositionalArgs(_: unknown, _: readonly unknown[] | undefined, _?: AgentArgsFallback): unknown[];
 export declare function createH3DevframeHost(_: CreateH3DevframeHostOptions): DevframeHost;
 export declare function createHostContext(_: CreateHostContextOptions): Promise<DevframeNodeContext>;
 export declare function createStorage<T extends object>(_: CreateStorageOptions<T>): SharedState<T>;
@@ -89,9 +60,6 @@ export declare function registerDevframeInstance(_: DevframeInstanceRecord, _?: 
 // #endregion
 
 // #region Other
-export { ContextRpcServer }
-export { createContextRpcServer }
-export { CreateContextRpcServerOptions }
 export { RpcFunctionsHost }
 export { StartedServer }
 export { startHttpAndWs }

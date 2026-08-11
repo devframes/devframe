@@ -12,6 +12,7 @@ const AGNOSTIC_ENTRIES = [
   'utils/colors.mjs',
   'utils/crypto-token.mjs',
   'utils/events.mjs',
+  'utils/hash.mjs',
   'utils/nanoid.mjs',
   'utils/shared-state.mjs',
   'utils/streaming-channel.mjs',

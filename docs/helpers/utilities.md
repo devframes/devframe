@@ -4,7 +4,7 @@ outline: deep
 
 # Utilities
 
-Devframe ships a set of small, stable helpers under the `devframe/utils/*` subpaths. They cover the most common ancillary tasks a devtool needs — colorising terminal output, opening files in an editor, generating IDs and tokens — without forcing every author to pick (and install) their own library.
+Devframe ships a set of small, stable helpers under the `devframe/utils/*` subpaths. They cover the most common ancillary tasks a devtool needs — colorising terminal output, hashing arbitrary values, opening files in an editor — without forcing every author to pick (and install) their own library.
 
 Each helper is bundled inside devframe. Importing from `devframe/utils/*` is enough — there's no separate `npm install` for these dependencies.
 
@@ -47,6 +47,16 @@ launchEditor('src/main.ts:42:7', 'code')
 ```
 
 The auto-detection reads the `LAUNCH_EDITOR` environment variable and falls back to common defaults. Most devframes consume this through the prebuilt `openInEditor` recipe — see [Common RPC Functions](./common-rpc-functions).
+
+### `devframe/utils/hash`
+
+Stable, deterministic hash of any structured-cloneable value. Useful for cache keys and dedup.
+
+```ts
+import { hash } from 'devframe/utils/hash'
+
+const key = hash({ functionName, args })
+```
 
 ### `devframe/utils/structured-clone`
 
@@ -127,6 +137,6 @@ Statically-validated when-clause expressions for conditional UI visibility. The 
 The utilities are exposed as **stable wrappers over their underlying libraries** rather than bare re-exports. Two consequences:
 
 - **One install.** Consumers do not list these libraries in their own `package.json`. Bundling them inside devframe means version drift across devtools is impossible.
-- **Swappable internals.** The wrapper signatures are deliberately narrower than upstream. Devframe can change the implementation (`ansis` → `picocolors`, …) without a breaking change to dependent devtools.
+- **Swappable internals.** The wrapper signatures are deliberately narrower than upstream. Devframe can change the implementation (`ansis` → `picocolors`, `ohash` → `crypto.subtle.digest`, …) without a breaking change to dependent devtools.
 
 When you need a feature outside the wrapper's minimal surface, prefer extending the wrapper inside devframe over bypassing it.

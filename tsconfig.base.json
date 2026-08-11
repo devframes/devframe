@@ -40,6 +40,9 @@
       "devframe/node": [
         "./packages/devframe/src/node/index.ts"
       ],
+      "devframe/internal": [
+        "./packages/devframe/src/internal/index.ts"
+      ],
       "devframe/constants": [
         "./packages/devframe/src/constants.ts"
       ],
@@ -54,6 +57,9 @@
       ],
       "devframe/utils/events": [
         "./packages/devframe/src/utils/events.ts"
+      ],
+      "devframe/utils/hash": [
+        "./packages/devframe/src/utils/hash.ts"
       ],
       "devframe/utils/launch-editor": [
         "./packages/devframe/src/utils/launch-editor.ts"

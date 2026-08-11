@@ -506,7 +506,7 @@ function instantiateHub(options: InitHubOptions): HubInstance {
     }
     else {
       const { attachBunWsTransport } = await import('devframe/rpc/transports/ws-bun')
-      const { createContextRpcServer } = await import('devframe/node')
+      const { createContextRpcServer } = await import('devframe/internal')
       const core = createContextRpcServer({ context: ctx, auth: resolvedAuth })
       bunTier = await attachBunWsTransport(core, { allowedOrigins: options.allowedOrigins })
       bunUpgradePath = joinURL(base, route)

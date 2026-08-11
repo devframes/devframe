@@ -76,6 +76,7 @@
         "src/adapters/{build,cac,dev,embedded,initiate}.ts",
         "src/adapters/mcp/index.ts",
         "src/client/index.ts",
+        "src/internal/index.ts",
         "src/node/index.ts",
         "src/node/{auth,hub-internals}/index.ts",
         "src/recipes/{common-rpc-functions,interactive-auth}.ts",

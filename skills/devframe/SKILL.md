@@ -550,6 +550,7 @@ Devframe re-exports a curated set of helpers under `devframe/utils/*`. They are 
 | `colors` from `devframe/utils/colors` | `ansis` | Terminal ANSI colors (`c.red`, `c.green`, tagged templates) |
 | `open` from `devframe/utils/open` | `open` | Open URLs / files in the OS default handler |
 | `launchEditor` from `devframe/utils/launch-editor` | `launch-editor` | Open `file:line:column` in the user's editor (optional `editor` arg) |
+| `hash` from `devframe/utils/hash` | `ohash` | Stable structural hash — cache keys, dedup |
 | `structuredClone{Serialize,Deserialize,Stringify,Parse}` from `devframe/utils/structured-clone` | `structured-clone-es` | JSON-safe round-trip of `Map` / `Set` / `Date` / `BigInt` / cycles |
 | `nanoid` from `devframe/utils/nanoid` | (vendored) | URL-safe random IDs |
 | `randomToken` / `randomDigits` / `timingSafeEqual` from `devframe/utils/crypto-token` | (native WebCrypto) | CSPRNG bearer tokens, one-time codes, constant-time compare |

@@ -1,6 +1,6 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import type { DevframeHubContext } from '../context'
-import { DevframeAgentHost } from 'devframe/node'
+import { DevframeAgentHost } from 'devframe/internal'
 import * as v from 'valibot'
 import { describe, expect, it } from 'vitest'
 import { DevframeCommandsHost } from '../host-commands'
