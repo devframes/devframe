@@ -3,6 +3,18 @@ import { createContextRpcServer } from 'devframe/internal'
 import { attachBunWsTransport } from 'devframe/rpc/transports/ws-bun'
 import { app, hub } from './app'
 
+// `Bun` is a global on the Bun runtime only; this is the Bun entry. Declare the
+// slice this file uses so `tsc` (Node types only, no `@types/bun`) can check it
+// — typing the `fetch` callback's params here is also what keeps them from
+// being implicitly `any`.
+declare const Bun: {
+  serve: (options: {
+    port: number
+    fetch: (request: Request, server: unknown) => Response | Promise<Response>
+    websocket: unknown
+  }) => { readonly port: number, stop: (closeActiveConnections?: boolean) => void }
+}
+
 /**
  * The Bun entry. Bun serves HTTP through the same `app.fetch` as Node, but
  * WebSockets arrive as fetch upgrades rather than `node:http` `upgrade`

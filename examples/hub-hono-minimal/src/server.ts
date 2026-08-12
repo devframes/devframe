@@ -1,3 +1,4 @@
+import type { Server } from 'node:http'
 import process from 'node:process'
 import { serve } from '@hono/node-server'
 import { app, hub } from './app'
@@ -10,7 +11,9 @@ import { app, hub } from './app'
 // for one instead with `ws: { sidecar: true }`.
 const port = Number(process.env.PORT ?? 5179)
 
-const server = serve({ fetch: app.fetch, port, hostname: '0.0.0.0' })
+// `serve()` returns `ServerType` (its http/http2 union); the default is a
+// plain `node:http` server, which is what `hub.attach` routes upgrades on.
+const server = serve({ fetch: app.fetch, port, hostname: '0.0.0.0' }) as unknown as Server
 const detach = hub.attach(server)
 
 process.on('SIGINT', () => {

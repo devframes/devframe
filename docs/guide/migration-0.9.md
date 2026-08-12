@@ -145,14 +145,63 @@ The low-level primitives shared between `devframe` and its first-party integrati
 | Moved | From | To |
 |---|---|---|
 | `createH3DevframeHost` (+ `CreateH3DevframeHostOptions`) | `devframe/node` | `devframe/internal` |
-| `startHttpAndWs` (+ `StartedServer`, `StartHttpAndWsOptions`) | `devframe/node` | `devframe/internal` |
 | `createContextRpcServer` (+ `ContextRpcServer`, `CreateContextRpcServerOptions`) | `devframe/node` | `devframe/internal` |
+| `StartedServer` (the `createDevServer` return handle) | `devframe/node` | `devframe/internal` |
 | `DevframeAgentHost` (class) | `devframe/node` | `devframe/internal` |
 | `coerceAgentPositionalArgs` (+ `AgentArgsFallback`) | `devframe/node` | `devframe/internal` |
 | `registerDevframeInstance` / `listLiveDevframeInstances` (+ `DevframeInstanceRecord`, `DevframeInstanceRegistration`) | `devframe/node` | `devframe/internal` |
 | `normalizeHttpServerUrl` | `devframe/node` | `devframe/internal` |
 
-A host that stands up its own server composes from `devframe/internal` — `createH3DevframeHost` for the node `DevframeHost`, `createContextRpcServer` + `devframe/rpc/transports/*` to bind a transport — plus `devframe/node`'s `createHostContext` and `devframe/node/hub-internals`. This is the path `@devframes/hub`'s `initHub` takes (in later releases `startHttpAndWs` was removed in favor of `initDevframe` / `initHub`). A custom host advertises itself with `registerDevframeInstance`, and a devtool enumerates running instances with `listLiveDevframeInstances`. Application code should prefer the adapters and `devframe/initiate`.
+A host that stands up its own server composes from `devframe/internal` — `createH3DevframeHost` for the node `DevframeHost`, `createContextRpcServer` + `devframe/rpc/transports/*` to bind a transport — plus `devframe/node`'s `createHostContext` and `devframe/node/hub-internals`. This is the path `@devframes/hub`'s `initHub` takes. A custom host advertises itself with `registerDevframeInstance` (or the new `register` flag, below), and a devtool enumerates running instances with `listLiveDevframeInstances`. Application code should prefer the adapters and `devframe/initiate`.
+
+## `startHttpAndWs` is removed
+
+The low-level "listen on a port + attach the WS transport" primitive is gone. `createDevServer`, `initDevframe`, and `initHub` own that binding internally now, resolving the transport from their own `server` / `ws` options — so the common paths never touch it. `StartHttpAndWsOptions` is removed with it; `StartedServer` stays (it is still `createDevServer`'s return handle, re-exported from `devframe/internal`).
+
+| 0.8.x | 0.9 |
+|---|---|
+| `startHttpAndWs({ context, port, ... })` for a standalone tool | `createDevServer(def, { port, ... })` |
+| `startHttpAndWs(...)` inside a framework host | `initDevframe(def, { base, ... })` / `initHub({ base, ... })` |
+
+A host that genuinely binds its own transport — a bare RPC socket, or a server it wires itself — composes the two public primitives `startHttpAndWs` used underneath: `createContextRpcServer` (`devframe/internal`) for the session/auth wiring, and a transport from `devframe/rpc/transports/*`.
+
+```ts
+// 0.9 — bind the RPC socket onto a server you own
+import { createServer } from 'node:http'
+import { createContextRpcServer } from 'devframe/internal'
+import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
+
+const httpServer = createServer()
+const { rpcGroup, onConnected, onDisconnected } = createContextRpcServer({ context, auth: false })
+attachWsRpcTransport(rpcGroup, { server: httpServer, onConnected, onDisconnected })
+httpServer.listen(port)
+```
+
+## `@devframes/hub`'s `mountDevframe` is removed — use `ctx.install`
+
+The free `mountDevframe(ctx, def, options)` function is replaced by an `install` method on the hub context. `MountDevframeOptions` is renamed `InstallDevframeOptions`. `initHub`'s declarative `devframes` list runs the same install path under the hood, so most hosts never call it directly.
+
+| 0.8.x | 0.9 |
+|---|---|
+| `import { mountDevframe } from '@devframes/hub/node'` | removed — call `ctx.install` |
+| `await mountDevframe(ctx, def, opts)` | `await ctx.install(def, opts)` |
+| `MountDevframeOptions` | `InstallDevframeOptions` (from `@devframes/hub/node`) |
+
+```ts
+// 0.8.x
+import { createHubContext, mountDevframe } from '@devframes/hub/node'
+
+const ctx = await createHubContext({ host, cwd, mode: 'dev' })
+await mountDevframe(ctx, myDevframe)
+```
+
+```ts
+// 0.9
+import { createHubContext } from '@devframes/hub/node'
+
+const ctx = await createHubContext({ host, cwd, mode: 'dev' })
+await ctx.install(myDevframe)
+```
 
 ## `@devframes/hub` category order lives only on `/constants`
 
@@ -184,6 +233,16 @@ const detach = hub.attach(serve({ fetch: app.fetch, port: 3000 }))
 ```
 
 Calling `attach` / `handleUpgrade` on an instance that already owns a transport reports [`DF0055`](/errors/DF0055), and on the advertise-only `ws.url` tier [`DF0056`](/errors/DF0056).
+
+## `initDevframe` / `initHub` can register themselves
+
+An in-process host used to call `registerDevframeInstance` by hand to appear in the global instance registry (`~/.devframe/instances/`, read by `devframe connect` and the inspect plugin's Instances tab). Both factories now take an opt-in `register` flag that does it for them: a dynamic import that writes the record once the public origin resolves and removes it on `close()`. `createDevServer` registers this way automatically.
+
+| 0.8.x | 0.9 |
+|---|---|
+| manual `registerDevframeInstance({ pid, port, origin, … })` + `unregister()` on every close path | `initHub({ base, register: true })` / `initDevframe(def, { base, register: true })` |
+
+Pass an object to override individual record fields — `register: { id, name, rootDir }`. `registerDevframeInstance` / `listLiveDevframeInstances` remain on `devframe/internal` for hosts that drive the registry directly.
 
 ## The `key` option is removed; memoize on `globalThis`
 
@@ -227,3 +286,5 @@ Bun.serve({
 ```
 
 `examples/hub-hono-minimal` ships this wiring in [`src/bun.ts`](https://github.com/devframes/devframe/blob/main/examples/hub-hono-minimal/src/bun.ts), next to the Node entry's `hub.attach(server)`.
+</content>
+</invoke>
