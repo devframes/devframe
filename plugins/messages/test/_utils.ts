@@ -1,6 +1,6 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
 import type { DevframeNodeContext } from 'devframe'
-import type { StartedServer } from 'devframe/node'
+import type { StartedServer } from 'devframe/internal'
 import { existsSync } from 'node:fs'
 import { mkdtemp } from 'node:fs/promises'
 import os from 'node:os'
@@ -9,11 +9,8 @@ import process from 'node:process'
 import { createHubContext } from '@devframes/hub/node'
 import messagesDevframe from '@devframes/plugin-messages'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
-import {
-  createH3DevframeHost,
-  createHostContext,
-  startHttpAndWs,
-} from 'devframe/node'
+import { createH3DevframeHost, startHttpAndWs } from 'devframe/internal'
+import { createHostContext } from 'devframe/node'
 import { resolveBasePath } from 'devframe/node/hub-internals'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'

@@ -4,9 +4,10 @@
 // #region Other
 export { coerceAgentPositionalArgs }
 export { createContextRpcServer }
+export { createH3DevframeHost }
 export { DevframeAgentHost }
-export { isObject }
 export { listLiveDevframeInstances }
 export { normalizeHttpServerUrl }
 export { registerDevframeInstance }
+export { startHttpAndWs }
 // #endregion

@@ -125,18 +125,18 @@ Two utility subpaths with no integration consumers are removed:
 
 The other `devframe/utils/*` helpers — `colors`, `open`, `launch-editor`, `hash`, `nanoid`, `crypto-token`, `structured-clone`, `events`, `shared-state`, `streaming-channel`, `when`, `simple-schema`, `serve-static`, `agent-tool-name` — are unchanged.
 
-## `devframe/node` is slimmed to the server-assembly surface
+## `devframe/node` is slimmed to the context surface
 
-`devframe/node` keeps the server-assembly API hosts actually use — `createHostContext`, `createH3DevframeHost`, `startHttpAndWs` (+ `StartedServer`), `createStorage`, and the `RpcFunctionsHost` type.
+`devframe/node` keeps just the context-building API — `createHostContext` (+ `CreateHostContextOptions`), `createStorage` (+ `CreateStorageOptions`), and the `RpcFunctionsHost` type. Serve a devframe through the adapters (`createDevServer`, `createBuild`, `createCac`) or [`devframe/initiate`](../adapters/initiate); build a context to embed one with `createHostContext`.
 
-The internal host implementations and low-level factories are no longer exported:
+The internal host implementations and low-level factories are no longer exported at all:
 
 | Removed from `devframe/node` | Notes |
 |---|---|
 | `DevframeDiagnosticsHost`, `DevframeServicesHostImpl`, `DevframeViewHost` (classes) | Internal host implementations. The same-named **types** remain on `devframe/types`. |
 | `createRpcSharedStateServerHost`, `createRpcStreamingServerHost` | Wired internally by `createContextRpcServer`. |
 | `createScopedNodeContext`, `createNodeSettings` | Internal to context assembly. |
-| `toDialableHost`, `formatHostForUrl` | Internal host-URL helpers. |
+| `toDialableHost`, `formatHostForUrl`, `isObject` | Internal helpers (`isObject` is removed entirely — inline `typeof x === 'object' && x !== null`). |
 
 ## Cross-package internals move to `devframe/internal`
 
@@ -144,13 +144,15 @@ The low-level primitives shared between `devframe` and its first-party integrati
 
 | Moved | From | To |
 |---|---|---|
+| `createH3DevframeHost` (+ `CreateH3DevframeHostOptions`) | `devframe/node` | `devframe/internal` |
+| `startHttpAndWs` (+ `StartedServer`, `StartHttpAndWsOptions`) | `devframe/node` | `devframe/internal` |
 | `createContextRpcServer` (+ `ContextRpcServer`, `CreateContextRpcServerOptions`) | `devframe/node` | `devframe/internal` |
 | `DevframeAgentHost` (class) | `devframe/node` | `devframe/internal` |
 | `coerceAgentPositionalArgs` (+ `AgentArgsFallback`) | `devframe/node` | `devframe/internal` |
 | `registerDevframeInstance` / `listLiveDevframeInstances` (+ `DevframeInstanceRecord`, `DevframeInstanceRegistration`) | `devframe/node` | `devframe/internal` |
-| `isObject`, `normalizeHttpServerUrl` | `devframe/node` | `devframe/internal` |
+| `normalizeHttpServerUrl` | `devframe/node` | `devframe/internal` |
 
-A host that binds its own transport composes from `createContextRpcServer` (`devframe/internal`) plus `devframe/rpc/server`, `devframe/rpc/transports/*`, and `devframe/node/hub-internals` — the path `@devframes/hub`'s `initHub` takes. A custom host advertises itself with `registerDevframeInstance`, and a devtool enumerates running instances with `listLiveDevframeInstances`. Application code should prefer the adapters and `devframe/node`.
+A host that stands up its own server composes from `devframe/internal` — `createH3DevframeHost` for the node `DevframeHost`, `startHttpAndWs` (or `createContextRpcServer` + `devframe/rpc/server` + `devframe/rpc/transports/*`) to bind a transport — plus `devframe/node`'s `createHostContext` and `devframe/node/hub-internals`. This is the path `@devframes/hub`'s `initHub` takes. A custom host advertises itself with `registerDevframeInstance`, and a devtool enumerates running instances with `listLiveDevframeInstances`. Application code should prefer the adapters and `devframe/initiate`.
 
 ## `@devframes/hub` category order lives only on `/constants`
 

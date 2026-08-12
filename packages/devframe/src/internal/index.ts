@@ -14,13 +14,18 @@
 // - `registerDevframeInstance` / `listLiveDevframeInstances` — the instance
 //   registry: a custom host advertises itself; a devtool (the inspect plugin's
 //   Instances tab, the connector) enumerates what's running.
-// - `isObject` / `normalizeHttpServerUrl` — small host-side helpers a
-//   hand-rolled host reuses to match devframe's own config/URL handling.
+// - `createH3DevframeHost` — the node/standalone `DevframeHost` implementation
+//   (filesystem storage paths + origin resolution) passed to `createHostContext`.
+// - `startHttpAndWs` — the low-level "listen on a port + attach the WS
+//   transport" primitive the adapters and `initHub` are built on.
+// - `normalizeHttpServerUrl` — a small host-side URL helper.
 export { coerceAgentPositionalArgs } from '../node/agent-args'
 export type { AgentArgsFallback } from '../node/agent-args'
 export { DevframeAgentHost } from '../node/host-agent'
+export * from '../node/host-h3'
 export { listLiveDevframeInstances, registerDevframeInstance } from '../node/instance-registry'
 export type { DevframeInstanceRecord, DevframeInstanceRegistration } from '../node/instance-registry'
 export { createContextRpcServer } from '../node/rpc-core'
 export type { ContextRpcServer, CreateContextRpcServerOptions } from '../node/rpc-core'
-export { isObject, normalizeHttpServerUrl } from '../node/utils'
+export * from '../node/server'
+export { normalizeHttpServerUrl } from '../node/utils'

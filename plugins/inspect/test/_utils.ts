@@ -1,17 +1,14 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
 import type { DevframeNodeContext } from 'devframe'
-import type { StartedServer } from 'devframe/node'
+import type { StartedServer } from 'devframe/internal'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import { createHubContext } from '@devframes/hub/node'
 import inspectDevframe from '@devframes/plugin-inspect'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
-import {
-  createH3DevframeHost,
-  createHostContext,
-  startHttpAndWs,
-} from 'devframe/node'
+import { createH3DevframeHost, startHttpAndWs } from 'devframe/internal'
+import { createHostContext } from 'devframe/node'
 import { resolveBasePath } from 'devframe/node/hub-internals'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'

@@ -1,9 +1,5 @@
 import { isIP } from 'node:net'
 
-export function isObject(value: unknown): value is Record<string, any> {
-  return Object.prototype.toString.call(value) === '[object Object]'
-}
-
 // Wildcard bind addresses (`0.0.0.0` / `::`) mean "listen on every interface";
 // they are not themselves dialable from a browser. When advertising a URL for a
 // client to open (banner, browser-open, dock entries), fall back to loopback —

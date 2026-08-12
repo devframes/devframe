@@ -1,11 +1,8 @@
-import type { StartedServer } from 'devframe/node'
+import type { StartedServer } from 'devframe/internal'
 import process from 'node:process'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
-import {
-  createH3DevframeHost,
-  createHostContext,
-  startHttpAndWs,
-} from 'devframe/node'
+import { createH3DevframeHost, startHttpAndWs } from 'devframe/internal'
+import { createHostContext } from 'devframe/node'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'

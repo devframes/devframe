@@ -1,13 +1,10 @@
 import type { DevframeNodeContext } from 'devframe'
-import type { StartedServer } from 'devframe/node'
+import type { StartedServer } from 'devframe/internal'
 import type { TerminalsOptions } from '../src/types'
 import process from 'node:process'
 import { createRpcStreamingClientHost } from 'devframe/client'
-import {
-  createH3DevframeHost,
-  createHostContext,
-  startHttpAndWs,
-} from 'devframe/node'
+import { createH3DevframeHost, startHttpAndWs } from 'devframe/internal'
+import { createHostContext } from 'devframe/node'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { createEventEmitter } from 'devframe/utils/events'
