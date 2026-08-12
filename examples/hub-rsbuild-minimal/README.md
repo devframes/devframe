@@ -14,7 +14,7 @@ Open the printed URL — the host page carries the floating dock via one injecte
 
 - `initHub({ devframes: [inspect, messages], ui: createUi() })` runs in Rsbuild's Node config process (never bundled into the browser), so `createUi()`'s prebuilt viewer/dock and the plugins' node code work unchanged.
 - `dev.setupMiddlewares` unshifts `hub.nodeMiddleware`, which owns the whole `/__devframes/` namespace and hands everything else back to Rsbuild.
-- The RPC WebSocket runs on an eager side-car port, advertised through `__connection.json`; the browser client discovers it automatically.
+- The RPC WebSocket runs on a side-car port (`ws: { sidecar: true }`, since Rsbuild's middleware stack never hands over upgrades), advertised through `__connection.json`; the browser client discovers it automatically.
 - `html.tags` injects `<script type="module" src="/__devframes/embedded.js">`, so the floating dock mounts itself.
 
 The same `initHub` instance mounts identically on Vite, Nitro, Hono, and Next.js — see the sibling `hub-*-minimal` examples.

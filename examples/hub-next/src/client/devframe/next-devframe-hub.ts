@@ -107,12 +107,6 @@ export interface NextDevframeHubOptions {
   host?: string
   /** Workspace root used by hub host capabilities. Default: `process.cwd()`. */
   cwd?: string
-  /**
-   * Memoize the instance on `globalThis` under this key (`initHub`'s `key`),
-   * so dev-time module re-evaluation returns the live instance instead of
-   * leaking side-car servers.
-   */
-  key?: string
 }
 
 const nextHubMessagesList = defineHubRpcFunction({
@@ -191,7 +185,6 @@ export async function nextDevframeHub(
   let registration: DevframeInstanceRegistration | undefined
 
   const hub = initHub({
-    ...(options.key ? { key: options.key } : {}),
     base: DEVFRAMES_HUB_BASE,
     cwd,
     origin,
@@ -204,10 +197,9 @@ export async function nextDevframeHub(
     // surface (agent-flagged commands, plugin tools, `devframe:state:read`)
     // over the same catch-all route as the SPAs.
     mcp: true,
-    // Omitted `server` (Next route handlers can't accept WS upgrades), so the
-    // instance starts its default eager side-car WebSocket server; a `port`
-    // option pins it.
-    ...(options.port != null ? { ws: { port: options.port } } : {}),
+    // Next route handlers can't accept WS upgrades, so the socket asks for a
+    // side-car of its own — on a free port near 9777, or the pinned `port`.
+    ws: options.port != null ? { port: options.port } : { sidecar: true },
     getStorageDir(scope) {
       if (scope === 'workspace')
         return join(cwd, '.devframe')
@@ -295,14 +287,15 @@ export async function nextDevframeHub(
   }
 }
 
-let hubPromise: Promise<HubInstance> | undefined
-
 /**
- * The route-facing singleton. `initHub`'s `key` memoizes the live instance on
- * `globalThis` across dev-time module re-evaluations; the module-level promise
- * just avoids re-running the plugin loading per request.
+ * The route-facing singleton, memoized on `globalThis`: Next re-evaluates
+ * route modules across dev-time reloads, and without the memo each reload
+ * would build another hub (and leak the previous side-car). The promise also
+ * keeps the plugin loading from re-running per request.
  */
+const globalRef = globalThis as { __nextDevframeHub?: Promise<HubInstance> }
+
 export function ensureNextDevframeHub(): Promise<HubInstance> {
-  hubPromise ??= nextDevframeHub({ key: 'next-devframe-hub' })
-  return hubPromise
+  globalRef.__nextDevframeHub ??= nextDevframeHub()
+  return globalRef.__nextDevframeHub
 }

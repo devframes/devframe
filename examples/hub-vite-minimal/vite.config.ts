@@ -10,7 +10,8 @@ import { defineConfig } from 'vite'
 const base = DEVFRAMES_HUB_BASE
 
 // The minimal Vite host: one `initHub()` call mounted as connect middleware
-// on the Vite dev server. `initHub` runs here in Vite's Node config process
+// on the Vite dev server, created inside `configureServer` so importing this
+// config never boots a hub. `initHub` runs here in Vite's Node config process
 // (never bundled into the browser), so `createUi()`'s prebuilt-asset lookup
 // and the plugins' node code work unchanged. The WebSocket upgrade shares
 // Vite's own dev server at `/__devframes/__ws` (zero extra ports); the dock
@@ -23,8 +24,13 @@ export default defineConfig({
     name: 'hub-vite-minimal',
     apply: 'serve',
     configureServer(server) {
+      // Share Vite's own HTTP server for the WS upgrade at
+      // `/__devframes/__ws` — zero extra ports. Only a plain-HTTP dev server
+      // qualifies (an https/http2 one isn't a `node:http` server), so an
+      // auto-port side-car covers the rest; either way the browser finds the
+      // socket through `__connection.json`.
+      const httpServer = server.httpServer instanceof NodeHttpServer ? server.httpServer : undefined
       const hub = initHub({
-        key: 'hub-vite-minimal',
         base,
         devframes: [createInspectDevframe(), createMessagesDevframe()],
         ui: createUi(),
@@ -32,10 +38,8 @@ export default defineConfig({
         // out of the gate. A hub reachable beyond localhost should gate (see
         // docs/guide/security.md).
         auth: false,
-        // Share Vite's own HTTP server for the WS upgrade; a plain-HTTP dev
-        // server (an https/http2 one wouldn't match) falls back to the eager
-        // side-car inside initHub.
-        server: server.httpServer instanceof NodeHttpServer ? server.httpServer : undefined,
+        server: httpServer,
+        ...(httpServer ? {} : { ws: { sidecar: true } }),
       })
       // Self-filters by base and calls next() otherwise, so Vite keeps serving
       // the host page and its assets while the hub owns `/__devframes/*`.

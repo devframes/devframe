@@ -12,10 +12,11 @@ const base = DEVFRAMES_HUB_BASE
 // The minimal Rsbuild host: one `initHub()` call mounted into the dev
 // server's middleware stack. It's created lazily inside `server.setup` (not
 // at module scope) so merely importing this config never spawns the hub's
-// side-car server — config readers (Rsbuild, knip, tests) stay side-effect
-// free. `initHub` runs here in Rsbuild's Node process, never bundled into the
-// browser, so `createUi()`'s prebuilt assets and the plugins' node code work
-// unchanged; the dock UI comes from `@devframes/hub-ui` via the `ui` slot.
+// side-car server, and the `??=` keeps a re-run reusing the live one —
+// config readers (Rsbuild, knip, tests) stay side-effect free. `initHub` runs
+// here in Rsbuild's Node process, never bundled into the browser, so
+// `createUi()`'s prebuilt assets and the plugins' node code work unchanged;
+// the dock UI comes from `@devframes/hub-ui` via the `ui` slot.
 let hub: HubInstance | undefined
 
 export default defineConfig({
@@ -25,13 +26,16 @@ export default defineConfig({
     // `/__devframes/*` and hands everything else back to Rsbuild via next().
     setup({ server }) {
       hub ??= initHub({
-        key: 'hub-rsbuild-minimal',
         base,
         devframes: [createInspectDevframe(), createMessagesDevframe()],
         ui: createUi(),
         // Single-user localhost demo: opts out of the gate. A hub reachable
         // beyond localhost should gate (see docs/guide/security.md).
         auth: false,
+        // Rsbuild's middleware stack never hands over WebSocket upgrades, so
+        // the socket gets its own side-car port, advertised through
+        // `__connection.json`.
+        ws: { sidecar: true },
       })
       server.middlewares.use(hub.nodeMiddleware)
     },

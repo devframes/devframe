@@ -27,14 +27,14 @@ The **RPC & State Inspector** carries an **Instances** tab that lists every devf
 `initHub()` answers everything under **`/__devframes/`** through a single web-standard `(request: Request) => Promise<Response>` handler — exactly the shape a Next App Router route handler returns. One optional catch-all route delegates to it:
 
 - `/__devframes/<id>/` — each mounted devframe's SPA and its `__connection.json`
-- `/__devframes/__connection.json` — hub discovery; advertises the side-car WebSocket (Next route handlers can't accept upgrades, so the instance starts its own eager WS side-car and the meta carries its port)
+- `/__devframes/__connection.json` — hub discovery; advertises the side-car WebSocket (Next route handlers can't accept upgrades, so the hub asks for one with `ws: { sidecar: true }` and the meta carries its port)
 - `/__devframes/__index.json` — the frame index and endpoint map
 - `/__devframes/__client-imports.js` — the dock client-script import map
 - `/__devframes/__mcp` — the aggregate MCP endpoint (Streamable-HTTP) over the whole hub tool registry
 
 Next.js reserves `_`-prefixed segment folders, so the route directory URL-encodes the leading underscore: `app/%5F_devframes/[[...path]]/route.ts`.
 
-`initHub`'s `key` memoizes the instance on `globalThis`, so Next's dev-time module re-evaluation returns the live instance instead of leaking side-car servers.
+The instance is memoized on `globalThis`, so Next's dev-time module re-evaluation reuses the live hub instead of leaking side-car servers.
 
 ## What the example proves
 

@@ -162,3 +162,68 @@ A host that stands up its own server composes from `devframe/internal` — `crea
 // 0.9
 import { DEFAULT_CATEGORIES_ORDER } from '@devframes/hub/constants'
 ```
+
+## `initDevframe` / `initHub` bind no WebSocket server on their own
+
+Both factories used to start a side-car WebSocket server when no transport option was given. In 0.9 a side-car is opt-in, so creating an instance never binds a port by itself. The binding resolves `ws.port` > `server` > `ws.sidecar` > the host's own upgrades:
+
+| 0.8.x | 0.9 |
+|-------|-----|
+| `initHub({ base })` (implicit side-car) | `initHub({ base, ws: { sidecar: true } })` |
+| `initDevframe(def, { base })` (implicit side-car) | `initDevframe(def, { base, ws: { sidecar: true } })` |
+| — | `hub.attach(server)` / `hub.handleUpgrade(req, socket, head)` — serve the socket from a server the host owns |
+
+Hosts already passing `server`, `ws.port` or `ws.url` are unaffected. Hosts whose handlers never see upgrades (Next.js route handlers, Nitro, Rsbuild) add `ws: { sidecar: true }`; hosts that get their `node:http` server *after* the instance exists — a Hono app served by `@hono/node-server`, for instance — hand it over with `attach`, which returns a detach function:
+
+```ts
+// 0.9
+import { serve } from '@hono/node-server'
+
+const hub = initHub({ base: DEVFRAMES_HUB_BASE })
+const detach = hub.attach(serve({ fetch: app.fetch, port: 3000 }))
+```
+
+Calling `attach` / `handleUpgrade` on an instance that already owns a transport reports [`DF0055`](/errors/DF0055), and on the advertise-only `ws.url` tier [`DF0056`](/errors/DF0056).
+
+## The `key` option is removed; memoize on `globalThis`
+
+`initDevframe` and `initHub` no longer memoize instances under a `key` (and the `DF0053` / `DF8001` replacement diagnostics are gone with it). A host that re-evaluates its modules in dev owns the memo, which makes the lifecycle visible at the call site:
+
+```ts
+// 0.8.x
+export const hub = initHub({ key: 'devtools', base: DEVFRAMES_HUB_BASE, devframes })
+```
+
+```ts
+// 0.9
+const g = globalThis as { hub?: HubInstance }
+export const hub = g.hub ??= initHub({ base: DEVFRAMES_HUB_BASE, devframes })
+```
+
+`@devframes/next`'s `createDevframeNextHandler` keeps its own `key` option and memoizes for you, so Next hosts using it need no change.
+
+## The Bun WebSocket tier moves out of the instances
+
+`initDevframe` / `initHub` no longer detect Bun and complete fetch upgrades themselves, so `instance.websocket` and `handler`'s second (`server`) argument are gone — `handler` is now exactly `(request: Request) => Promise<Response>`. A Bun host binds the transport itself, with the same public primitives the instances used underneath:
+
+```ts
+// 0.9
+import { createContextRpcServer } from 'devframe/internal'
+import { attachBunWsTransport } from 'devframe/rpc/transports/ws-bun'
+
+const core = createContextRpcServer({ context: await hub.context, auth: false })
+const tier = await attachBunWsTransport(core)
+
+Bun.serve({
+  port: 3000,
+  fetch(request, server) {
+    const { pathname } = new URL(request.url)
+    if (pathname === `${hub.base}__ws` && request.headers.get('upgrade')?.toLowerCase() === 'websocket')
+      return tier.handleUpgrade(request, server)
+    return app.fetch(request)
+  },
+  websocket: tier.websocket as never,
+})
+```
+
+`examples/hub-hono-minimal` ships this wiring in [`src/bun.ts`](https://github.com/devframes/devframe/blob/main/examples/hub-hono-minimal/src/bun.ts), next to the Node entry's `hub.attach(server)`.

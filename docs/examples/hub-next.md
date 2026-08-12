@@ -11,7 +11,7 @@ Package: `hub-next` · framework: **React (Next.js)**
 ## What it proves
 
 - `initHub({ base, devframes, configure })` boots the whole hub from one call; a single App Router catch-all route (`app/%5F_devframes/[[...path]]/route.ts`) delegates to `hub.handler(request)`.
-- Next route handlers can't accept WebSocket upgrades, so the instance starts its eager side-car WS server, advertised through `<base>__connection.json`.
+- Next route handlers can't accept WebSocket upgrades, so `ws: { sidecar: true }` gives the socket its own port, advertised through `<base>__connection.json`; the instance is memoized on `globalThis` so a dev-time reload reuses it.
 - The [JSON-render](/guide/json-render) hub integration with **registry replacement**: the React client renders the server-authored view with a small in-example React registry (rather than the Vue `@devframes/json-render-ui`) — the path a non-Vue host uses.
 - [Client-only docks](/guide/client-context#client-only-docks) the page registers itself with `context.docks.register()`.
 

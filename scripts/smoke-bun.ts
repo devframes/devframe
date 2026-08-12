@@ -1,34 +1,30 @@
 /**
- * Bun smoke test for the fetch-upgrade WebSocket tier — run locally with:
+ * Bun smoke test for the Hono hub example — run locally with:
  *
  *   bun scripts/smoke-bun.ts
  *
- * Boots the Hono example's hub under `Bun.serve` and exercises the three
- * surfaces end to end on Bun: HTTP through the catch-all handler, the
- * embedded bootstrap, and an RPC round-trip over a same-origin WebSocket
- * upgrade (no side-car port anywhere).
+ * Boots `examples/hub-hono-minimal/src/bun.ts` (Bun's fetch-upgrade wiring
+ * over the hub's context) and exercises four surfaces end to end: HTTP through
+ * the catch-all handler, the discovery documents, the embedded bootstrap, and
+ * an RPC round-trip over a same-origin WebSocket upgrade — no side-car port
+ * anywhere.
  *
  * Prerequisites: `pnpm install && pnpm build` (the hub serves built dists).
  */
 import process from 'node:process'
-import { app, hub } from '../examples/hub-hono-minimal/src/app'
+import { startBunServer } from '../examples/hub-hono-minimal/src/bun'
 
 function fail(step: string, detail: unknown): never {
   console.error(`✗ ${step}:`, detail)
   process.exit(1)
 }
 
-const server = Bun.serve({
-  port: 0,
-  fetch: app.fetch,
-  websocket: hub.websocket as never,
-})
-await hub.ready
+const server = await startBunServer(0)
 const origin = `http://localhost:${server.port}`
 console.log(`serving on ${origin}`)
 
-// 1. Discovery through the fetch handler — the Bun tier advertises a
-// same-origin relative path (no side-car port).
+// 1. Discovery through the fetch handler — the socket rides the app's own
+// origin, so the meta advertises a base-absolute path and no port.
 const meta = await (await fetch(`${origin}/__devframes/__connection.json`)).json() as {
   backend: string
   websocket: { path?: string, port?: number }
@@ -54,7 +50,7 @@ if (!embedded.ok || !embeddedJs.includes('devframes-dock-embedded'))
   fail('embedded.js', embedded.status)
 console.log(`✓ embedded.js serves (${(embeddedJs.length / 1024).toFixed(0)} kB)`)
 
-// 4. RPC round-trip over a same-origin WebSocket upgrade.
+// 4. RPC round-trip over the fetch upgrade.
 const { createRpcClient } = await import('devframe/rpc/client')
 const { createWsRpcChannel } = await import('devframe/rpc/transports/ws-client')
 const rpc = createRpcClient<any, any>({}, {
@@ -69,7 +65,6 @@ if (pong !== 'pong')
 console.log('✓ WS RPC round-trip over the fetch-upgrade tier: probe →', pong)
 rpc.$close?.()
 
-await hub.close()
-server.stop(true)
+await server.close()
 console.log('\nBun smoke test passed.')
 process.exit(0)

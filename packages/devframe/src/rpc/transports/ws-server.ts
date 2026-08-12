@@ -60,6 +60,14 @@ export interface WsRpcTransportOptions {
    */
   path?: string
   /**
+   * Create the adapter without binding it to anything: no server is created,
+   * no port is bound, no `upgrade` listener is installed. The caller drives
+   * the socket itself through {@link WsRpcTransport.handleUpgrade} (from its
+   * own `upgrade` listener) or {@link WsRpcTransport.attach} (to bind a
+   * server later). Takes precedence over `server` / `port` / `https`.
+   */
+  unbound?: boolean
+  /**
    * Destroy upgrade requests that don't match `path` instead of leaving them
    * for other listeners. Enable this when devframe owns the shared server
    * outright (nothing else handles its upgrades), so an off-route client is
@@ -176,6 +184,20 @@ export interface WsRpcTransport {
   ready: Promise<void>
   /** Returns the bound address, or `null` when the server is not listening. */
   address: () => AddressInfo | string | null
+  /**
+   * Complete a `node:http` `upgrade` event on this transport, applying the
+   * same `path` filter and origin gate the transport's own listener uses.
+   * Wire it into a host server directly — `server.on('upgrade',
+   * transport.handleUpgrade)` — or call it from an existing listener.
+   */
+  handleUpgrade: (req: IncomingMessage, socket: Duplex, head: Buffer) => void
+  /**
+   * Route a server's `upgrade` events to this transport, returning a detach
+   * function. Use it to bind an `unbound` transport once the host server
+   * exists; {@link WsRpcTransport.close} detaches every server attached this
+   * way (without closing them — the caller owns their lifecycle).
+   */
+  attach: (server: HttpServer | HttpsServer) => () => void
   /** Remove the upgrade listener from a shared `server` (a no-op otherwise). */
   detach: () => void
   /**
@@ -252,20 +274,18 @@ function isWsOriginRegistry(
 }
 
 /**
- * Route `upgrade` events on a server to the crossws adapter, optionally
- * filtered to a single `path`. Non-matching requests are left untouched so
- * other upgrade listeners (e.g. a Vite dev server's HMR socket) can claim
- * them, unless `destroyUnmatched` is set. Returns a detach function that
- * removes the listener.
+ * Build the `upgrade` listener that hands a request to the crossws adapter,
+ * optionally filtered to a single `path`. Non-matching requests are left
+ * untouched so other upgrade listeners (e.g. a Vite dev server's HMR socket)
+ * can claim them, unless `destroyUnmatched` is set.
  */
-function routeUpgrades(
-  server: HttpServer | HttpsServer,
+function createUpgradeListener(
   ws: NodeAdapter,
   path: string | undefined,
   destroyUnmatched: boolean,
   allowedOrigins: readonly string[] | WsOriginRegistry | false | undefined,
-): () => void {
-  const listener = (req: IncomingMessage, socket: Duplex, head: Buffer) => {
+): (req: IncomingMessage, socket: Duplex, head: Buffer) => void {
+  return (req, socket, head) => {
     socket.on('error', () => {
       // Prevent unhandled ECONNRESET crashes when destroying the socket
       // or when the client abruptly disconnects.
@@ -295,8 +315,6 @@ function routeUpgrades(
     }
     void ws.handleUpgrade(req, socket, head)
   }
-  server.on('upgrade', listener)
-  return () => server.off('upgrade', listener)
 }
 
 /**
@@ -429,6 +447,7 @@ export function attachWsRpcTransport<
     host = 'localhost',
     path,
     destroyUnmatched = false,
+    unbound,
     https,
     allowedOrigins,
   } = options
@@ -437,19 +456,41 @@ export function attachWsRpcTransport<
     hooks: createWsRpcPeerHooks(rpcGroup, options),
   })
 
-  let detach = NOOP
+  // One listener shape for every binding — the transport's own server, a
+  // shared host server, and the caller-driven `handleUpgrade` / `attach`.
+  const sharedUpgradeListener = createUpgradeListener(ws, path, destroyUnmatched, allowedOrigins)
+  const ownedUpgradeListener = createUpgradeListener(ws, path, true, allowedOrigins)
+
+  /** Bind a server's `upgrade` events, tracked so `close()` detaches them. */
+  const attachments = new Set<() => void>()
+  function attachTo(
+    target: HttpServer | HttpsServer,
+    listener: (req: IncomingMessage, socket: Duplex, head: Buffer) => void,
+  ): () => void {
+    target.on('upgrade', listener)
+    const detachOne = (): void => {
+      target.off('upgrade', listener)
+      attachments.delete(detachOne)
+    }
+    attachments.add(detachOne)
+    return detachOne
+  }
+
   let ready = Promise.resolve()
   // A server created (and thus owned) by this transport. Nothing else
   // handles its upgrades, so off-route clients are rejected promptly.
   let ownedServer: HttpServer | HttpsServer | undefined
-  if (server) {
+  if (unbound) {
+    // Nothing to bind: the caller drives upgrades itself.
+  }
+  else if (server) {
     // Share an existing HTTP(S) server's port. Route upgrades ourselves so we
     // can coexist with the host's own upgrade handlers.
-    detach = routeUpgrades(server, ws, path, destroyUnmatched, allowedOrigins)
+    attachTo(server, sharedUpgradeListener)
   }
   else if (https) {
     ownedServer = createHttpsServer(https)
-    detach = routeUpgrades(ownedServer, ws, path, true, allowedOrigins)
+    attachTo(ownedServer, ownedUpgradeListener)
     ready = listen(ownedServer, port ?? 0, host)
   }
   else {
@@ -459,21 +500,28 @@ export function attachWsRpcTransport<
       res.writeHead(426, { 'content-type': 'text/plain' })
       res.end('Upgrade Required')
     })
-    detach = routeUpgrades(ownedServer, ws, path, true, allowedOrigins)
+    attachTo(ownedServer, ownedUpgradeListener)
     ready = listen(ownedServer, port ?? 0, host)
   }
 
   const activeServer = server ?? ownedServer
 
+  function detachAll(): void {
+    for (const detachOne of [...attachments])
+      detachOne()
+  }
+
   return {
     ws,
     ready,
     address: () => activeServer?.address() ?? null,
-    detach,
+    handleUpgrade: sharedUpgradeListener,
+    attach: target => attachTo(target, sharedUpgradeListener),
+    detach: detachAll,
     async close() {
-      // Detach our upgrade listener first so a shared host server stops
+      // Detach our upgrade listeners first so a shared host server stops
       // routing new connections to us (and other handlers keep working).
-      detach()
+      detachAll()
       // Force-terminate every peer so callers can deterministically tear
       // the server down (tests, hot reload, graceful shutdown) — a graceful
       // close would wait for clients to disconnect on their own.

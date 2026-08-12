@@ -94,7 +94,7 @@ export async function mountDevframe(
   ctx.docks.register({
     id,
     title: d.name,
-    icon: d.icon ?? 'ph:plug-duotone',
+    icon: d.icon,
     // Definition-level `dock` defaults sit above the name/icon-derived
     // defaults; per-mount `options.dock` overrides them; `type`/`url`
     // (and `id`) stay locked, derived from the definition.

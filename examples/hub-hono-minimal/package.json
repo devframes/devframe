@@ -5,7 +5,7 @@
   "private": true,
   "description": "Minimal Hono host for @devframes/hub \u2014 the same app file serves the devtools namespace on Node and Bun.",
   "scripts": {
-    "dev": "tsx src/node.ts",
+    "dev": "tsx src/server.ts",
     "dev:bun": "bun src/bun.ts",
     "typecheck": "tsc --noEmit"
   },

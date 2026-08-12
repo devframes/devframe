@@ -50,9 +50,17 @@ export interface DevframeWsOptions {
   route?: string
   /**
    * Bind the socket on its own port instead of sharing the HTTP port. The
-   * browser connects to this port on the page's hostname.
+   * browser connects to this port on the page's hostname. Implies
+   * {@link DevframeWsOptions.sidecar}.
    */
   port?: number
+  /**
+   * Start a side-car WebSocket server on a free port, for hosts whose request
+   * handlers can't accept upgrades (Next.js route handlers, Nitro, Rsbuild).
+   * The resolved port is advertised in `__connection.json`, so the browser
+   * finds it without any further wiring. Set `port` instead to pin it.
+   */
+  sidecar?: boolean
   /**
    * Advertise a fixed, fully-qualified endpoint on another origin (a full
    * `ws://`/`wss://` URL). Takes precedence over `port`/`route` in the meta.

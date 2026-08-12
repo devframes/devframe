@@ -4,9 +4,10 @@
 // #region Interfaces
 export interface DevframeInstance {
   base: string;
-  handler: (_: Request, _?: unknown) => Promise<Response>;
+  handler: (_: Request) => Promise<Response>;
   nodeMiddleware: (_: IncomingMessage, _: ServerResponse, _?: (_?: unknown) => void) => void;
-  websocket: DevframeInstanceWebSocket;
+  attach: (_: Server) => () => void;
+  handleUpgrade: (_: IncomingMessage, _: Duplex, _: Buffer) => void;
   ready: Promise<void>;
   context: Promise<DevframeNodeContext>;
   connectionMeta: () => ConnectionMeta;
@@ -16,12 +17,6 @@ export interface DevframeInstanceInternals {
   readonly started?: StartedServer;
   readonly authHandler?: DevframeAuthHandler;
 }
-export interface DevframeInstanceWebSocket {
-  open: (_: unknown) => void;
-  message: (_: unknown, _: unknown) => void;
-  close: (_: unknown, _?: number, _?: string) => void;
-  drain: (_: unknown) => void;
-}
 export interface InitDevframeOptions {
   base: string;
   distDir?: string | false;
@@ -30,7 +25,6 @@ export interface InitDevframeOptions {
   host?: string;
   auth?: boolean | DevframeAuthHandler;
   mcp?: boolean | McpRouteOptions;
-  key?: string;
   origin?: string | (() => string);
   flags?: Record<string, unknown>;
   allowedOrigins?: readonly string[] | WsOriginRegistry | false;

@@ -1,3 +1,4 @@
+import type { HubInstance } from '@devframes/hub/initiate'
 import { createUi } from '@devframes/hub-ui'
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
 import { createInspectDevframe } from '@devframes/plugin-inspect'
@@ -5,14 +6,15 @@ import { createMessagesDevframe } from '@devframes/plugin-messages'
 import { Hono } from 'hono'
 
 // One runtime-agnostic app file: the hub instance and the Hono routes are
-// identical on Node (`src/node.ts`) and Bun (`src/bun.ts`) — only the
-// WebSocket transport differs, and the instance resolves that itself
-// (eager side-car port on Node, fetch-upgrade on Bun).
+// the same on Node and Bun. No transport option is passed, so the hub binds
+// nothing on its own — `src/server.ts` hands it the HTTP server's upgrade
+// events with `hub.attach(server)` once that server exists.
 //
-// `key` memoizes the instance on globalThis so dev-time module reloads
-// return the live hub instead of leaking transports.
-export const hub = initHub({
-  key: 'hub-hono-minimal',
+// Memoized on globalThis so a dev-time module reload returns the live hub
+// instead of leaking transports.
+const globalRef = globalThis as { __hubHonoMinimal?: HubInstance }
+
+export const hub: HubInstance = globalRef.__hubHonoMinimal ??= initHub({
   base: DEVFRAMES_HUB_BASE,
   devframes: [
     createInspectDevframe(),
@@ -43,11 +45,9 @@ export const hub = initHub({
 export const app = new Hono()
 
 // The whole hub namespace behind one catch-all, keyed off `hub.base` rather
-// than a repeated string. On Bun, `c.env` is the `Bun.serve` server — the
-// instance uses it to complete same-origin WebSocket upgrades; on Node it's
-// simply unused.
-app.all(hub.base.replace(/\/$/, ''), c => hub.handler(c.req.raw, c.env))
-app.all(`${hub.base}*`, c => hub.handler(c.req.raw, c.env))
+// than a repeated string.
+app.all(hub.base.replace(/\/$/, ''), c => hub.handler(c.req.raw))
+app.all(`${hub.base}*`, c => hub.handler(c.req.raw))
 
 // The host app: any page becomes devtools-equipped with one script tag.
 app.get('/', c => c.html(

@@ -319,6 +319,7 @@ export interface DevframeViewHost {
 export interface DevframeWsOptions {
   route?: string;
   port?: number;
+  sidecar?: boolean;
   url?: string;
 }
 export interface EventEmitter<Events extends EventsMap> {

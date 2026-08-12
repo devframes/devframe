@@ -41,10 +41,9 @@ export interface CreateDevframeNextHandlerOptions {
    */
   mcp?: InitDevframeOptions['mcp']
   /**
-   * Memoization key for the underlying `initDevframe` instance. Next re-runs
-   * route modules across dev-time reloads; the key makes a re-run return the
-   * live instance instead of leaking side-car servers. Default:
-   * `@devframes/next:<def.id>:<base>`.
+   * Memoization key for the handler. Next re-runs route modules across
+   * dev-time reloads; the key makes a re-run return the live handler instead
+   * of leaking side-car servers. Default: `@devframes/next:<def.id>:<base>`.
    */
   key?: string
 }
@@ -66,6 +65,19 @@ export interface DevframeNextHandler {
 /** Ensure a mount base has a single leading and trailing slash. */
 function normalizeBase(base: string): string {
   return `/${base}/`.replace(/\/{2,}/g, '/')
+}
+
+const REGISTRY_KEY = Symbol.for('@devframes/next:handler-registry')
+
+/**
+ * Handlers memoized per key on `globalThis`. Next re-evaluates route modules
+ * on every dev-time reload, so without this each reload would start a fresh
+ * side-car WebSocket server and leak the previous one.
+ */
+function handlerRegistry(): Map<string, DevframeNextHandler> {
+  const holder = globalThis as { [REGISTRY_KEY]?: Map<string, DevframeNextHandler> }
+  holder[REGISTRY_KEY] ??= new Map()
+  return holder[REGISTRY_KEY]
 }
 
 function defaultGetStorageDir(scope: DevframeStorageScope): string {
@@ -110,6 +122,11 @@ export function createDevframeNextHandler(
   }
 
   const base = normalizeBase(options.base ?? def.basePath ?? `/__${def.id}/`)
+  const key = options.key ?? `@devframes/next:${def.id}:${base}`
+  const registry = handlerRegistry()
+  const memoized = registry.get(key)
+  if (memoized)
+    return memoized
 
   const instance = initDevframe(def, {
     base,
@@ -120,15 +137,23 @@ export function createDevframeNextHandler(
     // interactive OTP unless `cli.auth` opts out). `false` opts out.
     auth: options.auth,
     mcp: options.mcp,
-    ...(options.port != null ? { ws: { port: options.port } } : {}),
+    // Next's route handlers never see WebSocket upgrades, so the RPC socket
+    // lives on a side-car server — on `options.port` when pinned, otherwise
+    // a free port — advertised via `<base>__connection.json`.
+    ws: options.port != null ? { port: options.port } : { sidecar: true },
     ...(options.resolveOrigin ? { origin: options.resolveOrigin } : {}),
     getStorageDir: options.getStorageDir ?? defaultGetStorageDir,
-    key: options.key ?? `@devframes/next:${def.id}:${base}`,
   })
 
-  return {
+  const handler: DevframeNextHandler = {
     fetch: request => instance.handler(request),
     ready: instance.ready,
-    close: instance.close,
+    close: async () => {
+      if (registry.get(key) === handler)
+        registry.delete(key)
+      await instance.close()
+    },
   }
+  registry.set(key, handler)
+  return handler
 }

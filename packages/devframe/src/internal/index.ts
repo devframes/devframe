@@ -18,6 +18,9 @@
 //   (filesystem storage paths + origin resolution) passed to `createHostContext`.
 // - `startHttpAndWs` — the low-level "listen on a port + attach the WS
 //   transport" primitive the adapters and `initHub` are built on.
+// - `createInstanceShell` — the shared machinery behind `initDevframe` and
+//   `initHub`: mount base, h3 app, lazy origin + auth banner, WebSocket
+//   binding resolution, the fetch/connect handler pair, and teardown.
 // - `normalizeHttpServerUrl` — a small host-side URL helper.
 export { coerceAgentPositionalArgs } from '../node/agent-args'
 export type { AgentArgsFallback } from '../node/agent-args'
@@ -25,6 +28,15 @@ export { DevframeAgentHost } from '../node/host-agent'
 export * from '../node/host-h3'
 export { listLiveDevframeInstances, registerDevframeInstance } from '../node/instance-registry'
 export type { DevframeInstanceRecord, DevframeInstanceRegistration } from '../node/instance-registry'
+export { createInstanceShell, samePath } from '../node/instance-shell'
+export type {
+  CreateInstanceShellOptions,
+  InstanceShell,
+  InstanceShellApi,
+  InstanceShellInit,
+  InstanceShellInternals,
+  InstanceWsTier,
+} from '../node/instance-shell'
 export { createContextRpcServer } from '../node/rpc-core'
 export type { ContextRpcServer, CreateContextRpcServerOptions } from '../node/rpc-core'
 export * from '../node/server'

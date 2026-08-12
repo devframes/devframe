@@ -44,7 +44,7 @@ const handler = createDevframeNextHandler(myDevframe)
 export const GET = handler.fetch
 ```
 
-The base defaults to `def.basePath ?? '/__<id>/'`. `close()` shuts the side-car down; `ready` resolves once it's listening.
+The base defaults to `def.basePath ?? '/__<id>/'`. `close()` shuts the side-car down; `ready` resolves once it's listening. The handler is memoized on `globalThis` under its `key`, so Next's dev-time route-module re-evaluation reuses the live one instead of starting a second side-car.
 
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -53,6 +53,7 @@ The base defaults to `def.basePath ?? '/__<id>/'`. `close()` shuts the side-car 
 | `port` | resolved from `def.cli?.port` | Side-car port. |
 | `flags` | — | Forwarded to `def.setup(ctx, { flags })`. |
 | `auth` | `false` | `true` for devframe's OTP gate, or a handler. The Next app owns auth by default. |
+| `key` | `@devframes/next:<id>:<base>` | Memoization key for the handler on `globalThis`. |
 
 ## Hosting a hub
 
@@ -61,7 +62,7 @@ For many devframes at once, use `createDevframeNextHost()` with [`@devframes/hub
 ```ts [devframe/host.ts]
 import { createHubContext, mountDevframe } from '@devframes/hub/node'
 import { createDevframeNextHost } from '@devframes/next'
-import { startHttpAndWs } from 'devframe/node'
+import { startHttpAndWs } from 'devframe/internal'
 
 const nextHost = createDevframeNextHost({
   resolveOrigin: () => 'http://localhost:3000',

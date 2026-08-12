@@ -252,12 +252,51 @@ describe('initHub', () => {
     }
   })
 
-  it('key memoization returns the live instance', async () => {
-    const wsPort = await getPort({ port: 18250, host: '127.0.0.1' })
-    const a = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, key: 'hub-memo', host: '127.0.0.1', ws: { port: wsPort } })
-    const b = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, key: 'hub-memo', host: '127.0.0.1', ws: { port: wsPort } })
-    expect(b).toBe(a)
-    await a.ready
-    await a.close()
+  it('default tier: binds nothing until the host attaches its own server', async () => {
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 18250, host })
+    // No `server`, no `ws` — the hub serves its namespace and waits for the
+    // host to hand the upgrade route over.
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, devframes: [makeFrame('alpha')] })
+    const server = createServer((req, res) => hub.nodeMiddleware(req, res))
+    let detach: (() => void) | undefined
+
+    try {
+      await hub.ready
+      expect(hub.connectionMeta()).toEqual({
+        backend: 'websocket',
+        websocket: { path: '/__devframes/__ws' },
+      })
+
+      await new Promise<void>(resolve => server.listen(port, host, resolve))
+      detach = hub.attach(server)
+      const client = connectWsClient(`ws://${host}:${port}/__devframes/__ws`)
+      await expect(client.$call('alpha:probe' as any)).resolves.toBe('ok:alpha')
+      client.$close()
+    }
+    finally {
+      detach?.()
+      await hub.close()
+      server.close()
+      server.closeAllConnections()
+    }
+  })
+
+  it('ws.sidecar: an auto-port side-car, advertised with its resolved port', async () => {
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { sidecar: true }, devframes: [makeFrame('alpha')] })
+
+    try {
+      await hub.ready
+      const advertised = hub.connectionMeta().websocket as { port: number, path: string }
+      expect(advertised.path).toBe('__ws')
+      expect(advertised.port).toBeGreaterThan(0)
+
+      const client = connectWsClient(`ws://127.0.0.1:${advertised.port}/__ws`)
+      await expect(client.$call('alpha:probe' as any)).resolves.toBe('ok:alpha')
+      client.$close()
+    }
+    finally {
+      await hub.close()
+    }
   })
 })

@@ -11,9 +11,9 @@ Open <http://localhost:5179> — the host page carries the floating dock via one
 
 ## How it works
 
-- [`src/app.ts`](./src/app.ts) — runtime-agnostic: `initHub({ devframes, ui: createUi(), key })` plus `app.all('/__devframes/*', c => hub.handler(c.req.raw, c.env))`. Everything — frame SPAs, `__connection.json`, `__index.json`, `embedded.js`, `__client-imports.js` — flows through that one route.
-- [`src/node.ts`](./src/node.ts) — `@hono/node-server`; the RPC WebSocket runs on an eager side-car port, advertised through `__connection.json`.
-- [`src/bun.ts`](./src/bun.ts) — `Bun.serve({ fetch: app.fetch, websocket: hub.websocket })`; WebSocket upgrades complete through `hub.handler(request, server)` on the app's own origin — no side-car.
+- [`src/app.ts`](./src/app.ts) — runtime-agnostic: `initHub({ devframes, ui: createUi() })` plus `app.all('/__devframes/*', c => hub.handler(c.req.raw))`. Everything — frame SPAs, `__connection.json`, `__index.json`, `embedded.js`, `__client-imports.js` — flows through that one route. The instance is memoized on `globalThis` so a dev-time reload reuses the live hub. It configures no WebSocket transport, so each entry below wires the socket its runtime's way; both end up serving `/__devframes/__ws` on the app's own origin, which is what the hub advertises either way.
+- [`src/server.ts`](./src/server.ts) — Node: `@hono/node-server`'s `serve()` returns the `node:http` server, and `hub.attach(server)` routes its upgrade events to the shared RPC socket.
+- [`src/bun.ts`](./src/bun.ts) — Bun: upgrades arrive as fetch requests, so this entry binds Bun's own transport to the hub context with `createContextRpcServer` + `attachBunWsTransport` and answers the upgrade route inside `Bun.serve({ fetch, websocket })`.
 
 The Bun path is exercised end to end by the repo's smoke script:
 

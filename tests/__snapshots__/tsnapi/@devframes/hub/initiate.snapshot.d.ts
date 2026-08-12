@@ -17,22 +17,20 @@ export interface HubDevframeEntry {
 }
 export interface HubInstance {
   base: string;
-  handler: (_: Request, _?: unknown) => Promise<Response>;
+  handler: (_: Request) => Promise<Response>;
   nodeMiddleware: (_: IncomingMessage, _: ServerResponse, _?: (_?: unknown) => void) => void;
-  websocket: {
-    open: (_: unknown) => void;
-    message: (_: unknown, _: unknown) => void;
-    close: (_: unknown, _?: number, _?: string) => void;
-    drain: (_: unknown) => void;
-  };
+  attach: (_: Server) => () => void;
+  handleUpgrade: (_: IncomingMessage, _: Duplex, _: Buffer) => void;
   ready: Promise<void>;
   context: Promise<DevframeHubContext>;
   connectionMeta: () => ConnectionMeta;
   close: () => Promise<void>;
 }
 export interface InitHubOptions {
+  name?: string;
+  version?: string;
   base: string;
-  devframes?: (DevframeDefinition | HubDevframeEntry)[];
+  devframes?: DevframesInput;
   rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations'];
   context?: DevframeHubContext;
   configure?: (_: DevframeHubContext) => void | Promise<void>;
@@ -42,13 +40,16 @@ export interface InitHubOptions {
   host?: string;
   auth?: boolean | DevframeAuthHandler;
   mcp?: boolean | McpRouteOptions;
-  key?: string;
   origin?: string | (() => string);
   cwd?: string;
   getStorageDir?: (_: DevframeStorageScope) => string;
   allowedOrigins?: readonly string[] | WsOriginRegistry | false;
   destroyUnmatchedUpgrades?: boolean;
 }
+// #endregion
+
+// #region Types
+export type DevframesInput = Array<DevframeDefinition | HubDevframeEntry | Thenable<Arrayable<DevframeDefinition | HubDevframeEntry | null | undefined>> | (() => Thenable<Arrayable<DevframeDefinition | HubDevframeEntry | null | undefined>>)>;
 // #endregion
 
 // #region Functions

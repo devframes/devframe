@@ -10,9 +10,9 @@ Package: `hub-rsbuild-minimal` · framework: **Rsbuild**
 
 ## What it shows
 
-- `initHub({ base, devframes: [inspect, messages], ui: createUi() })` created inside `server.setup` in `rsbuild.config.ts` — lazily, so importing the config never spawns the hub's side-car.
+- `initHub({ base, devframes: [inspect, messages], ui: createUi() })` created inside `server.setup` in `rsbuild.config.ts` — lazily, so importing the config never spawns the hub's side-car, and reused across re-runs.
 - `server.setup` registers `hub.nodeMiddleware`, which owns the `/__devframes/` namespace and hands everything else back to Rsbuild.
-- The RPC WebSocket runs on an eager side-car port, advertised through `<base>__connection.json`; `html.tags` injects the `${hub.base}embedded.js` bootstrap.
+- Rsbuild's middleware stack never hands over upgrades, so `ws: { sidecar: true }` puts the RPC WebSocket on its own port, advertised through `<base>__connection.json`; `html.tags` injects the `${hub.base}embedded.js` bootstrap.
 
 ## Run it
 

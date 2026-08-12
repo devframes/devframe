@@ -6,12 +6,13 @@ Serve a devframe from inside any app that can mount a catch-all route: `initDevf
 import { initDevframe } from 'devframe/initiate'
 import myDevframe from './devframe'
 
-const devtools = initDevframe(myDevframe, { base: '/__my-tool/', key: 'my-tool' })
-// devtools.base, devtools.handler, devtools.nodeMiddleware, devtools.websocket,
-// devtools.ready, devtools.context, devtools.connectionMeta(), devtools.close()
+const devtools = initDevframe(myDevframe, { base: '/__my-tool/' })
+// devtools.base, devtools.handler, devtools.nodeMiddleware, devtools.attach,
+// devtools.handleUpgrade, devtools.ready, devtools.context,
+// devtools.connectionMeta(), devtools.close()
 ```
 
-`base` is required, so the mount path is explicit at the call site — pass the conventional `resolveBasePath(def, 'hosted')` (i.e. `def.basePath ?? /__<id>/`) if you don't want to pick one. The instance echoes the normalized value back as `devtools.base`, so route guards and middleware reference it instead of repeating the string. The factory is synchronous and initializes eagerly; `handler`/`nodeMiddleware` await readiness internally, so hosts never race the boot.
+`base` is required, so the mount path is explicit at the call site — pass the conventional `resolveBasePath(def, 'hosted')` (i.e. `def.basePath ?? /__<id>/`) if you don't want to pick one. The instance echoes the normalized value back as `devtools.base`, so route guards and middleware reference it instead of repeating the string. The factory is synchronous and initializes eagerly; `handler`/`nodeMiddleware` await readiness internally, so hosts never race the boot. Creating an instance binds no port on its own — [the WebSocket binding](#the-websocket-binding) is the host's call.
 
 ## Mount the handler
 
@@ -30,7 +31,6 @@ export default defineConfig({
     configureServer(server) {
       const devtools = initDevframe(myDevframe, {
         base: '/__my-tool/',
-        key: 'my-tool',
         server: server.httpServer ?? undefined,
       })
       server.middlewares.use(devtools.nodeMiddleware)
@@ -49,12 +49,14 @@ export default defineHandler(event => devtools.handler(event.req))
 ```
 
 ```ts [Hono]
-// server.ts — the same file runs on Node and Bun
+// server.ts — `serve()` hands back the node server the socket rides on
+import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { devtools } from './devtools'
 
 const app = new Hono()
-app.all('/__my-tool/*', c => devtools.handler(c.req.raw, c.env))
+app.all('/__my-tool/*', c => devtools.handler(c.req.raw))
+devtools.attach(serve({ fetch: app.fetch, port: 3000 }))
 ```
 
 ```ts [Next.js]
@@ -66,7 +68,13 @@ import myDevframe from '@/devframe'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const devtools = initDevframe(myDevframe, { base: '/__my-tool/', key: 'my-tool' })
+// Route handlers never see upgrades, so the socket asks for a side-car; the
+// globalThis memo keeps a dev-time reload from starting a second one.
+const g = globalThis as { devtools?: ReturnType<typeof initDevframe> }
+const devtools = g.devtools ??= initDevframe(myDevframe, {
+  base: '/__my-tool/',
+  ws: { sidecar: true },
+})
 export const GET = devtools.handler
 ```
 
@@ -87,23 +95,30 @@ export default defineEventHandler((event) => {
 import myDevframe from '$lib/devframe'
 import { initDevframe } from 'devframe/initiate'
 
-const devtools = initDevframe(myDevframe, { base: '/__my-tool/', key: 'my-tool' })
+const g = globalThis as { devtools?: ReturnType<typeof initDevframe> }
+const devtools = g.devtools ??= initDevframe(myDevframe, {
+  base: '/__my-tool/',
+  ws: { sidecar: true },
+})
 export const GET = ({ request }) => devtools.handler(request)
 ```
 
 :::
 
-For frameworks with dev-time module reloading (Next, Nitro, SvelteKit), always set `key` — a re-evaluation returns the live instance instead of leaking WebSocket servers (`DF0053` reports an intentional replacement when the options changed).
+Frameworks with dev-time module reloading (Next, Nitro, SvelteKit) re-evaluate the module that calls `initDevframe`, so memoize the instance on `globalThis` as above — otherwise every reload builds a second instance and leaks the first one's WebSocket server. `@devframes/next`'s `createDevframeNextHandler` does this for you.
 
 ## The WebSocket binding
 
-Fetch handlers hand over `Request`s, so the RPC socket needs its own binding. The instance resolves it in precedence order and advertises the result in `__connection.json` — the browser client follows whatever is advertised:
+Fetch handlers hand over `Request`s, so the RPC socket needs a binding of its own, and the host picks it explicitly. The **local binding** resolves in precedence order:
 
-1. **`ws.port`** — an explicit side-car port.
+1. **`ws.port`** — a side-car server on that exact port.
 2. **`server`** — share the host's `node:http` server; the upgrade binds at `<base>__ws`. Zero extra ports, and the socket follows the app through proxies and HTTPS.
-3. **`ws.url` alone** — advertise an external endpoint verbatim; the server behind that URL owns the transport (wire the instance's `context` into your own server with `startHttpAndWs`). Combined with `server`/`ws.port`, `ws.url` overrides only the advertisement — the tunnel pattern.
-4. **Bun** — same-origin fetch upgrades: pass the `Bun.serve` server as `handler`'s second argument and wire `Bun.serve({ websocket: devtools.websocket })`.
-5. **Default** — an eager side-car on a free port, started at init so the meta is stable from the first request.
+3. **`ws: { sidecar: true }`** — a side-car server on a free port, for hosts whose handlers never see upgrades (Next.js route handlers, Nitro, Rsbuild).
+4. **The host's own upgrades** — with none of the above, the socket waits for the host to hand upgrade events over: `devtools.attach(server)` routes a server's `upgrade` events (returning a detach function), and `devtools.handleUpgrade(req, socket, head)` completes a single one from a listener you already own. This is the tier for hosts whose server exists only after the instance does, and it builds the transport lazily — an instance nobody attaches costs nothing.
+
+`ws.url` controls the *advertisement* instead: the browser dials it verbatim. On its own it means an external server owns the transport and its auth (wire the instance's `context` into that server with `startHttpAndWs`); alongside a local binding it overrides only what is advertised — the tunnel pattern, where a relay forwards to the socket bound here.
+
+Whichever combination is active, `__connection.json` describes it and the browser client follows. Asking a configured instance to also take over host upgrades reports `DF0055` (a local binding already owns the socket) or `DF0056` (`ws.url` handed it to someone else).
 
 ## Auth
 

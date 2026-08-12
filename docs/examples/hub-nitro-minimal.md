@@ -12,7 +12,7 @@ Package: `hub-nitro-minimal` · framework: **Nitro**
 
 - `initHub({ base, devframes: [inspect, messages], ui: createUi() })` in `hub.ts`, delegated to by a catch-all route (`routes/__devframes/[...path].ts`, plus its `index.ts` sibling for the namespace root) via `hub.handler(event.req)`.
 - `nitro.config.ts` keeps the devframe packages external so their prebuilt client assets resolve from the packages themselves rather than Nitro's build output.
-- The RPC WebSocket runs on an eager side-car port, advertised through `<base>__connection.json`.
+- Nitro handlers hand over `Request`s, so `ws: { sidecar: true }` puts the RPC WebSocket on its own port, advertised through `<base>__connection.json`.
 
 ## Run it
 

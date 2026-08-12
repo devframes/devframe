@@ -9,7 +9,6 @@ import { createInspectDevframe } from '@devframes/plugin-inspect'
 import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 
 export const hub = initHub({
-  key: 'devtools',
   base: DEVFRAMES_HUB_BASE, // required — the conventional `/__devframes/`
   devframes: [createInspectDevframe(), createTerminalsDevframe()],
   ui: createUi(),
@@ -19,7 +18,20 @@ export const hub = initHub({
 })
 ```
 
-`base` is required so the mount path is explicit; pass the exported `DEVFRAMES_HUB_BASE` for the conventional `/__devframes/`. The instance echoes the normalized value back as `hub.base`, so route guards and middleware reference it instead of repeating the string. Every mounted devframe runs its `setup()` against the **shared hub context**: one merged RPC registry (frames can call each other's functions), one shared-state store, one WebSocket transport, one Auth. The instance mirrors `initDevframe`'s surface — `base`, `handler`, `nodeMiddleware`, `websocket` (Bun), `ready`, `context`, `connectionMeta()`, `close()` — and the same mount snippets apply; see [the initiate adapter](../adapters/initiate#mount-the-handler).
+`base` is required so the mount path is explicit; pass the exported `DEVFRAMES_HUB_BASE` for the conventional `/__devframes/`. The instance echoes the normalized value back as `hub.base`, so route guards and middleware reference it instead of repeating the string. Every mounted devframe runs its `setup()` against the **shared hub context**: one merged RPC registry (frames can call each other's functions), one shared-state store, one WebSocket transport, one Auth. The instance mirrors `initDevframe`'s surface — `base`, `handler`, `nodeMiddleware`, `attach`, `handleUpgrade`, `ready`, `context`, `connectionMeta()`, `close()` — and the same mount snippets apply; see [the initiate adapter](../adapters/initiate#mount-the-handler).
+
+## The shared socket
+
+One transport serves the whole namespace, and the hub binds nothing on its own — the same four choices `initDevframe` offers, in the same precedence: `ws.port` pins a side-car, `server` shares the host's `node:http` upgrade at `<base>__ws`, `ws: { sidecar: true }` takes a free port (for Next.js, Nitro and Rsbuild hosts, whose handlers never see upgrades), and passing none of them leaves the socket to the host:
+
+```ts
+import { serve } from '@hono/node-server'
+
+// `serve()` returns the node server; the hub takes its upgrade events.
+const detach = hub.attach(serve({ fetch: app.fetch, port: 3000 }))
+```
+
+The advertised path is hub-base-absolute (`/__devframes/__ws`), so the one meta document resolves to the same socket from the hub base and from every frame base. A host whose module gets re-evaluated in dev (Next, Nitro) memoizes the instance on `globalThis`, so a reload reuses the live hub instead of leaking its transport.
 
 ## The namespace
 
@@ -29,7 +41,7 @@ export const hub = initHub({
 | `<id>/` | each mounted devframe's SPA, with its own `__connection.json` pointing at the shared socket |
 | `embedded.js` | the `ui.embedded` bootstrap (`404` without one) |
 | `__connection.json` | connection meta for the shared RPC socket |
-| `__ws` | the WebSocket upgrade route (shared-`server` and Bun tiers) |
+| `__ws` | the WebSocket upgrade route, for a shared or host-attached server |
 | `__index.json` | the machine-readable index: frames, endpoints |
 | `__client-imports.js` | the dock client-script import map for external viewers |
 | `__mcp` | the aggregate MCP endpoint over the whole tool registry (opt-in via `mcp`) |

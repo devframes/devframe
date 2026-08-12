@@ -12,7 +12,7 @@ Package: `hub-next-minimal` · framework: **React (Next.js)**
 
 - `initHub({ base, devframes: [inspect, messages], ui: createUi() })` behind one route (`app/%5F_devframes/[[...path]]/route.ts`) delegating to `hub.handler(request)`.
 - The plugins and `@devframes/hub-ui` load via a bundler-ignored dynamic `import()`, so Next resolves their published `dist` at runtime (their `import.meta.url` asset lookups don't survive static bundling).
-- Next route handlers can't accept WebSocket upgrades, so the instance runs its eager side-car WS server, advertised through `<base>__connection.json`.
+- Next route handlers can't accept WebSocket upgrades, so `ws: { sidecar: true }` gives the socket its own port, advertised through `<base>__connection.json`; the instance is memoized on `globalThis` so a dev-time reload reuses it.
 
 ## Run it
 

@@ -127,6 +127,8 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
           : { devframe: def, dock: { clientScript } }
       })
 
+      const httpServer = server.httpServer instanceof NodeHttpServer ? server.httpServer : undefined
+
       const hub = initHub({
         base,
         cwd,
@@ -142,10 +144,14 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
         // Share Vite's own http server for the WebSocket upgrade at
         // `<base>__ws` — no side-car port to discover. A `port` option pins
         // a side-car server instead, and an https/http2 dev server (where
-        // Vite hands us a non-`node:http` server) falls back to `initHub`'s
-        // eager side-car — clients discover either via `__connection.json`.
-        server: server.httpServer instanceof NodeHttpServer ? server.httpServer : undefined,
-        ...(options.port != null ? { ws: { port: options.port } } : {}),
+        // Vite hands us a non-`node:http` server) asks for an auto-port
+        // side-car — clients discover either via `__connection.json`.
+        server: httpServer,
+        ...(options.port != null
+          ? { ws: { port: options.port } }
+          : httpServer
+            ? {}
+            : { ws: { sidecar: true } }),
         getStorageDir(scope) {
           if (scope === 'workspace')
             return join(cwd, '.devframe')

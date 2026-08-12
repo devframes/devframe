@@ -5,9 +5,11 @@
 export { coerceAgentPositionalArgs }
 export { createContextRpcServer }
 export { createH3DevframeHost }
+export { createInstanceShell }
 export { DevframeAgentHost }
 export { listLiveDevframeInstances }
 export { normalizeHttpServerUrl }
 export { registerDevframeInstance }
+export { samePath }
 export { startHttpAndWs }
 // #endregion

@@ -148,13 +148,13 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
           flags: mw.flags,
           host: mw.host,
           // Pinned port → explicit side-car. Otherwise share Vite's own
-          // HTTP server; a middleware-mode Vite (no httpServer) falls back
-          // to the handler's eager auto side-car.
+          // HTTP server; a middleware-mode Vite (no httpServer) has no
+          // upgrade to share, so ask for an auto-port side-car instead.
           ...(mw.port != null
             ? { ws: { port: mw.port } }
             : server.httpServer
               ? { server: server.httpServer }
-              : {}),
+              : { ws: { sidecar: true } }),
           // Gate by default: an unset `auth` defers to the handler
           // (devframe's interactive OTP unless `cli.auth` opts out) rather
           // than leaving the socket ungated. `false` opts out explicitly.

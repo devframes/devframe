@@ -10,9 +10,9 @@ Package: `hub-hono-minimal` · framework: **Hono**
 
 ## What it shows
 
-- `initHub({ base, devframes: [inspect, messages], ui: createUi() })` in `src/app.ts` plus `app.all(\`${hub.base}*\`, c => hub.handler(c.req.raw, c.env))`.
-- On Node (`@hono/node-server`), the RPC WebSocket runs on an eager side-car port.
-- On Bun (`Bun.serve({ fetch, websocket: hub.websocket })`), WebSocket upgrades complete through `hub.handler(request, server)` on the app's own origin — no side-car. The repo's `scripts/smoke-bun.ts` exercises this path end to end.
+- `initHub({ base, devframes: [inspect, messages], ui: createUi() })` in `src/app.ts` plus `app.all(\`${hub.base}*\`, c => hub.handler(c.req.raw))`. No transport option, so each runtime's entry wires the socket its own way — both landing on `${hub.base}__ws`, the app's own origin.
+- On Node (`src/server.ts`), `@hono/node-server`'s `serve()` returns the `node:http` server and `hub.attach(server)` takes its upgrade events.
+- On Bun (`src/bun.ts`), upgrades arrive as fetch requests, so the entry binds Bun's transport with `createContextRpcServer` + `attachBunWsTransport` inside `Bun.serve({ fetch, websocket })`. The repo's `scripts/smoke-bun.ts` exercises this path end to end.
 
 ## Run it
 

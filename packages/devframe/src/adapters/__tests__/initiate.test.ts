@@ -48,7 +48,7 @@ describe('adapters/handler', () => {
     return devtools.close()
   })
 
-  it('default tier: eager side-car — SPA, meta, and WS RPC through fetch', async () => {
+  it('pinned side-car tier: SPA, meta, and WS RPC through fetch', async () => {
     const distDir = makeTmpDist()
     const wsPort = await getPort({ port: 18110, host: '127.0.0.1' })
     const devtools = initDevframe(defineTestDef('handler-test'), { base: '/__handler-test/', auth: false, distDir, host: '127.0.0.1', ws: { port: wsPort } })
@@ -259,43 +259,92 @@ describe('adapters/handler', () => {
     }
   })
 
-  it('key memoization: re-runs return the live instance; changed options replace it', async () => {
-    const def = defineTestDef('handler-memo')
-    const wsPort = await getPort({ port: 18150, host: '127.0.0.1' })
-    const a = initDevframe(def, { base: '/__handler-memo/', auth: false, key: 'memo-test', host: '127.0.0.1', ws: { port: wsPort } })
-    const b = initDevframe(def, { base: '/__handler-memo/', auth: false, key: 'memo-test', host: '127.0.0.1', ws: { port: wsPort } })
-    expect(b).toBe(a)
+  it('default tier: binds nothing until the host attaches its own server', async () => {
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 18150, host })
+    // No `server`, no `ws` — the instance owns no transport of its own.
+    const devtools = initDevframe(defineTestDef('handler-attach'), { base: '/__handler-attach/', auth: false })
+    const server = createServer((req, res) => devtools.nodeMiddleware(req, res))
+    let detach: (() => void) | undefined
 
     try {
-      await a.ready
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      const wsPort2 = await getPort({ port: 18151, host: '127.0.0.1' })
-      const c = initDevframe(def, { base: '/__handler-memo/', auth: false, key: 'memo-test', host: '127.0.0.1', ws: { port: wsPort2 } })
-      try {
-        expect(c).not.toBe(a)
-        expect(String(warn.mock.calls)).toContain('DF0053')
-        await c.ready
-        expect(c.connectionMeta()).toEqual({
-          backend: 'websocket',
-          websocket: { port: wsPort2, path: '__ws' },
-        })
+      await devtools.ready
+      // Advertised as a same-origin route, with no port of its own.
+      expect(devtools.connectionMeta()).toEqual({
+        backend: 'websocket',
+        websocket: { path: '__ws' },
+      })
 
-        // The replaced instance's side-car was closed.
-        await vi.waitFor(async () => {
-          const gone = new WebSocket(`ws://127.0.0.1:${wsPort}/__ws`)
-          await expect(new Promise((resolve, reject) => {
-            gone.on('open', () => reject(new Error('old side-car still accepting')))
-            gone.on('error', () => resolve('closed'))
-          })).resolves.toBe('closed')
-        })
-      }
-      finally {
-        warn.mockRestore()
-        await c.close()
-      }
+      // Upgrades only reach the socket once the host hands them over.
+      await new Promise<void>(resolve => server.listen(port, host, resolve))
+      const before = new WebSocket(`ws://${host}:${port}/__handler-attach/__ws`)
+      await expect(new Promise((resolve, reject) => {
+        before.on('open', () => reject(new Error('socket served before attach')))
+        before.on('error', () => resolve('refused'))
+      })).resolves.toBe('refused')
+
+      detach = devtools.attach(server)
+      const client = connectWsClient(`ws://${host}:${port}/__handler-attach/__ws`)
+      await expect(client.$call('test:probe' as any)).resolves.toBe('ok')
+      client.$close()
+
+      // Detaching hands the upgrade route back to the host.
+      detach()
+      detach = undefined
+      const after = new WebSocket(`ws://${host}:${port}/__handler-attach/__ws`)
+      await expect(new Promise((resolve, reject) => {
+        after.on('open', () => reject(new Error('socket still served after detach')))
+        after.on('error', () => resolve('refused'))
+      })).resolves.toBe('refused')
     }
     finally {
-      await a.close()
+      detach?.()
+      await devtools.close()
+      server.close()
+      server.closeAllConnections()
+    }
+  })
+
+  it('ws.sidecar: an auto-port side-car, advertised with its resolved port', async () => {
+    const devtools = initDevframe(defineTestDef('handler-sidecar'), {
+      base: '/__handler-sidecar/',
+      auth: false,
+      host: '127.0.0.1',
+      ws: { sidecar: true },
+    })
+
+    try {
+      await devtools.ready
+      const meta = devtools.connectionMeta()
+      const advertised = meta.websocket as { port: number, path: string }
+      expect(advertised.path).toBe('__ws')
+      expect(advertised.port).toBeGreaterThan(0)
+
+      const client = connectWsClient(`ws://127.0.0.1:${advertised.port}/__ws`)
+      await expect(client.$call('test:probe' as any)).resolves.toBe('ok')
+      client.$close()
+    }
+    finally {
+      await devtools.close()
+    }
+  })
+
+  it('a configured transport refuses to take over the host upgrades', async () => {
+    const wsPort = await getPort({ port: 18155, host: '127.0.0.1' })
+    const sidecar = initDevframe(defineTestDef('handler-owned'), { base: '/__handler-owned/', auth: false, host: '127.0.0.1', ws: { port: wsPort } })
+    const external = initDevframe(defineTestDef('handler-external'), { base: '/__handler-external/', ws: { url: 'wss://devtools.example.com/relay/__ws' } })
+
+    try {
+      await Promise.all([sidecar.ready, external.ready])
+      const server = createServer()
+      // The side-car already serves the socket…
+      expect(() => sidecar.attach(server)).toThrow(/DF0055|already owns its WebSocket transport/)
+      // …and an external endpoint owns both transport and auth.
+      expect(() => external.attach(server)).toThrow(/DF0056|advertises an external WebSocket endpoint/)
+    }
+    finally {
+      await sidecar.close()
+      await external.close()
     }
   })
 

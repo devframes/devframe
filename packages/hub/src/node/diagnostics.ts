@@ -18,10 +18,6 @@ export const diagnostics = defineDiagnostics({
       why: (p: { id: string }) => `Devframe id "${p.id}" collides with a reserved hub path — it cannot be mounted directly under the hub base.`,
       fix: 'The filenames directly under the hub base (`__connection.json`, `__ws`, `__index.json`, `__client-imports.js`, `__mcp`, `embedded.js`) are reserved for the hub protocol. Rename the devframe id, or override its mount with a non-colliding `basePath`.',
     },
-    DF8001: {
-      why: (p: { key: string }) => `initHub replaced the live hub instance memoized under key "${p.key}": its options changed since the previous call.`,
-      fix: 'A dev-time module reload re-ran initHub with different options, so the old instance (and its side-car WebSocket server) was closed and a new one started. If this is unexpected, keep the options stable across reloads — or use distinct keys for genuinely different hubs.',
-    },
     DF8002: {
       why: 'initHub received both `devframes` and `context` — the two assembly modes are mutually exclusive.',
       fix: 'Pass `devframes` to let the instance create the hub context and mount each frame itself, or pass a pre-built `context` (your host already mounted the frames) — never both.',
