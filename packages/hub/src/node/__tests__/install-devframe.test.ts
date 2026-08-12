@@ -6,10 +6,10 @@ import { join } from 'node:path'
 import { defineDevframe } from 'devframe'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DevframeDocksHost } from '../host-docks'
-import { mountDevframe } from '../mount-devframe'
+import { installDevframe } from '../install-devframe'
 
 function createContext(): DevframeHubContext {
-  const storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-mount-'))
+  const storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-install-'))
   const context = {
     host: {
       mountStatic: () => {},
@@ -21,6 +21,9 @@ function createContext(): DevframeHubContext {
     },
   } as unknown as DevframeHubContext
   context.docks = new DevframeDocksHost(context)
+  // `createHubContext` wires this; the hand-built fake context here does the
+  // same so the tests drive the public `ctx.install` surface.
+  context.install = (devframe, options) => installDevframe(context, devframe, options)
   return context
 }
 
@@ -39,7 +42,7 @@ function makeDevframe(
   })
 }
 
-describe('mountDevframe', () => {
+describe('ctx.install', () => {
   afterEach(() => {
     vi.restoreAllMocks()
   })
@@ -47,7 +50,7 @@ describe('mountDevframe', () => {
   it('registers an iframe dock derived from the definition and runs setup', async () => {
     const ctx = createContext()
     const setup = vi.fn()
-    await mountDevframe(ctx, makeDevframe({ setup }))
+    await ctx.install(makeDevframe({ setup }))
 
     expect(ctx.docks.views.size).toBe(1)
     const entry = ctx.docks.views.get('demo')
@@ -57,7 +60,7 @@ describe('mountDevframe', () => {
 
   it('applies the definition-level dock defaults to the synthesized entry', async () => {
     const ctx = createContext()
-    await mountDevframe(ctx, makeDevframe({
+    await ctx.install(makeDevframe({
       dock: { category: 'framework', defaultOrder: 5, when: 'clientType == embedded' },
     }))
 
@@ -73,7 +76,7 @@ describe('mountDevframe', () => {
 
   it('applies the definition-level dock `visibility` default to the synthesized entry, independent of `when`', async () => {
     const ctx = createContext()
-    await mountDevframe(ctx, makeDevframe({
+    await ctx.install(makeDevframe({
       dock: { when: 'clientType == embedded', visibility: 'false' },
     }))
 
@@ -86,11 +89,7 @@ describe('mountDevframe', () => {
 
   it('lets per-mount dock overrides win over the definition dock defaults', async () => {
     const ctx = createContext()
-    await mountDevframe(
-      ctx,
-      makeDevframe({ dock: { category: 'framework', defaultOrder: 5 } }),
-      { dock: { category: 'app' } },
-    )
+    await ctx.install(makeDevframe({ dock: { category: 'framework', defaultOrder: 5 } }), { dock: { category: 'app' } })
 
     expect(ctx.docks.views.get('demo')).toMatchObject({
       category: 'app',
@@ -103,8 +102,8 @@ describe('mountDevframe', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const setup = vi.fn()
 
-    await mountDevframe(ctx, makeDevframe({ setup }))
-    await mountDevframe(ctx, makeDevframe({ setup, name: 'Demo Again' }))
+    await ctx.install(makeDevframe({ setup }))
+    await ctx.install(makeDevframe({ setup, name: 'Demo Again' }))
 
     expect(ctx.docks.views.size).toBe(1)
     expect(ctx.docks.views.get('demo')).toMatchObject({ title: 'Demo' })
@@ -118,8 +117,8 @@ describe('mountDevframe', () => {
     const setup = vi.fn()
     const strategy: DevframeDuplicationStrategy = 'silent'
 
-    await mountDevframe(ctx, makeDevframe({ setup, duplicationStrategy: strategy }))
-    await mountDevframe(ctx, makeDevframe({ setup, duplicationStrategy: strategy }))
+    await ctx.install(makeDevframe({ setup, duplicationStrategy: strategy }))
+    await ctx.install(makeDevframe({ setup, duplicationStrategy: strategy }))
 
     expect(ctx.docks.views.size).toBe(1)
     expect(setup).toHaveBeenCalledTimes(1)
@@ -131,8 +130,8 @@ describe('mountDevframe', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     const def = makeDevframe({ duplicationStrategy: 'throw' })
 
-    await mountDevframe(ctx, def)
-    await expect(mountDevframe(ctx, def)).rejects.toThrow(/already mounted/)
+    await ctx.install(def)
+    await expect(ctx.install(def)).rejects.toThrow(/already mounted/)
     expect(ctx.docks.views.size).toBe(1)
   })
 
@@ -142,7 +141,7 @@ describe('mountDevframe', () => {
     ;(ctx.host as { mountConnectionMeta?: unknown }).mountConnectionMeta = mountConnectionMeta
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    await mountDevframe(ctx, makeDevframe({ cli: { distDir: '/tmp/demo-dist' } }))
+    await ctx.install(makeDevframe({ cli: { distDir: '/tmp/demo-dist' } }))
 
     expect(mountConnectionMeta).toHaveBeenCalledWith('/__demo/')
     expect(warn).not.toHaveBeenCalled()
@@ -152,7 +151,7 @@ describe('mountDevframe', () => {
     const ctx = createContext()
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    await mountDevframe(ctx, makeDevframe({ cli: { distDir: '/tmp/demo-dist' } }))
+    await ctx.install(makeDevframe({ cli: { distDir: '/tmp/demo-dist' } }))
 
     expect(warn).toHaveBeenCalledTimes(1)
     expect(warn.mock.calls[0].join(' ')).toContain('DF8106')
@@ -162,9 +161,9 @@ describe('mountDevframe', () => {
     const ctx = createContext()
     const setup = vi.fn()
 
-    await mountDevframe(ctx, makeDevframe({ setup, duplicationStrategy: 'duplicate' }))
-    await mountDevframe(ctx, makeDevframe({ setup, duplicationStrategy: 'duplicate' }))
-    await mountDevframe(ctx, makeDevframe({ setup, duplicationStrategy: 'duplicate' }))
+    await ctx.install(makeDevframe({ setup, duplicationStrategy: 'duplicate' }))
+    await ctx.install(makeDevframe({ setup, duplicationStrategy: 'duplicate' }))
+    await ctx.install(makeDevframe({ setup, duplicationStrategy: 'duplicate' }))
 
     expect([...ctx.docks.views.keys()]).toEqual(['demo', 'demo-2', 'demo-3'])
     expect(ctx.docks.views.get('demo-2')).toMatchObject({ type: 'iframe', url: '/__demo-2/' })

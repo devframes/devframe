@@ -1,6 +1,6 @@
+import type { HubInstance } from '@devframes/hub/initiate'
 import type { DevframeHubContext } from '@devframes/hub/node'
 import type { DevframeChildProcessTerminalSession, DevframeViewLauncher } from '@devframes/hub/types'
-import type { DevframeHost } from 'devframe/types'
 import type { Buffer } from 'node:buffer'
 import type { Plugin, PreviewServer, ResolvedConfig, ViteDevServer } from 'vite'
 import { existsSync } from 'node:fs'
@@ -8,10 +8,8 @@ import { createRequire } from 'node:module'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
-import { createHubContext, mountDevframe } from '@devframes/hub/node'
+import { initHub } from '@devframes/hub/initiate'
 import terminalsDevframe from '@devframes/plugin-terminals'
-import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
-import { startHttpAndWs } from 'devframe/internal'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { dirname, join } from 'pathe'
@@ -100,7 +98,7 @@ export interface StorybookHubOptions {
 export function storybookHub(options: StorybookHubOptions = {}): Plugin {
   const base = normalizeBase(options.base ?? '/__hub/')
   let viteConfig: ResolvedConfig | undefined
-  let started: { close: () => Promise<void> } | undefined
+  let hub: HubInstance | undefined
   const devServers = new Map<string, { ready: Promise<number>, session: DevframeChildProcessTerminalSession }>()
 
   function killDevServers(): void {
@@ -185,34 +183,33 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
   }
 
   async function startHub(server: ViteDevServer | PreviewServer, mode: 'dev' | 'build'): Promise<void> {
-    await started?.close().catch(() => {})
-    started = undefined
+    await hub?.close().catch(() => {})
+    hub = undefined
     killDevServers()
 
     const cwd = viteConfig?.root ?? process.cwd()
-    // Prefer 9787 but keep booting when it's taken (e.g. a lingering previous
-    // instance) — walk the range, then fall back to a random free port. The
-    // client discovers whatever was chosen via `__connection.json`.
-    const port = options.port ?? await getPort({ port: 9787, portRange: [9787, 9887] })
 
-    const serveConnectionMeta = (metaBase: string): void => {
-      server.middlewares.use(`${metaBase}${DEVFRAME_CONNECTION_META_FILENAME}`, (_req, res) => {
-        res.setHeader('Content-Type', 'application/json')
-        res.end(JSON.stringify({ backend: 'websocket', websocket: port }))
-      })
+    // In build mode, serve each pre-built Storybook on the Vite server itself
+    // — outside the hub base, so a launcher iframe resolves it on this origin.
+    if (mode === 'build') {
+      for (const meta of STORYBOOKS) {
+        if (existsSync(storybookStaticDir(meta.id)))
+          server.middlewares.use(`/__sb-${meta.id}/`, serveStaticNodeMiddleware(storybookStaticDir(meta.id)))
+      }
     }
 
-    const host: DevframeHost = {
-      mountStatic(mountBase, distDir) {
-        server.middlewares.use(mountBase, serveStaticNodeMiddleware(distDir))
-      },
-      mountConnectionMeta(metaBase) {
-        serveConnectionMeta(metaBase)
-      },
-      resolveOrigin() {
-        const resolved = server.resolvedUrls?.local?.[0]
-        return resolved ? new URL(resolved).origin : 'http://localhost:5173'
-      },
+    hub = initHub({
+      base,
+      cwd,
+      // Bind dual-stack (`::` accepts IPv6 + IPv4-mapped) so the side-car is
+      // dialable via `::1`, `127.0.0.1`, and from outside the machine — the
+      // default `localhost` bind resolves to `::1` only on some hosts, which
+      // strands IPv4 clients and remote browsers.
+      host: '::',
+      auth: false,
+      // Prefer 9787 but fall back to a free port when taken; the client
+      // discovers whatever was chosen via `__connection.json`.
+      ws: options.port != null ? { port: options.port } : { sidecar: true },
       getStorageDir(scope) {
         if (scope === 'workspace')
           return join(cwd, '.devframe')
@@ -220,117 +217,97 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
           return join(cwd, 'node_modules/.devframe-storybook')
         return join(homedir(), '.devframe-storybook')
       },
-    }
+      // The live terminals plugin — a real integration docked alongside the
+      // Storybooks, grouped separately so its "Terminals" reads apart from the
+      // "Terminals" Storybook. It also mirrors the hub's `ctx.terminals`
+      // sessions, so the spawned `storybook dev` processes appear inside it.
+      devframes: [{ devframe: terminalsDevframe, dock: { category: 'Plugins' } }],
+      configure(context) {
+        // Live launcher handles, so the launch command can patch each tile's
+        // status/digest/terminalSessionId as the process boots.
+        const launchers = new Map<string, { update: (patch: Partial<DevframeViewLauncher>) => void }>()
 
-    const context = await createHubContext({
-      cwd,
-      workspaceRoot: cwd,
-      mode,
-      host,
-    })
+        /** The full launcher payload for a tile (patched wholesale — `update` shallow-merges). */
+        const launcherState = (
+          meta: StorybookMeta,
+          patch: Partial<DevframeViewLauncher['launcher']>,
+        ): DevframeViewLauncher['launcher'] => ({
+          icon: meta.icon,
+          title: `${meta.title} Storybook`,
+          description: mode === 'build'
+            ? `Open the pre-built ${meta.title} Storybook`
+            : `Start the ${meta.title} plugin's Storybook dev server`,
+          command: launchCommandFor(meta.id),
+          buttonStart: mode === 'build' ? 'Open Storybook' : 'Start Storybook',
+          buttonLoading: 'Starting…',
+          status: 'idle',
+          ...patch,
+        })
 
-    // In build mode, serve each pre-built Storybook so its dock iframe resolves
-    // on this single origin.
-    if (mode === 'build') {
-      for (const meta of STORYBOOKS) {
-        if (existsSync(storybookStaticDir(meta.id)))
-          context.views.hostStatic(`/__sb-${meta.id}/`, storybookStaticDir(meta.id))
-      }
-    }
+        /**
+         * The launch handler bound to each launcher's command. Spawns the dev
+         * server through `ctx.terminals` (in dev), patches the tile as it
+         * boots, and returns the resolved URL for the client to iframe in place.
+         */
+        const launchStorybook = async (meta: StorybookMeta): Promise<EnsureStorybookResult> => {
+          const handle = launchers.get(meta.id)
+          const patch = (p: Partial<DevframeViewLauncher['launcher']>): void =>
+            handle?.update({ launcher: launcherState(meta, p) })
 
-    // Live launcher handles, so the launch command can patch each tile's
-    // status/digest/terminalSessionId as the process boots.
-    const launchers = new Map<string, { update: (patch: Partial<DevframeViewLauncher>) => void }>()
+          if (mode === 'build') {
+            if (!existsSync(storybookStaticDir(meta.id))) {
+              const error = 'Storybook not built. Run `pnpm storybook:build` first.'
+              patch({ status: 'error', error })
+              return { ok: false, error }
+            }
+            patch({ status: 'success' })
+            return { ok: true, kind: 'path', url: `/__sb-${meta.id}/` }
+          }
 
-    /** The full launcher payload for a tile (patched wholesale — `update` shallow-merges). */
-    const launcherState = (
-      meta: StorybookMeta,
-      patch: Partial<DevframeViewLauncher['launcher']>,
-    ): DevframeViewLauncher['launcher'] => ({
-      icon: meta.icon,
-      title: `${meta.title} Storybook`,
-      description: mode === 'build'
-        ? `Open the pre-built ${meta.title} Storybook`
-        : `Start the ${meta.title} plugin's Storybook dev server`,
-      command: launchCommandFor(meta.id),
-      buttonStart: mode === 'build' ? 'Open Storybook' : 'Start Storybook',
-      buttonLoading: 'Starting…',
-      status: 'idle',
-      ...patch,
-    })
-
-    /**
-     * The launch handler bound to each launcher's command. Spawns the dev
-     * server through `ctx.terminals` (in dev), patches the tile as it boots,
-     * and returns the resolved URL for the client to iframe in place.
-     */
-    const launchStorybook = async (meta: StorybookMeta): Promise<EnsureStorybookResult> => {
-      const handle = launchers.get(meta.id)
-      const patch = (p: Partial<DevframeViewLauncher['launcher']>): void =>
-        handle?.update({ launcher: launcherState(meta, p) })
-
-      if (mode === 'build') {
-        if (!existsSync(storybookStaticDir(meta.id))) {
-          const error = 'Storybook not built. Run `pnpm storybook:build` first.'
-          patch({ status: 'error', error })
-          return { ok: false, error }
+          patch({ status: 'loading', digest: 'Starting Storybook dev server…' })
+          try {
+            const port = await ensureDevServer(context, meta, line =>
+              patch({ status: 'loading', terminalSessionId: sessionIdFor(meta.id), digest: line }))
+            patch({ status: 'success', terminalSessionId: sessionIdFor(meta.id), digest: `Ready on port ${port}` })
+            return { ok: true, kind: 'port', port }
+          }
+          catch (error) {
+            const message = (error as Error).message
+            patch({ status: 'error', terminalSessionId: sessionIdFor(meta.id), error: message })
+            return { ok: false, error: message }
+          }
         }
-        patch({ status: 'success' })
-        return { ok: true, kind: 'path', url: `/__sb-${meta.id}/` }
-      }
 
-      patch({ status: 'loading', digest: 'Starting Storybook dev server…' })
-      try {
-        const port = await ensureDevServer(context, meta, line =>
-          patch({ status: 'loading', terminalSessionId: sessionIdFor(meta.id), digest: line }))
-        patch({ status: 'success', terminalSessionId: sessionIdFor(meta.id), digest: `Ready on port ${port}` })
-        return { ok: true, kind: 'port', port }
-      }
-      catch (error) {
-        const message = (error as Error).message
-        patch({ status: 'error', terminalSessionId: sessionIdFor(meta.id), error: message })
-        return { ok: false, error: message }
-      }
-    }
+        // One launcher dock per plugin Storybook, each bound to a command. A
+        // viewer dispatches the command over `hub:commands:execute` (the
+        // serializable path — the handler is stripped when the entry crosses
+        // into shared state), and reads back the {@link EnsureStorybookResult}
+        // to iframe the result.
+        for (const meta of STORYBOOKS) {
+          context.commands.register({
+            id: launchCommandFor(meta.id),
+            title: `${mode === 'build' ? 'Open' : 'Start'} ${meta.title} Storybook`,
+            icon: meta.icon,
+            category: 'Storybooks',
+            handler: () => launchStorybook(meta),
+          })
+          launchers.set(meta.id, context.docks.register<DevframeViewLauncher>({
+            id: dockIdFor(meta.id),
+            title: meta.title,
+            icon: meta.icon,
+            category: 'Storybooks',
+            type: 'launcher',
+            launcher: launcherState(meta, { status: 'idle' }),
+          }))
+        }
+      },
+    })
 
-    // One launcher dock per plugin Storybook, each bound to a command. A viewer
-    // dispatches the command over `hub:commands:execute` (the serializable
-    // path — the handler is stripped when the entry crosses into shared state),
-    // and reads back the {@link EnsureStorybookResult} to iframe the result.
-    for (const meta of STORYBOOKS) {
-      context.commands.register({
-        id: launchCommandFor(meta.id),
-        title: `${mode === 'build' ? 'Open' : 'Start'} ${meta.title} Storybook`,
-        icon: meta.icon,
-        category: 'Storybooks',
-        handler: () => launchStorybook(meta),
-      })
-      launchers.set(meta.id, context.docks.register<DevframeViewLauncher>({
-        id: dockIdFor(meta.id),
-        title: meta.title,
-        icon: meta.icon,
-        category: 'Storybooks',
-        type: 'launcher',
-        launcher: launcherState(meta, { status: 'idle' }),
-      }))
-    }
-
-    // The live terminals plugin — a real integration docked alongside the
-    // Storybooks, grouped separately so its "Terminals" reads apart from the
-    // "Terminals" Storybook. It also mirrors the hub's `ctx.terminals`
-    // sessions, so the spawned `storybook dev` processes appear inside it.
-    await mountDevframe(context, terminalsDevframe, { dock: { category: 'Plugins' } })
-
-    // Bind dual-stack (`::` accepts IPv6 + IPv4-mapped) so the side-car is
-    // dialable via `::1`, `127.0.0.1`, and from outside the machine — the
-    // default `localhost` bind resolves to `::1` only on some hosts, which
-    // strands IPv4 clients and remote browsers.
-    started = await startHttpAndWs({ context, port, host: '::', auth: false })
-    serveConnectionMeta(base)
+    server.middlewares.use(hub.nodeMiddleware)
 
     server.httpServer?.once('close', () => {
       killDevServers()
-      void started?.close().catch(() => {})
+      void hub?.close().catch(() => {})
     })
   }
 
@@ -353,8 +330,8 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
 
     async closeBundle() {
       killDevServers()
-      await started?.close().catch(() => {})
-      started = undefined
+      await hub?.close().catch(() => {})
+      hub = undefined
     },
   }
 }

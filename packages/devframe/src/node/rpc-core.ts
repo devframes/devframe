@@ -9,15 +9,18 @@ import { diagnostics } from './diagnostics'
 
 export interface CreateContextRpcServerOptions {
   context: DevframeNodeContext
-  /** See `StartHttpAndWsOptions.auth` — same contract, transport-agnostic. */
+  /**
+   * Auth intent: `true`/omitted gates by default, `false` opts out (auto-trust
+   * handshake shim), a {@link DevframeAuthHandler} installs a custom scheme.
+   */
   auth?: boolean | DevframeAuthHandler
-  /** See `StartHttpAndWsOptions.authorize`. */
+  /** Lower-level per-call gate by method name and session, without a full handler. */
   authorize?: (methodName: string, session: DevframeNodeRpcSession) => boolean
-  /** See `StartHttpAndWsOptions.onPeerConnect`. */
+  /** Called once per new WS connection, right after its session is created. */
   onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
-  /** See `StartHttpAndWsOptions.onPeerDisconnect`. */
+  /** Called once per closed WS connection, after the transport's disconnect bookkeeping. */
   onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
-  /** See `StartHttpAndWsOptions.rpcOptions`. */
+  /** Forwarded verbatim to birpc's `rpcOptions` so a host keeps seeing RPC failures. */
   rpcOptions?: Pick<
     EventOptions<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>,
     'onFunctionError' | 'onGeneralError'
@@ -39,8 +42,9 @@ export interface ContextRpcServer {
 
 /**
  * Bind a devframe context's registered RPC functions to a birpc group,
- * transport-agnostically — the shared core under `startHttpAndWs` (Node
- * http + WS) and the Bun fetch-upgrade tier of `createHandler`.
+ * transport-agnostically — the shared core under the instance shell's own
+ * HTTP+WS binding (Node http + WS) and the Bun fetch-upgrade tier of
+ * `createHandler`.
  *
  * Owns everything about serving RPC that is independent of *how* peers
  * connect: the auth handler's function registration, the
@@ -73,7 +77,7 @@ export function createContextRpcServer(options: CreateContextRpcServerOptions): 
     {
       rpcOptions: {
         // Forwarded as-is so a host with its own structured diagnostics
-        // keeps seeing RPC failures; see `StartHttpAndWsOptions.rpcOptions`.
+        // keeps seeing RPC failures.
         onFunctionError: options.rpcOptions?.onFunctionError,
         onGeneralError: options.rpcOptions?.onGeneralError,
         // Wrap each RPC handler in an AsyncLocalStorage context so

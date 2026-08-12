@@ -2,10 +2,10 @@ import type { DevframeDockEntry } from '../../types/docks'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { startHttpAndWs } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
 import { getInternalContext } from 'devframe/node/hub-internals'
 import { describe, expect, it, vi } from 'vitest'
+import { serveTestContext } from '../../../../../tests/helpers/serve-test-context'
 import { createHubContext } from '../context'
 
 function createHost(storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-context-'))) {
@@ -60,7 +60,7 @@ describe('createHubContext dock activation', () => {
   })
 })
 
-describe('startHttpAndWs remote endpoint metadata', () => {
+describe('served context remote endpoint metadata', () => {
   it('sets and clears the internal websocket endpoint', async () => {
     const context = await createHostContext({
       cwd: process.cwd(),
@@ -68,7 +68,7 @@ describe('startHttpAndWs remote endpoint metadata', () => {
       host: createHost(),
     })
 
-    const started = await startHttpAndWs({
+    const started = await serveTestContext({
       context,
       host: '127.0.0.1',
       port: 0,

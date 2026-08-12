@@ -130,7 +130,7 @@ export interface DevframeCliOptions {
    *     The `--no-auth` CLI flag maps here for one-off runs.
    *   - A {@link DevframeAuthHandler} — a custom handler (e.g. a tuned
    *     `createInteractiveAuth`, or an entirely different scheme) passed
-   *     straight through to `startHttpAndWs`.
+   *     straight through to the RPC transport binding.
    *
    * Hosted adapters (`vite`, `embedded`) ignore this and defer to the host's
    * auth; `@vitejs/devtools` honors the equivalent `devtools.clientAuth`.
@@ -201,7 +201,7 @@ export interface DevframeCliOptions {
 /**
  * Default dock attributes for the iframe entry a hub synthesizes when it
  * mounts this devframe. Framework-neutral metadata only — the hub layer
- * (`mountDevframe`) merges these beneath its per-mount `dock` overrides,
+ * (`ctx.install`) merges these beneath its per-mount `dock` overrides,
  * which in turn sit beneath the locked, derived `id` / `type` / `url`.
  *
  * Every field is optional. `title` / `icon` default to the definition's
@@ -283,7 +283,7 @@ export interface DevframeDefinition {
   icon?: string | { light: string, dark: string }
   /**
    * Default dock attributes applied when a hub mounts this devframe as an
-   * iframe dock entry. Consulted only by hub adapters (`mountDevframe`),
+   * iframe dock entry. Consulted only by the hub install path (`ctx.install`),
    * which merge these beneath the per-mount `dock` overrides; standalone
    * adapters (`cli` / `spa` / `build`) ignore it.
    *
@@ -299,7 +299,7 @@ export interface DevframeDefinition {
   /**
    * How a hub reacts when another devframe sharing this one's `id` is
    * mounted onto the same hub. Consulted only by hub adapters
-   * (`mountDevframe`); standalone adapters (`cli` / `spa` / `build`)
+   * (`ctx.install`); standalone adapters (`cli` / `spa` / `build`)
    * ignore it.
    *
    * @default 'warn'

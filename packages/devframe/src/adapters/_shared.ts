@@ -59,7 +59,7 @@ export async function resolveDevServerPort(
  * Normalize the `cli.mcp` / `mcp` option (`boolean | McpRouteOptions`) into
  * concrete options, or `undefined` when the MCP route is disabled.
  */
-export function resolveMcpConfig(mcp: boolean | McpRouteOptions | undefined): McpRouteOptions | undefined {
+function resolveMcpConfig(mcp: boolean | McpRouteOptions | undefined): McpRouteOptions | undefined {
   if (!mcp)
     return undefined
   return mcp === true ? {} : mcp

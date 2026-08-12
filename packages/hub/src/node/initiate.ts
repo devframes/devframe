@@ -1,3 +1,4 @@
+import type { DevframeInstanceRecord } from 'devframe/internal'
 import type { DevframeAuthHandler } from 'devframe/node/auth'
 import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
 import type { ConnectionMeta, DevframeDefinition, DevframeStorageScope, DevframeWsOptions, McpRouteOptions } from 'devframe/types'
@@ -6,24 +7,23 @@ import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from '
 import type { Duplex } from 'node:stream'
 import type { ClientScriptEntry } from '../types/docks'
 import type { CreateHubContextOptions, DevframeHubContext } from './context'
-import type { MountDevframeOptions } from './mount-devframe'
+import type { InstallDevframeOptions } from './install-devframe'
 import { readFile } from 'node:fs/promises'
 import process from 'node:process'
 import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_DOCK_IMPORTS_FILENAME, DEVFRAME_MCP_ROUTE, DEVFRAME_WS_ROUTE } from 'devframe/constants'
-import { createH3DevframeHost, createInstanceShell } from 'devframe/internal'
+import { createH3DevframeHost, createInstanceShell, resolveInstanceRegister } from 'devframe/internal'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import { cleanDoubleSlashes, joinURL, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import { createHubContext } from './context'
 import { diagnostics } from './diagnostics'
-import { mountDevframe } from './mount-devframe'
 
 /** A `devframes` entry with per-mount dock customization. */
 export interface HubDevframeEntry {
   devframe: DevframeDefinition
   /** Per-mount overrides for the auto-synthesized iframe dock entry. */
-  dock?: MountDevframeOptions['dock']
+  dock?: InstallDevframeOptions['dock']
 }
 
 type Thenable<T> = T | Promise<T>
@@ -139,7 +139,7 @@ export interface InitHubOptions {
   rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations']
   /**
    * Bring your own hub context instead of `devframes` — for hosts that
-   * assemble `createHubContext` + `mountDevframe` themselves (with their own
+   * assemble `createHubContext` + `ctx.install` themselves (with their own
    * `DevframeHost` serving the frames). The instance then serves only the
    * hub-level endpoints (`__connection.json`, `__index.json`,
    * `__client-imports.js`, the WS transport, MCP, and the `ui` slot);
@@ -191,6 +191,16 @@ export interface InitHubOptions {
    * from the first request when omitted.
    */
   origin?: string | (() => string)
+  /**
+   * Publish this hub in the global instance registry
+   * (`~/.devframe/instances/`) so discovery tooling (`devframe connect`, the
+   * inspect plugin's Instances tab) lists it like any standalone devframe.
+   * Registration is a dynamic import that fires once the public origin
+   * resolves and is torn down on {@link HubInstance.close}. Defaults to off;
+   * pass `true` to enable, or an object to override individual record fields
+   * (`id`, `name`, `basePath`, …).
+   */
+  register?: boolean | Partial<DevframeInstanceRecord>
   /** Working directory for the hub context. Default: `process.cwd()`. */
   cwd?: string
   /** Override where persisted devframe state lives. */
@@ -323,6 +333,11 @@ export function initHub(options: InitHubOptions): HubInstance {
     ws: options.ws,
     allowedOrigins: options.allowedOrigins,
     destroyUnmatchedUpgrades: options.destroyUnmatchedUpgrades,
+    register: resolveInstanceRegister(options.register, {
+      id: options.name ?? 'devframes-hub',
+      ...(options.name !== undefined ? { name: options.name } : {}),
+      rootDir: cwd,
+    }),
     // One meta document is served from the hub base *and* from every frame
     // base, so the advertised WS path has to be base-absolute to resolve to
     // the same socket from any depth.
@@ -386,7 +401,7 @@ export function initHub(options: InitHubOptions): HubInstance {
         if (!/^[\w.-]+$/.test(def.id))
           throw diagnostics.DF8004({ id: def.id })
         const frameBase = withTrailingSlash(joinURL(base, def.id))
-        await mountDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
+        await ctx.install(def, { base: frameBase, ...(dock ? { dock } : {}) })
         frames.push({ id: def.id, base: frameBase, title: def.name })
       }
 

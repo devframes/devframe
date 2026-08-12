@@ -131,6 +131,7 @@ export interface DevframeHubContext extends DevframeNodeContext {
   terminals: DevframeTerminalsHost;
   messages: DevframeMessagesHost;
   commands: DevframeCommandsHost;
+  install: (_: DevframeDefinition, _?: InstallDevframeOptions) => Promise<void>;
 }
 export interface DevframeMessageActivateAction {
   id: string;

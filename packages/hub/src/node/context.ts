@@ -1,15 +1,17 @@
 import type { CreateHostContextOptions } from 'devframe/node'
-import type { DevframeHost, DevframeNodeContext } from 'devframe/types'
+import type { DevframeDefinition, DevframeHost, DevframeNodeContext } from 'devframe/types'
 import type { DevframeCommandsHost } from '../types/commands'
 import type { DevframeDockActivation, DevframeDocksActiveState, DevframeDocksHost } from '../types/docks'
 import type { DevframeMessageEntry, DevframeMessageEntryInput, DevframeMessagesHost } from '../types/messages'
 import type { DevframeTerminalsHost } from '../types/terminals'
+import type { InstallDevframeOptions } from './install-devframe'
 import { createHostContext } from 'devframe/node'
 import { debounce } from 'perfect-debounce'
 import { DevframeCommandsHost as CommandsHostImpl } from './host-commands'
 import { DevframeDocksHost as DocksHostImpl } from './host-docks'
 import { DevframeMessagesHost as MessagesHostImpl } from './host-messages'
 import { DevframeTerminalsHost as TerminalsHostImpl } from './host-terminals'
+import { installDevframe } from './install-devframe'
 import { builtinHubRpcDeclarations } from './rpc-builtins'
 
 declare module 'devframe/types' {
@@ -100,6 +102,14 @@ export interface DevframeHubContext extends DevframeNodeContext {
   terminals: DevframeTerminalsHost
   messages: DevframeMessagesHost
   commands: DevframeCommandsHost
+  /**
+   * Install a {@link DevframeDefinition} into this hub: serve its SPA at the
+   * resolved base, synthesize an iframe dock from its metadata, and run its
+   * `setup(ctx)`. The imperative counterpart to `initHub`'s declarative
+   * `devframes` list — call it from a hub host's `configure(ctx)`, or wherever
+   * you hold the context, to plug an extra devframe in.
+   */
+  install: (devframe: DevframeDefinition, options?: InstallDevframeOptions) => Promise<void>
 }
 
 /**
@@ -134,6 +144,7 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
   context.terminals = terminals
   context.messages = messages
   context.commands = commands
+  context.install = (devframe, options) => installDevframe(context, devframe, options)
 
   await docks.init()
 

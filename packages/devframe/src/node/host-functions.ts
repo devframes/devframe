@@ -22,7 +22,7 @@ export type { RpcFunctionsHost } from 'devframe/types'
  * Concrete implementation backing `ctx.rpc`. Internal: consumers should
  * depend on the structural {@link RpcFunctionsHost} type, never this class.
  * Its `@internal` members (`_rpcGroup`, `_asyncStorage`,
- * `_emitSessionDisconnected`) are wired by `startHttpAndWs` and must not
+ * `_emitSessionDisconnected`) are wired by `createContextRpcServer` and must not
  * widen the public surface.
  *
  * @internal

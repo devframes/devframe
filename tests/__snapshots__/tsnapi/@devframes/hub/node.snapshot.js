@@ -23,5 +23,4 @@ export { hubTerminalsResize }
 export { hubTerminalsRestart }
 export { hubTerminalsTerminate }
 export { hubTerminalsWrite }
-export { mountDevframe }
 // #endregion

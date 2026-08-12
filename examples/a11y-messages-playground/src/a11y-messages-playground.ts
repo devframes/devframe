@@ -1,21 +1,16 @@
-import type { DevframeHubContext } from '@devframes/hub/node'
+import type { HubInstance } from '@devframes/hub/initiate'
 import type { ClientScriptEntry } from '@devframes/hub/types'
-import type { DevframeDefinition, DevframeHost } from 'devframe'
-import type { DevframeInstanceRegistration } from 'devframe/internal'
+import type { DevframeDefinition } from 'devframe'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
+import { Server as NodeHttpServer } from 'node:http'
 import { homedir } from 'node:os'
-import process from 'node:process'
-import { createHubContext, mountDevframe } from '@devframes/hub/node'
-import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
-import { registerDevframeInstance, startHttpAndWs } from 'devframe/internal'
-import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
-import { getPort } from 'get-port-please'
+import { initHub } from '@devframes/hub/initiate'
 import { join } from 'pathe'
 
 export interface A11yMessagesPlaygroundOptions {
-  /** Mount path for the hub's connection-meta endpoint. Default: `/__hub/`. */
+  /** Mount base the hub answers under. Default: `/__hub/`. */
   base?: string
-  /** Preferred port for the side-car RPC/WS server. Default: a free port near 9878. */
+  /** Pin the side-car RPC/WS port instead of sharing Vite's server / a random one. */
   port?: number
   /** Devframes to mount as docks (here: a11y + messages). */
   devframes?: DevframeDefinition[]
@@ -29,17 +24,17 @@ export interface A11yMessagesPlaygroundOptions {
 
 /**
  * A tiny Vite plugin that runs `@devframes/hub` inside the Vite dev server —
- * the same shape as `examples/vite-devframe-hub`, trimmed to the two
- * plugins this playground pairs (a11y + messages). It creates a hub context,
- * implements the framework-neutral `DevframeHost` surface, mounts each devframe
- * as a dock (attaching the a11y agent as its client script), and exposes the
- * side-car WS endpoint at `<base>__connection.json`.
+ * the same shape as `examples/hub-vite`, trimmed to the two plugins this
+ * playground pairs (a11y + messages). One `initHub()` call assembles the whole
+ * hub: it mounts each devframe as a dock (attaching the a11y agent as its
+ * client script), shares the WebSocket with Vite's own server, serves the
+ * discovery endpoints, and registers the playground in the global instance
+ * registry.
  */
 export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = {}): Plugin {
   const base = normalizeBase(options.base ?? '/__hub/')
   let viteConfig: ResolvedConfig | undefined
-  let started: { close: () => Promise<void> } | undefined
-  let registration: DevframeInstanceRegistration | undefined
+  let hub: HubInstance | undefined
 
   return {
     name: 'a11y-messages-playground',
@@ -50,36 +45,24 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
     },
 
     async configureServer(server: ViteDevServer) {
-      // Vite re-invokes `configureServer` on restart — tear the old server down
-      // so we don't leak the WS port, and drop the previous registry record so
-      // a restart doesn't leave a ghost instance behind.
-      await started?.close().catch(() => {})
-      started = undefined
-      registration?.unregister()
-      registration = undefined
+      // Vite re-invokes `configureServer` on restart — tear the old hub down so
+      // we don't leak the WS port or leave a ghost registry record behind.
+      await hub?.close().catch(() => {})
 
       const cwd = viteConfig!.root
-      const port = options.port ?? await getPort({ port: 9878, portRange: [9878, 9978] })
+      // Share Vite's own HTTP server for the WS upgrade when it's a plain
+      // `node:http` server; otherwise (a pinned port, or an https/http2 dev
+      // server) fall back to a side-car. Either way the browser finds the
+      // socket through `__connection.json`.
+      const httpServer = server.httpServer instanceof NodeHttpServer ? server.httpServer : undefined
+      const ws = options.port != null ? { port: options.port } : httpServer ? undefined : { sidecar: true as const }
 
-      const serveConnectionMeta = (metaBase: string): void => {
-        const metaPath = `${metaBase}${DEVFRAME_CONNECTION_META_FILENAME}`
-        server.middlewares.use(metaPath, (_req, res) => {
-          res.setHeader('Content-Type', 'application/json')
-          res.end(JSON.stringify({ backend: 'websocket', websocket: port }))
-        })
-      }
-
-      const host: DevframeHost = {
-        mountStatic(base, distDir) {
-          server.middlewares.use(base, serveStaticNodeMiddleware(distDir))
-        },
-        mountConnectionMeta(base) {
-          serveConnectionMeta(base)
-        },
-        resolveOrigin() {
-          const resolved = server.resolvedUrls?.local?.[0]
-          return resolved ? new URL(resolved).origin : 'http://localhost:5173'
-        },
+      hub = initHub({
+        base,
+        cwd,
+        auth: false,
+        ...(options.port == null && httpServer ? { server: httpServer } : {}),
+        ...(ws ? { ws } : {}),
         getStorageDir(scope) {
           if (scope === 'workspace')
             return join(cwd, '.devframe')
@@ -87,67 +70,29 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
             return join(cwd, 'node_modules/.a11y-messages-playground')
           return join(homedir(), '.a11y-messages-playground')
         },
-      }
-
-      const context: DevframeHubContext = await createHubContext({
-        cwd,
-        workspaceRoot: cwd,
-        mode: 'dev',
-        host,
-      })
-
-      // Mount each devframe as a dock, attaching its client script when one is
-      // configured (the a11y agent). `mountDevframe` runs the def's `setup(ctx)`,
-      // so `setupA11y` / `setupMessages` register their RPCs automatically.
-      for (const def of options.devframes ?? []) {
-        const clientScript = options.clientScripts?.[def.id]
-        await mountDevframe(context, def, clientScript ? { dock: { clientScript } } : undefined)
-      }
-
-      started = await startHttpAndWs({ context, port, auth: false })
-
-      // Tell the hub UI (served at `base`) where to find the WS endpoint.
-      serveConnectionMeta(base)
-
-      // Register this playground in the global instance registry
-      // (`~/.devframe/instances/`) so discovery tooling — `devframe connect`
-      // and the inspector's Instances tab — lists it like any standalone
-      // devframe. See `examples/vite-devframe-hub` for the same pattern.
-      const register = (): void => {
-        const origin = host.resolveOrigin()
-        const url = new URL(origin)
-        registration = registerDevframeInstance({
-          pid: process.pid,
-          port: Number(url.port) || (url.protocol === 'https:' ? 443 : 80),
-          origin,
-          basePath: base,
+        devframes: (options.devframes ?? []).map((def) => {
+          const clientScript = options.clientScripts?.[def.id]
+          return clientScript ? { devframe: def, dock: { clientScript } } : def
+        }),
+        // List the playground alongside standalone devframes in discovery
+        // tooling (`devframe connect`, the inspector's Instances tab).
+        register: {
           id: 'example:a11y-messages-playground',
           name: 'A11y + Messages Playground',
-          rootDir: cwd,
-          mcp: null,
-          startedAt: Date.now(),
-        })
-      }
-      if (server.httpServer?.listening)
-        register()
-      else
-        server.httpServer?.once('listening', register)
+        },
+      })
 
-      const closeStarted = started.close
-      started.close = async () => {
-        registration?.unregister()
-        registration = undefined
-        await closeStarted()
-      }
+      server.middlewares.use(hub.nodeMiddleware)
 
       server.httpServer?.once('close', () => {
-        void started?.close().catch(() => {})
+        void hub?.close().catch(() => {})
+        hub = undefined
       })
     },
 
     async closeBundle() {
-      await started?.close().catch(() => {})
-      started = undefined
+      await hub?.close().catch(() => {})
+      hub = undefined
     },
   }
 }

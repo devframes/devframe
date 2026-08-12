@@ -119,20 +119,20 @@ This is what lets a downstream analyzer spawn a `vite build`, show its progress 
 
 ## Mounting a devframe into a hub
 
-`mountDevframe(ctx, def)` is the framework-neutral primitive that registers any `DevframeDefinition` as a dock and runs its `setup(ctx)`:
+`ctx.install(def)` is the framework-neutral primitive that registers any `DevframeDefinition` as a dock and runs its `setup(ctx)`. It's the imperative counterpart to `initHub`'s declarative `devframes` list:
 
 ```ts
-import { createHubContext, mountDevframe } from '@devframes/hub/node'
+import { createHubContext } from '@devframes/hub/node'
 
 const ctx = await createHubContext({ cwd, host, mode: 'dev' })
-await mountDevframe(ctx, myDevframe)
+await ctx.install(myDevframe)
 ```
 
-Framework kits typically wrap this in a plugin shell. `@vitejs/devtools-kit`'s `createPluginFromDevframe` returns a Vite `Plugin` whose `devtools.setup` calls into `mountDevframe`.
+Framework kits typically wrap this in a plugin shell. `@vitejs/devtools-kit`'s `createPluginFromDevframe` returns a Vite `Plugin` whose `devtools.setup` calls into `ctx.install`.
 
 ### Connecting embedded SPAs
 
-A mounted devframe's SPA loads in an iframe at its base (`/__<id>/`) and calls `connectDevframe()`, which fetches `./__connection.json` relative to that base. `mountDevframe` serves it there by calling the host's `mountConnectionMeta(base)` alongside `mountStatic`, so the SPA discovers the RPC/WS endpoint directly. Implement `mountConnectionMeta` on your `DevframeHost` to serve the same connection meta you expose at the hub's own base:
+A mounted devframe's SPA loads in an iframe at its base (`/__<id>/`) and calls `connectDevframe()`, which fetches `./__connection.json` relative to that base. `ctx.install` serves it there by calling the host's `mountConnectionMeta(base)` alongside `mountStatic`, so the SPA discovers the RPC/WS endpoint directly. Implement `mountConnectionMeta` on your `DevframeHost` to serve the same connection meta you expose at the hub's own base:
 
 ```ts
 const host: DevframeHost = {
@@ -165,7 +165,7 @@ const defs = await Promise.all(
 ).then(mods => mods.map(m => m.default))
 
 for (const def of defs)
-  await mountDevframe(ctx, def)
+  await ctx.install(def)
 ```
 
 Each mounted SPA is served at `/__<id>/` and references its assets relatively (`./_next/…`, `./assets/…`). Disable the bundler's trailing-slash redirect so those paths resolve under the mount base:

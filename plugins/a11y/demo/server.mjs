@@ -22,9 +22,7 @@ import { readFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
-import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
-import { createH3DevframeHost, startHttpAndWs } from 'devframe/internal'
-import { createHostContext } from 'devframe/node'
+import { initDevframe } from 'devframe/initiate'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3, toNodeHandler } from 'h3'
@@ -82,22 +80,20 @@ async function main() {
 
   if (mode === 'dev') {
     const origin = `http://localhost:${port}`
-    const h3Host = createH3DevframeHost({
+    // 3a. `initDevframe` runs setup, serves the panel SPA + `__connection.json`
+    // on our shared app, and binds the WS RPC upgrade onto our server.
+    const server = createServer(toNodeHandler(app))
+    const instance = initDevframe(devframe, {
+      base: basePath,
+      distDir: panelDir,
+      app,
+      server,
+      host: bindHost,
       origin,
-      appName: devframe.id,
-      mount: (base, dir) => mountStaticHandler(app, base, dir),
+      auth: false,
     })
-    const ctx = await createHostContext({ cwd: ROOT, mode: 'dev', host: h3Host })
-    await devframe.setup(ctx)
-
-    // 3a. Connection meta (must precede the catch-all static mount) + WS RPC.
-    app.use(
-      `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`,
-      () => ({ backend: 'websocket', websocket: port }),
-    )
-    mountStaticHandler(app, basePath, panelDir)
-
-    await startHttpAndWs({ context: ctx, host: bindHost, port, app, auth: false })
+    await new Promise(r => server.listen(port, bindHost, r))
+    await instance.ready
     banner(origin)
   }
   else {

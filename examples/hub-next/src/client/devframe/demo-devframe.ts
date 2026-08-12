@@ -14,7 +14,7 @@ export default defineDevframe({
   version: pkg.version,
   packageName: pkg.name,
   homepage: pkg.homepage,
-  description: 'A tiny demo devframe mounted into the Next.js hub via mountDevframe().',
+  description: 'A tiny demo devframe mounted into the Next.js hub via its `devframes` list.',
   icon: 'ph:rocket-duotone',
   basePath: '/__next-demo-tool/',
   cli: {
@@ -34,7 +34,7 @@ export default defineDevframe({
     await ctx.messages.add({
       level: 'info',
       message: 'Next demo devframe loaded',
-      description: 'Registered via mountDevframe() from the Next host.',
+      description: 'Registered via the hub `devframes` list from the Next host.',
     })
   },
 })

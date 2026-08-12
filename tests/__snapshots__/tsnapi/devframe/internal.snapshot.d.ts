@@ -9,73 +9,10 @@ export interface CreateH3DevframeHostOptions {
   appName: string;
   workspaceRoot?: string;
 }
-export interface CreateInstanceShellOptions<TContext extends DevframeNodeContext> {
-  base: string;
-  app?: H3;
-  origin?: string | (() => string);
-  auth?: boolean | DevframeAuthHandler;
-  server?: Server;
-  ws?: DevframeWsOptions;
-  host?: string;
-  allowedOrigins?: readonly string[] | WsOriginRegistry | false;
-  destroyUnmatchedUpgrades?: boolean;
-  onPeerConnect?: (_: Peer, _: DevframeNodeRpcSession) => void;
-  onPeerDisconnect?: (_: Peer, _: DevframeNodeRpcSessionMeta) => void;
-  absoluteWsPath?: boolean;
-  resolveSidecarPort?: (_: string) => Promise<number>;
-  init: (_: InstanceShellApi) => Promise<InstanceShellInit<TContext>>;
-  mount?: (_: TContext, _: ConnectionMeta, _: InstanceShellApi) => void | Promise<void>;
-  onMetaUnavailable: () => never;
-}
-export interface DevframeInstanceRecord {
-  pid: number;
-  port: number;
-  origin: string;
-  basePath: string;
-  id: string;
-  name?: string;
-  rootDir: string;
-  mcp: {
-    path: string;
-  } | null;
-  startedAt: number;
-}
-export interface DevframeInstanceRegistration {
-  readonly file: string;
-  unregister: () => void;
-}
-export interface InstanceShell<TContext extends DevframeNodeContext> {
-  base: string;
-  handler: (_: Request) => Promise<Response>;
-  nodeMiddleware: (_: IncomingMessage, _: ServerResponse, _?: (_?: unknown) => void) => void;
-  ready: Promise<void>;
-  context: Promise<TContext>;
-  connectionMeta: () => ConnectionMeta;
-  handleUpgrade: (_: IncomingMessage, _: Duplex, _: Buffer) => void;
-  attach: (_: Server) => () => void;
-  close: () => Promise<void>;
-  internals: InstanceShellInternals;
-}
-export interface InstanceShellApi {
-  base: string;
-  app: H3;
-  origin: () => string | undefined;
-  connectionMeta: () => ConnectionMeta | undefined;
-}
-export interface InstanceShellInit<TContext extends DevframeNodeContext> {
-  context: TContext;
-  mcp?: ConnectionMeta['mcp'];
-  dispose?: () => Promise<void>;
-}
-export interface InstanceShellInternals {
-  readonly started?: StartedServer;
-  readonly authHandler?: DevframeAuthHandler;
-}
 // #endregion
 
 // #region Types
 export type AgentArgsFallback = 'wrap' | 'drop';
-export type InstanceWsTier = 'sidecar' | 'server' | 'external' | 'unbound';
 // #endregion
 
 // #region Classes
@@ -109,26 +46,26 @@ export declare class DevframeAgentHost implements DevframeAgentHost$1 {
 // #region Functions
 export declare function coerceAgentPositionalArgs(_: unknown, _: readonly unknown[] | undefined, _?: AgentArgsFallback): unknown[];
 export declare function createH3DevframeHost(_: CreateH3DevframeHostOptions): DevframeHost;
-export declare function createInstanceShell<TContext extends DevframeNodeContext>(_: CreateInstanceShellOptions<TContext>): InstanceShell<TContext>;
-export declare function listLiveDevframeInstances(_?: {
-  instancesDir?: string;
-  timeoutMs?: number;
-}): Promise<{
-  live: DevframeInstanceRecord[];
-  pruned: DevframeInstanceRecord[];
-}>;
 export declare function normalizeHttpServerUrl(_: string, _: number | string): string;
-export declare function registerDevframeInstance(_: DevframeInstanceRecord, _?: {
-  instancesDir?: string;
-}): DevframeInstanceRegistration;
-export declare function samePath(_: string, _: string): boolean;
 // #endregion
 
 // #region Other
 export { ContextRpcServer }
 export { createContextRpcServer }
 export { CreateContextRpcServerOptions }
+export { createInstanceShell }
+export { CreateInstanceShellOptions }
+export { DevframeInstanceRecord }
+export { DevframeInstanceRegistration }
+export { InstanceRegisterConfig }
+export { InstanceShell }
+export { InstanceShellApi }
+export { InstanceShellInit }
+export { InstanceShellInternals }
+export { InstanceWsTier }
+export { listLiveDevframeInstances }
+export { registerDevframeInstance }
+export { resolveInstanceRegister }
+export { samePath }
 export { StartedServer }
-export { startHttpAndWs }
-export { StartHttpAndWsOptions }
 // #endregion

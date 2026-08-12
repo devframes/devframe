@@ -6,12 +6,13 @@ import process from 'node:process'
 import {
   DEVFRAME_CONNECTION_META_FILENAME,
 } from 'devframe/constants'
-import { createH3DevframeHost, startHttpAndWs } from 'devframe/internal'
+import { createH3DevframeHost } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
+import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 import devframe from '../src/devframe'
 
 /**
@@ -50,7 +51,7 @@ export async function startStreamingChatServer(): Promise<StartedServer & {
     mountStaticHandler(app, basePath, resolve(distDir))
   }
 
-  const server = await startHttpAndWs({
+  const server = await serveTestContext({
     context: ctx,
     host,
     port,

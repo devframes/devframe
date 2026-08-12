@@ -3,13 +3,14 @@ import type { StartedServer } from 'devframe/internal'
 import type { TerminalsOptions } from '../src/types'
 import process from 'node:process'
 import { createRpcStreamingClientHost } from 'devframe/client'
-import { createH3DevframeHost, startHttpAndWs } from 'devframe/internal'
+import { createH3DevframeHost } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { createEventEmitter } from 'devframe/utils/events'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
+import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 import { createTerminalsDevframe } from '../src/index'
 import { getTerminalManager } from '../src/node/index'
 
@@ -92,7 +93,7 @@ export async function startTerminalsServer(
     (ctx as { terminals?: FakeHubTerminals }).terminals = hub
   await definition.setup(ctx)
 
-  const server = await startHttpAndWs({ context: ctx, host, port, app, auth: false })
+  const server = await serveTestContext({ context: ctx, host, port, app, auth: false })
 
   // Tear down spawned terminal processes (PTYs / piped children) alongside
   // the HTTP+WS server so tests don't leak `node`/shell processes.

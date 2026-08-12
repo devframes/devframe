@@ -1,4 +1,4 @@
-import type { StartedServer } from '../../../node/server'
+import type { StartedServer } from '../../../node/instance-shell'
 import type { DevframeDefinition } from '../../../types/devframe'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import { afterEach, describe, expect, it } from 'vitest'

@@ -5,7 +5,7 @@ import { resolveBasePath } from 'devframe/node/hub-internals'
 import { resolve } from 'pathe'
 import { diagnostics } from './diagnostics'
 
-export interface MountDevframeOptions {
+export interface InstallDevframeOptions {
   /**
    * Mount path override. Defaults to `d.basePath` or `/__${d.id}/`.
    */
@@ -37,19 +37,21 @@ function nextAvailableDockId(views: DevframeHubContext['docks']['views'], baseId
 }
 
 /**
- * Framework-neutral primitive — mounts a {@link DevframeDefinition} as a
- * dock inside a hub-aware context: serves the devframe's SPA at the
- * resolved base path, synthesizes an iframe dock entry from the
- * definition's metadata, and runs the definition's `setup(ctx)`.
+ * Framework-neutral primitive backing {@link DevframeHubContext.install} —
+ * installs a {@link DevframeDefinition} as a dock inside a hub-aware context:
+ * serves the devframe's SPA at the resolved base path, synthesizes an iframe
+ * dock entry from the definition's metadata, and runs the definition's
+ * `setup(ctx)`. Reach for it through `ctx.install(devframe)` rather than
+ * calling it directly.
  *
- * Framework kits wrap this with their own plugin/middleware machinery —
- * e.g. `@vitejs/devtools-kit`'s `createPluginFromDevframe` returns a
- * Vite `Plugin` whose `devtools.setup` ultimately delegates here.
+ * Framework kits wrap `ctx.install` with their own plugin/middleware
+ * machinery — e.g. `@vitejs/devtools-kit`'s `createPluginFromDevframe`
+ * returns a Vite `Plugin` whose `devtools.setup` ultimately delegates here.
  */
-export async function mountDevframe(
+export async function installDevframe(
   ctx: DevframeHubContext,
   d: DevframeDefinition,
-  options: MountDevframeOptions = {},
+  options: InstallDevframeOptions = {},
 ): Promise<void> {
   const strategy = d.duplicationStrategy ?? 'warn'
   const isDuplicate = ctx.docks.views.has(d.id)

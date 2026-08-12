@@ -2,14 +2,11 @@ import type { HubDevframeEntry, HubInstance } from '@devframes/hub/initiate'
 import type { DevframeHubContext } from '@devframes/hub/node'
 import type { ClientScriptEntry } from '@devframes/hub/types'
 import type { DevframeDefinition } from 'devframe'
-import type { DevframeInstanceRegistration } from 'devframe/internal'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { Server as NodeHttpServer } from 'node:http'
 import { homedir } from 'node:os'
-import process from 'node:process'
 import { defineHubRpcFunction } from '@devframes/hub'
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
-import { registerDevframeInstance } from 'devframe/internal'
 import { join } from 'pathe'
 
 export interface ViteDevframeHubOptions {
@@ -87,13 +84,10 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
   const base = normalizeBase(options.base ?? DEVFRAMES_HUB_BASE)
   let viteConfig: ResolvedConfig | undefined
   let instance: HubInstance | undefined
-  let registration: DevframeInstanceRegistration | undefined
 
-  // Every teardown path funnels here: drop the instance-registry record,
-  // then close the hub (WS binding / side-car, mounted frames' resources).
+  // Every teardown path funnels here: close the hub (WS binding / side-car,
+  // its instance-registry record, and mounted frames' resources).
   const teardown = async (): Promise<void> => {
-    registration?.unregister()
-    registration = undefined
     const previous = instance
     instance = undefined
     await previous?.close().catch(() => {})
@@ -109,8 +103,8 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
 
     async configureServer(server: ViteDevServer) {
       // Vite re-invokes `configureServer` on each restart. Tear down the
-      // previous instance so we don't leak the WS binding, and drop the
-      // previous registry record so a restart doesn't leave a ghost instance.
+      // previous instance so we don't leak the WS binding or leave a ghost
+      // registry record behind.
       await teardown()
 
       const cwd = viteConfig!.root
@@ -132,10 +126,12 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       const hub = initHub({
         base,
         cwd,
-        // Resolved lazily — Vite knows its local URL only once listening.
+        // Resolved lazily — Vite knows its local URL only once listening; an
+        // empty string until then defers both the auth banner and the registry
+        // record to the first request, whose origin is the real dialable one.
         origin: () => {
           const resolved = server.resolvedUrls?.local?.[0]
-          return resolved ? new URL(resolved).origin : 'http://localhost:5173'
+          return resolved ? new URL(resolved).origin : ''
         },
         // Single-user localhost demo: the hub is reachable only on loopback,
         // so it opts out of the gate for a no-friction dev experience. A hub
@@ -158,6 +154,16 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
           if (scope === 'project')
             return join(cwd, 'node_modules/.vite-devframe-hub')
           return join(homedir(), '.vite-devframe-hub')
+        },
+        // List this hub in the global instance registry (`~/.devframe/instances/`)
+        // so discovery tooling — `devframe connect`, the inspector's Instances
+        // tab — sees it like any standalone devframe. The instance owns the
+        // record: written once the first request resolves the dialable origin,
+        // removed on close. `rootDir` is the Vite project root.
+        register: {
+          id: 'example:vite-devframe-hub',
+          name: 'Vite Devframe Hub',
+          rootDir: cwd,
         },
         rpcDeclarations: [
           // The minimal hub ships its own `messages:list` and `terminals:list`
@@ -194,37 +200,6 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       // One namespace, one catch-all: the middleware serves everything under
       // `base` and `next()`s the rest back to Vite.
       server.middlewares.use(hub.nodeMiddleware)
-
-      // Record this hub in the global instance registry (`~/.devframe/instances/`)
-      // so discovery tooling — `devframe connect` and the inspector's Instances
-      // tab — lists it like any standalone devframe. `createDevServer` registers
-      // automatically; an in-process host like this one registers explicitly,
-      // reusing the Vite dev server's own origin (where `<base>__connection.json`
-      // is served). Registration waits for the server to be listening so the
-      // origin/port are known; `teardown` unregisters on every close path
-      // (restart, httpServer close, `closeBundle`).
-      const register = (): void => {
-        if (instance !== hub)
-          return
-        const resolved = server.resolvedUrls?.local?.[0]
-        const origin = resolved ? new URL(resolved).origin : 'http://localhost:5173'
-        const url = new URL(origin)
-        registration = registerDevframeInstance({
-          pid: process.pid,
-          port: Number(url.port) || (url.protocol === 'https:' ? 443 : 80),
-          origin,
-          basePath: base,
-          id: 'example:vite-devframe-hub',
-          name: 'Vite Devframe Hub',
-          rootDir: cwd,
-          mcp: null,
-          startedAt: Date.now(),
-        })
-      }
-      if (server.httpServer?.listening)
-        register()
-      else
-        server.httpServer?.once('listening', register)
 
       server.httpServer?.once('close', () => {
         if (instance !== hub)

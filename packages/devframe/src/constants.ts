@@ -75,7 +75,7 @@ export const ANONYMOUS_RPC_PREFIX = 'anonymous:'
 /**
  * Whether `name` is callable before a connection is trusted, i.e. it starts
  * with {@link ANONYMOUS_RPC_PREFIX}. Used by the resolver gate in
- * `startHttpAndWs` (via an `authorize` function) and by host adapters that
+ * the RPC server binding (via an `authorize` function) and by host adapters that
  * implement their own transport.
  */
 export function isAnonymousRpcMethod(name: string): boolean {

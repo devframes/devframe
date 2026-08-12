@@ -6,13 +6,14 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { createRpcStreamingClientHost } from 'devframe/client'
-import { createH3DevframeHost, startHttpAndWs } from 'devframe/internal'
+import { createH3DevframeHost } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
+import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 import { createAssetsDevframe } from '../src/index'
 import { disposeAssetsWatcher } from '../src/node/index'
 
@@ -50,7 +51,7 @@ export async function startAssetsServer(
   const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
   await definition.setup(ctx)
 
-  const server = await startHttpAndWs({ context: ctx, host, port, app, auth: false })
+  const server = await serveTestContext({ context: ctx, host, port, app, auth: false })
 
   // The live file watcher started by `setupAssets` otherwise keeps the
   // process alive past the test run.

@@ -1,18 +1,15 @@
 import type { Peer } from 'crossws'
 import type { DevframeAuthHandler } from '../node/auth/handler'
-import type { StartedServer } from '../node/server'
+import type { StartedServer } from '../node/instance-shell'
 import type { DevframeDefinition, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
 import type { DevframeNodeRpcSession, DevframeNodeRpcSessionMeta } from '../types/rpc'
 import { createServer } from 'node:http'
-import process from 'node:process'
 import { open } from 'devframe/utils/open'
 import { H3, toNodeHandler } from 'h3'
-import { joinURL, withBase, withoutLeadingSlash } from 'ufo'
-import { DEVFRAME_MCP_ROUTE } from '../constants'
+import { withBase } from 'ufo'
 import { diagnostics } from '../node/diagnostics'
-import { registerDevframeInstance } from '../node/instance-registry'
 import { normalizeHttpServerUrl } from '../node/utils'
-import { normalizeBasePath, resolveBasePath, resolveDevServerPort, resolveMcpConfig } from './_shared'
+import { normalizeBasePath, resolveBasePath, resolveDevServerPort } from './_shared'
 import { getInstanceInternals, initDevframe } from './initiate'
 
 export { resolveDevServerPort, resolveMcpConnectionMeta } from './_shared'
@@ -86,13 +83,13 @@ export interface CreateDevServerOptions {
   mcp?: boolean | McpRouteOptions
   /**
    * Called once per new WS connection, right after its session is created.
-   * Forwarded verbatim to the underlying `startHttpAndWs`.
+   * Forwarded verbatim to the underlying WS transport binding.
    */
   onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
   /**
    * Called once per closed WS connection, right after its session's
    * disconnect bookkeeping runs. Forwarded verbatim to the underlying
-   * `startHttpAndWs`.
+   * the underlying WS transport binding.
    */
   onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
   /**
@@ -178,6 +175,10 @@ export async function createDevServer(
     flags,
     onPeerConnect: options.onPeerConnect,
     onPeerDisconnect: options.onPeerDisconnect,
+    // Publish in the global registry so discovery tooling (`devframe connect`)
+    // finds the server without port guessing. The instance owns the record's
+    // lifecycle — written once its (pinned) origin resolves, removed on close.
+    register: true,
     // This server is devframe's own — nothing else handles its upgrades, so
     // off-route upgrade attempts are rejected promptly.
     destroyUnmatchedUpgrades: true,
@@ -193,28 +194,11 @@ export async function createDevServer(
 
   const internals = getInstanceInternals(devframe)
   // Every dev-server configuration binds a local transport (`server` is
-  // always passed), so the startHttpAndWs handle is always present.
+  // always passed), so the bound-transport handle is always present.
   const transport = internals.started!
 
   await options.onReady?.({ origin, port, app })
   await maybeOpenBrowser(def, flags, `${origin}${basePath}`, options.openBrowser, internals.authHandler)
-
-  const mcpConfig = resolveMcpConfig(options.mcp ?? def.cli?.mcp)
-
-  // Record the instance in the global registry so discovery tooling
-  // (`devframe connect`) finds it without port guessing. Registration never
-  // throws; a crash-orphaned record is pruned by readers on a failed probe.
-  const registration = registerDevframeInstance({
-    pid: process.pid,
-    port,
-    origin,
-    basePath,
-    id: def.id,
-    name: def.name,
-    rootDir: process.cwd(),
-    mcp: mcpConfig ? { path: joinURL(basePath, withoutLeadingSlash(mcpConfig.path ?? DEVFRAME_MCP_ROUTE)) } : null,
-    startedAt: Date.now(),
-  })
 
   return {
     origin,
@@ -224,10 +208,9 @@ export async function createDevServer(
     rpcGroup: transport.rpcGroup,
     connectionMeta: transport.connectionMeta,
     async close() {
-      registration.unregister()
-      // Instance teardown detaches the WS transport (and closes any
-      // dedicated-port socket server) and disposes MCP sessions; the HTTP
-      // server is this function's own to close.
+      // Instance teardown removes the registry record, detaches the WS
+      // transport (and closes any dedicated-port socket server), and disposes
+      // MCP sessions; the HTTP server is this function's own to close.
       await devframe.close()
       await new Promise<void>(resolveClose => server.close(() => resolveClose()))
     },

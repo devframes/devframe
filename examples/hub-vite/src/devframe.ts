@@ -5,7 +5,7 @@ import pkg from '../package.json' with { type: 'json' }
 
 /**
  * A tiny demo devframe — proves a portable devframe can plug into the
- * hub via {@link mountDevframe} and register its own docks / commands /
+ * hub via `ctx.install` and register its own docks / commands /
  * messages on top of the host-provided subsystems.
  *
  * The `ctx` cast is the same one `@vitejs/devtools-kit`'s
@@ -20,7 +20,7 @@ export default defineDevframe({
   version: pkg.version,
   packageName: pkg.name,
   homepage: pkg.homepage,
-  description: 'A tiny demo devframe that plugs into the hub via mountDevframe().',
+  description: 'A tiny demo devframe that plugs into the hub via its `devframes` list.',
   icon: 'ph:rocket-duotone',
   basePath: '/__demo-tool/',
   cli: {
@@ -40,7 +40,7 @@ export default defineDevframe({
     await ctx.messages.add({
       level: 'info',
       message: 'Demo devframe loaded',
-      description: 'Registered via mountDevframe(). Proves the devframe ↔ hub plug-in path works.',
+      description: 'Registered via the hub `devframes` list. Proves the devframe ↔ hub plug-in path works.',
     })
   },
 })

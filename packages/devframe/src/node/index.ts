@@ -1,8 +1,8 @@
 // Node-side public API for building a devframe context: `createHostContext`
 // (the context assembler) and `createStorage`.
 //
-// The server-assembly primitives (`createH3DevframeHost`, `startHttpAndWs`) and
-// everything lower-level live at `devframe/internal` (an explicitly-unstable
+// The server-assembly primitives (`createH3DevframeHost`, `createInstanceShell`)
+// and everything lower-level live at `devframe/internal` (an explicitly-unstable
 // cross-package surface): the transport-agnostic RPC core, the agent host, the
 // instance registry, and the `normalizeHttpServerUrl` helper. Application code
 // serves a devframe through the adapters (`createDevServer`, `createBuild`,

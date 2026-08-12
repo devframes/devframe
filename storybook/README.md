@@ -6,10 +6,10 @@ the live terminals plugin running as a real integration.
 
 ## How it works
 
-The whole host is one Vite plugin (`src/hub.ts`): it creates a hub context,
-implements the framework-neutral `DevframeHost`, registers a launcher dock (and
-a bound command) per plugin Storybook, mounts the terminals plugin via
-`mountDevframe`, and starts a side-car RPC/WS server.
+The whole host is one Vite plugin (`src/hub.ts`): one `initHub()` call mounts
+the terminals plugin (via the `devframes` list) and, in its `configure(ctx)`
+step, registers a launcher dock (and a bound command) per plugin Storybook —
+all behind the hub's connect middleware on a side-car RPC/WS server.
 
 Each Storybook dock is a `type: 'launcher'` tile with a **Start** button — the
 lazy trigger. The button binds a `ctx.commands` command (`storybook:launch:<id>`),

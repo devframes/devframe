@@ -39,12 +39,14 @@
 import type { DevframeHost, DevframeNodeContext } from 'devframe'
 import type { DataSourceEntry } from '../registry/index'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { createServer } from 'node:http'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
-import { startHttpAndWs } from 'devframe/internal'
+import { createContextRpcServer } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
 import { createInteractiveAuth } from 'devframe/recipes/interactive-auth'
+import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
 import { randomToken } from 'devframe/utils/crypto-token'
 import { getPort } from 'get-port-please'
 
@@ -153,7 +155,26 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
     ? createInteractiveAuth(context, { clientAuthTokens: [token!], banner: () => {} })
     : false
 
-  const handle = await startHttpAndWs({ context, port, auth })
+  // A bare WS RPC endpoint — no SPA, no discovery routes — so the agent
+  // binds the still-public transport primitives directly rather than the
+  // full-instance factories. The socket claims every upgrade on the port, so
+  // the advertised endpoint stays the bare `ws://127.0.0.1:<port>`.
+  const httpServer = createServer()
+  const { rpcGroup, onConnected, onDisconnected } = createContextRpcServer({ context, auth })
+  const { close: closeWs } = attachWsRpcTransport(rpcGroup, {
+    server: httpServer,
+    destroyUnmatched: true,
+    onConnected,
+    onDisconnected,
+  })
+  await new Promise<void>((resolve, reject) => {
+    const onError = (error: Error): void => reject(error)
+    httpServer.once('error', onError)
+    httpServer.listen(port, '127.0.0.1', () => {
+      httpServer.removeListener('error', onError)
+      resolve()
+    })
+  })
 
   const discoveryPath = join(cwd, AGENT_DISCOVERY_FILE)
   if (options.discoveryFile !== false) {
@@ -185,7 +206,8 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
         }
         catch {}
       }
-      await handle.close()
+      await closeWs()
+      await new Promise<void>(resolve => httpServer.close(() => resolve()))
     },
   }
 }

@@ -82,7 +82,7 @@ A devframe's SPA and RPC client code are byte-identical in both cases — that i
 
 ## Bring your own context
 
-Hosts that assemble `createHubContext` + `mountDevframe` themselves (with their own `DevframeHost` serving the frames) pass the finished context instead of a `devframes` list:
+Hosts that assemble `createHubContext` + `ctx.install` themselves (with their own `DevframeHost` serving the frames) pass the finished context instead of a `devframes` list:
 
 ```ts
 const hub = initHub({ base: DEVFRAMES_HUB_BASE, context: ctx })

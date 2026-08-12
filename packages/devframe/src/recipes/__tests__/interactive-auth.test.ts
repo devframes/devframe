@@ -6,10 +6,10 @@ import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
 import { describe, expect, it } from 'vitest'
+import { serveTestContext } from '../../../../../tests/helpers/serve-test-context'
 import { getTempAuthCode } from '../../node/auth/state'
 import { createHostContext } from '../../node/context'
 import { getInternalContext } from '../../node/hub-internals/context'
-import { startHttpAndWs } from '../../node/server'
 import { createInteractiveAuth } from '../interactive-auth'
 
 function makeHost(storageDir: string): DevframeHost {
@@ -42,7 +42,7 @@ async function startAuthenticatedServer(
 
   const host = '127.0.0.1'
   const port = await getPort({ port: 0, host })
-  const server = await startHttpAndWs({
+  const server = await serveTestContext({
     context,
     host,
     port,

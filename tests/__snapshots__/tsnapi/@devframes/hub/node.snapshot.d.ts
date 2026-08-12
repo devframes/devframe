@@ -272,6 +272,5 @@ export declare const hubTerminalsWrite: {
 export { createHubContext }
 export { CreateHubContextOptions }
 export { DevframeHubContext }
-export { mountDevframe }
-export { MountDevframeOptions }
+export { InstallDevframeOptions }
 // #endregion

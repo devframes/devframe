@@ -183,7 +183,7 @@ export interface RpcStreamingHost {
   /**
    * Adapters call this when a session disconnects so the host can drop
    * subscribers and abort orphaned streams. Most users do not need this;
-   * it's wired by `startHttpAndWs` automatically.
+   * it's wired by the RPC server binding automatically.
    *
    * @internal
    */

@@ -5,8 +5,8 @@ import type { Buffer } from 'node:buffer'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { Duplex } from 'node:stream'
 import type { DevframeAuthHandler } from '../node/auth/handler'
-import type { InstanceShellInternals } from '../node/instance-shell'
-import type { StartedServer } from '../node/server'
+import type { DevframeInstanceRecord } from '../node/instance-registry'
+import type { InstanceShellInternals, StartedServer } from '../node/instance-shell'
 import type { DevframeDefinition, DevframeSetupInfo, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
 import process from 'node:process'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
@@ -17,7 +17,7 @@ import { DEVFRAME_CONNECTION_META_FILENAME } from '../constants'
 import { createHostContext } from '../node/context'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
-import { createInstanceShell } from '../node/instance-shell'
+import { createInstanceShell, resolveInstanceRegister } from '../node/instance-shell'
 import { normalizeBasePath } from './_shared'
 import { resolveDevServerPort, resolveMcpConnectionMeta } from './dev'
 
@@ -89,6 +89,15 @@ export interface InitDevframeOptions {
    * URLs.
    */
   origin?: string | (() => string)
+  /**
+   * Publish this instance in the global registry (`~/.devframe/instances/`)
+   * so discovery tooling (`devframe connect`, the inspect plugin's Instances
+   * tab) finds it without port guessing. Registration is a dynamic import
+   * that fires once the public origin resolves and is torn down on
+   * {@link DevframeInstance.close}. Defaults to off; pass `true` to enable, or
+   * an object to override individual record fields (`id`, `name`, `mcp`, …).
+   */
+  register?: boolean | Partial<DevframeInstanceRecord>
   /** Parsed flag bag forwarded to `def.setup(ctx, { flags })`. */
   flags?: Record<string, unknown>
   /**
@@ -121,13 +130,12 @@ export interface InitDevframeOptions {
   destroyUnmatchedUpgrades?: boolean
   /**
    * Called once per new WS connection, right after its session is created.
-   * Forwarded verbatim to the underlying transport (see
-   * `StartHttpAndWsOptions.onPeerConnect`).
+   * Forwarded verbatim to the underlying transport.
    */
   onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
   /**
    * Called once per closed WS connection, right after the transport's own
-   * disconnect bookkeeping runs (see `StartHttpAndWsOptions.onPeerDisconnect`).
+   * disconnect bookkeeping runs.
    */
   onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
 }
@@ -195,7 +203,7 @@ export interface DevframeInstance {
  * @internal
  */
 export interface DevframeInstanceInternals {
-  /** The `startHttpAndWs` handle backing the side-car / shared-server WS tiers. */
+  /** The bound HTTP+WS server handle backing the side-car / shared-server WS tiers. */
   readonly started?: StartedServer
   /** The resolved auth handler when the gate is active. */
   readonly authHandler?: DevframeAuthHandler
@@ -248,6 +256,7 @@ export function initDevframe(
     destroyUnmatchedUpgrades: options.destroyUnmatchedUpgrades,
     onPeerConnect: options.onPeerConnect,
     onPeerDisconnect: options.onPeerDisconnect,
+    register: resolveInstanceRegister(options.register, { id: def.id, name: def.name }),
     resolveSidecarPort: sidecarHost => resolveDevServerPort(def, { host: sidecarHost }),
     onMetaUnavailable: () => {
       throw diagnostics.DF0054({ id: def.id })

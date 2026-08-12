@@ -22,7 +22,7 @@ export interface DevframeHost {
    * base, so a devframe SPA mounted there can discover the RPC/WS endpoint
    * via `connectDevframe()`'s relative `./__connection.json` fetch.
    *
-   * Called by `mountDevframe` for each mounted devframe (alongside
+   * Called by `ctx.install` for each mounted devframe (alongside
    * `mountStatic`). Without it, an embedded SPA can only discover the
    * endpoint by inheriting it from a same-origin parent window — which fails
    * for cross-origin or sandboxed iframes. Implementations serve the same

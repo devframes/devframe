@@ -25,7 +25,7 @@ export const diagnostics = defineDiagnostics({
     DP_MESSAGES_0001: {
       why: (p: { id: string }) =>
         `"${p.id}" is mounted on a context without a hub messages host (\`ctx.messages\`) — its RPC surface stays registered but no-ops, so the panel will show an empty feed.`,
-      fix: 'Mount this devframe through a hub host (`@devframes/hub`\'s `createHubContext` + `mountDevframe`) to get a live message feed.',
+      fix: 'Mount this devframe through a hub host (`@devframes/hub`\'s `initHub`, or `createHubContext` + `ctx.install`) to get a live message feed.',
     },
   },
 })

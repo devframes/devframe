@@ -535,7 +535,7 @@ describe('adapters/dev', () => {
     }
   })
 
-  it('forwards onPeerConnect/onPeerDisconnect to the underlying startHttpAndWs', async () => {
+  it('forwards onPeerConnect/onPeerDisconnect to the underlying WS transport binding', async () => {
     const devframe = defineDevframe({
       id: 'devframe-peer-hooks',
       name: 'Peer Hooks',

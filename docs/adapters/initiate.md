@@ -116,7 +116,7 @@ Fetch handlers hand over `Request`s, so the RPC socket needs a binding of its ow
 3. **`ws: { sidecar: true }`** — a side-car server on a free port, for hosts whose handlers never see upgrades (Next.js route handlers, Nitro, Rsbuild).
 4. **The host's own upgrades** — with none of the above, the socket waits for the host to hand upgrade events over: `devtools.attach(server)` routes a server's `upgrade` events (returning a detach function), and `devtools.handleUpgrade(req, socket, head)` completes a single one from a listener you already own. This is the tier for hosts whose server exists only after the instance does, and it builds the transport lazily — an instance nobody attaches costs nothing.
 
-`ws.url` controls the *advertisement* instead: the browser dials it verbatim. On its own it means an external server owns the transport and its auth (wire the instance's `context` into that server with `startHttpAndWs`); alongside a local binding it overrides only what is advertised — the tunnel pattern, where a relay forwards to the socket bound here.
+`ws.url` controls the *advertisement* instead: the browser dials it verbatim. On its own it means an external server owns the transport and its auth (wire the instance's `context` into that server by composing `createContextRpcServer` with a WS transport); alongside a local binding it overrides only what is advertised — the tunnel pattern, where a relay forwards to the socket bound here.
 
 Whichever combination is active, `__connection.json` describes it and the browser client follows. Asking a configured instance to also take over host upgrades reports `DF0055` (a local binding already owns the socket) or `DF0056` (`ws.url` handed it to someone else).
 

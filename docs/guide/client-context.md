@@ -139,7 +139,7 @@ A script that fails to import is logged and retried on the next dock update.
 Build the script as a single self-contained ES module — it loads outside any chunk graph or import map. Attach it when mounting the devframe:
 
 ```ts
-await mountDevframe(ctx, myDevframe, {
+await ctx.install(myDevframe, {
   dock: { clientScript: { importFrom: `/@fs/${myAgentBundlePath}` } },
 })
 ```
@@ -152,14 +152,14 @@ The [a11y inspector](/plugins/a11y)'s in-page agent is the canonical client scri
 
 ## Iframe panels
 
-Dock iframes are their own documents, so they connect themselves instead of reading the host page's context: the panel SPA calls `connectDevframe()`, which discovers `./__connection.json` relative to its own base — `mountDevframe` serves the hub's connection meta under every dock base for exactly this. The client script (host page) and the iframe panel then share the server through RPC and shared state, or a same-origin `BroadcastChannel` when the loop must survive static builds.
+Dock iframes are their own documents, so they connect themselves instead of reading the host page's context: the panel SPA calls `connectDevframe()`, which discovers `./__connection.json` relative to its own base — `ctx.install` serves the hub's connection meta under every dock base for exactly this. The client script (host page) and the iframe panel then share the server through RPC and shared state, or a same-origin `BroadcastChannel` when the loop must survive static builds.
 
 ## Shared-iframe soft navigation
 
 A tool with many internal views — Nuxt DevTools' tabs, say — can surface each view as its own hub dock while they all share **one** live iframe, switching between them with client-side (soft) navigation instead of reloading. One iframe dock is the **anchor**: it owns a `frameId` and opts in with `subTabs`.
 
 ```ts
-await mountDevframe(ctx, nuxtDevtools, {
+await ctx.install(nuxtDevtools, {
   dock: { frameId: 'nuxt-devtools', subTabs: { protocol: 'postmessage' } },
 })
 ```

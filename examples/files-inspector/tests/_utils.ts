@@ -7,12 +7,13 @@ import { fileURLToPath } from 'node:url'
 import {
   DEVFRAME_CONNECTION_META_FILENAME,
 } from 'devframe/constants'
-import { createH3DevframeHost, startHttpAndWs } from 'devframe/internal'
+import { createH3DevframeHost } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
+import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 import devframe from '../src/devframe'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
@@ -80,7 +81,7 @@ export async function startInspectorServer(
   app.use(metaPath, () => ({ backend: 'websocket', websocket: port }))
   mountStaticHandler(app, basePath, resolve(distDir))
 
-  const server = await startHttpAndWs({
+  const server = await serveTestContext({
     context: ctx,
     host,
     port,

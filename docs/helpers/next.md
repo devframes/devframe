@@ -57,42 +57,33 @@ The base defaults to `def.basePath ?? '/__<id>/'`. `close()` shuts the side-car 
 
 ## Hosting a hub
 
-For many devframes at once, use `createDevframeNextHost()` with [`@devframes/hub`](/guide/hub). Its `host` accumulates every `mountStatic` / `mountConnectionMeta` call into one `fetch` handler:
+For many devframes at once, use [`@devframes/hub`](/guide/hub)'s `initHub` — one call assembles every frame under `<base><id>/` behind a single web-standard `handler` you mount on a catch-all route:
 
 ```ts [devframe/host.ts]
-import { createHubContext, mountDevframe } from '@devframes/hub/node'
-import { createDevframeNextHost } from '@devframes/next'
-import { startHttpAndWs } from 'devframe/internal'
+import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
 
-const nextHost = createDevframeNextHost({
-  resolveOrigin: () => 'http://localhost:3000',
-  getStorageDir: scope => resolveStorageDir(scope),
+// Next route handlers can't accept WS upgrades, so the socket asks for a
+// side-car of its own; the browser discovers it via `__connection.json`.
+const hub = initHub({
+  base: DEVFRAMES_HUB_BASE,
+  devframes: [myDevframe],
+  ws: { sidecar: true },
+  auth: false,
 })
 
-const context = await createHubContext({ host: nextHost.host, mode: 'dev' })
-await mountDevframe(context, myDevframe)
-nextHost.host.mountConnectionMeta('/__hub') // the hub's own connection base
-
-const started = await startHttpAndWs({ context, port, auth: false })
-nextHost.setConnectionMeta({ backend: 'websocket', websocket: started.port })
-
-export const hub = { fetch: nextHost.fetch }
+export const { handler } = hub // mount on a `[[...path]]` route handler
 ```
 
-```ts [app/__[id]/[[...path]]/route.ts]
+```ts [app/__devframes/[[...path]]/route.ts]
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request): Promise<Response> {
-  return hub.fetch(request) // serves every mounted SPA + connection meta
+  return handler(request) // serves every mounted SPA + connection meta
 }
 ```
 
-`createDevframeNextHost` returns `{ host, fetch, setConnectionMeta }`:
-
-- **`host`** — the [`DevframeHost`](/guide/hub) to pass to `createHubContext` / `createHostContext`.
-- **`fetch(request)`** — the handler your route delegates to. Connection meta is matched before the static handler, so an SPA fallback never swallows a `<base>/__connection.json` discovery fetch; a miss returns a bare `404`.
-- **`setConnectionMeta(meta)`** — publish the live meta once the RPC/WS port is known. Until then, meta requests answer `503` so a racing client retries rather than caching a wrong endpoint.
+`initHub` returns one `handler` that serves every mounted SPA, the discovery endpoints, and the hub-level transport. Connection meta is matched before the static handlers, so an SPA fallback never swallows a `<base>__connection.json` discovery fetch; a miss returns a bare `404`. Memoize the instance on `globalThis` so Next's per-request route re-evaluation reuses one hub — see `examples/hub-next` for a full working host.
 
 ## React client
 
@@ -131,5 +122,5 @@ Route handlers that call `fetch` pin `export const runtime = 'nodejs'`: the stat
 ## See also
 
 - [Vite Bridge](./vite-bridge) — the equivalent for Vite-based hosts
-- [Hub](/guide/hub) — `createHubContext`, `mountDevframe`, and `DevframeHost`
+- [Hub](/guide/hub) — `initHub`, `ctx.install`, and `DevframeHost`
 - [hub-next](/examples/hub-next) — a full working host

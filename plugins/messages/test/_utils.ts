@@ -9,12 +9,13 @@ import process from 'node:process'
 import { createHubContext } from '@devframes/hub/node'
 import messagesDevframe from '@devframes/plugin-messages'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
-import { createH3DevframeHost, startHttpAndWs } from 'devframe/internal'
+import { createH3DevframeHost } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
 import { resolveBasePath } from 'devframe/node/hub-internals'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
+import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 
 const SPA_DIST = messagesDevframe.cli!.distDir!
 
@@ -77,7 +78,7 @@ async function boot(options: BootOptions): Promise<MessagesServer> {
   app.use(metaPath, () => ({ backend: 'websocket', websocket: port }))
   mountStaticHandler(app, basePath, path.resolve(distDir))
 
-  const server = await startHttpAndWs({
+  const server = await serveTestContext({
     context: ctx,
     host,
     port,

@@ -26,6 +26,7 @@ export interface InitDevframeOptions {
   auth?: boolean | DevframeAuthHandler;
   mcp?: boolean | McpRouteOptions;
   origin?: string | (() => string);
+  register?: boolean | Partial<DevframeInstanceRecord>;
   flags?: Record<string, unknown>;
   allowedOrigins?: readonly string[] | WsOriginRegistry | false;
   app?: H3;

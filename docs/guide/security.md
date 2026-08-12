@@ -12,7 +12,7 @@ An RPC handler runs with the full privileges of the process hosting it — files
 
 Two postures cover that boundary:
 
-- **Authenticated (default).** `auth` defaults to `true`. The browser authenticates with the server before calls are accepted, and reconnects by presenting a node-issued bearer token. `devframe/recipes/interactive-auth`'s `createInteractiveAuth` packages the whole protocol — handshake handlers, the resolver gate, connect-time trust, and the code/link banner — into a single `DevframeAuthHandler` you pass straight to `startHttpAndWs({ auth })`.
+- **Authenticated (default).** `auth` defaults to `true`. The browser authenticates with the server before calls are accepted, and reconnects by presenting a node-issued bearer token. `devframe/recipes/interactive-auth`'s `createInteractiveAuth` packages the whole protocol — handshake handlers, the resolver gate, connect-time trust, and the code/link banner — into a single `DevframeAuthHandler` the adapters wire for you (and that you can pass straight to `initDevframe` / `initHub` via `auth`).
 - **Unauthenticated opt-out.** Setting `auth: false` starts the server with an auto-trust handshake. It exists for single-user tools talking to their own `localhost`, where a round-trip would only add friction.
 
 > [!WARNING]
@@ -22,7 +22,7 @@ Two postures cover that boundary:
 
 Exactly one rule decides what an untrusted connection may call: **a method is reachable before trust iff its name starts with `anonymous:`** (`isAnonymousRpcMethod`, from `devframe/constants`). There is no separate allowlist to keep in sync — the two handshake methods below carry the prefix precisely because they're the only ones an unauthenticated caller needs.
 
-`startHttpAndWs` enforces this itself once you give it something to enforce: pass `auth: authHandler` (its `.authorize` becomes the gate) or your own `authorize(methodName, session)` function. Every other call from an untrusted session throws [`DF0036`](../errors/DF0036).
+The RPC server binding enforces this itself once you give it something to enforce: pass `auth: authHandler` (its `.authorize` becomes the gate) or your own `authorize(methodName, session)` function. Every other call from an untrusted session throws [`DF0036`](../errors/DF0036).
 
 On the client, `connectDevframe()` kicks off the handshake below without waiting for it, so a naive client could otherwise race it — sending a trusted call over the freshly-opened socket before the server has had a chance to answer `anonymous:devframe:auth`, hitting this exact gate. `rpc.call` / `rpc.callOptional` / `rpc.callEvent` hold anything issued while that first handshake is still in flight and release it once the handshake settles, so application code never has to special-case this window itself.
 
@@ -43,15 +43,13 @@ The bearer token is a secret. It travels to the server on the WebSocket URL (`?d
 ### The ready-made layer
 
 ```ts
-import { startHttpAndWs } from 'devframe/node'
 import { createInteractiveAuth } from 'devframe/recipes/interactive-auth'
 
+// The adapters gate with this layer by default. Construct it yourself only to
+// tune it (e.g. CI tokens) and hand it to `initDevframe` / `initHub` as `auth`.
 const auth = createInteractiveAuth(ctx, {
   clientAuthTokens: process.env.CI ? [process.env.DEVFRAME_CI_TOKEN!] : undefined,
 })
-
-const server = await startHttpAndWs({ context: ctx, port: 9999, auth })
-auth.printBanner()
 ```
 
 `createInteractiveAuth` closes over the auth storage internally — nothing here reaches into `devframe/node/hub-internals`. Pass `clientAuthTokens` for CI/shared machines that should skip the interactive prompt entirely, or a custom `banner`/`serverUrl` to change how the code is presented.

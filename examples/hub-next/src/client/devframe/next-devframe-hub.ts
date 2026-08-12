@@ -1,14 +1,12 @@
 import type { HubDevframeEntry, HubInstance } from '@devframes/hub/initiate'
 import type { DevframeHubContext } from '@devframes/hub/node'
 import type { DevframeDefinition } from 'devframe'
-import type { DevframeInstanceRegistration } from 'devframe/internal'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { defineHubRpcFunction } from '@devframes/hub'
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
-import { registerDevframeInstance } from 'devframe/internal'
 import { createDashboardView } from 'json-render/dashboard'
 import { dirname, join } from 'pathe'
 import demoDevframe from './demo-devframe'
@@ -182,8 +180,6 @@ export async function nextDevframeHub(
     },
   ]
 
-  let registration: DevframeInstanceRegistration | undefined
-
   const hub = initHub({
     base: DEVFRAMES_HUB_BASE,
     cwd,
@@ -212,6 +208,15 @@ export async function nextDevframeHub(
       nextHubTerminalsList,
     ],
     devframes,
+    // Record this hub in the global registry so `devframe connect` discovers
+    // it — running inside the Next dev server — like any standalone devframe.
+    // The instance owns the record (written once its pinned origin resolves,
+    // removed on close); the aggregate MCP path is derived from `mcp: true`.
+    register: {
+      id: 'example:next-devframe-hub',
+      name: 'Next Devframe Hub',
+      rootDir: cwd,
+    },
     async configure(ctx) {
       ctx.commands.register({
         id: 'example:next-devframe-hub:ping',
@@ -257,34 +262,10 @@ export async function nextDevframeHub(
         message: 'Next Devframe Hub started',
         description: `${devframes.length} devframe(s) mounted under ${DEVFRAMES_HUB_BASE}.`,
       })
-
-      // Record the instance in the global registry so `devframe connect`
-      // discovers this hub — running inside the Next dev server — like any
-      // standalone devframe. In-process hosts register explicitly; the origin
-      // is the Next app's own.
-      registration = registerDevframeInstance({
-        pid: process.pid,
-        port: nextPort,
-        origin,
-        basePath: DEVFRAMES_HUB_BASE,
-        id: 'example:next-devframe-hub',
-        name: 'Next Devframe Hub',
-        rootDir: cwd,
-        mcp: { path: `${DEVFRAMES_HUB_BASE}__mcp` },
-        startedAt: Date.now(),
-      })
     },
   })
 
-  const closeHub = hub.close
-  return {
-    ...hub,
-    close: async () => {
-      registration?.unregister()
-      registration = undefined
-      await closeHub()
-    },
-  }
+  return hub
 }
 
 /**

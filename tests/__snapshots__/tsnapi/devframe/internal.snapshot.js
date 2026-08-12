@@ -10,6 +10,6 @@ export { DevframeAgentHost }
 export { listLiveDevframeInstances }
 export { normalizeHttpServerUrl }
 export { registerDevframeInstance }
+export { resolveInstanceRegister }
 export { samePath }
-export { startHttpAndWs }
 // #endregion

@@ -152,7 +152,7 @@ The low-level primitives shared between `devframe` and its first-party integrati
 | `registerDevframeInstance` / `listLiveDevframeInstances` (+ `DevframeInstanceRecord`, `DevframeInstanceRegistration`) | `devframe/node` | `devframe/internal` |
 | `normalizeHttpServerUrl` | `devframe/node` | `devframe/internal` |
 
-A host that stands up its own server composes from `devframe/internal` — `createH3DevframeHost` for the node `DevframeHost`, `startHttpAndWs` (or `createContextRpcServer` + `devframe/rpc/server` + `devframe/rpc/transports/*`) to bind a transport — plus `devframe/node`'s `createHostContext` and `devframe/node/hub-internals`. This is the path `@devframes/hub`'s `initHub` takes. A custom host advertises itself with `registerDevframeInstance`, and a devtool enumerates running instances with `listLiveDevframeInstances`. Application code should prefer the adapters and `devframe/initiate`.
+A host that stands up its own server composes from `devframe/internal` — `createH3DevframeHost` for the node `DevframeHost`, `createContextRpcServer` + `devframe/rpc/transports/*` to bind a transport — plus `devframe/node`'s `createHostContext` and `devframe/node/hub-internals`. This is the path `@devframes/hub`'s `initHub` takes (in later releases `startHttpAndWs` was removed in favor of `initDevframe` / `initHub`). A custom host advertises itself with `registerDevframeInstance`, and a devtool enumerates running instances with `listLiveDevframeInstances`. Application code should prefer the adapters and `devframe/initiate`.
 
 ## `@devframes/hub` category order lives only on `/constants`
 

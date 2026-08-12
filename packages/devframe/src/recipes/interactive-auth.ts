@@ -53,7 +53,7 @@ function defaultBanner(info: { code: string, url: string }): void {
  * auth.printBanner()
  *
  * // wire `auth.authorize` / `auth.onConnect` into your transport, or pass
- * // the whole handler to `startHttpAndWs({ auth, ... })`.
+ * // the whole handler to `initDevframe` / `initHub` via their `auth` option.
  * ```
  */
 export function createInteractiveAuth(

@@ -9,7 +9,7 @@ import type { DevframeNodeRpcSession } from 'devframe/types'
  * the handshake RPC functions, the resolver gate, the connect-time trust
  * hook, and the startup banner.
  *
- * `startHttpAndWs` accepts one of these directly via its `auth` option —
+ * `initDevframe` / `initHub` accept one of these directly via their `auth` option —
  * see {@link https://devfra.me | devframe}'s server docs — or a host can
  * wire the four pieces itself against a lower-level transport.
  */

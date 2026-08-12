@@ -6,7 +6,7 @@
 //
 // - `createContextRpcServer` — the transport-agnostic RPC core; a host that
 //   binds its own transport (e.g. the hub's `initHub`) reuses the exact
-//   session/auth wiring `startHttpAndWs` uses.
+//   session/auth wiring the instance shell's own binding uses.
 // - `DevframeAgentHost` — the agent host implementation the hub composes into
 //   its own commands host.
 // - `coerceAgentPositionalArgs` — positional-arg coercion the hub applies when
@@ -16,11 +16,11 @@
 //   Instances tab, the connector) enumerates what's running.
 // - `createH3DevframeHost` — the node/standalone `DevframeHost` implementation
 //   (filesystem storage paths + origin resolution) passed to `createHostContext`.
-// - `startHttpAndWs` — the low-level "listen on a port + attach the WS
-//   transport" primitive the adapters and `initHub` are built on.
 // - `createInstanceShell` — the shared machinery behind `initDevframe` and
 //   `initHub`: mount base, h3 app, lazy origin + auth banner, WebSocket
-//   binding resolution, the fetch/connect handler pair, and teardown.
+//   binding resolution ("listen on a port / share one + attach the WS
+//   transport"), the fetch/connect handler pair, and teardown. `StartedServer`
+//   is the live handle its bound tiers produce and `createDevServer` re-exposes.
 // - `normalizeHttpServerUrl` — a small host-side URL helper.
 export { coerceAgentPositionalArgs } from '../node/agent-args'
 export type { AgentArgsFallback } from '../node/agent-args'
@@ -28,16 +28,17 @@ export { DevframeAgentHost } from '../node/host-agent'
 export * from '../node/host-h3'
 export { listLiveDevframeInstances, registerDevframeInstance } from '../node/instance-registry'
 export type { DevframeInstanceRecord, DevframeInstanceRegistration } from '../node/instance-registry'
-export { createInstanceShell, samePath } from '../node/instance-shell'
+export { createInstanceShell, resolveInstanceRegister, samePath } from '../node/instance-shell'
 export type {
   CreateInstanceShellOptions,
+  InstanceRegisterConfig,
   InstanceShell,
   InstanceShellApi,
   InstanceShellInit,
   InstanceShellInternals,
   InstanceWsTier,
+  StartedServer,
 } from '../node/instance-shell'
 export { createContextRpcServer } from '../node/rpc-core'
 export type { ContextRpcServer, CreateContextRpcServerOptions } from '../node/rpc-core'
-export * from '../node/server'
 export { normalizeHttpServerUrl } from '../node/utils'

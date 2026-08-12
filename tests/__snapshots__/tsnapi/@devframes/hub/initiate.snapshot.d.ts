@@ -13,7 +13,7 @@ export interface DevframeHubUi {
 }
 export interface HubDevframeEntry {
   devframe: DevframeDefinition;
-  dock?: MountDevframeOptions['dock'];
+  dock?: InstallDevframeOptions['dock'];
 }
 export interface HubInstance {
   base: string;
@@ -41,6 +41,7 @@ export interface InitHubOptions {
   auth?: boolean | DevframeAuthHandler;
   mcp?: boolean | McpRouteOptions;
   origin?: string | (() => string);
+  register?: boolean | Partial<DevframeInstanceRecord>;
   cwd?: string;
   getStorageDir?: (_: DevframeStorageScope) => string;
   allowedOrigins?: readonly string[] | WsOriginRegistry | false;
