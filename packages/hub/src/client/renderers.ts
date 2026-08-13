@@ -61,8 +61,13 @@ export type DockRendererMountResult
  * instance and disposes it when the entry deactivates.
  */
 export interface DockRenderersContext {
-  /** Register a renderer for a dock `type`. Returns an unregister function. */
-  register: (type: string, renderer: DockRenderer) => () => void
+  /**
+   * Register a renderer for a dock `type`. Returns an unregister function.
+   * Accepts a renderer narrowed to any specific entry variant (e.g. a
+   * {@link DockRenderer}<DevframeJsonRenderDockEntry> from an integration
+   * package) — the type routes only its own entries to it.
+   */
+  register: (type: string, renderer: DockRenderer<any>) => () => void
   /** Look up the locally-registered renderer for a dock `type`, if any. */
   get: (type: string) => DockRenderer | undefined
   /**
@@ -99,7 +104,7 @@ export interface CreateDockRenderersContextOptions {
   /** The assembled client context handed to renderers at mount. */
   context: () => DevframeClientContext
   /** Renderers registered locally at boot — these win over manifest modules. */
-  local?: Record<string, DockRenderer>
+  local?: Record<string, DockRenderer<any>>
   /** The current {@link DockRendererManifest} (live getter). */
   manifest?: () => DockRendererManifest
   /**

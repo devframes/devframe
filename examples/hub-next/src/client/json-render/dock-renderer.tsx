@@ -96,14 +96,18 @@ function JsonRenderView({ spec, rpc, registry, viewId }: JsonRenderViewProps): R
 export function createReactJsonRenderDockRenderer(): JsonRenderDockRenderer {
   return async ({ entry, container, context }) => {
     const view: JsonRenderViewRef = entry.view
-    const rpc = context.rpc
+    const { rpc } = context
+    // The action bridge only needs a loose `call(method, …)` — the client's
+    // typed `DevframeRpcClient` narrows `method` to known keys, so widen it at
+    // the prop boundary for the dynamic spec-action names.
+    const bridgeRpc = rpc as unknown as JsonRenderViewProps['rpc']
     const viewId = 'stateKey' in view ? view.stateKey : entry.id
     const root = createRoot(container)
 
     // Inline view: render the embedded spec once, no shared state involved.
     if ('spec' in view) {
       root.render(
-        <JsonRenderView spec={view.spec} rpc={rpc} registry={baseReactRegistry} viewId={viewId} />,
+        <JsonRenderView spec={view.spec} rpc={bridgeRpc} registry={baseReactRegistry} viewId={viewId} />,
       )
       return {
         dispose() {
@@ -112,12 +116,12 @@ export function createReactJsonRenderDockRenderer(): JsonRenderDockRenderer {
       }
     }
 
-    const state = await rpc.sharedState.get(view.stateKey, { initialValue: null })
+    const state = await rpc.sharedState.get<Spec>(view.stateKey, { initialValue: null as unknown as Spec })
     const render = (): void => {
       root.render(
         <JsonRenderView
           spec={state.value() as Spec | null}
-          rpc={rpc}
+          rpc={bridgeRpc}
           registry={baseReactRegistry}
           viewId={viewId}
         />,

@@ -66,7 +66,7 @@ export interface DevframeClientHostOptions {
    * Local registrations take precedence over the hub's renderer manifest
    * (`initHub({ renderers })`) — explicit local code beats wire config.
    */
-  renderers?: Record<string, DockRenderer>
+  renderers?: Record<string, DockRenderer<any>>
   /**
    * Hub-wide override of the top-level dock-bar category ordering — a map of
    * category id → ordering weight (lower sorts earlier), mirroring the shape

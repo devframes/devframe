@@ -1,12 +1,12 @@
-import type { HubDevframeEntry, HubInstance } from '@devframes/hub/initiate'
+import type { DockRendererRegistration, HubDevframeEntry, HubInstance } from '@devframes/hub/initiate'
 import type { DevframeHubContext } from '@devframes/hub/node'
+import type { jsonRenderUiRenderer as JsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import type { DevframeDefinition } from 'devframe'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { defineHubRpcFunction } from '@devframes/hub'
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
-import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { createDashboardView } from 'json-render/dashboard'
 import { dirname, join } from 'pathe'
@@ -60,6 +60,19 @@ async function loadAssetsDevframe(): Promise<DevframeDefinition> {
   // `src/client/devframe/` → `src/client/public`, the dir Next serves at `/`.
   const dir = join(dirname(fileURLToPath(import.meta.url)), '../public')
   return (mod.createAssetsDevframe as (options: { dir: string, watch: boolean }) => DevframeDefinition)({ dir, watch: false })
+}
+
+/**
+ * The reference json-render renderer registration for `initHub({ renderers })`.
+ * Loaded through the same bundler-ignored dynamic `import()` as the plugins:
+ * `jsonRenderUiRenderer()` resolves its prebuilt module via `import.meta.url`,
+ * which only points at the published `dist` when Node loads the package at
+ * request time — a static import would be rewritten into a Next server chunk,
+ * making the path resolve inside `.next/` (see `DF8109`).
+ */
+async function loadJsonRenderUiRenderer(): Promise<DockRendererRegistration> {
+  const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/json-render-ui/hub')
+  return (mod.jsonRenderUiRenderer as typeof JsonRenderUiRenderer)()
 }
 
 /**
@@ -158,6 +171,10 @@ export async function nextDevframeHub(
   // the origin, so their BroadcastChannel connects.
   const a11yAgent = await loadA11yAgentMount()
 
+  // The reference json-render renderer module, loaded the same bundler-ignored
+  // way so its `import.meta.url` bundle path resolves to the published `dist`.
+  const jsonRenderRenderer = await loadJsonRenderUiRenderer()
+
   // Demo devframes alongside the dogfooded built-in plugin packages. The
   // shared-iframe soft-navigation demo mounts as a `subTabs` anchor (a shared
   // `frameId` + the postmessage protocol) so the client host attaches the
@@ -215,7 +232,7 @@ export async function nextDevframeHub(
     // local React renderer for the same type (app/page.tsx), which takes
     // precedence — witnessing both sides of the swap seam: the manifest
     // composition AND a local frontend replacing it.
-    renderers: [jsonRenderUiRenderer()],
+    renderers: [jsonRenderRenderer],
     // Record this hub in the global registry so `devframe connect` discovers
     // it — running inside the Next dev server — like any standalone devframe.
     // The instance owns the record (written once its pinned origin resolves,
