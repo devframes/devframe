@@ -286,5 +286,3 @@ Bun.serve({
 ```
 
 `examples/hub-hono-minimal` ships this wiring in [`src/bun.ts`](https://github.com/devframes/devframe/blob/main/examples/hub-hono-minimal/src/bun.ts), next to the Node entry's `hub.attach(server)`.
-</content>
-</invoke>
