@@ -126,7 +126,12 @@ function start(context?: A11yAgentContext) {
 
   function scheduleScan() {
     clearTimeout(debounceTimer)
-    debounceTimer = window.setTimeout(runScan, 600)
+    // Observer/interaction-driven rescans are background refreshes: they
+    // update the report silently instead of flipping the messages-feed
+    // summary through loading → idle — that status churn is itself a page
+    // mutation (the host re-renders its feed), which would re-trigger the
+    // observer and turn the scan into a self-sustaining loop.
+    debounceTimer = window.setTimeout(() => void runScan({ background: true }), 600)
   }
 
   // Interaction-driven rescans, layered on top of the DOM observer. Bound only
@@ -176,7 +181,7 @@ function start(context?: A11yAgentContext) {
     console.groupEnd()
   }
 
-  async function runScan() {
+  async function runScan(options: { background?: boolean } = {}) {
     if (scanning) {
       rescanQueued = true
       return
@@ -184,7 +189,8 @@ function start(context?: A11yAgentContext) {
     scanning = true
     activeRoute = location.pathname
     post({ type: 'a11y:scanning', route: activeRoute })
-    reporter?.scanning()
+    if (!options.background)
+      reporter?.scanning()
     // Suspend observation so attribute-stamping during the scan doesn't
     // retrigger us.
     observer.disconnect()

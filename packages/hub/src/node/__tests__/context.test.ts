@@ -29,6 +29,49 @@ describe('createHubContext shared state', () => {
   })
 })
 
+describe('createHubContext docks state churn', () => {
+  it('message events republish the docks state only when the dock list changed', async () => {
+    const context = await createHubContext({
+      cwd: process.cwd(),
+      mode: 'build', // debounceMs = 0 — republishes settle synchronously-ish
+      host: createHost(),
+    })
+    context.docks.register({
+      type: 'iframe',
+      id: 'devframes_plugin_terminals',
+      title: 'Terminals',
+      icon: 'ph:terminal-window-duotone',
+      url: '/__devframes_plugin_terminals/',
+    })
+    const docks = await context.rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks')
+    // Let the register's debounced publish settle first.
+    await vi.waitFor(() => expect(docks.value()).toHaveLength(1))
+
+    let publishes = 0
+    const off = docks.on('updated', () => void publishes++)
+
+    // The periodic-producer pattern: message adds/updates that leave the
+    // dock list untouched must not rebroadcast `devframe:docks`.
+    await context.messages.add({ id: 'scan', level: 'info', message: 'No issues found' })
+    await context.messages.add({ id: 'scan', level: 'info', message: '2 issues found' })
+    await context.messages.add({ id: 'scan', level: 'info', message: '3 issues found' })
+    await new Promise(resolve => setTimeout(resolve, 30))
+    expect(publishes).toBe(0)
+
+    // A real dock change still publishes.
+    context.docks.register({
+      type: 'iframe',
+      id: 'second',
+      title: 'Second',
+      icon: 'ph:cube-duotone',
+      url: '/__second/',
+    })
+    await vi.waitFor(() => expect(publishes).toBeGreaterThan(0))
+    expect(docks.value()).toHaveLength(2)
+    off()
+  })
+})
+
 describe('createHubContext dock activation', () => {
   it('mirrors an activation into shared state and broadcasts it live', async () => {
     const context = await createHubContext({

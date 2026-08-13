@@ -147,8 +147,31 @@ describe('createMessagesReporter', () => {
     reporter.report(report([violation('label', 'minor')]))
 
     expect(removed).toEqual(['devframes:plugin:a11y:rule:image-alt'])
-    // The surviving rule was re-added (dedup by stable id updates in place).
-    expect(added.filter(m => m.id === 'devframes:plugin:a11y:rule:label')).toHaveLength(2)
+    // The surviving rule's content is unchanged — the reporter skips the
+    // redundant re-send instead of mirroring an identical entry every scan.
+    expect(added.filter(m => m.id === 'devframes:plugin:a11y:rule:label')).toHaveLength(1)
+  })
+
+  it('skips re-sending unchanged entries across scans, but sends real changes', () => {
+    const { client, added } = createStubMessages()
+    const reporter = createMessagesReporter(client)
+
+    reporter.report(report([violation('image-alt', 'critical')]))
+    reporter.report(report([violation('image-alt', 'critical')]))
+    reporter.report(report([violation('image-alt', 'critical')]))
+    // One summary + one rule entry, once — identical re-scans add nothing.
+    expect(added).toHaveLength(2)
+
+    // A dropped rule changes the summary (and removes the rule entry).
+    reporter.report(report([]))
+    const summaries = added.filter(m => m.id === 'devframes:plugin:a11y:scan')
+    expect(summaries).toHaveLength(2)
+    expect(summaries.at(-1)?.message).toBe('No accessibility issues found')
+
+    // A rule that comes back is sent again (its `lastSent` slot was dropped
+    // with the removal).
+    reporter.report(report([violation('image-alt', 'critical')]))
+    expect(added.filter(m => m.id === 'devframes:plugin:a11y:rule:image-alt')).toHaveLength(2)
   })
 
   it('settles the summary entry as an error when a scan fails', () => {

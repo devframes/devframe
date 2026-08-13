@@ -223,7 +223,7 @@ describe('sse transport e2e — full client', () => {
     }
   })
 
-  it('shared state syncs over SSE', async () => {
+  it('shared state syncs over SSE without echoing server updates back as POSTs', async () => {
     const { devframe, origin, base, close } = await bootServer('sse-client-state')
     try {
       const ctx = await devframe.context
@@ -232,19 +232,39 @@ describe('sse transport e2e — full client', () => {
       })
 
       stubLocation(origin, base)
+      let postCount = 0
       const client = await getDevframeRpcClient({
         baseURL: `${origin}${base}`,
         transport: 'sse',
         otpParam: false,
         simpleAuth: false,
+        sseOptions: {
+          fetch: (input, init) => {
+            if (init?.method === 'POST')
+              postCount++
+            return fetch(input, init)
+          },
+        },
       })
       await client.ensureTrusted(5000)
 
       const clientState = await client.sharedState.get<{ count: number }>('sse-test:counter')
       expect(clientState.value().count).toBe(1)
 
+      // Server-side ticks stream down; none of them may reflect back up as
+      // a `server-state:set` POST — the echo the server would just discard.
+      const postsBeforeTicks = postCount
       serverState.mutate(() => ({ count: 2 }))
       await vi.waitFor(() => expect(clientState.value().count).toBe(2))
+      serverState.mutate(() => ({ count: 3 }))
+      serverState.mutate(() => ({ count: 4 }))
+      await vi.waitFor(() => expect(clientState.value().count).toBe(4))
+      expect(postCount).toBe(postsBeforeTicks)
+
+      // A local mutation still forwards to the server (exactly once).
+      clientState.mutate(() => ({ count: 5 }))
+      await vi.waitFor(() => expect(serverState.value().count).toBe(5))
+      expect(postCount).toBe(postsBeforeTicks + 1)
       client.close?.()
     }
     finally {

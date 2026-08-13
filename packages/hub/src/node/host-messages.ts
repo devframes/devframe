@@ -8,6 +8,7 @@ import type {
 } from '../types/messages'
 import type { DevframeHubContext } from './context'
 import { createEventEmitter } from 'devframe/utils/events'
+import { hash } from 'devframe/utils/hash'
 import { nanoid } from 'devframe/utils/nanoid'
 
 const MAX_ENTRIES = 1000
@@ -93,9 +94,17 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
       timestamp: existing.timestamp,
     }
 
-    this.entries.set(id, updated)
-    this.lastModified.set(id, this._tick())
-    this.events.emit('message:updated', updated)
+    // Content dedupe: a re-add/update that changes nothing (a periodic
+    // producer mirroring the same entries — e.g. a scanner re-reporting an
+    // unchanged result) emits no event, so it can't fan out into broadcast
+    // and shared-state churn. An identical patch that carries `autoDelete`
+    // still falls through below to reset the keep-alive timer.
+    const unchanged = hash(updated) === hash(existing)
+    if (!unchanged) {
+      this.entries.set(id, updated)
+      this.lastModified.set(id, this._tick())
+      this.events.emit('message:updated', updated)
+    }
 
     // Reset autoDelete timer if changed
     if (patch.autoDelete !== undefined) {
