@@ -16,7 +16,7 @@ Open the printed URL. The dock on the left lists every mounted tool with its ico
 - **Git**, **Terminals**, **Code Server**, **RPC & State Inspector**, **A11y Inspector** — the built-in plugins, each an entry in `initHub`'s `devframes` list
 - **Next Demo Tool** / **Next Demo Tool B** — two trivial static SPAs that show the bare mount path
 
-Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`.
+Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`, and a **Transport** section showing which RPC transport the connection runs on (`websocket` or `sse`) with a segmented Auto / WS / SSE toggle — the choice rides a `?transport=` URL param and reconnects the whole client host on the pinned transport.
 
 The A11y Inspector shows a live axe-core report of this hub's own page: the host serves the plugin's in-page agent module (`a11yAgentBundlePath`) same-origin inside the hub namespace and attaches it as the a11y dock's `clientScript` (the `{ devframe, dock }` entry form); the hub client runtime — `createDevframeClientHost()` booted in `app/page.tsx` — imports it into the page, so the docked panel and the agent share the origin their BroadcastChannel rides.
 

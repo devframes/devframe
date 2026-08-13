@@ -921,6 +921,28 @@ importers:
         specifier: catalog:deps
         version: 8.21.2
 
+  examples/sse-basic:
+    dependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.3.3(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.40(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.1(vue@3.5.40(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.23))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+    devDependencies:
+      '@iconify-json/ph':
+        specifier: catalog:frontend
+        version: 1.2.2
+      '@types/node':
+        specifier: catalog:types
+        version: 26.1.2
+      unocss:
+        specifier: catalog:frontend
+        version: 66.7.5(@unocss/postcss@66.7.5(postcss@8.5.23))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0))
+      vite:
+        specifier: catalog:build
+        version: 8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0)
+
   examples/streaming-chat:
     dependencies:
       '@antfu/design':

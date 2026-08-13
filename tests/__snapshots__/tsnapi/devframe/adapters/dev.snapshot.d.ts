@@ -8,7 +8,8 @@ export interface CreateDevServerOptions {
   flags?: Record<string, unknown>;
   distDir?: string;
   basePath?: string;
-  ws?: DevframeWsOptions;
+  ws?: DevframeWsOptions | false;
+  sse?: boolean | DevframeSseOptions;
   app?: H3;
   openBrowser?: boolean | string;
   auth?: boolean | DevframeAuthHandler;

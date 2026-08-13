@@ -1,8 +1,7 @@
 import type { ChannelOptions } from 'birpc'
 import type { RpcFunctionDefinitionAny } from '../types'
 import { DEVFRAME_AUTH_TOKEN_QUERY_PARAM } from 'devframe/constants'
-import { structuredCloneParse, structuredCloneStringify } from 'devframe/utils/structured-clone'
-import { strictJsonStringify, STRUCTURED_CLONE_PREFIX } from '../serialization'
+import { createRpcWireCodec } from '../serialization'
 
 export interface WsRpcChannelOptions {
   url: string
@@ -57,10 +56,8 @@ export function createWsRpcChannel(options: WsRpcChannelOptions): ChannelOptions
     onDisconnected(e)
   })
 
-  // Per-channel state: maps an incoming request id to its method name
-  // so the matching outgoing response can independently look the
-  // method up in `definitions` and pick the right encoder.
-  const pendingRequestMethods = new Map<string, string>()
+  // Per-channel wire codec — request-id → method bookkeeping included.
+  const codec = createRpcWireCodec(definitions)
   return {
     close: () => {
       ws.close()
@@ -93,32 +90,7 @@ export function createWsRpcChannel(options: WsRpcChannelOptions): ChannelOptions
       // CLOSING or CLOSED: the socket will never (re)open on this channel.
       onError(new Error('Devframe WebSocket is not open; message dropped'))
     },
-    serialize: (msg: any): string => {
-      let method: string | undefined
-      if (msg.t === 'q') {
-        method = msg.m
-      }
-      else {
-        method = pendingRequestMethods.get(msg.i)
-        pendingRequestMethods.delete(msg.i)
-      }
-      // `jsonSerializable` constrains the return-value path (args + return).
-      // Error envelopes (`{ t: 's', i, e }`) carry a thrown value — fall back
-      // to structured-clone so they round-trip instead of crashing the serializer.
-      // Detect via `'e' in msg` so `throw undefined` still routes through SC.
-      const isErrorResponse = msg.t === 's' && 'e' in msg
-      const useJson = !isErrorResponse && !!method && definitions.get(method)?.jsonSerializable === true
-      if (useJson)
-        return strictJsonStringify(msg, method ?? '')
-      return `${STRUCTURED_CLONE_PREFIX}${structuredCloneStringify(msg)}`
-    },
-    deserialize: (raw: string): any => {
-      const msg: any = raw.startsWith(STRUCTURED_CLONE_PREFIX)
-        ? structuredCloneParse(raw.slice(STRUCTURED_CLONE_PREFIX.length))
-        : JSON.parse(raw)
-      if (msg.t === 'q' && msg.i && msg.m)
-        pendingRequestMethods.set(msg.i, msg.m)
-      return msg
-    },
+    serialize: codec.serialize,
+    deserialize: codec.deserialize,
   }
 }

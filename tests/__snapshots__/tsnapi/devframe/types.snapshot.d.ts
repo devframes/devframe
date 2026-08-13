@@ -50,6 +50,7 @@ export { DevframeSettingsRegistry }
 export { DevframeSettingsStore }
 export { DevframeSetupInfo }
 export { DevframeSpaOptions }
+export { DevframeSseOptions }
 export { DevframeStorageScope }
 export { DevframeViewHost }
 export { DevframeWsOptions }

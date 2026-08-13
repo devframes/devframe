@@ -13,8 +13,7 @@ import { createServer as createHttpsServer } from 'node:https'
 import crossws from 'crossws/adapters/node'
 import { DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM, DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM } from 'devframe/constants'
 import { randomToken, timingSafeEqual } from 'devframe/utils/crypto-token'
-import { structuredCloneParse, structuredCloneStringify } from 'devframe/utils/structured-clone'
-import { strictJsonStringify, STRUCTURED_CLONE_PREFIX } from '../serialization'
+import { createRpcWireCodec } from '../serialization'
 import { createRpcSessionMeta } from './session'
 
 export type {
@@ -348,11 +347,9 @@ export function createWsRpcPeerHooks<
         peer,
       }
 
-      // Per-connection state: maps an incoming request id to its method
-      // name so the matching outgoing response can look the method back
-      // up in `definitions` and pick the right encoder. One map per
-      // session — request-id spaces don't collide across sessions.
-      const pendingRequestMethods = new Map<string, string>()
+      // Per-connection wire codec — one per session, so request-id spaces
+      // don't collide across sessions.
+      const codec = createRpcWireCodec(definitions)
       const state: PeerState = { meta, connection, channel: undefined as unknown as ChannelOptions }
       const channel: ChannelOptions = {
         post: (data) => {
@@ -361,33 +358,8 @@ export function createWsRpcPeerHooks<
         on: (fn) => {
           state.onMessage = fn
         },
-        serialize: serializeOverride ?? ((msg: any): string => {
-          let method: string | undefined
-          if (msg.t === 'q') {
-            method = msg.m
-          }
-          else {
-            method = pendingRequestMethods.get(msg.i)
-            pendingRequestMethods.delete(msg.i)
-          }
-          // `jsonSerializable` constrains the return-value path (args + return).
-          // Error envelopes (`{ t: 's', i, e }`) carry a thrown value — fall back
-          // to structured-clone so they round-trip instead of crashing the serializer.
-          // Detect via `'e' in msg` so `throw undefined` still routes through SC.
-          const isErrorResponse = msg.t === 's' && 'e' in msg
-          const useJson = !isErrorResponse && !!method && definitions.get(method)?.jsonSerializable === true
-          if (useJson)
-            return strictJsonStringify(msg, method ?? '')
-          return `${STRUCTURED_CLONE_PREFIX}${structuredCloneStringify(msg)}`
-        }),
-        deserialize: deserializeOverride ?? ((raw: string): any => {
-          const msg: any = raw.startsWith(STRUCTURED_CLONE_PREFIX)
-            ? structuredCloneParse(raw.slice(STRUCTURED_CLONE_PREFIX.length))
-            : JSON.parse(raw)
-          if (msg.t === 'q' && msg.i && msg.m)
-            pendingRequestMethods.set(msg.i, msg.m)
-          return msg
-        }),
+        serialize: serializeOverride ?? codec.serialize,
+        deserialize: deserializeOverride ?? codec.deserialize,
         meta,
       }
       state.channel = channel

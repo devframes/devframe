@@ -128,5 +128,9 @@ export const diagnostics = defineDiagnostics({
       why: (p: { url: string }) => `This instance advertises an external WebSocket endpoint (${p.url}), so it serves no socket of its own.`,
       fix: 'The server behind `ws.url` owns the transport (and its auth). Drop `ws.url` to have the instance serve the socket, or pair it with `server` / `ws.port` / `ws.sidecar` for the tunnel pattern, where a local binding is advertised through the relay.',
     },
+    DF0057: {
+      why: () => 'This instance disables its WebSocket transport (`ws: false`), so there is no socket to drive upgrades into.',
+      fix: 'Clients connect over the SSE endpoint instead — no upgrade wiring is needed. Remove `ws: false` if the instance should serve a WebSocket after all.',
+    },
   },
 })

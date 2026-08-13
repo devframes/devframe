@@ -39,7 +39,15 @@
         </main>
       </div>
 
-      <footer class="grid grid-cols-3 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto">
+      <footer class="grid grid-cols-4 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto">
+        <section class="min-w-0">
+          <h2 class="mb2 text-[0.68rem] uppercase tracking-wider color-muted">Transport</h2>
+          <p id="transport" class="m0 rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">Connecting…</p>
+          <!-- Segmented selector (LayoutTabs variant="segment" port): a
+               bg-secondary track whose active trigger gets bg-base. -->
+          <div id="transport-toggle" class="mt2.5 inline-flex gap-0.5 rounded-lg bg-secondary p0.5"></div>
+        </section>
+
         <section class="min-w-0">
           <h2 class="mb2 text-[0.68rem] uppercase tracking-wider color-muted">Commands</h2>
           <ul id="commands" class="m0 flex flex-col list-none gap-1.5 p0"><li class="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">Waiting for snapshot…</li></ul>

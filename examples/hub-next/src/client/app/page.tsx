@@ -168,8 +168,38 @@ function DockIcon({ entry }: { entry: DevframeDockEntry }) {
   return <span className="grid h-5 w-5 shrink-0 place-items-center rounded bg-active text-[0.7rem] font-bold">{initial}</span>
 }
 
+// ── transport preference (`?transport=` param) ──────────────────────────────
+// The hub serves both live transports (WS at `__ws`, SSE at `__sse`); the
+// client's `transport` option picks one, `auto` trusting the server's
+// advertisement. A closed client has no reconnect, so the toggle writes the
+// preference into the URL and reloads — the whole host boots on the chosen
+// transport.
+
+const TRANSPORT_PREFS = ['auto', 'websocket', 'sse'] as const
+type TransportPref = (typeof TRANSPORT_PREFS)[number]
+
+function readTransportPref(): TransportPref {
+  const raw = new URLSearchParams(window.location.search).get('transport')
+  return (TRANSPORT_PREFS as readonly string[]).includes(raw ?? '') ? raw as TransportPref : 'auto'
+}
+
+function applyTransportPref(pref: TransportPref) {
+  const url = new URL(window.location.href)
+  if (pref === 'auto')
+    url.searchParams.delete('transport')
+  else
+    url.searchParams.set('transport', pref)
+  window.location.href = url.href
+}
+
+function transportLabel(pref: TransportPref): string {
+  return pref === 'websocket' ? 'WS' : pref === 'sse' ? 'SSE' : 'Auto'
+}
+
 export default function Page() {
   const [status, setStatus] = useState<Status>({ text: 'Connecting...' })
+  const [transport, setTransport] = useState<string | null>(null)
+  const [transportPref, setTransportPref] = useState<TransportPref>('auto')
   const [docks, setDocks] = useState<DevframeDockEntry[]>([])
   const [commands, setCommands] = useState<DevframeCommandEntry[]>([])
   const [messages, setMessages] = useState<DevframeMessageEntry[]>([])
@@ -191,12 +221,15 @@ export default function Page() {
 
     async function run() {
       try {
-        const rpc = await connectDevframe({ baseURL: HUB_BASE })
+        const pref = readTransportPref()
+        setTransportPref(pref)
+        const rpc = await connectDevframe({ baseURL: HUB_BASE, transport: pref })
         if (cancelled)
           return
 
         rpcRef.current = rpc
-        setStatus({ text: `Connected: backend=${rpc.connectionMeta.backend}`, kind: 'ready' })
+        setTransport(rpc.transport)
+        setStatus({ text: `Connected: transport=${rpc.transport}`, kind: 'ready' })
 
         // Boot the framework-level client host: it builds the shared client
         // context and imports each dock's client script into this page — e.g.
@@ -485,7 +518,30 @@ export default function Page() {
         </main>
       </div>
 
-      <footer className="grid grid-cols-3 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto">
+      <footer className="grid grid-cols-4 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto">
+        <section className="min-w-0">
+          <h2 className={titleClass}>Transport</h2>
+          <p className="m0 rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">
+            {transport
+              ? `Connected over ${transport} (${transportPref === 'auto' ? 'auto-selected' : 'pinned'})`
+              : 'Connecting…'}
+          </p>
+          {/* Segmented selector (LayoutTabs variant="segment" port): a
+              bg-secondary track whose active trigger gets bg-base. */}
+          <div className="mt2.5 inline-flex gap-0.5 rounded-lg bg-secondary p0.5">
+            {TRANSPORT_PREFS.map(pref => (
+              <button
+                key={pref}
+                type="button"
+                onClick={() => applyTransportPref(pref)}
+                className={`rounded-md border-none bg-transparent px2 py0.5 text-xs font-medium cursor-pointer ${pref === transportPref ? 'bg-base color-active shadow-sm' : 'color-muted hover:color-base'}`}
+              >
+                {transportLabel(pref)}
+              </button>
+            ))}
+          </div>
+        </section>
+
         <section className="min-w-0">
           <h2 className={titleClass}>Commands</h2>
           <ul className="m0 flex flex-col list-none gap-1.5 p0">

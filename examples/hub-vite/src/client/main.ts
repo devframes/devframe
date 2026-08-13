@@ -16,6 +16,8 @@ import '@antfu/design/styles.css'
 const HUB_BASE = '/__devframes/'
 
 const connEl = document.querySelector<HTMLElement>('#conn')!
+const transportEl = document.querySelector<HTMLElement>('#transport')!
+const transportToggleEl = document.querySelector<HTMLElement>('#transport-toggle')!
 const docksEl = document.querySelector<HTMLElement>('#docks')!
 const commandsEl = document.querySelector<HTMLElement>('#commands')!
 const messagesEl = document.querySelector<HTMLElement>('#messages')!
@@ -30,6 +32,42 @@ let disposePanel: (() => void) | null = null
 function setStatus(text: string, kind?: 'ready' | 'error') {
   const dot = kind === 'ready' ? 'bg-success' : kind === 'error' ? 'bg-error' : 'bg-neutral-400'
   connEl.innerHTML = `<span class="inline-block size-1.5 rounded-full shrink-0 ${dot} mr-1.5 align-middle"></span>${text}`
+}
+
+// ── transport preference (`?transport=` param) ──────────────────────────────
+// The hub serves both live transports (WS at `__ws`, SSE at `__sse`); the
+// client's `transport` option picks one, `auto` trusting the server's
+// advertisement. A closed client has no reconnect, so the toggle writes the
+// preference into the URL and reloads — the whole host boots on the chosen
+// transport.
+
+const TRANSPORT_PREFS = ['auto', 'websocket', 'sse'] as const
+type TransportPref = (typeof TRANSPORT_PREFS)[number]
+
+function readTransportPref(): TransportPref {
+  const raw = new URLSearchParams(location.search).get('transport')
+  return (TRANSPORT_PREFS as readonly string[]).includes(raw ?? '') ? raw as TransportPref : 'auto'
+}
+
+function applyTransportPref(pref: TransportPref) {
+  const url = new URL(location.href)
+  if (pref === 'auto')
+    url.searchParams.delete('transport')
+  else
+    url.searchParams.set('transport', pref)
+  location.href = url.href
+}
+
+function renderTransportToggle(current: TransportPref) {
+  transportToggleEl.innerHTML = TRANSPORT_PREFS.map((pref) => {
+    const active = pref === current
+      ? 'bg-base color-active shadow-sm'
+      : 'color-muted hover:color-base'
+    const label = pref === 'websocket' ? 'WS' : pref === 'sse' ? 'SSE' : 'Auto'
+    return `<button type="button" data-transport="${pref}" class="rounded-md border-none bg-transparent px2 py0.5 text-xs font-medium cursor-pointer ${active}">${label}</button>`
+  }).join('')
+  for (const button of transportToggleEl.querySelectorAll<HTMLButtonElement>('[data-transport]'))
+    button.addEventListener('click', () => applyTransportPref(button.dataset.transport as TransportPref))
 }
 
 function renderList<T>(host: HTMLElement, items: readonly T[], render: (item: T) => string) {
@@ -192,8 +230,12 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
 async function main() {
   setStatus('Connecting…')
 
-  const rpc = await connectDevframe({ baseURL: HUB_BASE })
-  setStatus(`Connected · backend=${rpc.connectionMeta.backend}`, 'ready')
+  const transportPref = readTransportPref()
+  renderTransportToggle(transportPref)
+
+  const rpc = await connectDevframe({ baseURL: HUB_BASE, transport: transportPref })
+  setStatus(`Connected · transport=${rpc.transport}`, 'ready')
+  transportEl.textContent = `Connected over ${rpc.transport} (${transportPref === 'auto' ? 'auto-selected' : 'pinned'})`
 
   // Boot the framework-level client host: it builds the shared client context
   // and imports each dock's client script into this page — e.g. the a11y

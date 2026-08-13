@@ -123,7 +123,8 @@ export interface DevframeCliOptions {
   auth?: boolean | DevframeAuthHandler;
   mcp?: boolean | McpRouteOptions;
   distDir?: string;
-  ws?: DevframeWsOptions;
+  ws?: DevframeWsOptions | false;
+  sse?: boolean | DevframeSseOptions;
   configure?: (_: CAC) => void;
   flags?: CliFlagsSchema;
 }
@@ -328,6 +329,9 @@ export interface DevframeSetupInfo {
 export interface DevframeSpaOptions {
   base?: string;
   loader?: 'query' | 'upload' | 'none';
+}
+export interface DevframeSseOptions {
+  route?: string;
 }
 export interface DevframeViewHost {
   buildStaticDirs: {

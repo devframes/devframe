@@ -36,7 +36,8 @@ export interface InitHubOptions {
   configure?: (_: DevframeHubContext) => void | Promise<void>;
   ui?: DevframeHubUi;
   server?: Server;
-  ws?: DevframeWsOptions;
+  ws?: DevframeWsOptions | false;
+  sse?: boolean | DevframeSseOptions;
   host?: string;
   auth?: boolean | DevframeAuthHandler;
   mcp?: boolean | McpRouteOptions;

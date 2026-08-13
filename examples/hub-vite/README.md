@@ -16,7 +16,7 @@ Open the printed URL. The dock on the left lists every mounted tool with its ico
 - **Git**, **Terminals**, **Code Server**, **RPC & State Inspector**, **A11y Inspector** — the built-in plugins, each a published `DevframeDefinition` passed to the host's `devframes` option
 - **Demo Tool** / **Demo Tool B** — two trivial static SPAs that show the bare mount path
 
-Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`.
+Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`, and a **Transport** section showing which RPC transport the connection runs on (`websocket` or `sse`) with a segmented Auto / WS / SSE toggle — the choice rides a `?transport=` URL param and reconnects the whole client host on the pinned transport.
 
 The A11y Inspector shows a live axe-core report of this hub's own page. `vite.config.ts` attaches the plugin's in-page agent as the a11y dock's `clientScript` (served via `/@fs/`), and the hub client runtime — `createDevframeClientHost()` booted in `src/client/main.ts` — imports it into the host page. Panel and agent share the Vite origin their BroadcastChannel rides; hover a violation to ring the offending element in the hub UI.
 

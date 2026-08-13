@@ -89,6 +89,7 @@ describe('initHub', () => {
       expect(hubRef.connectionMeta()).toEqual({
         backend: 'websocket',
         websocket: { path: '/__devframes/__ws' },
+        sse: { path: '/__devframes/__sse' },
       })
 
       // Frame SPAs under <base><id>/.
@@ -266,6 +267,7 @@ describe('initHub', () => {
       expect(hub.connectionMeta()).toEqual({
         backend: 'websocket',
         websocket: { path: '/__devframes/__ws' },
+        sse: { path: '/__devframes/__sse' },
       })
 
       await new Promise<void>(resolve => server.listen(port, host, resolve))

@@ -21,7 +21,8 @@ export interface InitDevframeOptions {
   base: string;
   distDir?: string | false;
   server?: Server;
-  ws?: DevframeWsOptions;
+  ws?: DevframeWsOptions | false;
+  sse?: boolean | DevframeSseOptions;
   host?: string;
   auth?: boolean | DevframeAuthHandler;
   mcp?: boolean | McpRouteOptions;

@@ -1,7 +1,7 @@
 import type { DevframeInstanceRecord } from 'devframe/internal'
 import type { DevframeAuthHandler } from 'devframe/node/auth'
 import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
-import type { ConnectionMeta, DevframeDefinition, DevframeStorageScope, DevframeWsOptions, McpRouteOptions } from 'devframe/types'
+import type { ConnectionMeta, DevframeDefinition, DevframeSseOptions, DevframeStorageScope, DevframeWsOptions, McpRouteOptions } from 'devframe/types'
 import type { Buffer } from 'node:buffer'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { Duplex } from 'node:stream'
@@ -166,9 +166,17 @@ export interface InitHubOptions {
    * binding resolves `ws.port` (pinned side-car) > `server` (shared upgrade)
    * > `ws.sidecar` (auto-port side-car) > the host driving upgrades itself,
    * while `url` overrides the advertisement (tunnel pattern) and `route`
-   * renames the upgrade segment (default `__ws`).
+   * renames the upgrade segment (default `__ws`). Pass `false` to serve no
+   * WebSocket at all — clients connect over SSE instead (`backend: 'sse'`).
    */
-  ws?: DevframeWsOptions
+  ws?: DevframeWsOptions | false
+  /**
+   * SSE RPC endpoint control, same contract as `initDevframe` — enabled by
+   * default at `<base>__sse` as the more portable transport alongside the
+   * WebSocket. Pass `false` to disable, or a {@link DevframeSseOptions} to
+   * rename the route.
+   */
+  sse?: boolean | DevframeSseOptions
   /** Bind host for a side-car WebSocket server. Default: `localhost`. */
   host?: string
   /**
@@ -331,6 +339,7 @@ export function initHub(options: InitHubOptions): HubInstance {
     auth: options.auth,
     server: options.server,
     ws: options.ws,
+    sse: options.sse,
     allowedOrigins: options.allowedOrigins,
     destroyUnmatchedUpgrades: options.destroyUnmatchedUpgrades,
     register: resolveInstanceRegister(options.register, {

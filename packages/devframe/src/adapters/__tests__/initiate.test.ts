@@ -59,6 +59,7 @@ describe('adapters/handler', () => {
       expect(devtools.connectionMeta()).toEqual({
         backend: 'websocket',
         websocket: { port: wsPort, path: '__ws' },
+        sse: { path: '__sse' },
       })
 
       // Hosted default base: /__<id>/.
@@ -71,6 +72,7 @@ describe('adapters/handler', () => {
       expect(await metaRes.json()).toEqual({
         backend: 'websocket',
         websocket: { port: wsPort, path: '__ws' },
+        sse: { path: '__sse' },
       })
 
       // Outside the base — and inside it on a miss — the fetch surface 404s.
@@ -152,6 +154,7 @@ describe('adapters/handler', () => {
       expect(devtoolsRef.connectionMeta()).toEqual({
         backend: 'websocket',
         websocket: { path: '__ws' },
+        sse: { path: '__sse' },
       })
 
       const index = await fetch(`http://${host}:${port}/__handler-shared/`)
@@ -159,7 +162,7 @@ describe('adapters/handler', () => {
       expect(await index.text()).toContain('handler test')
 
       const meta = await (await fetch(`http://${host}:${port}/__handler-shared/__connection.json`)).json()
-      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' } })
+      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' }, sse: { path: '__sse' } })
 
       // Outside the base, next() ran and the host app answered.
       const outside = await fetch(`http://${host}:${port}/app`)
@@ -273,6 +276,7 @@ describe('adapters/handler', () => {
       expect(devtools.connectionMeta()).toEqual({
         backend: 'websocket',
         websocket: { path: '__ws' },
+        sse: { path: '__sse' },
       })
 
       // Upgrades only reach the socket once the host hands them over.

@@ -82,7 +82,7 @@
         "src/recipes/{common-rpc-functions,interactive-auth}.ts",
         "src/rpc/{index,client,server}.ts",
         "src/rpc/dump/index.ts",
-        "src/rpc/transports/{ws-bun,ws-client,ws-server}.ts",
+        "src/rpc/transports/{sse-client,sse-server,ws-bun,ws-client,ws-server}.ts",
         "src/types/index.ts",
         "src/utils/*.ts"
       ]

@@ -1,20 +1,22 @@
 import type { BirpcGroup } from 'birpc'
 import type { NodeAdapter } from 'crossws/adapters/node'
+import type { SseRpcTransport } from 'devframe/rpc/transports/sse-server'
 import type { DevframeRpcConnection, WsOriginRegistry, WsRpcTransport } from 'devframe/rpc/transports/ws-server'
-import type { H3 } from 'h3'
+import type { H3, H3Event } from 'h3'
 import type { Buffer } from 'node:buffer'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { Duplex } from 'node:stream'
 import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from '../types'
-import type { DevframeWsOptions } from '../types/devframe'
+import type { DevframeSseOptions, DevframeWsOptions } from '../types/devframe'
 import type { DevframeAuthHandler } from './auth'
 import type { RpcFunctionsHostImpl } from './host-functions'
 import type { DevframeInstanceRecord, DevframeInstanceRegistration } from './instance-registry'
+import type { ContextRpcServer } from './rpc-core'
 import { createServer } from 'node:http'
 import process from 'node:process'
-import { H3 as H3App, toNodeHandler } from 'h3'
+import { defineHandler, H3 as H3App, toNodeHandler } from 'h3'
 import { joinURL, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
-import { DEVFRAME_WS_ROUTE } from '../constants'
+import { DEVFRAME_SSE_ROUTE, DEVFRAME_WS_ROUTE } from '../constants'
 import { createInteractiveAuth } from '../recipes/interactive-auth'
 import { diagnostics } from './diagnostics'
 import { getInternalContext } from './hub-internals/context'
@@ -30,8 +32,11 @@ export interface StartedServer {
   origin: string
   port: number
   app: H3
-  /** The crossws node adapter driving the RPC socket (connected peers, pub/sub). */
-  ws: NodeAdapter
+  /**
+   * The crossws node adapter driving the RPC socket (connected peers,
+   * pub/sub). Absent when the WebSocket transport is disabled (`ws: false`).
+   */
+  ws?: NodeAdapter
   rpcGroup: BirpcGroup<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>
   /**
    * The {@link ConnectionMeta} descriptor for this server — the same shape a
@@ -45,6 +50,8 @@ export interface StartedServer {
 /** How {@link bindHttpAndWs} binds the socket: own a fresh server, or share one. */
 interface BindHttpAndWsOptions {
   context: DevframeNodeContext
+  /** The context's RPC core (birpc group + connection lifecycle hooks). */
+  core: ContextRpcServer
   host: string
   /** Listening port for an owned server; ignored when `server` is supplied. */
   port: number
@@ -52,11 +59,10 @@ interface BindHttpAndWsOptions {
   server?: NodeHttpServer
   /** Bind the WS upgrade to a single route instead of every upgrade on the port. */
   path?: string
-  auth?: boolean | DevframeAuthHandler
+  /** Set `false` to bind HTTP only — no WebSocket transport at all. */
+  websocket?: boolean
   allowedOrigins?: readonly string[] | WsOriginRegistry | false
   destroyUnmatched?: boolean
-  onPeerConnect?: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
-  onPeerDisconnect?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
 }
 
 /**
@@ -68,33 +74,29 @@ interface BindHttpAndWsOptions {
  * owner.
  */
 async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServer> {
-  const { context, port } = options
+  const { context, port, core } = options
   const bindHost = options.host
   const app = new H3App()
   const ownsHttpServer = !options.server
   const httpServer = options.server ?? createServer(toNodeHandler(app))
   const rpcHost = context.rpc as unknown as RpcFunctionsHostImpl
+  const websocket = options.websocket !== false
 
-  const [{ createContextRpcServer }, { attachWsRpcTransport }] = await Promise.all([
-    import('./rpc-core'),
-    import('devframe/rpc/transports/ws-server'),
-  ])
-
-  const { rpcGroup, onConnected, onDisconnected } = createContextRpcServer({
-    context,
-    auth: options.auth,
-    onPeerConnect: options.onPeerConnect,
-    onPeerDisconnect: options.onPeerDisconnect,
-  })
-
-  const { ws, close: closeWs } = attachWsRpcTransport(rpcGroup, {
-    server: httpServer,
-    path: options.path,
-    destroyUnmatched: options.destroyUnmatched ?? ownsHttpServer,
-    allowedOrigins: options.allowedOrigins,
-    onConnected,
-    onDisconnected,
-  })
+  let ws: NodeAdapter | undefined
+  let closeWs = async (): Promise<void> => {}
+  if (websocket) {
+    const { attachWsRpcTransport } = await import('devframe/rpc/transports/ws-server')
+    const transport = attachWsRpcTransport(core.rpcGroup, {
+      server: httpServer,
+      path: options.path,
+      destroyUnmatched: options.destroyUnmatched ?? ownsHttpServer,
+      allowedOrigins: options.allowedOrigins,
+      onConnected: core.onConnected,
+      onDisconnected: core.onDisconnected,
+    })
+    ws = transport.ws
+    closeWs = transport.close
+  }
 
   if (ownsHttpServer) {
     try {
@@ -128,7 +130,8 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
   const origin = normalizeHttpServerUrl(bindHost, resolvedPort)
   const internal = getInternalContext(context)
   const wsUrl = `ws://${formatHostForUrl(bindHost)}:${resolvedPort}${options.path ?? ''}`
-  internal.wsEndpoint = { url: wsUrl }
+  if (websocket)
+    internal.wsEndpoint = { url: wsUrl }
 
   function connectionMeta(): ConnectionMeta {
     const jsonSerializableMethods: string[] = []
@@ -144,13 +147,13 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
     port: resolvedPort,
     app,
     ws,
-    rpcGroup,
+    rpcGroup: core.rpcGroup,
     connectionMeta,
     async close() {
       await closeWs()
       if (ownsHttpServer)
         await new Promise<void>(r => httpServer.close(() => r()))
-      if (getInternalContext(context).wsEndpoint?.url === wsUrl)
+      if (websocket && getInternalContext(context).wsEndpoint?.url === wsUrl)
         getInternalContext(context).wsEndpoint = undefined
     },
   }
@@ -167,8 +170,10 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
  * - `unbound` — the transport exists but nothing is bound to it yet; the host
  *   drives it through {@link InstanceShell.handleUpgrade} /
  *   {@link InstanceShell.attach}.
+ * - `disabled` — `ws: false`: no WebSocket at all; clients connect over the
+ *   SSE endpoint instead (`backend: 'sse'`).
  */
-export type InstanceWsTier = 'sidecar' | 'server' | 'external' | 'unbound'
+export type InstanceWsTier = 'sidecar' | 'server' | 'external' | 'unbound' | 'disabled'
 
 /** The live shell surface an `init` / `mount` callback can reach. */
 export interface InstanceShellApi {
@@ -203,8 +208,10 @@ export interface CreateInstanceShellOptions<TContext extends DevframeNodeContext
   auth?: boolean | DevframeAuthHandler
   /** Host `node:http` server to share the WS upgrade with. */
   server?: NodeHttpServer
-  /** Explicit WebSocket control — see {@link DevframeWsOptions}. */
-  ws?: DevframeWsOptions
+  /** Explicit WebSocket control — see {@link DevframeWsOptions}. `false` disables the socket (SSE-only). */
+  ws?: DevframeWsOptions | false
+  /** SSE endpoint control — enabled by default; `false` disables, an object renames the route. */
+  sse?: boolean | DevframeSseOptions
   /** Bind host for a side-car WebSocket server. Default: `localhost`. */
   host?: string
   /** Extra WS-upgrade origins beyond the loopback default; `false` disables the gate. */
@@ -214,9 +221,10 @@ export interface CreateInstanceShellOptions<TContext extends DevframeNodeContext
   onPeerConnect?: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
   onPeerDisconnect?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
   /**
-   * Advertise the WS route as a base-absolute path (`<base>__ws`) instead of
-   * the base-relative default. A hub serves one meta document from several
-   * bases, so its clients need the absolute form to resolve the same socket.
+   * Advertise the WS and SSE routes as base-absolute paths (`<base>__ws` /
+   * `<base>__sse`) instead of the base-relative default. A hub serves one
+   * meta document from several bases, so its clients need the absolute form
+   * to resolve the same endpoints.
    */
   absoluteWsPath?: boolean
   /** Pick the first port a `ws.sidecar` server tries. Default: a random free port. */
@@ -299,6 +307,22 @@ export function samePath(a: string, b: string): boolean {
 }
 
 /**
+ * Copy a web `Response` from a fetch-style transport handler onto the h3
+ * event's response and return its body — mirroring the MCP route's bridge.
+ * Returning the body (a `ReadableStream`, or `''` for an empty one — h3
+ * middleware only falls through on `undefined`) terminates the chain with
+ * the status/headers set here instead of continuing to the SPA catch-all.
+ */
+function respondWith(event: H3Event, response: Response): ReadableStream | string {
+  event.res.status = response.status
+  event.res.statusText = response.statusText
+  response.headers.forEach((value, key) => {
+    event.res.headers.set(key, value)
+  })
+  return response.body ?? ''
+}
+
+/**
  * The shared machinery behind `initDevframe` and `initHub`: one mount base,
  * one h3 app, one lazily-derived public origin (and the auth banner that waits
  * for it), one WebSocket binding, and the fetch / connect-middleware pair that
@@ -319,20 +343,35 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   const baseNoSlash = withoutTrailingSlash(base)
   const app = options.app ?? new H3App()
 
-  const ws = options.ws ?? {}
+  const wsDisabled = options.ws === false
+  const ws: DevframeWsOptions = options.ws === false ? {} : options.ws ?? {}
   const route = withoutLeadingSlash(ws.route ?? DEVFRAME_WS_ROUTE)
   /** Where an upgrade lands on the host's own origin. */
   const routePath = joinURL(base, route)
   /** What `__connection.json` advertises for a same-origin socket. */
   const advertisedPath = options.absoluteWsPath ? routePath : route
   const sidecarRequested = ws.port != null || ws.sidecar === true
-  const tier: InstanceWsTier = sidecarRequested
-    ? 'sidecar'
-    : options.server
-      ? 'server'
-      : ws.url
-        ? 'external'
-        : 'unbound'
+  const tier: InstanceWsTier = wsDisabled
+    ? 'disabled'
+    : sidecarRequested
+      ? 'sidecar'
+      : options.server
+        ? 'server'
+        : ws.url
+          ? 'external'
+          : 'unbound'
+
+  // The SSE endpoint (on by default) rides the same h3 app that serves
+  // `__connection.json`, so a relative advertised path always resolves —
+  // whatever host surface reaches the app (owned server, shared server,
+  // `handler` / `nodeMiddleware`) serves both. The `external` tier has no
+  // local RPC server to ride.
+  const sseEnabled = options.sse !== false && tier !== 'external'
+  const sseRoute = withoutLeadingSlash(
+    (typeof options.sse === 'object' ? options.sse.route : undefined) ?? DEVFRAME_SSE_ROUTE,
+  )
+  const sseRoutePath = joinURL(base, sseRoute)
+  const advertisedSsePath = options.absoluteWsPath ? sseRoutePath : sseRoute
 
   // The public origin is often unknowable at creation (the host app owns the
   // listener) — derive it from the first request and let the auth banner
@@ -396,8 +435,6 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
 
   let started: StartedServer | undefined
   let transport: WsRpcTransport | undefined
-  /** The `unbound` tier's resolved auth, held until its transport is built. */
-  let unboundAuth: boolean | DevframeAuthHandler | undefined
   let dispose: (() => Promise<void>) | undefined
   let ctx: TContext
 
@@ -425,22 +462,60 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   }
 
   /**
+   * The context's RPC core (birpc group, session lifecycle, auth gate) —
+   * one per instance, shared by every transport binding (WS and SSE), so a
+   * WS peer and an SSE session live in the same session/broadcast space.
+   * Built lazily: an `unbound` host that never wires a transport pays
+   * nothing for it, not even the imports. `resolvedAuth` and `ctx` are
+   * assigned during `init()` before any caller can reach this.
+   */
+  let resolvedAuth: boolean | DevframeAuthHandler = false
+  let corePromise: Promise<ContextRpcServer> | undefined
+  function ensureCore(): Promise<ContextRpcServer> {
+    corePromise ??= import('./rpc-core').then(({ createContextRpcServer }) => createContextRpcServer({
+      context: ctx,
+      auth: resolvedAuth,
+      onPeerConnect: options.onPeerConnect,
+      onPeerDisconnect: options.onPeerDisconnect,
+    }))
+    return corePromise
+  }
+
+  /**
+   * The SSE transport, built on the first request to its route so an
+   * instance nobody dials over SSE never loads it.
+   */
+  let ssePromise: Promise<SseRpcTransport> | undefined
+  function ensureSse(): Promise<SseRpcTransport> {
+    ssePromise ??= (async () => {
+      const [core, { attachSseRpcTransport }] = await Promise.all([
+        ensureCore(),
+        import('devframe/rpc/transports/sse-server'),
+      ])
+      return attachSseRpcTransport(core.rpcGroup, {
+        allowedOrigins: options.allowedOrigins,
+        onConnected: core.onConnected,
+        onDisconnected: core.onDisconnected,
+      })
+    })()
+    return ssePromise
+  }
+
+  /**
    * A side-car server on its own port. `getPort` probes and the bind can
    * still race (or disagree across the v4/v6 duals of `localhost`), so an
    * auto-port side-car retries on a fresh random port instead of failing
    * init; a pinned `ws.port` is honored as given and fails loudly.
    */
-  async function startSidecar(auth: boolean | DevframeAuthHandler): Promise<StartedServer> {
+  async function startSidecar(core: ContextRpcServer): Promise<StartedServer> {
     const sidecarHost = options.host ?? 'localhost'
     const start = (port: number): Promise<StartedServer> => bindHttpAndWs({
       context: ctx,
+      core,
       host: sidecarHost,
       port,
       path: withLeadingSlash(route),
-      auth,
       allowedOrigins: options.allowedOrigins,
-      onPeerConnect: options.onPeerConnect,
-      onPeerDisconnect: options.onPeerDisconnect,
     })
     if (ws.port != null)
       return await start(ws.port)
@@ -468,10 +543,10 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     // The WebSocket binding. `ws.url`, when set alongside a local binding,
     // overrides only the *advertisement* — the tunnel pattern, where a relay
     // forwards to whatever this instance bound locally.
-    const resolvedAuth = tier === 'external' ? false : resolveAuth()
-    let websocketMeta: ConnectionMeta['websocket']
+    resolvedAuth = tier === 'external' ? false : resolveAuth()
+    let websocketMeta: ConnectionMeta['websocket'] | undefined
     if (tier === 'sidecar') {
-      started = await startSidecar(resolvedAuth)
+      started = await startSidecar(await ensureCore())
       websocketMeta = { port: started.port, path: route }
     }
     else if (tier === 'server') {
@@ -479,14 +554,12 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       // extra ports, proxy/HTTPS friendly.
       started = await bindHttpAndWs({
         context: ctx,
+        core: await ensureCore(),
         host: options.host ?? 'localhost',
         port: 0,
         server: options.server,
         path: routePath,
-        auth: resolvedAuth,
         allowedOrigins: options.allowedOrigins,
-        onPeerConnect: options.onPeerConnect,
-        onPeerDisconnect: options.onPeerDisconnect,
         destroyUnmatched: options.destroyUnmatchedUpgrades,
       })
       websocketMeta = { path: advertisedPath }
@@ -494,18 +567,25 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     else if (tier === 'external') {
       websocketMeta = ws.url!
     }
-    else {
-      // Advertised now, served once the host hands upgrades over: the
-      // resolved auth waits with the transport it gates.
-      unboundAuth = resolvedAuth
+    else if (tier === 'unbound') {
       websocketMeta = { path: advertisedPath }
     }
-    if (ws.url)
+    if (!wsDisabled && ws.url)
       websocketMeta = ws.url
 
+    // The SSE endpoint rides the shell's own app — the same one serving
+    // `__connection.json` — so every HTTP-backed tier gets it through its
+    // existing surface (owned server, shared server, `handler` /
+    // `nodeMiddleware`), and the transport only loads on first use.
+    if (sseEnabled) {
+      app.use(sseRoutePath, defineHandler(async event =>
+        respondWith(event, await (await ensureSse()).handler(event.req))))
+    }
+
     meta = {
-      backend: 'websocket',
-      websocket: websocketMeta,
+      backend: wsDisabled ? (sseEnabled ? 'sse' : 'none') : 'websocket',
+      ...(websocketMeta !== undefined ? { websocket: websocketMeta } : {}),
+      ...(sseEnabled ? { sse: { path: advertisedSsePath } } : {}),
       ...(result.mcp ? { mcp: result.mcp } : {}),
     }
 
@@ -533,16 +613,10 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   let transportPromise: Promise<WsRpcTransport> | undefined
   function ensureTransport(): Promise<WsRpcTransport> {
     transportPromise ??= initPromise.then(async () => {
-      const [{ createContextRpcServer }, { attachWsRpcTransport }] = await Promise.all([
-        import('./rpc-core'),
+      const [core, { attachWsRpcTransport }] = await Promise.all([
+        ensureCore(),
         import('devframe/rpc/transports/ws-server'),
       ])
-      const core = createContextRpcServer({
-        context: ctx,
-        auth: unboundAuth!,
-        onPeerConnect: options.onPeerConnect,
-        onPeerDisconnect: options.onPeerDisconnect,
-      })
       transport = attachWsRpcTransport(core.rpcGroup, {
         unbound: true,
         path: routePath,
@@ -608,6 +682,8 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
 
   /** The `unbound` tier is the only one whose socket the host may drive. */
   function assertUnbound(): void {
+    if (tier === 'disabled')
+      throw diagnostics.DF0057()
     if (tier === 'external')
       throw diagnostics.DF0056({ url: ws.url! })
     if (tier !== 'unbound')
@@ -672,6 +748,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       await registerPromise?.catch(() => {})
       registration?.unregister()
       await dispose?.()
+      await ssePromise?.then(live => live.close()).catch(() => {})
       await started?.close()
       await transportPromise?.then(live => live.close()).catch(() => {})
     },
