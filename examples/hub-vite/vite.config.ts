@@ -15,7 +15,6 @@ import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
 import { alias } from '../../alias'
 import demoDevframe from './src/devframe'
-import demoDevframeB from './src/devframe-b'
 import tabbedToolDevframe from './src/tabbed-tool'
 import { unrenderedDockEntry } from './src/unrendered-dock'
 import { viteDevframeHub } from './src/vite-devframe-hub'
@@ -64,7 +63,6 @@ export default defineConfig({
     viteDevframeHub({
       devframes: [
         demoDevframe,
-        demoDevframeB,
         // Every built-in plugin, dogfooded end-to-end through the hub mount
         // path — the same set a full viewer like vite-devtools would surface.
         gitDevframe,

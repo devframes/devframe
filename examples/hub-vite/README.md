@@ -14,7 +14,7 @@ pnpm --filter hub-vite dev
 Open the printed URL. The dock on the left lists every mounted tool with its icon:
 
 - **Git**, **Terminals**, **Code Server**, **RPC & State Inspector**, **A11y Inspector** — the built-in plugins, each a published `DevframeDefinition` passed to the host's `devframes` option
-- **Demo Tool** / **Demo Tool B** — two trivial static SPAs that show the bare mount path
+- **Demo Tool** — a trivial static SPA that shows the bare mount path
 
 Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`.
 

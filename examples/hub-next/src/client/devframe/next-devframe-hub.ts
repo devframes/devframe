@@ -11,7 +11,6 @@ import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { createDashboardView } from 'json-render/dashboard'
 import { dirname, join } from 'pathe'
 import demoDevframe from './demo-devframe'
-import demoDevframeB from './demo-devframe-b'
 import tabbedDevframe from './tabbed-devframe'
 import { unrenderedDockEntry } from './unrendered-dock'
 
@@ -195,7 +194,6 @@ export async function nextDevframeHub(
   // shim reports — all sharing one iframe.
   const devframes: (DevframeDefinition | HubDevframeEntry)[] = [
     demoDevframe,
-    demoDevframeB,
     ...(await loadBuiltinPlugins()).map<DevframeDefinition | HubDevframeEntry>(def =>
       a11yAgent && def.id === a11yAgent.dockId
         ? { devframe: def, dock: { clientScript: { importFrom: a11yAgent.importFrom } } }

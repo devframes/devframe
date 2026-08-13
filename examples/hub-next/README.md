@@ -14,7 +14,7 @@ pnpm --filter hub-next dev
 Open the printed URL. The dock on the left lists every mounted tool with its icon:
 
 - **Git**, **Terminals**, **Code Server**, **RPC & State Inspector**, **A11y Inspector** — the built-in plugins, each an entry in `initHub`'s `devframes` list
-- **Next Demo Tool** / **Next Demo Tool B** — two trivial static SPAs that show the bare mount path
+- **Next Demo Tool** — a trivial static SPA that shows the bare mount path
 
 Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`.
 
@@ -42,7 +42,7 @@ The instance is memoized on `globalThis`, so Next's dev-time module re-evaluatio
 - Every `devframes` entry is mounted as a dock and served at `/__devframes/<id>/` with its own `__connection.json`, so the embedded SPA connects straight back to the hub
 - The browser reads `devframe:docks` / `devframe:commands` shared state and dispatches commands over RPC — byte-for-byte the same protocol the Vite host speaks
 - `createDevframeClientHost()` boots the hub's framework-level client runtime in the host page: it publishes the shared client context and imports each dock's `clientScript` (here, the a11y agent) so plugins run code in the page being inspected
-- The **JSON Render** dock renders through a **local React renderer** (`src/client/json-render/`) registered at `createDevframeClientHost({ renderers })`. The hub *also* publishes the reference Vue frontend through its renderer manifest (`renderers: [jsonRenderUiRenderer()]` on `initHub`), but local registration takes precedence — witnessing that any frontend implementing the `JsonRenderDockRenderer` contract can replace the reference one. Delete the local `renderers` option and the same dock renders via the manifest-served module instead. (The sibling `hub-vite` witness ships no local renderer and consumes the manifest directly — the other side of the swap seam.)
+- The **JSON Render** dock renders through a **local React renderer** (`src/client/json-render/react-renderer.tsx` — a compact React port of the base catalog) registered at `createDevframeClientHost({ renderers })`. The hub *also* publishes the reference Vue frontend through its renderer manifest (`renderers: [jsonRenderUiRenderer()]` on `initHub`), but local registration takes precedence — witnessing that any frontend implementing the `JsonRenderDockRenderer` contract can replace the reference one. Delete the local `renderers` option and the same dock renders via the manifest-served module instead. (The sibling `hub-vite` witness ships no local renderer and consumes the manifest directly — the other side of the swap seam.)
 - The **No Renderer** dock witnesses the missing-renderer path: its type is covered by nothing, so `renderers.mount()` resolves `{ status: 'missing-renderer' }` and the shell shows *No renderer for "demo-unrendered" in the current environment* instead of a dead panel
 
 ## Hosting built-in plugins in a bundler

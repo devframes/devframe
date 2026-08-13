@@ -12,7 +12,7 @@ import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { connectDevframe, createDevframeClientHost, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { createReactJsonRenderDockRenderer } from '../json-render/dock-renderer'
+import { createReactJsonRenderDockRenderer } from '../json-render/react-renderer'
 import { dockIconSvg } from './icons'
 
 const HUB_BASE = '/__devframes/'
@@ -141,6 +141,64 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
   }
 }
 
+type ClientContext = ClientHost['context']
+
+// Register the two *client-only* docks (an iframe from a Blob URL + an inline
+// interactive json-render view) on the client host context, so they stay local
+// to this page and never enter `devframe:docks` shared state. `force` lets
+// React StrictMode re-run the boot effect without tripping the duplicate-id
+// guard. Returns a disposer that removes them again.
+function registerClientDocks(ctx: ClientContext): () => void {
+  const notes = ctx.docks.register<DevframeViewIframe>({
+    id: 'client-notes',
+    title: 'Client Notes',
+    icon: 'ph:note-pencil-duotone',
+    type: 'iframe',
+    url: createClientNotesUrl(),
+    category: 'app',
+  }, true)
+  notes.update({ badge: ctx.clientType }) // patch in place via the handle
+  const playground = ctx.docks.register<DevframeJsonRenderDockEntry>({
+    id: 'client-playground',
+    title: 'Client Playground',
+    icon: 'ph:sliders-horizontal-duotone',
+    type: 'json-render',
+    view: { spec: createClientPlaygroundSpec(ctx.clientType) },
+    category: 'app',
+  }, true)
+  return () => {
+    notes.dispose()
+    playground.dispose()
+  }
+}
+
+// Poll the two kit-local RPCs that expose the hub's message + terminal
+// subsystems (a fuller kit would push over the hub's `*:updated` broadcasts).
+// Returns a stop function that ends the polling.
+function pollDrawer(
+  rpc: DevframeRpcClient,
+  onMessages: (m: DevframeMessageEntry[]) => void,
+  onTerminals: (t: TerminalSummary[]) => void,
+): () => void {
+  let alive = true
+  const refresh = async (): Promise<void> => {
+    const [messages, terminals] = await Promise.all([
+      rpc.call('example:next-devframe-hub:messages:list' as any) as Promise<DevframeMessageEntry[]>,
+      rpc.call('example:next-devframe-hub:terminals:list' as any) as Promise<TerminalSummary[]>,
+    ])
+    if (alive) {
+      onMessages(messages)
+      onTerminals(terminals)
+    }
+  }
+  void refresh()
+  const interval = window.setInterval(() => void refresh(), 2000)
+  return () => {
+    alive = false
+    window.clearInterval(interval)
+  }
+}
+
 /** Fetches (and caches, for the component's lifetime) a dock icon's sanitized SVG. */
 function useDockIconSvg(icon: DevframeDockEntry['icon']): string | undefined {
   const [svg, setSvg] = useState<string | undefined>(undefined)
@@ -222,40 +280,10 @@ export default function Page() {
         hostRef.current = clientHost
         const ctx = clientHost.context
 
-        // Register a *client-only* dock — one this page synthesizes itself.
-        // Unlike the server-authored docks, it's registered on the client host
-        // context, so it never enters the `devframe:docks` shared state: it
-        // stays local to this page and is not synced to the hub server or other
-        // viewers. It merges into `ctx.docks.entries` alongside the server
-        // docks. `force` lets React StrictMode re-run this effect without
-        // tripping the duplicate-id guard.
-        const clientDock = ctx.docks.register<DevframeViewIframe>({
-          id: 'client-notes',
-          title: 'Client Notes',
-          icon: 'ph:note-pencil-duotone',
-          type: 'iframe',
-          url: createClientNotesUrl(),
-          category: 'app',
-        }, true)
-        // Patch it in place with the returned handle (the id is immutable).
-        clientDock.update({ badge: ctx.clientType })
-
-        // Register a second client-only dock — this one a *json-render* view the
-        // page authors itself, the richer sibling of the iframe dock above. Its
-        // spec is carried **inline** in the dock entry (`view.spec`), so it needs
-        // no shared state at all: it lives only in this page yet renders — and
-        // stays fully interactive (inputs, toggles, and buttons that mutate its
-        // state) — through the same `json-render` dock renderer (the mini React
-        // registry) as a server-authored view. `force` lets React StrictMode
-        // re-run this effect safely.
-        const clientJsonRenderDock = clientHost.context.docks.register<DevframeJsonRenderDockEntry>({
-          id: 'client-playground',
-          title: 'Client Playground',
-          icon: 'ph:sliders-horizontal-duotone',
-          type: 'json-render',
-          view: { spec: createClientPlaygroundSpec(clientHost.context.clientType) },
-          category: 'app',
-        }, true)
+        // Two *client-only* docks (an iframe + an interactive inline
+        // json-render view), local to this page — never entering
+        // `devframe:docks` shared state, merged into `ctx.docks.entries`.
+        const disposeClientDocks = registerClientDocks(ctx)
 
         const docksState = await rpc.sharedState.get<DevframeDockEntry[]>(
           'devframe:docks',
@@ -293,36 +321,13 @@ export default function Page() {
         }
         window.addEventListener('message', onMessage)
 
-        const refreshMessages = async () => {
-          const entries = await rpc.call(
-            'example:next-devframe-hub:messages:list' as any,
-          ) as DevframeMessageEntry[]
-          if (!cancelled)
-            setMessages(entries)
-        }
-
-        const refreshTerminals = async () => {
-          const sessions = await rpc.call(
-            'example:next-devframe-hub:terminals:list' as any,
-          ) as TerminalSummary[]
-          if (!cancelled)
-            setTerminals(sessions)
-        }
-
-        await refreshMessages()
-        await refreshTerminals()
-
-        const interval = window.setInterval(() => {
-          void refreshMessages()
-          void refreshTerminals()
-        }, 2000)
+        const stopPolling = pollDrawer(rpc, setMessages, setTerminals)
 
         cleanup = () => {
-          window.clearInterval(interval)
+          stopPolling()
           window.removeEventListener('message', onMessage)
           // Remove the client-only docks, then tear down the host + local DOM.
-          clientDock.dispose()
-          clientJsonRenderDock.dispose()
+          disposeClientDocks()
           clientHost.dispose()
           wiredRef.current.clear()
           for (const el of iframePoolRef.current.values()) el.remove()
