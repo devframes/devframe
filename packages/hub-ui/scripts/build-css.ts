@@ -6,6 +6,7 @@ import { colors as c } from 'devframe/utils/colors'
 import MagicString from 'magic-string'
 import { glob } from 'tinyglobby'
 import { createGenerator } from 'unocss'
+import { shadowSurfaceSafelist } from '../../../design/uno.config'
 import config from '../uno.config'
 
 // Compile the components' UnoCSS output ahead of time into a plain string
@@ -23,16 +24,6 @@ const USER_STYLE = join(SRC_DIR, 'style.css')
 // exact same override after `virtual:uno.css`). See the file's own comment.
 const PRIMARY_RAMP = join(SRC_DIR, 'primary-ramp.css')
 const GENERATED_CSS = join(SRC_DIR, '.generated/css.ts')
-
-/**
- * Retarget Wind4's theme `:root {}` block at `:root, :host` so its
- * `--colors-*` (and other design tokens) cascade into the shadow root the
- * stylesheet is adopted into — a `:root` selector matches only the top-level
- * document, never the shadow host.
- */
-function shadowScopeTheme(css: string): string {
-  return css.replaceAll(':root {', ':root, :host {').replaceAll(':root{', ':root, :host{')
-}
 
 export async function buildCSS(): Promise<void> {
   const require = createRequire(import.meta.url)
@@ -72,17 +63,17 @@ export async function buildCSS(): Promise<void> {
 
   const primaryRamp = await fs.readFile(PRIMARY_RAMP, 'utf-8')
   const unoResult = await generator.generate(tokens)
+  // Wind3 drops a *plain* semantic shortcut (`.bg-base` / `.color-base`) from
+  // the main pass when the same shortcut also appears variant-prefixed in the
+  // sources (e.g. `@antfu/design`'s Tabs emits `data-[state=active]:bg-base`) —
+  // a shortcut+variant interaction. Generate the shadow-surface tokens in a
+  // dedicated pass so their plain (and `.dark`) rules are always present.
+  const surfaces = await generator.generate(shadowSurfaceSafelist.join(' '))
   const css = [
     reset,
     userStyle.toString(),
-    // The dock's stylesheet is adopted into a custom element's shadow root,
-    // where a `:root` selector matches nothing (the shadow host is `:host`).
-    // Wind4 emits `@antfu/design`'s theme (`--colors-*`, spacing, …) in one
-    // `:root {}` block, so retarget it at `:root, :host` to make those
-    // variables cascade into the shadow tree — otherwise every `bg-base` /
-    // `color-base` / `color-mix(var(--colors-*))` utility resolves to nothing
-    // inside the dock. (`@property` registrations are document-global already.)
-    shadowScopeTheme(unoResult.css),
+    unoResult.css,
+    surfaces.css,
     primaryRamp,
   ].join('\n')
 

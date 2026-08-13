@@ -1,17 +1,23 @@
-import { mergeConfigs } from 'unocss'
-import { designConfig } from '../../design/uno.config'
+import { mergeConfigs, presetWind3 } from 'unocss'
+import { createDesignConfig, shadowSurfaceSafelist } from '../../design/uno.config'
 
 // The shared devframe design base (see `design/uno.config.ts` and the root
 // AGENTS.md "Design system" section) plus this package's own extraction
 // globs and the dock-shell z-layers. The generated stylesheet is compiled
-// ahead of time by `scripts/build-css.ts` into
-// `src/client/.generated/css.ts` and injected into each custom element's
-// shadow root — `build-css.ts` rewrites the theme's `:root` selector to
-// `:root, :host` so `@antfu/design`'s `--colors-*` variables cascade into
-// that shadow tree (they otherwise only apply to the top-level document).
+// ahead of time by `scripts/build-css.ts` into `src/client/.generated/css.ts`
+// and injected into the dock custom element's **shadow root**.
+//
+// Composed on a **Wind3** base rather than the shared default's Wind4:
+// `@antfu/design`'s semantic utilities compile to concrete `rgb()` + `.dark`
+// variants under Wind3, which are self-contained inside a shadow tree — Wind4
+// keeps its theme/`--un-*` behind a document `:root {}` block and
+// `@property { inherits: false }`, neither of which reaches the shadow root.
+// The `safelist` guarantees the surface/text tokens ship even if a shortcut
+// class only appears via a `.dark:` variant the extractor misses.
 export default mergeConfigs([
-  designConfig,
+  createDesignConfig({ base: presetWind3() }),
   {
+    safelist: shadowSurfaceSafelist,
     content: {
       pipeline: {
         include: [/\.vue($|\?)/, /\.ts$/],

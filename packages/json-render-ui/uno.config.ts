@@ -2,32 +2,38 @@ import { presetAnthonyDesign } from '@antfu/design/unocss'
 import {
   defineConfig,
   presetIcons,
-  presetWind4,
+  presetWind3,
   transformerDirectives,
   transformerVariantGroup,
 } from 'unocss'
+import { shadowSurfaceSafelist } from '../../design/uno.config'
 
 // The reference frontend uses `@antfu/design` directly: its preset (tuned to
-// devframe's sage green) over a Wind4 base, Phosphor icons, DM Sans/Mono and
+// devframe's sage green) over a Wind3 base, Phosphor icons, DM Sans/Mono and
 // the directive/variant-group transformers. Component class strings are
 // authored in `.ts` render functions, so `.ts` is opted into extraction. The
 // named `z-*` layers are the app's to own (the preset blocks plain `z-<number>`).
 //
-// The prebuilt renderer module injects its compiled stylesheet into its own
-// shadow root; `scripts/build-css.ts` rewrites the theme's `:root` selector to
-// `:root, :host` so `@antfu/design`'s `--colors-*` variables cascade into that
-// shadow tree (they otherwise only apply to the top-level document).
+// **Wind3**, not the Wind4 the other devframe surfaces use: the prebuilt
+// renderer module injects its compiled stylesheet into its own shadow root,
+// where Wind4's theme/`--un-*` custom properties (behind a document `:root {}`
+// block and `@property { inherits: false }`) don't reach. Wind3 bakes
+// `@antfu/design`'s semantic utilities to concrete `rgb()` + `.dark` variants,
+// self-contained inside the shadow tree; `shadowSurfaceSafelist` guarantees
+// the surface/text tokens ship even when a shortcut only appears via a `.dark:`
+// variant the extractor misses.
 export default defineConfig({
   presets: [
     presetAnthonyDesign({ primary: '#3a6a45' }),
-    presetWind4(),
+    presetWind3(),
     presetIcons({ scale: 1.1 }),
   ],
   transformers: [transformerDirectives(), transformerVariantGroup()],
   preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
   // `Badge` picks a `badge-color-<name>` at runtime from a fixed set, so those
-  // classes can't be found by static extraction — safelist them.
-  safelist: ['badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],
+  // classes can't be found by static extraction — safelist them, alongside the
+  // shadow-root surface/text tokens.
+  safelist: [...shadowSurfaceSafelist, 'badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],
   shortcuts: {
     'z-nav': 'z-[30]',
     'z-dropdown': 'z-[40]',

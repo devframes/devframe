@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { colors as c } from 'devframe/utils/colors'
 import { glob } from 'tinyglobby'
 import { createGenerator } from 'unocss'
+import { shadowSurfaceSafelist } from '../../../design/uno.config'
 import config from '../uno.config'
 
 // Compile the renderer's UnoCSS output ahead of time into a plain string
@@ -24,16 +25,6 @@ const IGNORE = ['**/*.stories.*', '**/__tests__/**']
 // shadow boundary and retints the rendered views. See the file's own comment.
 const PRIMARY_RAMP = join(SRC_DIR, 'renderer-module/primary-ramp.css')
 const GENERATED_CSS = join(SRC_DIR, '.generated/css.ts')
-
-/**
- * Retarget Wind4's theme `:root {}` block at `:root, :host` so its
- * `--colors-*` (and other design tokens) cascade into the shadow root the
- * renderer module adopts the stylesheet into — a `:root` selector matches
- * only the top-level document, never the shadow host.
- */
-function shadowScopeTheme(css: string): string {
-  return css.replaceAll(':root {', ':root, :host {').replaceAll(':root{', ':root, :host{')
-}
 
 export async function buildCSS(): Promise<void> {
   const require = createRequire(import.meta.url)
@@ -65,12 +56,16 @@ export async function buildCSS(): Promise<void> {
 
   const primaryRamp = await fs.readFile(PRIMARY_RAMP, 'utf-8')
   const unoResult = await generator.generate(tokens)
+  // Wind3 drops a *plain* semantic shortcut (`.bg-base` / `.color-base`) from
+  // the main pass when the same shortcut also appears variant-prefixed in the
+  // sources (e.g. `@antfu/design`'s Tabs emits `data-[state=active]:bg-base`) —
+  // a shortcut+variant interaction. Generate the shadow-surface tokens in a
+  // dedicated pass so their plain (and `.dark`) rules are always present.
+  const surfaces = await generator.generate(shadowSurfaceSafelist.join(' '))
   const css = [
     reset,
-    // Make Wind4's `:root {}` theme block apply inside the renderer module's
-    // shadow root (see `shadowScopeTheme`) — otherwise `bg-base` / `color-base`
-    // and every `color-mix(var(--colors-*))` utility resolve to nothing there.
-    shadowScopeTheme(unoResult.css),
+    unoResult.css,
+    surfaces.css,
     primaryRamp,
   ].join('\n')
 
