@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.8.1",
   "private": true,
-  "description": "Minimal Hono host for @devframes/hub \u2014 the same app file serves the devtools namespace on Node and Bun.",
+  "description": "Minimal Hono host for @devframes/hub — the same app file serves the devtools namespace on Node and Bun.",
   "scripts": {
     "dev": "tsx src/server.ts",
     "dev:bun": "bun src/bun.ts",
@@ -12,8 +12,15 @@
   "dependencies": {
     "@devframes/hub": "workspace:*",
     "@devframes/hub-ui": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-assets": "workspace:*",
+    "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-data-inspector": "workspace:*",
+    "@devframes/plugin-git": "workspace:*",
     "@devframes/plugin-inspect": "workspace:*",
     "@devframes/plugin-messages": "workspace:*",
+    "@devframes/plugin-og": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
     "@hono/node-server": "catalog:deps",
     "devframe": "workspace:*",
     "hono": "catalog:deps"

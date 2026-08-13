@@ -34,16 +34,41 @@ const jsonRenderDock: DevframeJsonRenderDockEntry = {
 // `webpackIgnore` / `turbopackIgnore` so Next's bundler leaves them alone and
 // Node resolves the published `dist` at request time — a static import would
 // be bundled from source and break those lookups.
+//
+// The default-export plugins load from a list of specifier *variables* (not
+// string literals), so Next's bundler and TypeScript alike treat them as
+// opaque — the plugins' node-side source (child processes, the native
+// `zigpty` PTY backend) never gets pulled into this app's build or type
+// program. `data-inspector` (a `:`-carrying default id) and `assets` (its
+// watcher) need constructor options, so they load through dedicated helpers.
+const BUILTIN_PLUGIN_PACKAGES = [
+  '@devframes/plugin-git',
+  '@devframes/plugin-terminals',
+  '@devframes/plugin-code-server',
+  '@devframes/plugin-inspect',
+  '@devframes/plugin-a11y',
+  '@devframes/plugin-messages',
+  '@devframes/plugin-og',
+] as const
+
 async function loadHub(): Promise<HubInstance> {
-  const [hubUi, jsonRenderUi, inspect, messages] = await Promise.all([
+  const [hubUi, jsonRenderUi, dataInspector, assets, ...builtins] = await Promise.all([
     import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/hub-ui'),
     import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/json-render-ui/hub'),
-    import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-inspect'),
-    import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-messages'),
+    import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-data-inspector'),
+    import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-assets'),
+    ...BUILTIN_PLUGIN_PACKAGES.map(
+      pkg => import(/* webpackIgnore: true */ /* turbopackIgnore: true */ pkg),
+    ),
   ])
+  // Every built-in plugin, dogfooded end to end through the hub mount path.
+  // `data-inspector`'s default id carries `:` (a route-param marker), so it
+  // gets a colon-free id override to be a valid `<base><id>/` segment; the
+  // assets watcher is off since this host demonstrates mounting, not authoring.
   const devframes: DevframeDefinition[] = [
-    (inspect.createInspectDevframe as () => DevframeDefinition)(),
-    (messages.createMessagesDevframe as () => DevframeDefinition)(),
+    ...builtins.map(mod => mod.default as DevframeDefinition),
+    (dataInspector.createDataInspectorDevframe as (options: { id: string }) => DevframeDefinition)({ id: 'devframes_plugin_data-inspector' }),
+    (assets.createAssetsDevframe as (options: { watch: boolean }) => DevframeDefinition)({ watch: false }),
   ]
   // Next route handlers can't accept WebSocket upgrades, so the socket asks
   // for a side-car server of its own, advertised via `__connection.json`.

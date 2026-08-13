@@ -13,7 +13,7 @@ export interface CommandsContext {
 }
 export interface CreateDockRenderersContextOptions {
   context: () => DevframeClientContext;
-  local?: Record<string, DockRenderer>;
+  local?: Record<string, DockRenderer<any>>;
   manifest?: () => DockRendererManifest;
   onMounted?: (_: () => void, _: DevframeDockEntry) => (() => void) | void;
 }
@@ -26,7 +26,7 @@ export interface DevframeClientHostOptions {
   connect?: DevframeRpcClientOptions;
   clientType?: DockClientType;
   loadClientScripts?: boolean;
-  renderers?: Record<string, DockRenderer>;
+  renderers?: Record<string, DockRenderer<any>>;
   categoryOrder?: Record<string, number>;
 }
 export interface DockClientScriptContext extends DocksContext {
@@ -72,7 +72,7 @@ export interface DockRendererMountOptions<Entry extends DevframeDockEntry = Devf
   context: DevframeClientContext;
 }
 export interface DockRenderersContext {
-  register: (_: string, _: DockRenderer) => () => void;
+  register: (_: string, _: DockRenderer<any>) => () => void;
   get: (_: string) => DockRenderer | undefined;
   has: (_: string) => boolean;
   mount: (_: DevframeDockEntry, _: HTMLElement) => Promise<DockRendererMountResult>;

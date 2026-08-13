@@ -33,6 +33,7 @@ const BUILTIN_PLUGIN_PACKAGES = [
   '@devframes/plugin-inspect',
   '@devframes/plugin-a11y',
   '@devframes/plugin-messages',
+  '@devframes/plugin-og',
 ] as const
 
 async function loadBuiltinPlugins(): Promise<DevframeDefinition[]> {
@@ -60,6 +61,18 @@ async function loadAssetsDevframe(): Promise<DevframeDefinition> {
   // `src/client/devframe/` → `src/client/public`, the dir Next serves at `/`.
   const dir = join(dirname(fileURLToPath(import.meta.url)), '../public')
   return (mod.createAssetsDevframe as (options: { dir: string, watch: boolean }) => DevframeDefinition)({ dir, watch: false })
+}
+
+/**
+ * Load the data-inspector plugin with a colon-free id. Its default id
+ * (`devframes:plugin:data-inspector`) carries `:` — a route-param marker to
+ * the router the hub mounts each frame on — so it can't be a `<base><id>/`
+ * segment (`DF8004`); the override makes it mountable. Loaded through the same
+ * bundler-ignored dynamic `import()` as the other plugins.
+ */
+async function loadDataInspectorDevframe(): Promise<DevframeDefinition> {
+  const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-data-inspector')
+  return (mod.createDataInspectorDevframe as (options: { id: string }) => DevframeDefinition)({ id: 'devframes_plugin_data-inspector' })
 }
 
 /**
@@ -188,6 +201,7 @@ export async function nextDevframeHub(
         ? { devframe: def, dock: { clientScript: { importFrom: a11yAgent.importFrom } } }
         : def,
     ),
+    await loadDataInspectorDevframe(),
     await loadAssetsDevframe(),
     {
       devframe: tabbedDevframe,

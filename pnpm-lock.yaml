@@ -555,12 +555,33 @@ importers:
       '@devframes/hub-ui':
         specifier: workspace:*
         version: link:../../packages/hub-ui
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
       '@devframes/plugin-inspect':
         specifier: workspace:*
         version: link:../../plugins/inspect
       '@devframes/plugin-messages':
         specifier: workspace:*
         version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
       '@hono/node-server':
         specifier: catalog:deps
         version: 1.19.17(hono@4.13.0)
@@ -604,6 +625,9 @@ importers:
       '@devframes/plugin-code-server':
         specifier: workspace:*
         version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
       '@devframes/plugin-git':
         specifier: workspace:*
         version: link:../../plugins/git
@@ -613,6 +637,9 @@ importers:
       '@devframes/plugin-messages':
         specifier: workspace:*
         version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
       '@devframes/plugin-terminals':
         specifier: workspace:*
         version: link:../../plugins/terminals
@@ -686,12 +713,33 @@ importers:
       '@devframes/next':
         specifier: workspace:*
         version: link:../../packages/next
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
       '@devframes/plugin-inspect':
         specifier: workspace:*
         version: link:../../plugins/inspect
       '@devframes/plugin-messages':
         specifier: workspace:*
         version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -720,12 +768,33 @@ importers:
       '@devframes/hub-ui':
         specifier: workspace:*
         version: link:../../packages/hub-ui
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
       '@devframes/plugin-inspect':
         specifier: workspace:*
         version: link:../../plugins/inspect
       '@devframes/plugin-messages':
         specifier: workspace:*
         version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -751,12 +820,33 @@ importers:
       '@devframes/json-render-ui':
         specifier: workspace:*
         version: link:../../packages/json-render-ui
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
       '@devframes/plugin-inspect':
         specifier: workspace:*
         version: link:../../plugins/inspect
       '@devframes/plugin-messages':
         specifier: workspace:*
         version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -849,12 +939,33 @@ importers:
       '@devframes/json-render-ui':
         specifier: workspace:*
         version: link:../../packages/json-render-ui
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
       '@devframes/plugin-inspect':
         specifier: workspace:*
         version: link:../../plugins/inspect
       '@devframes/plugin-messages':
         specifier: workspace:*
         version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe

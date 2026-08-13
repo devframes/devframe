@@ -52,6 +52,24 @@
         "@devframes/plugin-git",
         "@devframes/plugin-inspect",
         "@devframes/plugin-messages",
+        "@devframes/plugin-og",
+        "@devframes/plugin-terminals"
+      ]
+    },
+    "examples/hub-next-minimal": {
+      // `BUILTIN_PLUGIN_PACKAGES` (`src/client/hub.ts`) lists these as string
+      // literals loaded through a runtime `import()` carrying
+      // `webpackIgnore`/`turbopackIgnore` — deliberately invisible to bundlers
+      // (and knip) so Next never inlines their node-only code. They're
+      // genuinely used at runtime. (`data-inspector` and `assets` load via
+      // their own string-literal helpers, so knip sees those directly.)
+      "ignoreDependencies": [
+        "@devframes/plugin-a11y",
+        "@devframes/plugin-code-server",
+        "@devframes/plugin-git",
+        "@devframes/plugin-inspect",
+        "@devframes/plugin-messages",
+        "@devframes/plugin-og",
         "@devframes/plugin-terminals"
       ]
     },

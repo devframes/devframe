@@ -4,9 +4,32 @@ import { Server as NodeHttpServer } from 'node:http'
 import { createUi } from '@devframes/hub-ui'
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
 import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
+import { createA11yDevframe } from '@devframes/plugin-a11y'
+import { createAssetsDevframe } from '@devframes/plugin-assets'
+import { createCodeServerDevframe } from '@devframes/plugin-code-server'
+import { createDataInspectorDevframe } from '@devframes/plugin-data-inspector'
+import { createGitDevframe } from '@devframes/plugin-git'
 import { createInspectDevframe } from '@devframes/plugin-inspect'
 import { createMessagesDevframe } from '@devframes/plugin-messages'
+import { createOgDevframe } from '@devframes/plugin-og'
+import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 import { defineConfig } from 'vite'
+
+// Every built-in plugin, dogfooded end to end through the hub mount path.
+// `data-inspector`'s default id carries `:` (a route-param marker), so it
+// gets a colon-free id override to be a valid `<base><id>/` segment; the
+// assets watcher is off since this host demonstrates mounting, not authoring.
+const builtinDevframes = [
+  createGitDevframe(),
+  createTerminalsDevframe(),
+  createCodeServerDevframe(),
+  createInspectDevframe(),
+  createDataInspectorDevframe({ id: 'devframes_plugin_data-inspector' }),
+  createA11yDevframe(),
+  createMessagesDevframe(),
+  createOgDevframe(),
+  createAssetsDevframe({ watch: false }),
+]
 
 // The one mount base, referenced by both `initHub({ base })` and the injected
 // embedded-script URL — no duplicated string literal.
@@ -57,7 +80,7 @@ export default defineConfig({
       const httpServer = server.httpServer instanceof NodeHttpServer ? server.httpServer : undefined
       const hub = initHub({
         base,
-        devframes: [createInspectDevframe(), createMessagesDevframe()],
+        devframes: builtinDevframes,
         ui: createUi(),
         // Serve the reference json-render frontend as a prebuilt renderer
         // module — the one-liner that makes `'json-render'` docks render in

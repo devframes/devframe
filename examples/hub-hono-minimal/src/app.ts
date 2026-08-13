@@ -1,8 +1,15 @@
 import type { HubInstance } from '@devframes/hub/initiate'
 import { createUi } from '@devframes/hub-ui'
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
+import { createA11yDevframe } from '@devframes/plugin-a11y'
+import { createAssetsDevframe } from '@devframes/plugin-assets'
+import { createCodeServerDevframe } from '@devframes/plugin-code-server'
+import { createDataInspectorDevframe } from '@devframes/plugin-data-inspector'
+import { createGitDevframe } from '@devframes/plugin-git'
 import { createInspectDevframe } from '@devframes/plugin-inspect'
 import { createMessagesDevframe } from '@devframes/plugin-messages'
+import { createOgDevframe } from '@devframes/plugin-og'
+import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 import { Hono } from 'hono'
 
 // One runtime-agnostic app file: the hub instance and the Hono routes are
@@ -16,9 +23,20 @@ const globalRef = globalThis as { __hubHonoMinimal?: HubInstance }
 
 export const hub: HubInstance = globalRef.__hubHonoMinimal ??= initHub({
   base: DEVFRAMES_HUB_BASE,
+  // Every built-in plugin, dogfooded end to end through the hub mount path.
+  // `data-inspector`'s default id carries `:` (a route-param marker), so it
+  // gets a colon-free id override to be a valid `<base><id>/` segment; the
+  // assets watcher is off since this host demonstrates mounting, not authoring.
   devframes: [
+    createGitDevframe(),
+    createTerminalsDevframe(),
+    createCodeServerDevframe(),
     createInspectDevframe(),
+    createDataInspectorDevframe({ id: 'devframes_plugin_data-inspector' }),
+    createA11yDevframe(),
     createMessagesDevframe(),
+    createOgDevframe(),
+    createAssetsDevframe({ watch: false }),
   ],
   ui: createUi(),
   // Single-user localhost demo: reachable only on loopback, so it opts out

@@ -9,8 +9,15 @@ const devframePackages = [
   '@devframes/hub',
   '@devframes/hub/initiate',
   '@devframes/hub-ui',
+  '@devframes/plugin-a11y',
+  '@devframes/plugin-assets',
+  '@devframes/plugin-code-server',
+  '@devframes/plugin-data-inspector',
+  '@devframes/plugin-git',
   '@devframes/plugin-inspect',
   '@devframes/plugin-messages',
+  '@devframes/plugin-og',
+  '@devframes/plugin-terminals',
 ]
 
 export default defineNitroConfig({
