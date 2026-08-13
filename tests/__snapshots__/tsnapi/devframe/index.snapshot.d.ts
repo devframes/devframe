@@ -64,8 +64,9 @@ export interface AgentToolProviderHandle extends AgentHandle {
   notifyChanged: () => void;
 }
 export interface ConnectionMeta {
-  backend: 'websocket' | 'static';
+  backend: 'websocket' | 'sse' | 'static' | 'none';
   websocket?: number | string | ConnectionMetaWebsocket;
+  sse?: string | ConnectionMetaSse;
   mcp?: {
     path: string;
     port?: number;
@@ -74,6 +75,11 @@ export interface ConnectionMeta {
   baseUrl?: string;
   authToken?: string;
   viewerOriginToken?: string;
+}
+export interface ConnectionMetaSse {
+  path?: string;
+  port?: number;
+  host?: string;
 }
 export interface ConnectionMetaWebsocket {
   path?: string;
@@ -212,6 +218,20 @@ export interface DevframeRpcClientFunctions {
   'devframe:streaming:upload-cancel': (_: string, _: string) => Promise<void>;
   'devframe:rpc:client-state:updated': (_: string, _: any, _: string) => Promise<void>;
   'devframe:rpc:client-state:patch': (_: string, _: any[], _: string) => Promise<void>;
+}
+export interface DevframeRpcConnection {
+  id: number;
+  transport: DevframeRpcTransportKind;
+  request?: DevframeRpcConnectionRequest;
+  send?: (_: string) => void;
+  close?: (_?: number, _?: string) => void;
+  peer?: Peer;
+}
+export interface DevframeRpcConnectionRequest {
+  url?: string;
+  headers?: {
+    get: (_: string) => string | null | undefined;
+  };
 }
 export interface DevframeRpcServerFunctions {
   'anonymous:devframe:auth': (_: {
@@ -402,6 +422,7 @@ export type DevframeDeploymentKind = 'standalone' | 'hosted';
 export type DevframeDiagnosticsDefinition = ReturnType<typeof defineDiagnostics<any, any>>;
 export type DevframeDiagnosticsLogger = Record<string, any>;
 export type DevframeDuplicationStrategy = 'warn' | 'silent' | 'throw' | 'duplicate';
+export type DevframeRpcTransportKind = 'websocket' | 'sse';
 export type DevframeRuntime = 'cli' | 'build' | 'spa' | 'vite' | 'embedded';
 export type DevframeServiceId = keyof DevframeServicesRegistry | (string & {});
 export type DevframeServiceOf<ID> = ID extends keyof DevframeServicesRegistry ? DevframeServicesRegistry[ID] : unknown;

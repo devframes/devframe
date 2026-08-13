@@ -1,5 +1,4 @@
-import type { Peer } from 'crossws'
-import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
+import type { DevframeRpcConnection, WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
 import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeStorageScope } from 'devframe/types'
 import type { Buffer } from 'node:buffer'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
@@ -129,15 +128,15 @@ export interface InitDevframeOptions {
    */
   destroyUnmatchedUpgrades?: boolean
   /**
-   * Called once per new WS connection, right after its session is created.
+   * Called once per new RPC connection, right after its session is created.
    * Forwarded verbatim to the underlying transport.
    */
-  onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
+  onPeerConnect?: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
   /**
-   * Called once per closed WS connection, right after the transport's own
+   * Called once per closed RPC connection, right after the transport's own
    * disconnect bookkeeping runs.
    */
-  onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+  onPeerDisconnect?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
 }
 
 export interface DevframeInstance {

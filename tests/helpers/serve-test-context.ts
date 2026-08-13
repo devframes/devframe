@@ -1,7 +1,6 @@
-import type { Peer } from 'crossws'
 import type { StartedServer } from 'devframe/internal'
 import type { DevframeAuthHandler } from 'devframe/node/auth'
-import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession } from 'devframe/types'
+import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeRpcConnection } from 'devframe/types'
 import type { H3 } from 'h3'
 import { createServer } from 'node:http'
 import { isIP } from 'node:net'
@@ -27,8 +26,8 @@ export interface ServeTestContextOptions {
   app?: H3
   /** Auth intent, same contract as the shell binding: `false` auto-trusts. */
   auth?: boolean | DevframeAuthHandler
-  /** Called once per new WS connection, right after its session is created. */
-  onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
+  /** Called once per new RPC connection, right after its session is created. */
+  onPeerConnect?: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
 }
 
 /**

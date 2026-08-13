@@ -150,18 +150,18 @@ export function createInteractiveAuth(
   }
 
   function onConnect(
-    peer: { request?: { url?: string, headers?: { get?: (name: string) => string | null } } },
+    connection: { request?: { url?: string, headers?: { get?: (name: string) => string | null | undefined } } },
     session: DevframeNodeRpcSession,
   ): void {
     let token: string | undefined
     let requestOrigin: string | undefined
     try {
-      const url = new URL(peer.request?.url ?? '', 'http://localhost')
+      const url = new URL(connection.request?.url ?? '', 'http://localhost')
       token = url.searchParams.get(DEVFRAME_AUTH_TOKEN_QUERY_PARAM) ?? undefined
     }
     catch {}
     try {
-      requestOrigin = peer.request?.headers?.get?.('origin') ?? undefined
+      requestOrigin = connection.request?.headers?.get?.('origin') ?? undefined
     }
     catch {}
     if (!token)

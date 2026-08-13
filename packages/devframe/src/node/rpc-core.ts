@@ -1,5 +1,5 @@
 import type { BirpcGroup, EventOptions } from 'birpc'
-import type { Peer } from 'crossws'
+import type { DevframeRpcConnection } from 'devframe/rpc/transports/ws-server'
 import type { DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
 import type { DevframeAuthHandler } from './auth'
 import type { RpcFunctionsHostImpl } from './host-functions'
@@ -16,10 +16,10 @@ export interface CreateContextRpcServerOptions {
   auth?: boolean | DevframeAuthHandler
   /** Lower-level per-call gate by method name and session, without a full handler. */
   authorize?: (methodName: string, session: DevframeNodeRpcSession) => boolean
-  /** Called once per new WS connection, right after its session is created. */
-  onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
-  /** Called once per closed WS connection, after the transport's disconnect bookkeeping. */
-  onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+  /** Called once per new RPC connection, right after its session is created. */
+  onPeerConnect?: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
+  /** Called once per closed RPC connection, after the transport's disconnect bookkeeping. */
+  onPeerDisconnect?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
   /** Forwarded verbatim to birpc's `rpcOptions` so a host keeps seeing RPC failures. */
   rpcOptions?: Pick<
     EventOptions<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>,
@@ -32,12 +32,12 @@ export interface ContextRpcServer {
   /** The resolved auth handler when `auth` was passed as one. */
   authHandler?: DevframeAuthHandler
   /**
-   * Peer lifecycle handlers to wire into a WS transport
+   * Connection lifecycle handlers to wire into a transport binding
    * (`attachWsRpcTransport`'s `onConnected` / `onDisconnected`, or any other
    * crossws adapter's peer hooks via `createWsRpcPeerHooks`).
    */
-  onConnected?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
-  onDisconnected: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+  onConnected?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
+  onDisconnected: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
 }
 
 /**
@@ -131,18 +131,18 @@ export function createContextRpcServer(options: CreateContextRpcServerOptions): 
   }
 
   const onConnected = (authHandler || options.onPeerConnect)
-    ? (peer: Peer, meta: DevframeNodeRpcSessionMeta) => {
+    ? (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => {
         const session: DevframeNodeRpcSession = {
           meta,
           rpc: rpcGroup.clients.find(client => (client as any).$meta === meta) as any,
         }
-        authHandler?.onConnect(peer, session)
-        options.onPeerConnect?.(peer, session)
+        authHandler?.onConnect(connection, session)
+        options.onPeerConnect?.(connection, session)
       }
     : undefined
 
-  const onDisconnected = (peer: Peer, meta: DevframeNodeRpcSessionMeta): void => {
-    options.onPeerDisconnect?.(peer, meta)
+  const onDisconnected = (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta): void => {
+    options.onPeerDisconnect?.(connection, meta)
     rpcHost._emitSessionDisconnected(meta)
   }
 

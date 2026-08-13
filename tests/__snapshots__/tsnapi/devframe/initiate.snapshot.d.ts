@@ -32,8 +32,8 @@ export interface InitDevframeOptions {
   app?: H3;
   getStorageDir?: (_: DevframeStorageScope) => string;
   destroyUnmatchedUpgrades?: boolean;
-  onPeerConnect?: (_: Peer, _: DevframeNodeRpcSession) => void;
-  onPeerDisconnect?: (_: Peer, _: DevframeNodeRpcSessionMeta) => void;
+  onPeerConnect?: (_: DevframeRpcConnection, _: DevframeNodeRpcSession) => void;
+  onPeerDisconnect?: (_: DevframeRpcConnection, _: DevframeNodeRpcSessionMeta) => void;
 }
 // #endregion
 

@@ -1,7 +1,6 @@
 import type { BirpcGroup } from 'birpc'
-import type { Peer } from 'crossws'
 import type { NodeAdapter } from 'crossws/adapters/node'
-import type { WsOriginRegistry, WsRpcTransport } from 'devframe/rpc/transports/ws-server'
+import type { DevframeRpcConnection, WsOriginRegistry, WsRpcTransport } from 'devframe/rpc/transports/ws-server'
 import type { H3 } from 'h3'
 import type { Buffer } from 'node:buffer'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
@@ -56,8 +55,8 @@ interface BindHttpAndWsOptions {
   auth?: boolean | DevframeAuthHandler
   allowedOrigins?: readonly string[] | WsOriginRegistry | false
   destroyUnmatched?: boolean
-  onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
-  onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+  onPeerConnect?: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
+  onPeerDisconnect?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
 }
 
 /**
@@ -212,8 +211,8 @@ export interface CreateInstanceShellOptions<TContext extends DevframeNodeContext
   allowedOrigins?: readonly string[] | WsOriginRegistry | false
   /** Destroy off-route upgrades on a shared `server`. */
   destroyUnmatchedUpgrades?: boolean
-  onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
-  onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+  onPeerConnect?: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
+  onPeerDisconnect?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
   /**
    * Advertise the WS route as a base-absolute path (`<base>__ws`) instead of
    * the base-relative default. A hub serves one meta document from several

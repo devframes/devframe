@@ -1,4 +1,4 @@
-import type { Peer } from 'crossws'
+import type { DevframeRpcConnection } from 'devframe/rpc/transports/ws-server'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/instance-shell'
 import type { DevframeDefinition, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
@@ -82,16 +82,16 @@ export interface CreateDevServerOptions {
    */
   mcp?: boolean | McpRouteOptions
   /**
-   * Called once per new WS connection, right after its session is created.
-   * Forwarded verbatim to the underlying WS transport binding.
+   * Called once per new RPC connection, right after its session is created.
+   * Forwarded verbatim to the underlying transport binding.
    */
-  onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
+  onPeerConnect?: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
   /**
-   * Called once per closed WS connection, right after its session's
+   * Called once per closed RPC connection, right after its session's
    * disconnect bookkeeping runs. Forwarded verbatim to the underlying
-   * the underlying WS transport binding.
+   * transport binding.
    */
-  onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+  onPeerDisconnect?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
   /**
    * Called once the WS server is bound. Devframe stays headless
    * otherwise — wire this if you want a startup banner.

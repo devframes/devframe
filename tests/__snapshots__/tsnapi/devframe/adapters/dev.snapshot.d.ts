@@ -13,8 +13,8 @@ export interface CreateDevServerOptions {
   openBrowser?: boolean | string;
   auth?: boolean | DevframeAuthHandler;
   mcp?: boolean | McpRouteOptions;
-  onPeerConnect?: (_: Peer, _: DevframeNodeRpcSession) => void;
-  onPeerDisconnect?: (_: Peer, _: DevframeNodeRpcSessionMeta) => void;
+  onPeerConnect?: (_: DevframeRpcConnection, _: DevframeNodeRpcSession) => void;
+  onPeerDisconnect?: (_: DevframeRpcConnection, _: DevframeNodeRpcSessionMeta) => void;
   onReady?: (_: {
     origin: string;
     port: number;
