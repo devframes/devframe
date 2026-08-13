@@ -91,6 +91,8 @@ const serverEntries = {
   'rpc/client': 'src/rpc/client.ts',
   'rpc/dump': 'src/rpc/dump/index.ts',
   'rpc/server': 'src/rpc/server.ts',
+  'rpc/transports/sse-client': 'src/rpc/transports/sse-client.ts',
+  'rpc/transports/sse-server': 'src/rpc/transports/sse-server.ts',
   'rpc/transports/ws-bun': 'src/rpc/transports/ws-bun.ts',
   'rpc/transports/ws-client': 'src/rpc/transports/ws-client.ts',
   'rpc/transports/ws-server': 'src/rpc/transports/ws-server.ts',

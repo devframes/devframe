@@ -1,7 +1,7 @@
 import { diagnostics } from './diagnostics'
 
 /**
- * Wire format used by the WS RPC transport.
+ * Wire format used by the live RPC transports (WebSocket and SSE).
  *
  * - **JSON (default, unprefixed):** payload is plain JSON text. Used when
  *   the dispatched method is declared `jsonSerializable: true`. Encoded

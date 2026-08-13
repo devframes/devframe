@@ -5,7 +5,7 @@ import { HISTORY_KEY } from '../../constants.ts'
 import { getStreamingChatContext } from '../../context.ts'
 
 /**
- * Synthetic "AI" — splits a canned response into tokens and emits them
+ * Synthetic "AI" - splits a canned response into tokens and emits them
  * one at a time. Swap in `OpenAI`'s `chat.completions.create({ stream: true })`
  * (or any async iterable of strings) to make it real.
  */
@@ -13,17 +13,17 @@ function* fakeTokens(prompt: string): Generator<string> {
   const lower = prompt.toLowerCase()
   let response: string
   if (/^(?:hi|hello|hey)\b/.test(lower)) {
-    response = `Hello! Ask me about devframe, streaming, or anything else — I'll fake-stream a response one token at a time.`
+    response = `Hello! Ask me about devframe, streaming, or anything else - I'll fake-stream a response one token at a time.`
   }
   else if (lower.includes('haiku')) {
-    response = 'Tiny chunks arrive — / type-safe over WebSocket / streams compose with ease.'
+    response = 'Tiny chunks arrive - / type-safe over WebSocket / streams compose with ease.'
   }
   else if (lower.includes('streaming')) {
     response
       = 'Streams start with `ctx.rpc.streaming.create()` on the server. '
         + 'Producers `write()` chunks; clients subscribe and consume them via '
         + '`for await (const chunk of reader)`. Cancellation, replay, and '
-        + 'backpressure are wired by the host — your handler stays small.'
+        + 'backpressure are wired by the host - your handler stays small.'
   }
   else if (lower.includes('history') || lower.includes('persist')) {
     response
@@ -36,7 +36,7 @@ function* fakeTokens(prompt: string): Generator<string> {
     response
       = `You asked: "${prompt}". `
         + 'devframe is a framework-neutral foundation for building developer '
-        + 'tooling — six adapters, type-safe RPC, shared state, and a '
+        + 'tooling - six adapters, type-safe RPC, shared state, and a '
         + 'first-class streaming channel for delta-style server↔client data. '
         + 'Pipe `ReadableStream`s into a sink, or write chunks by hand.'
   }
@@ -67,7 +67,7 @@ export const send = defineRpcFunction({
         const assistantId = nanoid()
         const now = Date.now()
 
-        // Append both messages atomically — clients see the user prompt
+        // Append both messages atomically - clients see the user prompt
         // and the empty assistant placeholder appear together.
         history.mutate((draft) => {
           draft.messages.push({
@@ -86,7 +86,7 @@ export const send = defineRpcFunction({
         })
         pruneIfTooLarge()
 
-        // Producer — token-by-token via streaming, full content committed
+        // Producer - token-by-token via streaming, full content committed
         // to shared state when done so refreshes / new clients see the
         // finished message without re-streaming.
         ;(async () => {

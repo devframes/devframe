@@ -17,6 +17,6 @@ export function setStreamingChatContext(ctx: DevframeNodeContext, value: Streami
 export function getStreamingChatContext(ctx: DevframeNodeContext): StreamingChatContext {
   const value = map.get(ctx)
   if (!value)
-    throw new Error('streaming-chat context not initialised — call setStreamingChatContext in devframe.setup')
+    throw new Error('streaming-chat context not initialised - call setStreamingChatContext in devframe.setup')
   return value
 }

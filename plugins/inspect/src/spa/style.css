@@ -1,5 +1,5 @@
 /* The inspector keeps its bespoke component CSS but sources every color/radius
-   from `@antfu/design`'s palette — the local token names below mirror the design
+   from `@antfu/design`'s palette - the local token names below mirror the design
    system's `bg-base` / `bg-secondary` / `color-*` / `border-base` semantics and
    flip via the `.dark` class. Only the domain-specific JSON/RPC syntax palette is
    defined per theme here. */
@@ -19,7 +19,7 @@
   --df-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
   --df-sans: var(--font-sans, "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
 
-  /* JSON / RPC syntax palette — light */
+  /* JSON / RPC syntax palette - light */
   --df-query: #2563c9;
   --df-static: #8a45c9;
   --df-action: #b9701f;
@@ -41,7 +41,7 @@
   --df-accent-dim: color-mix(in srgb, #6fb07d 22%, transparent);
   --df-danger: #fb7185;
 
-  /* JSON / RPC syntax palette — dark */
+  /* JSON / RPC syntax palette - dark */
   --df-query: #6ea8fe;
   --df-static: #c792ea;
   --df-action: #ffb08f;
@@ -608,7 +608,7 @@ textarea.args:focus {
 }
 
 /* Shown only when the sanitized MCP wire name (`.id`, above) differs from
-   the tool's internal registration id — see `toAgentToolName`. */
+   the tool's internal registration id - see `toAgentToolName`. */
 .card .id-note {
   font-family: var(--df-mono);
   font-size: 10px;

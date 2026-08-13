@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.8.2",
   "private": true,
-  "description": "Minimal Rsbuild host for @devframes/hub — one initHub() handler mounted as dev middleware, UI from @devframes/hub-ui.",
+  "description": "Minimal Rsbuild host for the devframe hub.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-rsbuild-minimal",
   "scripts": {
     "dev": "rsbuild dev",

@@ -32,7 +32,7 @@ function isIframeDock(d: DevframeDockEntry): d is DevframeDockEntry & { type: 'i
 async function main() {
   setStatus('Connecting…')
 
-  // The app under test renders immediately — it's plain page content the a11y
+  // The app under test renders immediately - it's plain page content the a11y
   // agent (imported below as the a11y dock's client script) will scan.
   mountAppUnderTest(appEl)
 
@@ -40,7 +40,7 @@ async function main() {
   setStatus(`Connected · backend=${rpc.connectionMeta.backend}`, 'ready')
 
   // Boot the hub client runtime: it publishes the shared client context and
-  // imports each dock's client script into this page — here, the a11y agent,
+  // imports each dock's client script into this page - here, the a11y agent,
   // which then scans this document live and mirrors findings into the messages
   // feed. The rail below reads the same `devframe:docks` shared state.
   const host = await createDevframeClientHost({ rpc })

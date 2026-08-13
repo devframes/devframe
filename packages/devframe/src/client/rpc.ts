@@ -1,5 +1,6 @@
 import type { BirpcOptions, BirpcReturn } from 'birpc'
 import type { RpcCacheOptions, RpcFunctionsCollector } from 'devframe/rpc'
+import type { SseRpcChannelOptions } from 'devframe/rpc/transports/sse-client'
 import type { WsRpcChannelOptions } from 'devframe/rpc/transports/ws-client'
 import type { ConnectionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, EventEmitter, RpcSharedStateHost, SettingsForNamespace } from 'devframe/types'
 import type { DevframeConnection, DevframeConnectionStatus, SetupDevframeConnectionOptions } from './connection'
@@ -13,6 +14,7 @@ import { setupDevframeConnection } from './connection'
 import { storeAuthToken } from './connection-storage'
 import { authenticateWithUrlOtp } from './otp'
 import { createRpcSharedStateClientHost } from './rpc-shared-state'
+import { createSseRpcClientMode } from './rpc-sse'
 import { createStaticRpcClientMode } from './rpc-static'
 import { createRpcStreamingClientHost } from './rpc-streaming'
 import { createWsRpcClientMode } from './rpc-ws'
@@ -75,7 +77,24 @@ export interface DevframeRpcClientOptions extends SetupDevframeConnectionOptions
    * @default true
    */
   simpleAuth?: boolean
+  /**
+   * Which live transport to connect over:
+   *
+   *  - `'auto'` (default) — trust the server's advertisement: its declared
+   *    primary (`backend`), preferring the WebSocket when both endpoints are
+   *    present. A server that couldn't bind a socket advertises SSE as its
+   *    primary, so no client-side fallback probing is needed.
+   *  - `'websocket'` / `'sse'` — pin one transport; connecting fails with a
+   *    clear error when the server doesn't advertise it. Reach for
+   *    `transport: 'sse'` when an intermediary silently strips WS upgrades —
+   *    something the server cannot detect.
+   *
+   * A `static` backend ignores this option (there is no live transport).
+   */
+  transport?: 'auto' | 'websocket' | 'sse'
   wsOptions?: Partial<WsRpcChannelOptions>
+  /** Channel overrides for the SSE transport — the `wsOptions` counterpart. */
+  sseOptions?: Partial<SseRpcChannelOptions>
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>
   cacheOptions?: boolean | Partial<RpcCacheOptions>
   /**
@@ -109,10 +128,16 @@ export interface DevframeRpcClient {
    */
   readonly status: DevframeConnectionStatus
   /**
-   * The most recent connection-level error (WebSocket error, refused trust, or
-   * failed connection-meta load), or `null` when the connection is healthy.
+   * The most recent connection-level error (transport error, refused trust,
+   * or failed connection-meta load), or `null` when the connection is healthy.
    */
   readonly connectionError: Error | null
+  /**
+   * The transport this client is actually connected over — `'websocket'`,
+   * `'sse'`, or `'static'`. Reflects the resolution of the `transport`
+   * option against the server's advertisement.
+   */
+  readonly transport: 'websocket' | 'sse' | 'static'
   /**
    * The complete connection used by this client, including the metadata source
    * URL external viewers use to resolve relative resources.
@@ -212,6 +237,12 @@ export interface DevframeRpcClient {
 }
 
 export interface DevframeRpcClientMode {
+  /**
+   * The transport this mode speaks. Optional so a mode implemented before
+   * this field existed — a custom transport, a hand-typed mock — still
+   * satisfies the interface; an absent value reads as `'websocket'`.
+   */
+  readonly transport?: 'websocket' | 'sse' | 'static'
   readonly isTrusted: boolean
   readonly status: DevframeConnectionStatus
   readonly connectionError: Error | null
@@ -228,6 +259,41 @@ export interface DevframeRpcClientMode {
   callOptional: DevframeRpcClient['callOptional']
   /** See {@link DevframeRpcClient.close}. */
   close?: () => void
+}
+
+/**
+ * Resolve the requested `transport` option against what the server
+ * advertises. `'auto'` trusts the advertisement — the server's declared
+ * primary (`backend`), preferring the WebSocket when both endpoints are
+ * present; an explicit `'websocket'` / `'sse'` pins that transport and
+ * throws when the server doesn't advertise it.
+ */
+export function resolveClientTransport(
+  requested: 'auto' | 'websocket' | 'sse',
+  meta: ConnectionMeta,
+): 'websocket' | 'sse' | 'static' {
+  if (meta.backend === 'static')
+    return 'static'
+  const hasWebsocket = meta.websocket !== undefined
+  const hasSse = meta.sse !== undefined
+  if (requested === 'websocket') {
+    if (!hasWebsocket)
+      throw new Error('[devframe] transport: \'websocket\' was requested, but this server does not advertise a WebSocket endpoint')
+    return 'websocket'
+  }
+  if (requested === 'sse') {
+    if (!hasSse)
+      throw new Error('[devframe] transport: \'sse\' was requested, but this server does not advertise an SSE endpoint')
+    return 'sse'
+  }
+  // 'auto' — the server's declared primary first, then whatever is present.
+  if (meta.backend === 'sse' && hasSse)
+    return 'sse'
+  if (hasWebsocket)
+    return 'websocket'
+  if (hasSse)
+    return 'sse'
+  throw new Error('[devframe] This server advertises no RPC transport (backend "none") — nothing to connect to. Enable the WebSocket or SSE endpoint on the server, or use its static/MCP surfaces instead.')
 }
 
 export async function getDevframeRpcClient(
@@ -285,35 +351,45 @@ export async function getDevframeRpcClient(
     })
   }
 
-  const mode = connectionMeta.backend === 'static'
+  const liveModeOptions = {
+    authToken,
+    connectionMeta,
+    metaBaseUrl,
+    events,
+    clientRpc,
+    callTimeout: options.callTimeout,
+    rpcOptions: {
+      ...rpcOptions,
+      async onRequest(req, next, resolve) {
+        await rpcOptions.onRequest?.call(this, req, next, resolve)
+        if (cacheOptions && cacheManager?.validate(req.m)) {
+          if (cacheManager.has(req.m, req.a)) {
+            return resolve(cacheManager.cached(req.m, req.a))
+          }
+          const res = await next(req)
+          cacheManager.apply(req, res)
+        }
+        else {
+          await next(req)
+        }
+      },
+    } satisfies DevframeRpcClientOptions['rpcOptions'],
+  }
+
+  const transport = resolveClientTransport(options.transport ?? 'auto', connectionMeta)
+  const mode = transport === 'static'
     ? await createStaticRpcClientMode({
         fetchJsonFromBases,
       })
-    : createWsRpcClientMode({
-        authToken,
-        connectionMeta,
-        metaBaseUrl,
-        events,
-        clientRpc,
-        callTimeout: options.callTimeout,
-        rpcOptions: {
-          ...rpcOptions,
-          async onRequest(req, next, resolve) {
-            await rpcOptions.onRequest?.call(this, req, next, resolve)
-            if (cacheOptions && cacheManager?.validate(req.m)) {
-              if (cacheManager.has(req.m, req.a)) {
-                return resolve(cacheManager.cached(req.m, req.a))
-              }
-              const res = await next(req)
-              cacheManager.apply(req, res)
-            }
-            else {
-              await next(req)
-            }
-          },
-        },
-        wsOptions: options.wsOptions,
-      })
+    : transport === 'sse'
+      ? createSseRpcClientMode({
+          ...liveModeOptions,
+          sseOptions: options.sseOptions,
+        })
+      : createWsRpcClientMode({
+          ...liveModeOptions,
+          wsOptions: options.wsOptions,
+        })
 
   // Channel name kept for cross-tab interop with the Vite DevTools auth page.
   let authChannel: BroadcastChannel | undefined
@@ -356,6 +432,9 @@ export async function getDevframeRpcClient(
     },
     get connectionError() {
       return mode.connectionError
+    },
+    get transport() {
+      return mode.transport ?? transport
     },
     get connection() {
       return connection

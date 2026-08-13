@@ -12,6 +12,7 @@ export interface DevframeRpcClient {
   readonly isTrusted: boolean | null;
   readonly status: DevframeConnectionStatus;
   readonly connectionError: Error | null;
+  readonly transport: 'websocket' | 'sse' | 'static';
   readonly connection: DevframeConnection;
   readonly connectionMeta: ConnectionMeta;
   ensureTrusted: (_?: number) => Promise<boolean>;
@@ -32,6 +33,7 @@ export interface DevframeRpcClient {
   close?: () => void;
 }
 export interface DevframeRpcClientMode {
+  readonly transport?: 'websocket' | 'sse' | 'static';
   readonly isTrusted: boolean;
   readonly status: DevframeConnectionStatus;
   readonly connectionError: Error | null;
@@ -48,7 +50,9 @@ export interface DevframeRpcClientOptions extends SetupDevframeConnectionOptions
   authToken?: string;
   otpParam?: string | false;
   simpleAuth?: boolean;
+  transport?: 'auto' | 'websocket' | 'sse';
   wsOptions?: Partial<WsRpcChannelOptions>;
+  sseOptions?: Partial<SseRpcChannelOptions>;
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>;
   cacheOptions?: boolean | Partial<RpcCacheOptions>;
   callTimeout?: number;
@@ -150,6 +154,8 @@ export declare function getDevframeRpcClient(_?: DevframeRpcClientOptions): Prom
 export declare function isCallableStatus(_: DevframeConnectionStatus): boolean;
 export declare function readOtpFromUrl(_?: string): string | undefined;
 export declare function registerDevframeViewerOrigin(_: DevframeConnection, _?: any): Promise<boolean>;
+export declare function resolveClientTransport(_: 'auto' | 'websocket' | 'sse', _: ConnectionMeta): 'websocket' | 'sse' | 'static';
+export declare function resolveSseUrl(_: ConnectionMeta['sse'], _: string, _: WsUrlLocation): string;
 export declare function resolveWsUrl(_: ConnectionMeta['websocket'], _: string, _: WsUrlLocation): string;
 export declare function setupDevframeConnection(_?: SetupDevframeConnectionOptions): Promise<DevframeConnection>;
 // #endregion

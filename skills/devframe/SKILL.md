@@ -1,7 +1,7 @@
 ---
 name: devframe
 description: >
-  Use when building a devtool with devframe — the
+  Use when building a devtool with devframe - the
   framework- and build-tool-agnostic foundation for defining a
   devtool once and serving it in many places. Covers
   DevframeDefinition, picking the right deployment adapter
@@ -9,7 +9,7 @@ description: >
   contracts, exposing an agent-native surface over MCP, and
   wiring the author's SPA client. For host-level features (docks,
   terminals, palette, etc.), the devframe can be mounted into a
-  host that provides them — Vite DevTools is one supported target,
+  host that provides them - Vite DevTools is one supported target,
   reached via the `vite` adapter. Triggers on `devframe` imports,
   `defineDevframe`, `createCac`, `createMcpServer`,
   `connectDevframe`, and on migrations of existing inspectors
@@ -19,9 +19,9 @@ description: >
 
 # devframe skill
 
-**Devframe is an asset: define your devtool once, serve it anywhere.** A devtool built on devframe is a single `DevframeDefinition` plus an author-provided SPA — the same definition deploys through a set of pluggable adapters (standalone CLI, static report, embedded SPA, MCP server, mounted into a host, etc.). Devframe is framework- and build-tool-agnostic; it has no Vite dependency and makes no UI-framework assumption.
+**Devframe is an asset: define your devtool once, serve it anywhere.** A devtool built on devframe is a single `DevframeDefinition` plus an author-provided SPA - the same definition deploys through a set of pluggable adapters (standalone CLI, static report, embedded SPA, MCP server, mounted into a host, etc.). Devframe is framework- and build-tool-agnostic; it has no Vite dependency and makes no UI-framework assumption.
 
-Devframe describes one tool. If you need host-level features (cross-tool palette, integrated terminals, dock aggregation), mount the devframe into a host that provides them — [Vite DevTools](https://devtools.vite.dev/) is the canonical example, reached via the `vite` adapter — or build your own host adapter. `devframe` itself must not depend on Vite or any `@vitejs/*` package.
+Devframe describes one tool. If you need host-level features (cross-tool palette, integrated terminals, dock aggregation), mount the devframe into a host that provides them - [Vite DevTools](https://devtools.vite.dev/) is the canonical example, reached via the `vite` adapter - or build your own host adapter. `devframe` itself must not depend on Vite or any `@vitejs/*` package.
 
 Full reference: [devfra.me/](https://devfra.me/).
 
@@ -38,9 +38,9 @@ All adapter factories share the shape `createXxx(devframeDef, options?)`.
 | Register dynamically at runtime | `createEmbedded(def, { ctx })` | `devframe/adapters/embedded` |
 | Expose to coding agents (MCP) | `createMcpServer(def, options?)` | `devframe/adapters/mcp` *(experimental)* |
 
-The same `DevframeDefinition` runs under every adapter — pick based on deployment, not on what the tool does.
+The same `DevframeDefinition` runs under every adapter - pick based on deployment, not on what the tool does.
 
-For Vite-based hosts that don't use the kit (Nuxt, Astro, SolidStart, plain Vite apps), `devframe/helpers/vite` exports `viteDevBridge(def, options?)` — a Vite plugin that mounts the SPA (static mode) or starts the RPC + WS bridge alongside the host's dev server (`devMiddleware: true`). Not an adapter; just a Vite integration helper.
+For Vite-based hosts that don't use the kit (Nuxt, Astro, SolidStart, plain Vite apps), `devframe/helpers/vite` exports `viteDevBridge(def, options?)` - a Vite plugin that mounts the SPA (static mode) or starts the RPC + WS bridge alongside the host's dev server (`devMiddleware: true`). Not an adapter; just a Vite integration helper.
 
 ## Minimum viable devframe
 
@@ -57,7 +57,7 @@ export default defineDevframe({
   icon: 'ph:magnifying-glass-duotone',
   cli: { distDir: './client/dist' },
   setup(ctx) {
-    const my = ctx.scope('my-inspector') // preferred — auto-namespaces ids
+    const my = ctx.scope('my-inspector') // preferred - auto-namespaces ids
     my.rpc.register(defineRpcFunction({
       name: 'get-stats', // stored as `my-inspector:get-stats`
       type: 'static',
@@ -83,28 +83,28 @@ export default defineDevframe({
 })
 ```
 
-`setup(ctx)` registers RPC functions, shared state, diagnostics, and any other devframe-level wiring. Host adapters can augment `ctx` with extra surfaces — for example, mounting into Vite DevTools via `createPluginFromDevframe(d)` exposes `docks`, `terminals`, `messages`, and `commands` on the augmented context, and the kit auto-derives an iframe dock entry from `id` / `name` / `icon` / `basePath`. For richer host-side behaviour (custom-render, terminals, palette commands) pass `options.setup` to `createPluginFromDevframe`.
+`setup(ctx)` registers RPC functions, shared state, diagnostics, and any other devframe-level wiring. Host adapters can augment `ctx` with extra surfaces - for example, mounting into Vite DevTools via `createPluginFromDevframe(d)` exposes `docks`, `terminals`, `messages`, and `commands` on the augmented context, and the kit auto-derives an iframe dock entry from `id` / `name` / `icon` / `basePath`. For richer host-side behaviour (custom-render, terminals, palette commands) pass `options.setup` to `createPluginFromDevframe`.
 
 See `templates/counter-devframe.ts` for a runnable counter example, `templates/spa-devframe.ts` for an SPA-ready shape, and `templates/vite-client.ts` for the author's client entry.
 
 ## Scoped context (preferred)
 
-`ctx.scope(id)` (server) and `client.scope(id)` (browser) return a namespace-scoped view that auto-prefixes every RPC id, shared-state key, and streaming channel with `id:`, and adds a top-level persisted `settings` store. Prefer it over the raw `ctx.rpc` / client — you name the namespace once and register / call by bare name.
+`ctx.scope(id)` (server) and `client.scope(id)` (browser) return a namespace-scoped view that auto-prefixes every RPC id, shared-state key, and streaming channel with `id:`, and adds a top-level persisted `settings` store. Prefer it over the raw `ctx.rpc` / client - you name the namespace once and register / call by bare name.
 
 ```ts
-// server — setup(ctx)
+// server - setup(ctx)
 const my = ctx.scope('my-inspector')
 my.rpc.register(getStats) //              -> my-inspector:get-stats
 await my.rpc.call('get-stats') //         invokeLocal, namespaced
 const state = await my.rpc.sharedState('view') // -> my-inspector:view
 await my.settings.project.set('theme', 'dark')
 
-// browser — connectDevframe()
+// browser - connectDevframe()
 const my = (await connectDevframe()).scope('my-inspector')
 const stats = await my.rpc.call('get-stats')
 ```
 
-- **Auto-namespacing.** Bare names get `id:` prepended; a name already containing `:` is treated as fully-qualified and passed through (so `my.rpc.call('other-tool:fn')` works). `register` only accepts bare names — passing a namespaced one throws `DF0034`.
+- **Auto-namespacing.** Bare names get `id:` prepended; a name already containing `:` is treated as fully-qualified and passed through (so `my.rpc.call('other-tool:fn')` works). `register` only accepts bare names - passing a namespaced one throws `DF0034`.
 - **Typed bare calls.** Define functions with bare names and augment the registry with `RpcDefinitionsToFunctionsWithNamespace<'my-inspector', typeof serverFunctions>` so the registry keys match the namespaced runtime ids; scoped `call('get-stats')` then stays typed.
 - **`base`.** The scoped context keeps the raw context as `my.base` (and re-exposes `views` / `diagnostics` / `agent` / `host` / `cwd` / `mode` on the server).
 
@@ -112,8 +112,8 @@ const stats = await my.rpc.call('get-stats')
 
 `my.settings` is a persisted key-value store at the **top level** of the scoped context (a sibling of `my.rpc`, not under it). Two scopes:
 
-- `project` — per-workspace, persisted under the host's `workspace` storage dir.
-- `global` — per-user, persisted under the host's `global` storage dir.
+- `project` - per-workspace, persisted under the host's `workspace` storage dir.
+- `global` - per-user, persisted under the host's `global` storage dir.
 
 Both are file-backed on the server and synced to clients over the shared-state protocol, so a `set` on either side propagates everywhere and survives restarts. All methods are async.
 
@@ -137,7 +137,7 @@ declare module 'devframe' {
 
 ## Project layout
 
-Once a devframe grows past a handful of RPC functions, split them out — one file per function under `src/rpc/functions/`, with `src/rpc/index.ts` as the barrel. The `functions/` subdirectory leaves room for sibling files like `src/rpc/utils.ts` (helpers, type aliases) as the surface grows. Each function file exports a named const with a **bare** name; the barrel collects them into a `const serverFunctions = [...] as const` and feeds the type-safe client registry recipe with the namespace-aware helper `RpcDefinitionsToFunctionsWithNamespace<'my-tool', typeof serverFunctions>` (it prefixes each bare name to match the namespaced runtime id the scope registers).
+Once a devframe grows past a handful of RPC functions, split them out - one file per function under `src/rpc/functions/`, with `src/rpc/index.ts` as the barrel. The `functions/` subdirectory leaves room for sibling files like `src/rpc/utils.ts` (helpers, type aliases) as the surface grows. Each function file exports a named const with a **bare** name; the barrel collects them into a `const serverFunctions = [...] as const` and feeds the type-safe client registry recipe with the namespace-aware helper `RpcDefinitionsToFunctionsWithNamespace<'my-tool', typeof serverFunctions>` (it prefixes each bare name to match the namespaced runtime id the scope registers).
 
 ```ts
 // src/rpc/functions/list-files.ts
@@ -145,7 +145,7 @@ import { defineRpcFunction } from 'devframe'
 import { getMyToolContext } from '../../context'
 
 export const listFiles = defineRpcFunction({
-  name: 'list-files', // bare — the scope namespaces it to `my-tool:list-files`
+  name: 'list-files', // bare - the scope namespaces it to `my-tool:list-files`
   type: 'query',
   jsonSerializable: true,
   setup: (ctx) => {
@@ -190,11 +190,11 @@ export default defineDevframe({
 })
 ```
 
-Note `setMyToolContext(ctx, …)` keys off the raw `ctx` (the same object the function `setup(ctx)` receives) — store the per-tool context on `ctx`, register through `my.rpc`.
+Note `setMyToolContext(ctx, …)` keys off the raw `ctx` (the same object the function `setup(ctx)` receives) - store the per-tool context on `ctx`, register through `my.rpc`.
 
 ### Sharing setup-time state via `src/context.ts`
 
-When per-file RPCs need access to runtime values that `setup(ctx)` constructs once — streaming channels, shared state handles, watchers, loaders, caches — expose them through a `WeakMap<DevframeNodeContext, T>` in a sibling `src/context.ts`. This mirrors the framework's own `internalContextMap` in `packages/devframe/src/node/hub-internals/context.ts`. The WeakMap keys off the existing `DevframeNodeContext` so contexts are garbage-collected automatically when the host tears down.
+When per-file RPCs need access to runtime values that `setup(ctx)` constructs once - streaming channels, shared state handles, watchers, loaders, caches - expose them through a `WeakMap<DevframeNodeContext, T>` in a sibling `src/context.ts`. This mirrors the framework's own `internalContextMap` in `packages/devframe/src/node/hub-internals/context.ts`. The WeakMap keys off the existing `DevframeNodeContext` so contexts are garbage-collected automatically when the host tears down.
 
 ```ts
 // src/context.ts
@@ -214,12 +214,12 @@ export function setMyToolContext(ctx: DevframeNodeContext, value: MyToolContext)
 export function getMyToolContext(ctx: DevframeNodeContext): MyToolContext {
   const value = map.get(ctx)
   if (!value)
-    throw new Error('my-tool context not initialised — call setMyToolContext in devframe.setup')
+    throw new Error('my-tool context not initialised - call setMyToolContext in devframe.setup')
   return value
 }
 ```
 
-Stateless RPCs and tiny demos can keep the inline shorthand inside `setup(ctx)` — reach for `src/rpc/functions/` and `src/context.ts` once you have more than one or two functions, or any shared setup state.
+Stateless RPCs and tiny demos can keep the inline shorthand inside `setup(ctx)` - reach for `src/rpc/functions/` and `src/context.ts` once you have more than one or two functions, or any shared setup state.
 
 ## Namespacing
 
@@ -228,10 +228,10 @@ Stateless RPCs and tiny demos can keep the inline shorthand inside `setup(ctx)` 
 ```ts
 'my-inspector:get-modules' // ✓
 'my-inspector:state' // ✓
-'get-modules' // ✗ — may collide with other devframes sharing the host
+'get-modules' // ✗ - may collide with other devframes sharing the host
 ```
 
-A [scoped context](#scoped-context-preferred) applies this prefix for you — `ctx.scope('my-inspector').rpc.register({ name: 'get-modules' })` registers `my-inspector:get-modules`. Define and call by bare name through the scope; reach for full ids only via `ctx.base` or when targeting another tool. Dock / command IDs are host-level (not part of the scoped `rpc` surface) — prefix those by hand.
+A [scoped context](#scoped-context-preferred) applies this prefix for you - `ctx.scope('my-inspector').rpc.register({ name: 'get-modules' })` registers `my-inspector:get-modules`. Define and call by bare name through the scope; reach for full ids only via `ctx.base` or when targeting another tool. Dock / command IDs are host-level (not part of the scoped `rpc` surface) - prefix those by hand.
 
 ## DevframeNodeContext at a glance
 
@@ -239,15 +239,15 @@ A [scoped context](#scoped-context-preferred) applies this prefix for you — `c
 
 | Host | Purpose |
 |------|---------|
-| `ctx.scope(id)` | **Preferred** namespace-scoped view — auto-prefixed `rpc` + top-level `settings` store |
+| `ctx.scope(id)` | **Preferred** namespace-scoped view - auto-prefixed `rpc` + top-level `settings` store |
 | `ctx.rpc` | Register RPC functions, broadcast, shared state, streaming channels |
 | `ctx.views` | Serve static files via `hostStatic(base, distDir)` |
-| `ctx.diagnostics` | Structured diagnostics host (nostics) — register custom error codes |
+| `ctx.diagnostics` | Structured diagnostics host (nostics) - register custom error codes |
 | `ctx.agent` | Expose tools + resources to coding agents (experimental) |
-| `ctx.host` | Runtime abstraction — `mountStatic`, `resolveOrigin`, `getStorageDir` |
-| `ctx.mode` | `'dev'` or `'build'` — gate setup work per runtime |
+| `ctx.host` | Runtime abstraction - `mountStatic`, `resolveOrigin`, `getStorageDir` |
+| `ctx.mode` | `'dev'` or `'build'` - gate setup work per runtime |
 
-> Hosts can augment `ctx` with additional surfaces (e.g. Vite DevTools' `docks`, `terminals`, `messages`, `commands`). Consult the host's docs — for Vite DevTools, see the [`vite-devtools-kit` skill](../../skills/vite-devtools-kit).
+> Hosts can augment `ctx` with additional surfaces (e.g. Vite DevTools' `docks`, `terminals`, `messages`, `commands`). Consult the host's docs - for Vite DevTools, see the [`vite-devtools-kit` skill](../../skills/vite-devtools-kit).
 
 ## RPC contracts
 
@@ -256,7 +256,7 @@ import { defineRpcFunction } from 'devframe'
 import * as v from 'valibot'
 
 const getModules = defineRpcFunction({
-  name: 'get-modules', // bare — registered via `ctx.scope('my-inspector').rpc.register`
+  name: 'get-modules', // bare - registered via `ctx.scope('my-inspector').rpc.register`
   type: 'query',
   jsonSerializable: true,
   args: [v.object({ limit: v.number() })],
@@ -269,12 +269,12 @@ const getModules = defineRpcFunction({
 
 | Type | Use when | Cached | Static dump |
 |------|----------|--------|-------------|
-| `'static'` | Data constant for a given input — dump at build time | Indefinitely | Automatic |
+| `'static'` | Data constant for a given input - dump at build time | Indefinitely | Automatic |
 | `'query'`  | Read that may change; optional `dump` for build adapters | Opt-in via `cacheable` | Manual |
 | `'action'` | Server-state mutation | Never | Never |
 | `'event'`  | Fire-and-forget; no response | Never | Never |
 
-Add valibot schemas when the RPC is user-facing, when you want static dumps, or when you expose it to agents. Prefer a **single object arg** (`args: [v.object({ ... })]`) over positional args — property names self-document and agents rely on them.
+Add valibot schemas when the RPC is user-facing, when you want static dumps, or when you expose it to agents. Prefer a **single object arg** (`args: [v.object({ ... })]`) over positional args - property names self-document and agents rely on them.
 
 ### `jsonSerializable` (wire + dump format)
 
@@ -285,9 +285,9 @@ Add valibot schemas when the RPC is user-facing, when you want static dumps, or 
 | `false` (default) | `structured-clone-es` | `s:` | `Map`, `Set`, `Date`, `BigInt`, cycles, class instances |
 | `true` (opt-in) | strict `JSON.stringify` | _(unprefixed)_ | JSON-only |
 
-Set `jsonSerializable: true` when your handler returns plain JSON shapes — the strict serializer **throws `DF0020`** synchronously on the offending call when it sees a value JSON cannot round-trip (Map/Set/Date/BigInt/class instance/`undefined`-in-array). Errors surface in dev next to the call that introduced them, not silently at build time.
+Set `jsonSerializable: true` when your handler returns plain JSON shapes - the strict serializer **throws `DF0020`** synchronously on the offending call when it sees a value JSON cannot round-trip (Map/Set/Date/BigInt/class instance/`undefined`-in-array). Errors surface in dev next to the call that introduced them, not silently at build time.
 
-`agent: {...}` requires `jsonSerializable: true` (registration throws `DF0019` otherwise). MCP tools speak JSON — opting into the agent surface is also opting into JSON-only data.
+`agent: {...}` requires `jsonSerializable: true` (registration throws `DF0019` otherwise). MCP tools speak JSON - opting into the agent surface is also opting into JSON-only data.
 
 Through the scope, `my.rpc.broadcast({ method, args, optional?, event?, filter? })` pushes to every connected client (method name namespaced), and `my.rpc.call(name, ...args)` invokes a server function locally without going through transport (the scoped form of `ctx.rpc.invokeLocal`, useful for cross-function composition).
 
@@ -305,13 +305,13 @@ state.mutate((draft) => {
 })
 ```
 
-- Values must be serializable — no functions, no circular refs.
+- Values must be serializable - no functions, no circular refs.
 - Mutations round-trip to all clients; the host tracks `syncIds` to avoid replay loops.
 - Prefer shared state over ad-hoc RPC events for UI that must reappear after reconnect.
 
 ## Streaming channels
 
-For chunk-style data flowing in either direction — LLM deltas, log tails, build progress, file uploads, mic / screen-share frames — use a streaming channel instead of inventing `action + delta/end` events. The same `channel` object handles both directions:
+For chunk-style data flowing in either direction - LLM deltas, log tails, build progress, file uploads, mic / screen-share frames - use a streaming channel instead of inventing `action + delta/end` events. The same `channel` object handles both directions:
 
 ```ts
 const my = ctx.scope('my-inspector')
@@ -324,18 +324,18 @@ const channel = my.rpc.streaming.create<string>('tokens', { // -> my-inspector:t
 ### Server-to-client (the common case)
 
 ```ts
-// Server — typically inside an action handler that returns the stream id
+// Server - typically inside an action handler that returns the stream id
 const stream = channel.start({ id: 'optional-stream-id' })
 stream.write(token) // imperative
 stream.error(err) // terminal failure
 stream.close() // terminal success
-stream.signal // AbortSignal — flips when consumers cancel or all subscribers drop
+stream.signal // AbortSignal - flips when consumers cancel or all subscribers drop
 stream.writable // WritableStream<T> for `pipeTo`-style consumption
 
-// Convenience — start + pipe in one call:
+// Convenience - start + pipe in one call:
 await channel.pipeFrom(sourceReadable, { id: 'optional' })
 
-// Client — my = (await connectDevframe()).scope('my-inspector')
+// Client - my = (await connectDevframe()).scope('my-inspector')
 const reader = my.rpc.streaming.subscribe<string>('tokens', streamId) // -> my-inspector:tokens
 for await (const token of reader) renderToken(token)
 // Or: reader.readable.pipeTo(domWritable)
@@ -347,7 +347,7 @@ reader.cancel() // server `stream.signal` aborts
 The same channel exposes `openInbound()` for the server side of a client→server upload. Pair it with a normal action that returns the id:
 
 ```ts
-// Server — my = ctx.scope('my-inspector')
+// Server - my = ctx.scope('my-inspector')
 my.rpc.register(defineRpcFunction({
   name: 'upload-file', // -> my-inspector:upload-file
   type: 'action',
@@ -362,7 +362,7 @@ my.rpc.register(defineRpcFunction({
   },
 }))
 
-// Client — my = (await connectDevframe()).scope('my-inspector')
+// Client - my = (await connectDevframe()).scope('my-inspector')
 const { uploadId } = await my.rpc.call('upload-file', { name: 'foo' })
 const upload = my.rpc.streaming.upload<Uint8Array>('files', uploadId) // -> my-inspector:files
 fileReadable.pipeTo(upload.writable, { signal: upload.signal })
@@ -403,7 +403,7 @@ For chat-style UIs that combine both: keep the **conversation log** in shared st
 
 ## Mounting into a host (Vite DevTools example)
 
-A portable devframe can be mounted into any host that ships an adapter for it. Vite DevTools is one supported target — `createPluginFromDevframe` is the Vite-DevTools-specific bridge; other hosts can implement equivalent factories. Example:
+A portable devframe can be mounted into any host that ships an adapter for it. Vite DevTools is one supported target - `createPluginFromDevframe` is the Vite-DevTools-specific bridge; other hosts can implement equivalent factories. Example:
 
 ```ts
 // vite.config.ts
@@ -413,7 +413,7 @@ import myInspector from './my-inspector'
 export default {
   plugins: [
     createPluginFromDevframe(myInspector, {
-      // Optional kit-only setup — runs after the auto-derived dock entry.
+      // Optional kit-only setup - runs after the auto-derived dock entry.
       setup(kitCtx) {
         kitCtx.commands.register({
           id: 'my-inspector:clear-cache',
@@ -426,11 +426,11 @@ export default {
 }
 ```
 
-The kit auto-derives an iframe dock entry from `id` / `name` / `icon` / `basePath`. For dock variations (custom-render, launcher, action, json-render), terminals, palette commands, and toasts, use the `options.setup` hook — those APIs live on the host-augmented context, not on the devframe-level `setup`. See the [`vite-devtools-kit` skill](../../skills/vite-devtools-kit) for the Vite-DevTools-specific reference.
+The kit auto-derives an iframe dock entry from `id` / `name` / `icon` / `basePath`. For dock variations (custom-render, launcher, action, json-render), terminals, palette commands, and toasts, use the `options.setup` hook - those APIs live on the host-augmented context, not on the devframe-level `setup`. See the [`vite-devtools-kit` skill](../../skills/vite-devtools-kit) for the Vite-DevTools-specific reference.
 
 ## When clauses
 
-Gate kit-side dock / command visibility with VS Code-style expressions. The runtime + types ship bundled from `devframe/utils/when` — no separate install. The consumers (`when` field on docks and commands) live in the kit:
+Gate kit-side dock / command visibility with VS Code-style expressions. The runtime + types ship bundled from `devframe/utils/when` - no separate install. The consumers (`when` field on docks and commands) live in the kit:
 
 ```ts
 when: 'clientType == embedded'
@@ -442,7 +442,7 @@ Built-in context: `clientType` (`'embedded' | 'standalone'`), `dockOpen`, `palet
 
 ## Agent-native surface (experimental)
 
-Opt an RPC function into the agent surface with an `agent` field — default-deny otherwise. Agent-exposed functions **must declare `jsonSerializable: true`** (registration throws `DF0019` otherwise):
+Opt an RPC function into the agent surface with an `agent` field - default-deny otherwise. Agent-exposed functions **must declare `jsonSerializable: true`** (registration throws `DF0019` otherwise):
 
 ```ts
 defineRpcFunction({
@@ -485,7 +485,7 @@ import { createMcpServer } from 'devframe/adapters/mcp'
 await createMcpServer(devframe, { transport: 'stdio' })
 ```
 
-`@modelcontextprotocol/server` is a peer dependency. The CLI adapter also exposes `my-devframe mcp` — route host logs to stderr (stdout is the MCP transport). Safety classifications (`'read' | 'action' | 'destructive'`) drive MCP hint annotations that agent clients use to prompt for confirmation.
+`@modelcontextprotocol/server` is a peer dependency. The CLI adapter also exposes `my-devframe mcp` - route host logs to stderr (stdout is the MCP transport). Safety classifications (`'read' | 'action' | 'destructive'`) drive MCP hint annotations that agent clients use to prompt for confirmation.
 
 ## Author SPA
 
@@ -495,16 +495,16 @@ Authors bring their own SPA (any framework or plain HTML). Client entry:
 import { connectDevframe } from 'devframe/client'
 
 const client = await connectDevframe()
-// await client.ensureTrusted() // WS mode only — blocks until server accepts
-const my = client.scope('my-inspector') // preferred — namespaced calls
+// await client.ensureTrusted() // WS mode only - blocks until server accepts
+const my = client.scope('my-inspector') // preferred - namespaced calls
 
 const data = await my.rpc.call('get-stats', { limit: 10 })
 ```
 
 `connectDevframe` auto-detects the backend via `/.devframe/.connection.json`:
 
-- **websocket** (dev mode) — full read/write, requires auth handshake. Listen for token updates on the `devframe-auth` BroadcastChannel.
-- **static** (build / spa output) — read-only, resolves calls from the baked RPC dump.
+- **websocket** (dev mode) - full read/write, requires auth handshake. Listen for token updates on the `devframe-auth` BroadcastChannel.
+- **static** (build / spa output) - read-only, resolves calls from the baked RPC dump.
 
 Use `my.rpc.sharedState(key)` for observable state, `my.rpc.register(defineRpcFunction(...))` to receive server broadcasts, `my.rpc.callOptional(...)` when a missing handler should resolve to `undefined` instead of throwing, and `my.settings.{project,global}` for persisted per-workspace / per-user settings synced from the server.
 
@@ -534,45 +534,45 @@ At runtime, static clients look up the argument hash in the dump; misses resolve
 
 | Subcommand | Action |
 |------------|--------|
-| *(default)* | Dev server on port 9999 (or `--port`) — WebSocket RPC, `cli.distDir` served at `/.devframe/` |
+| *(default)* | Dev server on port 9999 (or `--port`) - WebSocket RPC, `cli.distDir` served at `/.devframe/` |
 | `build` | Static snapshot → `./dist-static/` (configurable via `--out-dir`) |
 | `spa` | Deployable SPA → `./dist-spa/` |
 | `mcp` | stdio MCP server (experimental) |
 
-**Bring your own CLI framework?** `createCac` (`devframe/adapters/cac`) is just a cac wrapper around three peer factories — `createDevServer` (`devframe/adapters/dev`), `createBuild` (`devframe/adapters/build`), and `createMcpServer` (`devframe/adapters/mcp`). Use them directly with commander/yargs/oclif when `createCac`'s baked-in command structure doesn't fit. `cac` is an optional peer dependency pulled in only through `devframe/adapters/cac`, so bring-your-own-CLI tools run without installing it. `createDevServer` returns a `StartedServer` handle (`origin`, `port`, `app`, `wss`, `close()`) so you can wire SIGINT / hot-reload teardown into the surrounding program. `parseCliFlags(schema, raw)` and `defineCliFlags(...)` (both from `devframe/adapters/cac`) validate an arbitrary flag bag against a `CliFlagsSchema` — the helpers are framework-agnostic.
+**Bring your own CLI framework?** `createCac` (`devframe/adapters/cac`) is just a cac wrapper around three peer factories - `createDevServer` (`devframe/adapters/dev`), `createBuild` (`devframe/adapters/build`), and `createMcpServer` (`devframe/adapters/mcp`). Use them directly with commander/yargs/oclif when `createCac`'s baked-in command structure doesn't fit. `cac` is an optional peer dependency pulled in only through `devframe/adapters/cac`, so bring-your-own-CLI tools run without installing it. `createDevServer` returns a `StartedServer` handle (`origin`, `port`, `app`, `wss`, `close()`) so you can wire SIGINT / hot-reload teardown into the surrounding program. `parseCliFlags(schema, raw)` and `defineCliFlags(...)` (both from `devframe/adapters/cac`) validate an arbitrary flag bag against a `CliFlagsSchema` - the helpers are framework-agnostic.
 
 ## Bundled utilities
 
-Devframe re-exports a curated set of helpers under `devframe/utils/*`. They are bundled — never add the underlying packages to a devtool's own `package.json`:
+Devframe re-exports a curated set of helpers under `devframe/utils/*`. They are bundled - never add the underlying packages to a devtool's own `package.json`:
 
 | Import | Wraps | Use for |
 |--------|-------|---------|
 | `colors` from `devframe/utils/colors` | `ansis` | Terminal ANSI colors (`c.red`, `c.green`, tagged templates) |
 | `open` from `devframe/utils/open` | `open` | Open URLs / files in the OS default handler |
 | `launchEditor` from `devframe/utils/launch-editor` | `launch-editor` | Open `file:line:column` in the user's editor (optional `editor` arg) |
-| `hash` from `devframe/utils/hash` | `ohash` | Stable structural hash — cache keys, dedup |
+| `hash` from `devframe/utils/hash` | `ohash` | Stable structural hash - cache keys, dedup |
 | `structuredClone{Serialize,Deserialize,Stringify,Parse}` from `devframe/utils/structured-clone` | `structured-clone-es` | JSON-safe round-trip of `Map` / `Set` / `Date` / `BigInt` / cycles |
 | `nanoid` from `devframe/utils/nanoid` | (vendored) | URL-safe random IDs |
 | `randomToken` / `randomDigits` / `timingSafeEqual` from `devframe/utils/crypto-token` | (native WebCrypto) | CSPRNG bearer tokens, one-time codes, constant-time compare |
-| `createEventEmitter` from `devframe/utils/events` | — | Typed event bus |
+| `createEventEmitter` from `devframe/utils/events` | - | Typed event bus |
 | `createSharedState` from `devframe/utils/shared-state` | (immer internal) | Immutable state container (see `ctx.rpc.sharedState`) |
-| `createStreamSink` / `createStreamReader` from `devframe/utils/streaming-channel` | — | Low-level streaming primitives |
+| `createStreamSink` / `createStreamReader` from `devframe/utils/streaming-channel` | - | Low-level streaming primitives |
 | `evaluateWhen` / `WhenExpression` from `devframe/utils/when` | `whenexpr` | When-clause expressions |
 
-For "open file in editor" + "reveal in finder", prefer the prebuilt `commonRpcFunctions` RPC recipe (`devframe/recipes/common-rpc-functions`) — it wires the two utilities into named RPC functions ready to register.
+For "open file in editor" + "reveal in finder", prefer the prebuilt `commonRpcFunctions` RPC recipe (`devframe/recipes/common-rpc-functions`) - it wires the two utilities into named RPC functions ready to register.
 
 ## Security (secure by default)
 
 RPC handlers run with the full privileges of the host process, so the boundary that matters is who may connect. Keep that boundary tight:
 
-- **`auth` defaults to `true`** — dev-mode connections must authenticate before calls are accepted. Devframe ships the node primitives (`exchangeTempAuthCode`, `verifyAuthToken` in `devframe/node/auth`); the host adapter (e.g. Vite DevTools) provides the interactive `devframe:anonymous:auth` + `devframe:auth:exchange` handlers and auth UI.
+- **`auth` defaults to `true`** - dev-mode connections must authenticate before calls are accepted. Devframe ships the node primitives (`exchangeTempAuthCode`, `verifyAuthToken` in `devframe/node/auth`); the host adapter (e.g. Vite DevTools) provides the interactive `devframe:anonymous:auth` + `devframe:auth:exchange` handlers and auth UI.
 - **`auth: false` trusts every reachable connection.** Use it only for single-user `localhost` tools. Never combine it with a non-loopback bind host, a tunnel, or a shared/CI environment. The default bind host is already `localhost`.
-- **Authentication** exchanges a 6-digit one-time code (shown in the developer's terminal) for a node-issued bearer token via `requestTrustWithCode(code)`. The code is single-use, expires in 5 min, compared in constant time, and rotates after repeated failures — show it only in the terminal, never over the network.
-- **Magic-link (optional):** print `buildOtpAuthUrl(origin)` — `<origin>/#devframe_otp=<code>`. The code rides the URL **fragment**, which the browser never sends to the server, so it stays out of access logs and `Referer`. `connectDevframe` reads the code, exchanges it, and strips it from the URL. Integrations can opt out (`otpParam: false`) and drive it via the exposed `authenticateWithUrlOtp(rpc)` / `consumeOtpFromUrl()` client utilities. Only the single-use code rides the URL, never the bearer; treat the printed link like the code itself. The standalone CLI's `--open` does this automatically via `DevframeAuthHandler.buildOpenUrl` — the launched tab already carries the OTP, no prompt needed.
-- **Tokens are secrets.** The bearer token rides the WS URL (`?devframe_auth_token=…`) — serve over `wss://`/`https://` beyond loopback. Never log the token or code, never bake them into build output. Revoke via `revokeAuthToken(...)`; clients drop to untrusted on `devframe:auth:revoked`.
-- **Authorize handlers.** Any trusted client can call any registered function — validate inputs, and mark state-changing functions `type: 'destructive'` so MCP/agent clients prompt first.
-- **Origin-lock remote docks** (`originLock`, on by default) so a dock's session token is honored only on a connection whose `Origin` matches the dock — the connect-time gate enforces it.
-- **The MCP route requires an Origin.** The route-based MCP server (`cli.mcp`, `viteDevBridge`/Next handler `mcp`, `createMcpFetchHandler`) rejects `Origin`-less requests — a request must carry a loopback (or allow-listed) `Origin`, so it isn't reachable by an arbitrary local process. `devframe connect` sends each instance's own loopback origin automatically.
+- **Authentication** exchanges a 6-digit one-time code (shown in the developer's terminal) for a node-issued bearer token via `requestTrustWithCode(code)`. The code is single-use, expires in 5 min, compared in constant time, and rotates after repeated failures - show it only in the terminal, never over the network.
+- **Magic-link (optional):** print `buildOtpAuthUrl(origin)` - `<origin>/#devframe_otp=<code>`. The code rides the URL **fragment**, which the browser never sends to the server, so it stays out of access logs and `Referer`. `connectDevframe` reads the code, exchanges it, and strips it from the URL. Integrations can opt out (`otpParam: false`) and drive it via the exposed `authenticateWithUrlOtp(rpc)` / `consumeOtpFromUrl()` client utilities. Only the single-use code rides the URL, never the bearer; treat the printed link like the code itself. The standalone CLI's `--open` does this automatically via `DevframeAuthHandler.buildOpenUrl` - the launched tab already carries the OTP, no prompt needed.
+- **Tokens are secrets.** The bearer token rides the WS URL (`?devframe_auth_token=…`) - serve over `wss://`/`https://` beyond loopback. Never log the token or code, never bake them into build output. Revoke via `revokeAuthToken(...)`; clients drop to untrusted on `devframe:auth:revoked`.
+- **Authorize handlers.** Any trusted client can call any registered function - validate inputs, and mark state-changing functions `type: 'destructive'` so MCP/agent clients prompt first.
+- **Origin-lock remote docks** (`originLock`, on by default) so a dock's session token is honored only on a connection whose `Origin` matches the dock - the connect-time gate enforces it.
+- **The MCP route requires an Origin.** The route-based MCP server (`cli.mcp`, `viteDevBridge`/Next handler `mcp`, `createMcpFetchHandler`) rejects `Origin`-less requests - a request must carry a loopback (or allow-listed) `Origin`, so it isn't reachable by an arbitrary local process. `devframe connect` sends each instance's own loopback origin automatically.
 
 See [Security](https://devfra.me/security) for the full reference.
 
@@ -586,23 +586,23 @@ See [Security](https://devfra.me/security) for the full reference.
 
 Devframe-level pages (one-tool, portable surface):
 
-- [Devframe Definition](https://devfra.me/devframe-definition) — fields, runtime flags, multi-adapter wiring
-- [Scoped Context](https://devfra.me/scoped-context) — `ctx.scope(id)`, auto-namespacing, the `settings` store
-- [Adapters](https://devfra.me/adapters) — full reference for all deployment adapters
-- [RPC](https://devfra.me/rpc) — types, schema, broadcasts, dumps
-- [Shared State](https://devfra.me/shared-state) — patches, events, client-side mutation
-- [Streaming](https://devfra.me/streaming) — chunked feeds, uploads, replay, Web/Node Streams interop
-- [When Clauses](https://devfra.me/when-clauses) — syntax, context, type-safe wrappers
-- [Structured Diagnostics](https://devfra.me/diagnostics) — coded errors via `ctx.diagnostics`, register custom codes
-- [Utilities](https://devfra.me/utilities) — bundled `devframe/utils/*` helpers (colors, hash, launchEditor, structured-clone, …)
-- [Client](https://devfra.me/client) — auth handshake, modes, discovery
-- [Security](https://devfra.me/security) — trust model, authentication, secure-by-default practices
-- [Agent-Native](https://devfra.me/agent-native) — agent field, tools/resources, MCP + Claude Desktop
+- [Devframe Definition](https://devfra.me/devframe-definition) - fields, runtime flags, multi-adapter wiring
+- [Scoped Context](https://devfra.me/scoped-context) - `ctx.scope(id)`, auto-namespacing, the `settings` store
+- [Adapters](https://devfra.me/adapters) - full reference for all deployment adapters
+- [RPC](https://devfra.me/rpc) - types, schema, broadcasts, dumps
+- [Shared State](https://devfra.me/shared-state) - patches, events, client-side mutation
+- [Streaming](https://devfra.me/streaming) - chunked feeds, uploads, replay, Web/Node Streams interop
+- [When Clauses](https://devfra.me/when-clauses) - syntax, context, type-safe wrappers
+- [Structured Diagnostics](https://devfra.me/diagnostics) - coded errors via `ctx.diagnostics`, register custom codes
+- [Utilities](https://devfra.me/utilities) - bundled `devframe/utils/*` helpers (colors, hash, launchEditor, structured-clone, …)
+- [Client](https://devfra.me/client) - auth handshake, modes, discovery
+- [Security](https://devfra.me/security) - trust model, authentication, secure-by-default practices
+- [Agent-Native](https://devfra.me/agent-native) - agent field, tools/resources, MCP + Claude Desktop
 
-Host-specific extras (when mounting into Vite DevTools — other hosts have their own equivalents):
+Host-specific extras (when mounting into Vite DevTools - other hosts have their own equivalents):
 
 - [Vite DevTools Kit overview](https://devtools.vite.dev/kit/)
-- [Dock System](https://devtools.vite.dev/kit/dock-system) — every entry type + remote docks
-- [Commands](https://devtools.vite.dev/kit/commands) — palette, keybindings, sub-commands
-- [Messages & Notifications](https://devtools.vite.dev/kit/messages) — entry fields, positional hints
-- [Terminals](https://devtools.vite.dev/kit/terminals) — child processes, external sessions
+- [Dock System](https://devtools.vite.dev/kit/dock-system) - every entry type + remote docks
+- [Commands](https://devtools.vite.dev/kit/commands) - palette, keybindings, sub-commands
+- [Messages & Notifications](https://devtools.vite.dev/kit/messages) - entry fields, positional hints
+- [Terminals](https://devtools.vite.dev/kit/terminals) - child processes, external sessions

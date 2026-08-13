@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.8.2",
   "private": true,
-  "description": "Minimal Vite host for @devframes/hub — one initHub() handler mounted as dev middleware, UI from @devframes/hub-ui.",
+  "description": "Minimal Vite host that mounts the devframe hub as dev middleware.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-vite-minimal",
   "scripts": {
     "dev": "vite",

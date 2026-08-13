@@ -24,7 +24,7 @@ export function About({ ctx, basePath }: { ctx: InspectorCtx, basePath: string }
       </div>
 
       <p class="text-sm color-muted">
-        This page demonstrates that the SPA discovers its mount path at runtime —
+        This page demonstrates that the SPA discovers its mount path at runtime -
         the same bundle works under any base path.
       </p>
 

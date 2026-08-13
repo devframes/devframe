@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.8.2",
   "private": true,
-  "description": "End-to-end devframe demo — lists files in cwd via RPC, exercises CLI dev/build/spa surfaces.",
+  "description": "Devframe demo that lists files in the working directory over RPC across the dev, build, and spa surfaces.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/files-inspector",
   "main": "src/devframe.ts",
   "bin": {

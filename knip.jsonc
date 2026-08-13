@@ -2,13 +2,13 @@
   "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
   // `tests/__snapshots__/tsnapi/**` is `tsnapi`'s generated API-snapshot
   // fixture content (see `tests/exports.test.ts` and the root AGENTS.md
-  // "Development" section) — compared byte-for-byte against a fresh build,
+  // "Development" section) - compared byte-for-byte against a fresh build,
   // never imported. Not source to analyze.
   "ignore": ["tests/__snapshots__/tsnapi/**"],
   // `@iconify-json/*` icon collections and `@unocss/preset-icons` are
   // resolved by UnoCSS's `presetIcons()` at build time by package presence
   // (scanning `i-ph:*` classes against the installed collection), never
-  // imported in source — the same false-positive class knip's own docs
+  // imported in source - the same false-positive class knip's own docs
   // describe for icon-collection dependencies.
   "ignoreDependencies": ["@iconify-json/.+", "@unocss/preset-icons"],
   "workspaces": {
@@ -21,18 +21,18 @@
       // reported as unused from the root workspace.
       //
       // `skills/devframe/templates/*.ts` are the devframe-authoring skill's
-      // copy-and-run reference snippets (`skills/devframe/SKILL.md`) — each
+      // copy-and-run reference snippets (`skills/devframe/SKILL.md`) - each
       // one a standalone, runnable example, not imported by anything else.
       "entry": ["design/*.ts", "skills/devframe/templates/*.ts", "scripts/smoke-bun.ts"],
       // `spa-devframe.ts` imports `valibot` to illustrate schema validation
-      // for a consumer's own devframe — it's a dependency of the example a
+      // for a consumer's own devframe - it's a dependency of the example a
       // reader copies out, not of this repo's root tooling.
       "ignoreDependencies": ["valibot"]
     },
     "docs": {
       // `devframe` is referenced only inside fenced code samples in the
       // guide markdown (e.g. `docs/guide/rpc.md`), which knip doesn't parse
-      // as source — not a real unused dependency.
+      // as source - not a real unused dependency.
       "ignoreDependencies": ["devframe"]
     },
     "examples/hub-next": {
@@ -44,7 +44,7 @@
       },
       // `BUILTIN_PLUGIN_PACKAGES` (`src/client/devframe/next-devframe-hub.ts`)
       // lists these as string literals and loads them via a runtime
-      // `import()` carrying `webpackIgnore`/`turbopackIgnore` comments —
+      // `import()` carrying `webpackIgnore`/`turbopackIgnore` comments -
       // deliberately invisible to bundlers (and knip) so Next never inlines
       // their node-only code. They're genuinely used at runtime.
       "ignoreDependencies": [
@@ -86,7 +86,7 @@
       // the workspace `tsconfig.json`, but this repo's packages resolve
       // each other's `src/*.ts` directly across workspaces (via the `paths`
       // aliases in `tsconfig.base.json`), and `outDir` breaks `tsc`'s
-      // `rootDir` inference for every consumer that does — so entries are
+      // `rootDir` inference for every consumer that does - so entries are
       // listed explicitly instead. Keep this in sync with the `exports` map.
       "entry": [
         "src/{index,constants}.ts",
@@ -100,7 +100,7 @@
         "src/recipes/{common-rpc-functions,interactive-auth}.ts",
         "src/rpc/{index,client,server}.ts",
         "src/rpc/dump/index.ts",
-        "src/rpc/transports/{ws-bun,ws-client,ws-server}.ts",
+        "src/rpc/transports/{sse-client,sse-server,ws-bun,ws-client,ws-server}.ts",
         "src/types/index.ts",
         "src/utils/*.ts"
       ]
@@ -119,7 +119,7 @@
       // `@nuxt/schema`; tsdown's dts bundler inlines that as a lazy
       // `import("@nuxt/schema")` type reference in the built
       // `dist/module.d.mts` (visible only once this workspace has been
-      // built locally) — a transitive type-only leak from a dependency's
+      // built locally) - a transitive type-only leak from a dependency's
       // own dependency, not a real gap in this package's own manifest.
       "ignoreDependencies": ["@nuxt/schema"]
     },
@@ -132,7 +132,7 @@
       // The standalone SPA's own Vite config (`src/spa/vite.config.ts`)
       // mounts `unocss/vite` with no explicit config path, so UnoCSS
       // discovers this nested `uno.config.ts` by directory proximity to
-      // `root` — not an import knip's graph can see. Keep the package-root
+      // `root` - not an import knip's graph can see. Keep the package-root
       // config the Storybook build uses alongside it.
       "unocss": {
         "config": ["uno.config.ts", "src/spa/uno.config.ts"]
@@ -142,7 +142,7 @@
     // `tsdown.config.ts`'s `serverEntries`/`clientEntries`): a root
     // `index.ts`, an optional `cli.ts`/`vite.ts`/`constants.ts`/`types.ts`,
     // and `client|node|rpc|inject|engine|registry/index.ts` subdirectories.
-    // One shared pattern covers them all — see `packages/devframe` above for
+    // One shared pattern covers them all - see `packages/devframe` above for
     // why this is explicit instead of relying on source mapping.
     "plugins/*": {
       "entry": [

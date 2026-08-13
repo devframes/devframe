@@ -64,7 +64,7 @@ describe('adapters/dev', () => {
       const meta = await res.json()
       // Proxy-safe: the WS endpoint is advertised as a same-origin route
       // relative to `__connection.json`, never a baked-in host/port.
-      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' } })
+      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' }, sse: { path: '__sse' } })
     }
     finally {
       await handle.close()
@@ -167,7 +167,7 @@ describe('adapters/dev', () => {
 
     try {
       const meta = await (await fetch(`http://${host}:${port}/__connection.json`)).json()
-      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__sockets' } })
+      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__sockets' }, sse: { path: '__sse' } })
 
       const ok = new WebSocket(`ws://${host}:${port}/__sockets`)
       await expect(new Promise((resolve, reject) => {
@@ -206,6 +206,7 @@ describe('adapters/dev', () => {
       expect(meta).toEqual({
         backend: 'websocket',
         websocket: { port: wsPort, path: '__ws' },
+        sse: { path: '__sse' },
       })
 
       // The socket is reachable on its own port, rooted at `/<route>`.
@@ -242,9 +243,12 @@ describe('adapters/dev', () => {
 
     try {
       const meta = await (await fetch(`http://${host}:${port}/__connection.json`)).json()
+      // The tunnel pattern overrides only the WS advertisement; the SSE
+      // endpoint stays same-origin and rides the tunnel like the meta itself.
       expect(meta).toEqual({
         backend: 'websocket',
         websocket: 'wss://devtools.example.com/relay/__ws',
+        sse: { path: '__sse' },
       })
     }
     finally {
@@ -276,7 +280,7 @@ describe('adapters/dev', () => {
       const res = await fetch(`http://${host}:${port}/__connection.json`)
       expect(res.ok).toBe(true)
       const meta = await res.json()
-      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' } })
+      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' }, sse: { path: '__sse' } })
 
       // The SPA mount is absent — without a distDir, no static handler
       // is wired, so the basePath returns a 404 from h3 instead of an

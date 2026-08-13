@@ -7,34 +7,21 @@ import type { Server as HttpsServer, ServerOptions as HttpsServerOptions } from 
 import type { AddressInfo } from 'node:net'
 import type { Duplex } from 'node:stream'
 import type { RpcFunctionDefinitionAny } from '../types'
+import type { DevframeNodeRpcSessionMeta, DevframeRpcConnection } from './session'
 import { createServer as createHttpServer } from 'node:http'
 import { createServer as createHttpsServer } from 'node:https'
 import crossws from 'crossws/adapters/node'
 import { DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM, DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM } from 'devframe/constants'
 import { randomToken, timingSafeEqual } from 'devframe/utils/crypto-token'
-import { structuredCloneParse, structuredCloneStringify } from 'devframe/utils/structured-clone'
-import { strictJsonStringify, STRUCTURED_CLONE_PREFIX } from '../serialization'
+import { createRpcWireCodec } from '../wire-codec'
+import { createRpcSessionMeta } from './session'
 
-export interface DevframeNodeRpcSessionMeta {
-  id: number
-  /** The crossws peer backing this session's socket. */
-  peer?: Peer
-  clientAuthToken?: string
-  isTrusted?: boolean
-  subscribedStates: Set<string>
-  /**
-   * Streams this session has subscribed to via
-   * `rpc.streaming.subscribe(channel, id)`. Tracked here for O(1) cleanup
-   * on disconnect; the wire format is `${channel}\x1F${id}`.
-   */
-  subscribedStreams?: Set<string>
-  /**
-   * Inbound streams this session is currently uploading to (via
-   * `rpc.streaming.upload(channel, id)`). Tracked for cleanup on
-   * disconnect; same wire format as `subscribedStreams`.
-   */
-  uploadingStreams?: Set<string>
-}
+export type {
+  DevframeNodeRpcSessionMeta,
+  DevframeRpcConnection,
+  DevframeRpcConnectionRequest,
+  DevframeRpcTransportKind,
+} from './session'
 
 export interface WsRpcTransportOptions {
   /**
@@ -94,8 +81,8 @@ export interface WsRpcTransportOptions {
    * loses dev-time validation for `jsonSerializable: true` declarations.
    */
   definitions?: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>>
-  onConnected?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
-  onDisconnected?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+  onConnected?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
+  onDisconnected?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
   /** Override the default per-call serializer. Most callers should leave this unset. */
   serialize?: ChannelOptions['serialize']
   /** Override the default per-call deserializer. Most callers should leave this unset. */
@@ -207,8 +194,6 @@ export interface WsRpcTransport {
    */
   close: () => Promise<void>
 }
-
-let sessionId = 0
 
 const EMPTY_DEFS: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>> = new Map()
 
@@ -342,6 +327,7 @@ export function createWsRpcPeerHooks<
 
   interface PeerState {
     meta: DevframeNodeRpcSessionMeta
+    connection: DevframeRpcConnection
     channel: ChannelOptions
     /** birpc's inbound-message handler, registered via the channel's `on`. */
     onMessage?: (data: string) => void
@@ -350,18 +336,21 @@ export function createWsRpcPeerHooks<
 
   return {
     open: (peer) => {
-      const meta: DevframeNodeRpcSessionMeta = {
-        id: sessionId++,
+      const meta = createRpcSessionMeta()
+      meta.peer = peer
+      const connection: DevframeRpcConnection = {
+        id: meta.id,
+        transport: 'websocket',
+        request: peer.request,
+        send: data => peer.send(data),
+        close: (code, reason) => peer.close(code, reason),
         peer,
-        subscribedStates: new Set(),
       }
 
-      // Per-connection state: maps an incoming request id to its method
-      // name so the matching outgoing response can look the method back
-      // up in `definitions` and pick the right encoder. One map per
-      // session — request-id spaces don't collide across sessions.
-      const pendingRequestMethods = new Map<string, string>()
-      const state: PeerState = { meta, channel: undefined as unknown as ChannelOptions }
+      // Per-connection wire codec — one per session, so request-id spaces
+      // don't collide across sessions.
+      const codec = createRpcWireCodec(definitions)
+      const state: PeerState = { meta, connection, channel: undefined as unknown as ChannelOptions }
       const channel: ChannelOptions = {
         post: (data) => {
           peer.send(data)
@@ -369,33 +358,8 @@ export function createWsRpcPeerHooks<
         on: (fn) => {
           state.onMessage = fn
         },
-        serialize: serializeOverride ?? ((msg: any): string => {
-          let method: string | undefined
-          if (msg.t === 'q') {
-            method = msg.m
-          }
-          else {
-            method = pendingRequestMethods.get(msg.i)
-            pendingRequestMethods.delete(msg.i)
-          }
-          // `jsonSerializable` constrains the return-value path (args + return).
-          // Error envelopes (`{ t: 's', i, e }`) carry a thrown value — fall back
-          // to structured-clone so they round-trip instead of crashing the serializer.
-          // Detect via `'e' in msg` so `throw undefined` still routes through SC.
-          const isErrorResponse = msg.t === 's' && 'e' in msg
-          const useJson = !isErrorResponse && !!method && definitions.get(method)?.jsonSerializable === true
-          if (useJson)
-            return strictJsonStringify(msg, method ?? '')
-          return `${STRUCTURED_CLONE_PREFIX}${structuredCloneStringify(msg)}`
-        }),
-        deserialize: deserializeOverride ?? ((raw: string): any => {
-          const msg: any = raw.startsWith(STRUCTURED_CLONE_PREFIX)
-            ? structuredCloneParse(raw.slice(STRUCTURED_CLONE_PREFIX.length))
-            : JSON.parse(raw)
-          if (msg.t === 'q' && msg.i && msg.m)
-            pendingRequestMethods.set(msg.i, msg.m)
-          return msg
-        }),
+        serialize: serializeOverride ?? codec.serialize,
+        deserialize: deserializeOverride ?? codec.deserialize,
         meta,
       }
       state.channel = channel
@@ -404,7 +368,7 @@ export function createWsRpcPeerHooks<
       rpcGroup.updateChannels((channels) => {
         channels.push(channel)
       })
-      onConnected(peer, meta)
+      onConnected(connection, meta)
     },
     message: (peer, message) => {
       states.get(peer)?.onMessage?.(message.text())
@@ -419,7 +383,7 @@ export function createWsRpcPeerHooks<
         if (index >= 0)
           channels.splice(index, 1)
       })
-      onDisconnected(peer, state.meta)
+      onDisconnected(state.connection, state.meta)
     },
   }
 }

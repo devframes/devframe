@@ -1,7 +1,7 @@
 import { defineHandler } from 'nitro'
 
 // The host app: any page becomes devtools-equipped with one dev-only script
-// tag — the floating dock mounts itself and connects through the namespace
+// tag - the floating dock mounts itself and connects through the namespace
 // the __devframes routes serve.
 export default defineHandler(() => new Response(
   `<!doctype html>

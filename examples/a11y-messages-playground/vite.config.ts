@@ -13,7 +13,7 @@ export default defineConfig({
     UnoCSS(),
     a11yMessagesPlayground({
       devframes: [a11yDevframe, messagesDevframe],
-      // Attach the a11y agent as the a11y dock's client script — served over
+      // Attach the a11y agent as the a11y dock's client script - served over
       // Vite's `/@fs/` so it shares this page's origin (the BroadcastChannel the
       // agent and panel talk over rides that origin).
       clientScripts: {

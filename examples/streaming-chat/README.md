@@ -11,7 +11,7 @@ client (re)joins mid-stream.
 ## What it shows
 
 - A scoped context (`ctx.scope('example:streaming-chat')`) is the
-  preferred entry point — it auto-namespaces every id.
+  preferred entry point - it auto-namespaces every id.
 - `my.rpc.streaming.create('tokens', opts)` registers a streaming channel
   (`example:streaming-chat:tokens`).
 - `my.rpc.sharedState('history', …)` keeps the message log on the server
@@ -19,7 +19,7 @@ client (re)joins mid-stream.
   assistant pair atomically.
 - The producer streams tokens via the channel for low-latency rendering,
   then commits the joined content back to the shared state when it's
-  done — so refreshes and new clients see the finished message
+  done - so refreshes and new clients see the finished message
   immediately.
 - `reader.cancel()` aborts mid-stream; the assistant message is marked
   `cancelled: true` with whatever content was accumulated.
@@ -33,7 +33,7 @@ pnpm -C examples/streaming-chat run build
 pnpm -C examples/streaming-chat run dev
 ```
 
-Then open http://localhost:9897/ — type a prompt, watch tokens stream
+Then open http://localhost:9897/ - type a prompt, watch tokens stream
 in, refresh the page mid-conversation, cancel a long answer, click
 **Clear** to wipe the log.
 
@@ -50,7 +50,7 @@ with partial content, clear, and replay-after-finish.
 ## Wire it to a real LLM
 
 Replace `fakeTokens(prompt)` in `src/devframe.ts` with anything that
-yields strings — the rest of the example doesn't care. For OpenAI:
+yields strings - the rest of the example doesn't care. For OpenAI:
 
 ```ts
 const response = await openai.chat.completions.create({

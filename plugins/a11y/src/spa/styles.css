@@ -5,7 +5,7 @@
  * semantic tokens (`bg-base`, `color-muted`, `border-base`, …), which flip with
  * the `.dark` class on <html>. Only the handful of things utilities can't
  * express live here: the root sizing reset, the scroll area's thin scrollbar,
- * and the reduced-motion guard. WCAG severity — the one domain-specific color —
+ * and the reduced-motion guard. WCAG severity - the one domain-specific color -
  * rides an inline `--impact` CSS var consumed by arbitrary-value utilities.
  */
 

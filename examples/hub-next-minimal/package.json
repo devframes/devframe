@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.8.2",
   "private": true,
-  "description": "Minimal Next.js host for @devframes/hub — one initHub() handler on an App Router catch-all, UI from @devframes/hub-ui.",
+  "description": "Minimal Next.js host that mounts the devframe hub on a single App Router route.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-next-minimal",
   "scripts": {
     "dev": "next dev src/client",

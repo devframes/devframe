@@ -18,6 +18,24 @@ export const DEVFRAME_CONNECTION_KEY = '__DEVFRAME_CONNECTION__'
 export const DEVFRAME_WS_ROUTE = '__ws'
 
 /**
+ * Route the SSE RPC endpoint is bound to, relative to a devframe's base
+ * path. A single method-dispatched route: `GET` opens the event stream
+ * (server→client), `POST` carries RPC frames (client→server). Sits next to
+ * `__connection.json` so the deployed SPA reaches it on the same origin it
+ * loaded from — the transport for hosts and proxies where the WebSocket
+ * upgrade isn't available.
+ */
+export const DEVFRAME_SSE_ROUTE = '__sse'
+
+/**
+ * Request header carrying the SSE session id on every RPC `POST`. The
+ * server mints the id as the stream's first event (`event: session`);
+ * the client echoes it here so the POST joins that stream's birpc
+ * channel. Mirrors birpc's own SSE helpers for wire compatibility.
+ */
+export const DEVFRAME_SSE_SESSION_HEADER = 'x-birpc-session'
+
+/**
  * Route the Streamable-HTTP MCP endpoint is bound to, relative to a
  * devframe's base path. Sits next to `__connection.json` and the WS route
  * so an MCP client reaches it on the same origin the SPA loaded from — the

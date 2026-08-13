@@ -4,7 +4,7 @@ import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 
 /**
- * A tiny demo devframe — proves a portable devframe can plug into the
+ * A tiny demo devframe - proves a portable devframe can plug into the
  * hub via `ctx.install` and register its own docks / commands /
  * messages on top of the host-provided subsystems.
  *

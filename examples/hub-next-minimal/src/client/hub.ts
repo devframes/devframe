@@ -32,7 +32,7 @@ const jsonRenderDock: DevframeJsonRenderDockEntry = {
 // (SPA assets, the embedded/viewer bundles) via `new URL('../dist/...',
 // import.meta.url)`. Loaded with a runtime dynamic `import()` carrying
 // `webpackIgnore` / `turbopackIgnore` so Next's bundler leaves them alone and
-// Node resolves the published `dist` at request time — a static import would
+// Node resolves the published `dist` at request time - a static import would
 // be bundled from source and break those lookups.
 //
 // The default-export plugins load from a list of specifier *variables* (not

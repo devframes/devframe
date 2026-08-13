@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.8.1",
   "private": true,
-  "description": "Minimal Nitro host for @devframes/hub — one catch-all route mounts the whole devtools namespace.",
+  "description": "Minimal Nitro host that mounts the devframe hub on a single route.",
   "scripts": {
     "dev": "nitro dev",
     "typecheck": "tsc --noEmit"

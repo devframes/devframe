@@ -7,6 +7,8 @@ const r = (path: string) => fileURLToPath(new URL(`./packages/${path}`, import.m
 const p = (path: string) => fileURLToPath(new URL(`./plugins/${path}`, import.meta.url))
 
 export const alias = {
+  'devframe/rpc/transports/sse-client': r('devframe/src/rpc/transports/sse-client.ts'),
+  'devframe/rpc/transports/sse-server': r('devframe/src/rpc/transports/sse-server.ts'),
   'devframe/rpc/transports/ws-bun': r('devframe/src/rpc/transports/ws-bun.ts'),
   'devframe/rpc/transports/ws-server': r('devframe/src/rpc/transports/ws-server.ts'),
   'devframe/rpc/transports/ws-client': r('devframe/src/rpc/transports/ws-client.ts'),
@@ -120,7 +122,7 @@ export const alias = {
   '@devframes/plugin-assets': p('assets/src/index.ts'),
 }
 
-// update tsconfig.base.json — CSS aliases exist for Vite resolution only;
+// update tsconfig.base.json - CSS aliases exist for Vite resolution only;
 // TypeScript resolves `*.css` side-effect imports through ambient shims.
 const raw = fs.readFileSync(join(root, 'tsconfig.base.json'), 'utf-8').trim()
 const tsconfig = JSON.parse(raw)

@@ -2,7 +2,7 @@
   "name": "@devframes/plugin-a11y",
   "type": "module",
   "version": "0.8.2",
-  "description": "Devframe a11y inspector — runs axe-core against the host app, surfaces the violations through a Solid panel, and highlights the offending element in the page on hover. Works in dev (WebSocket) and static build modes.",
+  "description": "Devframe plugin that audits the host app with axe and highlights accessibility issues in the page.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/devframes/devframe#readme",

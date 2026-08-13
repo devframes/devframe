@@ -2,7 +2,7 @@
   "name": "@devframes/json-render-ui",
   "type": "module",
   "version": "0.8.2",
-  "description": "Official reference frontend for @devframes/json-render — a Vue renderer implementing the base catalog with @antfu/design.",
+  "description": "Vue renderer for devframe views described as JSON.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/devframes/devframe#readme",

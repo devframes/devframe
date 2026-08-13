@@ -15,7 +15,7 @@ import '@antfu/design/styles.css'
 // The whole browser UI for the Vite hub, in plain DOM: it reads the hub's
 // shared state (`devframe:docks` / `devframe:commands`) and its RPCs, and
 // renders an icon rail + an iframe stage / renderer panel + a subsystem
-// drawer. No hub classes are imported here — only the client protocol.
+// drawer. No hub classes are imported here - only the client protocol.
 
 const HUB_BASE = '/__devframes/'
 
@@ -28,6 +28,41 @@ const el = {
   ping: document.querySelector<HTMLButtonElement>('#ping')!,
   stage: document.querySelector<HTMLElement>('#dock-stage')!,
   panel: document.querySelector<HTMLElement>('#dock-panel')!,
+  transport: document.querySelector<HTMLElement>('#transport')!,
+  transportToggle: document.querySelector<HTMLElement>('#transport-toggle')!,
+}
+
+// ── transport preference (`?transport=` param) ──────────────────────────────
+// The hub serves both live transports (WS at `__ws`, SSE at `__sse`); the
+// client's `transport` option picks one, `auto` trusting the server's
+// advertisement. A connected client has no live switch, so the toggle writes
+// the `?transport=` param and reloads to reconnect on the pinned transport.
+
+const TRANSPORT_PREFS = ['auto', 'websocket', 'sse'] as const
+type TransportPref = (typeof TRANSPORT_PREFS)[number]
+
+function readTransportPref(): TransportPref {
+  const raw = new URLSearchParams(location.search).get('transport')
+  return (TRANSPORT_PREFS as readonly string[]).includes(raw ?? '') ? raw as TransportPref : 'auto'
+}
+
+function applyTransportPref(pref: TransportPref): void {
+  const url = new URL(location.href)
+  if (pref === 'auto')
+    url.searchParams.delete('transport')
+  else
+    url.searchParams.set('transport', pref)
+  location.href = url.href
+}
+
+function renderTransportToggle(current: TransportPref): void {
+  el.transportToggle.innerHTML = TRANSPORT_PREFS.map((pref) => {
+    const active = pref === current ? 'bg-base color-active shadow-sm' : 'color-muted hover:color-base'
+    const label = pref === 'websocket' ? 'WS' : pref === 'sse' ? 'SSE' : 'Auto'
+    return `<button type="button" data-transport="${pref}" class="rounded-md border-none bg-transparent px2 py0.5 text-xs font-medium cursor-pointer ${active}">${label}</button>`
+  }).join('')
+  for (const button of el.transportToggle.querySelectorAll<HTMLButtonElement>('[data-transport]'))
+    button.addEventListener('click', () => applyTransportPref(button.dataset.transport as TransportPref))
 }
 
 // ── small DOM helpers ───────────────────────────────────────────────────────
@@ -86,9 +121,9 @@ function isIframeDock(d: DevframeDockEntry): d is DevframeViewIframe & { url: st
 }
 
 // Dock types this shell renders natively (or that carry no panel view). Every
-// other type routes through the client host's renderer registry — a renderer
+// other type routes through the client host's renderer registry - a renderer
 // registered locally or served by the hub's renderer manifest (e.g.
-// `json-render`) — and a type nothing covers shows the missing-renderer
+// `json-render`) - and a type nothing covers shows the missing-renderer
 // fallback in `mountRenderer`.
 const NATIVE_TYPES = new Set(['action', 'launcher', 'group', '~builtin'])
 function isRenderableDock(d: DevframeDockEntry): boolean {
@@ -98,7 +133,7 @@ function isRenderableDock(d: DevframeDockEntry): boolean {
 // ── client-only dock content (synthesized in the browser) ───────────────────
 
 // A self-contained document for the client-only "Client Notes" dock, from a
-// Blob URL — no server route.
+// Blob URL - no server route.
 function createClientNotesUrl(): string {
   const html = `<!doctype html><meta charset="utf-8">
 <style>
@@ -110,7 +145,7 @@ function createClientNotesUrl(): string {
 </style>
 <h1>Client-only dock</h1>
 <p>This dock was registered in the browser with
-  <code>host.context.docks.register()</code>. It lives only in this page — it
+  <code>host.context.docks.register()</code>. It lives only in this page - it
   never enters the <code>devframe:docks</code> shared state, so it is not synced
   to the hub server or to any other connected viewer.</p>
 <p>Patch it live through the returned handle with <code>update()</code> (its
@@ -118,10 +153,10 @@ function createClientNotesUrl(): string {
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 }
 
-// An *interactive* json-render spec synthesized entirely in the browser — the
+// An *interactive* json-render spec synthesized entirely in the browser - the
 // client-only counterpart to a server-authored view. `{ $bindState }` inputs
 // write into the view's own `state`, `{ $state }` reads mirror it live, and the
-// buttons use the built-in `pushState` / `setState` actions — no server, no
+// buttons use the built-in `pushState` / `setState` actions - no server, no
 // shared state, rendered by the same manifest-served `json-render` module.
 function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec {
   return {
@@ -180,13 +215,16 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
 
 async function main(): Promise<void> {
   setStatus('Connecting…')
-  const rpc = await connectDevframe({ baseURL: HUB_BASE })
-  setStatus(`Connected · backend=${rpc.connectionMeta.backend}`, 'ready')
+  const transportPref = readTransportPref()
+  renderTransportToggle(transportPref)
+  const rpc = await connectDevframe({ baseURL: HUB_BASE, transport: transportPref })
+  setStatus(`Connected · transport=${rpc.transport}`, 'ready')
+  el.transport.textContent = `Connected over ${rpc.transport} (${transportPref === 'auto' ? 'auto-selected' : 'pinned'})`
 
   // Boot the framework-level client host: it assembles the shared client
   // context and imports each dock's client script into this page (e.g. the
   // a11y agent). `json-render` docks render through the module the hub serves
-  // via its renderer manifest — imported lazily by the registry on first mount.
+  // via its renderer manifest - imported lazily by the registry on first mount.
   const host = await createDevframeClientHost({ rpc })
   const docksCtx = host.context.docks
 
@@ -259,7 +297,7 @@ function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientHost>>
     mounted = null
     el.panel.hidden = false
     el.panel.innerHTML = ''
-    // A fresh container per mount — a self-styling renderer may attach a shadow
+    // A fresh container per mount - a self-styling renderer may attach a shadow
     // root to it.
     const container = document.createElement('div')
     container.className = 'h-full w-full'
@@ -347,14 +385,14 @@ function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientHost>>
 // ── the subsystem drawer (commands / messages / terminals) ──────────────────
 
 async function wireDrawer(rpc: Awaited<ReturnType<typeof connectDevframe>>): Promise<void> {
-  // Commands — read straight from `devframe:commands` shared state.
+  // Commands - read straight from `devframe:commands` shared state.
   const commands = await rpc.sharedState.get<DevframeCommandEntry[]>('devframe:commands', { initialValue: [] })
   const renderCommands = (): void => renderList(el.commands, commands.value() ?? [], c =>
     `<li class="rounded-lg border border-base bg-base px2.5 py1.5 text-xs font-mono">${c.title} <code class="op-fade">${c.id}</code></li>`)
   commands.on('updated', renderCommands)
   renderCommands()
 
-  // Messages + terminals — polled through kit-local RPCs (a fuller kit would
+  // Messages + terminals - polled through kit-local RPCs (a fuller kit would
   // register a client handler for the hub's `*:updated` broadcasts instead).
   const refreshMessages = async (): Promise<void> => {
     const entries = await rpc.call('example:vite-devframe-hub:messages:list' as any) as DevframeMessageEntry[]

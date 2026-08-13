@@ -2,7 +2,7 @@
   "name": "@devframes/plugin-assets",
   "type": "module",
   "version": "0.8.2",
-  "description": "Devframe plugin for browsing, previewing, uploading, and managing static assets in a directory — a framework-neutral port of Nuxt DevTools' Assets tab.",
+  "description": "Devframe plugin for browsing, previewing, uploading, and managing static assets in a directory.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/devframes/devframe#readme",

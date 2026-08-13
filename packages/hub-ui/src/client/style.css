@@ -3,11 +3,11 @@
 }
 
 /*
- * Thin/transparent scrollbar, matching packages/ui/src/styles/global.css —
+ * Thin/transparent scrollbar, matching packages/ui/src/styles/global.css -
  * that stylesheet only reaches the Nuxt plugin apps, not this injected
  * webcomponents shell, which otherwise falls back to the browser default
  * (thick, opaque-gutter) scrollbar clashing with the translucent dock.
- * `:host`, not `:root` — this stylesheet is adopted into the dock's shadow
+ * `:host`, not `:root` - this stylesheet is adopted into the dock's shadow
  * root (`defineCustomElement(..., { shadowRoot: true, styles: [css] })`),
  * where `:root` only ever matches the top-level document's <html>.
  * Rules below are unscoped (not `#devframes-anchor ...`) since the

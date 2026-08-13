@@ -48,7 +48,7 @@ export function SnapshotEnv() {
         className={inputClass('mb-3')}
         value={pattern}
         onChange={e => setPattern(e.target.value)}
-        placeholder="Regex filter (case-insensitive) — e.g. NODE | PATH | HOME"
+        placeholder="Regex filter (case-insensitive) - e.g. NODE | PATH | HOME"
         aria-label="Environment variable filter (case-insensitive regex)"
       />
       {snap === null && <p className="text-sm color-muted">Loading…</p>}

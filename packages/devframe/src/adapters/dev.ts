@@ -1,7 +1,7 @@
-import type { Peer } from 'crossws'
+import type { DevframeRpcConnection } from 'devframe/rpc/transports/ws-server'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/instance-shell'
-import type { DevframeDefinition, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
+import type { DevframeDefinition, DevframeSseOptions, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
 import type { DevframeNodeRpcSession, DevframeNodeRpcSessionMeta } from '../types/rpc'
 import { createServer } from 'node:http'
 import { open } from 'devframe/utils/open'
@@ -46,9 +46,16 @@ export interface CreateDevServerOptions {
   /**
    * Override how the browser reaches the RPC WebSocket (`def.cli?.ws`).
    * See {@link DevframeWsOptions}: same-server route (default), a dedicated
-   * port, or a remote origin.
+   * port, or a remote origin. Pass `false` to serve no WebSocket at all —
+   * clients connect over the SSE endpoint instead (`backend: 'sse'`).
    */
-  ws?: DevframeWsOptions
+  ws?: DevframeWsOptions | false
+  /**
+   * Override the SSE RPC endpoint control (`def.cli?.sse`) — enabled by
+   * default at `<base>__sse`. Pass `false` to disable, or a
+   * {@link DevframeSseOptions} to rename the route.
+   */
+  sse?: boolean | DevframeSseOptions
   /**
    * h3 app to mount the SPA + connection-meta routes on. When omitted
    * a fresh app is created. Pass a pre-configured app to attach custom
@@ -82,16 +89,16 @@ export interface CreateDevServerOptions {
    */
   mcp?: boolean | McpRouteOptions
   /**
-   * Called once per new WS connection, right after its session is created.
-   * Forwarded verbatim to the underlying WS transport binding.
+   * Called once per new RPC connection, right after its session is created.
+   * Forwarded verbatim to the underlying transport binding.
    */
-  onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
+  onPeerConnect?: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
   /**
-   * Called once per closed WS connection, right after its session's
+   * Called once per closed RPC connection, right after its session's
    * disconnect bookkeeping runs. Forwarded verbatim to the underlying
-   * the underlying WS transport binding.
+   * transport binding.
    */
-  onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+  onPeerDisconnect?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
   /**
    * Called once the WS server is bound. Devframe stays headless
    * otherwise — wire this if you want a startup banner.
@@ -168,6 +175,7 @@ export async function createDevServer(
     host,
     origin,
     ws: options.ws,
+    sse: options.sse,
     // The `--no-auth` flag forces the gate off regardless of the `auth`
     // option / definition default (which the instance resolves itself).
     auth: flags.auth === false ? false : options.auth,

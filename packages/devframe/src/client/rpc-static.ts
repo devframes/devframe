@@ -13,6 +13,7 @@ export async function createStaticRpcClientMode(
   const staticCaller = createStaticRpcCaller(manifest, options.fetchJsonFromBases)
 
   return {
+    transport: 'static',
     isTrusted: true,
     // A static backend has no live socket; every call is a local fetch, so it
     // is "connected" for its whole life.

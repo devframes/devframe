@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.8.2",
   "private": true,
-  "description": "Protocol-witness example — a tiny Next.js Devframe Hub built on @devframes/hub that exercises every hub subsystem end-to-end.",
+  "description": "Next.js reference hub that exercises every devframe hub subsystem end to end.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-next",
   "scripts": {
     "dev": "pnpm -C ../.. run build && next dev src/client",

@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.8.1",
   "private": true,
-  "description": "Minimal Hono host for @devframes/hub — the same app file serves the devtools namespace on Node and Bun.",
+  "description": "Minimal Hono host that serves the devframe hub namespace on both Node and Bun.",
   "scripts": {
     "dev": "tsx src/server.ts",
     "dev:bun": "bun src/bun.ts",

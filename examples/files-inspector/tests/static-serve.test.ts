@@ -12,7 +12,7 @@ import { assertClientBuilt, makeFixtureCwd } from './_utils'
 
 interface StaticServer {
   origin: string
-  /** URL prefix the SPA root is served at — `/` for option A, `/myapp/` for option B. */
+  /** URL prefix the SPA root is served at - `/` for option A, `/myapp/` for option B. */
   mountBase: string
   close: () => Promise<void>
 }
@@ -60,7 +60,7 @@ describe('static serve (deployed SPA contract)', () => {
   // *relative* to `document.baseURI`. For the "deployed at root" case
   // those resolve to absolute URLs at the server root; for the "deployed
   // at a sub-path" case the same relative paths resolve under the
-  // sub-path. Both must work without rebuilding the SPA — that's the
+  // sub-path. Both must work without rebuilding the SPA - that's the
   // whole point of `vite.base: './'` plus the runtime base discovery.
   describe.each([
     { name: 'at server root', mountBase: '/' },
@@ -121,7 +121,7 @@ describe('static serve (deployed SPA contract)', () => {
     })
 
     it('does not expose a stray `__devframe/` directory at the SPA root', async () => {
-      // Regression guard: the build output is intentionally flat —
+      // Regression guard: the build output is intentionally flat -
       // re-introducing a `__devframe/` subdir would create a nested
       // path the relative-base discovery in the SPA cannot reach.
       const res = await fetch(`${server.origin}${mountBase}__devframe/__connection.json`)

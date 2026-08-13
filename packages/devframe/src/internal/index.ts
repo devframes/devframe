@@ -14,6 +14,10 @@
 // - `registerDevframeInstance` / `listLiveDevframeInstances` — the instance
 //   registry: a custom host advertises itself; a devtool (the inspect plugin's
 //   Instances tab, the connector) enumerates what's running.
+// - `createRpcWireCodec` / `peekRpcWireFrame` — the per-connection wire
+//   codec (strict-JSON ⇄ structured-clone dispatch) and envelope peeker the
+//   built-in WS/SSE transports share; a custom transport implementation
+//   reuses them to speak the identical wire protocol.
 // - `createH3DevframeHost` — the node/standalone `DevframeHost` implementation
 //   (filesystem storage paths + origin resolution) passed to `createHostContext`.
 // - `createInstanceShell` — the shared machinery behind `initDevframe` and
@@ -42,3 +46,5 @@ export type {
 export { createContextRpcServer } from '../node/rpc-core'
 export type { ContextRpcServer, CreateContextRpcServerOptions } from '../node/rpc-core'
 export { normalizeHttpServerUrl } from '../node/utils'
+export { createRpcWireCodec, peekRpcWireFrame } from '../rpc/wire-codec'
+export type { RpcWireCodec } from '../rpc/wire-codec'

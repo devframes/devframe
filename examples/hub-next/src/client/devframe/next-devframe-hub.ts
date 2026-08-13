@@ -22,7 +22,7 @@ import { unrenderedDockEntry } from './unrendered-dock'
  * them alone: Node resolves the published `dist` at request time, where the
  * plugins' node-side code (git shell-outs, child-process supervisors, the
  * native `zigpty` PTY backend) and their `new URL('../dist/...',
- * import.meta.url)` SPA-dist lookups all work — none of which survive being
+ * import.meta.url)` SPA-dist lookups all work - none of which survive being
  * statically bundled into a Next server chunk.
  */
 const BUILTIN_PLUGIN_PACKAGES = [
@@ -46,7 +46,7 @@ async function loadBuiltinPlugins(): Promise<DevframeDefinition[]> {
 
 /**
  * Load the assets plugin and point its managed directory at this Next app's
- * `public/` (`src/client/public`) — the exact directory Next serves at `/`,
+ * `public/` (`src/client/public`) - the exact directory Next serves at `/`,
  * so the tab's previews resolve to real host URLs. Loaded through the same
  * bundler-ignored dynamic `import()` as the other plugins (its node code and
  * `import.meta.url`-based SPA-dist lookup don't survive static bundling), and
@@ -56,7 +56,7 @@ async function loadBuiltinPlugins(): Promise<DevframeDefinition[]> {
 async function loadAssetsDevframe(): Promise<DevframeDefinition> {
   const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-assets')
   // String path ops on the module path (not `new URL('../public', …)`, which
-  // Turbopack eagerly resolves as an asset import and fails on a directory) —
+  // Turbopack eagerly resolves as an asset import and fails on a directory) -
   // `src/client/devframe/` → `src/client/public`, the dir Next serves at `/`.
   const dir = join(dirname(fileURLToPath(import.meta.url)), '../public')
   return (mod.createAssetsDevframe as (options: { dir: string, watch: boolean }) => DevframeDefinition)({ dir, watch: false })
@@ -64,8 +64,8 @@ async function loadAssetsDevframe(): Promise<DevframeDefinition> {
 
 /**
  * Load the data-inspector plugin with a colon-free id. Its default id
- * (`devframes:plugin:data-inspector`) carries `:` — a route-param marker to
- * the router the hub mounts each frame on — so it can't be a `<base><id>/`
+ * (`devframes:plugin:data-inspector`) carries `:` - a route-param marker to
+ * the router the hub mounts each frame on - so it can't be a `<base><id>/`
  * segment (`DF8004`); the override makes it mountable. Loaded through the same
  * bundler-ignored dynamic `import()` as the other plugins.
  */
@@ -79,7 +79,7 @@ async function loadDataInspectorDevframe(): Promise<DevframeDefinition> {
  * Loaded through the same bundler-ignored dynamic `import()` as the plugins:
  * `jsonRenderUiRenderer()` resolves its prebuilt module via `import.meta.url`,
  * which only points at the published `dist` when Node loads the package at
- * request time — a static import would be rewritten into a Next server chunk,
+ * request time - a static import would be rewritten into a Next server chunk,
  * making the path resolve inside `.next/` (see `DF8109`).
  */
 async function loadJsonRenderUiRenderer(): Promise<DockRendererRegistration> {
@@ -88,13 +88,13 @@ async function loadJsonRenderUiRenderer(): Promise<DockRendererRegistration> {
 }
 
 /**
- * URL base the a11y agent module is served under — inside the hub namespace,
+ * URL base the a11y agent module is served under - inside the hub namespace,
  * so the one catch-all route reaches it.
  */
 const A11Y_AGENT_MOUNT_BASE = `${DEVFRAMES_HUB_BASE}df-a11y-agent/`
 
 interface A11yAgentMount {
-  /** The a11y devframe's dock id — the dock the client script attaches to. */
+  /** The a11y devframe's dock id - the dock the client script attaches to. */
   dockId: string
   /** On-disk directory holding the built agent module. */
   dir: string
@@ -104,7 +104,7 @@ interface A11yAgentMount {
 
 /**
  * Locate the a11y inspector's in-page **agent** module so the hub can serve it
- * same-origin and attach it to the a11y dock as its client script — the hub
+ * same-origin and attach it to the a11y dock as its client script - the hub
  * client runtime (booted in `app/page.tsx`) imports it into the host page,
  * where it scans this hub live. Loaded through the same bundler-ignored dynamic
  * `import()` as the plugins, since the package resolves its `dist` via
@@ -165,7 +165,7 @@ const nextHubTerminalsList = defineHubRpcFunction({
  * The entire Next host: one `initHub()` call. The instance mounts every
  * devframe under `/__devframes/<id>/`, merges their RPC registries onto one
  * WebSocket side-car, serves the discovery endpoints (`__connection.json`,
- * `__index.json`, `__client-imports.js`) and the aggregate MCP route — all
+ * `__index.json`, `__client-imports.js`) and the aggregate MCP route - all
  * behind the one web-standard `handler` the App Router catch-all delegates to.
  */
 export async function nextDevframeHub(
@@ -191,7 +191,7 @@ export async function nextDevframeHub(
   // shared-iframe soft-navigation demo mounts as a `subTabs` anchor (a shared
   // `frameId` + the postmessage protocol) so the client host attaches the
   // frame-nav adapter, materializing one client-only dock per tab the SPA's
-  // shim reports — all sharing one iframe.
+  // shim reports - all sharing one iframe.
   const devframes: (DevframeDefinition | HubDevframeEntry)[] = [
     demoDevframe,
     ...(await loadBuiltinPlugins()).map<DevframeDefinition | HubDevframeEntry>(def =>
@@ -220,12 +220,12 @@ export async function nextDevframeHub(
     // so it opts out of the gate for a no-friction dev experience. A hub
     // reachable beyond localhost should gate (see `docs/guide/security.md`).
     auth: false,
-    // The aggregate MCP endpoint at `/__devframes/__mcp` — the hub's agent
+    // The aggregate MCP endpoint at `/__devframes/__mcp` - the hub's agent
     // surface (agent-flagged commands, plugin tools, `devframe:state:read`)
     // over the same catch-all route as the SPAs.
     mcp: true,
     // Next route handlers can't accept WS upgrades, so the socket asks for a
-    // side-car of its own — on a free port near 9777, or the pinned `port`.
+    // side-car of its own - on a free port near 9777, or the pinned `port`.
     ws: options.port != null ? { port: options.port } : { sidecar: true },
     getStorageDir(scope) {
       if (scope === 'workspace')
@@ -242,11 +242,11 @@ export async function nextDevframeHub(
     // Serve the reference json-render frontend as a prebuilt renderer module
     // (published in the renderer manifest). This host's own page registers a
     // local React renderer for the same type (app/page.tsx), which takes
-    // precedence — witnessing both sides of the swap seam: the manifest
+    // precedence - witnessing both sides of the swap seam: the manifest
     // composition AND a local frontend replacing it.
     renderers: [jsonRenderRenderer],
     // Record this hub in the global registry so `devframe connect` discovers
-    // it — running inside the Next dev server — like any standalone devframe.
+    // it - running inside the Next dev server - like any standalone devframe.
     // The instance owns the record (written once its pinned origin resolves,
     // removed on close); the aggregate MCP path is derived from `mcp: true`.
     register: {
@@ -269,7 +269,7 @@ export async function nextDevframeHub(
         handler: () => 'pong',
       })
 
-      // The hub synthesizes no built-in docks — a high-level integration
+      // The hub synthesizes no built-in docks - a high-level integration
       // registers the viewer's native views it wants, declaring the `~builtin`
       // category itself so this Settings tab groups and sorts last.
       ctx.docks.register({
@@ -294,7 +294,7 @@ export async function nextDevframeHub(
         category: 'app',
       }))
 
-      // Witness the missing-renderer path: a dock type nothing covers — the
+      // Witness the missing-renderer path: a dock type nothing covers - the
       // client shows its fallback view instead of a dead panel.
       ctx.docks.register(unrenderedDockEntry)
 

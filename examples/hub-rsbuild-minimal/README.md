@@ -6,7 +6,7 @@ The minimal [Rsbuild](https://rsbuild.dev) host for `@devframes/hub`: one `initH
 pnpm --filter hub-rsbuild-minimal dev
 ```
 
-Open the printed URL — the host page carries the floating dock via one injected script tag — or `/__devframes/` for the standalone viewer.
+Open the printed URL - the host page carries the floating dock via one injected script tag - or `/__devframes/` for the standalone viewer.
 
 ## How it works
 
@@ -17,4 +17,4 @@ Open the printed URL — the host page carries the floating dock via one injecte
 - The RPC WebSocket runs on a side-car port (`ws: { sidecar: true }`, since Rsbuild's middleware stack never hands over upgrades), advertised through `__connection.json`; the browser client discovers it automatically.
 - `html.tags` injects `<script type="module" src="/__devframes/embedded.js">`, so the floating dock mounts itself.
 
-The same `initHub` instance mounts identically on Vite, Nitro, Hono, and Next.js — see the sibling `hub-*-minimal` examples.
+The same `initHub` instance mounts identically on Vite, Nitro, Hono, and Next.js - see the sibling `hub-*-minimal` examples.

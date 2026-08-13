@@ -31,7 +31,7 @@
   let connectionStatus = $state<DevframeConnectionStatus>(rpc.status)
 
   // Terminals ride live PTY streams, so a dropped socket or refused auth makes
-  // the whole surface useless — swap it for the shared connection state instead
+  // the whole surface useless - swap it for the shared connection state instead
   // of a frozen terminal. The client doesn't auto-reconnect; a reload re-runs
   // the handshake.
   const connCopy = $derived(connectionState(connectionStatus))
@@ -70,7 +70,7 @@
    * Focus a session by id, on request from the hub's cross-iframe dock
    * activation (e.g. Vite DevTools navigating to the build it just spawned).
    * Focuses immediately when the session is already known; otherwise waits for
-   * it to arrive. An unknown/ended id is a no-op — the default selection
+   * it to arrive. An unknown/ended id is a no-op - the default selection
    * (most-recent session) stands.
    */
   function requestFocus(id: string): void {
@@ -103,7 +103,7 @@
 
   /**
    * Sessions aggregated from other devframes via the hub (they carry a
-   * `channel`) are surfaced read-only — this plugin doesn't own their process,
+   * `channel`) are surfaced read-only - this plugin doesn't own their process,
    * so it offers no rename / restart / kill controls for them.
    */
   function isExternal(info: TerminalSessionInfo): boolean {
@@ -180,7 +180,7 @@
   })
 
   // The hub mirrors the most recent dock activation here. When it targets this
-  // dock and carries a session id, focus that session — this is how a mounted
+  // dock and carries a session id, focus that session - this is how a mounted
   // devframe (e.g. Vite DevTools) navigates the user straight to a spawned
   // build's terminal, whether the dock was already open or mounts in response.
   let offActivation: (() => void) | undefined
@@ -268,7 +268,7 @@
   /**
    * Kill a session's running process (interactive or readonly, own or
    * aggregated), keeping the stopped session and its scrollback. Always
-   * confirmed — a live process is being terminated.
+   * confirmed - a live process is being terminated.
    */
   function killSession(id: string): void {
     const s = sessions.find(x => x.id === id)
@@ -283,7 +283,7 @@
   }
 
   /**
-   * Discard a session entirely — process, stream, and scrollback. Removing a
+   * Discard a session entirely - process, stream, and scrollback. Removing a
    * session whose process is still running terminates it, so that case is
    * confirmed; an already-stopped session is dropped immediately.
    */
@@ -393,7 +393,7 @@
           <button
             type="button"
             class={navTab({ active: activeId === s.id, class: 'group' })}
-            title={isExternal(s) ? displayName(s) : `${displayName(s)} — double-click to rename`}
+            title={isExternal(s) ? displayName(s) : `${displayName(s)} - double-click to rename`}
             onclick={() => (activeId = s.id)}
             ondblclick={(e) => { if (isExternal(s)) return; e.preventDefault(); e.stopPropagation(); renamingId = s.id }}
           >

@@ -9,7 +9,7 @@ export function Home({ ctx }: { ctx: InspectorCtx }) {
   async function refresh() {
     setLoading(true)
     try {
-      // Scoped call — `list-files` resolves to `example:files-inspector:list-files`.
+      // Scoped call - `list-files` resolves to `example:files-inspector:list-files`.
       const result = await ctx.rpc.call('list-files')
       setFiles(result)
     }

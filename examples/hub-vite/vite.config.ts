@@ -20,8 +20,8 @@ import { unrenderedDockEntry } from './src/unrendered-dock'
 import { viteDevframeHub } from './src/vite-devframe-hub'
 
 // Colon-free id override: the hub instance derives each frame's mount path
-// (`/__devframes/<id>/`) from its id, and `:` — which the plugin's default id
-// (`devframes:plugin:data-inspector`) carries — is a route-param marker to
+// (`/__devframes/<id>/`) from its id, and `:` - which the plugin's default id
+// (`devframes:plugin:data-inspector`) carries - is a route-param marker to
 // the router underneath.
 const dataInspectorDevframe = createDataInspectorDevframe({ id: 'devframes_plugin_data-inspector' })
 
@@ -33,7 +33,7 @@ export default defineConfig({
   plugins: [
     UnoCSS(),
     {
-      // The host registers its own live objects as data-inspector sources —
+      // The host registers its own live objects as data-inspector sources -
       // the registry is process-global, so this works from any plugin hook.
       name: 'vite-devframe-hub:data-sources',
       configureServer(server) {
@@ -64,7 +64,7 @@ export default defineConfig({
       devframes: [
         demoDevframe,
         // Every built-in plugin, dogfooded end-to-end through the hub mount
-        // path — the same set a full viewer like vite-devtools would surface.
+        // path - the same set a full viewer like vite-devtools would surface.
         gitDevframe,
         terminalsDevframe,
         codeServerDevframe,
@@ -78,7 +78,7 @@ export default defineConfig({
         // and registers its iframe dock; the `dock` override marks it a
         // `subTabs` anchor (a shared `frameId` + the postmessage protocol) so
         // the client host attaches the frame-nav adapter, materializing one
-        // client-only dock per tab the SPA's shim reports — all sharing this
+        // client-only dock per tab the SPA's shim reports - all sharing this
         // one iframe.
         {
           devframe: tabbedToolDevframe,
@@ -91,7 +91,7 @@ export default defineConfig({
       ],
       // Attach the a11y inspector's in-page agent as its dock's client script.
       // The hub client runtime (booted in src/client/main.ts) imports it into
-      // this page so the docked panel scans the host live — no bespoke
+      // this page so the docked panel scans the host live - no bespoke
       // injection plugin needed. `/@fs/` lets Vite serve the built module.
       clientScripts: {
         [a11yDevframe.id]: { importFrom: `/@fs/${a11yAgentBundlePath}` },

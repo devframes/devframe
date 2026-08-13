@@ -45,7 +45,7 @@ describe('static build (CLI build surface)', () => {
 
     const html = await readFile(path.join(outBuild, 'index.html'), 'utf-8')
     expect(html).toContain('<base href="./" />')
-    // Same `base: './'` smoke check — proves the bundle is mount-path
+    // Same `base: './'` smoke check - proves the bundle is mount-path
     // portable. Re-deploying under any base path requires no rebuild.
     expect(html).toMatch(/src="\.\/assets\/[^"]+\.js"/)
 
@@ -93,7 +93,7 @@ describe('static build (CLI build surface)', () => {
   it('writes spa-loader.json honoring a custom base when def.spa is set', async () => {
     // The example's devframe sets `spa: { loader: 'none' }`, which opts
     // into the spa-loader sidecar. A `--base` override should be reflected
-    // verbatim in the loader descriptor without forcing a rebuild — the
+    // verbatim in the loader descriptor without forcing a rebuild - the
     // SPA bundle itself uses runtime base discovery, so the descriptor is
     // the only place the deploy base needs to land.
     const out = await mkdtemp(path.join(os.tmpdir(), 'devframe-files-inspector-base-'))

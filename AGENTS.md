@@ -4,16 +4,16 @@
 
 **`devframe`** is the framework-neutral container for one devtool integration, portable across viewers. Build a single tool (its RPC, its SPA, its diagnostics, its CLI/build/spa/embedded outputs) without caring how it'll be displayed. A devframe app runs standalone (CLI, static deploy, embedded SPA) just as well as it mounts inside a hub.
 
-**`@devframes/hub`** is the framework-neutral hub layer that sits on top of devframe and provides the multi-integration orchestration (docks, terminals, messages, commands). It does not ship UI — implementers (e.g. `@vitejs/devtools-kit`) provide their own UI on top of the hub's RPC + shared-state protocol. It does ship a **headless client runtime** (`createDevframeClientHost()` from `@devframes/hub/client`): booted in the host page, it assembles the shared `DevframeClientContext` (panel, docks, commands, when) and imports each dock entry's client script (`action` / `custom-render` / iframe `clientScript`) into that page — how a plugin like the a11y inspector runs code inside the page being inspected. See `examples/hub-vite/` for a working ~120-line Vite host demonstrating the protocol end to end.
+**`@devframes/hub`** is the framework-neutral hub layer that sits on top of devframe and provides the multi-integration orchestration (docks, terminals, messages, commands). It does not ship UI - implementers (e.g. `@vitejs/devtools-kit`) provide their own UI on top of the hub's RPC + shared-state protocol. It does ship a **headless client runtime** (`createDevframeClientHost()` from `@devframes/hub/client`): booted in the host page, it assembles the shared `DevframeClientContext` (panel, docks, commands, when) and imports each dock entry's client script (`action` / `custom-render` / iframe `clientScript`) into that page - how a plugin like the a11y inspector runs code inside the page being inspected. See `examples/hub-vite/` for a working ~120-line Vite host demonstrating the protocol end to end.
 
 ## Stack & Structure
 
 ESM TypeScript library. Bundled with `tsdown`. Tested with `vitest`. pnpm workspaces with catalog dependencies (`pnpm-workspace.yaml`); workspace globs reserve `playground`, `docs`, `packages/*`, `examples/*` for future additions.
 
 Source layout:
-- `src/` — library code; entry `src/index.ts`
-- `test/` — vitest specs; API snapshots via `tsnapi` under `test/__snapshots__/`
-- `dist/` — `tsdown` build output (committed to npm tarball via `files`)
+- `src/` - library code; entry `src/index.ts`
+- `test/` - vitest specs; API snapshots via `tsnapi` under `test/__snapshots__/`
+- `dist/` - `tsdown` build output (committed to npm tarball via `files`)
 
 ## Development
 
@@ -30,68 +30,68 @@ pnpm start        # tsx src/index.ts
 
 The `pnpm test` script intentionally runs `build` first so `tsnapi` snapshots compare against fresh `dist/`. `tsdown-stale-guard` enforces this in `test/api-snapshot.test.ts`.
 
-`pnpm typecheck` fans out through Turbo: every workspace package owns a `"typecheck": "tsc --noEmit"` script and its own `tsconfig.json` (extending `tsconfig.base.json` with an explicit `include`). Cross-package imports resolve to source through the `paths` aliases in `tsconfig.base.json`, so no prior build is needed. Any package added under `packages/*` or `plugins/*` is typechecked automatically once it ships that `typecheck` script — add one to every new package so it can't silently skip type errors.
+`pnpm typecheck` fans out through Turbo: every workspace package owns a `"typecheck": "tsc --noEmit"` script and its own `tsconfig.json` (extending `tsconfig.base.json` with an explicit `include`). Cross-package imports resolve to source through the `paths` aliases in `tsconfig.base.json`, so no prior build is needed. Any package added under `packages/*` or `plugins/*` is typechecked automatically once it ships that `typecheck` script - add one to every new package so it can't silently skip type errors.
 
-`pnpm typecheck` runs `scripts/verify-typecheck-coverage.ts` first — it fails the command (and CI, since CI just runs `pnpm typecheck`) if any workspace package has a `tsconfig.json` but no `typecheck` script, so a new package can't silently join the same blind spot. A package that genuinely can't typecheck yet needs a documented exception in that script, not a missing script.
+`pnpm typecheck` runs `scripts/verify-typecheck-coverage.ts` first - it fails the command (and CI, since CI just runs `pnpm typecheck`) if any workspace package has a `tsconfig.json` but no `typecheck` script, so a new package can't silently join the same blind spot. A package that genuinely can't typecheck yet needs a documented exception in that script, not a missing script.
 
-`pnpm knip` finds unused files, dependencies, and exports across every workspace (config in `knip.jsonc`). It runs against source directly — no prior build needed. Most workspaces need no configuration; `knip.jsonc` only carries per-workspace overrides for cases knip's defaults can't infer on their own: a package's non-`index.ts` `exports` subpaths (knip's package.json→`dist`→`src` source mapping needs a workspace `tsconfig.json` `outDir`, which conflicts with this repo's cross-workspace `src/*.ts` imports, so multi-entry packages list their `exports`-mapped entry files explicitly instead — keep that list in sync with each `tsdown.config.ts`), config files knip's plugins don't discover in a nested location (a Next.js app rooted below the workspace root, `storybook-solidjs-vite` not matching the Storybook plugin trigger), and dependencies referenced dynamically outside its static import graph (icon collections consumed by UnoCSS at build time, plugin packages loaded via a runtime `import()` string). Prefer fixing the underlying gap or a scoped `ignoreDependencies`/`entry` override over a blanket `ignore`.
+`pnpm knip` finds unused files, dependencies, and exports across every workspace (config in `knip.jsonc`). It runs against source directly - no prior build needed. Most workspaces need no configuration; `knip.jsonc` only carries per-workspace overrides for cases knip's defaults can't infer on their own: a package's non-`index.ts` `exports` subpaths (knip's package.json→`dist`→`src` source mapping needs a workspace `tsconfig.json` `outDir`, which conflicts with this repo's cross-workspace `src/*.ts` imports, so multi-entry packages list their `exports`-mapped entry files explicitly instead - keep that list in sync with each `tsdown.config.ts`), config files knip's plugins don't discover in a nested location (a Next.js app rooted below the workspace root, `storybook-solidjs-vite` not matching the Storybook plugin trigger), and dependencies referenced dynamically outside its static import graph (icon collections consumed by UnoCSS at build time, plugin packages loaded via a runtime `import()` string). Prefer fixing the underlying gap or a scoped `ignoreDependencies`/`entry` override over a blanket `ignore`.
 
 ## Conventions
 
 - RPC functions must use `defineRpcFunction`; always namespace IDs `devframes:plugin:<slug>:<fn-name>` (matching the plugin's `@devframes/plugin-<slug>` package name).
-- **Stay validator-neutral.** `devframe` and every `@devframes/*` package must not introduce a preferred schema validator dependency — no `valibot`, `zod`, `arktype`, etc. in their runtime `dependencies`. `args`/`returns`/flag schemas are typed against [Standard Schema](https://standardschema.dev/) (`@standard-schema/spec`, types-only); first-party code that needs to author a schema uses the built-in zero-dep `devframe/utils/simple-schema` builder (deliberately minimal — not a general validator). JSON-schema conversion uses each schema's own Standard JSON Schema converter (`~standard.jsonSchema`, implemented by e.g. zod 4) when present and degrades to a permissive object otherwise — no converter library and no vendor dependency is required. Docs, by contrast, should point *users* at a real validator for their own integrations — recommend **valibot** (lightest) or **zod** (worth reusing if they already pull it via the JSON-render or MCP integrations).
+- **Stay validator-neutral.** `devframe` and every `@devframes/*` package must not introduce a preferred schema validator dependency - no `valibot`, `zod`, `arktype`, etc. in their runtime `dependencies`. `args`/`returns`/flag schemas are typed against [Standard Schema](https://standardschema.dev/) (`@standard-schema/spec`, types-only); first-party code that needs to author a schema uses the built-in zero-dep `devframe/utils/simple-schema` builder (deliberately minimal - not a general validator). JSON-schema conversion uses each schema's own Standard JSON Schema converter (`~standard.jsonSchema`, implemented by e.g. zod 4) when present and degrades to a permissive object otherwise - no converter library and no vendor dependency is required. Docs, by contrast, should point *users* at a real validator for their own integrations - recommend **valibot** (lightest) or **zod** (worth reusing if they already pull it via the JSON-render or MCP integrations).
 - Shared state via `devframe/utils/shared-state`; keep values serializable.
 - Utility imports use the package-path form `devframe/utils/*`, never relative `../utils/*`.
-- Dependencies go through the pnpm catalogs in `pnpm-workspace.yaml` (`cli`, `inlined`, `testing`, `types`) — add to a catalog and reference as `catalog:<name>`, don't pin versions in `package.json`.
+- Dependencies go through the pnpm catalogs in `pnpm-workspace.yaml` (`cli`, `inlined`, `testing`, `types`) - add to a catalog and reference as `catalog:<name>`, don't pin versions in `package.json`.
 
 ### Design system
 
-All five built-in plugins — and every example under `examples/` — share one design system, [`@antfu/design`](https://github.com/antfu/design), so they look and feel like one product across frameworks (Git is React/Next, terminals is Svelte, code-server is Vue, inspect is Vue, a11y is Solid, the examples are Preact/Next/vanilla). It's a dev dependency consumed at build time: its UnoCSS preset and shipped styles drive every surface, and its Vue components are the canonical reference every framework matches. There is no shared internal design package — each app wires the preset itself and owns its own component ports.
+All five built-in plugins - and every example under `examples/` - share one design system, [`@antfu/design`](https://github.com/antfu/design), so they look and feel like one product across frameworks (Git is React/Next, terminals is Svelte, code-server is Vue, inspect is Vue, a11y is Solid, the examples are Preact/Next/vanilla). It's a dev dependency consumed at build time: its UnoCSS preset and shipped styles drive every surface, and its Vue components are the canonical reference every framework matches. There is no shared internal design package - each app wires the preset itself and owns its own component ports.
 
-- **Respect the skills.** This design system is built to the `antfu` and `antfu-design` skills (UnoCSS-first, class-based semantic tokens, dual light/dark, anti-slop) — load and follow them when building or changing any UI here. The surfaces deliberately echo the upstream devtools they descend from; reference their UI/UX when in doubt: [`antfu/node-modules-inspector`](https://github.com/antfu/node-modules-inspector), [`antfu/vite-plugin-inspect`](https://github.com/antfu/vite-plugin-inspect), [`eslint/config-inspector`](https://github.com/eslint/config-inspector), and [`vitejs/devtools` → `packages/rolldown`](https://github.com/vitejs/devtools/tree/main/packages/rolldown).
-- **One preset, wired per app.** Each consumer's `uno.config.ts` composes the same stack: `presetAnthonyDesign({ primary })` (from `@antfu/design/unocss`, tuned to devframe's sage green) + a Wind base + `presetIcons()` (Phosphor) + `transformerDirectives()` + `transformerVariantGroup()`, plus the named `z-*` layers the nav/overlay surfaces reference (`z-nav`, `z-dropdown`, `z-tooltip`, `z-toast`, `z-modal-*`, `z-drawer-*`) — `presetAnthonyDesign` blocks plain `z-<number>` so every layer is named. The shared `design/uno.config.ts` exposes this as `designConfig` (the default, on `presetWind4()`) and a `createDesignConfig({ base })` factory; keep the block identical across apps so the surfaces stay consistent.
-- **Wind4 by default, Wind3 for web components.** Ordinary surfaces (plugins served in iframes, examples in the page) use `presetWind4()`. A surface whose stylesheet is injected into a **shadow root** (`@devframes/hub-ui`'s dock custom element, `@devframes/json-render-ui`'s renderer module) must build on **`presetWind3()`** instead — pass it via `createDesignConfig({ base: presetWind3() })`, or `presetWind3()` directly. Wind4 keeps `@antfu/design`'s theme in a document `:root {}` block and registers its `--un-*` custom properties with `@property { inherits: false }`, neither of which reaches a shadow tree — so its `color-mix(var(--colors-*))` semantic utilities (`bg-base`, `color-base`, …) resolve to nothing inside a shadow root. Wind3 bakes the same shortcuts to concrete `rgb()` + `.dark` variants, self-contained in the shadow tree. Two shadow-root gotchas the ahead-of-time CSS builder must compensate for (both handled in `packages/{hub-ui,json-render-ui}/scripts/build-css.ts`; the Vite `unocss/vite` path for standalone SPAs and Storybook is not affected):
-  - **Plain-vs-variant shortcut drop.** When a semantic shortcut also appears **variant-prefixed** in the scanned sources (e.g. `@antfu/design`'s Tabs emits `data-[state=active]:bg-base`), a single-pass `generate(tokens)` drops the *plain* `.bg-base` / `.color-base` rule — so emit the surface tokens (`design/uno.config.ts`'s exported `shadowSurfaceSafelist`) in a **dedicated `generate()` pass** and append them.
-  - **`--un-*` collision with a Wind4 host.** `@property` registrations are document-global, so a host page built on Wind4 registers `--un-bg-opacity` / `--un-border-opacity` / `--un-text-opacity` as `@property { syntax: '<percentage>' }` for the whole document, including our shadow tree — which invalidates the *unitless* values Wind3 writes (`--un-border-opacity: 0.13`) and collapses the dependent `rgb(… / var(--un-*))` color (a visibly wrong border/background). Rename every `--un-` in the shadow stylesheet to a private prefix with `design/uno.config.ts`'s exported `namespaceShadowCssVars()` so it's immune to whatever the host registered.
-- **Tokens are semantic shortcuts.** Build UI from `@antfu/design`'s class vocabulary — surfaces `bg-base` / `bg-secondary` / `bg-active`, text `color-base` / `color-muted` / `color-faint` / `color-active`, `border-base`, `op-fade` / `op-mute` — never a hardcoded palette. Import `@antfu/design/styles.css` (or cherry-pick `@antfu/design/styles/base.css` + `scrollbar.css`) once per page; dark mode is the `.dark` class on `<html>`, flipped from the OS preference in the SPA entry.
-- **Vue uses the components directly; other frameworks port them.** The Vue surface (inspect) imports components straight from `@antfu/design/components/*` (`ActionButton`, `ActionIconButton`, `DisplayBadge`, `LayoutTabs`, `LayoutToolbar`, `LayoutCard`, …). Every non-Vue surface ports the components it needs into its own framework — React in git and the Next examples, Svelte in terminals, Solid in a11y, Preact in the Preact examples, vanilla DOM helpers in the Vite hub — mirroring the upstream component's markup, classes and behavior so it renders identically. Port on demand: recreate only what a surface uses, and keep each port faithful to its `@antfu/design` source.
-- **One nav, three buttons, one tab selector — strictly.** Every surface opens with the same top bar — a `LayoutToolbar`-style row led by a brand block (a primary-tinted `i-ph:*` icon + the product name). Buttons come in exactly three forms: a **text button** (`ActionButton` → `btn-action` / `btn-primary`), a **bordered icon button** (`ActionIconButton` → `btn-icon-square`), and a **borderless icon button** (round `btn-icon`). Multi-view tools (inspect, git) switch views with the one shared segmented selector (`LayoutTabs` `variant="segment"`: a `bg-secondary` track with `data-[state=active]:bg-base` triggers). Don't invent bespoke nav bars, button shapes, or tab styles.
-- **Icons** come from the shared Phosphor set (`i-ph:*`, duotone preferred) via `presetIcons` — use them everywhere instead of per-consumer icon libraries or bespoke SVG.
+- **Respect the skills.** This design system is built to the `antfu` and `antfu-design` skills (UnoCSS-first, class-based semantic tokens, dual light/dark, anti-slop) - load and follow them when building or changing any UI here. The surfaces deliberately echo the upstream devtools they descend from; reference their UI/UX when in doubt: [`antfu/node-modules-inspector`](https://github.com/antfu/node-modules-inspector), [`antfu/vite-plugin-inspect`](https://github.com/antfu/vite-plugin-inspect), [`eslint/config-inspector`](https://github.com/eslint/config-inspector), and [`vitejs/devtools` → `packages/rolldown`](https://github.com/vitejs/devtools/tree/main/packages/rolldown).
+- **One preset, wired per app.** Each consumer's `uno.config.ts` composes the same stack: `presetAnthonyDesign({ primary })` (from `@antfu/design/unocss`, tuned to devframe's sage green) + a Wind base + `presetIcons()` (Phosphor) + `transformerDirectives()` + `transformerVariantGroup()`, plus the named `z-*` layers the nav/overlay surfaces reference (`z-nav`, `z-dropdown`, `z-tooltip`, `z-toast`, `z-modal-*`, `z-drawer-*`) - `presetAnthonyDesign` blocks plain `z-<number>` so every layer is named. The shared `design/uno.config.ts` exposes this as `designConfig` (the default, on `presetWind4()`) and a `createDesignConfig({ base })` factory; keep the block identical across apps so the surfaces stay consistent.
+- **Wind4 by default, Wind3 for web components.** Ordinary surfaces (plugins served in iframes, examples in the page) use `presetWind4()`. A surface whose stylesheet is injected into a **shadow root** (`@devframes/hub-ui`'s dock custom element, `@devframes/json-render-ui`'s renderer module) must build on **`presetWind3()`** instead - pass it via `createDesignConfig({ base: presetWind3() })`, or `presetWind3()` directly. Wind4 keeps `@antfu/design`'s theme in a document `:root {}` block and registers its `--un-*` custom properties with `@property { inherits: false }`, neither of which reaches a shadow tree - so its `color-mix(var(--colors-*))` semantic utilities (`bg-base`, `color-base`, …) resolve to nothing inside a shadow root. Wind3 bakes the same shortcuts to concrete `rgb()` + `.dark` variants, self-contained in the shadow tree. Two shadow-root gotchas the ahead-of-time CSS builder must compensate for (both handled in `packages/{hub-ui,json-render-ui}/scripts/build-css.ts`; the Vite `unocss/vite` path for standalone SPAs and Storybook is not affected):
+  - **Plain-vs-variant shortcut drop.** When a semantic shortcut also appears **variant-prefixed** in the scanned sources (e.g. `@antfu/design`'s Tabs emits `data-[state=active]:bg-base`), a single-pass `generate(tokens)` drops the *plain* `.bg-base` / `.color-base` rule - so emit the surface tokens (`design/uno.config.ts`'s exported `shadowSurfaceSafelist`) in a **dedicated `generate()` pass** and append them.
+  - **`--un-*` collision with a Wind4 host.** `@property` registrations are document-global, so a host page built on Wind4 registers `--un-bg-opacity` / `--un-border-opacity` / `--un-text-opacity` as `@property { syntax: '<percentage>' }` for the whole document, including our shadow tree - which invalidates the *unitless* values Wind3 writes (`--un-border-opacity: 0.13`) and collapses the dependent `rgb(… / var(--un-*))` color (a visibly wrong border/background). Rename every `--un-` in the shadow stylesheet to a private prefix with `design/uno.config.ts`'s exported `namespaceShadowCssVars()` so it's immune to whatever the host registered.
+- **Tokens are semantic shortcuts.** Build UI from `@antfu/design`'s class vocabulary - surfaces `bg-base` / `bg-secondary` / `bg-active`, text `color-base` / `color-muted` / `color-faint` / `color-active`, `border-base`, `op-fade` / `op-mute` - never a hardcoded palette. Import `@antfu/design/styles.css` (or cherry-pick `@antfu/design/styles/base.css` + `scrollbar.css`) once per page; dark mode is the `.dark` class on `<html>`, flipped from the OS preference in the SPA entry.
+- **Vue uses the components directly; other frameworks port them.** The Vue surface (inspect) imports components straight from `@antfu/design/components/*` (`ActionButton`, `ActionIconButton`, `DisplayBadge`, `LayoutTabs`, `LayoutToolbar`, `LayoutCard`, …). Every non-Vue surface ports the components it needs into its own framework - React in git and the Next examples, Svelte in terminals, Solid in a11y, Preact in the Preact examples, vanilla DOM helpers in the Vite hub - mirroring the upstream component's markup, classes and behavior so it renders identically. Port on demand: recreate only what a surface uses, and keep each port faithful to its `@antfu/design` source.
+- **One nav, three buttons, one tab selector - strictly.** Every surface opens with the same top bar - a `LayoutToolbar`-style row led by a brand block (a primary-tinted `i-ph:*` icon + the product name). Buttons come in exactly three forms: a **text button** (`ActionButton` → `btn-action` / `btn-primary`), a **bordered icon button** (`ActionIconButton` → `btn-icon-square`), and a **borderless icon button** (round `btn-icon`). Multi-view tools (inspect, git) switch views with the one shared segmented selector (`LayoutTabs` `variant="segment"`: a `bg-secondary` track with `data-[state=active]:bg-base` triggers). Don't invent bespoke nav bars, button shapes, or tab styles.
+- **Icons** come from the shared Phosphor set (`i-ph:*`, duotone preferred) via `presetIcons` - use them everywhere instead of per-consumer icon libraries or bespoke SVG.
 - **A surface keeping its own component CSS** (inspect, a11y) sources every color from `@antfu/design`'s semantic shortcuts via `--at-apply` (expanded by `transformerDirectives`) rather than hardcoding a palette, so it tracks the shared theme and the `.dark` class.
 - **Plain `.ts`/vanilla views** must opt `.ts` into UnoCSS extraction (`content.pipeline.include` for Vite, or `content.filesystem` globs for the `@unocss/postcss` setup Next uses), since UnoCSS only scans framework files by default.
-- **Storybook.** Each plugin's storybook follows one setup — co-located `*.stories.*`, a `viteFinal` that adds the framework plugin + `unocss/vite` (pointed at the plugin's `uno.config`), `@antfu/design/styles.css`, a `theme` toggle on the `.dark` class, and a `bg-base color-base` decorator. The Vue surface (inspect, `@storybook/vue3-vite`) showcases the `@antfu/design` components in real use — the visual reference the React/Svelte/Solid/vanilla ports match, mirroring [`@antfu/design`'s own storybook](https://github.com/antfu/design/tree/main/storybook).
+- **Storybook.** Each plugin's storybook follows one setup - co-located `*.stories.*`, a `viteFinal` that adds the framework plugin + `unocss/vite` (pointed at the plugin's `uno.config`), `@antfu/design/styles.css`, a `theme` toggle on the `.dark` class, and a `bg-base color-base` decorator. The Vue surface (inspect, `@storybook/vue3-vite`) showcases the `@antfu/design` components in real use - the visual reference the React/Svelte/Solid/vanilla ports match, mirroring [`@antfu/design`'s own storybook](https://github.com/antfu/design/tree/main/storybook).
 
 ### Devframe design principles
 
 These reinforce devframe's positioning as "the container for one devtool integration, portable to multiple viewers". When in doubt, err on the side of "devframe provides primitives, the hub provides UX".
 
-- **Single-integration scope.** Devframe describes one tool. If a feature only makes sense when multiple tools share a UI — docking, a unified command palette, cross-tool toasts, terminal aggregation — it belongs in a hub package, not here.
-- **Headless by default.** No default startup banners, no opinionated logging to stdout, no default styling. Provide hooks (`onReady`, `cli.configure`, etc.); let the application print its own branding. Structured diagnostics via `nostics` are fine — ad-hoc `console.log`s baked into adapters are not.
+- **Single-integration scope.** Devframe describes one tool. If a feature only makes sense when multiple tools share a UI - docking, a unified command palette, cross-tool toasts, terminal aggregation - it belongs in a hub package, not here.
+- **Headless by default.** No default startup banners, no opinionated logging to stdout, no default styling. Provide hooks (`onReady`, `cli.configure`, etc.); let the application print its own branding. Structured diagnostics via `nostics` are fine - ad-hoc `console.log`s baked into adapters are not.
 - **Mount path depends on adapter context.** Given `id: 'foo'`, the default mount path is `/__foo/` for *hosted* adapters (`vite`, `embedded`) and `/` for *standalone* adapters (`cli`, `spa`, `build`). Authors override via `DevframeDefinition.basePath`. Don't hardcode mount paths in adapter code paths that may run standalone.
-- **SPAs own their basePath at runtime.** Build SPAs with relative asset paths (`vite.base: './'`); discover the effective base in the browser from the executing script's location / `document.baseURI`. `createBuild` / `createSpa` copy SPA output verbatim — no HTML rewriting, no build-time `--base` injection. The client (`connectDevframe`) resolves `.connection.json` relative to the runtime base automatically.
-- **CLI flags compose from both sides.** The `cac` instance backing `createCac` is exposed both to the `DevframeDefinition` (`cli.configure(cli)`) — for capabilities contributed by the tool itself — and to the `createCac` caller — for flags added at the final assembly stage. Parsed flag values are forwarded to `setup(ctx, { flags })`. Never hardcode domain-specific flags into `createCac`.
+- **SPAs own their basePath at runtime.** Build SPAs with relative asset paths (`vite.base: './'`); discover the effective base in the browser from the executing script's location / `document.baseURI`. `createBuild` / `createSpa` copy SPA output verbatim - no HTML rewriting, no build-time `--base` injection. The client (`connectDevframe`) resolves `.connection.json` relative to the runtime base automatically.
+- **CLI flags compose from both sides.** The `cac` instance backing `createCac` is exposed both to the `DevframeDefinition` (`cli.configure(cli)`) - for capabilities contributed by the tool itself - and to the `createCac` caller - for flags added at the final assembly stage. Parsed flag values are forwarded to `setup(ctx, { flags })`. Never hardcode domain-specific flags into `createCac`.
 
 ### Hub example parity
 
-`examples/hub-vite/` (Vite plugin + vanilla client) and `examples/hub-next/` (Next.js App Router + React client) are the two reference hosts, and they stay at **feature parity**. They mount the same set of plugins and demo devframes, expose the same dock rail / iframe stage / subsystem drawer, and speak the same hub protocol — the only differences should be the host framework's own plumbing (how static assets are mounted, how the side-car server starts, how the client is rendered).
+`examples/hub-vite/` (Vite plugin + vanilla client) and `examples/hub-next/` (Next.js App Router + React client) are the two reference hosts, and they stay at **feature parity**. They mount the same set of plugins and demo devframes, expose the same dock rail / iframe stage / subsystem drawer, and speak the same hub protocol - the only differences should be the host framework's own plumbing (how static assets are mounted, how the side-car server starts, how the client is rendered).
 
 Any change to one lands in the other in the same PR: adding a dock, wiring a new hub subsystem, changing the drawer layout, adopting a new client-runtime API. Their READMEs mirror each other too. If a capability genuinely can't exist on one host, say so explicitly in both READMEs rather than letting the examples silently drift.
 
 ## Structured Diagnostics (Error Codes)
 
-All node-side warnings and errors use structured diagnostics via [`nostics`](https://www.npmjs.com/package/nostics). Never use raw `console.warn`, `console.error`, or `throw new Error` with ad-hoc messages in node-side code — always define a coded diagnostic.
+All node-side warnings and errors use structured diagnostics via [`nostics`](https://www.npmjs.com/package/nostics). Never use raw `console.warn`, `console.error`, or `throw new Error` with ad-hoc messages in node-side code - always define a coded diagnostic.
 
 Prefix: **`DF`**. Codes are sequential 4-digit numbers (e.g. `DF0033`). Check the existing diagnostics file to find the next available number.
 
 Range allocation:
-- `DF00xx–DF07xx` — `devframe` core (RPC, host, storage, streams, …)
-- `DF80xx–DF89xx` — `@devframes/hub`. Sub-ranges:
-  - `DF80xx` — hub context / lifecycle
-  - `DF81xx` — docks
-  - `DF82xx` — terminals
-  - `DF83xx` — messages
-  - `DF84xx` — commands
-  - `DF85xx` — built-in RPC commands
+- `DF00xx–DF07xx` - `devframe` core (RPC, host, storage, streams, …)
+- `DF80xx–DF89xx` - `@devframes/hub`. Sub-ranges:
+  - `DF80xx` - hub context / lifecycle
+  - `DF81xx` - docks
+  - `DF82xx` - terminals
+  - `DF83xx` - messages
+  - `DF84xx` - commands
+  - `DF85xx` - built-in RPC commands
 
 ### Adding a new error
 
@@ -108,7 +108,7 @@ Range allocation:
    ```ts
    import { diagnostics } from './diagnostics'
 
-   // For thrown errors — always prefix with `throw` for TypeScript control flow:
+   // For thrown errors - always prefix with `throw` for TypeScript control flow:
    throw diagnostics.DF0033({ id, reason })
 
    // For reported warnings/errors (not thrown). The default console method is `warn`;
@@ -138,10 +138,10 @@ Range allocation:
    How to resolve it.
 
    ## Source
-   - [`src/node/filename.ts`](...) — `functionName()` throws this when …
+   - [`src/node/filename.ts`](...) - `functionName()` throws this when …
    ```
 
-   The `## Source` section lists each call site that emits the code, with a one-line role per entry. Don't list the `diagnostics.ts` definition — it's implied.
+   The `## Source` section lists each call site that emits the code, with a one-line role per entry. Don't list the `diagnostics.ts` definition - it's implied.
 
 ### Scope
 
@@ -162,7 +162,7 @@ These rules apply to every Markdown file under `docs/` once it exists (error ref
 
 ### 1. Positive framing
 
-Describe what *is*, not what *isn't*. Replace constructions like "X is for Y, not Z" or "there is no X for Y" with the closest natural positive phrasing. Don't document features that don't exist yet — release notes are the place for "now supported" announcements; docs describe what works today.
+Describe what *is*, not what *isn't*. Replace constructions like "X is for Y, not Z" or "there is no X for Y" with the closest natural positive phrasing. Don't document features that don't exist yet - release notes are the place for "now supported" announcements; docs describe what works today.
 
 - ❌ "Build mode only; dev mode is not supported yet."
 - ✅ "Analyses production builds in Vite 8+."
@@ -171,13 +171,13 @@ Describe what *is*, not what *isn't*. Replace constructions like "X is for Y, no
 
 Callouts (`> [!NOTE]`, `> [!TIP]`, `> [!INFO]`, `::: tip`, etc.) interrupt the reading flow and should earn their visual weight. Default to prose; reach for a callout only for genuinely critical material.
 
-- **`[!WARNING]` / `[!DANGER]`** — security hazards, footguns, breaking-change pitfalls, experimental-API stability warnings. Keep these.
-- **Bad-practice "✗" inline blocks** — fine inside code samples to contrast with a `✓` good example.
-- **Everything else** — fold into the surrounding prose.
+- **`[!WARNING]` / `[!DANGER]`** - security hazards, footguns, breaking-change pitfalls, experimental-API stability warnings. Keep these.
+- **Bad-practice "✗" inline blocks** - fine inside code samples to contrast with a `✓` good example.
+- **Everything else** - fold into the surrounding prose.
 
 ### 3. Concise and precise
 
-Trim filler intros, redundant cross-links (one link per page is enough — sidebars handle navigation), and code samples that demonstrate more than the point being made. Lead each page with one sentence that says what the reader can build with this. Strip out promises about future work, marketing language ("powerful", "seamless"), and exposition that the surrounding code already conveys.
+Trim filler intros, redundant cross-links (one link per page is enough - sidebars handle navigation), and code samples that demonstrate more than the point being made. Lead each page with one sentence that says what the reader can build with this. Strip out promises about future work, marketing language ("powerful", "seamless"), and exposition that the surrounding code already conveys.
 
 ### What goes where
 

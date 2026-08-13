@@ -92,7 +92,7 @@ export function App() {
           }
         }
         catch {
-          // Stream ended with error — leave whatever we accumulated.
+          // Stream ended with error - leave whatever we accumulated.
         }
       })()
     }
@@ -212,7 +212,7 @@ export function App() {
                     {' '}
                     <kbd class="rounded border border-base bg-secondary px-1.5 py-0.5 text-xs font-mono">Enter</kbd>
                     {' '}
-                    — or pick a demo prompt below.
+                    - or pick a demo prompt below.
                   </p>
                 </div>
               )

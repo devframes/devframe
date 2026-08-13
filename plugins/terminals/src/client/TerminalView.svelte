@@ -62,7 +62,7 @@
       // Readonly sessions are line-oriented log streams. Own pipe sessions get
       // their bare `\n` normalized to `\r\n` server-side, but sessions
       // aggregated from other devframes via the hub stream their raw output
-      // here unfiltered — a lone `\n` would then leave the cursor's column
+      // here unfiltered - a lone `\n` would then leave the cursor's column
       // untouched and render a staircase. `convertEol` makes xterm treat `\n`
       // as `\r\n`, fixing both (a no-op where CRLF already arrived). Interactive
       // PTY sessions keep it off so full-screen TUIs control the cursor exactly.

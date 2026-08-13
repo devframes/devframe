@@ -7,6 +7,12 @@
     "module": "esnext",
     "moduleResolution": "Bundler",
     "paths": {
+      "devframe/rpc/transports/sse-client": [
+        "./packages/devframe/src/rpc/transports/sse-client.ts"
+      ],
+      "devframe/rpc/transports/sse-server": [
+        "./packages/devframe/src/rpc/transports/sse-server.ts"
+      ],
       "devframe/rpc/transports/ws-bun": [
         "./packages/devframe/src/rpc/transports/ws-bun.ts"
       ],

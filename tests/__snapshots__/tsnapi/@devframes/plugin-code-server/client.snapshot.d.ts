@@ -16,6 +16,7 @@ export { CodeServerSharedState }
 export { CodeServerStartResult }
 export { CodeServerStatus }
 export { CodeServerStatusResult }
+export { ConnectionMeta }
 export { DevframeConnectionStatus }
 export { DevframeRpcClient }
 export { STATE_KEY }

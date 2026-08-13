@@ -2,7 +2,7 @@
   "name": "@devframes/plugin-messages",
   "type": "module",
   "version": "0.8.2",
-  "description": "Devframe plugin — the hub message feed as a portable panel: browse, filter, and dismiss `ctx.messages` entries from any hub host.",
+  "description": "Devframe plugin for browsing, filtering, and dismissing the hub message feed.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/devframes/devframe#readme",

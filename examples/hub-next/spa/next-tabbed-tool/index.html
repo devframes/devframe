@@ -57,8 +57,8 @@
           One iframe, many hub docks. This SPA hosts its own internal views
           (<span class="tag">Overview · Components · Timeline · Settings</span>)
           and exposes each as a first-class hub dock that shares
-          <em>this single iframe</em>. Switching docks soft-navigates here — no
-          reload — via the <code>devframe:frame-nav</code> postMessage protocol.
+          <em>this single iframe</em>. Switching docks soft-navigates here - no
+          reload - via the <code>devframe:frame-nav</code> postMessage protocol.
         </p>
         <div class="grid">
           <div class="card"><b>Shared frame</b><span>frameId · next-tabbed-tool</span></div>
@@ -82,18 +82,18 @@
       <section class="view" data-view="timeline">
         <h1>Timeline</h1>
         <p>Navigate <em>inside</em> this frame (the tab bar above) and watch the
-          hub's active dock follow — the frame posts <code>navigated</code> back.</p>
+          hub's active dock follow - the frame posts <code>navigated</code> back.</p>
         <ol>
-          <li>10:02 — build started</li>
-          <li>10:02 — 214 modules transformed</li>
-          <li>10:03 — page reload</li>
+          <li>10:02 - build started</li>
+          <li>10:02 - 214 modules transformed</li>
+          <li>10:03 - page reload</li>
         </ol>
       </section>
 
       <section class="view" data-view="settings">
         <h1>Settings</h1>
         <p>The manifest each tab reports (<code>title</code>, <code>icon</code>,
-          <code>navTarget</code>) becomes a client-only dock in the hub — never
+          <code>navTarget</code>) becomes a client-only dock in the hub - never
           written to the <code>devframe:docks</code> shared state.</p>
         <div class="grid">
           <div class="card"><b>Theme</b><span>follows OS</span></div>
@@ -168,7 +168,7 @@
       })
 
       render()
-      // Announce ourselves on load (the host also sends `hello` — either wins).
+      // Announce ourselves on load (the host also sends `hello` - either wins).
       post({ type: 'ready', tabs: manifest(), current })
     </script>
   </body>

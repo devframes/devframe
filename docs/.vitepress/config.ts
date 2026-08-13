@@ -29,6 +29,7 @@ function guideItems(prefix: string) {
     { text: 'When Clauses', link: `${prefix}/guide/when-clauses` },
     { text: 'Structured Diagnostics', link: `${prefix}/guide/diagnostics` },
     { text: 'Client', link: `${prefix}/guide/client` },
+    { text: 'Transports', link: `${prefix}/guide/transports` },
     { text: 'Security', link: `${prefix}/guide/security` },
     { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
     { text: 'Hub', link: `${prefix}/guide/hub` },
@@ -129,7 +130,7 @@ export function devframeNav(prefix = ''): DefaultTheme.NavItem[] {
       text: 'Guide',
       items: [
         ...guideItems(prefix),
-        { text: 'Examples', items: examplesItems(prefix) },
+        { text: 'Examples', link: `${prefix}/examples/` },
       ],
     },
     {

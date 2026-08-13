@@ -1,6 +1,6 @@
 // The "app under test": an intentionally-inaccessible, client-side-routed mini
 // app the a11y agent scans. Each route seeds a different family of axe
-// violations, and navigating between them (History API pushState — which the
+// violations, and navigating between them (History API pushState - which the
 // a11y agent patches) exercises the inspector's per-route tracking.
 //
 // Keep the chrome (the route nav) accessible so the deliberate violations stay
@@ -9,7 +9,7 @@
 interface Route {
   path: string
   label: string
-  /** What the route is designed to make axe flag — shown as a hint. */
+  /** What the route is designed to make axe flag - shown as a hint. */
   hint: string
   render: () => string
 }
@@ -70,7 +70,7 @@ const ROUTES: Route[] = [
     render: () => `
       <h1 style="color:#b8b8b8;background:#ffffff">Low-contrast heading</h1>
       <p style="color:#a9a9a9;background:#ffffff">
-        This paragraph sets light grey text on a white background — well below
+        This paragraph sets light grey text on a white background - well below
         the WCAG AA contrast ratio for body text.
       </p>
       <span style="color:#f0c419;background:#ffffff;padding:4px 8px">

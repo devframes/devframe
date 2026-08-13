@@ -19,7 +19,7 @@ export default defineDevframe({
     command: 'devframe-files-inspector',
     port: 9876,
     distDir,
-    // Single-user localhost demo — skip the trust handshake so the served
+    // Single-user localhost demo - skip the trust handshake so the served
     // SPA can call RPC without an OTP round-trip.
     auth: false,
     // Serve the agent surface over the dev server's `/__mcp` route and
@@ -34,7 +34,7 @@ export default defineDevframe({
       my.rpc.register(fn)
 
     // Gateway tool: returns the location of this tool's own docs instead of
-    // proxying their content — the agent reads the files with its own tools.
+    // proxying their content - the agent reads the files with its own tools.
     ctx.agent.registerTool({
       id: `${NAMESPACE}:docs`,
       description: 'Locate the Files Inspector\'s documentation on disk. Call before answering questions about how this tool works, then read the returned files directly.',

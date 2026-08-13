@@ -1,4 +1,4 @@
-// The host app is deliberately trivial — the devtools ride along via the
+// The host app is deliberately trivial - the devtools ride along via the
 // injected `/__devframes/embedded.js` script (see rsbuild.config.ts). The
 // floating dock mounts itself; the standalone viewer lives at /__devframes/.
 const app = document.querySelector('#root') ?? document.body

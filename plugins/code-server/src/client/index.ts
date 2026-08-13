@@ -1,8 +1,9 @@
 import type { DevframeConnectionStatus, DevframeRpcClient, DevframeRpcClientOptions } from 'devframe/client'
+import type { ConnectionMeta } from 'devframe/types'
 import { connectDevframe } from 'devframe/client'
 
 export { STATE_KEY } from '../constants'
-export type { DevframeConnectionStatus, DevframeRpcClient }
+export type { ConnectionMeta, DevframeConnectionStatus, DevframeRpcClient }
 export type {
   CodeServerBackend,
   CodeServerConnect,

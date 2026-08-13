@@ -32,13 +32,13 @@ const builtinDevframes = [
 ]
 
 // The one mount base, referenced by both `initHub({ base })` and the injected
-// embedded-script URL — no duplicated string literal.
+// embedded-script URL - no duplicated string literal.
 const base = DEVFRAMES_HUB_BASE
 
 // The minimal Rsbuild host: one `initHub()` call mounted into the dev
 // server's middleware stack. It's created lazily inside `server.setup` (not
 // at module scope) so merely importing this config never spawns the hub's
-// side-car server, and the `??=` keeps a re-run reusing the live one —
+// side-car server, and the `??=` keeps a re-run reusing the live one -
 // config readers (Rsbuild, knip, tests) stay side-effect free. `initHub` runs
 // here in Rsbuild's Node process, never bundled into the browser, so
 // `createUi()`'s prebuilt assets and the plugins' node code work unchanged;
@@ -98,7 +98,7 @@ export default defineConfig({
   },
   html: {
     title: 'Hub Rsbuild (minimal)',
-    // The floating-dock bootstrap — one dev-only module script, the whole
+    // The floating-dock bootstrap - one dev-only module script, the whole
     // embedded integration.
     tags: [
       { tag: 'script', attrs: { type: 'module', src: `${base}embedded.js` }, append: true },

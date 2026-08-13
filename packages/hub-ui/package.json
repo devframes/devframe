@@ -2,7 +2,7 @@
   "name": "@devframes/hub-ui",
   "type": "module",
   "version": "0.8.1",
-  "description": "Reference UI for @devframes/hub \u2014 the floating dock and standalone viewer filling the hub's ui slot.",
+  "description": "Reference UI for the devframe hub, providing the floating dock and standalone viewer.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/devframes/devframe#readme",

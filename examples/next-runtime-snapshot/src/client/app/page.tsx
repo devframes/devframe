@@ -19,7 +19,7 @@ function StatusBar() {
       {error
         ? (
             <span className="text-error">
-              connection failed —
+              connection failed -
               {' '}
               {error}
             </span>

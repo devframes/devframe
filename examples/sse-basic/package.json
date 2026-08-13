@@ -1,0 +1,22 @@
+{
+  "name": "sse-basic",
+  "type": "module",
+  "version": "0.8.2",
+  "private": true,
+  "description": "Minimal devframe that carries every RPC frame over plain HTTP with SSE.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/sse-basic",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@antfu/design": "catalog:frontend",
+    "devframe": "workspace:*"
+  },
+  "devDependencies": {
+    "@iconify-json/ph": "catalog:frontend",
+    "@types/node": "catalog:types",
+    "unocss": "catalog:frontend",
+    "vite": "catalog:build"
+  }
+}

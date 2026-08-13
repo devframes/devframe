@@ -15,7 +15,7 @@ jobs:
     with:
       build: pnpm run ci:build
       # The Build step above already produced a fresh dist/ for this exact
-      # checkout, so skip `test`'s own `build && vitest` — running plain
+      # checkout, so skip `test`'s own `build && vitest` - running plain
       # vitest halves the number of full-monorepo `turbo run build` passes
       # per job, which is where the flaky Windows native-toolchain crash
       # (see scripts/ci-retry.ts) shows up.

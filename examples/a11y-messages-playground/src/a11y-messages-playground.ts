@@ -16,14 +16,14 @@ export interface A11yMessagesPlaygroundOptions {
   devframes?: DevframeDefinition[]
   /**
    * Per-dock client scripts, keyed by devframe id. Attached to the mounted
-   * iframe dock so the hub client runtime imports them into the host page —
+   * iframe dock so the hub client runtime imports them into the host page -
    * this is how the a11y inspector's in-page agent gets into the page it scans.
    */
   clientScripts?: Record<string, ClientScriptEntry>
 }
 
 /**
- * A tiny Vite plugin that runs `@devframes/hub` inside the Vite dev server —
+ * A tiny Vite plugin that runs `@devframes/hub` inside the Vite dev server -
  * the same shape as `examples/hub-vite`, trimmed to the two plugins this
  * playground pairs (a11y + messages). One `initHub()` call assembles the whole
  * hub: it mounts each devframe as a dock (attaching the a11y agent as its
@@ -45,7 +45,7 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
     },
 
     async configureServer(server: ViteDevServer) {
-      // Vite re-invokes `configureServer` on restart — tear the old hub down so
+      // Vite re-invokes `configureServer` on restart - tear the old hub down so
       // we don't leak the WS port or leave a ghost registry record behind.
       await hub?.close().catch(() => {})
 

@@ -69,6 +69,22 @@ export interface DevframeWsOptions {
 }
 
 /**
+ * Controls the SSE RPC endpoint — the WebSocket-free transport for hosts
+ * and proxies where the upgrade isn't available. It rides whatever HTTP
+ * surface serves the instance (the same one serving `__connection.json`),
+ * so a relative `route` always resolves; there is no port plumbing of its
+ * own. Enabled by default alongside the WebSocket; pass `sse: false` to
+ * disable, or `ws: false` to run SSE-only (`backend: 'sse'`).
+ */
+export interface DevframeSseOptions {
+  /**
+   * Route segment the SSE endpoint binds to and is advertised at, relative
+   * to the SPA base. Default: `__sse`.
+   */
+  route?: string
+}
+
+/**
  * Configuration for the route-based MCP server mounted alongside the dev
  * server (opt-in via {@link DevframeCliOptions.mcp}). The endpoint speaks
  * the MCP Streamable-HTTP transport over the same origin as the SPA,
@@ -159,9 +175,16 @@ export interface DevframeCliOptions {
   /**
    * How the browser reaches the RPC WebSocket. Defaults to sharing the HTTP
    * port on the `__ws` route. See {@link DevframeWsOptions} for the
-   * different-port and remote-origin variants.
+   * different-port and remote-origin variants. Pass `false` to serve no
+   * WebSocket at all — clients connect over SSE instead (`backend: 'sse'`).
    */
-  ws?: DevframeWsOptions
+  ws?: DevframeWsOptions | false
+  /**
+   * How the browser reaches the SSE RPC endpoint — enabled by default
+   * alongside the WebSocket as the more portable transport. Pass `false`
+   * to disable, or a {@link DevframeSseOptions} to change its route.
+   */
+  sse?: boolean | DevframeSseOptions
   /**
    * Capability-side CAC hook. Called with the CAC instance after the
    * adapter registers its built-in commands (`build` / `spa` / `mcp`)

@@ -17,6 +17,30 @@ import { dockIconSvg } from './icons'
 
 const HUB_BASE = '/__devframes/'
 
+// ── transport preference (`?transport=` param) ──────────────────────────────
+// The hub serves both live transports (WS at `__ws`, SSE at `__sse`); the
+// client's `transport` option picks one, `auto` trusting the server's
+// advertisement. A connected client has no live switch, so the toggle writes
+// the `?transport=` param and reloads to reconnect on the pinned transport.
+const TRANSPORT_PREFS = ['auto', 'websocket', 'sse'] as const
+type TransportPref = (typeof TRANSPORT_PREFS)[number]
+
+function readTransportPref(): TransportPref {
+  const raw = new URLSearchParams(window.location.search).get('transport')
+  return (TRANSPORT_PREFS as readonly string[]).includes(raw ?? '') ? raw as TransportPref : 'auto'
+}
+function applyTransportPref(pref: TransportPref): void {
+  const url = new URL(window.location.href)
+  if (pref === 'auto')
+    url.searchParams.delete('transport')
+  else
+    url.searchParams.set('transport', pref)
+  window.location.href = url.href
+}
+function transportLabel(pref: TransportPref): string {
+  return pref === 'websocket' ? 'WS' : pref === 'sse' ? 'SSE' : 'Auto'
+}
+
 interface Status {
   text: string
   kind?: 'ready' | 'error'
@@ -32,8 +56,8 @@ function isIframeDock(d: DevframeDockEntry): d is IframeDock {
 
 // Dock types this shell renders natively (or that carry no panel view of
 // their own). Everything else routes through the hub's dock-renderer
-// registry — the local React renderer registered at boot, or a prebuilt
-// module from the hub's renderer manifest — and a type nothing covers shows
+// registry - the local React renderer registered at boot, or a prebuilt
+// module from the hub's renderer manifest - and a type nothing covers shows
 // the missing-renderer fallback.
 const NATIVE_TYPES = new Set(['action', 'launcher', 'group', '~builtin'])
 function isRenderableDock(d: DevframeDockEntry): boolean {
@@ -60,7 +84,7 @@ function createClientNotesUrl(): string {
 </style>
 <h1>Client-only dock</h1>
 <p>This dock was registered in the browser with
-  <code>host.context.docks.register()</code>. It lives only in this page — it
+  <code>host.context.docks.register()</code>. It lives only in this page - it
   never enters the <code>devframe:docks</code> shared state, so it is not synced
   to the hub server or to any other connected viewer.</p>
 <p>Patch it live through the returned handle with <code>update()</code> (its
@@ -68,12 +92,12 @@ function createClientNotesUrl(): string {
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 }
 
-// An *interactive* json-render spec synthesized entirely in the browser — the
+// An *interactive* json-render spec synthesized entirely in the browser - the
 // client-only counterpart to a server-authored view. Interactivity needs no
 // server and no shared state: `{ $bindState }` inputs write straight into the
 // view's own `state`, `{ $state }` reads mirror it live, and the buttons use the
 // framework's built-in state actions (`pushState` / `setState`) to mutate that
-// state — every change re-renders through the mini React registry.
+// state - every change re-renders through the mini React registry.
 function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec {
   return {
     root: 'root',
@@ -231,6 +255,8 @@ function DockIcon({ entry }: { entry: DevframeDockEntry }) {
 
 export default function Page() {
   const [status, setStatus] = useState<Status>({ text: 'Connecting...' })
+  const [transport, setTransport] = useState<string | null>(null)
+  const [transportPref, setTransportPref] = useState<TransportPref>('auto')
   const [docks, setDocks] = useState<DevframeDockEntry[]>([])
   const [commands, setCommands] = useState<DevframeCommandEntry[]>([])
   const [messages, setMessages] = useState<DevframeMessageEntry[]>([])
@@ -255,21 +281,24 @@ export default function Page() {
 
     async function run() {
       try {
-        const rpc = await connectDevframe({ baseURL: HUB_BASE })
+        const pref = readTransportPref()
+        setTransportPref(pref)
+        const rpc = await connectDevframe({ baseURL: HUB_BASE, transport: pref })
         if (cancelled)
           return
 
         rpcRef.current = rpc
-        setStatus({ text: `Connected: backend=${rpc.connectionMeta.backend}`, kind: 'ready' })
+        setTransport(rpc.transport)
+        setStatus({ text: `Connected: transport=${rpc.transport}`, kind: 'ready' })
 
         // Boot the framework-level client host: it builds the shared client
-        // context and imports each dock's client script into this page — e.g.
+        // context and imports each dock's client script into this page - e.g.
         // the a11y inspector's in-page agent, which then scans this hub live.
         //
         // Register a mini React json-render renderer. The hub also publishes
         // the reference Vue frontend through its renderer manifest
         // (`initHub({ renderers: [jsonRenderUiRenderer()] })`), but a locally
-        // registered renderer takes precedence — witnessing that any frontend
+        // registered renderer takes precedence - witnessing that any frontend
         // implementing the `JsonRenderDockRenderer` contract can replace the
         // reference one. Delete this `renderers` option and the same dock
         // renders through the manifest-served Vue module instead.
@@ -281,7 +310,7 @@ export default function Page() {
         const ctx = clientHost.context
 
         // Two *client-only* docks (an iframe + an interactive inline
-        // json-render view), local to this page — never entering
+        // json-render view), local to this page - never entering
         // `devframe:docks` shared state, merged into `ctx.docks.entries`.
         const disposeClientDocks = registerClientDocks(ctx)
 
@@ -296,7 +325,7 @@ export default function Page() {
 
         // Mirror the merged dock list (server docks + client-only docks) and the
         // host's current selection into React state. Selection is owned by the
-        // client host (`switchEntry`) — that is what lets the frame-nav adapter
+        // client host (`switchEntry`) - that is what lets the frame-nav adapter
         // hear a dock's `entry:activated` and drive shared-frame soft-navigation.
         const syncDocks = () => setDocks([...ctx.docks.entries])
         const syncSelected = () => setSelectedDockId(ctx.docks.selectedId)
@@ -353,8 +382,8 @@ export default function Page() {
 
   const renderableDocks = useMemo(() => docks.filter(isRenderableDock), [docks])
 
-  // Wire each dock's state once so a selection change — from a click, or from
-  // the frame-nav adapter reacting to in-frame navigation — updates the UI.
+  // Wire each dock's state once so a selection change - from a click, or from
+  // the frame-nav adapter reacting to in-frame navigation - updates the UI.
   useEffect(() => {
     const ctx = hostRef.current?.context
     if (!ctx)
@@ -417,8 +446,8 @@ export default function Page() {
   }, [selectedDockId, docks, selectedDock])
 
   // Mount a renderer dock (e.g. json-render) into the panel via the client
-  // host's renderer registry — the local React renderer, or a prebuilt module
-  // lazy-imported from the hub's renderer manifest — disposing when the
+  // host's renderer registry - the local React renderer, or a prebuilt module
+  // lazy-imported from the hub's renderer manifest - disposing when the
   // selection changes. Each mount gets a fresh container element (a
   // self-styling renderer may attach a shadow root to it); the typed mount
   // result drives the missing-renderer / load-error fallback below.
@@ -532,7 +561,30 @@ export default function Page() {
         </main>
       </div>
 
-      <footer className="grid grid-cols-3 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto">
+      <footer className="grid grid-cols-4 shrink-0 gap-5 border-t border-base bg-base px4 py3 max-h-30vh of-auto">
+        <section className="min-w-0">
+          <h2 className={titleClass}>Transport</h2>
+          <p className="m0 rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">
+            {transport
+              ? `Connected over ${transport} (${transportPref === 'auto' ? 'auto-selected' : 'pinned'})`
+              : 'Connecting…'}
+          </p>
+          {/* Segmented selector (LayoutTabs variant="segment" port): a
+              bg-secondary track whose active trigger gets bg-base. */}
+          <div className="mt2.5 inline-flex gap-0.5 rounded-lg bg-secondary p0.5">
+            {TRANSPORT_PREFS.map(pref => (
+              <button
+                key={pref}
+                type="button"
+                onClick={() => applyTransportPref(pref)}
+                className={`rounded-md border-none bg-transparent px2 py0.5 text-xs font-medium cursor-pointer ${pref === transportPref ? 'bg-base color-active shadow-sm' : 'color-muted hover:color-base'}`}
+              >
+                {transportLabel(pref)}
+              </button>
+            ))}
+          </div>
+        </section>
+
         <section className="min-w-0">
           <h2 className={titleClass}>Commands</h2>
           <ul className="m0 flex flex-col list-none gap-1.5 p0">

@@ -103,8 +103,33 @@ export interface ConnectionMetaWebsocket {
   host?: string
 }
 
+/**
+ * Object form of {@link ConnectionMeta.sse} — the same proxy-safe shape and
+ * resolution rules as {@link ConnectionMetaWebsocket}, producing an
+ * `http(s)://` endpoint instead of a `ws(s)://` one. Set `port` (and/or
+ * `host`) only when the SSE endpoint genuinely lives on a different origin
+ * than the page, e.g. a side-car server on its own port.
+ */
+export interface ConnectionMetaSse {
+  /**
+   * Path to the SSE endpoint. Relative paths (the default, e.g. `__sse`)
+   * are resolved against `__connection.json`'s location; absolute paths
+   * (`/__sse`) resolve against the page origin.
+   */
+  path?: string
+  /** Override the port. Combined with the page hostname unless `host` is set. */
+  port?: number
+  /** Override the host (`hostname[:port]`). Use for a fully cross-origin endpoint. */
+  host?: string
+}
+
 export interface ConnectionMeta {
-  backend: 'websocket' | 'static'
+  /**
+   * The server's primary live-RPC transport (`websocket` / `sse`), `static`
+   * for a pre-computed RPC dump with no live server, or `none` for a server
+   * exposing no RPC transport at all (e.g. an MCP-only deployment).
+   */
+  backend: 'websocket' | 'sse' | 'static' | 'none'
   /**
    * WebSocket endpoint, resolved by the client into a `ws(s)://` URL:
    *
@@ -115,6 +140,17 @@ export interface ConnectionMeta {
    *     URL with its protocol swapped, or a path resolved same-origin.
    */
   websocket?: number | string | ConnectionMetaWebsocket
+  /**
+   * SSE endpoint (`GET` opens the event stream, `POST` carries RPC calls),
+   * resolved by the client into an `http(s)://` URL with the same
+   * proxy-safe rules as {@link ConnectionMeta.websocket}:
+   *
+   *   - {@link ConnectionMetaSse} — the proxy-flexible default; a
+   *     same-origin path relative to `__connection.json`.
+   *   - `string` — a full `http(s)://` URL used verbatim, or a path
+   *     resolved same-origin.
+   */
+  sse?: string | ConnectionMetaSse
   /**
    * Present when the dev server exposes a route-based MCP endpoint
    * (`cli.mcp`). Advertises the MCP Streamable-HTTP route so in-browser

@@ -2,7 +2,7 @@
   "name": "@devframes/next",
   "type": "module",
   "version": "0.8.2",
-  "description": "Next.js host integration for Devframe — serve mounted devframe SPAs and connection meta from an App Router route (experimental)",
+  "description": "Next.js host integration that serves mounted devframes from an App Router route.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/devframes/devframe#readme",

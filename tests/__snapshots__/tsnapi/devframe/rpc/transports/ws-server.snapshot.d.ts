@@ -7,6 +7,9 @@ export { createWsOriginRegistry }
 export { CreateWsOriginRegistryOptions }
 export { createWsRpcPeerHooks }
 export { DevframeNodeRpcSessionMeta }
+export { DevframeRpcConnection }
+export { DevframeRpcConnectionRequest }
+export { DevframeRpcTransportKind }
 export { isAllowedOrigin }
 export { isLoopbackHostname }
 export { WsOriginRegistry }

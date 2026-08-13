@@ -1,5 +1,4 @@
-import type { Peer } from 'crossws'
-import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
+import type { DevframeRpcConnection, WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
 import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeStorageScope } from 'devframe/types'
 import type { Buffer } from 'node:buffer'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
@@ -7,7 +6,7 @@ import type { Duplex } from 'node:stream'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeInstanceRecord } from '../node/instance-registry'
 import type { InstanceShellInternals, StartedServer } from '../node/instance-shell'
-import type { DevframeDefinition, DevframeSetupInfo, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
+import type { DevframeDefinition, DevframeSetupInfo, DevframeSseOptions, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
 import process from 'node:process'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
@@ -57,8 +56,16 @@ export interface InitDevframeOptions {
    * advertisement* only: the browser dials it verbatim (a tunnel/relay),
    * while the local binding keeps following the options above — and on its
    * own it means an external server owns both the transport and its auth.
+   * Pass `false` to serve no WebSocket at all — clients connect over the
+   * SSE endpoint instead (`backend: 'sse'`).
    */
-  ws?: DevframeWsOptions
+  ws?: DevframeWsOptions | false
+  /**
+   * SSE RPC endpoint control — enabled by default at `<base>__sse` as the
+   * more portable transport alongside the WebSocket. Pass `false` to
+   * disable, or a {@link DevframeSseOptions} to rename the route.
+   */
+  sse?: boolean | DevframeSseOptions
   /**
    * Bind host for a side-car WebSocket server (default: `def.cli?.host ??
    * 'localhost'`). Irrelevant for the `server` / `ws.url` tiers.
@@ -129,15 +136,15 @@ export interface InitDevframeOptions {
    */
   destroyUnmatchedUpgrades?: boolean
   /**
-   * Called once per new WS connection, right after its session is created.
+   * Called once per new RPC connection, right after its session is created.
    * Forwarded verbatim to the underlying transport.
    */
-  onPeerConnect?: (peer: Peer, session: DevframeNodeRpcSession) => void
+  onPeerConnect?: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
   /**
-   * Called once per closed WS connection, right after the transport's own
+   * Called once per closed RPC connection, right after the transport's own
    * disconnect bookkeeping runs.
    */
-  onPeerDisconnect?: (peer: Peer, meta: DevframeNodeRpcSessionMeta) => void
+  onPeerDisconnect?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
 }
 
 export interface DevframeInstance {
@@ -252,6 +259,7 @@ export function initDevframe(
     auth: options.auth !== undefined ? options.auth : def.cli?.auth,
     server: options.server,
     ws: options.ws ?? def.cli?.ws,
+    sse: options.sse ?? def.cli?.sse,
     allowedOrigins: options.allowedOrigins,
     destroyUnmatchedUpgrades: options.destroyUnmatchedUpgrades,
     onPeerConnect: options.onPeerConnect,

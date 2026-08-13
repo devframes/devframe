@@ -12,6 +12,7 @@ export { AgentToolInput }
 export { AgentToolProvider }
 export { AgentToolProviderHandle }
 export { ConnectionMeta }
+export { ConnectionMetaSse }
 export { ConnectionMetaWebsocket }
 export { DevframeAgentHost }
 export { DevframeAgentHostEvents }
@@ -31,8 +32,11 @@ export { DevframeNodeContext }
 export { DevframeNodeRpcSession }
 export { DevframeNodeRpcSessionMeta }
 export { DevframeRpcClientFunctions }
+export { DevframeRpcConnection }
+export { DevframeRpcConnectionRequest }
 export { DevframeRpcServerFunctions }
 export { DevframeRpcSharedStates }
+export { DevframeRpcTransportKind }
 export { DevframeRuntime }
 export { DevframeScopedNodeContext }
 export { DevframeScopedNodeRpc }
@@ -46,6 +50,7 @@ export { DevframeSettingsRegistry }
 export { DevframeSettingsStore }
 export { DevframeSetupInfo }
 export { DevframeSpaOptions }
+export { DevframeSseOptions }
 export { DevframeStorageScope }
 export { DevframeViewHost }
 export { DevframeWsOptions }

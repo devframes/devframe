@@ -1,5 +1,5 @@
-import type { Peer } from 'crossws'
 import type { RpcFunctionDefinitionAny } from 'devframe/rpc'
+import type { DevframeRpcConnection } from 'devframe/rpc/transports/ws-server'
 import type { DevframeNodeRpcSession } from 'devframe/types'
 
 /**
@@ -28,12 +28,12 @@ export interface DevframeAuthHandler {
    */
   authorize: (methodName: string, session: DevframeNodeRpcSession) => boolean
   /**
-   * Connect-time trust: reads a bearer token off the peer's upgrade request
-   * (an `Authorization: Bearer <token>` header, or a static/pre-shared
-   * token from `clientAuthTokens`) and, when valid, marks the session
+   * Connect-time trust: reads a bearer token off the connection's initial
+   * request (a static/pre-shared token from `clientAuthTokens`, or a token
+   * minted by the code exchange) and, when valid, marks the session
    * trusted immediately — before the client's own handshake call.
    */
-  onConnect: (peer: Peer, session: DevframeNodeRpcSession) => void
+  onConnect: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
   /**
    * Print the current one-time code and its magic-link URL. Devframe stays
    * headless — call this yourself once the server is listening. Safe to

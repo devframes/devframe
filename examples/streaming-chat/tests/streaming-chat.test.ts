@@ -175,7 +175,7 @@ describe('streaming-chat (example)', () => {
     const assistant = history.messages.find(m => m.id === assistantId)!
     expect(assistant.streamId).toBeUndefined()
     expect(assistant.content.length).toBeGreaterThan(0)
-    // Partial content — the canned "devframe" response is well over 200 chars.
+    // Partial content - the canned "devframe" response is well over 200 chars.
     expect(assistant.content.length).toBeLessThan(200)
   })
 

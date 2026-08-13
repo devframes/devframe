@@ -2,8 +2,8 @@
 
 A simplified [node-modules-inspector](https://github.com/antfu/node-modules-inspector)-style example built on [devframe](../../packages/devframe). Lists files in the current working directory and renders them through a Preact SPA. Exercises every devframe surface end-to-end:
 
-- **CLI dev server** — `node bin.mjs` boots an HTTP + WebSocket server backing live RPC.
-- **Static build** — `node bin.mjs build` produces a self-contained directory (SPA + baked RPC dump) deployable to any static host.
+- **CLI dev server** - `node bin.mjs` boots an HTTP + WebSocket server backing live RPC.
+- **Static build** - `node bin.mjs build` produces a self-contained directory (SPA + baked RPC dump) deployable to any static host.
 
 The Preact client showcases two patterns relevant to devframe authors:
 
@@ -27,5 +27,5 @@ pnpm -C examples/files-inspector run test        # E2E tests
 |------|---------|
 | `src/devframe.ts` | The single `DevframeDefinition` consumed by every adapter. |
 | `src/client/` | Preact SPA: `index.html`, `main.tsx`, `app.tsx`, `routes/*`, `vite.config.ts`. |
-| `bin.mjs` | `createCac(devframe).parse()` — exposes `dev`, `build`, `spa`, `mcp`. |
+| `bin.mjs` | `createCac(devframe).parse()` - exposes `dev`, `build`, `spa`, `mcp`. |
 | `tests/` | E2E tests for CLI dev server and static build. |

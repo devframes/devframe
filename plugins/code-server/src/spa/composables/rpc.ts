@@ -1,4 +1,4 @@
-import type { DevframeConnectionStatus, DevframeRpcClient } from '@devframes/plugin-code-server/client'
+import type { ConnectionMeta, DevframeConnectionStatus, DevframeRpcClient } from '@devframes/plugin-code-server/client'
 import { connectCodeServer } from '@devframes/plugin-code-server/client'
 import { reactive, shallowRef } from 'vue'
 
@@ -6,7 +6,7 @@ export const connection = reactive<{
   connected: boolean
   status: DevframeConnectionStatus
   error: string | null
-  backend: 'websocket' | 'static' | null
+  backend: ConnectionMeta['backend'] | null
 }>({
   connected: false,
   status: 'connecting',

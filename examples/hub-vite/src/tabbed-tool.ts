@@ -9,7 +9,7 @@ import pkg from '../package.json' with { type: 'json' }
  * Mounted as a `subTabs` anchor (see `vite.config.ts`), the hub's client host
  * attaches its frame-nav adapter: the SPA's `postMessage` shim reports its tabs,
  * each becomes a client-only hub dock sharing this one iframe, and switching
- * docks soft-navigates inside it instead of reloading — a unified home for a
+ * docks soft-navigates inside it instead of reloading - a unified home for a
  * multi-tab tool like Nuxt DevTools.
  */
 export default defineDevframe({

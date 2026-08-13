@@ -6,7 +6,7 @@ The minimal [Vite](https://vite.dev) host for `@devframes/hub`: one `initHub()` 
 pnpm --filter hub-vite-minimal dev
 ```
 
-Open the printed URL — the host page carries the floating dock via one injected script tag — or `/__devframes/` for the standalone viewer.
+Open the printed URL - the host page carries the floating dock via one injected script tag - or `/__devframes/` for the standalone viewer.
 
 ## How it works
 
@@ -14,7 +14,7 @@ Open the printed URL — the host page carries the floating dock via one injecte
 
 - `initHub({ devframes: [inspect, messages], ui: createUi() })` runs in Vite's Node config process (never bundled into the browser), so `createUi()`'s prebuilt viewer/dock and the plugins' node code work unchanged.
 - `server.middlewares.use(hub.nodeMiddleware)` mounts the whole `/__devframes/` namespace; the middleware self-filters by base and hands everything else back to Vite.
-- The RPC WebSocket shares Vite's own dev server at `/__devframes/__ws` — zero extra ports.
+- The RPC WebSocket shares Vite's own dev server at `/__devframes/__ws` - zero extra ports.
 - `transformIndexHtml` injects `<script type="module" src="/__devframes/embedded.js">` into the host page, so the floating dock mounts itself.
 
-The same `initHub` instance mounts identically on Nitro, Hono, Next.js, and Rsbuild — see the sibling `hub-*-minimal` examples.
+The same `initHub` instance mounts identically on Nitro, Hono, Next.js, and Rsbuild - see the sibling `hub-*-minimal` examples.

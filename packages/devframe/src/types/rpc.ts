@@ -6,7 +6,12 @@ import type { StreamReader, StreamSink } from 'devframe/utils/streaming-channel'
 import type { DevframeNodeContext } from './context'
 import type { DevframeRpcClientFunctions, DevframeRpcServerFunctions } from './rpc-augments'
 
-export type { DevframeNodeRpcSessionMeta }
+export type {
+  DevframeNodeRpcSessionMeta,
+  DevframeRpcConnection,
+  DevframeRpcConnectionRequest,
+  DevframeRpcTransportKind,
+} from 'devframe/rpc/transports/ws-server'
 
 export interface DevframeNodeRpcSession {
   meta: DevframeNodeRpcSessionMeta
