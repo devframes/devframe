@@ -18,8 +18,8 @@ export interface RpcFunctionAgentInfo {
 /**
  * Serializable description of a single registered RPC function. Returned
  * by `devframes:plugin:inspect:list-functions`. JSON-safe by construction
- * — valibot schemas are projected to JSON Schema (best effort), never
- * sent as live objects.
+ * — Standard Schema args/return schemas are projected to JSON Schema (best
+ * effort), never sent as live objects.
  */
 export interface RpcFunctionInfo {
   /** Full namespaced function name (e.g. `my-plugin:do-thing`). */
@@ -32,9 +32,9 @@ export interface RpcFunctionInfo {
   snapshot: boolean
   /** Whether results may be cached client-side. */
   cacheable: boolean
-  /** Whether an args valibot schema is declared. */
+  /** Whether an args schema is declared. */
   hasArgs: boolean
-  /** Whether a return valibot schema is declared. */
+  /** Whether a return schema is declared. */
   hasReturns: boolean
   /** Whether an explicit dump definition is declared. */
   hasDump: boolean

@@ -1,5 +1,4 @@
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from '@standard-schema/spec'
-import { toJsonSchema } from '@valibot/to-json-schema'
 
 const FALLBACK_SCHEMA = Object.freeze({ type: 'object', additionalProperties: true })
 
@@ -9,17 +8,19 @@ type MaybeJsonSchema = StandardSchemaV1['~standard'] & Partial<StandardJSONSchem
 /**
  * Convert a schema to JSON Schema for the inspector, vendor-neutrally.
  *
- * Prefers the schema's own Standard JSON Schema converter
- * (`~standard.jsonSchema`, implemented by e.g. zod 4), then falls back to
- * valibot's converter, then to a permissive object — so introspection never
- * throws regardless of which validator produced the schema.
+ * Uses the schema's own [Standard JSON Schema](https://standardschema.dev/)
+ * converter (`~standard.jsonSchema`, implemented by e.g. zod 4) when the
+ * validator provides one, and degrades to a permissive object schema
+ * otherwise (e.g. valibot, which has no native converter) — so introspection
+ * never throws and never pulls in a converter library for a validator devframe
+ * doesn't otherwise depend on.
  */
 function convert(schema: unknown): unknown {
   const standard = (schema as StandardSchemaV1)['~standard'] as MaybeJsonSchema
+  if (!standard.jsonSchema)
+    return FALLBACK_SCHEMA
   try {
-    if (standard.jsonSchema)
-      return standard.jsonSchema.input({ target: 'draft-2020-12' })
-    return toJsonSchema(schema as never)
+    return standard.jsonSchema.input({ target: 'draft-2020-12' })
   }
   catch {
     return FALLBACK_SCHEMA
