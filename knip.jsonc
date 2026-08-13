@@ -107,8 +107,10 @@
     },
     "packages/json-render-ui": {
       // `src/components/index.ts` is already picked up via
-      // `tsdown.config.ts`; only `spa.ts` needs to be declared explicitly.
-      "entry": ["src/{index,spa}.ts"],
+      // `tsdown.config.ts`; only `spa.ts`/`hub.ts` (node-safe entries) and
+      // the prebuilt renderer module (built by its own Vite config, consumed
+      // at runtime via the hub's renderer manifest) need declaring.
+      "entry": ["src/{index,spa,hub}.ts", "src/renderer-module/index.ts"],
       // The standalone SPA's own Vite config (`src/spa/vite.config.ts`)
       // mounts `unocss/vite` with no explicit config path, so UnoCSS
       // discovers this nested `uno.config.ts` by directory proximity to

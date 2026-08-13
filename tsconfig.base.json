@@ -157,6 +157,9 @@
       "@devframes/json-render-ui/components": [
         "./packages/json-render-ui/src/components/index.ts"
       ],
+      "@devframes/json-render-ui/hub": [
+        "./packages/json-render-ui/src/hub.ts"
+      ],
       "@devframes/json-render-ui/spa": [
         "./packages/json-render-ui/src/spa.ts"
       ],

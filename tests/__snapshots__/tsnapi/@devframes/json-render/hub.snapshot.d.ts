@@ -8,6 +8,11 @@ export interface DevframeJsonRenderDockEntry extends DevframeDockEntryBase {
 }
 // #endregion
 
+// #region Types
+export type JsonRenderDockMountOptions = DockRendererMountOptions<DevframeJsonRenderDockEntry>;
+export type JsonRenderDockRenderer = DockRenderer<DevframeJsonRenderDockEntry>;
+// #endregion
+
 // #region Functions
 export declare function toJsonRenderDockEntry(_: JsonRenderView, _: Omit<DevframeJsonRenderDockEntry, 'type' | 'view'>): DevframeJsonRenderDockEntry;
 // #endregion

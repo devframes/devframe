@@ -30,11 +30,14 @@ function isIframeDock(d: DevframeDockEntry): d is IframeDock {
   return d.type === 'iframe' && typeof (d as { url?: unknown }).url === 'string'
 }
 
-// A dock this shell can display: an iframe, or one with a registered renderer
-// (the json-render dock, rendered by the mini React registry).
-const RENDERER_TYPES = new Set(['json-render'])
+// Dock types this shell renders natively (or that carry no panel view of
+// their own). Everything else routes through the hub's dock-renderer
+// registry — the local React renderer registered at boot, or a prebuilt
+// module from the hub's renderer manifest — and a type nothing covers shows
+// the missing-renderer fallback.
+const NATIVE_TYPES = new Set(['action', 'launcher', 'group', '~builtin'])
 function isRenderableDock(d: DevframeDockEntry): boolean {
-  return isIframeDock(d) || RENDERER_TYPES.has(d.type)
+  return isIframeDock(d) || !NATIVE_TYPES.has(d.type)
 }
 
 // One iframe is kept alive per `frameId` (shared-frame docks) or per dock id
@@ -176,6 +179,9 @@ export default function Page() {
   const [terminals, setTerminals] = useState<TerminalSummary[]>([])
   const [pingResult, setPingResult] = useState('Run ping')
   const [selectedDockId, setSelectedDockId] = useState<string | null>(null)
+  // Fallback shown when the selected renderer dock's type has no renderer
+  // (missing-renderer) or its manifest module failed to import (load-error).
+  const [panelFallback, setPanelFallback] = useState<{ message: string, hint: string } | null>(null)
   const rpcRef = useRef<DevframeRpcClient | null>(null)
   const hostRef = useRef<ClientHost | null>(null)
   // The stage holds the kept-alive iframe pool; the panel hosts renderer docks.
@@ -202,8 +208,13 @@ export default function Page() {
         // context and imports each dock's client script into this page — e.g.
         // the a11y inspector's in-page agent, which then scans this hub live.
         //
-        // Register a mini React json-render renderer so the hub can display the
-        // `json-render` dock authored server-side via @devframes/json-render.
+        // Register a mini React json-render renderer. The hub also publishes
+        // the reference Vue frontend through its renderer manifest
+        // (`initHub({ renderers: [jsonRenderUiRenderer()] })`), but a locally
+        // registered renderer takes precedence — witnessing that any frontend
+        // implementing the `JsonRenderDockRenderer` contract can replace the
+        // reference one. Delete this `renderers` option and the same dock
+        // renders through the manifest-served Vue module instead.
         const clientHost = await createDevframeClientHost({
           rpc,
           renderers: { 'json-render': createReactJsonRenderDockRenderer() },
@@ -400,24 +411,49 @@ export default function Page() {
     }
   }, [selectedDockId, docks, selectedDock])
 
-  // Mount a renderer dock (json-render) into the panel via the client host's
-  // renderer registry, disposing when the selection changes.
+  // Mount a renderer dock (e.g. json-render) into the panel via the client
+  // host's renderer registry — the local React renderer, or a prebuilt module
+  // lazy-imported from the hub's renderer manifest — disposing when the
+  // selection changes. Each mount gets a fresh container element (a
+  // self-styling renderer may attach a shadow root to it); the typed mount
+  // result drives the missing-renderer / load-error fallback below.
   useEffect(() => {
     const host = hostRef.current
     const dock = selectedDock
-    const container = panelRef.current
-    if (!host || !dock || isIframeDock(dock) || !container)
+    const stage = panelRef.current
+    if (!host || !dock || isIframeDock(dock) || !stage)
       return
     let alive = true
     let dispose: (() => void) | undefined
-    void host.context.renderers.mount(dock, container).then((d) => {
-      if (alive)
-        dispose = d
-      else d()
+    setPanelFallback(null)
+    const container = document.createElement('div')
+    container.className = 'h-full w-full'
+    stage.append(container)
+    void host.context.renderers.mount(dock, container).then((result) => {
+      if (!alive) {
+        if (result.status === 'mounted')
+          result.dispose()
+        return
+      }
+      if (result.status === 'mounted') {
+        dispose = result.dispose
+        return
+      }
+      setPanelFallback(result.status === 'missing-renderer'
+        ? {
+            message: `No renderer for “${dock.type}” in the current environment`,
+            hint: 'The host has not registered a renderer for this dock type.',
+          }
+        : {
+            message: `The renderer for “${dock.type}” failed to load`,
+            hint: 'Check the console, then re-select the dock to retry.',
+          })
     })
     return () => {
       alive = false
       dispose?.()
+      container.remove()
+      setPanelFallback(null)
     }
   }, [selectedDockId, selectedIsIframe])
 
@@ -480,8 +516,14 @@ export default function Page() {
           {/* Iframe docks are pooled here (one kept-alive iframe per frameId),
               shown/hidden on switch so shared-frame tabs soft-navigate. */}
           <div ref={stageRef} hidden={!selectedDock || !selectedIsIframe} className="absolute inset-0" />
-          {/* Renderer docks (json-render) mount here via the client host. */}
+          {/* Renderer docks (json-render, …) mount here via the client host. */}
           <div ref={panelRef} hidden={!selectedDock || selectedIsIframe} className="absolute inset-0 of-auto bg-base p4" />
+          {panelFallback && selectedDock && !selectedIsIframe && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-base p6 text-center">
+              <div className="text-sm op-fade">{panelFallback.message}</div>
+              <div className="text-xs op-mute">{panelFallback.hint}</div>
+            </div>
+          )}
         </main>
       </div>
 

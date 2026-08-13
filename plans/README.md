@@ -44,6 +44,7 @@ changes are allowed as long as they're marked).
 | 030 | Spike: server-side auth enforcement ⚠️ | security | P2 | L | 003, 007, 015 | DONE |
 | 031 | Agent-native MCP wave (bridges, core surface, connector) | direction | P2 | L | — | IN PROGRESS (phases 1–3 implemented on PR #145; DONE at merge) |
 | 032 | Reduce the devframe + @devframes/hub public API surface for 0.9 ⚠️ | direction/tech-debt | P2 | L | — | TODO |
+| 033 | Swappable UI packages: renderer-module manifest + missing-renderer fallback ⚠️ | direction | P1 | L | — | DONE (plan + implementation in one PR) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale).
 

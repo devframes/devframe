@@ -1,4 +1,4 @@
-import type { HubDevframeEntry, HubInstance } from '@devframes/hub/initiate'
+import type { DockRendererRegistration, HubDevframeEntry, HubInstance } from '@devframes/hub/initiate'
 import type { DevframeHubContext } from '@devframes/hub/node'
 import type { ClientScriptEntry } from '@devframes/hub/types'
 import type { DevframeDefinition } from 'devframe'
@@ -31,6 +31,14 @@ export interface ViteDevframeHubOptions {
    * (e.g. the a11y inspector's in-page agent).
    */
   clientScripts?: Record<string, ClientScriptEntry>
+  /**
+   * Prebuilt dock-renderer modules forwarded to `initHub({ renderers })` —
+   * each is served at `<base>__renderers/<type>.mjs` and published in the
+   * renderer manifest, so the client imports it lazily the first time a dock
+   * of its type mounts (e.g. `jsonRenderUiRenderer()` from
+   * `@devframes/json-render-ui/hub` for `json-render` docks).
+   */
+  renderers?: DockRendererRegistration[]
   /**
    * Called once the hub context is created (after devframes are mounted),
    * inside `initHub`'s `configure` step. Lets the composition register extra
@@ -174,6 +182,7 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
           viteHubTerminalsList,
         ],
         devframes,
+        ...(options.renderers ? { renderers: options.renderers } : {}),
         async configure(ctx) {
           // Seed a sample command directly on the hub so the UI
           // shows something even without any plugged-in devframes.

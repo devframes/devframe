@@ -6,12 +6,14 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { defineHubRpcFunction } from '@devframes/hub'
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
+import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { createDashboardView } from 'json-render/dashboard'
 import { dirname, join } from 'pathe'
 import demoDevframe from './demo-devframe'
 import demoDevframeB from './demo-devframe-b'
 import tabbedDevframe from './tabbed-devframe'
+import { unrenderedDockEntry } from './unrendered-dock'
 
 /**
  * Built-in plugin packages dogfooded through the hub mount path.
@@ -208,6 +210,12 @@ export async function nextDevframeHub(
       nextHubTerminalsList,
     ],
     devframes,
+    // Serve the reference json-render frontend as a prebuilt renderer module
+    // (published in the renderer manifest). This host's own page registers a
+    // local React renderer for the same type (app/page.tsx), which takes
+    // precedence — witnessing both sides of the swap seam: the manifest
+    // composition AND a local frontend replacing it.
+    renderers: [jsonRenderUiRenderer()],
     // Record this hub in the global registry so `devframe connect` discovers
     // it — running inside the Next dev server — like any standalone devframe.
     // The instance owns the record (written once its pinned origin resolves,
@@ -256,6 +264,10 @@ export async function nextDevframeHub(
         icon: 'ph:layout-duotone',
         category: 'app',
       }))
+
+      // Witness the missing-renderer path: a dock type nothing covers — the
+      // client shows its fallback view instead of a dead panel.
+      ctx.docks.register(unrenderedDockEntry)
 
       await ctx.messages.add({
         level: 'success',

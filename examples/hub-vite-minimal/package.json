@@ -12,6 +12,8 @@
   "dependencies": {
     "@devframes/hub": "workspace:*",
     "@devframes/hub-ui": "workspace:*",
+    "@devframes/json-render": "workspace:*",
+    "@devframes/json-render-ui": "workspace:*",
     "@devframes/plugin-inspect": "workspace:*",
     "@devframes/plugin-messages": "workspace:*",
     "devframe": "workspace:*"

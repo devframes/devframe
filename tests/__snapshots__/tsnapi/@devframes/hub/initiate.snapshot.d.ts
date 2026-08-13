@@ -11,6 +11,11 @@ export interface DevframeHubUi {
   };
   assets?: Record<string, () => string | Uint8Array>;
 }
+export interface DockRendererRegistration {
+  type: string;
+  file: string;
+  importName?: string;
+}
 export interface HubDevframeEntry {
   devframe: DevframeDefinition;
   dock?: InstallDevframeOptions['dock'];
@@ -35,6 +40,7 @@ export interface InitHubOptions {
   context?: DevframeHubContext;
   configure?: (_: DevframeHubContext) => void | Promise<void>;
   ui?: DevframeHubUi;
+  renderers?: readonly DockRendererRegistration[];
   server?: Server;
   ws?: DevframeWsOptions;
   host?: string;

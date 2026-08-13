@@ -27,12 +27,10 @@
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
     "dompurify": "catalog:frontend",
-    "json-render": "workspace:*",
-    "vue": "catalog:frontend"
+    "json-render": "workspace:*"
   },
   "devDependencies": {
     "@iconify-json/ph": "catalog:frontend",
-    "@vitejs/plugin-vue": "catalog:build",
     "pathe": "catalog:deps",
     "unocss": "catalog:frontend",
     "vite": "catalog:build"

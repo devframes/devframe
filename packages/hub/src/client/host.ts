@@ -23,13 +23,14 @@ import type {
   DocksPanelContext,
   WhenClauseContext,
 } from './docks'
-import type { DockRenderer, DockRenderersContext } from './renderers'
+import type { DockRenderer, DockRendererManifest, DockRenderersContext } from './renderers'
 import { connectDevframe } from 'devframe/client'
 import { createEventEmitter } from 'devframe/utils/events'
-import { DEFAULT_CATEGORIES_ORDER, DEFAULT_STATE_USER_SETTINGS } from '../constants'
+import { DEFAULT_CATEGORIES_ORDER, DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY } from '../constants'
 import { getDevframeClientContext, setDevframeClientContext } from './context'
 import { attachFrameNavClient } from './frame-nav'
 import { createMessagesClient } from './messages'
+import { createDockRenderersContext } from './renderers'
 
 const DOCKS_STATE_KEY = 'devframe:docks'
 const COMMANDS_STATE_KEY = 'devframe:commands'
@@ -61,6 +62,9 @@ export interface DevframeClientHostOptions {
    * application injects the ones it wants (e.g.
    * `{ 'json-render': createJsonRenderDockRenderer() }` from
    * `@devframes/json-render-ui`). The hub ships none by default.
+   *
+   * Local registrations take precedence over the hub's renderer manifest
+   * (`initHub({ renderers })`) — explicit local code beats wire config.
    */
   renderers?: Record<string, DockRenderer>
   /**
@@ -112,12 +116,13 @@ export async function createDevframeClientHost(
   // Set by createRenderersContext(); teardown disposes every live mount.
   let mountedRenderers: Set<() => void> | undefined
 
-  const [docksState, commandsState, settings] = await Promise.all([
+  const [docksState, commandsState, settings, renderersManifestState] = await Promise.all([
     rpc.sharedState.get<DevframeDockEntry[]>(DOCKS_STATE_KEY, { initialValue: [] }),
     rpc.sharedState.get<DevframeServerCommandEntry[]>(COMMANDS_STATE_KEY, { initialValue: [] }),
     rpc.sharedState.get<DevframeDocksUserSettings>(USER_SETTINGS_STATE_KEY, {
       initialValue: DEFAULT_STATE_USER_SETTINGS(),
     }),
+    rpc.sharedState.get<DockRendererManifest>(DOCK_RENDERERS_STATE_KEY, { initialValue: {} }),
   ])
 
   let selectedId: string | null = null
@@ -432,47 +437,25 @@ export async function createDevframeClientHost(
   // ── renderers ────────────────────────────────────────────────────────────
 
   function createRenderersContext(): DockRenderersContext {
-    const rendererMap = new Map<string, DockRenderer>()
-    for (const [type, renderer] of Object.entries(options.renderers ?? {}))
-      rendererMap.set(type, renderer)
     // Every live mount's disposer, so host teardown cleans them all up.
     const mountedDisposers = new Set<() => void>()
     mountedRenderers = mountedDisposers
 
-    return {
-      register(type, renderer) {
-        rendererMap.set(type, renderer)
-        return () => {
-          if (rendererMap.get(type) === renderer)
-            rendererMap.delete(type)
-        }
-      },
-      get: type => rendererMap.get(type),
-      has: type => rendererMap.has(type),
-      async mount(entry, container) {
-        const renderer = rendererMap.get(entry.type)
-        if (!renderer) {
-          console.warn(`[@devframes/hub] no renderer registered for dock type "${entry.type}" (entry "${entry.id}")`)
-          return () => {}
-        }
-        const instance = await renderer({ entry, container, context })
-        let disposed = false
-        let offDeactivate: (() => void) | undefined
-        const dispose = (): void => {
-          if (disposed)
-            return
-          disposed = true
-          mountedDisposers.delete(dispose)
-          offDeactivate?.()
-          instance.dispose?.()
-        }
+    return createDockRenderersContext({
+      context: () => context,
+      ...(options.renderers ? { local: options.renderers } : {}),
+      manifest: () => renderersManifestState.value() as DockRendererManifest,
+      onMounted(dispose, entry) {
         mountedDisposers.add(dispose)
         // Dispose when the dock deactivates — the Vite viewer leaked here by
         // never unsubscribing the renderer's shared-state listeners.
-        offDeactivate = entryToStateMap.get(entry.id)?.events.on('entry:deactivated', dispose)
-        return dispose
+        const offDeactivate = entryToStateMap.get(entry.id)?.events.on('entry:deactivated', dispose)
+        return () => {
+          mountedDisposers.delete(dispose)
+          offDeactivate?.()
+        }
       },
-    }
+    })
   }
 
   // ── client scripts ───────────────────────────────────────────────────────

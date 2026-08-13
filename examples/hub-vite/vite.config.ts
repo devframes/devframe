@@ -1,3 +1,4 @@
+import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 import a11yDevframe, { a11yAgentBundlePath } from '@devframes/plugin-a11y'
 import assetsDevframe from '@devframes/plugin-assets'
@@ -9,7 +10,6 @@ import inspectDevframe from '@devframes/plugin-inspect'
 import messagesDevframe from '@devframes/plugin-messages'
 import ogDevframe from '@devframes/plugin-og'
 import terminalsDevframe from '@devframes/plugin-terminals'
-import vue from '@vitejs/plugin-vue'
 import { createDashboardView } from 'json-render/dashboard'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
@@ -17,6 +17,7 @@ import { alias } from '../../alias'
 import demoDevframe from './src/devframe'
 import demoDevframeB from './src/devframe-b'
 import tabbedToolDevframe from './src/tabbed-tool'
+import { unrenderedDockEntry } from './src/unrendered-dock'
 import { viteDevframeHub } from './src/vite-devframe-hub'
 
 // Colon-free id override: the hub instance derives each frame's mount path
@@ -30,11 +31,7 @@ export default defineConfig({
   // Dev tooling reached from arbitrary hostnames (LAN IPs, tunnels, tailnets):
   // accept any Host header and fall back to the next free port when busy.
   server: { allowedHosts: true, strictPort: false },
-  // @antfu/design (pulled in by the JSON-render dock renderer) ships raw `.vue`;
-  // let @vitejs/plugin-vue compile its SFCs instead of esbuild pre-bundling.
-  optimizeDeps: { exclude: ['@antfu/design', '@devframes/json-render-ui'] },
   plugins: [
-    vue(),
     UnoCSS(),
     {
       // The host registers its own live objects as data-inspector sources —
@@ -101,9 +98,15 @@ export default defineConfig({
       clientScripts: {
         [a11yDevframe.id]: { importFrom: `/@fs/${a11yAgentBundlePath}` },
       },
+      // Serve the reference json-render frontend as a prebuilt renderer
+      // module: the hub publishes it in the renderer manifest and the client
+      // (src/client/main.ts) imports it lazily the first time a
+      // `json-render` dock mounts — no Vue and no renderer code compiled
+      // into this host's own bundle.
+      renderers: [jsonRenderUiRenderer()],
       // Dogfood the opt-in JSON-render hub integration: author a view on the
-      // hub context and project it onto a `json-render` dock. The client host
-      // (src/client/main.ts) renders it via @devframes/json-render-ui.
+      // hub context and project it onto a `json-render` dock, rendered by the
+      // manifest module above.
       onContextReady: (context) => {
         const view = createDashboardView(context)
         context.docks.register(toJsonRenderDockEntry(view, {
@@ -112,6 +115,9 @@ export default defineConfig({
           icon: 'ph:layout-duotone',
           category: 'app',
         }))
+        // Witness the missing-renderer path: a dock type nothing covers —
+        // the client shows its fallback view instead of a dead panel.
+        context.docks.register(unrenderedDockEntry)
       },
     }),
   ],

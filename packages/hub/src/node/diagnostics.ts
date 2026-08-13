@@ -62,6 +62,18 @@ export const diagnostics = defineDiagnostics({
       why: (p: { id: string }) => `Dock activation requested for unknown dock id "${p.id}"`,
       fix: 'Pass a `dockId` that matches a registered dock entry. The activation is still broadcast, but no viewer will switch to it. Ids are case-sensitive — check for typos, and ensure the target dock is registered before activating it.',
     },
+    DF8108: {
+      why: (p: { type: string }) => `A renderer module is already registered for dock type "${p.type}"`,
+      fix: 'Each dock type resolves to exactly one renderer module in the hub\'s renderer manifest. Remove the duplicate `renderers` registration, or give the second renderer its own dock type.',
+    },
+    DF8109: {
+      why: (p: { type: string, file: string }) => `The renderer module registered for dock type "${p.type}" does not exist at "${p.file}"`,
+      fix: 'Point the registration\'s `file` at the prebuilt browser ES module (build the renderer package first, or check the path). Registration helpers like `jsonRenderUiRenderer()` resolve the path for you.',
+    },
+    DF8110: {
+      why: (p: { type: string }) => `Dock type "${p.type}" is not a servable renderer-module name — the hub serves each module at \`<base>__renderers/<type>.mjs\``,
+      fix: 'Renderer types become URL segments, so they may only contain letters, digits, `_`, `-`, and `.`. Use a route-safe dock type (e.g. `json-render`).',
+    },
     DF8200: {
       why: (p: { id: string }) => `Terminal session with id "${p.id}" already registered`,
     },

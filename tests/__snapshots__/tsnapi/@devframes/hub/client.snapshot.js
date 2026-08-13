@@ -6,6 +6,7 @@ export function attachFrameNavClient(_) {}
 export function buildRemoteDevframeUrl(_, _) {}
 export async function connectRemoteDevframe(_) {}
 export async function createDevframeClientHost(_) {}
+export function createDockRenderersContext(_) {}
 export function createMessagesClient(_, _) {}
 export function getDevframeClientContext() {}
 export function parseRemoteConnection(_) {}

@@ -22,6 +22,7 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./components": "./dist/components/index.mjs",
+    "./hub": "./dist/hub.mjs",
     "./spa": "./dist/spa.mjs",
     "./package.json": "./package.json"
   },
@@ -30,7 +31,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown && vite build --config src/spa/vite.config.ts",
+    "build": "pnpm run build:css && tsdown && vite build --config src/spa/vite.config.ts && vite build --config src/renderer-module/vite.config.ts",
+    "build:css": "tsx scripts/build-css.ts",
     "watch": "tsdown --watch",
     "typecheck": "tsc --noEmit",
     "storybook": "storybook dev -p 6014",
@@ -40,23 +42,33 @@
   },
   "peerDependencies": {
     "@antfu/design": "^0.3.0",
+    "@devframes/hub": "workspace:*",
     "@devframes/json-render": "workspace:*",
     "vue": "^3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "@devframes/hub": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@json-render/vue": "catalog:frontend"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
+    "@devframes/hub": "workspace:*",
     "@devframes/json-render": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
     "@storybook/addon-docs": "catalog:storybook",
     "@storybook/vue3-vite": "catalog:storybook",
     "@unocss/preset-icons": "catalog:frontend",
+    "@unocss/reset": "catalog:frontend",
     "@vitejs/plugin-vue": "catalog:build",
     "devframe": "workspace:*",
     "storybook": "catalog:storybook",
+    "tinyglobby": "catalog:deps",
     "tsdown": "catalog:build",
+    "tsx": "catalog:build",
     "unocss": "catalog:frontend",
     "vite": "catalog:build",
     "vitest": "catalog:testing",

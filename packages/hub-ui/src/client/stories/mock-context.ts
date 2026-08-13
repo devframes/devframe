@@ -45,6 +45,7 @@ function createMockRpc(
     enablePatches: false,
   })
   const commandsState = createSharedState({ initialValue: [] as any[], enablePatches: false })
+  const rendererManifestState = createSharedState({ initialValue: {} as Record<string, never>, enablePatches: false })
   const events = createEventEmitter<RpcClientEvents>()
 
   let trusted = initialTrusted
@@ -81,6 +82,8 @@ function createMockRpc(
           return settingsState
         if (key === 'devframe:commands')
           return commandsState
+        if (key === 'devframe:dock-renderers')
+          return rendererManifestState
         throw new Error(`[mock-rpc] Unexpected shared state key: ${key}`)
       },
     },

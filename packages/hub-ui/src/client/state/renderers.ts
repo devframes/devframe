@@ -1,51 +1,31 @@
-import type { DevframeDockEntry } from '@devframes/hub'
 import type {
   DevframeClientContext,
-  DockRenderer,
+  DockRendererManifest,
   DockRenderersContext,
   DocksContext,
 } from '@devframes/hub/client'
+import { createDockRenderersContext } from '@devframes/hub/client'
 
 /**
- * The client-side dock-renderer registry required by the hub's `DocksContext`
- * (devframe 0.7.6). The headless hub routes a dock `type` to a host-registered
- * renderer through this registry — e.g. a host could register
- * `@devframes/json-render-ui` for `'json-render'`.
+ * The client-side dock-renderer registry required by the hub's `DocksContext`.
+ * Delegates to the hub's shared factory, so local-first resolution, lazy
+ * imports from the hub's renderer manifest (`initHub({ renderers })` →
+ * the `devframe:dock-renderers` shared-state slot), and the typed mount
+ * result behave exactly like `createDevframeClientHost`'s registry.
  *
- * Devframes renders its built-in dock types directly in `ViewEntry.vue`
- * (it owns its Vue shell rather than delegating to the hub's client host), so
- * nothing is registered here by default. The registry still exists so the
- * context satisfies the hub contract and third-party dock types can plug in.
+ * hub-ui renders its native dock types directly in `ViewEntry.vue`; every
+ * other type routes through this registry via `ViewDockRenderer.vue` — e.g. a
+ * `'json-render'` dock renders with whatever implementation the host
+ * composed (`jsonRenderUiRenderer()` from `@devframes/json-render-ui/hub`,
+ * or any community renderer), and falls back to the missing-renderer view
+ * when none is present.
  */
-export function createDockRenderers(getContext: () => DocksContext): DockRenderersContext {
-  const renderers = new Map<string, DockRenderer>()
-
-  return {
-    register(type, renderer) {
-      renderers.set(type, renderer)
-      return () => {
-        if (renderers.get(type) === renderer)
-          renderers.delete(type)
-      }
-    },
-    get(type) {
-      return renderers.get(type)
-    },
-    has(type) {
-      return renderers.has(type)
-    },
-    async mount(entry: DevframeDockEntry, container: HTMLElement) {
-      const renderer = renderers.get(entry.type)
-      if (!renderer) {
-        console.warn(`[@devframes/hub-ui] no dock renderer registered for type "${entry.type}"`)
-        return () => {}
-      }
-      const instance = await renderer({
-        entry,
-        container,
-        context: getContext() as DevframeClientContext,
-      })
-      return () => instance.dispose?.()
-    },
-  }
+export function createDockRenderers(
+  getContext: () => DocksContext,
+  manifest: () => DockRendererManifest,
+): DockRenderersContext {
+  return createDockRenderersContext({
+    context: () => getContext() as DevframeClientContext,
+    manifest,
+  })
 }

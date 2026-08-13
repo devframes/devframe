@@ -4,6 +4,7 @@
 // #region Variables
 export declare const DEFAULT_CATEGORIES_ORDER: Record<string, number>;
 export declare const DEFAULT_STATE_USER_SETTINGS: () => DevframeDocksUserSettings;
+export declare const DOCK_RENDERERS_STATE_KEY: string;
 // #endregion
 
 // #region Re-exports

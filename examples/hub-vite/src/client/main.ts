@@ -8,7 +8,6 @@ import type {
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { connectDevframe, createDevframeClientHost, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
-import { createJsonRenderDockRenderer } from '@devframes/json-render-ui'
 import { dockIconSvg } from './icons'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
@@ -88,11 +87,15 @@ function isIframeDock(d: DevframeDockEntry): d is DevframeDockEntry & { type: 'i
   return d.type === 'iframe' && typeof (d as { url?: unknown }).url === 'string'
 }
 
-// A dock this shell can display: an iframe, or one with a registered renderer
-// (e.g. the json-render dock, rendered by @devframes/json-render-ui).
-const RENDERER_TYPES = new Set(['json-render'])
+// Dock types this shell renders natively (or that carry no panel view of
+// their own). Everything else routes through the hub's dock-renderer
+// registry — renderers registered locally or served by the hub's renderer
+// manifest (e.g. `json-render`, rendered by the @devframes/json-render-ui
+// module `initHub({ renderers })` publishes) — and a type nothing covers
+// shows the missing-renderer fallback below.
+const NATIVE_TYPES = new Set(['action', 'launcher', 'group', '~builtin'])
 function isRenderableDock(d: DevframeDockEntry): boolean {
-  return isIframeDock(d) || RENDERER_TYPES.has(d.type)
+  return isIframeDock(d) || !NATIVE_TYPES.has(d.type)
 }
 
 // A self-contained document for the client-only dock, rendered from a Blob URL
@@ -200,12 +203,12 @@ async function main() {
   // inspector's in-page agent, which then scans this host live. The dock UI
   // below still reads the same shared state directly.
   //
-  // Register the JSON-render dock renderer so the hub can display a
-  // `json-render` dock (authored server-side via @devframes/json-render).
-  const host = await createDevframeClientHost({
-    rpc,
-    renderers: { 'json-render': createJsonRenderDockRenderer() },
-  })
+  // No renderer is compiled in: `json-render` docks render through the
+  // prebuilt module the hub serves via its renderer manifest
+  // (`initHub({ renderers: [jsonRenderUiRenderer()] })`), imported lazily by
+  // the registry the first time such a dock mounts. A renderer passed here
+  // (`renderers: { 'json-render': … }`) would take precedence.
+  const host = await createDevframeClientHost({ rpc })
 
   // Register a *client-only* dock — one this page synthesizes itself. Unlike
   // the server-authored docks, it's registered on the client host context, so
@@ -229,7 +232,7 @@ async function main() {
   // carried **inline** in the dock entry (`view.spec`), so it needs no shared
   // state at all: it lives only in this page yet renders — and stays fully
   // interactive (inputs, toggles, and buttons that mutate its state) — through
-  // the very same `json-render` dock renderer registered above as a
+  // the very same manifest-served `json-render` renderer module as a
   // server-authored view.
   host.context.docks.register<DevframeJsonRenderDockEntry>({
     id: 'client-playground',
@@ -308,14 +311,36 @@ async function main() {
     }
 
     if (entry && !isIframeDock(entry) && mountedRendererId !== entry.id) {
-      // A renderer dock (json-render): mount it into the panel via the client
-      // host's renderer registry. The Vue app subscribes to the view's shared
-      // state and updates live.
+      // A renderer dock (e.g. json-render): mount it into the panel via the
+      // client host's renderer registry — a locally-registered renderer, or
+      // the prebuilt module the registry lazy-imports from the hub's
+      // renderer manifest. Each mount gets a fresh container element (a
+      // self-styling renderer may attach a shadow root to it).
       disposePanel?.()
+      disposePanel = null
       panelEl.hidden = false
       panelEl.innerHTML = ''
       mountedRendererId = entry.id
-      disposePanel = await host.context.renderers.mount(entry, panelEl)
+      const container = document.createElement('div')
+      container.className = 'h-full w-full'
+      panelEl.append(container)
+      const result = await host.context.renderers.mount(entry, container)
+      if (result.status === 'mounted') {
+        disposePanel = result.dispose
+      }
+      else if (mountedRendererId === entry.id) {
+        // The typed mount result carries the fallback states: a type nothing
+        // covers, or a renderer module that failed to load (retry by
+        // re-selecting the dock).
+        container.remove()
+        const message = result.status === 'missing-renderer'
+          ? `No renderer for “${entry.type}” in the current environment`
+          : `The renderer for “${entry.type}” failed to load`
+        panelEl.innerHTML = `<div class="h-full w-full flex flex-col items-center justify-center gap-2 p6 text-center">
+          <div class="text-sm op-fade">${message}</div>
+          <div class="text-xs op-mute">${result.status === 'missing-renderer' ? 'The host has not registered a renderer for this dock type.' : 'Check the console, then re-select the dock to retry.'}</div>
+        </div>`
+      }
     }
   }
 

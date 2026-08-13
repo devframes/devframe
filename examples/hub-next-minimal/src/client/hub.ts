@@ -1,7 +1,32 @@
 import type { createUi as CreateUi } from '@devframes/hub-ui'
 import type { HubInstance } from '@devframes/hub/initiate'
+import type { DevframeJsonRenderSpec } from '@devframes/json-render'
+import type { jsonRenderUiRenderer as JsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
+import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import type { DevframeDefinition } from 'devframe'
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
+
+// A server-authored JSON-render dock: the whole view is this serializable
+// spec — no client build. It renders through whatever `'json-render'`
+// renderer the hub composes (below, the reference `@devframes/json-render-ui`
+// module); without one, the viewer shows its missing-renderer fallback.
+const jsonRenderSpec: DevframeJsonRenderSpec = {
+  root: 'root',
+  elements: {
+    root: { type: 'Card', props: { title: 'JSON Render' }, children: ['body'] },
+    body: { type: 'Stack', props: { gap: 8 }, children: ['text', 'badge'] },
+    text: { type: 'Text', props: { text: 'This dock is a JSON spec authored on the server and rendered by the module composed via initHub({ renderers }).' }, children: [] },
+    badge: { type: 'Badge', props: { text: 'renderer manifest', variant: 'info' }, children: [] },
+  },
+}
+
+const jsonRenderDock: DevframeJsonRenderDockEntry = {
+  type: 'json-render',
+  id: 'json-render-demo',
+  title: 'JSON Render',
+  icon: 'ph:layout-duotone',
+  view: { spec: jsonRenderSpec },
+}
 
 // The plugin packages and `@devframes/hub-ui` resolve their prebuilt `dist`
 // (SPA assets, the embedded/viewer bundles) via `new URL('../dist/...',
@@ -10,8 +35,9 @@ import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
 // Node resolves the published `dist` at request time — a static import would
 // be bundled from source and break those lookups.
 async function loadHub(): Promise<HubInstance> {
-  const [hubUi, inspect, messages] = await Promise.all([
+  const [hubUi, jsonRenderUi, inspect, messages] = await Promise.all([
     import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/hub-ui'),
+    import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/json-render-ui/hub'),
     import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-inspect'),
     import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-messages'),
   ])
@@ -26,6 +52,13 @@ async function loadHub(): Promise<HubInstance> {
     ws: { sidecar: true },
     devframes,
     ui: (hubUi.createUi as typeof CreateUi)(),
+    // Serve the reference json-render frontend as a prebuilt renderer module
+    // — the one-liner that makes `'json-render'` docks render in the prebuilt
+    // viewer. Swap it for any community implementation of the same contract.
+    renderers: [(jsonRenderUi.jsonRenderUiRenderer as typeof JsonRenderUiRenderer)()],
+    configure(ctx) {
+      ctx.docks.register(jsonRenderDock)
+    },
     // Single-user localhost demo: opts out of the gate. A hub reachable
     // beyond localhost should gate (see docs/guide/security.md).
     auth: false,

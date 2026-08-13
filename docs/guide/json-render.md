@@ -177,21 +177,40 @@ A consuming Vite app therefore:
 
 The hub is JSON-render-agnostic; its dock union is **open**. The
 `@devframes/json-render/hub` subpath contributes the `json-render` dock type,
-and the hub's client host routes it to a **registered renderer**:
+and viewers route it through the hub's renderer registry:
 
 ```ts
-// server — register a dock carrying the view's serializable reference
+// server — register a dock carrying the view's serializable reference,
+// and compose the frontend as a prebuilt renderer module
+import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 
-ctx.docks.register(toJsonRenderDockEntry(view, {
-  id: 'metrics',
-  title: 'Metrics',
-  icon: 'ph:chart-bar-duotone',
-}))
+initHub({
+  ui: createUi(),
+  renderers: [jsonRenderUiRenderer()],
+  configure(ctx) {
+    ctx.docks.register(toJsonRenderDockEntry(view, {
+      id: 'metrics',
+      title: 'Metrics',
+      icon: 'ph:chart-bar-duotone',
+    }))
+  },
+})
 ```
 
+That `renderers` line is the whole client story for prebuilt viewers: the hub
+serves `@devframes/json-render-ui`'s self-contained module and publishes it in
+the [renderer manifest](./hub-initiate#renderer-modules); the viewer's registry
+imports it lazily the first time a `json-render` dock mounts. Without any
+registration for the type, a viewer shows its missing-renderer fallback
+(*No renderer for "json-render" in the current environment*) instead of a dead
+panel.
+
+A host page that builds its own client can register a renderer **locally**
+instead — it takes precedence over the manifest:
+
 ```ts
-// host page — inject the frontend lib as the renderer for the dock type
+// host page — a locally-bundled frontend wins over the manifest module
 import { createDevframeClientHost } from '@devframes/hub/client'
 import { createJsonRenderDockRenderer } from '@devframes/json-render-ui'
 
@@ -200,7 +219,9 @@ const host = await createDevframeClientHost({
 })
 
 // the viewer mounts the active dock into a container it owns
-const dispose = await host.context.renderers.mount(entry, container)
+const result = await host.context.renderers.mount(entry, container)
+if (result.status === 'mounted')
+  result.dispose // tear down when the viewer decides; deactivation disposes too
 ```
 
 The dock carries only a serializable `JsonRenderViewRef` — no functions cross
@@ -212,15 +233,24 @@ docks](./client-context#client-only-docks)). The client host disposes the
 renderer when the dock deactivates.
 
 Both hub example shells dogfood this end to end: the [Vite hub](/examples/hub-vite)
-registers `@devframes/json-render-ui` (Vue), and the [Next hub](/examples/hub-next)
-registers a small in-example React registry — the same dock, two frontends.
+consumes the manifest-served `@devframes/json-render-ui` module (Vue), and the
+[Next hub](/examples/hub-next) registers a small in-example React renderer
+locally over the same manifest — the same dock, two frontends, both sides of
+the seam.
 
 ## Swapping the frontend
 
-A third party replaces the whole registry — pass a custom `registry` to
-`createRenderer({ registry })` or `createJsonRenderDockRenderer({ registry })`.
+The renderer contract lives in the protocol package:
+`@devframes/json-render/hub` exports `JsonRenderDockRenderer` (a hub
+`DockRenderer` narrowed to the `json-render` entry) and
+`JsonRenderDockMountOptions`. Implement it in any framework and plug it in at
+either seam — a prebuilt module registered through `initHub({ renderers })`,
+or a local registration at `createDevframeClientHost({ renderers })`.
 `@devframes/json-render-ui` is the reference implementation, not a hard
 dependency of the protocol; the hub acquires no Vue.
+
+Within a frontend, the registry swaps too — pass a custom `registry` to
+`createRenderer({ registry })` or `createJsonRenderDockRenderer({ registry })`.
 
 A frontend need not implement every component. When a spec references a
 component the active registry lacks, the renderer isolates that element behind a
@@ -228,5 +258,6 @@ placeholder — showing the component type and a gist of its prop keys (`{ label
 onPress }`) — and logs a `console.warn`, while the rest of the view renders
 normally.
 
-See the [`json-render` example](/examples/json-render) for a
-runnable end-to-end app.
+See [Build your own JSON-Render frontend](./build-your-own-json-render-frontend)
+for the full contract, and the [`json-render` example](/examples/json-render)
+for a runnable end-to-end app.

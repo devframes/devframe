@@ -25,6 +25,14 @@ export const DEFAULT_CATEGORIES_ORDER: Record<string, number> = {
   '~builtin': 1000,
 }
 
+/**
+ * Shared-state slot carrying the hub's renderer manifest — one
+ * {@link import('./client/renderers').DockRendererManifest} entry per dock
+ * `type`, published by `initHub({ renderers })` and consumed by every
+ * hub-aware client (the headless client host and viewers alike).
+ */
+export const DOCK_RENDERERS_STATE_KEY = 'devframe:dock-renderers'
+
 export const DEFAULT_STATE_USER_SETTINGS: () => DevframeDocksUserSettings = () => ({
   docksHidden: [],
   docksCategoriesHidden: [],

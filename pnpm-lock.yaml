@@ -589,6 +589,9 @@ importers:
       '@devframes/json-render':
         specifier: workspace:*
         version: link:../../packages/json-render
+      '@devframes/json-render-ui':
+        specifier: workspace:*
+        version: link:../../packages/json-render-ui
       '@devframes/next':
         specifier: workspace:*
         version: link:../../packages/next
@@ -674,6 +677,12 @@ importers:
       '@devframes/hub-ui':
         specifier: workspace:*
         version: link:../../packages/hub-ui
+      '@devframes/json-render':
+        specifier: workspace:*
+        version: link:../../packages/json-render
+      '@devframes/json-render-ui':
+        specifier: workspace:*
+        version: link:../../packages/json-render-ui
       '@devframes/next':
         specifier: workspace:*
         version: link:../../packages/next
@@ -736,6 +745,12 @@ importers:
       '@devframes/hub-ui':
         specifier: workspace:*
         version: link:../../packages/hub-ui
+      '@devframes/json-render':
+        specifier: workspace:*
+        version: link:../../packages/json-render
+      '@devframes/json-render-ui':
+        specifier: workspace:*
+        version: link:../../packages/json-render-ui
       '@devframes/plugin-inspect':
         specifier: workspace:*
         version: link:../../plugins/inspect
@@ -806,16 +821,10 @@ importers:
       json-render:
         specifier: workspace:*
         version: link:../json-render
-      vue:
-        specifier: catalog:frontend
-        version: 3.5.40(typescript@6.0.3)
     devDependencies:
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
-      '@vitejs/plugin-vue':
-        specifier: catalog:build
-        version: 6.0.8(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0))(vue@3.5.40(typescript@6.0.3))
       pathe:
         specifier: catalog:deps
         version: 2.0.3
@@ -834,6 +843,12 @@ importers:
       '@devframes/hub-ui':
         specifier: workspace:*
         version: link:../../packages/hub-ui
+      '@devframes/json-render':
+        specifier: workspace:*
+        version: link:../../packages/json-render
+      '@devframes/json-render-ui':
+        specifier: workspace:*
+        version: link:../../packages/json-render-ui
       '@devframes/plugin-inspect':
         specifier: workspace:*
         version: link:../../plugins/inspect
@@ -1115,12 +1130,6 @@ importers:
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
-      '@json-render/core':
-        specifier: catalog:deps
-        version: 0.19.0(zod@4.4.3)
-      '@json-render/vue':
-        specifier: catalog:frontend
-        version: 0.19.0(vue@3.5.40(typescript@5.9.3))(zod@4.4.3)
       '@storybook/addon-docs':
         specifier: catalog:storybook
         version: 10.5.6(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(esbuild@0.28.0)(rollup@4.60.3)(storybook@10.5.6(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0))
@@ -1210,6 +1219,9 @@ importers:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.3(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.40(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.40(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.1(vue@3.5.40(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.40(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.23))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../hub
       '@devframes/json-render':
         specifier: workspace:*
         version: link:../json-render
@@ -1225,6 +1237,9 @@ importers:
       '@unocss/preset-icons':
         specifier: catalog:frontend
         version: 66.7.5
+      '@unocss/reset':
+        specifier: catalog:frontend
+        version: 66.7.5
       '@vitejs/plugin-vue':
         specifier: catalog:build
         version: 6.0.8(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0))(vue@3.5.40(typescript@6.0.3))
@@ -1234,9 +1249,15 @@ importers:
       storybook:
         specifier: catalog:storybook
         version: 10.5.6(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      tinyglobby:
+        specifier: catalog:deps
+        version: 0.2.17
       tsdown:
         specifier: catalog:build
         version: 0.22.14(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(tsx@4.23.6)(typescript@6.0.3)
+      tsx:
+        specifier: catalog:build
+        version: 4.23.6
       unocss:
         specifier: catalog:frontend
         version: 66.7.5(@unocss/postcss@66.7.5(postcss@8.5.23))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.6)(yaml@2.9.0))
@@ -11227,12 +11248,6 @@ snapshots:
       react: 19.2.8
     transitivePeerDependencies:
       - zod
-
-  '@json-render/vue@0.19.0(vue@3.5.40(typescript@5.9.3))(zod@4.4.3)':
-    dependencies:
-      '@json-render/core': 0.19.0(zod@4.4.3)
-      vue: 3.5.40(typescript@5.9.3)
-      zod: 4.4.3
 
   '@json-render/vue@0.19.0(vue@3.5.40(typescript@6.0.3))(zod@4.4.3)':
     dependencies:

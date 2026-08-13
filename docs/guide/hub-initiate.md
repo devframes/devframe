@@ -61,6 +61,26 @@ interface DevframeHubUi {
 
 `@devframes/hub-ui`'s `createUi()` is the reference implementation: a standalone viewer plus the floating dock — one `<script type="module" src="/__devframes/embedded.js">` tag in the host page and the dock mounts itself, always visible. A viewer product supplies a different object to the same slot and reuses all the infrastructure; visibility policy (keyboard summon, passive modes) belongs entirely to the entry's author.
 
+## Renderer modules
+
+Viewers are prebuilt, so a renderer for an opt-in dock type (e.g. [JSON-Render](./json-render)) composes at the hub, not in viewer code. `initHub({ renderers })` takes registrations — `{ type, file, importName? }`, where `file` is a prebuilt, self-contained browser ES module whose export is a ready `DockRenderer` — serves each at `<base>__renderers/<type>.mjs`, and publishes the **renderer manifest** into the `devframe:dock-renderers` shared-state slot. Any hub-aware client — the reference UI, a community viewer, a hand-rolled host page — imports a module lazily the first time a dock of its type mounts:
+
+```ts
+import { createUi } from '@devframes/hub-ui'
+import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
+
+initHub({
+  ui: createUi(),
+  renderers: [jsonRenderUiRenderer()],
+})
+```
+
+Renderer packages ship the registration helper (here `jsonRenderUiRenderer()` resolving `@devframes/json-render-ui`'s shipped bundle); swap it for any implementation of the same renderer contract and every viewer picks the replacement up. A renderer registered directly in client code (`createDevframeClientHost({ renderers })`) takes precedence over the manifest, and a dock type covered by neither renders the viewer's missing-renderer fallback.
+
+Renderer modules are **self-styling and shadow-root-safe**: a module delivers its own styles into its mount subtree (the reference module attaches its own shadow root inside the given container), the viewer keeps a live `dark` class on the container as the theme signal, and CSS custom properties (e.g. a `--devframe-primary` branding override) inherit across the boundary.
+
+Registrations are validated fail-fast: one module per type (`DF8108`), an existing bundle file (`DF8109`), and a route-safe type name (`DF8110`).
+
 ## One Auth for the hub
 
 The hub has a **single Auth**: one gate at the one shared transport covers every frame, the hub built-ins, and the MCP route. Mounted frames have no gates of their own — trust established once (OTP exchange, magic link, or a pre-shared token) unlocks the namespace. The gate is on by default; `auth: false` opts a single-user localhost setup out.

@@ -1,6 +1,9 @@
 import type { HubInstance } from '@devframes/hub/initiate'
+import type { DevframeJsonRenderSpec } from '@devframes/json-render'
+import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { createUi } from '@devframes/hub-ui'
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
+import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import { createInspectDevframe } from '@devframes/plugin-inspect'
 import { createMessagesDevframe } from '@devframes/plugin-messages'
 import { defineConfig } from '@rsbuild/core'
@@ -19,6 +22,28 @@ const base = DEVFRAMES_HUB_BASE
 // the dock UI comes from `@devframes/hub-ui` via the `ui` slot.
 let hub: HubInstance | undefined
 
+// A server-authored JSON-render dock: the whole view is this serializable
+// spec — no client build. It renders through whatever `'json-render'`
+// renderer the hub composes (below, the reference `@devframes/json-render-ui`
+// module); without one, the viewer shows its missing-renderer fallback.
+const jsonRenderSpec: DevframeJsonRenderSpec = {
+  root: 'root',
+  elements: {
+    root: { type: 'Card', props: { title: 'JSON Render' }, children: ['body'] },
+    body: { type: 'Stack', props: { gap: 8 }, children: ['text', 'badge'] },
+    text: { type: 'Text', props: { text: 'This dock is a JSON spec authored on the server and rendered by the module composed via initHub({ renderers }).' }, children: [] },
+    badge: { type: 'Badge', props: { text: 'renderer manifest', variant: 'info' }, children: [] },
+  },
+}
+
+const jsonRenderDock: DevframeJsonRenderDockEntry = {
+  type: 'json-render',
+  id: 'json-render-demo',
+  title: 'JSON Render',
+  icon: 'ph:layout-duotone',
+  view: { spec: jsonRenderSpec },
+}
+
 export default defineConfig({
   source: { entry: { index: './src/index.ts' } },
   server: {
@@ -29,6 +54,14 @@ export default defineConfig({
         base,
         devframes: [createInspectDevframe(), createMessagesDevframe()],
         ui: createUi(),
+        // Serve the reference json-render frontend as a prebuilt renderer
+        // module — the one-liner that makes `'json-render'` docks render in
+        // the prebuilt viewer. Swap it for any community implementation of
+        // the same contract.
+        renderers: [jsonRenderUiRenderer()],
+        configure(ctx) {
+          ctx.docks.register(jsonRenderDock)
+        },
         // Single-user localhost demo: opts out of the gate. A hub reachable
         // beyond localhost should gate (see docs/guide/security.md).
         auth: false,

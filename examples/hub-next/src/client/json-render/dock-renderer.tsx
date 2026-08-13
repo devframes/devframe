@@ -1,6 +1,7 @@
 'use client'
 
 import type { JsonRenderViewRef, Spec } from '@devframes/json-render'
+import type { JsonRenderDockRenderer } from '@devframes/json-render/hub'
 import type { ComponentRegistry } from '@json-render/react'
 import type { ReactNode } from 'react'
 import { basePropSchemas } from '@devframes/json-render'
@@ -83,26 +84,20 @@ function JsonRenderView({ spec, rpc, registry, viewId }: JsonRenderViewProps): R
   )
 }
 
-export interface ReactDockMountOptions {
-  entry: unknown
-  container: HTMLElement
-
-  context: { rpc: any }
-}
-
 /**
- * A hub-compatible dock renderer that renders a `json-render` dock with this
- * example's mini **React** registry (registry replacement) instead of the Vue
- * reference frontend. Mounts a React root into the container the client host
+ * A dock renderer implementing the `JsonRenderDockRenderer` contract from
+ * `@devframes/json-render/hub` — this example's mini **React** registry
+ * replacing the Vue reference frontend, exactly the seam a community
+ * implementation uses. Mounts a React root into the container the client host
  * provides. For a shared-state view it subscribes to the live spec; for an
  * inline view (`entry.view.spec`) it renders the embedded spec directly, with
  * no shared-state round-trip. Disposes cleanly either way.
  */
-export function createReactJsonRenderDockRenderer() {
-  return async ({ entry, container, context }: ReactDockMountOptions): Promise<{ dispose: () => void }> => {
-    const view = (entry as { view: JsonRenderViewRef }).view
+export function createReactJsonRenderDockRenderer(): JsonRenderDockRenderer {
+  return async ({ entry, container, context }) => {
+    const view: JsonRenderViewRef = entry.view
     const rpc = context.rpc
-    const viewId = 'stateKey' in view ? view.stateKey : ((entry as { id?: string }).id ?? 'inline')
+    const viewId = 'stateKey' in view ? view.stateKey : entry.id
     const root = createRoot(container)
 
     // Inline view: render the embedded spec once, no shared state involved.

@@ -8,6 +8,7 @@ import type { Duplex } from 'node:stream'
 import type { ClientScriptEntry } from '../types/docks'
 import type { CreateHubContextOptions, DevframeHubContext } from './context'
 import type { InstallDevframeOptions } from './install-devframe'
+import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import process from 'node:process'
 import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_DOCK_IMPORTS_FILENAME, DEVFRAME_MCP_ROUTE, DEVFRAME_WS_ROUTE } from 'devframe/constants'
@@ -16,6 +17,7 @@ import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import { cleanDoubleSlashes, joinURL, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
+import { DOCK_RENDERERS_STATE_KEY } from '../constants'
 import { createHubContext } from './context'
 import { diagnostics } from './diagnostics'
 
@@ -58,8 +60,36 @@ const RESERVED_HUB_PATHS = [
   DEVFRAME_WS_ROUTE,
   DEVFRAME_MCP_ROUTE,
   '__index.json',
+  '__renderers',
   'embedded.js',
 ] as const
+
+/**
+ * One dock-type → prebuilt renderer-module registration for
+ * {@link InitHubOptions.renderers}. The hub serves the module at
+ * `<base>__renderers/<type>.mjs` and publishes it in the renderer manifest
+ * (the `devframe:dock-renderers` shared-state slot), so any viewer — the
+ * reference UI, a community viewer, a hand-rolled host page — lazily imports
+ * it the first time a dock of that `type` needs rendering.
+ *
+ * The module must be a **self-contained browser ES module** (its framework
+ * and styles bundled in) whose {@link DockRendererRegistration.importName}
+ * export is a ready `DockRenderer`. Renderer packages ship a node helper
+ * returning this shape — e.g. `jsonRenderUiRenderer()` from
+ * `@devframes/json-render-ui/hub`.
+ */
+export interface DockRendererRegistration {
+  /** Dock `type` this renderer handles (e.g. `'json-render'`). */
+  type: string
+  /** Absolute path of the prebuilt, self-contained browser ES module. */
+  file: string
+  /**
+   * Named export carrying the renderer.
+   *
+   * @default 'default'
+   */
+  importName?: string
+}
 
 /**
  * The UI slot of a hub instance — pure data, zero policy. The hub itself is
@@ -153,6 +183,22 @@ export interface InitHubOptions {
   configure?: (ctx: DevframeHubContext) => void | Promise<void>
   /** See {@link DevframeHubUi} — omitted, the hub stays fully headless. */
   ui?: DevframeHubUi
+  /**
+   * Prebuilt dock-renderer modules to serve and advertise — the composition
+   * seam that hands a renderer package (e.g. `@devframes/json-render-ui`) to
+   * a prebuilt viewer. Each {@link DockRendererRegistration} is served at
+   * `<base>__renderers/<type>.mjs` and published in the renderer manifest;
+   * clients import a module lazily the first time a dock of its `type`
+   * mounts. Renderers registered directly in client code
+   * (`createDevframeClientHost({ renderers })`) take precedence.
+   *
+   * ```ts
+   * import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
+   *
+   * initHub({ ui: createUi(), renderers: [jsonRenderUiRenderer()] })
+   * ```
+   */
+  renderers?: readonly DockRendererRegistration[]
   /**
    * Share the host's `node:http` server for the WebSocket RPC endpoint
    * (upgrade bound at `<base>__ws`). Hosts whose handlers never see upgrades
@@ -276,6 +322,28 @@ function normalizeBase(base: string): string {
 }
 
 /**
+ * Validate the renderer-module registrations fail-fast: route-safe types
+ * (each becomes the `<base>__renderers/<type>.mjs` URL segment), one module
+ * per type, and an existing bundle file (renderer packages are prebuilt).
+ */
+function resolveRendererRegistrations(
+  registrations: readonly DockRendererRegistration[],
+): DockRendererRegistration[] {
+  const seen = new Set<string>()
+  return registrations.map((registration) => {
+    if (!/^[\w.-]+$/.test(registration.type))
+      throw diagnostics.DF8110({ type: registration.type })
+    if (seen.has(registration.type))
+      throw diagnostics.DF8108({ type: registration.type })
+    seen.add(registration.type)
+    const file = resolve(registration.file)
+    if (!existsSync(file))
+      throw diagnostics.DF8109({ type: registration.type, file })
+    return { ...registration, file }
+  })
+}
+
+/**
  * Render the dock client-script import map as an ES module — one dynamic
  * import thunk per dock that carries a client script (`clientScript` on
  * iframe docks, `action`, `renderer`). External viewers import this module
@@ -322,6 +390,7 @@ export function initHub(options: InitHubOptions): HubInstance {
   const app = new H3()
   const cwd = options.cwd ?? process.cwd()
   const frames: { id: string, base: string, title: string }[] = []
+  const rendererRegistrations = resolveRendererRegistrations(options.renderers ?? [])
 
   const shell = createInstanceShell<DevframeHubContext>({
     base,
@@ -407,6 +476,25 @@ export function initHub(options: InitHubOptions): HubInstance {
 
       await options.configure?.(ctx)
 
+      // Publish the renderer manifest — one `ClientScriptEntry` per dock
+      // `type`, `importFrom` base-absolute so it resolves to the served module
+      // from any page depth. Clients read it from shared state and import a
+      // module lazily the first time a dock of that type mounts.
+      if (rendererRegistrations.length > 0) {
+        const manifest: Record<string, ClientScriptEntry> = {}
+        for (const registration of rendererRegistrations) {
+          manifest[registration.type] = {
+            importFrom: joinURL(base, '__renderers', `${registration.type}.mjs`),
+            ...(registration.importName ? { importName: registration.importName } : {}),
+          }
+        }
+        const manifestState = await ctx.rpc.sharedState.get<Record<string, ClientScriptEntry>>(
+          DOCK_RENDERERS_STATE_KEY,
+          { initialValue: {} },
+        )
+        manifestState.mutate(() => manifest)
+      }
+
       // Aggregate MCP — one Streamable-HTTP endpoint over the shared
       // context's whole registry (tool ids are namespaced per plugin, and the
       // wire-name collision policy is `createMcpFetchHandler`'s own).
@@ -461,6 +549,17 @@ export function initHub(options: InitHubOptions): HubInstance {
           event.res.headers.set('Content-Type', 'text/javascript; charset=utf-8')
           event.res.headers.set('Cache-Control', 'no-store')
           return await readFile(entry)
+        })
+      }
+
+      // Renderer modules — each registration's prebuilt bundle, buffered like
+      // `embedded.js` (a single self-contained file read per request in dev;
+      // a buffered body survives every host's request bridging).
+      for (const registration of rendererRegistrations) {
+        app.use(joinURL(base, '__renderers', `${registration.type}.mjs`), async (event) => {
+          event.res.headers.set('Content-Type', 'text/javascript; charset=utf-8')
+          event.res.headers.set('Cache-Control', 'no-store')
+          return await readFile(registration.file)
         })
       }
 

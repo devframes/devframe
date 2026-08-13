@@ -10,6 +10,9 @@ export default defineConfig({
     // Node-safe entry: exposes the prebuilt SPA path + a devframe wiring
     // helper. Imports no Vue / `@antfu/design`, only `node:url`.
     'spa': 'src/spa.ts',
+    // Node-safe entry: the hub renderer-manifest registration pointing at the
+    // prebuilt module in `dist/renderer/` (built by its own Vite config).
+    'hub': 'src/hub.ts',
   },
   outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),
   clean: true,

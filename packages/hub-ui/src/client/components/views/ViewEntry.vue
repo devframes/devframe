@@ -3,10 +3,10 @@ import type { DevframeDockEntry } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import type { IframePanes } from 'iframe-pane'
 import type { CSSProperties } from 'vue'
-import { defineAsyncComponent } from 'vue'
 import ViewBuiltinClientAuthNotice from '../views-builtin/ViewBuiltinClientAuthNotice.vue'
 import ViewBuiltinSettings from '../views-builtin/ViewBuiltinSettings.vue'
 import ViewCustomRenderer from './ViewCustomRenderer.vue'
+import ViewDockRenderer from './ViewDockRenderer.vue'
 import ViewIframe from './ViewIframe.vue'
 import ViewLauncher from './ViewLauncher.vue'
 
@@ -17,9 +17,6 @@ defineProps<{
   iframeStyle?: CSSProperties
   divStyle?: CSSProperties
 }>()
-
-// Lazy load some less frequently used builtin views
-const ViewJsonRender = defineAsyncComponent(() => import('./ViewJsonRender.vue'))
 </script>
 
 <template>
@@ -62,14 +59,17 @@ const ViewJsonRender = defineAsyncComponent(() => import('./ViewJsonRender.vue')
       :context
       :entry
     />
-    <ViewJsonRender
-      v-else-if="entry.type === 'json-render'"
+    <!--
+      Any other dock type routes through the hub's dock-renderer registry
+      (locally-registered renderers, or prebuilt modules from the hub's
+      renderer manifest — e.g. `json-render`). With no renderer available it
+      renders the missing-renderer fallback.
+    -->
+    <ViewDockRenderer
+      v-else
       :context
       :entry
     />
-    <div v-else>
-      Unknown entry: {{ entry }}
-    </div>
 
     <template #fallback>
       <div>

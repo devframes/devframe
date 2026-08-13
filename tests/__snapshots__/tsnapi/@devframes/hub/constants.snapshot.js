@@ -4,6 +4,7 @@
 // #region Variables
 export var DEFAULT_CATEGORIES_ORDER /* const */
 export var DEFAULT_STATE_USER_SETTINGS /* const */
+export var DOCK_RENDERERS_STATE_KEY /* const */
 // #endregion
 
 // #region Re-exports

@@ -1,11 +1,11 @@
 import type { DevframeClientCommand, DevframeDockEntry, DevframeDockUserEntry, DevframeRpcClientFunctions, DevframeViewIframe } from '@devframes/hub'
-import type { CommandsContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockPanelStorage, DockRegistration, DocksContext } from '@devframes/hub/client'
+import type { CommandsContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockPanelStorage, DockRegistration, DockRendererManifest, DocksContext } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
 import type { Ref } from 'vue'
 import type { HubDocksUserSettings } from './dock-settings'
 import { attachFrameNavClient } from '@devframes/hub/client'
-import { DEFAULT_STATE_USER_SETTINGS } from '@devframes/hub/constants'
+import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY } from '@devframes/hub/constants'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
 import { BUILTIN_ENTRIES, HUB_UI_HIDE_EVENT } from '../constants'
 import { useBranding } from './branding'
@@ -28,6 +28,15 @@ export async function createDocksContext(
   }
 
   const dockEntries = await useDocksEntries(rpc)
+
+  // The hub's renderer manifest (`initHub({ renderers })`): dock type →
+  // prebuilt renderer-module entry. The registry below lazy-imports a module
+  // the first time a dock of its type mounts; locally-registered renderers win.
+  const rendererManifestState = await rpc.sharedState.get<DockRendererManifest>(
+    DOCK_RENDERERS_STATE_KEY,
+    { initialValue: {} },
+  )
+  const rendererManifest = sharedStateToRef(rendererManifestState)
 
   // Client-only dock registry (0.7.10 `DocksEntriesContext` API). Docks
   // registered here live in this page only, merged over the server-provided
@@ -512,7 +521,7 @@ export async function createDocksContext(
       },
       events: rpc.events,
     },
-    renderers: markRaw(createDockRenderers(() => docksContext)),
+    renderers: markRaw(createDockRenderers(() => docksContext, () => rendererManifest.value)),
     rpc: markRaw(rpc),
     clientType,
   })

@@ -1,0 +1,29 @@
+/*
+ * Primary color as a single overridable variable: `--devframe-primary`.
+ *
+ * Mirrors `@devframes/hub-ui`'s ramp (see its `src/client/primary-ramp.css`
+ * for the full derivation notes): each Wind4 stop (`--colors-primary-*`) is
+ * derived from `--devframe-primary` via `color-mix`, falling back to the
+ * devframe default sage green when it is unset.
+ *
+ * Appended AFTER the UnoCSS output (see `scripts/build-css.ts`) so this block
+ * wins over Wind4's own `:root, :host` primary declarations. `:host` is the
+ * effective selector inside the renderer module's shadow root — its host is
+ * the viewer-owned mount container, and `--devframe-primary` (set by a
+ * viewer's branding on any ancestor) inherits across the shadow boundary onto
+ * it, so a rebranded hub retints the rendered views too.
+ */
+:root,
+:host {
+  --devframe-primary-DEFAULT: var(--devframe-primary);
+  --devframe-primary-600: color-mix(in oklab, var(--devframe-primary), white 9%);
+  --devframe-primary-500: color-mix(in oklab, var(--devframe-primary), white 18%);
+  --devframe-primary-400: color-mix(in oklab, var(--devframe-primary), white 34%);
+  --devframe-primary-300: color-mix(in oklab, var(--devframe-primary), white 54%);
+
+  --colors-primary-DEFAULT: var(--devframe-primary-DEFAULT, #3a6a45);
+  --colors-primary-600: var(--devframe-primary-600, #40704b);
+  --colors-primary-500: var(--devframe-primary-500, #578861);
+  --colors-primary-400: var(--devframe-primary-400, #75a67e);
+  --colors-primary-300: var(--devframe-primary-300, #93c69d);
+}

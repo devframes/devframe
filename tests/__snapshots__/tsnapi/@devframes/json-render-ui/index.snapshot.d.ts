@@ -19,13 +19,6 @@ export interface JsonRenderActionError {
   action: string;
   error: unknown;
 }
-export interface JsonRenderDockMountOptions {
-  entry: unknown;
-  container: HTMLElement;
-  context: {
-    rpc: any;
-  };
-}
 export interface JsonRenderDockRendererOptions {
   registry?: ComponentRegistry;
 }
@@ -33,16 +26,13 @@ export interface JsonRenderDockRendererOptions {
 
 // #region Types
 export type JrComponent<P = Record<string, unknown>> = (_: BaseComponentProps<P>) => VNodeChild;
-export type JsonRenderDockRenderer = (_: JsonRenderDockMountOptions) => Promise<{
-  dispose?: () => void;
-}>;
 // #endregion
 
 // #region Functions
 export declare function createActionBridge(_: ActionBridgeRpc, _?: {
   interactive?: boolean;
 }): JsonRenderActionBridge;
-export declare function createJsonRenderDockRenderer(_?: JsonRenderDockRendererOptions): JsonRenderDockRenderer;
+export declare function createJsonRenderDockRenderer(_?: JsonRenderDockRendererOptions): JsonRenderDockRenderer$1;
 export declare function createRenderer(_?: CreateRendererOptions): import("vue").DefineComponent<{}, () => import("vue").VNode<import("vue").RendererNode, import("vue").RendererElement, {
   [key: string]: any;
 }>, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<{}> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
@@ -140,4 +130,9 @@ export declare const Text: JrComponent<TextProps>;
 export declare const TextInput: JrComponent<TextInputProps>;
 export declare const Tree: JrComponent<TreeProps>;
 export declare const UNSUPPORTED_COMPONENT_TYPE: string;
+// #endregion
+
+// #region Other
+export { JsonRenderDockMountOptions }
+export { JsonRenderDockRenderer }
 // #endregion

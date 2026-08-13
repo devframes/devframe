@@ -35,6 +35,8 @@ function guideItems(prefix: string) {
     { text: 'Serve a Hub Anywhere', link: `${prefix}/guide/hub-initiate` },
     { text: 'Deep Linking', link: `${prefix}/guide/deep-linking` },
     { text: 'Client Scripts & Context', link: `${prefix}/guide/client-context` },
+    { text: 'Build Your Own Hub UI', link: `${prefix}/guide/build-your-own-hub-ui` },
+    { text: 'Build Your Own JSON-Render Frontend', link: `${prefix}/guide/build-your-own-json-render-frontend` },
     { text: 'Agent-Native (experimental)', link: `${prefix}/guide/agent-native` },
   ] satisfies DefaultTheme.NavItemWithLink[]
 }

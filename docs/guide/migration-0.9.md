@@ -286,5 +286,37 @@ Bun.serve({
 ```
 
 `examples/hub-hono-minimal` ships this wiring in [`src/bun.ts`](https://github.com/devframes/devframe/blob/main/examples/hub-hono-minimal/src/bun.ts), next to the Node entry's `hub.attach(server)`.
-</content>
-</invoke>
+
+## `renderers.mount()` resolves a typed result
+
+The client renderer registry's `mount()` previously resolved a bare disposer — and silently no-opped when no renderer covered the dock type. It now resolves a discriminated `DockRendererMountResult`, so viewers can show a visible fallback instead of a dead panel:
+
+```ts
+// 0.8.x
+const dispose = await context.renderers.mount(entry, container)
+
+// 0.9
+const result = await context.renderers.mount(entry, container)
+if (result.status === 'mounted')
+  const dispose = result.dispose
+else if (result.status === 'missing-renderer')
+  showFallback(`No renderer for "${entry.type}" in the current environment`)
+else // 'load-error'
+  showError(result.error)
+```
+
+`renderers.has(type)` now also answers `true` for types covered by the hub's [renderer manifest](./hub-initiate#renderer-modules) (`initHub({ renderers })`), whose modules `mount()` imports lazily; renderers registered locally keep precedence.
+
+## `@devframes/hub-ui` renders json-render docks through the registry
+
+hub-ui's bundled Vue json-render components are removed. A `json-render` dock (and any other non-native dock type) now renders through the dock-renderer registry — compose a frontend on the hub:
+
+```ts
+// 0.9
+import { createUi } from '@devframes/hub-ui'
+import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
+
+initHub({ ui: createUi(), renderers: [jsonRenderUiRenderer()] })
+```
+
+Without a registration for the type, hub-ui shows its missing-renderer fallback view. Behavior also improves with the reference module: prop validation with per-element error isolation, action error surfacing, and static-mode handling — see [JSON-Render](./json-render#rendering-inside-a-hub).
