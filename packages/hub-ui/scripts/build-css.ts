@@ -69,15 +69,16 @@ export async function buildCSS(): Promise<void> {
   // a shortcut+variant interaction. Generate the shadow-surface tokens in a
   // dedicated pass so their plain (and `.dark`) rules are always present.
   const surfaces = await generator.generate(shadowSurfaceSafelist.join(' '))
-  // Namespace Wind's `--un-*` vars so this shadow-root stylesheet is immune to
-  // a host page's Wind4 `@property` registrations (see `namespaceShadowCssVars`).
+  // Namespace Wind's `--un-*` vars (→ `--un-hub-*`) so this shadow-root
+  // stylesheet is immune to a host page's Wind4 `@property` registrations
+  // (see `namespaceShadowCssVars`).
   const css = namespaceShadowCssVars([
     reset,
     userStyle.toString(),
     unoResult.css,
     surfaces.css,
     primaryRamp,
-  ].join('\n'))
+  ].join('\n'), '--un-hub-')
 
   await fs.mkdir(join(SRC_DIR, '.generated'), { recursive: true })
   await fs.writeFile(GENERATED_CSS, [

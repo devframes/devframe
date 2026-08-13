@@ -98,13 +98,18 @@ export const designConfig = createDesignConfig()
  * visibly wrong border/background/text color).
  *
  * The shadow stylesheet sets and reads these vars entirely within itself, so
- * renaming every `--un-` to `--dfun-` keeps it self-consistent while making it
- * immune to whatever the host page registered. Apply only to shadow-injected
- * CSS (`hub-ui` dock, `json-render-ui` renderer module) — the Vite-served SPAs
- * own their whole document and need no rename.
+ * renaming every `--un-` to a per-surface prefix (`--un-jr-`, `--un-hub-`)
+ * keeps it self-consistent while making it immune to whatever the host page
+ * registered — the renamed names are distinct properties the host's
+ * `@property --un-*` rules never match. Apply only to shadow-injected CSS
+ * (`hub-ui` dock, `json-render-ui` renderer module) — the Vite-served SPAs own
+ * their whole document and need no rename.
+ *
+ * @param css - The compiled shadow-root stylesheet.
+ * @param prefix - The replacement for `--un-` (e.g. `--un-jr-`, `--un-hub-`).
  */
-export function namespaceShadowCssVars(css: string): string {
-  return css.replaceAll('--un-', '--dfun-')
+export function namespaceShadowCssVars(css: string, prefix: string): string {
+  return css.replaceAll('--un-', prefix)
 }
 
 export const shadowSurfaceSafelist: string[] = [
