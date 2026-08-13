@@ -38,8 +38,26 @@ export const BUILTIN_ENTRY_CLIENT_AUTH_NOTICE: DevframeViewBuiltin = Object.free
   icon: 'ph:warning-duotone',
 })
 
+/**
+ * The viewer's own Settings view. hub-ui owns this `~builtin` dock rather than
+ * leaning on a host to register it server-side — so the Settings tab is visible
+ * by default in every consumer of the reference UI (the standalone viewer and
+ * the embedded dock alike). A `~builtin` view defaults its category to
+ * `~builtin`, so it groups and sorts last on the bar. A host that registers its
+ * own `~settings` dock (node-side, into `devframe:docks`) still wins the merge;
+ * this entry only fills the gap when none is present.
+ */
+export const BUILTIN_ENTRY_SETTINGS: DevframeViewBuiltin = Object.freeze({
+  type: '~builtin',
+  category: '~builtin',
+  id: '~settings',
+  title: 'Settings',
+  icon: 'ph:gear-duotone',
+})
+
 export const BUILTIN_ENTRIES: readonly DevframeViewBuiltin[] = Object.freeze([
   BUILTIN_ENTRY_CLIENT_AUTH_NOTICE,
+  BUILTIN_ENTRY_SETTINGS,
 ])
 
 export { DEFAULT_CATEGORIES_ORDER } from '@devframes/hub/constants'

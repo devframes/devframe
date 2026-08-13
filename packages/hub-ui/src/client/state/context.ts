@@ -7,7 +7,7 @@ import type { HubDocksUserSettings } from './dock-settings'
 import { attachFrameNavClient } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS } from '@devframes/hub/constants'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
-import { BUILTIN_ENTRIES, HUB_UI_HIDE_EVENT } from '../constants'
+import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, HUB_UI_HIDE_EVENT } from '../constants'
 import { useBranding } from './branding'
 import { createCommandsContext } from './commands'
 import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, getRegisteredGroupIds, resolveCommandIcon, resolveGroupDefaultChild } from './dock-settings'
@@ -36,20 +36,32 @@ export async function createDocksContext(
   const clientDocks = reactive(new Map<string, DevframeDockEntry>())
   const entries = computed<DevframeDockEntry[]>(() => {
     const server = dockEntries.value
-    if (clientDocks.size === 0)
-      return server
-    const seen = new Set<string>()
-    const merged: DevframeDockEntry[] = []
-    for (const entry of server) {
-      seen.add(entry.id)
-      // a client dock sharing a server id overrides it in the local merge
-      merged.push(clientDocks.get(entry.id) ?? entry)
+    let base: DevframeDockEntry[]
+    if (clientDocks.size === 0) {
+      base = server
     }
-    for (const [id, entry] of clientDocks) {
-      if (!seen.has(id))
-        merged.push(entry)
+    else {
+      const seen = new Set<string>()
+      const merged: DevframeDockEntry[] = []
+      for (const entry of server) {
+        seen.add(entry.id)
+        // a client dock sharing a server id overrides it in the local merge
+        merged.push(clientDocks.get(entry.id) ?? entry)
+      }
+      for (const [id, entry] of clientDocks) {
+        if (!seen.has(id))
+          merged.push(entry)
+      }
+      base = merged
     }
-    return merged
+    // Surface the viewer's own built-in Settings tab by default. hub-ui owns it
+    // rather than depending on a host to register `~settings` server-side, so
+    // Settings is always reachable (dock bar + `devframes:open-settings`). A host
+    // that registered its own `~settings` entry wins — we only add ours when the
+    // merged list has none.
+    if (base.some(entry => entry.id === BUILTIN_ENTRY_SETTINGS.id))
+      return base
+    return [...base, BUILTIN_ENTRY_SETTINGS]
   })
 
   const selectedId = ref<string | null>(null)
