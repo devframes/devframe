@@ -1,6 +1,6 @@
-import type { DevframeVitePlugin, ViteDevBridgeOptions } from 'devframe/helpers/vite'
+import type { DevframeVitePlugin, ViteDevBridgeOptions } from '@devframes/vite'
 import type { CodeServerOptions } from './types'
-import { viteDevBridge } from 'devframe/helpers/vite'
+import { viteDevBridge } from '@devframes/vite'
 import { createCodeServerDevframe } from './index'
 
 export interface CodeServerViteOptions extends CodeServerOptions {

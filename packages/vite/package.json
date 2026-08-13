@@ -1,31 +1,28 @@
 {
-  "name": "@devframes/nuxt",
+  "name": "@devframes/vite",
   "type": "module",
   "version": "0.9.0-beta.1",
-  "description": "Nuxt module that exposes a Nuxt app as a devframe client.",
+  "description": "Vite plugin for mounting a devframe inside any Vite-based host (Astro, SolidStart, Nuxt, plain Vite apps).",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/devframes/devframe#readme",
   "repository": {
-    "directory": "packages/nuxt",
+    "directory": "packages/vite",
     "type": "git",
     "url": "git+https://github.com/devframes/devframe.git"
   },
   "bugs": "https://github.com/devframes/devframe/issues",
   "keywords": [
     "devframe",
-    "nuxt",
+    "vite",
     "devtools"
   ],
   "sideEffects": false,
   "exports": {
-    ".": {
-      "types": "./dist/types.d.mts",
-      "default": "./dist/module.mjs"
-    },
+    ".": "./dist/index.mjs",
     "./package.json": "./package.json"
   },
-  "types": "./dist/types.d.mts",
+  "types": "./dist/index.d.mts",
   "files": [
     "dist"
   ],
@@ -33,20 +30,28 @@
     "build": "tsdown",
     "watch": "tsdown --watch",
     "typecheck": "tsc --noEmit",
-    "prepack": "pnpm run build"
+    "prepack": "pnpm run build",
+    "test": "vitest run"
   },
   "peerDependencies": {
-    "@nuxt/kit": "^3.0.0 || ^4.0.0 || ^5.0.0-0",
-    "devframe": "workspace:*"
+    "devframe": "workspace:*",
+    "vite": "^7.0.0 || ^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
   },
   "dependencies": {
-    "@devframes/vite": "workspace:*"
+    "pathe": "catalog:deps"
   },
   "devDependencies": {
-    "@nuxt/kit": "catalog:build",
+    "@modelcontextprotocol/client": "catalog:deps",
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
-    "nuxt": "catalog:build",
-    "tsdown": "catalog:build"
+    "get-port-please": "catalog:deps",
+    "tsdown": "catalog:build",
+    "vite": "catalog:build",
+    "vitest": "catalog:testing"
   }
 }

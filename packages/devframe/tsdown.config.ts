@@ -110,7 +110,6 @@ const serverEntries = {
   'adapters/initiate': 'src/adapters/initiate.ts',
   'adapters/mcp': 'src/adapters/mcp/index.ts',
   'cli/main': 'src/cli/main.ts',
-  'helpers/vite': 'src/helpers/vite.ts',
   'recipes/common-rpc-functions': 'src/recipes/common-rpc-functions.ts',
   'recipes/interactive-auth': 'src/recipes/interactive-auth.ts',
 }

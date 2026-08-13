@@ -27,7 +27,6 @@
     "./adapters/mcp": "./dist/adapters/mcp.mjs",
     "./client": "./dist/client/index.mjs",
     "./constants": "./dist/constants.mjs",
-    "./helpers/vite": "./dist/helpers/vite.mjs",
     "./initiate": "./dist/adapters/initiate.mjs",
     "./internal": "./dist/internal/index.mjs",
     "./node": "./dist/node/index.mjs",

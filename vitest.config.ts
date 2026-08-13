@@ -31,6 +31,7 @@ export default defineConfig({
       'plugins/assets',
       'examples/hub-next',
       'packages/next',
+      'packages/vite',
       {
         test: {
           name: 'tests',

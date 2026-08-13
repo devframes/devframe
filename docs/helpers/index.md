@@ -9,7 +9,7 @@ Helpers are the optional, opt-in surface around the core `defineDevframe` API: s
 | Helper | Entry | What it does |
 |--------|-------|--------------|
 | [Utilities](./utilities) | `devframe/utils/*` | Bundled small utilities — terminal colors, hashing, editor launch, structured-clone serialization, and more. |
-| [Vite Bridge](./vite-bridge) | `devframe/helpers/vite` | Vite plugin for mounting a devframe inside any Vite-based host (Astro, SolidStart, plain Vite). |
+| [Vite Bridge](./vite-bridge) | `@devframes/vite` | Vite plugin for mounting a devframe inside any Vite-based host (Astro, SolidStart, plain Vite). |
 | [Nuxt Module](./nuxt) | `@devframes/nuxt` | Nuxt module that wires a Nuxt SPA as a devframe client and serves the dev-time RPC bridge. |
 | [Next Helper](./next) | `@devframes/next` | Route-handler host + React client for mounting devframes inside a Next.js App Router app (experimental). |
 | [Common RPC Functions](./common-rpc-functions) | `devframe/recipes/common-rpc-functions` | Prebuilt RPC actions for "open in editor" and "reveal in Finder". |

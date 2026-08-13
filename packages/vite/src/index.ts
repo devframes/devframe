@@ -1,12 +1,12 @@
+import type { DevframeDefinition, McpRouteOptions } from 'devframe'
+import type { DevframeInstance } from 'devframe/initiate'
+import type { DevframeAuthHandler } from 'devframe/node/auth'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
-import type { DevframeInstance } from '../adapters/initiate'
-import type { DevframeAuthHandler } from '../node/auth/handler'
-import type { DevframeDefinition, McpRouteOptions } from '../types/devframe'
+import type { Plugin } from 'vite'
+import { initDevframe } from 'devframe/initiate'
+import { diagnostics, normalizeBasePath, resolveBasePath } from 'devframe/internal'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { resolve } from 'pathe'
-import { normalizeBasePath, resolveBasePath } from '../adapters/_shared'
-import { initDevframe } from '../adapters/initiate'
-import { diagnostics } from '../node/diagnostics'
 
 export interface ViteDevBridgeOptions {
   /**
@@ -70,21 +70,31 @@ export interface ViteDevBridgeOptions {
   mcp?: boolean | McpRouteOptions
 }
 
-/** The slice of a Vite dev server the bridge plugin touches. */
+/**
+ * The slice of a Vite dev server the bridge plugin touches — deliberately
+ * narrower than Vite's real `ViteDevServer` (which carries the module
+ * graph, watcher, transform pipeline, …) so a host can hand the bridge
+ * anything shaped like this, and a test double only needs to fake two
+ * fields. A real `ViteDevServer` satisfies this structurally, so
+ * `viteDevBridge`'s returned `configureServer(server: ViteDevServer)` hook
+ * (typed against the real `Plugin` below) is still fully type-safe.
+ */
 export interface DevframeViteDevServerLike {
   middlewares: {
     use: ((path: string, handler: (req: IncomingMessage, res: ServerResponse, next?: (err?: unknown) => void) => void) => void)
       & ((handler: (req: IncomingMessage, res: ServerResponse, next?: (err?: unknown) => void) => void) => void)
   }
-  httpServer?: NodeHttpServer | null
+  /**
+   * Deliberately structural (just the one event the bridge listens for)
+   * rather than `NodeHttpServer` — Vite's real `ViteDevServer.httpServer`
+   * is `http.Server | Http2SecureServer | null`, and `Http2SecureServer`
+   * doesn't satisfy `http.Server`'s full shape.
+   */
+  httpServer?: { once: (event: 'close', listener: () => void) => unknown } | null
 }
 
-export interface DevframeVitePlugin {
-  name: string
-  apply: 'serve'
-  configureServer: (server: DevframeViteDevServerLike) => void | Promise<void>
-  closeBundle?: () => void | Promise<void>
-}
+/** A `viteDevBridge` plugin — a real Vite `Plugin`, scoped to its `serve`-only hooks. */
+export type DevframeVitePlugin = Plugin
 
 /**
  * Bridge a devframe into an existing Vite dev server. Returns a Vite
@@ -108,7 +118,8 @@ export interface DevframeVitePlugin {
  *
  * Use bridge mode when integrating with frameworks that own the SPA
  * (Nuxt, Astro, SolidStart, plain Vite apps). For the all-in-one
- * `dev` / `build` / `mcp` shell, reach for {@link createCac} instead.
+ * `dev` / `build` / `mcp` shell, reach for `createCac` (`devframe/adapters/cac`)
+ * instead.
  */
 export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptions = {}): DevframeVitePlugin {
   const base = normalizeMountBase(options.base ?? resolveBasePath(d, 'hosted'))
@@ -118,7 +129,7 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
     return {
       name: `devframe:${d.id}`,
       apply: 'serve',
-      configureServer(server) {
+      configureServer(server: DevframeViteDevServerLike) {
         if (!distDir)
           return
         server.middlewares.use(base, serveStaticNodeMiddleware(resolve(distDir)))
@@ -132,7 +143,7 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
   return {
     name: `devframe:${d.id}`,
     apply: 'serve',
-    async configureServer(server) {
+    async configureServer(server: DevframeViteDevServerLike) {
       // Vite re-invokes `configureServer` on each restart cycle; close
       // the prior handle so we don't leak the WS transport. Silent catch —
       // a stale handle's close failure shouldn't block a fresh start.
@@ -153,7 +164,11 @@ export function viteDevBridge(d: DevframeDefinition, options: ViteDevBridgeOptio
           ...(mw.port != null
             ? { ws: { port: mw.port } }
             : server.httpServer
-              ? { server: server.httpServer }
+              // `initDevframe`'s `server` option shares a real
+              // `node:http` server's WS upgrade listener — Vite's dev
+              // server is always one in practice (never the HTTP/2
+              // variant `ViteDevServer['httpServer']` also allows for).
+              ? { server: server.httpServer as NodeHttpServer }
               : { ws: { sidecar: true } }),
           // Gate by default: an unset `auth` defers to the handler
           // (devframe's interactive OTP unless `cli.auth` opts out) rather

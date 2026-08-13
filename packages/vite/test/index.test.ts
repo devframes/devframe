@@ -1,13 +1,13 @@
+import type { DevframeDefinition } from 'devframe'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
-import type { DevframeDefinition } from '../../types/devframe'
-import type { DevframeViteDevServerLike } from '../vite'
+import type { DevframeViteDevServerLike } from '../src/index'
 import { createServer } from 'node:http'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
 import { afterEach, describe, expect, it } from 'vitest'
-import { viteDevBridge } from '../vite'
+import { viteDevBridge } from '../src/index'
 
 function defineTestDef(): DevframeDefinition {
   return {

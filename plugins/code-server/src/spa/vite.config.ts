@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
+import { viteDevBridge } from '@devframes/vite'
 import vue from '@vitejs/plugin-vue'
-import { viteDevBridge } from 'devframe/helpers/vite'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
 import { alias } from '../../../../alias'

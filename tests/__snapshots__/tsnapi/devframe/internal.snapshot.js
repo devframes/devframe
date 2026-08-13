@@ -8,10 +8,13 @@ export { createH3DevframeHost }
 export { createInstanceShell }
 export { createRpcWireCodec }
 export { DevframeAgentHost }
+export { diagnostics }
 export { listLiveDevframeInstances }
+export { normalizeBasePath }
 export { normalizeHttpServerUrl }
 export { peekRpcWireFrame }
 export { registerDevframeInstance }
+export { resolveBasePath }
 export { resolveInstanceRegister }
 export { samePath }
 // #endregion

@@ -58,6 +58,196 @@ export declare function peekRpcWireFrame(_: string): {
 };
 // #endregion
 
+// #region Variables
+export declare const diagnostics: import("nostics").Diagnostics<{
+  readonly DF0006: {
+    readonly why: (p: {
+      name: string;
+    }) => string;
+  };
+  readonly DF0007: {
+    readonly why: "AsyncLocalStorage is not set, it likely to be an internal bug of the Devframe foundation";
+  };
+  readonly DF0008: {
+    readonly why: (p: {
+      distDir: string;
+    }) => string;
+  };
+  readonly DF0012: {
+    readonly why: (p: {
+      filepath: string;
+    }) => string;
+  };
+  readonly DF0013: {
+    readonly why: (p: {
+      key: string;
+    }) => string;
+  };
+  readonly DF0014: {
+    readonly why: (p: {
+      name: string;
+    }) => string;
+    readonly fix: "Provide a short description (~1–3 sentences) explaining what the tool does and when agents should invoke it.";
+  };
+  readonly DF0015: {
+    readonly why: (p: {
+      id: string;
+    }) => string;
+    readonly fix: "Tool ids must be unique across RPC functions with an `agent` field and tools registered via `ctx.agent.registerTool()`.";
+  };
+  readonly DF0016: {
+    readonly why: (p: {
+      id: string;
+    }) => string;
+  };
+  readonly DF0017: {
+    readonly why: (p: {
+      transport: string;
+      reason: string;
+    }) => string;
+  };
+  readonly DF0029: {
+    readonly why: (p: {
+      channel: string;
+      id: string;
+      dropped: number;
+    }) => string;
+    readonly fix: "The consumer is too slow for the producer. Raise `highWaterMark` on the subscription, slow the producer, or batch chunks.";
+  };
+  readonly DF0030: {
+    readonly why: (p: {
+      channel: string;
+      id: string;
+    }) => string;
+    readonly fix: "Ensure the server-side producer is running before clients subscribe, or check for typos in the stream id.";
+  };
+  readonly DF0031: {
+    readonly why: (p: {
+      channel: string;
+      id: string;
+    }) => string;
+    readonly fix: "Track the producer lifecycle — guard writes with the `stream.signal.aborted` flag.";
+  };
+  readonly DF0032: {
+    readonly why: (p: {
+      channel: string;
+    }) => string;
+    readonly fix: "Each channel name must be unique within a context. Pick a different name or reuse the existing channel handle.";
+  };
+  readonly DF0033: {
+    readonly why: (p: {
+      id: string;
+      reason: string;
+    }) => string;
+    readonly fix: "Verify the bridge port is free and the devframe setup function does not throw. Pin a port via `cli.port` / `cli.portRange` on the definition, or via `devMiddleware.port` on `viteDevBridge`.";
+  };
+  readonly DF0034: {
+    readonly why: (p: {
+      namespace: string;
+      name: string;
+    }) => string;
+    readonly fix: "A scoped context auto-namespaces ids. Pass a bare name without a \":\" separator (e.g. `register({ name: \"get-cwd\" })`), or use the unscoped `ctx.base.rpc.register` for a fully-qualified name.";
+  };
+  readonly DF0035: {
+    readonly why: (p: {
+      filepath: string;
+    }) => string;
+    readonly fix: "Check that the storage directory is writable and has free space.";
+  };
+  readonly DF0036: {
+    readonly why: (p: {
+      name: string;
+    }) => string;
+    readonly fix: "Complete the auth handshake (or connect with a static/pre-shared token) before calling a trusted method. Untrusted callers may only call `anonymous:`-prefixed methods — see `isAnonymousRpcMethod`.";
+  };
+  readonly DF0037: {
+    readonly why: (p: {
+      id: string;
+    }) => string;
+    readonly fix: "Service ids are unique per context. Revoke the existing provider first (the `provide()` call returns a revoke function), or namespace the id with your plugin id to avoid collisions.";
+  };
+  readonly DF0042: {
+    readonly why: (p: {
+      id: string;
+    }) => string;
+    readonly fix: "Pass `{ force: true }` to `createBuild()` if the degraded export is still useful to you, or drop `capabilities.build: false` on the definition.";
+  };
+  readonly DF0045: {
+    readonly why: (p: {
+      file: string;
+      reason: string;
+    }) => string;
+    readonly fix: "Discovery tooling (`devframe connect`) will not see this instance. Check that the registry directory is writable, point `DEVFRAME_INSTANCES_DIR` at a writable directory, or set `DEVFRAME_DISABLE_INSTANCE_REGISTRY=1` to opt out of registration.";
+  };
+  readonly DF0046: {
+    readonly why: (p: {
+      reason: string;
+    }) => string;
+    readonly fix: "Install it next to devframe (e.g. `npm install @modelcontextprotocol/server`) and run `devframe connect` again.";
+  };
+  readonly DF0047: {
+    readonly why: (p: {
+      name: string;
+      id: string;
+      existing: string;
+    }) => string;
+    readonly fix: "Wire names derive from tool ids (characters outside [a-zA-Z0-9_-] become \"_\"). Rename one of the two ids so they sanitize to distinct names.";
+  };
+  readonly DF0048: {
+    readonly why: (p: {
+      key: string;
+    }) => string;
+    readonly fix: "Call the devframe_state_read tool without arguments to list the available keys, then retry with one of them.";
+  };
+  readonly DF0049: {
+    readonly why: "The devframe_connect_call-tool tool requires { port: number, tool: string }.";
+    readonly fix: "Call devframe_connect_list-instances to get the port and tool names, then retry.";
+  };
+  readonly DF0050: {
+    readonly why: (p: {
+      port: number;
+    }) => string;
+    readonly fix: "Call devframe_connect_list-instances for the current instance list — the instance may have stopped or changed port.";
+  };
+  readonly DF0051: {
+    readonly why: (p: {
+      port: number;
+    }) => string;
+    readonly fix: "Restart the instance with the --mcp flag (or set `cli.mcp: true` on its definition) to expose its tools, then list instances again.";
+  };
+  readonly DF0052: {
+    readonly why: (p: {
+      host: string;
+      port: number;
+      reason: string;
+    }) => string;
+    readonly fix: "The port is likely already taken by another process (often a previous devframe instance). Free it, or pick another via `--port`, `cli.port` / `cli.portRange` on the definition, or `devMiddleware.port` on `viteDevBridge`. The original node error is available as `error.cause`.";
+  };
+  readonly DF0054: {
+    readonly why: (p: {
+      id: string;
+    }) => string;
+    readonly fix: "Await `instance.ready` (or any request through `instance.handler`) before reading `connectionMeta()` — the WebSocket binding it describes is only known once initialization completes.";
+  };
+  readonly DF0055: {
+    readonly why: (p: {
+      tier: string;
+    }) => string;
+    readonly fix: "Drop `handleUpgrade`/`attach` and let the configured transport serve the socket, or remove `server` / `ws.port` / `ws.sidecar` from the options so the instance leaves the binding to you.";
+  };
+  readonly DF0056: {
+    readonly why: (p: {
+      url: string;
+    }) => string;
+    readonly fix: "The server behind `ws.url` owns the transport (and its auth). Drop `ws.url` to have the instance serve the socket, or pair it with `server` / `ws.port` / `ws.sidecar` for the tunnel pattern, where a local binding is advertised through the relay.";
+  };
+  readonly DF0057: {
+    readonly why: () => string;
+    readonly fix: "Clients connect over the SSE endpoint instead — no upgrade wiring is needed. Remove `ws: false` if the instance should serve a WebSocket after all.";
+  };
+}, readonly [typeof devframeReporter]>;
+// #endregion
+
 // #region Other
 export { ContextRpcServer }
 export { createContextRpcServer }
@@ -73,7 +263,9 @@ export { InstanceShellInit }
 export { InstanceShellInternals }
 export { InstanceWsTier }
 export { listLiveDevframeInstances }
+export { normalizeBasePath }
 export { registerDevframeInstance }
+export { resolveBasePath }
 export { resolveInstanceRegister }
 export { samePath }
 export { StartedServer }

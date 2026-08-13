@@ -40,7 +40,7 @@ All adapter factories share the shape `createXxx(devframeDef, options?)`.
 
 The same `DevframeDefinition` runs under every adapter - pick based on deployment, not on what the tool does.
 
-For Vite-based hosts that don't use the kit (Nuxt, Astro, SolidStart, plain Vite apps), `devframe/helpers/vite` exports `viteDevBridge(def, options?)` - a Vite plugin that mounts the SPA (static mode) or starts the RPC + WS bridge alongside the host's dev server (`devMiddleware: true`). Not an adapter; just a Vite integration helper.
+For Vite-based hosts that don't use the kit (Nuxt, Astro, SolidStart, plain Vite apps), `@devframes/vite` exports `viteDevBridge(def, options?)` - a Vite plugin that mounts the SPA (static mode) or starts the RPC + WS bridge alongside the host's dev server (`devMiddleware: true`). Not an adapter; just a Vite integration helper.
 
 ## Minimum viable devframe
 

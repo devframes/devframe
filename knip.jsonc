@@ -90,7 +90,6 @@
       // listed explicitly instead. Keep this in sync with the `exports` map.
       "entry": [
         "src/{index,constants}.ts",
-        "src/helpers/vite.ts",
         "src/adapters/{build,cac,dev,embedded,initiate}.ts",
         "src/adapters/mcp/index.ts",
         "src/client/index.ts",

@@ -103,9 +103,6 @@
       "devframe/adapters/build": [
         "./packages/devframe/src/adapters/build.ts"
       ],
-      "devframe/helpers/vite": [
-        "./packages/devframe/src/helpers/vite.ts"
-      ],
       "devframe/adapters/embedded": [
         "./packages/devframe/src/adapters/embedded.ts"
       ],
@@ -147,6 +144,9 @@
       ],
       "@devframes/next": [
         "./packages/next/src/index.ts"
+      ],
+      "@devframes/vite": [
+        "./packages/vite/src/index.ts"
       ],
       "@devframes/json-render/core": [
         "./packages/json-render/src/core.ts"

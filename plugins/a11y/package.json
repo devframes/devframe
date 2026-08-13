@@ -62,6 +62,7 @@
     }
   },
   "dependencies": {
+    "@devframes/vite": "workspace:*",
     "axe-core": "catalog:frontend",
     "cac": "catalog:deps",
     "solid-js": "catalog:frontend"

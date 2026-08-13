@@ -9,7 +9,7 @@ A thin Vite plugin for mounting a devframe inside an existing Vite dev server. U
 This sits below the [`vite` adapter](/adapters/vite) on the abstraction ladder: the adapter targets the full Vite DevTools dock; the bridge is the lower-level Vite plugin you reach for when you want a devframe to ride along with an existing app's dev server without the DevTools dock.
 
 ```ts
-import { viteDevBridge } from 'devframe/helpers/vite'
+import { viteDevBridge } from '@devframes/vite'
 import { defineConfig } from 'vite'
 import devframe from './devframe'
 

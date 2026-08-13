@@ -59,6 +59,7 @@
     }
   },
   "dependencies": {
+    "@devframes/vite": "workspace:*",
     "cac": "catalog:deps",
     "get-port-please": "catalog:deps",
     "nostics": "catalog:deps"

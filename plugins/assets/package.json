@@ -57,6 +57,7 @@
     }
   },
   "dependencies": {
+    "@devframes/vite": "workspace:*",
     "cac": "catalog:deps",
     "chokidar": "catalog:deps",
     "image-meta": "catalog:deps",

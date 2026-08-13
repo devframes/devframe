@@ -1,6 +1,6 @@
-import type { DevframeVitePlugin, ViteDevBridgeOptions } from 'devframe/helpers/vite'
+import type { DevframeVitePlugin, ViteDevBridgeOptions } from '@devframes/vite'
 import type { TerminalsOptions } from './types'
-import { viteDevBridge } from 'devframe/helpers/vite'
+import { viteDevBridge } from '@devframes/vite'
 import { createTerminalsDevframe } from './index'
 
 export interface TerminalsViteOptions extends TerminalsOptions {

@@ -26,8 +26,16 @@
 //   transport"), the fetch/connect handler pair, and teardown. `StartedServer`
 //   is the live handle its bound tiers produce and `createDevServer` re-exposes.
 // - `normalizeHttpServerUrl` — a small host-side URL helper.
+// - `resolveBasePath` / `normalizeBasePath` — the mount-base resolution
+//   `initDevframe` itself uses; a bridge (`@devframes/vite`) that mounts a
+//   devframe onto a host it doesn't own reuses the exact same defaulting.
+// - `diagnostics` — devframe core's structured diagnostics instance
+//   (`DF00xx`), so a first-party integration built outside this package can
+//   report against the same registered codes instead of minting its own.
+export { normalizeBasePath, resolveBasePath } from '../adapters/_shared'
 export { coerceAgentPositionalArgs } from '../node/agent-args'
 export type { AgentArgsFallback } from '../node/agent-args'
+export { diagnostics } from '../node/diagnostics'
 export { DevframeAgentHost } from '../node/host-agent'
 export * from '../node/host-h3'
 export { listLiveDevframeInstances, registerDevframeInstance } from '../node/instance-registry'

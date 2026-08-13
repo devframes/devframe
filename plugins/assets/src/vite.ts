@@ -1,5 +1,5 @@
-import type { DevframeVitePlugin, ViteDevBridgeOptions } from 'devframe/helpers/vite'
-import { viteDevBridge } from 'devframe/helpers/vite'
+import type { DevframeVitePlugin, ViteDevBridgeOptions } from '@devframes/vite'
+import { viteDevBridge } from '@devframes/vite'
 import assetsDevframe from './index'
 
 export type { ViteDevBridgeOptions }

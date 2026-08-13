@@ -14,7 +14,6 @@ const FORBIDDEN: ForbiddenRule[] = [
   { name: 'devframe/rpc/transports/*', match: id => id.startsWith('devframe/rpc/transports/') },
   { name: 'devframe/node*', match: id => id === 'devframe/node' || id.startsWith('devframe/node/') },
   { name: 'devframe/adapters/*', match: id => id.startsWith('devframe/adapters/') },
-  { name: 'devframe/helpers/*', match: id => id.startsWith('devframe/helpers/') },
   { name: 'devframe/recipes/*', match: id => id.startsWith('devframe/recipes/') },
   { name: 'devframe/utils/launch-editor', match: id => id === 'devframe/utils/launch-editor' },
   { name: 'devframe/utils/open', match: id => id === 'devframe/utils/open' },
