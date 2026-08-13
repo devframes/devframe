@@ -6,6 +6,31 @@ outline: deep
 
 0.9 removes the compatibility shims that were deprecated across the 0.7 series and trims the public API surface of `devframe` and `@devframes/hub` down to what integrations actually consume. Each change has a drop-in replacement, so migrating is a matter of updating import paths and a handful of call sites. This page covers the changes between 0.8.x and 0.9.
 
+## Overview
+
+Every entry below has a drop-in replacement. At a glance:
+
+**`devframe`**
+
+| Removed / moved | Replacement |
+|---|---|
+| `devframe/adapters/cli` (`createCli`, `CreateCliOptions`, `CliHandle`) | `devframe/adapters/cac` (`createCac`, …) |
+| `devframe/recipes/open-helpers` | `devframe/recipes/common-rpc-functions` |
+| dump re-exports on the `devframe/rpc` barrel | `devframe/rpc/dump` |
+| `defineDevframe` on `devframe/types` | `defineDevframe` on `devframe` |
+| `devframe/utils/promise`, `devframe/utils/scope` | `Promise.withResolvers()` / inline the check |
+| host implementations + low-level factories on `devframe/node` | slimmed to `createHostContext` / `createStorage` |
+| cross-package internals on `devframe/node` | `devframe/internal` (unstable) |
+| `startHttpAndWs` | `createDevServer` / `devframe/initiate` |
+
+**`@devframes/hub`**
+
+| Removed / moved | Replacement |
+|---|---|
+| json-render shims (`defineJsonRenderSpec`, `ctx.createJsonRenderer`, …) | `@devframes/json-render` |
+| `mountDevframe` | `ctx.install` |
+| `DEFAULT_CATEGORIES_ORDER` re-exports | `@devframes/hub/constants` |
+
 ## `devframe/adapters/cli` is removed
 
 The CLI adapter was renamed to `cac` in 0.7. The `devframe/adapters/cli` entry - `createCli`, `CreateCliOptions`, and `CliHandle` - is now gone. Import from `devframe/adapters/cac` instead:
@@ -145,14 +170,13 @@ The low-level primitives shared between `devframe` and its first-party integrati
 | Moved | From | To |
 |---|---|---|
 | `createH3DevframeHost` (+ `CreateH3DevframeHostOptions`) | `devframe/node` | `devframe/internal` |
-| `createContextRpcServer` (+ `ContextRpcServer`, `CreateContextRpcServerOptions`) | `devframe/node` | `devframe/internal` |
 | `StartedServer` (the `createDevServer` return handle) | `devframe/node` | `devframe/internal` |
 | `DevframeAgentHost` (class) | `devframe/node` | `devframe/internal` |
 | `coerceAgentPositionalArgs` (+ `AgentArgsFallback`) | `devframe/node` | `devframe/internal` |
 | `registerDevframeInstance` / `listLiveDevframeInstances` (+ `DevframeInstanceRecord`, `DevframeInstanceRegistration`) | `devframe/node` | `devframe/internal` |
 | `normalizeHttpServerUrl` | `devframe/node` | `devframe/internal` |
 
-A host that stands up its own server composes from `devframe/internal` - `createH3DevframeHost` for the node `DevframeHost`, `createContextRpcServer` + `devframe/rpc/transports/*` to bind a transport - plus `devframe/node`'s `createHostContext` and `devframe/node/hub-internals`. This is the path `@devframes/hub`'s `initHub` takes. A custom host advertises itself with `registerDevframeInstance` (or the new `register` flag, below), and a devtool enumerates running instances with `listLiveDevframeInstances`. Application code should prefer the adapters and `devframe/initiate`.
+A host that stands up its own server composes from `devframe/internal` - `createH3DevframeHost` for the node `DevframeHost`, plus `createContextRpcServer` and a transport from `devframe/rpc/transports/*` to bind the RPC socket - alongside `devframe/node`'s `createHostContext` and `devframe/node/hub-internals`. A custom host advertises itself with `registerDevframeInstance`, and a devtool enumerates running instances with `listLiveDevframeInstances`. Application code should prefer the adapters and `devframe/initiate`.
 
 ## `startHttpAndWs` is removed
 
@@ -163,7 +187,7 @@ The low-level "listen on a port + attach the WS transport" primitive is gone. `c
 | `startHttpAndWs({ context, port, ... })` for a standalone tool | `createDevServer(def, { port, ... })` |
 | `startHttpAndWs(...)` inside a framework host | `initDevframe(def, { base, ... })` / `initHub({ base, ... })` |
 
-A host that genuinely binds its own transport - a bare RPC socket, or a server it wires itself - composes the two public primitives `startHttpAndWs` used underneath: `createContextRpcServer` (`devframe/internal`) for the session/auth wiring, and a transport from `devframe/rpc/transports/*`.
+A host that genuinely binds its own transport - a bare RPC socket, or a server it wires itself - composes the two primitives the adapters use underneath: `createContextRpcServer` (`devframe/internal`) for the session/auth wiring, and a transport from `devframe/rpc/transports/*`.
 
 ```ts
 // 0.9 - bind the RPC socket onto a server you own
@@ -211,112 +235,3 @@ await ctx.install(myDevframe)
 // 0.9
 import { DEFAULT_CATEGORIES_ORDER } from '@devframes/hub/constants'
 ```
-
-## `initDevframe` / `initHub` bind no WebSocket server on their own
-
-Both factories used to start a side-car WebSocket server when no transport option was given. In 0.9 a side-car is opt-in, so creating an instance never binds a port by itself. The binding resolves `ws.port` > `server` > `ws.sidecar` > the host's own upgrades:
-
-| 0.8.x | 0.9 |
-|-------|-----|
-| `initHub({ base })` (implicit side-car) | `initHub({ base, ws: { sidecar: true } })` |
-| `initDevframe(def, { base })` (implicit side-car) | `initDevframe(def, { base, ws: { sidecar: true } })` |
-| - | `hub.attach(server)` / `hub.handleUpgrade(req, socket, head)` - serve the socket from a server the host owns |
-
-Hosts already passing `server`, `ws.port` or `ws.url` are unaffected. Hosts whose handlers never see upgrades (Next.js route handlers, Nitro, Rsbuild) add `ws: { sidecar: true }`; hosts that get their `node:http` server *after* the instance exists - a Hono app served by `@hono/node-server`, for instance - hand it over with `attach`, which returns a detach function:
-
-```ts
-// 0.9
-import { serve } from '@hono/node-server'
-
-const hub = initHub({ base: DEVFRAMES_HUB_BASE })
-const detach = hub.attach(serve({ fetch: app.fetch, port: 3000 }))
-```
-
-Calling `attach` / `handleUpgrade` on an instance that already owns a transport reports [`DF0055`](/errors/DF0055), and on the advertise-only `ws.url` tier [`DF0056`](/errors/DF0056).
-
-## `initDevframe` / `initHub` can register themselves
-
-An in-process host used to call `registerDevframeInstance` by hand to appear in the global instance registry (`~/.devframe/instances/`, read by `devframe connect` and the inspect plugin's Instances tab). Both factories now take an opt-in `register` flag that does it for them: a dynamic import that writes the record once the public origin resolves and removes it on `close()`. `createDevServer` registers this way automatically.
-
-| 0.8.x | 0.9 |
-|---|---|
-| manual `registerDevframeInstance({ pid, port, origin, … })` + `unregister()` on every close path | `initHub({ base, register: true })` / `initDevframe(def, { base, register: true })` |
-
-Pass an object to override individual record fields - `register: { id, name, rootDir }`. `registerDevframeInstance` / `listLiveDevframeInstances` remain on `devframe/internal` for hosts that drive the registry directly.
-
-## The `key` option is removed; memoize on `globalThis`
-
-`initDevframe` and `initHub` no longer memoize instances under a `key` (and the `DF0053` / `DF8001` replacement diagnostics are gone with it). A host that re-evaluates its modules in dev owns the memo, which makes the lifecycle visible at the call site:
-
-```ts
-// 0.8.x
-export const hub = initHub({ key: 'devtools', base: DEVFRAMES_HUB_BASE, devframes })
-```
-
-```ts
-// 0.9
-const g = globalThis as { hub?: HubInstance }
-export const hub = g.hub ??= initHub({ base: DEVFRAMES_HUB_BASE, devframes })
-```
-
-`@devframes/next`'s `createDevframeNextHandler` keeps its own `key` option and memoizes for you, so Next hosts using it need no change.
-
-## The Bun WebSocket tier moves out of the instances
-
-`initDevframe` / `initHub` no longer detect Bun and complete fetch upgrades themselves, so `instance.websocket` and `handler`'s second (`server`) argument are gone - `handler` is now exactly `(request: Request) => Promise<Response>`. A Bun host binds the transport itself, with the same public primitives the instances used underneath:
-
-```ts
-// 0.9
-import { createContextRpcServer } from 'devframe/internal'
-import { attachBunWsTransport } from 'devframe/rpc/transports/ws-bun'
-
-const core = createContextRpcServer({ context: await hub.context, auth: false })
-const tier = await attachBunWsTransport(core)
-
-Bun.serve({
-  port: 3000,
-  fetch(request, server) {
-    const { pathname } = new URL(request.url)
-    if (pathname === `${hub.base}__ws` && request.headers.get('upgrade')?.toLowerCase() === 'websocket')
-      return tier.handleUpgrade(request, server)
-    return app.fetch(request)
-  },
-  websocket: tier.websocket as never,
-})
-```
-
-`examples/hub-hono-minimal` ships this wiring in [`src/bun.ts`](https://github.com/devframes/devframe/blob/main/examples/hub-hono-minimal/src/bun.ts), next to the Node entry's `hub.attach(server)`.
-
-## `renderers.mount()` resolves a typed result
-
-The client renderer registry's `mount()` previously resolved a bare disposer - and silently no-opped when no renderer covered the dock type. It now resolves a discriminated `DockRendererMountResult`, so viewers can show a visible fallback instead of a dead panel:
-
-```ts
-// 0.8.x
-const dispose = await context.renderers.mount(entry, container)
-
-// 0.9
-const result = await context.renderers.mount(entry, container)
-if (result.status === 'mounted')
-  const dispose = result.dispose
-else if (result.status === 'missing-renderer')
-  showFallback(`No renderer for "${entry.type}" in the current environment`)
-else // 'load-error'
-  showError(result.error)
-```
-
-`renderers.has(type)` now also answers `true` for types covered by the hub's [renderer manifest](./hub-initiate#renderer-modules) (`initHub({ renderers })`), whose modules `mount()` imports lazily; renderers registered locally keep precedence.
-
-## `@devframes/hub-ui` renders json-render docks through the registry
-
-hub-ui's bundled Vue json-render components are removed. A `json-render` dock (and any other non-native dock type) now renders through the dock-renderer registry - compose a frontend on the hub:
-
-```ts
-// 0.9
-import { createUi } from '@devframes/hub-ui'
-import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
-
-initHub({ ui: createUi(), renderers: [jsonRenderUiRenderer()] })
-```
-
-Without a registration for the type, hub-ui shows its missing-renderer fallback view. Behavior also improves with the reference module: prop validation with per-element error isolation, action error surfacing, and static-mode handling - see [JSON-Render](./json-render#rendering-inside-a-hub).
