@@ -2,25 +2,25 @@ import { presetAnthonyDesign } from '@antfu/design/unocss'
 import {
   defineConfig,
   presetIcons,
-  presetWind3,
+  presetWind4,
   transformerDirectives,
   transformerVariantGroup,
 } from 'unocss'
 
 // The reference frontend uses `@antfu/design` directly: its preset (tuned to
-// devframe's sage green) over a Wind3 base, Phosphor icons, DM Sans/Mono and
+// devframe's sage green) over a Wind4 base, Phosphor icons, DM Sans/Mono and
 // the directive/variant-group transformers. Component class strings are
 // authored in `.ts` render functions, so `.ts` is opted into extraction. The
 // named `z-*` layers are the app's to own (the preset blocks plain `z-<number>`).
 //
-// Wind3, not the Wind4 the other devframe surfaces use: this stylesheet is
-// injected into the renderer module's own shadow root, and Wind4's
-// `@property`/cascade-layer theme output doesn't apply reliably to
-// adopted-stylesheet content inside a shadow tree — Wind3's plain utilities do.
+// The prebuilt renderer module injects its compiled stylesheet into its own
+// shadow root; `scripts/build-css.ts` rewrites the theme's `:root` selector to
+// `:root, :host` so `@antfu/design`'s `--colors-*` variables cascade into that
+// shadow tree (they otherwise only apply to the top-level document).
 export default defineConfig({
   presets: [
     presetAnthonyDesign({ primary: '#3a6a45' }),
-    presetWind3(),
+    presetWind4(),
     presetIcons({ scale: 1.1 }),
   ],
   transformers: [transformerDirectives(), transformerVariantGroup()],

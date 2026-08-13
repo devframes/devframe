@@ -1,20 +1,16 @@
-import { mergeConfigs, presetWind3 } from 'unocss'
-import { createDesignConfig } from '../../design/uno.config'
+import { mergeConfigs } from 'unocss'
+import { designConfig } from '../../design/uno.config'
 
 // The shared devframe design base (see `design/uno.config.ts` and the root
 // AGENTS.md "Design system" section) plus this package's own extraction
 // globs and the dock-shell z-layers. The generated stylesheet is compiled
 // ahead of time by `scripts/build-css.ts` into
 // `src/client/.generated/css.ts` and injected into each custom element's
-// shadow root, so the components stay styled in any host page without a
-// global stylesheet.
-//
-// Composed on a **Wind3** base rather than the shared default's Wind4: the
-// dock renders inside a custom element's shadow root, and Wind4's
-// `@property`/cascade-layer theme output doesn't apply reliably to the
-// stylesheet adopted into that shadow tree — Wind3's plain utility output does.
+// shadow root — `build-css.ts` rewrites the theme's `:root` selector to
+// `:root, :host` so `@antfu/design`'s `--colors-*` variables cascade into
+// that shadow tree (they otherwise only apply to the top-level document).
 export default mergeConfigs([
-  createDesignConfig({ base: presetWind3() }),
+  designConfig,
   {
     content: {
       pipeline: {

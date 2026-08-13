@@ -25,6 +25,16 @@ const IGNORE = ['**/*.stories.*', '**/__tests__/**']
 const PRIMARY_RAMP = join(SRC_DIR, 'renderer-module/primary-ramp.css')
 const GENERATED_CSS = join(SRC_DIR, '.generated/css.ts')
 
+/**
+ * Retarget Wind4's theme `:root {}` block at `:root, :host` so its
+ * `--colors-*` (and other design tokens) cascade into the shadow root the
+ * renderer module adopts the stylesheet into — a `:root` selector matches
+ * only the top-level document, never the shadow host.
+ */
+function shadowScopeTheme(css: string): string {
+  return css.replaceAll(':root {', ':root, :host {').replaceAll(':root{', ':root, :host{')
+}
+
 export async function buildCSS(): Promise<void> {
   const require = createRequire(import.meta.url)
   const reset = await fs.readFile(require.resolve('@unocss/reset/tailwind.css'), 'utf-8')
@@ -57,7 +67,10 @@ export async function buildCSS(): Promise<void> {
   const unoResult = await generator.generate(tokens)
   const css = [
     reset,
-    unoResult.css,
+    // Make Wind4's `:root {}` theme block apply inside the renderer module's
+    // shadow root (see `shadowScopeTheme`) — otherwise `bg-base` / `color-base`
+    // and every `color-mix(var(--colors-*))` utility resolve to nothing there.
+    shadowScopeTheme(unoResult.css),
     primaryRamp,
   ].join('\n')
 

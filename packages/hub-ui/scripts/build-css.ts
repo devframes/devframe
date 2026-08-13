@@ -24,6 +24,16 @@ const USER_STYLE = join(SRC_DIR, 'style.css')
 const PRIMARY_RAMP = join(SRC_DIR, 'primary-ramp.css')
 const GENERATED_CSS = join(SRC_DIR, '.generated/css.ts')
 
+/**
+ * Retarget Wind4's theme `:root {}` block at `:root, :host` so its
+ * `--colors-*` (and other design tokens) cascade into the shadow root the
+ * stylesheet is adopted into — a `:root` selector matches only the top-level
+ * document, never the shadow host.
+ */
+function shadowScopeTheme(css: string): string {
+  return css.replaceAll(':root {', ':root, :host {').replaceAll(':root{', ':root, :host{')
+}
+
 export async function buildCSS(): Promise<void> {
   const require = createRequire(import.meta.url)
   const reset = await fs.readFile(require.resolve('@unocss/reset/tailwind.css'), 'utf-8')
@@ -65,7 +75,14 @@ export async function buildCSS(): Promise<void> {
   const css = [
     reset,
     userStyle.toString(),
-    unoResult.css,
+    // The dock's stylesheet is adopted into a custom element's shadow root,
+    // where a `:root` selector matches nothing (the shadow host is `:host`).
+    // Wind4 emits `@antfu/design`'s theme (`--colors-*`, spacing, …) in one
+    // `:root {}` block, so retarget it at `:root, :host` to make those
+    // variables cascade into the shadow tree — otherwise every `bg-base` /
+    // `color-base` / `color-mix(var(--colors-*))` utility resolves to nothing
+    // inside the dock. (`@property` registrations are document-global already.)
+    shadowScopeTheme(unoResult.css),
     primaryRamp,
   ].join('\n')
 

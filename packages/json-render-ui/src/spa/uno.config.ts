@@ -2,21 +2,20 @@ import { presetAnthonyDesign } from '@antfu/design/unocss'
 import {
   defineConfig,
   presetIcons,
-  presetWind3,
+  presetWind4,
   transformerDirectives,
   transformerVariantGroup,
 } from 'unocss'
 
 // The prebuilt SPA renders `@devframes/json-render-ui`, whose components author
 // class strings in `.ts` render functions — so `.ts` is opted into extraction.
-// Same `@antfu/design` stack (sage-green preset, Phosphor, DM Sans/Mono) as
-// every other devframe surface, on the **Wind3** base the package's renderer
-// module uses (`../../uno.config.ts`) so the components render identically in
-// the standalone SPA and inside the shadow-root renderer module.
+// Same `@antfu/design` stack (sage-green preset, Wind4, Phosphor, DM Sans/Mono)
+// as every other devframe surface. This SPA renders into the page's light DOM,
+// so it needs no shadow-root theme rewrite (unlike the renderer module).
 export default defineConfig({
   presets: [
     presetAnthonyDesign({ primary: '#3a6a45' }),
-    presetWind3(),
+    presetWind4(),
     presetIcons({ scale: 1.1 }),
   ],
   transformers: [transformerDirectives(), transformerVariantGroup()],
