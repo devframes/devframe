@@ -83,6 +83,30 @@ export const designConfig = createDesignConfig()
  * these to concrete `rgb()`, so they stay self-contained inside the shadow
  * tree.
  */
+/**
+ * Rename Wind's internal `--un-*` custom properties to a private prefix in a
+ * stylesheet destined for a **shadow root**.
+ *
+ * `@property` registrations are document-global regardless of where they're
+ * declared, so a host page built with Wind4 registers `--un-bg-opacity` /
+ * `--un-border-opacity` / `--un-text-opacity` (et al.) as
+ * `@property { syntax: '<percentage>'; inherits: false }` for the whole
+ * document — including inside our shadow tree. Our shadow CSS is Wind3, which
+ * sets those same vars **unitless** (`--un-border-opacity: 0.13`), so the
+ * global `<percentage>` registration makes every such declaration invalid and
+ * the dependent `color-mix()` / `rgb(… / var(--un-*))` value collapses (a
+ * visibly wrong border/background/text color).
+ *
+ * The shadow stylesheet sets and reads these vars entirely within itself, so
+ * renaming every `--un-` to `--dfun-` keeps it self-consistent while making it
+ * immune to whatever the host page registered. Apply only to shadow-injected
+ * CSS (`hub-ui` dock, `json-render-ui` renderer module) — the Vite-served SPAs
+ * own their whole document and need no rename.
+ */
+export function namespaceShadowCssVars(css: string): string {
+  return css.replaceAll('--un-', '--dfun-')
+}
+
 export const shadowSurfaceSafelist: string[] = [
   'bg-base',
   'bg-secondary',

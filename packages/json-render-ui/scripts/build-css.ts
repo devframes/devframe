@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { colors as c } from 'devframe/utils/colors'
 import { glob } from 'tinyglobby'
 import { createGenerator } from 'unocss'
-import { shadowSurfaceSafelist } from '../../../design/uno.config'
+import { namespaceShadowCssVars, shadowSurfaceSafelist } from '../../../design/uno.config'
 import config from '../uno.config'
 
 // Compile the renderer's UnoCSS output ahead of time into a plain string
@@ -62,12 +62,14 @@ export async function buildCSS(): Promise<void> {
   // a shortcut+variant interaction. Generate the shadow-surface tokens in a
   // dedicated pass so their plain (and `.dark`) rules are always present.
   const surfaces = await generator.generate(shadowSurfaceSafelist.join(' '))
-  const css = [
+  // Namespace Wind's `--un-*` vars so this shadow-root stylesheet is immune to
+  // a host page's Wind4 `@property` registrations (see `namespaceShadowCssVars`).
+  const css = namespaceShadowCssVars([
     reset,
     unoResult.css,
     surfaces.css,
     primaryRamp,
-  ].join('\n')
+  ].join('\n'))
 
   await fs.mkdir(join(SRC_DIR, '.generated'), { recursive: true })
   await fs.writeFile(GENERATED_CSS, [
