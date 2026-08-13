@@ -33,11 +33,9 @@ export class RpcFunctionsCollectorBase {
 
 // #region Other
 export { createDefineWrapperWithContext }
-export { createRpcWireCodec }
 export { defineRpcFunction }
 export { getRpcHandler }
 export { getRpcResolvedSetupResult }
-export { peekRpcWireFrame }
 export { strictJsonStringify }
 export { STRUCTURED_CLONE_PREFIX }
 export { validateDefinition }

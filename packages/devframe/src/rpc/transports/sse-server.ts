@@ -3,7 +3,7 @@ import type { RpcFunctionDefinitionAny } from '../types'
 import type { DevframeNodeRpcSessionMeta, DevframeRpcConnection } from './session'
 import type { WsOriginRegistry } from './ws-server'
 import { DEVFRAME_SSE_SESSION_HEADER } from 'devframe/constants'
-import { createRpcWireCodec, peekRpcWireFrame } from '../serialization'
+import { createRpcWireCodec, peekRpcWireFrame } from '../wire-codec'
 import { createRpcSessionMeta } from './session'
 import { isAllowedOrigin } from './ws-server'
 

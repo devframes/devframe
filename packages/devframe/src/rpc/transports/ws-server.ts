@@ -13,7 +13,7 @@ import { createServer as createHttpsServer } from 'node:https'
 import crossws from 'crossws/adapters/node'
 import { DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM, DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM } from 'devframe/constants'
 import { randomToken, timingSafeEqual } from 'devframe/utils/crypto-token'
-import { createRpcWireCodec } from '../serialization'
+import { createRpcWireCodec } from '../wire-codec'
 import { createRpcSessionMeta } from './session'
 
 export type {

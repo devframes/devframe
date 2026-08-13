@@ -1,7 +1,7 @@
 import type { ChannelOptions } from 'birpc'
 import type { RpcFunctionDefinitionAny } from '../types'
 import { DEVFRAME_AUTH_TOKEN_QUERY_PARAM, DEVFRAME_SSE_SESSION_HEADER } from 'devframe/constants'
-import { createRpcWireCodec } from '../serialization'
+import { createRpcWireCodec } from '../wire-codec'
 
 export interface SseRpcChannelOptions {
   /** Resolved `http(s)://` URL of the SSE endpoint. */

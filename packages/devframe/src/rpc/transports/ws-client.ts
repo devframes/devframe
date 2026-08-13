@@ -1,7 +1,7 @@
 import type { ChannelOptions } from 'birpc'
 import type { RpcFunctionDefinitionAny } from '../types'
 import { DEVFRAME_AUTH_TOKEN_QUERY_PARAM } from 'devframe/constants'
-import { createRpcWireCodec } from '../serialization'
+import { createRpcWireCodec } from '../wire-codec'
 
 export interface WsRpcChannelOptions {
   url: string

@@ -6,9 +6,11 @@ export { coerceAgentPositionalArgs }
 export { createContextRpcServer }
 export { createH3DevframeHost }
 export { createInstanceShell }
+export { createRpcWireCodec }
 export { DevframeAgentHost }
 export { listLiveDevframeInstances }
 export { normalizeHttpServerUrl }
+export { peekRpcWireFrame }
 export { registerDevframeInstance }
 export { resolveInstanceRegister }
 export { samePath }
