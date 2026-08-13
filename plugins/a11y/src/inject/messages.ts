@@ -113,9 +113,23 @@ export function createMessagesReporter(
   let reportedRules = new Set<string>()
   // Fire-and-forget: the feed is a mirror, never a gate for the scan loop.
   // Every entry is grouped under the short `a11y` category.
-  const send = (input: HubMessageInput) =>
+  //
+  // Re-scans routinely produce the identical report; sending it again would
+  // be one wire message per entry for zero feed change (and the feed
+  // re-render it causes on the host page can re-trigger the DOM observer —
+  // a scan loop). Remember what each entry last carried and send only diffs.
+  const lastSent = new Map<string, string>()
+  const send = (input: HubMessageInput & { id: string }) => {
+    const digest = JSON.stringify(input)
+    if (lastSent.get(input.id) === digest)
+      return
+    lastSent.set(input.id, digest)
     void messages.add({ category: MESSAGE_CATEGORY, ...input }).catch(() => {})
-  const drop = (id: string) => void messages.remove(id).catch(() => {})
+  }
+  const drop = (id: string) => {
+    lastSent.delete(id)
+    void messages.remove(id).catch(() => {})
+  }
   const dockId = () => options.dockId?.() ?? A11Y_DEFAULT_DOCK_ID
 
   return {

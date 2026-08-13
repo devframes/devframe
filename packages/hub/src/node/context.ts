@@ -6,6 +6,7 @@ import type { DevframeMessageEntry, DevframeMessageEntryInput, DevframeMessagesH
 import type { DevframeTerminalsHost } from '../types/terminals'
 import type { InstallDevframeOptions } from './install-devframe'
 import { createHostContext } from 'devframe/node'
+import { hash } from 'devframe/utils/hash'
 import { debounce } from 'perfect-debounce'
 import { DevframeCommandsHost as CommandsHostImpl } from './host-commands'
 import { DevframeDocksHost as DocksHostImpl } from './host-docks'
@@ -151,11 +152,25 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
   const debounceMs = options.mode === 'build' ? 0 : 10
 
   const docksSharedState = await context.rpc.sharedState.get('devframe:docks', { initialValue: [] })
+  // The docks state republishes on dock, terminal, *and* message events —
+  // most of which don't actually change the dock list. Publish only when
+  // the content really changed, so a chatty subsystem (e.g. a message feed
+  // being mirrored every scan) can't turn into a stream of identical
+  // `devframe:docks` broadcasts.
+  let publishedDocksHash: string | undefined
+  function publishDocks(): void {
+    const values = docks.values()
+    const digest = hash(values)
+    if (digest === publishedDocksHash)
+      return
+    publishedDocksHash = digest
+    docksSharedState.mutate(() => values)
+  }
   const refreshDocks = debounce(() => {
-    docksSharedState.mutate(() => docks.values())
+    publishDocks()
   }, debounceMs)
   docks.events.on('dock:entry:updated', refreshDocks)
-  docksSharedState.mutate(() => docks.values())
+  publishDocks()
 
   // Cross-iframe dock activation. A dock activation is a discrete user intent
   // ("go to Terminals now"), so it fires immediately (no debounce, which could
@@ -181,7 +196,7 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
       method: 'devframe:terminals:updated',
       args: [],
     })
-    docksSharedState.mutate(() => docks.values())
+    publishDocks()
   }, debounceMs)
   terminals.events.on('terminal:session:updated', broadcastTerminals)
 
@@ -190,7 +205,7 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
       method: 'devframe:messages:updated',
       args: [],
     })
-    docksSharedState.mutate(() => docks.values())
+    publishDocks()
   }, debounceMs)
   messages.events.on('message:added', broadcastMessages)
   messages.events.on('message:updated', broadcastMessages)

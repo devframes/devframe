@@ -3,12 +3,35 @@ import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
 import type { DevframeRpcClient } from './rpc'
 import { createSharedState } from 'devframe/utils/shared-state'
 
+/**
+ * Upper bound on remembered server-originated syncIds. An update's own
+ * `updated` event fires synchronously after it is applied, so the set only
+ * needs to outlive the brief window between applying a server update and
+ * observing its emission — 100 comfortably covers a burst.
+ */
+const MAX_REMOTE_SYNC_IDS = 100
+
 export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcSharedStateHost {
   const sharedState = new Map<string, SharedState<any>>()
   const stateDisposers = new Map<string, () => void>()
   const initialValues = new Map<string, any>()
   const keyAddedListeners = new Set<(key: string) => void>()
   const isStaticBackend = rpc.connectionMeta.backend === 'static'
+
+  // Server-originated syncIds, so the forwarding listener below can tell a
+  // local mutation (forward it to the server) from an applied server update
+  // (already the server's own — forwarding it back would be a pure echo the
+  // server discards, at the cost of one wire message per update; over the
+  // SSE transport that's a whole HTTP POST per server-side state tick).
+  const remoteSyncIds = new Set<string>()
+  function rememberRemoteSyncId(syncId: string): void {
+    remoteSyncIds.add(syncId)
+    if (remoteSyncIds.size > MAX_REMOTE_SYNC_IDS) {
+      const oldest = remoteSyncIds.values().next().value
+      if (oldest !== undefined)
+        remoteSyncIds.delete(oldest)
+    }
+  }
 
   function mergeWithInitialValue(key: string, serverState: any): any {
     const initial = initialValues.get(key)
@@ -26,6 +49,7 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
       const state = sharedState.get(key)
       if (!state || state.syncIds.has(syncId))
         return
+      rememberRemoteSyncId(syncId)
       state.mutate(() => mergeWithInitialValue(key, fullState), syncId)
     },
   })
@@ -37,6 +61,7 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
       const state = sharedState.get(key)
       if (!state || state.syncIds.has(syncId))
         return
+      rememberRemoteSyncId(syncId)
       state.patch(patches, syncId)
     },
   })
@@ -45,6 +70,9 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
     const offs: (() => void)[] = []
     offs.push(state.on('updated', (fullState, patches, syncId) => {
       if (isStaticBackend)
+        return
+      // An update the server just sent needs no reflection back to it.
+      if (remoteSyncIds.has(syncId))
         return
       if (patches) {
         rpc.callEvent('devframe:rpc:server-state:patch', key, patches, syncId)

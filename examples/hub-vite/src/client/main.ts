@@ -70,12 +70,20 @@ function renderTransportToggle(current: TransportPref) {
     button.addEventListener('click', () => applyTransportPref(button.dataset.transport as TransportPref))
 }
 
+const renderedMarkup = new WeakMap<HTMLElement, string>()
+
 function renderList<T>(host: HTMLElement, items: readonly T[], render: (item: T) => string) {
-  if (!items.length) {
-    host.innerHTML = '<li class="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">empty</li>'
+  const html = items.length
+    ? items.map(render).join('')
+    : '<li class="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">empty</li>'
+  // Skip identical rewrites: an innerHTML assignment always recreates the
+  // nodes, which counts as a DOM mutation — and the a11y inspector's in-page
+  // agent watches the body for mutations to schedule rescans. Repainting an
+  // unchanged list every poll would keep it scanning forever.
+  if (renderedMarkup.get(host) === html)
     return
-  }
-  host.innerHTML = items.map(render).join('')
+  renderedMarkup.set(host, html)
+  host.innerHTML = html
 }
 
 // Session-lifetime cache of resolved dock-icon SVGs, keyed by the icon id

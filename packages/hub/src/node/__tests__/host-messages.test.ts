@@ -21,6 +21,47 @@ describe('devframeMessagesHost', () => {
     expect(host.removals.at(-1)?.id).toBe('message:1004')
   })
 
+  it('dedupes identical re-adds: no update event, no clock tick', async () => {
+    const host = new DevframeMessagesHost({} as DevframeHubContext)
+    const updates: string[] = []
+    host.events.on('message:updated', entry => void updates.push(entry.id))
+
+    const input = { id: 'scan', level: 'info' as const, message: 'No issues found', labels: ['a11y'] }
+    await host.add(input)
+    const tickAfterAdd = host.lastModified.get('scan')
+
+    // The periodic-producer pattern: the same entry mirrored again and again.
+    await host.add({ ...input })
+    await host.add({ ...input, labels: ['a11y'] })
+    expect(updates).toEqual([])
+    expect(host.lastModified.get('scan')).toBe(tickAfterAdd)
+
+    // A real change still updates and emits.
+    await host.add({ ...input, message: '2 issues found' })
+    expect(updates).toEqual(['scan'])
+    expect(host.entries.get('scan')?.message).toBe('2 issues found')
+    expect(host.lastModified.get('scan')).not.toBe(tickAfterAdd)
+  })
+
+  it('an identical re-add carrying autoDelete still resets the keep-alive timer', async () => {
+    const host = new DevframeMessagesHost({} as DevframeHubContext)
+    const updates: string[] = []
+    host.events.on('message:updated', entry => void updates.push(entry.id))
+
+    await host.add({ id: 'alive', level: 'info', message: 'still here', autoDelete: 50 })
+    // Keep-alive re-adds: content identical, timer restarted each time.
+    for (let i = 0; i < 3; i++) {
+      await new Promise(resolve => setTimeout(resolve, 30))
+      await host.add({ id: 'alive', level: 'info', message: 'still here', autoDelete: 50 })
+    }
+    // 90ms elapsed — well past the 50ms window — yet the entry survives.
+    expect(host.entries.has('alive')).toBe(true)
+    expect(updates).toEqual([])
+    // Once the re-adds stop, the timer finally fires.
+    await new Promise(resolve => setTimeout(resolve, 80))
+    expect(host.entries.has('alive')).toBe(false)
+  })
+
   it('provides per-level shortcuts that delegate to add()', async () => {
     const host = new DevframeMessagesHost({} as DevframeHubContext)
 
