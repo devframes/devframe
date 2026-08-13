@@ -41,7 +41,6 @@
     "prepack": "pnpm run build"
   },
   "peerDependencies": {
-    "@antfu/design": "^0.3.0",
     "@devframes/hub": "workspace:*",
     "@devframes/json-render": "workspace:*",
     "vue": "^3.5.0"

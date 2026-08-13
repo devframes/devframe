@@ -28,8 +28,10 @@ export default defineConfig({
     presetWind3(),
     presetIcons({ scale: 1.1 }),
   ],
-  transformers: [transformerDirectives(), transformerVariantGroup()],
-  preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
+  transformers: [
+    transformerDirectives(),
+    transformerVariantGroup(),
+  ],
   // `Badge` picks a `badge-color-<name>` at runtime from a fixed set, so those
   // classes can't be found by static extraction — safelist them, alongside the
   // shadow-root surface/text tokens.
