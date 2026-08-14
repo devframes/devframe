@@ -168,6 +168,7 @@ function readQueryParams(): DevframeBranding {
  * and return it. Called once the RPC client is connected, before the dock
  * element mounts, so branding is applied on the first paint.
  */
+// TODO: remove this, the branding would only be provided by the connection meta, which has its own propagation methods, no globals or queryies anymore.
 export function resolveBranding(options: {
   mode: 'embedded' | 'standalone'
   branding?: DevframeBranding

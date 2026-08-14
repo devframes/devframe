@@ -134,6 +134,7 @@ export interface DevframeHubUi {
    * connection handshake they already perform, in place of a separate
    * fetched asset.
    */
+  // TODO: rename to "configs"
   settings?: () => Record<string, unknown>
 }
 

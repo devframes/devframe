@@ -97,6 +97,7 @@ export async function installDevframe(
   // are this devframe's opinion about the hub-wide dock bar, not attributes
   // of its own synthesized entry — pull them out before spreading the rest
   // into the entry and fold them into the hub's aggregate instead.
+  // TODO: rework this, instead of contributeDockConfig, we should have the APIs for configuring the connection meta's configs object
   const { categoryOrder, maxVisibleItems, defaultMode, defaultPosition, ...entryDockDefaults } = d.dock ?? {}
   if (categoryOrder || maxVisibleItems !== undefined || defaultMode !== undefined || defaultPosition !== undefined) {
     ctx.docks.contributeDockConfig({ categoryOrder, maxVisibleItems, defaultMode, defaultPosition })
