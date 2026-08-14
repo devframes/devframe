@@ -1,4 +1,4 @@
-import type { DockPanelStorage } from '@devframes/hub/client'
+import type { HubDockPanelStorage } from '../state/docks'
 import { getDevframeRpcClient, setDevframeClientContext } from '@devframes/hub/client'
 import { useLocalStorage } from '@vueuse/core'
 import { HUB_UI_HIDE_EVENT } from '../constants'
@@ -39,7 +39,7 @@ async function mountDock(): Promise<void> {
     simpleAuth: false,
   })
 
-  const state = useLocalStorage<DockPanelStorage>(
+  const state = useLocalStorage<HubDockPanelStorage>(
     'devframes-dock-state',
     DEFAULT_DOCK_PANEL_STORE(),
     { mergeDefaults: true },
