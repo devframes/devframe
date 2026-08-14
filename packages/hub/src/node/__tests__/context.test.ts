@@ -60,6 +60,49 @@ describe('createHubContext dock activation', () => {
   })
 })
 
+describe('createHubContext remote dock republishing', () => {
+  it('re-projects a remote dock once the WS endpoint resolves after registration', async () => {
+    // Mirrors vitejs/devtools#517/#520: a remote iframe dock can register
+    // before an async WS bind (side-car port probing, an `unbound` tier
+    // waiting on the host's own `attach()`) resolves `wsEndpoint`. Nothing
+    // else re-registers that dock once the port is known, so the fix has to
+    // re-project every dock when the endpoint changes.
+    const context = await createHubContext({
+      cwd: process.cwd(),
+      mode: 'build',
+      host: createHost(),
+    })
+
+    context.docks.register({
+      type: 'iframe',
+      id: 'remote',
+      title: 'Remote',
+      icon: 'ph:cube-duotone',
+      url: 'https://remote.test/app',
+      remote: true,
+    })
+
+    // The registration's own refresh is debounced too — let it settle before
+    // asserting the pre-bind projection.
+    await new Promise(resolve => setTimeout(resolve, 20))
+
+    const docksState = await context.rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks')
+    const beforeBind = docksState.value()[0]
+    expect(beforeBind?.type === 'iframe' ? beforeBind.url : undefined).toBe('https://remote.test/app')
+
+    getInternalContext(context).setWsEndpoint({ url: 'ws://localhost:4173' })
+    // The refresh is debounced (0ms in `mode: 'build'`, still a macrotask).
+    await new Promise(resolve => setTimeout(resolve, 20))
+
+    const afterBind = docksState.value()[0]
+    const afterUrl = afterBind?.type === 'iframe' ? afterBind.url : ''
+    expect(afterUrl).not.toBe('https://remote.test/app')
+    expect(afterUrl).toContain('https://remote.test/app')
+
+    getInternalContext(context).setWsEndpoint(undefined)
+  })
+})
+
 describe('served context remote endpoint metadata', () => {
   it('sets and clears the internal websocket endpoint', async () => {
     const context = await createHostContext({
