@@ -9,18 +9,19 @@ outline: deep
 
 `@devframes/next` hosts devframes from a Next.js App Router app. Next runs on webpack/Turbopack rather than Vite, so it hosts through a route handler instead of the [Vite Bridge](./vite-bridge): the package serves each devframe's SPA and its `__connection.json` from a single `fetch` handler your catch-all route delegates to, reusing devframe's own [`serveStaticHandler`](/adapters/dev) for SPA fallback, content types, and path-traversal guarding.
 
-It comes in three parts:
+`@devframes/next` splits into two scopes: `@devframes/next/dev-spa` (author one devframe with Next) and [`@devframes/next/hub`](#mounting-a-hub) (mount a whole devframes-hub). The bare `@devframes/next` import throws with a pointer to both.
+
+The `dev-spa` scope comes in two parts:
 
 1. **`withDevframe()`** — applies the one Next config setting a devframe host needs.
 2. **`createDevframeNextHandler()`** — hosts a single devframe (the common case).
-3. **`createDevframeNextHost()`** — the lower-level primitive for a hub mounting many devframes at once.
 
-Plus a React client surface at `@devframes/next/client`.
+Plus a React client surface at `@devframes/next/dev-spa/client`.
 
 ## Config
 
 ```ts [next.config.mjs]
-import { withDevframe } from '@devframes/next'
+import { withDevframe } from '@devframes/next/dev-spa'
 
 export default withDevframe({
   // ...your own Next config
@@ -34,7 +35,7 @@ export default withDevframe({
 `createDevframeNextHandler(definition)` statically serves the devframe's built SPA and starts a side-car RPC/WebSocket server, advertising it at `<base>/__connection.json`. Delegate your catch-all route to its `fetch`:
 
 ```ts [app/__my-tool/[[...path]]/route.ts]
-import { createDevframeNextHandler } from '@devframes/next'
+import { createDevframeNextHandler } from '@devframes/next/dev-spa'
 import myDevframe from '@/devframe'
 
 export const runtime = 'nodejs'
@@ -87,11 +88,11 @@ export async function GET(request: Request): Promise<Response> {
 
 ## React client
 
-`@devframes/next/client` connects to the RPC backend and provides the client to your component tree — the React counterpart to `@devframes/nuxt`'s `$rpc` plugin. Children render immediately, so your shell and a connection indicator stay visible while the client connects.
+`@devframes/next/dev-spa/client` connects to the RPC backend and provides the client to your component tree — the React counterpart to `@devframes/nuxt`'s `$rpc` plugin. Children render immediately, so your shell and a connection indicator stay visible while the client connects.
 
 ```tsx [app/providers.tsx]
 'use client'
-import { RpcProvider } from '@devframes/next/client'
+import { RpcProvider } from '@devframes/next/dev-spa/client'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return <RpcProvider baseURL="/__my-tool/">{children}</RpcProvider>
@@ -102,7 +103,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 ```tsx [app/panel.tsx]
 'use client'
-import { useRpc, useRpcStatus } from '@devframes/next/client'
+import { useRpc, useRpcStatus } from '@devframes/next/dev-spa/client'
 
 export function Panel() {
   const rpc = useRpc()?.scope('my-tool:')
@@ -118,6 +119,24 @@ Both hooks throw outside a `<RpcProvider>`. Theming and layout stay app-owned.
 ## Runtime
 
 Route handlers that call `fetch` pin `export const runtime = 'nodejs'`: the static handler streams built SPA files from disk, and the side-car RPC/WS server is a Node process.
+
+## Mounting a hub
+
+`@devframes/next/hub` mounts a whole [devframes-hub](/guide/hub) — many integrations under one namespace — from a single catch-all route. `nextDevframeHub()` returns a route handle memoized on `globalThis` (so Next's dev-time route re-evaluation reuses one instance); `createNextDevframeHub()` is the underlying builder. The UI defaults to `@devframes/hub-ui` (loaded through a bundler-ignored dynamic `import()` so its asset lookups resolve at request time); pass `ui` to swap it or `ui: false` for a headless hub you drive with the React client at `@devframes/next/hub/client` (`useDevframeHubClient()`).
+
+```ts [app/__devframes/[[...path]]/route.ts]
+import { nextDevframeHub } from '@devframes/next/hub'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+const hub = nextDevframeHub({ devframes: [] })
+export const GET = (req: Request) => hub.handler(req)
+export const POST = (req: Request) => hub.handler(req)
+export const DELETE = (req: Request) => hub.handler(req)
+```
+
+Unlike Vite and Nuxt, Next has no native hub viewer, so this scope prints no recommendation. `createDevframeNextHost()` remains available from `@devframes/next/hub` as the lower-level "bring your own `DevframeHost`" seam for `initHub({ context })`.
 
 ## See also
 

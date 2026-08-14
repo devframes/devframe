@@ -24,9 +24,21 @@
       "types": "./dist/index.d.mts",
       "default": "./dist/index.mjs"
     },
-    "./client": {
+    "./dev-spa": {
+      "types": "./dist/dev-spa.d.mts",
+      "default": "./dist/dev-spa.mjs"
+    },
+    "./dev-spa/client": {
       "types": "./dist/client.d.mts",
       "default": "./dist/client.mjs"
+    },
+    "./hub": {
+      "types": "./dist/hub.d.mts",
+      "default": "./dist/hub.mjs"
+    },
+    "./hub/client": {
+      "types": "./dist/hub-client.d.mts",
+      "default": "./dist/hub-client.mjs"
     },
     "./package.json": "./package.json"
   },
@@ -41,11 +53,19 @@
     "prepack": "pnpm run build"
   },
   "peerDependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
     "devframe": "workspace:*",
     "next": "^14.0.0 || ^15.0.0 || ^16.0.0",
     "react": "^18.0.0 || ^19.0.0"
   },
   "peerDependenciesMeta": {
+    "@devframes/hub": {
+      "optional": true
+    },
+    "@devframes/hub-ui": {
+      "optional": true
+    },
     "next": {
       "optional": true
     },
@@ -54,9 +74,12 @@
     }
   },
   "dependencies": {
-    "h3": "catalog:deps"
+    "h3": "catalog:deps",
+    "ufo": "catalog:deps"
   },
   "devDependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
     "@types/node": "catalog:types",
     "@types/react": "catalog:types",
     "devframe": "workspace:*",

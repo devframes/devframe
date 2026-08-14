@@ -4,24 +4,42 @@ import { defineConfig } from 'tsdown'
 
 const require = createRequire(import.meta.url)
 
+// Keep transitive Nuxt/Vite/Vue type graphs — and the optional `@devframes/*`
+// peers — out of dts bundling. Consumers resolve these via their own
+// node_modules at install time.
+const neverBundle = [
+  '@nuxt/kit',
+  '@nuxt/schema',
+  '@vitejs/plugin-vue-jsx',
+  '@vue/babel-plugin-jsx',
+  '@vue/babel-plugin-resolve-type',
+  'scule',
+  'vue',
+  /^@devframes\//,
+]
+
 export default defineConfig([{
-  entry: './src/module.ts',
-  // tsconfig: '../../tsconfig.base.json',
+  // Node/neutral entries — the throwing root, the single-devframe Nuxt module,
+  // and the hub Nuxt module.
+  entry: {
+    'index': 'src/index.ts',
+    'dev-spa': 'src/dev-spa.ts',
+    'hub': 'src/hub.ts',
+  },
   clean: true,
   dts: true,
   exports: false,
-  // Keep transitive Nuxt/Vite type graphs out of dts bundling. Consumers
-  // resolve these via their own node_modules at install time.
-  deps: {
-    neverBundle: [
-      '@nuxt/kit',
-      '@nuxt/schema',
-      '@vitejs/plugin-vue-jsx',
-      '@vue/babel-plugin-jsx',
-      '@vue/babel-plugin-resolve-type',
-      'scule',
-    ],
-  },
+  outExtensions: () => ({ dts: '.d.mts' }),
+  deps: { neverBundle },
+}, {
+  // Browser entry — the hub client composable (Vue).
+  entry: { 'hub-client': 'src/hub-client.ts' },
+  platform: 'browser',
+  clean: false,
+  dts: true,
+  exports: false,
+  outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),
+  deps: { neverBundle: ['vue', 'devframe/client', /^@devframes\//] },
 }, {
   // just transpile the plugin to esm: we don't need the runtime at subpackage exports
   entry: {
@@ -44,7 +62,8 @@ export default defineConfig([{
     'build:done': async () => {
       const tsdownPkg = require('tsdown/package.json')
       const { name, version } = require('./package.json')
-      // copy types and generate plugin d.ts, module types.d.mts and module.json files
+      // copy runtime types + generate the client-plugin d.ts and the Nuxt
+      // module metadata (describing the default `@devframes/nuxt/dev-spa` module).
       await Promise.all([
         fs.cp('src/runtime/types.d.ts', 'dist/runtime/types.d.ts'),
         fs.writeFile('dist/runtime/plugin.client.d.ts', `import type { Plugin } from '#app';
@@ -54,17 +73,13 @@ declare const plugin: Plugin<{
 }>;
 export default plugin;
 `, 'utf-8'),
-        fs.writeFile('dist/types.d.mts', `export { default } from './module.mjs';
-
-export { type ModuleOptions, type DevframeNuxtModuleOptions } from './module.mjs';
-`, 'utf-8'),
         fs.writeFile('dist/module.json', `{
-  "name": "${name}",
+  "name": "${name}/dev-spa",
   "configKey": "devframe",
   "version": "${version}",
   "builder": {
     "tsdown": "${tsdownPkg.version}"
-  }        
+  }
 }
 `, 'utf-8'),
       ])

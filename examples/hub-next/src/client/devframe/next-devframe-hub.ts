@@ -6,8 +6,9 @@ import { homedir } from 'node:os'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { defineHubRpcFunction } from '@devframes/hub'
-import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
+import { DEVFRAMES_HUB_BASE } from '@devframes/hub/initiate'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
+import { createNextDevframeHub } from '@devframes/next/hub'
 import { createDashboardView } from 'json-render/dashboard'
 import { dirname, join } from 'pathe'
 import demoDevframe from './demo-devframe'
@@ -162,11 +163,13 @@ const nextHubTerminalsList = defineHubRpcFunction({
 })
 
 /**
- * The entire Next host: one `initHub()` call. The instance mounts every
- * devframe under `/__devframes/<id>/`, merges their RPC registries onto one
- * WebSocket side-car, serves the discovery endpoints (`__connection.json`,
- * `__index.json`, `__client-imports.js`) and the aggregate MCP route - all
- * behind the one web-standard `handler` the App Router catch-all delegates to.
+ * The entire Next host, built on `@devframes/next/hub`'s
+ * {@link createNextDevframeHub}: one call mounts every devframe under
+ * `/__devframes/<id>/`, merges their RPC registries onto one WebSocket
+ * side-car, serves the discovery endpoints and the aggregate MCP route behind
+ * the one web-standard `handler` the App Router catch-all delegates to. This
+ * host renders its own React UI (`app/page.tsx`), so it opts out of the
+ * default `@devframes/hub-ui` slot with `ui: false`.
  */
 export async function nextDevframeHub(
   options: NextDevframeHubOptions = {},
@@ -211,7 +214,7 @@ export async function nextDevframeHub(
     },
   ]
 
-  const hub = initHub({
+  const hub = await createNextDevframeHub({
     base: DEVFRAMES_HUB_BASE,
     cwd,
     origin,
@@ -224,9 +227,12 @@ export async function nextDevframeHub(
     // surface (agent-flagged commands, plugin tools, `devframe:state:read`)
     // over the same catch-all route as the SPAs.
     mcp: true,
-    // Next route handlers can't accept WS upgrades, so the socket asks for a
-    // side-car of its own - on a free port near 9777, or the pinned `port`.
-    ws: options.port != null ? { port: options.port } : { sidecar: true },
+    // This host renders its own React UI in `app/page.tsx`, so skip the
+    // default `@devframes/hub-ui` viewer/embedded slot.
+    ui: false,
+    // Next route handlers can't accept WS upgrades — `createNextDevframeHub`
+    // runs the socket on a side-car (a free port near 9777, or the pinned one).
+    port: options.port,
     getStorageDir(scope) {
       if (scope === 'workspace')
         return join(cwd, '.devframe')

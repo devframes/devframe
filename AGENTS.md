@@ -44,6 +44,16 @@ The `pnpm test` script intentionally runs `build` first so `tsnapi` snapshots co
 - Utility imports use the package-path form `devframe/utils/*`, never relative `../utils/*`.
 - Dependencies go through the pnpm catalogs in `pnpm-workspace.yaml` (`cli`, `inlined`, `testing`, `types`) - add to a catalog and reference as `catalog:<name>`, don't pin versions in `package.json`.
 
+### Framework adapter packages: two scopes, one shape
+
+The framework adapter packages - `@devframes/vite`, `@devframes/nuxt`, `@devframes/next` - each split their surface into **two clearly-scoped subpaths**, because a consumer is always doing one of two distinct jobs. Keep all three parallel:
+
+- **`.../dev-spa`** - **build & dev-serve a single devframe's SPA** with that tool (the "I'm authoring one devframe" scope). Vite: the `devframeVitePlugin` / `devframeViteBridge` / `devframeVite` plugins. Next: `withDevframe` + `createDevframeNextHandler`, with its React client at `.../dev-spa/client`. Nuxt: the Nuxt module (registered as `modules: ['@devframes/nuxt/dev-spa']`).
+- **`.../hub`** - **mount a whole `@devframes/hub` (many integrations) inside that tool** (the "I'm standing up devtools" scope). Wraps `initHub`, defaults the UI slot to `@devframes/hub-ui`'s `createUi()` (overridable via `ui`, or `ui: false` for headless), and ships a browser client helper at `.../hub/client` (a thin, lifecycle-managing wrapper over `@devframes/hub/client`'s `createDevframeClientHost`). `@devframes/hub` and `@devframes/hub-ui` are **optional peers** of these packages; `hub-ui` is loaded lazily (a bundler-ignored dynamic `import()` in the Next hub) so it stays optional and its `import.meta.url` asset lookups resolve at request time.
+- **The bare root (`.`) throws** a helpful error pointing at the two subpaths - never put real code on it.
+- **Vite and Nuxt already have native hub viewers** (`@vitejs/devtools-kit`, `@nuxt/devtools`), so `@devframes/vite/hub` and `@devframes/nuxt/hub` still work but emit a one-time `console.warn` recommending those (silence with `{ quiet: true }`). `@devframes/next/hub` has no native counterpart, so it warns nothing.
+- The **full hub examples** (`examples/hub-vite`, `examples/hub-next`) consume `.../hub` for the server but keep hand-rolling their own client UI against `@devframes/hub/client` with `ui: false` - that hand-rolled client is the whole point of those reference hosts. The **minimal** ones (`examples/hub-*-minimal`) consume `.../hub` with the default `@devframes/hub-ui` and inject its `embedded.js`, needing no client code.
+
 ### Design system
 
 All five built-in plugins - and every example under `examples/` - share one design system, [`@antfu/design`](https://github.com/antfu/design), so they look and feel like one product across frameworks (Git is React/Next, terminals is Svelte, code-server is Vue, inspect is Vue, a11y is Solid, the examples are Preact/Next/vanilla). It's a dev dependency consumed at build time: its UnoCSS preset and shipped styles drive every surface, and its Vue components are the canonical reference every framework matches. There is no shared internal design package - each app wires the preset itself and owns its own component ports.

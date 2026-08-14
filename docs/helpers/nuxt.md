@@ -4,7 +4,9 @@ outline: deep
 
 # Nuxt Helper
 
-The `@devframes/nuxt` module wires a Nuxt-built SPA as a devframe client, and optionally serves the dev-time RPC bridge alongside `nuxt dev`. It runs inside the Nuxt app that consumes your devframe.
+The `@devframes/nuxt/dev-spa` module wires a Nuxt-built SPA as a devframe client, and optionally serves the dev-time RPC bridge alongside `nuxt dev`. It runs inside the Nuxt app that consumes your devframe.
+
+`@devframes/nuxt` splits into two scopes: `@devframes/nuxt/dev-spa` (this page — author one devframe with Nuxt) and [`@devframes/nuxt/hub`](#mounting-a-hub) (mount a whole devframes-hub). The bare `@devframes/nuxt` import throws with a pointer to both.
 
 It handles the four things every Nuxt-powered standalone devtool needs:
 
@@ -17,7 +19,7 @@ It handles the four things every Nuxt-powered standalone devtool needs:
 
 ```ts [nuxt.config.ts]
 export default defineNuxtConfig({
-  modules: ['@devframes/nuxt'],
+  modules: ['@devframes/nuxt/dev-spa'],
 })
 ```
 
@@ -45,7 +47,7 @@ export function usePayload() {
 
 ```ts [nuxt.config.ts]
 export default defineNuxtConfig({
-  modules: ['@devframes/nuxt'],
+  modules: ['@devframes/nuxt/dev-spa'],
   devframe: {
     baseURL: './', // where the devframe snapshot lives, relative to the page
     skipAppDefaults: false, // opt out of the app.baseURL / vite.base defaults
@@ -64,7 +66,7 @@ Pass your devframe definition to wire `nuxt dev` up to the RPC backend:
 import devframe from './src/devframe' // defineDevframe(...) export
 
 export default defineNuxtConfig({
-  modules: [['@devframes/nuxt', { devframe }]],
+  modules: [['@devframes/nuxt/dev-spa', { devframe }]],
 })
 ```
 
@@ -81,7 +83,7 @@ The bridge is **on by default** whenever `devframe` is set. Skip it (back to cli
 
 ```ts [nuxt.config.ts]
 export default defineNuxtConfig({
-  modules: [['@devframes/nuxt', {
+  modules: [['@devframes/nuxt/dev-spa', {
     devframe,
     devMiddleware: {
       port: 7777,
@@ -127,6 +129,18 @@ At build time the module:
   ```
 
 At runtime the built SPA fetches `./__connection.json` (resolved against `document.baseURI`) and branches on the `backend` field — `websocket` in dev, `static` from a `createBuild` snapshot.
+
+## Mounting a hub
+
+`@devframes/nuxt/hub` mounts a whole [devframes-hub](/guide/hub) — many integrations under one namespace — alongside `nuxt dev`, wiring `@devframes/vite`'s hub plugin into Nuxt's Vite dev server and injecting `@devframes/hub-ui`'s floating dock. The UI defaults to `@devframes/hub-ui`; pass `ui` to swap it or `ui: false` for a headless hub you drive with `@devframes/nuxt/hub/client`.
+
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+  modules: [['@devframes/nuxt/hub', { devframes: [] }]],
+})
+```
+
+Nuxt DevTools (`@nuxt/devtools`) integrates the same hub protocol natively and is the recommended path for a Nuxt app, so this module prints a one-time recommendation to that effect (silence it with `{ quiet: true }`).
 
 ## See also
 

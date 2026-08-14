@@ -1,6 +1,6 @@
 import type { DevframeDefinition } from 'devframe'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
-import type { DevframeViteDevServerLike, DevframeVitePlugin } from '../src/index'
+import type { DevframeViteDevServerLike, DevframeVitePlugin } from '../src/dev-spa'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
@@ -10,7 +10,7 @@ import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
 import { afterEach, describe, expect, it } from 'vitest'
-import { devframeVite, devframeViteBridge, devframeVitePlugin } from '../src/index'
+import { devframeVite, devframeViteBridge, devframeVitePlugin } from '../src/dev-spa'
 
 function defineTestDef(overrides: Partial<DevframeDefinition> = {}): DevframeDefinition {
   return {

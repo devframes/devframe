@@ -1,10 +1,9 @@
-import type { createUi as CreateUi } from '@devframes/hub-ui'
 import type { HubInstance } from '@devframes/hub/initiate'
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { jsonRenderUiRenderer as JsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import type { DevframeDefinition } from 'devframe'
-import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
+import { createNextDevframeHub } from '@devframes/next/hub'
 
 // A server-authored JSON-render dock: the whole view is this serializable
 // spec — no client build. It renders through whatever `'json-render'`
@@ -52,8 +51,7 @@ const BUILTIN_PLUGIN_PACKAGES = [
 ] as const
 
 async function loadHub(): Promise<HubInstance> {
-  const [hubUi, jsonRenderUi, dataInspector, assets, ...builtins] = await Promise.all([
-    import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/hub-ui'),
+  const [jsonRenderUi, dataInspector, assets, ...builtins] = await Promise.all([
     import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/json-render-ui/hub'),
     import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-data-inspector'),
     import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-assets'),
@@ -70,13 +68,12 @@ async function loadHub(): Promise<HubInstance> {
     (dataInspector.createDataInspectorDevframe as (options: { id: string }) => DevframeDefinition)({ id: 'devframes_plugin_data-inspector' }),
     (assets.createAssetsDevframe as (options: { watch: boolean }) => DevframeDefinition)({ watch: false }),
   ]
-  // Next route handlers can't accept WebSocket upgrades, so the socket asks
-  // for a side-car server of its own, advertised via `__connection.json`.
-  return initHub({
-    base: DEVFRAMES_HUB_BASE,
-    ws: { sidecar: true },
+  // `@devframes/next/hub` runs the socket on a side-car (Next routes can't
+  // accept WS upgrades) and defaults the UI to `@devframes/hub-ui` (loaded
+  // through its own bundler-ignored dynamic import) — the minimal host needs
+  // no client code, just the injected `embedded.js`.
+  return createNextDevframeHub({
     devframes,
-    ui: (hubUi.createUi as typeof CreateUi)(),
     // Serve the reference json-render frontend as a prebuilt renderer module
     // — the one-liner that makes `'json-render'` docks render in the prebuilt
     // viewer. Swap it for any community implementation of the same contract.

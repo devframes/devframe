@@ -19,7 +19,7 @@ export interface DevframeNextConfig {
  * connect. Serving the base path verbatim keeps relative resolution intact.
  *
  * ```js [next.config.mjs]
- * import { withDevframe } from '@devframes/next'
+ * import { withDevframe } from '@devframes/next/dev-spa'
  *
  * export default withDevframe({
  *   // ...your own Next config

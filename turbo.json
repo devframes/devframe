@@ -16,16 +16,17 @@
     },
     "@devframes/nuxt#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@devframes/vite#build"],
+      "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/hub#build"],
       "outputs": ["dist/**"]
     },
     "@devframes/next#build": {
       "outputLogs": "new-only",
+      "dependsOn": ["devframe#build", "@devframes/hub#build", "@devframes/hub-ui#build"],
       "outputs": ["dist/**"]
     },
     "@devframes/vite#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build"],
+      "dependsOn": ["devframe#build", "@devframes/hub#build", "@devframes/hub-ui#build"],
       "outputs": ["dist/**"]
     },
     "@devframes/json-render#build": {

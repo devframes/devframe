@@ -1,4 +1,4 @@
-import { withDevframe } from '@devframes/next'
+import { withDevframe } from '@devframes/next/dev-spa'
 
 // `withDevframe` applies the settings a devframe host requires (currently
 // `skipTrailingSlashRedirect: true`, so mounted SPAs' relative assets under

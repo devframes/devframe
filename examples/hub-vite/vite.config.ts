@@ -1,3 +1,5 @@
+import type { DevframeHubContext } from '@devframes/hub/node'
+import { defineHubRpcFunction } from '@devframes/hub'
 import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 import a11yDevframe, { a11yAgentBundlePath } from '@devframes/plugin-a11y'
@@ -10,6 +12,7 @@ import inspectDevframe from '@devframes/plugin-inspect'
 import messagesDevframe from '@devframes/plugin-messages'
 import ogDevframe from '@devframes/plugin-og'
 import terminalsDevframe from '@devframes/plugin-terminals'
+import { viteDevframeHub } from '@devframes/vite/hub'
 import { createDashboardView } from 'json-render/dashboard'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
@@ -17,13 +20,43 @@ import { alias } from '../../alias'
 import demoDevframe from './src/devframe'
 import tabbedToolDevframe from './src/tabbed-tool'
 import { unrenderedDockEntry } from './src/unrendered-dock'
-import { viteDevframeHub } from './src/vite-devframe-hub'
 
 // Colon-free id override: the hub instance derives each frame's mount path
 // (`/__devframes/<id>/`) from its id, and `:` - which the plugin's default id
 // (`devframes:plugin:data-inspector`) carries - is a route-param marker to
 // the router underneath.
 const dataInspectorDevframe = createDataInspectorDevframe({ id: 'devframes_plugin_data-inspector' })
+
+// Minimal hub-local RPCs the vanilla client reads for its message / terminal
+// lists. A more ambitious host would standardise these (alongside the
+// built-in `hub:commands:execute`); the reference keeps them example-local and
+// hands them to `viteDevframeHub` via `rpcDeclarations`.
+const messagesList = defineHubRpcFunction({
+  name: 'example:vite-devframe-hub:messages:list',
+  type: 'static',
+  jsonSerializable: true,
+  setup: (ctx: DevframeHubContext) => ({
+    async handler() {
+      return Array.from(ctx.messages.entries.values())
+    },
+  }),
+})
+
+const terminalsList = defineHubRpcFunction({
+  name: 'example:vite-devframe-hub:terminals:list',
+  type: 'static',
+  jsonSerializable: true,
+  setup: (ctx: DevframeHubContext) => ({
+    async handler() {
+      return Array.from(ctx.terminals.sessions.values()).map(s => ({
+        id: s.id,
+        title: s.title,
+        description: s.description,
+        status: s.status,
+      }))
+    },
+  }),
+})
 
 export default defineConfig({
   resolve: { alias },
@@ -60,7 +93,19 @@ export default defineConfig({
         })
       },
     },
+    // The whole Vite host: `@devframes/vite/hub` wraps `initHub` and mounts it
+    // as connect middleware. This host renders its own vanilla client
+    // (src/client/main.ts) against `@devframes/hub/client`, so it opts out of
+    // the default `@devframes/hub-ui` slot with `ui: false`. `quiet` silences
+    // the Vite-DevTools recommendation for this reference example.
     viteDevframeHub({
+      ui: false,
+      quiet: true,
+      register: {
+        id: 'example:vite-devframe-hub',
+        name: 'Vite Devframe Hub',
+      },
+      rpcDeclarations: [messagesList, terminalsList],
       devframes: [
         demoDevframe,
         // Every built-in plugin, dogfooded end-to-end through the hub mount
@@ -102,10 +147,20 @@ export default defineConfig({
       // `json-render` dock mounts — no Vue and no renderer code compiled
       // into this host's own bundle.
       renderers: [jsonRenderUiRenderer()],
-      // Dogfood the opt-in JSON-render hub integration: author a view on the
-      // hub context and project it onto a `json-render` dock, rendered by the
-      // manifest module above.
-      onContextReady: (context) => {
+      configure: async (context) => {
+        // Seed a sample command directly on the hub so the UI shows something
+        // even without any plugged-in devframes.
+        context.commands.register({
+          id: 'example:vite-devframe-hub:ping',
+          title: 'Vite Hub · Ping',
+          icon: 'ph:bell-duotone',
+          category: 'kit',
+          handler: () => 'pong',
+        })
+
+        // Dogfood the opt-in JSON-render hub integration: author a view on the
+        // hub context and project it onto a `json-render` dock, rendered by the
+        // manifest module above.
         const view = createDashboardView(context)
         context.docks.register(toJsonRenderDockEntry(view, {
           id: 'example:json-render',
@@ -116,6 +171,12 @@ export default defineConfig({
         // Witness the missing-renderer path: a dock type nothing covers —
         // the client shows its fallback view instead of a dead panel.
         context.docks.register(unrenderedDockEntry)
+
+        await context.messages.add({
+          level: 'success',
+          message: 'Vite Devframe Hub started',
+          description: 'Mounted under /__devframes/ with the built-in plugins.',
+        })
       },
     }),
   ],

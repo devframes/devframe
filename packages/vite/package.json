@@ -20,6 +20,9 @@
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.mjs",
+    "./dev-spa": "./dist/dev-spa.mjs",
+    "./hub": "./dist/hub.mjs",
+    "./hub/client": "./dist/hub-client.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -34,10 +37,18 @@
     "test": "vitest run"
   },
   "peerDependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
     "devframe": "workspace:*",
     "vite": "^7.0.0 || ^8.0.0"
   },
   "peerDependenciesMeta": {
+    "@devframes/hub": {
+      "optional": true
+    },
+    "@devframes/hub-ui": {
+      "optional": true
+    },
     "vite": {
       "optional": true
     }
@@ -46,6 +57,8 @@
     "pathe": "catalog:deps"
   },
   "devDependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
     "@modelcontextprotocol/client": "catalog:deps",
     "@types/node": "catalog:types",
     "devframe": "workspace:*",

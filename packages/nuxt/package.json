@@ -20,12 +20,24 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/types.d.mts",
-      "default": "./dist/module.mjs"
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./dev-spa": {
+      "types": "./dist/dev-spa.d.mts",
+      "default": "./dist/dev-spa.mjs"
+    },
+    "./hub": {
+      "types": "./dist/hub.d.mts",
+      "default": "./dist/hub.mjs"
+    },
+    "./hub/client": {
+      "types": "./dist/hub-client.d.mts",
+      "default": "./dist/hub-client.mjs"
     },
     "./package.json": "./package.json"
   },
-  "types": "./dist/types.d.mts",
+  "types": "./dist/index.d.mts",
   "files": [
     "dist"
   ],
@@ -36,17 +48,29 @@
     "prepack": "pnpm run build"
   },
   "peerDependencies": {
+    "@devframes/hub": "workspace:*",
     "@nuxt/kit": "^3.0.0 || ^4.0.0 || ^5.0.0-0",
-    "devframe": "workspace:*"
+    "devframe": "workspace:*",
+    "vue": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@devframes/hub": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@devframes/vite": "workspace:*"
   },
   "devDependencies": {
+    "@devframes/hub": "workspace:*",
     "@nuxt/kit": "catalog:build",
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "nuxt": "catalog:build",
-    "tsdown": "catalog:build"
+    "tsdown": "catalog:build",
+    "vue": "catalog:frontend"
   }
 }

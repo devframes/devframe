@@ -1,5 +1,5 @@
-import type { DevframeViteOptions, DevframeVitePlugin } from '@devframes/vite'
-import { devframeVite } from '@devframes/vite'
+import type { DevframeViteOptions, DevframeVitePlugin } from '@devframes/vite/dev-spa'
+import { devframeVite } from '@devframes/vite/dev-spa'
 import inspectDevframe from './index'
 
 export type { DevframeViteOptions }

@@ -23,6 +23,7 @@
     "@devframes/plugin-messages": "workspace:*",
     "@devframes/plugin-og": "workspace:*",
     "@devframes/plugin-terminals": "workspace:*",
+    "@devframes/vite": "workspace:*",
     "devframe": "workspace:*"
   },
   "devDependencies": {

@@ -98,7 +98,7 @@ function defaultGetStorageDir(scope: DevframeStorageScope): string {
  *
  * ```ts [app/%5F_my-tool/[[...path]]/route.ts]
  * import myDevframe from '@/devframe'
- * import { createDevframeNextHandler } from '@devframes/next'
+ * import { createDevframeNextHandler } from '@devframes/next/dev-spa'
  *
  * export const runtime = 'nodejs'
  * export const dynamic = 'force-dynamic'

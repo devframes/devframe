@@ -24,6 +24,7 @@
     "@devframes/plugin-messages": "workspace:*",
     "@devframes/plugin-og": "workspace:*",
     "@devframes/plugin-terminals": "workspace:*",
+    "@devframes/vite": "workspace:*",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
     "dompurify": "catalog:frontend",
@@ -31,7 +32,6 @@
   },
   "devDependencies": {
     "@iconify-json/ph": "catalog:frontend",
-    "pathe": "catalog:deps",
     "unocss": "catalog:frontend",
     "vite": "catalog:build"
   }
