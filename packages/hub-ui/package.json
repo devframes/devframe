@@ -34,6 +34,7 @@
     "build:node": "tsdown",
     "build:embedded": "vite build --config vite.embedded.config.ts",
     "build:standalone": "vite build --config src/client/standalone/vite.config.ts",
+    "dev": "pnpm -C ../.. exec turbo run build --filter=@devframes/hub... && vite --config playground/vite.config.ts",
     "typecheck": "tsc --noEmit",
     "prepack": "pnpm build",
     "storybook": "storybook dev -p 6014",

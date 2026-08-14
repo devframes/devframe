@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hub-ui playground</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #fff;
+        font-family: system-ui, sans-serif;
+      }
+      html.dark,
+      html.dark body {
+        background: #111;
+        color: #eee;
+      }
+      /* `main.ts` marks the mode on `<body>` before mounting — `#app` only
+         needs to fill the viewport in standalone mode (where `DockStandalone`
+         mounts into it); in embedded mode it stays empty and out of the way,
+         leaving `#host-content` visible under the floating dock. */
+      body.standalone #app {
+        height: 100%;
+      }
+      #host-content {
+        max-width: 40rem;
+        margin: 4rem auto;
+        padding: 0 1.5rem;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Standalone mode (default) mounts `DockStandalone` into `#app`, filling
+      the page — this content sits underneath it, unused.
+
+      `?embedded` instead leaves this content visible and floats
+      `DockEmbedded` over it, standing in for a host app the dock is
+      inspecting.
+    -->
+    <div id="app"></div>
+    <div id="host-content">
+      <h1>hub-ui playground</h1>
+      <p>
+        A sample host page. Load with <code>?embedded</code> to see the
+        floating dock (<code>DockEmbedded</code>) over this content instead
+        of the full-page standalone viewer (<code>DockStandalone</code>).
+      </p>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
