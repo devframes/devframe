@@ -363,8 +363,8 @@ const toolbarClass = computed(() => {
 
 const contentClass = computed(() => {
   return isVertical.value
-    ? 'flex-1 h-full overflow-hidden'
-    : 'flex-1 w-full overflow-hidden'
+    ? 'flex-1 h-full overflow-clip'
+    : 'flex-1 w-full overflow-clip'
 })
 
 /** A thin band flush with the candidate edge, tracking the drag before it commits on release. */
@@ -407,7 +407,7 @@ const dragPreviewStyle = computed<CSSProperties | undefined>(() => {
 <template>
   <div
     id="devframes-edge-panel"
-    class="bg-glass:80 border border-base color-base shadow overflow-hidden z-floating-anchor font-sans text-[15px] box-border"
+    class="bg-glass:80 border border-base color-base shadow overflow-clip z-floating-anchor font-sans text-[15px] box-border"
     :class="[panelLayoutClass, { 'devframes-edge-collapsed': isCollapsed }]"
     :style="panelStyle"
     @mousemove="bringUp"
