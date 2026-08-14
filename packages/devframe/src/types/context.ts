@@ -69,6 +69,8 @@ export interface DevframeNodeContext {
    * — static, boot-time config a host publishes once and never mutates
    * again. See {@link DevframeConfigsHost}.
    */
+  // TODO: call it `ctx.staticConfig`, and have it a plain object. No need for complex host here.
+  // Just mention that it's not reactive and should be updated only at setup time, not during the session.
   configs: DevframeConfigsHost
   /**
    * Create a namespace-scoped view of this context. The returned

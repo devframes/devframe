@@ -1,5 +1,6 @@
 import { getDevframeRpcClient, setDevframeClientContext } from '@devframes/hub/client'
 import { watchEffect } from 'vue'
+import { applyDocumentHead, applyPrimaryColor, setBranding } from '../state/branding'
 import { isDark } from '../state/color-mode'
 
 // The standalone viewer — a vanilla shell served at the hub base itself
@@ -33,8 +34,7 @@ async function main(): Promise<void> {
   // apply title/favicon/description here too. Read from
   // `ConnectionMeta.configs.ui.branding`, carried by the connection we just
   // established above.
-  const { resolveBranding, applyPrimaryColor, applyDocumentHead } = await import('../state/branding')
-  const branding = resolveBranding(rpc.connectionMeta.configs?.ui?.branding)
+  const branding = setBranding(rpc.connectionMeta.configs?.ui?.branding || {})
   applyDocumentHead(document, branding)
 
   const { createDocksContext } = await import('../state/context')

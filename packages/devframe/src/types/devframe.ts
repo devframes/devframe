@@ -262,6 +262,7 @@ export interface DevframeDockDefaults {
   badge?: string
   /** Id of the dock group this entry collapses under, if any. */
   groupId?: string
+  // TODO: `categoryOrder` / `maxVisibleItems` / `defaultMode` / `defaultPosition` are not per-entry attributes, but global hub-wide preferences. They should be moved to a separate `DevframeDockPreferences` type and surfaced in the connection meta, not on the entry itself.
   /**
    * This devframe's opinion about the top-level dock-bar **category**
    * ordering, hub-wide — not an attribute of this entry itself. Every

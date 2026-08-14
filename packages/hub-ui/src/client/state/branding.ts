@@ -87,16 +87,6 @@ function resolveLogo(logo: BrandingLogo | undefined, dark: boolean): string | un
   return dark ? (logo.dark || logo.light) : logo.light
 }
 
-/**
- * Resolve branding at boot: install whatever `ConnectionMeta.configs.ui.branding`
- * carried from the connection handshake the dock already performed, and
- * return it. Called once the RPC client is connected, before the dock
- * element mounts, so branding is applied on the first paint.
- */
-export function resolveBranding(branding: DevframeBranding | undefined): ResolvedBranding {
-  return setBranding(branding ?? {})
-}
-
 // --- Applying to the DOM --------------------------------------------------
 
 /** Set the primary color on the dock host element (retints the whole ramp). */
