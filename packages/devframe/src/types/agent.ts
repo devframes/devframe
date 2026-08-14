@@ -6,9 +6,6 @@ import type { EventEmitter } from './events'
  * Serializable description of an agent-exposed tool. This is the shape
  * returned by the agent host manifest and surfaced over the wire by
  * the `devframe:agent:list-tools` introspection RPC.
- *
- * @experimental The agent-native surface is experimental and may change
- * without a major version bump until it stabilizes.
  */
 export interface AgentTool {
   /** Stable identifier. For RPC-backed tools, matches the RPC name. */
@@ -44,8 +41,6 @@ export interface AgentTool {
 /**
  * Input accepted by `DevframeAgentHost.registerTool()`. Handler is
  * stripped from the serializable `AgentTool` projection.
- *
- * @experimental
  */
 export interface AgentToolInput {
   id: string
@@ -74,8 +69,6 @@ export interface AgentToolInput {
 /**
  * Serializable description of an agent-readable resource. Resources
  * surface structured or textual snapshots of devframe state.
- *
- * @experimental
  */
 export interface AgentResource {
   id: string
@@ -89,8 +82,6 @@ export interface AgentResource {
 
 /**
  * Input accepted by `DevframeAgentHost.registerResource()`.
- *
- * @experimental
  */
 export interface AgentResourceInput {
   id: string
@@ -105,8 +96,6 @@ export interface AgentResourceInput {
 
 /**
  * Payload returned by `AgentResourceInput.read`. Either `text` or `json` must be set.
- *
- * @experimental
  */
 export interface AgentResourceContent {
   text?: string
@@ -117,8 +106,6 @@ export interface AgentResourceContent {
 
 /**
  * Unified view of the agent-exposed surface.
- *
- * @experimental
  */
 export interface AgentManifest {
   tools: readonly AgentTool[]
@@ -127,8 +114,6 @@ export interface AgentManifest {
 
 /**
  * Handle returned by `registerTool` / `registerResource`.
- *
- * @experimental
  */
 export interface AgentHandle {
   unregister: () => void
@@ -144,15 +129,11 @@ export interface AgentHandle {
  * Providers should namespace tool ids like any other tool; on an id
  * collision the earlier source wins (registered tools, then RPC tools,
  * then providers in registration order).
- *
- * @experimental
  */
 export type AgentToolProvider = () => readonly AgentToolInput[]
 
 /**
  * Handle returned by `registerToolProvider`.
- *
- * @experimental
  */
 export interface AgentToolProviderHandle extends AgentHandle {
   /**
@@ -165,8 +146,6 @@ export interface AgentToolProviderHandle extends AgentHandle {
 
 /**
  * Events emitted by `DevframeAgentHost`.
- *
- * @experimental
  */
 export interface DevframeAgentHostEvents {
   'agent:tool:registered': (tool: AgentTool) => void
@@ -185,9 +164,6 @@ export interface DevframeAgentHostEvents {
  * RPC functions flagged with `agent` and plugin-registered tools /
  * resources. Consumed by protocol adapters such as the devframe MCP
  * adapter.
- *
- * @experimental The agent-native surface is experimental and may change
- * without a major version bump until it stabilizes.
  */
 export interface DevframeAgentHost {
   readonly events: EventEmitter<DevframeAgentHostEvents>

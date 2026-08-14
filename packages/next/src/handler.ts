@@ -36,8 +36,6 @@ export interface CreateDevframeNextHandlerOptions {
    * SPA — and advertise it in the handler's `__connection.json`. Overrides
    * `def.cli?.mcp`, `undefined` falls through to it, `false` disables the
    * route regardless.
-   *
-   * @experimental
    */
   mcp?: InitDevframeOptions['mcp']
   /**

@@ -90,9 +90,6 @@ export interface DevframeSseOptions {
  * the MCP Streamable-HTTP transport over the same origin as the SPA,
  * exposing the definition's `ctx.agent` tools + shared-state resources to
  * external MCP clients connected to the *running* server.
- *
- * @experimental The agent-native surface is experimental and may change
- * without a major version bump until it stabilizes.
  */
 export interface McpRouteOptions {
   /**
@@ -166,8 +163,6 @@ export interface DevframeCliOptions {
    * - {@link McpRouteOptions} — customise the route path / allowed origins.
    *
    * The `--mcp` / `--no-mcp` CLI flags override this per run.
-   *
-   * @experimental
    */
   mcp?: boolean | McpRouteOptions
   /** Author's SPA dist directory (served as the devframe's UI). */

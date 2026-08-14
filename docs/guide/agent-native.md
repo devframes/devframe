@@ -4,10 +4,6 @@ outline: deep
 
 # Agent-Native Devframe
 
-::: warning Experimental
-The agent-native surface (`agent` field on `defineRpcFunction`, `DevframeAgentHost`, and the `devframe/adapters/mcp` adapter) is experimental and may change without a major version bump until it stabilizes.
-:::
-
 Devframe can expose the same surface a browser UI consumes — RPC functions, resources, and shared state — to coding agents (Claude Desktop / Cursor / Zed / Claude Code, or any MCP-speaking client). Agent exposure is opt-in per function; functions stay private by default.
 
 ## How it works

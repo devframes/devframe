@@ -236,8 +236,6 @@ export interface InitHubOptions {
    * Expose the **aggregate** MCP endpoint at `<base>__mcp` — one
    * Streamable-HTTP server over the shared context's whole tool registry
    * (ids are already namespaced per plugin). Disabled by default.
-   *
-   * @experimental
    */
   mcp?: boolean | McpRouteOptions
   /**

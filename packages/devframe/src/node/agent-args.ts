@@ -23,8 +23,6 @@ export type AgentArgsFallback = 'wrap' | 'drop'
  * - without schemas, `arg0`/`arg1`/… keys are collected when present
  * - an empty object becomes a zero-argument call
  * - anything else follows the {@link AgentArgsFallback}
- *
- * @experimental
  */
 export function coerceAgentPositionalArgs(
   args: unknown,

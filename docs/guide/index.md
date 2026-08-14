@@ -81,7 +81,7 @@ Run it:
 ```sh
 node ./my-devframe.js        # dev server on http://localhost:9999/
 node ./my-devframe.js build  # self-contained static deploy in dist-static/
-node ./my-devframe.js mcp    # stdio MCP server (experimental)
+node ./my-devframe.js mcp    # stdio MCP server
 ```
 
 The CLI adapter serves the SPA at `/` by default. When the same devframe is embedded inside a host (`vite`, `embedded`), the default becomes `/.my-devframe/`. Override either side via `defineDevframe({ basePath })`.

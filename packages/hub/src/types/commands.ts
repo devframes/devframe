@@ -53,9 +53,6 @@ export interface DevframeCommandBase {
  * `when` clauses are evaluated client-side only and are **not** enforced for
  * agent calls — opt in a `when`-gated command only if running it outside its
  * UI context is safe.
- *
- * @experimental The agent-native surface is experimental and may change
- * without a major version bump until it stabilizes.
  */
 export interface DevframeCommandAgentOptions {
   /**
@@ -93,8 +90,6 @@ export interface DevframeServerCommandInput extends DevframeCommandBase {
   /**
    * Opt this command in to the agent surface (`ctx.agent` → MCP). Requires a
    * `handler`. See {@link DevframeCommandAgentOptions}.
-   *
-   * @experimental
    */
   agent?: DevframeCommandAgentOptions
   /**

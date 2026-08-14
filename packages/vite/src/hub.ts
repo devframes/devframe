@@ -63,8 +63,6 @@ export interface ViteDevframeHubOptions {
   auth?: InitHubOptions['auth']
   /**
    * Expose the aggregate MCP endpoint at `<base>__mcp`.
-   *
-   * @experimental
    */
   mcp?: InitHubOptions['mcp']
   /** Publish this hub in the global instance registry. Default: off. */

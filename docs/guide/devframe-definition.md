@@ -111,7 +111,7 @@ interface DevframeNodeContext {
   rpc: RpcFunctionsHost // register + broadcast + sharedState
   views: DevframeViewHost // static file hosting (`hostStatic`)
   diagnostics: DevframeDiagnosticsHost
-  agent: DevframeAgentHost // experimental
+  agent: DevframeAgentHost // expose tools + resources to coding agents
   services: DevframeServicesHost // typed cross-plugin service registry
 
   scope: (id) => DevframeScopedNodeContext // namespaced view (preferred)

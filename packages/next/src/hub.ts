@@ -52,8 +52,6 @@ export interface NextDevframeHubOptions {
   /**
    * Expose the aggregate MCP endpoint at `<base>__mcp`. Default: `true`
    * (the Next hub's agent surface rides the same catch-all route).
-   *
-   * @experimental
    */
   mcp?: InitHubOptions['mcp']
   /** Public origin the Next app is reachable at. Default: derived from `PORT`. */

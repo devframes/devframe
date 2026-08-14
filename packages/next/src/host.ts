@@ -74,8 +74,6 @@ export interface DevframeNextHost {
    * stays an optional peer). Advertise the path in the connection meta
    * (`mcp: { path }` — same origin, no port) and register the instance via
    * `registerDevframeInstance` so `devframe connect` can discover it.
-   *
-   * @experimental
    */
   mountMcp: (
     ctx: DevframeNodeContext,

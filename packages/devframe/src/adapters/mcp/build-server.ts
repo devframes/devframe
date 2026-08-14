@@ -90,9 +90,6 @@ export function buildMcpServerFromContext(
 /**
  * Build an MCP server over the agent surface of a devframe definition.
  * Currently supports `stdio` transport only.
- *
- * @experimental The agent-native surface is experimental and may change
- * without a major version bump until it stabilizes.
  */
 export async function createMcpServer(
   definition: DevframeDefinition,

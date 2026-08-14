@@ -36,7 +36,7 @@ All adapter factories share the shape `createXxx(devframeDef, options?)`.
 | Self-contained static deploy with baked data | `createBuild(def, options?)` | `devframe/adapters/build` |
 | Mount into a host (Vite DevTools or any compatible host) | `createPluginFromDevframe(def, options?)` | `@vitejs/devtools-kit/node` |
 | Register dynamically at runtime | `createEmbedded(def, { ctx })` | `devframe/adapters/embedded` |
-| Expose to coding agents (MCP) | `createMcpServer(def, options?)` | `devframe/adapters/mcp` *(experimental)* |
+| Expose to coding agents (MCP) | `createMcpServer(def, options?)` | `devframe/adapters/mcp` |
 
 The same `DevframeDefinition` runs under every adapter - pick based on deployment, not on what the tool does.
 
@@ -243,7 +243,7 @@ A [scoped context](#scoped-context-preferred) applies this prefix for you - `ctx
 | `ctx.rpc` | Register RPC functions, broadcast, shared state, streaming channels |
 | `ctx.views` | Serve static files via `hostStatic(base, distDir)` |
 | `ctx.diagnostics` | Structured diagnostics host (nostics) - register custom error codes |
-| `ctx.agent` | Expose tools + resources to coding agents (experimental) |
+| `ctx.agent` | Expose tools + resources to coding agents |
 | `ctx.host` | Runtime abstraction - `mountStatic`, `resolveOrigin`, `getStorageDir` |
 | `ctx.mode` | `'dev'` or `'build'` - gate setup work per runtime |
 
@@ -440,7 +440,7 @@ when: 'my-inspector.ready && count >= 10'
 
 Built-in context: `clientType` (`'embedded' | 'standalone'`), `dockOpen`, `paletteOpen`, `dockSelectedId`. Plugins can add namespaced keys (`.` or `:` separators). Both the types (`WhenExpression<Ctx, S>`) and runtime (`evaluateWhen`, `resolveContextValue`) come from `devframe/utils/when`.
 
-## Agent-native surface (experimental)
+## Agent-native surface
 
 Opt an RPC function into the agent surface with an `agent` field - default-deny otherwise. Agent-exposed functions **must declare `jsonSerializable: true`** (registration throws `DF0019` otherwise):
 
@@ -537,7 +537,7 @@ At runtime, static clients look up the argument hash in the dump; misses resolve
 | *(default)* | Dev server on port 9999 (or `--port`) - WebSocket RPC, `cli.distDir` served at `/.devframe/` |
 | `build` | Static snapshot → `./dist-static/` (configurable via `--out-dir`) |
 | `spa` | Deployable SPA → `./dist-spa/` |
-| `mcp` | stdio MCP server (experimental) |
+| `mcp` | stdio MCP server |
 
 **Bring your own CLI framework?** `createCac` (`devframe/adapters/cac`) is just a cac wrapper around three peer factories - `createDevServer` (`devframe/adapters/dev`), `createBuild` (`devframe/adapters/build`), and `createMcpServer` (`devframe/adapters/mcp`). Use them directly with commander/yargs/oclif when `createCac`'s baked-in command structure doesn't fit. `cac` is an optional peer dependency pulled in only through `devframe/adapters/cac`, so bring-your-own-CLI tools run without installing it. `createDevServer` returns a `StartedServer` handle (`origin`, `port`, `app`, `wss`, `close()`) so you can wire SIGINT / hot-reload teardown into the surrounding program. `parseCliFlags(schema, raw)` and `defineCliFlags(...)` (both from `devframe/adapters/cac`) validate an arbitrary flag bag against a `CliFlagsSchema` - the helpers are framework-agnostic.
 

@@ -58,10 +58,15 @@ function guideGroups(prefix: string) {
       ],
     },
     {
-      text: 'Recipes & Advanced',
+      text: 'Agent-Native',
+      items: [
+        { text: 'Agent-Native', link: `${prefix}/guide/agent-native` },
+      ],
+    },
+    {
+      text: 'Recipes',
       items: [
         { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
-        { text: 'Agent-Native (experimental)', link: `${prefix}/guide/agent-native` },
       ],
     },
   ] satisfies { text: string, items: DefaultTheme.NavItemWithLink[] }[]

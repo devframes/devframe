@@ -6,8 +6,6 @@ import { keepAlive, parsePortsFlag, startConnectServer } from './connect'
  * The `devframe` bin — the framework's own CLI, distinct from the per-app
  * CLI shells authors build with `createCac(definition)`. It hosts the
  * app-independent commands; today that is `connect`, the MCP connector.
- *
- * @experimental
  */
 export async function runDevframeCli(argv: string[] = process.argv): Promise<void> {
   const cli = cac('devframe')

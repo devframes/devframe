@@ -4,9 +4,6 @@ outline: deep
 
 # MCP
 
-> [!WARNING] Experimental
-> The agent-native surface is experimental and may change without a major version bump.
-
 Translates a devframe's agent host into a [Model Context Protocol](https://modelcontextprotocol.io) server so coding agents (Claude Desktop, Cursor, Zed, Claude Code) can call flagged RPCs and read exposed resources.
 
 ```ts

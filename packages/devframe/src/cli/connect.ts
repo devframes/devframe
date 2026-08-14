@@ -84,8 +84,6 @@ const GATEWAY_TOOLS: Tool[] = [
  * the instance registry and list each one's MCP tools) and
  * `devframe_connect_call-tool` (invoke one tool on one instance over its
  * Streamable-HTTP endpoint) — and holds no domain knowledge of its own.
- *
- * @experimental
  */
 export async function startConnectServer(options: ConnectServerOptions = {}): Promise<ConnectServerHandle> {
   const sdk = await importSdk()

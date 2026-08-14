@@ -80,7 +80,7 @@ my-tool --config ./my.config.mjs
 my-tool --port 8080 --no-open
 my-tool build --out-dir dist-static         # self-contained static deploy
 my-tool build --out-dir dist-static --base /tool/  # …under a custom base
-my-tool mcp                                 # agent exposure (experimental)
+my-tool mcp                                 # agent exposure
 ```
 
 ## Nuxt SPA setup

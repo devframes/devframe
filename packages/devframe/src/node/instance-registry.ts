@@ -7,9 +7,6 @@ import { diagnostics } from './diagnostics'
 /**
  * One running devframe instance, as recorded in the instance registry.
  * Records are self-describing JSON — additive fields are safe.
- *
- * @experimental The agent-native surface is experimental and may change
- * without a major version bump until it stabilizes.
  */
 export interface DevframeInstanceRecord {
   /** Process id of the dev server. */
@@ -37,8 +34,6 @@ export interface DevframeInstanceRecord {
 
 /**
  * Handle returned by {@link registerDevframeInstance}.
- *
- * @experimental
  */
 export interface DevframeInstanceRegistration {
   /** The registry file backing this registration. */
@@ -89,8 +84,6 @@ function isRegistryDisabled(): boolean {
  * crash are pruned by readers whose liveness probe fails. Registration never
  * throws — a write failure degrades to a coded warning (`DF0045`), since a
  * dev server must not die over discovery metadata.
- *
- * @experimental
  */
 export function registerDevframeInstance(
   record: DevframeInstanceRecord,
@@ -130,8 +123,6 @@ export function registerDevframeInstance(
 /**
  * Read every record in the registry directory, dropping unparseable files.
  * Liveness is the caller's concern — see {@link probeDevframeInstance}.
- *
- * @experimental
  */
 export function readDevframeInstances(options: { instancesDir?: string } = {}): DevframeInstanceRecord[] {
   const dir = resolveInstancesDir(options.instancesDir)
@@ -248,8 +239,6 @@ async function probeDevframeInstance(
  * records left behind by killed processes shadow the server currently bound
  * there: per `(port, basePath)` only the newest record survives, older
  * ghosts are pruned with the dead.
- *
- * @experimental
  */
 export async function listLiveDevframeInstances(
   options: { instancesDir?: string, timeoutMs?: number } = {},

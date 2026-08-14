@@ -23,8 +23,6 @@ export interface MountedMcpHttp {
  * legitimate MCP 404 (unknown session) isn't swallowed by h3's
  * "Response-with-404 falls through to the next handler" rule (which would
  * otherwise hand the request to the SPA static catch-all).
- *
- * @experimental
  */
 export function mountMcpHttp(
   app: H3,

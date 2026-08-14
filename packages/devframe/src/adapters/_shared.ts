@@ -76,8 +76,6 @@ function resolveMcpConfig(mcp: boolean | McpRouteOptions | undefined): McpRouteO
  * and the client dials `<page-host>:<port><path>`. Without `port` the path
  * stays relative, resolved against `__connection.json`'s own location (the
  * same-server default).
- *
- * @experimental
  */
 export function resolveMcpConnectionMeta(
   def: DevframeDefinition,

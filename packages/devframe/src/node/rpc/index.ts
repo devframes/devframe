@@ -7,8 +7,6 @@ import { agentReadResource } from './agent-read-resource'
  * Built-in agent introspection RPC functions. Registered automatically
  * by `createHostContext`. Not themselves agent-exposed (no `agent`
  * field) — they power the MCP adapter and any future agent CLI.
- *
- * @experimental
  */
 export const BUILTIN_AGENT_RPC = [
   agentListTools,

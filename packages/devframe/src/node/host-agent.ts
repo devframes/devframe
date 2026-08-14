@@ -34,8 +34,6 @@ interface RegisteredResource {
  * devframe. Auto-discovers RPC functions with an `agent` field from
  * `ctx.rpc.definitions`, and accepts plugin-registered tools /
  * resources via `registerTool` / `registerResource`.
- *
- * @experimental
  */
 export class DevframeAgentHost implements DevframeAgentHostType {
   public readonly events: EventEmitter<DevframeAgentHostEvents> = createEventEmitter()

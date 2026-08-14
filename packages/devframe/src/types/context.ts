@@ -51,8 +51,6 @@ export interface DevframeNodeContext {
   diagnostics: DevframeDiagnosticsHost
   /**
    * Agent host — aggregates the agent-exposed surface of this devtool.
-   *
-   * @experimental
    */
   agent: DevframeAgentHost
   /**

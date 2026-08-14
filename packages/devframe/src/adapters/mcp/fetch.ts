@@ -53,8 +53,6 @@ interface McpSession {
  * loopback-default DNS-rebinding protection that — unlike the WS upgrade's
  * `isAllowedOrigin` — also rejects `Origin`-less requests, so a route-based
  * endpoint isn't reachable by an arbitrary local process.
- *
- * @experimental
  */
 export function createMcpFetchHandler(
   ctx: DevframeNodeContext,

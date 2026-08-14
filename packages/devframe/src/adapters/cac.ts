@@ -71,7 +71,7 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
     // `true` default, silently enabling MCP. Declaring just `--mcp` yields the
     // opt-in tri-state — absent → `undefined` (falls through to `cli.mcp`),
     // `--mcp` → `true`, `--no-mcp` → `false` (handled by CAC's `--no-` prefix).
-    .option('--mcp', 'Expose an MCP server over HTTP at /__mcp (use --no-mcp to disable) [experimental]')
+    .option('--mcp', 'Expose an MCP server over HTTP at /__mcp (use --no-mcp to disable)')
 
   // Register typed flags from the definition ahead of `cli.configure`
   // so authors can still override or augment via the escape hatch.
@@ -120,7 +120,7 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
   }
 
   cli
-    .command('mcp', 'Start an MCP server exposing agent-facing tools (stdio) [experimental]')
+    .command('mcp', 'Start an MCP server exposing agent-facing tools (stdio)')
     .action(async () => {
       // MCP clients expect JSON-RPC on stdout — route welcome/logging
       // noise out of the way. Logs-SDK diagnostics land on stderr by

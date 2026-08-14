@@ -8,9 +8,6 @@
 // Requires `@modelcontextprotocol/server` to be installed as a peer
 // dependency. Importing this entry without the SDK throws at load time
 // with the usual Node module-not-found error.
-//
-// @experimental The agent-native surface is experimental and may change
-// without a major version bump until it stabilizes.
 
 export {
   createMcpServer,

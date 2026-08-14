@@ -110,8 +110,6 @@ export interface DevframeViteBridgeOptions {
    * `<base>__mcp` — on the Vite app's own origin — and advertise it in the
    * bridge's `__connection.json`. Overrides `def.cli?.mcp`, `undefined`
    * falls through to it, `false` disables the route regardless.
-   *
-   * @experimental
    */
   mcp?: boolean | McpRouteOptions
 }

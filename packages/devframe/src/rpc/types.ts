@@ -25,9 +25,6 @@ export type RpcFunctionType = 'static' | 'action' | 'event' | 'query'
  * the function is surfaced to agents (e.g. via the devframe MCP adapter)
  * as a callable tool. Functions without an `agent` field are not exposed —
  * default-deny.
- *
- * @experimental The agent-native surface is experimental and may change
- * without a major version bump until it stabilizes.
  */
 export interface RpcFunctionAgentOptions {
   /**
@@ -260,8 +257,6 @@ export type RpcFunctionDefinition<
         /**
          * Expose this function to agents (e.g. via the MCP adapter).
          * When omitted, the function is not agent-exposed (default-deny).
-         *
-         * @experimental
          */
         agent?: RpcFunctionAgentOptions
         /** Setup function called with context to initialize handler and dump */
@@ -308,8 +303,6 @@ export type RpcFunctionDefinition<
         /**
          * Expose this function to agents (e.g. via the MCP adapter).
          * When omitted, the function is not agent-exposed (default-deny).
-         *
-         * @experimental
          */
         agent?: RpcFunctionAgentOptions
         /** Setup function called with context to initialize handler and dump */
