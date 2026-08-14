@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { DevframeDockEntry, DevframeViewGroup } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
-import { useElementBounding, watchDebounced } from '@vueuse/core'
-import { computed, h, ref, useTemplateRef } from 'vue'
+import { watchDebounced } from '@vueuse/core'
+import { computed, h, ref, useTemplateRef, watch } from 'vue'
 import { deriveSidebarCapacity, docksSplitGroupsWithCapacity, getGroupMembersGrouped } from '../../state/dock-settings'
 import { sharedStateToRef } from '../../state/docks'
 import { setDocksSidebarOverflowPanel, setFloatingTooltip, useDocksSidebarOverflowPanel } from '../../state/floating-tooltip'
@@ -36,7 +36,29 @@ const memberGroups = computed(() => getGroupMembersGrouped(
 ))
 
 const sidebar = useTemplateRef<HTMLDivElement>('sidebar')
-const { height: frameHeight } = useElementBounding(sidebar)
+
+// Bind the ResizeObserver via the sidebar element's own document/window
+// rather than a global one: in popup dock mode the sidebar renders inside
+// the popup's own realm, and `useElementBounding`'s window-level resize
+// listener only fires for the host page, so the rail wouldn't collapse or
+// restore until the mouse moved back into the host page.
+const frameHeight = ref(0)
+watch(sidebar, (el, _prev, onCleanup) => {
+  if (!el) {
+    frameHeight.value = 0
+    return
+  }
+  const ResizeObserverCtor = el.ownerDocument?.defaultView?.ResizeObserver ?? globalThis.ResizeObserver
+  if (!ResizeObserverCtor)
+    return
+  const observer = new ResizeObserverCtor(([entry]) => {
+    if (!entry)
+      return
+    frameHeight.value = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height
+  })
+  observer.observe(el)
+  onCleanup(() => observer.disconnect())
+}, { immediate: true, flush: 'post' })
 
 const totalItems = computed(() => memberGroups.value.reduce((acc, [, items]) => acc + items.length, 0))
 
