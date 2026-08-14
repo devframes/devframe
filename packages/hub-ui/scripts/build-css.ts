@@ -6,7 +6,7 @@ import { colors as c } from 'devframe/utils/colors'
 import MagicString from 'magic-string'
 import { glob } from 'tinyglobby'
 import { createGenerator } from 'unocss'
-import { namespaceShadowCssVars, shadowSurfaceSafelist } from '../../../design/uno.config'
+import { namespaceShadowCssVars, rewireBakedPrimaryColors, shadowSurfaceSafelist } from '../../../design/uno.config'
 import config from '../uno.config'
 
 // Compile the components' UnoCSS output ahead of time into a plain string
@@ -69,14 +69,22 @@ export async function buildCSS(): Promise<void> {
   // a shortcut+variant interaction. Generate the shadow-surface tokens in a
   // dedicated pass so their plain (and `.dark`) rules are always present.
   const surfaces = await generator.generate(shadowSurfaceSafelist.join(' '))
+  // Wind3 bakes the `primary` theme color to literal `rgb()` triplets at
+  // generate-time — rewire them to read the live `--colors-primary-*`
+  // variables `primary-ramp.css` derives from `--devframe-primary`, so a
+  // rebrand actually retints `text-primary`/`bg-primary`/`btn-primary`/…
+  // (see `rewireBakedPrimaryColors`'s own comment).
+  const primaryTheme = (generator.config.theme as { colors?: Record<string, Record<string, string>> }).colors?.primary ?? {}
+  const unoCss = rewireBakedPrimaryColors(unoResult.css, primaryTheme)
+  const surfacesCss = rewireBakedPrimaryColors(surfaces.css, primaryTheme)
   // Namespace Wind's `--un-*` vars (→ `--un-hub-*`) so this shadow-root
   // stylesheet is immune to a host page's Wind4 `@property` registrations
   // (see `namespaceShadowCssVars`).
   const css = namespaceShadowCssVars([
     reset,
     userStyle.toString(),
-    unoResult.css,
-    surfaces.css,
+    unoCss,
+    surfacesCss,
     primaryRamp,
   ].join('\n'), '--un-hub-')
 

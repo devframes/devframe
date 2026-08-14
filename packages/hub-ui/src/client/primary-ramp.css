@@ -2,11 +2,11 @@
  * Primary color as a single overridable variable: `--devframe-primary`.
  *
  * Appended AFTER the UnoCSS output (see `scripts/build-css.ts`) so this block
- * wins over Wind4's own `:root, :host` primary declarations, and imported after
+ * wins over Wind3's own `:root, :host` primary declarations, and imported after
  * `virtual:uno.css` in the Storybook preview for the same reason.
  *
- * Each Wind4 stop (`--colors-primary-*`) is derived from `--devframe-primary`
- * via `color-mix`. When `--devframe-primary` is unset, the intermediate
+ * Each stop (`--colors-primary-*`) is derived from `--devframe-primary` via
+ * `color-mix`. When `--devframe-primary` is unset, the intermediate
  * `--devframe-primary-<stop>` vars become guaranteed-invalid (their `color-mix`
  * references an unset var with no fallback), so each `--colors-primary-<stop>`
  * falls back to the exact devframe default hex - the default look is preserved,
@@ -14,6 +14,16 @@
  * the tree, so setting `--devframe-primary` on the dock host retints
  * everything, and setting it on a group's chrome container retints just that
  * group (the group-accent mechanism).
+ *
+ * The dock's shadow root is built on Wind3, which bakes `primary`-based
+ * utilities (`text-primary`, `bg-primary`, `btn-primary`, `ring-primary-500`,
+ * …) to literal `rgb()` triplets rather than referencing these variables —
+ * `scripts/build-css.ts` rewires those baked colors into CSS relative-color
+ * syntax reading `--colors-primary-<stop>` (see `rewireBakedPrimaryColors` in
+ * `design/uno.config.ts`) so this block actually retints them, not just the
+ * handful of rules (the glow gradient below) that reference the variables
+ * directly. The stops declared here (`DEFAULT`/`600`/`500`/`400`/`300`) must
+ * match `OVERRIDABLE_PRIMARY_STOPS` there.
  *
  * `:host` is the effective selector inside the dock's shadow root; `:root` is
  * for the light-DOM Storybook preview (it matches nothing in the shadow root).
