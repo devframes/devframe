@@ -1,5 +1,6 @@
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
+import { createUi } from '@devframes/hub-ui'
 import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import { createA11yDevframe } from '@devframes/plugin-a11y'
 import { createAssetsDevframe } from '@devframes/plugin-assets'
@@ -54,10 +55,9 @@ const jsonRenderDock: DevframeJsonRenderDockEntry = {
 // The minimal Vite host: one `viteDevframeHub()` plugin from
 // `@devframes/vite/hub`. It wraps `initHub` (mounted as connect middleware on
 // Vite's dev server, sharing its HTTP server for the WS upgrade at
-// `/__devframes/__ws`), defaults the dock UI to `@devframes/hub-ui`, and
-// injects its `embedded.js` bootstrap into the host page — the whole embedded
-// integration in one call. `quiet` silences the Vite-DevTools recommendation
-// for this reference example.
+// `/__devframes/__ws`) and injects the UI's `embedded.js` bootstrap into the
+// host page — the whole embedded integration in one call. `quiet` silences the
+// Vite-DevTools recommendation for this reference example.
 export default defineConfig({
   // Dev tooling reached from arbitrary hostnames (LAN IPs, tunnels): accept
   // any Host header and fall back to the next free port when busy.
@@ -66,6 +66,12 @@ export default defineConfig({
     viteDevframeHub({
       quiet: true,
       devframes: builtinDevframes,
+      // Rebrand the reference UI to Vite's own purple — one field, no CSS:
+      // `createUi`'s `branding` option publishes `branding.json`, which the
+      // dock fetches at boot and feeds into `--devframe-primary` (see
+      // `@devframes/hub-ui`'s `primary-ramp.css`). Passing `ui` overrides the
+      // default `createUi()` the plugin would otherwise use.
+      ui: createUi({ branding: { primaryColor: '#646cff', productName: 'Devframes on Vite' } }),
       // Serve the reference json-render frontend as a prebuilt renderer
       // module — the one-liner that makes `'json-render'` docks render in
       // the prebuilt viewer. Swap it for any community implementation of

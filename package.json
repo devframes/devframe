@@ -16,7 +16,7 @@
   "scripts": {
     "build": "turbo run build --concurrency=3",
     "ci:build": "tsx scripts/ci-retry.ts pnpm run build",
-    "watch": "pnpm -r run watch",
+    "watch": "turbo watch build --concurrency=3",
     "play": "tsx scripts/play.ts",
     "dev": "tsx scripts/play.ts",
     "docs": "pnpm -C docs run docs",

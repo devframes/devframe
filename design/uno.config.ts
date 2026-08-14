@@ -123,3 +123,57 @@ export const shadowSurfaceSafelist: string[] = [
   'color-active',
   'border-base',
 ]
+
+/**
+ * The primary-ramp stops a shadow-root surface's `primary-ramp.css` exposes
+ * as overridable `--colors-primary-<stop>` custom properties (derived from
+ * `--devframe-primary`). Must match that file's declarations exactly.
+ */
+const OVERRIDABLE_PRIMARY_STOPS = ['DEFAULT', '600', '500', '400', '300'] as const
+
+function hexToRgbTriplet(hex: string): string | undefined {
+  const match = /^#([0-9a-f]{6})$/i.exec(hex)
+  if (!match)
+    return undefined
+  const int = Number.parseInt(match[1], 16)
+  return `${(int >> 16) & 255} ${(int >> 8) & 255} ${int & 255}`
+}
+
+/**
+ * Rewire a Wind3-compiled shadow-root stylesheet's baked-in `primary` theme
+ * colors into CSS relative-color syntax reading the live `--colors-primary-*`
+ * variables `primary-ramp.css` derives from `--devframe-primary`.
+ *
+ * Wind3 (unlike Wind4) resolves each theme color to a literal `rgb(r g b /
+ * <alpha>)` at compile time — the `<alpha>` slot is already dynamic (a slash
+ * literal, or the utility's own `--un-*-opacity` variable), but the base `r g
+ * b` triplet is baked in, so every `primary`-based utility (`text-primary`,
+ * `bg-primary`, `btn-primary`, `ring-primary-500`, …) ignores
+ * `--devframe-primary` entirely — only hand-written rules that already
+ * reference `--colors-primary-*` directly (the dock's glow gradient,
+ * `primary-ramp.css` itself) retint. Swapping the baked triplet for `from
+ * var(--colors-primary-<stop>, <hex>) r g b` keeps that exact alpha
+ * mechanism intact while sourcing the base color from the variable — a
+ * rebrand's `--devframe-primary` now reaches every baked utility too.
+ *
+ * Call once per generated pass, after `generator.generate(...)`, passing the
+ * resolved `generator.config.theme.colors.primary` ramp.
+ *
+ * @param css - The compiled Wind3 CSS (pre-`--un-*` namespacing).
+ * @param primaryRamp - The generator's resolved `theme.colors.primary` ramp.
+ */
+export function rewireBakedPrimaryColors(css: string, primaryRamp: Record<string, string>): string {
+  let out = css
+  for (const stop of OVERRIDABLE_PRIMARY_STOPS) {
+    const hex = primaryRamp[stop]
+    const rgb = hex && hexToRgbTriplet(hex)
+    if (!rgb)
+      continue
+    const varName = stop === 'DEFAULT' ? '--colors-primary-DEFAULT' : `--colors-primary-${stop}`
+    out = out.replace(
+      new RegExp(String.raw`rgb\(${rgb}(?!\d)`, 'g'),
+      `rgb(from var(${varName}, ${hex}) r g b`,
+    )
+  }
+  return out
+}

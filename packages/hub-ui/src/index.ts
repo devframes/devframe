@@ -63,10 +63,6 @@ export function createUi(options: CreateUiOptions = {}): DevframeHubUi {
     ...(options.embedded !== false
       ? { embedded: { entry: join(client, 'embedded.js') } }
       : {}),
-    ...(options.branding
-      // Serialized once and served from memory at `<base>branding.json` by the
-      // hub's generic `assets` seam — no build step, no files written.
-      ? { assets: { 'branding.json': () => JSON.stringify(options.branding) } }
-      : {}),
+    assets: { 'branding.json': () => JSON.stringify(options.branding || {}) },
   }
 }
