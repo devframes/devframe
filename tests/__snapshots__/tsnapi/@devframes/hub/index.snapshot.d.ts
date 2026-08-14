@@ -81,6 +81,12 @@ export interface DevframeDockActivation {
   dockId: string;
   params?: Record<string, unknown>;
 }
+export interface DevframeDockConfig {
+  categoryOrder?: Record<string, number>;
+  maxVisibleItems?: number;
+  defaultMode?: 'float' | 'edge';
+  defaultPosition?: 'left' | 'right' | 'top' | 'bottom';
+}
 export interface DevframeDockEntryBase {
   id: string;
   title: string;
@@ -110,6 +116,8 @@ export interface DevframeDocksHost {
     'dock:entry:updated': (entry: DevframeDockUserEntry) => void;
     'dock:activate': (activation: DevframeDockActivation) => void;
   }>;
+  readonly dockConfig: DevframeDockConfig;
+  contributeDockConfig: (_: DevframeDockConfig) => void;
   register: <T extends DevframeDockUserEntry>(_: T, _?: boolean) => {
     update: (_: Partial<T>) => void;
   };

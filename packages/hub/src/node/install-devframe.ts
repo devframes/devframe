@@ -93,6 +93,15 @@ export async function installDevframe(
     ctx.views.hostStatic(base, resolve(d.cli.distDir))
   }
 
+  // `categoryOrder` / `maxVisibleItems` / `defaultMode` / `defaultPosition`
+  // are this devframe's opinion about the hub-wide dock bar, not attributes
+  // of its own synthesized entry — pull them out before spreading the rest
+  // into the entry and fold them into the hub's aggregate instead.
+  const { categoryOrder, maxVisibleItems, defaultMode, defaultPosition, ...entryDockDefaults } = d.dock ?? {}
+  if (categoryOrder || maxVisibleItems !== undefined || defaultMode !== undefined || defaultPosition !== undefined) {
+    ctx.docks.contributeDockConfig({ categoryOrder, maxVisibleItems, defaultMode, defaultPosition })
+  }
+
   ctx.docks.register({
     id,
     title: d.name,
@@ -100,7 +109,7 @@ export async function installDevframe(
     // Definition-level `dock` defaults sit above the name/icon-derived
     // defaults; per-mount `options.dock` overrides them; `type`/`url`
     // (and `id`) stay locked, derived from the definition.
-    ...d.dock,
+    ...entryDockDefaults,
     ...options.dock,
     type: 'iframe',
     url: base,

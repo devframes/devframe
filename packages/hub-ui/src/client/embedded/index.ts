@@ -39,19 +39,32 @@ async function mountDock(): Promise<void> {
     simpleAuth: false,
   })
 
+  // The hub's aggregated dock-bar preferences (declared by installed
+  // devframes), delivered once via the connection handshake we just
+  // performed — fixed for the life of this server, never re-fetched.
+  const dockConfig = rpc.connectionMeta.configs?.dock
+
+  const defaultStore = DEFAULT_DOCK_PANEL_STORE()
   const state = useLocalStorage<DockPanelStorage>(
     'devframes-dock-state',
-    DEFAULT_DOCK_PANEL_STORE(),
+    {
+      ...defaultStore,
+      // Seed a first-run visitor's mode/position from the hub's declared
+      // defaults — `useLocalStorage`'s own `mergeDefaults` already limits
+      // this to a visitor with no stored preference yet.
+      ...(dockConfig?.defaultMode ? { mode: dockConfig.defaultMode } : {}),
+      ...(dockConfig?.defaultPosition ? { position: dockConfig.defaultPosition } : {}),
+    },
     { mergeDefaults: true },
   )
 
   // Resolve branding before the dock exists so the primary color and logo are
-  // in place on the first paint. Fetched from `<base>branding.json` (served
-  // where this script is), then overridden by any host-page channel.
+  // in place on the first paint. Read from `ConnectionMeta.configs.ui.branding`
+  // (already fetched above), then overridden by any host-page channel.
   const { resolveBranding, applyPrimaryColor } = await import('../state/branding')
-  const branding = await resolveBranding({
+  const branding = resolveBranding({
     mode: 'embedded',
-    brandingUrl: new URL('branding.json', import.meta.url),
+    branding: rpc.connectionMeta.configs?.ui?.branding,
   })
 
   const { createDocksContext } = await import('../state/context')
@@ -59,7 +72,10 @@ async function mountDock(): Promise<void> {
   setDevframeClientContext(context)
 
   const { DockEmbedded } = await import('../components/DockEmbedded')
-  dockEl = new DockEmbedded({ context }) as unknown as HTMLElement
+  dockEl = new DockEmbedded({
+    context,
+    ...(dockConfig?.maxVisibleItems !== undefined ? { layout: { maxVisibleItems: dockConfig.maxVisibleItems } } : {}),
+  }) as unknown as HTMLElement
   // Inline on the host element — beats the generated `:host` ramp defaults and
   // inherits through the shadow tree. The embedded bootstrap never touches the
   // host page's <title>/favicon (it's a guest there).

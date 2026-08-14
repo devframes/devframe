@@ -97,6 +97,39 @@ describe('ctx.install', () => {
     })
   })
 
+  it('contributes categoryOrder/maxVisibleItems/defaultMode/defaultPosition to the hub aggregate instead of the entry', async () => {
+    const ctx = createContext()
+    await ctx.install(makeDevframe({
+      dock: {
+        category: 'app',
+        categoryOrder: { app: -40 },
+        maxVisibleItems: 4,
+        defaultMode: 'edge',
+        defaultPosition: 'left',
+      },
+    }))
+
+    expect(ctx.docks.dockConfig).toEqual({
+      categoryOrder: { app: -40 },
+      maxVisibleItems: 4,
+      defaultMode: 'edge',
+      defaultPosition: 'left',
+    })
+    // Not spread onto the synthesized entry — those aren't entry attributes.
+    const entry = ctx.docks.views.get('demo') as unknown as Record<string, unknown>
+    expect(entry.categoryOrder).toBeUndefined()
+    expect(entry.maxVisibleItems).toBeUndefined()
+    expect(entry.defaultMode).toBeUndefined()
+    expect(entry.defaultPosition).toBeUndefined()
+    expect(entry.category).toBe('app')
+  })
+
+  it('leaves the hub aggregate untouched when a devframe declares no dock-bar preferences', async () => {
+    const ctx = createContext()
+    await ctx.install(makeDevframe({ dock: { category: 'app' } }))
+    expect(ctx.docks.dockConfig).toEqual({})
+  })
+
   it('warns and deduplicates by default, keeping the first registration', async () => {
     const ctx = createContext()
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})

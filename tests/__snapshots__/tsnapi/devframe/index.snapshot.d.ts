@@ -75,6 +75,7 @@ export interface ConnectionMeta {
   baseUrl?: string;
   authToken?: string;
   viewerOriginToken?: string;
+  configs?: Partial<DevframeConnectionConfigsRegistry>;
 }
 export interface ConnectionMetaSse {
   path?: string;
@@ -128,6 +129,7 @@ export interface DevframeCliOptions {
   configure?: (_: CAC) => void;
   flags?: CliFlagsSchema;
 }
+export interface DevframeConnectionConfigsRegistry {}
 export interface DevframeDefineDiagnosticsOptions<Codes extends Record<string, DiagnosticDefinition>> {
   docsBase?: string | ((_: keyof Codes) => string | undefined);
   codes: Codes;
@@ -174,6 +176,10 @@ export interface DevframeDockDefaults {
   visibility?: string;
   badge?: string;
   groupId?: string;
+  categoryOrder?: Record<string, number>;
+  maxVisibleItems?: number;
+  defaultMode?: 'float' | 'edge';
+  defaultPosition?: 'left' | 'right' | 'top' | 'bottom';
 }
 export interface DevframeHost {
   mountStatic: (_: string, _: string) => void | Promise<void>;

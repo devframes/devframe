@@ -73,9 +73,10 @@ async function loadHub(): Promise<HubInstance> {
   // `@devframes/next/hub` runs the socket on a side-car (Next routes can't
   // accept WS upgrades). This host overrides the default UI slot to rebrand
   // the reference viewer to Next.js/Vercel's monochrome black — one field, no
-  // CSS: `createUi`'s `branding` option publishes `branding.json`, which the
-  // dock fetches at boot and feeds into `--devframe-primary` (see
-  // `@devframes/hub-ui`'s `primary-ramp.css`).
+  // CSS: `createUi`'s `branding` option publishes
+  // `ConnectionMeta.configs.ui.branding`, which the dock reads at connect
+  // time and feeds into `--devframe-primary` (see `@devframes/hub-ui`'s
+  // `primary-ramp.css`).
   return createNextDevframeHub({
     devframes,
     ui: (hubUi.createUi as typeof CreateUi)({ branding: { primaryColor: '#000000', productName: 'Devframes on Next.js' } }),

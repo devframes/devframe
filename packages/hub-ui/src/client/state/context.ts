@@ -7,7 +7,7 @@ import type { HubDocksUserSettings } from './dock-settings'
 import { attachFrameNavClient } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY } from '@devframes/hub/constants'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
-import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, HUB_UI_HIDE_EVENT } from '../constants'
+import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_UI_HIDE_EVENT } from '../constants'
 import { useBranding } from './branding'
 import { createCommandsContext } from './commands'
 import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, getRegisteredGroupIds, resolveCommandIcon, resolveGroupDefaultChild } from './dock-settings'
@@ -353,8 +353,12 @@ export async function createDocksContext(
 
   // Settings store, `settings`, and `getWhenContext` are established earlier
   // (right before `switchEntry`) — its group→member resolution needs them.
+  // `categoryOrderOverride` folds in every installed devframe's own declared
+  // `dock.categoryOrder`, aggregated hub-wide and delivered once via the
+  // connection handshake (`ConnectionMeta.configs.dock.categoryOrder`).
+  const categoryOrderOverride = rpc.connectionMeta.configs?.dock?.categoryOrder
   const groupedEntries = computed(() => {
-    return docksGroupByCategories(entries.value, settings.value, { whenContext: getWhenContext(), collapseGroups: true })
+    return docksGroupByCategories(entries.value, settings.value, { whenContext: getWhenContext(), collapseGroups: true, categoryOrderOverride })
   })
 
   // Initialize commands context with reactive when-context
@@ -511,6 +515,7 @@ export async function createDocksContext(
       entries,
       entryToStateMap: markRaw(dockEntryStateMap),
       groupedEntries,
+      categoryOrder: categoryOrderOverride ? { ...DEFAULT_CATEGORIES_ORDER, ...categoryOrderOverride } : DEFAULT_CATEGORIES_ORDER,
       settings: settingsStore,
       getStateById: (id: string) => dockEntryStateMap.get(id),
       switchEntry,

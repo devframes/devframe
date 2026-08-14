@@ -95,6 +95,14 @@ export interface DocksEntriesContext {
   entries: DevframeDockEntry[]
   entryToStateMap: Map<string, DockEntryState>
   groupedEntries: DevframeDockEntriesGrouped
+  /**
+   * The resolved top-level category ordering — `DEFAULT_CATEGORIES_ORDER`,
+   * overridden by every installed devframe's own `dock.categoryOrder`
+   * (`ConnectionMeta.configs.dock.categoryOrder`), overridden again by the
+   * host page's own `createDevframeClientHost({ categoryOrder })`. Fixed
+   * for the life of the session — resolved once at boot.
+   */
+  readonly categoryOrder: Record<string, number>
   settings: SharedState<DevframeDocksUserSettings>
   /**
    * Get the state of a dock entry by its ID

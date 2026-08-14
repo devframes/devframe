@@ -77,9 +77,10 @@ export default defineConfig({
         base,
         devframes: builtinDevframes,
         // Rebrand the reference UI to Rsbuild's own orange — one field, no
-        // CSS: `createUi`'s `branding` option publishes `branding.json`,
-        // which the dock fetches at boot and feeds into `--devframe-primary`
-        // (see `@devframes/hub-ui`'s `primary-ramp.css`).
+        // CSS: `createUi`'s `branding` option publishes
+        // `ConnectionMeta.configs.ui.branding`, which the dock reads at
+        // connect time and feeds into `--devframe-primary` (see
+        // `@devframes/hub-ui`'s `primary-ramp.css`).
         ui: createUi({ branding: { primaryColor: '#ff5e00', productName: 'Devframes on Rsbuild' } }),
         // Serve the reference json-render frontend as a prebuilt renderer
         // module — the one-liner that makes `'json-render'` docks render in

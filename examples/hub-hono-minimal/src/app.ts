@@ -39,9 +39,9 @@ export const hub: HubInstance = globalRef.__hubHonoMinimal ??= initHub({
     createAssetsDevframe({ watch: false }),
   ],
   // Rebrand the reference UI to Hono's own orange — one field, no CSS:
-  // `createUi`'s `branding` option publishes `branding.json`, which the dock
-  // fetches at boot and feeds into `--devframe-primary` (see
-  // `@devframes/hub-ui`'s `primary-ramp.css`).
+  // `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
+  // which the dock reads at connect time and feeds into `--devframe-primary`
+  // (see `@devframes/hub-ui`'s `primary-ramp.css`).
   ui: createUi({ branding: { primaryColor: '#e36002', productName: 'Devframes on Hono' } }),
   // Gate with devframe's interactive OTP (the default). The hub prints a
   // 6-digit code + magic link on startup, and the reference UI's authorization

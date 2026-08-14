@@ -30,11 +30,13 @@ async function main(): Promise<void> {
   })
 
   // Resolve branding before mount; the standalone page owns its own head, so
-  // apply title/favicon/description here too.
+  // apply title/favicon/description here too. Read from
+  // `ConnectionMeta.configs.ui.branding`, carried by the connection we just
+  // established above.
   const { resolveBranding, applyPrimaryColor, applyDocumentHead } = await import('../state/branding')
-  const branding = await resolveBranding({
+  const branding = resolveBranding({
     mode: 'standalone',
-    brandingUrl: new URL('branding.json', document.baseURI),
+    branding: rpc.connectionMeta.configs?.ui?.branding,
   })
   applyDocumentHead(document, branding)
 

@@ -6,6 +6,12 @@ import { fileURLToPath } from 'node:url'
 
 export type { DevframeBranding } from './client/state/branding'
 
+declare module 'devframe/types' {
+  interface DevframeConnectionConfigsRegistry {
+    ui: { branding?: DevframeBranding }
+  }
+}
+
 /**
  * The built client assets live next to the built entry (`dist/index.mjs` →
  * `dist/client/`). When this module runs from source instead (tests and
@@ -29,10 +35,11 @@ export interface CreateUiOptions {
   embedded?: boolean
   /**
    * Rebrand the reference UI — logo, product name, primary color, and more.
-   * Published as `<base>branding.json` (via the hub's generic `assets` seam)
-   * and fetched by the dock at boot. Reaches both the embedded dock and the
-   * standalone viewer. A host page can still override any field at runtime via
-   * `window.__DEVFRAME_BRANDING__` / `<script data-*>` / `?query` params.
+   * Published as `ConnectionMeta.configs.ui.branding`, read by the dock at
+   * boot from the one connection handshake it already performs. Reaches
+   * both the embedded dock and the standalone viewer. A host page can still
+   * override any field at runtime via `window.__DEVFRAME_BRANDING__` /
+   * `<script data-*>` / `?query` params.
    */
   branding?: DevframeBranding
 }
@@ -63,6 +70,6 @@ export function createUi(options: CreateUiOptions = {}): DevframeHubUi {
     ...(options.embedded !== false
       ? { embedded: { entry: join(client, 'embedded.js') } }
       : {}),
-    assets: { 'branding.json': () => JSON.stringify(options.branding || {}) },
+    settings: () => ({ branding: options.branding || {} }),
   }
 }

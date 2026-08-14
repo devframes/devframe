@@ -67,10 +67,10 @@ export default defineConfig({
       quiet: true,
       devframes: builtinDevframes,
       // Rebrand the reference UI to Vite's own purple — one field, no CSS:
-      // `createUi`'s `branding` option publishes `branding.json`, which the
-      // dock fetches at boot and feeds into `--devframe-primary` (see
-      // `@devframes/hub-ui`'s `primary-ramp.css`). Passing `ui` overrides the
-      // default `createUi()` the plugin would otherwise use.
+      // `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
+      // which the dock reads at connect time and feeds into `--devframe-primary`
+      // (see `@devframes/hub-ui`'s `primary-ramp.css`). Passing `ui` overrides
+      // the default `createUi()` the plugin would otherwise use.
       ui: createUi({ branding: { primaryColor: '#646cff', productName: 'Devframes on Vite' } }),
       // Serve the reference json-render frontend as a prebuilt renderer
       // module — the one-liner that makes `'json-render'` docks render in

@@ -262,6 +262,36 @@ export interface DevframeDockDefaults {
   badge?: string
   /** Id of the dock group this entry collapses under, if any. */
   groupId?: string
+  /**
+   * This devframe's opinion about the top-level dock-bar **category**
+   * ordering, hub-wide — not an attribute of this entry itself. Every
+   * installed devframe's `categoryOrder` is shallow-merged into one
+   * aggregate (last-installed wins per key), delivered once via
+   * `ConnectionMeta.configs.dock.categoryOrder` and merged beneath
+   * `DEFAULT_CATEGORIES_ORDER`. A host page's own
+   * `createDevframeClientHost({ categoryOrder })` still overrides it.
+   */
+  categoryOrder?: Record<string, number>
+  /**
+   * This devframe's preferred inline-item capacity for the floating dock
+   * bar before entries overflow — hub-wide, not an attribute of this entry.
+   * The last installed devframe declaring it wins; an explicit `layout`
+   * prop passed to the dock UI still overrides it. Edge mode ignores this
+   * by design — it shows every entry with no capacity cutoff.
+   */
+  maxVisibleItems?: number
+  /**
+   * Seeds a first-run visitor's dock mode — hub-wide, not an attribute of
+   * this entry. Only applies when the visitor has no stored dock
+   * preference yet; never overwrites one who already moved their dock. The
+   * last installed devframe declaring it wins.
+   */
+  defaultMode?: 'float' | 'edge'
+  /**
+   * Seeds a first-run visitor's dock position, same override semantics as
+   * {@link defaultMode}.
+   */
+  defaultPosition?: 'left' | 'right' | 'top' | 'bottom'
 }
 
 export interface DevframeSpaOptions {

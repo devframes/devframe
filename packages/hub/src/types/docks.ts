@@ -1,11 +1,43 @@
 import type { ConnectionMeta, EventEmitter } from 'devframe/types'
 
+/**
+ * The hub's aggregate, plugin-declared dock-bar layout preferences —
+ * collected across every installed {@link import('devframe/types').DevframeDefinition}'s
+ * own `dock.categoryOrder` / `maxVisibleItems` / `defaultMode` /
+ * `defaultPosition` (last-installed devframe wins per scalar key,
+ * `categoryOrder` shallow-merged). Published verbatim as
+ * `ConnectionMeta.configs.dock` — fixed for the life of the server, never
+ * mutated after boot.
+ */
+export interface DevframeDockConfig {
+  categoryOrder?: Record<string, number>
+  maxVisibleItems?: number
+  defaultMode?: 'float' | 'edge'
+  defaultPosition?: 'left' | 'right' | 'top' | 'bottom'
+}
+
+declare module 'devframe/types' {
+  interface DevframeConnectionConfigsRegistry {
+    dock: DevframeDockConfig
+  }
+}
+
 export interface DevframeDocksHost {
   readonly views: Map<string, DevframeDockUserEntry>
   readonly events: EventEmitter<{
     'dock:entry:updated': (entry: DevframeDockUserEntry) => void
     'dock:activate': (activation: DevframeDockActivation) => void
   }>
+  /** The aggregate dock-bar config collected from every installed devframe so far. */
+  readonly dockConfig: DevframeDockConfig
+  /**
+   * Merge one devframe's declared dock-bar preferences into
+   * {@link dockConfig} — called by `installDevframe` for every devframe
+   * whose `dock` declares any of `categoryOrder` / `maxVisibleItems` /
+   * `defaultMode` / `defaultPosition`. Last caller wins per scalar key;
+   * `categoryOrder` shallow-merges over what's already aggregated.
+   */
+  contributeDockConfig: (config: DevframeDockConfig) => void
 
   register: <T extends DevframeDockUserEntry>(entry: T, force?: boolean) => {
     update: (patch: Partial<T>) => void

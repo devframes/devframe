@@ -12,10 +12,11 @@ export type BrandingLogo = string | { light: string, dark: string }
 /**
  * Consumer-facing branding for the reference hub-ui. Every field is optional
  * and falls back to devframe's own identity. Delivered three ways, merged
- * field-by-field (later wins): the `branding.json` `createUi({ branding })`
- * publishes, then the host page (a `window.__DEVFRAME_BRANDING__` global or
- * `data-*` attrs on the embedding `<script>`, or `?query` params on the
- * standalone viewer).
+ * field-by-field (later wins): the `ConnectionMeta.configs.ui.branding`
+ * `createUi({ branding })` publishes (read from the connection handshake the
+ * dock already performs), then the host page (a `window.__DEVFRAME_BRANDING__`
+ * global or `data-*` attrs on the embedding `<script>`, or `?query` params on
+ * the standalone viewer).
  */
 export interface DevframeBranding {
   /** Product name — the wordmark, window titles, and all user-visible copy. */
@@ -160,36 +161,21 @@ function readQueryParams(): DevframeBranding {
   return out
 }
 
-async function fetchBrandingJson(url: string | URL): Promise<DevframeBranding | undefined> {
-  try {
-    const res = await fetch(url)
-    if (!res.ok)
-      return undefined
-    const json = await res.json()
-    return json && typeof json === 'object' ? json as DevframeBranding : undefined
-  }
-  catch {
-    // A missing branding.json (embedded-only without the assets seam, offline,
-    // etc.) is expected — fall back to defaults + any host-page override.
-    return undefined
-  }
-}
-
 /**
- * Resolve branding at boot: fetch the served `branding.json`, layer the
- * host-page channels over it (they win per field), install the result, and
- * return it. Awaited before the dock element mounts, so branding is applied on
- * the first paint.
+ * Resolve branding at boot: take whatever `ConnectionMeta.configs.ui.branding`
+ * carried from the connection handshake the dock already performed, layer
+ * the host-page channels over it (they win per field), install the result,
+ * and return it. Called once the RPC client is connected, before the dock
+ * element mounts, so branding is applied on the first paint.
  */
-export async function resolveBranding(options: {
+export function resolveBranding(options: {
   mode: 'embedded' | 'standalone'
-  brandingUrl: string | URL
-}): Promise<ResolvedBranding> {
-  const fetched = await fetchBrandingJson(options.brandingUrl)
+  branding?: DevframeBranding
+}): ResolvedBranding {
   const hostPage = options.mode === 'embedded'
     ? mergeBranding(readScriptDataAttrs(), readWindowGlobal())
     : mergeBranding(readQueryParams(), readWindowGlobal())
-  return setBranding(mergeBranding(fetched, hostPage))
+  return setBranding(mergeBranding(options.branding, hostPage))
 }
 
 // --- Applying to the DOM --------------------------------------------------

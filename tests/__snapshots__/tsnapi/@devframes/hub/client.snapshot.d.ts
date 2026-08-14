@@ -97,6 +97,7 @@ export interface DocksEntriesContext {
   entries: DevframeDockEntry[];
   entryToStateMap: Map<string, DockEntryState>;
   groupedEntries: DevframeDockEntriesGrouped;
+  readonly categoryOrder: Record<string, number>;
   settings: SharedState<DevframeDocksUserSettings>;
   getStateById: (_: string) => DockEntryState | undefined;
   switchEntry: (_?: string | null) => Promise<boolean>;

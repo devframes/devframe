@@ -78,9 +78,11 @@ export interface DevframeClientHostOptions {
    * distinct from {@link import('../types/docks').DevframeViewGroup.categoryOrder},
    * which only reorders the IN-GROUP sub-categories of one specific group.
    *
-   * Keys are merged over `DEFAULT_CATEGORIES_ORDER`, so the host app only
-   * lists the categories it wants to move; any category absent from the map
-   * keeps its default weight (falling back to `0`).
+   * Keys are merged over `DEFAULT_CATEGORIES_ORDER` and every installed
+   * devframe's own declared `dock.categoryOrder` (see
+   * `ConnectionMeta.configs.dock.categoryOrder`) — this option sorts last
+   * and wins, so the host app only lists the categories it wants to move;
+   * any category absent from the map keeps its otherwise-resolved weight.
    *
    * @example
    * ```ts
@@ -135,6 +137,16 @@ export async function createDevframeClientHost(
   // attach one adapter per shared iframe and tear them all down on dispose.
   const frameNavAdapters = new Map<string, () => void>()
   const loadScriptsEnabled = options.loadClientScripts ?? true
+
+  // Resolved once at boot, fixed for the session: default table, overridden
+  // by every installed devframe's own declared preference (delivered once
+  // via the connection handshake), overridden again by this host page's own
+  // explicit option.
+  const categoryOrder: Record<string, number> = {
+    ...DEFAULT_CATEGORIES_ORDER,
+    ...rpc.connectionMeta?.configs?.dock?.categoryOrder,
+    ...options.categoryOrder,
+  }
 
   const panel = createPanelContext(clientType)
   const docks = createDocksContext()
@@ -322,7 +334,7 @@ export async function createDevframeClientHost(
     }
 
     docks.entries = entries
-    docks.groupedEntries = groupByCategory(entries)
+    docks.groupedEntries = groupByCategory(entries, categoryOrder)
     if (selectedId && !entryToStateMap.has(selectedId))
       selectedId = null
   }
@@ -341,6 +353,7 @@ export async function createDevframeClientHost(
       entries: [],
       entryToStateMap,
       groupedEntries: [],
+      categoryOrder,
       settings,
       getStateById: id => entryToStateMap.get(id),
       switchEntry,
@@ -522,7 +535,7 @@ function createPanelContext(clientType: DockClientType): DocksPanelContext {
   }
 }
 
-function groupByCategory(entries: DevframeDockEntry[]): DevframeDockEntriesGrouped {
+function groupByCategory(entries: DevframeDockEntry[], categoryOrder: Record<string, number>): DevframeDockEntriesGrouped {
   // Index registered groups so a member whose `groupId` resolves takes its
   // OUTER bucket from the group's category, not its own (which becomes the
   // member's in-group sub-category). Orphan members — a `groupId` with no
@@ -547,6 +560,6 @@ function groupByCategory(entries: DevframeDockEntry[]): DevframeDockEntriesGroup
     list.push(entry)
   }
   return [...groups.entries()].sort(
-    ([a], [b]) => (DEFAULT_CATEGORIES_ORDER[a] ?? 0) - (DEFAULT_CATEGORIES_ORDER[b] ?? 0),
+    ([a], [b]) => (categoryOrder[a] ?? 0) - (categoryOrder[b] ?? 0),
   )
 }

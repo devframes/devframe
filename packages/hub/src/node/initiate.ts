@@ -119,12 +119,22 @@ export interface DevframeHubUi {
   }
   /**
    * Extra UI-owned files the hub serves at `<base><key>`, each produced lazily
-   * from memory. Keys are base-relative paths (e.g. `branding.json`); the
-   * content-type is inferred from the key's extension. A generic seam a viewer
-   * uses to publish small runtime documents (the reference UI serves its
-   * branding this way) without teaching the hub anything about their meaning.
+   * from memory. Keys are base-relative paths; the content-type is inferred
+   * from the key's extension. A generic seam a viewer uses to publish
+   * arbitrary runtime documents without teaching the hub anything about
+   * their meaning.
    */
   assets?: Record<string, () => string | Uint8Array>
+  /**
+   * Static, UI-owned configuration published verbatim as
+   * `ConnectionMeta.configs.ui` — the hub embeds whatever this returns
+   * without interpreting it, staying policy-free about what "ui" means.
+   * The reference UI's `createUi({ branding })` sets this to `{ branding }`,
+   * reaching every mounted frame and the standalone viewer through the one
+   * connection handshake they already perform, in place of a separate
+   * fetched asset.
+   */
+  settings?: () => Record<string, unknown>
 }
 
 export type DevframesInput = Array<
@@ -523,6 +533,21 @@ export function initHub(options: InitHubOptions): HubInstance {
     },
 
     mount(ctx, meta) {
+      // Static, boot-time config — the UI slot's own opaque settings (e.g.
+      // branding) plus the dock-bar preferences aggregated from every
+      // installed devframe — baked into the one connection meta every frame
+      // and the standalone viewer already fetch. Fixed for the life of the
+      // server: computed once, here, after every devframe has installed.
+      const uiConfig = options.ui?.settings?.()
+      const dockConfig = ctx.docks.dockConfig
+      const hasDockConfig = Object.keys(dockConfig).length > 0
+      if (uiConfig || hasDockConfig) {
+        meta.configs = {
+          ...(uiConfig ? { ui: uiConfig } : {}),
+          ...(hasDockConfig ? { dock: dockConfig } : {}),
+        }
+      }
+
       // Hub-level discovery endpoints, registered before the viewer's static
       // mount so its SPA-fallback can't swallow them.
       app.use(joinURL(base, DEVFRAME_CONNECTION_META_FILENAME), () => meta)
@@ -572,9 +597,9 @@ export function initHub(options: InitHubOptions): HubInstance {
         })
       }
 
-      // UI-owned assets (e.g. the reference viewer's `branding.json`), served
-      // from memory. Registered before the viewer's SPA catch-all so these exact
-      // routes win, mirroring the discovery endpoints above.
+      // UI-owned assets, served from memory. Registered before the viewer's
+      // SPA catch-all so these exact routes win, mirroring the discovery
+      // endpoints above.
       for (const [key, produce] of Object.entries(options.ui?.assets ?? {})) {
         app.use(joinURL(base, key), (event) => {
           event.res.headers.set('Content-Type', assetContentType(key))
