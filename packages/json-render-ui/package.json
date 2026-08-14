@@ -51,7 +51,8 @@
     }
   },
   "dependencies": {
-    "@json-render/vue": "catalog:frontend"
+    "@json-render/vue": "catalog:frontend",
+    "@vueuse/core": "catalog:frontend"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
