@@ -122,10 +122,7 @@ export interface DevframeDocksUserSettings {
   docksCategoriesHidden: string[];
   docksPinned: string[];
   docksCustomOrder: Record<string, number>;
-  showIframeAddressBar: boolean;
-  closeOnOutsideClick: boolean;
   commandShortcuts: DevframeCommandShortcutOverrides;
-  autoCollapseEdgeToolbar?: boolean;
 }
 export interface DevframeHubContext extends DevframeNodeContext {
   readonly host: DevframeHost;

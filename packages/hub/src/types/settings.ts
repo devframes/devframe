@@ -1,19 +1,32 @@
 import type { DevframeCommandShortcutOverrides } from './commands'
 
+/**
+ * Persisted per-user dock + command settings, synced over the
+ * `devframe:user-settings` shared state. The generic base carries the hub's
+ * own dock-registry and command model that every viewer shares; a viewer
+ * augments it with its own reference-UI toggles via declaration merging:
+ *
+ * ```ts
+ * declare module '@devframes/hub/types' {
+ *   interface DevframeDocksUserSettings {
+ *     myViewerToggle?: boolean
+ *   }
+ * }
+ * ```
+ *
+ * Augmented fields are optional so the hub's `DEFAULT_STATE_USER_SETTINGS()`
+ * (which knows nothing about them) stays assignable — an absent value reads
+ * as the viewer's documented default.
+ */
 export interface DevframeDocksUserSettings {
+  /** Ids of dock entries the user has hidden from the bar. */
   docksHidden: string[]
+  /** Category ids the user has collapsed/hidden on the bar. */
   docksCategoriesHidden: string[]
+  /** Ids of dock entries the user has pinned. */
   docksPinned: string[]
+  /** Per-entry sort weight overriding the registry's default order. */
   docksCustomOrder: Record<string, number>
-  showIframeAddressBar: boolean
-  closeOnOutsideClick: boolean
+  /** Per-command keybinding overrides (empty array = shortcut disabled). */
   commandShortcuts: DevframeCommandShortcutOverrides
-  /**
-   * Auto-collapse the edge-mode toolbar to a small handle when idle (no
-   * hover or drag) and the panel content is closed, instead of permanently
-   * spanning the full edge. Off by default — an absent value preserves
-   * today's edge-mode behavior for existing users; opt in from
-   * Settings → Appearance.
-   */
-  autoCollapseEdgeToolbar?: boolean
 }

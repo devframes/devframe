@@ -1,12 +1,13 @@
-import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeViewGroup } from '@devframes/hub'
+import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeDocksUserSettings, DevframeViewGroup } from '@devframes/hub'
 import type { Immutable } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
-import type { HubDocksUserSettings } from '../types'
 import { evaluateWhen } from 'devframe/utils/when'
 import { DEFAULT_CATEGORIES_ORDER, INSPECTOR_DOCK_ID } from '../constants'
+// Registers hub-ui's reference-viewer settings onto DevframeDocksUserSettings.
+import '../types'
 
-export type { HubDocksUserSettings }
 export type { DevframeDockEntriesGrouped }
+export type { DevframeDocksUserSettings }
 
 /**
  * Synthetic category that collects pinned dock entries. Pinning re-buckets an
@@ -141,7 +142,7 @@ export function getEntryGroup(
 export function getGroupMembersGrouped(
   entries: DevframeDockEntry[],
   groupId: string,
-  settings?: Immutable<HubDocksUserSettings>,
+  settings?: Immutable<DevframeDocksUserSettings>,
   options?: { includeHidden?: boolean, whenContext?: WhenContext },
 ): DevframeDockEntriesGrouped {
   const members = entries.filter(e => e.type !== 'group' && e.groupId === groupId)
@@ -165,7 +166,7 @@ export function getGroupMembersGrouped(
 export function getGroupMembers(
   entries: DevframeDockEntry[],
   groupId: string,
-  settings?: Immutable<HubDocksUserSettings>,
+  settings?: Immutable<DevframeDocksUserSettings>,
   options?: { includeHidden?: boolean, whenContext?: WhenContext },
 ): DevframeDockEntry[] {
   return getGroupMembersGrouped(entries, groupId, settings, options).flatMap(([, items]) => items)
@@ -248,7 +249,7 @@ export function resolveGroupDefaultChild(
  */
 export function docksGroupByCategories(
   entries: DevframeDockEntry[],
-  settings: Immutable<HubDocksUserSettings>,
+  settings: Immutable<DevframeDocksUserSettings>,
   options?: { includeHidden?: boolean, whenContext?: WhenContext, collapseGroups?: boolean, ignoreCategoryHidden?: boolean, categoryOrderOverride?: Record<string, number> },
 ): DevframeDockEntriesGrouped {
   const { docksHidden, docksCategoriesHidden, docksCustomOrder, docksPinned } = settings

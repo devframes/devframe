@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
-import type { HubDocksUserSettings } from '../../state/dock-settings'
+import type { DevframeDocksUserSettings } from '../../state/dock-settings'
 import { DEFAULT_STATE_USER_SETTINGS } from '@devframes/hub/constants'
 import { useBranding } from '../../state/branding'
 import { useConfirm } from '../../state/confirm'
@@ -9,7 +9,7 @@ import { sharedStateToRef } from '../../state/docks'
 
 const props = defineProps<{
   context: DocksContext
-  settingsStore: SharedState<HubDocksUserSettings>
+  settingsStore: SharedState<DevframeDocksUserSettings>
 }>()
 
 const settings = sharedStateToRef(props.settingsStore)

@@ -3,7 +3,7 @@ import type { CommandsContext, DevframeRpcClient, DockClientScriptContext, DockE
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
 import type { Ref } from 'vue'
-import type { HubDocksUserSettings } from './dock-settings'
+import type { DevframeDocksUserSettings } from './dock-settings'
 import { attachFrameNavClient } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY } from '@devframes/hub/constants'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
@@ -134,7 +134,7 @@ export async function createDocksContext(
   panelStore ||= ref(DEFAULT_DOCK_PANEL_STORE())
   let docksContext: DocksContext
 
-  let _settingsStorePromise: Promise<SharedState<HubDocksUserSettings>> | undefined
+  let _settingsStorePromise: Promise<SharedState<DevframeDocksUserSettings>> | undefined
   const getSettingsStore = async () => {
     if (!_settingsStorePromise) {
       _settingsStorePromise = rpc.sharedState.get(

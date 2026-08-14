@@ -1,24 +1,36 @@
-import type { DevframeDocksUserSettings, DevframeViewLauncher } from '@devframes/hub/types'
+import type { DevframeViewLauncher } from '@devframes/hub/types'
 // Importing the hub-mounted json-render integration registers its
 // `'json-render'` dock entry (a serializable `view` ref, not a live handle)
 // on the hub's open dock union via declaration merging.
 import '@devframes/json-render/hub'
 
 /**
- * hub-ui user settings — the hub's {@link DevframeDocksUserSettings} widened
- * with the toggles only this viewer ships.
- *
- * The extra fields are optional so the hub's `DEFAULT_STATE_USER_SETTINGS()`
- * (which knows nothing about them) stays assignable; an absent value reads as
- * its documented default.
+ * hub-ui's reference-viewer settings, merged onto the hub's generic
+ * {@link DevframeDocksUserSettings} — the hub core stays unaware of them.
+ * Every field is optional so the hub's `DEFAULT_STATE_USER_SETTINGS()` (which
+ * knows nothing about them) stays assignable; an absent value reads as the
+ * documented default.
  */
-export interface HubDocksUserSettings extends DevframeDocksUserSettings {
-  /**
-   * Reveal the Devframe Inspector dock (the "devtools for the devtools"
-   * meta-introspection panel). Hidden by default — an absent value keeps the
-   * dock out of the dock bar until the user opts in from Settings → Advanced.
-   */
-  showDevframeInspector?: boolean
+declare module '@devframes/hub/types' {
+  interface DevframeDocksUserSettings {
+    /** Show the address-bar chrome on iframe dock views. Defaults to shown. */
+    showIframeAddressBar?: boolean
+    /** Close the floating dock panel when clicking outside it. */
+    closeOnOutsideClick?: boolean
+    /**
+     * Auto-collapse the edge-mode toolbar to a small handle when idle (no
+     * hover or drag) and the panel content is closed, instead of permanently
+     * spanning the full edge. Off by default — an absent value preserves the
+     * default edge-mode behavior; opt in from Settings → Appearance.
+     */
+    autoCollapseEdgeToolbar?: boolean
+    /**
+     * Reveal the Devframe Inspector dock (the "devtools for the devtools"
+     * meta-introspection panel). Hidden by default — an absent value keeps the
+     * dock out of the dock bar until the user opts in from Settings → Advanced.
+     */
+    showDevframeInspector?: boolean
+  }
 }
 
 /**

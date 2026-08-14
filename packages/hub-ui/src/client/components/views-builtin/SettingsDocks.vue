@@ -2,7 +2,7 @@
 import type { DevframeDockEntry } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
-import type { DevframeDockEntriesGrouped, HubDocksUserSettings } from '../../state/dock-settings'
+import type { DevframeDockEntriesGrouped, DevframeDocksUserSettings } from '../../state/dock-settings'
 import { useDraggable } from '@vueuse/core'
 import { computed, ref, useTemplateRef } from 'vue'
 import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, isCategoryHideable } from '../../state/dock-settings'
@@ -12,7 +12,7 @@ import DockIcon from '../dock/DockIcon.vue'
 
 const props = defineProps<{
   context: DocksContext
-  settingsStore: SharedState<HubDocksUserSettings>
+  settingsStore: SharedState<DevframeDocksUserSettings>
 }>()
 
 const settings = sharedStateToRef(props.settingsStore)

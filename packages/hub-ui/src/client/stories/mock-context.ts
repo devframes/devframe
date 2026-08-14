@@ -1,6 +1,5 @@
-import type { DevframeDockEntry } from '@devframes/hub'
+import type { DevframeDockEntry, DevframeDocksUserSettings } from '@devframes/hub'
 import type { DevframeRpcClient, DockPanelStorage, DocksContext, RpcClientEvents } from '@devframes/hub/client'
-import type { HubDocksUserSettings } from '../types'
 import { DEFAULT_STATE_USER_SETTINGS } from '@devframes/hub/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { createSharedState } from 'devframe/utils/shared-state'
@@ -27,7 +26,7 @@ export interface CreateMockContextOptions {
   /** Overrides merged over the default panel store (mode, position, open, ...). */
   panel?: Partial<DockPanelStorage>
   /** Overrides merged over the default user settings (hidden, pinned, order, ...). */
-  settings?: Partial<HubDocksUserSettings>
+  settings?: Partial<DevframeDocksUserSettings>
   /** Entry id to pre-select (also opens the panel). */
   selectedId?: string | null
   /** Initial trust state. Defaults to `true`. */
@@ -36,7 +35,7 @@ export interface CreateMockContextOptions {
 
 function createMockRpc(
   entries: DevframeDockEntry[],
-  settings: Partial<HubDocksUserSettings>,
+  settings: Partial<DevframeDocksUserSettings>,
   initialTrusted: boolean,
 ): MockRpcClient {
   const docksState = createSharedState({ initialValue: entries, enablePatches: false })

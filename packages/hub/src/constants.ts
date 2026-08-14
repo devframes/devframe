@@ -38,7 +38,5 @@ export const DEFAULT_STATE_USER_SETTINGS: () => DevframeDocksUserSettings = () =
   docksCategoriesHidden: [],
   docksPinned: [],
   docksCustomOrder: {},
-  showIframeAddressBar: false,
-  closeOnOutsideClick: false,
   commandShortcuts: {},
 })

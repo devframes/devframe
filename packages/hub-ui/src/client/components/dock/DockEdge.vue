@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
 import type { CSSProperties } from 'vue'
-import type { HubDocksUserSettings } from '../../state/dock-settings'
+import type { DevframeDocksUserSettings } from '../../state/dock-settings'
 import type { DockEdge as DockEdgePosition, DockLayout } from './dock-layout'
 import { useEventListener } from '@vueuse/core'
 import { computed, h, onMounted, ref, useTemplateRef } from 'vue'
@@ -24,7 +24,7 @@ const props = defineProps<{
 
 const context = props.context
 const store = context.panel.store
-const settings = sharedStateToRef<HubDocksUserSettings>(context.docks.settings)
+const settings = sharedStateToRef<DevframeDocksUserSettings>(context.docks.settings)
 const layout = computed(() => resolveDockLayout(props.layout))
 
 const viewsContainer = useTemplateRef<HTMLElement>('viewsContainer')

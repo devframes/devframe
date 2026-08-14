@@ -1,9 +1,8 @@
-import type { DevframeClientCommand, DevframeCommandEntry, DevframeCommandKeybinding, DevframeServerCommandEntry } from '@devframes/hub'
+import type { DevframeClientCommand, DevframeCommandEntry, DevframeCommandKeybinding, DevframeDocksUserSettings, DevframeServerCommandEntry } from '@devframes/hub'
 import type { CommandsContext, DevframeRpcClient } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
 import type { ShallowRef } from 'vue'
-import type { HubDocksUserSettings } from '../types'
 import { evaluateWhen } from 'devframe/utils/when'
 import { computed, markRaw, reactive, ref, watch } from 'vue'
 import { sharedStateToRef } from './docks'
@@ -15,7 +14,7 @@ const commandsContextByRpc = new WeakMap<DevframeRpcClient, CommandsContext>()
 export async function createCommandsContext(
   clientType: 'embedded' | 'standalone',
   rpc: DevframeRpcClient,
-  settingsState: SharedState<HubDocksUserSettings>,
+  settingsState: SharedState<DevframeDocksUserSettings>,
   whenContextProvider?: () => WhenContext,
 ): Promise<CommandsContext> {
   if (commandsContextByRpc.has(rpc)) {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
-import type { HubDocksUserSettings } from '../../state/dock-settings'
+import type { DevframeDocksUserSettings } from '../../state/dock-settings'
 import { computed } from 'vue'
 import { useBranding } from '../../state/branding'
 import { colorSchemePreference, setColorSchemePreference } from '../../state/color-mode'
@@ -10,7 +10,7 @@ import { isDockPopupSupported, requestDockPopupOpen, useIsDockPopupOpen } from '
 
 const props = defineProps<{
   context: DocksContext
-  settingsStore: SharedState<HubDocksUserSettings>
+  settingsStore: SharedState<DevframeDocksUserSettings>
 }>()
 
 const settings = sharedStateToRef(props.settingsStore)
