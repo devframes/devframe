@@ -1,4 +1,4 @@
-import type { DevframeRpcConnection } from 'devframe/rpc/transports/ws-server'
+import type { DevframeRpcConnection, WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/instance-shell'
 import type { DevframeDefinition, DevframeSseOptions, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
@@ -50,6 +50,13 @@ export interface CreateDevServerOptions {
    * clients connect over the SSE endpoint instead (`backend: 'sse'`).
    */
   ws?: DevframeWsOptions | false
+  /**
+   * Extra origins to accept on the WS upgrade beyond the loopback default.
+   * Add your LAN/tunnel origin here when reaching the tool from another
+   * host. Pass `false` to disable origin checking entirely (not
+   * recommended). Default: loopback-only.
+   */
+  allowedOrigins?: readonly string[] | WsOriginRegistry | false
   /**
    * Override the SSE RPC endpoint control (`def.cli?.sse`) — enabled by
    * default at `<base>__sse`. Pass `false` to disable, or a
@@ -175,6 +182,7 @@ export async function createDevServer(
     host,
     origin,
     ws: options.ws,
+    allowedOrigins: options.allowedOrigins,
     sse: options.sse,
     // The `--no-auth` flag forces the gate off regardless of the `auth`
     // option / definition default (which the instance resolves itself).

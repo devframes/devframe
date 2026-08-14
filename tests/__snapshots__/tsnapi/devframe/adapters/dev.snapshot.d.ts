@@ -9,6 +9,7 @@ export interface CreateDevServerOptions {
   distDir?: string;
   basePath?: string;
   ws?: DevframeWsOptions | false;
+  allowedOrigins?: readonly string[] | WsOriginRegistry | false;
   sse?: boolean | DevframeSseOptions;
   app?: H3;
   openBrowser?: boolean | string;
