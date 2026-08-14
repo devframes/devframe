@@ -1,10 +1,10 @@
 import type { DevframeViewBuiltin } from '@devframes/hub'
 
 /**
- * `window` event the "Hide" command dispatches to ask whoever mounted the
- * embedded dock to tear it down for the session. The hub-ui dock is always
- * visible by design — hiding is a page-lifetime action, and a reload brings
- * the dock back (see `src/client/embedded/index.ts`).
+ * `window` event the "Hide" command dispatches to conceal the embedded dock.
+ * The embedded bootstrap's visibility controller catches it and detaches the
+ * dock; the `Shift+Alt+D` reveal shortcut (or, in `passive` mode, a later
+ * reload) brings it back (see `src/client/embedded/visibility.ts`).
  */
 export const HUB_UI_HIDE_EVENT = 'devframes:hub-ui:hide'
 

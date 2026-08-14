@@ -408,8 +408,8 @@ export async function createDocksContext(
       // explicit visit and stays mounted.
       when: 'clientType == embedded',
       action: () => {
-        // Ask whoever mounted the embedded dock to tear it down for this
-        // session — a reload brings it back.
+        // Conceal the embedded dock — the Shift+Alt+D reveal shortcut (or a
+        // reload) brings it back. In passive mode this is remembered.
         window.dispatchEvent(new CustomEvent(HUB_UI_HIDE_EVENT))
       },
     },

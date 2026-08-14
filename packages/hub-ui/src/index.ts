@@ -1,14 +1,16 @@
 import type { DevframeHubUi } from '@devframes/hub/initiate'
+import type { EmbeddedVisibility } from './client/embedded/visibility'
 import type { DevframeBranding } from './client/state/branding'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+export type { EmbeddedVisibility } from './client/embedded/visibility'
 export type { DevframeBranding } from './client/state/branding'
 
 declare module 'devframe/types' {
   interface DevframeConnectionConfigsRegistry {
-    ui: { branding?: DevframeBranding }
+    ui: { branding?: DevframeBranding, embeddedVisibility?: EmbeddedVisibility }
   }
 }
 
@@ -40,6 +42,21 @@ export interface CreateUiOptions {
    * both the embedded dock and the standalone viewer.
    */
   branding?: DevframeBranding
+  /**
+   * How the embedded floating dock reveals itself on a fresh page:
+   *
+   * - `'normal'` (default) — shown immediately.
+   * - `'passive'` — starts hidden with a console hint; `Shift+Alt+D` reveals
+   *   it, and the reveal persists per-origin so later sessions start shown.
+   * - `'hidden'` — starts hidden; `Shift+Alt+D` reveals it for the current
+   *   session only.
+   *
+   * Published as `ConnectionMeta.configs.ui.embeddedVisibility`. Like the
+   * float/edge dock mode, it seeds a user-overridable preference — the
+   * visitor's own reveal/hide wins from then on. Applies to the embedded
+   * dock only; the standalone viewer is an explicit visit and always shows.
+   */
+  embeddedVisibility?: EmbeddedVisibility
 }
 
 /**
@@ -68,6 +85,9 @@ export function createUi(options: CreateUiOptions = {}): DevframeHubUi {
     ...(options.embedded !== false
       ? { embedded: { entry: join(client, 'embedded.js') } }
       : {}),
-    configs: () => ({ branding: options.branding || {} }),
+    configs: () => ({
+      branding: options.branding || {},
+      ...(options.embeddedVisibility ? { embeddedVisibility: options.embeddedVisibility } : {}),
+    }),
   }
 }

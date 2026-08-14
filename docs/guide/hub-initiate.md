@@ -61,7 +61,19 @@ interface DevframeHubUi {
 }
 ```
 
-`@devframes/hub-ui`'s `createUi()` is the reference implementation: a standalone viewer plus the floating dock — one `<script type="module" src="/__devframes/embedded.js">` tag in the host page and the dock mounts itself, always visible. A viewer product supplies a different object to the same slot and reuses all the infrastructure; visibility policy (keyboard summon, passive modes) belongs entirely to the entry's author.
+`@devframes/hub-ui`'s `createUi()` is the reference implementation: a standalone viewer plus the floating dock — one `<script type="module" src="/__devframes/embedded.js">` tag in the host page and the dock mounts itself. A viewer product supplies a different object to the same slot and reuses all the infrastructure.
+
+`createUi()` takes a few options: `branding` (rebrand the reference UI — logo, product name, primary color) and `embeddedVisibility` for the floating dock's reveal policy:
+
+```ts
+createUi({ embeddedVisibility: 'passive' })
+```
+
+- `'normal'` (default) — the dock is shown immediately.
+- `'passive'` — the dock starts hidden with a console hint; `Shift+Alt+D` reveals it, and the reveal persists per-origin so later sessions start shown.
+- `'hidden'` — the dock starts hidden; `Shift+Alt+D` reveals it for the current session only.
+
+Both ride `ConnectionMeta.configs.ui` to the client. Like the float/edge dock mode, `embeddedVisibility` seeds a user-overridable preference — the visitor's own reveal/hide wins from then on.
 
 ## Renderer modules
 

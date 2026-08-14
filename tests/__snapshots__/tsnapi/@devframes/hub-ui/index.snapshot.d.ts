@@ -6,6 +6,7 @@ export interface CreateUiOptions {
   viewer?: boolean;
   embedded?: boolean;
   branding?: DevframeBranding;
+  embeddedVisibility?: EmbeddedVisibility;
 }
 export interface DevframeBranding {
   productName?: string;
@@ -16,6 +17,10 @@ export interface DevframeBranding {
   favicon?: string;
   windowTitle?: string;
 }
+// #endregion
+
+// #region Types
+export type EmbeddedVisibility = 'normal' | 'passive' | 'hidden';
 // #endregion
 
 // #region Functions
