@@ -107,6 +107,13 @@
     "packages/hub": {
       "entry": ["src/{index,constants}.ts", "src/{client,node,types}/index.ts", "src/node/{index,initiate}.ts"]
     },
+    "packages/hub-ui": {
+      // `playground/client-scripts/*.ts` are dock `action` entries the
+      // playground's `seed.ts` points at by their runtime URL string
+      // (`action.importFrom`), not a static import knip's graph can see —
+      // the same shape as a devframe's `clientScript`/`clientScripts` entry.
+      "entry": ["playground/client-scripts/*.ts"]
+    },
     "packages/json-render": {
       // `src/node/index.ts` is already picked up via `tsdown.config.ts`
       // (its literal `entry` object parses cleanly); only `core.ts`/`hub.ts`

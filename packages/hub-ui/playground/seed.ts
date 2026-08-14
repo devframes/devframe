@@ -1,5 +1,7 @@
+import type { DevframeViewAction, DevframeViewGroup } from '@devframes/hub'
 import type { DevframeHubContext } from '@devframes/hub/node'
 import type { DevframeDockEntryBase } from '@devframes/hub/types'
+import { PLAYGROUND_GROUP_ID } from './constants'
 
 /**
  * A dock type no renderer covers — registering it exercises the viewer's
@@ -26,6 +28,37 @@ const unrenderedDockEntry: PlaygroundUnrenderedDockEntry = {
 }
 
 /**
+ * The dock-bar button collapsing the Alpha/Beta devframes (grouped by
+ * `hub-plugin.ts`'s `devframes` entries) and the "Ping" action below —
+ * exercises the grouped-dock UI (`DockGroupButton`/`DockGroupPopover`) the
+ * playground otherwise never touches.
+ */
+const playgroundGroup: DevframeViewGroup = {
+  type: 'group',
+  id: PLAYGROUND_GROUP_ID,
+  title: 'Playground Tools',
+  icon: 'ph:flask-duotone',
+  category: 'app',
+  // No `defaultChildId` — clicking reveals the member popover instead of
+  // jumping straight to one, exercising that UI too (`DockGroupPopover`).
+}
+
+/**
+ * A one-shot action dock — no panel of its own, just a client script
+ * (`client-scripts/ping-action.ts`) the viewer imports and runs on click.
+ * Grouped alongside the Alpha/Beta devframes above.
+ */
+const pingAction: DevframeViewAction = {
+  type: 'action',
+  id: 'playground:ping',
+  title: 'Ping',
+  icon: 'ph:hand-waving-duotone',
+  category: 'app',
+  groupId: PLAYGROUND_GROUP_ID,
+  action: { importFrom: '/client-scripts/ping-action.ts' },
+}
+
+/**
  * Seeds the playground's hub context with just enough content to exercise
  * hub-ui's own surfaces — the dock bar, message center, and command palette —
  * without needing a real mounted devframe SPA. Called from `hub-plugin.ts`'s
@@ -33,6 +66,8 @@ const unrenderedDockEntry: PlaygroundUnrenderedDockEntry = {
  */
 export async function seedPlayground(ctx: DevframeHubContext): Promise<void> {
   ctx.docks.register(unrenderedDockEntry)
+  ctx.docks.register(playgroundGroup)
+  ctx.docks.register(pingAction)
 
   ctx.commands.register({
     id: 'playground:say-hello',

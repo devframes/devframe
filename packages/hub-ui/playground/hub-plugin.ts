@@ -2,14 +2,19 @@ import type { HubInstance } from '@devframes/hub/initiate'
 import type { Plugin, ViteDevServer } from 'vite'
 import { Server as NodeHttpServer } from 'node:http'
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
+import { PLAYGROUND_GROUP_ID } from './constants'
+import { playgroundAlphaDevframe, playgroundBetaDevframe } from './devframes'
 import { seedPlayground } from './seed'
 
 /**
  * Mounts a bare, headless hub instance as Vite dev-server middleware — just
  * enough backend for `main.ts`'s `DockStandalone`/`DockEmbedded` to connect
- * to (RPC, WebSocket, `__connection.json`). No `devframes`, no `ui` slot, no
- * renderer manifest: this playground is developing hub-ui itself, not
- * exercising the wider hub protocol (`examples/hub-vite` already does that).
+ * to (RPC, WebSocket, `__connection.json`), plus two tiny static devframes
+ * (`devframes.ts`) so the dock bar has real mounted content to switch
+ * between, not just the client-only entries `seed.ts` registers. No `ui`
+ * slot, no renderer manifest: this playground is developing hub-ui itself,
+ * not exercising the wider hub protocol (`examples/hub-vite` already does
+ * that).
  *
  * A hand-rolled slice of `@devframes/vite/hub` rather than that package
  * itself — pulling it in here would make `@devframes/hub-ui` and
@@ -50,6 +55,12 @@ export function hubUiPlaygroundHub(): Plugin {
         // `@devframes/vite/hub` does.
         server: httpServer,
         ...(httpServer ? {} : { ws: { sidecar: true } }),
+        // Collapsed under the "Playground Tools" group `seed.ts`'s
+        // `configure` registers below, alongside the "Ping" action.
+        devframes: [
+          { devframe: playgroundAlphaDevframe, dock: { groupId: PLAYGROUND_GROUP_ID } },
+          { devframe: playgroundBetaDevframe, dock: { groupId: PLAYGROUND_GROUP_ID } },
+        ],
         configure: seedPlayground,
       })
       instance = hub
