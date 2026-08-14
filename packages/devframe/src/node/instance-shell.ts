@@ -589,14 +589,13 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       ...(result.mcp ? { mcp: result.mcp } : {}),
     }
 
-    // Every contribution (`ctx.configs.contribute(...)`) made during
-    // `options.init(api)` — e.g. a hub aggregating each installed
-    // devframe's own dock-bar preferences — is in by now; bake the
-    // resolved configs into the meta `options.mount` (and every host that
-    // re-serves this same meta at another base) publishes.
-    const configs = ctx.configs.resolve()
-    if (Object.keys(configs).length > 0)
-      meta.configs = configs
+    // Whatever `setup(ctx)` wrote to `ctx.staticConfig` during
+    // `options.init(api)` — e.g. a hub aggregating each installed devframe's
+    // own dock-bar preferences — is in by now; bake it into the meta
+    // `options.mount` (and every host that re-serves this same meta at
+    // another base) publishes.
+    if (Object.keys(ctx.staticConfig).length > 0)
+      meta.configs = ctx.staticConfig
 
     await options.mount?.(ctx, meta, api)
 

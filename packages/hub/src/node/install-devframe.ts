@@ -93,21 +93,20 @@ export async function installDevframe(
     ctx.views.hostStatic(base, resolve(d.cli.distDir))
   }
 
-  // `categoryOrder` / `maxVisibleItems` / `defaultMode` / `defaultPosition`
-  // are this devframe's opinion about the hub-wide dock bar, not attributes
-  // of its own synthesized entry — pull them out before spreading the rest
-  // into the entry, and contribute them to `ConnectionMeta.configs.dock`
-  // instead (last-installed devframe wins per scalar key, `categoryOrder`
-  // shallow-merged).
-  const { categoryOrder, maxVisibleItems, defaultMode, defaultPosition, ...entryDockDefaults } = d.dock ?? {}
-  if (categoryOrder || maxVisibleItems !== undefined || defaultMode !== undefined || defaultPosition !== undefined) {
-    ctx.configs.contribute('dock', (current = {}) => ({
+  // This devframe's hub-wide dock-bar preferences aggregate into
+  // `ConnectionMeta.configs.dock` (last-installed wins per scalar key,
+  // `categoryOrder` shallow-merged) — separate from its own synthesized
+  // entry's attributes (`d.dock`).
+  const prefs = d.dockPreferences
+  if (prefs && (prefs.categoryOrder || prefs.maxVisibleItems !== undefined || prefs.defaultMode !== undefined || prefs.defaultPosition !== undefined)) {
+    const current = ctx.staticConfig.dock ?? {}
+    ctx.staticConfig.dock = {
       ...current,
-      ...(categoryOrder ? { categoryOrder: { ...current.categoryOrder, ...categoryOrder } } : {}),
-      ...(maxVisibleItems !== undefined ? { maxVisibleItems } : {}),
-      ...(defaultMode !== undefined ? { defaultMode } : {}),
-      ...(defaultPosition !== undefined ? { defaultPosition } : {}),
-    }))
+      ...(prefs.categoryOrder ? { categoryOrder: { ...current.categoryOrder, ...prefs.categoryOrder } } : {}),
+      ...(prefs.maxVisibleItems !== undefined ? { maxVisibleItems: prefs.maxVisibleItems } : {}),
+      ...(prefs.defaultMode !== undefined ? { defaultMode: prefs.defaultMode } : {}),
+      ...(prefs.defaultPosition !== undefined ? { defaultPosition: prefs.defaultPosition } : {}),
+    }
   }
 
   ctx.docks.register({
@@ -117,7 +116,7 @@ export async function installDevframe(
     // Definition-level `dock` defaults sit above the name/icon-derived
     // defaults; per-mount `options.dock` overrides them; `type`/`url`
     // (and `id`) stay locked, derived from the definition.
-    ...entryDockDefaults,
+    ...d.dock,
     ...options.dock,
     type: 'iframe',
     url: base,

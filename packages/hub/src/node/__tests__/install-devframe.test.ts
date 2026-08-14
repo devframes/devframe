@@ -1,4 +1,4 @@
-import type { DevframeConfigsHost, DevframeDefinition, DevframeDuplicationStrategy } from 'devframe/types'
+import type { DevframeDefinition, DevframeDuplicationStrategy } from 'devframe/types'
 import type { DevframeHubContext } from '../context'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -7,17 +7,6 @@ import { defineDevframe } from 'devframe'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DevframeDocksHost } from '../host-docks'
 import { installDevframe } from '../install-devframe'
-
-/** Minimal stand-in for `createHostContext`'s real `DevframeConfigsHostImpl`. */
-function createConfigsHost(): DevframeConfigsHost {
-  const values: Record<string, any> = {}
-  return {
-    contribute: (key, updater) => {
-      values[key] = updater(values[key])
-    },
-    resolve: () => values,
-  }
-}
 
 function createContext(): DevframeHubContext {
   const storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-install-'))
@@ -30,7 +19,8 @@ function createContext(): DevframeHubContext {
     views: {
       hostStatic: () => {},
     },
-    configs: createConfigsHost(),
+    // `createHostContext` seeds this plain object; the fake mirrors it.
+    staticConfig: {},
   } as unknown as DevframeHubContext
   context.docks = new DevframeDocksHost(context)
   // `createHubContext` wires this; the hand-built fake context here does the
@@ -109,11 +99,11 @@ describe('ctx.install', () => {
     })
   })
 
-  it('contributes categoryOrder/maxVisibleItems/defaultMode/defaultPosition to ctx.configs instead of the entry', async () => {
+  it('writes dockPreferences to ctx.staticConfig.dock, not the synthesized entry', async () => {
     const ctx = createContext()
     await ctx.install(makeDevframe({
-      dock: {
-        category: 'app',
+      dock: { category: 'app' },
+      dockPreferences: {
         categoryOrder: { app: -40 },
         maxVisibleItems: 4,
         defaultMode: 'edge',
@@ -121,7 +111,7 @@ describe('ctx.install', () => {
       },
     }))
 
-    expect(ctx.configs.resolve().dock).toEqual({
+    expect(ctx.staticConfig.dock).toEqual({
       categoryOrder: { app: -40 },
       maxVisibleItems: 4,
       defaultMode: 'edge',
@@ -136,23 +126,23 @@ describe('ctx.install', () => {
     expect(entry.category).toBe('app')
   })
 
-  it('leaves ctx.configs untouched when a devframe declares no dock-bar preferences', async () => {
+  it('leaves ctx.staticConfig untouched when a devframe declares no dock preferences', async () => {
     const ctx = createContext()
     await ctx.install(makeDevframe({ dock: { category: 'app' } }))
-    expect(ctx.configs.resolve().dock).toBeUndefined()
+    expect(ctx.staticConfig.dock).toBeUndefined()
   })
 
   it('shallow-merges categoryOrder across two devframes, last wins per scalar field', async () => {
     const ctx = createContext()
     await ctx.install(makeDevframe({
-      dock: { categoryOrder: { app: -40, web: 300 }, maxVisibleItems: 4, defaultMode: 'edge' },
+      dockPreferences: { categoryOrder: { app: -40, web: 300 }, maxVisibleItems: 4, defaultMode: 'edge' },
     }))
     await ctx.install(makeDevframe({
       id: 'demo-2',
-      dock: { categoryOrder: { app: -60, advanced: -50 }, maxVisibleItems: 10 },
+      dockPreferences: { categoryOrder: { app: -60, advanced: -50 }, maxVisibleItems: 10 },
     }))
 
-    expect(ctx.configs.resolve().dock).toEqual({
+    expect(ctx.staticConfig.dock).toEqual({
       categoryOrder: { app: -60, web: 300, advanced: -50 },
       maxVisibleItems: 10,
       defaultMode: 'edge',

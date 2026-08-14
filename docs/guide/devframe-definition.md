@@ -113,7 +113,7 @@ interface DevframeNodeContext {
   diagnostics: DevframeDiagnosticsHost
   agent: DevframeAgentHost // experimental
   services: DevframeServicesHost // typed cross-plugin service registry
-  configs: DevframeConfigsHost // contribute to this context's own ConnectionMeta.configs
+  staticConfig: Partial<DevframeConnectionConfigsRegistry> // this context's own ConnectionMeta.configs
 
   scope: (id) => DevframeScopedNodeContext // namespaced view (preferred)
 }
@@ -133,7 +133,7 @@ ctx.services.whenAvailable('my-plugin:sources', (sources) => {
 
 ### Static connection configs
 
-`ctx.configs` builds up `ConnectionMeta.configs` — static, boot-time data delivered once through the connection handshake every client already performs, and never mutated again. Contrast it with `ctx.scope(id).settings`, which is mutable and synced bidirectionally over shared-state RPC for the life of the session.
+`ctx.staticConfig` is this context's own `ConnectionMeta.configs` — static, boot-time data delivered once through the connection handshake every client already performs, and read-only from the browser. It's a plain, **non-reactive** object: write it during `setup(ctx)`, never during the session (it's serialized once, after setup). Contrast it with `ctx.scope(id).settings`, which is mutable and synced bidirectionally over shared-state RPC for the life of the session.
 
 ```ts
 declare module 'devframe/types' {
@@ -142,7 +142,7 @@ declare module 'devframe/types' {
   }
 }
 
-ctx.configs.contribute('my-plugin', () => ({ featureFlag: true }))
+ctx.staticConfig['my-plugin'] = { featureFlag: true }
 ```
 
 `updater` receives whatever's been contributed to that key so far (or `undefined` on the first contribution), so multiple contributors sharing a key — a hub aggregating each installed devframe's own preference, for example — own their own merge semantics (overwrite, shallow-merge a record, …) rather than the host imposing one.

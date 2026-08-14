@@ -65,13 +65,21 @@ export interface DevframeNodeContext {
    */
   services: DevframeServicesHost
   /**
-   * The API for contributing to this context's own {@link ConnectionMeta.configs}
-   * — static, boot-time config a host publishes once and never mutates
-   * again. See {@link DevframeConfigsHost}.
+   * This context's own {@link ConnectionMeta.configs} — static, boot-time
+   * config a host publishes once through the connection handshake and every
+   * client reads read-only. A plain, **non-reactive** object: mutate it
+   * during `setup(ctx)` (a plugin sets its keys, a hub aggregates across
+   * every installed devframe), never during the session — it's serialized
+   * once, after setup, and changing it afterwards reaches no client.
+   *
+   * ```ts
+   * ctx.staticConfig.dock = {
+   *   ...ctx.staticConfig.dock,
+   *   categoryOrder: { ...ctx.staticConfig.dock?.categoryOrder, ...myOrder },
+   * }
+   * ```
    */
-  // TODO: call it `ctx.staticConfig`, and have it a plain object. No need for complex host here.
-  // Just mention that it's not reactive and should be updated only at setup time, not during the session.
-  configs: DevframeConfigsHost
+  staticConfig: Partial<DevframeConnectionConfigsRegistry>
   /**
    * Create a namespace-scoped view of this context. The returned
    * `ctx.scope('my-plugin')` auto-namespaces every RPC id, shared-state
@@ -246,30 +254,3 @@ export interface ConnectionMeta {
  * augments it with `dock`; `@devframes/hub-ui` augments it with `ui`.
  */
 export interface DevframeConnectionConfigsRegistry {}
-
-/**
- * The API for building up {@link ConnectionMeta.configs} — every registered
- * key merges from whatever contributes to it (a plugin's own `setup(ctx)`,
- * a hub aggregating across every installed devframe, …) into the one
- * document a host publishes once and serves for the life of the server.
- *
- * `updater` receives whatever's been contributed to `key` so far (or
- * `undefined` on the first contribution) and returns the new value — the
- * contributor owns its own merge semantics (overwrite, shallow-merge a
- * record, …), not this host.
- *
- * ```ts
- * ctx.configs.contribute('dock', (current = {}) => ({
- *   ...current,
- *   categoryOrder: { ...current.categoryOrder, ...myCategoryOrder },
- * }))
- * ```
- */
-export interface DevframeConfigsHost {
-  contribute: <K extends keyof DevframeConnectionConfigsRegistry>(
-    key: K,
-    updater: (current: DevframeConnectionConfigsRegistry[K] | undefined) => DevframeConnectionConfigsRegistry[K],
-  ) => void
-  /** Everything contributed so far — what a host publishes as `ConnectionMeta.configs`. */
-  resolve: () => Partial<DevframeConnectionConfigsRegistry>
-}

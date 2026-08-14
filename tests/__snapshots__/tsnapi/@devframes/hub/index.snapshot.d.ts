@@ -81,12 +81,6 @@ export interface DevframeDockActivation {
   dockId: string;
   params?: Record<string, unknown>;
 }
-export interface DevframeDockConfig {
-  categoryOrder?: Record<string, number>;
-  maxVisibleItems?: number;
-  defaultMode?: 'float' | 'edge';
-  defaultPosition?: 'left' | 'right' | 'top' | 'bottom';
-}
 export interface DevframeDockEntryBase {
   id: string;
   title: string;

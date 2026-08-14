@@ -534,7 +534,7 @@ export function initHub(options: InitHubOptions): HubInstance {
 
     mount(ctx, meta) {
       // `meta.configs` already carries whatever every installed devframe
-      // contributed via `ctx.configs` (e.g. aggregated dock-bar preferences
+      // wrote to `ctx.staticConfig` (e.g. aggregated dock-bar preferences
       // under `dock`) — add the UI slot's own opaque config (e.g. branding)
       // under `ui`, without interpreting it, staying policy-free about what
       // "ui" means.

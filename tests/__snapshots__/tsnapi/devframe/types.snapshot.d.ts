@@ -19,7 +19,6 @@ export { DevframeAgentHostEvents }
 export { DevframeBrowserContext }
 export { DevframeCapabilities }
 export { DevframeCliOptions }
-export { DevframeConfigsHost }
 export { DevframeConnectionConfigsRegistry }
 export { DevframeDefineDiagnosticsOptions }
 export { DevframeDefinition }
@@ -28,6 +27,7 @@ export { DevframeDiagnosticsDefinition }
 export { DevframeDiagnosticsHost }
 export { DevframeDiagnosticsLogger }
 export { DevframeDockDefaults }
+export { DevframeDockPreferences }
 export { DevframeDuplicationStrategy }
 export { DevframeHost }
 export { DevframeNodeContext }

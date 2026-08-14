@@ -178,11 +178,13 @@ describe('initHub', () => {
     const wsPort = await getPort({ port: 18225, host: '127.0.0.1' })
     const alpha: DevframeDefinition = {
       ...makeFrame('alpha', makeDist('<!doctype html><title>frame a</title>')),
-      dock: { category: 'app', categoryOrder: { app: -40 }, maxVisibleItems: 4 },
+      dock: { category: 'app' },
+      dockPreferences: { categoryOrder: { app: -40 }, maxVisibleItems: 4 },
     }
     const beta: DevframeDefinition = {
       ...makeFrame('beta'),
-      dock: { category: 'web', categoryOrder: { app: -60, web: 300 }, defaultMode: 'edge' },
+      dock: { category: 'web' },
+      dockPreferences: { categoryOrder: { app: -60, web: 300 }, defaultMode: 'edge' },
     }
 
     const hub = initHub({

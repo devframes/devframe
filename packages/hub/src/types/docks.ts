@@ -1,24 +1,11 @@
-import type { ConnectionMeta, EventEmitter } from 'devframe/types'
+import type { ConnectionMeta, DevframeDockPreferences, EventEmitter } from 'devframe/types'
 
-/**
- * The hub's aggregate, plugin-declared dock-bar layout preferences —
- * collected across every installed {@link import('devframe/types').DevframeDefinition}'s
- * own `dock.categoryOrder` / `maxVisibleItems` / `defaultMode` /
- * `defaultPosition` (last-installed devframe wins per scalar key,
- * `categoryOrder` shallow-merged). Published verbatim as
- * `ConnectionMeta.configs.dock` — fixed for the life of the server, never
- * mutated after boot.
- */
-export interface DevframeDockConfig {
-  categoryOrder?: Record<string, number>
-  maxVisibleItems?: number
-  defaultMode?: 'float' | 'edge'
-  defaultPosition?: 'left' | 'right' | 'top' | 'bottom'
-}
-
+// The hub aggregates every installed devframe's `dockPreferences`
+// (last-installed wins per scalar key, `categoryOrder` shallow-merged) and
+// publishes the result as `ConnectionMeta.configs.dock`.
 declare module 'devframe/types' {
   interface DevframeConnectionConfigsRegistry {
-    dock: DevframeDockConfig
+    dock: DevframeDockPreferences
   }
 }
 
