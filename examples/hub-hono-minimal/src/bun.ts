@@ -1,5 +1,6 @@
 import process from 'node:process'
 import { createContextRpcServer } from 'devframe/internal'
+import { createInteractiveAuth } from 'devframe/recipes/interactive-auth'
 import { attachBunWsTransport } from 'devframe/rpc/transports/ws-bun'
 import { app, hub } from './app'
 
@@ -30,9 +31,11 @@ declare const Bun: {
 export async function startBunServer(port: number): Promise<{ port: number, close: () => Promise<void> }> {
   await hub.ready
   const context = await hub.context
-  // Matches `app.ts`'s `auth: false` — this single-user localhost demo owns
-  // its trust boundary. A gated host passes the same handler it gave `initHub`.
-  const core = createContextRpcServer({ context, auth: false })
+  // Matches `app.ts`'s gated `initHub`: bind the same interactive-OTP handler to
+  // Bun's own WS transport so this path enforces the same trust boundary. It
+  // shares the context's auth storage and one-time code, so a client authorizes
+  // once regardless of which runtime serves the socket.
+  const core = createContextRpcServer({ context, auth: createInteractiveAuth(context) })
   const tier = await attachBunWsTransport(core)
   const upgradePath = `${hub.base}__ws`
 

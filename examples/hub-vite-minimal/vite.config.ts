@@ -81,7 +81,11 @@ export default defineConfig({
       const hub = initHub({
         base,
         devframes: builtinDevframes,
-        ui: createUi(),
+        // Rebrand the reference UI to Vite's own purple — one field, no CSS:
+        // `createUi`'s `branding` option publishes `branding.json`, which the
+        // dock fetches at boot and feeds into `--devframe-primary` (see
+        // `@devframes/hub-ui`'s `primary-ramp.css`).
+        ui: createUi({ branding: { primaryColor: '#646cff', productName: 'Devframes on Vite' } }),
         // Serve the reference json-render frontend as a prebuilt renderer
         // module — the one-liner that makes `'json-render'` docks render in
         // the prebuilt viewer. Swap it for any community implementation of
