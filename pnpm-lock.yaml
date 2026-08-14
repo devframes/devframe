@@ -1260,6 +1260,9 @@ importers:
       '@devframes/json-render':
         specifier: workspace:*
         version: link:../json-render
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2

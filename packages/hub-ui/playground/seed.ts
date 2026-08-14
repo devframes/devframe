@@ -28,8 +28,8 @@ const unrenderedDockEntry: PlaygroundUnrenderedDockEntry = {
 }
 
 /**
- * The dock-bar button collapsing the Alpha/Beta devframes (grouped by
- * `hub-plugin.ts`'s `devframes` entries) and the "Ping" action below —
+ * The dock-bar button collapsing the Git devframe (grouped by
+ * `hub-plugin.ts`'s `devframes` entry) and the "Ping" action below —
  * exercises the grouped-dock UI (`DockGroupButton`/`DockGroupPopover`) the
  * playground otherwise never touches.
  */
@@ -46,7 +46,7 @@ const playgroundGroup: DevframeViewGroup = {
 /**
  * A one-shot action dock — no panel of its own, just a client script
  * (`client-scripts/ping-action.ts`) the viewer imports and runs on click.
- * Grouped alongside the Alpha/Beta devframes above.
+ * Grouped alongside the Git devframe above.
  */
 const pingAction: DevframeViewAction = {
   type: 'action',
