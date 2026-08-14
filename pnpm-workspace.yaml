@@ -63,6 +63,7 @@ catalogs:
     '@preact/preset-vite': ^2.10.6
     '@rsbuild/core': ^2.1.11
     '@vitejs/plugin-vue': ^6.0.8
+    lightningcss: ^1.33.0
     magic-string: ^1.1.1
     mlly: ^1.8.2
     nuxt: ^4.5.2

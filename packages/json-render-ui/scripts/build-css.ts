@@ -1,8 +1,10 @@
+import { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { colors as c } from 'devframe/utils/colors'
+import { transform } from 'lightningcss'
 import { glob } from 'tinyglobby'
 import { createGenerator } from 'unocss'
 import { namespaceShadowCssVars, rewireBakedPrimaryColors, shadowSurfaceSafelist } from '../../../design/uno.config'
@@ -73,12 +75,19 @@ export async function buildCSS(): Promise<void> {
   // Namespace Wind's `--un-*` vars (→ `--un-jr-*`) so this shadow-root
   // stylesheet is immune to a host page's Wind4 `@property` registrations
   // (see `namespaceShadowCssVars`).
-  const css = namespaceShadowCssVars([
+  let css = [
     reset,
     unoCss,
     surfacesCss,
     primaryRamp,
-  ].join('\n'), '--un-jr-')
+  ].join('\n')
+
+  css = namespaceShadowCssVars(css, '--un-jr-')
+  css = transform({
+    filename: 'hub-ui.css',
+    code: Buffer.from(css),
+    minify: true,
+  }).code.toString()
 
   await fs.mkdir(join(SRC_DIR, '.generated'), { recursive: true })
   await fs.writeFile(GENERATED_CSS, [

@@ -49,6 +49,7 @@
     "eslint": "catalog:tooling",
     "h3": "catalog:deps",
     "knip": "catalog:tooling",
+    "lightningcss": "catalog:build",
     "nano-staged": "catalog:tooling",
     "pathe": "catalog:deps",
     "prompts": "catalog:tooling",

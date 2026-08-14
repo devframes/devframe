@@ -1,8 +1,10 @@
+import { Buffer } from 'node:buffer'
 import fs from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { colors as c } from 'devframe/utils/colors'
+import { transform } from 'lightningcss'
 import MagicString from 'magic-string'
 import { glob } from 'tinyglobby'
 import { createGenerator } from 'unocss'
@@ -80,13 +82,20 @@ export async function buildCSS(): Promise<void> {
   // Namespace Wind's `--un-*` vars (→ `--un-hub-*`) so this shadow-root
   // stylesheet is immune to a host page's Wind4 `@property` registrations
   // (see `namespaceShadowCssVars`).
-  const css = namespaceShadowCssVars([
+  let css = [
     reset,
     userStyle.toString(),
     unoCss,
     surfacesCss,
     primaryRamp,
-  ].join('\n'), '--un-hub-')
+  ].join('\n')
+
+  css = namespaceShadowCssVars(css, '--un-hub-')
+  css = transform({
+    filename: 'hub-ui.css',
+    code: Buffer.from(css),
+    minify: true,
+  }).code.toString()
 
   await fs.mkdir(join(SRC_DIR, '.generated'), { recursive: true })
   await fs.writeFile(GENERATED_CSS, [
