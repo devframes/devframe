@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import { viteDevBridge } from '@devframes/vite'
+import { devframeViteBridge } from '@devframes/vite'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
@@ -20,7 +20,7 @@ export default defineConfig({
   plugins: [
     vue(),
     UnoCSS(),
-    viteDevBridge(createMessagesDevDevframe(), { devMiddleware: true, base: '/' }),
+    devframeViteBridge(createMessagesDevDevframe(), { base: '/' }),
   ],
   // `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile its
   // SFCs instead of esbuild pre-bundling them.

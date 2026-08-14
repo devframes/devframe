@@ -96,7 +96,7 @@ function stripTrailingSlash(base: string): string {
  * hosts one or more devframes, plus the single `fetch` handler its catch-all
  * route delegates to.
  *
- * This is the hosted-adapter counterpart to `viteDevBridge` for the Next
+ * This is the hosted-adapter counterpart to `devframeViteBridge` for the Next
  * runtime, which — being webpack/Turbopack rather than Vite — can't reuse the
  * Vite middleware path. Instead of hand-rolling static serving in a route
  * handler, static mounts are registered on an internal h3 app and served

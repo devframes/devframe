@@ -1,10 +1,10 @@
-import type { DevframeVitePlugin, ViteDevBridgeOptions } from '@devframes/vite'
-import { viteDevBridge } from '@devframes/vite'
+import type { DevframeViteOptions, DevframeVitePlugin } from '@devframes/vite'
+import { devframeVite } from '@devframes/vite'
 import ogDevframe from './index'
 
-export type { ViteDevBridgeOptions }
+export type { DevframeViteOptions }
 
-export type OgVitePluginOptions = ViteDevBridgeOptions
+export type OgVitePluginOptions = DevframeViteOptions
 
 /**
  * Mount the OG image preview into an existing Vite dev server. As a hosted
@@ -12,5 +12,5 @@ export type OgVitePluginOptions = ViteDevBridgeOptions
  * gate stays off by default — opt back in with `{ auth: true }`.
  */
 export function ogVitePlugin(options: OgVitePluginOptions = {}): DevframeVitePlugin {
-  return viteDevBridge(ogDevframe, options)
+  return devframeVite(ogDevframe, options)
 }

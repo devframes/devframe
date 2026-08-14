@@ -10,7 +10,7 @@ import { dataInspectorVitePlugin } from '../vite'
 // `document.baseURI` and connects via `connectDevframe()`. The build is
 // copied verbatim by `createBuild`/`createSpa`; no HTML rewriting.
 //
-// `dataInspectorVitePlugin({ devMiddleware: true })` dogfoods the plugin: it
+// `dataInspectorVitePlugin({ bridge: true })` dogfoods the plugin: it
 // runs a side-car RPC + WS backend (with the built-in example source) next to
 // this HMR frontend, so `pnpm dev` is a full devframe dev server, not a
 // backend-less SPA.
@@ -24,7 +24,7 @@ export default defineConfig({
   plugins: [
     vue(),
     UnoCSS(),
-    dataInspectorVitePlugin({ devMiddleware: true, base: '/' }),
+    dataInspectorVitePlugin({ bridge: true, base: '/' }),
   ],
   // `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile its
   // SFCs instead of esbuild pre-bundling them.

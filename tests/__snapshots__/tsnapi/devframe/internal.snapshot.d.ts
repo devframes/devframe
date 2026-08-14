@@ -139,7 +139,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
       id: string;
       reason: string;
     }) => string;
-    readonly fix: "Verify the bridge port is free and the devframe setup function does not throw. Pin a port via `cli.port` / `cli.portRange` on the definition, or via `devMiddleware.port` on `viteDevBridge`.";
+    readonly fix: "Verify the bridge port is free and the devframe setup function does not throw. Pin a port via `cli.port` / `cli.portRange` on the definition, or via `port` on `devframeViteBridge` (`@devframes/vite`).";
   };
   readonly DF0034: {
     readonly why: (p: {
@@ -221,7 +221,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
       port: number;
       reason: string;
     }) => string;
-    readonly fix: "The port is likely already taken by another process (often a previous devframe instance). Free it, or pick another via `--port`, `cli.port` / `cli.portRange` on the definition, or `devMiddleware.port` on `viteDevBridge`. The original node error is available as `error.cause`.";
+    readonly fix: "The port is likely already taken by another process (often a previous devframe instance). Free it, or pick another via `--port`, `cli.port` / `cli.portRange` on the definition, or `port` on `devframeViteBridge` (`@devframes/vite`). The original node error is available as `error.cause`.";
   };
   readonly DF0054: {
     readonly why: (p: {

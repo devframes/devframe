@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import { viteDevBridge } from '@devframes/vite'
+import { devframeViteBridge } from '@devframes/vite'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
@@ -11,9 +11,9 @@ import { createCodeServerDevframe } from '../index'
 // `document.baseURI` and connects via `connectDevframe()`. The build is copied
 // verbatim by `createBuild`; no HTML rewriting.
 //
-// `viteDevBridge({ devMiddleware: true })` runs a side-car devframe RPC + WS
-// server during `vite dev` so the launcher can detect/start/stop the editor
-// while Vite serves the UI source with HMR.
+// `devframeViteBridge()` runs a side-car devframe RPC + WS server during
+// `vite dev` so the launcher can detect/start/stop the editor while Vite
+// serves the UI source with HMR.
 export default defineConfig({
   base: './',
   root: fileURLToPath(new URL('.', import.meta.url)),
@@ -21,7 +21,7 @@ export default defineConfig({
   plugins: [
     vue(),
     UnoCSS(),
-    viteDevBridge(createCodeServerDevframe(), { devMiddleware: true, base: '/' }),
+    devframeViteBridge(createCodeServerDevframe(), { base: '/' }),
   ],
   // `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile its
   // SFCs instead of esbuild pre-bundling them.

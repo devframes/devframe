@@ -60,7 +60,7 @@ export const diagnostics = defineDiagnostics({
     DF0033: {
       why: (p: { id: string, reason: string }) =>
         `Failed to start dev RPC bridge for "${p.id}": ${p.reason}`,
-      fix: 'Verify the bridge port is free and the devframe setup function does not throw. Pin a port via `cli.port` / `cli.portRange` on the definition, or via `devMiddleware.port` on `viteDevBridge`.',
+      fix: 'Verify the bridge port is free and the devframe setup function does not throw. Pin a port via `cli.port` / `cli.portRange` on the definition, or via `port` on `devframeViteBridge` (`@devframes/vite`).',
     },
     DF0034: {
       why: (p: { namespace: string, name: string }) =>
@@ -114,7 +114,7 @@ export const diagnostics = defineDiagnostics({
     },
     DF0052: {
       why: (p: { host: string, port: number, reason: string }) => `Failed to listen on ${p.host}:${p.port}: ${p.reason}`,
-      fix: 'The port is likely already taken by another process (often a previous devframe instance). Free it, or pick another via `--port`, `cli.port` / `cli.portRange` on the definition, or `devMiddleware.port` on `viteDevBridge`. The original node error is available as `error.cause`.',
+      fix: 'The port is likely already taken by another process (often a previous devframe instance). Free it, or pick another via `--port`, `cli.port` / `cli.portRange` on the definition, or `port` on `devframeViteBridge` (`@devframes/vite`). The original node error is available as `error.cause`.',
     },
     DF0054: {
       why: (p: { id: string }) => `connectionMeta() was called before initDevframe("${p.id}") finished initializing.`,

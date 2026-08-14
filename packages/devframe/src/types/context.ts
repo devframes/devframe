@@ -157,7 +157,7 @@ export interface ConnectionMeta {
    * tooling (e.g. an MCP inspector) can discover it without guessing the
    * path. `path` is relative to `__connection.json`'s location, like the
    * WebSocket `path`. `port` is set when the endpoint lives on a side-car
-   * server on its own port (bridge mode — `viteDevBridge`,
+   * server on its own port (bridge mode — `devframeViteBridge`,
    * `@devframes/next`): the client combines the page hostname with `port`
    * and resolves `path` against that origin, mirroring
    * {@link ConnectionMetaWebsocket.port}.

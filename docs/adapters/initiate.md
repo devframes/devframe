@@ -126,4 +126,4 @@ The instance **gates by default** — a handler mounted inside an app server is 
 
 ## Relation to the other adapters
 
-`createDevServer`, `viteDevBridge`, and `@devframes/next` are assembled from this instance internally — the handler is the one wiring underneath every serving path. To host **many** devframes behind one namespace with shared transport and docks, use the hub's counterpart: [`initHub`](../guide/hub-initiate).
+`createDevServer`, `devframeViteBridge` (`@devframes/vite`), and `@devframes/next` are assembled from this instance internally — the handler is the one wiring underneath every serving path. To host **many** devframes behind one namespace with shared transport and docks, use the hub's counterpart: [`initHub`](../guide/hub-initiate).

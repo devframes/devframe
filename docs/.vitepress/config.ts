@@ -59,7 +59,7 @@ function helpersItems(prefix: string) {
   return [
     { text: 'Overview', link: `${prefix}/helpers/` },
     { text: 'Utilities', link: `${prefix}/helpers/utilities` },
-    { text: 'Vite Bridge', link: `${prefix}/helpers/vite-bridge` },
+    { text: 'Vite Plugin', link: `${prefix}/helpers/vite-bridge` },
     { text: 'Nuxt Module', link: `${prefix}/helpers/nuxt` },
     { text: 'Next Helper', link: `${prefix}/helpers/next` },
     { text: 'Common RPC Functions', link: `${prefix}/helpers/common-rpc-functions` },

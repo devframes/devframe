@@ -92,7 +92,7 @@ Higher-level integrations can drive their own authentication UI instead: disable
 ## Practices for tools built on devframe
 
 - **Stay on loopback.** The default bind host is `localhost`. Bind to a routable address only when you intend to, and require authentication when you do.
-- **Keep `auth: false` local.** Reach for it only for single-user localhost tools; leave the default in place anywhere a connection could originate elsewhere. The hosted bridges (`viteDevBridge`, `@devframes/next`'s handler) gate their side-car by default too — a host that owns the trust boundary another way opts out with `auth: false` explicitly.
+- **Keep `auth: false` local.** Reach for it only for single-user localhost tools; leave the default in place anywhere a connection could originate elsewhere. The hosted bridges (`devframeViteBridge`, `@devframes/next`'s handler) gate their side-car by default too — a host that owns the trust boundary another way opts out with `auth: false` explicitly.
 - **The MCP route requires an origin.** Unlike the WS transport, the route-based MCP server rejects `Origin`-less requests (a request must carry a loopback or allow-listed `Origin`), so a route-based endpoint isn't reachable by an arbitrary local process — see [MCP](/adapters/mcp).
 - **Treat tokens as secrets.** Never log the bearer token or the one-time code, and never bake either into build output.
 - **Authorize every handler.** A registered function is callable by any trusted client. Validate inputs, and mark state-changing functions `type: 'destructive'` so MCP and agent clients prompt before invoking them.

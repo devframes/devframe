@@ -21,7 +21,7 @@ export default defineConfig(({ command }) => ({
   plugins: [
     vue(),
     UnoCSS(),
-    assetsVitePlugin({ devMiddleware: true, base: '/' }),
+    assetsVitePlugin({ bridge: true, base: '/' }),
   ],
   // `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile
   // its SFCs instead of esbuild pre-bundling them.

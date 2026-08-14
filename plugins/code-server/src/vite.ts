@@ -1,11 +1,11 @@
-import type { DevframeVitePlugin, ViteDevBridgeOptions } from '@devframes/vite'
+import type { DevframeViteBridgeOptions, DevframeVitePlugin } from '@devframes/vite'
 import type { CodeServerOptions } from './types'
-import { viteDevBridge } from '@devframes/vite'
+import { devframeViteBridge, devframeVitePlugin } from '@devframes/vite'
 import { createCodeServerDevframe } from './index'
 
 export interface CodeServerViteOptions extends CodeServerOptions {
-  /** Forwarded to the underlying `viteDevBridge` (mount base, etc.). */
-  vite?: ViteDevBridgeOptions
+  /** Forwarded to the underlying `devframeViteBridge`/`devframeVitePlugin` (mount base, etc.). */
+  vite?: DevframeViteBridgeOptions
 }
 
 /**
@@ -19,7 +19,7 @@ export function codeServerVite(options: CodeServerViteOptions = {}): DevframeVit
   const { vite, ...codeServerOptions } = options
   const definition = createCodeServerDevframe(codeServerOptions)
   return [
-    viteDevBridge(definition, { ...vite, devMiddleware: true }),
-    viteDevBridge(definition, vite),
+    devframeViteBridge(definition, vite),
+    devframeVitePlugin(definition, { base: vite?.base }),
   ]
 }

@@ -35,7 +35,7 @@ export interface CreateDevServerOptions {
    * `def.cli?.distDir` is set, the dev server runs in **bridge mode** —
    * only `__connection.json` and the WS endpoint are mounted; the SPA
    * is expected to be hosted elsewhere (e.g. by a parent Vite/Nuxt
-   * dev server via `viteDevBridge({ devMiddleware })`).
+   * dev server via `devframeViteBridge` from `@devframes/vite`).
    */
   distDir?: string
   /**
@@ -74,7 +74,7 @@ export interface CreateDevServerOptions {
    * Override how authentication resolves, taking precedence over
    * `def.cli?.auth`. Pass `false` to skip the gate entirely (the standard
    * choice for a **hosted** deployment where the host manages auth — see
-   * {@link viteDevBridge}); a {@link DevframeAuthHandler} to install a custom
+   * {@link devframeViteBridge} from `@devframes/vite`); a {@link DevframeAuthHandler} to install a custom
    * scheme; or `true` to force devframe's interactive OTP gate on. When
    * omitted, auth resolves from `flags.auth` / `def.cli?.auth` (the standalone
    * default: gated). The `--no-auth` flag (`flags.auth === false`) still forces
@@ -115,7 +115,7 @@ export interface CreateDevServerOptions {
  * server runs in **bridge mode**: only `__connection.json` and the WS
  * endpoint are mounted, with no SPA mount. The SPA is expected to be
  * hosted elsewhere (e.g. by a parent Vite/Nuxt dev server) — see
- * `viteDevBridge({ devMiddleware })`.
+ * `devframeViteBridge` from `@devframes/vite`.
  *
  * Returns the underlying {@link StartedServer} handle so callers can
  * close it gracefully (SIGINT, hot-reload, test teardown).

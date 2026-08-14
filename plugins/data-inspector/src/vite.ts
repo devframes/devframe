@@ -1,14 +1,14 @@
-import type { DevframeVitePlugin, ViteDevBridgeOptions } from '@devframes/vite'
-import { viteDevBridge } from '@devframes/vite'
+import type { DevframeViteOptions, DevframeVitePlugin } from '@devframes/vite'
+import { devframeVite } from '@devframes/vite'
 import dataInspectorDevframe from './index'
 
-export type { ViteDevBridgeOptions }
+export type { DevframeViteOptions }
 
 /**
  * Mount the data inspector into an existing Vite dev server. In the default
  * static-mount mode it serves the built SPA at `/__devframes:plugin:data-inspector/`;
- * pass `{ devMiddleware: true }` for the bridge mode where the host owns
- * the SPA and devframe runs a side-car RPC + WS server.
+ * pass `{ bridge: true }` for the bridge mode where the host owns the SPA
+ * and devframe runs a side-car RPC + WS server.
  *
  * Register the host's own objects as sources next to it:
  *
@@ -20,6 +20,6 @@ export type { ViteDevBridgeOptions }
  * }
  * ```
  */
-export function dataInspectorVitePlugin(options?: ViteDevBridgeOptions): DevframeVitePlugin {
-  return viteDevBridge(dataInspectorDevframe, options)
+export function dataInspectorVitePlugin(options?: DevframeViteOptions): DevframeVitePlugin {
+  return devframeVite(dataInspectorDevframe, options)
 }

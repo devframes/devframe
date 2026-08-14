@@ -1,15 +1,18 @@
 import type { DevframeDefinition } from 'devframe'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
-import type { DevframeViteDevServerLike } from '../src/index'
+import type { DevframeViteDevServerLike, DevframeVitePlugin } from '../src/index'
+import { mkdtempSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
 import { afterEach, describe, expect, it } from 'vitest'
-import { viteDevBridge } from '../src/index'
+import { devframeVite, devframeViteBridge, devframeVitePlugin } from '../src/index'
 
-function defineTestDef(): DevframeDefinition {
+function defineTestDef(overrides: Partial<DevframeDefinition> = {}): DevframeDefinition {
   return {
     id: 'vite-bridge-test',
     name: 'Vite Bridge Test',
@@ -25,6 +28,7 @@ function defineTestDef(): DevframeDefinition {
         handler: () => ({ greeting: 'hi' }),
       })
     },
+    ...overrides,
   }
 }
 
@@ -79,8 +83,37 @@ function fakeViteServer(): FakeViteServer {
   }
 }
 
-describe('viteDevBridge (bridge mode mcp)', () => {
-  let bridge: ReturnType<typeof viteDevBridge> | undefined
+describe('devframeVitePlugin (static mount)', () => {
+  let vite: FakeViteServer | undefined
+
+  afterEach(() => {
+    vite?.close()
+    vite = undefined
+  })
+
+  it('serves the built distDir at the mount base', async () => {
+    const host = '127.0.0.1'
+    const vitePort = await getPort({ port: 19700, host })
+    const distDir = mkdtempSync(join(tmpdir(), 'devframe-vite-plugin-'))
+    writeFileSync(join(distDir, 'index.html'), '<h1>hi</h1>')
+
+    const plugin = devframeVitePlugin(defineTestDef({ cli: { distDir } }), { base: '/__static-test/' })
+    vite = fakeViteServer()
+    await vite.listen(vitePort, host)
+    await plugin.configureServer?.(vite as any)
+
+    const res = await fetch(`http://${host}:${vitePort}/__static-test/`)
+    expect(await res.text()).toBe('<h1>hi</h1>')
+  })
+
+  it('starts no RPC server — no closeBundle handle to close', () => {
+    const plugin = devframeVitePlugin(defineTestDef())
+    expect(plugin.closeBundle).toBeUndefined()
+  })
+})
+
+describe('devframeViteBridge (bridge mode mcp)', () => {
+  let bridge: ReturnType<typeof devframeViteBridge> | undefined
   let vite: FakeViteServer | undefined
 
   afterEach(async () => {
@@ -94,8 +127,9 @@ describe('viteDevBridge (bridge mode mcp)', () => {
     const host = '127.0.0.1'
     const vitePort = await getPort({ port: 19705, host })
     const wsPort = await getPort({ port: 19710, host })
-    bridge = viteDevBridge(defineTestDef(), {
-      devMiddleware: { port: wsPort, host },
+    bridge = devframeViteBridge(defineTestDef(), {
+      port: wsPort,
+      host,
       mcp: true,
       // The bridge gates by default; opt out here so this test can dial
       // the WS side-car and MCP route directly.
@@ -132,8 +166,8 @@ describe('viteDevBridge (bridge mode mcp)', () => {
   it('shares the Vite http server for the WS endpoint when no port is pinned', async () => {
     const host = '127.0.0.1'
     const vitePort = await getPort({ port: 19715, host })
-    bridge = viteDevBridge(defineTestDef(), {
-      devMiddleware: { host },
+    bridge = devframeViteBridge(defineTestDef(), {
+      host,
       auth: false,
     })
 
@@ -159,8 +193,8 @@ describe('viteDevBridge (bridge mode mcp)', () => {
   })
 })
 
-describe('viteDevBridge (auth default)', () => {
-  let bridge: ReturnType<typeof viteDevBridge> | undefined
+describe('devframeViteBridge (auth default)', () => {
+  let bridge: ReturnType<typeof devframeViteBridge> | undefined
   let vite: FakeViteServer | undefined
 
   afterEach(async () => {
@@ -186,7 +220,7 @@ describe('viteDevBridge (auth default)', () => {
 
   it('gates the side-car by default (unset auth → untrusted handshake)', async () => {
     const port = await getPort({ port: 19730, host: '127.0.0.1' })
-    bridge = viteDevBridge(defineTestDef(), { devMiddleware: { port, host: '127.0.0.1' } })
+    bridge = devframeViteBridge(defineTestDef(), { port, host: '127.0.0.1' })
     vite = fakeViteServer()
     await bridge.configureServer(vite)
 
@@ -197,10 +231,45 @@ describe('viteDevBridge (auth default)', () => {
 
   it('opts out when auth: false is passed explicitly (auto-trust handshake)', async () => {
     const port = await getPort({ port: 19740, host: '127.0.0.1' })
-    bridge = viteDevBridge(defineTestDef(), { devMiddleware: { port, host: '127.0.0.1' }, auth: false })
+    bridge = devframeViteBridge(defineTestDef(), { port, host: '127.0.0.1', auth: false })
     vite = fakeViteServer()
     await bridge.configureServer(vite)
 
     expect(await handshakeIsTrusted(port)).toBe(true)
+  })
+})
+
+describe('devframeVite (dispatcher)', () => {
+  let vite: FakeViteServer | undefined
+  let plugin: DevframeVitePlugin | undefined
+
+  afterEach(async () => {
+    await plugin?.closeBundle?.()
+    plugin = undefined
+    vite?.close()
+    vite = undefined
+  })
+
+  it('static-mounts by default (no bridge, no RPC server)', () => {
+    plugin = devframeVite(defineTestDef())
+    expect(plugin.closeBundle).toBeUndefined()
+  })
+
+  it('starts the RPC bridge when bridge: true', async () => {
+    const port = await getPort({ port: 19750, host: '127.0.0.1' })
+    plugin = devframeVite(defineTestDef(), { bridge: true, port, host: '127.0.0.1', auth: false })
+    vite = fakeViteServer()
+    await plugin.configureServer?.(vite as any)
+
+    const rpc = createRpcClient<any, any>({}, {
+      channel: createWsRpcChannel({ url: `ws://127.0.0.1:${port}/__ws` }),
+    })
+    try {
+      const res = await rpc.$call('anonymous:devframe:auth', { authToken: '', ua: 'test', origin: 'http://localhost' }) as { isTrusted: boolean }
+      expect(res.isTrusted).toBe(true)
+    }
+    finally {
+      rpc.$close?.()
+    }
   })
 })

@@ -40,7 +40,7 @@ All adapter factories share the shape `createXxx(devframeDef, options?)`.
 
 The same `DevframeDefinition` runs under every adapter - pick based on deployment, not on what the tool does.
 
-For Vite-based hosts that don't use the kit (Nuxt, Astro, SolidStart, plain Vite apps), `@devframes/vite` exports `viteDevBridge(def, options?)` - a Vite plugin that mounts the SPA (static mode) or starts the RPC + WS bridge alongside the host's dev server (`devMiddleware: true`). Not an adapter; just a Vite integration helper.
+For Vite-based hosts that don't use the kit (Nuxt, Astro, SolidStart, plain Vite apps), `@devframes/vite` exports `devframeVitePlugin(def, options?)` (static SPA mount) and `devframeViteBridge(def, options?)` (RPC + WS bridge alongside the host's dev server) - plus `devframeVite(def, { bridge, ...options })` as a convenience wrapper over both. Not an adapter; just a Vite integration helper.
 
 ## Minimum viable devframe
 
@@ -572,7 +572,7 @@ RPC handlers run with the full privileges of the host process, so the boundary t
 - **Tokens are secrets.** The bearer token rides the WS URL (`?devframe_auth_token=…`) - serve over `wss://`/`https://` beyond loopback. Never log the token or code, never bake them into build output. Revoke via `revokeAuthToken(...)`; clients drop to untrusted on `devframe:auth:revoked`.
 - **Authorize handlers.** Any trusted client can call any registered function - validate inputs, and mark state-changing functions `type: 'destructive'` so MCP/agent clients prompt first.
 - **Origin-lock remote docks** (`originLock`, on by default) so a dock's session token is honored only on a connection whose `Origin` matches the dock - the connect-time gate enforces it.
-- **The MCP route requires an Origin.** The route-based MCP server (`cli.mcp`, `viteDevBridge`/Next handler `mcp`, `createMcpFetchHandler`) rejects `Origin`-less requests - a request must carry a loopback (or allow-listed) `Origin`, so it isn't reachable by an arbitrary local process. `devframe connect` sends each instance's own loopback origin automatically.
+- **The MCP route requires an Origin.** The route-based MCP server (`cli.mcp`, `devframeViteBridge`/Next handler `mcp`, `createMcpFetchHandler`) rejects `Origin`-less requests - a request must carry a loopback (or allow-listed) `Origin`, so it isn't reachable by an arbitrary local process. `devframe connect` sends each instance's own loopback origin automatically.
 
 See [Security](https://devfra.me/security) for the full reference.
 

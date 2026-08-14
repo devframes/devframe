@@ -1,15 +1,15 @@
-import type { DevframeVitePlugin, ViteDevBridgeOptions } from '@devframes/vite'
-import { viteDevBridge } from '@devframes/vite'
+import type { DevframeViteOptions, DevframeVitePlugin } from '@devframes/vite'
+import { devframeVite } from '@devframes/vite'
 import inspectDevframe from './index'
 
-export type { ViteDevBridgeOptions }
+export type { DevframeViteOptions }
 
 /**
  * Mount the inspector into an existing Vite dev server. In the default
  * static-mount mode it serves the built SPA at `/__devframes_plugin_inspect/`;
- * pass `{ devMiddleware: true }` for the bridge mode where the host owns
- * the SPA and devframe runs a side-car RPC + WS server.
+ * pass `{ bridge: true }` for the bridge mode where the host owns the SPA
+ * and devframe runs a side-car RPC + WS server.
  */
-export function inspectVitePlugin(options?: ViteDevBridgeOptions): DevframeVitePlugin {
-  return viteDevBridge(inspectDevframe, options)
+export function inspectVitePlugin(options?: DevframeViteOptions): DevframeVitePlugin {
+  return devframeVite(inspectDevframe, options)
 }

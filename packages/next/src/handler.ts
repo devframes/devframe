@@ -91,7 +91,7 @@ function defaultGetStorageDir(scope: DevframeStorageScope): string {
 
 /**
  * Host a **single** devframe from a Next.js App Router app — the Next
- * counterpart to `viteDevBridge`, reduced to memoization + defaults over
+ * counterpart to `devframeViteBridge`, reduced to memoization + defaults over
  * `initDevframe` (Next's route handlers can't accept WS upgrades, so the
  * RPC socket lives on the instance's side-car port, advertised at
  * `<base>__connection.json`).

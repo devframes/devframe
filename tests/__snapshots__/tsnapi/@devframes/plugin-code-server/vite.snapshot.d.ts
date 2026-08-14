@@ -3,7 +3,7 @@
  */
 // #region Interfaces
 export interface CodeServerViteOptions extends CodeServerOptions {
-  vite?: ViteDevBridgeOptions;
+  vite?: DevframeViteBridgeOptions;
 }
 // #endregion
 

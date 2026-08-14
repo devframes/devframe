@@ -3,7 +3,7 @@
  */
 // #region Interfaces
 export interface TerminalsViteOptions extends TerminalsOptions {
-  vite?: ViteDevBridgeOptions;
+  vite?: DevframeViteBridgeOptions;
 }
 // #endregion
 
