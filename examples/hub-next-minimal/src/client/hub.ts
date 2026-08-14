@@ -79,7 +79,7 @@ async function loadHub(): Promise<HubInstance> {
   // `primary-ramp.css`).
   return createNextDevframeHub({
     devframes,
-    ui: (hubUi.createUi as typeof CreateUi)({ branding: { primaryColor: '#000000', productName: 'Devframes on Next.js' } }),
+    ui: (hubUi.createUi as typeof CreateUi)({ branding: { primaryColor: '#3f8ba9', productName: 'Devframes on Next.js' } }),
     // Serve the reference json-render frontend as a prebuilt renderer module
     // — the one-liner that makes `'json-render'` docks render in the prebuilt
     // viewer. Swap it for any community implementation of the same contract.
