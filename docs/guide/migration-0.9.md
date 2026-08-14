@@ -31,6 +31,18 @@ Every entry below has a drop-in replacement. At a glance:
 | `mountDevframe` | `ctx.install` |
 | `DEFAULT_CATEGORIES_ORDER` re-exports | `@devframes/hub/constants` |
 
+**Framework adapters (`@devframes/vite` / `@devframes/nuxt` / `@devframes/next`)**
+
+Each splits into two scoped subpaths — `.../dev-spa` (author one devframe's SPA) and `.../hub` (mount a whole `@devframes/hub`) — and the bare package root throws with a pointer to both.
+
+| Removed / moved | Replacement |
+|---|---|
+| `devframe/helpers/vite` (`viteDevBridge`) | `@devframes/vite/dev-spa` (`devframeVite` / `devframeVitePlugin` / `devframeViteBridge`) |
+| `@devframes/nuxt` (bare module) | `@devframes/nuxt/dev-spa` |
+| `@devframes/next` root (`withDevframe`, `createDevframeNextHandler`) | `@devframes/next/dev-spa` |
+| `@devframes/next/client` | `@devframes/next/dev-spa/client` |
+| mount a hub inside a tool | `@devframes/{vite,nuxt,next}/hub` (+ `/hub/client`) |
+
 ## `devframe/adapters/cli` is removed
 
 The CLI adapter was renamed to `cac` in 0.7. The `devframe/adapters/cli` entry - `createCli`, `CreateCliOptions`, and `CliHandle` - is now gone. Import from `devframe/adapters/cac` instead:
@@ -235,3 +247,82 @@ await ctx.install(myDevframe)
 // 0.9
 import { DEFAULT_CATEGORIES_ORDER } from '@devframes/hub/constants'
 ```
+
+## The Vite bridge moves to `@devframes/vite`
+
+`devframe/helpers/vite` is now its own package, `@devframes/vite` — so it can depend on `vite` directly (its plugins are typed against Vite's real `Plugin` / `ViteDevServer`) while `devframe` core stays free of a Vite dependency. It also splits into two scoped subpaths, and the single `viteDevBridge` becomes three purpose-named plugins on `@devframes/vite/dev-spa`:
+
+| 0.8.x | 0.9 |
+|---|---|
+| `import { viteDevBridge } from 'devframe/helpers/vite'` | `import { devframeVite } from '@devframes/vite/dev-spa'` |
+| `viteDevBridge(def)` (static mount) | `devframeVitePlugin(def)` |
+| `viteDevBridge(def, { devMiddleware: true })` (RPC bridge) | `devframeViteBridge(def)` |
+| `viteDevBridge(def, { devMiddleware: { port, host, flags } })` | `devframeViteBridge(def, { port, host, flags })` |
+
+The `devMiddleware` boolean/object option is gone: `devframeVitePlugin` is always the static mount, `devframeViteBridge` is always the RPC bridge, and their bridge options are flattened to the top level (`port`, `host`, `flags`, `auth`, `mcp`). `devframeVite(def, { bridge })` is a convenience wrapper that picks between the two.
+
+```ts
+// 0.8.x
+import { viteDevBridge } from 'devframe/helpers/vite'
+
+export default defineConfig({
+  plugins: [viteDevBridge(devframe, { devMiddleware: true })],
+})
+```
+
+```ts
+// 0.9
+import { devframeViteBridge } from '@devframes/vite/dev-spa'
+
+export default defineConfig({
+  plugins: [devframeViteBridge(devframe)],
+})
+```
+
+`@devframes/vite` (and `@devframes/nuxt` / `@devframes/next`) take `@devframes/hub` and `@devframes/hub-ui` as **optional** peers — only the `/hub` scope needs them. Install `vite` as a peer as before. See [`@devframes/vite`](/helpers/vite-bridge) for the full reference.
+
+## `@devframes/nuxt` and `@devframes/next` split into `/dev-spa` and `/hub`
+
+Both packages now serve their single-devframe surface from a `.../dev-spa` subpath, and the bare package root throws with a pointer to the two scopes.
+
+Nuxt — register the module by its subpath:
+
+```ts
+// 0.8.x [nuxt.config.ts]
+export default defineNuxtConfig({ modules: ['@devframes/nuxt'] })
+
+// 0.9 [nuxt.config.ts]
+export default defineNuxtConfig({ modules: ['@devframes/nuxt/dev-spa'] })
+```
+
+Next — the config/handler helpers and the React client move down a level:
+
+| 0.8.x | 0.9 |
+|---|---|
+| `import { withDevframe } from '@devframes/next'` | `import { withDevframe } from '@devframes/next/dev-spa'` |
+| `import { createDevframeNextHandler } from '@devframes/next'` | `import { createDevframeNextHandler } from '@devframes/next/dev-spa'` |
+| `import { RpcProvider, useRpc } from '@devframes/next/client'` | `import { RpcProvider, useRpc } from '@devframes/next/dev-spa/client'` |
+
+## Mounting a hub: the new `/hub` scope
+
+Standing up a whole `@devframes/hub` (many integrations) inside a tool now has a first-class home instead of hand-rolled `initHub` glue: `@devframes/vite/hub`, `@devframes/nuxt/hub`, and `@devframes/next/hub`. Each wraps `initHub`, defaults the UI slot to `@devframes/hub-ui`'s `createUi()` (override with `ui`, or `ui: false` for a headless hub you drive with the matching `/hub/client` helper), and mounts everything under one namespace.
+
+```ts
+// Vite
+import { viteDevframeHub } from '@devframes/vite/hub'
+
+export default defineConfig({ plugins: [viteDevframeHub({ devframes: [] })] })
+```
+
+```ts
+// Next — app/__devframes/[[...path]]/route.ts
+import { nextDevframeHub } from '@devframes/next/hub'
+
+export const runtime = 'nodejs'
+const hub = nextDevframeHub({ devframes: [] })
+export const GET = (req: Request) => hub.handler(req)
+export const POST = (req: Request) => hub.handler(req)
+export const DELETE = (req: Request) => hub.handler(req)
+```
+
+Vite and Nuxt already have native hub viewers, so `@devframes/vite/hub` and `@devframes/nuxt/hub` print a one-time recommendation to prefer [Vite DevTools](https://devtools.vite.dev) / [Nuxt DevTools](https://devtools.nuxt.com) (silence with `{ quiet: true }`); `@devframes/next/hub` has no native counterpart and stays quiet. See [`@devframes/vite`](/helpers/vite-bridge#mounting-a-hub), [`@devframes/nuxt`](/helpers/nuxt#mounting-a-hub), and [`@devframes/next`](/helpers/next#mounting-a-hub).
