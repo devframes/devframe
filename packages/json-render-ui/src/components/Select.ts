@@ -3,7 +3,8 @@ import type { JrComponent } from './_shared'
 import FormCombobox from '@antfu/design/components/Form/FormCombobox.vue'
 import FormSelect from '@antfu/design/components/Form/FormSelect.vue'
 import { useBoundProp } from '@json-render/vue'
-import { computed, defineComponent, h, ref } from 'vue'
+import { computed, defineComponent, h } from 'vue'
+import { useUncontrolledValue } from '../composables/useUncontrolledValue'
 
 interface SelectOption {
   value: string
@@ -28,8 +29,9 @@ function normalize(option: string | SelectOption): { value: string, label?: stri
 }
 
 // Stateful inner component: a JrComponent render fn can't hold a ref, so the
-// uncontrolled selection (no `$bindState` on `value`) lives here; when the spec
-// binds `value`, `bindingPath` is set and writes flow back to the state store.
+// uncontrolled selection (no `$bindState` on `value`) lives here, session-
+// persisted so it survives a reload; when the spec binds `value`,
+// `bindingPath` is set and writes flow back to the state store instead.
 const SelectImpl = defineComponent({
   name: 'JrSelectImpl',
   props: {
@@ -47,7 +49,11 @@ const SelectImpl = defineComponent({
     // on store change); `useBoundProp` is used only for its store setter.
     const [, setBound] = useBoundProp<string>(props.value, props.bindingPath)
     const controlled = props.bindingPath != null
-    const local = ref<string | undefined>(props.value)
+    const local = useUncontrolledValue<string | undefined>(
+      'Select',
+      { options: props.options, searchable: props.searchable },
+      props.value,
+    )
     const model = computed(() => (controlled ? props.value : local.value))
     const setModel = (next: string | undefined) => {
       if (controlled)

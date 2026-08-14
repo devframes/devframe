@@ -1,7 +1,8 @@
 import type { PropType, VNode } from 'vue'
 import type { JrComponent } from './_shared'
 import { useBoundProp } from '@json-render/vue'
-import { computed, defineComponent, h, ref } from 'vue'
+import { computed, defineComponent, h } from 'vue'
+import { useUncontrolledValue } from '../composables/useUncontrolledValue'
 import { Badge } from './Badge'
 import { Icon } from './Icon'
 
@@ -28,7 +29,8 @@ interface TabsProps {
 // are runtime-resolved *names* — so this is a thin custom component over the
 // shared semantic tokens (like Text/Stack), using the Icon component. Stateful
 // so the uncontrolled selection persists across renders (a JrComponent render
-// fn can't hold a ref); binds to the state store when `bindingPath` is set.
+// fn can't hold a ref) and across a reload (session-persisted); binds to the
+// state store when `bindingPath` is set.
 const TabsImpl = defineComponent({
   name: 'JrTabsImpl',
   props: {
@@ -44,7 +46,12 @@ const TabsImpl = defineComponent({
     // only for its store setter.
     const [, setBound] = useBoundProp<string>(props.value, props.bindingPath)
     const controlled = props.bindingPath != null
-    const local = ref<string | undefined>(props.defaultValue ?? props.value ?? props.tabs[0]?.value)
+    // Session-persisted so the uncontrolled selection survives a reload.
+    const local = useUncontrolledValue<string | undefined>(
+      'Tabs',
+      { tabs: props.tabs, orientation: props.orientation },
+      props.defaultValue ?? props.value ?? props.tabs[0]?.value,
+    )
     const active = computed(() => (controlled ? props.value : local.value))
     const isVertical = computed(() => props.orientation === 'vertical')
 

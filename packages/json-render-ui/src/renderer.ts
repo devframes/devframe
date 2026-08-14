@@ -4,8 +4,10 @@ import type { Component, PropType } from 'vue'
 import type { ActionBridgeRpc } from './action-bridge'
 import { basePropSchemas } from '@devframes/json-render'
 import { JSONUIProvider, Renderer } from '@json-render/vue'
-import { computed, defineComponent, h } from 'vue'
+import { useDebounceFn, useSessionStorage } from '@vueuse/core'
+import { computed, defineComponent, h, provide, ref, watchEffect } from 'vue'
 import { createActionBridge } from './action-bridge'
+import { DOCK_ENTRY_ID_KEY } from './composables/dock-entry-id'
 import { baseRegistry, ERROR_COMPONENT_TYPE, UNSUPPORTED_COMPONENT_TYPE } from './registry'
 
 // Upstream ships these as heavily-typed `DefineComponent`s; render them through
@@ -82,9 +84,36 @@ export const JsonRenderView = defineComponent({
   setup(props) {
     const bridge = createActionBridge(props.rpc, { interactive: props.interactive })
 
+    /**
+     * Descendants (e.g. `useUncontrolledValue`) `inject()` this to scope
+     * session-persisted state to "this dock" — the mounted view's own id,
+     * stable while a given `resetKey` subtree is alive (a `viewId` change
+     * remounts that subtree below, via the `key` on `ProviderC`).
+     */
+    provide(DOCK_ENTRY_ID_KEY, props.viewId)
+
     // Reset the provider (reseed state) only on identity change.
     const resetKey = computed(() => props.viewId)
     const effectiveSpec = computed(() => (props.spec ? sanitizeSpec(props.spec, props.registry) : null))
+
+    /**
+     * Restores/persists the scroll position of this view, per tab, across a
+     * reload — keyed by `viewId` so switching views doesn't bleed one view's
+     * scroll into another's. The key is a getter (not a plain string) since,
+     * unlike the registry components below, this component instance itself is
+     * not guaranteed to remount when `viewId` changes (e.g. the reference SPA
+     * keeps one `JsonRenderView` alive across its own view switcher) — the
+     * `watchEffect` below re-fires on both a fresh mount and a `viewId` change.
+     */
+    const scrollEl = ref<HTMLElement | null>(null)
+    const scrollTop = useSessionStorage(() => `devframes-json-render-scroll:${props.viewId}`, 0)
+    watchEffect(() => {
+      if (scrollEl.value)
+        scrollEl.value.scrollTop = scrollTop.value
+    })
+    const persistScrollTop = useDebounceFn(() => {
+      scrollTop.value = scrollEl.value?.scrollTop ?? 0
+    }, 200)
 
     return () => {
       if (props.loading)
@@ -107,7 +136,7 @@ export const JsonRenderView = defineComponent({
           }, 'Interactive actions are unavailable in static output.')
         : null
 
-      return h('div', { class: 'color-base' }, [
+      return h('div', { class: 'color-base w-full h-full overflow-auto', ref: scrollEl, onScroll: persistScrollTop }, [
         staticNote,
         banner,
         h(
