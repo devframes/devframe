@@ -53,6 +53,23 @@ export interface DevframeInternalContext {
     /** Full `ws://` or `wss://` URL with host and port. */
     url: string
   }
+
+  /**
+   * Set {@link DevframeInternalContext.wsEndpoint} and notify subscribers —
+   * the WS-binding tiers (side-car, shared-server, and the `unbound` tier's
+   * `attach()`) call this once the socket is bound (or `undefined` once torn
+   * down) instead of assigning the field directly, so anything that already
+   * projected the endpoint (a hub's remote-dock URLs, registered before an
+   * async bind resolves) gets a chance to re-project it.
+   */
+  setWsEndpoint: (endpoint: { url: string } | undefined) => void
+  /**
+   * Subscribe to every {@link DevframeInternalContext.setWsEndpoint} call.
+   * Returns an unsubscribe function. The hub context uses this to refresh
+   * the `devframe:docks` shared state so a remote dock registered before the
+   * WS port resolves still ends up with a live connection URL.
+   */
+  onWsEndpointChange: (cb: () => void) => () => void
 }
 
 export const internalContextMap = new WeakMap<DevframeNodeContext, DevframeInternalContext>()
@@ -66,6 +83,7 @@ export function getInternalContext(context: DevframeNodeContext): DevframeIntern
       },
     })
     const remoteTokens = new Map<string, RemoteTokenRecord>()
+    const wsEndpointListeners = new Set<() => void>()
 
     function revokeRemoteToken(token: string): void {
       if (!remoteTokens.delete(token))
@@ -78,6 +96,14 @@ export function getInternalContext(context: DevframeNodeContext): DevframeIntern
         auth: storage,
       },
       revokeAuthToken: (token: string) => revokeAuthToken(context, storage, token),
+      setWsEndpoint(endpoint) {
+        internalContext.wsEndpoint = endpoint
+        for (const listener of wsEndpointListeners) listener()
+      },
+      onWsEndpointChange(cb) {
+        wsEndpointListeners.add(cb)
+        return () => wsEndpointListeners.delete(cb)
+      },
       remoteTokens,
       allocateRemoteToken(dockId, origin, originLock) {
         const token = randomToken()

@@ -131,7 +131,7 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
   const internal = getInternalContext(context)
   const wsUrl = `ws://${formatHostForUrl(bindHost)}:${resolvedPort}${options.path ?? ''}`
   if (websocket)
-    internal.wsEndpoint = { url: wsUrl }
+    internal.setWsEndpoint({ url: wsUrl })
 
   function connectionMeta(): ConnectionMeta {
     const jsonSerializableMethods: string[] = []
@@ -154,7 +154,7 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
       if (ownsHttpServer)
         await new Promise<void>(r => httpServer.close(() => r()))
       if (websocket && getInternalContext(context).wsEndpoint?.url === wsUrl)
-        getInternalContext(context).wsEndpoint = undefined
+        getInternalContext(context).setWsEndpoint(undefined)
     },
   }
 }
@@ -701,9 +701,9 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       if (typeof address !== 'object' || !address)
         return
       const host = options.host ?? (address.address === '::' || address.address === '0.0.0.0' ? 'localhost' : address.address)
-      getInternalContext(ctx).wsEndpoint = {
+      getInternalContext(ctx).setWsEndpoint({
         url: `ws://${formatHostForUrl(host)}:${address.port}${routePath}`,
-      }
+      })
     }
     if (server.listening)
       record()

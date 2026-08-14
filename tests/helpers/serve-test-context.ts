@@ -76,7 +76,7 @@ export async function serveTestContext(options: ServeTestContextOptions): Promis
   // Publish the dialable socket URL on the context, mirroring the shell's own
   // binding, so surfaces that hand out a complete endpoint work in tests too.
   const wsUrl = `ws://${formatHostForUrl(bindHost)}:${resolvedPort}`
-  getInternalContext(context).wsEndpoint = { url: wsUrl }
+  getInternalContext(context).setWsEndpoint({ url: wsUrl })
 
   function connectionMeta(): ConnectionMeta {
     const jsonSerializableMethods: string[] = []
@@ -98,7 +98,7 @@ export async function serveTestContext(options: ServeTestContextOptions): Promis
       await closeWs()
       await new Promise<void>(r => httpServer.close(() => r()))
       if (getInternalContext(context).wsEndpoint?.url === wsUrl)
-        getInternalContext(context).wsEndpoint = undefined
+        getInternalContext(context).setWsEndpoint(undefined)
     },
   }
 }

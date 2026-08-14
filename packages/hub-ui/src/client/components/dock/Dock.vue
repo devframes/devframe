@@ -293,7 +293,7 @@ onMounted(() => {
         <div
           v-if="isRpcTrusted"
           :class="isMinimized ? 'opacity-0 pointer-events-none' : 'opacity-100'"
-          class="transition duration-200 flex items-center w-full h-full justify-center px3"
+          class="transition duration-200 flex items-center w-full h-full justify-center px1 overflow-hidden"
         >
           <DockEntriesWithCategories
             :context="context"

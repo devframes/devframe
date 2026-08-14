@@ -6,6 +6,7 @@ import type { DevframeMessageEntry, DevframeMessageEntryInput, DevframeMessagesH
 import type { DevframeTerminalsHost } from '../types/terminals'
 import type { InstallDevframeOptions } from './install-devframe'
 import { createHostContext } from 'devframe/node'
+import { getInternalContext } from 'devframe/node/hub-internals'
 import { debounce } from 'perfect-debounce'
 import { DevframeCommandsHost as CommandsHostImpl } from './host-commands'
 import { DevframeDocksHost as DocksHostImpl } from './host-docks'
@@ -155,6 +156,13 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
     docksSharedState.mutate(() => docks.values())
   }, debounceMs)
   docks.events.on('dock:entry:updated', refreshDocks)
+  // A remote iframe dock registered before the WS transport finishes binding
+  // (the common case: `initHub` installs devframes — and their docks — before
+  // resolving an async side-car/shared-server port) gets projected without a
+  // connection URL, since `wsEndpoint` isn't set yet. Nothing re-registers
+  // that dock once the port resolves, so re-project every dock once the
+  // endpoint becomes known (or is torn down) instead of leaving it stale.
+  getInternalContext(context).onWsEndpointChange(refreshDocks)
   docksSharedState.mutate(() => docks.values())
 
   // Cross-iframe dock activation. A dock activation is a discrete user intent
