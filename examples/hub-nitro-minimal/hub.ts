@@ -41,7 +41,11 @@ export const hub: HubInstance = globalRef.__hubNitroMinimal ??= initHub({
     createOgDevframe(),
     createAssetsDevframe({ watch: false }),
   ],
-  ui: createUi(),
+  // Rebrand the reference UI to Nitro's own pink/red — one field, no CSS:
+  // `createUi`'s `branding` option publishes `branding.json`, which the dock
+  // fetches at boot and feeds into `--devframe-primary` (see
+  // `@devframes/hub-ui`'s `primary-ramp.css`).
+  ui: createUi({ branding: { primaryColor: '#ff2056', productName: 'Devframes on Nitro' } }),
   // Single-user localhost demo: reachable only on loopback, so it opts out
   // of the gate for a no-friction dev experience. A hub reachable beyond
   // localhost should gate (see docs/guide/security.md).
