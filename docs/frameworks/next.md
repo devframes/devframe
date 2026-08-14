@@ -2,12 +2,12 @@
 outline: deep
 ---
 
-# Next Helper
+# Next
 
 > [!WARNING]
 > Experimental. `@devframes/next`'s API is still settling — expect changes before a stable release.
 
-`@devframes/next` hosts devframes from a Next.js App Router app. Next runs on webpack/Turbopack rather than Vite, so it hosts through a route handler instead of the [Vite Bridge](./vite-bridge): the package serves each devframe's SPA and its `__connection.json` from a single `fetch` handler your catch-all route delegates to, reusing devframe's own [`serveStaticHandler`](/adapters/dev) for SPA fallback, content types, and path-traversal guarding.
+`@devframes/next` hosts devframes from a Next.js App Router app. Next runs on webpack/Turbopack rather than Vite, so it hosts through a route handler instead of the [Vite](./vite): the package serves each devframe's SPA and its `__connection.json` from a single `fetch` handler your catch-all route delegates to, reusing devframe's own [`serveStaticHandler`](/adapters/dev) for SPA fallback, content types, and path-traversal guarding.
 
 `@devframes/next` splits into two scopes: `@devframes/next/dev-spa` (author one devframe with Next) and [`@devframes/next/hub`](#mounting-a-hub) (mount a whole devframes-hub). The bare `@devframes/next` import throws with a pointer to both.
 
@@ -140,6 +140,6 @@ Unlike Vite and Nuxt, Next has no native hub viewer, so this scope prints no rec
 
 ## See also
 
-- [Vite Bridge](./vite-bridge) — the equivalent for Vite-based hosts
+- [Vite](./vite) — the equivalent for Vite-based hosts
 - [Hub](/guide/hub) — `initHub`, `ctx.install`, and `DevframeHost`
 - [hub-next](/examples/hub-next) — a full working host

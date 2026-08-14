@@ -98,7 +98,7 @@ export default defineNuxtConfig({
 })
 ```
 
-Build with `nuxt build` and point `cli.distDir` at `./dist/public`. The SPA discovers its effective base at runtime — no `--base` rewrite needed. See the [Nuxt helper docs](/helpers/nuxt) for the full reference.
+Build with `nuxt build` and point `cli.distDir` at `./dist/public`. The SPA discovers its effective base at runtime — no `--base` rewrite needed. See the [Nuxt docs](/frameworks/nuxt) for the full reference.
 
 ## Next.js SPA setup
 

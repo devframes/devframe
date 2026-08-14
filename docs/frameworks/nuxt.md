@@ -2,7 +2,7 @@
 outline: deep
 ---
 
-# Nuxt Helper
+# Nuxt
 
 The `@devframes/nuxt/dev-spa` module wires a Nuxt-built SPA as a devframe client, and optionally serves the dev-time RPC bridge alongside `nuxt dev`. It runs inside the Nuxt app that consumes your devframe.
 

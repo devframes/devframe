@@ -2,7 +2,7 @@
 outline: deep
 ---
 
-# @devframes/vite
+# Vite
 
 `@devframes/vite` splits into two scopes: **`@devframes/vite/dev-spa`** (this page — dev-serve one devframe's SPA with Vite) and [**`@devframes/vite/hub`**](#mounting-a-hub) (mount a whole devframes-hub inside a Vite app). The bare `@devframes/vite` import throws with a pointer to both.
 

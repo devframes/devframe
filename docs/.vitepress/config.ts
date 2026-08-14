@@ -16,30 +16,60 @@ function listErrorCodes(prefix: string): string[] {
     .sort()
 }
 
-function guideItems(prefix: string) {
+function guideGroups(prefix: string) {
   return [
-    { text: 'Introduction', link: `${prefix}/guide/` },
-    { text: 'Devframe Definition', link: `${prefix}/guide/devframe-definition` },
-    { text: 'Scoped Context', link: `${prefix}/guide/scoped-context` },
-    { text: 'Cross-Plugin Services', link: `${prefix}/guide/services` },
-    { text: 'RPC', link: `${prefix}/guide/rpc` },
-    { text: 'Shared State', link: `${prefix}/guide/shared-state` },
-    { text: 'JSON-Render', link: `${prefix}/guide/json-render` },
-    { text: 'Streaming', link: `${prefix}/guide/streaming` },
-    { text: 'When Clauses', link: `${prefix}/guide/when-clauses` },
-    { text: 'Structured Diagnostics', link: `${prefix}/guide/diagnostics` },
-    { text: 'Client', link: `${prefix}/guide/client` },
-    { text: 'Transports', link: `${prefix}/guide/transports` },
-    { text: 'Security', link: `${prefix}/guide/security` },
-    { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
-    { text: 'Hub', link: `${prefix}/guide/hub` },
-    { text: 'Serve a Hub Anywhere', link: `${prefix}/guide/hub-initiate` },
-    { text: 'Deep Linking', link: `${prefix}/guide/deep-linking` },
-    { text: 'Client Scripts & Context', link: `${prefix}/guide/client-context` },
-    { text: 'Build Your Own Hub UI', link: `${prefix}/guide/build-your-own-hub-ui` },
-    { text: 'Build Your Own JSON-Render Frontend', link: `${prefix}/guide/build-your-own-json-render-frontend` },
-    { text: 'Agent-Native (experimental)', link: `${prefix}/guide/agent-native` },
-  ] satisfies DefaultTheme.NavItemWithLink[]
+    {
+      text: 'Fundamentals',
+      items: [
+        { text: 'Introduction', link: `${prefix}/guide/` },
+        { text: 'Devframe Definition', link: `${prefix}/guide/devframe-definition` },
+        { text: 'Scoped Context', link: `${prefix}/guide/scoped-context` },
+        { text: 'Cross-Plugin Services', link: `${prefix}/guide/services` },
+        { text: 'RPC', link: `${prefix}/guide/rpc` },
+        { text: 'Shared State', link: `${prefix}/guide/shared-state` },
+        { text: 'Streaming', link: `${prefix}/guide/streaming` },
+        { text: 'When Clauses', link: `${prefix}/guide/when-clauses` },
+        { text: 'Structured Diagnostics', link: `${prefix}/guide/diagnostics` },
+      ],
+    },
+    {
+      text: 'Client & Security',
+      items: [
+        { text: 'Client', link: `${prefix}/guide/client` },
+        { text: 'Transports', link: `${prefix}/guide/transports` },
+        { text: 'Security', link: `${prefix}/guide/security` },
+        { text: 'Deep Linking', link: `${prefix}/guide/deep-linking` },
+      ],
+    },
+    {
+      text: 'JSON-Render',
+      items: [
+        { text: 'JSON-Render', link: `${prefix}/guide/json-render` },
+        { text: 'Build Your Own JSON-Render Frontend', link: `${prefix}/guide/build-your-own-json-render-frontend` },
+      ],
+    },
+    {
+      text: 'Hub',
+      items: [
+        { text: 'Hub', link: `${prefix}/guide/hub` },
+        { text: 'Serve a Hub Anywhere', link: `${prefix}/guide/hub-initiate` },
+        { text: 'Client Scripts & Context', link: `${prefix}/guide/client-context` },
+        { text: 'Build Your Own Hub UI', link: `${prefix}/guide/build-your-own-hub-ui` },
+      ],
+    },
+    {
+      text: 'Recipes & Advanced',
+      items: [
+        { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
+        { text: 'Agent-Native (experimental)', link: `${prefix}/guide/agent-native` },
+      ],
+    },
+  ] satisfies { text: string, items: DefaultTheme.NavItemWithLink[] }[]
+}
+
+/** Flattened guide list — used by the top nav dropdown, which renders one level. */
+function guideItems(prefix: string) {
+  return guideGroups(prefix).flatMap(group => group.items) satisfies DefaultTheme.NavItemWithLink[]
 }
 
 function adaptersItems(prefix: string) {
@@ -49,9 +79,18 @@ function adaptersItems(prefix: string) {
     { text: 'Dev', link: `${prefix}/adapters/dev` },
     { text: 'Initiate (middleware)', link: `${prefix}/adapters/initiate` },
     { text: 'Build', link: `${prefix}/adapters/build` },
-    { text: 'Vite', link: `${prefix}/adapters/vite` },
+    { text: 'Vite DevTools', link: `${prefix}/adapters/vite` },
     { text: 'Embedded', link: `${prefix}/adapters/embedded` },
     { text: 'MCP', link: `${prefix}/adapters/mcp` },
+  ] satisfies DefaultTheme.NavItemWithLink[]
+}
+
+function frameworksItems(prefix: string) {
+  return [
+    { text: 'Overview', link: `${prefix}/frameworks/` },
+    { text: 'Vite', link: `${prefix}/frameworks/vite` },
+    { text: 'Nuxt', link: `${prefix}/frameworks/nuxt` },
+    { text: 'Next', link: `${prefix}/frameworks/next` },
   ] satisfies DefaultTheme.NavItemWithLink[]
 }
 
@@ -59,9 +98,6 @@ function helpersItems(prefix: string) {
   return [
     { text: 'Overview', link: `${prefix}/helpers/` },
     { text: 'Utilities', link: `${prefix}/helpers/utilities` },
-    { text: 'Vite Plugin', link: `${prefix}/helpers/vite-bridge` },
-    { text: 'Nuxt Module', link: `${prefix}/helpers/nuxt` },
-    { text: 'Next Helper', link: `${prefix}/helpers/next` },
     { text: 'Common RPC Functions', link: `${prefix}/helpers/common-rpc-functions` },
     { text: 'Interactive Auth', link: `${prefix}/helpers/interactive-auth` },
   ] satisfies DefaultTheme.NavItemWithLink[]
@@ -103,11 +139,16 @@ export function devframeSidebar(prefix = ''): DefaultTheme.SidebarItem[] {
   return [
     {
       text: 'Guide',
-      items: guideItems(prefix),
+      // Labelled, collapsible subsections instead of one long flat list.
+      items: guideGroups(prefix).map(group => ({ ...group, collapsed: false })),
     },
     {
       text: 'Adapters',
       items: adaptersItems(prefix),
+    },
+    {
+      text: 'Frameworks',
+      items: frameworksItems(prefix),
     },
     {
       text: 'Helpers',
@@ -137,6 +178,7 @@ export function devframeNav(prefix = ''): DefaultTheme.NavItem[] {
       text: 'Adapters',
       items: [
         ...adaptersItems(prefix),
+        { text: 'Frameworks', items: frameworksItems(prefix) },
         { text: 'Helpers', items: helpersItems(prefix) },
       ],
     },

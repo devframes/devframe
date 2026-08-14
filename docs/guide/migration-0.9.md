@@ -279,7 +279,7 @@ export default defineConfig({
 })
 ```
 
-`@devframes/vite` (and `@devframes/nuxt` / `@devframes/next`) take `@devframes/hub` and `@devframes/hub-ui` as **optional** peers — only the `/hub` scope needs them. Install `vite` as a peer as before. See [`@devframes/vite`](/helpers/vite-bridge) for the full reference.
+`@devframes/vite` (and `@devframes/nuxt` / `@devframes/next`) take `@devframes/hub` and `@devframes/hub-ui` as **optional** peers — only the `/hub` scope needs them. Install `vite` as a peer as before. See [`@devframes/vite`](/frameworks/vite) for the full reference.
 
 ## `@devframes/nuxt` and `@devframes/next` split into `/dev-spa` and `/hub`
 
@@ -325,4 +325,4 @@ export const POST = (req: Request) => hub.handler(req)
 export const DELETE = (req: Request) => hub.handler(req)
 ```
 
-Vite and Nuxt already have native hub viewers, so `@devframes/vite/hub` and `@devframes/nuxt/hub` print a one-time recommendation to prefer [Vite DevTools](https://devtools.vite.dev) / [Nuxt DevTools](https://devtools.nuxt.com) (silence with `{ quiet: true }`); `@devframes/next/hub` has no native counterpart and stays quiet. See [`@devframes/vite`](/helpers/vite-bridge#mounting-a-hub), [`@devframes/nuxt`](/helpers/nuxt#mounting-a-hub), and [`@devframes/next`](/helpers/next#mounting-a-hub).
+Vite and Nuxt already have native hub viewers, so `@devframes/vite/hub` and `@devframes/nuxt/hub` print a one-time recommendation to prefer [Vite DevTools](https://devtools.vite.dev) / [Nuxt DevTools](https://devtools.nuxt.com) (silence with `{ quiet: true }`); `@devframes/next/hub` has no native counterpart and stays quiet. See [`@devframes/vite`](/frameworks/vite#mounting-a-hub), [`@devframes/nuxt`](/frameworks/nuxt#mounting-a-hub), and [`@devframes/next`](/frameworks/next#mounting-a-hub).
