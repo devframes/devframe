@@ -11,6 +11,8 @@ pnpm install
 pnpm --filter hub-vite dev
 ```
 
+On first load the hub asks you to authorize. `initHub()` gates every connection by default (devframe's interactive OTP), so it prints a 6-digit code and a magic link in the terminal, and the page shows an authorization view that exchanges the code for a bearer token stored in the browser. The client shell opts out of devframe's native `prompt()` (`simpleAuth: false`) to render that view; open the magic link instead to authorize without typing. Each embedded SPA then inherits the token the host page stored.
+
 Open the printed URL. The dock on the left lists every mounted tool with its icon:
 
 - **Git**, **Terminals**, **Code Server**, **RPC & State Inspector**, **A11y Inspector** - the built-in plugins, each a published `DevframeDefinition` passed to the host's `devframes` option
@@ -26,6 +28,7 @@ The **RPC & State Inspector** carries an **Instances** tab that lists every devf
 
 - `initHub()` boots a hub with no Vite-specific code path: `server.middlewares.use(instance.nodeMiddleware)` plus Vite's `httpServer` for the shared WebSocket upgrade is the entire framework adapter
 - Every `devframes` entry is served at `/__devframes/<id>/` with its own `__connection.json`, so each embedded SPA connects straight back to the hub; `/__devframes/__index.json` lists the mounted frames and endpoints for any external viewer
+- One authorization covers the whole hub: `initHub()` gates the shared transport by default, so a single OTP handshake trusts every mounted frame, the discovery endpoints, and the built-ins. The shell drives its own authorization view (`simpleAuth: false`) and each embedded SPA inherits the stored token
 - Real integrations work end to end through the mount path - the inspector lists every plugin's RPC functions live, terminals stream over the hub, and code-server launches an authenticated editor
 - The browser reads `devframe:docks` / `devframe:commands` shared state and dispatches commands over RPC - no hub classes imported on the client
 - `createDevframeClientHost()` boots the hub's framework-level client runtime in the host page: it publishes the shared client context and imports each dock's `clientScript` (here, the a11y agent) so plugins run code in the page being inspected
@@ -43,6 +46,6 @@ The dock UI is plain DOM in `src/client/`. To skin your own viewer, read the sam
 | `src/vite-devframe-hub.ts` | The Vite host - one `initHub()` call mounted as connect middleware, plus instance-registry registration |
 | `vite.config.ts` | Passes the built-in plugins and demo devframes to the host's `devframes` option; attaches the a11y agent as its dock's `clientScript`; composes the json-render frontend via `renderers` |
 | `src/unrendered-dock.ts` | A dock type registered with no renderer on purpose - the missing-renderer fallback witness |
-| `src/client/main.ts` | The browser UI that consumes the hub protocol |
+| `src/client/main.ts` | The browser UI that consumes the hub protocol, including the interactive-OTP authorization view |
 | `src/client/icons.ts` | Offline Phosphor icons for the dock |
 | `index.html` | The UI shell |

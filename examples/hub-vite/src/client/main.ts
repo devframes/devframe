@@ -213,11 +213,124 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
   }
 }
 
+// ── authorization gate (interactive OTP) ────────────────────────────────────
+// The hub gates every connection; this shell opts out of devframe's native
+// `prompt()` (`simpleAuth: false`) and renders its own authorization view,
+// mirroring the reference UI's `ViewBuiltinClientAuthNotice`. Trust can arrive
+// three ways: a stored bearer token or the magic-link OTP resolves the
+// handshake silently (the overlay never shows), otherwise the connection
+// settles `unauthorized` and the user types the 6-digit code from the terminal.
+
+function authorize(rpc: Awaited<ReturnType<typeof connectDevframe>>): Promise<void> {
+  if (rpc.isTrusted)
+    return Promise.resolve()
+  return new Promise<void>((resolve) => {
+    const overlay = createAuthOverlay(rpc)
+    // Reveal the code entry only once the handshake has actually been refused,
+    // so the silent stored-token / magic-link paths don't flash the overlay.
+    const reveal = (status: string): void => {
+      if (status === 'unauthorized')
+        overlay.reveal()
+    }
+    const offStatus = rpc.events.on('connection:status', reveal)
+    const offTrust = rpc.events.on('rpc:is-trusted:updated', (trusted) => {
+      if (!trusted)
+        return
+      offTrust()
+      offStatus()
+      overlay.remove()
+      resolve()
+    })
+    reveal(rpc.status)
+  })
+}
+
+function createAuthOverlay(
+  rpc: Awaited<ReturnType<typeof connectDevframe>>,
+): { reveal: () => void, remove: () => void } {
+  const overlay = document.createElement('div')
+  overlay.hidden = true
+  overlay.className = 'fixed inset-0 grid place-items-center overflow-auto bg-base p8 color-base'
+  overlay.innerHTML = `
+    <div class="w-full max-w-100 flex flex-col items-center text-center">
+      <div class="grid size-16 place-items-center rounded-2xl bg-active">
+        <span class="i-ph-shield-check-duotone text-4xl color-active"></span>
+      </div>
+      <h1 class="mt5 text-2xl font-bold tracking-tight">Authorize Vite Devframe Hub</h1>
+      <p class="mt2 max-w-88 text-sm op-fade leading-relaxed">
+        This hub can access your server, read your filesystem, and run commands.
+        Confirm it's you before continuing.
+      </p>
+      <form class="mt6 w-full flex flex-col items-center gap-4 rounded-xl border border-base bg-secondary p6 shadow-sm">
+        <p class="text-sm op-fade">Enter the <span class="font-mono color-active">6-digit code</span> printed in your terminal.</p>
+        <input data-code inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+          aria-label="One-time authorization code" placeholder="••••••"
+          class="w-56 rounded-lg border border-base bg-base px3 py2 text-center text-2xl font-mono tracking-[0.4em] color-base outline-none focus:border-active" />
+        <button data-submit type="submit" class="btn-primary w-full justify-center py2!">Authorize</button>
+        <p data-error class="min-h-5 text-sm text-red-500" role="alert" aria-live="assertive"></p>
+      </form>
+    </div>`
+
+  const form = overlay.querySelector<HTMLFormElement>('form')!
+  const input = overlay.querySelector<HTMLInputElement>('[data-code]')!
+  const button = overlay.querySelector<HTMLButtonElement>('[data-submit]')!
+  const error = overlay.querySelector<HTMLElement>('[data-error]')!
+
+  input.addEventListener('input', () => {
+    input.value = input.value.replace(/\D/g, '').slice(0, 6)
+    error.textContent = ''
+  })
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    const code = input.value.trim()
+    if (code.length < 6 || button.disabled)
+      return
+    button.disabled = true
+    button.textContent = 'Authorizing…'
+    try {
+      const ok = await rpc.requestTrustWithCode(code)
+      if (!ok) {
+        error.textContent = 'That code didn\u2019t match. Check your terminal and try again.'
+        input.value = ''
+        input.focus()
+      }
+      // On success the trust listener in `authorize()` removes this overlay.
+    }
+    catch {
+      error.textContent = 'Something went wrong while authorizing. Please try again.'
+    }
+    finally {
+      button.disabled = false
+      button.textContent = 'Authorize'
+    }
+  })
+
+  document.body.append(overlay)
+  return {
+    reveal() {
+      if (!overlay.hidden)
+        return
+      overlay.hidden = false
+      setStatus('Waiting for authorization…')
+      input.focus()
+    },
+    remove: () => overlay.remove(),
+  }
+}
+
 async function main(): Promise<void> {
   setStatus('Connecting…')
   const transportPref = readTransportPref()
   renderTransportToggle(transportPref)
-  const rpc = await connectDevframe({ baseURL: HUB_BASE, transport: transportPref })
+  // The hub gates by default (interactive OTP). `simpleAuth: false` opts out of
+  // devframe's native `prompt()` fallback so this shell can drive its own
+  // authorization view; the magic-link OTP (`?devframe_otp=` on the URL) is
+  // still consumed automatically. `connectDevframe` returns before the trust
+  // handshake settles, so `authorize()` holds the UI until this client is
+  // trusted (via a stored token, the magic link, or the code the user enters).
+  const rpc = await connectDevframe({ baseURL: HUB_BASE, transport: transportPref, simpleAuth: false })
+  await authorize(rpc)
   setStatus(`Connected · transport=${rpc.transport}`, 'ready')
   el.transport.textContent = `Connected over ${rpc.transport} (${transportPref === 'auto' ? 'auto-selected' : 'pinned'})`
 

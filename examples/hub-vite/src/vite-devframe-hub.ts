@@ -141,10 +141,10 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
           const resolved = server.resolvedUrls?.local?.[0]
           return resolved ? new URL(resolved).origin : ''
         },
-        // Single-user localhost demo: the hub is reachable only on loopback,
-        // so it opts out of the gate for a no-friction dev experience. A hub
-        // reachable beyond localhost should gate (see `docs/guide/security.md`).
-        auth: false,
+        // Gate access with devframe's interactive OTP (the default): the hub
+        // prints a 6-digit code + magic link once its origin resolves, and the
+        // client shell (`src/client/main.ts`) drives its own authorization view
+        // to exchange the code for a bearer token. See `docs/guide/security.md`.
         // Share Vite's own http server for the WebSocket upgrade at
         // `<base>__ws` - no side-car port to discover. A `port` option pins
         // a side-car server instead, and an https/http2 dev server (where

@@ -84,9 +84,10 @@ async function loadHub(): Promise<HubInstance> {
     configure(ctx) {
       ctx.docks.register(jsonRenderDock)
     },
-    // Single-user localhost demo: opts out of the gate. A hub reachable
-    // beyond localhost should gate (see docs/guide/security.md).
-    auth: false,
+    // Gate with devframe's interactive OTP (the default). The hub prints a
+    // 6-digit code + magic link on startup, and the reference UI's
+    // authorization view exchanges it for a bearer token. See
+    // docs/guide/security.md.
   })
 }
 
