@@ -68,7 +68,7 @@
 }
 
 #devframes-anchor #devframes-dock {
-  --uno: h-full rounded-full select-none touch-none ma;
+  --uno: h-full rounded-full select-none touch-none ma flex;
   --uno: "shadow text-[#333] dark:text-white  bg-glass:80";
   --uno: transition-all duration-500;
   height: var(--devframes-dock-height, 40px);
