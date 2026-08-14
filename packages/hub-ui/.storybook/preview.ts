@@ -1,4 +1,11 @@
 import type { Decorator, Preview } from '@storybook/vue3-vite'
+// The same Tailwind preflight `scripts/build-css.ts` prepends to the shipped
+// shadow-root stylesheet — first, so `virtual:uno.css`'s utilities (and the
+// hand-written `style.css`) win over its resets, matching the production
+// build's `[reset, userStyle, unoCss, ...]` order. Without it, stories miss
+// the reset (unstyled default `<button>`/`<ul>`/heading margins, …) real
+// dock content never shows once mounted in its actual shadow root.
+import '@unocss/reset/tailwind.css'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
 import '../src/client/style.css'
