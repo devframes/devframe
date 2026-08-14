@@ -100,3 +100,28 @@ export function resolveFloatingPosition(options: ResolveFloatingPositionOptions)
 
   return { align, style }
 }
+
+/** Properties whose computed value, when not `none`, makes an element a containing block for `position: fixed` descendants. */
+const FIXED_CONTAINING_BLOCK_PROPERTIES = ['transform', 'translate', 'rotate', 'scale', 'perspective', 'filter', 'backdropFilter'] as const
+
+/**
+ * The element a fixed-position panel anchored to `anchor` must be `<Teleport>`ed into to
+ * avoid being positioned relative to — and clipped by — a transformed ancestor, or
+ * `undefined` when there is no such ancestor and the panel can stay in place.
+ *
+ * Returns the *outermost* offending ancestor's parent: escaping only the nearest one can
+ * land inside another, leaving the panel just as mispositioned. Walking `parentElement`
+ * (rather than `parentNode`) naturally stops at a shadow root's boundary — a dock's popover
+ * never escapes the shadow root that its stylesheet is scoped to.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/position#fixed
+ */
+export function resolveFixedEscapeTarget(anchor: Element): HTMLElement | undefined {
+  let outermost: HTMLElement | undefined
+  for (let node = anchor.parentElement; node; node = node.parentElement) {
+    const style = getComputedStyle(node)
+    if (FIXED_CONTAINING_BLOCK_PROPERTIES.some(property => style[property] !== 'none') || /paint|layout|strict|content/.test(style.contain))
+      outermost = node
+  }
+  return outermost?.parentElement ?? undefined
+}

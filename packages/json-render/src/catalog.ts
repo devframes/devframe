@@ -45,7 +45,7 @@ const componentDescriptions: Record<keyof typeof basePropSchemas, string> = {
   Tree: 'Recursive object/array viewer with expandable nodes.',
   Tabs: 'Tabbed container; each child renders under the positionally-matching tab.',
   Link: 'Hyperlink to a safe-scheme URL with an optional icon.',
-  Select: 'Single-select dropdown bound to a state value, with optional search.',
+  Select: 'Single-select dropdown bound to a state value, with optional search or a native `<select>` fallback.',
 }
 
 /**

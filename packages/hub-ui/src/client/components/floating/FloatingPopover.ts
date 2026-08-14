@@ -2,8 +2,8 @@ import type { MaybeElementRef } from '@vueuse/core'
 import type { PropType, VNode } from 'vue'
 import type { FloatingPopoverProps } from '../../state/floating-tooltip'
 import { onClickOutside, useDebounceFn, useEventListener } from '@vueuse/core'
-import { defineComponent, h, nextTick, onMounted, onUpdated, reactive, ref, useTemplateRef, watch } from 'vue'
-import { resolveFloatingPosition } from './floating-position'
+import { defineComponent, h, nextTick, onMounted, onUpdated, reactive, ref, Teleport, useTemplateRef, watch } from 'vue'
+import { resolveFixedEscapeTarget, resolveFloatingPosition } from './floating-position'
 
 // @unocss-include
 
@@ -34,6 +34,12 @@ const FloatingPopoverComponent = defineComponent({
     const panel = useTemplateRef<HTMLDivElement>('panel')
     const el = ref(props.item?.el)
     const renderCounter = ref(0)
+    /** Resolved from the anchor rather than the panel, which may not be in the document yet. */
+    const escapeTarget = ref<HTMLElement | undefined>()
+
+    function refreshEscapeTarget(anchor: Element | undefined) {
+      escapeTarget.value = anchor ? resolveFixedEscapeTarget(anchor) : undefined
+    }
 
     const panelSize = reactive({ width: 0, height: 0 })
     // Before the first measurement, `resolveFloatingPosition` centers the panel
@@ -59,7 +65,10 @@ const FloatingPopoverComponent = defineComponent({
       })
     }
 
-    onMounted(measurePanel)
+    onMounted(() => {
+      refreshEscapeTarget(props.item?.el)
+      measurePanel()
+    })
     onUpdated(measurePanel)
 
     useEventListener(window, 'resize', () => {
@@ -97,6 +106,7 @@ const FloatingPopoverComponent = defineComponent({
             el.value = value.el
           else
             renderCounter.value++
+          refreshEscapeTarget(value.el)
         }
         else {
           clearThrottled()
@@ -106,6 +116,10 @@ const FloatingPopoverComponent = defineComponent({
 
     let previousContent: VNode | undefined
     let previousStyle: Record<string, string> = {}
+
+    /** Escapes the anchor's containing block when there is one, otherwise renders in place. */
+    const withEscape = (node: VNode) =>
+      escapeTarget.value ? h(Teleport, { to: escapeTarget.value }, [node]) : node
 
     return () => {
       // Force re-render to update the position
@@ -120,7 +134,7 @@ const FloatingPopoverComponent = defineComponent({
       // When dismissing (item is null), keep the last known position
       // so the popover fades out in place instead of jumping
       if (!props.item) {
-        return h(
+        return withEscape(h(
           'div',
           {
             ref: 'panel',
@@ -132,7 +146,7 @@ const FloatingPopoverComponent = defineComponent({
             style: previousStyle,
           },
           previousContent,
-        )
+        ))
       }
 
       const rect = el.value.getBoundingClientRect()
@@ -157,7 +171,7 @@ const FloatingPopoverComponent = defineComponent({
 
       previousContent = content
 
-      return h(
+      return withEscape(h(
         'div',
         {
           ref: 'panel',
@@ -169,7 +183,7 @@ const FloatingPopoverComponent = defineComponent({
           style,
         },
         content,
-      )
+      ))
     }
   },
 })
