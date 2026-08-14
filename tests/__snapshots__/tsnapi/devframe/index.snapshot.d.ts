@@ -147,7 +147,6 @@ export interface DevframeDefinition {
     dark: string;
   };
   dock?: DevframeDockDefaults;
-  dockPreferences?: DevframeDockPreferences;
   basePath?: string;
   duplicationStrategy?: DevframeDuplicationStrategy;
   capabilities?: {
@@ -177,12 +176,6 @@ export interface DevframeDockDefaults {
   visibility?: string;
   badge?: string;
   groupId?: string;
-}
-export interface DevframeDockPreferences {
-  categoryOrder?: Record<string, number>;
-  maxVisibleItems?: number;
-  defaultMode?: 'float' | 'edge';
-  defaultPosition?: 'left' | 'right' | 'top' | 'bottom';
 }
 export interface DevframeHost {
   mountStatic: (_: string, _: string) => void | Promise<void>;

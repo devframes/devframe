@@ -78,11 +78,9 @@ export interface DevframeClientHostOptions {
    * distinct from {@link import('../types/docks').DevframeViewGroup.categoryOrder},
    * which only reorders the IN-GROUP sub-categories of one specific group.
    *
-   * Keys are merged over `DEFAULT_CATEGORIES_ORDER` and every installed
-   * devframe's own declared `dock.categoryOrder` (see
-   * `ConnectionMeta.configs.dock.categoryOrder`) — this option sorts last
-   * and wins, so the host app only lists the categories it wants to move;
-   * any category absent from the map keeps its otherwise-resolved weight.
+   * Keys are merged over `DEFAULT_CATEGORIES_ORDER`, so the host app only
+   * lists the categories it wants to move; any category absent from the map
+   * keeps its default weight.
    *
    * @example
    * ```ts
@@ -138,13 +136,10 @@ export async function createDevframeClientHost(
   const frameNavAdapters = new Map<string, () => void>()
   const loadScriptsEnabled = options.loadClientScripts ?? true
 
-  // Resolved once at boot, fixed for the session: default table, overridden
-  // by every installed devframe's own declared preference (delivered once
-  // via the connection handshake), overridden again by this host page's own
-  // explicit option.
+  // Resolved once at boot, fixed for the session: the default table overridden
+  // by this host page's own explicit option.
   const categoryOrder: Record<string, number> = {
     ...DEFAULT_CATEGORIES_ORDER,
-    ...rpc.connectionMeta?.configs?.dock?.categoryOrder,
     ...options.categoryOrder,
   }
 

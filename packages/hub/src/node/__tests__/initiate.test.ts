@@ -174,42 +174,32 @@ describe('initHub', () => {
     }
   })
 
-  it('assembles ConnectionMeta.configs from the ui slot and every installed devframe\'s dock preferences', async () => {
+  it('serves whatever the ui slot\'s setup(ctx) writes to ctx.staticConfig as ConnectionMeta.configs', async () => {
     const wsPort = await getPort({ port: 18225, host: '127.0.0.1' })
-    const alpha: DevframeDefinition = {
-      ...makeFrame('alpha', makeDist('<!doctype html><title>frame a</title>')),
-      dock: { category: 'app' },
-      dockPreferences: { categoryOrder: { app: -40 }, maxVisibleItems: 4 },
-    }
-    const beta: DevframeDefinition = {
-      ...makeFrame('beta'),
-      dock: { category: 'web' },
-      dockPreferences: { categoryOrder: { app: -60, web: 300 }, defaultMode: 'edge' },
-    }
+    const alpha = makeFrame('alpha', makeDist('<!doctype html><title>frame a</title>'))
 
     const hub = initHub({
       base: DEVFRAMES_HUB_BASE,
       auth: false,
       host: '127.0.0.1',
       ws: { port: wsPort },
-      devframes: [alpha, beta],
-      ui: { configs: () => ({ branding: { productName: 'Test Hub' } }) },
+      devframes: [alpha],
+      ui: {
+        setup(ctx) {
+          ;(ctx.staticConfig as Record<string, unknown>).ui = { branding: { productName: 'Test Hub' } }
+        },
+      },
     })
 
     try {
       await hub.ready
       const origin = 'http://localhost:5173'
 
-      // The hub's own meta…
+      // The hub's own meta carries what the ui slot published…
       const hubMeta = await (await hub.handler(new Request(`${origin}/__devframes/__connection.json`))).json()
-      expect(hubMeta.configs).toEqual({
-        ui: { branding: { productName: 'Test Hub' } },
-        // Last-installed devframe (`beta`) wins the `app` scalar key; `web`
-        // only `beta` declared; `maxVisibleItems` only `alpha` declared.
-        dock: { categoryOrder: { app: -60, web: 300 }, maxVisibleItems: 4, defaultMode: 'edge' },
-      })
+      expect(hubMeta.configs).toEqual({ ui: { branding: { productName: 'Test Hub' } } })
 
-      // …and every per-frame meta carries the identical aggregate.
+      // …and every per-frame meta carries the identical document.
       const frameMeta = await (await hub.handler(new Request(`${origin}/__devframes/alpha/__connection.json`))).json()
       expect(frameMeta.configs).toEqual(hubMeta.configs)
     }
@@ -218,7 +208,7 @@ describe('initHub', () => {
     }
   })
 
-  it('omits ConnectionMeta.configs entirely when neither the ui slot nor any devframe declares anything', async () => {
+  it('omits ConnectionMeta.configs entirely when the ui slot writes nothing', async () => {
     const wsPort = await getPort({ port: 18226, host: '127.0.0.1' })
     const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, devframes: [makeFrame('alpha')] })
 

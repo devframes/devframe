@@ -93,22 +93,6 @@ export async function installDevframe(
     ctx.views.hostStatic(base, resolve(d.cli.distDir))
   }
 
-  // This devframe's hub-wide dock-bar preferences aggregate into
-  // `ConnectionMeta.configs.dock` (last-installed wins per scalar key,
-  // `categoryOrder` shallow-merged) — separate from its own synthesized
-  // entry's attributes (`d.dock`).
-  const prefs = d.dockPreferences
-  if (prefs && (prefs.categoryOrder || prefs.maxVisibleItems !== undefined || prefs.defaultMode !== undefined || prefs.defaultPosition !== undefined)) {
-    const current = ctx.staticConfig.dock ?? {}
-    ctx.staticConfig.dock = {
-      ...current,
-      ...(prefs.categoryOrder ? { categoryOrder: { ...current.categoryOrder, ...prefs.categoryOrder } } : {}),
-      ...(prefs.maxVisibleItems !== undefined ? { maxVisibleItems: prefs.maxVisibleItems } : {}),
-      ...(prefs.defaultMode !== undefined ? { defaultMode: prefs.defaultMode } : {}),
-      ...(prefs.defaultPosition !== undefined ? { defaultPosition: prefs.defaultPosition } : {}),
-    }
-  }
-
   ctx.docks.register({
     id,
     title: d.name,

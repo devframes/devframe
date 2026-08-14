@@ -126,15 +126,15 @@ export interface DevframeHubUi {
    */
   assets?: Record<string, () => string | Uint8Array>
   /**
-   * Static, UI-owned configuration published verbatim as
-   * `ConnectionMeta.configs.ui` — the hub embeds whatever this returns
-   * without interpreting it, staying policy-free about what "ui" means.
-   * The reference UI's `createUi({ branding })` sets this to `{ branding }`,
-   * reaching every mounted frame and the standalone viewer through the one
-   * connection handshake they already perform, in place of a separate
-   * fetched asset.
+   * A setup hook run once during hub init with the hub context — the UI
+   * slot's chance to publish its own static, boot-time config through the
+   * generic `ctx.staticConfig` (serialized into `ConnectionMeta.configs`).
+   * The reference UI's `createUi()` uses it to set
+   * `ctx.staticConfig.ui = { branding, … }`, reaching every mounted frame and
+   * the standalone viewer through the one connection handshake they perform.
+   * The hub stays policy-free about what the UI writes.
    */
-  configs?: () => Record<string, unknown>
+  setup?: (ctx: DevframeHubContext) => void | Promise<void>
 }
 
 export type DevframesInput = Array<
@@ -495,6 +495,12 @@ export function initHub(options: InitHubOptions): HubInstance {
 
       await options.configure?.(ctx)
 
+      // The UI slot publishes its own static config (branding, dock
+      // preferences, …) into `ctx.staticConfig` — run last so it can see the
+      // installed devframes. The instance shell serializes `ctx.staticConfig`
+      // into the connection meta right after this `init` returns.
+      await options.ui?.setup?.(ctx)
+
       // Publish the renderer manifest — one `ClientScriptEntry` per dock
       // `type`, `importFrom` base-absolute so it resolves to the served module
       // from any page depth. Clients read it from shared state and import a
@@ -533,14 +539,9 @@ export function initHub(options: InitHubOptions): HubInstance {
     },
 
     mount(ctx, meta) {
-      // `meta.configs` already carries whatever every installed devframe
-      // wrote to `ctx.staticConfig` (e.g. aggregated dock-bar preferences
-      // under `dock`) — add the UI slot's own opaque config (e.g. branding)
-      // under `ui`, without interpreting it, staying policy-free about what
-      // "ui" means.
-      const uiConfig = options.ui?.configs?.()
-      if (uiConfig)
-        meta.configs = { ...meta.configs, ...{ ui: uiConfig } }
+      // `meta.configs` already carries whatever `ctx.staticConfig` collected
+      // during init — the UI slot's `setup(ctx)` (branding, dock preferences,
+      // …) and any devframe's own contributions. Nothing to add here.
 
       // Hub-level discovery endpoints, registered before the viewer's static
       // mount so its SPA-fallback can't swallow them.

@@ -7,6 +7,7 @@ export interface CreateUiOptions {
   embedded?: boolean;
   branding?: DevframeBranding;
   embeddedVisibility?: EmbeddedVisibility;
+  dockPreferences?: DevframeDockPreferences;
 }
 export interface DevframeBranding {
   productName?: string;
@@ -16,6 +17,12 @@ export interface DevframeBranding {
   tagline?: string;
   favicon?: string;
   windowTitle?: string;
+}
+export interface DevframeDockPreferences {
+  categoryOrder?: Record<string, number>;
+  maxVisibleItems?: number;
+  defaultMode?: 'float' | 'edge';
+  defaultPosition?: 'left' | 'right' | 'top' | 'bottom';
 }
 // #endregion
 

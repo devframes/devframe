@@ -353,10 +353,10 @@ export async function createDocksContext(
 
   // Settings store, `settings`, and `getWhenContext` are established earlier
   // (right before `switchEntry`) — its group→member resolution needs them.
-  // `categoryOrderOverride` folds in every installed devframe's own declared
-  // `dock.categoryOrder`, aggregated hub-wide and delivered once via the
-  // connection handshake (`ConnectionMeta.configs.dock.categoryOrder`).
-  const categoryOrderOverride = rpc.connectionMeta.configs?.dock?.categoryOrder
+  // `categoryOrderOverride` folds in the reference UI's configured
+  // `dockPreferences.categoryOrder` (`createUi({ dockPreferences })`),
+  // delivered once via the connection handshake.
+  const categoryOrderOverride = rpc.connectionMeta.configs?.ui?.dockPreferences?.categoryOrder
   const groupedEntries = computed(() => {
     return docksGroupByCategories(entries.value, settings.value, { whenContext: getWhenContext(), collapseGroups: true, categoryOrderOverride })
   })

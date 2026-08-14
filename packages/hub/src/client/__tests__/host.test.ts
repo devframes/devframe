@@ -157,10 +157,9 @@ describe('createDevframeClientHost', () => {
     host.dispose()
   })
 
-  it('merges categoryOrder from connectionMeta.configs.dock beneath DEFAULT_CATEGORIES_ORDER, and the host option beneath that', async () => {
+  it('merges the host-page categoryOrder option beneath DEFAULT_CATEGORIES_ORDER', async () => {
     const { rpc, states } = createStubRpc()
-    ;(rpc as any).connectionMeta = { backend: 'websocket', configs: { dock: { categoryOrder: { app: -200, web: 10 } } } }
-    const host = await createDevframeClientHost({ rpc, categoryOrder: { web: 999 } })
+    const host = await createDevframeClientHost({ rpc, categoryOrder: { app: -200, web: 999 } })
 
     states.get('devframe:docks')!.push([
       iframeEntry('app-entry', { category: 'app' }),
@@ -169,7 +168,7 @@ describe('createDevframeClientHost', () => {
     ])
 
     expect(host.context.docks.categoryOrder).toMatchObject({ app: -200, web: 999, framework: -100 })
-    // `app` (-200, from connectionMeta) now sorts ahead of `framework` (-100, default).
+    // `app` (-200, from the option) now sorts ahead of `framework` (-100, default).
     expect(host.context.docks.groupedEntries.map(([cat]) => cat)).toEqual(['app', 'framework', 'web'])
     host.dispose()
   })

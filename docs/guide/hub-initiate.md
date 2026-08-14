@@ -57,23 +57,26 @@ interface DevframeHubUi {
   viewer?: { distDir: string } // a standalone SPA served at the namespace root
   embedded?: { entry: string } // a prebuilt bootstrap served at <base>embedded.js
   assets?: Record<string, () => string | Uint8Array> // extra UI-owned files
-  configs?: () => Record<string, unknown> // static config, published as ConnectionMeta.configs.ui
+  setup?: (ctx) => void | Promise<void> // publish static config via ctx.staticConfig
 }
 ```
 
-`@devframes/hub-ui`'s `createUi()` is the reference implementation: a standalone viewer plus the floating dock — one `<script type="module" src="/__devframes/embedded.js">` tag in the host page and the dock mounts itself. A viewer product supplies a different object to the same slot and reuses all the infrastructure.
+`@devframes/hub-ui`'s `createUi()` is the reference implementation: a standalone viewer plus the floating dock — one `<script type="module" src="/__devframes/embedded.js">` tag in the host page and the dock mounts itself. A viewer product supplies a different object to the same slot and reuses all the infrastructure. Its `setup(ctx)` publishes the reference UI's config to `ctx.staticConfig.ui`, which rides `ConnectionMeta.configs.ui` to the client.
 
-`createUi()` takes a few options: `branding` (rebrand the reference UI — logo, product name, primary color) and `embeddedVisibility` for the floating dock's reveal policy:
+`createUi()` takes a few options:
+
+- **`branding`** — rebrand the reference UI (logo, product name, primary color).
+- **`dockPreferences`** — dock-bar rendering: `categoryOrder`, floating-dock `maxVisibleItems`, and the first-run `defaultMode` (`'float'` / `'edge'`) and `defaultPosition`.
+- **`embeddedVisibility`** — the floating dock's reveal policy:
+  - `'normal'` (default) — the dock is shown immediately.
+  - `'passive'` — the dock starts hidden with a console hint; `Shift+Alt+D` reveals it, and the reveal persists per-origin so later sessions start shown.
+  - `'hidden'` — the dock starts hidden; `Shift+Alt+D` reveals it for the current session only.
 
 ```ts
-createUi({ embeddedVisibility: 'passive' })
+createUi({ embeddedVisibility: 'passive', dockPreferences: { defaultMode: 'edge' } })
 ```
 
-- `'normal'` (default) — the dock is shown immediately.
-- `'passive'` — the dock starts hidden with a console hint; `Shift+Alt+D` reveals it, and the reveal persists per-origin so later sessions start shown.
-- `'hidden'` — the dock starts hidden; `Shift+Alt+D` reveals it for the current session only.
-
-Both ride `ConnectionMeta.configs.ui` to the client. Like the float/edge dock mode, `embeddedVisibility` seeds a user-overridable preference — the visitor's own reveal/hide wins from then on.
+Each seeds a user-overridable preference — the config sets the default, the visitor's own choice (reveal/hide, float/edge, …) wins from then on.
 
 ## Renderer modules
 

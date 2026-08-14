@@ -1,16 +1,22 @@
 import type { DevframeHubUi } from '@devframes/hub/initiate'
+import type { DevframeDockPreferences } from './client/dock-preferences'
 import type { EmbeddedVisibility } from './client/embedded/visibility'
 import type { DevframeBranding } from './client/state/branding'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+export type { DevframeDockPreferences } from './client/dock-preferences'
 export type { EmbeddedVisibility } from './client/embedded/visibility'
 export type { DevframeBranding } from './client/state/branding'
 
 declare module 'devframe/types' {
   interface DevframeConnectionConfigsRegistry {
-    ui: { branding?: DevframeBranding, embeddedVisibility?: EmbeddedVisibility }
+    ui: {
+      branding?: DevframeBranding
+      embeddedVisibility?: EmbeddedVisibility
+      dockPreferences?: DevframeDockPreferences
+    }
   }
 }
 
@@ -57,6 +63,13 @@ export interface CreateUiOptions {
    * dock only; the standalone viewer is an explicit visit and always shows.
    */
   embeddedVisibility?: EmbeddedVisibility
+  /**
+   * Dock-bar rendering preferences — category ordering, floating-dock
+   * inline-item capacity, and the first-run float/edge mode and position.
+   * Published as `ConnectionMeta.configs.ui.dockPreferences`; each seeds a
+   * user-overridable preference the visitor's own choice then wins.
+   */
+  dockPreferences?: DevframeDockPreferences
 }
 
 /**
@@ -85,9 +98,15 @@ export function createUi(options: CreateUiOptions = {}): DevframeHubUi {
     ...(options.embedded !== false
       ? { embedded: { entry: join(client, 'embedded.js') } }
       : {}),
-    configs: () => ({
-      branding: options.branding || {},
-      ...(options.embeddedVisibility ? { embeddedVisibility: options.embeddedVisibility } : {}),
-    }),
+    // Publish the reference UI's config through the generic `ctx.staticConfig`
+    // — it rides the connection handshake to every mounted frame and the
+    // standalone viewer as `ConnectionMeta.configs.ui`.
+    setup(ctx) {
+      ctx.staticConfig.ui = {
+        branding: options.branding || {},
+        ...(options.embeddedVisibility ? { embeddedVisibility: options.embeddedVisibility } : {}),
+        ...(options.dockPreferences ? { dockPreferences: options.dockPreferences } : {}),
+      }
+    },
   }
 }

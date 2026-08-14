@@ -40,21 +40,21 @@ async function mountDock(): Promise<void> {
     simpleAuth: false,
   })
 
-  // The hub's aggregated dock-bar preferences (declared by installed
-  // devframes), delivered once via the connection handshake we just
-  // performed — fixed for the life of this server, never re-fetched.
-  const dockConfig = rpc.connectionMeta.configs?.dock
+  // The reference UI's dock-bar preferences (`createUi({ dockPreferences })`),
+  // delivered once via the connection handshake we just performed — fixed for
+  // the life of this server, never re-fetched.
+  const dockPreferences = rpc.connectionMeta.configs?.ui?.dockPreferences
 
   const defaultStore = DEFAULT_DOCK_PANEL_STORE()
   const state = useLocalStorage<DockPanelStorage>(
     'devframes-dock-state',
     {
       ...defaultStore,
-      // Seed a first-run visitor's mode/position from the hub's declared
+      // Seed a first-run visitor's mode/position from the configured
       // defaults — `useLocalStorage`'s own `mergeDefaults` already limits
       // this to a visitor with no stored preference yet.
-      ...(dockConfig?.defaultMode ? { mode: dockConfig.defaultMode } : {}),
-      ...(dockConfig?.defaultPosition ? { position: dockConfig.defaultPosition } : {}),
+      ...(dockPreferences?.defaultMode ? { mode: dockPreferences.defaultMode } : {}),
+      ...(dockPreferences?.defaultPosition ? { position: dockPreferences.defaultPosition } : {}),
     },
     { mergeDefaults: true },
   )
@@ -71,7 +71,7 @@ async function mountDock(): Promise<void> {
   const { DockEmbedded } = await import('../components/DockEmbedded')
   dockEl = new DockEmbedded({
     context,
-    ...(dockConfig?.maxVisibleItems !== undefined ? { layout: { maxVisibleItems: dockConfig.maxVisibleItems } } : {}),
+    ...(dockPreferences?.maxVisibleItems !== undefined ? { layout: { maxVisibleItems: dockPreferences.maxVisibleItems } } : {}),
   }) as unknown as HTMLElement
   // Inline on the host element — beats the generated `:host` ramp defaults and
   // inherits through the shadow tree. The embedded bootstrap never touches the

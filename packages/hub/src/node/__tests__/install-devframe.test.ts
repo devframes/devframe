@@ -19,8 +19,6 @@ function createContext(): DevframeHubContext {
     views: {
       hostStatic: () => {},
     },
-    // `createHostContext` seeds this plain object; the fake mirrors it.
-    staticConfig: {},
   } as unknown as DevframeHubContext
   context.docks = new DevframeDocksHost(context)
   // `createHubContext` wires this; the hand-built fake context here does the
@@ -96,56 +94,6 @@ describe('ctx.install', () => {
     expect(ctx.docks.views.get('demo')).toMatchObject({
       category: 'app',
       defaultOrder: 5,
-    })
-  })
-
-  it('writes dockPreferences to ctx.staticConfig.dock, not the synthesized entry', async () => {
-    const ctx = createContext()
-    await ctx.install(makeDevframe({
-      dock: { category: 'app' },
-      dockPreferences: {
-        categoryOrder: { app: -40 },
-        maxVisibleItems: 4,
-        defaultMode: 'edge',
-        defaultPosition: 'left',
-      },
-    }))
-
-    expect(ctx.staticConfig.dock).toEqual({
-      categoryOrder: { app: -40 },
-      maxVisibleItems: 4,
-      defaultMode: 'edge',
-      defaultPosition: 'left',
-    })
-    // Not spread onto the synthesized entry — those aren't entry attributes.
-    const entry = ctx.docks.views.get('demo') as unknown as Record<string, unknown>
-    expect(entry.categoryOrder).toBeUndefined()
-    expect(entry.maxVisibleItems).toBeUndefined()
-    expect(entry.defaultMode).toBeUndefined()
-    expect(entry.defaultPosition).toBeUndefined()
-    expect(entry.category).toBe('app')
-  })
-
-  it('leaves ctx.staticConfig untouched when a devframe declares no dock preferences', async () => {
-    const ctx = createContext()
-    await ctx.install(makeDevframe({ dock: { category: 'app' } }))
-    expect(ctx.staticConfig.dock).toBeUndefined()
-  })
-
-  it('shallow-merges categoryOrder across two devframes, last wins per scalar field', async () => {
-    const ctx = createContext()
-    await ctx.install(makeDevframe({
-      dockPreferences: { categoryOrder: { app: -40, web: 300 }, maxVisibleItems: 4, defaultMode: 'edge' },
-    }))
-    await ctx.install(makeDevframe({
-      id: 'demo-2',
-      dockPreferences: { categoryOrder: { app: -60, advanced: -50 }, maxVisibleItems: 10 },
-    }))
-
-    expect(ctx.staticConfig.dock).toEqual({
-      categoryOrder: { app: -60, web: 300, advanced: -50 },
-      maxVisibleItems: 10,
-      defaultMode: 'edge',
     })
   })
 

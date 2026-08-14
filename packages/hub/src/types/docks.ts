@@ -1,13 +1,4 @@
-import type { ConnectionMeta, DevframeDockPreferences, EventEmitter } from 'devframe/types'
-
-// The hub aggregates every installed devframe's `dockPreferences`
-// (last-installed wins per scalar key, `categoryOrder` shallow-merged) and
-// publishes the result as `ConnectionMeta.configs.dock`.
-declare module 'devframe/types' {
-  interface DevframeConnectionConfigsRegistry {
-    dock: DevframeDockPreferences
-  }
-}
+import type { ConnectionMeta, EventEmitter } from 'devframe/types'
 
 export interface DevframeDocksHost {
   readonly views: Map<string, DevframeDockUserEntry>
