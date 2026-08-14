@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { h, onMounted } from 'vue'
+import { MESSAGES_DOCK_ID } from '../../constants'
 import { addToast } from '../../state/toasts'
 import { message } from '../../stories/fixtures'
 import ToastOverlay from './ToastOverlay.vue'
@@ -31,6 +32,26 @@ export const Stack: Story = {
         addToast(message({ level: 'error', message: 'Build failed', description: '2 errors in 1 file', notify: true, autoDismiss: 10 ** 7 }))
         addToast(message({ level: 'warn', message: 'Slow HMR update (820ms)', notify: true, autoDismiss: 10 ** 7 }))
         addToast(message({ level: 'success', message: 'Server ready on :5173', notify: true, autoDismiss: 10 ** 7 }))
+      })
+      return () => h(ToastOverlay)
+    },
+  }),
+}
+
+/** A toast whose message carries an `activate` action, rendered alongside the dismiss control. */
+export const WithAction: Story = {
+  render: () => ({
+    setup() {
+      onMounted(() => {
+        addToast(message({
+          level: 'warn',
+          message: 'New a11y violation detected',
+          notify: true,
+          autoDismiss: 10 ** 7,
+          actions: [
+            { id: 'view', label: 'View', kind: 'activate', activate: { dockId: MESSAGES_DOCK_ID } },
+          ],
+        }))
       })
       return () => h(ToastOverlay)
     },

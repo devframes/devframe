@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DevframeMessageAction } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import { MESSAGES_DOCK_ID } from '../../constants'
 import { selectMessage, useMessages } from '../../state/messages'
@@ -23,6 +24,20 @@ function openMessages(toastId: string) {
   // (its dock id is the plugin's devframe id).
   props.context?.docks.switchEntry(MESSAGES_DOCK_ID)
 }
+
+/**
+ * Mirrors `@devframes/plugin-messages`'s own `onActivate` dispatch (its
+ * `App.vue`) — the toast's own `entry.actions` buttons behave identically to
+ * the ones in the messages panel's detail view, without waiting for that
+ * panel to be open. `context.docks`/`context.commands` reach the hub
+ * directly here, whereas the plugin (an iframe) goes through RPC.
+ */
+function dispatchAction(action: DevframeMessageAction) {
+  if (action.kind === 'activate')
+    props.context?.docks.switchEntry(action.activate.dockId)
+  else if (action.kind === 'command')
+    props.context?.commands.execute(action.command.id, ...(action.command.params ?? []))
+}
 </script>
 
 <template>
@@ -44,6 +59,14 @@ function openMessages(toastId: string) {
       >
         <MessageItem :entry="toast.entry" compact class="px-3 py-2.5">
           <template #actions>
+            <button
+              v-for="action of toast.entry.actions"
+              :key="action.id"
+              class="flex-none text-xs px-1.5 py-0.5 rounded border border-base op70 hover:op100 hover:bg-active transition"
+              @click.stop="dispatchAction(action)"
+            >
+              {{ action.label }}
+            </button>
             <button
               class="flex-none op30 hover:op100 p-0.5 rounded hover:bg-active transition"
               @click.stop="dismissToast(toast.id)"
