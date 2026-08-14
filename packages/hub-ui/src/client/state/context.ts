@@ -1,9 +1,10 @@
 import type { DevframeClientCommand, DevframeDockEntry, DevframeDockUserEntry, DevframeRpcClientFunctions, DevframeViewIframe } from '@devframes/hub'
-import type { CommandsContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockPanelStorage, DockRegistration, DockRendererManifest, DocksContext } from '@devframes/hub/client'
+import type { CommandsContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockRegistration, DockRendererManifest, DocksContext } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
 import type { Ref } from 'vue'
 import type { HubDocksUserSettings } from './dock-settings'
+import type { HubDockPanelStorage } from './docks'
 import { attachFrameNavClient } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY } from '@devframes/hub/constants'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
@@ -21,7 +22,7 @@ const docksContextByRpc = new WeakMap<DevframeRpcClient, DocksContext>()
 export async function createDocksContext(
   clientType: 'embedded' | 'standalone',
   rpc: DevframeRpcClient,
-  panelStore?: Ref<DockPanelStorage>,
+  panelStore?: Ref<HubDockPanelStorage>,
 ): Promise<DocksContext> {
   if (docksContextByRpc.has(rpc)) {
     return docksContextByRpc.get(rpc)!
@@ -73,11 +74,56 @@ export async function createDocksContext(
     return [...base, BUILTIN_ENTRY_SETTINGS]
   })
 
-  const selectedId = ref<string | null>(null)
+  panelStore ||= ref(DEFAULT_DOCK_PANEL_STORE())
+
+  /**
+   * `selectedId` lives in `panelStore` (localStorage in the embedded client),
+   * alongside `open`/mode/geometry — so it's restored across a reload and
+   * shared cross-tab like the rest of that value, instead of resetting to
+   * nothing every time the dock mounts.
+   */
+  const selectedId = computed<string | null>({
+    get: () => panelStore.value.selectedId,
+    set: (value) => { panelStore.value.selectedId = value },
+  })
   const selected = computed(
     () => entries.value.find(entry => entry.id === selectedId.value)
       ?? BUILTIN_ENTRIES.find(entry => entry.id === selectedId.value)
       ?? null,
+  )
+
+  /**
+   * A restored `selectedId` may point at a non-selectable entry (a group, or
+   * a `subTabs` anchor) — `switchEntry` would fix that on click, but routing
+   * through it here would force `panelStore.value.open = true`, reopening a
+   * closed panel. So validate once, on boot, directly instead. Past boot,
+   * `switchEntry` may itself land `selectedId` on a group/anchor (e.g.
+   * mid-redirect, or a `subTabs` anchor with no live member yet) — that's not
+   * something to keep correcting.
+   */
+  const isSelectableEntry = (id: string): boolean => {
+    if (BUILTIN_ENTRIES.some(entry => entry.id === id))
+      return true
+    const entry = entries.value.find(e => e.id === id)
+    if (!entry)
+      return false
+    if (entry.type === 'group')
+      return false
+    if (entry.type === 'iframe' && entry.subTabs)
+      return false
+    return true
+  }
+  let bootRestoreChecked = false
+  watch(
+    entries,
+    () => {
+      if (bootRestoreChecked)
+        return
+      bootRestoreChecked = true
+      if (selectedId.value != null && !isSelectableEntry(selectedId.value))
+        selectedId.value = null
+    },
+    { immediate: true },
   )
 
   const dockEntryStateMap: Map<string, DockEntryState> = reactive(new Map())
@@ -131,7 +177,6 @@ export async function createDocksContext(
     clientDocks.set(entry.id, entry as DevframeDockEntry)
   }
 
-  panelStore ||= ref(DEFAULT_DOCK_PANEL_STORE())
   let docksContext: DocksContext
 
   let _settingsStorePromise: Promise<SharedState<HubDocksUserSettings>> | undefined

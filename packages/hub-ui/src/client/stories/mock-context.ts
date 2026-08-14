@@ -1,5 +1,6 @@
 import type { DevframeDockEntry } from '@devframes/hub'
-import type { DevframeRpcClient, DockPanelStorage, DocksContext, RpcClientEvents } from '@devframes/hub/client'
+import type { DevframeRpcClient, DocksContext, RpcClientEvents } from '@devframes/hub/client'
+import type { HubDockPanelStorage } from '../state/docks'
 import type { HubDocksUserSettings } from '../types'
 import { DEFAULT_STATE_USER_SETTINGS } from '@devframes/hub/constants'
 import { createEventEmitter } from 'devframe/utils/events'
@@ -25,7 +26,7 @@ export interface CreateMockContextOptions {
   /** Which client shell the context represents. */
   clientType?: 'embedded' | 'standalone'
   /** Overrides merged over the default panel store (mode, position, open, ...). */
-  panel?: Partial<DockPanelStorage>
+  panel?: Partial<HubDockPanelStorage>
   /** Overrides merged over the default user settings (hidden, pinned, order, ...). */
   settings?: Partial<HubDocksUserSettings>
   /** Entry id to pre-select (also opens the panel). */
@@ -117,7 +118,7 @@ export async function createMockDocksContext(
   } = options
 
   const rpc = createMockRpc(entries, settings, isTrusted)
-  const panelStore = ref<DockPanelStorage>({ ...DEFAULT_DOCK_PANEL_STORE(), ...panel })
+  const panelStore = ref<HubDockPanelStorage>({ ...DEFAULT_DOCK_PANEL_STORE(), ...panel })
 
   const context = await createDocksContext(clientType, rpc, panelStore)
 

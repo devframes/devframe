@@ -5,7 +5,18 @@ import type { Ref, ShallowRef } from 'vue'
 import { createEventEmitter } from 'devframe/utils/events'
 import { markRaw, reactive, shallowRef, watch } from 'vue'
 
-export function DEFAULT_DOCK_PANEL_STORE(): DockPanelStorage {
+/**
+ * {@link DockPanelStorage} (hub's own type — geometry/mode/`open`) plus
+ * `selectedId`, which the hub has no concept of. Both persist in the same
+ * `devframes-dock-state` localStorage value (the embedded dock's own store),
+ * so both survive a reload and are shared cross-tab like the rest of that
+ * value — a dock left open/selected in one tab shows the same way in the next.
+ */
+export interface HubDockPanelStorage extends DockPanelStorage {
+  selectedId: string | null
+}
+
+export function DEFAULT_DOCK_PANEL_STORE(): HubDockPanelStorage {
   return {
     mode: 'float',
     width: 80,
@@ -15,6 +26,7 @@ export function DEFAULT_DOCK_PANEL_STORE(): DockPanelStorage {
     position: 'bottom',
     open: false,
     inactiveTimeout: 3_000,
+    selectedId: null,
   }
 }
 
