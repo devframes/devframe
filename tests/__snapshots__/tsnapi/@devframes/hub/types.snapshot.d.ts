@@ -23,6 +23,7 @@ export { DevframeDiagnosticsDefinition }
 export { DevframeDiagnosticsHost }
 export { DevframeDiagnosticsLogger }
 export { DevframeDockActivation }
+export { DevframeDockBadgeVariant }
 export { DevframeDockEntriesGrouped }
 export { DevframeDockEntry }
 export { DevframeDockEntryBase }

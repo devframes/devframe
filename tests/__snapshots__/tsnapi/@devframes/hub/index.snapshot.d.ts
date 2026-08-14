@@ -90,6 +90,7 @@ export interface DevframeDockEntryBase {
   when?: string;
   visibility?: string;
   badge?: string;
+  badgeVariant?: DevframeDockBadgeVariant;
   groupId?: string;
 }
 export interface DevframeDockEntryRegistry {
@@ -339,6 +340,7 @@ export interface RemoteDockOptions {
 
 // #region Types
 export type DevframeCommandEntry = DevframeServerCommandEntry | DevframeClientCommand;
+export type DevframeDockBadgeVariant = 'default' | 'info' | 'success' | 'warning' | 'danger';
 export type DevframeDockEntriesGrouped = [category: string, entries: DevframeDockEntry[]][];
 export type DevframeDockEntry = DevframeDockUserEntry;
 export type DevframeDockEntryCategory = 'framework' | 'app' | 'ui' | 'data' | 'web' | 'performance' | 'advanced' | 'docs' | 'default' | '~builtin' | (string & {});

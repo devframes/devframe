@@ -128,6 +128,7 @@ function onClick() {
       :is-selected="isActive || isPanelVisible"
       :is-dimmed="dimInactive && selected ? !isActive : false"
       :badge="group.badge"
+      :badge-variant="group.badgeVariant"
       @click="onClick"
     />
   </div>

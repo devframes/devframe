@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { DevframeDockEntryBase } from '@devframes/hub'
+import type { DevframeDockBadgeVariant, DevframeDockEntryBase } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import { useEventListener } from '@vueuse/core'
-import { useTemplateRef } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import { setFloatingTooltip } from '../../state/floating-tooltip'
 import { openDockContextMenu } from './DockContextMenu'
 import DockIcon from './DockIcon.vue'
@@ -16,12 +16,32 @@ const props = withDefaults(
     isDimmed?: boolean
     isVertical?: boolean
     badge?: string
+    badgeVariant?: DevframeDockBadgeVariant
     tooltip?: boolean
   }>(),
   {
     tooltip: true,
   },
 )
+
+// Mirrors json-render's `Badge` variant→color-name map (see
+// `@devframes/json-render-ui`'s `Badge.ts`), applied as an inline fill since
+// the dock bar doesn't pull in json-render-ui's `DisplayBadge` component.
+// `undefined` at `'default'`/unset keeps the existing `bg-primary text-white`
+// classes below — every existing badge consumer keeps its current look.
+const badgeColors: Record<Exclude<DevframeDockBadgeVariant, 'default'>, { bg: string, fg: string }> = {
+  info: { bg: '#3b82f6', fg: '#eff6ff' },
+  success: { bg: '#22c55e', fg: '#f0fdf4' },
+  warning: { bg: '#f59e0b', fg: '#fffbeb' },
+  danger: { bg: '#ef4444', fg: '#fef2f2' },
+}
+
+const badgeStyle = computed(() => {
+  if (!props.badgeVariant || props.badgeVariant === 'default')
+    return undefined
+  const { bg, fg } = badgeColors[props.badgeVariant]
+  return { backgroundColor: bg, color: fg }
+})
 
 const button = useTemplateRef<HTMLButtonElement>('button')
 
@@ -87,7 +107,12 @@ useEventListener('pointerdown', () => {
       class="flex items-center justify-center p1.5 hover:bg-[#8881] hover:scale-110 transition-all duration-300 relative outline-none"
     >
       <DockIcon :icon="dock.icon" class="w-5 h-5 select-none" />
-      <div v-if="badge" class="absolute top-0.5 right-0 bg-primary text-white text-0.6em px-1 rounded-full shadow">
+      <div
+        v-if="badge"
+        class="absolute top-0.5 right-0 text-0.6em px-1 rounded-full shadow"
+        :class="badgeStyle ? '' : 'bg-primary text-white'"
+        :style="badgeStyle"
+      >
         {{ badge }}
       </div>
     </button>

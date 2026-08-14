@@ -69,6 +69,9 @@ export type DevframeDockEntryCategory
 
 export type DevframeDockEntryIcon = string | { light: string, dark: string }
 
+/** Color for a dock-bar entry's {@link DevframeDockEntryBase.badge} — mirrors json-render's `TabDescriptor.badgeVariant`. */
+export type DevframeDockBadgeVariant = 'default' | 'info' | 'success' | 'warning' | 'danger'
+
 export interface DevframeDockEntryBase {
   id: string
   title: string
@@ -133,6 +136,11 @@ export interface DevframeDockEntryBase {
    * Badge text to display on the dock icon (e.g., unread count)
    */
   badge?: string
+  /**
+   * Colors {@link badge}. Omitted (or `'default'`) keeps the existing neutral
+   * fill, so every pre-existing badge consumer keeps its current look.
+   */
+  badgeVariant?: DevframeDockBadgeVariant
   /**
    * Id of the group this entry belongs to. When set, hosts collapse this entry
    * under the matching group's button instead of showing it directly on the
