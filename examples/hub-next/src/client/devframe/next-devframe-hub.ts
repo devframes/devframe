@@ -219,10 +219,10 @@ export async function nextDevframeHub(
     cwd,
     origin,
     host: hostName,
-    // Single-user localhost demo: the side-car is reachable only on loopback,
-    // so it opts out of the gate for a no-friction dev experience. A hub
-    // reachable beyond localhost should gate (see `docs/guide/security.md`).
-    auth: false,
+    // Gate access with devframe's interactive OTP (the default): the hub
+    // prints a 6-digit code + magic link on startup, and the client shell
+    // (`app/page.tsx`) drives its own authorization view to exchange the code
+    // for a bearer token. See `docs/guide/security.md`.
     // The aggregate MCP endpoint at `/__devframes/__mcp` - the hub's agent
     // surface (agent-flagged commands, plugin tools, `devframe:state:read`)
     // over the same catch-all route as the SPAs.

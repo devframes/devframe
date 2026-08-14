@@ -46,10 +46,9 @@ export const hub: HubInstance = globalRef.__hubNitroMinimal ??= initHub({
   // fetches at boot and feeds into `--devframe-primary` (see
   // `@devframes/hub-ui`'s `primary-ramp.css`).
   ui: createUi({ branding: { primaryColor: '#ff2056', productName: 'Devframes on Nitro' } }),
-  // Single-user localhost demo: reachable only on loopback, so it opts out
-  // of the gate for a no-friction dev experience. A hub reachable beyond
-  // localhost should gate (see docs/guide/security.md).
-  auth: false,
+  // Gate with devframe's interactive OTP (the default). The hub prints a
+  // 6-digit code + magic link on startup, and the reference UI's authorization
+  // view exchanges it for a bearer token. See docs/guide/security.md.
   configure(ctx) {
     ctx.commands.register({
       id: 'example:hub-nitro-minimal:ping',

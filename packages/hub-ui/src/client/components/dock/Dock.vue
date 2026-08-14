@@ -272,11 +272,11 @@ onMounted(() => {
         </div>
         <div
           v-if="!isRpcTrusted"
-          class="transition duration-300 delay-200"
+          class="transition duration-300 delay-200 ma"
           :class="isMinimized ? 'opacity-0 pointer-events-none ws-nowrap text-sm text-orange of-hidden' : 'opacity-100'"
         >
           <button
-            class="p2 transition hover:bg-active rounded-full px4"
+            class="transition rounded-full px4"
             @click="context.docks.toggleEntry(BUILTIN_ENTRY_CLIENT_AUTH_NOTICE.id)"
           >
             <div class="flex items-center gap-1">
@@ -291,6 +291,7 @@ onMounted(() => {
           </button>
         </div>
         <div
+          v-if="isRpcTrusted"
           :class="isMinimized ? 'opacity-0 pointer-events-none' : 'opacity-100'"
           class="transition duration-200 flex items-center w-full h-full justify-center px3"
         >

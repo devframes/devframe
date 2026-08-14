@@ -1,4 +1,5 @@
 import type { HubInstance } from '@devframes/hub/initiate'
+import { getTempAuthCode } from 'devframe/node/auth'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
@@ -19,6 +20,23 @@ function wsPortOf(hub: HubInstance): number {
 function bootRpc(hub: HubInstance) {
   const channel = createWsRpcChannel({ url: `ws://127.0.0.1:${wsPortOf(hub)}/__ws` })
   return createRpcClient<any, any>({}, { channel })
+}
+
+/**
+ * The hub gates by default (interactive OTP), so a fresh connection is
+ * untrusted. Exchange the current one-time code for a bearer token over the
+ * anonymous handshake RPC, which marks this session trusted — mirroring what a
+ * browser client does after the user enters the code from the terminal.
+ */
+async function bootTrustedRpc(hub: HubInstance) {
+  const rpc = bootRpc(hub)
+  const result = await rpc.$call('anonymous:devframe:auth:exchange', {
+    code: getTempAuthCode(),
+    ua: 'vitest',
+    origin: 'http://127.0.0.1:3000',
+  }) as { authToken: string | null }
+  expect(result.authToken).toBeTruthy()
+  return rpc
 }
 
 describe('next-devframe-hub (example)', () => {
@@ -81,11 +99,33 @@ describe('next-devframe-hub (example)', () => {
     expect(dockIds).toContain('devframes_plugin_assets')
   })
 
+  it('gates untrusted calls until the OTP handshake completes', async () => {
+    hub = await nextDevframeHub({ host: '127.0.0.1' })
+    await hub.ready
+
+    // A fresh connection is untrusted: a non-anonymous call is refused.
+    const rpc = bootRpc(hub)
+    await expect(
+      rpc.$call('example:next-devframe-hub:messages:list'),
+    ).rejects.toThrow()
+
+    // After exchanging the one-time code the same connection is trusted.
+    const result = await rpc.$call('anonymous:devframe:auth:exchange', {
+      code: getTempAuthCode(),
+      ua: 'vitest',
+      origin: 'http://127.0.0.1:3000',
+    }) as { authToken: string | null }
+    expect(result.authToken).toBeTruthy()
+    await expect(
+      rpc.$call('example:next-devframe-hub:messages:list'),
+    ).resolves.toBeInstanceOf(Array)
+  })
+
   it('lists startup and demo messages through the kit-local RPC', async () => {
     hub = await nextDevframeHub({ host: '127.0.0.1' })
     await hub.ready
 
-    const rpc = bootRpc(hub)
+    const rpc = await bootTrustedRpc(hub)
     const messages = await rpc.$call('example:next-devframe-hub:messages:list') as { message: string }[]
     expect(messages.map(m => m.message)).toContain('Next Devframe Hub started')
     expect(messages.map(m => m.message)).toContain('Next demo devframe loaded')
@@ -95,7 +135,7 @@ describe('next-devframe-hub (example)', () => {
     hub = await nextDevframeHub({ host: '127.0.0.1' })
     await hub.ready
 
-    const rpc = bootRpc(hub)
+    const rpc = await bootTrustedRpc(hub)
     await expect(
       rpc.$call('hub:commands:execute', 'example:next-devframe-hub:ping'),
     ).resolves.toBe('pong')

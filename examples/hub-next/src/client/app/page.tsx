@@ -10,6 +10,7 @@ import type {
 } from '@devframes/hub/types'
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
+import type { FormEvent } from 'react'
 import { connectDevframe, createDevframeClientHost, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createReactJsonRenderDockRenderer } from '../json-render/react-renderer'
@@ -253,8 +254,89 @@ function DockIcon({ entry }: { entry: DevframeDockEntry }) {
   return <span className="grid h-5 w-5 shrink-0 place-items-center rounded bg-active text-[0.7rem] font-bold">{initial}</span>
 }
 
+// ── authorization gate (interactive OTP) ────────────────────────────────────
+// The hub gates every connection; this shell opts out of devframe's native
+// `prompt()` (`simpleAuth: false`) and renders its own authorization view,
+// mirroring the reference UI's `ViewBuiltinClientAuthNotice`. It shows only
+// once the handshake is refused — a stored token or the magic-link OTP
+// authorizes silently and this never mounts.
+function AuthOverlay({ rpc }: { rpc: DevframeRpcClient }) {
+  const CODE_LENGTH = 6
+  const [code, setCode] = useState('')
+  const [error, setError] = useState('')
+  const [verifying, setVerifying] = useState(false)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    if (code.length < CODE_LENGTH || verifying)
+      return
+    setVerifying(true)
+    setError('')
+    try {
+      const ok = await rpc.requestTrustWithCode(code)
+      if (!ok) {
+        setError('That code didn’t match. Check your terminal and try again.')
+        setCode('')
+        inputRef.current?.focus()
+      }
+      // On success the boot effect's trust listener unmounts this overlay.
+    }
+    catch {
+      setError('Something went wrong while authorizing. Please try again.')
+    }
+    finally {
+      setVerifying(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 grid place-items-center of-auto bg-base p8 color-base">
+      <div className="w-full max-w-100 flex flex-col items-center text-center">
+        <div className="grid size-16 place-items-center rounded-2xl bg-active">
+          <span className="i-ph-shield-check-duotone text-4xl color-active" />
+        </div>
+        <h1 className="mt5 text-2xl font-bold tracking-tight">Authorize Next Devframe Hub</h1>
+        <p className="mt2 max-w-88 text-sm op-fade leading-relaxed">
+          This hub can access your server, read your filesystem, and run commands.
+          Confirm it&apos;s you before continuing.
+        </p>
+        <form onSubmit={submit} className="mt6 w-full flex flex-col items-center gap-4 rounded-xl border border-base bg-secondary p6 shadow-sm" autoComplete="off">
+          <p className="text-sm op-fade">
+            Enter the
+            {' '}
+            <span className="font-mono color-active">6-digit code</span>
+            {' '}
+            printed in your terminal.
+          </p>
+          <input
+            ref={inputRef}
+            value={code}
+            onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, CODE_LENGTH))}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={CODE_LENGTH}
+            aria-label="One-time authorization code"
+            placeholder="••••••"
+            className="w-56 rounded-lg border border-base bg-base px3 py2 text-center text-2xl font-mono tracking-[0.4em] color-base outline-none focus:border-active"
+          />
+          <button type="submit" disabled={code.length < CODE_LENGTH || verifying} className="btn-primary w-full justify-center py2!">
+            {verifying ? 'Authorizing…' : 'Authorize'}
+          </button>
+          <p className="min-h-5 text-sm text-red-500" role="alert" aria-live="assertive">{error}</p>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function Page() {
   const [status, setStatus] = useState<Status>({ text: 'Connecting...' })
+  const [authNeeded, setAuthNeeded] = useState(false)
   const [transport, setTransport] = useState<string | null>(null)
   const [transportPref, setTransportPref] = useState<TransportPref>('auto')
   const [docks, setDocks] = useState<DevframeDockEntry[]>([])
@@ -278,17 +360,51 @@ export default function Page() {
   useEffect(() => {
     let cancelled = false
     let cleanup: (() => void) | undefined
+    let offAuth: (() => void) | undefined
 
     async function run() {
       try {
         const pref = readTransportPref()
         setTransportPref(pref)
-        const rpc = await connectDevframe({ baseURL: HUB_BASE, transport: pref })
+        // The hub gates by default (interactive OTP). `simpleAuth: false` opts
+        // out of devframe's native `prompt()` so this shell drives its own
+        // authorization view; the magic-link OTP (`?devframe_otp=`) is still
+        // consumed automatically. `connectDevframe` resolves before the trust
+        // handshake settles, so hold the client-host boot until trusted.
+        const rpc = await connectDevframe({ baseURL: HUB_BASE, transport: pref, simpleAuth: false })
         if (cancelled)
           return
 
         rpcRef.current = rpc
         setTransport(rpc.transport)
+
+        // Gate on trust. A stored token or the magic link resolves silently
+        // (the overlay never shows); otherwise the connection settles
+        // `unauthorized` and the overlay collects the code the user types.
+        if (!rpc.isTrusted) {
+          await new Promise<void>((resolve) => {
+            const offTrust = rpc.events.on('rpc:is-trusted:updated', (trusted) => {
+              if (trusted) {
+                offAuth?.()
+                resolve()
+              }
+            })
+            const reveal = (status: string): void => {
+              if (status === 'unauthorized')
+                setAuthNeeded(true)
+            }
+            const offStatus = rpc.events.on('connection:status', reveal)
+            offAuth = () => {
+              offTrust()
+              offStatus()
+            }
+            reveal(rpc.status)
+          })
+          if (cancelled)
+            return
+          setAuthNeeded(false)
+        }
+
         setStatus({ text: `Connected: transport=${rpc.transport}`, kind: 'ready' })
 
         // Boot the framework-level client host: it builds the shared client
@@ -375,6 +491,7 @@ export default function Page() {
 
     return () => {
       cancelled = true
+      offAuth?.()
       cleanup?.()
       rpcRef.current = null
     }
@@ -512,6 +629,7 @@ export default function Page() {
 
   return (
     <div className="h-full flex flex-col bg-base color-base">
+      {authNeeded && rpcRef.current && <AuthOverlay rpc={rpcRef.current} />}
       <header className="shrink-0 flex items-center gap-3 h-nav px-3 border-b border-base bg-base">
         <h1 className="m0 flex items-center gap-1.5 shrink-0 text-sm font-semibold select-none">
           <span className="i-ph-squares-four-duotone text-base color-active" />
