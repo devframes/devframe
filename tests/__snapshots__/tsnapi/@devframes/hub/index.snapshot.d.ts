@@ -125,6 +125,7 @@ export interface DevframeDocksUserSettings {
   showIframeAddressBar: boolean;
   closeOnOutsideClick: boolean;
   commandShortcuts: DevframeCommandShortcutOverrides;
+  autoCollapseEdgeToolbar?: boolean;
 }
 export interface DevframeHubContext extends DevframeNodeContext {
   readonly host: DevframeHost;
