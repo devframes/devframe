@@ -1,7 +1,6 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type {
-  DevframeDockConfig,
   DevframeDockEntry,
   DevframeDocksHost as DevframeDocksHostType,
   DevframeDockUserEntry,
@@ -36,7 +35,6 @@ export class DevframeDocksHost implements DevframeDocksHostType {
   public readonly views: DevframeDocksHostType['views'] = new Map()
   public readonly events: DevframeDocksHostType['events'] = createEventEmitter()
   public userSettings: SharedState<DevframeDocksUserSettings> = undefined!
-  public readonly dockConfig: DevframeDockConfig = {}
 
   /** Dock-id → allocated remote token + resolved options. */
   private readonly remoteDocks = new Map<string, RemoteDockRecord>()
@@ -44,18 +42,6 @@ export class DevframeDocksHost implements DevframeDocksHostType {
   constructor(
     public readonly context: DevframeHubContext,
   ) {}
-
-  contributeDockConfig(config: DevframeDockConfig): void {
-    if (config.categoryOrder) {
-      this.dockConfig.categoryOrder = { ...this.dockConfig.categoryOrder, ...config.categoryOrder }
-    }
-    if (config.maxVisibleItems !== undefined)
-      this.dockConfig.maxVisibleItems = config.maxVisibleItems
-    if (config.defaultMode !== undefined)
-      this.dockConfig.defaultMode = config.defaultMode
-    if (config.defaultPosition !== undefined)
-      this.dockConfig.defaultPosition = config.defaultPosition
-  }
 
   async init() {
     this.userSettings = await this.context.rpc.sharedState.get('devframe:user-settings', {

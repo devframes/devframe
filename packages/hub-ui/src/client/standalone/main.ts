@@ -34,10 +34,7 @@ async function main(): Promise<void> {
   // `ConnectionMeta.configs.ui.branding`, carried by the connection we just
   // established above.
   const { resolveBranding, applyPrimaryColor, applyDocumentHead } = await import('../state/branding')
-  const branding = resolveBranding({
-    mode: 'standalone',
-    branding: rpc.connectionMeta.configs?.ui?.branding,
-  })
+  const branding = resolveBranding(rpc.connectionMeta.configs?.ui?.branding)
   applyDocumentHead(document, branding)
 
   const { createDocksContext } = await import('../state/context')

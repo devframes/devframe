@@ -28,18 +28,6 @@ export interface DevframeDocksHost {
     'dock:entry:updated': (entry: DevframeDockUserEntry) => void
     'dock:activate': (activation: DevframeDockActivation) => void
   }>
-  // TODO: remove this, it doesn't need to be exposed in DevframeDocksHost
-  /** The aggregate dock-bar config collected from every installed devframe so far. */
-  readonly dockConfig: DevframeDockConfig
-  /**
-   * Merge one devframe's declared dock-bar preferences into
-   * {@link dockConfig} — called by `installDevframe` for every devframe
-   * whose `dock` declares any of `categoryOrder` / `maxVisibleItems` /
-   * `defaultMode` / `defaultPosition`. Last caller wins per scalar key;
-   * `categoryOrder` shallow-merges over what's already aggregated.
-   */
-  // TODO: remove this, it doesn't need to be exposed in DevframeDocksHost
-  contributeDockConfig: (config: DevframeDockConfig) => void
 
   register: <T extends DevframeDockUserEntry>(entry: T, force?: boolean) => {
     update: (patch: Partial<T>) => void

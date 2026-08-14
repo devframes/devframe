@@ -134,8 +134,7 @@ export interface DevframeHubUi {
    * connection handshake they already perform, in place of a separate
    * fetched asset.
    */
-  // TODO: rename to "configs"
-  settings?: () => Record<string, unknown>
+  configs?: () => Record<string, unknown>
 }
 
 export type DevframesInput = Array<
@@ -534,20 +533,14 @@ export function initHub(options: InitHubOptions): HubInstance {
     },
 
     mount(ctx, meta) {
-      // Static, boot-time config — the UI slot's own opaque settings (e.g.
-      // branding) plus the dock-bar preferences aggregated from every
-      // installed devframe — baked into the one connection meta every frame
-      // and the standalone viewer already fetch. Fixed for the life of the
-      // server: computed once, here, after every devframe has installed.
-      const uiConfig = options.ui?.settings?.()
-      const dockConfig = ctx.docks.dockConfig
-      const hasDockConfig = Object.keys(dockConfig).length > 0
-      if (uiConfig || hasDockConfig) {
-        meta.configs = {
-          ...(uiConfig ? { ui: uiConfig } : {}),
-          ...(hasDockConfig ? { dock: dockConfig } : {}),
-        }
-      }
+      // `meta.configs` already carries whatever every installed devframe
+      // contributed via `ctx.configs` (e.g. aggregated dock-bar preferences
+      // under `dock`) — add the UI slot's own opaque config (e.g. branding)
+      // under `ui`, without interpreting it, staying policy-free about what
+      // "ui" means.
+      const uiConfig = options.ui?.configs?.()
+      if (uiConfig)
+        meta.configs = { ...meta.configs, ...{ ui: uiConfig } }
 
       // Hub-level discovery endpoints, registered before the viewer's static
       // mount so its SPA-fallback can't swallow them.

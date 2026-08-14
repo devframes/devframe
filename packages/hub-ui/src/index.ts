@@ -37,9 +37,7 @@ export interface CreateUiOptions {
    * Rebrand the reference UI — logo, product name, primary color, and more.
    * Published as `ConnectionMeta.configs.ui.branding`, read by the dock at
    * boot from the one connection handshake it already performs. Reaches
-   * both the embedded dock and the standalone viewer. A host page can still
-   * override any field at runtime via `window.__DEVFRAME_BRANDING__` /
-   * `<script data-*>` / `?query` params.
+   * both the embedded dock and the standalone viewer.
    */
   branding?: DevframeBranding
 }
@@ -70,6 +68,6 @@ export function createUi(options: CreateUiOptions = {}): DevframeHubUi {
     ...(options.embedded !== false
       ? { embedded: { entry: join(client, 'embedded.js') } }
       : {}),
-    settings: () => ({ branding: options.branding || {} }),
+    configs: () => ({ branding: options.branding || {} }),
   }
 }

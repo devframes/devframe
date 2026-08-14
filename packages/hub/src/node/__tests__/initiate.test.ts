@@ -191,7 +191,7 @@ describe('initHub', () => {
       host: '127.0.0.1',
       ws: { port: wsPort },
       devframes: [alpha, beta],
-      ui: { settings: () => ({ branding: { productName: 'Test Hub' } }) },
+      ui: { configs: () => ({ branding: { productName: 'Test Hub' } }) },
     })
 
     try {

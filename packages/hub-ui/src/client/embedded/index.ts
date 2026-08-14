@@ -59,13 +59,10 @@ async function mountDock(): Promise<void> {
   )
 
   // Resolve branding before the dock exists so the primary color and logo are
-  // in place on the first paint. Read from `ConnectionMeta.configs.ui.branding`
-  // (already fetched above), then overridden by any host-page channel.
+  // in place on the first paint. Read from `ConnectionMeta.configs.ui.branding`,
+  // carried by the connection we just established above.
   const { resolveBranding, applyPrimaryColor } = await import('../state/branding')
-  const branding = resolveBranding({
-    mode: 'embedded',
-    branding: rpc.connectionMeta.configs?.ui?.branding,
-  })
+  const branding = resolveBranding(rpc.connectionMeta.configs?.ui?.branding)
 
   const { createDocksContext } = await import('../state/context')
   const context = await createDocksContext('embedded', rpc, state)

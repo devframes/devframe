@@ -116,8 +116,6 @@ export interface DevframeDocksHost {
     'dock:entry:updated': (entry: DevframeDockUserEntry) => void;
     'dock:activate': (activation: DevframeDockActivation) => void;
   }>;
-  readonly dockConfig: DevframeDockConfig;
-  contributeDockConfig: (_: DevframeDockConfig) => void;
   register: <T extends DevframeDockUserEntry>(_: T, _?: boolean) => {
     update: (_: Partial<T>) => void;
   };

@@ -22,10 +22,8 @@ export declare class DevframeDocksHost implements DevframeDocksHost$1 {
   readonly views: DevframeDocksHost$1['views'];
   readonly events: DevframeDocksHost$1['events'];
   userSettings: SharedState<DevframeDocksUserSettings>;
-  readonly dockConfig: DevframeDockConfig;
   private readonly remoteDocks;
   constructor(_: DevframeHubContext);
-  contributeDockConfig(_: DevframeDockConfig): void;
   init(): Promise<void>;
   values(): DevframeDockEntry[];
   private projectView;

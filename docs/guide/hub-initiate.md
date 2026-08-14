@@ -57,7 +57,7 @@ interface DevframeHubUi {
   viewer?: { distDir: string } // a standalone SPA served at the namespace root
   embedded?: { entry: string } // a prebuilt bootstrap served at <base>embedded.js
   assets?: Record<string, () => string | Uint8Array> // extra UI-owned files
-  settings?: () => Record<string, unknown> // static config, published as ConnectionMeta.configs.ui
+  configs?: () => Record<string, unknown> // static config, published as ConnectionMeta.configs.ui
 }
 ```
 

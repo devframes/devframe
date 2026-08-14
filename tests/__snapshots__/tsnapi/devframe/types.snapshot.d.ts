@@ -19,6 +19,7 @@ export { DevframeAgentHostEvents }
 export { DevframeBrowserContext }
 export { DevframeCapabilities }
 export { DevframeCliOptions }
+export { DevframeConfigsHost }
 export { DevframeConnectionConfigsRegistry }
 export { DevframeDefineDiagnosticsOptions }
 export { DevframeDefinition }

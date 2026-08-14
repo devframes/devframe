@@ -11,12 +11,12 @@ export type BrandingLogo = string | { light: string, dark: string }
 
 /**
  * Consumer-facing branding for the reference hub-ui. Every field is optional
- * and falls back to devframe's own identity. Delivered three ways, merged
- * field-by-field (later wins): the `ConnectionMeta.configs.ui.branding`
- * `createUi({ branding })` publishes (read from the connection handshake the
- * dock already performs), then the host page (a `window.__DEVFRAME_BRANDING__`
- * global or `data-*` attrs on the embedding `<script>`, or `?query` params on
- * the standalone viewer).
+ * and falls back to devframe's own identity. Published as
+ * `ConnectionMeta.configs.ui.branding` via `createUi({ branding })`, and
+ * read from the one connection handshake the dock already performs —
+ * `ConnectionMeta` has its own cross-realm propagation (see
+ * `DEVFRAME_CONNECTION_KEY`), so branding needs no globals or query params
+ * of its own.
  */
 export interface DevframeBranding {
   /** Product name — the wordmark, window titles, and all user-visible copy. */
@@ -87,96 +87,14 @@ function resolveLogo(logo: BrandingLogo | undefined, dark: boolean): string | un
   return dark ? (logo.dark || logo.light) : logo.light
 }
 
-// --- Merge + host-page reading -------------------------------------------
-
-/** Field-level merge; later layers override earlier ones (empty values skip). */
-function mergeBranding(...layers: Array<DevframeBranding | undefined>): DevframeBranding {
-  const out: DevframeBranding = {}
-  for (const layer of layers) {
-    if (!layer || typeof layer !== 'object')
-      continue
-    for (const key of Object.keys(layer) as (keyof DevframeBranding)[]) {
-      const value = layer[key]
-      if (value !== undefined && value !== null && value !== '')
-        (out as Record<string, unknown>)[key] = value
-    }
-  }
-  return out
-}
-
-function readWindowGlobal(): DevframeBranding | undefined {
-  const global = (globalThis as { __DEVFRAME_BRANDING__?: unknown }).__DEVFRAME_BRANDING__
-  return global && typeof global === 'object' ? global as DevframeBranding : undefined
-}
-
-const SCRIPT_ATTR_MAP: Record<string, keyof DevframeBranding> = {
-  'data-product-name': 'productName',
-  'data-primary-color': 'primaryColor',
-  'data-logo': 'logo',
-  'data-tagline': 'tagline',
-  'data-window-title': 'windowTitle',
-}
-
-function findEmbeddedScript(): HTMLScriptElement | null {
-  if (typeof document === 'undefined')
-    return null
-  const current = document.currentScript as HTMLScriptElement | null
-  if (current?.src)
-    return current
-  const scripts = Array.from(document.querySelectorAll('script[src]')) as HTMLScriptElement[]
-  return scripts.find(script => /embedded\.js(?:$|[?#])/.test(script.src)) ?? null
-}
-
-function readScriptDataAttrs(): DevframeBranding {
-  const out: DevframeBranding = {}
-  const script = findEmbeddedScript()
-  if (!script)
-    return out
-  for (const [attr, key] of Object.entries(SCRIPT_ATTR_MAP)) {
-    const value = script.getAttribute(attr)
-    if (value != null)
-      (out as Record<string, unknown>)[key] = value
-  }
-  return out
-}
-
-const QUERY_PARAM_MAP: Record<string, keyof DevframeBranding> = {
-  productName: 'productName',
-  primaryColor: 'primaryColor',
-  logo: 'logo',
-  tagline: 'tagline',
-  windowTitle: 'windowTitle',
-}
-
-function readQueryParams(): DevframeBranding {
-  const out: DevframeBranding = {}
-  if (typeof location === 'undefined')
-    return out
-  const params = new URLSearchParams(location.search)
-  for (const [param, key] of Object.entries(QUERY_PARAM_MAP)) {
-    const value = params.get(param)
-    if (value != null)
-      (out as Record<string, unknown>)[key] = value
-  }
-  return out
-}
-
 /**
- * Resolve branding at boot: take whatever `ConnectionMeta.configs.ui.branding`
- * carried from the connection handshake the dock already performed, layer
- * the host-page channels over it (they win per field), install the result,
- * and return it. Called once the RPC client is connected, before the dock
+ * Resolve branding at boot: install whatever `ConnectionMeta.configs.ui.branding`
+ * carried from the connection handshake the dock already performed, and
+ * return it. Called once the RPC client is connected, before the dock
  * element mounts, so branding is applied on the first paint.
  */
-// TODO: remove this, the branding would only be provided by the connection meta, which has its own propagation methods, no globals or queryies anymore.
-export function resolveBranding(options: {
-  mode: 'embedded' | 'standalone'
-  branding?: DevframeBranding
-}): ResolvedBranding {
-  const hostPage = options.mode === 'embedded'
-    ? mergeBranding(readScriptDataAttrs(), readWindowGlobal())
-    : mergeBranding(readQueryParams(), readWindowGlobal())
-  return setBranding(mergeBranding(options.branding, hostPage))
+export function resolveBranding(branding: DevframeBranding | undefined): ResolvedBranding {
+  return setBranding(branding ?? {})
 }
 
 // --- Applying to the DOM --------------------------------------------------

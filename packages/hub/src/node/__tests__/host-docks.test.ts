@@ -191,34 +191,6 @@ describe('devframeDockHost grouping', () => {
   })
 })
 
-describe('devframeDockHost dockConfig aggregation', () => {
-  it('starts empty', () => {
-    const host = new DevframeDocksHost(createContext())
-    expect(host.dockConfig).toEqual({})
-  })
-
-  it('shallow-merges categoryOrder across contributions, last wins per key', () => {
-    const host = new DevframeDocksHost(createContext())
-    host.contributeDockConfig({ categoryOrder: { app: -40, web: 300 } })
-    host.contributeDockConfig({ categoryOrder: { app: -60, advanced: -50 } })
-    expect(host.dockConfig.categoryOrder).toEqual({ app: -60, web: 300, advanced: -50 })
-  })
-
-  it('last contribution wins per scalar field', () => {
-    const host = new DevframeDocksHost(createContext())
-    host.contributeDockConfig({ maxVisibleItems: 4, defaultMode: 'edge', defaultPosition: 'left' })
-    host.contributeDockConfig({ maxVisibleItems: 10 })
-    expect(host.dockConfig).toMatchObject({ maxVisibleItems: 10, defaultMode: 'edge', defaultPosition: 'left' })
-  })
-
-  it('leaves an unset scalar field untouched by a contribution that omits it', () => {
-    const host = new DevframeDocksHost(createContext())
-    host.contributeDockConfig({ defaultMode: 'float' })
-    host.contributeDockConfig({ categoryOrder: { app: 1 } })
-    expect(host.dockConfig.defaultMode).toBe('float')
-  })
-})
-
 describe('devframeDockHost activate', () => {
   it('emits a dock:activate event carrying the id and params', () => {
     const host = new DevframeDocksHost(createContext())

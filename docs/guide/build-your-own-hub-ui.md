@@ -16,7 +16,7 @@ interface DevframeHubUi {
   viewer?: { distDir: string } // a standalone SPA served at the hub base
   embedded?: { entry: string } // a self-contained bootstrap at <base>embedded.js
   assets?: Record<string, () => string | Uint8Array> // extra UI-owned files
-  settings?: () => Record<string, unknown> // static config, published as ConnectionMeta.configs.ui
+  configs?: () => Record<string, unknown> // static config, published as ConnectionMeta.configs.ui
 }
 ```
 
@@ -25,12 +25,12 @@ prebuilt assets: the viewer SPA is built with relative asset paths, and the
 embedded entry is one self-contained ES module that mounts your dock into any
 host page.
 
-`settings` publishes whatever you return verbatim as
+`configs` publishes whatever you return verbatim as
 `ConnectionMeta.configs.ui` — the reference UI's `createUi({ branding })` uses
 it to deliver `{ branding }`, read by the dock from the one connection
 handshake it already performs, rather than a separate fetched file. The hub
 never interprets this object; it's a policy-free pass-through to your own
-client code. It's the read-only counterpart to `assets`: reach for `settings`
+client code. It's the read-only counterpart to `assets`: reach for `configs`
 for small, structured, boot-time config, and `assets` for arbitrary served
 files.
 

@@ -129,6 +129,10 @@ export interface DevframeCliOptions {
   configure?: (_: CAC) => void;
   flags?: CliFlagsSchema;
 }
+export interface DevframeConfigsHost {
+  contribute: <K extends keyof DevframeConnectionConfigsRegistry>(_: K, _: (_: DevframeConnectionConfigsRegistry[K] | undefined) => DevframeConnectionConfigsRegistry[K]) => void;
+  resolve: () => Partial<DevframeConnectionConfigsRegistry>;
+}
 export interface DevframeConnectionConfigsRegistry {}
 export interface DevframeDefineDiagnosticsOptions<Codes extends Record<string, DiagnosticDefinition>> {
   docsBase?: string | ((_: keyof Codes) => string | undefined);
@@ -197,6 +201,7 @@ export interface DevframeNodeContext {
   diagnostics: DevframeDiagnosticsHost;
   agent: DevframeAgentHost;
   services: DevframeServicesHost;
+  configs: DevframeConfigsHost;
   scope: {
     <NS extends string>(_: NS): DevframeScopedNodeContext<NS, SettingsForNamespace<NS>>;
     (_?: null | ''): DevframeNodeContext;
