@@ -1514,19 +1514,16 @@ importers:
       '@devframes/vite':
         specifier: workspace:*
         version: link:../../packages/vite
-      axe-core:
-        specifier: catalog:frontend
-        version: 4.13.0
       cac:
         specifier: catalog:deps
         version: 7.0.0
-      solid-js:
-        specifier: catalog:frontend
-        version: 1.9.14
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.4(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.41(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.41(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.3(vue@3.5.41(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.41(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.26))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
+      axe-core:
+        specifier: catalog:frontend
+        version: 4.13.0
       colorjs.io:
         specifier: catalog:frontend
         version: 0.7.1
@@ -1539,6 +1536,9 @@ importers:
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.26(crossws@0.4.10(srvx@0.12.4))
+      solid-js:
+        specifier: catalog:frontend
+        version: 1.9.14
       storybook:
         specifier: catalog:storybook
         version: 10.5.7(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
