@@ -111,7 +111,6 @@
     "mlly": "catalog:build",
     "obug": "catalog:deps",
     "ohash": "catalog:deps",
-    "open": "catalog:deps",
     "p-limit": "catalog:deps",
     "perfect-debounce": "catalog:deps",
     "structured-clone-es": "catalog:deps",
