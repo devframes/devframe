@@ -180,15 +180,19 @@ describe('resolveStaticAssetsSource (installed package)', () => {
     expect(resolveStaticAssetsSource('/some/dir', makeTmp())).toBe('/some/dir')
   })
 
+  // `resolveStaticAssetsSource` returns `pathe` (forward-slash) paths; the
+  // test builds `distDir` with `node:path` (backslash on Windows).
+  const norm = (p: string): string => p.replace(/\\/g, '/')
+
   it('short-circuits to an exactly matching installed package', () => {
     const { resolveFrom, distDir } = install('1.2.3')
-    expect(resolveStaticAssetsSource({ package: '@scope/demo-client', version: '1.2.3', resolveFrom }, makeTmp())).toBe(distDir)
+    expect(norm(resolveStaticAssetsSource({ package: '@scope/demo-client', version: '1.2.3', resolveFrom }, makeTmp()) as string)).toBe(norm(distDir))
     expect(warnSpy).not.toHaveBeenCalled()
   })
 
   it('warns on minor/patch skew and serves the installed copy (DF0062)', () => {
     const { resolveFrom, distDir } = install('1.3.0')
-    expect(resolveStaticAssetsSource({ package: '@scope/demo-client', version: '1.2.3', resolveFrom }, makeTmp())).toBe(distDir)
+    expect(norm(resolveStaticAssetsSource({ package: '@scope/demo-client', version: '1.2.3', resolveFrom }, makeTmp()) as string)).toBe(norm(distDir))
     expect(warnSpy.mock.calls.some(a => String(a[0]).includes('DF0062'))).toBe(true)
   })
 
