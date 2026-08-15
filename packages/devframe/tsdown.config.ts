@@ -54,6 +54,20 @@ const deps = {
   ],
 }
 
+// The node build reaches `devframe/utils/shared-state` (`node/storage.ts`,
+// `node/rpc-shared-state.ts`) through the same `devframe/utils/shared-state`
+// tsconfig path alias the browser build's own `utils/shared-state` entry
+// uses — two independent rolldown graphs, so left alone each would inline
+// its own copy of `immer`. Externalizing the specifier here (node build
+// only) keeps the tsconfig-paths resolver from ever inlining that source;
+// the emitted `import 'devframe/utils/shared-state'` instead resolves at
+// runtime to the already-built `dist/utils/shared-state.mjs` chunk via
+// Node's package self-reference, so immer's bytes exist exactly once.
+const nodeDeps = {
+  ...deps,
+  neverBundle: [...deps.neverBundle, 'devframe/utils/shared-state'],
+}
+
 // Shared by the runtime client build and the combined dts build below.
 const clientEntries = {
   'client/index': 'src/client/index.ts',
@@ -154,7 +168,7 @@ export default defineConfig([
     clean: false,
     platform: 'node',
     tsconfig,
-    deps,
+    deps: nodeDeps,
     dts: false,
     entry: serverEntries,
   },
