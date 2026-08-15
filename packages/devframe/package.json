@@ -95,7 +95,6 @@
     "@standard-schema/spec": "catalog:deps",
     "birpc": "catalog:deps",
     "crossws": "catalog:deps",
-    "destr": "catalog:deps",
     "h3": "catalog:deps",
     "mrmime": "catalog:deps",
     "nostics": "catalog:deps",
