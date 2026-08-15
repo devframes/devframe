@@ -25,7 +25,6 @@ export default defineDevframe({
     distDir,
     auth: false,
   },
-  spa: { loader: 'none' },
   setup(ctx) {
     // A scoped context auto-namespaces every registered id with `NAMESPACE:`.
     const my = ctx.scope(NAMESPACE)

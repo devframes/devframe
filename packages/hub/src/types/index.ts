@@ -18,7 +18,6 @@ export type { RpcDefinitionsFilter, RpcDefinitionsToFunctions } from 'devframe/r
 export type {
   ConnectionMeta,
   DevframeCapabilities,
-  DevframeDiagnosticsDefinition,
   DevframeDiagnosticsHost,
   DevframeDiagnosticsLogger,
   DevframeHost,
@@ -27,11 +26,9 @@ export type {
   DevframeRpcServerFunctions,
   DevframeRpcSharedStates,
   DevframeViewHost,
-  EntriesToObject,
   EventEmitter,
   EventsMap,
   EventUnsubscribe,
-  PartialWithoutId,
   RpcBroadcastOptions,
   RpcFunctionsHost,
   RpcSharedStateGetOptions,
@@ -39,5 +36,4 @@ export type {
   RpcStreamingChannel,
   RpcStreamingChannelOptions,
   RpcStreamingHost,
-  Thenable,
 } from 'devframe/types'

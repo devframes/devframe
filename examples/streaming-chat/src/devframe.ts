@@ -27,7 +27,6 @@ export default defineDevframe({
     // Vite-side surface requires.
     auth: false,
   },
-  spa: { loader: 'none' },
   async setup(ctx) {
     // A scoped context auto-namespaces channel + state ids with `NAMESPACE:`.
     const my = ctx.scope(NAMESPACE)

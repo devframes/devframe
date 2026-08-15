@@ -22,6 +22,7 @@ export interface CreateDevServerOptions {
     port: number;
     app: H3;
   }) => void | Promise<void>;
+  force?: boolean;
 }
 // #endregion
 

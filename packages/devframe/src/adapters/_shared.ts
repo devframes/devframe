@@ -9,7 +9,7 @@ const DEFAULT_PORT = 9999
 /**
  * Resolve the mount base path for a devframe's SPA. Hosted adapters
  * (`vite`, `embedded`) default to `/__<id>/` so they don't collide
- * with the host app; standalone adapters (`cli`, `spa`, `build`)
+ * with the host app; standalone adapters (`cli`, `build`)
  * default to `/` because they own the origin.
  *
  * The devframe author can override with `basePath` on the definition.

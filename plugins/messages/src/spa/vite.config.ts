@@ -9,7 +9,7 @@ import { createMessagesDevDevframe } from './dev-host'
 // The messages panel SPA. `base: './'` keeps every asset URL relative so the
 // bundle is mount-path portable — it discovers its runtime base from
 // `document.baseURI` and connects via `connectDevframe()`. The build is
-// copied verbatim by `createBuild`/`createSpa`; no HTML rewriting.
+// copied verbatim by `createBuild`; no HTML rewriting.
 //
 // `pnpm dev` self-hosts through the demo-seeded dev harness (a stand-in hub
 // messages host) so the feed is lively without a full hub host.

@@ -3,7 +3,6 @@
  */
 // #region Interfaces
 export interface CreateH3DevframeHostOptions {
-  app?: unknown;
   origin: string | (() => string);
   mount?: (_: string, _: string) => void | Promise<void>;
   appName: string;
@@ -244,6 +243,12 @@ export declare const diagnostics: import("nostics").Diagnostics<{
   readonly DF0057: {
     readonly why: () => string;
     readonly fix: "Clients connect over the SSE endpoint instead — no upgrade wiring is needed. Remove `ws: false` if the instance should serve a WebSocket after all.";
+  };
+  readonly DF0058: {
+    readonly why: (p: {
+      id: string;
+    }) => string;
+    readonly fix: "Pass `{ force: true }` to `createDevServer()` to run it anyway, or drop `capabilities.dev: false` on the definition.";
   };
 }, readonly [typeof devframeReporter]>;
 // #endregion

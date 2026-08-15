@@ -4,7 +4,7 @@ outline: deep
 
 # CLI (cac)
 
-The cac adapter wraps a `DevframeDefinition` in a [`cac`](https://github.com/cacjs/cac)-powered command-line interface. From one entry it spins up an `h3` dev server with WebSocket RPC, builds static snapshots, builds SPA bundles, or starts an MCP server.
+The cac adapter wraps a `DevframeDefinition` in a [`cac`](https://github.com/cacjs/cac)-powered command-line interface. From one entry it spins up an `h3` dev server with WebSocket RPC, builds static snapshots, or starts an MCP server.
 
 `cac` is an optional peer dependency, pulled in only through this adapter — install it alongside `devframe` to opt into `createCac`:
 
@@ -68,7 +68,7 @@ defineDevframe({
   id: 'my-devframe',
   cli: {
     command: 'my-devframe', // binary name; default: the id
-    distDir: './client/dist', // required for dev/build/spa
+    distDir: './client/dist', // required for dev/build
     port: 7777, // preferred port
     portRange: [7777, 9000], // passed through to get-port-please
     random: false, // passed through to get-port-please

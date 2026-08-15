@@ -44,7 +44,6 @@ export const DEVFRAME_SSE_SESSION_HEADER = 'x-birpc-session'
 export const DEVFRAME_MCP_ROUTE = '__mcp'
 export const DEVFRAME_RPC_DUMP_MANIFEST_FILENAME = '__rpc-dump/index.json'
 export const DEVFRAME_DOCK_IMPORTS_FILENAME = '__client-imports.js'
-export const DEVFRAME_DOCK_IMPORTS_VIRTUAL_ID = '/__devframe-client-imports.js'
 export const DEVFRAME_RPC_DUMP_DIRNAME = '__rpc-dump'
 
 /**

@@ -5,7 +5,7 @@ description: >
   framework- and build-tool-agnostic foundation for defining a
   devtool once and serving it in many places. Covers
   DevframeDefinition, picking the right deployment adapter
-  (cli / build / spa / vite / embedded / mcp), designing RPC
+  (cli / build / vite / embedded / mcp), designing RPC
   contracts, exposing an agent-native surface over MCP, and
   wiring the author's SPA client. For host-level features (docks,
   terminals, palette, etc.), the devframe can be mounted into a
@@ -85,7 +85,7 @@ export default defineDevframe({
 
 `setup(ctx)` registers RPC functions, shared state, diagnostics, and any other devframe-level wiring. Host adapters can augment `ctx` with extra surfaces - for example, mounting into Vite DevTools via `createPluginFromDevframe(d)` exposes `docks`, `terminals`, `messages`, and `commands` on the augmented context, and the kit auto-derives an iframe dock entry from `id` / `name` / `icon` / `basePath`. For richer host-side behaviour (custom-render, terminals, palette commands) pass `options.setup` to `createPluginFromDevframe`.
 
-See `templates/counter-devframe.ts` for a runnable counter example, `templates/spa-devframe.ts` for an SPA-ready shape, and `templates/vite-client.ts` for the author's client entry.
+See `templates/counter-devframe.ts` for a runnable counter example and `templates/vite-client.ts` for the author's client entry.
 
 ## Scoped context (preferred)
 
@@ -504,7 +504,7 @@ const data = await my.rpc.call('get-stats', { limit: 10 })
 `connectDevframe` auto-detects the backend via `/.devframe/.connection.json`:
 
 - **websocket** (dev mode) - full read/write, requires auth handshake. Listen for token updates on the `devframe-auth` BroadcastChannel.
-- **static** (build / spa output) - read-only, resolves calls from the baked RPC dump.
+- **static** (build output) - read-only, resolves calls from the baked RPC dump.
 
 Use `my.rpc.sharedState(key)` for observable state, `my.rpc.register(defineRpcFunction(...))` to receive server broadcasts, `my.rpc.callOptional(...)` when a missing handler should resolve to `undefined` instead of throwing, and `my.settings.{project,global}` for persisted per-workspace / per-user settings synced from the server.
 
@@ -530,13 +530,12 @@ At runtime, static clients look up the argument hash in the dump; misses resolve
 
 ## CLI adapter subcommands
 
-`createCac(devframe).parse()` gives the tool four subcommands out of the box:
+`createCac(devframe).parse()` gives the tool three subcommands out of the box:
 
 | Subcommand | Action |
 |------------|--------|
 | *(default)* | Dev server on port 9999 (or `--port`) - WebSocket RPC, `cli.distDir` served at `/.devframe/` |
 | `build` | Static snapshot → `./dist-static/` (configurable via `--out-dir`) |
-| `spa` | Deployable SPA → `./dist-spa/` |
 | `mcp` | stdio MCP server |
 
 **Bring your own CLI framework?** `createCac` (`devframe/adapters/cac`) is just a cac wrapper around three peer factories - `createDevServer` (`devframe/adapters/dev`), `createBuild` (`devframe/adapters/build`), and `createMcpServer` (`devframe/adapters/mcp`). Use them directly with commander/yargs/oclif when `createCac`'s baked-in command structure doesn't fit. `cac` is an optional peer dependency pulled in only through `devframe/adapters/cac`, so bring-your-own-CLI tools run without installing it. `createDevServer` returns a `StartedServer` handle (`origin`, `port`, `app`, `wss`, `close()`) so you can wire SIGINT / hot-reload teardown into the surrounding program. `parseCliFlags(schema, raw)` and `defineCliFlags(...)` (both from `devframe/adapters/cac`) validate an arbitrary flag bag against a `CliFlagsSchema` - the helpers are framework-agnostic.

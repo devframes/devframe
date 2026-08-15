@@ -75,7 +75,6 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
         cli.option('--write', 'Enable staging, unstaging, and committing from the UI')
       },
     },
-    spa: { loader: 'none' },
     setup(ctx, info) {
       const write = options.write ?? info?.flags?.write === true
       configureGit(ctx, {

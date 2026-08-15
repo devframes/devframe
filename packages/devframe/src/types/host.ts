@@ -3,10 +3,10 @@
 // snapshot, embedded, etc.).
 //
 // Host classes (docks, views, ...) call into this interface so they stay
-// framework-neutral. Concrete implementations live in each adapter:
-//   - packages/kit/src/node/vite-host.ts — Vite-backed (dev mode)
-//   - packages/devframe/src/node/host-h3.ts — h3 CLI server
-//   - (build/spa/embedded) — added as the respective adapters land
+// framework-neutral. The h3-backed implementation
+// (`packages/devframe/src/node/host-h3.ts`) serves every standalone runtime
+// (CLI dev server, static build, embedded); hosted runtimes provide their own
+// (e.g. `@devframes/vite`).
 
 export interface DevframeHost {
   /**

@@ -46,6 +46,44 @@ async function connectRaw(url: string, origin?: string): Promise<'open' | 'close
 }
 
 describe('adapters/dev', () => {
+  it('rejects a definition with capabilities.dev: false by default', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-dev-disabled',
+      name: 'Dev Disabled',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      capabilities: { dev: false },
+      setup: () => {},
+    })
+    await expect(
+      createDevServer(devframe, { host: '127.0.0.1', port: 0, openBrowser: false }),
+    ).rejects.toThrow(/capabilities\.dev: false/)
+  })
+
+  it('proceeds past capabilities.dev: false when force is set', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-dev-disabled-forced',
+      name: 'Dev Disabled Forced',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      capabilities: { dev: false },
+      setup: () => {},
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19398, host })
+    const handle = await createDevServer(devframe, { host, port, openBrowser: false, force: true })
+    try {
+      expect(handle.port).toBe(port)
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
   it('createDevServer starts, exposes __connection.json, and closes', async () => {
     const distDir = makeTmpDist()
     const devframe = defineDevframe({

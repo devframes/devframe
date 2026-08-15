@@ -61,7 +61,6 @@ export function createTerminalsDevframe(options: TerminalsOptions = {}): Devfram
       // the tab lands already trusted.
       auth: options.auth ?? true,
     },
-    spa: { loader: 'none' },
     dock: {
       category: '~builtin',
     },

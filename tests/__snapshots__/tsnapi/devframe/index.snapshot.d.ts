@@ -107,9 +107,6 @@ export interface DevframeAgentHostEvents {
   'agent:resource:unregistered': (_: string) => void;
   'agent:manifest:changed': () => void;
 }
-export interface DevframeBrowserContext {
-  rpc: unknown;
-}
 export interface DevframeCapabilities {
   rpc?: boolean;
   views?: boolean;
@@ -150,14 +147,11 @@ export interface DevframeDefinition {
   basePath?: string;
   duplicationStrategy?: DevframeDuplicationStrategy;
   capabilities?: {
-    dev?: boolean | Record<string, boolean>;
-    build?: boolean | Record<string, boolean>;
-    spa?: boolean | Record<string, boolean>;
+    dev?: boolean;
+    build?: boolean;
   };
   setup: (_: DevframeNodeContext, _?: DevframeSetupInfo) => void | Promise<void>;
-  setupBrowser?: (_: DevframeBrowserContext) => void | Promise<void>;
   cli?: DevframeCliOptions;
-  spa?: DevframeSpaOptions;
 }
 export interface DevframeDiagnosticsHost {
   readonly logger: DevframeDiagnosticsLogger;
@@ -329,10 +323,6 @@ export interface DevframeSettingsStore<T extends Record<string, any> = Record<st
 export interface DevframeSetupInfo {
   flags?: Record<string, unknown>;
 }
-export interface DevframeSpaOptions {
-  base?: string;
-  loader?: 'query' | 'upload' | 'none';
-}
 export interface DevframeSseOptions {
   route?: string;
 }
@@ -426,20 +416,12 @@ export interface ScopedBroadcastOptions<METHOD, Args extends any[]> {
 // #region Types
 export type AgentToolProvider = () => readonly AgentToolInput[];
 export type DevframeDeploymentKind = 'standalone' | 'hosted';
-export type DevframeDiagnosticsDefinition = ReturnType<typeof defineDiagnostics<any, any>>;
 export type DevframeDiagnosticsLogger = Record<string, any>;
 export type DevframeDuplicationStrategy = 'warn' | 'silent' | 'throw' | 'duplicate';
 export type DevframeRpcTransportKind = 'websocket' | 'sse';
-export type DevframeRuntime = 'cli' | 'build' | 'spa' | 'vite' | 'embedded';
 export type DevframeServiceId = keyof DevframeServicesRegistry | (string & {});
 export type DevframeServiceOf<ID> = ID extends keyof DevframeServicesRegistry ? DevframeServicesRegistry[ID] : unknown;
 export type DevframeStorageScope = 'workspace' | 'project' | 'global';
-export type EntriesToObject<T extends readonly [string, any][]> = { [K in T[number] as K[0]]: K[1]; };
-export type PartialWithoutId<T extends {
-  id: string;
-}> = Partial<Omit<T, 'id'>> & {
-  id: string;
-};
 export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> & {
   invokeLocal: <T extends keyof DevframeRpcServerFunctions, Args extends Parameters<DevframeRpcServerFunctions[T]>>(_: T, ..._: Args) => Promise<Awaited<ReturnType<DevframeRpcServerFunctions[T]>>>;
   broadcast: <T extends keyof DevframeRpcClientFunctions, Args extends Parameters<DevframeRpcClientFunctions[T]>>(_: RpcBroadcastOptions<T, Args>) => Promise<void>;
@@ -452,7 +434,6 @@ export type ScopedRpcFn<Registry, NS extends string, T extends string> = `${NS}:
 export type ScopedServerFunctions<NS extends string> = { [K in keyof DevframeRpcServerFunctions as K extends `${NS}:${infer R}` ? R : never]: DevframeRpcServerFunctions[K]; };
 export type ScopedSharedStates<NS extends string> = { [K in keyof DevframeRpcSharedStates as K extends `${NS}:${infer R}` ? R : never]: DevframeRpcSharedStates[K]; };
 export type SettingsForNamespace<NS extends string> = NS extends keyof DevframeSettingsRegistry ? DevframeSettingsRegistry[NS] extends Record<string, any> ? DevframeSettingsRegistry[NS] : Record<string, any> : Record<string, any>;
-export type Thenable<T> = T | Promise<T>;
 // #endregion
 
 // #region Functions

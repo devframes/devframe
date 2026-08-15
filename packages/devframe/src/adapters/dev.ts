@@ -111,6 +111,12 @@ export interface CreateDevServerOptions {
    * otherwise — wire this if you want a startup banner.
    */
   onReady?: (info: { origin: string, port: number, app: H3 }) => void | Promise<void>
+  /**
+   * Proceed even when the definition declares `capabilities.dev: false`.
+   * `createDevServer` otherwise refuses such a definition (`DF0058`) — this
+   * only matters for a caller invoking it directly, bypassing the CLI.
+   */
+  force?: boolean
 }
 
 /**
@@ -135,6 +141,9 @@ export async function createDevServer(
   def: DevframeDefinition,
   options: CreateDevServerOptions = {},
 ): Promise<StartedServer> {
+  if (def.capabilities?.dev === false && !options.force)
+    throw diagnostics.DF0058({ id: def.id })
+
   const host = options.host ?? def.cli?.host ?? 'localhost'
   const requestedPort = options.port ?? await resolveDevServerPort(def, { host })
   const flags = options.flags ?? {}

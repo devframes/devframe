@@ -76,7 +76,6 @@ export function createDataInspectorDevframe(options: DataInspectorDevframeOption
       distDir: existsSync(distDir) ? distDir : undefined,
       auth: options.auth ?? true,
     },
-    spa: { loader: 'none' },
     dock: { category: '~builtin' },
     setup(ctx) {
       setupDataInspector(ctx, { exampleSource: options.exampleSource })

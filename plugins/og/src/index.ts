@@ -46,7 +46,6 @@ export function createOgDevframe(options: OgDevframeOptions = {}): DevframeDefin
       distDir: existsSync(distDir) ? distDir : undefined,
       auth: options.auth ?? true,
     },
-    spa: { loader: 'query' },
     dock: { category: '~builtin' },
     setup(ctx) {
       setupOg(ctx, { defaultUrl: options.defaultUrl, fetch: options.fetch })

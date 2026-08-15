@@ -1,15 +1,6 @@
 import type { defineDiagnostics, Diagnostic, DiagnosticDefinition } from 'nostics'
 
 /**
- * A diagnostics definition object built with `defineDiagnostics`. Typed as
- * `unknown` because each integration's definition has a distinct narrow shape
- * (e.g. specific code keys like `DF0001` / `MYP0001`), and TypeScript's mapped
- * types don't allow assigning a narrow-keyed result to a generically-keyed
- * one. The host stores them in a heterogeneous registry.
- */
-export type DevframeDiagnosticsDefinition = ReturnType<typeof defineDiagnostics<any, any>>
-
-/**
  * The shared diagnostics lookup exposed by the host. A `Proxy` that resolves
  * any registered code name to its `nostics` handle (a callable that builds
  * a diagnostic and routes it through registered reporters). Typed loosely

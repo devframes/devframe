@@ -15,7 +15,7 @@ Devframe keeps its surface focused on one tool, so the same definition stays por
 - **One tool per definition.** A devframe describes a single integration. Deploy it through any adapter; host-level features that only matter when several tools share a UI (palettes, cross-tool toasts, unified terminals) come from whichever host you mount into — Vite DevTools is one example.
 - **Headless.** Hook into `onReady`, `cli.configure`, and friends to print your own startup banners and styling — Devframe stays out of the way.
 - **App-owned file watching.** Wire your own watcher (chokidar, fs.watch, …) and signal change via `ctx.rpc.sharedState.set(...)` or event-typed RPCs.
-- **Context-aware mount paths.** Standalone adapters (`cli`, `spa`, `build`) serve at `/` by default; hosted adapters (`vite`, `embedded`) serve at `/.<id>/`. Override via `DevframeDefinition.basePath`.
+- **Context-aware mount paths.** Standalone adapters (`cli`, `build`) serve at `/` by default; hosted adapters (`vite`, `embedded`) serve at `/.<id>/`. Override via `DevframeDefinition.basePath`.
 - **SPAs own their base at runtime.** Build with relative asset paths (`vite.base: './'`); `connectDevframe` discovers the effective base from the executing script's location.
 - **CLI flags compose.** The `cac` instance is exposed to both the devframe (`cli.configure`) and the caller of `createCac`, so capability flags and app flags merge cleanly.
 

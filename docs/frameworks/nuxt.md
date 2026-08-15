@@ -113,7 +113,7 @@ my-tool/
     └── public/           # Nuxt build output, pointed at by cli.distDir
 ```
 
-In dev (`nuxt dev`) the bridge is live. In production (`<your-cli> build` then `<your-cli> spa`) the SPA loads the static dump.
+In dev (`nuxt dev`) the bridge is live. In production (`<your-cli> build`) the SPA loads the static dump.
 
 ## How it works
 

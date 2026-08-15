@@ -6,7 +6,7 @@ import a11yDevframe from './index.ts'
  * Build the standalone CLI for the a11y inspector — backs the package `bin`
  * (`devframes_plugin_a11y`) and `pnpx @devframes/plugin-a11y`. Wraps the
  * default {@link createA11yDevframe} definition with devframe's
- * `dev` / `build` / `spa` command shell.
+ * `dev` / `build` command shell.
  */
 export function createA11yCli(): CacHandle {
   return createCac(a11yDevframe)

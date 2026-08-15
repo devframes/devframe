@@ -8,7 +8,7 @@ import { inspectVitePlugin } from '../vite'
 // The inspector SPA. `base: './'` keeps every asset URL relative so the
 // bundle is mount-path portable — it discovers its runtime base from
 // `document.baseURI` and connects via `connectDevframe()`. The build is
-// copied verbatim by `createBuild`/`createSpa`; no HTML rewriting.
+// copied verbatim by `createBuild`; no HTML rewriting.
 export default defineConfig({
   base: './',
   root: fileURLToPath(new URL('.', import.meta.url)),

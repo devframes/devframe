@@ -4,7 +4,7 @@ outline: deep
 
 # Standalone CLI with Devframe
 
-This recipe walks through building a standalone CLI devframe on top of Devframe — the shape where a user runs `npx my-tool` and gets a local dev server serving a Vue / Nuxt / React SPA backed by type-safe RPC, plus `build` / `spa` / `mcp` subcommands for free.
+This recipe walks through building a standalone CLI devframe on top of Devframe — the shape where a user runs `npx my-tool` and gets a local dev server serving a Vue / Nuxt / React SPA backed by type-safe RPC, plus `build` / `mcp` subcommands for free.
 
 It's the pattern used by tools like an ESLint config inspector or a bundler-config viewer: a binary that opens a browser.
 
@@ -345,7 +345,7 @@ For typed flag schemas, `parseCliFlags(schema, rawBag)` (from `devframe/adapters
 
 ## Why this shape
 
-- **One command, one binary.** `createCac` is a complete CLI — dev, build, spa, mcp all from a single `defineDevframe` value.
+- **One command, one binary.** `createCac` is a complete CLI — dev, build, mcp all from a single `defineDevframe` value.
 - **Headless.** Your `onReady` callback owns startup output, so your tool's stdout stays yours.
 - **Base-agnostic.** Same SPA build works at `/` (dev, standalone static) and at any deployment base.
 - **Typed end-to-end.** RPC function definitions flow their types through to the client `rpc.call` site.

@@ -26,7 +26,6 @@ export default defineDevframe({
     // register the instance for `devframe connect` discovery.
     mcp: true,
   },
-  spa: { loader: 'none' },
   setup(ctx) {
     // A scoped context auto-namespaces every registered id with `NAMESPACE:`.
     const my = ctx.scope(NAMESPACE)

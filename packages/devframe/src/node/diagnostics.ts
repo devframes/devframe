@@ -132,5 +132,9 @@ export const diagnostics = defineDiagnostics({
       why: () => 'This instance disables its WebSocket transport (`ws: false`), so there is no socket to drive upgrades into.',
       fix: 'Clients connect over the SSE endpoint instead — no upgrade wiring is needed. Remove `ws: false` if the instance should serve a WebSocket after all.',
     },
+    DF0058: {
+      why: (p: { id: string }) => `"${p.id}" declares \`capabilities.dev: false\` — it does not support a live dev server (its value is a static export only).`,
+      fix: 'Pass `{ force: true }` to `createDevServer()` to run it anyway, or drop `capabilities.dev: false` on the definition.',
+    },
   },
 })
