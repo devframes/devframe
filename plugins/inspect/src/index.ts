@@ -1,6 +1,4 @@
-import type { DevframeDefinition } from 'devframe'
-import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import type { DevframeDefinition, RemoteAssets } from 'devframe'
 import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { setupInspect } from './node/index'
@@ -8,10 +6,16 @@ import { setupInspect } from './node/index'
 /** Default devframe id — drives the hosted mount path `/__<id>/`. */
 const DEFAULT_ID = 'devframes_plugin_inspect'
 
-// The Vue SPA is built (by Vite) into `dist/spa`. From both the source
-// entry (`src/index.ts`, via the workspace alias) and the published
-// entry (`dist/index.mjs`), `../dist/spa` resolves to `<pkg>/dist/spa`.
-const distDir = fileURLToPath(new URL('../dist/spa', import.meta.url))
+// The Vue SPA ships in the lockstep-versioned `@devframes/plugin-inspect-client`
+// package rather than inside this (slim) node package. `resolveFrom` lets a
+// locally installed copy (a workspace link in this monorepo, or an explicit
+// `npm install` for air-gapped setups) be served with zero network; otherwise
+// the assets stream on demand through devframe's caching CDN back-proxy.
+const distDir: RemoteAssets = {
+  package: `${pkg.name}-client`,
+  version: pkg.version,
+  resolveFrom: import.meta.url,
+}
 
 export interface InspectDevframeOptions {
   /** Override the devframe id (and default CLI command / mount path). */
@@ -58,7 +62,7 @@ export function createInspectDevframe(options: InspectDevframeOptions = {}): Dev
     cli: {
       command: id,
       port: options.port ?? 9012,
-      distDir: existsSync(distDir) ? distDir : undefined,
+      distDir,
       // Gate the standalone server by default; `maybeOpenBrowser` folds the
       // current OTP into the `--open` URL so the tab lands already trusted.
       // Hosted adapters (Vite/hub) supply their own auth layer and ignore this.
