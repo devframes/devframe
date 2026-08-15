@@ -63,6 +63,7 @@
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",
+    "@devframes/plugin-inspect-client": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
     "@standard-schema/spec": "catalog:deps",
     "@storybook/addon-docs": "catalog:storybook",
