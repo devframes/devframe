@@ -166,5 +166,10 @@ export const diagnostics = defineDiagnostics({
         `Failed to materialize the remote assets of "${p.package}@${p.version}": ${p.reason}`,
       fix: 'Static builds need every asset file up front. Install the assets package locally, or ensure the provider (and its file-listing API) is reachable during the build.',
     },
+    DF0065: {
+      why: (p: { field: 'package' | 'version', value: string }) =>
+        `Invalid remote-assets ${p.field} "${p.value}".`,
+      fix: 'A remote-assets `package` must be a valid npm package name and `version` an exact semver version (e.g. `1.2.3`) — they are interpolated into CDN URLs and the cache path.',
+    },
   },
 })

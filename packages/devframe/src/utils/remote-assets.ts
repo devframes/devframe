@@ -305,6 +305,24 @@ function errText(error: unknown): string {
 }
 
 // ---------------------------------------------------------------------------
+// Validation
+// ---------------------------------------------------------------------------
+
+// npm package name rules (github.com/npm/validate-npm-package-name), and an
+// exact semver version — both interpolated into CDN URLs and the cache path,
+// so they must not carry separators, `@`, or traversal segments.
+const PACKAGE_NAME_RE = /^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/
+const VERSION_RE = /^\d+\.\d+\.\d+(?:-[a-z0-9-]+(?:\.[a-z0-9-]+)*)?(?:\+[a-z0-9-]+(?:\.[a-z0-9-]+)*)?$/i
+
+/** Reject a {@link RemoteAssets} with an unsafe package name or version (`DF0065`). */
+function assertValidRemoteAssets(assets: RemoteAssets): void {
+  if (assets.package.length > 214 || !PACKAGE_NAME_RE.test(assets.package))
+    throw diagnostics.DF0065({ field: 'package', value: assets.package })
+  if (!VERSION_RE.test(assets.version))
+    throw diagnostics.DF0065({ field: 'version', value: assets.version })
+}
+
+// ---------------------------------------------------------------------------
 // Source resolution
 // ---------------------------------------------------------------------------
 
@@ -314,6 +332,9 @@ function errText(error: unknown): string {
  * locally installed copy of its package when present) or a caching
  * {@link RemoteAssetsStore} back-proxy. Remote caches live under
  * `<projectStorageDir>/.remote-assets/<package>@<version>/`.
+ *
+ * A remote source's `package`/`version` are validated first (`DF0065`) — both
+ * are interpolated into CDN URLs and the cache path.
  */
 export function resolveStaticAssetsSource(
   source: StaticAssetsSource,
@@ -321,6 +342,7 @@ export function resolveStaticAssetsSource(
 ): string | RemoteAssetsStore {
   if (typeof source === 'string')
     return source
+  assertValidRemoteAssets(source)
   return resolveInstalled(source)
     ?? createStore(source, join(projectStorageDir, '.remote-assets', `${source.package.replace(/\//g, '+')}@${source.version}`))
 }

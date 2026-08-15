@@ -208,6 +208,33 @@ describe('resolveStaticAssetsSource (installed package)', () => {
   })
 })
 
+describe('resolveStaticAssetsSource (validation)', () => {
+  it.each([
+    ['UPPERCASE/name', '1.2.3'],
+    ['has spaces', '1.2.3'],
+    ['../escape', '1.2.3'],
+    ['@scope/', '1.2.3'],
+  ])('rejects invalid package %j (DF0065)', (pkg, version) => {
+    expect(() => resolveStaticAssetsSource({ package: pkg, version }, makeTmp())).toThrow(/Invalid remote-assets package/)
+  })
+
+  it.each([
+    ['@scope/ok', '../etc'],
+    ['@scope/ok', 'latest'],
+    ['@scope/ok', '1.2'],
+    ['@scope/ok', '1.2.3/x'],
+  ])('rejects invalid version for %j (DF0065)', (pkg, version) => {
+    expect(() => resolveStaticAssetsSource({ package: pkg, version }, makeTmp())).toThrow(/Invalid remote-assets version/)
+  })
+
+  it('accepts valid scoped names and semver (incl. prerelease/build)', () => {
+    const tmp = makeTmp()
+    for (const version of ['1.2.3', '0.9.0-beta.4', '1.0.0+build.5', '10.20.30-rc.1+meta']) {
+      expect(() => resolveStaticAssetsSource({ package: '@devframes/plugin-git-client', version, fetch: async () => new Response(null) }, tmp)).not.toThrow()
+    }
+  })
+})
+
 describe('serveStaticHandler with a remote store', () => {
   async function serve(store: RemoteAssetsStore): Promise<{ url: string, close: () => Promise<void> }> {
     const app = new H3()
