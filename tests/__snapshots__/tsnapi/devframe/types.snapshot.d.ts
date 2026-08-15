@@ -58,8 +58,6 @@ export { McpRouteOptions }
 export { RemoteAssets }
 export { RemoteAssetsProvider }
 export { RemoteAssetsProviderCustom }
-export { RemoteAssetsServedFile }
-export { RemoteAssetsServeOptions }
 export { RemoteAssetsStore }
 export { RpcBroadcastOptions }
 export { RpcFunctionAgentOptions }

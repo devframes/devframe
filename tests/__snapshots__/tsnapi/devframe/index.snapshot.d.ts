@@ -369,22 +369,11 @@ export interface RemoteAssetsProviderCustom {
   fileUrl: (_: string, _: string, _: string) => string;
   listFiles?: (_: string, _: string, _: typeof globalThis.fetch) => Promise<string[]>;
 }
-export interface RemoteAssetsServedFile {
-  headers: Record<string, string>;
-  stream: () => ReadableStream<Uint8Array>;
-  cancel: () => void;
-}
-export interface RemoteAssetsServeOptions {
-  indexNames?: string[];
-  single?: boolean;
-}
 export interface RemoteAssetsStore {
-  readonly kind: 'remote-assets-store';
   readonly assets: RemoteAssets & {
     path: string;
   };
-  readonly cacheDir: string;
-  serve: (_: string, _?: RemoteAssetsServeOptions) => Promise<RemoteAssetsServedFile | null>;
+  serve: (_: string) => Promise<Response | null>;
   materialize: (_: string) => Promise<void>;
 }
 export interface RpcBroadcastOptions<METHOD, Args extends any[]> {

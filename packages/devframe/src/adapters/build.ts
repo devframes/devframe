@@ -5,7 +5,7 @@ import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import process from 'node:process'
 import { colors as c } from 'devframe/utils/colors'
-import { createRemoteAssetsStore, remoteAssetsCacheDir, remoteAssetsCacheRoot, resolveInstalledRemoteAssets } from 'devframe/utils/remote-assets'
+import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { structuredCloneStringify } from 'devframe/utils/structured-clone'
 import { dirname, resolve } from 'pathe'
 import {
@@ -70,28 +70,17 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
 
   const host = createH3DevframeHost({ origin: 'http://localhost', appName: d.id })
 
-  // Copy author's SPA into the output root. A remote-assets source copies
-  // from the locally installed assets package when present, otherwise every
-  // listed file is materialized from the provider — a static deploy must be
-  // self-contained.
-  if (typeof distSource === 'string') {
-    console.log(c.cyan`[devframe] copying SPA from ${distSource} -> ${outDir}`)
-    await fs.cp(distSource, outDir, { recursive: true })
+  // A static deploy must be self-contained: a local dir (or a remote source
+  // backed by a locally installed package) is copied; an uninstalled remote
+  // source materializes every listed file from the provider.
+  const resolved = resolveStaticAssetsSource(distSource, host.getStorageDir('project'))
+  if (typeof resolved === 'string') {
+    console.log(c.cyan`[devframe] copying SPA from ${resolved} -> ${outDir}`)
+    await fs.cp(resolved, outDir, { recursive: true })
   }
   else {
-    const installed = resolveInstalledRemoteAssets(distSource)
-    if (installed) {
-      console.log(c.cyan`[devframe] copying SPA from ${installed} -> ${outDir}`)
-      await fs.cp(installed, outDir, { recursive: true })
-    }
-    else {
-      console.log(c.cyan`[devframe] materializing SPA from ${distSource.package}@${distSource.version} -> ${outDir}`)
-      const cacheRoot = remoteAssetsCacheRoot(host.getStorageDir('project'))
-      const store = createRemoteAssetsStore(distSource, {
-        cacheDir: remoteAssetsCacheDir(cacheRoot, distSource),
-      })
-      await store.materialize(outDir)
-    }
+    console.log(c.cyan`[devframe] materializing SPA from ${resolved.assets.package}@${resolved.assets.version} -> ${outDir}`)
+    await resolved.materialize(outDir)
   }
 
   const ctx = await createHostContext({

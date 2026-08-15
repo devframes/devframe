@@ -1,6 +1,6 @@
 import type { DevframeNodeContext, DevframeViewHost as DevframeViewHostType, StaticAssetsSource } from 'devframe/types'
 import { existsSync } from 'node:fs'
-import { remoteAssetsCacheRoot, resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
+import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { diagnostics } from './diagnostics'
 
 export class DevframeViewHost implements DevframeViewHostType {
@@ -18,9 +18,7 @@ export class DevframeViewHost implements DevframeViewHostType {
     // Local directories must exist up front; remote declarations resolve to
     // a locally installed package when present, otherwise to a lazy CDN
     // back-proxy store — nothing to check on disk yet.
-    const resolved = resolveStaticAssetsSource(source, {
-      cacheRoot: remoteAssetsCacheRoot(this.context.host.getStorageDir('project')),
-    })
+    const resolved = resolveStaticAssetsSource(source, this.context.host.getStorageDir('project'))
     if (typeof resolved === 'string' && !existsSync(resolved)) {
       throw diagnostics.DF0008({ distDir: resolved })
     }

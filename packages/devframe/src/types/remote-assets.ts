@@ -84,46 +84,22 @@ export type StaticAssetsSource = string | RemoteAssets
 
 /**
  * A resolved, servable handle over a {@link RemoteAssets} declaration —
- * created by `createRemoteAssetsStore()` (`devframe/utils/remote-assets`)
+ * produced by `resolveStaticAssetsSource()` (`devframe/utils/remote-assets`)
  * and consumed by the static-serving engine (`devframe/utils/serve-static`).
  */
 export interface RemoteAssetsStore {
-  readonly kind: 'remote-assets-store'
   /** The declaration this store serves (with defaults applied). */
   readonly assets: RemoteAssets & { path: string }
-  /** Version-locked cache directory files are persisted under. */
-  readonly cacheDir: string
   /**
-   * Resolve a request path (relative to the mount base) and open the file:
-   * from the cache when present, otherwise streamed through the provider
-   * while being written into the cache. Returns `null` for a miss (404)
-   * and throws on provider/network failure.
+   * Resolve a request path (relative to the mount base, SPA fallback to
+   * `index.html`) and return a `Response`: streamed from the cache when
+   * present, otherwise through the provider while being written into the
+   * cache. `null` on a miss (404); throws on provider/network failure.
    */
-  serve: (urlPath: string, options?: RemoteAssetsServeOptions) => Promise<RemoteAssetsServedFile | null>
+  serve: (urlPath: string) => Promise<Response | null>
   /**
    * Download every listed file under `assets.path` into `targetDir`
    * (paths relative to `assets.path`). Requires a provider file listing.
    */
   materialize: (targetDir: string) => Promise<void>
-}
-
-/** Request-resolution options for {@link RemoteAssetsStore.serve}. */
-export interface RemoteAssetsServeOptions {
-  /** Default: `['index.html']`. */
-  indexNames?: string[]
-  /** SPA fallback to `indexNames[0]` on miss. Default: `true`. */
-  single?: boolean
-}
-
-/** An opened file ready to respond with. */
-export interface RemoteAssetsServedFile {
-  /** Response headers (`Content-Type`, `Content-Length` when known, …). */
-  headers: Record<string, string>
-  /** Response body. Call at most once. */
-  stream: () => ReadableStream<Uint8Array>
-  /**
-   * Release the file when the body will never be read (HEAD requests) —
-   * an in-flight provider download keeps filling the cache.
-   */
-  cancel: () => void
 }

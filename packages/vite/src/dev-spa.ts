@@ -6,7 +6,7 @@ import type { Plugin } from 'vite'
 import process from 'node:process'
 import { initDevframe } from 'devframe/initiate'
 import { diagnostics, normalizeBasePath, resolveBasePath } from 'devframe/internal'
-import { remoteAssetsCacheRoot, resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
+import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { join, resolve } from 'pathe'
 
@@ -70,11 +70,9 @@ export function devframeVitePlugin(d: DevframeDefinition, options: DevframeViteP
       if (!distDir)
         return
       // Remote-assets sources resolve to the locally installed assets
-      // package when present, otherwise to a caching CDN back-proxy. The
-      // cache root mirrors the h3 host's `project` storage convention.
-      const source = resolveStaticAssetsSource(distDir, {
-        cacheRoot: remoteAssetsCacheRoot(join(process.cwd(), 'node_modules', `.${d.id}`, 'devframe')),
-      })
+      // package when present, otherwise to a caching CDN back-proxy, under
+      // the h3 host's `project` storage convention.
+      const source = resolveStaticAssetsSource(distDir, join(process.cwd(), 'node_modules', `.${d.id}`, 'devframe'))
       server.middlewares.use(base, serveStaticNodeMiddleware(typeof source === 'string' ? resolve(source) : source))
     },
   }

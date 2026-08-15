@@ -9,7 +9,7 @@ import type { InstanceShellInternals, StartedServer } from '../node/instance-she
 import type { DevframeDefinition, DevframeSetupInfo, DevframeSseOptions, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
 import type { StaticAssetsSource } from '../types/remote-assets'
 import process from 'node:process'
-import { remoteAssetsCacheRoot, resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
+import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
@@ -332,9 +332,7 @@ export function initDevframe(
       app.use(joinURL(base, DEVFRAME_CONNECTION_META_FILENAME), () => meta)
 
       if (distDir) {
-        const source = resolveStaticAssetsSource(distDir, {
-          cacheRoot: remoteAssetsCacheRoot(context.host.getStorageDir('project')),
-        })
+        const source = resolveStaticAssetsSource(distDir, context.host.getStorageDir('project'))
         mountStaticHandler(app, base, typeof source === 'string' ? resolve(source) : source)
       }
     },

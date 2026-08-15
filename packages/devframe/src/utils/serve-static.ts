@@ -1,13 +1,13 @@
 import type { EventHandler } from 'h3'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { RemoteAssetsServedFile, RemoteAssetsStore } from '../types/remote-assets'
+import type { ReadableStream as NodeWebReadableStream } from 'node:stream/web'
+import type { RemoteAssetsStore } from '../types/remote-assets'
 import { createReadStream } from 'node:fs'
 import { stat } from 'node:fs/promises'
 import { Readable } from 'node:stream'
 import { defineHandler, H3 } from 'h3'
 import { lookup } from 'mrmime'
 import { extname, join, normalize, resolve, sep } from 'pathe'
-import { renderRemoteAssetsErrorPage } from './remote-assets'
 
 /**
  * What the static-serving engine accepts: a local directory, or a resolved
@@ -140,49 +140,27 @@ function normalizeOptions(options: ServeStaticOptions | undefined): NormalizedOp
   }
 }
 
-function acceptsHtml(accept: string | null | undefined): boolean {
-  return typeof accept === 'string' && accept.includes('text/html')
-}
-
-interface RemoteMiss {
-  status: number
-  html?: string
-}
-
 /**
- * Drive one request through a {@link RemoteAssetsStore} — shared between the
- * h3 and connect flavors. Returns the served file, or a status (+ error page
- * for HTML navigations) on miss/failure.
+ * Drive one request through a {@link RemoteAssetsStore}: the store's
+ * `Response` on a hit, a 404 on a miss, or a 502 (styled error page for HTML
+ * navigations) on provider failure — shared between the h3 and connect flavors.
  */
-async function serveFromRemoteStore(
-  store: RemoteAssetsStore,
-  urlPath: string,
-  accept: string | null | undefined,
-  opts: NormalizedOptions,
-): Promise<RemoteAssetsServedFile | RemoteMiss> {
+async function remoteResponse(store: RemoteAssetsStore, urlPath: string, accept: string | null | undefined): Promise<Response> {
   try {
-    const file = await store.serve(urlPath, opts)
-    if (file)
-      return file
-    return { status: 404 }
+    return (await store.serve(urlPath)) ?? new Response(null, { status: 404 })
   }
   catch (error) {
-    if (acceptsHtml(accept)) {
-      return {
-        status: 502,
-        html: renderRemoteAssetsErrorPage({
-          package: store.assets.package,
-          version: store.assets.version,
-          reason: error instanceof Error ? error.message : String(error),
-        }),
-      }
+    if (typeof accept === 'string' && accept.includes('text/html')) {
+      return new Response(
+        remoteErrorPage(store.assets.package, store.assets.version, error instanceof Error ? error.message : String(error)),
+        { status: 502, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+      )
     }
-    return { status: 502 }
+    return new Response(null, { status: 502 })
   }
 }
 
-function serveRemoteAssetsHandler(store: RemoteAssetsStore, options?: ServeStaticOptions): EventHandler {
-  const opts = normalizeOptions(options)
+function serveRemoteAssetsHandler(store: RemoteAssetsStore): EventHandler {
   return defineHandler(async (event) => {
     const method = event.req.method
     if (method !== 'GET' && method !== 'HEAD') {
@@ -190,22 +168,14 @@ function serveRemoteAssetsHandler(store: RemoteAssetsStore, options?: ServeStati
       event.res.headers.set('Allow', 'GET, HEAD')
       return ''
     }
-    const result = await serveFromRemoteStore(store, event.url.pathname, event.req.headers.get('accept'), opts)
-    if ('status' in result) {
-      event.res.status = result.status
-      if (result.html) {
-        event.res.headers.set('Content-Type', 'text/html; charset=utf-8')
-        return result.html
-      }
-      return ''
-    }
-    for (const [k, v] of Object.entries(result.headers))
-      event.res.headers.set(k, v)
+    const res = await remoteResponse(store, event.url.pathname, event.req.headers.get('accept'))
+    event.res.status = res.status
+    res.headers.forEach((v, k) => event.res.headers.set(k, v))
     if (method === 'HEAD') {
-      result.cancel()
+      await res.body?.cancel().catch(() => {})
       return ''
     }
-    return result.stream()
+    return (res.body ?? '') as ReadableStream
   })
 }
 
@@ -225,7 +195,7 @@ export function serveStaticHandler(
   options?: ServeStaticOptions,
 ): EventHandler {
   if (typeof source !== 'string')
-    return serveRemoteAssetsHandler(source, options)
+    return serveRemoteAssetsHandler(source)
   const absDir = resolve(source)
   const opts = normalizeOptions(options)
   return defineHandler(async (event) => {
@@ -295,31 +265,19 @@ export function serveStaticNodeMiddleware(
       const url = req.url ?? '/'
 
       if (absDir === undefined) {
-        const store = source as RemoteAssetsStore
-        const accept = req.headers.accept
-        const result = await serveFromRemoteStore(store, url, accept, opts)
-        if ('status' in result) {
-          if (result.status === 404 && next) {
-            next()
-            return
-          }
-          res.statusCode = result.status
-          if (result.html) {
-            res.setHeader('Content-Type', 'text/html; charset=utf-8')
-            res.end(result.html)
-            return
-          }
+        const response = await remoteResponse(source as RemoteAssetsStore, url, req.headers.accept)
+        if (response.status === 404 && next) {
+          next()
+          return
+        }
+        res.statusCode = response.status
+        response.headers.forEach((v, k) => res.setHeader(k, v))
+        if (method === 'HEAD' || !response.body) {
+          await response.body?.cancel().catch(() => {})
           res.end()
           return
         }
-        for (const [k, v] of Object.entries(result.headers))
-          res.setHeader(k, v)
-        if (method === 'HEAD') {
-          result.cancel()
-          res.end()
-          return
-        }
-        Readable.fromWeb(result.stream() as import('node:stream/web').ReadableStream<Uint8Array>).pipe(res)
+        Readable.fromWeb(response.body as NodeWebReadableStream<Uint8Array>).pipe(res)
         return
       }
 
@@ -348,4 +306,46 @@ export function serveStaticNodeMiddleware(
       res.end()
     })
   }
+}
+
+/**
+ * Minimal, dependency-free HTML shown when a remote-assets request cannot
+ * be satisfied (no installed package, no cache, provider unreachable).
+ */
+function remoteErrorPage(pkg: string, version: string, reason: string): string {
+  const esc = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const name = esc(pkg)
+  const ver = esc(version)
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client assets unavailable</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; font: 14px/1.6 ui-sans-serif, system-ui, sans-serif; background: #fafafa; color: #27272a; }
+  main { max-width: 32rem; padding: 2rem; }
+  h1 { font-size: 1rem; font-weight: 600; margin: 0 0 .5rem; }
+  p { margin: .5rem 0; opacity: .8; }
+  pre { font: 12px/1.6 ui-monospace, monospace; background: rgb(125 125 125 / .12); border-radius: 6px; padding: .75rem 1rem; overflow-x: auto; }
+  button { font: inherit; padding: .35rem 1rem; border-radius: 6px; border: 1px solid rgb(125 125 125 / .3); background: transparent; color: inherit; cursor: pointer; }
+  button:hover { background: rgb(125 125 125 / .08); }
+  .muted { opacity: .55; font-size: 12px; }
+  @media (prefers-color-scheme: dark) { body { background: #111; color: #d4d4d8; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Client assets unavailable</h1>
+  <p>The UI for this tool is served from <code>${name}@${ver}</code>, which could not be reached.</p>
+  <pre>${esc(reason)}</pre>
+  <p>To use it without network access, install the assets package locally:</p>
+  <pre>npm install ${name}@${ver}</pre>
+  <button onclick="location.reload()">Retry</button>
+  <p class="muted">devframe remote assets</p>
+</main>
+</body>
+</html>
+`
 }
