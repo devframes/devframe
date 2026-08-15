@@ -9,7 +9,6 @@ const clientEntries = {
 const serverEntries = {
   'index': 'src/index.ts',
   'cli': 'src/cli.ts',
-  'vite': 'src/vite.ts',
   'node/index': 'src/node/index.ts',
   'rpc/index': 'src/rpc/index.ts',
 }

@@ -1,6 +1,21 @@
 import type { DevframeDocksUserSettings } from './types/settings'
+import { cleanDoubleSlashes, withLeadingSlash, withTrailingSlash } from 'ufo'
 
 export * from 'devframe/constants'
+
+/** Default mount base for a hub instance — one namespace, one catch-all. */
+export const DEVFRAMES_HUB_BASE = '/__devframes/'
+
+/**
+ * Normalize a hub mount base to an absolute path with leading and trailing
+ * slashes (e.g. `devframes` → `/devframes/`), collapsing any doubled
+ * slashes the input introduced. The one implementation every hub-aware
+ * host (`@devframes/hub` itself, and the Vite/Nuxt/Next adapters) resolves
+ * `options.base` through.
+ */
+export function normalizeHubBase(base: string): string {
+  return cleanDoubleSlashes(withTrailingSlash(withLeadingSlash(base)))
+}
 
 /**
  * The default ordering weight for each known dock category — lower sorts

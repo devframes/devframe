@@ -26,7 +26,6 @@
     "./cli": "./dist/cli.mjs",
     "./node": "./dist/node/index.mjs",
     "./rpc": "./dist/rpc/index.mjs",
-    "./vite": "./dist/vite.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -57,7 +56,6 @@
     }
   },
   "dependencies": {
-    "@devframes/vite": "workspace:*",
     "cac": "catalog:deps",
     "chokidar": "catalog:deps",
     "image-meta": "catalog:deps",
@@ -69,6 +67,7 @@
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
+    "@devframes/vite": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
     "@storybook/addon-a11y": "catalog:storybook",
     "@storybook/addon-docs": "catalog:storybook",

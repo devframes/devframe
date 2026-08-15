@@ -44,12 +44,13 @@ Opens the inspector against a fresh standalone devframe connection — handy as 
 
 ```ts
 // vite.config.ts
-import { inspectVitePlugin } from '@devframes/plugin-inspect/vite'
+import inspectDevframe from '@devframes/plugin-inspect'
+import { devframeVite } from '@devframes/vite/dev-spa'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    inspectVitePlugin(),
+    devframeVite(inspectDevframe),
   ],
 })
 ```

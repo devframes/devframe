@@ -2,12 +2,10 @@
 
 import type { DevframeClientHost, DevframeClientHostOptions } from '@devframes/hub/client'
 import { createDevframeClientHost } from '@devframes/hub/client'
+import { DEVFRAMES_HUB_BASE } from '@devframes/hub/constants'
 import { useEffect, useState } from 'react'
 
 export type { DevframeClientHost, DevframeClientHostOptions } from '@devframes/hub/client'
-
-/** Default hub mount base — mirrors `@devframes/hub`'s `DEVFRAMES_HUB_BASE`. */
-const DEVFRAMES_HUB_BASE = '/__devframes/'
 
 export interface UseDevframeHubClientOptions extends DevframeClientHostOptions {
   /**

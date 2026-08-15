@@ -24,12 +24,13 @@ pnpx @devframes/plugin-og
 
 ```ts
 // vite.config.ts
-import { ogVitePlugin } from '@devframes/plugin-og/vite'
+import ogDevframe from '@devframes/plugin-og'
+import { devframeVite } from '@devframes/vite/dev-spa'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    ogVitePlugin(),
+    devframeVite(ogDevframe),
   ],
 })
 ```

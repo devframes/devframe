@@ -1,12 +1,10 @@
 import type { DevframeClientHost, DevframeClientHostOptions } from '@devframes/hub/client'
 import type { Ref } from 'vue'
 import { createDevframeClientHost } from '@devframes/hub/client'
+import { DEVFRAMES_HUB_BASE } from '@devframes/hub/constants'
 import { onScopeDispose, shallowRef } from 'vue'
 
 export type { DevframeClientHost, DevframeClientHostOptions } from '@devframes/hub/client'
-
-/** Default hub mount base — mirrors `@devframes/hub`'s `DEVFRAMES_HUB_BASE`. */
-const DEVFRAMES_HUB_BASE = '/__devframes/'
 
 export interface UseDevframeHubClientOptions extends DevframeClientHostOptions {
   /**

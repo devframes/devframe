@@ -43,6 +43,12 @@ Each splits into two scoped subpaths — `.../dev-spa` (author one devframe's SP
 | `@devframes/next/client` | `@devframes/next/dev-spa/client` |
 | mount a hub inside a tool | `@devframes/{vite,nuxt,next}/hub` (+ `/hub/client`) |
 
+**Built-in plugins**
+
+| Removed / moved | Replacement |
+|---|---|
+| `@devframes/plugin-{a11y,assets,data-inspector,inspect,messages,og}/vite` | `devframeVite(def, options)` from `@devframes/vite/dev-spa`, against the plugin's default export |
+
 ## `devframe/adapters/cli` is removed
 
 The CLI adapter was renamed to `cac` in 0.7. The `devframe/adapters/cli` entry - `createCli`, `CreateCliOptions`, and `CliHandle` - is now gone. Import from `devframe/adapters/cac` instead:
@@ -280,6 +286,31 @@ export default defineConfig({
 ```
 
 `@devframes/vite` (and `@devframes/nuxt` / `@devframes/next`) take `@devframes/hub` and `@devframes/hub-ui` as **optional** peers — only the `/hub` scope needs them. Install `vite` as a peer as before. See [`@devframes/vite`](/frameworks/vite) for the full reference.
+
+## Built-in plugins' `/vite` subpath is removed
+
+`a11yVitePlugin`, `assetsVitePlugin`, `dataInspectorVitePlugin`, `inspectVitePlugin`, `messagesVitePlugin`, and `ogVitePlugin` — each plugin's `@devframes/plugin-<name>/vite` export — were one-line renames over `devframeVite(def, options)`. Call `devframeVite` directly against the plugin's default export instead:
+
+```ts
+// 0.8.x
+import { a11yVitePlugin } from '@devframes/plugin-a11y/vite'
+
+export default defineConfig({
+  plugins: [a11yVitePlugin()],
+})
+```
+
+```ts
+// 0.9
+import a11yDevframe from '@devframes/plugin-a11y'
+import { devframeVite } from '@devframes/vite/dev-spa'
+
+export default defineConfig({
+  plugins: [devframeVite(a11yDevframe)],
+})
+```
+
+`@devframes/plugin-code-server`'s `codeServerVite` and `@devframes/plugin-terminals`'s `terminalsVite` are unaffected — they mount a bridge and a static plugin together (and build their devframe from the passed options), not a plain `devframeVite` delegation.
 
 ## `@devframes/nuxt` and `@devframes/next` split into `/dev-spa` and `/hub`
 

@@ -107,14 +107,15 @@ pnpx @devframes/plugin-data-inspector attach               # attach to a process
 ## Mount into a Vite host
 
 ```ts
+import dataInspectorDevframe from '@devframes/plugin-data-inspector'
 import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
 // vite.config.ts
-import { dataInspectorVitePlugin } from '@devframes/plugin-data-inspector/vite'
+import { devframeVite } from '@devframes/vite/dev-spa'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    dataInspectorVitePlugin(),
+    devframeVite(dataInspectorDevframe),
     {
       name: 'my-app:data-sources',
       configureServer(server) {

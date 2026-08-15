@@ -74,8 +74,7 @@
     }
   },
   "dependencies": {
-    "h3": "catalog:deps",
-    "ufo": "catalog:deps"
+    "h3": "catalog:deps"
   },
   "devDependencies": {
     "@devframes/hub": "workspace:*",

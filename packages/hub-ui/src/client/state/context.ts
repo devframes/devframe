@@ -1,10 +1,10 @@
 import type { DevframeClientCommand, DevframeDockEntry, DevframeDockUserEntry, DevframeRpcClientFunctions, DevframeViewIframe } from '@devframes/hub'
-import type { CommandsContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockPanelStorage, DockRegistration, DockRendererManifest, DocksContext } from '@devframes/hub/client'
+import type { CommandsContext, DevframeClientContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockPanelStorage, DockRegistration, DockRendererManifest, DocksContext } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
 import type { Ref } from 'vue'
 import type { DevframeDocksUserSettings } from './dock-settings'
-import { attachFrameNavClient } from '@devframes/hub/client'
+import { attachFrameNavClient, createDockRenderersContext } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY } from '@devframes/hub/constants'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
 import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_UI_HIDE_EVENT } from '../constants'
@@ -14,7 +14,6 @@ import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMemb
 import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, sharedStateToRef, useDocksEntries } from './docks'
 import { createClientMessagesClient } from './messages-client'
 import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDockPopupOpen } from './popup'
-import { createDockRenderers } from './renderers'
 import { executeSetupScript } from './setup-script'
 
 const docksContextByRpc = new WeakMap<DevframeRpcClient, DocksContext>()
@@ -538,7 +537,10 @@ export async function createDocksContext(
       },
       events: rpc.events,
     },
-    renderers: markRaw(createDockRenderers(() => docksContext, () => rendererManifest.value)),
+    renderers: markRaw(createDockRenderersContext({
+      context: () => docksContext as DevframeClientContext,
+      manifest: () => rendererManifest.value,
+    })),
     rpc: markRaw(rpc),
     clientType,
   })

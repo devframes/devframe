@@ -30,12 +30,13 @@ pnpx @devframes/plugin-assets --read-only # disable upload / rename / delete / m
 
 ```ts
 // vite.config.ts
-import { assetsVitePlugin } from '@devframes/plugin-assets/vite'
+import assetsDevframe from '@devframes/plugin-assets'
+import { devframeVite } from '@devframes/vite/dev-spa'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    assetsVitePlugin(),
+    devframeVite(assetsDevframe),
   ],
 })
 ```

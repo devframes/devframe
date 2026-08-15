@@ -53,7 +53,9 @@ handle.notifyChanged() // or notify imperatively
 // hub hosts mount the default export like any devframe:
 import dataInspectorDevframe from '@devframes/plugin-data-inspector'
 // Vite
-import { dataInspectorVitePlugin } from '@devframes/plugin-data-inspector/vite'
+import { devframeVite } from '@devframes/vite/dev-spa'
+
+devframeVite(dataInspectorDevframe)
 ```
 
 ## Standalone CLI

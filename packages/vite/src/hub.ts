@@ -5,7 +5,8 @@ import type { DevframeDefinition } from 'devframe'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { Server as NodeHttpServer } from 'node:http'
 import process from 'node:process'
-import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
+import { DEVFRAMES_HUB_BASE, normalizeHubBase } from '@devframes/hub/constants'
+import { initHub } from '@devframes/hub/initiate'
 
 export interface ViteDevframeHubOptions {
   /**
@@ -115,7 +116,7 @@ function recommendViteDevtools(): void {
  * single devframe's own SPA, reach for `@devframes/vite/dev-spa` instead.
  */
 export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
-  const base = normalizeBase(options.base ?? DEVFRAMES_HUB_BASE)
+  const base = normalizeHubBase(options.base ?? DEVFRAMES_HUB_BASE)
   let viteConfig: ResolvedConfig | undefined
   let instance: HubInstance | undefined
   // Set once the hub is up if its UI ships an `embedded.js` bootstrap — the
@@ -247,11 +248,4 @@ function attachClientScripts(
       ? { ...(entry as HubDevframeEntry), dock: { clientScript, ...(entry as HubDevframeEntry).dock } }
       : { devframe: def, dock: { clientScript } }
   })
-}
-
-function normalizeBase(base: string): string {
-  let out = base.startsWith('/') ? base : `/${base}`
-  if (!out.endsWith('/'))
-    out = `${out}/`
-  return out
 }

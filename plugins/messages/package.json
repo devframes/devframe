@@ -27,7 +27,6 @@
     "./constants": "./dist/constants.mjs",
     "./node": "./dist/node/index.mjs",
     "./rpc": "./dist/rpc/index.mjs",
-    "./vite": "./dist/vite.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -60,13 +59,13 @@
     }
   },
   "dependencies": {
-    "@devframes/vite": "workspace:*",
     "cac": "catalog:deps",
     "nostics": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",
+    "@devframes/vite": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
     "@storybook/addon-docs": "catalog:storybook",
     "@storybook/vue3-vite": "catalog:storybook",

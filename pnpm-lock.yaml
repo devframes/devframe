@@ -1409,9 +1409,6 @@ importers:
       next:
         specifier: ^14.0.0 || ^15.0.0 || ^16.0.0
         version: 16.2.12(@babel/core@7.29.0(supports-color@10.2.2))(@playwright/test@1.62.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      ufo:
-        specifier: catalog:deps
-        version: 1.6.4
     devDependencies:
       '@devframes/hub':
         specifier: workspace:*
@@ -1499,9 +1496,6 @@ importers:
 
   plugins/a11y:
     dependencies:
-      '@devframes/vite':
-        specifier: workspace:*
-        version: link:../../packages/vite
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -1554,9 +1548,6 @@ importers:
 
   plugins/assets:
     dependencies:
-      '@devframes/vite':
-        specifier: workspace:*
-        version: link:../../packages/vite
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -1585,6 +1576,9 @@ importers:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.4(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.41(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.41(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.3(vue@3.5.41(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.41(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.26))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
+      '@devframes/vite':
+        specifier: workspace:*
+        version: link:../../packages/vite
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
@@ -1700,9 +1694,6 @@ importers:
 
   plugins/data-inspector:
     dependencies:
-      '@devframes/vite':
-        specifier: workspace:*
-        version: link:../../packages/vite
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -1719,6 +1710,9 @@ importers:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.4(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.41(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.41(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.3(vue@3.5.41(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.41(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.26))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
+      '@devframes/vite':
+        specifier: workspace:*
+        version: link:../../packages/vite
       '@discoveryjs/discovery':
         specifier: catalog:frontend
         version: 1.0.0-beta.99
@@ -1867,9 +1861,6 @@ importers:
 
   plugins/inspect:
     dependencies:
-      '@devframes/vite':
-        specifier: workspace:*
-        version: link:../../packages/vite
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -1886,6 +1877,9 @@ importers:
       '@devframes/plugin-inspect--assets':
         specifier: workspace:*
         version: link:assets-pkg
+      '@devframes/vite':
+        specifier: workspace:*
+        version: link:../../packages/vite
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
@@ -1948,9 +1942,6 @@ importers:
 
   plugins/messages:
     dependencies:
-      '@devframes/vite':
-        specifier: workspace:*
-        version: link:../../packages/vite
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -1964,6 +1955,9 @@ importers:
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
+      '@devframes/vite':
+        specifier: workspace:*
+        version: link:../../packages/vite
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
@@ -2024,9 +2018,6 @@ importers:
 
   plugins/og:
     dependencies:
-      '@devframes/vite':
-        specifier: workspace:*
-        version: link:../../packages/vite
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -2040,6 +2031,9 @@ importers:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.4(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.41(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.41(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.3(vue@3.5.41(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.41(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.26))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
+      '@devframes/vite':
+        specifier: workspace:*
+        version: link:../../packages/vite
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
