@@ -90,7 +90,8 @@ export async function installDevframe(
       await ctx.host.mountConnectionMeta(base)
     else
       diagnostics.DF8106({ id, name: d.name, base })
-    ctx.views.hostStatic(base, resolve(d.cli.distDir))
+    const distSource = d.cli.distDir
+    ctx.views.hostStatic(base, typeof distSource === 'string' ? resolve(distSource) : distSource)
   }
 
   ctx.docks.register({

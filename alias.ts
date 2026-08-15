@@ -30,6 +30,7 @@ export const alias = {
   'devframe/utils/launch-editor': r('devframe/src/utils/launch-editor.ts'),
   'devframe/utils/nanoid': r('devframe/src/utils/nanoid.ts'),
   'devframe/utils/open': r('devframe/src/utils/open.ts'),
+  'devframe/utils/remote-assets': r('devframe/src/utils/remote-assets.ts'),
   'devframe/utils/simple-schema': r('devframe/src/utils/simple-schema.ts'),
   'devframe/utils/serve-static': r('devframe/src/utils/serve-static.ts'),
   'devframe/utils/shared-state': r('devframe/src/utils/shared-state.ts'),

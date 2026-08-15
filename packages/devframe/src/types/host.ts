@@ -8,14 +8,19 @@
 //   - packages/devframe/src/node/host-h3.ts — h3 CLI server
 //   - (build/spa/embedded) — added as the respective adapters land
 
+import type { RemoteAssetsStore } from './remote-assets'
+
 export interface DevframeHost {
   /**
-   * Serve a static directory at the given URL base. Called by
-   * `DevframeViewHost.hostStatic`. Implementations map this to whatever
+   * Serve static assets at the given URL base — a local directory, or a
+   * resolved {@link RemoteAssetsStore} back-proxy. Called by
+   * `DevframeViewHost.hostStatic` (which normalizes `RemoteAssets`
+   * declarations into stores first). Implementations map this to whatever
    * the underlying runtime expects (Vite middleware, h3 handler, no-op
-   * for build snapshots).
+   * for build snapshots) — the shared engine in
+   * `devframe/utils/serve-static` accepts either shape.
    */
-  mountStatic: (base: string, distDir: string) => void | Promise<void>
+  mountStatic: (base: string, source: string | RemoteAssetsStore) => void | Promise<void>
 
   /**
    * Serve the host's connection meta (`__connection.json`) at the given URL

@@ -5,7 +5,7 @@
 export interface CreateH3DevframeHostOptions {
   app?: unknown;
   origin: string | (() => string);
-  mount?: (_: string, _: string) => void | Promise<void>;
+  mount?: (_: string, _: string | RemoteAssetsStore) => void | Promise<void>;
   appName: string;
   workspaceRoot?: string;
 }
@@ -244,6 +244,54 @@ export declare const diagnostics: import("nostics").Diagnostics<{
   readonly DF0057: {
     readonly why: () => string;
     readonly fix: "Clients connect over the SSE endpoint instead — no upgrade wiring is needed. Remove `ws: false` if the instance should serve a WebSocket after all.";
+  };
+  readonly DF0058: {
+    readonly why: (p: {
+      package: string;
+      version: string;
+      provider: string;
+      reason: string;
+    }) => string;
+    readonly fix: "Requests fall back to probing the provider per file. Check network access to the provider, or install the assets package locally so no listing is needed.";
+  };
+  readonly DF0059: {
+    readonly why: (p: {
+      url: string;
+      package: string;
+      reason: string;
+    }) => string;
+    readonly fix: "Install the assets package locally (`npm install <package>`) to serve it with zero network, or check network access to the configured provider.";
+  };
+  readonly DF0060: {
+    readonly why: (p: {
+      package: string;
+      required: string;
+      installed: string;
+    }) => string;
+    readonly fix: "Align the installed assets package with the version its node package declares — they are published in lockstep.";
+  };
+  readonly DF0061: {
+    readonly why: (p: {
+      package: string;
+      required: string;
+      installed: string;
+    }) => string;
+    readonly fix: "Install the exact declared version to serve byte-identical assets.";
+  };
+  readonly DF0062: {
+    readonly why: (p: {
+      filepath: string;
+      reason: string;
+    }) => string;
+    readonly fix: "The response was still served; only caching failed. Check that the cache directory is writable and has free space.";
+  };
+  readonly DF0063: {
+    readonly why: (p: {
+      package: string;
+      version: string;
+      reason: string;
+    }) => string;
+    readonly fix: "Static builds need every asset file up front. Install the assets package locally, or ensure the provider (and its file-listing API) is reachable during the build.";
   };
 }, readonly [typeof devframeReporter]>;
 // #endregion

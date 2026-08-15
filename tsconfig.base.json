@@ -76,6 +76,9 @@
       "devframe/utils/open": [
         "./packages/devframe/src/utils/open.ts"
       ],
+      "devframe/utils/remote-assets": [
+        "./packages/devframe/src/utils/remote-assets.ts"
+      ],
       "devframe/utils/simple-schema": [
         "./packages/devframe/src/utils/simple-schema.ts"
       ],

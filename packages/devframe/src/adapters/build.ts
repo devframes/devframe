@@ -1,9 +1,11 @@
 /* eslint-disable no-console */
 import type { DevframeDefinition } from '../types/devframe'
+import type { StaticAssetsSource } from '../types/remote-assets'
 import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import process from 'node:process'
 import { colors as c } from 'devframe/utils/colors'
+import { createRemoteAssetsStore, remoteAssetsCacheDir, remoteAssetsCacheRoot, resolveInstalledRemoteAssets } from 'devframe/utils/remote-assets'
 import { structuredCloneStringify } from 'devframe/utils/structured-clone'
 import { dirname, resolve } from 'pathe'
 import {
@@ -24,11 +26,12 @@ export interface CreateBuildOptions {
   /** Absolute URL base the output is served from (default: `/`). */
   base?: string
   /**
-   * Override the SPA dist directory to copy into `outDir`. When omitted
-   * the adapter reads `devframe.cli?.distDir` — authors typically set this
-   * once on the definition itself.
+   * Override the SPA dist to copy into `outDir` — a local directory or a
+   * remote-assets declaration (materialized in full at build time). When
+   * omitted the adapter reads `devframe.cli?.distDir` — authors typically
+   * set this once on the definition itself.
    */
-  distDir?: string
+  distDir?: StaticAssetsSource
   /**
    * Pretty-print RPC dump JSON files. Defaults to `false` so payload
    * shards (which can be multiple MB for graph-heavy tools) ship
@@ -62,22 +65,44 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
     throw diagnostics.DF0042({ id: d.id })
 
   const outDir = resolve(options.outDir ?? 'dist-static')
-  const distDir = options.distDir ?? d.cli?.distDir
-  if (!distDir)
+  const distSource = options.distDir ?? d.cli?.distDir
+  if (!distSource)
     throw new Error(`[devframe] createBuild: no distDir for "${d.id}". Set \`cli.distDir\` on the definition or pass it as an option.`)
 
   if (existsSync(outDir))
     await fs.rm(outDir, { recursive: true })
   await fs.mkdir(outDir, { recursive: true })
 
-  // Copy author's SPA into the output root.
-  console.log(c.cyan`[devframe] copying SPA from ${distDir} -> ${outDir}`)
-  await fs.cp(distDir, outDir, { recursive: true })
+  const host = createH3DevframeHost({ origin: 'http://localhost', appName: d.id })
+
+  // Copy author's SPA into the output root. A remote-assets source copies
+  // from the locally installed assets package when present, otherwise every
+  // listed file is materialized from the provider — a static deploy must be
+  // self-contained.
+  if (typeof distSource === 'string') {
+    console.log(c.cyan`[devframe] copying SPA from ${distSource} -> ${outDir}`)
+    await fs.cp(distSource, outDir, { recursive: true })
+  }
+  else {
+    const installed = resolveInstalledRemoteAssets(distSource)
+    if (installed) {
+      console.log(c.cyan`[devframe] copying SPA from ${installed} -> ${outDir}`)
+      await fs.cp(installed, outDir, { recursive: true })
+    }
+    else {
+      console.log(c.cyan`[devframe] materializing SPA from ${distSource.package}@${distSource.version} -> ${outDir}`)
+      const cacheRoot = remoteAssetsCacheRoot(host.getStorageDir('project'))
+      const store = createRemoteAssetsStore(distSource, {
+        cacheDir: remoteAssetsCacheDir(cacheRoot, distSource),
+      })
+      await store.materialize(outDir)
+    }
+  }
 
   const ctx = await createHostContext({
     cwd: process.cwd(),
     mode: 'build',
-    host: createH3DevframeHost({ origin: 'http://localhost', appName: d.id }),
+    host,
   })
   await d.setup(ctx)
 

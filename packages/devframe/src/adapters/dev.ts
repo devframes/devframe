@@ -2,6 +2,7 @@ import type { DevframeRpcConnection } from 'devframe/rpc/transports/ws-server'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/instance-shell'
 import type { DevframeDefinition, DevframeSseOptions, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
+import type { StaticAssetsSource } from '../types/remote-assets'
 import type { DevframeNodeRpcSession, DevframeNodeRpcSessionMeta } from '../types/rpc'
 import { createServer } from 'node:http'
 import { open } from 'devframe/utils/open'
@@ -37,7 +38,7 @@ export interface CreateDevServerOptions {
    * is expected to be hosted elsewhere (e.g. by a parent Vite/Nuxt
    * dev server via `devframeViteBridge` from `@devframes/vite`).
    */
-  distDir?: string
+  distDir?: StaticAssetsSource
   /**
    * Override the SPA mount path. Defaults to
    * `resolveBasePath(def, 'standalone')` (i.e. `def.basePath` or `/`).

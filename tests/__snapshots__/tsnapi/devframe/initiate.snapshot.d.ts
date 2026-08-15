@@ -19,7 +19,7 @@ export interface DevframeInstanceInternals {
 }
 export interface InitDevframeOptions {
   base: string;
-  distDir?: string | false;
+  distDir?: StaticAssetsSource | false;
   server?: Server;
   ws?: DevframeWsOptions | false;
   sse?: boolean | DevframeSseOptions;

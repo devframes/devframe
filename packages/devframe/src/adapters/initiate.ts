@@ -7,7 +7,9 @@ import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeInstanceRecord } from '../node/instance-registry'
 import type { InstanceShellInternals, StartedServer } from '../node/instance-shell'
 import type { DevframeDefinition, DevframeSetupInfo, DevframeSseOptions, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
+import type { StaticAssetsSource } from '../types/remote-assets'
 import process from 'node:process'
+import { remoteAssetsCacheRoot, resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
@@ -36,7 +38,7 @@ export interface InitDevframeOptions {
    * **bridge mode**: only `__connection.json`, the WS endpoint, and the MCP
    * route (when enabled) are served; the SPA is hosted elsewhere.
    */
-  distDir?: string | false
+  distDir?: StaticAssetsSource | false
   /**
    * Share the host's `node:http` server for the WebSocket RPC endpoint: the
    * upgrade listener binds to `<base>__ws` on this server, so no extra port
@@ -323,14 +325,18 @@ export function initDevframe(
       }
     },
 
-    mount(_context, meta) {
+    mount(context, meta) {
       // Discovery meta before the SPA mount so its SPA-fallback can't swallow
       // the route; both sit at the SPA root for relative `./__connection.json`
       // fetches.
       app.use(joinURL(base, DEVFRAME_CONNECTION_META_FILENAME), () => meta)
 
-      if (distDir)
-        mountStaticHandler(app, base, resolve(distDir))
+      if (distDir) {
+        const source = resolveStaticAssetsSource(distDir, {
+          cacheRoot: remoteAssetsCacheRoot(context.host.getStorageDir('project')),
+        })
+        mountStaticHandler(app, base, typeof source === 'string' ? resolve(source) : source)
+      }
     },
   })
 

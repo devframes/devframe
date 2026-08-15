@@ -17,7 +17,13 @@ import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 
-const SPA_DIST = messagesDevframe.cli!.distDir!
+const SPA_DIST = localDistDir(messagesDevframe.cli!.distDir!)
+
+function localDistDir(source: string | object): string {
+  if (typeof source !== 'string')
+    throw new TypeError('these tests serve the local dist directory — build the SPA first')
+  return source
+}
 
 /**
  * Assert the Vue SPA has been built. The dev-server and static-build
@@ -53,7 +59,7 @@ interface BootOptions {
  * warn-and-noop path.
  */
 async function boot(options: BootOptions): Promise<MessagesServer> {
-  const distDir = messagesDevframe.cli!.distDir!
+  const distDir = localDistDir(messagesDevframe.cli!.distDir!)
   const basePath = resolveBasePath(messagesDevframe, 'standalone')
   const host = '127.0.0.1'
   const port = await getPort({ host, random: true })

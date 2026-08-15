@@ -6,7 +6,7 @@ export interface CreateDevServerOptions {
   host?: string;
   port?: number;
   flags?: Record<string, unknown>;
-  distDir?: string;
+  distDir?: StaticAssetsSource;
   basePath?: string;
   ws?: DevframeWsOptions | false;
   sse?: boolean | DevframeSseOptions;

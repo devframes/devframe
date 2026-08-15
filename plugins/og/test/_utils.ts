@@ -28,7 +28,7 @@ const testDevframe = createOgDevframe({ fetch: testFetch })
 
 export function assertSpaBuilt(): void {
   const distDir = testDevframe.cli!.distDir
-  if (!distDir || !existsSync(path.join(distDir, 'index.html')))
+  if (!distDir || typeof distDir !== 'string' || !existsSync(path.join(distDir, 'index.html')))
     throw new Error('Open Graph SPA missing. Run the plugin build first.')
 }
 
@@ -38,6 +38,8 @@ export interface OgServer extends StartedServer {
 
 export async function startOgServer(): Promise<OgServer> {
   const distDir = testDevframe.cli!.distDir!
+  if (typeof distDir !== 'string')
+    throw new TypeError('these tests serve the local dist directory — build the SPA first')
   const basePath = resolveBasePath(testDevframe, 'standalone')
   const host = '127.0.0.1'
   const port = await getPort({ host, random: true })

@@ -102,6 +102,7 @@ const serverEntries = {
   'internal/index': 'src/internal/index.ts',
   'utils/launch-editor': 'src/utils/launch-editor.ts',
   'utils/open': 'src/utils/open.ts',
+  'utils/remote-assets': 'src/utils/remote-assets.ts',
   'utils/serve-static': 'src/utils/serve-static.ts',
   'adapters/cac': 'src/adapters/cac.ts',
   'adapters/dev': 'src/adapters/dev.ts',

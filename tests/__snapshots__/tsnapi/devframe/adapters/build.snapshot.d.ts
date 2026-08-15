@@ -5,7 +5,7 @@
 export interface CreateBuildOptions {
   outDir?: string;
   base?: string;
-  distDir?: string;
+  distDir?: StaticAssetsSource;
   pretty?: boolean;
   force?: boolean;
 }

@@ -132,5 +132,35 @@ export const diagnostics = defineDiagnostics({
       why: () => 'This instance disables its WebSocket transport (`ws: false`), so there is no socket to drive upgrades into.',
       fix: 'Clients connect over the SSE endpoint instead — no upgrade wiring is needed. Remove `ws: false` if the instance should serve a WebSocket after all.',
     },
+    DF0058: {
+      why: (p: { package: string, version: string, provider: string, reason: string }) =>
+        `Failed to fetch the file listing for "${p.package}@${p.version}" from ${p.provider}: ${p.reason}`,
+      fix: 'Requests fall back to probing the provider per file. Check network access to the provider, or install the assets package locally so no listing is needed.',
+    },
+    DF0059: {
+      why: (p: { url: string, package: string, reason: string }) =>
+        `Failed to fetch a remote asset of "${p.package}" (${p.url}): ${p.reason}`,
+      fix: 'Install the assets package locally (`npm install <package>`) to serve it with zero network, or check network access to the configured provider.',
+    },
+    DF0060: {
+      why: (p: { package: string, required: string, installed: string }) =>
+        `The locally installed "${p.package}@${p.installed}" is a different major version than the required "${p.required}".`,
+      fix: 'Align the installed assets package with the version its node package declares — they are published in lockstep.',
+    },
+    DF0061: {
+      why: (p: { package: string, required: string, installed: string }) =>
+        `The locally installed "${p.package}@${p.installed}" differs from the required "${p.required}" — serving the installed one.`,
+      fix: 'Install the exact declared version to serve byte-identical assets.',
+    },
+    DF0062: {
+      why: (p: { filepath: string, reason: string }) =>
+        `Failed to persist a remote asset into the cache at "${p.filepath}": ${p.reason}`,
+      fix: 'The response was still served; only caching failed. Check that the cache directory is writable and has free space.',
+    },
+    DF0063: {
+      why: (p: { package: string, version: string, reason: string }) =>
+        `Failed to materialize the remote assets of "${p.package}@${p.version}": ${p.reason}`,
+      fix: 'Static builds need every asset file up front. Install the assets package locally, or ensure the provider (and its file-listing API) is reachable during the build.',
+    },
   },
 })

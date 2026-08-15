@@ -1,11 +1,19 @@
 import type { EventHandler } from 'h3'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import type { RemoteAssetsServedFile, RemoteAssetsStore } from '../types/remote-assets'
 import { createReadStream } from 'node:fs'
 import { stat } from 'node:fs/promises'
 import { Readable } from 'node:stream'
 import { defineHandler, H3 } from 'h3'
 import { lookup } from 'mrmime'
 import { extname, join, normalize, resolve, sep } from 'pathe'
+import { renderRemoteAssetsErrorPage } from './remote-assets'
+
+/**
+ * What the static-serving engine accepts: a local directory, or a resolved
+ * {@link RemoteAssetsStore} back-proxy (from `devframe/utils/remote-assets`).
+ */
+export type ServableAssets = string | RemoteAssetsStore
 
 export interface ServeStaticOptions {
   /** Default: `['index.html']`. */
@@ -132,8 +140,79 @@ function normalizeOptions(options: ServeStaticOptions | undefined): NormalizedOp
   }
 }
 
+function acceptsHtml(accept: string | null | undefined): boolean {
+  return typeof accept === 'string' && accept.includes('text/html')
+}
+
+interface RemoteMiss {
+  status: number
+  html?: string
+}
+
 /**
- * h3 event handler that serves files from `dir` with SPA fallback.
+ * Drive one request through a {@link RemoteAssetsStore} — shared between the
+ * h3 and connect flavors. Returns the served file, or a status (+ error page
+ * for HTML navigations) on miss/failure.
+ */
+async function serveFromRemoteStore(
+  store: RemoteAssetsStore,
+  urlPath: string,
+  accept: string | null | undefined,
+  opts: NormalizedOptions,
+): Promise<RemoteAssetsServedFile | RemoteMiss> {
+  try {
+    const file = await store.serve(urlPath, opts)
+    if (file)
+      return file
+    return { status: 404 }
+  }
+  catch (error) {
+    if (acceptsHtml(accept)) {
+      return {
+        status: 502,
+        html: renderRemoteAssetsErrorPage({
+          package: store.assets.package,
+          version: store.assets.version,
+          reason: error instanceof Error ? error.message : String(error),
+        }),
+      }
+    }
+    return { status: 502 }
+  }
+}
+
+function serveRemoteAssetsHandler(store: RemoteAssetsStore, options?: ServeStaticOptions): EventHandler {
+  const opts = normalizeOptions(options)
+  return defineHandler(async (event) => {
+    const method = event.req.method
+    if (method !== 'GET' && method !== 'HEAD') {
+      event.res.status = 405
+      event.res.headers.set('Allow', 'GET, HEAD')
+      return ''
+    }
+    const result = await serveFromRemoteStore(store, event.url.pathname, event.req.headers.get('accept'), opts)
+    if ('status' in result) {
+      event.res.status = result.status
+      if (result.html) {
+        event.res.headers.set('Content-Type', 'text/html; charset=utf-8')
+        return result.html
+      }
+      return ''
+    }
+    for (const [k, v] of Object.entries(result.headers))
+      event.res.headers.set(k, v)
+    if (method === 'HEAD') {
+      result.cancel()
+      return ''
+    }
+    return result.stream()
+  })
+}
+
+/**
+ * h3 event handler that serves files from `source` with SPA fallback — a
+ * local directory, or a {@link RemoteAssetsStore} whose files stream through
+ * the CDN back-proxy into the local cache.
  *
  * Drop-in replacement for `fromNodeMiddleware(sirv(dir, { dev: true, single: true }))`
  * when the surrounding server is an h3 app — no `Cache-Control` beyond
@@ -142,10 +221,12 @@ function normalizeOptions(options: ServeStaticOptions | undefined): NormalizedOp
  * works.
  */
 export function serveStaticHandler(
-  dir: string,
+  source: ServableAssets,
   options?: ServeStaticOptions,
 ): EventHandler {
-  const absDir = resolve(dir)
+  if (typeof source !== 'string')
+    return serveRemoteAssetsHandler(source, options)
+  const absDir = resolve(source)
   const opts = normalizeOptions(options)
   return defineHandler(async (event) => {
     const method = event.req.method
@@ -177,11 +258,11 @@ export function serveStaticHandler(
 export function mountStaticHandler(
   app: H3,
   base: string,
-  dir: string,
+  source: ServableAssets,
   options?: ServeStaticOptions,
 ): void {
   const staticApp = new H3()
-  staticApp.use(serveStaticHandler(dir, options))
+  staticApp.use(serveStaticHandler(source, options))
   app.mount(base.replace(/\/$/, ''), staticApp)
 }
 
@@ -193,10 +274,10 @@ export function mountStaticHandler(
  * adapt an event handler back into Node middleware.
  */
 export function serveStaticNodeMiddleware(
-  dir: string,
+  source: ServableAssets,
   options?: ServeStaticOptions,
 ): (req: IncomingMessage, res: ServerResponse, next?: (err?: Error) => void) => void {
-  const absDir = resolve(dir)
+  const absDir = typeof source === 'string' ? resolve(source) : undefined
   const opts = normalizeOptions(options)
   return (req, res, next) => {
     void (async () => {
@@ -212,6 +293,36 @@ export function serveStaticNodeMiddleware(
         return
       }
       const url = req.url ?? '/'
+
+      if (absDir === undefined) {
+        const store = source as RemoteAssetsStore
+        const accept = req.headers.accept
+        const result = await serveFromRemoteStore(store, url, accept, opts)
+        if ('status' in result) {
+          if (result.status === 404 && next) {
+            next()
+            return
+          }
+          res.statusCode = result.status
+          if (result.html) {
+            res.setHeader('Content-Type', 'text/html; charset=utf-8')
+            res.end(result.html)
+            return
+          }
+          res.end()
+          return
+        }
+        for (const [k, v] of Object.entries(result.headers))
+          res.setHeader(k, v)
+        if (method === 'HEAD') {
+          result.cancel()
+          res.end()
+          return
+        }
+        Readable.fromWeb(result.stream() as import('node:stream/web').ReadableStream<Uint8Array>).pipe(res)
+        return
+      }
+
       const file = await resolveTarget(absDir, url, opts.indexNames, opts.single)
       if (!file) {
         if (next) {

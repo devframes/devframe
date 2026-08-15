@@ -52,6 +52,7 @@
     "./utils/launch-editor": "./dist/utils/launch-editor.mjs",
     "./utils/nanoid": "./dist/utils/nanoid.mjs",
     "./utils/open": "./dist/utils/open.mjs",
+    "./utils/remote-assets": "./dist/utils/remote-assets.mjs",
     "./utils/simple-schema": "./dist/utils/simple-schema.mjs",
     "./utils/serve-static": "./dist/utils/serve-static.mjs",
     "./utils/shared-state": "./dist/utils/shared-state.mjs",

@@ -61,6 +61,12 @@ export { EventsMap }
 export { EventUnsubscribe }
 export { McpRouteOptions }
 export { PartialWithoutId }
+export { RemoteAssets }
+export { RemoteAssetsProvider }
+export { RemoteAssetsProviderCustom }
+export { RemoteAssetsServedFile }
+export { RemoteAssetsServeOptions }
+export { RemoteAssetsStore }
 export { RpcBroadcastOptions }
 export { RpcFunctionAgentOptions }
 export { RpcFunctionsHost }
@@ -75,5 +81,6 @@ export { ScopedRpcFn }
 export { ScopedServerFunctions }
 export { ScopedSharedStates }
 export { SettingsForNamespace }
+export { StaticAssetsSource }
 export { Thenable }
 // #endregion

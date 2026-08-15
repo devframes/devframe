@@ -47,6 +47,8 @@ export async function startDashboardServer(
 ): Promise<DashboardServer> {
   const devframe = createGitDevframe(options)
   const distDir = devframe.cli!.distDir!
+  if (typeof distDir !== 'string')
+    throw new TypeError('these tests serve the local dist directory — build the SPA first')
   // The factory leaves basePath adapter-resolved; standalone defaults to '/'.
   const basePath = devframe.basePath ?? '/'
   const host = '127.0.0.1'

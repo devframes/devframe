@@ -30,6 +30,8 @@ export async function startStreamingChatServer(): Promise<StartedServer & {
   // tests don't need the dist (we don't call assertClientBuilt unless the
   // test fetches index.html).
   const distDir = devframe.cli!.distDir!
+  if (typeof distDir !== 'string')
+    throw new TypeError('these tests serve the local dist directory — build the SPA first')
   const basePath = devframe.basePath!
   const host = '127.0.0.1'
   const port = await getPort({ host, random: true })

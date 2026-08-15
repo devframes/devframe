@@ -1,0 +1,129 @@
+/**
+ * A version-locked pointer at browser assets published as their own npm
+ * package (e.g. `@devframes/plugin-git-client`), served through devframe's
+ * caching back-proxy instead of a directory shipped inside the node package.
+ *
+ * Resolution order at serve time:
+ *
+ *   1. The package installed locally (resolved from {@link resolveFrom})
+ *      — the zero-network / air-gap path. Version skew warns; a major
+ *      version mismatch throws.
+ *   2. The per-file cache under
+ *      `<storageDir project>/.remote-assets/<package>@<version>/`.
+ *   3. The CDN {@link provider} — each requested file streams through to
+ *      the browser while being written into the cache.
+ *
+ * Anywhere a static mount accepts a dist directory (`cli.distDir`,
+ * `hostStatic`, `mountStatic`) it also accepts this object — see
+ * {@link StaticAssetsSource}.
+ */
+export interface RemoteAssets {
+  /** npm package name that ships the assets, e.g. `@devframes/plugin-git-client`. */
+  package: string
+  /** Exact version to serve, e.g. `1.2.3`. Typically the host package's own version. */
+  version: string
+  /**
+   * Subpath inside the package the served assets live under.
+   *
+   * @default 'dist'
+   */
+  path?: string
+  /**
+   * CDN that mirrors npm and serves individual package files.
+   *
+   * @default 'jsdelivr'
+   */
+  provider?: RemoteAssetsProvider
+  /**
+   * `import.meta.url` of the declaring module. When set, a locally
+   * installed copy of {@link package} is resolved from this module's own
+   * dependency graph first (works under pnpm's strict layout) and served
+   * with zero network. Omitting it skips the installed-package step —
+   * cache + CDN still work.
+   */
+  resolveFrom?: string
+  /** Custom fetch implementation (proxies, tests). Defaults to the global `fetch`. */
+  fetch?: typeof globalThis.fetch
+  /**
+   * Never touch the network: serve only from the locally installed package
+   * or files already in the cache.
+   *
+   * @default false
+   */
+  offline?: boolean
+}
+
+/**
+ * Built-in CDN providers (`'jsdelivr'` — default, `'unpkg'`) or a custom
+ * provider for corp mirrors.
+ */
+export type RemoteAssetsProvider = 'jsdelivr' | 'unpkg' | RemoteAssetsProviderCustom
+
+/** A custom {@link RemoteAssets} CDN provider (e.g. an internal npm mirror). */
+export interface RemoteAssetsProviderCustom {
+  /**
+   * Absolute URL serving `filePath` (package-relative, POSIX, no leading
+   * slash) of `pkg@version`.
+   */
+  fileUrl: (pkg: string, version: string, filePath: string) => string
+  /**
+   * List every file path in `pkg@version` (package-relative, no leading
+   * slash). Powers request-path resolution (correct 404s / SPA fallback)
+   * and build-time materialization. When omitted, requests are resolved by
+   * probing {@link fileUrl} directly and builds cannot materialize from
+   * this provider.
+   */
+  listFiles?: (pkg: string, version: string, fetchImpl: typeof globalThis.fetch) => Promise<string[]>
+}
+
+/**
+ * What every static-assets seam accepts: a local dist directory, or a
+ * {@link RemoteAssets} pointer served through the caching back-proxy.
+ */
+export type StaticAssetsSource = string | RemoteAssets
+
+/**
+ * A resolved, servable handle over a {@link RemoteAssets} declaration —
+ * created by `createRemoteAssetsStore()` (`devframe/utils/remote-assets`)
+ * and consumed by the static-serving engine (`devframe/utils/serve-static`).
+ */
+export interface RemoteAssetsStore {
+  readonly kind: 'remote-assets-store'
+  /** The declaration this store serves (with defaults applied). */
+  readonly assets: RemoteAssets & { path: string }
+  /** Version-locked cache directory files are persisted under. */
+  readonly cacheDir: string
+  /**
+   * Resolve a request path (relative to the mount base) and open the file:
+   * from the cache when present, otherwise streamed through the provider
+   * while being written into the cache. Returns `null` for a miss (404)
+   * and throws on provider/network failure.
+   */
+  serve: (urlPath: string, options?: RemoteAssetsServeOptions) => Promise<RemoteAssetsServedFile | null>
+  /**
+   * Download every listed file under `assets.path` into `targetDir`
+   * (paths relative to `assets.path`). Requires a provider file listing.
+   */
+  materialize: (targetDir: string) => Promise<void>
+}
+
+/** Request-resolution options for {@link RemoteAssetsStore.serve}. */
+export interface RemoteAssetsServeOptions {
+  /** Default: `['index.html']`. */
+  indexNames?: string[]
+  /** SPA fallback to `indexNames[0]` on miss. Default: `true`. */
+  single?: boolean
+}
+
+/** An opened file ready to respond with. */
+export interface RemoteAssetsServedFile {
+  /** Response headers (`Content-Type`, `Content-Length` when known, …). */
+  headers: Record<string, string>
+  /** Response body. Call at most once. */
+  stream: () => ReadableStream<Uint8Array>
+  /**
+   * Release the file when the body will never be read (HEAD requests) —
+   * an in-flight provider download keeps filling the cache.
+   */
+  cancel: () => void
+}

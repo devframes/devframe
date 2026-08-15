@@ -2,6 +2,7 @@ import type { CAC } from 'cac'
 import type { CliFlagsSchema } from '../adapters/flags'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeNodeContext } from './context'
+import type { StaticAssetsSource } from './remote-assets'
 
 export type DevframeRuntime = 'cli' | 'build' | 'spa' | 'vite' | 'embedded'
 
@@ -165,8 +166,13 @@ export interface DevframeCliOptions {
    * The `--mcp` / `--no-mcp` CLI flags override this per run.
    */
   mcp?: boolean | McpRouteOptions
-  /** Author's SPA dist directory (served as the devframe's UI). */
-  distDir?: string
+  /**
+   * Author's SPA dist — served as the devframe's UI. A local directory, or
+   * a {@link StaticAssetsSource} remote declaration (`{ package, version }`)
+   * served through devframe's caching CDN back-proxy so the assets need not
+   * ship inside the node package.
+   */
+  distDir?: StaticAssetsSource
   /**
    * How the browser reaches the RPC WebSocket. Defaults to sharing the HTTP
    * port on the `__ws` route. See {@link DevframeWsOptions} for the

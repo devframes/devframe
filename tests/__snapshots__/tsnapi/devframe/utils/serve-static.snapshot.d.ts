@@ -8,8 +8,12 @@ export interface ServeStaticOptions {
 }
 // #endregion
 
+// #region Types
+export type ServableAssets = string | RemoteAssetsStore;
+// #endregion
+
 // #region Functions
-export declare function mountStaticHandler(_: H3, _: string, _: string, _?: ServeStaticOptions): void;
-export declare function serveStaticHandler(_: string, _?: ServeStaticOptions): EventHandler;
-export declare function serveStaticNodeMiddleware(_: string, _?: ServeStaticOptions): (_: IncomingMessage, _: ServerResponse, _?: (_?: Error) => void) => void;
+export declare function mountStaticHandler(_: H3, _: string, _: ServableAssets, _?: ServeStaticOptions): void;
+export declare function serveStaticHandler(_: ServableAssets, _?: ServeStaticOptions): EventHandler;
+export declare function serveStaticNodeMiddleware(_: ServableAssets, _?: ServeStaticOptions): (_: IncomingMessage, _: ServerResponse, _?: (_?: Error) => void) => void;
 // #endregion
