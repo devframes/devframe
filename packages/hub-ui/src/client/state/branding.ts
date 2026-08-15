@@ -1,39 +1,7 @@
 import type { Ref } from 'vue'
+import type { BrandingLogo, DevframeBranding } from '../../types'
 import { computed, ref } from 'vue'
 import { isDark } from './color-mode'
-
-/**
- * A logo asset — a single URL/data-URI, or per-color-scheme variants. The dark
- * variant falls back to the light one when only `light` is given (or a bare
- * string is used for both).
- */
-export type BrandingLogo = string | { light: string, dark: string }
-
-/**
- * Consumer-facing branding for the reference hub-ui. Every field is optional
- * and falls back to devframe's own identity. Published as
- * `ConnectionMeta.configs.ui.branding` via `createUi({ branding })`, and
- * read from the one connection handshake the dock already performs —
- * `ConnectionMeta` has its own cross-realm propagation (see
- * `DEVFRAME_CONNECTION_KEY`), so branding needs no globals or query params
- * of its own.
- */
-export interface DevframeBranding {
-  /** Product name — the wordmark, window titles, and all user-visible copy. */
-  productName?: string
-  /** Logo mark (URL / data-URI), rendered via `<img>`. */
-  logo?: BrandingLogo
-  /** Optional standalone wordmark image; when absent, mark + productName text is composed. */
-  wordmark?: BrandingLogo
-  /** Brand color; feeds `--devframe-primary` and the whole primary ramp. */
-  primaryColor?: string
-  /** Short line for the auth screen and the standalone meta description. */
-  tagline?: string
-  /** Favicon URL — applied on the standalone viewer and the popped-out window only. */
-  favicon?: string
-  /** Window/tab title; defaults to `productName`. */
-  windowTitle?: string
-}
 
 /** Branding with defaults resolved — what the UI actually renders. */
 export interface ResolvedBranding {

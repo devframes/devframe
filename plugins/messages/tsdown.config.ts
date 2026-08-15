@@ -36,6 +36,14 @@ export default defineConfig([
     clean: false,
     platform: 'neutral',
     tsconfig,
+    // `client/index.ts` re-exports `useMessages(): Reactive<MessagesState>` —
+    // a genuine Vue reactivity type, not just a documentation import. Without
+    // this, the dts bundler inlines Vue's entire runtime-core/reactivity type
+    // surface to describe `Reactive<T>` (≈935 KB); `neverBundle` keeps the
+    // reference as `import('vue').Reactive<...>` instead. This build is
+    // `emitDtsOnly`, so it has no effect on the JS output (built separately
+    // by the Vite lib build for the client, and by the node build above).
+    deps: { neverBundle: ['vue'] },
     dts: { emitDtsOnly: true },
     outExtensions: () => ({ dts: '.d.mts' }),
     entry: { ...clientEntries, ...serverEntries },

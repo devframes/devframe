@@ -1,23 +1,5 @@
+import type { EmbeddedVisibility } from '../../types'
 import { HUB_UI_HIDE_EVENT } from '../constants'
-
-/**
- * How the embedded floating dock reveals itself on a fresh page — the
- * reference UI's port of Nuxt DevTools' opt-in overlay, published as
- * `ConnectionMeta.configs.ui.embeddedVisibility` and set via
- * `createUi({ embeddedVisibility })`.
- *
- * - `normal` (default) — the dock is shown immediately.
- * - `passive` — the dock starts hidden and a console hint offers the reveal
- *   shortcut; revealing persists per-origin, so later sessions on this
- *   browser start shown. The "Hide" command returns to passive.
- * - `hidden` — the dock starts hidden and the shortcut reveals it for the
- *   current session only; nothing is persisted.
- *
- * Whatever the policy, the reveal state is a user-overridable preference —
- * the same shape as the float/edge dock mode: the config seeds it, the
- * visitor's own reveal/hide wins from then on.
- */
-export type EmbeddedVisibility = 'normal' | 'passive' | 'hidden'
 
 /** Per-origin persisted reveal flag for `passive` mode. */
 const REVEAL_STORAGE_KEY = 'devframes-dock-revealed'
