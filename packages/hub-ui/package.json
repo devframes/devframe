@@ -45,6 +45,11 @@
     "@devframes/json-render": "workspace:*",
     "devframe": "workspace:*"
   },
+  "peerDependenciesMeta": {
+    "@devframes/json-render": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",
@@ -61,9 +66,7 @@
     "dompurify": "catalog:frontend",
     "fuse.js": "catalog:frontend",
     "iframe-pane": "catalog:frontend",
-    "magic-string": "catalog:build",
     "storybook": "catalog:storybook",
-    "tinyglobby": "catalog:deps",
     "tsdown": "catalog:build",
     "tsx": "catalog:build",
     "unocss": "catalog:frontend",

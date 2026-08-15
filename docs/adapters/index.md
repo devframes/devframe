@@ -25,7 +25,7 @@ A devframe's SPA basePath depends on which adapter is running it:
 
 | Adapter kind | Default basePath | Reason |
 |--------------|------------------|--------|
-| `cli`, `spa`, `build` (standalone) | `/` | The devframe owns the origin. |
+| `cli`, `build` (standalone) | `/` | The devframe owns the origin. |
 | `vite`, `embedded` (hosted) | `/__<id>/` | The devframe shares the origin with a host app and namespaces itself. |
 
 Override either side explicitly with `DevframeDefinition.basePath`:

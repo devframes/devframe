@@ -93,6 +93,48 @@ export const ToggleTrigger: Story = {
   }),
 }
 
+/**
+ * A `transform` on an ancestor turns it into a containing block for `position: fixed`
+ * descendants — without the escape fix, the panel would be positioned relative to (and
+ * clipped by) the transformed box below rather than the viewport. It still lands on the
+ * trigger correctly here because `FloatingPopover` `<Teleport>`s the panel out to that
+ * ancestor's parent.
+ */
+export const EscapesTransformedAncestor: Story = {
+  render: () => defineComponent({
+    setup() {
+      const triggerEl = ref<HTMLElement | null>(null)
+      const open = ref(false)
+      const item = computed(() => (open.value && triggerEl.value)
+        ? { el: triggerEl.value, content: () => h('div', { class: 'flex flex-col gap-0.5 min-w-40' }, [
+            h('div', { class: 'px2 pt1 pb1.5 op60 text-2.75 uppercase tracking-wide font-medium' }, 'Menu'),
+            ...['Overview', 'Pages', 'Components'].map(label =>
+              h('button', { class: 'px2 py1.5 rounded text-sm text-left op80 hover:op100 hover:bg-active transition' }, label)),
+          ]) }
+        : null)
+      return () => h('div', { class: 'flex items-center justify-center p20 min-h-80 font-sans' }, [
+        h('div', {
+          class: 'p8 border-2 border-dashed border-red rounded of-hidden',
+          style: { transform: 'translateZ(0)' },
+        }, [
+          h('div', { class: 'text-xs op60 mb2' }, 'Transformed + clipping ancestor'),
+          h('button', {
+            ref: (el: any) => (triggerEl.value = el),
+            class: 'px3 py1.5 rounded border border-base bg-glass color-base shadow',
+            onClick: () => (open.value = !open.value),
+          }, 'Toggle menu'),
+        ]),
+        h(FloatingPopover, {
+          item: item.value,
+          panelClass: '!p0',
+          ignore: [triggerEl],
+          onDismiss: () => (open.value = false),
+        }),
+      ])
+    },
+  }),
+}
+
 export const CornerAnchors: Story = {
   render: () => defineComponent({
     setup() {

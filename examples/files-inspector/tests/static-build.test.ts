@@ -89,23 +89,4 @@ describe('static build (CLI build surface)', () => {
     ) as { output: string[] }
     expect(record.output).toEqual(['README.md', 'package.json', 'sample.txt'])
   })
-
-  it('writes spa-loader.json honoring a custom base when def.spa is set', async () => {
-    // The example's devframe sets `spa: { loader: 'none' }`, which opts
-    // into the spa-loader sidecar. A `--base` override should be reflected
-    // verbatim in the loader descriptor without forcing a rebuild - the
-    // SPA bundle itself uses runtime base discovery, so the descriptor is
-    // the only place the deploy base needs to land.
-    const out = await mkdtemp(path.join(os.tmpdir(), 'devframe-files-inspector-base-'))
-    try {
-      await createBuild(devframe, { outDir: out, base: '/custom-base/' })
-      const loader = JSON.parse(
-        await readFile(path.join(out, 'spa-loader.json'), 'utf-8'),
-      ) as { version: number, mode: string, base: string }
-      expect(loader).toEqual({ version: 1, mode: 'none', base: '/custom-base/' })
-    }
-    finally {
-      await rm(out, { recursive: true, force: true })
-    }
-  })
 })

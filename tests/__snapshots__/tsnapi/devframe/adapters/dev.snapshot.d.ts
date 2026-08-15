@@ -9,6 +9,7 @@ export interface CreateDevServerOptions {
   distDir?: StaticAssetsSource;
   basePath?: string;
   ws?: DevframeWsOptions | false;
+  allowedOrigins?: readonly string[] | WsOriginRegistry | false;
   sse?: boolean | DevframeSseOptions;
   app?: H3;
   openBrowser?: boolean | string;
@@ -21,6 +22,7 @@ export interface CreateDevServerOptions {
     port: number;
     app: H3;
   }) => void | Promise<void>;
+  force?: boolean;
 }
 // #endregion
 

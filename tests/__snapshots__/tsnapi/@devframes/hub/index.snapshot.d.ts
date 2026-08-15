@@ -376,7 +376,6 @@ export declare const defineHubRpcFunction: <NAME extends string, TYPE extends im
 // #region Other
 export { ConnectionMeta }
 export { DevframeCapabilities }
-export { DevframeDiagnosticsDefinition }
 export { DevframeDiagnosticsHost }
 export { DevframeDiagnosticsLogger }
 export { DevframeHost }
@@ -385,11 +384,9 @@ export { DevframeRpcClientFunctions }
 export { DevframeRpcServerFunctions }
 export { DevframeRpcSharedStates }
 export { DevframeViewHost }
-export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }
 export { EventUnsubscribe }
-export { PartialWithoutId }
 export { RpcBroadcastOptions }
 export { RpcDefinitionsFilter }
 export { RpcDefinitionsToFunctions }
@@ -399,5 +396,4 @@ export { RpcSharedStateHost }
 export { RpcStreamingChannel }
 export { RpcStreamingChannelOptions }
 export { RpcStreamingHost }
-export { Thenable }
 // #endregion

@@ -48,13 +48,11 @@ export default defineDevframe({
 | `homepage` | `string` | **Required.** Project homepage or documentation URL. |
 | `description` | `string` | **Required.** One-line summary of what the tool does. |
 | `icon` | `string \| { light, dark }` | Optional Iconify name or URL; supports light/dark pairs. |
-| `basePath` | `string` | Optional mount path override. Defaults depend on the adapter: `/` for standalone (`cli` / `spa` / `build`), `/.<id>/` for hosted (`vite` / `embedded`). |
+| `basePath` | `string` | Optional mount path override. Defaults depend on the adapter: `/` for standalone (`cli` / `build`), `/.<id>/` for hosted (`vite` / `embedded`). |
 | `duplicationStrategy` | `'warn' \| 'silent' \| 'throw' \| 'duplicate'` | How a hub reacts when another devframe sharing this `id` is mounted onto the same hub. Defaults to `'warn'`. See [Hub](./hub). Hub adapters consult it; standalone adapters ignore it. |
-| `capabilities` | `{ dev?, build?, spa? }` | Per-runtime feature flags. A `boolean` applies to the runtime as a whole; an object enables individual features. |
+| `capabilities` | `{ dev?, build? }` | Per-runtime feature flags. A `boolean` applies to the runtime as a whole; an object enables individual features. |
 | `setup` | `(ctx, info?) => void \| Promise<void>` | **Required.** Server-side entry point. Runs in every runtime. The optional second argument carries runtime metadata — most notably the parsed CLI `flags` when running under `createCac`. |
-| `setupBrowser` | `(ctx) => void \| Promise<void>` | Browser-only entry used by the SPA adapter. |
 | `cli` | `DevframeCliOptions` | Defaults for the CLI adapter. See [CLI options](#cli-options) below. |
-| `spa` | `DevframeSpaOptions` | Defaults for the SPA adapter (`base`, `loader`). |
 
 ### Sourcing metadata from `package.json`
 
@@ -171,23 +169,6 @@ Each devframe-level host has a dedicated page:
 - [Agent-Native](./agent-native) — `ctx.agent`
 - [Cross-Plugin Services](./services) — `ctx.services`
 
-## Browser setup
-
-The SPA adapter supports a `setupBrowser(ctx)` hook that runs inside the deployed client bundle. Use it for tools that perform their own in-browser work — parsing a dropped file, calling public APIs from the client, etc.
-
-```ts
-defineDevframe({
-  id: 'my-devframe',
-  name: 'My Devframe',
-  setup(ctx) { /* server-side */ },
-  setupBrowser(ctx) {
-    // `ctx.rpc` is the write-disabled static client in SPA mode.
-  },
-})
-```
-
-Deployed SPAs that use `setupBrowser` ship their own client entry that registers the handlers.
-
 ## CLI options
 
 `cli` configures the CLI adapter's defaults and plugs additional flags/commands into the CAC instance:
@@ -198,7 +179,7 @@ defineDevframe({
   name: 'My Devframe',
   cli: {
     command: 'my-devframe', // binary name; default: the `id`
-    distDir: './client/dist', // required for dev / build / spa
+    distDir: './client/dist', // required for dev / build
     port: 9876, // preferred port; default: 9999
     portRange: [9876, 10000], // forwarded to get-port-please
     random: false, // forwarded to get-port-please
@@ -220,7 +201,7 @@ defineDevframe({
 | Field | Type | Description |
 |-------|------|-------------|
 | `command` | `string` | Binary name surfaced in `--help`. Default: the definition's `id`. |
-| `distDir` | `string` | SPA dist directory. **Required** for `dev` / `build` / `spa`. |
+| `distDir` | `string` | SPA dist directory. **Required** for `dev` / `build`. |
 | `port` | `number` | Preferred port for the dev server. |
 | `portRange` | `[number, number]` | Port scan range, passed through to `get-port-please`. |
 | `random` | `boolean` | Prefer a random open port. |
@@ -230,18 +211,6 @@ defineDevframe({
 | `configure` | `(cli: CAC) => void` | Contribute capability flags/commands. Runs before `createCac`'s `configureCli` option so the final tool author always has the last word. |
 
 `setup(ctx, info)` receives `info.flags` populated from both devframe's built-in flags and any you declared via `configure` — saves duplicating flag parsing.
-
-## SPA options
-
-```ts
-defineDevframe({
-  id: 'my-devframe',
-  spa: {
-    base: '/',
-    loader: 'query', // 'query' | 'upload' | 'none'
-  },
-})
-```
 
 See [Adapters](/adapters/) for how each adapter consumes these.
 

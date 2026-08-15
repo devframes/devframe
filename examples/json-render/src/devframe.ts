@@ -2,9 +2,9 @@ import { createJsonRenderDevframe } from '@devframes/json-render-ui/spa'
 import pkg from '../package.json' with { type: 'json' }
 import { createDashboardView } from './dashboard.ts'
 
-// `createJsonRenderDevframe` presets `spa.loader: 'none'` and points
-// `cli.distDir` at the prebuilt `@devframes/json-render-ui` SPA, so this
-// example serves the out-of-box renderer with no client build of its own.
+// `createJsonRenderDevframe` points `cli.distDir` at the prebuilt
+// `@devframes/json-render-ui` SPA, so this example serves the out-of-box
+// renderer with no client build of its own.
 export default createJsonRenderDevframe({
   id: 'example:json-render',
   name: 'JSON-Render',

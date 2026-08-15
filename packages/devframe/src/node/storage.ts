@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import process from 'node:process'
-import { destr } from 'destr'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { dirname } from 'pathe'
 import { debounce } from 'perfect-debounce'
@@ -13,6 +12,20 @@ export interface CreateStorageOptions<T extends object> {
   debounce?: number
 }
 
+// `JSON.parse` with a reviver that drops `__proto__`/`constructor.prototype`
+// keys, mirroring destr's core prototype-pollution guard. Storage only ever
+// reads back JSON it wrote itself via `JSON.stringify`, so destr's lenient
+// (non-strict) parsing of bare keywords/quoted strings never applies here -
+// this file is always a JSON object literal, and invalid JSON should throw
+// (caught below) rather than fall back to the raw string.
+function safeJsonParse<T>(text: string): T {
+  return JSON.parse(text, (key, value) => {
+    if (key === '__proto__' || (key === 'constructor' && value && typeof value === 'object' && 'prototype' in value))
+      return undefined
+    return value
+  })
+}
+
 export function createStorage<T extends object>(options: CreateStorageOptions<T>) {
   const {
     mergeInitialValue = (initialValue, savedValue) => ({ ...initialValue, ...savedValue }),
@@ -22,7 +35,7 @@ export function createStorage<T extends object>(options: CreateStorageOptions<T>
   let initialValue: T = options.initialValue
   if (fs.existsSync(options.filepath)) {
     try {
-      const savedValue = destr<T>(fs.readFileSync(options.filepath, 'utf-8'), { strict: true })
+      const savedValue = safeJsonParse<T>(fs.readFileSync(options.filepath, 'utf-8'))
       initialValue = mergeInitialValue ? mergeInitialValue(options.initialValue, savedValue) : savedValue
     }
     catch (error) {

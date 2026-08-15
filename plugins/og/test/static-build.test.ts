@@ -32,12 +32,10 @@ describe('open Graph static build', () => {
       await rm(outDir, { recursive: true, force: true })
   })
 
-  it('copies the Vue SPA and query loader metadata', async () => {
+  it('copies the Vue SPA with relative asset URLs', async () => {
     const html = await readFile(path.join(outDir, 'index.html'), 'utf8')
-    const loader = JSON.parse(await readFile(path.join(outDir, 'spa-loader.json'), 'utf8'))
     expect(html).toContain('<base href="./" />')
     expect(html).toMatch(/src="\.\/assets\/[^"?]+\.js"/)
-    expect(loader).toMatchObject({ mode: 'query' })
   })
 
   it('bakes the default target into the RPC dump', async () => {

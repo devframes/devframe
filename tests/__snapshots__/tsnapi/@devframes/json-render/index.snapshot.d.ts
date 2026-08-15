@@ -241,6 +241,7 @@ export declare const basePropSchemas: {
     label: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
     disabled: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
     searchable: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+    native: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
   }, z.core.$strip>;
 };
 export declare const baseSchema: import("@json-render/core").Schema<{
@@ -331,6 +332,7 @@ export declare const SelectPropsSchema: z.ZodObject<{
   label: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
   disabled: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
   searchable: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
+  native: z.ZodOptional<z.ZodUnion<readonly [z.ZodBoolean, z.ZodIntersection<z.ZodObject<{}, z.core.$loose>, z.ZodRecord<z.ZodString, z.ZodUnknown>>]>>;
 }, z.core.$strip>;
 export declare const StackPropsSchema: z.ZodObject<{
   direction: z.ZodOptional<z.ZodEnum<{

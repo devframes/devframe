@@ -160,6 +160,7 @@ export const SelectPropsSchema = z.object({
   label: str.optional(),
   disabled: bool.optional(),
   searchable: bool.optional(),
+  native: bool.optional(),
 })
 
 /**

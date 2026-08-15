@@ -11,7 +11,6 @@ export declare const DEVFRAME_AUTH_TOKEN_QUERY_PARAM: string;
 export declare const DEVFRAME_CONNECTION_KEY: string;
 export declare const DEVFRAME_CONNECTION_META_FILENAME: string;
 export declare const DEVFRAME_DOCK_IMPORTS_FILENAME: string;
-export declare const DEVFRAME_DOCK_IMPORTS_VIRTUAL_ID: string;
 export declare const DEVFRAME_MCP_ROUTE: string;
 export declare const DEVFRAME_OTP_URL_PARAM: string;
 export declare const DEVFRAME_RPC_DUMP_DIRNAME: string;

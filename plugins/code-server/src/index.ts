@@ -60,7 +60,6 @@ export function createCodeServerDevframe(options: CodeServerOptions = {}): Devfr
       // Hosted adapters supply their own auth layer and ignore this.
       auth: options.auth ?? true,
     },
-    spa: { loader: 'none' },
     async setup(ctx) {
       const { setupCodeServer } = await import('./node/index')
       await setupCodeServer(ctx, options)

@@ -87,7 +87,6 @@ export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeD
       port: options.port ?? 9899,
       distDir,
     },
-    spa: { loader: 'none' },
     setup(ctx) {
       setupA11y(ctx, {
         dockId: id,

@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
  *
  * ```ts
  * import { jsonRenderSpaDir } from '@devframes/json-render-ui/spa'
- * defineDevframe({ cli: { command: 'my-app', distDir: jsonRenderSpaDir }, spa: { loader: 'none' } })
+ * defineDevframe({ cli: { command: 'my-app', distDir: jsonRenderSpaDir } })
  * ```
  *
  * This entry is node-safe: it imports no Vue and no `@antfu/design`, so a build
@@ -18,9 +18,9 @@ export const jsonRenderSpaDir: string = fileURLToPath(new URL('./spa/', import.m
 
 /**
  * Wrap a devframe definition so it serves the prebuilt {@link jsonRenderSpaDir
- * standalone SPA}. Presets `spa.loader: 'none'` and defaults `cli.distDir` to
- * the SPA assets (an explicit `cli.distDir` still wins). The author supplies
- * everything else (id, name, `setup`, port, …) as usual.
+ * standalone SPA}. Defaults `cli.distDir` to the SPA assets (an explicit
+ * `cli.distDir` still wins). The author supplies everything else (id, name,
+ * `setup`, port, …) as usual.
  *
  * ```ts
  * export default createJsonRenderDevframe({
@@ -33,7 +33,6 @@ export const jsonRenderSpaDir: string = fileURLToPath(new URL('./spa/', import.m
 export function createJsonRenderDevframe(definition: DevframeDefinition): DevframeDefinition {
   return {
     ...definition,
-    spa: { loader: 'none', ...definition.spa },
     cli: { ...definition.cli, distDir: definition.cli?.distDir ?? jsonRenderSpaDir },
   }
 }

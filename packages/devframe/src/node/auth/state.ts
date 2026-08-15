@@ -3,6 +3,29 @@ import type { SharedState } from 'devframe/utils/shared-state'
 import type { InternalAnonymousAuthStorage } from '../hub-internals/context'
 import { DEVFRAME_OTP_URL_PARAM } from 'devframe/constants'
 import { randomDigits, randomToken, timingSafeEqual } from 'devframe/utils/crypto-token'
+import { parseUA } from 'ua-parser-modern'
+
+/**
+ * Format a raw `navigator.userAgent` string into the short display label
+ * shown for a trusted device (e.g. "Chrome 120 | macOS 14 desktop").
+ *
+ * The client used to parse+format this itself, but that pulled
+ * `ua-parser-modern` into the browser bundle for a label nothing else on
+ * the client needs — the client now sends the raw string and parsing
+ * happens here, at the server ingress, keeping the persisted label format
+ * identical.
+ */
+function describeUA(userAgent: string): string {
+  const info = parseUA(userAgent)
+  return [
+    info.browser.name,
+    info.browser.version,
+    '|',
+    info.os.name,
+    info.os.version,
+    info.device.type,
+  ].filter(i => i).join(' ')
+}
 
 /** Number of decimal digits in a human-typed one-time authentication code. */
 const TEMP_AUTH_CODE_LENGTH = 6
@@ -121,7 +144,7 @@ export function exchangeTempAuthCode(
   storage.mutate((state) => {
     state.trusted[authToken] = {
       authToken,
-      ua: info.ua,
+      ua: describeUA(info.ua),
       origin: info.origin,
       timestamp: Date.now(),
     }

@@ -112,10 +112,9 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
     cli
       .command('build', 'Build a self-contained static deploy of the devframe')
       .option('--out-dir <outDir>', 'Output directory', { default: 'dist-static' })
-      .option('--base <base>', 'URL base', { default: '/' })
       .option('--pretty', 'Pretty-print dump JSON (larger on disk)')
-      .action(async (flags: { outDir: string, base?: string, pretty?: boolean }) => {
-        await createBuild(d, { outDir: flags.outDir, base: flags.base, pretty: flags.pretty })
+      .action(async (flags: { outDir: string, pretty?: boolean }) => {
+        await createBuild(d, { outDir: flags.outDir, pretty: flags.pretty })
       })
   }
 

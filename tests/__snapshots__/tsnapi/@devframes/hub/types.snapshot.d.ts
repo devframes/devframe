@@ -19,7 +19,6 @@ export { DevframeCommandKeybinding }
 export { DevframeCommandShortcutOverrides }
 export { DevframeCommandsHost }
 export { DevframeCommandsHostEvents }
-export { DevframeDiagnosticsDefinition }
 export { DevframeDiagnosticsHost }
 export { DevframeDiagnosticsLogger }
 export { DevframeDockActivation }
@@ -71,13 +70,11 @@ export { DevframeViewHost }
 export { DevframeViewIframe }
 export { DevframeViewLauncher }
 export { DevframeViewLauncherStatus }
-export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }
 export { EventUnsubscribe }
 export { FrameSubTabsConfig }
 export { NavTarget }
-export { PartialWithoutId }
 export { RemoteConnectionInfo }
 export { RemoteDockOptions }
 export { RpcBroadcastOptions }
@@ -89,5 +86,4 @@ export { RpcSharedStateHost }
 export { RpcStreamingChannel }
 export { RpcStreamingChannelOptions }
 export { RpcStreamingHost }
-export { Thenable }
 // #endregion

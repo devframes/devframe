@@ -106,9 +106,6 @@ catalogs:
     ohash:
       specifier: ^2.0.11
       version: 2.0.11
-    open:
-      specifier: ^11.0.0
-      version: 11.0.0
     p-limit:
       specifier: ^7.3.1
       version: 7.3.1
@@ -406,6 +403,9 @@ importers:
       '@types/ws':
         specifier: catalog:types
         version: 8.18.1
+      '@unocss/reset':
+        specifier: catalog:frontend
+        version: 66.7.5
       bumpp:
         specifier: catalog:tooling
         version: 12.2.0
@@ -424,6 +424,9 @@ importers:
       lightningcss:
         specifier: catalog:build
         version: 1.33.0
+      magic-string:
+        specifier: catalog:build
+        version: 1.1.1
       nano-staged:
         specifier: catalog:tooling
         version: 1.0.2
@@ -439,6 +442,9 @@ importers:
       skills-npm:
         specifier: catalog:tooling
         version: 1.2.0
+      tinyglobby:
+        specifier: catalog:deps
+        version: 0.2.17
       tsnapi:
         specifier: catalog:testing
         version: 1.2.0(vitest@4.1.10(@types/node@26.2.0)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))
@@ -1129,9 +1135,6 @@ importers:
       crossws:
         specifier: ^0.4.10
         version: 0.4.10(srvx@0.12.4)
-      destr:
-        specifier: catalog:deps
-        version: 2.0.5
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.26(crossws@0.4.10(srvx@0.12.4))
@@ -1175,9 +1178,6 @@ importers:
       ohash:
         specifier: catalog:deps
         version: 2.0.11
-      open:
-        specifier: catalog:deps
-        version: 11.0.0
       p-limit:
         specifier: catalog:deps
         version: 7.3.1
@@ -1302,15 +1302,9 @@ importers:
       iframe-pane:
         specifier: catalog:frontend
         version: 1.1.0
-      magic-string:
-        specifier: catalog:build
-        version: 1.1.1
       storybook:
         specifier: catalog:storybook
         version: 10.5.7(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      tinyglobby:
-        specifier: catalog:deps
-        version: 0.2.17
       tsdown:
         specifier: catalog:build
         version: 0.22.14(@volar/typescript@2.4.28(typescript@5.9.3))(oxc-resolver@11.24.2)(tsx@4.23.12)(typescript@5.9.3)
@@ -1379,9 +1373,6 @@ importers:
       '@unocss/preset-icons':
         specifier: catalog:frontend
         version: 66.7.5
-      '@unocss/reset':
-        specifier: catalog:frontend
-        version: 66.7.5
       '@vitejs/plugin-vue':
         specifier: catalog:build
         version: 6.0.8(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
@@ -1391,9 +1382,6 @@ importers:
       storybook:
         specifier: catalog:storybook
         version: 10.5.7(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      tinyglobby:
-        specifier: catalog:deps
-        version: 0.2.17
       tsdown:
         specifier: catalog:build
         version: 0.22.14(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(tsx@4.23.12)(typescript@6.0.3)
@@ -1514,19 +1502,16 @@ importers:
       '@devframes/vite':
         specifier: workspace:*
         version: link:../../packages/vite
-      axe-core:
-        specifier: catalog:frontend
-        version: 4.13.0
       cac:
         specifier: catalog:deps
         version: 7.0.0
-      solid-js:
-        specifier: catalog:frontend
-        version: 1.9.14
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.4(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.41(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.41(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.3(vue@3.5.41(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.41(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.26))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
+      axe-core:
+        specifier: catalog:frontend
+        version: 4.13.0
       colorjs.io:
         specifier: catalog:frontend
         version: 0.7.1
@@ -1539,6 +1524,9 @@ importers:
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.26(crossws@0.4.10(srvx@0.12.4))
+      solid-js:
+        specifier: catalog:frontend
+        version: 1.9.14
       storybook:
         specifier: catalog:storybook
         version: 10.5.7(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -8091,9 +8079,6 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
-  magic-string@1.0.0:
-    resolution: {integrity: sha512-CGvjzMN08iv6w1mm4/x3Gh1hLb4VnyRUA15FFpl6CsCIGGoe36k7kY5KNz9QDbSBN5I/fWHM6ZlIkUTa5xdUEA==}
-
   magic-string@1.1.1:
     resolution: {integrity: sha512-qFemKPzc3ttrYVaMmnSkGtGc5nE6Ncl4bj7c9IE6C9OUIRXjf6PzJ+UZ1xhVIjYc7dolHq3qKzpAJPZUbvNj+A==}
 
@@ -13441,7 +13426,7 @@ snapshots:
   '@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.8(@typescript-eslint/types@8.67.0))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0))':
     dependencies:
       deepmerge: 4.3.1
-      magic-string: 1.0.0
+      magic-string: 1.1.1
       obug: 2.1.4
       svelte: 5.56.8(@typescript-eslint/types@8.67.0)
       vite: 8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)
@@ -16543,10 +16528,6 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  magic-string@1.0.0:
-    dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.5
-
   magic-string@1.1.1:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -18231,7 +18212,7 @@ snapshots:
 
   rolldown-string@0.3.1(rolldown@1.2.3):
     dependencies:
-      magic-string: 1.0.0
+      magic-string: 1.1.1
     optionalDependencies:
       rolldown: 1.2.3
 

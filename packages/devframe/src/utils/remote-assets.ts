@@ -102,8 +102,8 @@ function majorOf(version: string): string {
  * Resolve a locally installed copy of `assets.package` from
  * `assets.resolveFrom`'s dependency graph and return its assets directory
  * (`<pkg root>/<assets.path>`), or `undefined` when the package (or the
- * directory) is absent. A different installed version warns (`DF0061`);
- * a different **major** throws (`DF0060`).
+ * directory) is absent. A different installed version warns (`DF0062`);
+ * a different **major** throws (`DF0061`).
  */
 export function resolveInstalledRemoteAssets(assets: RemoteAssets): string | undefined {
   if (!assets.resolveFrom)
@@ -122,8 +122,8 @@ export function resolveInstalledRemoteAssets(assets: RemoteAssets): string | und
     return undefined
   if (installed !== assets.version) {
     if (majorOf(installed) !== majorOf(assets.version))
-      throw diagnostics.DF0060({ package: assets.package, required: assets.version, installed })
-    diagnostics.DF0061({ package: assets.package, required: assets.version, installed })
+      throw diagnostics.DF0061({ package: assets.package, required: assets.version, installed })
+    diagnostics.DF0062({ package: assets.package, required: assets.version, installed })
   }
   const dir = join(dirname(pkgJsonPath), assets.path ?? 'dist')
   return existsSync(dir) ? dir : undefined
@@ -263,7 +263,7 @@ export function createRemoteAssetsStore(
     catch (error) {
       if (!manifestFailureReported) {
         manifestFailureReported = true
-        diagnostics.DF0058({
+        diagnostics.DF0059({
           package: normalized.package,
           version: normalized.version,
           provider: providerName(assets),
@@ -296,7 +296,7 @@ export function createRemoteAssetsStore(
     }
   }
 
-  /** Write `body` to the cache at `filePath` (tmp + rename); failures warn (`DF0062`). */
+  /** Write `body` to the cache at `filePath` (tmp + rename); failures warn (`DF0063`). */
   async function persist(filePath: string, body: ReadableStream<Uint8Array>): Promise<void> {
     const target = join(cacheDir, filePath)
     const tmp = `${target}.${Math.random().toString(36).slice(2)}.tmp`
@@ -315,7 +315,7 @@ export function createRemoteAssetsStore(
     }
     catch (error) {
       await rm(tmp, { force: true }).catch(() => {})
-      diagnostics.DF0062({
+      diagnostics.DF0063({
         filepath: target,
         reason: error instanceof Error ? error.message : String(error),
         cause: error,
@@ -326,7 +326,7 @@ export function createRemoteAssetsStore(
   /**
    * Fetch `filePath` through the provider: `null` on 404, a served file
    * (client branch of the teed body, cache write in the background) on 200,
-   * throws (`DF0059`) otherwise.
+   * throws (`DF0060`) otherwise.
    */
   async function serveRemote(filePath: string): Promise<RemoteAssetsServedFile | null> {
     const url = provider.fileUrl(normalized.package, normalized.version, filePath)
@@ -335,7 +335,7 @@ export function createRemoteAssetsStore(
       res = await fetchImpl(url)
     }
     catch (error) {
-      throw diagnostics.DF0059({
+      throw diagnostics.DF0060({
         url,
         package: normalized.package,
         reason: error instanceof Error ? error.message : String(error),
@@ -348,7 +348,7 @@ export function createRemoteAssetsStore(
     }
     if (!res.ok || !res.body) {
       await res.body?.cancel().catch(() => {})
-      throw diagnostics.DF0059({ url, package: normalized.package, reason: `HTTP ${res.status}` })
+      throw diagnostics.DF0060({ url, package: normalized.package, reason: `HTTP ${res.status}` })
     }
     const [toClient, toCache] = res.body.tee()
     // Fire-and-forget: the cache write must not block (or fail) the response.
@@ -382,7 +382,7 @@ export function createRemoteAssetsStore(
       if (cached)
         return cached
       if (assets.offline)
-        throw diagnostics.DF0059({ url: filePath, package: normalized.package, reason: 'offline: true and the file is not in the cache' })
+        throw diagnostics.DF0060({ url: filePath, package: normalized.package, reason: 'offline: true and the file is not in the cache' })
       return serveRemote(filePath)
     }
 
@@ -405,7 +405,7 @@ export function createRemoteAssetsStore(
 
   async function materialize(targetDir: string): Promise<void> {
     if (!provider.listFiles) {
-      throw diagnostics.DF0063({
+      throw diagnostics.DF0064({
         package: normalized.package,
         version: normalized.version,
         reason: 'the configured provider has no file listing (`listFiles`)',
@@ -416,7 +416,7 @@ export function createRemoteAssetsStore(
       files = await provider.listFiles(normalized.package, normalized.version, fetchImpl)
     }
     catch (error) {
-      throw diagnostics.DF0063({
+      throw diagnostics.DF0064({
         package: normalized.package,
         version: normalized.version,
         reason: error instanceof Error ? error.message : String(error),
@@ -435,7 +435,7 @@ export function createRemoteAssetsStore(
           throw new Error(`HTTP ${res.status}`)
       }
       catch (error) {
-        throw diagnostics.DF0063({
+        throw diagnostics.DF0064({
           package: normalized.package,
           version: normalized.version,
           reason: `failed to download ${filePath}: ${error instanceof Error ? error.message : String(error)}`,

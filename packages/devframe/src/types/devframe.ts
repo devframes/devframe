@@ -4,13 +4,11 @@ import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeNodeContext } from './context'
 import type { StaticAssetsSource } from './remote-assets'
 
-export type DevframeRuntime = 'cli' | 'build' | 'spa' | 'vite' | 'embedded'
-
 /**
  * Classification of how a devframe is being deployed. Hosted adapters
  * (`vite`, `embedded`) share their origin with a host app and must
  * namespace their mount path under `/__<id>/`. Standalone adapters
- * (`cli`, `spa`, `build`) own the origin and default to `/`.
+ * (`cli`, `build`) own the origin and default to `/`.
  */
 export type DevframeDeploymentKind = 'standalone' | 'hosted'
 
@@ -133,7 +131,7 @@ export interface DevframeCliOptions {
   /**
    * Authentication for the standalone dev server.
    *
-   *   - `undefined` / `true` — the standalone adapters (`cli` / `spa` /
+   *   - `undefined` / `true` — the standalone adapters (`cli` /
    *     served `build`) auto-wire devframe's interactive OTP auth
    *     (`createInteractiveAuth`): an untrusted client can only reach
    *     `anonymous:` methods until it exchanges the printed one-time code.
@@ -188,7 +186,7 @@ export interface DevframeCliOptions {
   sse?: boolean | DevframeSseOptions
   /**
    * Capability-side CAC hook. Called with the CAC instance after the
-   * adapter registers its built-in commands (`build` / `spa` / `mcp`)
+   * adapter registers its built-in commands (`build` / `mcp`)
    * but before `createCac`'s own `configureCli` caller. Use this to
    * contribute tool-specific flags and subcommands from the definition
    * itself.
@@ -230,7 +228,7 @@ export interface DevframeCliOptions {
  *
  * Every field is optional. `title` / `icon` default to the definition's
  * `name` / `icon` when omitted here; the rest are unset by default.
- * Standalone adapters (`cli` / `spa` / `build`) ignore this entirely.
+ * Standalone adapters (`cli` / `build`) ignore this entirely.
  */
 export interface DevframeDockDefaults {
   /** Dock entry title. Defaults to the definition's `name`. */
@@ -265,24 +263,6 @@ export interface DevframeDockDefaults {
   groupId?: string
 }
 
-export interface DevframeSpaOptions {
-  base?: string
-  /**
-   * How the deployed SPA loads its data.
-   * - `'query'` — read from URL search params.
-   * - `'upload'` — accept a file drag-drop.
-   * - `'none'`  — use the baked RPC dump only.
-   */
-  loader?: 'query' | 'upload' | 'none'
-}
-
-export interface DevframeBrowserContext {
-  /**
-   * The connected RPC client (may be write-disabled in static/spa modes).
-   */
-  rpc: unknown
-}
-
 /**
  * Runtime information threaded into `setup(ctx, info)`. Adapters
  * populate the fields that make sense for their deployment. In
@@ -309,45 +289,44 @@ export interface DevframeDefinition {
    * Default dock attributes applied when a hub mounts this devframe as an
    * iframe dock entry. Consulted only by the hub install path (`ctx.install`),
    * which merge these beneath the per-mount `dock` overrides; standalone
-   * adapters (`cli` / `spa` / `build`) ignore it.
+   * adapters (`cli` / `build`) ignore it.
    *
    * @see {@link DevframeDockDefaults}
    */
   dock?: DevframeDockDefaults
   /**
    * Mount path override. Defaults depend on the adapter:
-   * `/` for standalone (`cli` / `spa` / `build`), `/__<id>/` for hosted
+   * `/` for standalone (`cli` / `build`), `/__<id>/` for hosted
    * (`vite` / `embedded`).
    */
   basePath?: string
   /**
    * How a hub reacts when another devframe sharing this one's `id` is
    * mounted onto the same hub. Consulted only by hub adapters
-   * (`ctx.install`); standalone adapters (`cli` / `spa` / `build`)
+   * (`ctx.install`); standalone adapters (`cli` / `build`)
    * ignore it.
    *
    * @default 'warn'
    */
   duplicationStrategy?: DevframeDuplicationStrategy
   /**
-   * Declares which runtimes meaningfully support this devframe. Consulted
-   * by adapters that can act on a plain `false` before doing any work:
-   * `createCac` skips registering the `build` subcommand entirely when
-   * `capabilities.build` is `false` — useful for a devframe whose value is
-   * inherently live (e.g. it manages real files on disk), so a static
-   * export would only ever produce a broken, write-less shell of the tool.
-   * The `Record<string, boolean>` shape is reserved for finer-grained
-   * sub-capabilities and currently unconsumed by any adapter.
+   * Declares which runtimes meaningfully support this devframe. Adapters
+   * act on a `false` before doing any work:
+   *
+   * - `build: false` — `createCac` skips registering the `build` subcommand,
+   *   and `createBuild` refuses (throws `DF0042`) unless `{ force: true }`.
+   *   Useful for a devframe whose value is inherently live (e.g. it manages
+   *   real files on disk), so a static export would only ever produce a
+   *   broken, write-less shell of the tool.
+   * - `dev: false` — `createDevServer` refuses (throws `DF0058`) unless
+   *   `{ force: true }`. Useful for a devframe that only makes sense as a
+   *   static export (e.g. a report generator with nothing to serve live).
    */
   capabilities?: {
-    dev?: boolean | Record<string, boolean>
-    build?: boolean | Record<string, boolean>
-    spa?: boolean | Record<string, boolean>
+    dev?: boolean
+    build?: boolean
   }
   /** Server-side setup — the primary entrypoint. Runs in every runtime. */
   setup: (ctx: DevframeNodeContext, info?: DevframeSetupInfo) => void | Promise<void>
-  /** Browser-only setup for the SPA adapter (bundled into the client). */
-  setupBrowser?: (ctx: DevframeBrowserContext) => void | Promise<void>
   cli?: DevframeCliOptions
-  spa?: DevframeSpaOptions
 }

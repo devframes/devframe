@@ -38,7 +38,7 @@ export interface InspectDevframeOptions {
 
 /**
  * Build a {@link DevframeDefinition} for the Devframe Inspector. The
- * same definition runs standalone (`/cli`, `/spa`, `/build`) and mounts
+ * same definition runs standalone (`/cli`, `/build`) and mounts
  * into a host (`/vite`, hub).
  *
  * @experimental This plugin is experimental and may change without a major
@@ -64,7 +64,6 @@ export function createInspectDevframe(options: InspectDevframeOptions = {}): Dev
       // Hosted adapters (Vite/hub) supply their own auth layer and ignore this.
       auth: options.auth ?? true,
     },
-    spa: { loader: 'none' },
     dock: {
       category: '~builtin',
     },

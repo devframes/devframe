@@ -94,7 +94,7 @@ validation.
 `@devframes/json-render-ui/spa` ships a prebuilt renderer, so an app serves a
 JSON-render UI without authoring or building any client. Wrap the definition
 with `createJsonRenderDevframe` — it points `cli.distDir` at the shipped SPA
-(`jsonRenderSpaDir`) and sets `spa.loader: 'none'`:
+(`jsonRenderSpaDir`):
 
 ```ts
 import { createJsonRenderDevframe } from '@devframes/json-render-ui/spa'

@@ -16,14 +16,12 @@ export { ConnectionMetaSse }
 export { ConnectionMetaWebsocket }
 export { DevframeAgentHost }
 export { DevframeAgentHostEvents }
-export { DevframeBrowserContext }
 export { DevframeCapabilities }
 export { DevframeCliOptions }
 export { DevframeConnectionConfigsRegistry }
 export { DevframeDefineDiagnosticsOptions }
 export { DevframeDefinition }
 export { DevframeDeploymentKind }
-export { DevframeDiagnosticsDefinition }
 export { DevframeDiagnosticsHost }
 export { DevframeDiagnosticsLogger }
 export { DevframeDockDefaults }
@@ -38,7 +36,6 @@ export { DevframeRpcConnectionRequest }
 export { DevframeRpcServerFunctions }
 export { DevframeRpcSharedStates }
 export { DevframeRpcTransportKind }
-export { DevframeRuntime }
 export { DevframeScopedNodeContext }
 export { DevframeScopedNodeRpc }
 export { DevframeScopedStreamingHost }
@@ -50,17 +47,14 @@ export { DevframeSettings }
 export { DevframeSettingsRegistry }
 export { DevframeSettingsStore }
 export { DevframeSetupInfo }
-export { DevframeSpaOptions }
 export { DevframeSseOptions }
 export { DevframeStorageScope }
 export { DevframeViewHost }
 export { DevframeWsOptions }
-export { EntriesToObject }
 export { EventEmitter }
 export { EventsMap }
 export { EventUnsubscribe }
 export { McpRouteOptions }
-export { PartialWithoutId }
 export { RemoteAssets }
 export { RemoteAssetsProvider }
 export { RemoteAssetsProviderCustom }
@@ -82,5 +76,4 @@ export { ScopedServerFunctions }
 export { ScopedSharedStates }
 export { SettingsForNamespace }
 export { StaticAssetsSource }
-export { Thenable }
 // #endregion

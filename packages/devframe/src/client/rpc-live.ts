@@ -3,7 +3,6 @@ import type { ConnectionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunct
 import type { DevframeConnectionStatus } from './connection'
 import type { DevframeClientRpcHost, DevframeRpcClientMode, DevframeRpcClientOptions, RpcClientEvents } from './rpc'
 import { createRpcClient } from 'devframe/rpc/client'
-import { parseUA } from 'ua-parser-modern'
 import { promiseWithResolver } from '../utils/promise'
 import { DevframeConnectionError } from './connection'
 
@@ -184,24 +183,15 @@ export function createLiveRpcClientMode(
 
   let currentAuthToken: string | undefined = authToken
 
-  function describeUA(): string {
-    const info = parseUA(navigator.userAgent)
-    return [
-      info.browser.name,
-      info.browser.version,
-      '|',
-      info.os.name,
-      info.os.version,
-      info.device.type,
-    ].filter(i => i).join(' ')
-  }
-
   async function requestTrustWithToken(token: string) {
     currentAuthToken = token
 
     const result = await serverRpc.$call('anonymous:devframe:auth', {
       authToken: token,
-      ua: describeUA(),
+      // Sent raw; the server parses it into a display label (see
+      // `describeUA` in `node/auth/state.ts`) so `ua-parser-modern` stays
+      // out of the browser bundle.
+      ua: navigator.userAgent,
       origin: location.origin,
     })
 
@@ -228,7 +218,7 @@ export function createLiveRpcClientMode(
   async function requestTrustWithCode(code: string): Promise<string | null> {
     const result = await serverRpc.$call('anonymous:devframe:auth:exchange', {
       code,
-      ua: describeUA(),
+      ua: navigator.userAgent,
       origin: location.origin,
     })
 

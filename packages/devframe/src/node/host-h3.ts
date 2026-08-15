@@ -5,8 +5,6 @@ import process from 'node:process'
 import { join } from 'pathe'
 
 export interface CreateH3DevframeHostOptions {
-  /** The h3 app instance — registered once the CLI adapter lands. */
-  app?: unknown
   /**
    * Host the standalone server listens on, e.g. `http://localhost:9999`.
    * Consumed by `resolveOrigin` for dock entries that need an absolute URL.
@@ -17,9 +15,9 @@ export interface CreateH3DevframeHostOptions {
   /**
    * Register a static-file handler at `base` serving files from `source` —
    * a local directory or a resolved remote-assets back-proxy store (both
-   * accepted by `devframe/utils/serve-static`). Wired into the h3 app once
-   * the CLI adapter lands (commit 5). For now the CLI isn't running, so the
-   * default is a no-op.
+   * accepted by `devframe/utils/serve-static`). `mountStatic` forwards to
+   * it; when omitted the host serves no SPA (bridge mode, where the SPA is
+   * hosted elsewhere).
    */
   mount?: (base: string, source: string | RemoteAssetsStore) => void | Promise<void>
   /**

@@ -120,7 +120,6 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
         cli.option('--read-only', 'Disable upload, rename, delete, and folder creation')
       },
     },
-    spa: { loader: 'none' },
     dock: { category: '~builtin' },
     async setup(ctx, info) {
       const readOnlyFlag = info?.flags?.readOnly === true

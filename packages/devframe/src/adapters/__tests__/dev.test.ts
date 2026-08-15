@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { defineDevframe } from 'devframe'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
+import { createWsOriginRegistry } from 'devframe/rpc/transports/ws-server'
 import { open } from 'devframe/utils/open'
 import { getPort } from 'get-port-please'
 import { describe, expect, it, vi } from 'vitest'
@@ -31,7 +32,58 @@ function makeTmpDist(): string {
   return dir
 }
 
+async function connectRaw(url: string, origin?: string): Promise<'open' | 'closed'> {
+  return await new Promise((resolve) => {
+    const ws = new WebSocket(url, origin ? { headers: { origin } } : undefined)
+    ws.on('open', () => {
+      ws.close()
+      resolve('open')
+    })
+    ws.on('error', () => resolve('closed'))
+    ws.on('unexpected-response', () => resolve('closed'))
+    ws.on('close', () => resolve('closed'))
+  })
+}
+
 describe('adapters/dev', () => {
+  it('rejects a definition with capabilities.dev: false by default', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-dev-disabled',
+      name: 'Dev Disabled',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      capabilities: { dev: false },
+      setup: () => {},
+    })
+    await expect(
+      createDevServer(devframe, { host: '127.0.0.1', port: 0, openBrowser: false }),
+    ).rejects.toThrow(/capabilities\.dev: false/)
+  })
+
+  it('proceeds past capabilities.dev: false when force is set', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-dev-disabled-forced',
+      name: 'Dev Disabled Forced',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      capabilities: { dev: false },
+      setup: () => {},
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19398, host })
+    const handle = await createDevServer(devframe, { host, port, openBrowser: false, force: true })
+    try {
+      expect(handle.port).toBe(port)
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
   it('createDevServer starts, exposes __connection.json, and closes', async () => {
     const distDir = makeTmpDist()
     const devframe = defineDevframe({
@@ -250,6 +302,99 @@ describe('adapters/dev', () => {
         websocket: 'wss://devtools.example.com/relay/__ws',
         sse: { path: '__sse' },
       })
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
+  it('allowedOrigins: default stays loopback-only', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-origins-default',
+      name: 'Origins Default',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      setup: () => {},
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19450, host })
+    const handle = await createDevServer(devframe, { host, port, openBrowser: false })
+
+    try {
+      await expect(connectRaw(`ws://${host}:${port}/__ws`)).resolves.toBe('open')
+      await expect(connectRaw(`ws://${host}:${port}/__ws`, `http://${host}:12345`)).resolves.toBe('open')
+      await expect(connectRaw(`ws://${host}:${port}/__ws`, 'http://evil.example')).resolves.toBe('closed')
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
+  it('allowedOrigins: an array of extra origins is honored on top of the loopback default', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-origins-array',
+      name: 'Origins Array',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      setup: () => {},
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19440, host })
+    const handle = await createDevServer(devframe, {
+      host,
+      port,
+      openBrowser: false,
+      allowedOrigins: ['http://evil.example'],
+    })
+
+    try {
+      await expect(connectRaw(`ws://${host}:${port}/__ws`, 'http://evil.example')).resolves.toBe('open')
+      // Still rejects an origin that's neither loopback nor allowlisted.
+      await expect(connectRaw(`ws://${host}:${port}/__ws`, 'http://other.example')).resolves.toBe('closed')
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
+  it('allowedOrigins: a WsOriginRegistry gates the upgrade end-to-end', async () => {
+    const devframe = defineDevframe({
+      id: 'devframe-origins-registry',
+      name: 'Origins Registry',
+      version: '0.0.0',
+      packageName: 'devframe-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe.',
+      setup: () => {},
+    })
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 19430, host })
+    const origin = 'chrome-extension://abcdefghijklmnop'
+    const registry = createWsOriginRegistry({
+      validateOrigin: value => value.startsWith('chrome-extension://'),
+    })
+    const handle = await createDevServer(devframe, {
+      host,
+      port,
+      openBrowser: false,
+      allowedOrigins: registry,
+    })
+
+    try {
+      // Unregistered, the registry rejects the same origin it'll accept below.
+      await expect(connectRaw(`ws://${host}:${port}/__ws`, origin)).resolves.toBe('closed')
+
+      const params = new URLSearchParams({
+        devframe_viewer_origin: origin,
+        devframe_viewer_origin_token: registry.token,
+      })
+      expect(registry.registerFromUrl(`/__connection.json?${params}`)).toBe(origin)
+
+      await expect(connectRaw(`ws://${host}:${port}/__ws`, origin)).resolves.toBe('open')
     }
     finally {
       await handle.close()

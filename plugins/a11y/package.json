@@ -63,16 +63,16 @@
   },
   "dependencies": {
     "@devframes/vite": "workspace:*",
-    "axe-core": "catalog:frontend",
-    "cac": "catalog:deps",
-    "solid-js": "catalog:frontend"
+    "cac": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
+    "axe-core": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
     "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
+    "solid-js": "catalog:frontend",
     "storybook": "catalog:storybook",
     "storybook-solidjs-vite": "catalog:storybook",
     "tsdown": "catalog:build",

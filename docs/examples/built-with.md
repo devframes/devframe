@@ -12,6 +12,6 @@ Real-world devframes:
 
 End-to-end examples in this repo, exercising the full adapter surface:
 
-- [**files-inspector**](https://github.com/devframes/devframe/tree/main/examples/files-inspector) — lists files in cwd via RPC; exercises CLI dev/build/spa surfaces.
+- [**files-inspector**](https://github.com/devframes/devframe/tree/main/examples/files-inspector) — lists files in cwd via RPC; exercises CLI dev/build surfaces.
 - [**streaming-chat**](https://github.com/devframes/devframe/tree/main/examples/streaming-chat) — streams synthetic chat tokens from server to client via `ctx.rpc.streaming`.
 - [**next-runtime-snapshot**](https://github.com/devframes/devframe/tree/main/examples/next-runtime-snapshot) — Next.js App Router SPA over RPC, surfacing the host Node runtime (system info, memory, env).

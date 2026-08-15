@@ -26,12 +26,9 @@ describe('adapters/cac', () => {
     expect(cli.commands.map(c => c.name)).not.toContain('build')
   })
 
-  it('still registers build when capabilities.build is true or a record', () => {
+  it('still registers build when capabilities.build is true', () => {
     const truthy = createCac(baseDevframe({ capabilities: { build: true } }))
     expect(truthy.cli.commands.map(c => c.name)).toContain('build')
-
-    const record = createCac(baseDevframe({ capabilities: { build: { dump: true } } }))
-    expect(record.cli.commands.map(c => c.name)).toContain('build')
   })
 
   it('always registers the dev and mcp commands regardless of capabilities.build', () => {

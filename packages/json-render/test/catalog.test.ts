@@ -40,6 +40,10 @@ describe('per-component prop validation', () => {
     expect(basePropSchemas.Progress.safeParse({ value: 40, max: 100 }).success).toBe(true)
   })
 
+  it('accepts Select.native alongside the rest of its props', () => {
+    expect(basePropSchemas.Select.safeParse({ options: ['a', 'b'], native: true }).success).toBe(true)
+  })
+
   it('rejects an out-of-set enum value', () => {
     expect(basePropSchemas.Button.safeParse({ variant: 'nope' }).success).toBe(false)
     expect(basePropSchemas.Badge.safeParse({ variant: 'purple' }).success).toBe(false)

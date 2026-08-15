@@ -142,7 +142,7 @@ describe('createRemoteAssetsStore', () => {
     await expect(store.serve('/../package.json')).resolves.toBeNull()
   })
 
-  it('falls back to probe mode when the file listing fails (DF0058)', async () => {
+  it('falls back to probe mode when the file listing fails (DF0059)', async () => {
     const cdn = fakeCdn(CDN_FILES)
     const failingListing: typeof globalThis.fetch = async (input) => {
       const url = String(input)
@@ -156,10 +156,10 @@ describe('createRemoteAssetsStore', () => {
     )
     const file = await store.serve('/assets/app.js')
     await expect(text(file!.stream())).resolves.toBe('console.log("app")')
-    expect(warnSpy.mock.calls.some(args => String(args[0]).includes('DF0058'))).toBe(true)
+    expect(warnSpy.mock.calls.some(args => String(args[0]).includes('DF0059'))).toBe(true)
   })
 
-  it('offline: serves from the cache only and throws on a miss (DF0059)', async () => {
+  it('offline: serves from the cache only and throws on a miss (DF0060)', async () => {
     const cdn = fakeCdn(CDN_FILES)
     const cacheDir = join(makeTmp(), 'cache')
 
@@ -233,14 +233,14 @@ describe('resolveInstalledRemoteAssets', () => {
     expect(warnSpy).not.toHaveBeenCalled()
   })
 
-  it('warns on minor/patch skew and serves the installed copy (DF0061)', () => {
+  it('warns on minor/patch skew and serves the installed copy (DF0062)', () => {
     const { resolveFrom, distDir } = makeInstalled('1.3.0')
     const dir = resolveInstalledRemoteAssets({ package: '@scope/demo-client', version: '1.2.3', resolveFrom })
     expect(dir).toBe(distDir)
-    expect(warnSpy.mock.calls.some(args => String(args[0]).includes('DF0061'))).toBe(true)
+    expect(warnSpy.mock.calls.some(args => String(args[0]).includes('DF0062'))).toBe(true)
   })
 
-  it('throws on a major version mismatch (DF0060)', () => {
+  it('throws on a major version mismatch (DF0061)', () => {
     const { resolveFrom } = makeInstalled('2.0.0')
     expect(() => resolveInstalledRemoteAssets({ package: '@scope/demo-client', version: '1.2.3', resolveFrom }))
       .toThrow(/different major version/)

@@ -18,13 +18,10 @@ import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { collectStaticRpcDump } from '../rpc/dump/static'
 import { strictJsonStringify } from '../rpc/serialization'
-import { resolveBasePath } from './_shared'
 
 export interface CreateBuildOptions {
   /** Output directory. Defaults to `dist-static`. */
   outDir?: string
-  /** Absolute URL base the output is served from (default: `/`). */
-  base?: string
   /**
    * Override the SPA dist to copy into `outDir` — a local directory or a
    * remote-assets declaration (materialized in full at build time). When
@@ -54,11 +51,9 @@ export interface CreateBuildOptions {
  *   - Copy the author's SPA dist into `<outDir>/`.
  *   - Write `<outDir>/__connection.json` (`{ backend: 'static' }`) and the
  *     sharded RPC dump under `<outDir>/__rpc-dump/` so the deployed SPA
- *     discovers both via relative paths from `document.baseURI`.
- *   - When `def.spa` is configured, also write `<outDir>/spa-loader.json`
- *     describing the SPA's data-loader mode (`'query'` / `'upload'` /
- *     `'none'`). The output is mount-path agnostic — the same bundle
- *     works at `/`, `/devframe/`, or any base, no rewriting required.
+ *     discovers both via relative paths from `document.baseURI`. The
+ *     output is mount-path agnostic — the same bundle works at `/`,
+ *     `/devframe/`, or any base, no rewriting required.
  */
 export async function createBuild(d: DevframeDefinition, options: CreateBuildOptions = {}): Promise<void> {
   if (d.capabilities?.build === false && !options.force)
@@ -142,20 +137,6 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
     JSON.stringify(dump.manifest, null, 2),
     'utf-8',
   )
-
-  if (d.spa) {
-    const base = options.base ?? resolveBasePath(d, 'standalone')
-    const spaLoader = {
-      version: 1,
-      mode: d.spa.loader ?? 'none',
-      base,
-    }
-    await fs.writeFile(
-      resolve(outDir, 'spa-loader.json'),
-      JSON.stringify(spaLoader, null, 2),
-      'utf-8',
-    )
-  }
 
   console.log(c.green`[devframe] built "${d.id}" -> ${outDir}`)
 }

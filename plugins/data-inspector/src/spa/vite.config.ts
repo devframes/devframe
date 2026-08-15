@@ -8,7 +8,7 @@ import { dataInspectorVitePlugin } from '../vite'
 // The data-inspector SPA. `base: './'` keeps every asset URL relative so the
 // bundle is mount-path portable — it discovers its runtime base from
 // `document.baseURI` and connects via `connectDevframe()`. The build is
-// copied verbatim by `createBuild`/`createSpa`; no HTML rewriting.
+// copied verbatim by `createBuild`; no HTML rewriting.
 //
 // `dataInspectorVitePlugin({ bridge: true })` dogfoods the plugin: it
 // runs a side-car RPC + WS backend (with the built-in example source) next to

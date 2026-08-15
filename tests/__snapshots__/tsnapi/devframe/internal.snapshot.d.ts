@@ -3,7 +3,6 @@
  */
 // #region Interfaces
 export interface CreateH3DevframeHostOptions {
-  app?: unknown;
   origin: string | (() => string);
   mount?: (_: string, _: string | RemoteAssetsStore) => void | Promise<void>;
   appName: string;
@@ -247,6 +246,12 @@ export declare const diagnostics: import("nostics").Diagnostics<{
   };
   readonly DF0058: {
     readonly why: (p: {
+      id: string;
+    }) => string;
+    readonly fix: "Pass `{ force: true }` to `createDevServer()` to run it anyway, or drop `capabilities.dev: false` on the definition.";
+  };
+  readonly DF0059: {
+    readonly why: (p: {
       package: string;
       version: string;
       provider: string;
@@ -254,7 +259,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "Requests fall back to probing the provider per file. Check network access to the provider, or install the assets package locally so no listing is needed.";
   };
-  readonly DF0059: {
+  readonly DF0060: {
     readonly why: (p: {
       url: string;
       package: string;
@@ -262,7 +267,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "Install the assets package locally (`npm install <package>`) to serve it with zero network, or check network access to the configured provider.";
   };
-  readonly DF0060: {
+  readonly DF0061: {
     readonly why: (p: {
       package: string;
       required: string;
@@ -270,7 +275,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "Align the installed assets package with the version its node package declares — they are published in lockstep.";
   };
-  readonly DF0061: {
+  readonly DF0062: {
     readonly why: (p: {
       package: string;
       required: string;
@@ -278,14 +283,14 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "Install the exact declared version to serve byte-identical assets.";
   };
-  readonly DF0062: {
+  readonly DF0063: {
     readonly why: (p: {
       filepath: string;
       reason: string;
     }) => string;
     readonly fix: "The response was still served; only caching failed. Check that the cache directory is writable and has free space.";
   };
-  readonly DF0063: {
+  readonly DF0064: {
     readonly why: (p: {
       package: string;
       version: string;

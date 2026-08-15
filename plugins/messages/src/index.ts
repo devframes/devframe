@@ -38,7 +38,7 @@ export interface MessagesDevframeOptions {
  * Build a {@link DevframeDefinition} for the hub message feed panel —
  * a portable view over `ctx.messages`, ported from vitejs/devtools'
  * built-in Messages view. The same definition runs standalone
- * (`/cli`, `/spa`, `/build`) and mounts into a host (`/vite`, hub);
+ * (`/cli`, `/build`) and mounts into a host (`/vite`, hub);
  * a hub host is what feeds it live entries.
  *
  * @experimental This plugin is experimental and may change without a major
@@ -67,7 +67,6 @@ export function createMessagesDevframe(options: MessagesDevframeOptions = {}): D
     dock: {
       category: '~builtin',
     },
-    spa: { loader: 'none' },
     setup(ctx) {
       setupMessages(ctx)
     },

@@ -21,6 +21,13 @@ interface SelectProps {
   disabled?: boolean
   /** Swap the plain select for a searchable combobox. */
   searchable?: boolean
+  /**
+   * Renders a real `<select>` instead of `FormSelect`/`FormCombobox`. The browser draws its
+   * option list outside the page's layout, so no ancestor can clip or reposition it — the
+   * dependable choice for a `Select` embedded in a host layout this component doesn't
+   * control. Takes priority over `searchable`, which has no native equivalent.
+   */
+  native?: boolean
 }
 
 function normalize(option: string | SelectOption): { value: string, label?: string } {
@@ -39,6 +46,7 @@ const SelectImpl = defineComponent({
     label: { type: String, default: undefined },
     disabled: { type: Boolean, default: undefined },
     searchable: { type: Boolean, default: undefined },
+    native: { type: Boolean, default: undefined },
     bindingPath: { type: String, default: undefined },
     onChange: { type: Function as PropType<() => void>, default: undefined },
   },
@@ -56,7 +64,30 @@ const SelectImpl = defineComponent({
       props.onChange?.()
     }
     const options = computed(() => props.options.map(normalize))
+    const withLabel = (control: ReturnType<typeof h>) => {
+      if (!props.label)
+        return control
+      return h('div', { class: 'flex flex-col gap-1' }, [
+        h('label', { class: 'text-sm font-medium' }, props.label),
+        control,
+      ])
+    }
     return () => {
+      if (props.native) {
+        return withLabel(h('select', {
+          'value': model.value ?? '',
+          'disabled': props.disabled,
+          'aria-label': props.label,
+          'class': 'text-sm px2.5 h-9 min-w-40 border border-base rounded bg-base color-base outline-none transition disabled:op50 disabled:pointer-events-none focus-visible:ring-2 focus-visible:ring-primary-500/40',
+          'onChange': (e: Event) => setModel((e.target as HTMLSelectElement).value),
+        }, [
+          // Only while unset, so the placeholder can't be re-selected afterwards.
+          props.placeholder && model.value === undefined
+            ? h('option', { value: '', disabled: true }, props.placeholder)
+            : null,
+          ...options.value.map(option => h('option', { value: option.value }, option.label ?? option.value)),
+        ]))
+      }
       const Comp = (props.searchable ? FormCombobox : FormSelect) as unknown as Parameters<typeof h>[0]
       const control = h(Comp, {
         'options': options.value,
@@ -65,13 +96,7 @@ const SelectImpl = defineComponent({
         'modelValue': model.value,
         'onUpdate:modelValue': (next: string) => setModel(next),
       })
-      if (props.label) {
-        return h('div', { class: 'flex flex-col gap-1' }, [
-          h('label', { class: 'text-sm font-medium' }, props.label),
-          control,
-        ])
-      }
-      return control
+      return withLabel(control)
     }
   },
 })
@@ -84,6 +109,7 @@ export const Select: JrComponent<SelectProps> = ({ props, on, bindings }) =>
     label: props.label,
     disabled: props.disabled,
     searchable: props.searchable,
+    native: props.native,
     bindingPath: bindings?.value,
     onChange: () => on('change').emit(),
   })
