@@ -45,6 +45,11 @@
     "@devframes/json-render": "workspace:*",
     "devframe": "workspace:*"
   },
+  "peerDependenciesMeta": {
+    "@devframes/json-render": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",

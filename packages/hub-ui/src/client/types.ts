@@ -1,7 +1,12 @@
 import type { DevframeViewLauncher } from '@devframes/hub/types'
 // Importing the hub-mounted json-render integration registers its
 // `'json-render'` dock entry (a serializable `view` ref, not a live handle)
-// on the hub's open dock union via declaration merging.
+// on the hub's open dock union via declaration merging. This has to be a
+// value import, not `import type`, because TS rejects a type-only
+// side-effect import (no bindings to mark as type-only) — but it's still
+// fully erased at build time since nothing in dist ever references it, so
+// @devframes/json-render staying an *optional* peer below doesn't change
+// what ships.
 import '@devframes/json-render/hub'
 
 /**
