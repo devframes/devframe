@@ -1,4 +1,4 @@
-import { defineDiagnostics } from 'nostics'
+import { defineDiagnostics } from 'devframe/utils/nostics'
 import { devframeReporter } from '../utils/diagnostics-reporter'
 
 export const diagnostics = defineDiagnostics({

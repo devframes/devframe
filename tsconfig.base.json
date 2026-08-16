@@ -73,6 +73,9 @@
       "devframe/utils/nanoid": [
         "./packages/devframe/src/utils/nanoid.ts"
       ],
+      "devframe/utils/nostics": [
+        "./packages/devframe/src/utils/nostics.ts"
+      ],
       "devframe/utils/open": [
         "./packages/devframe/src/utils/open.ts"
       ],

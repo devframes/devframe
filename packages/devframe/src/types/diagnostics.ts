@@ -1,4 +1,4 @@
-import type { defineDiagnostics, Diagnostic, DiagnosticDefinition } from 'nostics'
+import type { defineDiagnostics, Diagnostic, DiagnosticDefinition } from 'devframe/utils/nostics'
 
 /**
  * The shared diagnostics lookup exposed by the host. A `Proxy` that resolves

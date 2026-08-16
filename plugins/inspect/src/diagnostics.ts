@@ -1,4 +1,4 @@
-import { defineDiagnostics } from 'nostics'
+import { defineDiagnostics } from 'devframe/utils/nostics'
 
 /**
  * Structured diagnostics for `@devframes/plugin-inspect`. Node-side only.

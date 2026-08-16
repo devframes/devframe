@@ -1,6 +1,6 @@
-import type { Diagnostic } from 'nostics'
+import type { Diagnostic } from 'devframe/utils/nostics'
 import { colors as c } from 'devframe/utils/colors'
-import { ansiFormatter } from 'nostics/formatters/ansi'
+import { ansiFormatter } from 'devframe/utils/nostics'
 
 const formatAnsi = ansiFormatter(c)
 

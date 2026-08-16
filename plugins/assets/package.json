@@ -61,7 +61,6 @@
     "cac": "catalog:deps",
     "chokidar": "catalog:deps",
     "image-meta": "catalog:deps",
-    "nostics": "catalog:deps",
     "pathe": "catalog:deps",
     "perfect-debounce": "catalog:deps",
     "tinyglobby": "catalog:deps",

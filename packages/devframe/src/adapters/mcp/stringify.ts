@@ -1,4 +1,4 @@
-import { Diagnostic } from 'nostics'
+import { Diagnostic } from 'devframe/utils/nostics'
 
 /**
  * JSON-coercing serializer for MCP text payloads.

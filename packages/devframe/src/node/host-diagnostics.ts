@@ -1,5 +1,5 @@
 import type { DevframeDiagnosticsHost as DevframeDiagnosticsHostType, DevframeDiagnosticsLogger, DevframeNodeContext } from 'devframe/types'
-import { defineDiagnostics } from 'nostics'
+import { defineDiagnostics } from 'devframe/utils/nostics'
 import { devframeReporter } from '../utils/diagnostics-reporter'
 
 export class DevframeDiagnosticsHost implements DevframeDiagnosticsHostType {

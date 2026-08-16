@@ -1,4 +1,4 @@
-import { defineDiagnostics } from 'nostics'
+import { defineDiagnostics } from 'devframe/utils/nostics'
 import { devframeReporter } from '../utils/diagnostics-reporter'
 
 // DF00xx codes are allocated across packages (e.g. @devframes/json-render

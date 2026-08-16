@@ -46,7 +46,6 @@
   },
   "dependencies": {
     "@json-render/core": "catalog:deps",
-    "nostics": "catalog:deps",
     "zod": "catalog:deps"
   },
   "devDependencies": {

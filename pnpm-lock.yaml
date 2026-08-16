@@ -1217,9 +1217,6 @@ importers:
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.26(crossws@0.4.10(srvx@0.12.4))
-      nostics:
-        specifier: catalog:deps
-        version: 1.2.0
       pathe:
         specifier: catalog:deps
         version: 2.0.3
@@ -1326,9 +1323,6 @@ importers:
       '@json-render/core':
         specifier: catalog:deps
         version: 0.19.0(zod@4.4.3)
-      nostics:
-        specifier: catalog:deps
-        version: 1.2.0
       zod:
         specifier: catalog:deps
         version: 4.4.3
@@ -1566,9 +1560,6 @@ importers:
       image-meta:
         specifier: catalog:deps
         version: 0.2.2
-      nostics:
-        specifier: catalog:deps
-        version: 1.2.0
       pathe:
         specifier: catalog:deps
         version: 2.0.3
@@ -1651,9 +1642,6 @@ importers:
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0
-      nostics:
-        specifier: catalog:deps
-        version: 1.2.0
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -1712,9 +1700,6 @@ importers:
       jora:
         specifier: catalog:deps
         version: 1.0.0-beta.16
-      nostics:
-        specifier: catalog:deps
-        version: 1.2.0
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -1873,9 +1858,6 @@ importers:
       cac:
         specifier: catalog:deps
         version: 7.0.0
-      nostics:
-        specifier: catalog:deps
-        version: 1.2.0
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -1954,9 +1936,6 @@ importers:
       cac:
         specifier: catalog:deps
         version: 7.0.0
-      nostics:
-        specifier: catalog:deps
-        version: 1.2.0
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -2030,9 +2009,6 @@ importers:
       cac:
         specifier: catalog:deps
         version: 7.0.0
-      nostics:
-        specifier: catalog:deps
-        version: 1.2.0
       parse5:
         specifier: catalog:deps
         version: 8.0.1
@@ -2094,9 +2070,6 @@ importers:
       cac:
         specifier: catalog:deps
         version: 7.0.0
-      nostics:
-        specifier: catalog:deps
-        version: 1.2.0
       zigpty:
         specifier: catalog:deps
         version: 0.2.1

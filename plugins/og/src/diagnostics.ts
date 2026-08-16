@@ -1,4 +1,4 @@
-import { defineDiagnostics } from 'nostics'
+import { defineDiagnostics } from 'devframe/utils/nostics'
 
 export const diagnostics = defineDiagnostics({
   docsBase: 'https://devfra.me/errors',

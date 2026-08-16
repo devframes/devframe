@@ -46,7 +46,6 @@
     "@standard-schema/spec": "catalog:deps",
     "destr": "catalog:deps",
     "h3": "catalog:deps",
-    "nostics": "catalog:deps",
     "pathe": "catalog:deps",
     "perfect-debounce": "catalog:deps",
     "tinyexec": "catalog:deps",

@@ -60,7 +60,6 @@
   "dependencies": {
     "@devframes/vite": "workspace:*",
     "cac": "catalog:deps",
-    "nostics": "catalog:deps",
     "parse5": "catalog:deps"
   },
   "devDependencies": {

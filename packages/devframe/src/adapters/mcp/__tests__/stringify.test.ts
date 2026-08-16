@@ -1,4 +1,4 @@
-import { Diagnostic } from 'nostics'
+import { Diagnostic } from 'devframe/utils/nostics'
 import { describe, expect, it } from 'vitest'
 import { formatMcpError, stringifyForMcp } from '../stringify'
 

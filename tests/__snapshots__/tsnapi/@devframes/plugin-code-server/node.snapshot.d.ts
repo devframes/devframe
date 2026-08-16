@@ -89,7 +89,7 @@ export declare function setupCodeServer(_: DevframeNodeContext, _?: CodeServerOp
 // #endregion
 
 // #region Variables
-export declare const diagnostics: import("nostics").Diagnostics<{
+export declare const diagnostics: Diagnostics<{
   readonly DP_CODE_SERVER_0001: {
     readonly why: (p: {
       bin: string;

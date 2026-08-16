@@ -103,6 +103,7 @@ const serverEntries = {
   'node/hub-internals': 'src/node/hub-internals/index.ts',
   'internal/index': 'src/internal/index.ts',
   'utils/launch-editor': 'src/utils/launch-editor.ts',
+  'utils/nostics': 'src/utils/nostics.ts',
   'utils/open': 'src/utils/open.ts',
   'utils/remote-assets': 'src/utils/remote-assets.ts',
   'utils/serve-static': 'src/utils/serve-static.ts',

@@ -1,4 +1,4 @@
-import { defineDiagnostics } from 'nostics'
+import { defineDiagnostics } from 'devframe/utils/nostics'
 import { hubReporter } from '../utils/diagnostics-reporter'
 
 // Hub-side diagnostics for docks, terminals, messages, and commands.

@@ -15,7 +15,7 @@ export declare function createJsonRenderView(_: AnyContext, _: CreateJsonRenderV
 // #endregion
 
 // #region Variables
-export declare const jsonRenderDiagnostics: import("nostics").Diagnostics<{
+export declare const jsonRenderDiagnostics: Diagnostics<{
   readonly DF0038: {
     readonly why: (p: {
       id: string;

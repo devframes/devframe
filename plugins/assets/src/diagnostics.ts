@@ -1,4 +1,4 @@
-import { defineDiagnostics } from 'nostics'
+import { defineDiagnostics } from 'devframe/utils/nostics'
 
 // Uses the plugin's own `DP_ASSETS_` prefix per the built-in plugin
 // convention, keeping it collision-free with devframe core (`DF`) and the

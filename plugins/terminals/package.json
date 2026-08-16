@@ -61,7 +61,6 @@
   "dependencies": {
     "@devframes/vite": "workspace:*",
     "cac": "catalog:deps",
-    "nostics": "catalog:deps",
     "zigpty": "catalog:deps"
   },
   "devDependencies": {

@@ -29,6 +29,7 @@ export const alias = {
   'devframe/utils/hash': r('devframe/src/utils/hash.ts'),
   'devframe/utils/launch-editor': r('devframe/src/utils/launch-editor.ts'),
   'devframe/utils/nanoid': r('devframe/src/utils/nanoid.ts'),
+  'devframe/utils/nostics': r('devframe/src/utils/nostics.ts'),
   'devframe/utils/open': r('devframe/src/utils/open.ts'),
   'devframe/utils/remote-assets': r('devframe/src/utils/remote-assets.ts'),
   'devframe/utils/simple-schema': r('devframe/src/utils/simple-schema.ts'),
