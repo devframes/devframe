@@ -1,5 +1,5 @@
 {
-  "name": "@devframes/plugin-inspect-assets",
+  "name": "@devframes/plugin-inspect--assets",
   "type": "module",
   "version": "0.9.0-beta.4",
   "description": "Prebuilt browser assets (SPA) for @devframes/plugin-inspect, served on demand through devframe's remote-assets back-proxy.",
