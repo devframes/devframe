@@ -1883,9 +1883,9 @@ importers:
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
-      '@devframes/plugin-inspect-client':
+      '@devframes/plugin-inspect-assets':
         specifier: workspace:*
-        version: link:client-pkg
+        version: link:assets-pkg
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
@@ -1944,7 +1944,7 @@ importers:
         specifier: catalog:deps
         version: 8.21.3
 
-  plugins/inspect/client-pkg: {}
+  plugins/inspect/assets-pkg: {}
 
   plugins/messages:
     dependencies:
