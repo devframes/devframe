@@ -106,16 +106,18 @@ pnpx @devframes/plugin-data-inspector attach               # attach to a process
 
 ## Mount into a Vite host
 
+For a [Vite DevTools](https://devtools.vite.dev) app, mount the panel with `createPluginFromDevframe` from `@vitejs/devtools-kit/node`:
+
 ```ts
 import dataInspectorDevframe from '@devframes/plugin-data-inspector'
 import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
 // vite.config.ts
-import { devframeVite } from '@devframes/vite/dev-spa'
+import { createPluginFromDevframe } from '@vitejs/devtools-kit/node'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    devframeVite(dataInspectorDevframe),
+    createPluginFromDevframe(dataInspectorDevframe),
     {
       name: 'my-app:data-sources',
       configureServer(server) {
@@ -129,6 +131,14 @@ export default defineConfig({
     },
   ],
 })
+```
+
+Without Vite DevTools, `devframeVite` from `@devframes/vite/dev-spa` mounts the panel directly, no DevTools dock required — swap it in for `createPluginFromDevframe` above:
+
+```ts
+import { devframeVite } from '@devframes/vite/dev-spa'
+
+devframeVite(dataInspectorDevframe)
 ```
 
 Hub hosts mount the default export like any devframe definition.

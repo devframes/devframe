@@ -289,7 +289,7 @@ export default defineConfig({
 
 ## Built-in plugins' `/vite` subpath is removed
 
-`a11yVitePlugin`, `assetsVitePlugin`, `dataInspectorVitePlugin`, `inspectVitePlugin`, `messagesVitePlugin`, and `ogVitePlugin` — each plugin's `@devframes/plugin-<name>/vite` export — were one-line renames over `devframeVite(def, options)`. Call `devframeVite` directly against the plugin's default export instead:
+`a11yVitePlugin`, `assetsVitePlugin`, `dataInspectorVitePlugin`, `inspectVitePlugin`, `messagesVitePlugin`, and `ogVitePlugin` — each plugin's `@devframes/plugin-<name>/vite` export — were one-line renames over `devframeVite(def, options)`. For a Vite app, mount the plugin into [Vite DevTools](https://devtools.vite.dev) instead, with `createPluginFromDevframe` from `@vitejs/devtools-kit/node`:
 
 ```ts
 // 0.8.x
@@ -302,6 +302,17 @@ export default defineConfig({
 
 ```ts
 // 0.9
+import a11yDevframe from '@devframes/plugin-a11y'
+import { createPluginFromDevframe } from '@vitejs/devtools-kit/node'
+
+export default defineConfig({
+  plugins: [createPluginFromDevframe(a11yDevframe)],
+})
+```
+
+Without Vite DevTools, call `devframeVite` directly against the plugin's default export instead — the lower-level, DevTools-free path:
+
+```ts
 import a11yDevframe from '@devframes/plugin-a11y'
 import { devframeVite } from '@devframes/vite/dev-spa'
 
