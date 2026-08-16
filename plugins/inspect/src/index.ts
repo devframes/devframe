@@ -6,13 +6,13 @@ import { setupInspect } from './node/index'
 /** Default devframe id — drives the hosted mount path `/__<id>/`. */
 const DEFAULT_ID = 'devframes_plugin_inspect'
 
-// The Vue SPA ships in the lockstep-versioned `@devframes/plugin-inspect-client`
+// The Vue SPA ships in the lockstep-versioned `@devframes/plugin-inspect-assets`
 // package rather than inside this (slim) node package. `resolveFrom` lets a
 // locally installed copy (a workspace link in this monorepo, or an explicit
 // `npm install` for air-gapped setups) be served with zero network; otherwise
 // the assets stream on demand through devframe's caching CDN back-proxy.
 const distDir: RemoteAssets = {
-  package: `${pkg.name}-client`,
+  package: `${pkg.name}-assets`,
   version: pkg.version,
   resolveFrom: import.meta.url,
 }
