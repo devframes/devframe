@@ -201,7 +201,7 @@ defineDevframe({
 | Field | Type | Description |
 |-------|------|-------------|
 | `command` | `string` | Binary name surfaced in `--help`. Default: the definition's `id`. |
-| `distDir` | `string` | SPA dist directory. **Required** for `dev` / `build`. |
+| `distDir` | `string \| RemoteAssets` | SPA dist directory, or a [remote assets](./client-assets) package fetched on demand. **Required** for `dev` / `build`. |
 | `port` | `number` | Preferred port for the dev server. |
 | `portRange` | `[number, number]` | Port scan range, passed through to `get-port-please`. |
 | `random` | `boolean` | Prefer a random open port. |

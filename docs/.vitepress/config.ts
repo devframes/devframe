@@ -23,6 +23,7 @@ function guideGroups(prefix: string) {
       items: [
         { text: 'Introduction', link: `${prefix}/guide/` },
         { text: 'Devframe Definition', link: `${prefix}/guide/devframe-definition` },
+        { text: 'Client Assets', link: `${prefix}/guide/client-assets` },
         { text: 'Scoped Context', link: `${prefix}/guide/scoped-context` },
         { text: 'Cross-Plugin Services', link: `${prefix}/guide/services` },
         { text: 'RPC', link: `${prefix}/guide/rpc` },

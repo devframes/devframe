@@ -23,7 +23,7 @@ await createBuild(devframe, {
 | Option | Default | Description |
 |--------|---------|-------------|
 | `outDir` | `dist-static` | Output directory. Cleared on each build. |
-| `distDir` | `def.cli?.distDir` | Override the SPA dist directory. |
+| `distDir` | `def.cli?.distDir` | Override the SPA dist directory (a local path or a [remote assets](/guide/client-assets) package, materialized in full at build time). |
 | `pretty` | `false` | Pretty-print dump JSON (larger on disk). |
 
 The resulting directory hosts on any static web server (`serve`, nginx, GitHub Pages, …). The client auto-detects `static` mode by resolving `./__connection.json` against `document.baseURI` and runs in read-only form.
