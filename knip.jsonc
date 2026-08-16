@@ -158,7 +158,7 @@
     },
     "plugins/inspect": {
       // The lockstep assets package is referenced only as a runtime string
-      // (`${pkg.name}-assets` in `cli.distDir`), never imported, so knip
+      // (`${pkg.name}--assets` in `cli.distDir`), never imported, so knip
       // can't see the dev-only workspace link that makes it resolvable in
       // the monorepo. Repeat the `plugins/*` entry glob (a workspace config
       // replaces, not merges, it).
@@ -166,7 +166,7 @@
         "src/{index,cli,vite,constants,types}.ts",
         "src/{client,node,rpc,inject,engine,registry}/index.ts"
       ],
-      "ignoreDependencies": ["@devframes/plugin-inspect-assets"]
+      "ignoreDependencies": ["@devframes/plugin-inspect--assets"]
     },
     "plugins/inspect/assets-pkg": {
       // Assets-only package: no source, just a prebuilt `dist` produced by

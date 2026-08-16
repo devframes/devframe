@@ -1883,7 +1883,7 @@ importers:
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
-      '@devframes/plugin-inspect-assets':
+      '@devframes/plugin-inspect--assets':
         specifier: workspace:*
         version: link:assets-pkg
       '@iconify-json/ph':

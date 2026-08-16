@@ -20,7 +20,7 @@ import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 /**
  * Resolve the inspector's SPA to a local directory. Its `distDir` is a
  * remote-assets declaration; in this monorepo the lockstep
- * `@devframes/plugin-inspect-assets` package is workspace-linked, so
+ * `@devframes/plugin-inspect--assets` package is workspace-linked, so
  * resolution short-circuits to its built `dist`. A store (rather than a
  * string) means that build hasn't run.
  */
