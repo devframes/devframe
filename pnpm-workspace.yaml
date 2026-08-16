@@ -26,6 +26,7 @@ trustPolicyExclude:
 packages:
   - packages/*
   - plugins/*
+  - plugins/*/assets-pkg
   - examples/*
   - storybook
   - docs

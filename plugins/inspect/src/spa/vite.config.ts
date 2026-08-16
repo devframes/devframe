@@ -22,7 +22,10 @@ export default defineConfig({
   // SFCs instead of esbuild pre-bundling them.
   optimizeDeps: { exclude: ['@antfu/design'] },
   build: {
-    outDir: fileURLToPath(new URL('../../dist/spa', import.meta.url)),
+    // Emit into the sibling `@devframes/plugin-inspect--assets` package, which
+    // ships these assets to npm; the node package stays slim and serves them
+    // on demand through devframe's remote-assets back-proxy.
+    outDir: fileURLToPath(new URL('../../assets-pkg/dist', import.meta.url)),
     emptyOutDir: true,
   },
 })

@@ -65,7 +65,7 @@
     "@devframes/plugin-inspect#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build", "@devframes/vite#build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-og#build": {
       "outputLogs": "new-only",

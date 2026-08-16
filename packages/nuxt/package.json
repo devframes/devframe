@@ -1,7 +1,7 @@
 {
   "name": "@devframes/nuxt",
   "type": "module",
-  "version": "0.9.0-beta.4",
+  "version": "0.9.0-beta.5",
   "description": "Nuxt module that exposes a Nuxt app as a devframe client.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

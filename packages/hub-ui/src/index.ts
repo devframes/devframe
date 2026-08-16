@@ -1,14 +1,10 @@
 import type { DevframeHubUi } from '@devframes/hub/initiate'
-import type { DevframeDockPreferences } from './client/dock-preferences'
-import type { EmbeddedVisibility } from './client/embedded/visibility'
-import type { DevframeBranding } from './client/state/branding'
+import type { DevframeBranding, DevframeDockPreferences, EmbeddedVisibility } from './types'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export type { DevframeDockPreferences } from './client/dock-preferences'
-export type { EmbeddedVisibility } from './client/embedded/visibility'
-export type { DevframeBranding } from './client/state/branding'
+export type { DevframeBranding, DevframeDockPreferences, EmbeddedVisibility } from './types'
 
 declare module 'devframe/types' {
   interface DevframeConnectionConfigsRegistry {

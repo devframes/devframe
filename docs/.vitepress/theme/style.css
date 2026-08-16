@@ -41,3 +41,13 @@
   padding-bottom: 1rem;
   font-style: italic;
 }
+
+.VPMenuGroup > .title {
+  opacity: 0.5;
+}
+
+li:not(:first-child) > .VPMenuGroup > .title {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--vp-c-divider);
+}

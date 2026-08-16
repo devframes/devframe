@@ -23,14 +23,15 @@ function guideGroups(prefix: string) {
       items: [
         { text: 'Introduction', link: `${prefix}/guide/` },
         { text: 'Devframe Definition', link: `${prefix}/guide/devframe-definition` },
-        { text: 'Client Assets', link: `${prefix}/guide/client-assets` },
-        { text: 'Scoped Context', link: `${prefix}/guide/scoped-context` },
-        { text: 'Cross-Plugin Services', link: `${prefix}/guide/services` },
         { text: 'RPC', link: `${prefix}/guide/rpc` },
         { text: 'Shared State', link: `${prefix}/guide/shared-state` },
-        { text: 'Streaming', link: `${prefix}/guide/streaming` },
-        { text: 'When Clauses', link: `${prefix}/guide/when-clauses` },
+        { text: 'Client Assets', link: `${prefix}/guide/client-assets` },
         { text: 'Structured Diagnostics', link: `${prefix}/guide/diagnostics` },
+        { text: 'Agent-Native', link: `${prefix}/guide/agent-native` },
+        { text: 'JSON-Render', link: `${prefix}/guide/json-render` },
+        { text: 'Streaming', link: `${prefix}/guide/streaming` },
+        { text: 'Scoped Context', link: `${prefix}/guide/scoped-context` },
+        { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
       ],
     },
     {
@@ -39,51 +40,41 @@ function guideGroups(prefix: string) {
         { text: 'Client', link: `${prefix}/guide/client` },
         { text: 'Transports', link: `${prefix}/guide/transports` },
         { text: 'Security', link: `${prefix}/guide/security` },
-        { text: 'Deep Linking', link: `${prefix}/guide/deep-linking` },
-      ],
-    },
-    {
-      text: 'JSON-Render',
-      items: [
-        { text: 'JSON-Render', link: `${prefix}/guide/json-render` },
-        { text: 'Build Your Own JSON-Render Frontend', link: `${prefix}/guide/build-your-own-json-render-frontend` },
       ],
     },
     {
       text: 'Hub',
       items: [
         { text: 'Hub', link: `${prefix}/guide/hub` },
-        { text: 'Serve a Hub Anywhere', link: `${prefix}/guide/hub-initiate` },
         { text: 'Client Scripts & Context', link: `${prefix}/guide/client-context` },
+        { text: 'Serve a Hub Anywhere', link: `${prefix}/guide/hub-initiate` },
+        { text: 'Cross-Plugin Services', link: `${prefix}/guide/services` },
+        { text: 'Deep Linking', link: `${prefix}/guide/deep-linking` },
+      ],
+    },
+    {
+      text: 'Customization',
+      items: [
+        { text: 'Build Your Own JSON-Render Frontend', link: `${prefix}/guide/build-your-own-json-render-frontend` },
         { text: 'Build Your Own Hub UI', link: `${prefix}/guide/build-your-own-hub-ui` },
       ],
     },
     {
-      text: 'Agent-Native',
+      text: 'References',
       items: [
-        { text: 'Agent-Native', link: `${prefix}/guide/agent-native` },
-      ],
-    },
-    {
-      text: 'Recipes',
-      items: [
-        { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
+        { text: 'When Clauses', link: `${prefix}/guide/when-clauses` },
+        { text: 'Examples', link: `${prefix}/examples/` },
       ],
     },
   ] satisfies { text: string, items: DefaultTheme.NavItemWithLink[] }[]
 }
 
-/** Flattened guide list — used by the top nav dropdown, which renders one level. */
-function guideItems(prefix: string) {
-  return guideGroups(prefix).flatMap(group => group.items) satisfies DefaultTheme.NavItemWithLink[]
-}
-
 function adaptersItems(prefix: string) {
   return [
     { text: 'Overview', link: `${prefix}/adapters/` },
-    { text: 'CLI (cac)', link: `${prefix}/adapters/cac` },
-    { text: 'Dev', link: `${prefix}/adapters/dev` },
     { text: 'Initiate (middleware)', link: `${prefix}/adapters/initiate` },
+    { text: 'Dev', link: `${prefix}/adapters/dev` },
+    { text: 'CLI', link: `${prefix}/adapters/cac` },
     { text: 'Build', link: `${prefix}/adapters/build` },
     { text: 'Vite DevTools', link: `${prefix}/adapters/vite` },
     { text: 'Embedded', link: `${prefix}/adapters/embedded` },
@@ -175,10 +166,7 @@ export function devframeNav(prefix = ''): DefaultTheme.NavItem[] {
   return [
     {
       text: 'Guide',
-      items: [
-        ...guideItems(prefix),
-        { text: 'Examples', link: `${prefix}/examples/` },
-      ],
+      items: guideGroups(prefix),
     },
     {
       text: 'Adapters',

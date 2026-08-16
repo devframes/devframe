@@ -2,6 +2,7 @@ import type { DevframeHubContext } from '@devframes/hub/node'
 import type { DevframeNodeContext } from 'devframe'
 import type { StartedServer } from 'devframe/internal'
 import { existsSync } from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
 import { createHubContext } from '@devframes/hub/node'
@@ -10,22 +11,38 @@ import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { createH3DevframeHost } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
 import { resolveBasePath } from 'devframe/node/hub-internals'
+import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 
-const SPA_DIST = inspectDevframe.cli!.distDir!
+/**
+ * Resolve the inspector's SPA to a local directory. Its `distDir` is a
+ * remote-assets declaration; in this monorepo the lockstep
+ * `@devframes/plugin-inspect--assets` package is workspace-linked, so
+ * resolution short-circuits to its built `dist`. A store (rather than a
+ * string) means that build hasn't run.
+ */
+function localSpaDir(): string {
+  const resolved = resolveStaticAssetsSource(inspectDevframe.cli!.distDir!, path.join(os.tmpdir(), 'devframes_plugin_inspect-test'))
+  if (typeof resolved !== 'string') {
+    throw new TypeError(
+      '[devframes_plugin_inspect] client SPA missing — run `pnpm -C plugins/inspect run build` first.',
+    )
+  }
+  return resolved
+}
 
 /**
  * Assert the Vue SPA has been built. The dev-server and static-build
- * tests mount / copy `dist/spa`; a missing build produces a loud, fixable
- * failure rather than an opaque 404.
+ * tests mount / copy the client SPA; a missing build produces a loud,
+ * fixable failure rather than an opaque 404.
  */
 export function assertSpaBuilt(): void {
-  if (!existsSync(path.join(SPA_DIST, 'index.html'))) {
+  if (!existsSync(path.join(localSpaDir(), 'index.html'))) {
     throw new Error(
-      '[devframes_plugin_inspect] dist/spa missing — run `pnpm -C plugins/inspect run build` first.',
+      '[devframes_plugin_inspect] client SPA missing — run `pnpm -C plugins/inspect run build` first.',
     )
   }
 }
@@ -51,7 +68,7 @@ interface BootOptions {
  * context exercises the no-hub path (empty list, thrown diagnostic).
  */
 async function boot(options: BootOptions): Promise<InspectorServer> {
-  const distDir = inspectDevframe.cli!.distDir!
+  const distDir = localSpaDir()
   const basePath = resolveBasePath(inspectDevframe, 'standalone')
   const host = '127.0.0.1'
   const port = await getPort({ host, random: true })

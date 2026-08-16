@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-inspect",
   "type": "module",
-  "version": "0.9.0-beta.4",
+  "version": "0.9.0-beta.5",
   "description": "Devframe plugin that inspects the RPC registry, shared state, and agent surface of a connection.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
@@ -63,6 +63,7 @@
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",
+    "@devframes/plugin-inspect--assets": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
     "@standard-schema/spec": "catalog:deps",
     "@storybook/addon-docs": "catalog:storybook",
