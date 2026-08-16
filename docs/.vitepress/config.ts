@@ -42,6 +42,12 @@ function guideGroups(prefix: string) {
       ],
     },
     {
+      text: 'Performance',
+      items: [
+        { text: 'Performance Best Practices', link: `${prefix}/guide/performance` },
+      ],
+    },
+    {
       text: 'JSON-Render',
       items: [
         { text: 'JSON-Render', link: `${prefix}/guide/json-render` },
