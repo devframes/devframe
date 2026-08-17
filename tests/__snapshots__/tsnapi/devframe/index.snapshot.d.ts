@@ -356,9 +356,15 @@ export interface RemoteAssets {
   version: string;
   path?: string;
   provider?: RemoteAssetsProvider;
-  resolveFrom?: string;
+  resolveFrom?: string | null;
   fetch?: typeof globalThis.fetch;
   offline?: boolean;
+}
+export interface RemoteAssetsErrorMessage {
+  type: 'devframe:remote-assets-error';
+  package: string;
+  version: string;
+  reason: string;
 }
 export interface RemoteAssetsProviderCustom {
   fileUrl: (_: string, _: string, _: string) => string;

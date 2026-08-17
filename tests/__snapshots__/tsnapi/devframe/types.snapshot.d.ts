@@ -56,6 +56,7 @@ export { EventsMap }
 export { EventUnsubscribe }
 export { McpRouteOptions }
 export { RemoteAssets }
+export { RemoteAssetsErrorMessage }
 export { RemoteAssetsProvider }
 export { RemoteAssetsProviderCustom }
 export { RemoteAssetsStore }

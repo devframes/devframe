@@ -252,7 +252,7 @@ onMounted(() => {
   const panelSession = props.context.panel.session
   watchEffect(() => {
     if (props.context.docks.selectedId === props.entry.id)
-      panelSession.route = currentUrl.value
+      panelSession.selectedDockRoute = currentUrl.value
   })
 
   // Listen for iframe load events

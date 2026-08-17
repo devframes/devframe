@@ -33,13 +33,13 @@ export interface DockSessionStorage {
   /** Whether the dock panel is open. */
   open: boolean
   /** The currently selected dock entry id, or `null` when nothing is open. */
-  selectedId: string | null
+  selectedDockId: string | null
   /**
    * The live address-bar URL of the selected iframe dock, restored as that
    * iframe's boot `src` on the next load so the deep-linked route survives a
    * reload. `null` when the selected dock has no iframe route to remember.
    */
-  route: string | null
+  selectedDockRoute: string | null
 }
 
 export type DockClientType = 'embedded' | 'standalone'
@@ -117,11 +117,11 @@ export interface DocksPanelContext {
   isResizing: boolean
   readonly isVertical: boolean
   /**
-   * Claim the persisted {@link DockSessionStorage.route boot route} for a dock
+   * Claim the persisted {@link DockSessionStorage.selectedDockRoute boot route} for a dock
    * id, once. Returns the saved address-bar URL only for the dock that was
    * selected before the last reload — and only on the first call for it — so a
    * restored iframe boots deep-linked while a later switch to a different dock
-   * (whose live route isn't reflected in {@link DockSessionStorage.route} yet)
+   * (whose live route isn't reflected in {@link DockSessionStorage.selectedDockRoute} yet)
    * doesn't reuse the stale value. Returns `null` otherwise.
    */
   consumeBootRoute?: (id: string) => string | null
@@ -129,6 +129,7 @@ export interface DocksPanelContext {
 
 export interface DocksEntriesContext {
   selectedId: string | null
+  selectedRoute: string | null
   readonly selected: DevframeDockEntry | null
   entries: DevframeDockEntry[]
   entryToStateMap: Map<string, DockEntryState>

@@ -83,22 +83,27 @@ export async function createDocksContext(
   // the live session state. Re-applied once the RPC becomes trusted so a reload
   // lands back on the same dock — see the restore effect near the end.
   const restoreIntent = {
-    open: sessionStore.value.open,
-    selectedId: sessionStore.value.selectedId,
-    route: sessionStore.value.route,
+    ...sessionStore.value,
   }
 
-  // `selectedId` is backed by the session store so the current selection both
+  // `selectedDockId` is backed by the session store so the current selection both
   // drives the UI and persists across reloads through one source of truth.
-  const selectedId = computed<string | null>({
-    get: () => sessionStore.value.selectedId,
+  const selectedDockId = computed<string | null>({
+    get: () => sessionStore.value.selectedDockId,
     set: (id) => {
-      sessionStore.value.selectedId = id
+      sessionStore.value.selectedDockId = id
     },
   })
+  const selectedDockRoute = computed<string | null>({
+    get: () => sessionStore.value.selectedDockRoute,
+    set: (route) => {
+      sessionStore.value.selectedDockRoute = route
+    },
+  })
+
   const selected = computed(
-    () => entries.value.find(entry => entry.id === selectedId.value)
-      ?? BUILTIN_ENTRIES.find(entry => entry.id === selectedId.value)
+    () => entries.value.find(entry => entry.id === selectedDockId.value)
+      ?? BUILTIN_ENTRIES.find(entry => entry.id === selectedDockId.value)
       ?? null,
   )
 
@@ -142,8 +147,8 @@ export async function createDocksContext(
         // Clearing the selection when the active member vanishes matches the
         // hub reconcile behavior for a removed selected entry (shared-iframe
         // soft-nav §7.5).
-        if (selectedId.value === entry.id)
-          selectedId.value = null
+        if (selectedDockId.value === entry.id)
+          selectedDockId.value = null
       },
     }
   }
@@ -179,7 +184,7 @@ export async function createDocksContext(
     clientType,
     dockOpen: sessionStore.value.open,
     paletteOpen: commandsContext?.paletteOpen ?? false,
-    dockSelectedId: selectedId.value ?? '',
+    dockSelectedId: selectedDockId.value ?? '',
     popupOpen: isDockPopupOpen.value,
   })
 
@@ -195,13 +200,13 @@ export async function createDocksContext(
 
   const switchEntry = async (id: string | null = null) => {
     if (id == null) {
-      selectedId.value = null
+      selectedDockId.value = null
       sessionStore.value.open = false
-      sessionStore.value.route = null
+      sessionStore.value.selectedDockRoute = null
       return true
     }
     if (id === '~client-auth-notice') {
-      selectedId.value = id
+      selectedDockId.value = id
       sessionStore.value.open = true
       return true
     }
@@ -268,18 +273,18 @@ export async function createDocksContext(
     if (entry.type === 'iframe' && entry.frameId && !entry.subTabs)
       frameNavCurrentMember.set(entry.frameId, entry.id)
 
-    selectedId.value = entry.id
+    selectedDockId.value = entry.id
     sessionStore.value.open = true
     // Only an iframe dock owns an address-bar route; ViewIframe keeps
     // `session.route` current for it. Clear it for anything else so a stale
     // route from a previous iframe isn't persisted against a non-iframe dock.
     if (entry.type !== 'iframe')
-      sessionStore.value.route = null
+      sessionStore.value.selectedDockRoute = null
     return true
   }
 
   const toggleEntry = async (id: string) => {
-    if (selectedId.value === id)
+    if (selectedDockId.value === id)
       return switchEntry(null)
     return switchEntry(id)
   }
@@ -415,7 +420,7 @@ export async function createDocksContext(
       keybindings: [{ key: 'Escape' }],
       action: () => {
         sessionStore.value.open = false
-        selectedId.value = null
+        selectedDockId.value = null
       },
     },
     {
@@ -533,9 +538,9 @@ export async function createDocksContext(
   // One-shot boot route (see `DocksPanelContext.consumeBootRoute`): the persisted
   // address-bar URL is handed back to exactly the iframe dock that was selected
   // before the reload, once.
-  let bootRoute: string | null = restoreIntent.selectedId != null ? restoreIntent.route : null
+  let bootRoute: string | null = restoreIntent.selectedDockId != null ? restoreIntent.selectedDockRoute : null
   const consumeBootRoute = (id: string): string | null => {
-    if (bootRoute != null && id === restoreIntent.selectedId) {
+    if (bootRoute != null && id === restoreIntent.selectedDockId) {
       const route = bootRoute
       bootRoute = null
       return route
@@ -553,7 +558,8 @@ export async function createDocksContext(
       consumeBootRoute,
     },
     docks: {
-      selectedId,
+      selectedId: selectedDockId,
+      selectedRoute: selectedDockRoute,
       selected,
       entries,
       entryToStateMap: markRaw(dockEntryStateMap),
@@ -604,8 +610,8 @@ export async function createDocksContext(
   // open. `switchEntry` reads `session.route` back through `consumeBootRoute`
   // when the restored iframe boots.
   const applyRestore = (): void => {
-    if (restoreIntent.open && restoreIntent.selectedId != null)
-      void switchEntry(restoreIntent.selectedId)
+    if (restoreIntent.open && restoreIntent.selectedDockId != null)
+      void switchEntry(restoreIntent.selectedDockId)
   }
   if (rpc.isTrusted) {
     applyRestore()
