@@ -17,9 +17,9 @@ feed through `@devframes/hub`'s `listSince` delta API.
 ## Mount into a hub
 
 ```ts
-import messagesDevframe from '@devframes/plugin-messages'
+import createMessagesDevframe from '@devframes/plugin-messages'
 
-await hubContext.install(messagesDevframe)
+await hubContext.install(createMessagesDevframe())
 ```
 
 The hub's `ctx.messages` host feeds the panel live — every

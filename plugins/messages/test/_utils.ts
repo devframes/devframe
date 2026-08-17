@@ -7,7 +7,7 @@ import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
 import { createHubContext } from '@devframes/hub/node'
-import messagesDevframe from '@devframes/plugin-messages'
+import createMessagesDevframe from '@devframes/plugin-messages'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { createH3DevframeHost } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
@@ -17,6 +17,7 @@ import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 
+const messagesDevframe = createMessagesDevframe()
 const SPA_DIST = localDistDir(messagesDevframe.cli!.distDir!)
 
 function localDistDir(source: string | object): string {

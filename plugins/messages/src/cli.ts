@@ -1,6 +1,6 @@
 import type { CacHandle } from 'devframe/adapters/cac'
 import { createCac } from 'devframe/adapters/cac'
-import messagesDevframe from './index'
+import createMessagesDevframe from './index'
 
 /**
  * Build the standalone CLI for the messages panel — backs the package `bin`
@@ -9,5 +9,5 @@ import messagesDevframe from './index'
  * `dev` / `build` / `mcp` command shell.
  */
 export function createMessagesCli(): CacHandle {
-  return createCac(messagesDevframe)
+  return createCac(createMessagesDevframe())
 }

@@ -43,6 +43,6 @@ export declare function createInspectDevframe(_?: InspectDevframeOptions): Devfr
 // #endregion
 
 // #region Default Export
-declare const _default: DevframeDefinition;
+declare function _default(_?: InspectDevframeOptions): DevframeDefinition;
 export default _default
 // #endregion

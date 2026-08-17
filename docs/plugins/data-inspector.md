@@ -109,7 +109,7 @@ pnpx @devframes/plugin-data-inspector attach               # attach to a process
 For a [Vite DevTools](https://devtools.vite.dev) app, mount the panel with `createPluginFromDevframe` from `@vitejs/devtools-kit/node`:
 
 ```ts
-import dataInspectorDevframe from '@devframes/plugin-data-inspector'
+import createDataInspectorDevframe from '@devframes/plugin-data-inspector'
 import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
 // vite.config.ts
 import { createPluginFromDevframe } from '@vitejs/devtools-kit/node'
@@ -117,7 +117,7 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    createPluginFromDevframe(dataInspectorDevframe),
+    createPluginFromDevframe(createDataInspectorDevframe()),
     {
       name: 'my-app:data-sources',
       configureServer(server) {
@@ -133,15 +133,15 @@ export default defineConfig({
 })
 ```
 
-Without Vite DevTools, `devframeVite` from `@devframes/vite/dev-spa` mounts the panel directly, no DevTools dock required — swap it in for `createPluginFromDevframe` above:
+Without Vite DevTools, `devframeVite` from `@devframes/vite/single` mounts the panel directly, no DevTools dock required — swap it in for `createPluginFromDevframe` above:
 
 ```ts
-import { devframeVite } from '@devframes/vite/dev-spa'
+import { devframeVite } from '@devframes/vite/single'
 
-devframeVite(dataInspectorDevframe)
+devframeVite(createDataInspectorDevframe())
 ```
 
-Hub hosts mount the default export like any devframe definition.
+Hub hosts mount an instance from the default export like any devframe definition.
 
 ## Programmatic
 

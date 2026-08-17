@@ -162,7 +162,9 @@ Dev servers with a module bundler (Next's Turbopack/webpack) statically analyse 
 const pkgs = ['@devframes/plugin-git', '@devframes/plugin-terminals']
 const defs = await Promise.all(
   pkgs.map(p => import(/* webpackIgnore: true */ /* turbopackIgnore: true */ p)),
-).then(mods => mods.map(m => m.default))
+  // Each package's default export is its `create<X>Devframe` factory, not a
+  // pre-built instance — call it to get one.
+).then(mods => mods.map(m => m.default()))
 
 for (const def of defs)
   await ctx.install(def)

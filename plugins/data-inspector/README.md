@@ -50,12 +50,12 @@ handle.notifyChanged() // or notify imperatively
 ## Mount
 
 ```ts
-// hub hosts mount the default export like any devframe:
-import dataInspectorDevframe from '@devframes/plugin-data-inspector'
+// the default export is the factory — call it for an instance:
+import createDataInspectorDevframe from '@devframes/plugin-data-inspector'
 // Vite
-import { devframeVite } from '@devframes/vite/dev-spa'
+import { devframeVite } from '@devframes/vite/single'
 
-devframeVite(dataInspectorDevframe)
+devframeVite(createDataInspectorDevframe())
 ```
 
 ## Standalone CLI

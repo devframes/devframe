@@ -46,7 +46,7 @@ function recommendNuxtDevtools(): void {
  * integrates the same hub protocol natively and is the recommended path for a
  * Nuxt app, so this module emits a one-time notice to that effect (silence it
  * with `{ quiet: true }`). To wire a Nuxt app up as a single devframe client,
- * reach for `@devframes/nuxt/dev-spa` instead.
+ * reach for `@devframes/nuxt/single` instead.
  *
  * ```ts [nuxt.config.ts]
  * export default defineNuxtConfig({

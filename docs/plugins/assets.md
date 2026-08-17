@@ -32,28 +32,28 @@ For a [Vite DevTools](https://devtools.vite.dev) app, mount the panel with `crea
 
 ```ts
 // vite.config.ts
-import assetsDevframe from '@devframes/plugin-assets'
+import createAssetsDevframe from '@devframes/plugin-assets'
 import { createPluginFromDevframe } from '@vitejs/devtools-kit/node'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    createPluginFromDevframe(assetsDevframe),
+    createPluginFromDevframe(createAssetsDevframe()),
   ],
 })
 ```
 
-Without Vite DevTools, `devframeVite` from `@devframes/vite/dev-spa` mounts the panel directly, no DevTools dock required:
+Without Vite DevTools, `devframeVite` from `@devframes/vite/single` mounts the panel directly, no DevTools dock required:
 
 ```ts
 // vite.config.ts
-import assetsDevframe from '@devframes/plugin-assets'
-import { devframeVite } from '@devframes/vite/dev-spa'
+import createAssetsDevframe from '@devframes/plugin-assets'
+import { devframeVite } from '@devframes/vite/single'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    devframeVite(assetsDevframe),
+    devframeVite(createAssetsDevframe()),
   ],
 })
 ```

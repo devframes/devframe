@@ -55,6 +55,6 @@ export declare const a11yAgentBundlePath: string;
 // #endregion
 
 // #region Default Export
-declare const _default: DevframeDefinition;
+declare function _default(_?: A11yDevframeOptions): DevframeDefinition;
 export default _default
 // #endregion

@@ -2,7 +2,7 @@
 
 import type { DevframeScopedClientContext } from 'devframe/client'
 import type { ReactNode } from 'react'
-import { RpcProvider as DevframeRpcProvider, useRpc as useDevframeRpc, useRpcStatus } from '@devframes/next/dev-spa/client'
+import { RpcProvider as DevframeRpcProvider, useRpc as useDevframeRpc, useRpcStatus } from '@devframes/next/single/client'
 import { useMemo } from 'react'
 
 // Inlined (not imported from the server `rpc/index.ts`) so the client
@@ -17,7 +17,7 @@ interface ConnectionState {
 }
 
 /**
- * Connect to the RPC backend via `@devframes/next/dev-spa/client` — the connect +
+ * Connect to the RPC backend via `@devframes/next/single/client` — the connect +
  * status machinery lives in the package now; this file only scopes the client
  * to this tool's namespace and reshapes the status for the local UI.
  */

@@ -1,12 +1,12 @@
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
-import { devframeVite } from '@devframes/vite/dev-spa'
+import { devframeVite } from '@devframes/vite/single'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'pathe'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
 import { alias } from '../../../../alias'
-import assetsDevframe from '../index'
+import createAssetsDevframe from '../index'
 
 // The plugin manages `<cwd>/public` and (as a mounted plugin) does NOT serve
 // those bytes itself — it references the host's URLs. Here the host is Vite,
@@ -22,7 +22,7 @@ export default defineConfig(({ command }) => ({
   plugins: [
     vue(),
     UnoCSS(),
-    devframeVite(assetsDevframe, { bridge: true, base: '/' }),
+    devframeVite(createAssetsDevframe(), { bridge: true, base: '/' }),
   ],
   // `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile
   // its SFCs instead of esbuild pre-bundling them.

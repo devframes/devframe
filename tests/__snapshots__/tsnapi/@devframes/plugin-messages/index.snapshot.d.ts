@@ -23,7 +23,7 @@ export declare const PLUGIN_ID: string;
 // #endregion
 
 // #region Default Export
-declare const _default: DevframeDefinition;
+declare function _default(_?: MessagesDevframeOptions): DevframeDefinition;
 export default _default
 // #endregion
 

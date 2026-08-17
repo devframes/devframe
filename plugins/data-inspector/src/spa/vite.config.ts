@@ -1,18 +1,18 @@
 import { fileURLToPath } from 'node:url'
-import { devframeVite } from '@devframes/vite/dev-spa'
+import { devframeVite } from '@devframes/vite/single'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
 import { alias } from '../../../../alias'
-import dataInspectorDevframe from '../index'
+import createDataInspectorDevframe from '../index'
 
 // The data-inspector SPA. `base: './'` keeps every asset URL relative so the
 // bundle is mount-path portable — it discovers its runtime base from
 // `document.baseURI` and connects via `connectDevframe()`. The build is
 // copied verbatim by `createBuild`; no HTML rewriting.
 //
-// `devframeVite(dataInspectorDevframe, { bridge: true })` dogfoods the
-// plugin: it runs a side-car RPC + WS backend (with the built-in example
+// `devframeVite(createDataInspectorDevframe(), { bridge: true })` dogfoods
+// the plugin: it runs a side-car RPC + WS backend (with the built-in example
 // source) next to this HMR frontend, so `pnpm dev` is a full devframe dev
 // server, not a backend-less SPA.
 export default defineConfig({
@@ -25,7 +25,7 @@ export default defineConfig({
   plugins: [
     vue(),
     UnoCSS(),
-    devframeVite(dataInspectorDevframe, { bridge: true, base: '/' }),
+    devframeVite(createDataInspectorDevframe(), { bridge: true, base: '/' }),
   ],
   // `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile its
   // SFCs instead of esbuild pre-bundling them.

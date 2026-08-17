@@ -71,6 +71,4 @@ export function createTerminalsDevframe(options: TerminalsOptions = {}): Devfram
   })
 }
 
-/** Default-configured terminals devframe (interactive shell, no presets). */
-const terminals: DevframeDefinition = createTerminalsDevframe()
-export default terminals
+export default createTerminalsDevframe

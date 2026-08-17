@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'node:url'
-import { devframeVite } from '@devframes/vite/dev-spa'
+import { devframeVite } from '@devframes/vite/single'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
 import { alias } from '../../../../alias'
-import inspectDevframe from '../index'
+import createInspectDevframe from '../index'
 
 // The inspector SPA. `base: './'` keeps every asset URL relative so the
 // bundle is mount-path portable — it discovers its runtime base from
@@ -17,7 +17,7 @@ export default defineConfig({
   plugins: [
     vue(),
     UnoCSS(),
-    devframeVite(inspectDevframe, { bridge: true, base: '/' }),
+    devframeVite(createInspectDevframe(), { bridge: true, base: '/' }),
   ],
   // `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile its
   // SFCs instead of esbuild pre-bundling them.

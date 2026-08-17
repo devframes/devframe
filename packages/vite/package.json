@@ -20,7 +20,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.mjs",
-    "./dev-spa": "./dist/dev-spa.mjs",
+    "./single": "./dist/single.mjs",
     "./hub": "./dist/hub.mjs",
     "./hub/client": "./dist/hub-client.mjs",
     "./package.json": "./package.json"

@@ -1,7 +1,7 @@
 import type { CacHandle } from 'devframe/adapters/cac'
 import { createCac } from 'devframe/adapters/cac'
-import ogDevframe from './index'
+import createOgDevframe from './index'
 
 export function createOgCli(): CacHandle {
-  return createCac(ogDevframe)
+  return createCac(createOgDevframe())
 }

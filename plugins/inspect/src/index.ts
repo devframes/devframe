@@ -77,8 +77,5 @@ export function createInspectDevframe(options: InspectDevframeOptions = {}): Dev
   })
 }
 
-/** The default inspector devframe definition. */
-const inspectDevframe: DevframeDefinition = createInspectDevframe()
-
-export default inspectDevframe
+export default createInspectDevframe
 export type { InvokeResult, RpcFunctionInfo } from './types'

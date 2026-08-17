@@ -99,8 +99,5 @@ export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeD
   })
 }
 
-/** The default a11y inspector devframe definition. */
-const a11yDevframe: DevframeDefinition = createA11yDevframe()
-
-export default a11yDevframe
+export default createA11yDevframe
 export type { Impact, ScanReport, Violation, ViolationNode } from './shared/protocol.ts'

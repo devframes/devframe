@@ -6,7 +6,7 @@ import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
 import { createHubContext } from '@devframes/hub/node'
-import inspectDevframe from '@devframes/plugin-inspect'
+import createInspectDevframe from '@devframes/plugin-inspect'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { createH3DevframeHost } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
@@ -16,6 +16,8 @@ import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { serveTestContext } from '../../../tests/helpers/serve-test-context'
+
+const inspectDevframe = createInspectDevframe()
 
 /**
  * Resolve the inspector's SPA to a local directory. Its `distDir` is a

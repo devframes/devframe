@@ -139,8 +139,8 @@
       "@devframes/nuxt/runtime/plugin.client": [
         "./packages/nuxt/src/runtime/plugin.client.ts"
       ],
-      "@devframes/nuxt/dev-spa": [
-        "./packages/nuxt/src/dev-spa.ts"
+      "@devframes/nuxt/single": [
+        "./packages/nuxt/src/single.ts"
       ],
       "@devframes/nuxt/hub/client": [
         "./packages/nuxt/src/hub-client.ts"
@@ -151,11 +151,11 @@
       "@devframes/nuxt": [
         "./packages/nuxt/src/index.ts"
       ],
-      "@devframes/next/dev-spa/client": [
+      "@devframes/next/single/client": [
         "./packages/next/src/client.tsx"
       ],
-      "@devframes/next/dev-spa": [
-        "./packages/next/src/dev-spa.ts"
+      "@devframes/next/single": [
+        "./packages/next/src/single.ts"
       ],
       "@devframes/next/hub/client": [
         "./packages/next/src/hub-client.tsx"
@@ -166,8 +166,8 @@
       "@devframes/next": [
         "./packages/next/src/index.ts"
       ],
-      "@devframes/vite/dev-spa": [
-        "./packages/vite/src/dev-spa.ts"
+      "@devframes/vite/single": [
+        "./packages/vite/src/single.ts"
       ],
       "@devframes/vite/hub/client": [
         "./packages/vite/src/hub-client.ts"

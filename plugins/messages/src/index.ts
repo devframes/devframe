@@ -73,10 +73,7 @@ export function createMessagesDevframe(options: MessagesDevframeOptions = {}): D
   })
 }
 
-/** The default messages devframe definition. */
-const messagesDevframe: DevframeDefinition = createMessagesDevframe()
-
-export default messagesDevframe
+export default createMessagesDevframe
 export { DEFAULT_PORT, MESSAGES_UPDATED_EVENT, PLUGIN_ID } from './constants'
 // The plugin's data vocabulary is the hub's — re-exported so the SPA, the
 // embeddable client, and consumers can type against the plugin package alone.

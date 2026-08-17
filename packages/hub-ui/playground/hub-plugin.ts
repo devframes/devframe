@@ -2,7 +2,7 @@ import type { HubInstance } from '@devframes/hub/initiate'
 import type { Plugin, ViteDevServer } from 'vite'
 import { Server as NodeHttpServer } from 'node:http'
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
-import gitDevframe from '@devframes/plugin-git'
+import createGitDevframe from '@devframes/plugin-git'
 import { PLAYGROUND_GROUP_ID } from './constants'
 import { seedPlayground } from './seed'
 
@@ -22,8 +22,8 @@ import { seedPlayground } from './seed'
  * slot), a cyclic workspace dependency for no real benefit.
  *
  * `@devframes/plugin-git` is the one built-in plugin that doesn't itself
- * depend on `@devframes/vite` (every other plugin does, for its own
- * dev-spa/build tooling) — mounting any of those here would reintroduce the
+ * depend on `@devframes/vite` (every other plugin does, for its own SPA
+ * dev-serve/build tooling) — mounting any of those here would reintroduce the
  * same cyclic dependency `@devframes/vite/hub` avoids, just one hop further
  * out (hub-ui → that plugin → `@devframes/vite` → hub-ui again, via its peer
  * dependency).
@@ -67,7 +67,7 @@ export function hubUiPlaygroundHub(): Plugin {
         // to stage/commit from. Inspects this very checkout: `cwd` above is
         // this package's own directory.
         devframes: [
-          { devframe: gitDevframe, dock: { groupId: PLAYGROUND_GROUP_ID } },
+          { devframe: createGitDevframe(), dock: { groupId: PLAYGROUND_GROUP_ID } },
         ],
         configure: seedPlayground,
       })

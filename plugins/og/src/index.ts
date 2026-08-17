@@ -53,7 +53,5 @@ export function createOgDevframe(options: OgDevframeOptions = {}): DevframeDefin
   })
 }
 
-const ogDevframe: DevframeDefinition = createOgDevframe()
-
-export default ogDevframe
+export default createOgDevframe
 export type { OgFetch, OgHeadTag, OgHeadTagName, OgResolveInput, OgSnapshot } from './types'

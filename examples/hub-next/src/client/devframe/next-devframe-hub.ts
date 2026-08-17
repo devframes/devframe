@@ -42,7 +42,7 @@ async function loadBuiltinPlugins(): Promise<DevframeDefinition[]> {
       pkg => import(/* webpackIgnore: true */ /* turbopackIgnore: true */ pkg),
     ),
   )
-  return mods.map(mod => mod.default as DevframeDefinition)
+  return mods.map(mod => (mod.default as () => DevframeDefinition)())
 }
 
 /**
@@ -116,7 +116,7 @@ async function loadA11yAgentMount(): Promise<A11yAgentMount | null> {
     const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-a11y')
     const bundle = mod.a11yAgentBundlePath as string
     return {
-      dockId: (mod.default as DevframeDefinition).id,
+      dockId: (mod.default as () => DevframeDefinition)().id,
       dir: dirname(bundle),
       importFrom: `${A11Y_AGENT_MOUNT_BASE}inject.js`,
     }

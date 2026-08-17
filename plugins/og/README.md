@@ -6,4 +6,4 @@ Inspect Open Graph and Twitter metadata for any reachable page, then compare its
 pnpx @devframes/plugin-og
 ```
 
-The package exports `createOgDevframe()` for custom definitions — mount it into a Vite host with `devframeVite()` from `@devframes/vite/dev-spa`. Pass `defaultUrl` to bake a shareable report with the devframe build adapter.
+The package exports `createOgDevframe()` for custom definitions — mount it into a Vite host with `devframeVite()` from `@devframes/vite/single`. Pass `defaultUrl` to bake a shareable report with the devframe build adapter.

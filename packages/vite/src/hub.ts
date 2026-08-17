@@ -113,7 +113,7 @@ function recommendViteDevtools(): void {
  * (`@vitejs/devtools-kit`) integrates the same hub protocol natively and is
  * the recommended path for a Vite app, so this plugin emits a one-time notice
  * to that effect (silence it with `{ quiet: true }`). For dev-serving a
- * single devframe's own SPA, reach for `@devframes/vite/dev-spa` instead.
+ * single devframe's own SPA, reach for `@devframes/vite/single` instead.
  */
 export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
   const base = normalizeHubBase(options.base ?? DEVFRAMES_HUB_BASE)

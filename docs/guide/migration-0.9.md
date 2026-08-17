@@ -33,21 +33,22 @@ Every entry below has a drop-in replacement. At a glance:
 
 **Framework adapters (`@devframes/vite` / `@devframes/nuxt` / `@devframes/next`)**
 
-Each splits into two scoped subpaths — `.../dev-spa` (author one devframe's SPA) and `.../hub` (mount a whole `@devframes/hub`) — and the bare package root throws with a pointer to both.
+Each splits into two scoped subpaths — `.../single` (author one devframe's SPA) and `.../hub` (mount a whole `@devframes/hub`) — and the bare package root throws with a pointer to both.
 
 | Removed / moved | Replacement |
 |---|---|
-| `devframe/helpers/vite` (`viteDevBridge`) | `@devframes/vite/dev-spa` (`devframeVite` / `devframeVitePlugin` / `devframeViteBridge`) |
-| `@devframes/nuxt` (bare module) | `@devframes/nuxt/dev-spa` |
-| `@devframes/next` root (`withDevframe`, `createDevframeNextHandler`) | `@devframes/next/dev-spa` |
-| `@devframes/next/client` | `@devframes/next/dev-spa/client` |
+| `devframe/helpers/vite` (`viteDevBridge`) | `@devframes/vite/single` (`devframeVite` / `devframeVitePlugin` / `devframeViteBridge`) |
+| `@devframes/nuxt` (bare module) | `@devframes/nuxt/single` |
+| `@devframes/next` root (`withDevframe`, `createDevframeNextHandler`) | `@devframes/next/single` |
+| `@devframes/next/client` | `@devframes/next/single/client` |
 | mount a hub inside a tool | `@devframes/{vite,nuxt,next}/hub` (+ `/hub/client`) |
 
 **Built-in plugins**
 
 | Removed / moved | Replacement |
 |---|---|
-| `@devframes/plugin-{a11y,assets,data-inspector,inspect,messages,og}/vite` | `devframeVite(def, options)` from `@devframes/vite/dev-spa`, against the plugin's default export |
+| `@devframes/plugin-{a11y,assets,data-inspector,inspect,messages,og}/vite` | `devframeVite(def, options)` from `@devframes/vite/single`, against an instance from the plugin's default export |
+| default export is a pre-built `DevframeDefinition` | default export is the `create<X>Devframe` factory — call it for an instance |
 
 ## `devframe/adapters/cli` is removed
 
@@ -256,11 +257,11 @@ import { DEFAULT_CATEGORIES_ORDER } from '@devframes/hub/constants'
 
 ## The Vite bridge moves to `@devframes/vite`
 
-`devframe/helpers/vite` is now its own package, `@devframes/vite` — so it can depend on `vite` directly (its plugins are typed against Vite's real `Plugin` / `ViteDevServer`) while `devframe` core stays free of a Vite dependency. It also splits into two scoped subpaths, and the single `viteDevBridge` becomes three purpose-named plugins on `@devframes/vite/dev-spa`:
+`devframe/helpers/vite` is now its own package, `@devframes/vite` — so it can depend on `vite` directly (its plugins are typed against Vite's real `Plugin` / `ViteDevServer`) while `devframe` core stays free of a Vite dependency. It also splits into two scoped subpaths, and the single `viteDevBridge` becomes three purpose-named plugins on `@devframes/vite/single`:
 
 | 0.8.x | 0.9 |
 |---|---|
-| `import { viteDevBridge } from 'devframe/helpers/vite'` | `import { devframeVite } from '@devframes/vite/dev-spa'` |
+| `import { viteDevBridge } from 'devframe/helpers/vite'` | `import { devframeVite } from '@devframes/vite/single'` |
 | `viteDevBridge(def)` (static mount) | `devframeVitePlugin(def)` |
 | `viteDevBridge(def, { devMiddleware: true })` (RPC bridge) | `devframeViteBridge(def)` |
 | `viteDevBridge(def, { devMiddleware: { port, host, flags } })` | `devframeViteBridge(def, { port, host, flags })` |
@@ -278,7 +279,7 @@ export default defineConfig({
 
 ```ts
 // 0.9
-import { devframeViteBridge } from '@devframes/vite/dev-spa'
+import { devframeViteBridge } from '@devframes/vite/single'
 
 export default defineConfig({
   plugins: [devframeViteBridge(devframe)],
@@ -302,30 +303,50 @@ export default defineConfig({
 
 ```ts
 // 0.9
-import a11yDevframe from '@devframes/plugin-a11y'
+import createA11yDevframe from '@devframes/plugin-a11y'
 import { createPluginFromDevframe } from '@vitejs/devtools-kit/node'
 
 export default defineConfig({
-  plugins: [createPluginFromDevframe(a11yDevframe)],
+  plugins: [createPluginFromDevframe(createA11yDevframe())],
 })
 ```
 
-Without Vite DevTools, call `devframeVite` directly against the plugin's default export instead — the lower-level, DevTools-free path:
+Without Vite DevTools, call `devframeVite` directly against an instance from the plugin's default export instead — the lower-level, DevTools-free path:
 
 ```ts
-import a11yDevframe from '@devframes/plugin-a11y'
-import { devframeVite } from '@devframes/vite/dev-spa'
+import createA11yDevframe from '@devframes/plugin-a11y'
+import { devframeVite } from '@devframes/vite/single'
 
 export default defineConfig({
-  plugins: [devframeVite(a11yDevframe)],
+  plugins: [devframeVite(createA11yDevframe())],
 })
 ```
 
 `@devframes/plugin-code-server`'s `codeServerVite` and `@devframes/plugin-terminals`'s `terminalsVite` are unaffected — they mount a bridge and a static plugin together (and build their devframe from the passed options), not a plain `devframeVite` delegation.
 
-## `@devframes/nuxt` and `@devframes/next` split into `/dev-spa` and `/hub`
+## Built-in plugins' default export is now the factory, not an instance
 
-Both packages now serve their single-devframe surface from a `.../dev-spa` subpath, and the bare package root throws with a pointer to the two scopes.
+Every built-in plugin (`@devframes/plugin-{a11y,assets,code-server,data-inspector,git,inspect,messages,og,terminals}`) used to construct one `DevframeDefinition` at module scope and export that instance as its default export — eagerly, the moment anything imported the package, whether or not that consumer wanted the zero-config shape. The default export is now the `create<X>Devframe` factory itself; call it to get an instance:
+
+```ts
+// 0.8.x
+import a11yDevframe from '@devframes/plugin-a11y'
+
+await ctx.install(a11yDevframe)
+```
+
+```ts
+// 0.9
+import createA11yDevframe from '@devframes/plugin-a11y'
+
+await ctx.install(createA11yDevframe())
+```
+
+The named `create<X>Devframe` export (for passing options) is unchanged.
+
+## `@devframes/nuxt` and `@devframes/next` split into `/single` and `/hub`
+
+Both packages now serve their single-devframe surface from a `.../single` subpath, and the bare package root throws with a pointer to the two scopes.
 
 Nuxt — register the module by its subpath:
 
@@ -334,16 +355,16 @@ Nuxt — register the module by its subpath:
 export default defineNuxtConfig({ modules: ['@devframes/nuxt'] })
 
 // 0.9 [nuxt.config.ts]
-export default defineNuxtConfig({ modules: ['@devframes/nuxt/dev-spa'] })
+export default defineNuxtConfig({ modules: ['@devframes/nuxt/single'] })
 ```
 
 Next — the config/handler helpers and the React client move down a level:
 
 | 0.8.x | 0.9 |
 |---|---|
-| `import { withDevframe } from '@devframes/next'` | `import { withDevframe } from '@devframes/next/dev-spa'` |
-| `import { createDevframeNextHandler } from '@devframes/next'` | `import { createDevframeNextHandler } from '@devframes/next/dev-spa'` |
-| `import { RpcProvider, useRpc } from '@devframes/next/client'` | `import { RpcProvider, useRpc } from '@devframes/next/dev-spa/client'` |
+| `import { withDevframe } from '@devframes/next'` | `import { withDevframe } from '@devframes/next/single'` |
+| `import { createDevframeNextHandler } from '@devframes/next'` | `import { createDevframeNextHandler } from '@devframes/next/single'` |
+| `import { RpcProvider, useRpc } from '@devframes/next/client'` | `import { RpcProvider, useRpc } from '@devframes/next/single/client'` |
 
 ## Mounting a hub: the new `/hub` scope
 

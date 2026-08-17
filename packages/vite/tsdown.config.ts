@@ -20,13 +20,13 @@ const deps = {
 }
 
 export default defineConfig([
-  // Node entries — the throwing root, the single-devframe dev-spa plugins,
-  // and the hub host plugin.
+  // Node entries — the throwing root, the single-devframe plugins, and the
+  // hub host plugin.
   {
     entry: {
-      'index': 'src/index.ts',
-      'dev-spa': 'src/dev-spa.ts',
-      'hub': 'src/hub.ts',
+      index: 'src/index.ts',
+      single: 'src/single.ts',
+      hub: 'src/hub.ts',
     },
     platform: 'node',
     tsconfig,

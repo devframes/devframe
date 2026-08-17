@@ -85,6 +85,6 @@ export declare const TERMINAL_STREAM_CHANNEL: string;
 // #endregion
 
 // #region Default Export
-declare const _default: DevframeDefinition;
+declare function _default(_?: TerminalsOptions): DevframeDefinition;
 export default _default
 // #endregion

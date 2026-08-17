@@ -10,6 +10,6 @@ export var a11yAgentBundlePath /* const */
 // #endregion
 
 // #region Default Export
-var _default /* const */
+function _default(_) {}
 export default _default
 // #endregion

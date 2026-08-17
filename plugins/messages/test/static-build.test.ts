@@ -1,7 +1,7 @@
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import messagesDevframe from '@devframes/plugin-messages'
+import createMessagesDevframe from '@devframes/plugin-messages'
 import { createBuild } from 'devframe/adapters/build'
 import {
   DEVFRAME_CONNECTION_META_FILENAME,
@@ -18,7 +18,7 @@ describe('messages static build', () => {
   beforeAll(async () => {
     assertSpaBuilt()
     outDir = await mkdtemp(path.join(os.tmpdir(), 'devframes_plugin_messages-build-'))
-    await createBuild(messagesDevframe, { outDir })
+    await createBuild(createMessagesDevframe(), { outDir })
   })
 
   afterAll(async () => {

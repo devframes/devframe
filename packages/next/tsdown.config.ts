@@ -10,13 +10,13 @@ const nodeDeps = {
 }
 
 export default defineConfig([
-  // Node entries — the throwing root, the single-devframe dev-spa surface,
-  // and the hub host.
+  // Node entries — the throwing root, the single-devframe surface, and the
+  // hub host.
   {
     entry: {
-      'index': 'src/index.ts',
-      'dev-spa': 'src/dev-spa.ts',
-      'hub': 'src/hub.ts',
+      index: 'src/index.ts',
+      single: 'src/single.ts',
+      hub: 'src/hub.ts',
     },
     platform: 'node',
     tsconfig,

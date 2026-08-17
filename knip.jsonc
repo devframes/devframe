@@ -11,6 +11,15 @@
   // imported in source - the same false-positive class knip's own docs
   // describe for icon-collection dependencies.
   "ignoreDependencies": ["@iconify-json/.+", "@unocss/preset-icons"],
+  // Every built-in plugin's `src/index.ts` aliases its `create<X>Devframe`
+  // factory as both the named and default export (AGENTS.md § "A plugin's
+  // default export is its `create<X>Devframe` factory") - `export default
+  // createXDevframe` right below `export function createXDevframe(...) {}`.
+  // Deliberate, not an accidental duplicate: the named export is for options,
+  // the default export is the conventional single-devframe import.
+  "ignoreIssues": {
+    "plugins/*/src/index.ts": ["duplicates"]
+  },
   "workspaces": {
     ".": {
       // `design/*.ts` is the shared design system (AGENTS.md § "Design

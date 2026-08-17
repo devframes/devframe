@@ -8,20 +8,20 @@ The framework packages — [`@devframes/vite`](./vite), [`@devframes/nuxt`](./nu
 
 | Scope | Subpath | You are… |
 |-------|---------|----------|
-| **dev-spa** | `.../dev-spa` | building & dev-serving a **single devframe's SPA** with that tool |
+| **single** | `.../single` | building & dev-serving a **single devframe's SPA** with that tool |
 | **hub** | `.../hub` | mounting a whole **[devframes-hub](/guide/hub)** (many integrations) inside that tool |
 
 The bare package root (`@devframes/vite`, `@devframes/nuxt`, `@devframes/next`) has no export — it throws with a pointer to the two subpaths, so an accidental bare import fails loudly instead of resolving to nothing.
 
-| Package | dev-spa | hub |
-|---------|---------|-----|
+| Package | single | hub |
+|---------|--------|-----|
 | [`@devframes/vite`](./vite) | `devframeVitePlugin` / `devframeViteBridge` / `devframeVite` | `viteDevframeHub` (+ `/hub/client`) |
-| [`@devframes/nuxt`](./nuxt) | the Nuxt module (`modules: ['@devframes/nuxt/dev-spa']`) | the hub Nuxt module (+ `/hub/client`) |
-| [`@devframes/next`](./next) | `withDevframe` + `createDevframeNextHandler` (+ `/dev-spa/client`) | `nextDevframeHub` (+ `/hub/client`) |
+| [`@devframes/nuxt`](./nuxt) | the Nuxt module (`modules: ['@devframes/nuxt/single']`) | the hub Nuxt module (+ `/hub/client`) |
+| [`@devframes/next`](./next) | `withDevframe` + `createDevframeNextHandler` (+ `/single/client`) | `nextDevframeHub` (+ `/hub/client`) |
 
-## dev-spa: author one devframe
+## single: author one devframe
 
-The `dev-spa` scope is for when the thing you're building **is** a devframe — you author its UI with Vite/Nuxt/Next and want its RPC backend running during development. See each package's page for the details; for the framework-neutral CLI/build/embedded outputs, reach for the [adapters](/adapters/) instead.
+The `single` scope is for when the thing you're building **is** a devframe — you author its UI with Vite/Nuxt/Next and want its RPC backend running during development. See each package's page for the details; for the framework-neutral CLI/build/embedded outputs, reach for the [adapters](/adapters/) instead.
 
 ## hub: mount a devframes-hub
 

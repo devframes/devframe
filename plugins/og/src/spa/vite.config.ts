@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'node:url'
-import { devframeVite } from '@devframes/vite/dev-spa'
+import { devframeVite } from '@devframes/vite/single'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
 import { alias } from '../../../../alias'
-import ogDevframe from '../index'
+import createOgDevframe from '../index'
 
 export default defineConfig({
   base: './',
@@ -13,7 +13,7 @@ export default defineConfig({
   plugins: [
     vue(),
     UnoCSS(),
-    devframeVite(ogDevframe, { bridge: true, base: '/' }),
+    devframeVite(createOgDevframe(), { bridge: true, base: '/' }),
   ],
   optimizeDeps: { exclude: ['@antfu/design'] },
   build: {

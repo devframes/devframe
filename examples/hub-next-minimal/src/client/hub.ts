@@ -66,7 +66,7 @@ async function loadHub(): Promise<HubInstance> {
   // gets a colon-free id override to be a valid `<base><id>/` segment; the
   // assets watcher is off since this host demonstrates mounting, not authoring.
   const devframes: DevframeDefinition[] = [
-    ...builtins.map(mod => mod.default as DevframeDefinition),
+    ...builtins.map(mod => (mod.default as () => DevframeDefinition)()),
     (dataInspector.createDataInspectorDevframe as (options: { id: string }) => DevframeDefinition)({ id: 'devframes_plugin_data-inspector' }),
     (assets.createAssetsDevframe as (options: { watch: boolean }) => DevframeDefinition)({ watch: false }),
   ]

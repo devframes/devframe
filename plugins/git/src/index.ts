@@ -91,4 +91,4 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
   })
 }
 
-export default createGitDevframe()
+export default createGitDevframe

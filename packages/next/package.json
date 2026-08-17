@@ -24,11 +24,11 @@
       "types": "./dist/index.d.mts",
       "default": "./dist/index.mjs"
     },
-    "./dev-spa": {
-      "types": "./dist/dev-spa.d.mts",
-      "default": "./dist/dev-spa.mjs"
+    "./single": {
+      "types": "./dist/single.d.mts",
+      "default": "./dist/single.mjs"
     },
-    "./dev-spa/client": {
+    "./single/client": {
       "types": "./dist/client.d.mts",
       "default": "./dist/client.mjs"
     },

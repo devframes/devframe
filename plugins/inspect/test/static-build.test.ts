@@ -1,7 +1,7 @@
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import inspectDevframe from '@devframes/plugin-inspect'
+import createInspectDevframe from '@devframes/plugin-inspect'
 import { createBuild } from 'devframe/adapters/build'
 import {
   DEVFRAME_CONNECTION_META_FILENAME,
@@ -16,7 +16,7 @@ describe('inspector static build', () => {
   beforeAll(async () => {
     assertSpaBuilt()
     outDir = await mkdtemp(path.join(os.tmpdir(), 'devframes_plugin_inspect-build-'))
-    await createBuild(inspectDevframe, { outDir })
+    await createBuild(createInspectDevframe(), { outDir })
   })
 
   afterAll(async () => {

@@ -39,6 +39,6 @@ export declare function createOgDevframe(_?: OgDevframeOptions): DevframeDefinit
 // #endregion
 
 // #region Default Export
-declare const _default: DevframeDefinition;
+declare function _default(_?: OgDevframeOptions): DevframeDefinition;
 export default _default
 // #endregion

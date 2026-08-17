@@ -115,7 +115,7 @@ pnpm -C plugins/a11y dev         # from source: same, at /__devframes_plugin_a11
 
 | Path | Export | Purpose |
 |------|--------|---------|
-| `src/index.ts` | `.` | `createA11yDevframe()` + the default `DevframeDefinition`; `a11yAgentBundlePath` — the agent module a hub attaches as this dock's client script |
+| `src/index.ts` | `.` | `createA11yDevframe()` (also the default export); `a11yAgentBundlePath` — the agent module a hub attaches as this dock's client script |
 | `src/node/index.ts` | `/node` | `setupA11y(ctx, options?)` — registers the RPC functions with the runtime config |
 | `src/cli.ts` | `/cli` | `createA11yCli()` — backs the `devframes_plugin_a11y` bin |
 | `src/client/index.ts` | `/client` | `connectA11y()` — typed browser RPC client wrapper |

@@ -9,7 +9,7 @@ import { homedir } from 'node:os'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { initHub } from '@devframes/hub/initiate'
-import terminalsDevframe from '@devframes/plugin-terminals'
+import createTerminalsDevframe from '@devframes/plugin-terminals'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { dirname, join } from 'pathe'
@@ -221,7 +221,7 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
       // Storybooks, grouped separately so its "Terminals" reads apart from the
       // "Terminals" Storybook. It also mirrors the hub's `ctx.terminals`
       // sessions, so the spawned `storybook dev` processes appear inside it.
-      devframes: [{ devframe: terminalsDevframe, dock: { category: 'Plugins' } }],
+      devframes: [{ devframe: createTerminalsDevframe(), dock: { category: 'Plugins' } }],
       configure(context) {
         // Live launcher handles, so the launch command can patch each tile's
         // status/digest/terminalSessionId as the process boots.

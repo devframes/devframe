@@ -27,11 +27,12 @@ import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3, toNodeHandler } from 'h3'
 import { resolve } from 'pathe'
-import devframe from '../src/index.ts'
+import createA11yDevframe from '../src/index.ts'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
 const ROOT = resolve(HERE, '..')
 
+const devframe = createA11yDevframe()
 const mode = process.argv[2] === 'build' ? 'build' : 'dev'
 const basePath = devframe.basePath
 const injectDir = resolve(ROOT, 'dist/inject')
