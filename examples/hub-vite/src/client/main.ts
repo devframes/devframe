@@ -3,6 +3,7 @@ import type {
   DevframeDockEntry,
   DevframeMessageEntry,
   DevframeTerminalSession,
+  DevframeViewBuiltin,
   DevframeViewIframe,
 } from '@devframes/hub/types'
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
@@ -120,14 +121,22 @@ function isIframeDock(d: DevframeDockEntry): d is DevframeViewIframe & { url: st
   return d.type === 'iframe' && typeof (d as { url?: unknown }).url === 'string'
 }
 
-// Dock types this shell renders natively (or that carry no panel view). Every
-// other type routes through the client host's renderer registry - a renderer
-// registered locally or served by the hub's renderer manifest (e.g.
-// `json-render`) - and a type nothing covers shows the missing-renderer
-// fallback in `mountRenderer`.
-const NATIVE_TYPES = new Set(['action', 'launcher', 'group', '~builtin'])
+function isBuiltinDock(d: DevframeDockEntry): d is DevframeViewBuiltin {
+  return d.type === '~builtin'
+}
+
+// Dock types this shell renders inline, with no tab of their own: an `action`
+// fires its client script from a bar button, a `launcher` shows a
+// call-to-action, and a `group` collapses its members into a popover. Every
+// other type gets a tab in the rail - an iframe dock, a `~builtin` reserved
+// view (rendered natively in `mountBuiltinPanel`, e.g. Settings), or a custom
+// type routed through the client host's renderer registry (a renderer
+// registered locally or served by the hub's renderer manifest, e.g.
+// `json-render`), falling back to the missing-renderer message in
+// `mountRenderer` when nothing covers it.
+const NO_TAB_TYPES = new Set(['action', 'launcher', 'group'])
 function isRenderableDock(d: DevframeDockEntry): boolean {
-  return isIframeDock(d) || !NATIVE_TYPES.has(d.type)
+  return !NO_TAB_TYPES.has(d.type)
 }
 
 // ── client-only dock content (synthesized in the browser) ───────────────────
@@ -435,8 +444,60 @@ function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientHost>>
     </div>`
   }
 
+  // The viewer's own native view for a reserved `~builtin` id - the hub
+  // registers no UI for these itself (see
+  // docs/guide/build-your-own-hub-ui.md). This reference shell recognizes
+  // `~settings`: a per-dock visibility toggle backed by the same
+  // `devframe:user-settings` shared state every viewer reads.
+  function mountBuiltinPanel(entry: DevframeViewBuiltin): void {
+    if (mounted) {
+      mounted.dispose()
+      mounted = null
+    }
+    el.panel.hidden = false
+    if (entry.id !== '~settings') {
+      el.panel.innerHTML = `<div class="h-full w-full flex items-center justify-center p6 text-center text-sm op-fade">Unknown built-in view “${entry.id}”</div>`
+      return
+    }
+    renderSettingsPanel()
+  }
+
+  function renderSettingsPanel(): void {
+    const hidden = docksCtx.settings.value().docksHidden
+    const hideable = docksCtx.entries.filter(d => d.id !== '~settings' && !NO_TAB_TYPES.has(d.type))
+    el.panel.innerHTML = `<div class="h-full w-full of-auto p4">
+      <h2 class="mb1 text-sm font-semibold color-base">Settings</h2>
+      <p class="mb3 text-xs op-fade">Toggle which docks appear in the rail.</p>
+      <ul class="flex flex-col gap-1.5">${hideable.map(d => `
+        <li>
+          <label class="flex cursor-pointer items-center gap-2 rounded-md border border-base bg-base px2.5 py1.5 text-xs font-mono">
+            <input type="checkbox" data-settings-dock-id="${d.id}" ${hidden.includes(d.id) ? '' : 'checked'} />
+            <span class="truncate">${d.title}</span>
+          </label>
+        </li>`).join('')}</ul>
+    </div>`
+    for (const input of el.panel.querySelectorAll<HTMLInputElement>('[data-settings-dock-id]')) {
+      input.addEventListener('change', () => {
+        const id = input.dataset.settingsDockId!
+        docksCtx.settings.mutate((state) => {
+          state.docksHidden = input.checked
+            ? state.docksHidden.filter(hiddenId => hiddenId !== id)
+            : [...state.docksHidden, id]
+        })
+      })
+    }
+  }
+
   function showSelection(list: DevframeDockEntry[]): void {
     const entry = docksCtx.selectedId ? list.find(d => d.id === docksCtx.selectedId) ?? null : null
+
+    // A `~builtin` reserved view owns the panel through the viewer's own
+    // native rendering, never the renderer registry.
+    if (entry && isBuiltinDock(entry)) {
+      for (const frame of iframes.values()) frame.hidden = true
+      mountBuiltinPanel(entry)
+      return
+    }
 
     // A renderer dock (json-render, …) owns the panel; anything else (an
     // iframe dock, or no selection) hides the panel and disposes any mount.
@@ -459,7 +520,10 @@ function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientHost>>
   // (a click, or the frame-nav adapter reacting to in-frame navigation).
   const wired = new Set<string>()
   function render(): void {
-    const list = docksCtx.entries.filter(isRenderableDock)
+    const hidden = docksCtx.settings.value().docksHidden
+    const list = docksCtx.entries.filter(entry =>
+      isRenderableDock(entry) && (entry.id === '~settings' || !hidden.includes(entry.id)),
+    )
     if (!docksCtx.selectedId && list.length > 0)
       void docksCtx.switchEntry(list[0].id)
 
@@ -485,6 +549,9 @@ function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientHost>>
   void host.context.rpc.sharedState
     .get<DevframeDockEntry[]>('devframe:docks', { initialValue: [] })
     .then(docks => docks.on('updated', render))
+  // Toggling a dock's visibility in the Settings panel writes here - re-render
+  // the rail (and the panel's own checkbox list) so it takes effect live.
+  docksCtx.settings.on('updated', render)
   // The frame-nav adapter registers client-only member docks in response to a
   // shared-frame anchor's manifest; re-render after it reconciles (microtask).
   window.addEventListener('message', (event) => {

@@ -6,6 +6,7 @@ import type {
   DevframeDockEntry,
   DevframeMessageEntry,
   DevframeTerminalSession,
+  DevframeViewBuiltin,
   DevframeViewIframe,
 } from '@devframes/hub/types'
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
@@ -55,14 +56,21 @@ function isIframeDock(d: DevframeDockEntry): d is IframeDock {
   return d.type === 'iframe' && typeof (d as { url?: unknown }).url === 'string'
 }
 
-// Dock types this shell renders natively (or that carry no panel view of
-// their own). Everything else routes through the hub's dock-renderer
-// registry - the local React renderer registered at boot, or a prebuilt
-// module from the hub's renderer manifest - and a type nothing covers shows
-// the missing-renderer fallback.
-const NATIVE_TYPES = new Set(['action', 'launcher', 'group', '~builtin'])
+function isBuiltinDock(d: DevframeDockEntry): d is DevframeViewBuiltin {
+  return d.type === '~builtin'
+}
+
+// Dock types this shell renders inline, with no tab of their own: an `action`
+// fires its client script from a bar button, a `launcher` shows a
+// call-to-action, and a `group` collapses its members into a popover. Every
+// other type gets a tab in the rail - an iframe dock, a `~builtin` reserved
+// view (rendered natively by `SettingsPanel`, e.g. Settings), or a custom type
+// routed through the hub's dock-renderer registry (the local React renderer
+// registered at boot, or a prebuilt module from the hub's renderer manifest),
+// falling back to the missing-renderer message when nothing covers it.
+const NO_TAB_TYPES = new Set(['action', 'launcher', 'group'])
 function isRenderableDock(d: DevframeDockEntry): boolean {
-  return isIframeDock(d) || !NATIVE_TYPES.has(d.type)
+  return !NO_TAB_TYPES.has(d.type)
 }
 
 // One iframe is kept alive per `frameId` (shared-frame docks) or per dock id
@@ -254,6 +262,38 @@ function DockIcon({ entry }: { entry: DevframeDockEntry }) {
   return <span className="grid h-5 w-5 shrink-0 place-items-center rounded bg-active text-[0.7rem] font-bold">{initial}</span>
 }
 
+// The viewer's own native view for the reserved `~settings` id - the hub
+// registers no UI for `~builtin` docks itself (see
+// docs/guide/build-your-own-hub-ui.md). A per-dock visibility toggle backed by
+// the same `devframe:user-settings` shared state every viewer reads.
+function SettingsPanel({ docks, hidden, onToggle }: {
+  docks: DevframeDockEntry[]
+  hidden: string[]
+  onToggle: (id: string, visible: boolean) => void
+}) {
+  const hideable = docks.filter(d => d.id !== '~settings' && !NO_TAB_TYPES.has(d.type))
+  return (
+    <div className="absolute inset-0 of-auto bg-base p4">
+      <h2 className="mb1 text-sm font-semibold color-base">Settings</h2>
+      <p className="mb3 text-xs op-fade">Toggle which docks appear in the rail.</p>
+      <ul className="m0 flex flex-col list-none gap-1.5 p0">
+        {hideable.map(dock => (
+          <li key={dock.id}>
+            <label className="flex cursor-pointer items-center gap-2 rounded-md border border-base bg-base px2.5 py1.5 text-xs font-mono">
+              <input
+                type="checkbox"
+                checked={!hidden.includes(dock.id)}
+                onChange={event => onToggle(dock.id, event.target.checked)}
+              />
+              <span className="truncate">{dock.title}</span>
+            </label>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 // ── authorization gate (interactive OTP) ────────────────────────────────────
 // The hub gates every connection; this shell opts out of devframe's native
 // `prompt()` (`simpleAuth: false`) and renders its own authorization view,
@@ -340,6 +380,7 @@ export default function Page() {
   const [transport, setTransport] = useState<string | null>(null)
   const [transportPref, setTransportPref] = useState<TransportPref>('auto')
   const [docks, setDocks] = useState<DevframeDockEntry[]>([])
+  const [docksHidden, setDocksHidden] = useState<string[]>([])
   const [commands, setCommands] = useState<DevframeCommandEntry[]>([])
   const [messages, setMessages] = useState<DevframeMessageEntry[]>([])
   const [terminals, setTerminals] = useState<TerminalSummary[]>([])
@@ -446,11 +487,16 @@ export default function Page() {
         const syncDocks = () => setDocks([...ctx.docks.entries])
         const syncSelected = () => setSelectedDockId(ctx.docks.selectedId)
         const renderCommands = () => setCommands([...(commandsState.value() ?? [])] as DevframeCommandEntry[])
+        // Toggling a dock's visibility in the Settings panel writes here -
+        // re-sync so hidden docks disappear from `renderableDocks` live.
+        const syncSettings = () => setDocksHidden([...ctx.docks.settings.value().docksHidden])
         docksState.on('updated', syncDocks)
         commandsState.on('updated', renderCommands)
+        ctx.docks.settings.on('updated', syncSettings)
         syncDocks()
         syncSelected()
         renderCommands()
+        syncSettings()
 
         // The frame-nav adapter registers/updates client-only member docks in
         // response to a shared-frame anchor's manifest; re-sync (after it has
@@ -497,7 +543,10 @@ export default function Page() {
     }
   }, [])
 
-  const renderableDocks = useMemo(() => docks.filter(isRenderableDock), [docks])
+  const renderableDocks = useMemo(
+    () => docks.filter(d => isRenderableDock(d) && (d.id === '~settings' || !docksHidden.includes(d.id))),
+    [docks, docksHidden],
+  )
 
   // Wire each dock's state once so a selection change - from a click, or from
   // the frame-nav adapter reacting to in-frame navigation - updates the UI.
@@ -527,6 +576,7 @@ export default function Page() {
 
   const selectedDock = renderableDocks.find(d => d.id === selectedDockId) ?? null
   const selectedIsIframe = selectedDock ? isIframeDock(selectedDock) : false
+  const selectedIsBuiltin = selectedDock ? isBuiltinDock(selectedDock) : false
 
   // Keep-alive iframe pool: ensure + show the iframe for the selected dock's
   // frame, hide the rest. Creating an iframe hands it to the client host
@@ -572,7 +622,7 @@ export default function Page() {
     const host = hostRef.current
     const dock = selectedDock
     const stage = panelRef.current
-    if (!host || !dock || isIframeDock(dock) || !stage)
+    if (!host || !dock || isIframeDock(dock) || isBuiltinDock(dock) || !stage)
       return
     let alive = true
     let dispose: (() => void) | undefined
@@ -606,7 +656,7 @@ export default function Page() {
       container.remove()
       setPanelFallback(null)
     }
-  }, [selectedDockId, selectedIsIframe])
+  }, [selectedDockId, selectedIsIframe, selectedIsBuiltin])
 
   async function ping() {
     if (!rpcRef.current)
@@ -669,12 +719,33 @@ export default function Page() {
               shown/hidden on switch so shared-frame tabs soft-navigate. */}
           <div ref={stageRef} hidden={!selectedDock || !selectedIsIframe} className="absolute inset-0" />
           {/* Renderer docks (json-render, …) mount here via the client host. */}
-          <div ref={panelRef} hidden={!selectedDock || selectedIsIframe} className="absolute inset-0 of-auto bg-base p4" />
-          {panelFallback && selectedDock && !selectedIsIframe && (
+          <div ref={panelRef} hidden={!selectedDock || selectedIsIframe || selectedIsBuiltin} className="absolute inset-0 of-auto bg-base p4" />
+          {panelFallback && selectedDock && !selectedIsIframe && !selectedIsBuiltin && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-base p6 text-center">
               <div className="text-sm op-fade">{panelFallback.message}</div>
               <div className="text-xs op-mute">{panelFallback.hint}</div>
             </div>
+          )}
+          {selectedDock && selectedIsBuiltin && (
+            selectedDock.id === '~settings'
+              ? (
+                  <SettingsPanel
+                    docks={docks}
+                    hidden={docksHidden}
+                    onToggle={(id, visible) => hostRef.current?.context.docks.settings.mutate((state) => {
+                      state.docksHidden = visible
+                        ? state.docksHidden.filter(hiddenId => hiddenId !== id)
+                        : [...state.docksHidden, id]
+                    })}
+                  />
+                )
+              : (
+                  <div className="absolute inset-0 flex items-center justify-center p6 text-center text-sm op-fade">
+                    Unknown built-in view “
+                    {selectedDock.id}
+                    ”
+                  </div>
+                )
           )}
         </main>
       </div>

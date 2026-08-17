@@ -166,6 +166,18 @@ export default defineConfig({
           handler: () => 'pong',
         })
 
+        // The hub synthesizes no built-in docks - a high-level integration
+        // registers the viewer's native views it wants, declaring the
+        // `~builtin` category itself so this Settings tab groups and sorts
+        // last.
+        context.docks.register({
+          type: '~builtin',
+          id: '~settings',
+          title: 'Settings',
+          icon: 'ph:gear-duotone',
+          category: '~builtin',
+        })
+
         // Dogfood the opt-in JSON-render hub integration: author a view on the
         // hub context and project it onto a `json-render` dock, rendered by the
         // manifest module above.
