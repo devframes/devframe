@@ -1,4 +1,4 @@
-import type { DevframeDefinition } from 'devframe'
+import type { DevframeDefinition, RemoteAssets } from 'devframe'
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
@@ -8,10 +8,15 @@ import { setupA11y } from './node/index.ts'
 const DEFAULT_ID = 'devframes_plugin_a11y'
 const BASE_PATH = '/__devframes_plugin_a11y/'
 
-// The Solid panel SPA is built (by Vite) into `dist/spa`. From both the
-// source entry (`src/index.ts`, via the workspace alias) and the published
-// entry (`dist/index.mjs`), `../dist/spa` resolves to `<pkg>/dist/spa`.
-const distDir = fileURLToPath(new URL('../dist/spa', import.meta.url))
+// The Solid panel SPA ships in the lockstep `@devframes/plugin-a11y--assets`
+// package, served on demand through devframe's remote-assets back-proxy;
+// `resolveFrom` serves a locally installed copy (a workspace link here) with
+// zero network. The host-page agent bundle (`dist/inject`, below) stays here.
+const distDir: RemoteAssets = {
+  package: `${pkg.name}--assets`,
+  version: pkg.version,
+  resolveFrom: import.meta.url,
+}
 
 /**
  * Absolute path to the built in-page **agent** module (`dist/inject/inject.js`)

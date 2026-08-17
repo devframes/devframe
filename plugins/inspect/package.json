@@ -46,10 +46,14 @@
     "test": "vitest run"
   },
   "peerDependencies": {
+    "@devframes/plugin-inspect--assets": "workspace:*",
     "devframe": "workspace:*",
     "vite": "^7.0.0 || ^8.0.0"
   },
   "peerDependenciesMeta": {
+    "@devframes/plugin-inspect--assets": {
+      "optional": true
+    },
     "vite": {
       "optional": true
     }

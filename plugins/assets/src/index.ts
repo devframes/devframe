@@ -1,7 +1,6 @@
-import type { DevframeDefinition } from 'devframe'
-import { fileURLToPath } from 'node:url'
+import type { DevframeDefinition, RemoteAssets } from 'devframe'
 import { defineDevframe } from 'devframe'
-import { dirname, resolve } from 'pathe'
+import { resolve } from 'pathe'
 import pkg from '../package.json' with { type: 'json' }
 import { DEFAULT_PORT } from './constants'
 import { setupAssets } from './node/index'
@@ -10,10 +9,14 @@ import { DEFAULT_ALLOWED_UPLOAD_EXTENSIONS } from './types'
 export type { AssetImageMeta, AssetInfo, AssetType, CodeSnippet } from './types'
 export { DEFAULT_ALLOWED_UPLOAD_EXTENSIONS } from './types'
 
-// Package root, resolved one level up from this module — which sits at
-// `<root>/src/index.ts` in dev and `<root>/dist/index.mjs` once built, so
-// the bundled SPA is always `<root>/dist/spa`.
-const PKG_ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
+// The SPA ships in the lockstep `@devframes/plugin-assets--assets` package,
+// served on demand through devframe's remote-assets back-proxy; `resolveFrom`
+// serves a locally installed copy (a workspace link here) with zero network.
+const remoteAssets: RemoteAssets = {
+  package: `${pkg.name}--assets`,
+  version: pkg.version,
+  resolveFrom: import.meta.url,
+}
 
 const DEFAULT_ID = 'devframes_plugin_assets'
 
@@ -93,7 +96,7 @@ export interface AssetsDevframeOptions {
  */
 export function createAssetsDevframe(options: AssetsDevframeOptions = {}): DevframeDefinition {
   const id = options.id ?? DEFAULT_ID
-  const distDir = options.distDir ?? resolve(PKG_ROOT, 'dist/spa')
+  const distDir = options.distDir ?? remoteAssets
   const write = options.write ?? true
   const serveStatic = options.serveStatic ?? false
   // When self-serving (standalone CLI), mount under a dedicated base so the

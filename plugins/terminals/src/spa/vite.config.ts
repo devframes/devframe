@@ -13,7 +13,7 @@ export default defineConfig({
     UnoCSS(),
   ],
   build: {
-    outDir: fileURLToPath(new URL('../../dist/spa', import.meta.url)),
+    outDir: fileURLToPath(new URL('../../assets-pkg/dist', import.meta.url)),
     emptyOutDir: true,
   },
 })

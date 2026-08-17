@@ -1,7 +1,5 @@
-import type { DevframeDefinition } from 'devframe'
+import type { DevframeDefinition, RemoteAssets } from 'devframe'
 import type { CodeServerOptions } from './types'
-import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { DEFAULT_PORT, PLUGIN_ID } from './constants'
@@ -15,10 +13,14 @@ export {
 } from './constants'
 export type * from './types'
 
-// The launcher SPA is built (by Vite) into `dist/spa`. From both the source
-// entry (`src/index.ts`, via the workspace alias) and the published entry
-// (`dist/index.mjs`), `../dist/spa` resolves to `<pkg>/dist/spa`.
-const distDir = fileURLToPath(new URL('../dist/spa', import.meta.url))
+// The SPA ships in the lockstep `@devframes/plugin-code-server--assets` package,
+// served on demand through devframe's remote-assets back-proxy; `resolveFrom`
+// serves a locally installed copy (a workspace link here) with zero network.
+const remoteAssets: RemoteAssets = {
+  package: `${pkg.name}--assets`,
+  version: pkg.version,
+  resolveFrom: import.meta.url,
+}
 
 /**
  * Build a {@link DevframeDefinition} for the code-server panel. The same
@@ -37,7 +39,7 @@ const distDir = fileURLToPath(new URL('../dist/spa', import.meta.url))
  * ```
  */
 export function createCodeServerDevframe(options: CodeServerOptions = {}): DevframeDefinition {
-  const resolvedDist = options.distDir ?? distDir
+  const resolvedDist = options.distDir ?? remoteAssets
   return defineDevframe({
     id: PLUGIN_ID,
     name: 'Code Server',
@@ -54,7 +56,7 @@ export function createCodeServerDevframe(options: CodeServerOptions = {}): Devfr
       port: options.port ?? DEFAULT_PORT,
       portRange: options.portRange,
       random: options.random,
-      distDir: existsSync(resolvedDist) ? resolvedDist : undefined,
+      distDir: resolvedDist,
       // Gate the standalone launcher by default; `maybeOpenBrowser` folds the
       // current OTP into the `--open` URL so the tab lands already trusted.
       // Hosted adapters supply their own auth layer and ignore this.

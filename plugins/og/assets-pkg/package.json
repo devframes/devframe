@@ -1,0 +1,30 @@
+{
+  "name": "@devframes/plugin-og--assets",
+  "type": "module",
+  "version": "0.9.0-beta.8",
+  "description": "Prebuilt browser assets (SPA) for @devframes/plugin-og, served on demand through devframe's remote-assets back-proxy.",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/devframes/devframe#readme",
+  "repository": {
+    "directory": "plugins/og/assets-pkg",
+    "type": "git",
+    "url": "git+https://github.com/devframes/devframe.git"
+  },
+  "bugs": "https://github.com/devframes/devframe/issues",
+  "keywords": [
+    "devframe",
+    "devframe-plugin",
+    "devtools",
+    "client-assets"
+  ],
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "turbo run build --filter=@devframes/plugin-og"
+  }
+}

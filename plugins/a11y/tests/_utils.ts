@@ -1,11 +1,12 @@
 import type { StartedServer } from 'devframe/internal'
 import { existsSync } from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
-import { fileURLToPath } from 'node:url'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { createH3DevframeHost } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
+import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
@@ -13,15 +14,21 @@ import { resolve } from 'pathe'
 import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 import createA11yDevframe from '../src/index'
 
-const HERE = fileURLToPath(new URL('.', import.meta.url))
-const SPA_DIST = resolve(HERE, '../dist/spa')
 const devframe = createA11yDevframe()
 
-/** Loud failure if the Solid panel hasn't been built — tests serve `dist/spa`. */
+/** Resolve the Solid panel SPA to a local dir — the workspace-linked `--assets` package in dev. */
+function localSpaDir(): string {
+  const resolved = resolveStaticAssetsSource(devframe.cli!.distDir!, resolve(os.tmpdir(), 'devframes_plugin_a11y-test'))
+  if (typeof resolved !== 'string')
+    throw new TypeError('[devframes_plugin_a11y] client SPA missing — run `pnpm -C plugins/a11y run build` first.')
+  return resolved
+}
+
+/** Loud failure if the Solid panel hasn't been built — tests serve the client SPA. */
 export function assertClientBuilt(): void {
-  if (!existsSync(path.join(SPA_DIST, 'index.html'))) {
+  if (!existsSync(path.join(localSpaDir(), 'index.html'))) {
     throw new Error(
-      '[devframes_plugin_a11y] dist/spa missing — run `pnpm -C plugins/a11y run build` first.',
+      '[devframes_plugin_a11y] client SPA missing — run `pnpm -C plugins/a11y run build` first.',
     )
   }
 }
@@ -37,9 +44,7 @@ export interface InspectorServer extends StartedServer {
  * ws transport tests.
  */
 export async function startInspectorServer(): Promise<InspectorServer> {
-  const distDir = devframe.cli!.distDir!
-  if (typeof distDir !== 'string')
-    throw new TypeError('these tests serve the local dist directory — build the SPA first')
+  const distDir = localSpaDir()
   const basePath = devframe.basePath!
   const host = '127.0.0.1'
   const port = await getPort({ host, random: true })

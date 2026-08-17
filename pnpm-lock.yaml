@@ -1497,6 +1497,9 @@ importers:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.4(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.41(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.41(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.3(vue@3.5.41(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.41(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.26))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
+      '@devframes/plugin-a11y--assets':
+        specifier: workspace:*
+        version: link:assets-pkg
       axe-core:
         specifier: catalog:frontend
         version: 4.13.0
@@ -1540,6 +1543,8 @@ importers:
         specifier: catalog:deps
         version: 8.21.3
 
+  plugins/a11y/assets-pkg: {}
+
   plugins/assets:
     dependencies:
       cac:
@@ -1567,6 +1572,9 @@ importers:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.4(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.41(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.41(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.3(vue@3.5.41(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.41(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.26))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
+      '@devframes/plugin-assets--assets':
+        specifier: workspace:*
+        version: link:assets-pkg
       '@devframes/vite':
         specifier: workspace:*
         version: link:../../packages/vite
@@ -1625,6 +1633,8 @@ importers:
         specifier: catalog:frontend
         version: 3.5.41(typescript@6.0.3)
 
+  plugins/assets/assets-pkg: {}
+
   plugins/code-server:
     dependencies:
       '@devframes/vite':
@@ -1640,6 +1650,9 @@ importers:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.4(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.41(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.41(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.3(vue@3.5.41(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.41(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.26))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
+      '@devframes/plugin-code-server--assets':
+        specifier: workspace:*
+        version: link:assets-pkg
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
@@ -1680,6 +1693,8 @@ importers:
         specifier: catalog:frontend
         version: 3.5.41(typescript@6.0.3)
 
+  plugins/code-server/assets-pkg: {}
+
   plugins/data-inspector:
     dependencies:
       cac:
@@ -1695,6 +1710,9 @@ importers:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.4(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.41(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.41(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.3(vue@3.5.41(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.41(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.26))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
+      '@devframes/plugin-data-inspector--assets':
+        specifier: workspace:*
+        version: link:assets-pkg
       '@devframes/vite':
         specifier: workspace:*
         version: link:../../packages/vite
@@ -1753,6 +1771,8 @@ importers:
         specifier: catalog:frontend
         version: 3.5.41(typescript@6.0.3)
 
+  plugins/data-inspector/assets-pkg: {}
+
   plugins/git:
     dependencies:
       cac:
@@ -1768,6 +1788,9 @@ importers:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.4(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.41(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.41(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.3(vue@3.5.41(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.41(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.23))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
+      '@devframes/plugin-git--assets':
+        specifier: workspace:*
+        version: link:assets-pkg
       '@floating-ui/react':
         specifier: catalog:frontend
         version: 0.27.20(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -1843,6 +1866,8 @@ importers:
       ws:
         specifier: catalog:deps
         version: 8.21.3
+
+  plugins/git/assets-pkg: {}
 
   plugins/inspect:
     dependencies:
@@ -1934,6 +1959,9 @@ importers:
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
+      '@devframes/plugin-messages--assets':
+        specifier: workspace:*
+        version: link:assets-pkg
       '@devframes/vite':
         specifier: workspace:*
         version: link:../../packages/vite
@@ -1995,6 +2023,8 @@ importers:
         specifier: catalog:deps
         version: 8.21.3
 
+  plugins/messages/assets-pkg: {}
+
   plugins/og:
     dependencies:
       cac:
@@ -2007,6 +2037,9 @@ importers:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.4(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.41(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.6.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.41(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.3(vue@3.5.41(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.41(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.26))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
+      '@devframes/plugin-og--assets':
+        specifier: workspace:*
+        version: link:assets-pkg
       '@devframes/vite':
         specifier: workspace:*
         version: link:../../packages/vite
@@ -2056,6 +2089,8 @@ importers:
         specifier: catalog:deps
         version: 8.21.3
 
+  plugins/og/assets-pkg: {}
+
   plugins/terminals:
     dependencies:
       '@devframes/vite':
@@ -2071,6 +2106,9 @@ importers:
       '@antfu/design':
         specifier: catalog:frontend
         version: 0.3.4(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.30(vue@3.5.41(typescript@6.0.3)))(@unocss/core@66.7.5)(colorjs.io@0.7.1)(dompurify@3.4.13)(floating-vue@5.2.2(vue@3.5.41(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.3(vue@3.5.41(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.41(typescript@6.0.3)))(unocss@66.7.5(@unocss/postcss@66.7.5(postcss@8.5.26))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.41(typescript@6.0.3))
+      '@devframes/plugin-terminals--assets':
+        specifier: workspace:*
+        version: link:assets-pkg
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
@@ -2128,6 +2166,8 @@ importers:
       ws:
         specifier: catalog:deps
         version: 8.21.3
+
+  plugins/terminals/assets-pkg: {}
 
   storybook:
     dependencies:

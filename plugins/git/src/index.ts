@@ -1,7 +1,6 @@
-import type { DevframeDefinition } from 'devframe'
-import { fileURLToPath } from 'node:url'
+import type { DevframeDefinition, RemoteAssets } from 'devframe'
 import { defineDevframe } from 'devframe'
-import { dirname, resolve } from 'pathe'
+import { resolve } from 'pathe'
 import pkg from '../package.json' with { type: 'json' }
 import { configureGit } from './rpc/context.ts'
 import { readFunctions, writeFunctions } from './rpc/index.ts'
@@ -15,10 +14,15 @@ export type { StageArgs } from './rpc/functions/stage.ts'
 export type { FileStatusCode, GitStatus, StatusFileEntry } from './rpc/functions/status.ts'
 export type { UnstageArgs } from './rpc/functions/unstage.ts'
 
-// Package root, resolved one level up from this module — which sits at
-// `<root>/src/index.ts` in dev and `<root>/dist/index.mjs` once built, so
-// the bundled SPA is always `<root>/dist/client`.
-const PKG_ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
+// The Next.js static-export SPA ships in the lockstep
+// `@devframes/plugin-git--assets` package, served on demand through devframe's
+// remote-assets back-proxy; `resolveFrom` serves a locally installed copy (a
+// workspace link here) with zero network.
+const remoteAssets: RemoteAssets = {
+  package: `${pkg.name}--assets`,
+  version: pkg.version,
+  resolveFrom: import.meta.url,
+}
 
 export interface GitDevframeOptions {
   /** Repository directory to inspect. Defaults to the devframe `cwd`. */
@@ -54,7 +58,7 @@ export interface GitDevframeOptions {
  * version bump until it stabilizes.
  */
 export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDefinition {
-  const distDir = options.distDir ?? resolve(PKG_ROOT, 'dist/client')
+  const distDir = options.distDir ?? remoteAssets
   return defineDevframe({
     id: 'devframes_plugin_git',
     name: 'Git',

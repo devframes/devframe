@@ -12,18 +12,21 @@ import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { createH3DevframeHost } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
 import { resolveBasePath } from 'devframe/node/hub-internals'
+import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 
 const messagesDevframe = createMessagesDevframe()
-const SPA_DIST = localDistDir(messagesDevframe.cli!.distDir!)
+const SPA_DIST = localDistDir()
 
-function localDistDir(source: string | object): string {
-  if (typeof source !== 'string')
-    throw new TypeError('these tests serve the local dist directory — build the SPA first')
-  return source
+/** Resolve the SPA to a local dir — the workspace-linked `--assets` package in dev. */
+function localDistDir(): string {
+  const resolved = resolveStaticAssetsSource(messagesDevframe.cli!.distDir!, path.join(os.tmpdir(), 'devframes_plugin_messages-test'))
+  if (typeof resolved !== 'string')
+    throw new TypeError('these tests serve the local client SPA — build the plugin first')
+  return resolved
 }
 
 /**
@@ -60,7 +63,7 @@ interface BootOptions {
  * warn-and-noop path.
  */
 async function boot(options: BootOptions): Promise<MessagesServer> {
-  const distDir = localDistDir(messagesDevframe.cli!.distDir!)
+  const distDir = localDistDir()
   const basePath = resolveBasePath(messagesDevframe, 'standalone')
   const host = '127.0.0.1'
   const port = await getPort({ host, random: true })

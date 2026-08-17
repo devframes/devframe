@@ -55,12 +55,12 @@
     "@devframes/plugin-code-server#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build", "@devframes/vite#build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-terminals#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build", "@devframes/vite#build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-inspect#build": {
       "outputLogs": "new-only",
@@ -70,22 +70,22 @@
     "@devframes/plugin-og#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build", "@devframes/vite#build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-data-inspector#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build", "@devframes/vite#build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-messages#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build", "@devframes/hub#build", "@devframes/vite#build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-assets#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build", "@devframes/vite#build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "hub-vite#build": {
       "outputLogs": "new-only",
@@ -145,12 +145,12 @@
     "@devframes/plugin-git#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-a11y#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build", "@devframes/vite#build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "files-inspector-example#cli:build": {
       "outputLogs": "new-only",

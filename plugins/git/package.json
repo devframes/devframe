@@ -46,6 +46,14 @@
     "prepack": "turbo run build --filter=@devframes/plugin-git",
     "test": "vitest run"
   },
+  "peerDependencies": {
+    "@devframes/plugin-git--assets": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@devframes/plugin-git--assets": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "cac": "catalog:deps",
     "devframe": "workspace:*",
@@ -53,6 +61,7 @@
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
+    "@devframes/plugin-git--assets": "workspace:*",
     "@floating-ui/react": "catalog:frontend",
     "@iconify-json/catppuccin": "catalog:frontend",
     "@pierre/diffs": "catalog:frontend",

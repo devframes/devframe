@@ -183,6 +183,42 @@
       "entry": [],
       "project": []
     },
+    // Each plugin's lockstep `--assets` package is referenced only as a
+    // runtime string (`${pkg.name}--assets` in `cli.distDir`), never imported,
+    // so knip can't see the dev-only workspace link. A workspace config
+    // replaces (not merges) the `plugins/*` glob's `entry`, so repeat it.
+    "plugins/og": {
+      "entry": ["src/{index,cli,vite,constants,types}.ts", "src/{client,node,rpc,inject,engine,registry}/index.ts"],
+      "ignoreDependencies": ["@devframes/plugin-og--assets"]
+    },
+    "plugins/og/assets-pkg": { "entry": [], "project": [] },
+    "plugins/data-inspector": {
+      "entry": ["src/{index,cli,vite,constants,types}.ts", "src/{client,node,rpc,inject,engine,registry}/index.ts"],
+      "ignoreDependencies": ["@devframes/plugin-data-inspector--assets"]
+    },
+    "plugins/data-inspector/assets-pkg": { "entry": [], "project": [] },
+    "plugins/code-server": {
+      "entry": ["src/{index,cli,vite,constants,types}.ts", "src/{client,node,rpc,inject,engine,registry}/index.ts"],
+      "ignoreDependencies": ["@devframes/plugin-code-server--assets"]
+    },
+    "plugins/code-server/assets-pkg": { "entry": [], "project": [] },
+    "plugins/assets": {
+      "entry": ["src/{index,cli,vite,constants,types}.ts", "src/{client,node,rpc,inject,engine,registry}/index.ts"],
+      "ignoreDependencies": ["@devframes/plugin-assets--assets"]
+    },
+    "plugins/assets/assets-pkg": { "entry": [], "project": [] },
+    "plugins/messages": {
+      "entry": ["src/{index,cli,vite,constants,types}.ts", "src/{client,node,rpc,inject,engine,registry}/index.ts"],
+      "ignoreDependencies": ["@devframes/plugin-messages--assets"]
+    },
+    "plugins/messages/assets-pkg": { "entry": [], "project": [] },
+    "plugins/terminals": {
+      "entry": ["src/{index,cli,vite,constants,types}.ts", "src/{client,node,rpc,inject,engine,registry}/index.ts"],
+      "ignoreDependencies": ["@devframes/plugin-terminals--assets"]
+    },
+    "plugins/terminals/assets-pkg": { "entry": [], "project": [] },
+    "plugins/a11y/assets-pkg": { "entry": [], "project": [] },
+    "plugins/git/assets-pkg": { "entry": [], "project": [] },
     "plugins/a11y": {
       // `storybook-solidjs-vite` (not an official `@storybook/*` framework
       // package) doesn't match knip's Storybook plugin trigger, so it never
@@ -199,7 +235,8 @@
         "src/{index,cli,vite,constants,types}.ts",
         "src/{client,node,rpc,inject,engine,registry}/index.ts",
         "src/**/*.stories.tsx"
-      ]
+      ],
+      "ignoreDependencies": ["@devframes/plugin-a11y--assets"]
     },
     "plugins/git": {
       // The React client build's root sits at `src/client` (`next dev
@@ -207,7 +244,8 @@
       // config glob (workspace-root `postcss.config.*`) misses it.
       "postcss": {
         "config": ["src/client/postcss.config.mjs"]
-      }
+      },
+      "ignoreDependencies": ["@devframes/plugin-git--assets"]
     }
   }
 }

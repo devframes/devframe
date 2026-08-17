@@ -122,6 +122,6 @@ pnpm -C plugins/a11y dev         # from source: same, at /__devframes_plugin_a11
 | `src/rpc/` | — | `get-config` static RPC + the type-safe client registry |
 | `src/shared/protocol.ts` | — | the agent ↔ panel `BroadcastChannel` contract |
 | `src/inject/` | — | the host-page agent (axe scan, highlight overlay, hub messages mirror) → `dist/inject/inject.js` |
-| `src/spa/` | — | the Solid panel SPA → `dist/spa` |
+| `src/spa/` | — | the Solid panel SPA → `assets-pkg/dist` (ships in `@devframes/plugin-a11y--assets`) |
 | `demo/` | — | same-origin host page + server (dev + static modes) |
 | `tests/` | — | dev-server RPC + static-build dump |

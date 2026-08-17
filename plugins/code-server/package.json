@@ -50,10 +50,14 @@
     "prepack": "turbo run build --filter=@devframes/plugin-code-server"
   },
   "peerDependencies": {
+    "@devframes/plugin-code-server--assets": "workspace:*",
     "devframe": "workspace:*",
     "vite": "^8.0.0"
   },
   "peerDependenciesMeta": {
+    "@devframes/plugin-code-server--assets": {
+      "optional": true
+    },
     "vite": {
       "optional": true
     }
@@ -65,6 +69,7 @@
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
+    "@devframes/plugin-code-server--assets": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
     "@storybook/addon-docs": "catalog:storybook",
     "@storybook/vue3-vite": "catalog:storybook",

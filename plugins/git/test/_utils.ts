@@ -1,9 +1,11 @@
 import type { DevframeNodeContext } from 'devframe'
 import type { StartedServer } from 'devframe/internal'
 import type { GitDevframeOptions } from '../src/index'
+import { tmpdir } from 'node:os'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { createH3DevframeHost } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
+import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
@@ -46,9 +48,10 @@ export async function startDashboardServer(
   options: GitDevframeOptions = {},
 ): Promise<DashboardServer> {
   const devframe = createGitDevframe(options)
-  const distDir = devframe.cli!.distDir!
+  // The client SPA ships in the workspace-linked `--assets` package in dev.
+  const distDir = resolveStaticAssetsSource(devframe.cli!.distDir!, resolve(tmpdir(), 'devframes_plugin_git-test'))
   if (typeof distDir !== 'string')
-    throw new TypeError('these tests serve the local dist directory — build the SPA first')
+    throw new TypeError('these tests serve the local client SPA — build the plugin first')
   // The factory leaves basePath adapter-resolved; standalone defaults to '/'.
   const basePath = devframe.basePath ?? '/'
   const host = '127.0.0.1'

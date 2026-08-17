@@ -1,6 +1,4 @@
-import type { DevframeDefinition } from 'devframe'
-import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import type { DevframeDefinition, RemoteAssets } from 'devframe'
 import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { setupDataInspector } from './node/index'
@@ -11,10 +9,14 @@ const DEFAULT_ID = 'devframes:plugin:data-inspector'
 /** Preferred standalone CLI port. */
 const DEFAULT_PORT = 9014
 
-// The Vue SPA is built (by Vite) into `dist/spa`. From both the source
-// entry (`src/index.ts`, via the workspace alias) and the published
-// entry (`dist/index.mjs`), `../dist/spa` resolves to `<pkg>/dist/spa`.
-const distDir = fileURLToPath(new URL('../dist/spa', import.meta.url))
+// The SPA ships in the lockstep `@devframes/plugin-data-inspector--assets` package,
+// served on demand through devframe's remote-assets back-proxy; `resolveFrom`
+// serves a locally installed copy (a workspace link here) with zero network.
+const remoteAssets: RemoteAssets = {
+  package: `${pkg.name}--assets`,
+  version: pkg.version,
+  resolveFrom: import.meta.url,
+}
 
 export interface DataInspectorDevframeOptions {
   /** Override the devframe id (and default mount path). */
@@ -73,7 +75,7 @@ export function createDataInspectorDevframe(options: DataInspectorDevframeOption
     cli: {
       command: 'data-inspector',
       port: options.port ?? DEFAULT_PORT,
-      distDir: existsSync(distDir) ? distDir : undefined,
+      distDir: remoteAssets,
       auth: options.auth ?? true,
     },
     dock: { category: '~builtin' },

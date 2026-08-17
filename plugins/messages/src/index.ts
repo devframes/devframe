@@ -1,15 +1,18 @@
-import type { DevframeDefinition } from 'devframe'
-import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import type { DevframeDefinition, RemoteAssets } from 'devframe'
 import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { DEFAULT_PORT, PLUGIN_ID } from './constants'
 import { setupMessages } from './node/index'
 
-// The Vue SPA is built (by Vite) into `dist/spa`. From both the source
-// entry (`src/index.ts`, via the workspace alias) and the published
-// entry (`dist/index.mjs`), `../dist/spa` resolves to `<pkg>/dist/spa`.
-const distDir = fileURLToPath(new URL('../dist/spa', import.meta.url))
+// The SPA ships in the lockstep `@devframes/plugin-messages--assets` package,
+// served on demand through devframe's remote-assets back-proxy; `resolveFrom`
+// serves a locally installed copy (a workspace link here) with zero network.
+const remoteAssets: RemoteAssets = {
+  package: `${pkg.name}--assets`,
+  version: pkg.version,
+  resolveFrom: import.meta.url,
+}
+// The panel `clientScript` bundle (`dist/client`) stays in this node package.
 
 export interface MessagesDevframeOptions {
   /** Override the devframe id (and default CLI command / mount path). */
@@ -58,7 +61,7 @@ export function createMessagesDevframe(options: MessagesDevframeOptions = {}): D
     cli: {
       command: id,
       port: options.port ?? DEFAULT_PORT,
-      distDir: existsSync(distDir) ? distDir : undefined,
+      distDir: remoteAssets,
       // Gate the standalone server by default; `maybeOpenBrowser` folds the
       // current OTP into the `--open` URL so the tab lands already trusted.
       // Hosted adapters (Vite/hub) supply their own auth layer and ignore this.

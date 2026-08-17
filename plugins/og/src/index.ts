@@ -1,13 +1,18 @@
-import type { DevframeDefinition } from 'devframe'
+import type { DevframeDefinition, RemoteAssets } from 'devframe'
 import type { OgFetch } from './types'
-import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { setupOg } from './node/index'
 
 const DEFAULT_ID = 'devframes_plugin_og'
-const distDir = fileURLToPath(new URL('../dist/spa', import.meta.url))
+// The SPA ships in the lockstep `@devframes/plugin-og--assets` package,
+// served on demand through devframe's remote-assets back-proxy; `resolveFrom`
+// serves a locally installed copy (a workspace link here) with zero network.
+const remoteAssets: RemoteAssets = {
+  package: `${pkg.name}--assets`,
+  version: pkg.version,
+  resolveFrom: import.meta.url,
+}
 
 export interface OgDevframeOptions {
   id?: string
@@ -43,7 +48,7 @@ export function createOgDevframe(options: OgDevframeOptions = {}): DevframeDefin
     cli: {
       command: id,
       port: options.port ?? 9016,
-      distDir: existsSync(distDir) ? distDir : undefined,
+      distDir: remoteAssets,
       auth: options.auth ?? true,
     },
     dock: { category: '~builtin' },

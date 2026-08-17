@@ -49,10 +49,14 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@devframes/plugin-data-inspector--assets": "workspace:*",
     "devframe": "workspace:*",
     "vite": "^7.0.0 || ^8.0.0"
   },
   "peerDependenciesMeta": {
+    "@devframes/plugin-data-inspector--assets": {
+      "optional": true
+    },
     "vite": {
       "optional": true
     }
@@ -64,6 +68,7 @@
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
+    "@devframes/plugin-data-inspector--assets": "workspace:*",
     "@devframes/vite": "workspace:*",
     "@discoveryjs/discovery": "catalog:frontend",
     "@iconify-json/ph": "catalog:frontend",

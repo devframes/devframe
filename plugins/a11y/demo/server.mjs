@@ -11,7 +11,7 @@
  *
  * Two modes prove the plugin works either way:
  *
- *   node demo/server.mjs          dev    — live WebSocket RPC (`dist/spa`)
+ *   node demo/server.mjs          dev    — live WebSocket RPC (`assets-pkg/dist`)
  *   node demo/server.mjs build    static — baked RPC dump,    (`dist/static`)
  *
  * The scan/highlight loop is identical in both: it rides the BroadcastChannel,
@@ -36,7 +36,7 @@ const devframe = createA11yDevframe()
 const mode = process.argv[2] === 'build' ? 'build' : 'dev'
 const basePath = devframe.basePath
 const injectDir = resolve(ROOT, 'dist/inject')
-const panelDir = mode === 'build' ? resolve(ROOT, 'dist/static') : resolve(ROOT, 'dist/spa')
+const panelDir = mode === 'build' ? resolve(ROOT, 'dist/static') : resolve(ROOT, 'assets-pkg/dist')
 
 function requireBuilt(file, hint) {
   if (!existsSync(file)) {
