@@ -4,7 +4,8 @@ import type { DocksContext } from '@devframes/hub/client'
 import type { RemoteAssetsErrorMessage } from 'devframe/types'
 import type { IframePanes } from 'iframe-pane'
 import type { CSSProperties } from 'vue'
-import { DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE, REMOTE_CONNECTION_KEY } from '@devframes/hub/constants'
+import { stripRemoteConnectionFromUrl, watchFrameLocation } from '@devframes/hub/client'
+import { DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE } from '@devframes/hub/constants'
 import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watchEffect } from 'vue'
 import { sharedStateToRef } from '../../state/docks'
 import ViewAssetsError from './ViewAssetsError.vue'
@@ -15,34 +16,6 @@ const props = defineProps<{
   panes: IframePanes
   iframeStyle?: CSSProperties
 }>()
-
-function stripRemoteConnectionParam(url: string): string {
-  // Remove the remote connection descriptor so the auth token isn't exposed
-  // in the address bar (user could accidentally copy it).
-  let result = url
-
-  const hashIdx = result.indexOf('#')
-  if (hashIdx !== -1) {
-    const hash = result.slice(hashIdx + 1)
-    const filtered = hash
-      .split('&')
-      .filter(part => !part.startsWith(`${REMOTE_CONNECTION_KEY}=`))
-      .join('&')
-    result = filtered ? `${result.slice(0, hashIdx)}#${filtered}` : result.slice(0, hashIdx)
-  }
-
-  const qIdx = result.indexOf('?')
-  if (qIdx !== -1) {
-    const query = result.slice(qIdx + 1)
-    const filtered = query
-      .split('&')
-      .filter(part => !part.startsWith(`${REMOTE_CONNECTION_KEY}=`))
-      .join('&')
-    result = filtered ? `${result.slice(0, qIdx)}?${filtered}` : result.slice(0, qIdx)
-  }
-
-  return result
-}
 
 const settings = sharedStateToRef(props.context.docks.settings)
 const isEdgeMode = computed(() => props.context.panel.store.mode === 'edge')
@@ -100,9 +73,12 @@ const isCrossOrigin = computed(() => {
   }
 })
 
-// Display URL - hides host if same as current page
+// Display URL - hides host if same as current page. The remote connection
+// descriptor is stripped so its auth token can't be read (or copied) out of the
+// address bar; the route persisted for a reload keeps it, since the restored
+// iframe still has to connect.
 const displayUrl = computed(() => {
-  const sanitized = stripRemoteConnectionParam(currentUrl.value)
+  const sanitized = stripRemoteConnectionFromUrl(currentUrl.value)
   if (isCrossOrigin.value) {
     return sanitized
   }
@@ -115,19 +91,6 @@ const displayUrl = computed(() => {
     return sanitized
   }
 })
-
-function updateCurrentUrl() {
-  try {
-    // Try to get the current URL from the iframe (may fail due to cross-origin)
-    const iframe = iframeElement.value
-    if (iframe?.contentWindow?.location?.href) {
-      currentUrl.value = iframe.contentWindow.location.href
-    }
-  }
-  catch {
-    // Cross-origin restriction, keep the last known URL
-  }
-}
 
 function onWindowMessage(event: MessageEvent) {
   const data = event.data as Partial<RemoteAssetsErrorMessage> | null
@@ -221,6 +184,7 @@ function refresh() {
 }
 
 let onIframeLoad: (() => void) | undefined
+let stopLocationWatch: (() => void) | undefined
 
 onMounted(() => {
   const existed = props.panes.has(paneKey.value)
@@ -243,8 +207,17 @@ onMounted(() => {
   })
   const iframe = pane.iframe
 
-  if (existed)
-    updateCurrentUrl()
+  // Follow the frame wherever it goes — a document load, but also an SPA
+  // router's `pushState`/`replaceState` and back/forward, none of which fire
+  // `load`. `currentUrl` is the single source the address bar renders and the
+  // session route persists, so tracking it here keeps both live.
+  stopLocationWatch = watchFrameLocation({
+    iframe,
+    initial: currentUrl.value,
+    onChange: (href) => {
+      currentUrl.value = href
+    },
+  })
 
   // Persist this dock's live route while it is the selected one, so the next
   // reload can restore it. Only the selected dock writes, so switching docks
@@ -258,7 +231,6 @@ onMounted(() => {
   // Listen for iframe load events
   onIframeLoad = () => {
     isIframeLoading.value = false
-    updateCurrentUrl()
   }
   iframe.addEventListener('load', onIframeLoad)
 
@@ -306,6 +278,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('message', onWindowMessage)
+  // A shared frame outlives this view, so its page is left exactly as found —
+  // the incoming view starts its own watch.
+  stopLocationWatch?.()
+  stopLocationWatch = undefined
   const pane = props.panes.get(paneKey.value)
   if (pane && onIframeLoad)
     pane.iframe?.removeEventListener('load', onIframeLoad)

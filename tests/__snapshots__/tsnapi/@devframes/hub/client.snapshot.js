@@ -13,6 +13,7 @@ export function parseRemoteConnection(_) {}
 export function resolveDockIcon(_, _) {}
 export function resolveDockUrl(_, _) {}
 export function setDevframeClientContext(_) {}
+export function watchFrameLocation(_) {}
 // #endregion
 
 // #region Variables

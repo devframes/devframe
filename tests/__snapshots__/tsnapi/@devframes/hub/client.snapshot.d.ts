@@ -118,6 +118,27 @@ export interface DocksPanelContext {
   readonly isVertical: boolean;
   consumeBootRoute?: (_: string) => string | null;
 }
+export interface FrameLocationHistory {
+  pushState: (..._: any[]) => void;
+  replaceState: (..._: any[]) => void;
+}
+export interface FrameLocationTarget {
+  readonly contentWindow: FrameLocationWindow | null;
+  addEventListener: (_: 'load', _: () => void) => void;
+  removeEventListener: (_: 'load', _: () => void) => void;
+}
+export interface FrameLocationWindow {
+  readonly location: {
+    readonly href: string;
+  };
+  readonly history?: FrameLocationHistory;
+  readonly navigation?: {
+    addEventListener: (_: 'currententrychange', _: () => void) => void;
+    removeEventListener: (_: 'currententrychange', _: () => void) => void;
+  };
+  addEventListener: (_: 'popstate' | 'hashchange', _: () => void) => void;
+  removeEventListener: (_: 'popstate' | 'hashchange', _: () => void) => void;
+}
 export interface FrameNavClient {
   readonly ready: boolean;
   readonly currentTabId: string | null;
@@ -156,6 +177,11 @@ export interface FrameTab {
 }
 export interface MessagesClientOptions {
   defaults?: Partial<DevframeMessageEntryInput>;
+}
+export interface WatchFrameLocationOptions {
+  iframe: FrameLocationTarget;
+  onChange: (_: string) => void;
+  initial?: string;
 }
 export interface WhenClauseContext {
   readonly context: WhenContext;
@@ -217,6 +243,7 @@ export declare function resolveDockIcon(_: DevframeDockEntryIcon, _: DevframeCon
 export declare function resolveDockUrl(_: string, _: DevframeConnection): string;
 export declare function setDevframeClientContext(_: DevframeClientContext | undefined): void;
 export declare function stripRemoteConnectionFromUrl(_: string): string;
+export declare function watchFrameLocation(_: WatchFrameLocationOptions): () => void;
 // #endregion
 
 // #region Variables
