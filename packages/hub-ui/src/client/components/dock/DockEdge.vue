@@ -363,8 +363,8 @@ const toolbarClass = computed(() => {
 
 const contentClass = computed(() => {
   return isVertical.value
-    ? 'flex-1 h-full overflow-clip'
-    : 'flex-1 w-full overflow-clip'
+    ? 'flex-1 h-full min-w-0 overflow-clip'
+    : 'flex-1 w-full min-h-0 overflow-clip'
 })
 
 /** A thin band flush with the candidate edge, tracking the drag before it commits on release. */

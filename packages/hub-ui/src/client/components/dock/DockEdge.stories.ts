@@ -1,8 +1,10 @@
+import type { DevframeViewBuiltin } from '@devframes/hub'
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { h } from 'vue'
 import { categorizedEntries, groupedEntries } from '../../stories/fixtures'
 import { mountWithContext } from '../../stories/story-helpers'
 import FloatingElements from '../floating/FloatingElements.vue'
+import ViewBuiltinSettings from '../views-builtin/ViewBuiltinSettings.vue'
 import DockEdge from './DockEdge.vue'
 
 /** A stand-in panel body (the real one mounts iframe/custom views). */
@@ -82,6 +84,35 @@ export const CollapsedIdle: Story = {
       },
       ctx => [
         h(DockEdge, { context: ctx }, { view: ({ entry }: any) => body(entry) }),
+        h(FloatingElements),
+      ],
+    ),
+  }),
+}
+
+const settingsEntry: DevframeViewBuiltin = {
+  type: '~builtin',
+  id: '~settings',
+  title: 'Settings',
+  icon: 'ph:gear-duotone',
+}
+
+/**
+ * Bottom edge hosting the real Settings view, whose tab content is taller than
+ * the panel. Guards the panel's main-axis height chain: the other stories stub
+ * `#view` with short, self-scrolling content, so they cannot catch a content
+ * wrapper that grows past the panel instead of letting descendants scroll.
+ */
+export const BottomWithSettings: Story = {
+  render: () => ({
+    setup: () => mountWithContext(
+      {
+        entries: categorizedEntries,
+        selectedId: 'overview',
+        panel: { mode: 'edge', position: 'bottom', height: 40 },
+      },
+      ctx => [
+        h(DockEdge, { context: ctx }, { view: () => h(ViewBuiltinSettings, { context: ctx, entry: settingsEntry }) }),
         h(FloatingElements),
       ],
     ),
