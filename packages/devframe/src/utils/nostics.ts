@@ -1,14 +1,55 @@
+import type { AnyDiagnosticReporter, Diagnostic, DiagnosticDefinition, Diagnostics } from 'nostics'
+import { colors } from 'devframe/utils/colors'
+import { defineDiagnostics as defineNosticsDiagnostics } from 'nostics'
+import { ansiFormatter } from 'nostics/formatters/ansi'
+
+const formatAnsi = ansiFormatter(colors)
+
 /**
- * Re-exports `nostics`'s public API — `defineDiagnostics`, the `Diagnostic`
- * class, its supporting types, and the ANSI formatter — so integrations that
- * define their own coded `diagnostics.ts` (the built-in plugins,
- * `@devframes/hub`, `@devframes/json-render`, …) reach it through
- * `devframe/utils/nostics` instead of taking a direct dependency on
- * `nostics` themselves.
+ * The reporter every {@link defineDiagnostics} call below wires in ahead of
+ * any caller-supplied ones: prints the diagnostic through devframe's own
+ * ANSI colors via `console[method]` (default `'warn'`).
  */
+function devframeReporter(d: Diagnostic, { method = 'warn' }: { method?: 'log' | 'warn' | 'error' } = {}): void {
+  // eslint-disable-next-line no-console
+  console[method](formatAnsi(d))
+}
+
+/**
+ * Options accepted by {@link defineDiagnostics} — identical to `nostics`'s
+ * own `DefineDiagnosticsOptions`, minus the reporter devframe already
+ * prepends.
+ */
+export type DevframeDefineDiagnosticsOptions<
+  Codes extends Record<string, DiagnosticDefinition>,
+  Reporters extends readonly AnyDiagnosticReporter[] = [],
+> = Parameters<typeof defineDiagnostics<Codes, Reporters>>[0]
+
+/**
+ * Drop-in replacement for `nostics`'s `defineDiagnostics()` with devframe's
+ * ANSI console reporter pre-wired ahead of any `reporters` passed in. Every
+ * `diagnostics.ts` in devframe core, `@devframes/hub`, `@devframes/json-render`,
+ * and the built-in plugins defines its codes through this instead of
+ * `nostics`'s own `defineDiagnostics` — the reporter registration lives
+ * here, once, so none of them need to build their own reporter (`colors`,
+ * `ansiFormatter`) or take a direct dependency on `nostics` themselves.
+ */
+export function defineDiagnostics<
+  const Codes extends Record<string, DiagnosticDefinition>,
+  const Reporters extends readonly AnyDiagnosticReporter[] = [],
+>(options: {
+  docsBase?: string | ((code: keyof Codes) => string | undefined)
+  codes: Codes
+  reporters?: Reporters
+}): Diagnostics<Codes, readonly [typeof devframeReporter, ...Reporters]> {
+  return defineNosticsDiagnostics({
+    ...options,
+    reporters: [devframeReporter, ...(options.reporters ?? [])],
+  }) as Diagnostics<Codes, readonly [typeof devframeReporter, ...Reporters]>
+}
+
 export {
   createConsoleReporter,
-  defineDiagnostics,
   defineProdDiagnostics,
   Diagnostic,
   formatDiagnostic,
@@ -18,7 +59,6 @@ export type {
   AnyDiagnosticReporter,
   ConsoleMethod,
   ConsoleReporterOptions,
-  DefineDiagnosticsOptions,
   DiagnosticCallParams,
   DiagnosticDefinition,
   DiagnosticHandle,

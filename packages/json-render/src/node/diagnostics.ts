@@ -1,15 +1,4 @@
-import type { Diagnostic } from 'devframe/utils/nostics'
-import { colors as c } from 'devframe/utils/colors'
-import { ansiFormatter, defineDiagnostics } from 'devframe/utils/nostics'
-
-const formatAnsi = ansiFormatter(c)
-
-interface ReporterOptions { method?: 'log' | 'warn' | 'error' }
-
-function jsonRenderReporter(d: Diagnostic, { method = 'warn' }: ReporterOptions = {}): void {
-  // eslint-disable-next-line no-console
-  console[method](formatAnsi(d))
-}
+import { defineDiagnostics } from 'devframe/utils/nostics'
 
 // `@devframes/json-render` protocol/runtime diagnostics. These share the
 // `DF` prefix and live in the devframe core range (next free after the
@@ -17,7 +6,6 @@ function jsonRenderReporter(d: Diagnostic, { method = 'warn' }: ReporterOptions 
 // `console.*` in the UI package.
 export const diagnostics = defineDiagnostics({
   docsBase: 'https://devfra.me/errors',
-  reporters: [jsonRenderReporter],
   codes: {
     DF0038: {
       why: (p: { id: string, key: string, issues: string }) =>

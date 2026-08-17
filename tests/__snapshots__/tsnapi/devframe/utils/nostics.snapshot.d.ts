@@ -8,8 +8,8 @@ export { ConsoleMethod }
 export { ConsoleReporterOptions }
 export { createConsoleReporter }
 export { defineDiagnostics }
-export { DefineDiagnosticsOptions }
 export { defineProdDiagnostics }
+export { DevframeDefineDiagnosticsOptions }
 export { Diagnostic }
 export { DiagnosticCallParams }
 export { DiagnosticDefinition }

@@ -1,9 +1,7 @@
 import { defineDiagnostics } from 'devframe/utils/nostics'
-import { devframeReporter } from '../utils/diagnostics-reporter'
 
 export const diagnostics = defineDiagnostics({
   docsBase: 'https://devfra.me/errors',
-  reporters: [devframeReporter],
   codes: {
     DF0019: {
       why: (p: { name: string }) =>

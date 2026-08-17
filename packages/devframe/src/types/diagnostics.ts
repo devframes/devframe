@@ -1,4 +1,4 @@
-import type { defineDiagnostics, Diagnostic, DiagnosticDefinition } from 'devframe/utils/nostics'
+import type { defineDiagnostics } from 'devframe/utils/nostics'
 
 /**
  * The shared diagnostics lookup exposed by the host. A `Proxy` that resolves
@@ -10,15 +10,14 @@ import type { defineDiagnostics, Diagnostic, DiagnosticDefinition } from 'devfra
 export type DevframeDiagnosticsLogger = Record<string, any>
 
 /**
- * Options accepted by the host's `defineDiagnostics()` factory — mirrors
- * `nostics`'s shape but the host pre-wires its ANSI console reporter, so
- * plugins typically omit `reporters`.
+ * Options accepted by the host's `defineDiagnostics()` factory. Re-exported
+ * from `devframe/utils/nostics` — the same shape every module-level
+ * `diagnostics.ts` (devframe core, `@devframes/hub`, the built-in plugins)
+ * accepts, since `host.defineDiagnostics()` and the top-level
+ * `defineDiagnostics` from `devframe/utils/nostics` pre-wire the identical
+ * ANSI console reporter.
  */
-export interface DevframeDefineDiagnosticsOptions<Codes extends Record<string, DiagnosticDefinition>> {
-  docsBase?: string | ((code: keyof Codes) => string | undefined)
-  codes: Codes
-  reporters?: ReadonlyArray<(d: Diagnostic, o?: any) => void>
-}
+export type { DevframeDefineDiagnosticsOptions } from 'devframe/utils/nostics'
 
 /**
  * Host for structured diagnostics — a thin layer over `nostics` that lets
@@ -64,10 +63,9 @@ export interface DevframeDiagnosticsHost {
 
   /**
    * Build a typed diagnostics object with the host's ANSI console reporter
-   * pre-wired. Mirrors `nostics`'s `defineDiagnostics` so integrations don't
-   * need to take a direct dependency on `nostics`.
+   * pre-wired. The same `devframe/utils/nostics` `defineDiagnostics` every
+   * built-in plugin's module-level `diagnostics.ts` uses, so integrations
+   * don't need to take a direct dependency on `nostics`.
    */
-  defineDiagnostics: <const Codes extends Record<string, DiagnosticDefinition>>(
-    options: DevframeDefineDiagnosticsOptions<Codes>,
-  ) => ReturnType<typeof defineDiagnostics<Codes, any>>
+  defineDiagnostics: typeof defineDiagnostics
 }

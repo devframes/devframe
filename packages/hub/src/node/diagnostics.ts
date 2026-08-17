@@ -1,5 +1,4 @@
 import { defineDiagnostics } from 'devframe/utils/nostics'
-import { hubReporter } from '../utils/diagnostics-reporter'
 
 // Hub-side diagnostics for docks, terminals, messages, and commands.
 // Shares the `DF` prefix with devframe core; the hub reserves the
@@ -12,7 +11,6 @@ import { hubReporter } from '../utils/diagnostics-reporter'
 //   DF8400-DF8499 — commands
 export const diagnostics = defineDiagnostics({
   docsBase: 'https://devfra.me/errors',
-  reporters: [hubReporter],
   codes: {
     DF8000: {
       why: (p: { id: string }) => `Devframe id "${p.id}" collides with a reserved hub path — it cannot be mounted directly under the hub base.`,

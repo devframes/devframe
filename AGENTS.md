@@ -91,7 +91,7 @@ Any change to one lands in the other in the same PR: adding a dock, wiring a new
 
 ## Structured Diagnostics (Error Codes)
 
-All node-side warnings and errors use structured diagnostics via [`nostics`](https://www.npmjs.com/package/nostics). Never use raw `console.warn`, `console.error`, or `throw new Error` with ad-hoc messages in node-side code - always define a coded diagnostic. Import `defineDiagnostics`, `Diagnostic`, and `ansiFormatter` from `devframe/utils/nostics` rather than from `nostics` directly - it re-exports the package's API so plugins don't need their own `nostics` dependency.
+All node-side warnings and errors use structured diagnostics via [`nostics`](https://www.npmjs.com/package/nostics). Never use raw `console.warn`, `console.error`, or `throw new Error` with ad-hoc messages in node-side code - always define a coded diagnostic. Import `defineDiagnostics` (and `Diagnostic` for `instanceof` checks) from `devframe/utils/nostics` rather than from `nostics` directly - it pre-wires devframe's ANSI console reporter, so a plugin's `diagnostics.ts` never builds its own reporter (`colors`, `ansiFormatter`) or depends on `nostics` itself.
 
 Prefix: **`DF`**. Codes are sequential 4-digit numbers (e.g. `DF0033`). Check the existing diagnostics file to find the next available number.
 

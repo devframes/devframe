@@ -125,5 +125,7 @@ export declare const diagnostics: Diagnostics<{
     }) => string;
     readonly fix: "Check the tunnel logs, ensure the `code` CLI is signed in, or raise `startTimeout`.";
   };
-}, readonly [typeof reporter]>;
+}, readonly [(d: Diagnostic, { method }?: {
+  method?: "log" | "warn" | "error";
+}) => void]>;
 // #endregion

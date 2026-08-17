@@ -1,12 +1,10 @@
 import { defineDiagnostics } from 'devframe/utils/nostics'
-import { devframeReporter } from '../utils/diagnostics-reporter'
 
 // DF00xx codes are allocated across packages (e.g. @devframes/json-render
 // owns DF0037–DF0041), so this file alone doesn't show the next free
 // number — check `docs/errors/` for the full allocation before adding one.
 export const diagnostics = defineDiagnostics({
   docsBase: 'https://devfra.me/errors',
-  reporters: [devframeReporter],
   codes: {
     DF0006: {
       why: (p: { name: string }) => `RPC function "${p.name}" is not registered`,

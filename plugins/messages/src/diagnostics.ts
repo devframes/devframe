@@ -1,15 +1,4 @@
-import type { Diagnostic } from 'devframe/utils/nostics'
-import { colors as c } from 'devframe/utils/colors'
-import { ansiFormatter, defineDiagnostics } from 'devframe/utils/nostics'
-
-const formatAnsi = ansiFormatter(c)
-
-interface ReporterOptions { method?: 'log' | 'warn' | 'error' }
-
-function reporter(d: Diagnostic, { method = 'warn' }: ReporterOptions = {}): void {
-  // eslint-disable-next-line no-console
-  console[method](formatAnsi(d))
-}
+import { defineDiagnostics } from 'devframe/utils/nostics'
 
 /**
  * Structured diagnostics for `@devframes/plugin-messages`. Node-side only.
@@ -19,7 +8,6 @@ function reporter(d: Diagnostic, { method = 'warn' }: ReporterOptions = {}): voi
  */
 export const diagnostics = defineDiagnostics({
   docsBase: 'https://devfra.me/errors',
-  reporters: [reporter],
   codes: {
     DP_MESSAGES_0001: {
       why: (p: { id: string }) =>

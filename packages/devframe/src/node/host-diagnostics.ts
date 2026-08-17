@@ -1,6 +1,5 @@
 import type { DevframeDiagnosticsHost as DevframeDiagnosticsHostType, DevframeDiagnosticsLogger, DevframeNodeContext } from 'devframe/types'
 import { defineDiagnostics } from 'devframe/utils/nostics'
-import { devframeReporter } from '../utils/diagnostics-reporter'
 
 export class DevframeDiagnosticsHost implements DevframeDiagnosticsHostType {
   private _registry: Record<string, unknown> = {}
@@ -9,16 +8,9 @@ export class DevframeDiagnosticsHost implements DevframeDiagnosticsHostType {
     get: (_, code: string) => this._registry[code],
   })
 
-  readonly defineDiagnostics: DevframeDiagnosticsHostType['defineDiagnostics'] = (opts) => {
-    const merged = {
-      ...opts,
-      reporters: [devframeReporter, ...(opts.reporters ?? [])],
-    } as Parameters<typeof defineDiagnostics>[0]
-    // Runtime passthrough: the per-call `Codes` generic can't be threaded
-    // through this assigned arrow, so the narrow return type is restored by
-    // the property's declared signature at every call site.
-    return defineDiagnostics(merged) as any
-  }
+  // Already pre-wires devframe's ANSI console reporter — no extra merging
+  // needed here, the host's `defineDiagnostics` just is the shared one.
+  readonly defineDiagnostics: DevframeDiagnosticsHostType['defineDiagnostics'] = defineDiagnostics
 
   constructor(
     public readonly context: DevframeNodeContext,

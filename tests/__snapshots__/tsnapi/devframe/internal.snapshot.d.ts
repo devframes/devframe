@@ -305,7 +305,9 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "A remote-assets `package` must be a valid npm package name and `version` an exact semver version (e.g. `1.2.3`) — they are interpolated into CDN URLs and the cache path.";
   };
-}, readonly [typeof devframeReporter]>;
+}, readonly [(d: import("nostics").Diagnostic, { method }?: {
+  method?: "log" | "warn" | "error";
+}) => void]>;
 // #endregion
 
 // #region Other

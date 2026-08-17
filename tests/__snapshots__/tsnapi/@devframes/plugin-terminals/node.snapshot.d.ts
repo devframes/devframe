@@ -88,5 +88,7 @@ export declare const diagnostics: Diagnostics<{
     readonly why: "Terminals manager is not initialised on this context";
     readonly fix: "Call setupTerminals(ctx) (or use createTerminalsDevframe) before invoking terminal RPCs.";
   };
-}, readonly [typeof reporter]>;
+}, readonly [(d: Diagnostic, { method }?: {
+  method?: "log" | "warn" | "error";
+}) => void]>;
 // #endregion

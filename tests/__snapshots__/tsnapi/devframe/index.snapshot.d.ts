@@ -127,11 +127,6 @@ export interface DevframeCliOptions {
   flags?: CliFlagsSchema;
 }
 export interface DevframeConnectionConfigsRegistry {}
-export interface DevframeDefineDiagnosticsOptions<Codes extends Record<string, DiagnosticDefinition>> {
-  docsBase?: string | ((_: keyof Codes) => string | undefined);
-  codes: Codes;
-  reporters?: ReadonlyArray<(d: Diagnostic, o?: any) => void>;
-}
 export interface DevframeDefinition {
   id: string;
   name: string;
@@ -156,7 +151,7 @@ export interface DevframeDefinition {
 export interface DevframeDiagnosticsHost {
   readonly logger: DevframeDiagnosticsLogger;
   register: (_: Record<string, unknown>) => void;
-  defineDiagnostics: <const Codes extends Record<string, DiagnosticDefinition>>(_: DevframeDefineDiagnosticsOptions<Codes>) => ReturnType<typeof defineDiagnostics<Codes, any>>;
+  defineDiagnostics: typeof defineDiagnostics;
 }
 export interface DevframeDockDefaults {
   title?: string;
@@ -435,6 +430,7 @@ export interface ScopedBroadcastOptions<METHOD, Args extends any[]> {
 
 // #region Types
 export type AgentToolProvider = () => readonly AgentToolInput[];
+export type DevframeDefineDiagnosticsOptions<Codes extends Record<string, DiagnosticDefinition>, Reporters extends readonly AnyDiagnosticReporter[] = []> = Parameters<typeof defineDiagnostics<Codes, Reporters>>[0];
 export type DevframeDeploymentKind = 'standalone' | 'hosted';
 export type DevframeDiagnosticsLogger = Record<string, any>;
 export type DevframeDuplicationStrategy = 'warn' | 'silent' | 'throw' | 'duplicate';
