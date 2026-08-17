@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net'
 import type { MockInstance } from 'vitest'
 import type { RemoteAssets, RemoteAssetsErrorMessage, RemoteAssetsStore } from '../types/remote-assets'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -12,8 +12,11 @@ import { DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE } from '../constants'
 import { resolveStaticAssetsSource } from './remote-assets'
 import { serveStaticHandler } from './serve-static'
 
+// `realpathSync` because module resolution reports realpaths, while the system
+// temp dir is a symlink on macOS (`/var` → `/private/var`) — a path built from
+// the raw `mkdtempSync` result would never match a resolved one.
 function makeTmp(): string {
-  return mkdtempSync(join(tmpdir(), 'devframe-remote-assets-'))
+  return realpathSync(mkdtempSync(join(tmpdir(), 'devframe-remote-assets-')))
 }
 
 /** A fake CDN over a flat `filePath -> contents` map, answering the jsDelivr listing API + per-file URLs. */

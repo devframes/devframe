@@ -333,6 +333,7 @@ export async function createDevframeClientHost(
     if (selectedId && !entryToStateMap.has(selectedId)) {
       selectedId = null
       panel.session.selectedDockId = null
+      panel.session.selectedDockRoute = null
     }
   }
 
@@ -343,6 +344,14 @@ export async function createDevframeClientHost(
       },
       set selectedId(id: string | null) {
         void switchEntry(id)
+      },
+      // A mirror of the session field, so a persisting host reads and writes the
+      // selected iframe's route through the same context every viewer uses.
+      get selectedRoute() {
+        return panel.session.selectedDockRoute
+      },
+      set selectedRoute(route: string | null) {
+        panel.session.selectedDockRoute = route
       },
       get selected() {
         return (selectedId && entryToStateMap.get(selectedId)?.entryMeta) || null
@@ -398,6 +407,10 @@ export async function createDevframeClientHost(
     // Mirror onto the session context so a persisting host and the when-clause
     // context see the current selection.
     panel.session.selectedDockId = next
+    // Only an iframe dock owns an address-bar route, so drop the remembered one
+    // for anything else rather than leaving it attached to the new selection.
+    if (next === null || entryToStateMap.get(next)?.entryMeta.type !== 'iframe')
+      panel.session.selectedDockRoute = null
     if (previous)
       entryToStateMap.get(previous)?.events.emit('entry:deactivated')
     if (next)

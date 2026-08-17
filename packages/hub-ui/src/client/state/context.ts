@@ -276,7 +276,7 @@ export async function createDocksContext(
     selectedDockId.value = entry.id
     sessionStore.value.open = true
     // Only an iframe dock owns an address-bar route; ViewIframe keeps
-    // `session.route` current for it. Clear it for anything else so a stale
+    // `session.selectedDockRoute` current for it. Clear it for anything else so a stale
     // route from a previous iframe isn't persisted against a non-iframe dock.
     if (entry.type !== 'iframe')
       sessionStore.value.selectedDockRoute = null
@@ -607,7 +607,7 @@ export async function createDocksContext(
   // revocation clears the selection), so the durable intent captured in
   // `restoreIntent` is re-applied here after the handshake — re-running the
   // dock's setup script and re-opening the panel on the dock the developer left
-  // open. `switchEntry` reads `session.route` back through `consumeBootRoute`
+  // open. `switchEntry` reads `session.selectedDockRoute` back through `consumeBootRoute`
   // when the restored iframe boots.
   const applyRestore = (): void => {
     if (restoreIntent.open && restoreIntent.selectedDockId != null)

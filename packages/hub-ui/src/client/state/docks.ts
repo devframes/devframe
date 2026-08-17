@@ -18,7 +18,7 @@ export function DEFAULT_DOCK_PANEL_STORE(): DockPanelStorage {
 }
 
 /**
- * The per-tab session UI state seed — `open`/`selectedId`/`route`. Persisted to
+ * The per-tab session UI state seed — `open`/`selectedDockId`/`selectedDockRoute`. Persisted to
  * `sessionStorage` by the embedded and standalone bootstraps so a reload (and
  * the RPC auth handshake that follows one) restores the panel to the dock and
  * route the developer left open. Distinct from {@link DEFAULT_DOCK_PANEL_STORE}
@@ -27,7 +27,7 @@ export function DEFAULT_DOCK_PANEL_STORE(): DockPanelStorage {
 export function DEFAULT_DOCK_SESSION_STORE(): DockSessionStorage {
   return {
     open: false,
-    selectedId: null,
+    selectedDockId: null,
     selectedDockRoute: null,
   }
 }

@@ -92,6 +92,7 @@ export interface DocksContext extends DevframeRpcContext {
 }
 export interface DocksEntriesContext {
   selectedId: string | null;
+  selectedRoute: string | null;
   readonly selected: DevframeDockEntry | null;
   entries: DevframeDockEntry[];
   entryToStateMap: Map<string, DockEntryState>;
@@ -106,8 +107,8 @@ export interface DocksEntriesContext {
 }
 export interface DockSessionStorage {
   open: boolean;
-  selectedId: string | null;
-  route: string | null;
+  selectedDockId: string | null;
+  selectedDockRoute: string | null;
 }
 export interface DocksPanelContext {
   store: DockPanelStorage;
