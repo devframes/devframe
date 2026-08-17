@@ -1,11 +1,11 @@
 import type { DevframeDockEntry, DevframeDocksUserSettings } from '@devframes/hub'
-import type { DevframeRpcClient, DockPanelStorage, DocksContext, RpcClientEvents } from '@devframes/hub/client'
+import type { DevframeRpcClient, DockPanelStorage, DocksContext, DockSessionStorage, RpcClientEvents } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS } from '@devframes/hub/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { ref } from 'vue'
 import { createDocksContext } from '../state/context'
-import { DEFAULT_DOCK_PANEL_STORE } from '../state/docks'
+import { DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
 
 /**
  * A story-only RPC client. Backs the three shared-state keys the dock context
@@ -23,8 +23,10 @@ export interface CreateMockContextOptions {
   entries?: DevframeDockEntry[]
   /** Which client shell the context represents. */
   clientType?: 'embedded' | 'standalone'
-  /** Overrides merged over the default panel store (mode, position, open, ...). */
+  /** Overrides merged over the default panel store (mode, position, geometry, ...). */
   panel?: Partial<DockPanelStorage>
+  /** Overrides merged over the default per-tab session store (open, selectedId, route). */
+  session?: Partial<DockSessionStorage>
   /** Overrides merged over the default user settings (hidden, pinned, order, ...). */
   settings?: Partial<DevframeDocksUserSettings>
   /** Entry id to pre-select (also opens the panel). */
@@ -110,6 +112,7 @@ export async function createMockDocksContext(
     entries = [],
     clientType = 'embedded',
     panel,
+    session,
     settings = {},
     selectedId = null,
     isTrusted = true,
@@ -117,12 +120,13 @@ export async function createMockDocksContext(
 
   const rpc = createMockRpc(entries, settings, isTrusted)
   const panelStore = ref<DockPanelStorage>({ ...DEFAULT_DOCK_PANEL_STORE(), ...panel })
+  const sessionStore = ref<DockSessionStorage>({ ...DEFAULT_DOCK_SESSION_STORE(), ...session })
 
-  const context = await createDocksContext(clientType, rpc, panelStore)
+  const context = await createDocksContext(clientType, rpc, panelStore, sessionStore)
 
   if (selectedId != null) {
     context.docks.selectedId = selectedId
-    context.panel.store.open = true
+    context.panel.session.open = true
   }
 
   return context as DocksContext & { rpc: MockRpcClient }

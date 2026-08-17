@@ -38,7 +38,8 @@ function edgeStory(position: 'top' | 'right' | 'bottom' | 'left', open = true) {
         {
           entries: categorizedEntries,
           selectedId: open ? 'overview' : null,
-          panel: { mode: 'edge', position, open, height: 40, width: 30 },
+          panel: { mode: 'edge', position, height: 40, width: 30 },
+          session: { open },
         },
         ctx => [
           h(DockEdge, { context: ctx }, { view: ({ entry }: any) => body(entry) }),
@@ -75,7 +76,8 @@ export const CollapsedIdle: Story = {
       {
         entries: categorizedEntries,
         selectedId: null,
-        panel: { mode: 'edge', position: 'bottom', open: false, inactiveTimeout: 0 },
+        panel: { mode: 'edge', position: 'bottom', inactiveTimeout: 0 },
+        session: { open: false },
         settings: { autoCollapseEdgeToolbar: true },
       },
       ctx => [
@@ -93,7 +95,7 @@ export const WithGroup: Story = {
       {
         entries: groupedEntries,
         selectedId: 'nuxt:overview',
-        panel: { mode: 'edge', position: 'bottom', open: true, height: 45 },
+        panel: { mode: 'edge', position: 'bottom', height: 45 },
       },
       ctx => [
         h(DockEdge, { context: ctx }, { view: ({ entry }: any) => body(entry) }),

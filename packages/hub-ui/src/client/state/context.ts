@@ -1,5 +1,5 @@
 import type { DevframeClientCommand, DevframeDockEntry, DevframeDockUserEntry, DevframeRpcClientFunctions, DevframeViewIframe } from '@devframes/hub'
-import type { CommandsContext, DevframeClientContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockPanelStorage, DockRegistration, DockRendererManifest, DocksContext } from '@devframes/hub/client'
+import type { CommandsContext, DevframeClientContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockPanelStorage, DockRegistration, DockRendererManifest, DocksContext, DockSessionStorage } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
 import type { Ref } from 'vue'
@@ -11,7 +11,7 @@ import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_
 import { useBranding } from './branding'
 import { createCommandsContext } from './commands'
 import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, getRegisteredGroupIds, resolveCommandIcon, resolveGroupDefaultChild } from './dock-settings'
-import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, sharedStateToRef, useDocksEntries } from './docks'
+import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE, sharedStateToRef, useDocksEntries } from './docks'
 import { createClientMessagesClient } from './messages-client'
 import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDockPopupOpen } from './popup'
 import { executeSetupScript } from './setup-script'
@@ -21,6 +21,7 @@ export async function createDocksContext(
   clientType: 'embedded' | 'standalone',
   rpc: DevframeRpcClient,
   panelStore?: Ref<DockPanelStorage>,
+  sessionStore?: Ref<DockSessionStorage>,
 ): Promise<DocksContext> {
   if (docksContextByRpc.has(rpc)) {
     return docksContextByRpc.get(rpc)!
@@ -72,10 +73,37 @@ export async function createDocksContext(
     return [...base, BUILTIN_ENTRY_SETTINGS]
   })
 
-  const selectedId = ref<string | null>(null)
+  // Per-tab session UI state (open/selectedId/route). A caller (the embedded and
+  // standalone bootstraps) passes a `sessionStorage`-backed ref so it survives a
+  // reload; stories and the default path fall back to an in-memory ref.
+  sessionStore ||= ref(DEFAULT_DOCK_SESSION_STORE())
+
+  // Snapshot the persisted intent up front, before the pre-handshake untrusted
+  // window (Dock.vue's `open`-gate, a revocation `switchEntry(null)`) can clear
+  // the live session state. Re-applied once the RPC becomes trusted so a reload
+  // lands back on the same dock — see the restore effect near the end.
+  const restoreIntent = {
+    ...sessionStore.value,
+  }
+
+  // `selectedDockId` is backed by the session store so the current selection both
+  // drives the UI and persists across reloads through one source of truth.
+  const selectedDockId = computed<string | null>({
+    get: () => sessionStore.value.selectedDockId,
+    set: (id) => {
+      sessionStore.value.selectedDockId = id
+    },
+  })
+  const selectedDockRoute = computed<string | null>({
+    get: () => sessionStore.value.selectedDockRoute,
+    set: (route) => {
+      sessionStore.value.selectedDockRoute = route
+    },
+  })
+
   const selected = computed(
-    () => entries.value.find(entry => entry.id === selectedId.value)
-      ?? BUILTIN_ENTRIES.find(entry => entry.id === selectedId.value)
+    () => entries.value.find(entry => entry.id === selectedDockId.value)
+      ?? BUILTIN_ENTRIES.find(entry => entry.id === selectedDockId.value)
       ?? null,
   )
 
@@ -119,8 +147,8 @@ export async function createDocksContext(
         // Clearing the selection when the active member vanishes matches the
         // hub reconcile behavior for a removed selected entry (shared-iframe
         // soft-nav §7.5).
-        if (selectedId.value === entry.id)
-          selectedId.value = null
+        if (selectedDockId.value === entry.id)
+          selectedDockId.value = null
       },
     }
   }
@@ -154,9 +182,9 @@ export async function createDocksContext(
   const isDockPopupOpen = useIsDockPopupOpen()
   const getWhenContext = (): WhenContext => ({
     clientType,
-    dockOpen: panelStore.value.open,
+    dockOpen: sessionStore.value.open,
     paletteOpen: commandsContext?.paletteOpen ?? false,
-    dockSelectedId: selectedId.value ?? '',
+    dockSelectedId: selectedDockId.value ?? '',
     popupOpen: isDockPopupOpen.value,
   })
 
@@ -172,13 +200,14 @@ export async function createDocksContext(
 
   const switchEntry = async (id: string | null = null) => {
     if (id == null) {
-      selectedId.value = null
-      panelStore.value.open = false
+      selectedDockId.value = null
+      sessionStore.value.open = false
+      sessionStore.value.selectedDockRoute = null
       return true
     }
     if (id === '~client-auth-notice') {
-      selectedId.value = id
-      panelStore.value.open = true
+      selectedDockId.value = id
+      sessionStore.value.open = true
       return true
     }
     const entry = entries.value.find(e => e.id === id)
@@ -244,13 +273,18 @@ export async function createDocksContext(
     if (entry.type === 'iframe' && entry.frameId && !entry.subTabs)
       frameNavCurrentMember.set(entry.frameId, entry.id)
 
-    selectedId.value = entry.id
-    panelStore.value.open = true
+    selectedDockId.value = entry.id
+    sessionStore.value.open = true
+    // Only an iframe dock owns an address-bar route; ViewIframe keeps
+    // `session.selectedDockRoute` current for it. Clear it for anything else so a stale
+    // route from a previous iframe isn't persisted against a non-iframe dock.
+    if (entry.type !== 'iframe')
+      sessionStore.value.selectedDockRoute = null
     return true
   }
 
   const toggleEntry = async (id: string) => {
-    if (selectedId.value === id)
+    if (selectedDockId.value === id)
       return switchEntry(null)
     return switchEntry(id)
   }
@@ -385,8 +419,8 @@ export async function createDocksContext(
       when: 'dockOpen && !paletteOpen',
       keybindings: [{ key: 'Escape' }],
       action: () => {
-        panelStore.value.open = false
-        selectedId.value = null
+        sessionStore.value.open = false
+        selectedDockId.value = null
       },
     },
     {
@@ -501,15 +535,31 @@ export async function createDocksContext(
     }
   })
 
+  // One-shot boot route (see `DocksPanelContext.consumeBootRoute`): the persisted
+  // address-bar URL is handed back to exactly the iframe dock that was selected
+  // before the reload, once.
+  let bootRoute: string | null = restoreIntent.selectedDockId != null ? restoreIntent.selectedDockRoute : null
+  const consumeBootRoute = (id: string): string | null => {
+    if (bootRoute != null && id === restoreIntent.selectedDockId) {
+      const route = bootRoute
+      bootRoute = null
+      return route
+    }
+    return null
+  }
+
   docksContext = reactive({
     panel: {
       store: panelStore,
+      session: sessionStore,
       isDragging: false,
       isResizing: false,
       isVertical: computed(() => panelStore.value.position === 'left' || panelStore.value.position === 'right'),
+      consumeBootRoute,
     },
     docks: {
-      selectedId,
+      selectedId: selectedDockId,
+      selectedRoute: selectedDockRoute,
       selected,
       entries,
       entryToStateMap: markRaw(dockEntryStateMap),
@@ -551,6 +601,29 @@ export async function createDocksContext(
       return false
     return switchEntry(entry.id)
   })
+
+  // Restore the persisted selection once the RPC is trusted. A reload starts
+  // untrusted, and Dock.vue force-closes the panel during that window (and a
+  // revocation clears the selection), so the durable intent captured in
+  // `restoreIntent` is re-applied here after the handshake — re-running the
+  // dock's setup script and re-opening the panel on the dock the developer left
+  // open. `switchEntry` reads `session.selectedDockRoute` back through `consumeBootRoute`
+  // when the restored iframe boots.
+  const applyRestore = (): void => {
+    if (restoreIntent.open && restoreIntent.selectedDockId != null)
+      void switchEntry(restoreIntent.selectedDockId)
+  }
+  if (rpc.isTrusted) {
+    applyRestore()
+  }
+  else {
+    const off = rpc.events.on('rpc:is-trusted:updated', (isTrusted) => {
+      if (!isTrusted)
+        return
+      off()
+      applyRestore()
+    })
+  }
 
   docksContextByRpc.set(rpc, docksContext)
   return docksContext

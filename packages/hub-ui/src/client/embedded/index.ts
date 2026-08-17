@@ -1,8 +1,8 @@
-import type { DockPanelStorage } from '@devframes/hub/client'
+import type { DockPanelStorage, DockSessionStorage } from '@devframes/hub/client'
 import { getDevframeRpcClient, setDevframeClientContext } from '@devframes/hub/client'
-import { useLocalStorage } from '@vueuse/core'
+import { useLocalStorage, useSessionStorage } from '@vueuse/core'
 import { applyPrimaryColor, setBranding } from '../state/branding'
-import { DEFAULT_DOCK_PANEL_STORE } from '../state/docks'
+import { DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
 import { setupEmbeddedVisibility } from './visibility'
 
 /**
@@ -59,13 +59,23 @@ async function mountDock(): Promise<void> {
     { mergeDefaults: true },
   )
 
+  // Per-tab session UI state (open dock + its route). `sessionStorage`, not
+  // `localStorage`: selection is per-tab navigation state, so two tabs against
+  // the same server keep their own rather than fighting over a shared one. It
+  // survives a reload and is restored after the auth handshake.
+  const session = useSessionStorage<DockSessionStorage>(
+    'devframes-dock-session',
+    DEFAULT_DOCK_SESSION_STORE(),
+    { mergeDefaults: true },
+  )
+
   // Resolve branding before the dock exists so the primary color and logo are
   // in place on the first paint. Read from `ConnectionMeta.configs.ui.branding`,
   // carried by the connection we just established above.
   const branding = setBranding(rpc.connectionMeta.configs?.ui?.branding || {})
 
   const { createDocksContext } = await import('../state/context')
-  const context = await createDocksContext('embedded', rpc, state)
+  const context = await createDocksContext('embedded', rpc, state, session)
   setDevframeClientContext(context)
 
   const { DockEmbedded } = await import('../components/DockEmbedded')

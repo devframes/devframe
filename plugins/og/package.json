@@ -74,7 +74,6 @@
     "@types/node": "catalog:types",
     "@vitejs/plugin-vue": "catalog:build",
     "devframe": "workspace:*",
-    "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
     "storybook": "catalog:storybook",
     "tsdown": "catalog:build",

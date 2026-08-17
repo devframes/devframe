@@ -76,7 +76,6 @@
     "@vitejs/plugin-react-oxc": "catalog:storybook",
     "clsx": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
-    "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
     "next": "catalog:frontend",
     "react": "catalog:frontend",

@@ -64,8 +64,7 @@
   },
   "dependencies": {
     "@devframes/vite": "workspace:*",
-    "cac": "catalog:deps",
-    "get-port-please": "catalog:deps"
+    "cac": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",

@@ -33,7 +33,7 @@ useEventListener(window, 'mousedown', (e: MouseEvent) => {
     return
   if (isDockPopupOpen.value)
     return
-  if (!props.context.panel.store.open || props.context.panel.isDragging || props.context.panel.isResizing)
+  if (!props.context.panel.session.open || props.context.panel.isDragging || props.context.panel.isResizing)
     return
 
   const matched = e.composedPath().find((_el) => {

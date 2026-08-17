@@ -1,7 +1,10 @@
+import type { DockSessionStorage } from '@devframes/hub/client'
 import { getDevframeRpcClient, setDevframeClientContext } from '@devframes/hub/client'
+import { useSessionStorage } from '@vueuse/core'
 import { watchEffect } from 'vue'
 import { applyDocumentHead, applyPrimaryColor, setBranding } from '../state/branding'
 import { isDark } from '../state/color-mode'
+import { DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
 
 // The standalone viewer — a vanilla shell served at the hub base itself
 // (`DevframeHubUi.viewer`): resolve the shared connection, build the docks
@@ -37,8 +40,16 @@ async function main(): Promise<void> {
   const branding = setBranding(rpc.connectionMeta.configs?.ui?.branding || {})
   applyDocumentHead(document, branding)
 
+  // Per-tab session UI state (which dock is open + its route). `sessionStorage`
+  // so a reload restores the selection after the auth handshake, per-tab.
+  const session = useSessionStorage<DockSessionStorage>(
+    'devframes-dock-session',
+    DEFAULT_DOCK_SESSION_STORE(),
+    { mergeDefaults: true },
+  )
+
   const { createDocksContext } = await import('../state/context')
-  const context = await createDocksContext('standalone', rpc)
+  const context = await createDocksContext('standalone', rpc, undefined, session)
   setDevframeClientContext(context)
 
   const { DockStandalone } = await import('../components/DockStandalone')

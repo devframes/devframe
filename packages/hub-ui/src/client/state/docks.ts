@@ -1,5 +1,5 @@
 import type { DevframeDockEntry } from '@devframes/hub'
-import type { DevframeRpcClient, DockEntryState, DockEntryStateEvents, DockPanelStorage } from '@devframes/hub/client'
+import type { DevframeRpcClient, DockEntryState, DockEntryStateEvents, DockPanelStorage, DockSessionStorage } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { Ref, ShallowRef } from 'vue'
 import { createEventEmitter } from 'devframe/utils/events'
@@ -13,8 +13,22 @@ export function DEFAULT_DOCK_PANEL_STORE(): DockPanelStorage {
     top: 0,
     left: 10,
     position: 'bottom',
-    open: false,
     inactiveTimeout: 3_000,
+  }
+}
+
+/**
+ * The per-tab session UI state seed — `open`/`selectedDockId`/`selectedDockRoute`. Persisted to
+ * `sessionStorage` by the embedded and standalone bootstraps so a reload (and
+ * the RPC auth handshake that follows one) restores the panel to the dock and
+ * route the developer left open. Distinct from {@link DEFAULT_DOCK_PANEL_STORE}
+ * (browser-shared `localStorage` geometry), because selection is per-tab.
+ */
+export function DEFAULT_DOCK_SESSION_STORE(): DockSessionStorage {
+  return {
+    open: false,
+    selectedDockId: null,
+    selectedDockRoute: null,
   }
 }
 

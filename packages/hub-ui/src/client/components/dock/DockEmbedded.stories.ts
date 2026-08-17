@@ -69,7 +69,7 @@ export const FloatReducedOverlap: Story = {
 export const Edge: Story = {
   render: () => ({
     setup: () => mountWithContext(
-      { entries: blankEntries, selectedId: 'overview', panel: { mode: 'edge', position: 'bottom', open: true, height: 45 } },
+      { entries: blankEntries, selectedId: 'overview', panel: { mode: 'edge', position: 'bottom', height: 45 } },
       ctx => h(DockEmbedded, { context: ctx }),
     ),
   }),

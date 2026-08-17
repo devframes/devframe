@@ -16,8 +16,30 @@ export interface DockPanelStorage {
   top: number
   left: number
   position: 'left' | 'right' | 'bottom' | 'top'
-  open: boolean
   inactiveTimeout: number
+}
+
+/**
+ * Per-tab UI state of the dock panel, distinct from the browser-shared geometry
+ * in {@link DockPanelStorage}. A viewer persists this to `sessionStorage` so a
+ * reload (or the RPC auth handshake that follows one) restores the panel to
+ * exactly where the developer left it — which dock was open, and the
+ * address-bar route of that dock's iframe. Kept `sessionStorage`-scoped (not
+ * `localStorage`) because it is per-tab navigation state: two tabs open against
+ * the same dev server each keep their own selection rather than fighting over a
+ * shared one. Every field is serializable.
+ */
+export interface DockSessionStorage {
+  /** Whether the dock panel is open. */
+  open: boolean
+  /** The currently selected dock entry id, or `null` when nothing is open. */
+  selectedDockId: string | null
+  /**
+   * The live address-bar URL of the selected iframe dock, restored as that
+   * iframe's boot `src` on the next load so the deep-linked route survives a
+   * reload. `null` when the selected dock has no iframe route to remember.
+   */
+  selectedDockRoute: string | null
 }
 
 export type DockClientType = 'embedded' | 'standalone'
@@ -84,13 +106,30 @@ export type DevframeClientContext = DocksContext
 
 export interface DocksPanelContext {
   store: DockPanelStorage
+  /**
+   * Per-tab session UI state — whether the panel is open, which dock is
+   * selected, and that dock's iframe route. Restored across reloads (and the
+   * auth handshake that follows one) by a viewer that persists it to
+   * `sessionStorage`.
+   */
+  session: DockSessionStorage
   isDragging: boolean
   isResizing: boolean
   readonly isVertical: boolean
+  /**
+   * Claim the persisted {@link DockSessionStorage.selectedDockRoute boot route} for a dock
+   * id, once. Returns the saved address-bar URL only for the dock that was
+   * selected before the last reload — and only on the first call for it — so a
+   * restored iframe boots deep-linked while a later switch to a different dock
+   * (whose live route isn't reflected in {@link DockSessionStorage.selectedDockRoute} yet)
+   * doesn't reuse the stale value. Returns `null` otherwise.
+   */
+  consumeBootRoute?: (id: string) => string | null
 }
 
 export interface DocksEntriesContext {
   selectedId: string | null
+  selectedRoute: string | null
   readonly selected: DevframeDockEntry | null
   entries: DevframeDockEntry[]
   entryToStateMap: Map<string, DockEntryState>

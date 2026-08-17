@@ -86,7 +86,7 @@ const isRpcTrusted = useIsRpcTrusted(context, (isTrusted) => {
   else if (!isTrusted) {
     // On revocation: close current tab and panel
     context.docks.switchEntry(null)
-    context.panel.store.open = false
+    context.panel.session.open = false
   }
 })
 
@@ -183,7 +183,7 @@ const isMinimized = computed(() => {
   // @ts-expect-error compatibility
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0
   return !context.panel.isDragging
-    && !context.panel.store.open
+    && !context.panel.session.open
     && !isHovering.value
     && !isTouchDevice
     && context.panel.store.inactiveTimeout
@@ -218,8 +218,8 @@ whenever(isMinimized, () => {
 })
 
 onMounted(() => {
-  if (context.panel.store.open && !isRpcTrusted.value)
-    context.panel.store.open = false
+  if (context.panel.session.open && !isRpcTrusted.value)
+    context.panel.session.open = false
   if (isRpcTrusted.value)
     bringUp()
   recalculateCounter.value++

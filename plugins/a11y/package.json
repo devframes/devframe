@@ -73,7 +73,6 @@
     "axe-core": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
-    "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
     "solid-js": "catalog:frontend",
     "storybook": "catalog:storybook",

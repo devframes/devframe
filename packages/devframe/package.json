@@ -48,6 +48,7 @@
     "./utils/colors": "./dist/utils/colors.mjs",
     "./utils/crypto-token": "./dist/utils/crypto-token.mjs",
     "./utils/events": "./dist/utils/events.mjs",
+    "./utils/get-port": "./dist/utils/get-port.mjs",
     "./utils/hash": "./dist/utils/hash.mjs",
     "./utils/launch-editor": "./dist/utils/launch-editor.mjs",
     "./utils/nanoid": "./dist/utils/nanoid.mjs",
