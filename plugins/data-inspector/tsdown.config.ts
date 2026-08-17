@@ -35,6 +35,14 @@ export default defineConfig([
     tsconfig,
     dts: false,
     entry: serverEntries,
+    // jora is loaded via a lazy `import('jora')` in `engine/query-engine.ts`
+    // (only paid for on the first query), and inlined here so that lazy
+    // import resolves a chunk shipped inside this package's own `dist`
+    // instead of a `node_modules` lookup consumers would otherwise need to
+    // satisfy just to load the RPC functions. The browser build (SPA,
+    // `engine/index` client entry) keeps jora external/dependency-resolved,
+    // since jora already loads eagerly there for query-editor syntax gating.
+    deps: { alwaysBundle: ['jora'] },
   },
   // One dts graph PER entry: a single-entry graph can never split shared
   // chunks, so declarations always inline and the emitted .d.mts files are

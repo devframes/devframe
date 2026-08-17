@@ -9,10 +9,18 @@
  *     forms (`{ $type: 'Map', value }`), keeping queries portable;
  *   - suggestions come from jora's stat mode, flattened into plain
  *     RPC-safe completion items.
+ *
+ * jora itself loads lazily, on the first query: `import('jora')` only runs
+ * once `runQuery`/`runQueryAtPath`/`suggest` are actually called, so simply
+ * registering the data-inspector's RPC functions (which happens on every
+ * host that sets it up, whether or not anyone opens the panel) never pays
+ * for parsing jora. The node build inlines jora into its own output (see
+ * `tsdown.config.ts`'s `deps.alwaysBundle`) so that on-demand `import()`
+ * resolves a local chunk instead of a `node_modules` lookup.
  */
+import type { Jora } from 'jora'
 import type { NodePath, QueryOutcome, SuggestItem, SuggestOutcome } from './contract'
 import type { NormalizeOptions } from './normalize'
-import jora from 'jora'
 import { navigate, normalize } from './normalize'
 
 export type { SuggestItem, SuggestOutcome } from './contract'
@@ -45,51 +53,62 @@ function isSetLike(v: unknown): v is Set<unknown> {
     && typeof (v as Map<unknown, unknown>).get !== 'function'
 }
 
-const createQuery = jora.setup({
-  methods: {
-    /** Map(-like or normalized tag) -> plain object (string-coerced keys). */
-    fromMap: (v) => {
-      if (isMapLike(v))
-        return Object.fromEntries(v.entries())
-      if (isMapTag(v))
-        return v.value ?? Object.fromEntries((v.entries ?? []).map(e => [String(e.key), e.value]))
-      return v
-    },
-    /** Map(-like or normalized tag) -> [{ key, value }] preserving key identity. */
-    mapEntries: (v) => {
-      if (isMapLike(v))
-        return [...v.entries()].map(([key, value]) => ({ key, value }))
-      if (isMapTag(v)) {
-        if (v.entries)
-          return v.entries
-        return Object.entries(v.value ?? {}).map(([key, value]) => ({ key, value }))
-      }
-      return []
-    },
-    /** Set(-like or normalized tag) -> array. */
-    fromSet: (v) => {
-      if (isSetLike(v))
-        return [...v]
-      if (isSetTag(v))
-        return v.values ?? []
-      return v
-    },
-    /** Constructor name of any value. */
-    typeOf: (v) => {
-      if (v === null)
-        return 'null'
-      if (typeof v !== 'object')
-        return typeof v
-      return (v as object).constructor?.name ?? 'Object'
-    },
-    /** All own keys (incl. non-enumerable), as strings. */
-    ownKeys: v => (v && typeof v === 'object') ? Reflect.ownKeys(v).map(String) : [],
-  },
-})
+type CreateQuery = ReturnType<Jora['setup']>
 
-export function runQuery(target: unknown, query: string, options?: NormalizeOptions): QueryOutcome {
+/**
+ * jora loads on first use and is cached for the process lifetime — a single
+ * `import('jora')` + `setup()`, however many queries follow.
+ */
+let createQueryPromise: Promise<CreateQuery> | undefined
+
+function getCreateQuery(): Promise<CreateQuery> {
+  return createQueryPromise ??= import('jora').then(({ default: jora }) => jora.setup({
+    methods: {
+      /** Map(-like or normalized tag) -> plain object (string-coerced keys). */
+      fromMap: (v) => {
+        if (isMapLike(v))
+          return Object.fromEntries(v.entries())
+        if (isMapTag(v))
+          return v.value ?? Object.fromEntries((v.entries ?? []).map(e => [String(e.key), e.value]))
+        return v
+      },
+      /** Map(-like or normalized tag) -> [{ key, value }] preserving key identity. */
+      mapEntries: (v) => {
+        if (isMapLike(v))
+          return [...v.entries()].map(([key, value]) => ({ key, value }))
+        if (isMapTag(v)) {
+          if (v.entries)
+            return v.entries
+          return Object.entries(v.value ?? {}).map(([key, value]) => ({ key, value }))
+        }
+        return []
+      },
+      /** Set(-like or normalized tag) -> array. */
+      fromSet: (v) => {
+        if (isSetLike(v))
+          return [...v]
+        if (isSetTag(v))
+          return v.values ?? []
+        return v
+      },
+      /** Constructor name of any value. */
+      typeOf: (v) => {
+        if (v === null)
+          return 'null'
+        if (typeof v !== 'object')
+          return typeof v
+        return (v as object).constructor?.name ?? 'Object'
+      },
+      /** All own keys (incl. non-enumerable), as strings. */
+      ownKeys: v => (v && typeof v === 'object') ? Reflect.ownKeys(v).map(String) : [],
+    },
+  }))
+}
+
+export async function runQuery(target: unknown, query: string, options?: NormalizeOptions): Promise<QueryOutcome> {
   try {
     const started = performance.now()
+    const createQuery = await getCreateQuery()
     const raw = createQuery(query)(target)
     const queryMs = Math.round((performance.now() - started) * 100) / 100
     const { data, stats } = normalize(raw, options)
@@ -110,9 +129,10 @@ export function runQuery(target: unknown, query: string, options?: NormalizeOpti
  * 'depth'` marker the client is expanding, so the same filter options must be
  * threaded through (they shift array indices and drop keys).
  */
-export function runQueryAtPath(target: unknown, query: string, path: NodePath, options?: NormalizeOptions): QueryOutcome {
+export async function runQueryAtPath(target: unknown, query: string, path: NodePath, options?: NormalizeOptions): Promise<QueryOutcome> {
   try {
     const started = performance.now()
+    const createQuery = await getCreateQuery()
     const raw = createQuery(query)(target)
     const node = navigate(raw, path, options)
     const queryMs = Math.round((performance.now() - started) * 100) / 100
@@ -140,9 +160,10 @@ interface JoraStatEntry {
  * its candidates in a nested `suggestions` array — flattened here into plain,
  * RPC-safe completion items.
  */
-export function suggest(target: unknown, query: string, pos: number, limit = 30): SuggestOutcome {
+export async function suggest(target: unknown, query: string, pos: number, limit = 30): Promise<SuggestOutcome> {
   try {
     const started = performance.now()
+    const createQuery = await getCreateQuery()
     const statApi = createQuery(query, { tolerant: true, stat: true })(target) as {
       suggestion: (pos: number, opts?: { limit?: number }) => JoraStatEntry[] | null
     }
