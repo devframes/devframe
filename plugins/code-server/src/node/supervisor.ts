@@ -21,7 +21,7 @@ import { randomBytes } from 'node:crypto'
 import { request as httpRequest } from 'node:http'
 import { hostname } from 'node:os'
 import process from 'node:process'
-import { getPort } from 'get-port-please'
+import { getPort } from 'devframe/utils/get-port'
 import {
   DEFAULT_CODE_SERVER_PORT,
   DEFAULT_START_TIMEOUT,

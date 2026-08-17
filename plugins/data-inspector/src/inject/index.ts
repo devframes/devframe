@@ -48,7 +48,7 @@ import { createHostContext } from 'devframe/node'
 import { createInteractiveAuth } from 'devframe/recipes/interactive-auth'
 import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
 import { randomToken } from 'devframe/utils/crypto-token'
-import { getPort } from 'get-port-please'
+import { getPort } from 'devframe/utils/get-port'
 
 /** Discovery file path, relative to the target process's cwd. */
 export const AGENT_DISCOVERY_FILE = 'node_modules/.data-inspector/agent.json'

@@ -1509,9 +1509,6 @@ importers:
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.26(crossws@0.4.10(srvx@0.12.4))
@@ -1605,9 +1602,6 @@ importers:
       floating-vue:
         specifier: catalog:frontend
         version: 5.2.2(vue@3.5.41(typescript@6.0.3))
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.26(crossws@0.4.10(srvx@0.12.4))
@@ -1643,9 +1637,6 @@ importers:
       cac:
         specifier: catalog:deps
         version: 7.0.0
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -1700,9 +1691,6 @@ importers:
       cac:
         specifier: catalog:deps
         version: 7.0.0
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
       jora:
         specifier: catalog:deps
         version: 1.0.0-beta.16
@@ -1833,9 +1821,6 @@ importers:
       colorjs.io:
         specifier: catalog:frontend
         version: 0.7.1
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.26(crossws@0.4.10(srvx@0.12.4))
@@ -1914,9 +1899,6 @@ importers:
       floating-vue:
         specifier: catalog:frontend
         version: 5.2.2(vue@3.5.41(typescript@6.0.3))
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.26(crossws@0.4.10(srvx@0.12.4))
@@ -1992,9 +1974,6 @@ importers:
       floating-vue:
         specifier: catalog:frontend
         version: 5.2.2(vue@3.5.41(typescript@6.0.3))
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.26(crossws@0.4.10(srvx@0.12.4))
@@ -2061,9 +2040,6 @@ importers:
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.26(crossws@0.4.10(srvx@0.12.4))
@@ -2133,9 +2109,6 @@ importers:
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.26(crossws@0.4.10(srvx@0.12.4))

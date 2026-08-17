@@ -102,6 +102,7 @@ const serverEntries = {
   'node/auth': 'src/node/auth/index.ts',
   'node/hub-internals': 'src/node/hub-internals/index.ts',
   'internal/index': 'src/internal/index.ts',
+  'utils/get-port': 'src/utils/get-port.ts',
   'utils/launch-editor': 'src/utils/launch-editor.ts',
   'utils/nostics': 'src/utils/nostics.ts',
   'utils/open': 'src/utils/open.ts',

@@ -78,7 +78,6 @@
     "@xterm/xterm": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
-    "get-port-please": "catalog:deps",
     "h3": "catalog:deps",
     "storybook": "catalog:storybook",
     "svelte": "catalog:frontend",

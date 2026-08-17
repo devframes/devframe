@@ -63,7 +63,6 @@
   },
   "dependencies": {
     "cac": "catalog:deps",
-    "get-port-please": "catalog:deps",
     "jora": "catalog:deps"
   },
   "devDependencies": {
