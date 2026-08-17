@@ -8,6 +8,7 @@ import { DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE, REMOTE_CONNECTION_KEY } from
 import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watchEffect } from 'vue'
 import { sharedStateToRef } from '../../state/docks'
 import ViewAssetsError from './ViewAssetsError.vue'
+import ViewIframeLoading from './ViewIframeLoading.vue'
 
 const props = defineProps<{
   context: DocksContext
@@ -383,15 +384,7 @@ onUnmounted(() => {
       ref="viewFrame"
       class="devframes-view-iframe relative w-full h-full flex-1 items-center justify-center"
     >
-      <div
-        v-if="showLoadingPlaceholder"
-        class="devframes-view-iframe-loading absolute inset-0 flex flex-col items-center justify-center gap-2 bg-base"
-      >
-        <div class="i-ph:circle-notch-duotone animate-spin text-3xl color-faint" />
-        <div class="text-sm color-muted">
-          Loading…
-        </div>
-      </div>
+      <ViewIframeLoading v-if="showLoadingPlaceholder" />
       <ViewAssetsError
         v-if="assetsError"
         :error="assetsError"
