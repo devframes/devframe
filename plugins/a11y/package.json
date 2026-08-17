@@ -26,7 +26,6 @@
     "./client": "./dist/client/index.mjs",
     "./cli": "./dist/cli.mjs",
     "./node": "./dist/node/index.mjs",
-    "./vite": "./dist/vite.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -62,7 +61,6 @@
     }
   },
   "dependencies": {
-    "@devframes/vite": "workspace:*",
     "cac": "catalog:deps"
   },
   "devDependencies": {

@@ -11,10 +11,11 @@ import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import { serveTestContext } from '../../../tests/helpers/serve-test-context'
-import devframe from '../src/index'
+import createA11yDevframe from '../src/index'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
 const SPA_DIST = resolve(HERE, '../dist/spa')
+const devframe = createA11yDevframe()
 
 /** Loud failure if the Solid panel hasn't been built — tests serve `dist/spa`. */
 export function assertClientBuilt(): void {

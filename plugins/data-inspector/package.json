@@ -28,7 +28,6 @@
     "./engine": "./dist/engine/index.mjs",
     "./node": "./dist/node/index.mjs",
     "./registry": "./dist/registry/index.mjs",
-    "./vite": "./dist/vite.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -59,13 +58,13 @@
     }
   },
   "dependencies": {
-    "@devframes/vite": "workspace:*",
     "cac": "catalog:deps",
     "get-port-please": "catalog:deps",
     "jora": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
+    "@devframes/vite": "workspace:*",
     "@discoveryjs/discovery": "catalog:frontend",
     "@iconify-json/ph": "catalog:frontend",
     "@storybook/addon-docs": "catalog:storybook",

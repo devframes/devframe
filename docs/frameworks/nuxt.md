@@ -4,9 +4,9 @@ outline: deep
 
 # Nuxt
 
-The `@devframes/nuxt/dev-spa` module wires a Nuxt-built SPA as a devframe client, and optionally serves the dev-time RPC bridge alongside `nuxt dev`. It runs inside the Nuxt app that consumes your devframe.
+The `@devframes/nuxt/single` module wires a Nuxt-built SPA as a devframe client, and optionally serves the dev-time RPC bridge alongside `nuxt dev`. It runs inside the Nuxt app that consumes your devframe.
 
-`@devframes/nuxt` splits into two scopes: `@devframes/nuxt/dev-spa` (this page — author one devframe with Nuxt) and [`@devframes/nuxt/hub`](#mounting-a-hub) (mount a whole devframes-hub). The bare `@devframes/nuxt` import throws with a pointer to both.
+`@devframes/nuxt` splits into two scopes: `@devframes/nuxt/single` (this page — author one devframe with Nuxt) and [`@devframes/nuxt/hub`](#mounting-a-hub) (mount a whole devframes-hub). The bare `@devframes/nuxt` import throws with a pointer to both.
 
 It handles the four things every Nuxt-powered standalone devtool needs:
 
@@ -19,7 +19,7 @@ It handles the four things every Nuxt-powered standalone devtool needs:
 
 ```ts [nuxt.config.ts]
 export default defineNuxtConfig({
-  modules: ['@devframes/nuxt/dev-spa'],
+  modules: ['@devframes/nuxt/single'],
 })
 ```
 
@@ -47,7 +47,7 @@ export function usePayload() {
 
 ```ts [nuxt.config.ts]
 export default defineNuxtConfig({
-  modules: ['@devframes/nuxt/dev-spa'],
+  modules: ['@devframes/nuxt/single'],
   devframe: {
     baseURL: './', // where the devframe snapshot lives, relative to the page
     skipAppDefaults: false, // opt out of the app.baseURL / vite.base defaults
@@ -66,7 +66,7 @@ Pass your devframe definition to wire `nuxt dev` up to the RPC backend:
 import devframe from './src/devframe' // defineDevframe(...) export
 
 export default defineNuxtConfig({
-  modules: [['@devframes/nuxt/dev-spa', { devframe }]],
+  modules: [['@devframes/nuxt/single', { devframe }]],
 })
 ```
 
@@ -83,7 +83,7 @@ The bridge is **on by default** whenever `devframe` is set. Skip it (back to cli
 
 ```ts [nuxt.config.ts]
 export default defineNuxtConfig({
-  modules: [['@devframes/nuxt/dev-spa', {
+  modules: [['@devframes/nuxt/single', {
     devframe,
     devMiddleware: {
       port: 7777,

@@ -22,9 +22,9 @@ export default defineConfig([{
   // Node/neutral entries — the throwing root, the single-devframe Nuxt module,
   // and the hub Nuxt module.
   entry: {
-    'index': 'src/index.ts',
-    'dev-spa': 'src/dev-spa.ts',
-    'hub': 'src/hub.ts',
+    index: 'src/index.ts',
+    single: 'src/single.ts',
+    hub: 'src/hub.ts',
   },
   clean: true,
   dts: true,
@@ -63,7 +63,7 @@ export default defineConfig([{
       const tsdownPkg = require('tsdown/package.json')
       const { name, version } = require('./package.json')
       // copy runtime types + generate the client-plugin d.ts and the Nuxt
-      // module metadata (describing the default `@devframes/nuxt/dev-spa` module).
+      // module metadata (describing the default `@devframes/nuxt/single` module).
       await Promise.all([
         fs.cp('src/runtime/types.d.ts', 'dist/runtime/types.d.ts'),
         fs.writeFile('dist/runtime/plugin.client.d.ts', `import type { Plugin } from '#app';
@@ -74,7 +74,7 @@ declare const plugin: Plugin<{
 export default plugin;
 `, 'utf-8'),
         fs.writeFile('dist/module.json', `{
-  "name": "${name}/dev-spa",
+  "name": "${name}/single",
   "configKey": "devframe",
   "version": "${version}",
   "builder": {

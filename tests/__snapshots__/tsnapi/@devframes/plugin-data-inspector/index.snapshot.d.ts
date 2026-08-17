@@ -46,6 +46,6 @@ export declare const DATA_SOURCES_SERVICE_ID: string;
 // #endregion
 
 // #region Default Export
-declare const _default: DevframeDefinition;
+declare function _default(_?: DataInspectorDevframeOptions): DevframeDefinition;
 export default _default
 // #endregion

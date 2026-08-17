@@ -16,8 +16,8 @@ import { createH3DevframeHost, createInstanceShell, resolveInstanceRegister } fr
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
-import { cleanDoubleSlashes, joinURL, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
-import { DOCK_RENDERERS_STATE_KEY } from '../constants'
+import { joinURL, withoutLeadingSlash, withTrailingSlash } from 'ufo'
+import { DEVFRAMES_HUB_BASE, DOCK_RENDERERS_STATE_KEY, normalizeHubBase } from '../constants'
 import { createHubContext } from './context'
 import { diagnostics } from './diagnostics'
 
@@ -35,8 +35,8 @@ function normalizeDevframeEntry(entry: DevframeDefinition | HubDevframeEntry): H
   return 'devframe' in entry ? entry : { devframe: entry }
 }
 
-/** Default mount base for a hub instance — one namespace, one catch-all. */
-export const DEVFRAMES_HUB_BASE = '/__devframes/'
+/** Default mount base for a hub instance — re-exported from `../constants` (the client-safe home) for existing importers of this node entry. */
+export { DEVFRAMES_HUB_BASE }
 
 /** Content-type for a UI asset key, inferred from its file extension. */
 function assetContentType(key: string): string {
@@ -333,10 +333,6 @@ function resolveDevframesInput(input: DevframesInput): Promise<HubDevframeEntry[
     .then(arrays => arrays.flat())
 }
 
-function normalizeBase(base: string): string {
-  return cleanDoubleSlashes(withTrailingSlash(withLeadingSlash(base)))
-}
-
 /**
  * Validate the renderer-module registrations fail-fast: route-safe types
  * (each becomes the `<base>__renderers/<type>.mjs` URL segment), one module
@@ -401,7 +397,7 @@ function renderClientImportsModule(ctx: DevframeHubContext): string {
  * through {@link HubInstance.attach}.
  */
 export function initHub(options: InitHubOptions): HubInstance {
-  const base = normalizeBase(options.base)
+  const base = normalizeHubBase(options.base)
   const baseNoSlash = base.slice(0, -1)
   const app = new H3()
   const cwd = options.cwd ?? process.cwd()

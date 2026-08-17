@@ -67,6 +67,4 @@ export function createCodeServerDevframe(options: CodeServerOptions = {}): Devfr
   })
 }
 
-/** Default-configured code-server devframe. */
-const codeServer: DevframeDefinition = createCodeServerDevframe()
-export default codeServer
+export default createCodeServerDevframe

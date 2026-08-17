@@ -25,7 +25,6 @@
     "./client": "./dist/client/index.mjs",
     "./cli": "./dist/cli.mjs",
     "./node": "./dist/node/index.mjs",
-    "./vite": "./dist/vite.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -56,13 +55,13 @@
     }
   },
   "dependencies": {
-    "@devframes/vite": "workspace:*",
     "cac": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",
     "@devframes/plugin-inspect--assets": "workspace:*",
+    "@devframes/vite": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
     "@standard-schema/spec": "catalog:deps",
     "@storybook/addon-docs": "catalog:storybook",

@@ -4,14 +4,14 @@ outline: deep
 
 # Vite
 
-`@devframes/vite` splits into two scopes: **`@devframes/vite/dev-spa`** (this page — dev-serve one devframe's SPA with Vite) and [**`@devframes/vite/hub`**](#mounting-a-hub) (mount a whole devframes-hub inside a Vite app). The bare `@devframes/vite` import throws with a pointer to both.
+`@devframes/vite` splits into two scopes: **`@devframes/vite/single`** (this page — dev-serve one devframe's SPA with Vite) and [**`@devframes/vite/hub`**](#mounting-a-hub) (mount a whole devframes-hub inside a Vite app). The bare `@devframes/vite` import throws with a pointer to both.
 
-The `dev-spa` scope exports two Vite plugins for mounting a single devframe inside an existing Vite dev server — `devframeVitePlugin` (static mount) and `devframeViteBridge` (RPC bridge) — plus `devframeVite`, a convenience wrapper that picks between them. Used by [`@devframes/nuxt`](./nuxt) and available for any Vite-based host (Astro, SolidStart, plain Vite apps).
+The `single` scope exports two Vite plugins for mounting a single devframe inside an existing Vite dev server — `devframeVitePlugin` (static mount) and `devframeViteBridge` (RPC bridge) — plus `devframeVite`, a convenience wrapper that picks between them. Used by [`@devframes/nuxt`](./nuxt) and available for any Vite-based host (Astro, SolidStart, plain Vite apps).
 
 This sits below the [`vite` adapter](/adapters/vite) on the abstraction ladder: the adapter targets the full Vite DevTools dock; these are the lower-level Vite plugins you reach for when you want a devframe to ride along with an existing app's dev server without the DevTools dock.
 
 ```ts
-import { devframeViteBridge, devframeVitePlugin } from '@devframes/vite/dev-spa'
+import { devframeViteBridge, devframeVitePlugin } from '@devframes/vite/single'
 import { defineConfig } from 'vite'
 import devframe from './devframe'
 
@@ -26,7 +26,7 @@ export default defineConfig({
 
 ## `devframeVitePlugin` — static mount
 
-Mounts `def.cli.distDir` at `options.base` (`/__<id>/` by default) with SPA fallback. No RPC server is started — useful when you only need the SPA bundle served from a known path.
+Mounts `def.cli.distDir` at `options.base` (`/__<id>/` by default) with SPA fallback. No RPC server is started — useful when you only need the SPA bundle served from a known path. `distDir` may be a local directory or a [remote assets](/guide/client-assets) package.
 
 | Option | Default | Description |
 |--------|---------|-------------|

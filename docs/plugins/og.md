@@ -22,14 +22,32 @@ pnpx @devframes/plugin-og
 
 ## Mount into a Vite host
 
+For a [Vite DevTools](https://devtools.vite.dev) app, mount the panel with `createPluginFromDevframe` from `@vitejs/devtools-kit/node`:
+
 ```ts
 // vite.config.ts
-import { ogVitePlugin } from '@devframes/plugin-og/vite'
+import createOgDevframe from '@devframes/plugin-og'
+import { createPluginFromDevframe } from '@vitejs/devtools-kit/node'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    ogVitePlugin(),
+    createPluginFromDevframe(createOgDevframe()),
+  ],
+})
+```
+
+Without Vite DevTools, `devframeVite` from `@devframes/vite/single` mounts the panel directly, no DevTools dock required:
+
+```ts
+// vite.config.ts
+import createOgDevframe from '@devframes/plugin-og'
+import { devframeVite } from '@devframes/vite/single'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [
+    devframeVite(createOgDevframe()),
   ],
 })
 ```

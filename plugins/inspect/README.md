@@ -28,12 +28,13 @@ reference and for poking at the introspection RPCs themselves.
 
 ```ts
 // vite.config.ts
-import { inspectVitePlugin } from '@devframes/plugin-inspect/vite'
+import createInspectDevframe from '@devframes/plugin-inspect'
+import { devframeVite } from '@devframes/vite/single'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    inspectVitePlugin(),
+    devframeVite(createInspectDevframe()),
   ],
 })
 ```

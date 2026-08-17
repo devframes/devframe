@@ -6,6 +6,6 @@ export function createGitDevframe(_) {}
 // #endregion
 
 // #region Default Export
-var _default
+function _default(_) {}
 export default _default
 // #endregion

@@ -90,7 +90,7 @@ For the Nuxt side, add the devframe helper module — it sets `app.baseURL: './'
 ```ts [nuxt.config.ts]
 export default defineNuxtConfig({
   ssr: false,
-  modules: ['@devframes/nuxt/dev-spa'],
+  modules: ['@devframes/nuxt/single'],
   nitro: {
     preset: 'static',
     output: { dir: './dist' }, // matches createCac's distDir of ./dist/public

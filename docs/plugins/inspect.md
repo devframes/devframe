@@ -42,14 +42,32 @@ Opens the inspector against a fresh standalone devframe connection — handy as 
 
 ## Mount into a Vite host
 
+For a [Vite DevTools](https://devtools.vite.dev) app, mount the panel with `createPluginFromDevframe` from `@vitejs/devtools-kit/node`:
+
 ```ts
 // vite.config.ts
-import { inspectVitePlugin } from '@devframes/plugin-inspect/vite'
+import createInspectDevframe from '@devframes/plugin-inspect'
+import { createPluginFromDevframe } from '@vitejs/devtools-kit/node'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    inspectVitePlugin(),
+    createPluginFromDevframe(createInspectDevframe()),
+  ],
+})
+```
+
+Without Vite DevTools, `devframeVite` from `@devframes/vite/single` mounts the panel directly, no DevTools dock required:
+
+```ts
+// vite.config.ts
+import createInspectDevframe from '@devframes/plugin-inspect'
+import { devframeVite } from '@devframes/vite/single'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [
+    devframeVite(createInspectDevframe()),
   ],
 })
 ```

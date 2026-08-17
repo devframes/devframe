@@ -1,9 +1,7 @@
 import type { ViteDevframeHubOptions } from '@devframes/vite/hub'
+import { DEVFRAMES_HUB_BASE, normalizeHubBase } from '@devframes/hub/constants'
 import { viteDevframeHub } from '@devframes/vite/hub'
 import { addVitePlugin, createResolver, defineNuxtModule } from '@nuxt/kit'
-
-/** Default hub mount base — mirrors `@devframes/hub`'s `DEVFRAMES_HUB_BASE`. */
-const DEVFRAMES_HUB_BASE = '/__devframes/'
 
 export interface DevframeNuxtHubOptions extends Omit<ViteDevframeHubOptions, 'quiet'> {
   /**
@@ -48,7 +46,7 @@ function recommendNuxtDevtools(): void {
  * integrates the same hub protocol natively and is the recommended path for a
  * Nuxt app, so this module emits a one-time notice to that effect (silence it
  * with `{ quiet: true }`). To wire a Nuxt app up as a single devframe client,
- * reach for `@devframes/nuxt/dev-spa` instead.
+ * reach for `@devframes/nuxt/single` instead.
  *
  * ```ts [nuxt.config.ts]
  * export default defineNuxtConfig({
@@ -72,7 +70,7 @@ export default defineNuxtModule<ModuleOptions>({
 
     createResolver(import.meta.url)
 
-    const base = normalizeBase(options.base ?? DEVFRAMES_HUB_BASE)
+    const base = normalizeHubBase(options.base ?? DEVFRAMES_HUB_BASE)
     const { injectEmbedded, quiet: _quiet, ...hubOptions } = options
 
     // Wire the hub into Nuxt's own Vite dev server. `quiet: true` suppresses
@@ -94,10 +92,3 @@ export default defineNuxtModule<ModuleOptions>({
     }
   },
 })
-
-function normalizeBase(base: string): string {
-  let out = base.startsWith('/') ? base : `/${base}`
-  if (!out.endsWith('/'))
-    out = `${out}/`
-  return out
-}

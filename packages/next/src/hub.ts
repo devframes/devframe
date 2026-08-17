@@ -1,6 +1,6 @@
 import type { DevframeHubUi, HubInstance, InitHubOptions } from '@devframes/hub/initiate'
-import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
-import { cleanDoubleSlashes, withLeadingSlash, withTrailingSlash } from 'ufo'
+import { DEVFRAMES_HUB_BASE, normalizeHubBase } from '@devframes/hub/constants'
+import { initHub } from '@devframes/hub/initiate'
 
 // The "bring your own DevframeHost" seam for `initHub({ context })`.
 export type {
@@ -80,7 +80,7 @@ export interface NextDevframeHubOptions {
  * instead of leaking a side-car per reload.
  */
 export async function createNextDevframeHub(options: NextDevframeHubOptions = {}): Promise<HubInstance> {
-  const base = normalizeBase(options.base ?? DEVFRAMES_HUB_BASE)
+  const base = normalizeHubBase(options.base ?? DEVFRAMES_HUB_BASE)
 
   const ui = options.ui === false
     ? undefined
@@ -149,7 +149,7 @@ function hubRegistry(): Map<string, Promise<HubInstance>> {
  * ```
  */
 export function nextDevframeHub(options: NextDevframeHubOptions = {}): NextDevframeHubHandle {
-  const base = normalizeBase(options.base ?? DEVFRAMES_HUB_BASE)
+  const base = normalizeHubBase(options.base ?? DEVFRAMES_HUB_BASE)
 
   const ready = (): Promise<HubInstance> => {
     const registry = hubRegistry()
@@ -187,8 +187,4 @@ export function nextDevframeHub(options: NextDevframeHubOptions = {}): NextDevfr
 async function loadDefaultUi(): Promise<DevframeHubUi> {
   const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/hub-ui')
   return (mod.createUi as () => DevframeHubUi)()
-}
-
-function normalizeBase(base: string): string {
-  return cleanDoubleSlashes(withTrailingSlash(withLeadingSlash(base)))
 }

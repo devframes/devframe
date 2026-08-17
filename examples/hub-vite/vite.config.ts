@@ -2,16 +2,16 @@ import type { DevframeHubContext } from '@devframes/hub/node'
 import { defineHubRpcFunction } from '@devframes/hub'
 import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
-import a11yDevframe, { a11yAgentBundlePath } from '@devframes/plugin-a11y'
-import assetsDevframe from '@devframes/plugin-assets'
-import codeServerDevframe from '@devframes/plugin-code-server'
+import createA11yDevframe, { a11yAgentBundlePath } from '@devframes/plugin-a11y'
+import createAssetsDevframe from '@devframes/plugin-assets'
+import createCodeServerDevframe from '@devframes/plugin-code-server'
 import { createDataInspectorDevframe } from '@devframes/plugin-data-inspector'
 import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
-import gitDevframe from '@devframes/plugin-git'
-import inspectDevframe from '@devframes/plugin-inspect'
-import messagesDevframe from '@devframes/plugin-messages'
-import ogDevframe from '@devframes/plugin-og'
-import terminalsDevframe from '@devframes/plugin-terminals'
+import createGitDevframe from '@devframes/plugin-git'
+import createInspectDevframe from '@devframes/plugin-inspect'
+import createMessagesDevframe from '@devframes/plugin-messages'
+import createOgDevframe from '@devframes/plugin-og'
+import createTerminalsDevframe from '@devframes/plugin-terminals'
 import { viteDevframeHub } from '@devframes/vite/hub'
 import { createDashboardView } from 'json-render/dashboard'
 import UnoCSS from 'unocss/vite'
@@ -21,6 +21,14 @@ import demoDevframe from './src/devframe'
 import tabbedToolDevframe from './src/tabbed-tool'
 import { unrenderedDockEntry } from './src/unrendered-dock'
 
+const a11yDevframe = createA11yDevframe()
+const assetsDevframe = createAssetsDevframe()
+const codeServerDevframe = createCodeServerDevframe()
+const gitDevframe = createGitDevframe()
+const inspectDevframe = createInspectDevframe()
+const messagesDevframe = createMessagesDevframe()
+const ogDevframe = createOgDevframe()
+const terminalsDevframe = createTerminalsDevframe()
 // Colon-free id override: the hub instance derives each frame's mount path
 // (`/__devframes/<id>/`) from its id, and `:` - which the plugin's default id
 // (`devframes:plugin:data-inspector`) carries - is a route-param marker to

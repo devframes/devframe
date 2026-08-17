@@ -1,5 +1,5 @@
 import type { DevframeDefinition } from 'devframe'
-import { devframeViteBridge } from '@devframes/vite/dev-spa'
+import { devframeViteBridge } from '@devframes/vite/single'
 import { addPlugin, addVitePlugin, createResolver, defineNuxtModule } from '@nuxt/kit'
 
 export interface DevframeNuxtModuleOptions {

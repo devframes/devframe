@@ -8,7 +8,7 @@ import {
   DEVFRAME_RPC_DUMP_MANIFEST_FILENAME,
 } from 'devframe/constants'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import devframe from '../src/index'
+import createA11yDevframe from '../src/index'
 import { assertClientBuilt } from './_utils'
 
 interface DumpManifest {
@@ -31,7 +31,7 @@ describe('static build (CLI build surface)', () => {
   })
 
   it('copies the SPA with relative asset URLs', async () => {
-    await createBuild(devframe, { outDir: outBuild })
+    await createBuild(createA11yDevframe(), { outDir: outBuild })
     const html = await readFile(path.join(outBuild, 'index.html'), 'utf-8')
     expect(html).toContain('<base href="./" />')
     expect(html).toMatch(/src="\.\/assets\/[^"]+\.js"/)

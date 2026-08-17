@@ -136,6 +136,4 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
   })
 }
 
-const assetsDevframe: DevframeDefinition = createAssetsDevframe()
-
-export default assetsDevframe
+export default createAssetsDevframe

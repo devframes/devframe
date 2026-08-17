@@ -9,19 +9,19 @@ outline: deep
 
 `@devframes/next` hosts devframes from a Next.js App Router app. Next runs on webpack/Turbopack rather than Vite, so it hosts through a route handler instead of the [Vite](./vite): the package serves each devframe's SPA and its `__connection.json` from a single `fetch` handler your catch-all route delegates to, reusing devframe's own [`serveStaticHandler`](/adapters/dev) for SPA fallback, content types, and path-traversal guarding.
 
-`@devframes/next` splits into two scopes: `@devframes/next/dev-spa` (author one devframe with Next) and [`@devframes/next/hub`](#mounting-a-hub) (mount a whole devframes-hub). The bare `@devframes/next` import throws with a pointer to both.
+`@devframes/next` splits into two scopes: `@devframes/next/single` (author one devframe with Next) and [`@devframes/next/hub`](#mounting-a-hub) (mount a whole devframes-hub). The bare `@devframes/next` import throws with a pointer to both.
 
-The `dev-spa` scope comes in two parts:
+The `single` scope comes in two parts:
 
 1. **`withDevframe()`** — applies the one Next config setting a devframe host needs.
 2. **`createDevframeNextHandler()`** — hosts a single devframe (the common case).
 
-Plus a React client surface at `@devframes/next/dev-spa/client`.
+Plus a React client surface at `@devframes/next/single/client`.
 
 ## Config
 
 ```ts [next.config.mjs]
-import { withDevframe } from '@devframes/next/dev-spa'
+import { withDevframe } from '@devframes/next/single'
 
 export default withDevframe({
   // ...your own Next config
@@ -35,7 +35,7 @@ export default withDevframe({
 `createDevframeNextHandler(definition)` statically serves the devframe's built SPA and starts a side-car RPC/WebSocket server, advertising it at `<base>/__connection.json`. Delegate your catch-all route to its `fetch`:
 
 ```ts [app/__my-tool/[[...path]]/route.ts]
-import { createDevframeNextHandler } from '@devframes/next/dev-spa'
+import { createDevframeNextHandler } from '@devframes/next/single'
 import myDevframe from '@/devframe'
 
 export const runtime = 'nodejs'
@@ -88,11 +88,11 @@ export async function GET(request: Request): Promise<Response> {
 
 ## React client
 
-`@devframes/next/dev-spa/client` connects to the RPC backend and provides the client to your component tree — the React counterpart to `@devframes/nuxt`'s `$rpc` plugin. Children render immediately, so your shell and a connection indicator stay visible while the client connects.
+`@devframes/next/single/client` connects to the RPC backend and provides the client to your component tree — the React counterpart to `@devframes/nuxt`'s `$rpc` plugin. Children render immediately, so your shell and a connection indicator stay visible while the client connects.
 
 ```tsx [app/providers.tsx]
 'use client'
-import { RpcProvider } from '@devframes/next/dev-spa/client'
+import { RpcProvider } from '@devframes/next/single/client'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return <RpcProvider baseURL="/__my-tool/">{children}</RpcProvider>
@@ -103,7 +103,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 ```tsx [app/panel.tsx]
 'use client'
-import { useRpc, useRpcStatus } from '@devframes/next/dev-spa/client'
+import { useRpc, useRpcStatus } from '@devframes/next/single/client'
 
 export function Panel() {
   const rpc = useRpc()?.scope('my-tool:')

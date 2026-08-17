@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import { devframeViteBridge } from '@devframes/vite/dev-spa'
+import { devframeViteBridge } from '@devframes/vite/single'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'

@@ -15,7 +15,6 @@ const clientEntries = {
 const serverEntries = {
   'index': 'src/index.ts',
   'cli': 'src/cli.ts',
-  'vite': 'src/vite.ts',
   'node/index': 'src/node/index.ts',
   'registry/index': 'src/registry/index.ts',
   'inject/index': 'src/inject/index.ts',

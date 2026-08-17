@@ -146,6 +146,6 @@ export declare function createGitDevframe(_?: GitDevframeOptions): DevframeDefin
 // #endregion
 
 // #region Default Export
-declare const _default: DevframeDefinition;
+declare function _default(_?: GitDevframeOptions): DevframeDefinition;
 export default _default
 // #endregion

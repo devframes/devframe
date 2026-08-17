@@ -11,6 +11,6 @@ export var DATA_SOURCES_SERVICE_ID /* const */
 // #endregion
 
 // #region Default Export
-var _default
+function _default(_) {}
 export default _default
 // #endregion

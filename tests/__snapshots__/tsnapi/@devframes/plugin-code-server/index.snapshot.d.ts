@@ -87,6 +87,6 @@ export declare const STATE_KEY: string;
 // #endregion
 
 // #region Default Export
-declare const _default: DevframeDefinition;
+declare function _default(_?: CodeServerOptions): DevframeDefinition;
 export default _default
 // #endregion

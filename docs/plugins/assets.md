@@ -28,14 +28,32 @@ pnpx @devframes/plugin-assets --read-only # disable upload / rename / delete / m
 
 ## Mount into a Vite host
 
+For a [Vite DevTools](https://devtools.vite.dev) app, mount the panel with `createPluginFromDevframe` from `@vitejs/devtools-kit/node`:
+
 ```ts
 // vite.config.ts
-import { assetsVitePlugin } from '@devframes/plugin-assets/vite'
+import createAssetsDevframe from '@devframes/plugin-assets'
+import { createPluginFromDevframe } from '@vitejs/devtools-kit/node'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    assetsVitePlugin(),
+    createPluginFromDevframe(createAssetsDevframe()),
+  ],
+})
+```
+
+Without Vite DevTools, `devframeVite` from `@devframes/vite/single` mounts the panel directly, no DevTools dock required:
+
+```ts
+// vite.config.ts
+import createAssetsDevframe from '@devframes/plugin-assets'
+import { devframeVite } from '@devframes/vite/single'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [
+    devframeVite(createAssetsDevframe()),
   ],
 })
 ```

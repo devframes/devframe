@@ -50,6 +50,6 @@ export declare const DEFAULT_ALLOWED_UPLOAD_EXTENSIONS: readonly string[];
 // #endregion
 
 // #region Default Export
-declare const _default: DevframeDefinition;
+declare function _default(_?: AssetsDevframeOptions): DevframeDefinition;
 export default _default
 // #endregion

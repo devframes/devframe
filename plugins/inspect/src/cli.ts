@@ -1,6 +1,6 @@
 import type { CacHandle } from 'devframe/adapters/cac'
 import { createCac } from 'devframe/adapters/cac'
-import inspectDevframe from './index'
+import createInspectDevframe from './index'
 
 /**
  * Build the standalone CLI for the inspector — backs the package `bin`
@@ -9,5 +9,5 @@ import inspectDevframe from './index'
  * `dev` / `build` / `mcp` command shell.
  */
 export function createInspectCli(): CacHandle {
-  return createCac(inspectDevframe)
+  return createCac(createInspectDevframe())
 }
