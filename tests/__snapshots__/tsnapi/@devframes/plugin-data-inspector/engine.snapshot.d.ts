@@ -148,12 +148,12 @@ export declare function normalize(_: unknown, _?: NormalizeOptions): {
   data: unknown;
   stats: NormalizeStats;
 };
-export declare function runQuery(_: unknown, _: string, _?: NormalizeOptions): QueryOutcome;
-export declare function runQueryAtPath(_: unknown, _: string, _: NodePath, _?: NormalizeOptions): QueryOutcome;
+export declare function runQuery(_: unknown, _: string, _?: NormalizeOptions): Promise<QueryOutcome>;
+export declare function runQueryAtPath(_: unknown, _: string, _: NodePath, _?: NormalizeOptions): Promise<QueryOutcome>;
 export declare function skeletonOf(_: unknown, _?: SkeletonOptions): {
   skeleton: unknown;
   nodes: number;
   ms: number;
 };
-export declare function suggest(_: unknown, _: string, _: number, _?: number): SuggestOutcome;
+export declare function suggest(_: unknown, _: string, _: number, _?: number): Promise<SuggestOutcome>;
 // #endregion

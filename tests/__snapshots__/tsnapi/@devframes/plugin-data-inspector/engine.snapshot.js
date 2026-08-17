@@ -6,8 +6,8 @@ export function applyWrite(_, _, _) {}
 export function isExcludedKey(_, _) {}
 export function navigate(_, _, _) {}
 export function normalize(_, _) {}
-export function runQuery(_, _, _) {}
-export function runQueryAtPath(_, _, _, _) {}
+export async function runQuery(_, _, _) {}
+export async function runQueryAtPath(_, _, _, _) {}
 export function skeletonOf(_, _) {}
-export function suggest(_, _, _, _) {}
+export async function suggest(_, _, _, _) {}
 // #endregion
