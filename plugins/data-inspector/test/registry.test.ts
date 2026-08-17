@@ -158,7 +158,7 @@ describe('example source', () => {
     const data = await resolveSourceData(getDataSource(entry.id)!)
     const { runQuery } = await import('../src/engine/query-engine')
     for (const recipe of entry.queries ?? []) {
-      const out = runQuery(data, recipe.query.trim() || '$', recipe)
+      const out = await runQuery(data, recipe.query.trim() || '$', recipe)
       expect(out.ok, `suggested query "${recipe.title}" must run`).toBe(true)
     }
   })

@@ -101,8 +101,8 @@ describe('depth truncation + lazy expand', () => {
     expect(navigate(g, [['k', 'map'], ['mv', 0]])).toBe('v')
   })
 
-  it('runQueryAtPath re-runs and returns a fresh slice of the subtree', () => {
-    const out = runQueryAtPath(deep(), '$', [['k', 'level0'], ['k', 'level1']], { maxDepth: 3 })
+  it('runQueryAtPath re-runs and returns a fresh slice of the subtree', async () => {
+    const out = await runQueryAtPath(deep(), '$', [['k', 'level0'], ['k', 'level1']], { maxDepth: 3 })
     expect(out.ok).toBe(true)
     if (out.ok) {
       // The subtree normalizes from level2 with a fresh budget, reaching the leaf.
@@ -110,45 +110,45 @@ describe('depth truncation + lazy expand', () => {
     }
   })
 
-  it('runQueryAtPath fails soft on a broken base query', () => {
-    expect(runQueryAtPath(deep(), 'nope.method()', []).ok).toBe(false)
+  it('runQueryAtPath fails soft on a broken base query', async () => {
+    expect((await runQueryAtPath(deep(), 'nope.method()', [])).ok).toBe(false)
   })
 })
 
 describe('runQuery (live)', () => {
-  it('queries live Maps and Sets through the bridge methods', () => {
-    const out = runQuery(liveGraph(), 'store.entries.mapEntries().key')
+  it('queries live Maps and Sets through the bridge methods', async () => {
+    const out = await runQuery(liveGraph(), 'store.entries.mapEntries().key')
     expect(out).toMatchObject({ ok: true, result: ['a', 'b'] })
-    const set = runQuery(liveGraph(), 'tags.fromSet()')
+    const set = await runQuery(liveGraph(), 'tags.fromSet()')
     expect(set).toMatchObject({ ok: true, result: ['alpha', 'beta'] })
   })
 
-  it('reports payload size and timings', () => {
-    const out = runQuery(liveGraph(), 'store.name')
+  it('reports payload size and timings', async () => {
+    const out = await runQuery(liveGraph(), 'store.name')
     expect(out.ok && out.stats.payloadBytes).toBeGreaterThan(0)
   })
 
-  it('fails soft with an error envelope', () => {
-    const out = runQuery(liveGraph(), 'nope.method()')
+  it('fails soft with an error envelope', async () => {
+    const out = await runQuery(liveGraph(), 'nope.method()')
     expect(out.ok).toBe(false)
   })
 })
 
 describe('runQuery (static portability)', () => {
-  it('the same query works against the NORMALIZED form of the data', () => {
+  it('the same query works against the NORMALIZED form of the data', async () => {
     const { data } = normalize(liveGraph())
     // `store.entries` is now a `{ $type: 'Map', value }` tag; the bridge
     // methods duck-type it so live-authored queries stay portable.
-    const out = runQuery(data, 'store.entries.mapEntries().key')
+    const out = await runQuery(data, 'store.entries.mapEntries().key')
     expect(out).toMatchObject({ ok: true, result: ['a', 'b'] })
-    const set = runQuery(data, 'tags.fromSet()')
+    const set = await runQuery(data, 'tags.fromSet()')
     expect(set).toMatchObject({ ok: true, result: ['alpha', 'beta'] })
   })
 })
 
 describe('suggest', () => {
-  it('returns flattened, prefix-ranged completion items', () => {
-    const out = suggest({ foo: { bar: 1, baz: 2 } }, 'foo.', 4)
+  it('returns flattened, prefix-ranged completion items', async () => {
+    const out = await suggest({ foo: { bar: 1, baz: 2 } }, 'foo.', 4)
     expect(out.ok).toBe(true)
     expect(out.suggestions.map(s => s.value)).toEqual(['bar', 'baz'])
     expect(out.suggestions[0]).toMatchObject({ from: 4, to: 4, current: '' })

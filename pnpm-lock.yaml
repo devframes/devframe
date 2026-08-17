@@ -85,9 +85,6 @@ catalogs:
     immer:
       specifier: ^11.1.16
       version: 11.1.16
-    jora:
-      specifier: ^1.0.0-beta.16
-      version: 1.0.0-beta.16
     launch-editor:
       specifier: ^2.14.1
       version: 2.14.1
@@ -268,6 +265,9 @@ catalogs:
     '@antfu/utils':
       specifier: ^9.3.0
       version: 9.3.0
+    jora:
+      specifier: ^1.0.0-beta.16
+      version: 1.0.0-beta.16
     ua-parser-modern:
       specifier: ^0.1.1
       version: 0.1.1
@@ -1691,9 +1691,6 @@ importers:
       cac:
         specifier: catalog:deps
         version: 7.0.0
-      jora:
-        specifier: catalog:deps
-        version: 1.0.0-beta.16
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -1734,6 +1731,9 @@ importers:
       floating-vue:
         specifier: catalog:frontend
         version: 5.2.2(vue@3.5.41(typescript@6.0.3))
+      jora:
+        specifier: catalog:inlined
+        version: 1.0.0-beta.16
       reka-ui:
         specifier: catalog:frontend
         version: 2.10.3(vue@3.5.41(typescript@6.0.3))

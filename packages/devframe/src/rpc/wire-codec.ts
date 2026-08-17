@@ -6,7 +6,6 @@ import { strictJsonStringify, STRUCTURED_CLONE_PREFIX } from './serialization'
  * The per-connection `serialize`/`deserialize` pair for a live RPC wire.
  *
  * @internal
- * implementations; not part of the stable public API.
  */
 export interface RpcWireCodec {
   serialize: (msg: any) => string
@@ -25,7 +24,6 @@ const EMPTY_WIRE_DEFS: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonS
  * don't collide across connections.
  *
  * @internal
- * implementations; not part of the stable public API.
  */
 export function createRpcWireCodec(
   definitions: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>> = EMPTY_WIRE_DEFS,
@@ -72,7 +70,6 @@ export function createRpcWireCodec(
  * handed to birpc proper.
  *
  * @internal
- * implementations; not part of the stable public API.
  */
 export function peekRpcWireFrame(raw: string): { t?: string, i?: string } {
   try {

@@ -61,6 +61,10 @@ function createMockRpc(
 
   const rpc = {
     events,
+    // Server-advertised connection metadata. Stories have no live server, so
+    // advertise the `static` backend with no `configs` — the context reads
+    // `connectionMeta.configs?.ui?...` optionally, so an empty meta is enough.
+    connectionMeta: { backend: 'static' as const },
     get isTrusted() {
       return trusted
     },

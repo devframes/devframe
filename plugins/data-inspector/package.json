@@ -62,8 +62,7 @@
     }
   },
   "dependencies": {
-    "cac": "catalog:deps",
-    "jora": "catalog:deps"
+    "cac": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
@@ -79,6 +78,7 @@
     "devframe": "workspace:*",
     "dompurify": "catalog:frontend",
     "floating-vue": "catalog:frontend",
+    "jora": "catalog:inlined",
     "reka-ui": "catalog:frontend",
     "splitpanes": "catalog:frontend",
     "storybook": "catalog:storybook",

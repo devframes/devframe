@@ -89,7 +89,6 @@ catalogs:
     hono: ^4.13.1
     image-meta: ^0.2.2
     immer: ^11.1.16
-    jora: ^1.0.0-beta.16
     launch-editor: ^2.14.1
     mrmime: ^2.0.1
     nitro: ^3.0.260610-beta
@@ -152,6 +151,7 @@ catalogs:
     vue: ^3.5.41
   inlined:
     '@antfu/utils': ^9.3.0
+    jora: ^1.0.0-beta.16
     ua-parser-modern: ^0.1.1
   storybook:
     '@storybook/addon-a11y': *storybook

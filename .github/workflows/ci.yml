@@ -14,13 +14,9 @@ jobs:
     uses: sxzz/workflows/.github/workflows/unit-test.yml@main
     with:
       build: pnpm run ci:build
-      # The Build step above already produced a fresh dist/ for this exact
-      # checkout, so skip `test`'s own `build && vitest` - running plain
-      # vitest halves the number of full-monorepo `turbo run build` passes
-      # per job, which is where the flaky Windows native-toolchain crash
-      # (see scripts/ci-retry.ts) shows up.
       test: pnpm exec vitest
       lint: pnpm run lint && pnpm run knip
+      build-for-lint: true
 
   e2e:
     runs-on: ubuntu-latest
