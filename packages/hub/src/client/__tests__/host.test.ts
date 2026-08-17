@@ -74,7 +74,7 @@ describe('createDevframeClientHost', () => {
     expect(getDevframeClientContext()).toBe(host.context)
     expect(host.context.clientType).toBe('standalone')
     expect(host.context.rpc).toBe(rpc)
-    expect(host.context.panel.store.open).toBe(true)
+    expect(host.context.panel.session.open).toBe(true)
     expect(host.context.when.context).toMatchObject({
       clientType: 'standalone',
       dockOpen: true,

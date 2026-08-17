@@ -56,7 +56,6 @@ export interface DockPanelStorage {
   top: number;
   left: number;
   position: 'left' | 'right' | 'bottom' | 'top';
-  open: boolean;
   inactiveTimeout: number;
 }
 export interface DockRegistration<T extends DevframeDockEntry = DevframeDockEntry> {
@@ -105,11 +104,18 @@ export interface DocksEntriesContext {
   register: <T extends DevframeDockEntry>(_: T, _?: boolean) => DockRegistration<T>;
   update: (_: DevframeDockUserEntry) => void;
 }
+export interface DockSessionStorage {
+  open: boolean;
+  selectedId: string | null;
+  route: string | null;
+}
 export interface DocksPanelContext {
   store: DockPanelStorage;
+  session: DockSessionStorage;
   isDragging: boolean;
   isResizing: boolean;
   readonly isVertical: boolean;
+  consumeBootRoute?: (_: string) => string | null;
 }
 export interface FrameNavClient {
   readonly ready: boolean;

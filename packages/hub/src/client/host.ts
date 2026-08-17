@@ -151,7 +151,7 @@ export async function createDevframeClientHost(
     get context(): WhenContext {
       return {
         clientType,
-        dockOpen: panel.store.open,
+        dockOpen: panel.session.open,
         paletteOpen: commands.paletteOpen,
         dockSelectedId: selectedId ?? '',
       }
@@ -330,8 +330,10 @@ export async function createDevframeClientHost(
 
     docks.entries = entries
     docks.groupedEntries = groupByCategory(entries, categoryOrder)
-    if (selectedId && !entryToStateMap.has(selectedId))
+    if (selectedId && !entryToStateMap.has(selectedId)) {
       selectedId = null
+      panel.session.selectedId = null
+    }
   }
 
   function createDocksContext(): DocksEntriesContext {
@@ -393,6 +395,9 @@ export async function createDevframeClientHost(
 
     const previous = selectedId
     selectedId = next
+    // Mirror onto the session context so a persisting host and the when-clause
+    // context see the current selection.
+    panel.session.selectedId = next
     if (previous)
       entryToStateMap.get(previous)?.events.emit('entry:deactivated')
     if (next)
@@ -516,12 +521,17 @@ function createPanelContext(clientType: DockClientType): DocksPanelContext {
     top: 0,
     left: 0,
     position: 'right',
+    inactiveTimeout: 0,
+  }
+  const session: DocksPanelContext['session'] = {
     // A standalone runtime owns the page, so its "panel" is always open.
     open: clientType === 'standalone',
-    inactiveTimeout: 0,
+    selectedId: null,
+    route: null,
   }
   return {
     store,
+    session,
     isDragging: false,
     isResizing: false,
     get isVertical() {

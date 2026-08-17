@@ -224,18 +224,36 @@ let onIframeLoad: (() => void) | undefined
 
 onMounted(() => {
   const existed = props.panes.has(paneKey.value)
+  // Restore the address-bar route persisted before the last reload: the dock
+  // that was selected then boots deep-linked to where the developer left it,
+  // instead of the entry's default url. `consumeBootRoute` hands the saved URL
+  // back only for that dock, and only once, so a later switch can't reuse it.
+  const bootUrl = props.context.panel.consumeBootRoute?.(props.entry.id) ?? props.entry.url
+  if (!existed && bootUrl !== currentUrl.value) {
+    currentUrl.value = bootUrl
+    editingUrl.value = bootUrl
+  }
   // `src` is only assigned when the pane is first created, so re-mounting an
   // existing iframe (tab switch) preserves its navigation/scroll/JS state. For
   // a shared frame this is also the boot deep-link: the first member (or the
   // anchor) to become visible seeds the src, and every later switch soft-navs.
   const pane = props.panes.ensure(paneKey.value, {
-    src: props.entry.url,
+    src: bootUrl,
     style: { boxShadow: 'none', outline: 'none' },
   })
   const iframe = pane.iframe
 
   if (existed)
     updateCurrentUrl()
+
+  // Persist this dock's live route while it is the selected one, so the next
+  // reload can restore it. Only the selected dock writes, so switching docks
+  // never overwrites another's saved route.
+  const panelSession = props.context.panel.session
+  watchEffect(() => {
+    if (props.context.docks.selectedId === props.entry.id)
+      panelSession.route = currentUrl.value
+  })
 
   // Listen for iframe load events
   onIframeLoad = () => {

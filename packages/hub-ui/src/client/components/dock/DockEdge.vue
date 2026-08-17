@@ -37,7 +37,7 @@ const selectedEntry = computed(() => context.docks.selected)
 const activeGroup = computed(() => getEntryGroup(context.docks.entries, selectedEntry.value))
 const hasPanelContent = computed(() => {
   const entry = selectedEntry.value
-  return context.panel.store.open
+  return context.panel.session.open
     && !!entry
     && entry.type !== 'action'
 })
