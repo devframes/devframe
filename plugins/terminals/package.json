@@ -47,7 +47,7 @@
     "build-storybook": "storybook build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "prepack": "pnpm run build"
+    "prepack": "turbo run build --filter=@devframes/plugin-terminals"
   },
   "peerDependencies": {
     "devframe": "workspace:*",

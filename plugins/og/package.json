@@ -43,7 +43,7 @@
     "storybook": "storybook dev -p 6017",
     "build-storybook": "storybook build",
     "cli:build": "node bin.mjs build --out-dir dist/static",
-    "prepack": "pnpm build",
+    "prepack": "turbo run build --filter=@devframes/plugin-og",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

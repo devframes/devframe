@@ -38,7 +38,7 @@
     "storybook": "storybook dev -p 6014",
     "build-storybook": "storybook build",
     "test": "vitest run",
-    "prepack": "pnpm run build"
+    "prepack": "turbo run build --filter=@devframes/json-render-ui"
   },
   "peerDependencies": {
     "@devframes/hub": "workspace:*",

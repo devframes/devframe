@@ -43,7 +43,7 @@
     "storybook:build": "storybook build -o storybook-static",
     "watch": "tsdown --watch",
     "typecheck": "tsc --noEmit",
-    "prepack": "pnpm run build",
+    "prepack": "turbo run build --filter=@devframes/plugin-git",
     "test": "vitest run"
   },
   "dependencies": {

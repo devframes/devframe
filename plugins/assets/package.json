@@ -42,7 +42,7 @@
     "watch": "tsdown --watch",
     "storybook": "storybook dev -p 6013 --host 0.0.0.0",
     "storybook:build": "storybook build",
-    "prepack": "pnpm build",
+    "prepack": "turbo run build --filter=@devframes/plugin-assets",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

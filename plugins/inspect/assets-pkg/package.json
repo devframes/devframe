@@ -25,6 +25,6 @@
     "dist"
   ],
   "scripts": {
-    "prepack": "pnpm --filter @devframes/plugin-inspect run build"
+    "prepack": "turbo run build --filter=@devframes/plugin-inspect"
   }
 }

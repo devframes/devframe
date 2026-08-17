@@ -44,7 +44,7 @@
     "watch": "tsdown --watch",
     "storybook": "storybook dev -p 6016",
     "build-storybook": "storybook build",
-    "prepack": "pnpm build",
+    "prepack": "turbo run build --filter=@devframes/plugin-data-inspector",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

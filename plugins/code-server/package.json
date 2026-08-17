@@ -47,7 +47,7 @@
     "storybook": "storybook dev -p 6013",
     "build-storybook": "storybook build",
     "test": "vitest run",
-    "prepack": "pnpm run build"
+    "prepack": "turbo run build --filter=@devframes/plugin-code-server"
   },
   "peerDependencies": {
     "devframe": "workspace:*",

@@ -50,7 +50,7 @@
     "build": "tsdown",
     "watch": "tsdown --watch",
     "typecheck": "tsc --noEmit",
-    "prepack": "pnpm run build"
+    "prepack": "turbo run build --filter=@devframes/next"
   },
   "peerDependencies": {
     "@devframes/hub": "workspace:*",

@@ -48,7 +48,7 @@
     "demo": "node demo/server.mjs",
     "demo:build": "node demo/server.mjs build",
     "typecheck": "tsc --noEmit",
-    "prepack": "pnpm run build",
+    "prepack": "turbo run build --filter=@devframes/plugin-a11y",
     "test": "vitest run"
   },
   "peerDependencies": {

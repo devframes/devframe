@@ -36,7 +36,7 @@
     "build:standalone": "vite build --config src/client/standalone/vite.config.ts",
     "dev": "pnpm -C ../.. exec turbo run build --filter=@devframes/hub... --filter=@devframes/plugin-git... && vite --config playground/vite.config.ts",
     "typecheck": "tsc --noEmit",
-    "prepack": "pnpm build",
+    "prepack": "turbo run build --filter=@devframes/hub-ui",
     "storybook": "storybook dev -p 6014",
     "build-storybook": "storybook build"
   },

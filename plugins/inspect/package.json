@@ -40,7 +40,7 @@
     "dev": "vite --config src/spa/vite.config.ts",
     "watch": "tsdown --watch",
     "cli:build": "node bin.mjs build --out-dir dist/static",
-    "prepack": "pnpm build",
+    "prepack": "turbo run build --filter=@devframes/plugin-inspect",
     "storybook": "storybook dev -p 6012",
     "build-storybook": "storybook build",
     "test": "vitest run"
