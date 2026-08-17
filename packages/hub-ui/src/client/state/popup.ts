@@ -1,7 +1,7 @@
 import type { DocksContext } from '@devframes/hub/client'
 import { createEventEmitter } from 'devframe/utils/events'
 import { shallowRef, watch } from 'vue'
-import { applyDocumentHead, useBranding } from './branding'
+import { applyDocumentHead, applyPrimaryColor, useBranding } from './branding'
 import { isDark } from './color-mode'
 import { setDocksOverflowPanel } from './floating-tooltip'
 
@@ -130,6 +130,10 @@ async function mountStandaloneApp(context: DocksContext, popup: Window) {
   popup.document.body.appendChild(appRoot)
 
   const dockElement = new DockStandaloneElement({ context })
+  // The popup is its own document, so the inline `--devframe-primary` on the
+  // embedded host can't inherit across — apply it here too, or the `:host` ramp
+  // falls back to the default palette.
+  applyPrimaryColor(dockElement, useBranding().value.primaryColor)
   popupDockElement = dockElement
   appRoot.appendChild(dockElement)
 }
