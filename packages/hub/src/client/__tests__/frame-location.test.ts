@@ -160,7 +160,8 @@ describe('watchFrameLocation', () => {
     watchFrameLocation({ iframe: frame.iframe, onChange, initial: 'http://localhost/app/' })
 
     frame.pushState('http://localhost/app/routes')
-    expect(onChange).toHaveBeenCalledExactlyOnceWith('http://localhost/app/routes')
+expect(onChange).toHaveBeenCalledTimes(1)
+expect(onChange).toHaveBeenLastCalledWith('http://localhost/app/routes')
   })
 
   it('catches a navigation the wrapper cannot see, via currententrychange', () => {
