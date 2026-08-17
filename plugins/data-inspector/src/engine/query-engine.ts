@@ -14,9 +14,11 @@
  * once `runQuery`/`runQueryAtPath`/`suggest` are actually called, so simply
  * registering the data-inspector's RPC functions (which happens on every
  * host that sets it up, whether or not anyone opens the panel) never pays
- * for parsing jora. The node build inlines jora into its own output (see
- * `tsdown.config.ts`'s `deps.alwaysBundle`) so that on-demand `import()`
- * resolves a local chunk instead of a `node_modules` lookup.
+ * for parsing jora. jora is a `devDependency` (`catalog:inlined` in the
+ * workspace catalog) rather than a regular `dependency`, so tsdown vendors
+ * it straight into this package's own `dist` on both the node and browser
+ * builds — the on-demand `import()` resolves a local chunk, and neither
+ * side needs consumers to install jora themselves.
  */
 import type { Jora } from 'jora'
 import type { NodePath, QueryOutcome, SuggestItem, SuggestOutcome } from './contract'

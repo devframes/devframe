@@ -63,8 +63,7 @@
   },
   "dependencies": {
     "cac": "catalog:deps",
-    "get-port-please": "catalog:deps",
-    "jora": "catalog:deps"
+    "get-port-please": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
@@ -80,6 +79,7 @@
     "devframe": "workspace:*",
     "dompurify": "catalog:frontend",
     "floating-vue": "catalog:frontend",
+    "jora": "catalog:inlined",
     "reka-ui": "catalog:frontend",
     "splitpanes": "catalog:frontend",
     "storybook": "catalog:storybook",
