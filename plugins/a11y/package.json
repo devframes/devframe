@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-a11y",
   "type": "module",
-  "version": "0.9.0-beta.6",
+  "version": "0.9.0-beta.7",
   "description": "Devframe plugin that audits the host app with axe and highlights accessibility issues in the page.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

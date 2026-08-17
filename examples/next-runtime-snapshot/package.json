@@ -1,7 +1,7 @@
 {
   "name": "next-runtime-snapshot-example",
   "type": "module",
-  "version": "0.9.0-beta.6",
+  "version": "0.9.0-beta.7",
   "private": true,
   "description": "Devframe demo exposing the host Node runtime snapshot through a Next.js App Router SPA.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/next-runtime-snapshot",

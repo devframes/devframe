@@ -1,7 +1,7 @@
 {
   "name": "@devframes/hub",
   "type": "module",
-  "version": "0.9.0-beta.6",
+  "version": "0.9.0-beta.7",
   "description": "Hub layer that orchestrates devframe docks, terminals, messages, and commands on any host.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

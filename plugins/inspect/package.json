@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-inspect",
   "type": "module",
-  "version": "0.9.0-beta.6",
+  "version": "0.9.0-beta.7",
   "description": "Devframe plugin that inspects the RPC registry, shared state, and agent surface of a connection.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

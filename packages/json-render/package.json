@@ -1,7 +1,7 @@
 {
   "name": "@devframes/json-render",
   "type": "module",
-  "version": "0.9.0-beta.6",
+  "version": "0.9.0-beta.7",
   "description": "Protocol layer for describing devframe views as JSON that any renderer can display.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
