@@ -26,6 +26,7 @@ export interface DevframeClientHostOptions {
   connect?: DevframeRpcClientOptions;
   clientType?: DockClientType;
   loadClientScripts?: boolean;
+  resolveClientModule?: (_: string) => string | undefined;
   renderers?: Record<string, DockRenderer<any>>;
   categoryOrder?: Record<string, number>;
 }
@@ -178,6 +179,11 @@ export interface FrameTab {
 export interface MessagesClientOptions {
   defaults?: Partial<DevframeMessageEntryInput>;
 }
+export interface ResolveClientModuleSpecifierOptions {
+  resolveClientModule?: (_: string) => string | undefined;
+  connectionMeta?: ConnectionMeta;
+  metaBaseUrl?: string;
+}
 export interface WatchFrameLocationOptions {
   iframe: FrameLocationTarget;
   onChange: (_: string) => void;
@@ -231,6 +237,7 @@ export type FrameNavHostPayload = {
 // #endregion
 
 // #region Functions
+export declare function applyClientModuleResolutionTemplate(_: string, _: string): string;
 export declare function attachFrameNavClient(_: FrameNavClientOptions): FrameNavClient;
 export declare function buildRemoteDevframeUrl(_: string, _: DevframeConnection): string;
 export declare function connectRemoteDevframe(_?: ConnectRemoteDevframeOptions): Promise<DevframeRpcClient>;
@@ -238,7 +245,9 @@ export declare function createDevframeClientHost(_?: DevframeClientHostOptions):
 export declare function createDockRenderersContext(_: CreateDockRenderersContextOptions): DockRenderersContext;
 export declare function createMessagesClient(_: DevframeRpcClient, _?: MessagesClientOptions): DevframeMessagesClient;
 export declare function getDevframeClientContext(): DevframeClientContext | undefined;
+export declare function isBareModuleSpecifier(_: string): boolean;
 export declare function parseRemoteConnection(_?: string): RemoteConnectionInfo | null;
+export declare function resolveClientModuleSpecifier(_: string, _?: ResolveClientModuleSpecifierOptions): string;
 export declare function resolveDockIcon(_: DevframeDockEntryIcon, _: DevframeConnection): DevframeDockEntryIcon;
 export declare function resolveDockUrl(_: string, _: DevframeConnection): string;
 export declare function setDevframeClientContext(_: DevframeClientContext | undefined): void;
@@ -248,6 +257,7 @@ export declare function watchFrameLocation(_: WatchFrameLocationOptions): () => 
 
 // #region Variables
 export declare const CLIENT_CONTEXT_KEY: string;
+export declare const CLIENT_MODULE_SPECIFIER_TOKEN: string;
 export declare const FRAME_NAV_CHANNEL: string;
 export declare const FRAME_NAV_VERSION: number;
 // #endregion

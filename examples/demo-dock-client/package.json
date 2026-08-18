@@ -1,0 +1,25 @@
+{
+  "name": "demo-dock-client",
+  "type": "module",
+  "version": "0.9.0",
+  "private": true,
+  "description": "Reference dock client script for the hub examples: bare npm imports and globalThis-anchored shared state.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/demo-dock-client",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./node": "./dist/node.mjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "nanoevents": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@devframes/hub": "workspace:*",
+    "@types/node": "catalog:types",
+    "tsdown": "catalog:build"
+  }
+}

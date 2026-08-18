@@ -26,6 +26,7 @@ import type {
 import type { DockRenderer, DockRendererManifest, DockRenderersContext } from './renderers'
 import { connectDevframe } from 'devframe/client'
 import { createEventEmitter } from 'devframe/utils/events'
+import { isBareModuleSpecifier, resolveClientModuleSpecifier } from '../client-modules'
 import { DEFAULT_CATEGORIES_ORDER, DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY } from '../constants'
 import { getDevframeClientContext, setDevframeClientContext } from './context'
 import { attachFrameNavClient } from './frame-nav'
@@ -57,6 +58,22 @@ export interface DevframeClientHostOptions {
    * `custom-render`, and iframe `clientScript`). Default `true`.
    */
   loadClientScripts?: boolean
+  /**
+   * Resolve a **bare-specifier** client script (`importFrom` naming an npm
+   * module, e.g. `'vite-plugin-vue-tracer/client/vite-devtools'`) to a URL
+   * this page can import — a viewer's own policy, winning over the
+   * host-advertised `ConnectionMeta.configs.dock.clientModuleResolution`
+   * template. Return `undefined` to fall through to that template. URL
+   * specifiers never reach this hook.
+   *
+   * A viewer running inside a Vite-served page can route bare specifiers
+   * through the app's own module graph:
+   *
+   * ```ts
+   * createDevframeClientHost({ resolveClientModule: s => `/@id/${s}` })
+   * ```
+   */
+  resolveClientModule?: (specifier: string) => string | undefined
   /**
    * Dock renderers to register at boot, keyed by dock `type`. The host
    * application injects the ones it wants (e.g.
@@ -501,10 +518,20 @@ export async function createDevframeClientHost(
   }
 
   async function runClientScript(entryId: string, script: ClientScriptEntry): Promise<void> {
+    // A bare specifier resolves through the explicit option, then the
+    // host-advertised template (`configs.dock.clientModuleResolution`); URL
+    // specifiers pass through untouched.
+    const specifier = resolveClientModuleSpecifier(script.importFrom, {
+      ...(options.resolveClientModule ? { resolveClientModule: options.resolveClientModule } : {}),
+      connectionMeta: rpc.connectionMeta,
+      // Optional-chained: a partial rpc stub (tests, bespoke viewers) may
+      // carry no connection record — the template then resolves page-relative.
+      metaBaseUrl: rpc.connection?.metaBaseUrl,
+    })
     try {
       // Keep this a *native* dynamic import in every bundler — the specifier
       // is a runtime URL served by the host, not a build-time module.
-      const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ /* turbopackIgnore: true */ script.importFrom)
+      const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ /* turbopackIgnore: true */ specifier)
       const fn = mod[script.importName ?? 'default']
       if (typeof fn !== 'function')
         return
@@ -519,7 +546,15 @@ export async function createDevframeClientHost(
     }
     catch (error) {
       loadedScripts.delete(entryId)
-      console.error(`[@devframes/hub] failed to load client script for "${entryId}" from ${script.importFrom}`, error)
+      // An unresolved bare specifier is a host-capability gap, not a plugin
+      // bug — say so instead of surfacing the browser's opaque TypeError.
+      const hint = specifier === script.importFrom && isBareModuleSpecifier(script.importFrom)
+        ? ' — the specifier is a bare npm specifier and this host advertises no client-module resolution '
+        + '(`ConnectionMeta.configs.dock.clientModuleResolution`). Serve the script as a self-contained '
+        + 'bundle by URL, pass `resolveClientModule` to this client host, or run under a host that '
+        + 'resolves bare specifiers (e.g. Vite: `/@id/{specifier}`).'
+        : ''
+      console.error(`[@devframes/hub] failed to load client script for "${entryId}" from ${specifier}${hint}`, error)
     }
   }
 }

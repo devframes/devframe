@@ -136,7 +136,12 @@ A script that fails to import is logged and retried on the next dock update.
 
 ### Shipping a client script
 
-Build the script as a single self-contained ES module — it loads outside any chunk graph or import map. Attach it when mounting the devframe:
+`importFrom` accepts two shapes:
+
+- **A URL the host serves** — a single self-contained ES module, loading outside any chunk graph. Works on every host.
+- **A bare npm specifier** (`'vite-plugin-vue-tracer/client/vite-devtools'`) — resolved through the host runtime, where supported.
+
+For the URL shape, attach the built bundle when mounting the devframe:
 
 ```ts
 await ctx.install(myDevframe, {
@@ -145,6 +150,35 @@ await ctx.install(myDevframe, {
 ```
 
 Under Vite, `/@fs/<absolute path>` serves the built bundle directly; other hosts mount the bundle's directory statically and pass that URL instead.
+
+### Bare npm specifiers
+
+Bare specifiers are a **host-runtime capability**. A host that can serve npm modules to the browser advertises a resolution template as `ConnectionMeta.configs.dock.clientModuleResolution` — the `{specifier}` token is replaced with the specifier, and every client-script loader (the client host, the hub-ui viewers, `__client-imports.js`) applies it before importing:
+
+```ts
+// A Vite host resolves bare specifiers through its own module graph.
+// `@devframes/vite/hub` declares this by default.
+initHub({ clientModuleResolution: '/@id/{specifier}' })
+```
+
+On a Vite host, `/@id/<specifier>` routes the import through Vite's own resolution and import-analysis, so the script's transitive bare imports work too and resolve in the same module graph as the inspected app — a plugin whose injected app-side code and dock client script import the same modules shares their instances. A plugin can then declare its dock with just the specifier:
+
+```ts
+ctx.docks.register({
+  type: 'action',
+  id: 'vue-tracer',
+  title: 'Vue Tracer',
+  icon: 'ph:crosshair-simple-duotone',
+  action: { importFrom: 'vite-plugin-vue-tracer/client/vite-devtools' },
+})
+```
+
+A host that declares no template (Next.js today) supports the URL shape only — registering a bare specifier there warns [`DF8111`](/errors/DF8111). A viewer can also resolve bare specifiers itself with `createDevframeClientHost({ resolveClientModule })`, which wins over the host template.
+
+Two guarantees to design against:
+
+- **Client scripts always execute in the inspected page's realm** — the same `window` as the app being inspected.
+- **Module identity is best-effort, realm identity is the contract.** On Vite hosts a bare specifier shares the app's module graph; elsewhere a script ships as its own bundle. A plugin keeping shared state between its injected app code and its dock script should anchor that state on `globalThis` (vue-tracer's `__vue_tracer__` store is the reference pattern) rather than rely on both sides importing one module instance.
 
 ### Dual boots
 

@@ -70,6 +70,7 @@ export { DevframeViewHost }
 export { DevframeViewIframe }
 export { DevframeViewLauncher }
 export { DevframeViewLauncherStatus }
+export { DockConnectionConfig }
 export { EventEmitter }
 export { EventsMap }
 export { EventUnsubscribe }

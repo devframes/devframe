@@ -176,6 +176,22 @@ export default defineConfig({
           icon: 'ph:layout-duotone',
           category: 'app',
         }))
+        // Bare-specifier client script demo: `importFrom` names the npm
+        // package itself. The Vite host advertises its default
+        // `clientModuleResolution` (`'/@id/{specifier}'`), so the client host
+        // imports the script through Vite's own module graph — its bare
+        // `nanoevents` import resolves there too. The Next reference host
+        // consumes the same package as a prebuilt self-contained bundle
+        // instead (see examples/demo-dock-client).
+        context.docks.register({
+          type: 'action',
+          id: 'example:demo-client-script',
+          title: 'Client Script Demo',
+          icon: 'ph:plugs-connected-duotone',
+          category: 'app',
+          action: { importFrom: 'demo-dock-client' },
+        })
+
         // Witness the missing-renderer path: a dock type nothing covers —
         // the client shows its fallback view instead of a dead panel.
         context.docks.register(unrenderedDockEntry)

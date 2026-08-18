@@ -4,3 +4,7 @@
 // #region Functions
 export function viteDevframeHub(_) {}
 // #endregion
+
+// #region Variables
+export var VITE_CLIENT_MODULE_RESOLUTION /* const */
+// #endregion

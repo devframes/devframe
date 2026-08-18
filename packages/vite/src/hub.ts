@@ -33,6 +33,19 @@ export interface ViteDevframeHubOptions {
    */
   clientScripts?: Record<string, ClientScriptEntry>
   /**
+   * How this host resolves **bare-specifier** client scripts (an `importFrom`
+   * naming an npm module, e.g. `'vite-plugin-vue-tracer/client/vite-devtools'`),
+   * advertised as `ConnectionMeta.configs.dock.clientModuleResolution`.
+   * Defaults to Vite's `'/@id/{specifier}'` — requests route through Vite's
+   * own resolution and import-analysis, so the script's transitive bare
+   * imports work too and share the app's module graph. Pass `false` to
+   * advertise no resolution (bare-specifier client scripts then warn
+   * `DF8111`).
+   *
+   * @default '/@id/{specifier}'
+   */
+  clientModuleResolution?: string | false
+  /**
    * Prebuilt dock-renderer modules forwarded to `initHub({ renderers })` —
    * each served at `<base>__renderers/<type>.mjs` and published in the
    * renderer manifest (e.g. `jsonRenderUiRenderer()` from
@@ -85,6 +98,14 @@ export interface ViteDevframeHubOptions {
    */
   quiet?: boolean
 }
+
+/**
+ * The Vite host's bare-specifier resolution template — `/@id/<specifier>`
+ * asks the Vite dev server to resolve and transform the module through its
+ * own graph. Exported for hosts (e.g. Vite DevTools) that boot their own
+ * client host or hub and want to declare the same capability.
+ */
+export const VITE_CLIENT_MODULE_RESOLUTION = '/@id/{specifier}'
 
 let recommendedViteDevtools = false
 
@@ -160,9 +181,18 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
 
       const httpServer = server.httpServer instanceof NodeHttpServer ? server.httpServer : undefined
 
+      // Bare-specifier client scripts resolve through Vite's own module graph:
+      // `/@id/<specifier>` routes the request through Vite's resolution and
+      // import-analysis, so the script's transitive bare imports work too and
+      // share module instances with the app's own code.
+      const clientModuleResolution = options.clientModuleResolution === false
+        ? undefined
+        : options.clientModuleResolution ?? VITE_CLIENT_MODULE_RESOLUTION
+
       const hub = initHub({
         base,
         cwd,
+        ...(clientModuleResolution ? { clientModuleResolution } : {}),
         origin: options.origin ?? (() => {
           const resolved = server.resolvedUrls?.local?.[0]
           return resolved ? new URL(resolved).origin : ''

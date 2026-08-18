@@ -1,6 +1,7 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type {
+  ClientScriptEntry,
   DevframeDockEntry,
   DevframeDocksHost as DevframeDocksHostType,
   DevframeDockUserEntry,
@@ -14,6 +15,7 @@ import { createStorage } from 'devframe/node'
 import { getInternalContext } from 'devframe/node/hub-internals'
 import { createEventEmitter } from 'devframe/utils/events'
 import { join } from 'pathe'
+import { isBareModuleSpecifier } from '../client-modules'
 import { DEFAULT_STATE_USER_SETTINGS } from '../constants'
 import { buildRemoteConnectionUrl } from '../remote-url'
 import { diagnostics } from './diagnostics'
@@ -89,6 +91,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
       throw diagnostics.DF8100({ id: view.id })
     }
     this.validateGroupMembership(view)
+    this.warnUnresolvableClientScript(view)
     this.prepareRemoteRegistration(view)
     this.views.set(view.id, view)
     this.events.emit('dock:entry:updated', view)
@@ -126,6 +129,25 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     if (!this.views.has(dockId))
       diagnostics.DF8107({ id: dockId })
     this.events.emit('dock:activate', { dockId, params })
+  }
+
+  /**
+   * Warn (don't throw — a viewer-side `resolveClientModule` may still cover
+   * it) when a dock declares a **bare-specifier** client script on a host
+   * that advertises no client-module resolution: the browser cannot resolve
+   * a bare npm specifier natively, so the script is doomed to fail there.
+   * On a host that declares `staticConfig.dock.clientModuleResolution`
+   * (e.g. Vite's `'/@id/{specifier}'`), bare specifiers are first-class and
+   * this stays silent.
+   */
+  private warnUnresolvableClientScript(view: DevframeDockUserEntry): void {
+    if (this.context.staticConfig?.dock?.clientModuleResolution)
+      return
+    const script = (view as { clientScript?: ClientScriptEntry }).clientScript
+      ?? (view as { action?: ClientScriptEntry }).action
+      ?? (view as { renderer?: ClientScriptEntry }).renderer
+    if (script?.importFrom && isBareModuleSpecifier(script.importFrom))
+      diagnostics.DF8111({ id: view.id, specifier: script.importFrom })
   }
 
   private validateGroupMembership(view: DevframeDockUserEntry): void {

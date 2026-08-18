@@ -27,6 +27,7 @@
     "@devframes/plugin-terminals": "workspace:*",
     "@json-render/react": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
+    "demo-dock-client": "workspace:*",
     "devframe": "workspace:*",
     "dompurify": "catalog:frontend",
     "json-render": "workspace:*",

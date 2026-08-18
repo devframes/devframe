@@ -26,6 +26,7 @@
     "@devframes/plugin-terminals": "workspace:*",
     "@devframes/vite": "workspace:*",
     "colorjs.io": "catalog:frontend",
+    "demo-dock-client": "workspace:*",
     "devframe": "workspace:*",
     "dompurify": "catalog:frontend",
     "json-render": "workspace:*"

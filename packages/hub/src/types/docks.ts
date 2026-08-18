@@ -164,7 +164,16 @@ export interface DevframeDockEntryBase {
 
 export interface ClientScriptEntry {
   /**
-   * The filepath or module name to import from
+   * What to import — either a **URL the host serves** (a self-contained ES
+   * module, e.g. `/@fs/<abs path>` under Vite or a statically-mounted bundle
+   * path), or a **bare npm specifier** (e.g.
+   * `'vite-plugin-vue-tracer/client/vite-devtools'`).
+   *
+   * Bare specifiers are a host-runtime capability: they resolve through the
+   * host-advertised {@link DockConnectionConfig.clientModuleResolution}
+   * template (Vite hosts declare `'/@id/{specifier}'`, importing through the
+   * app's own module graph). On a host that declares no template, ship a
+   * self-contained bundle and pass its URL instead (see `DF8111`).
    */
   importFrom: string
   /**
@@ -173,6 +182,34 @@ export interface ClientScriptEntry {
    * @default 'default'
    */
   importName?: string
+}
+
+/**
+ * Static dock-layer config a hub host publishes through the connection
+ * handshake (`ConnectionMeta.configs.dock`), declared node-side via
+ * `ctx.staticConfig.dock` (or `initHub({ clientModuleResolution })`).
+ */
+export interface DockConnectionConfig {
+  /**
+   * URL template that resolves a **bare-specifier** client script
+   * (`ClientScriptEntry.importFrom`) to an importable URL on this host — the
+   * `{specifier}` token is replaced with the bare specifier (a token-less
+   * template is used as a prefix). Declaring it advertises that this host
+   * runtime can serve npm modules to the browser:
+   *
+   * - Vite hosts declare `'/@id/{specifier}'` — the request routes through
+   *   Vite's own resolution and import-analysis, so the script's transitive
+   *   bare imports work too and share the app's module graph.
+   * - Hosts without such a runtime (e.g. Next.js) leave it undeclared; client
+   *   scripts there ship as self-contained bundles served by URL.
+   */
+  clientModuleResolution?: string
+}
+
+declare module 'devframe/types' {
+  interface DevframeConnectionConfigsRegistry {
+    dock: DockConnectionConfig
+  }
 }
 
 export interface DevframeViewIframe extends DevframeDockEntryBase {

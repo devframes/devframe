@@ -315,6 +315,9 @@ export interface DevframeViewLauncher extends DevframeDockEntryBase {
     onLaunch?: () => Promise<void>;
   };
 }
+export interface DockConnectionConfig {
+  clientModuleResolution?: string;
+}
 export interface FrameSubTabsConfig {
   protocol: 'postmessage';
   handshakeTimeoutMs?: number;
