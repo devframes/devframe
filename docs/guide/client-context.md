@@ -38,7 +38,7 @@ Viewers with an HTML pipeline layer injection on top: `@vitejs/devtools` wraps t
 | `connect` | Options forwarded to `connectDevframe` when `rpc` is not supplied — pass `baseURL` to point at the hub's connection-meta mount (e.g. `/__hub/`). |
 | `clientType` | `'standalone'` (default) — the runtime owns the whole page (a hub UI). `'embedded'` — the runtime lives inside a user app alongside a panel. |
 | `loadClientScripts` | Import and run dock entries' client scripts. Default `true`. |
-| `renderers` | Dock renderers to register at boot, keyed by dock `type` (e.g. `{ 'json-render': createJsonRenderDockRenderer() }` from `@devframes/json-render-ui`). Local registrations take precedence over the hub's [renderer manifest](./hub-initiate#renderer-modules). |
+| `renderers` | Dock renderers to register at boot, keyed by dock `type` (e.g. `{ 'json-render': myRenderer }` — any implementation of the dock-renderer contract the host bundles). Local registrations take precedence over the hub's [renderer manifest](./hub-initiate#renderer-modules). |
 
 Boot the host once per page: a second boot replaces the published context and logs a warning. `dispose()` tears down its listeners and unpublishes the context it owns.
 

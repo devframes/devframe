@@ -124,37 +124,21 @@ path and the wiring helper, pulling in no Vue.
 
 ### Custom frontend
 
-To render with your own client, supply the frontend lib and let devframe serve
-its SPA. Connect, read the view's shared state, and render it with
-`JsonRenderView`:
-
-```ts
-import { JsonRenderView } from '@devframes/json-render-ui'
-import { connectDevframe } from 'devframe/client'
-import { createApp, h, shallowRef } from 'vue'
-
-const rpc = await connectDevframe()
-const state = await rpc.sharedState.get('devframe:json-render:global:metrics', { initialValue: null })
-const spec = shallowRef(state.value())
-state.on('updated', () => {
-  spec.value = state.value()
-})
-
-createApp({
-  render: () => h(JsonRenderView, {
-    spec: spec.value,
-    rpc,
-    interactive: rpc.connectionMeta.backend !== 'static',
-  }),
-}).mount('#app')
-```
+A custom frontend renders a view straight from its shared state: connect with
+`connectDevframe()`, read the view's state (keyed
+`devframe:json-render:<scope>:<id>`), subscribe to its `updated` events, and
+render each spec element with your own component registry. The renderer
+contract and the base catalog's per-component prop schemas live in the
+framework-neutral `@devframes/json-render` package, so a frontend in any
+framework implements the same spec — see [Build your own JSON-render
+frontend](./build-your-own-json-render-frontend) and the React renderer in the
+[Next hub example](/examples/hub-next).
 
 In a **static** build the spec + state are snapshotted as a read-only render;
-there is no live RPC, so the action bridge reports actions as unavailable and
-`interactive: false` renders a static-output notice. Local state and bindings
-still work.
+there is no live RPC, so actions report as unavailable and a frontend shows a
+static-output notice. Local state and bindings still work.
 
-### Consuming the reference frontend
+### The reference frontend
 
 `@devframes/json-render-ui` wraps `@antfu/design`'s Vue components directly
 (`ActionButton`, `DisplayBadge`, `LayoutCard`, `FormTextInput`, `FormSwitch`,
@@ -164,14 +148,13 @@ the rest of the devframe surfaces. A few catalog components stay bespoke where
 `@antfu/design` has no matching primitive — `Stack`, `Text`, `CodeBlock`, the
 value-tree `Tree`, and the row-clickable/loadable `DataTable`.
 
-A consuming Vite app therefore:
-
-- installs `@antfu/design` (a peer dependency) and imports `@antfu/design/styles.css`;
-- excludes it from dep pre-bundling so `@vitejs/plugin-vue` compiles its SFCs —
-  `optimizeDeps: { exclude: ['@antfu/design'] }`;
-- composes the shared UnoCSS preset (`presetAnthonyDesign`) and safelists the
-  runtime-selected badge colors the base catalog can emit —
-  `safelist: ['badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue']`.
+It ships as two self-contained prebuilt bundles — the standalone SPA
+(`@devframes/json-render-ui/spa`) and the hub renderer module
+(`@devframes/json-render-ui/hub`) — each inlining Vue, the upstream renderer,
+and the compiled `@antfu/design` styles. A consuming app wires nothing and
+pulls no frontend package into its own graph: the SPA is served verbatim as
+`cli.distDir`, and the hub module is imported natively by the viewer from the
+renderer manifest.
 
 ## Rendering inside a hub
 
@@ -207,15 +190,18 @@ registration for the type, a viewer shows its missing-renderer fallback
 panel.
 
 A host page that builds its own client can register a renderer **locally**
-instead — it takes precedence over the manifest:
+instead — it takes precedence over the manifest. The renderer is any
+implementation of the `JsonRenderDockRenderer` contract the host bundles
+itself (the [Next hub example](/examples/hub-next) registers a React one this
+way):
 
 ```ts
 // host page — a locally-bundled frontend wins over the manifest module
 import { createDevframeClientHost } from '@devframes/hub/client'
-import { createJsonRenderDockRenderer } from '@devframes/json-render-ui'
+import { myJsonRenderDockRenderer } from './my-renderer'
 
 const host = await createDevframeClientHost({
-  renderers: { 'json-render': createJsonRenderDockRenderer() },
+  renderers: { 'json-render': myJsonRenderDockRenderer },
 })
 
 // the viewer mounts the active dock into a container it owns
@@ -249,8 +235,9 @@ or a local registration at `createDevframeClientHost({ renderers })`.
 `@devframes/json-render-ui` is the reference implementation, not a hard
 dependency of the protocol; the hub acquires no Vue.
 
-Within a frontend, the registry swaps too — pass a custom `registry` to
-`createRenderer({ registry })` or `createJsonRenderDockRenderer({ registry })`.
+Within a frontend, the component registry is pluggable too — an implementation
+maps each catalog component type to its own component, so a frontend can render
+a subset or theme the built-ins without touching the protocol.
 
 A frontend need not implement every component. When a spec references a
 component the active registry lacks, the renderer isolates that element behind a

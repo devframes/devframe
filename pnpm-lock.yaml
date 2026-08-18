@@ -1341,10 +1341,6 @@ importers:
         version: 0.22.14(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(tsx@4.23.12)(typescript@6.0.3)
 
   packages/json-render-ui:
-    dependencies:
-      '@json-render/vue':
-        specifier: catalog:frontend
-        version: 0.19.0(vue@3.5.41(typescript@6.0.3))(zod@4.4.3)
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -1358,6 +1354,9 @@ importers:
       '@iconify-json/ph':
         specifier: catalog:frontend
         version: 1.2.2
+      '@json-render/vue':
+        specifier: catalog:frontend
+        version: 0.19.0(vue@3.5.41(typescript@6.0.3))(zod@4.4.3)
       '@storybook/addon-docs':
         specifier: catalog:storybook
         version: 10.5.7(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(esbuild@0.28.0)(rollup@4.60.3)(storybook@10.5.7(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0))

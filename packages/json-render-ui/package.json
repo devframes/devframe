@@ -20,13 +20,10 @@
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./dist/index.mjs",
-    "./components": "./dist/components/index.mjs",
     "./hub": "./dist/hub.mjs",
     "./spa": "./dist/spa.mjs",
     "./package.json": "./package.json"
   },
-  "types": "./dist/index.d.mts",
   "files": [
     "dist"
   ],
@@ -42,22 +39,22 @@
   },
   "peerDependencies": {
     "@devframes/hub": "workspace:*",
-    "@devframes/json-render": "workspace:*",
-    "vue": "^3.5.0"
+    "devframe": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@devframes/hub": {
       "optional": true
+    },
+    "devframe": {
+      "optional": true
     }
-  },
-  "dependencies": {
-    "@json-render/vue": "catalog:frontend"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/hub": "workspace:*",
     "@devframes/json-render": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
+    "@json-render/vue": "catalog:frontend",
     "@storybook/addon-docs": "catalog:storybook",
     "@storybook/vue3-vite": "catalog:storybook",
     "@unocss/preset-icons": "catalog:frontend",
