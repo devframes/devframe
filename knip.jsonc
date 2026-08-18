@@ -16,9 +16,11 @@
   // default export is its `create<X>Devframe` factory") - `export default
   // createXDevframe` right below `export function createXDevframe(...) {}`.
   // Deliberate, not an accidental duplicate: the named export is for options,
-  // the default export is the conventional single-devframe import.
+  // the default export is the conventional single-devframe import. Service
+  // packages (`create<X>Service`) follow the same rule.
   "ignoreIssues": {
-    "plugins/*/src/index.ts": ["duplicates"]
+    "plugins/*/src/index.ts": ["duplicates"],
+    "services/*/src/index.ts": ["duplicates"]
   },
   "workspaces": {
     ".": {

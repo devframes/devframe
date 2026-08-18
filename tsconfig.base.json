@@ -378,6 +378,12 @@
       ],
       "@devframes/plugin-assets": [
         "./plugins/assets/src/index.ts"
+      ],
+      "@devframes/service-open": [
+        "./services/open/src/index.ts"
+      ],
+      "@devframes/service-shiki": [
+        "./services/shiki/src/index.ts"
       ]
     },
     "resolveJsonModule": true,

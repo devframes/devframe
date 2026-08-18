@@ -5,6 +5,7 @@ import { join, relative } from 'pathe'
 const root = fileURLToPath(new URL('.', import.meta.url))
 const r = (path: string) => fileURLToPath(new URL(`./packages/${path}`, import.meta.url))
 const p = (path: string) => fileURLToPath(new URL(`./plugins/${path}`, import.meta.url))
+const s = (path: string) => fileURLToPath(new URL(`./services/${path}`, import.meta.url))
 
 export const alias = {
   'devframe/rpc/transports/sse-client': r('devframe/src/rpc/transports/sse-client.ts'),
@@ -131,6 +132,8 @@ export const alias = {
   '@devframes/plugin-assets/cli': p('assets/src/cli.ts'),
   '@devframes/plugin-assets/vite': p('assets/src/vite.ts'),
   '@devframes/plugin-assets': p('assets/src/index.ts'),
+  '@devframes/service-open': s('open/src/index.ts'),
+  '@devframes/service-shiki': s('shiki/src/index.ts'),
 }
 
 // update tsconfig.base.json - CSS aliases exist for Vite resolution only;

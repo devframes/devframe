@@ -1,0 +1,46 @@
+{
+  "name": "@devframes/service-open",
+  "type": "module",
+  "version": "0.9.0",
+  "description": "Devframe wire service that opens files in the user's editor or reveals them in the OS file explorer.",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/devframes/devframe#readme",
+  "repository": {
+    "directory": "services/open",
+    "type": "git",
+    "url": "git+https://github.com/devframes/devframe.git"
+  },
+  "bugs": "https://github.com/devframes/devframe/issues",
+  "keywords": [
+    "devframe",
+    "devframe-service",
+    "devtools",
+    "open-in-editor"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "watch": "tsdown --watch",
+    "prepack": "turbo run build --filter=@devframes/service-open",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "devframe": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:types",
+    "devframe": "workspace:*",
+    "tsdown": "catalog:build",
+    "vitest": "catalog:testing"
+  }
+}

@@ -143,6 +143,12 @@ state.on('updated', render)
 
 `has()`/`get()`/`keys()` are synchronous snapshots of the advertisement — before the first sync lands they read as empty, and `get()` returns `undefined` rather than throwing, so the natural shape of consuming code is "render the fallback until the service appears". Each handle carries the advertised `version` and `meta` for finer gating.
 
+### Built-in services
+
+**`@devframes/service-open`** (`devframes:service:open`) opens files in the user's editor (`open-in-editor`, with optional `line`/`column`) or reveals them in the OS file explorer (`open-in-finder`). Callers pass **absolute** paths; the service refuses anything outside the workspace root and the configured extra `roots` (`DS_OPEN_0002`), and gates editor commands to the `KNOWN_EDITORS` picklist. Options: `{ editor?, roots? }` — the preferred editor (later installer wins) and additional openable directories (merged as a union). It supersedes the per-plugin `devframe/recipes/common-rpc-functions` registrations, now deprecated.
+
+**`@devframes/service-shiki`** (`devframes:service:shiki`) renders [Shiki](https://shiki.style) syntax highlighting on the server, so plugin bundles stop shipping grammars and themes. Three RPC queries — `highlight` (dual-theme HTML), `code-to-hast`, and `code-to-tokens` (for renderers that own their DOM, e.g. diff views) — all client-`cacheable` and LRU-cached server-side per `(code, lang, themes)`. Unknown languages degrade to plain text. Options: `{ themes?, langs? }` — the default light/dark pair (defaults `vitesse-light`/`vitesse-dark`, matching the design system; later installer wins) and languages to eagerly load (merged as a union).
+
 ## Services, RPC, or shared state?
 
 Each mechanism covers a different direction of travel:
