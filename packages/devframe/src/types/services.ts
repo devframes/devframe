@@ -24,7 +24,16 @@
  *
  * Service ids follow the same namespacing rule as RPC functions: prefix with
  * the providing plugin's id.
+ *
+ * On top of this in-process tier sit **wire services**
+ * ({@link DevframeServiceDefinition}) — npm-packaged capabilities installed
+ * via {@link DevframeServicesHost.install} (or declaratively through
+ * `DevframeDefinition.services`), keyed by their npm package name, that also
+ * register RPC functions and are advertised to browser clients through the
+ * `devframe:services` shared state for feature-detection.
  */
+
+import type { DevframeScopedNodeContext } from './scope'
 
 /**
  * Augmentation point mapping service ids to their implementation types.
@@ -42,6 +51,163 @@ export type DevframeServiceId = keyof DevframeServicesRegistry | (string & {})
 export type DevframeServiceOf<ID> = ID extends keyof DevframeServicesRegistry
   ? DevframeServicesRegistry[ID]
   : unknown
+
+/**
+ * Augmentation point mapping a service's npm package name to the RPC scope
+ * namespace it registers its functions under, so a client's
+ * `services.get('@devframes/service-x')` returns a scoped RPC surface typed
+ * against that namespace. Service packages contribute their entry via
+ * declaration merging:
+ *
+ * ```ts
+ * declare module 'devframe' {
+ *   interface DevframeServicesScopeRegistry {
+ *     '@devframes/service-open': 'devframes:service:open'
+ *   }
+ * }
+ * ```
+ */
+export interface DevframeServicesScopeRegistry {}
+
+/** Resolved RPC scope namespace for a service package name, or `string`. */
+export type DevframeServiceScopeOf<PKG> = PKG extends keyof DevframeServicesScopeRegistry
+  ? DevframeServicesScopeRegistry[PKG] & string
+  : string
+
+/**
+ * Runtime information threaded into a service definition's `setup`.
+ */
+export interface DevframeServiceSetupInfo<Options = unknown> {
+  /**
+   * The merged option sets contributed by every installer of this service
+   * (declarative descriptors and explicit definitions alike), merged at the
+   * `ready()` barrier — via the definition's own {@link DevframeServiceDefinition.mergeOptions}
+   * when present, otherwise shallow-merged in declaration order (later sets
+   * win). `undefined` when no installer passed options.
+   */
+  options?: Options
+}
+
+/**
+ * A **wire service** — a shared server-side capability (e.g. open-in-editor,
+ * syntax highlighting) packaged so any devframe host can install it once and
+ * every plugin/client can consume it without re-implementing or re-bundling
+ * it. Contrast with plain {@link DevframeServicesHost.provide}, which shares
+ * an in-process object between plugins on the node side only: a
+ * `DevframeServiceDefinition` additionally registers RPC functions under its
+ * {@link DevframeServiceDefinition.scope} and is **advertised to clients**
+ * through the reactive `devframe:services` shared state, so browser UIs can
+ * feature-detect it (`ctx.services.has(pkg)`) and degrade gracefully.
+ *
+ * Ship one per npm package (`@devframes/service-<slug>` for first-party),
+ * with the package's default export being the `create<X>Service` factory —
+ * never a pre-built instance.
+ */
+export interface DevframeServiceDefinition<API = unknown, Options = any> {
+  /**
+   * The npm package name this service ships in — also its registry key
+   * (`ctx.services.has('@devframes/service-x')` on both node and client).
+   */
+  package: string
+  /** Semver of the service — advertised to clients, checked against descriptor ranges. */
+  version: string
+  /**
+   * RPC namespace the service's functions register under, following the
+   * plugin id grammar (e.g. `devframes:service:open`). `setup` receives a
+   * context pre-scoped to it, so functions register with bare names.
+   */
+  scope: string
+  /**
+   * Extra advertised metadata (feature flags, defaults, …). Must be
+   * JSON-serializable — it is mirrored to every client.
+   */
+  meta?: Record<string, unknown>
+  /**
+   * This instance's own option set (usually baked in by the factory that
+   * created the definition). Joins the merge alongside every declarative
+   * descriptor's `options`.
+   */
+  options?: Options
+  /**
+   * Merge the option sets contributed by multiple installers (in declaration
+   * order) into the one bag passed to `setup`. Defaults to a shallow merge
+   * where later sets win.
+   */
+  mergeOptions?: (sets: Options[]) => Options
+  /**
+   * Construct the service: register its RPC functions on the pre-scoped
+   * context and return its **node API** — the in-process surface other
+   * plugins get from `ctx.services.get(package)` (no RPC hop server-side).
+   */
+  setup: (ctx: DevframeScopedNodeContext, info: DevframeServiceSetupInfo<Options>) => API | Promise<API>
+}
+
+/**
+ * Declarative reference to a service package — the form a
+ * {@link DevframeServiceInput} takes when the installer doesn't hold the
+ * factory itself (e.g. `DevframeDefinition.services`). The host imports the
+ * package's default-export factory and installs the resulting definition at
+ * the `ready()` barrier.
+ */
+export interface DevframeServiceDescriptor<Options = any> {
+  /** npm package name of the service (its default export is the factory). */
+  package: string
+  /**
+   * Accepted semver range for the installed service. An unsatisfied range
+   * warns (`DF0069`) — or throws (`DF0068`) when {@link required} — while the
+   * service still installs; the advertised meta carries the real version.
+   */
+  version?: string
+  /**
+   * Fail hard when the service can't be imported or its version range isn't
+   * satisfied. By default a missing service is skipped silently — clients see
+   * `has() === false` and degrade.
+   *
+   * @default false
+   */
+  required?: boolean
+  /** Option set this installer contributes to the merge. */
+  options?: Options
+}
+
+/**
+ * What can be passed to `ctx.services.install()` (and listed in
+ * `DevframeDefinition.services`): a declarative {@link DevframeServiceDescriptor}
+ * (the host imports the factory) or a ready {@link DevframeServiceDefinition}
+ * (the installer already called the factory — its `options` join the merge).
+ */
+export type DevframeServiceInput<API = unknown, Options = any>
+  = DevframeServiceDescriptor<Options> | DevframeServiceDefinition<API, Options>
+
+export interface DevframeServiceInstallOptions {
+  /**
+   * Path or file URL (e.g. `import.meta.url`, or a resolved
+   * `<pkg>/package.json` path) the descriptor's package is resolved
+   * **from** — so a plugin-declared service resolves against the plugin's
+   * own dependencies. Falls back to the context's `workspaceRoot`.
+   */
+  resolveFrom?: string | null
+}
+
+/**
+ * One service's advertisement entry, mirrored to clients through the
+ * `devframe:services` shared state.
+ */
+export interface DevframeServiceMeta {
+  /** npm package name — the registry key. */
+  package: string
+  /** Installed version of the service. */
+  version: string
+  /** RPC namespace its functions live under. */
+  scope: string
+  /** Extra service-declared metadata. */
+  meta?: Record<string, unknown>
+}
+
+/**
+ * Shape of the `devframe:services` shared state: package name → advertisement.
+ */
+export type DevframeServicesState = Record<string, DevframeServiceMeta>
 
 export interface DevframeServicesHost {
   /**
@@ -64,4 +230,31 @@ export interface DevframeServicesHost {
   ) => () => void
   /** Ids of every currently-provided service. */
   keys: () => string[]
+  /**
+   * Install a **wire service** (see {@link DevframeServiceDefinition}).
+   * Before {@link DevframeServicesHost.ready} fires, installs are queued —
+   * option sets from every installer accumulate and each service is
+   * constructed **once** at the barrier with the merged options; the
+   * returned promise resolves with the service's node API then (or
+   * `undefined` when an optional descriptor's package can't be imported).
+   * After the barrier, installs construct immediately; installing an
+   * already-installed package returns the existing API (a warning is
+   * emitted when the late install carried options, since they're ignored).
+   */
+  install: <API = unknown, Options = any>(
+    input: DevframeServiceInput<API, Options>,
+    options?: DevframeServiceInstallOptions,
+  ) => Promise<API | undefined>
+  /**
+   * Fire the collect-then-setup barrier: resolve every queued descriptor
+   * (importing its package), merge option sets per service, construct each
+   * service once, `provide()` its node API under the package name, and
+   * advertise it to clients via the `devframe:services` shared state.
+   * Idempotent — adapters call it once after every devframe's `setup` has
+   * run; a repeat returns the same promise. Rejects when a `required`
+   * service fails to import or misses its version range.
+   */
+  ready: () => Promise<void>
+  /** Whether the {@link ready} barrier has fired. */
+  readonly isReady: boolean
 }

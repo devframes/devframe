@@ -47,6 +47,13 @@ export const DEVFRAME_DOCK_IMPORTS_FILENAME = '__client-imports.js'
 export const DEVFRAME_RPC_DUMP_DIRNAME = '__rpc-dump'
 
 /**
+ * Shared-state key carrying the wire-service advertisements (package name →
+ * `DevframeServiceMeta`). Written by the node services host; mirrored to
+ * clients for feature-detection via `client.services`.
+ */
+export const DEVFRAME_SERVICES_STATE_KEY = 'devframe:services'
+
+/**
  * URL fragment / query parameter name carrying the remote dock
  * connection descriptor (defined as `RemoteConnectionInfo` in
  * `@vitejs/devtools-kit`) injected into remote-UI iframe dock URLs.

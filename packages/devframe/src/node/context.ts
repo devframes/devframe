@@ -54,7 +54,7 @@ export async function createHostContext(options: CreateHostContextOptions): Prom
   context.rpc = rpcHost
   context.views = viewsHost
   context.diagnostics = diagnosticsHost
-  context.services = new DevframeServicesHostImpl()
+  context.services = new DevframeServicesHostImpl(context)
 
   // Agent host must be constructed after `rpcHost` so it can subscribe
   // to `onChanged` — it auto-discovers RPC functions flagged with

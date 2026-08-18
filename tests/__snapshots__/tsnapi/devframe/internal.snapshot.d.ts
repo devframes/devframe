@@ -305,6 +305,48 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "A remote-assets `package` must be a valid npm package name and `version` an exact semver version (e.g. `1.2.3`) — they are interpolated into CDN URLs and the cache path.";
   };
+  readonly DF0066: {
+    readonly why: (p: {
+      package: string;
+    }) => string;
+    readonly fix: "Option sets only merge before `ctx.services.ready()` fires. Install the service (or declare it in `DevframeDefinition.services`) before the barrier so its options join the merge.";
+  };
+  readonly DF0067: {
+    readonly why: (p: {
+      package: string;
+      reason: string;
+    }) => string;
+    readonly fix: "Install the service package next to whoever declares it (a plugin declaring it in `services` should list it in its own dependencies), or drop `required: true` to degrade gracefully when it is absent.";
+  };
+  readonly DF0068: {
+    readonly why: (p: {
+      package: string;
+      required: string;
+      installed: string;
+    }) => string;
+    readonly fix: "Align the installed service package with the range its declarer requires, or drop `required: true` to downgrade the mismatch to a warning.";
+  };
+  readonly DF0069: {
+    readonly why: (p: {
+      package: string;
+      required: string;
+      installed: string;
+    }) => string;
+    readonly fix: "The advertised meta carries the real version, so clients can gate on it. Align the installed service package with the declared range to silence this warning.";
+  };
+  readonly DF0070: {
+    readonly why: (p: {
+      package: string;
+      reason: string;
+    }) => string;
+    readonly fix: "A service package's default export must be a factory returning a `DevframeServiceDefinition` — an object with `package`, `version`, `scope`, and a `setup` function.";
+  };
+  readonly DF0071: {
+    readonly why: (p: {
+      reason: string;
+    }) => string;
+    readonly fix: "Call `ctx.services.ready()` explicitly after every devframe's setup has run (the first-party adapters do) so installation errors surface at startup instead of at connect time.";
+  };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
 }) => void]>;

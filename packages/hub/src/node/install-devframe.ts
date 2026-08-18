@@ -1,6 +1,7 @@
 import type { DevframeDefinition } from 'devframe/types'
 import type { DevframeViewIframe } from '../types/docks'
 import type { DevframeHubContext } from './context'
+import { installDefinitionServices } from 'devframe/node'
 import { resolveBasePath } from 'devframe/node/hub-internals'
 import { resolve } from 'pathe'
 import { diagnostics } from './diagnostics'
@@ -107,5 +108,10 @@ export async function installDevframe(
     url: base,
   } as DevframeViewIframe)
 
+  // Queue the definition's declarative wire services ahead of its setup so
+  // their option sets precede setup-time installs in the merge order. The
+  // hub fires the `ctx.services.ready()` barrier once every devframe (and
+  // the host's own configuration) has installed.
+  installDefinitionServices(ctx, d)
   await d.setup(ctx)
 }

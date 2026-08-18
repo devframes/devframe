@@ -16,6 +16,7 @@ import { resolve } from 'pathe'
 import { joinURL } from 'ufo'
 import { DEVFRAME_CONNECTION_META_FILENAME } from '../constants'
 import { createHostContext } from '../node/context'
+import { installDefinitionServices } from '../node/definition-services'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { createInstanceShell, resolveInstanceRegister } from '../node/instance-shell'
@@ -289,7 +290,11 @@ export function initDevframe(
         host: hostImpl,
       })
       const setupInfo: DevframeSetupInfo = { flags: options.flags ?? {} }
+      installDefinitionServices(context, def)
       await def.setup(context, setupInfo)
+      // Collect-then-setup barrier: every declared/queued wire service is
+      // constructed once, with its option sets merged across declarers.
+      await context.services.ready()
 
       // Route-based MCP server (opt-in). Mounted before the SPA static
       // catch-all so the exact `<base>__mcp` route wins, and advertised in

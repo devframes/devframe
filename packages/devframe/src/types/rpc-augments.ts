@@ -152,4 +152,13 @@ export interface DevframeRpcServerFunctions {
 /**
  * To be extended
  */
-export interface DevframeRpcSharedStates {}
+export interface DevframeRpcSharedStates {
+  /**
+   * Wire-service advertisements — package name → `{ package, version,
+   * scope, meta }` for every installed {@link import('./services').DevframeServiceDefinition}.
+   * Written by the node services host at the `ready()` barrier; clients read
+   * it through `client.services` (or subscribe to it directly for
+   * reactivity). Read-only from the browser.
+   */
+  'devframe:services': import('./services').DevframeServicesState
+}

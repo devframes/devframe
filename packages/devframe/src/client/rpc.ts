@@ -4,6 +4,7 @@ import type { SseRpcChannelOptions } from 'devframe/rpc/transports/sse-client'
 import type { WsRpcChannelOptions } from 'devframe/rpc/transports/ws-client'
 import type { ConnectionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, EventEmitter, RpcSharedStateHost, SettingsForNamespace } from 'devframe/types'
 import type { DevframeConnection, DevframeConnectionStatus, SetupDevframeConnectionOptions } from './connection'
+import type { DevframeServicesClient } from './rpc-services'
 import type { RpcStreamingClientHost } from './rpc-streaming'
 import type { DevframeScopedClientContext } from './scope'
 import { DEVFRAME_OTP_URL_PARAM } from 'devframe/constants'
@@ -13,6 +14,7 @@ import { withBase } from 'ufo'
 import { setupDevframeConnection } from './connection'
 import { storeAuthToken } from './connection-storage'
 import { authenticateWithUrlOtp } from './otp'
+import { createDevframeServicesClient } from './rpc-services'
 import { createRpcSharedStateClientHost } from './rpc-shared-state'
 import { createSseRpcClientMode } from './rpc-sse'
 import { createStaticRpcClientMode } from './rpc-static'
@@ -196,6 +198,13 @@ export interface DevframeRpcClient {
    * The shared state host
    */
   sharedState: RpcSharedStateHost
+  /**
+   * The server's advertised wire services (mirrored `devframe:services`
+   * shared state) — feature-detect a capability with
+   * `rpc.services.has('@devframes/service-x')` and get a scoped, typed RPC
+   * handle with `rpc.services.get(...)`. See {@link DevframeServicesClient}.
+   */
+  services: DevframeServicesClient
   /**
    * The streaming channel host. Subscribe to a server-side stream by
    * channel + id; the returned reader is both `AsyncIterable<T>` and
@@ -467,6 +476,7 @@ export async function getDevframeRpcClient(
     callOptional: gateOnBootstrapAuth(mode.callOptional),
     client: clientRpc,
     sharedState: undefined!,
+    services: undefined!,
     streaming: undefined!,
     cacheManager,
     scope: undefined!,
@@ -475,6 +485,7 @@ export async function getDevframeRpcClient(
 
   rpc.sharedState = createRpcSharedStateClientHost(rpc)
   rpc.streaming = createRpcStreamingClientHost(rpc)
+  rpc.services = createDevframeServicesClient(rpc)
 
   // Namespace-scoped views are memoized per namespace so repeated
   // `client.scope('my-plugin')` calls return a stable object.

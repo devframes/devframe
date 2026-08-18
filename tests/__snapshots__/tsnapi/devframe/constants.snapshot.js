@@ -16,6 +16,7 @@ export var DEVFRAME_OTP_URL_PARAM /* const */
 export var DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE /* const */
 export var DEVFRAME_RPC_DUMP_DIRNAME /* const */
 export var DEVFRAME_RPC_DUMP_MANIFEST_FILENAME /* const */
+export var DEVFRAME_SERVICES_STATE_KEY /* const */
 export var DEVFRAME_SSE_ROUTE /* const */
 export var DEVFRAME_SSE_SESSION_HEADER /* const */
 export var DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM /* const */

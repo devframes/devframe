@@ -3,6 +3,7 @@ import type { CliFlagsSchema } from '../adapters/flags'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeNodeContext } from './context'
 import type { StaticAssetsSource } from './remote-assets'
+import type { DevframeServiceInput } from './services'
 
 /**
  * Classification of how a devframe is being deployed. Hosted adapters
@@ -326,6 +327,19 @@ export interface DevframeDefinition {
     dev?: boolean
     build?: boolean
   }
+  /**
+   * Wire services this devframe consumes (see `DevframeServiceDefinition`).
+   * Each entry is either a declarative descriptor
+   * (`{ package, version?, required?, options? }` — the host imports the
+   * package's default-export factory, resolving it against **this plugin's
+   * own dependencies**) or a ready `DevframeServiceDefinition` (the factory
+   * was already called). The adapter queues these before `setup(ctx)` runs
+   * and constructs each service once at the `ctx.services.ready()` barrier,
+   * merging option sets across every declarer. Missing services are skipped
+   * unless marked `required` — clients feature-detect via
+   * `client.services.has(pkg)` and degrade.
+   */
+  services?: DevframeServiceInput[]
   /** Server-side setup — the primary entrypoint. Runs in every runtime. */
   setup: (ctx: DevframeNodeContext, info?: DevframeSetupInfo) => void | Promise<void>
   cli?: DevframeCliOptions

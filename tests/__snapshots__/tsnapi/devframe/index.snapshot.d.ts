@@ -145,6 +145,7 @@ export interface DevframeDefinition {
     dev?: boolean;
     build?: boolean;
   };
+  services?: DevframeServiceInput[];
   setup: (_: DevframeNodeContext, _?: DevframeSetupInfo) => void | Promise<void>;
   cli?: DevframeCliOptions;
 }
@@ -257,7 +258,9 @@ export interface DevframeRpcServerFunctions {
     message: string;
   }) => Promise<void>;
 }
-export interface DevframeRpcSharedStates {}
+export interface DevframeRpcSharedStates {
+  'devframe:services': DevframeServicesState;
+}
 export interface DevframeScopedNodeContext<NS extends string = string, Settings extends Record<string, any> = Record<string, any>> {
   readonly namespace: NS;
   readonly base: DevframeNodeContext;
@@ -270,6 +273,7 @@ export interface DevframeScopedNodeContext<NS extends string = string, Settings 
   views: DevframeViewHost;
   diagnostics: DevframeDiagnosticsHost;
   agent: DevframeAgentHost;
+  services: DevframeServicesHost;
   scope: DevframeNodeContext['scope'];
 }
 export interface DevframeScopedNodeRpc<NS extends string = string> {
@@ -295,14 +299,45 @@ export interface DevframeScopedNodeRpc<NS extends string = string> {
 export interface DevframeScopedStreamingHost {
   create: <T = unknown>(_: string, _?: RpcStreamingChannelOptions) => RpcStreamingChannel<T>;
 }
+export interface DevframeServiceDefinition<API = unknown, Options = any> {
+  package: string;
+  version: string;
+  scope: string;
+  meta?: Record<string, unknown>;
+  options?: Options;
+  mergeOptions?: (_: Options[]) => Options;
+  setup: (_: DevframeScopedNodeContext, _: DevframeServiceSetupInfo<Options>) => API | Promise<API>;
+}
+export interface DevframeServiceDescriptor<Options = any> {
+  package: string;
+  version?: string;
+  required?: boolean;
+  options?: Options;
+}
+export interface DevframeServiceInstallOptions {
+  resolveFrom?: string | null;
+}
+export interface DevframeServiceMeta {
+  package: string;
+  version: string;
+  scope: string;
+  meta?: Record<string, unknown>;
+}
+export interface DevframeServiceSetupInfo<Options = unknown> {
+  options?: Options;
+}
 export interface DevframeServicesHost {
   provide: <ID extends DevframeServiceId>(_: ID, _: DevframeServiceOf<ID>) => () => void;
   get: <ID extends DevframeServiceId>(_: ID) => DevframeServiceOf<ID> | undefined;
   has: (_: DevframeServiceId) => boolean;
   whenAvailable: <ID extends DevframeServiceId>(_: ID, _: (_: DevframeServiceOf<ID>) => void) => () => void;
   keys: () => string[];
+  install: <API = unknown, Options = any>(_: DevframeServiceInput<API, Options>, _?: DevframeServiceInstallOptions) => Promise<API | undefined>;
+  ready: () => Promise<void>;
+  readonly isReady: boolean;
 }
 export interface DevframeServicesRegistry {}
+export interface DevframeServicesScopeRegistry {}
 export interface DevframeSettings<T extends Record<string, any> = Record<string, any>> {
   global: DevframeSettingsStore<T>;
   project: DevframeSettingsStore<T>;
@@ -442,7 +477,10 @@ export type DevframeDiagnosticsLogger = Record<string, any>;
 export type DevframeDuplicationStrategy = 'warn' | 'silent' | 'throw' | 'duplicate';
 export type DevframeRpcTransportKind = 'websocket' | 'sse';
 export type DevframeServiceId = keyof DevframeServicesRegistry | (string & {});
+export type DevframeServiceInput<API = unknown, Options = any> = DevframeServiceDescriptor<Options> | DevframeServiceDefinition<API, Options>;
 export type DevframeServiceOf<ID> = ID extends keyof DevframeServicesRegistry ? DevframeServicesRegistry[ID] : unknown;
+export type DevframeServiceScopeOf<PKG> = PKG extends keyof DevframeServicesScopeRegistry ? DevframeServicesScopeRegistry[PKG] & string : string;
+export type DevframeServicesState = Record<string, DevframeServiceMeta>;
 export type DevframeStorageScope = 'workspace' | 'project' | 'global';
 export type RemoteAssetsProvider = 'jsdelivr' | 'unpkg' | RemoteAssetsProviderCustom;
 export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> & {

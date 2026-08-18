@@ -13,6 +13,7 @@ export class DevframeConnectionError extends Error {
 export async function authenticateWithUrlOtp(_, _) {}
 export function consumeOtpFromUrl(_) {}
 export function createClientSettings(_, _) {}
+export function createDevframeServicesClient(_) {}
 export function createRpcStreamingClientHost(_) {}
 export function createScopedClientContext(_, _) {}
 export function getDevframeConnection() {}

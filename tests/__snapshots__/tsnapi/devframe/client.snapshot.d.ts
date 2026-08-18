@@ -24,6 +24,7 @@ export interface DevframeRpcClient {
   callOptional: DevframeRpcClientCallOptional;
   client: DevframeClientRpcHost;
   sharedState: RpcSharedStateHost;
+  services: DevframeServicesClient;
   streaming: RpcStreamingClientHost;
   cacheManager: RpcCacheManager;
   scope: {
@@ -95,6 +96,16 @@ export interface DevframeScopedClientStreamingHost {
   subscribe: <T = unknown>(_: string, _: string, _?: StreamingSubscribeOptions) => StreamReader<T>;
   upload: <T = unknown>(_: string, _: string) => StreamSink<T>;
 }
+export interface DevframeServiceClientHandle<NS extends string = string> extends DevframeServiceMeta {
+  readonly scope: NS;
+  readonly rpc: DevframeScopedClientRpc<NS>;
+}
+export interface DevframeServicesClient {
+  has: (_: string) => boolean;
+  get: <PKG extends string>(_: PKG) => DevframeServiceClientHandle<DevframeServiceScopeOf<PKG>> | undefined;
+  keys: () => string[];
+  state: () => Promise<SharedState<DevframeServicesState>>;
+}
 export interface RpcClientEvents {
   'rpc:is-trusted:updated': (_: boolean) => void;
   'connection:status': (_: DevframeConnectionStatus, _: DevframeConnectionStatus) => void;
@@ -147,6 +158,7 @@ export declare function authenticateWithUrlOtp(_: Pick<DevframeRpcClient, 'isTru
 }): Promise<boolean>;
 export declare function consumeOtpFromUrl(_?: string): string | undefined;
 export declare function createClientSettings<T extends Record<string, any> = Record<string, any>>(_: DevframeRpcClient, _: string): DevframeSettings<T>;
+export declare function createDevframeServicesClient(_: DevframeRpcClient): DevframeServicesClient;
 export declare function createRpcStreamingClientHost(_: DevframeRpcClient): RpcStreamingClientHost;
 export declare function createScopedClientContext<NS extends string = string>(_: DevframeRpcClient, _: NS): DevframeScopedClientContext<NS>;
 export declare function getDevframeConnection(): DevframeConnection | undefined;

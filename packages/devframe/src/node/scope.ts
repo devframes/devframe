@@ -56,6 +56,7 @@ export function createScopedNodeContext<NS extends string = string>(
     views: context.views,
     diagnostics: context.diagnostics,
     agent: context.agent,
+    services: context.services,
     scope: context.scope,
   }
 }

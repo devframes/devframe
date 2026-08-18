@@ -20,6 +20,7 @@ export interface CreateStorageOptions<T extends object> {
 // #region Functions
 export declare function createHostContext(_: CreateHostContextOptions): Promise<DevframeNodeContext>;
 export declare function createStorage<T extends object>(_: CreateStorageOptions<T>): SharedState<T>;
+export declare function installDefinitionServices(_: DevframeNodeContext, _: DevframeDefinition): void;
 // #endregion
 
 // #region Other

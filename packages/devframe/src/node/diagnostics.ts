@@ -169,5 +169,35 @@ export const diagnostics = defineDiagnostics({
         `Invalid remote-assets ${p.field} "${p.value}".`,
       fix: 'A remote-assets `package` must be a valid npm package name and `version` an exact semver version (e.g. `1.2.3`) — they are interpolated into CDN URLs and the cache path.',
     },
+    DF0066: {
+      why: (p: { package: string }) =>
+        `Service "${p.package}" is already installed — keeping the first installation and ignoring this one's options.`,
+      fix: 'Option sets only merge before `ctx.services.ready()` fires. Install the service (or declare it in `DevframeDefinition.services`) before the barrier so its options join the merge.',
+    },
+    DF0067: {
+      why: (p: { package: string, reason: string }) =>
+        `Failed to import the required service package "${p.package}": ${p.reason}`,
+      fix: 'Install the service package next to whoever declares it (a plugin declaring it in `services` should list it in its own dependencies), or drop `required: true` to degrade gracefully when it is absent.',
+    },
+    DF0068: {
+      why: (p: { package: string, required: string, installed: string }) =>
+        `The installed service "${p.package}@${p.installed}" does not satisfy the required range "${p.required}".`,
+      fix: 'Align the installed service package with the range its declarer requires, or drop `required: true` to downgrade the mismatch to a warning.',
+    },
+    DF0069: {
+      why: (p: { package: string, required: string, installed: string }) =>
+        `The installed service "${p.package}@${p.installed}" does not satisfy the declared range "${p.required}" — installing it anyway.`,
+      fix: 'The advertised meta carries the real version, so clients can gate on it. Align the installed service package with the declared range to silence this warning.',
+    },
+    DF0070: {
+      why: (p: { package: string, reason: string }) =>
+        `Invalid service "${p.package}": ${p.reason}`,
+      fix: 'A service package\'s default export must be a factory returning a `DevframeServiceDefinition` — an object with `package`, `version`, `scope`, and a `setup` function.',
+    },
+    DF0071: {
+      why: (p: { reason: string }) =>
+        `Deferred service installation failed while flushing on the first client connection: ${p.reason}`,
+      fix: 'Call `ctx.services.ready()` explicitly after every devframe\'s setup has run (the first-party adapters do) so installation errors surface at startup instead of at connect time.',
+    },
   },
 })

@@ -495,6 +495,11 @@ export function initHub(options: InitHubOptions): HubInstance {
       // into the connection meta right after this `init` returns.
       await options.ui?.setup?.(ctx)
 
+      // Wire-services barrier: every service declared by an installed
+      // devframe (or installed explicitly during `configure`) is constructed
+      // once here, with its option sets merged across declarers.
+      await ctx.services.ready()
+
       // Publish the renderer manifest — one `ClientScriptEntry` per dock
       // `type`, `importFrom` base-absolute so it resolves to the served module
       // from any page depth. Clients read it from shared state and import a

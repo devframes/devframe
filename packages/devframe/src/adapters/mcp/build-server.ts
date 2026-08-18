@@ -5,7 +5,7 @@ import type { AgentTool, DevframeDefinition, DevframeHost, DevframeNodeContext }
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { Server } from '@modelcontextprotocol/server'
-import { createHostContext } from 'devframe/node'
+import { createHostContext, installDefinitionServices } from 'devframe/node'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { join } from 'pathe'
 import { diagnostics } from '../../node/diagnostics'
@@ -116,7 +116,9 @@ export async function createMcpServer(
     mode: 'dev',
     host,
   })
+  installDefinitionServices(ctx, definition)
   await definition.setup(ctx)
+  await ctx.services.ready()
 
   const { server, dispose } = buildMcpServerFromContext(ctx, {
     serverName: options.serverName ?? `${definition.id} (devframe)`,
