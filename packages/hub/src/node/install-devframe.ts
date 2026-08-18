@@ -112,6 +112,6 @@ export async function installDevframe(
   // their option sets precede setup-time installs in the merge order. The
   // hub fires the `ctx.services.ready()` barrier once every devframe (and
   // the host's own configuration) has installed.
-  installDefinitionServices(ctx, d)
+  await installDefinitionServices(ctx, d)
   await d.setup(ctx)
 }

@@ -20,6 +20,6 @@ export async function createEmbedded(d: DevframeDefinition, options: CreateEmbed
   // Declarative services queue before setup; the owning host fires the
   // `ctx.services.ready()` barrier (post-barrier registration installs
   // immediately).
-  installDefinitionServices(options.ctx, d)
+  await installDefinitionServices(options.ctx, d)
   await d.setup(options.ctx)
 }

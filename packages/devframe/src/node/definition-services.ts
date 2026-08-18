@@ -33,10 +33,9 @@ function resolveDefinitionResolveFrom(def: DevframeDefinition, cwd: string): str
  * Installation itself happens at the `ctx.services.ready()` barrier the
  * adapter fires once every devframe's setup has run.
  */
-export function installDefinitionServices(context: DevframeNodeContext, def: DevframeDefinition): void {
+export async function installDefinitionServices(context: DevframeNodeContext, def: DevframeDefinition): Promise<void> {
   if (!def.services || def.services.length === 0)
     return
   const resolveFrom = resolveDefinitionResolveFrom(def, context.cwd)
-  for (const input of def.services)
-    void context.services.install(input, resolveFrom ? { resolveFrom } : {})
+  await Promise.all(def.services.map(input => context.services.install(input, resolveFrom ? { resolveFrom } : {})))
 }

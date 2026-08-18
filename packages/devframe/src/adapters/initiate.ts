@@ -290,10 +290,8 @@ export function initDevframe(
         host: hostImpl,
       })
       const setupInfo: DevframeSetupInfo = { flags: options.flags ?? {} }
-      installDefinitionServices(context, def)
+      await installDefinitionServices(context, def)
       await def.setup(context, setupInfo)
-      // Collect-then-setup barrier: every declared/queued wire service is
-      // constructed once, with its option sets merged across declarers.
       await context.services.ready()
 
       // Route-based MCP server (opt-in). Mounted before the SPA static

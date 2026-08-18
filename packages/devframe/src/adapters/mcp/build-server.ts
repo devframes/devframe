@@ -117,7 +117,7 @@ export async function createMcpServer(
     mode: 'dev',
     host,
   })
-  installDefinitionServices(ctx, definition)
+  await installDefinitionServices(ctx, definition)
   await definition.setup(ctx)
   await ctx.services.ready()
 

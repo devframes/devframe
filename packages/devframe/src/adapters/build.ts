@@ -89,7 +89,7 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
     mode: 'build',
     host,
   })
-  installDefinitionServices(ctx, d)
+  await installDefinitionServices(ctx, d)
   await d.setup(ctx)
   await ctx.services.ready()
 
