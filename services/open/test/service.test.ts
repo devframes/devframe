@@ -1,8 +1,10 @@
 import type { DevframeHost } from 'devframe/types'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import { createHostContext } from 'devframe/node'
+// `pathe` (not `node:path`) so the expected paths use the same normalized
+// forward-slash form the service resolves to on every OS.
+import { join } from 'pathe'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createOpenService } from '../src/index'
 

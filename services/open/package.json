@@ -37,6 +37,9 @@
   "peerDependencies": {
     "devframe": "workspace:*"
   },
+  "dependencies": {
+    "pathe": "catalog:deps"
+  },
   "devDependencies": {
     "@types/node": "catalog:types",
     "devframe": "workspace:*",

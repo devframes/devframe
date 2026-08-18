@@ -2145,6 +2145,10 @@ importers:
   plugins/terminals/assets-pkg: {}
 
   services/open:
+    dependencies:
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
     devDependencies:
       '@types/node':
         specifier: catalog:types
