@@ -141,14 +141,12 @@ interface DemoDockClientMount {
 
 /**
  * Locate the shared demo dock-client script (examples/demo-dock-client) as a
- * prebuilt **self-contained bundle** - this host declares no
+ * prebuilt **self-contained bundle**: this host declares no
  * `clientModuleResolution` (Next's bundler exposes no browser-reachable
- * on-demand module URL), so bare-specifier client scripts are unsupported
- * here and the script ships by URL instead. The Vite reference host consumes
- * the same package as a bare specifier through its `/@id/{specifier}`
- * template - the capability difference between the two hosts. Loaded through
- * the same bundler-ignored dynamic `import()` as the plugins (the package
- * resolves its bundle via `import.meta.url`). Returns `null` if unbuilt.
+ * on-demand module URL), so client scripts ship by URL here — the Vite
+ * reference host consumes the same package as a bare specifier instead.
+ * Loaded through the same bundler-ignored dynamic `import()` as the plugins.
+ * Returns `null` if unbuilt.
  */
 async function loadDemoDockClientMount(): Promise<DemoDockClientMount | null> {
   try {

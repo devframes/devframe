@@ -27,10 +27,7 @@ export * from "devframe/client";
 // #endregion
 
 // #region Other
-export { applyClientModuleResolutionTemplate }
-export { CLIENT_MODULE_SPECIFIER_TOKEN }
 export { clientScriptFailureHint }
-export { isBareModuleSpecifier }
 export { resolveClientModuleSpecifier }
 export { stripRemoteConnectionFromUrl }
 // #endregion

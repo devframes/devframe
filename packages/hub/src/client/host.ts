@@ -60,18 +60,11 @@ export interface DevframeClientHostOptions {
   loadClientScripts?: boolean
   /**
    * Resolve a **bare-specifier** client script (`importFrom` naming an npm
-   * module, e.g. `'vite-plugin-vue-tracer/client/vite-devtools'`) to a URL
-   * this page can import — a viewer's own policy, winning over the
-   * host-advertised `ConnectionMeta.configs.dock.clientModuleResolution`
-   * template. Return `undefined` to fall through to that template. URL
-   * specifiers never reach this hook.
-   *
-   * A viewer running inside a Vite-served page can route bare specifiers
-   * through the app's own module graph:
-   *
-   * ```ts
-   * createDevframeClientHost({ resolveClientModule: s => `/@id/${s}` })
-   * ```
+   * module) to a URL this page can import — a viewer's own policy, winning
+   * over the host-advertised `ConnectionMeta.configs.dock.clientModuleResolution`
+   * template (return `undefined` to fall through to it). URL specifiers never
+   * reach this hook. E.g. on a Vite-served page:
+   * `resolveClientModule: s => `/@id/${s}``.
    */
   resolveClientModule?: (specifier: string) => string | undefined
   /**
@@ -519,13 +512,12 @@ export async function createDevframeClientHost(
 
   async function runClientScript(entryId: string, script: ClientScriptEntry): Promise<void> {
     // A bare specifier resolves through the explicit option, then the
-    // host-advertised template (`configs.dock.clientModuleResolution`); URL
-    // specifiers pass through untouched.
+    // host-advertised template; URL specifiers pass through untouched. (The
+    // rpc reads are optional-chained for partial stubs — tests, bespoke
+    // viewers — where the template then resolves page-relative.)
     const specifier = resolveClientModuleSpecifier(script.importFrom, {
-      ...(options.resolveClientModule ? { resolveClientModule: options.resolveClientModule } : {}),
-      connectionMeta: rpc.connectionMeta,
-      // Optional-chained: a partial rpc stub (tests, bespoke viewers) may
-      // carry no connection record — the template then resolves page-relative.
+      resolveClientModule: options.resolveClientModule,
+      template: rpc.connectionMeta?.configs?.dock?.clientModuleResolution,
       metaBaseUrl: rpc.connection?.metaBaseUrl,
     })
     try {

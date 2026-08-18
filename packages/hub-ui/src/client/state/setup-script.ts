@@ -26,13 +26,11 @@ async function _executeSetupScript(
   const script = clientScriptOf(entry)
   if (!script?.importFrom)
     throw new Error(`[@devframes/hub-ui] Dock entry "${entry.id}" carries no client script to run`)
-  // A bare specifier resolves through the host-advertised template
-  // (`configs.dock.clientModuleResolution`); URL specifiers pass through
-  // untouched. Mirrors `@devframes/hub`'s `createDevframeClientHost`.
+  // A bare specifier resolves through the host-advertised template; URL
+  // specifiers pass through untouched. Mirrors `@devframes/hub`'s
+  // `createDevframeClientHost` (rpc reads optional-chained for partial stubs).
   const specifier = resolveClientModuleSpecifier(script.importFrom, {
-    connectionMeta: context.rpc.connectionMeta,
-    // Optional-chained: a partial rpc stub (stories, bespoke viewers) may
-    // carry no connection record — the template then resolves page-relative.
+    template: context.rpc.connectionMeta?.configs?.dock?.clientModuleResolution,
     metaBaseUrl: context.rpc.connection?.metaBaseUrl,
   })
   try {

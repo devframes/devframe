@@ -74,7 +74,7 @@ export const diagnostics = defineDiagnostics({
     },
     DF8111: {
       why: (p: { id: string, specifier: string }) => `Dock "${p.id}" declares the bare-specifier client script "${p.specifier}", but this host advertises no client-module resolution — the browser cannot resolve a bare npm specifier natively, so the script will fail to load.`,
-      fix: 'Bare specifiers are a host-runtime capability, advertised as `ConnectionMeta.configs.dock.clientModuleResolution`. Run under a host that declares it (a Vite host resolves them through its own module graph via `initHub({ clientModuleResolution: \'/@id/{specifier}\' })` — `@devframes/vite/hub` does this by default), or ship the script as a self-contained bundle and pass a URL the host serves as `importFrom` instead. A viewer may also resolve them itself via `createDevframeClientHost({ resolveClientModule })`, in which case this warning is safe to disregard.',
+      fix: 'Run under a host that declares `initHub({ clientModuleResolution })` (e.g. Vite\'s `\'/@id/{specifier}\'`), ship the script as a self-contained bundle served by URL, or resolve it in the viewer via `createDevframeClientHost({ resolveClientModule })` (then disregard this warning).',
     },
     DF8200: {
       why: (p: { id: string }) => `Terminal session with id "${p.id}" already registered`,

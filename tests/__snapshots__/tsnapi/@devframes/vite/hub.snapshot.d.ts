@@ -8,7 +8,6 @@ export interface ViteDevframeHubOptions {
   host?: string;
   devframes?: InitHubOptions['devframes'];
   clientScripts?: Record<string, ClientScriptEntry>;
-  clientModuleResolution?: string | false;
   renderers?: readonly DockRendererRegistration[];
   rpcDeclarations?: InitHubOptions['rpcDeclarations'];
   configure?: (_: DevframeHubContext) => void | Promise<void>;
@@ -27,8 +26,4 @@ export interface ViteDevframeHubOptions {
 
 // #region Functions
 export declare function viteDevframeHub(_?: ViteDevframeHubOptions): Plugin;
-// #endregion
-
-// #region Variables
-export declare const VITE_CLIENT_MODULE_RESOLUTION: string;
 // #endregion

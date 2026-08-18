@@ -130,13 +130,6 @@ function isRenderableDock(d: DevframeDockEntry): boolean {
   return isIframeDock(d) || !NATIVE_TYPES.has(d.type)
 }
 
-// `action` docks carry no panel: they render in the rail as momentary buttons
-// whose click fires `entry:activated` for the dock's client script (loaded by
-// the client host at boot), leaving the panel selection untouched.
-function isActionDock(d: DevframeDockEntry): boolean {
-  return d.type === 'action'
-}
-
 // ── client-only dock content (synthesized in the browser) ───────────────────
 
 // A self-contained document for the client-only "Client Notes" dock, from a
@@ -466,7 +459,8 @@ function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientHost>>
   // (a click, or the frame-nav adapter reacting to in-frame navigation).
   const wired = new Set<string>()
   function render(): void {
-    const list = docksCtx.entries.filter(d => isRenderableDock(d) || isActionDock(d))
+    // The rail also lists panel-less `action` docks as momentary buttons.
+    const list = docksCtx.entries.filter(d => isRenderableDock(d) || d.type === 'action')
     const selectable = list.filter(isRenderableDock)
     if (!docksCtx.selectedId && selectable.length > 0)
       void docksCtx.switchEntry(selectable[0].id)
@@ -490,7 +484,7 @@ function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientHost>>
       return
     // Momentary action dock: fire its client script, keep the panel as-is.
     const state = docksCtx.getStateById(id)
-    if (state && isActionDock(state.entryMeta)) {
+    if (state?.entryMeta.type === 'action') {
       state.events.emit('entry:activated')
       return
     }

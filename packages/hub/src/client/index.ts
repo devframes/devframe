@@ -1,4 +1,4 @@
-export * from '../client-modules'
+export { clientScriptFailureHint, resolveClientModuleSpecifier } from '../client-modules'
 export * from './client-script'
 export * from './context'
 export * from './dock-resources'

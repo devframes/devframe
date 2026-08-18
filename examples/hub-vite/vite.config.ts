@@ -177,12 +177,10 @@ export default defineConfig({
           category: 'app',
         }))
         // Bare-specifier client script demo: `importFrom` names the npm
-        // package itself. The Vite host advertises its default
-        // `clientModuleResolution` (`'/@id/{specifier}'`), so the client host
-        // imports the script through Vite's own module graph — its bare
-        // `nanoevents` import resolves there too. The Next reference host
-        // consumes the same package as a prebuilt self-contained bundle
-        // instead (see examples/demo-dock-client).
+        // package itself, imported through Vite's own module graph via the
+        // host's `clientModuleResolution` (`'/@id/{specifier}'`). The Next
+        // reference host consumes the same package as a prebuilt
+        // self-contained bundle instead (see examples/demo-dock-client).
         context.docks.register({
           type: 'action',
           id: 'example:demo-client-script',

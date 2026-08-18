@@ -65,13 +65,6 @@ function isRenderableDock(d: DevframeDockEntry): boolean {
   return isIframeDock(d) || !NATIVE_TYPES.has(d.type)
 }
 
-// `action` docks carry no panel: they render in the rail as momentary buttons
-// whose click fires `entry:activated` for the dock's client script (loaded by
-// the client host at boot), leaving the panel selection untouched.
-function isActionDock(d: DevframeDockEntry): boolean {
-  return d.type === 'action'
-}
-
 // One iframe is kept alive per `frameId` (shared-frame docks) or per dock id
 // (plain iframe docks), so shared-frame member docks reuse the same element and
 // soft-navigate rather than reload.
@@ -505,8 +498,8 @@ export default function Page() {
   }, [])
 
   const renderableDocks = useMemo(() => docks.filter(isRenderableDock), [docks])
-  // The rail also lists momentary `action` docks alongside the selectable ones.
-  const railDocks = useMemo(() => docks.filter(d => isRenderableDock(d) || isActionDock(d)), [docks])
+  // The rail also lists panel-less `action` docks as momentary buttons.
+  const railDocks = useMemo(() => docks.filter(d => isRenderableDock(d) || d.type === 'action'), [docks])
 
   // Wire each dock's state once so a selection change - from a click, or from
   // the frame-nav adapter reacting to in-frame navigation - updates the UI.
@@ -662,15 +655,12 @@ export default function Page() {
                       type="button"
                       onClick={() => {
                         const ctx = hostRef.current?.context
-                        if (!ctx)
-                          return
                         // Momentary action dock: fire its client script, keep
                         // the panel selection as-is.
-                        if (isActionDock(dock)) {
-                          ctx.docks.getStateById(dock.id)?.events.emit('entry:activated')
-                          return
-                        }
-                        void ctx.docks.switchEntry(dock.id)
+                        if (dock.type === 'action')
+                          ctx?.docks.getStateById(dock.id)?.events.emit('entry:activated')
+                        else
+                          void ctx?.docks.switchEntry(dock.id)
                       }}
                       className={`relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${dock.id === selectedDockId ? ' op100! bg-active border-base! color-base' : ''}`}
                       title={dock.title}

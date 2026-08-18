@@ -134,11 +134,9 @@ export class DevframeDocksHost implements DevframeDocksHostType {
   /**
    * Warn (don't throw — a viewer-side `resolveClientModule` may still cover
    * it) when a dock declares a **bare-specifier** client script on a host
-   * that advertises no client-module resolution: the browser cannot resolve
-   * a bare npm specifier natively, so the script is doomed to fail there.
-   * On a host that declares `staticConfig.dock.clientModuleResolution`
-   * (e.g. Vite's `'/@id/{specifier}'`), bare specifiers are first-class and
-   * this stays silent.
+   * that advertises no `staticConfig.dock.clientModuleResolution`: the
+   * browser cannot resolve a bare npm specifier natively, so the script is
+   * doomed to fail there.
    */
   private warnUnresolvableClientScript(view: DevframeDockUserEntry): void {
     if (this.context.staticConfig?.dock?.clientModuleResolution)
