@@ -6,7 +6,7 @@
   "description": "Reference dock client script for the hub examples: bare npm imports and globalThis-anchored shared state.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/demo-dock-client",
   "exports": {
-    ".": "./dist/index.mjs",
+    ".": "./src/index.ts",
     "./node": "./dist/node.mjs",
     "./package.json": "./package.json"
   },

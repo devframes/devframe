@@ -240,6 +240,7 @@ export type FrameNavHostPayload = {
 export declare function applyClientModuleResolutionTemplate(_: string, _: string): string;
 export declare function attachFrameNavClient(_: FrameNavClientOptions): FrameNavClient;
 export declare function buildRemoteDevframeUrl(_: string, _: DevframeConnection): string;
+export declare function clientScriptFailureHint(_: string, _: string): string;
 export declare function connectRemoteDevframe(_?: ConnectRemoteDevframeOptions): Promise<DevframeRpcClient>;
 export declare function createDevframeClientHost(_?: DevframeClientHostOptions): Promise<DevframeClientHost>;
 export declare function createDockRenderersContext(_: CreateDockRenderersContextOptions): DockRenderersContext;

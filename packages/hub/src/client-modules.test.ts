@@ -2,6 +2,7 @@ import type { ConnectionMeta } from 'devframe/types'
 import { describe, expect, it } from 'vitest'
 import {
   applyClientModuleResolutionTemplate,
+  clientScriptFailureHint,
   isBareModuleSpecifier,
   resolveClientModuleSpecifier,
 } from './client-modules'
@@ -98,5 +99,23 @@ describe('resolveClientModuleSpecifier', () => {
       },
     })).toBe('/already/a/url.js')
     expect(called).toBe(false)
+  })
+})
+
+describe('clientScriptFailureHint', () => {
+  it('is silent for URL specifiers', () => {
+    expect(clientScriptFailureHint('/@fs/abs/inject.js', '/@fs/abs/inject.js')).toBe('')
+  })
+
+  it('names the capability gap for an unresolved bare specifier', () => {
+    const hint = clientScriptFailureHint('foo/bar', 'foo/bar')
+    expect(hint).toContain('clientModuleResolution')
+    expect(hint).toContain('bare npm specifier')
+  })
+
+  it('names the serving gap for a resolved-but-failed bare specifier', () => {
+    const hint = clientScriptFailureHint('foo/bar', 'http://localhost:5173/@id/foo/bar')
+    expect(hint).toContain('"foo/bar"')
+    expect(hint).toContain('could not serve the module')
   })
 })

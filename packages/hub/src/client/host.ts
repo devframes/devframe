@@ -26,7 +26,7 @@ import type {
 import type { DockRenderer, DockRendererManifest, DockRenderersContext } from './renderers'
 import { connectDevframe } from 'devframe/client'
 import { createEventEmitter } from 'devframe/utils/events'
-import { isBareModuleSpecifier, resolveClientModuleSpecifier } from '../client-modules'
+import { clientScriptFailureHint, resolveClientModuleSpecifier } from '../client-modules'
 import { DEFAULT_CATEGORIES_ORDER, DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY } from '../constants'
 import { getDevframeClientContext, setDevframeClientContext } from './context'
 import { attachFrameNavClient } from './frame-nav'
@@ -546,15 +546,10 @@ export async function createDevframeClientHost(
     }
     catch (error) {
       loadedScripts.delete(entryId)
-      // An unresolved bare specifier is a host-capability gap, not a plugin
-      // bug — say so instead of surfacing the browser's opaque TypeError.
-      const hint = specifier === script.importFrom && isBareModuleSpecifier(script.importFrom)
-        ? ' — the specifier is a bare npm specifier and this host advertises no client-module resolution '
-        + '(`ConnectionMeta.configs.dock.clientModuleResolution`). Serve the script as a self-contained '
-        + 'bundle by URL, pass `resolveClientModule` to this client host, or run under a host that '
-        + 'resolves bare specifiers (e.g. Vite: `/@id/{specifier}`).'
-        : ''
-      console.error(`[@devframes/hub] failed to load client script for "${entryId}" from ${specifier}${hint}`, error)
+      console.error(
+        `[@devframes/hub] failed to load client script for "${entryId}" from ${specifier}${clientScriptFailureHint(script.importFrom, specifier)}`,
+        error,
+      )
     }
   }
 }

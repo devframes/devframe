@@ -1,6 +1,6 @@
 import type { ClientScriptEntry, DevframeDockUserEntry } from '@devframes/hub'
 import type { DockClientScriptContext } from '@devframes/hub/client'
-import { isBareModuleSpecifier, resolveClientModuleSpecifier } from '@devframes/hub/client'
+import { clientScriptFailureHint, resolveClientModuleSpecifier } from '@devframes/hub/client'
 
 /**
  * Resolve the {@link ClientScriptEntry} a dock entry carries — an `action`'s
@@ -48,14 +48,10 @@ async function _executeSetupScript(
   catch (error) {
     // TODO: maybe popup a error toast here?
     // TODO: A unified logger API
-    // An unresolved bare specifier is a host-capability gap, not a plugin
-    // bug — say so instead of surfacing the browser's opaque TypeError.
-    const hint = specifier === script.importFrom && isBareModuleSpecifier(script.importFrom)
-      ? ` — "${specifier}" is a bare npm specifier and this host advertises no client-module resolution `
-      + '(`ConnectionMeta.configs.dock.clientModuleResolution`). Serve the script as a self-contained '
-      + 'bundle by URL, or run under a host that resolves bare specifiers (e.g. Vite: `/@id/{specifier}`).'
-      : ''
-    console.error(`[@devframes/hub-ui] Error executing client script${hint}`, error)
+    console.error(
+      `[@devframes/hub-ui] Error executing client script from ${specifier}${clientScriptFailureHint(script.importFrom, specifier)}`,
+      error,
+    )
     throw error
   }
 }
