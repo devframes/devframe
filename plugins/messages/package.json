@@ -63,6 +63,7 @@
     }
   },
   "dependencies": {
+    "@devframes/service-open": "workspace:*",
     "cac": "catalog:deps"
   },
   "devDependencies": {

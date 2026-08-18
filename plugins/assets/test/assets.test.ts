@@ -175,6 +175,10 @@ describe('assets plugin', () => {
     expect(defs.has('devframes:plugin:assets:open-in-editor')).toBe(true)
     expect(defs.has('devframes:plugin:assets:reveal-in-folder')).toBe(true)
     expect(defs.has('devframes:plugin:assets:mkdir')).toBe(false)
+    // Both delegate to the open wire service the plugin installs during
+    // setup (with the managed dir as an allowed root).
+    expect(server.ctx.services.has('@devframes/service-open')).toBe(true)
+    expect(defs.has('devframes:service:open:open-in-editor')).toBe(true)
   })
 
   // The one test that needs the live watcher — every other test above opts

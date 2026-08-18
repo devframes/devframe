@@ -124,9 +124,20 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
       },
     },
     dock: { category: '~builtin' },
+    // Server-highlighted text previews; the SPA falls back to a plain
+    // `<pre>` when the service isn't advertised.
+    services: [{ package: '@devframes/service-shiki' }],
     async setup(ctx, info) {
       const readOnlyFlag = info?.flags?.readOnly === true
       const dir = options.dir ? resolve(ctx.cwd, options.dir) : resolve(ctx.cwd, 'public')
+      // Backs open-in-editor / reveal-in-folder. Installed here (not in the
+      // declarative `services` list) because the managed dir — contributed
+      // as an extra allowed root, since it may live outside the workspace —
+      // is only known at setup time.
+      void ctx.services.install(
+        { package: '@devframes/service-open', options: { roots: [dir] } },
+        { resolveFrom: pkg.name },
+      )
       await setupAssets(ctx, {
         dir,
         write: readOnlyFlag ? false : write,

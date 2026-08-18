@@ -49,10 +49,19 @@ function reload(): void {
   location.reload()
 }
 
-// The "open file" affordance rides on devframe's prebuilt recipe, which the
-// plugin registers server-side; static builds have no live server to open
-// an editor with.
-const canOpenFile = computed(() => props.rpc.connectionMeta.backend !== 'static')
+// The "open file" affordance delegates to the `@devframes/service-open`
+// wire service; hide it until the service is advertised (and always on
+// static builds, which have no live server to open an editor with).
+const openServiceAvailable = ref(props.rpc.services.has('@devframes/service-open'))
+onMounted(() => {
+  props.rpc.services.state()
+    .then((state) => {
+      openServiceAvailable.value = props.rpc.services.has('@devframes/service-open')
+      state.on('updated', () => (openServiceAvailable.value = props.rpc.services.has('@devframes/service-open')))
+    })
+    .catch(() => {})
+})
+const canOpenFile = computed(() => props.rpc.connectionMeta.backend !== 'static' && openServiceAvailable.value)
 
 // Message actions that navigate to another dock only work under a hub host
 // (the `hub:docks:activate` RPC + `devframe:docks` registry). Probe the docks
@@ -99,12 +108,7 @@ async function onOpenFile(entry: DevframeMessageEntry): Promise<void> {
   if (!entry.filePosition)
     return
   const { file, line, column } = entry.filePosition
-  let path = file
-  if (line)
-    path += `:${line}`
-  if (column)
-    path += `:${column}`
-  await props.rpc.call('devframe:open-in-editor', path)
+  await props.rpc.call('devframes:plugin:messages:open-file', { file, line, column })
 }
 </script>
 

@@ -7,6 +7,7 @@ import FormTextInput from '@antfu/design/components/Form/FormTextInput.vue'
 import OverlayModal from '@antfu/design/components/Overlay/OverlayModal.vue'
 import { computed, ref, watch } from 'vue'
 import { fileNameOf, formatFileSize, formatTimeAgo } from '../utils/format'
+import { highlightAsset } from '../utils/highlight'
 import { buildSnippets } from '../utils/snippets'
 import AssetPreview from './AssetPreview.vue'
 import CodeSnippets from './CodeSnippets.vue'
@@ -23,6 +24,7 @@ const SUPPORTS_PREVIEW = new Set(['image', 'text', 'video', 'audio', 'font'])
 
 const imageMeta = ref<AssetImageMeta | null>(null)
 const textContent = ref<string | null>(null)
+const highlightedHtml = ref<string | null>(null)
 const deleteOpen = ref(false)
 const renameOpen = ref(false)
 const newName = ref('')
@@ -32,14 +34,38 @@ const errorNotice = ref<string | null>(null)
 watch(() => props.asset.path, (path) => {
   imageMeta.value = null
   textContent.value = null
+  highlightedHtml.value = null
   errorNotice.value = null
   const rpc = props.rpc
   if (!rpc)
     return
   if (props.asset.type === 'image')
     void rpc.call('devframes:plugin:assets:read-image-meta', path).then((m) => { imageMeta.value = m })
-  if (props.asset.type === 'text')
-    void rpc.call('devframes:plugin:assets:read-text', path, 5000).then((c) => { textContent.value = c })
+  if (props.asset.type === 'text') {
+    void rpc.call('devframes:plugin:assets:read-text', path, 5000).then(async (c) => {
+      textContent.value = c
+      // Server-highlighted preview via the shiki wire service; `null` when
+      // it isn't advertised — the preview keeps its plain `<pre>`.
+      const html = c == null ? null : await highlightAsset(rpc, path, c)
+      if (props.asset.path === path)
+        highlightedHtml.value = html
+    })
+  }
+}, { immediate: true })
+
+// The open/reveal affordances delegate to the `@devframes/service-open`
+// wire service; hide them until the host advertises it.
+const openServiceAvailable = ref(false)
+watch(() => props.rpc, (rpc) => {
+  if (!rpc)
+    return
+  openServiceAvailable.value = rpc.services.has('@devframes/service-open')
+  rpc.services.state()
+    .then((state) => {
+      openServiceAvailable.value = rpc.services.has('@devframes/service-open')
+      state.on('updated', () => (openServiceAvailable.value = rpc.services.has('@devframes/service-open')))
+    })
+    .catch(() => {})
 }, { immediate: true })
 
 function gcd(a: number, b: number): number {
@@ -127,6 +153,7 @@ function openInBrowser(): void {
         :asset="asset"
         detail
         :text-content="textContent"
+        :highlighted-html="highlightedHtml"
         class="max-h-80 min-h-20 w-auto min-w-20 rounded border border-base"
       />
     </div>
@@ -192,10 +219,10 @@ function openInBrowser(): void {
       <ActionButton variant="primary" icon="i-ph-download-simple-duotone" @click="openInBrowser">
         Download
       </ActionButton>
-      <ActionButton icon="i-ph-code-duotone" :disabled="busy" @click="handleOpenInEditor">
+      <ActionButton v-if="openServiceAvailable" icon="i-ph-code-duotone" :disabled="busy" @click="handleOpenInEditor">
         Open in Editor
       </ActionButton>
-      <ActionButton icon="i-ph-folder-open-duotone" :disabled="busy" @click="handleRevealInFolder">
+      <ActionButton v-if="openServiceAvailable" icon="i-ph-folder-open-duotone" :disabled="busy" @click="handleRevealInFolder">
         Reveal in Folder
       </ActionButton>
       <ActionButton v-if="canWrite" icon="i-ph-text-aa-duotone" @click="openRenameDialog">

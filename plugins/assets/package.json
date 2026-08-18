@@ -48,6 +48,7 @@
   },
   "peerDependencies": {
     "@devframes/plugin-assets--assets": "workspace:*",
+    "@devframes/service-shiki": "workspace:*",
     "devframe": "workspace:*",
     "vite": "^7.0.0 || ^8.0.0"
   },
@@ -55,11 +56,15 @@
     "@devframes/plugin-assets--assets": {
       "optional": true
     },
+    "@devframes/service-shiki": {
+      "optional": true
+    },
     "vite": {
       "optional": true
     }
   },
   "dependencies": {
+    "@devframes/service-open": "workspace:*",
     "cac": "catalog:deps",
     "chokidar": "catalog:deps",
     "image-meta": "catalog:deps",
@@ -71,6 +76,7 @@
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/plugin-assets--assets": "workspace:*",
+    "@devframes/service-shiki": "workspace:*",
     "@devframes/vite": "workspace:*",
     "@iconify-json/ph": "catalog:frontend",
     "@storybook/addon-a11y": "catalog:storybook",

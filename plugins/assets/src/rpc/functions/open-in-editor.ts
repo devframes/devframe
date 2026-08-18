@@ -1,16 +1,17 @@
 import type { DevframeNodeContext } from 'devframe'
+import { OPEN_SERVICE_PACKAGE } from '@devframes/service-open'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
-import { launchEditor } from 'devframe/utils/launch-editor'
 import { s } from 'devframe/utils/simple-schema'
+import { diagnostics } from '../../diagnostics'
 import { getAssetsContext } from '../../node/context'
 
 const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
 
 /**
- * Reuses devframe's `launchEditor` utility (the same one backing the core
- * `devframe:open-in-editor` recipe) but resolves the path against the
- * managed directory first, so the client only ever sends a root-relative
- * path — never the server's absolute filesystem layout.
+ * Delegates to the `@devframes/service-open` wire service (installed by the
+ * plugin's setup with the managed dir as an allowed root), resolving the
+ * path against the managed directory first — so the client only ever sends
+ * a root-relative path, never the server's absolute filesystem layout.
  */
 export const openInEditor = defineAssetsRpc({
   name: 'devframes:plugin:assets:open-in-editor',
@@ -29,7 +30,10 @@ export const openInEditor = defineAssetsRpc({
     return {
       // See `list.ts` for why the async handler is cast.
       handler: (async (path: string): Promise<void> => {
-        launchEditor(assets.resolvePath(path))
+        const open = ctx.services.get(OPEN_SERVICE_PACKAGE)
+        if (!open)
+          throw diagnostics.DP_ASSETS_0008()
+        await open.openInEditor({ path: assets.resolvePath(path) })
       }) as any,
     }
   },

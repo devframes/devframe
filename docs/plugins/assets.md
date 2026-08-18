@@ -95,12 +95,12 @@ All functions are namespaced `devframes:plugin:assets:*`:
 | `list` | `query`, `snapshot: true` | Every file under the managed directory, with type, size, and last-modified time. |
 | `capabilities` | `query`, `snapshot: true` | Whether write actions are enabled, and the upload allow-list — lets the UI gate itself proactively. |
 | `read-image-meta` | `query` | Width, height, and orientation for an image asset. |
-| `read-text` | `query` | Truncated text content, for preview. |
+| `read-text` | `query` | Truncated text content, for preview. When the host advertises the [`@devframes/service-shiki` wire service](/guide/services#built-in-services), the panel renders it server-highlighted; otherwise it falls back to a plain `<pre>`. |
 | `upload` | `action` | Allocates a streaming upload slot; the client pipes the file's bytes over the paired channel. |
 | `rename` | `action` | Renames an asset within its folder, preserving its extension. |
 | `delete` | `action` | Deletes one or more assets in a single call. |
 | `mkdir` | `action` | Creates a folder, including missing parents. |
-| `open-in-editor` / `reveal-in-folder` | `action` | Launch the asset in your editor, or reveal its containing folder in the OS file manager. Always registered, regardless of `write`. |
+| `open-in-editor` / `reveal-in-folder` | `action` | Launch the asset in your editor, or reveal its containing folder in the OS file manager, delegating to the [`@devframes/service-open` wire service](/guide/services#built-in-services) (installed by the plugin with the managed dir as an allowed root). Always registered, regardless of `write`. |
 
 `upload` / `rename` / `delete` / `mkdir` are registered only when `write` is enabled.
 

@@ -70,6 +70,9 @@ export function createMessagesDevframe(options: MessagesDevframeOptions = {}): D
     dock: {
       category: '~builtin',
     },
+    // Backs the detail panel's "open file" affordance; the panel hides it
+    // when the service isn't advertised.
+    services: [{ package: '@devframes/service-open' }],
     setup(ctx) {
       setupMessages(ctx)
     },

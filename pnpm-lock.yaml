@@ -1546,6 +1546,9 @@ importers:
 
   plugins/assets:
     dependencies:
+      '@devframes/service-open':
+        specifier: workspace:*
+        version: link:../../services/open
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -1574,6 +1577,9 @@ importers:
       '@devframes/plugin-assets--assets':
         specifier: workspace:*
         version: link:assets-pkg
+      '@devframes/service-shiki':
+        specifier: workspace:*
+        version: link:../../services/shiki
       '@devframes/vite':
         specifier: workspace:*
         version: link:../../packages/vite
@@ -1933,6 +1939,9 @@ importers:
 
   plugins/messages:
     dependencies:
+      '@devframes/service-open':
+        specifier: workspace:*
+        version: link:../../services/open
       cac:
         specifier: catalog:deps
         version: 7.0.0

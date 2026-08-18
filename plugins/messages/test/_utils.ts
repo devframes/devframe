@@ -82,7 +82,12 @@ async function boot(options: BootOptions): Promise<MessagesServer> {
   const ctx = options.hub
     ? await createHubContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
     : await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
+  // Mirror the adapters: queue the definition's declared wire services
+  // before setup, then fire the collect-then-setup barrier.
+  for (const input of messagesDevframe.services ?? [])
+    void ctx.services.install(input, { resolveFrom: messagesDevframe.packageName })
   await messagesDevframe.setup(ctx)
+  await ctx.services.ready()
 
   const metaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`
   app.use(metaPath, () => ({ backend: 'websocket', websocket: port }))

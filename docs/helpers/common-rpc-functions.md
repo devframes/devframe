@@ -4,6 +4,9 @@ outline: deep
 
 # Common RPC Functions
 
+> [!WARNING]
+> Deprecated in favor of the [`@devframes/service-open` wire service](/guide/services#built-in-services) — one host-level installation shared by every plugin, feature-detectable from clients, with workspace-root path containment on top of the editor gating. The recipe keeps working; removal lands in a future major.
+
 Prebuilt RPC actions for the two file-system actions every CLI devtool needs — opening a file in the editor, revealing a path in the OS file explorer. Use the recipe instead of re-implementing them so every devframe converges on the same registered names and payload shape.
 
 ```ts
