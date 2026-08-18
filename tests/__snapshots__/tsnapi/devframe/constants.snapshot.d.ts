@@ -11,6 +11,32 @@ export declare const DEVFRAME_AUTH_TOKEN_QUERY_PARAM: string;
 export declare const DEVFRAME_CONNECTION_KEY: string;
 export declare const DEVFRAME_CONNECTION_META_FILENAME: string;
 export declare const DEVFRAME_DOCK_IMPORTS_FILENAME: string;
+export declare const DEVFRAME_EVENTS: {
+  readonly bus: {
+    readonly agentManifestChanged: "agent:manifest:changed";
+    readonly agentToolRegistered: "agent:tool:registered";
+    readonly agentToolUnregistered: "agent:tool:unregistered";
+    readonly agentResourceRegistered: "agent:resource:registered";
+    readonly agentResourceUnregistered: "agent:resource:unregistered";
+  };
+  readonly client: {
+    readonly isTrustedUpdated: "rpc:is-trusted:updated";
+    readonly error: "rpc:error";
+    readonly connectionStatus: "connection:status";
+    readonly connectionError: "connection:error";
+  };
+  readonly broadcast: {
+    readonly authRevoked: "devframe:auth:revoked";
+    readonly clientStateUpdated: "devframe:rpc:client-state:updated";
+    readonly clientStatePatch: "devframe:rpc:client-state:patch";
+    readonly streamingChunk: "devframe:streaming:chunk";
+    readonly streamingEnd: "devframe:streaming:end";
+    readonly streamingUploadCancel: "devframe:streaming:upload-cancel";
+  };
+  readonly postMessage: {
+    readonly remoteAssetsError: "devframe:remote-assets-error";
+  };
+};
 export declare const DEVFRAME_MCP_ROUTE: string;
 export declare const DEVFRAME_OTP_URL_PARAM: string;
 export declare const DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE: string;

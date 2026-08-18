@@ -8,7 +8,7 @@ import { Readable } from 'node:stream'
 import { defineHandler, H3 } from 'h3'
 import { lookup } from 'mrmime'
 import { extname, join, normalize, resolve, sep } from 'pathe'
-import { DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE } from '../constants'
+import { DEVFRAME_EVENTS } from '../events'
 
 /**
  * What the static-serving engine accepts: a local directory, or a resolved
@@ -322,7 +322,7 @@ function remoteErrorPage(pkg: string, version: string, reason: string): string {
   const esc = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   const name = esc(pkg)
   const ver = esc(version)
-  const message: RemoteAssetsErrorMessage = { type: DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE, package: pkg, version, reason }
+  const message: RemoteAssetsErrorMessage = { type: DEVFRAME_EVENTS.postMessage.remoteAssetsError, package: pkg, version, reason }
   // `</script>` inside the JSON would end the block early; `<` is the only
   // character that can do that, and escaping it keeps the literal valid JS.
   const payload = JSON.stringify(message).replace(/</g, '\\u003c')

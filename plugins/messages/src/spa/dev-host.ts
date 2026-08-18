@@ -1,5 +1,6 @@
 import type { DevframeMessagesHost as DevframeMessagesHostType } from '@devframes/hub/types'
 import type { DevframeDefinition, DevframeNodeContext } from 'devframe'
+import { HUB_EVENTS } from '@devframes/hub/constants'
 import { defineDevframe } from 'devframe'
 import { MESSAGES_UPDATED_EVENT } from '../constants'
 import { createMessagesDevframe } from '../index'
@@ -31,10 +32,10 @@ function wireBroadcast(ctx: DevframeNodeContext, messages: DevframeMessagesHostT
   const broadcast = (): void => {
     ctx.rpc.broadcast({ method: MESSAGES_UPDATED_EVENT, args: [] })
   }
-  messages.events.on('messages:added', broadcast)
-  messages.events.on('messages:updated', broadcast)
-  messages.events.on('messages:removed', broadcast)
-  messages.events.on('messages:cleared', broadcast)
+  messages.events.on(HUB_EVENTS.bus.messagesAdded, broadcast)
+  messages.events.on(HUB_EVENTS.bus.messagesUpdated, broadcast)
+  messages.events.on(HUB_EVENTS.bus.messagesRemoved, broadcast)
+  messages.events.on(HUB_EVENTS.bus.messagesCleared, broadcast)
 }
 
 function seedDemoMessages(messages: DevframeMessagesHostType): void {

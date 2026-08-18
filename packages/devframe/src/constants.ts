@@ -1,3 +1,7 @@
+import { DEVFRAME_EVENTS } from './events'
+
+export { DEVFRAME_EVENTS } from './events'
+
 // Devframe runtime routes and static output conventions.
 export const DEVFRAME_CONNECTION_META_FILENAME = '__connection.json'
 
@@ -88,7 +92,7 @@ export const DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM = 'devframe_viewer_origin_
  * (`@devframes/hub-ui` does, in its iframe view). Payload shape:
  * `RemoteAssetsErrorMessage` (`devframe/types`).
  */
-export const DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE = 'devframe:remote-assets-error'
+export const DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE: string = DEVFRAME_EVENTS.postMessage.remoteAssetsError
 
 /**
  * Prefix that marks an RPC method as callable before a connection is

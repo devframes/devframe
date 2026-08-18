@@ -1,5 +1,6 @@
 import type { DevframeDockEntryIcon, DevframeViewIframe, NavTarget } from '../types/docks'
 import type { DockRegistration, DocksEntriesContext } from './docks'
+import { HUB_EVENTS } from '../events'
 
 /**
  * Shared-iframe soft navigation — the viewer-side half of a host↔iframe
@@ -22,7 +23,7 @@ import type { DockRegistration, DocksEntriesContext } from './docks'
  */
 
 /** `postMessage` channel tag shared by both halves of the protocol. */
-export const FRAME_NAV_CHANNEL = 'devframe:frame-nav'
+export const FRAME_NAV_CHANNEL: string = HUB_EVENTS.postMessage.frameNav
 /** Protocol version. */
 export const FRAME_NAV_VERSION = 1
 

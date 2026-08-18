@@ -8,6 +8,7 @@ import type {
 import type { DevframeHubContext } from './context'
 import { coerceAgentPositionalArgs } from 'devframe/internal'
 import { createEventEmitter } from 'devframe/utils/events'
+import { HUB_EVENTS } from '../events'
 import { diagnostics } from './diagnostics'
 
 function findChildCommand(command: DevframeServerCommandInput, id: string): DevframeServerCommandInput | undefined {
@@ -76,7 +77,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
     validateCommandIds(this.commands, command)
     this.validateAgentExposure(command)
     this.commands.set(command.id, command)
-    this.events.emit('commands:registered', this.toSerializable(command))
+    this.events.emit(HUB_EVENTS.bus.commandsRegistered, this.toSerializable(command))
     this.agentProvider?.notifyChanged()
 
     return {
@@ -97,7 +98,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
         validateCommandIds(this.commands, next, existing.id)
         this.validateAgentExposure(next)
         Object.assign(existing, patch)
-        this.events.emit('commands:registered', this.toSerializable(existing))
+        this.events.emit(HUB_EVENTS.bus.commandsRegistered, this.toSerializable(existing))
         this.agentProvider?.notifyChanged()
       },
       unregister: () => this.unregister(command.id),
@@ -107,7 +108,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
   unregister(id: string): boolean {
     const deleted = this.commands.delete(id)
     if (deleted) {
-      this.events.emit('commands:unregistered', id)
+      this.events.emit(HUB_EVENTS.bus.commandsUnregistered, id)
       this.agentProvider?.notifyChanged()
     }
     return deleted

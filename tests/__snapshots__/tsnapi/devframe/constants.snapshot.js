@@ -11,6 +11,7 @@ export var DEVFRAME_AUTH_TOKEN_QUERY_PARAM /* const */
 export var DEVFRAME_CONNECTION_KEY /* const */
 export var DEVFRAME_CONNECTION_META_FILENAME /* const */
 export var DEVFRAME_DOCK_IMPORTS_FILENAME /* const */
+export var DEVFRAME_EVENTS /* const */
 export var DEVFRAME_MCP_ROUTE /* const */
 export var DEVFRAME_OTP_URL_PARAM /* const */
 export var DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE /* const */

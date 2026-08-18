@@ -1,6 +1,7 @@
 import type { StreamErrorPayload, StreamReader, StreamSink } from 'devframe/utils/streaming-channel'
 import type { DevframeRpcClient } from './rpc'
 import { createStreamReader, createStreamSink } from 'devframe/utils/streaming-channel'
+import { DEVFRAME_EVENTS } from '../events'
 
 const STREAM_KEY_SEPARATOR = '\x1F'
 
@@ -46,7 +47,7 @@ export function createRpcStreamingClientHost(rpc: DevframeRpcClient): RpcStreami
   const uploads = new Map<string, StreamSink<any>>()
 
   rpc.client.register({
-    name: 'devframe:streaming:chunk',
+    name: DEVFRAME_EVENTS.broadcast.streamingChunk,
     type: 'event',
     handler(channel: string, id: string, seq: number, chunk: any) {
       const reader = readers.get(streamKey(channel, id))
@@ -55,7 +56,7 @@ export function createRpcStreamingClientHost(rpc: DevframeRpcClient): RpcStreami
   })
 
   rpc.client.register({
-    name: 'devframe:streaming:end',
+    name: DEVFRAME_EVENTS.broadcast.streamingEnd,
     type: 'event',
     handler(channel: string, id: string, error?: StreamErrorPayload) {
       const key = streamKey(channel, id)
@@ -68,7 +69,7 @@ export function createRpcStreamingClientHost(rpc: DevframeRpcClient): RpcStreami
   })
 
   rpc.client.register({
-    name: 'devframe:streaming:upload-cancel',
+    name: DEVFRAME_EVENTS.broadcast.streamingUploadCancel,
     type: 'event',
     handler(channel: string, id: string) {
       const key = streamKey(channel, id)
@@ -87,7 +88,7 @@ export function createRpcStreamingClientHost(rpc: DevframeRpcClient): RpcStreami
   // OR the WS dropped briefly (state intact). Either way, sending `subscribe`
   // with `afterSeq: lastSeenSeq` is the right thing: the server replays
   // missed chunks if it has them, otherwise starts fresh.
-  rpc.events.on('rpc:is-trusted:updated', (isTrusted) => {
+  rpc.events.on(DEVFRAME_EVENTS.client.isTrustedUpdated, (isTrusted) => {
     if (!isTrusted)
       return
     for (const [key, reader] of readers) {
@@ -142,7 +143,7 @@ export function createRpcStreamingClientHost(rpc: DevframeRpcClient): RpcStreami
       })
     }
     else {
-      const off = rpc.events.on('rpc:is-trusted:updated', (trusted) => {
+      const off = rpc.events.on(DEVFRAME_EVENTS.client.isTrustedUpdated, (trusted) => {
         if (trusted) {
           off()
           if (readers.has(key) && !reader.cancelled && !reader.done) {

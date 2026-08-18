@@ -5,7 +5,7 @@ import type { WhenContext } from 'devframe/utils/when'
 import type { Ref } from 'vue'
 import type { DevframeDocksUserSettings } from './dock-settings'
 import { attachFrameNavClient, createDockRenderersContext } from '@devframes/hub/client'
-import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY } from '@devframes/hub/constants'
+import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY, HUB_EVENTS } from '@devframes/hub/constants'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
 import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_UI_HIDE_EVENT } from '../constants'
 import { useBranding } from './branding'
@@ -376,7 +376,7 @@ export async function createDocksContext(
   // ourselves. The target dock (e.g. Terminals) reads `activation.params` to
   // focus a specific session.
   rpc.client.register({
-    name: 'devframe:docks:activate' satisfies keyof DevframeRpcClientFunctions,
+    name: HUB_EVENTS.broadcast.docksActivate satisfies keyof DevframeRpcClientFunctions,
     type: 'action',
     handler: (activation: { dockId: string, params?: Record<string, unknown> }) => {
       if (activation?.dockId)

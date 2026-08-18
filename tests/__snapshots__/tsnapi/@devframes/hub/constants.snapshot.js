@@ -10,6 +10,7 @@ export var DEFAULT_CATEGORIES_ORDER /* const */
 export var DEFAULT_STATE_USER_SETTINGS /* const */
 export var DEVFRAMES_HUB_BASE /* const */
 export var DOCK_RENDERERS_STATE_KEY /* const */
+export var HUB_EVENTS /* const */
 // #endregion
 
 // #region Re-exports

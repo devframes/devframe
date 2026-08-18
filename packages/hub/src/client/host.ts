@@ -27,15 +27,16 @@ import type { DockRenderer, DockRendererManifest, DockRenderersContext } from '.
 import { connectDevframe } from 'devframe/client'
 import { createEventEmitter } from 'devframe/utils/events'
 import { DEFAULT_CATEGORIES_ORDER, DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY } from '../constants'
+import { HUB_EVENTS } from '../events'
 import { getDevframeClientContext, setDevframeClientContext } from './context'
 import { attachFrameNavClient } from './frame-nav'
 import { createMessagesClient } from './messages'
 import { createDockRenderersContext } from './renderers'
 
-const DOCKS_STATE_KEY = 'devframe:docks'
-const COMMANDS_STATE_KEY = 'devframe:commands'
-const USER_SETTINGS_STATE_KEY = 'devframe:user-settings'
-const DOCKS_ACTIVATE_EVENT = 'devframe:docks:activate'
+const DOCKS_STATE_KEY = HUB_EVENTS.sharedState.docks
+const COMMANDS_STATE_KEY = HUB_EVENTS.sharedState.commands
+const USER_SETTINGS_STATE_KEY = HUB_EVENTS.sharedState.userSettings
+const DOCKS_ACTIVATE_EVENT = HUB_EVENTS.broadcast.docksActivate
 
 export interface DevframeClientHostOptions {
   /**

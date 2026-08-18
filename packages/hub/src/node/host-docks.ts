@@ -15,6 +15,7 @@ import { getInternalContext } from 'devframe/node/hub-internals'
 import { createEventEmitter } from 'devframe/utils/events'
 import { join } from 'pathe'
 import { DEFAULT_STATE_USER_SETTINGS } from '../constants'
+import { HUB_EVENTS } from '../events'
 import { buildRemoteConnectionUrl } from '../remote-url'
 import { diagnostics } from './diagnostics'
 
@@ -44,7 +45,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
   ) {}
 
   async init() {
-    this.userSettings = await this.context.rpc.sharedState.get('devframe:user-settings', {
+    this.userSettings = await this.context.rpc.sharedState.get(HUB_EVENTS.sharedState.userSettings, {
       sharedState: createStorage({
         // Personal dock layout/preferences: per-checkout private state.
         filepath: join(this.context.host.getStorageDir('project'), 'settings.json'),
@@ -91,7 +92,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     this.validateGroupMembership(view)
     this.prepareRemoteRegistration(view)
     this.views.set(view.id, view)
-    this.events.emit('docks:entry:updated', view)
+    this.events.emit(HUB_EVENTS.bus.docksEntryUpdated, view)
 
     return {
       update: (patch) => {
@@ -115,7 +116,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     this.validateGroupMembership(view)
     this.prepareRemoteRegistration(view)
     this.views.set(view.id, view)
-    this.events.emit('docks:entry:updated', view)
+    this.events.emit(HUB_EVENTS.bus.docksEntryUpdated, view)
   }
 
   activate(dockId: string, params?: Record<string, unknown>): void {
@@ -125,7 +126,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     // rather than fatal.
     if (!this.views.has(dockId))
       diagnostics.DF8107({ id: dockId })
-    this.events.emit('docks:activate', { dockId, params })
+    this.events.emit(HUB_EVENTS.bus.docksActivate, { dockId, params })
   }
 
   private validateGroupMembership(view: DevframeDockUserEntry): void {

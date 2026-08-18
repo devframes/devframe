@@ -8,6 +8,7 @@ import { Server } from '@modelcontextprotocol/server'
 import { createHostContext } from 'devframe/node'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { join } from 'pathe'
+import { DEVFRAME_EVENTS } from '../../events'
 import { diagnostics } from '../../node/diagnostics'
 import { formatMcpError, stringifyForMcp } from './stringify'
 import { argsToJsonSchema, returnToJsonSchema } from './to-json-schema'
@@ -70,7 +71,7 @@ export function buildMcpServerFromContext(
   const notify = (method: string): void => {
     server.notification({ method }).catch(() => { /* ignore transport errors */ })
   }
-  const offManifest = ctx.agent.events.on('agent:manifest:changed', () => {
+  const offManifest = ctx.agent.events.on(DEVFRAME_EVENTS.bus.agentManifestChanged, () => {
     notify('notifications/tools/list_changed')
     notify('notifications/resources/list_changed')
   })

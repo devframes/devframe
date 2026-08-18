@@ -5,6 +5,7 @@ import type {
   DevframePtyTerminalSession,
 } from '../types/terminals'
 import { defineHubRpcFunction } from '../define'
+import { HUB_EVENTS } from '../events'
 import { diagnostics } from './diagnostics'
 
 /**
@@ -52,7 +53,7 @@ function resolveControllableSession(
  * from the shared state and dispatch by id via this RPC.
  */
 export const hubCommandsExecute = defineHubRpcFunction({
-  name: 'hub:commands:execute',
+  name: HUB_EVENTS.rpc.commandsExecute,
   type: 'action',
   setup: context => ({
     async handler(id: string, ...args: any[]) {
@@ -71,7 +72,7 @@ export const hubCommandsExecute = defineHubRpcFunction({
  * dock client script can report into the same feed the server writes to.
  */
 export const hubMessagesAdd = defineHubRpcFunction({
-  name: 'hub:messages:add',
+  name: HUB_EVENTS.rpc.messagesAdd,
   type: 'action',
   jsonSerializable: true,
   setup: context => ({
@@ -84,7 +85,7 @@ export const hubMessagesAdd = defineHubRpcFunction({
 
 /** `hub:messages:update` — Patch a message by id; returns the updated entry (or `undefined`). */
 export const hubMessagesUpdate = defineHubRpcFunction({
-  name: 'hub:messages:update',
+  name: HUB_EVENTS.rpc.messagesUpdate,
   type: 'action',
   jsonSerializable: true,
   setup: context => ({
@@ -96,7 +97,7 @@ export const hubMessagesUpdate = defineHubRpcFunction({
 
 /** `hub:messages:remove` — Remove a message by id. */
 export const hubMessagesRemove = defineHubRpcFunction({
-  name: 'hub:messages:remove',
+  name: HUB_EVENTS.rpc.messagesRemove,
   type: 'action',
   setup: context => ({
     async handler(id: string): Promise<void> {
@@ -107,7 +108,7 @@ export const hubMessagesRemove = defineHubRpcFunction({
 
 /** `hub:messages:clear` — Remove every message. */
 export const hubMessagesClear = defineHubRpcFunction({
-  name: 'hub:messages:clear',
+  name: HUB_EVENTS.rpc.messagesClear,
   type: 'action',
   setup: context => ({
     async handler(): Promise<void> {
@@ -122,7 +123,7 @@ export const hubMessagesClear = defineHubRpcFunction({
  * terminals plugin) drive a session owned by another plugin.
  */
 export const hubTerminalsWrite = defineHubRpcFunction({
-  name: 'hub:terminals:write',
+  name: HUB_EVENTS.rpc.terminalsWrite,
   type: 'action',
   setup: context => ({
     async handler(id: string, data: string): Promise<void> {
@@ -133,7 +134,7 @@ export const hubTerminalsWrite = defineHubRpcFunction({
 
 /** `hub:terminals:resize` — Resize an interactive PTY session by id. */
 export const hubTerminalsResize = defineHubRpcFunction({
-  name: 'hub:terminals:resize',
+  name: HUB_EVENTS.rpc.terminalsResize,
   type: 'action',
   setup: context => ({
     async handler(id: string, cols: number, rows: number): Promise<void> {
@@ -149,7 +150,7 @@ export const hubTerminalsResize = defineHubRpcFunction({
  * force-kill a session owned by another plugin.
  */
 export const hubTerminalsTerminate = defineHubRpcFunction({
-  name: 'hub:terminals:terminate',
+  name: HUB_EVENTS.rpc.terminalsTerminate,
   type: 'action',
   setup: context => ({
     async handler(id: string): Promise<void> {
@@ -164,7 +165,7 @@ export const hubTerminalsTerminate = defineHubRpcFunction({
  * elsewhere.
  */
 export const hubTerminalsRestart = defineHubRpcFunction({
-  name: 'hub:terminals:restart',
+  name: HUB_EVENTS.rpc.terminalsRestart,
   type: 'action',
   setup: context => ({
     async handler(id: string): Promise<void> {
@@ -182,7 +183,7 @@ export const hubTerminalsRestart = defineHubRpcFunction({
  * terminal UI discard a stopped aggregated session.
  */
 export const hubTerminalsRemove = defineHubRpcFunction({
-  name: 'hub:terminals:remove',
+  name: HUB_EVENTS.rpc.terminalsRemove,
   type: 'action',
   setup: context => ({
     async handler(id: string): Promise<void> {
@@ -210,7 +211,7 @@ export const hubTerminalsRemove = defineHubRpcFunction({
  * mounts in response still converges on it).
  */
 export const hubDocksActivate = defineHubRpcFunction({
-  name: 'hub:docks:activate',
+  name: HUB_EVENTS.rpc.docksActivate,
   type: 'action',
   setup: context => ({
     async handler(input: { dockId: string, params?: Record<string, unknown> }): Promise<void> {

@@ -10,6 +10,50 @@ export declare const DEFAULT_CATEGORIES_ORDER: Record<string, number>;
 export declare const DEFAULT_STATE_USER_SETTINGS: () => DevframeDocksUserSettings;
 export declare const DEVFRAMES_HUB_BASE: string;
 export declare const DOCK_RENDERERS_STATE_KEY: string;
+export declare const HUB_EVENTS: {
+  readonly bus: {
+    readonly docksEntryUpdated: "docks:entry:updated";
+    readonly docksActivate: "docks:activate";
+    readonly terminalsSessionUpdated: "terminals:session:updated";
+    readonly messagesAdded: "messages:added";
+    readonly messagesUpdated: "messages:updated";
+    readonly messagesRemoved: "messages:removed";
+    readonly messagesCleared: "messages:cleared";
+    readonly commandsRegistered: "commands:registered";
+    readonly commandsUnregistered: "commands:unregistered";
+  };
+  readonly rpc: {
+    readonly docksActivate: "hub:docks:activate";
+    readonly commandsExecute: "hub:commands:execute";
+    readonly messagesAdd: "hub:messages:add";
+    readonly messagesUpdate: "hub:messages:update";
+    readonly messagesRemove: "hub:messages:remove";
+    readonly messagesClear: "hub:messages:clear";
+    readonly terminalsWrite: "hub:terminals:write";
+    readonly terminalsResize: "hub:terminals:resize";
+    readonly terminalsTerminate: "hub:terminals:terminate";
+    readonly terminalsRestart: "hub:terminals:restart";
+    readonly terminalsRemove: "hub:terminals:remove";
+  };
+  readonly broadcast: {
+    readonly docksActivate: "devframe:docks:activate";
+    readonly terminalsUpdated: "devframe:terminals:updated";
+    readonly messagesUpdated: "devframe:messages:updated";
+  };
+  readonly sharedState: {
+    readonly docks: "devframe:docks";
+    readonly docksActive: "devframe:docks:active";
+    readonly commands: "devframe:commands";
+    readonly userSettings: "devframe:user-settings";
+    readonly dockRenderers: "devframe:dock-renderers";
+  };
+  readonly stream: {
+    readonly terminals: "devframe:terminals";
+  };
+  readonly postMessage: {
+    readonly frameNav: "devframe:frame-nav";
+  };
+};
 // #endregion
 
 // #region Re-exports

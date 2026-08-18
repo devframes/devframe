@@ -3,6 +3,7 @@ import type { ConnectionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunct
 import type { DevframeConnectionStatus } from './connection'
 import type { DevframeClientRpcHost, DevframeRpcClientMode, DevframeRpcClientOptions, RpcClientEvents } from './rpc'
 import { createRpcClient } from 'devframe/rpc/client'
+import { DEVFRAME_EVENTS } from '../events'
 import { promiseWithResolver } from '../utils/promise'
 import { DevframeConnectionError } from './connection'
 
@@ -65,7 +66,7 @@ export function createLiveRpcClientMode(
       return
     const previous = status
     status = next
-    events.emit('connection:status', next, previous)
+    events.emit(DEVFRAME_EVENTS.client.connectionStatus, next, previous)
   }
 
   // Pending calls we can settle proactively — a connection that drops (or a
@@ -99,7 +100,7 @@ export function createLiveRpcClientMode(
           if (settled)
             return
           finish()
-          events.emit('rpc:error', error, method)
+          events.emit(DEVFRAME_EVENTS.client.error, error, method)
           reject(error)
         },
       }
@@ -127,7 +128,7 @@ export function createLiveRpcClientMode(
             return
           finish()
           const err = error instanceof Error ? error : new Error(String(error))
-          events.emit('rpc:error', err, method)
+          events.emit(DEVFRAME_EVENTS.client.error, err, method)
           reject(err)
         },
       )
@@ -148,7 +149,7 @@ export function createLiveRpcClientMode(
     definitions,
     onError(error) {
       setStatus('error', error)
-      events.emit('connection:error', error)
+      events.emit(DEVFRAME_EVENTS.client.connectionError, error)
       rejectAllPending(new DevframeConnectionError('connection', '[devframe] Connection to the devframe server failed', { cause: error }))
     },
     onDisconnected() {
@@ -169,15 +170,15 @@ export function createLiveRpcClientMode(
 
   // Handle server-initiated auth revocation
   clientRpc.register({
-    name: 'devframe:auth:revoked',
+    name: DEVFRAME_EVENTS.broadcast.authRevoked,
     type: 'event',
     handler: () => {
       isTrusted = false
       const authError = new DevframeConnectionError('auth', '[devframe] The devframe server revoked this client\'s trust')
       setStatus('unauthorized', authError)
-      events.emit('connection:error', authError)
+      events.emit(DEVFRAME_EVENTS.client.connectionError, authError)
       rejectAllPending(authError)
-      events.emit('rpc:is-trusted:updated', false)
+      events.emit(DEVFRAME_EVENTS.client.isTrustedUpdated, false)
     },
   })
 
@@ -209,9 +210,9 @@ export function createLiveRpcClientMode(
       // so it never lands here.
       const authError = new DevframeConnectionError('auth', '[devframe] The devframe server refused this client\'s credentials')
       setStatus('unauthorized', authError)
-      events.emit('connection:error', authError)
+      events.emit(DEVFRAME_EVENTS.client.connectionError, authError)
     }
-    events.emit('rpc:is-trusted:updated', isTrusted)
+    events.emit(DEVFRAME_EVENTS.client.isTrustedUpdated, isTrusted)
     return result.isTrusted
   }
 
@@ -228,7 +229,7 @@ export function createLiveRpcClientMode(
       isTrusted = true
       trustedPromise.resolve(true)
       setStatus('connected')
-      events.emit('rpc:is-trusted:updated', true)
+      events.emit(DEVFRAME_EVENTS.client.isTrustedUpdated, true)
     }
     return token
   }
@@ -284,7 +285,7 @@ export function createLiveRpcClientMode(
       const method = String(args[0])
       const failFast = terminalError()
       if (failFast) {
-        events.emit('rpc:error', failFast, method)
+        events.emit(DEVFRAME_EVENTS.client.error, failFast, method)
         return Promise.reject(failFast)
       }
       return guardCall(
@@ -300,7 +301,7 @@ export function createLiveRpcClientMode(
       // to send, so surface the failure and drop it instead of queuing forever.
       const failFast = terminalError()
       if (failFast) {
-        events.emit('rpc:error', failFast, String(args[0]))
+        events.emit(DEVFRAME_EVENTS.client.error, failFast, String(args[0]))
         return
       }
       return serverRpc.$callEvent(
@@ -312,7 +313,7 @@ export function createLiveRpcClientMode(
       const method = String(args[0])
       const failFast = terminalError()
       if (failFast) {
-        events.emit('rpc:error', failFast, method)
+        events.emit(DEVFRAME_EVENTS.client.error, failFast, method)
         return Promise.reject(failFast)
       }
       return guardCall(

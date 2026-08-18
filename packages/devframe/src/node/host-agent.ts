@@ -16,6 +16,7 @@ import type {
   RpcFunctionAgentOptions,
 } from 'devframe/types'
 import { createEventEmitter } from 'devframe/utils/events'
+import { DEVFRAME_EVENTS } from '../events'
 import { coerceAgentPositionalArgs } from './agent-args'
 import { diagnostics } from './diagnostics'
 
@@ -48,7 +49,7 @@ export class DevframeAgentHost implements DevframeAgentHostType {
   ) {
     // Watch the RPC host for new `agent`-flagged definitions.
     this._rpcUnsubscribe = context.rpc.onChanged(() => {
-      this.events.emit('agent:manifest:changed')
+      this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
     })
   }
 
@@ -57,8 +58,8 @@ export class DevframeAgentHost implements DevframeAgentHostType {
 
     const tool = this._projectTool(input)
     this.tools.set(tool.id, { tool, handler: input.handler })
-    this.events.emit('agent:tool:registered', tool)
-    this.events.emit('agent:manifest:changed')
+    this.events.emit(DEVFRAME_EVENTS.bus.agentToolRegistered, tool)
+    this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
 
     return {
       unregister: () => this.unregisterTool(tool.id),
@@ -68,25 +69,25 @@ export class DevframeAgentHost implements DevframeAgentHostType {
   unregisterTool(id: string): boolean {
     const existed = this.tools.delete(id)
     if (existed) {
-      this.events.emit('agent:tool:unregistered', id)
-      this.events.emit('agent:manifest:changed')
+      this.events.emit(DEVFRAME_EVENTS.bus.agentToolUnregistered, id)
+      this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
     }
     return existed
   }
 
   registerToolProvider(provider: AgentToolProvider): AgentToolProviderHandle {
     this.providers.add(provider)
-    this.events.emit('agent:manifest:changed')
+    this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
 
     const notifyChanged = (): void => {
       if (this.providers.has(provider))
-        this.events.emit('agent:manifest:changed')
+        this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
     }
     return {
       notifyChanged,
       unregister: () => {
         if (this.providers.delete(provider))
-          this.events.emit('agent:manifest:changed')
+          this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
       },
     }
   }
@@ -103,8 +104,8 @@ export class DevframeAgentHost implements DevframeAgentHostType {
       uri: input.uri ?? `devframe://resource/${encodeURIComponent(input.id)}`,
     }
     this.resources.set(resource.id, { resource, read: input.read })
-    this.events.emit('agent:resource:registered', resource)
-    this.events.emit('agent:manifest:changed')
+    this.events.emit(DEVFRAME_EVENTS.bus.agentResourceRegistered, resource)
+    this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
 
     return {
       unregister: () => this.unregisterResource(resource.id),
@@ -114,8 +115,8 @@ export class DevframeAgentHost implements DevframeAgentHostType {
   unregisterResource(id: string): boolean {
     const existed = this.resources.delete(id)
     if (existed) {
-      this.events.emit('agent:resource:unregistered', id)
-      this.events.emit('agent:manifest:changed')
+      this.events.emit(DEVFRAME_EVENTS.bus.agentResourceUnregistered, id)
+      this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
     }
     return existed
   }

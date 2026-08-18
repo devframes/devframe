@@ -1,6 +1,8 @@
 import type { DevframeDocksUserSettings } from './types/settings'
 import { cleanDoubleSlashes, withLeadingSlash, withTrailingSlash } from 'ufo'
+import { HUB_EVENTS } from './events'
 
+export { HUB_EVENTS } from './events'
 export * from 'devframe/constants'
 
 /** Default mount base for a hub instance — one namespace, one catch-all. */
@@ -46,7 +48,7 @@ export const DEFAULT_CATEGORIES_ORDER: Record<string, number> = {
  * `type`, published by `initHub({ renderers })` and consumed by every
  * hub-aware client (the headless client host and viewers alike).
  */
-export const DOCK_RENDERERS_STATE_KEY = 'devframe:dock-renderers'
+export const DOCK_RENDERERS_STATE_KEY: string = HUB_EVENTS.sharedState.dockRenderers
 
 export const DEFAULT_STATE_USER_SETTINGS: () => DevframeDocksUserSettings = () => ({
   docksHidden: [],

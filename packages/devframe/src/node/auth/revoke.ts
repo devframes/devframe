@@ -2,6 +2,7 @@ import type { DevframeNodeContext } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { RpcFunctionsHostImpl } from '../host-functions'
 import type { InternalAnonymousAuthStorage } from '../hub-internals/context'
+import { DEVFRAME_EVENTS } from '../../events'
 
 /**
  * Flip `isTrusted` to false on any live WS clients connected with `token`
@@ -30,7 +31,7 @@ export async function revokeActiveConnectionsForToken(
     return
 
   await rpcHost.broadcast({
-    method: 'devframe:auth:revoked',
+    method: DEVFRAME_EVENTS.broadcast.authRevoked,
     args: [],
     filter: client => affectedSessionIds.has(client.$meta.id),
   })

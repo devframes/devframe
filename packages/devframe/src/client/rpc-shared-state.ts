@@ -2,6 +2,7 @@ import type { RpcSharedStateGetOptions, RpcSharedStateHost } from 'devframe/type
 import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
 import type { DevframeRpcClient } from './rpc'
 import { createSharedState } from 'devframe/utils/shared-state'
+import { DEVFRAME_EVENTS } from '../events'
 
 export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcSharedStateHost {
   const sharedState = new Map<string, SharedState<any>>()
@@ -20,7 +21,7 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
   }
 
   rpc.client.register({
-    name: 'devframe:rpc:client-state:updated',
+    name: DEVFRAME_EVENTS.broadcast.clientStateUpdated,
     type: 'event',
     handler: (key: string, fullState: any, syncId: string) => {
       const state = sharedState.get(key)
@@ -31,7 +32,7 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
   })
 
   rpc.client.register({
-    name: 'devframe:rpc:client-state:patch',
+    name: DEVFRAME_EVENTS.broadcast.clientStatePatch,
     type: 'event',
     handler: (key: string, patches: SharedStatePatch[], syncId: string) => {
       const state = sharedState.get(key)
@@ -124,7 +125,7 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
         if (!rpc.isTrusted) {
           resolve(state)
           let initialized = false
-          rpc.events.on('rpc:is-trusted:updated', (isTrusted) => {
+          rpc.events.on(DEVFRAME_EVENTS.client.isTrustedUpdated, (isTrusted) => {
             if (isTrusted && !initialized) {
               initialized = true
               initSharedState()

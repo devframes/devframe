@@ -16,6 +16,7 @@ import type {
 import type { DevframeHubContext } from './context'
 import process from 'node:process'
 import { createEventEmitter } from 'devframe/utils/events'
+import { HUB_EVENTS } from '../events'
 import { diagnostics } from './diagnostics'
 
 type PartialWithoutId<T extends { id: string }> = Partial<T> & { id: string }
@@ -24,7 +25,7 @@ type PartialWithoutId<T extends { id: string }> = Partial<T> & { id: string }
  * Channel name used for terminal stream output. Stable, well-known so
  * hub-aware clients can subscribe by name.
  */
-const TERMINAL_STREAM_CHANNEL = 'devframe:terminals' as const
+const TERMINAL_STREAM_CHANNEL = HUB_EVENTS.stream.terminals
 const TERMINAL_REPLAY_WINDOW = 1000
 /** Max chunks retained in the per-session scrollback buffer (bounded like the replay window). */
 const TERMINAL_BUFFER_LIMIT = 1000
@@ -71,7 +72,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     }
     this.sessions.set(session.id, session)
     this.bindStream(session)
-    this.events.emit('terminals:session:updated', session)
+    this.events.emit(HUB_EVENTS.bus.terminalsSessionUpdated, session)
     return session
   }
 
@@ -83,13 +84,13 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     Object.assign(session, patch)
     this.sessions.set(patch.id, session)
     this.bindStream(session)
-    this.events.emit('terminals:session:updated', session)
+    this.events.emit(HUB_EVENTS.bus.terminalsSessionUpdated, session)
   }
 
   remove(session: DevframeTerminalSession): void {
     this._boundStreams.get(session.id)?.dispose()
     this.sessions.delete(session.id)
-    this.events.emit('terminals:session:updated', session)
+    this.events.emit(HUB_EVENTS.bus.terminalsSessionUpdated, session)
     this._boundStreams.delete(session.id)
   }
 
@@ -185,7 +186,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       if (session.status === next)
         return
       session.status = next
-      this.events.emit('terminals:session:updated', session)
+      this.events.emit(HUB_EVENTS.bus.terminalsSessionUpdated, session)
     }
 
     const closeStream = () => {
@@ -376,7 +377,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       if (session.status === next)
         return
       session.status = next
-      this.events.emit('terminals:session:updated', session)
+      this.events.emit(HUB_EVENTS.bus.terminalsSessionUpdated, session)
     }
 
     const closeStream = () => {

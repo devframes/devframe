@@ -2,6 +2,7 @@ import type { RpcFunctionsHost, RpcSharedStateGetOptions, RpcSharedStateHost } f
 import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { createDebug } from 'obug'
+import { DEVFRAME_EVENTS } from '../events'
 import { diagnostics } from './diagnostics'
 
 const debug = createDebug('devframe:rpc:state:changed')
@@ -22,7 +23,7 @@ export function createRpcSharedStateServerHost(
         if (patches) {
           debug('patch', { key, syncId })
           rpc.broadcast({
-            method: 'devframe:rpc:client-state:patch',
+            method: DEVFRAME_EVENTS.broadcast.clientStatePatch,
             args: [key, patches, syncId],
             filter: client => client.$meta.subscribedStates.has(key),
           })
@@ -30,7 +31,7 @@ export function createRpcSharedStateServerHost(
         else {
           debug('updated', { key, syncId })
           rpc.broadcast({
-            method: 'devframe:rpc:client-state:updated',
+            method: DEVFRAME_EVENTS.broadcast.clientStateUpdated,
             args: [key, fullState, syncId],
             filter: client => client.$meta.subscribedStates.has(key),
           })

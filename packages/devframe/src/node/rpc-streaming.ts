@@ -8,6 +8,7 @@ import type {
 import type { StreamErrorPayload, StreamReader, StreamSink } from 'devframe/utils/streaming-channel'
 import { createStreamReader, createStreamSink } from 'devframe/utils/streaming-channel'
 import { createDebug } from 'obug'
+import { DEVFRAME_EVENTS } from '../events'
 import { diagnostics } from './diagnostics'
 
 const debug = createDebug('devframe:rpc:streaming')
@@ -118,7 +119,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
       for (const buffered of record.sink.buffer) {
         if (buffered.seq > afterSeq) {
           rpc.broadcast({
-            method: 'devframe:streaming:chunk',
+            method: DEVFRAME_EVENTS.broadcast.streamingChunk,
             args: [channelName, id, buffered.seq, buffered.chunk],
             event: true,
             optional: true,
@@ -128,7 +129,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
       }
       if (record.sink.closed) {
         rpc.broadcast({
-          method: 'devframe:streaming:end',
+          method: DEVFRAME_EVENTS.broadcast.streamingEnd,
           args: [channelName, id, undefined],
           event: true,
           optional: true,
@@ -250,7 +251,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
       record.unbinders.push(
         sink.events.on('chunk', (seq, chunk) => {
           rpc.broadcast({
-            method: 'devframe:streaming:chunk',
+            method: DEVFRAME_EVENTS.broadcast.streamingChunk,
             args: [name, sink.id, seq, chunk],
             event: true,
             optional: true,
@@ -261,7 +262,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
       record.unbinders.push(
         sink.events.on('end', (error) => {
           rpc.broadcast({
-            method: 'devframe:streaming:end',
+            method: DEVFRAME_EVENTS.broadcast.streamingEnd,
             args: [name, sink.id, error],
             event: true,
             optional: true,
@@ -304,7 +305,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
           if (!targetMeta)
             return
           rpc.broadcast({
-            method: 'devframe:streaming:upload-cancel',
+            method: DEVFRAME_EVENTS.broadcast.streamingUploadCancel,
             args: [name, reader.id],
             event: true,
             optional: true,

@@ -9,6 +9,7 @@ import type {
 import type { DevframeHubContext } from './context'
 import { createEventEmitter } from 'devframe/utils/events'
 import { nanoid } from 'devframe/utils/nanoid'
+import { HUB_EVENTS } from '../events'
 
 const MAX_ENTRIES = 1000
 const MAX_REMOVALS = 1000
@@ -69,7 +70,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
 
     this.entries.set(entry.id, entry)
     this.lastModified.set(entry.id, this._tick())
-    this.events.emit('messages:added', entry)
+    this.events.emit(HUB_EVENTS.bus.messagesAdded, entry)
 
     if (entry.autoDelete) {
       this._autoDeleteTimers.set(entry.id, setTimeout(() => {
@@ -95,7 +96,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
 
     this.entries.set(id, updated)
     this.lastModified.set(id, this._tick())
-    this.events.emit('messages:updated', updated)
+    this.events.emit(HUB_EVENTS.bus.messagesUpdated, updated)
 
     // Reset autoDelete timer if changed
     if (patch.autoDelete !== undefined) {
@@ -123,7 +124,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
     this.entries.delete(id)
     this.lastModified.delete(id)
     this._recordRemoval(id, this._tick())
-    this.events.emit('messages:removed', id)
+    this.events.emit(HUB_EVENTS.bus.messagesRemoved, id)
   }
 
   info(message: string, extra?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle> {
@@ -155,7 +156,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
       this._recordRemoval(id, tick)
     this.entries.clear()
     this.lastModified.clear()
-    this.events.emit('messages:cleared')
+    this.events.emit(HUB_EVENTS.bus.messagesCleared)
   }
 
   listSince(since?: number | null): DevframeMessagesListDelta {

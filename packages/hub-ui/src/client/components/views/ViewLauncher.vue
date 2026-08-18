@@ -3,6 +3,7 @@ import type { DevframeViewLauncherStatus } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import type { HubViewLauncher } from '../../types'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
+import { HUB_EVENTS } from '@devframes/hub/constants'
 import { computed, ref, watch } from 'vue'
 import { TERMINALS_DOCK_ID } from '../../constants'
 import DockIcon from '../dock/DockIcon.vue'
@@ -54,7 +55,7 @@ const terminalSessionId = computed(() => props.entry.launcher.terminalSessionId)
 function viewInTerminal() {
   if (!terminalSessionId.value)
     return
-  props.context.rpc.call('hub:docks:activate', {
+  props.context.rpc.call(HUB_EVENTS.rpc.docksActivate, {
     dockId: TERMINALS_DOCK_ID,
     params: { sessionId: terminalSessionId.value },
   })
