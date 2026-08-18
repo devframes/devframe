@@ -155,7 +155,7 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
   const refreshDocks = debounce(() => {
     docksSharedState.mutate(() => docks.values())
   }, debounceMs)
-  docks.events.on('dock:entry:updated', refreshDocks)
+  docks.events.on('docks:entry:updated', refreshDocks)
   // A remote iframe dock registered before the WS transport finishes binding
   // (the common case: `initHub` installs devframes — and their docks — before
   // resolving an async side-car/shared-server port) gets projected without a
@@ -174,7 +174,7 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
     'devframe:docks:active',
     { initialValue: { activation: null } },
   )
-  docks.events.on('dock:activate', (activation) => {
+  docks.events.on('docks:activate', (activation) => {
     activeDockSharedState.mutate((state) => {
       state.activation = activation
     })
@@ -191,7 +191,7 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
     })
     docksSharedState.mutate(() => docks.values())
   }, debounceMs)
-  terminals.events.on('terminal:session:updated', broadcastTerminals)
+  terminals.events.on('terminals:session:updated', broadcastTerminals)
 
   const broadcastMessages = debounce(() => {
     context.rpc.broadcast({
@@ -200,17 +200,17 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
     })
     docksSharedState.mutate(() => docks.values())
   }, debounceMs)
-  messages.events.on('message:added', broadcastMessages)
-  messages.events.on('message:updated', broadcastMessages)
-  messages.events.on('message:removed', broadcastMessages)
-  messages.events.on('message:cleared', broadcastMessages)
+  messages.events.on('messages:added', broadcastMessages)
+  messages.events.on('messages:updated', broadcastMessages)
+  messages.events.on('messages:removed', broadcastMessages)
+  messages.events.on('messages:cleared', broadcastMessages)
 
   const commandsSharedState = await context.rpc.sharedState.get('devframe:commands', { initialValue: [] })
   const syncCommands = debounce(() => {
     commandsSharedState.mutate(() => commands.list())
   }, debounceMs)
-  commands.events.on('command:registered', syncCommands)
-  commands.events.on('command:unregistered', syncCommands)
+  commands.events.on('commands:registered', syncCommands)
+  commands.events.on('commands:unregistered', syncCommands)
 
   commandsSharedState.mutate(() => commands.list())
 

@@ -3,8 +3,8 @@ import type { ConnectionMeta, EventEmitter } from 'devframe/types'
 export interface DevframeDocksHost {
   readonly views: Map<string, DevframeDockUserEntry>
   readonly events: EventEmitter<{
-    'dock:entry:updated': (entry: DevframeDockUserEntry) => void
-    'dock:activate': (activation: DevframeDockActivation) => void
+    'docks:entry:updated': (entry: DevframeDockUserEntry) => void
+    'docks:activate': (activation: DevframeDockActivation) => void
   }>
 
   register: <T extends DevframeDockUserEntry>(entry: T, force?: boolean) => {

@@ -275,7 +275,7 @@ A hub-aware UI doesn't import any hub classes; it reads three shared-state keys 
 | `hub:commands:execute` RPC | `(id, ...args) => unknown` | Server-side command dispatch. |
 | `hub:docks:activate` RPC | `({ dockId, params? }) => void` | Switch the active dock from any client. |
 
-Plus broadcast notifications (`devframe:docks:activate`, `devframe:terminals:updated`, `devframe:messages:updated`) that a UI can subscribe to via `rpc.client.register(...)`. The client host registers the `devframe:docks:activate` handler for you.
+Plus broadcast notifications (`devframe:docks:activate`, `devframe:terminals:updated`, `devframe:messages:updated`) that a UI can subscribe to via `rpc.client.register(...)`. The client host registers the `devframe:docks:activate` handler for you. The [Events Reference](./events) tables every channel across all four subsystems.
 
 ## Running plugin code in the host page
 

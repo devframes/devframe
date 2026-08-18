@@ -50,6 +50,7 @@ function guideGroups(prefix: string) {
         { text: 'Serve a Hub Anywhere', link: `${prefix}/guide/hub-initiate` },
         { text: 'Cross-Plugin Services', link: `${prefix}/guide/services` },
         { text: 'Deep Linking', link: `${prefix}/guide/deep-linking` },
+        { text: 'Events Reference', link: `${prefix}/guide/events` },
       ],
     },
     {

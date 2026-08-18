@@ -76,7 +76,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
     validateCommandIds(this.commands, command)
     this.validateAgentExposure(command)
     this.commands.set(command.id, command)
-    this.events.emit('command:registered', this.toSerializable(command))
+    this.events.emit('commands:registered', this.toSerializable(command))
     this.agentProvider?.notifyChanged()
 
     return {
@@ -97,7 +97,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
         validateCommandIds(this.commands, next, existing.id)
         this.validateAgentExposure(next)
         Object.assign(existing, patch)
-        this.events.emit('command:registered', this.toSerializable(existing))
+        this.events.emit('commands:registered', this.toSerializable(existing))
         this.agentProvider?.notifyChanged()
       },
       unregister: () => this.unregister(command.id),
@@ -107,7 +107,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
   unregister(id: string): boolean {
     const deleted = this.commands.delete(id)
     if (deleted) {
-      this.events.emit('command:unregistered', id)
+      this.events.emit('commands:unregistered', id)
       this.agentProvider?.notifyChanged()
     }
     return deleted

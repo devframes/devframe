@@ -261,7 +261,7 @@ describe('devframeTerminalHost child-process status lifecycle', () => {
   it('marks status stopped and emits an update on a clean exit', async () => {
     const { host } = createTerminalHost()
     const updates: string[] = []
-    host.events.on('terminal:session:updated', s => updates.push(s.status))
+    host.events.on('terminals:session:updated', s => updates.push(s.status))
 
     const session = await host.startChildProcess({
       command: process.execPath,
@@ -441,7 +441,7 @@ describe('devframeTerminalHost PTY status lifecycle', () => {
   itPty('marks status stopped and emits an update on a clean exit', async () => {
     const { host } = createTerminalHost()
     const updates: string[] = []
-    host.events.on('terminal:session:updated', s => updates.push(s.status))
+    host.events.on('terminals:session:updated', s => updates.push(s.status))
 
     const session = await host.startPtySession({
       command: NODE,

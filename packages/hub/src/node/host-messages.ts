@@ -69,7 +69,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
 
     this.entries.set(entry.id, entry)
     this.lastModified.set(entry.id, this._tick())
-    this.events.emit('message:added', entry)
+    this.events.emit('messages:added', entry)
 
     if (entry.autoDelete) {
       this._autoDeleteTimers.set(entry.id, setTimeout(() => {
@@ -95,7 +95,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
 
     this.entries.set(id, updated)
     this.lastModified.set(id, this._tick())
-    this.events.emit('message:updated', updated)
+    this.events.emit('messages:updated', updated)
 
     // Reset autoDelete timer if changed
     if (patch.autoDelete !== undefined) {
@@ -123,7 +123,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
     this.entries.delete(id)
     this.lastModified.delete(id)
     this._recordRemoval(id, this._tick())
-    this.events.emit('message:removed', id)
+    this.events.emit('messages:removed', id)
   }
 
   info(message: string, extra?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle> {
@@ -155,7 +155,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
       this._recordRemoval(id, tick)
     this.entries.clear()
     this.lastModified.clear()
-    this.events.emit('message:cleared')
+    this.events.emit('messages:cleared')
   }
 
   listSince(since?: number | null): DevframeMessagesListDelta {

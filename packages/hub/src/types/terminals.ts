@@ -5,7 +5,7 @@ import type { DevframeDockEntryIcon } from './docks'
 export interface DevframeTerminalsHost {
   readonly sessions: Map<string, DevframeTerminalSession>
   readonly events: EventEmitter<{
-    'terminal:session:updated': (session: DevframeTerminalSession) => void
+    'terminals:session:updated': (session: DevframeTerminalSession) => void
   }>
 
   register: (session: DevframeTerminalSession) => DevframeTerminalSession

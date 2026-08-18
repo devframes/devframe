@@ -71,7 +71,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     }
     this.sessions.set(session.id, session)
     this.bindStream(session)
-    this.events.emit('terminal:session:updated', session)
+    this.events.emit('terminals:session:updated', session)
     return session
   }
 
@@ -83,13 +83,13 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     Object.assign(session, patch)
     this.sessions.set(patch.id, session)
     this.bindStream(session)
-    this.events.emit('terminal:session:updated', session)
+    this.events.emit('terminals:session:updated', session)
   }
 
   remove(session: DevframeTerminalSession): void {
     this._boundStreams.get(session.id)?.dispose()
     this.sessions.delete(session.id)
-    this.events.emit('terminal:session:updated', session)
+    this.events.emit('terminals:session:updated', session)
     this._boundStreams.delete(session.id)
   }
 
@@ -185,7 +185,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       if (session.status === next)
         return
       session.status = next
-      this.events.emit('terminal:session:updated', session)
+      this.events.emit('terminals:session:updated', session)
     }
 
     const closeStream = () => {
@@ -376,7 +376,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       if (session.status === next)
         return
       session.status = next
-      this.events.emit('terminal:session:updated', session)
+      this.events.emit('terminals:session:updated', session)
     }
 
     const closeStream = () => {

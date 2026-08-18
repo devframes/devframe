@@ -85,7 +85,7 @@ describe('devframeDockHost grouping', () => {
   it('registers a group entry: stored, projected, and emitted', () => {
     const host = new DevframeDocksHost(createContext())
     const emitted: string[] = []
-    host.events.on('dock:entry:updated', entry => emitted.push(entry.id))
+    host.events.on('docks:entry:updated', entry => emitted.push(entry.id))
 
     host.register({
       type: 'group',
@@ -192,12 +192,12 @@ describe('devframeDockHost grouping', () => {
 })
 
 describe('devframeDockHost activate', () => {
-  it('emits a dock:activate event carrying the id and params', () => {
+  it('emits a docks:activate event carrying the id and params', () => {
     const host = new DevframeDocksHost(createContext())
     host.register({ type: 'iframe', id: 'terminals', title: 'Terminals', icon: 'ph:terminal-window-duotone', url: '/__terminals/' })
 
     const activations: Array<{ dockId: string, params?: Record<string, unknown> }> = []
-    host.events.on('dock:activate', a => activations.push(a))
+    host.events.on('docks:activate', a => activations.push(a))
 
     host.activate('terminals', { sessionId: 'sess-1' })
     expect(activations).toEqual([{ dockId: 'terminals', params: { sessionId: 'sess-1' } }])
@@ -208,7 +208,7 @@ describe('devframeDockHost activate', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     try {
       const activations: string[] = []
-      host.events.on('dock:activate', a => activations.push(a.dockId))
+      host.events.on('docks:activate', a => activations.push(a.dockId))
 
       host.activate('nope')
       expect(activations).toEqual(['nope'])

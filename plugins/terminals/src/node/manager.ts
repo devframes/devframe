@@ -83,7 +83,7 @@ interface HubTerminalsBridge {
   update: (session: HubTerminalEntry) => void
   remove?: (session: { id: string }) => void
   events?: {
-    on: (event: 'terminal:session:updated', cb: (session: HubTerminalEntry) => void) => void
+    on: (event: 'terminals:session:updated', cb: (session: HubTerminalEntry) => void) => void
   }
 }
 
@@ -176,7 +176,7 @@ export class TerminalManager {
     // aggregated sessions appear/update/disappear in this plugin's UI. Guarded
     // to foreign ids so mirroring our *own* sessions into the hub can't loop.
     const hub = this.hubTerminals()
-    hub?.events?.on('terminal:session:updated', (session) => {
+    hub?.events?.on('terminals:session:updated', (session) => {
       if (!this.sessions.has(session.id))
         this.refreshSessionsState()
     })

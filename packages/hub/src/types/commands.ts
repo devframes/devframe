@@ -135,8 +135,8 @@ export interface DevframeCommandHandle {
 }
 
 export interface DevframeCommandsHostEvents {
-  'command:registered': (command: DevframeServerCommandEntry) => void
-  'command:unregistered': (id: string) => void
+  'commands:registered': (command: DevframeServerCommandEntry) => void
+  'commands:unregistered': (id: string) => void
 }
 
 export interface DevframeCommandsHost {

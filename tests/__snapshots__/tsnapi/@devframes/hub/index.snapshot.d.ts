@@ -74,8 +74,8 @@ export interface DevframeCommandsHost {
   list: () => DevframeServerCommandEntry[];
 }
 export interface DevframeCommandsHostEvents {
-  'command:registered': (_: DevframeServerCommandEntry) => void;
-  'command:unregistered': (_: string) => void;
+  'commands:registered': (_: DevframeServerCommandEntry) => void;
+  'commands:unregistered': (_: string) => void;
 }
 export interface DevframeDockActivation {
   dockId: string;
@@ -107,8 +107,8 @@ export interface DevframeDocksActiveState {
 export interface DevframeDocksHost {
   readonly views: Map<string, DevframeDockUserEntry>;
   readonly events: EventEmitter<{
-    'dock:entry:updated': (entry: DevframeDockUserEntry) => void;
-    'dock:activate': (activation: DevframeDockActivation) => void;
+    'docks:entry:updated': (entry: DevframeDockUserEntry) => void;
+    'docks:activate': (activation: DevframeDockActivation) => void;
   }>;
   register: <T extends DevframeDockUserEntry>(_: T, _?: boolean) => {
     update: (_: Partial<T>) => void;
@@ -197,10 +197,10 @@ export interface DevframeMessagesClient extends DevframeMessagesLevelShortcuts {
 export interface DevframeMessagesHost extends DevframeMessagesLevelShortcuts {
   readonly entries: Map<string, DevframeMessageEntry>;
   readonly events: EventEmitter<{
-    'message:added': (entry: DevframeMessageEntry) => void;
-    'message:updated': (entry: DevframeMessageEntry) => void;
-    'message:removed': (id: string) => void;
-    'message:cleared': () => void;
+    'messages:added': (entry: DevframeMessageEntry) => void;
+    'messages:updated': (entry: DevframeMessageEntry) => void;
+    'messages:removed': (id: string) => void;
+    'messages:cleared': () => void;
   }>;
   add: (_: DevframeMessageEntryInput) => Promise<DevframeMessageHandle>;
   update: (_: string, _: Partial<DevframeMessageEntryInput>) => Promise<DevframeMessageEntry | undefined>;
@@ -264,7 +264,7 @@ export interface DevframeTerminalSessionBase {
 export interface DevframeTerminalsHost {
   readonly sessions: Map<string, DevframeTerminalSession>;
   readonly events: EventEmitter<{
-    'terminal:session:updated': (session: DevframeTerminalSession) => void;
+    'terminals:session:updated': (session: DevframeTerminalSession) => void;
   }>;
   register: (_: DevframeTerminalSession) => DevframeTerminalSession;
   update: (_: DevframeTerminalSession) => void;

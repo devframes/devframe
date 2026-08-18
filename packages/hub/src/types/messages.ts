@@ -206,10 +206,10 @@ export interface DevframeMessagesListDelta {
 export interface DevframeMessagesHost extends DevframeMessagesLevelShortcuts {
   readonly entries: Map<string, DevframeMessageEntry>
   readonly events: EventEmitter<{
-    'message:added': (entry: DevframeMessageEntry) => void
-    'message:updated': (entry: DevframeMessageEntry) => void
-    'message:removed': (id: string) => void
-    'message:cleared': () => void
+    'messages:added': (entry: DevframeMessageEntry) => void
+    'messages:updated': (entry: DevframeMessageEntry) => void
+    'messages:removed': (id: string) => void
+    'messages:cleared': () => void
   }>
 
   /**

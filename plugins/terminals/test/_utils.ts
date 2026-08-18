@@ -39,7 +39,7 @@ export interface FakeHubTerminals {
 
 /**
  * Minimal stand-in for the hub's `ctx.terminals` aggregation host — a sessions
- * map plus a `terminal:session:updated` emitter — so tests can exercise how the
+ * map plus a `terminals:session:updated` emitter — so tests can exercise how the
  * terminals plugin surfaces sessions contributed by *other* devframes.
  */
 export function createFakeHubTerminals(): FakeHubTerminals {
@@ -50,19 +50,19 @@ export function createFakeHubTerminals(): FakeHubTerminals {
     events,
     register(entry) {
       sessions.set(entry.id, entry)
-      events.emit('terminal:session:updated', entry)
+      events.emit('terminals:session:updated', entry)
       return entry
     },
     update(patch) {
       const cur = sessions.get(patch.id)
       if (cur)
         Object.assign(cur, patch)
-      events.emit('terminal:session:updated', sessions.get(patch.id) ?? patch)
+      events.emit('terminals:session:updated', sessions.get(patch.id) ?? patch)
     },
     remove(entry) {
       const cur = sessions.get(entry.id)
       sessions.delete(entry.id)
-      events.emit('terminal:session:updated', cur ?? entry)
+      events.emit('terminals:session:updated', cur ?? entry)
     },
   }
 }

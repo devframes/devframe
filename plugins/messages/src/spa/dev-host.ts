@@ -31,10 +31,10 @@ function wireBroadcast(ctx: DevframeNodeContext, messages: DevframeMessagesHostT
   const broadcast = (): void => {
     ctx.rpc.broadcast({ method: MESSAGES_UPDATED_EVENT, args: [] })
   }
-  messages.events.on('message:added', broadcast)
-  messages.events.on('message:updated', broadcast)
-  messages.events.on('message:removed', broadcast)
-  messages.events.on('message:cleared', broadcast)
+  messages.events.on('messages:added', broadcast)
+  messages.events.on('messages:updated', broadcast)
+  messages.events.on('messages:removed', broadcast)
+  messages.events.on('messages:cleared', broadcast)
 }
 
 function seedDemoMessages(messages: DevframeMessagesHostType): void {

@@ -91,7 +91,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     this.validateGroupMembership(view)
     this.prepareRemoteRegistration(view)
     this.views.set(view.id, view)
-    this.events.emit('dock:entry:updated', view)
+    this.events.emit('docks:entry:updated', view)
 
     return {
       update: (patch) => {
@@ -115,7 +115,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     this.validateGroupMembership(view)
     this.prepareRemoteRegistration(view)
     this.views.set(view.id, view)
-    this.events.emit('dock:entry:updated', view)
+    this.events.emit('docks:entry:updated', view)
   }
 
   activate(dockId: string, params?: Record<string, unknown>): void {
@@ -125,7 +125,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
     // rather than fatal.
     if (!this.views.has(dockId))
       diagnostics.DF8107({ id: dockId })
-    this.events.emit('dock:activate', { dockId, params })
+    this.events.emit('docks:activate', { dockId, params })
   }
 
   private validateGroupMembership(view: DevframeDockUserEntry): void {
