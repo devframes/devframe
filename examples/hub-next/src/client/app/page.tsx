@@ -295,7 +295,7 @@ function AuthOverlay({ rpc }: { rpc: DevframeRpcClient }) {
   }
 
   return (
-    <div className="fixed inset-0 grid place-items-center of-auto bg-base p8 color-base">
+    <div className="fixed inset-0 z-modal-content grid place-items-center of-auto bg-base p8 color-base">
       <div className="w-full max-w-100 flex flex-col items-center text-center">
         <div className="grid size-16 place-items-center rounded-2xl bg-active">
           <span className="i-ph-shield-check-duotone text-4xl color-active" />
