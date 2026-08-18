@@ -1,7 +1,7 @@
 import type { DevframeDefinition } from 'devframe/types'
 import type { DevframeViewIframe } from '../types/docks'
 import type { DevframeHubContext } from './context'
-import { installDefinitionServices } from 'devframe/node'
+import { installDefinitionServices } from 'devframe/internal'
 import { resolveBasePath } from 'devframe/node/hub-internals'
 import { resolve } from 'pathe'
 import { diagnostics } from './diagnostics'

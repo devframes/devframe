@@ -32,9 +32,13 @@
 // - `diagnostics` — devframe core's structured diagnostics instance
 //   (`DF00xx`), so a first-party integration built outside this package can
 //   report against the same registered codes instead of minting its own.
+// - `installDefinitionServices` — queues a definition's declarative wire
+//   services ahead of its `setup`; a host that installs devframes itself
+//   (the hub's `installDevframe`) calls it exactly like the adapters do.
 export { normalizeBasePath, resolveBasePath } from '../adapters/_shared'
 export { coerceAgentPositionalArgs } from '../node/agent-args'
 export type { AgentArgsFallback } from '../node/agent-args'
+export { installDefinitionServices } from '../node/definition-services'
 export { diagnostics } from '../node/diagnostics'
 export { DevframeAgentHost } from '../node/host-agent'
 export * from '../node/host-h3'

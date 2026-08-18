@@ -132,7 +132,6 @@ describe('wire services (install / ready barrier)', () => {
     const second = ctx.services.install({ package: '@test/svc', options: { b: 2, c: 3 } })
 
     expect(setup).not.toHaveBeenCalled()
-    expect(ctx.services.isReady).toBe(false)
     await ctx.services.ready()
 
     expect(setup).toHaveBeenCalledTimes(1)

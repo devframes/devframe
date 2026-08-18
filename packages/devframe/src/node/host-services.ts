@@ -4,7 +4,6 @@ import type {
   DevframeServiceDescriptor,
   DevframeServiceId,
   DevframeServiceInput,
-  DevframeServiceInstallOptions,
   DevframeServiceOf,
   DevframeServicesHost,
   DevframeServicesState,
@@ -106,13 +105,9 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
     return Array.from(this.services.keys())
   }
 
-  get isReady(): boolean {
-    return this.readyPromise !== undefined
-  }
-
   install<API = unknown, Options = any>(
     input: DevframeServiceInput<API, Options>,
-    options?: DevframeServiceInstallOptions,
+    options?: { resolveFrom?: string | null },
   ): Promise<API | undefined> {
     validateServiceInput(input as DevframeServiceInput)
     const promise = new Promise<unknown>((resolve, reject) => {

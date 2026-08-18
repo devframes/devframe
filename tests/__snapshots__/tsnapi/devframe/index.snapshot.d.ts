@@ -273,7 +273,6 @@ export interface DevframeScopedNodeContext<NS extends string = string, Settings 
   views: DevframeViewHost;
   diagnostics: DevframeDiagnosticsHost;
   agent: DevframeAgentHost;
-  services: DevframeServicesHost;
   scope: DevframeNodeContext['scope'];
 }
 export interface DevframeScopedNodeRpc<NS extends string = string> {
@@ -306,7 +305,9 @@ export interface DevframeServiceDefinition<API = unknown, Options = any> {
   meta?: Record<string, unknown>;
   options?: Options;
   mergeOptions?: (_: Options[]) => Options;
-  setup: (_: DevframeScopedNodeContext, _: DevframeServiceSetupInfo<Options>) => API | Promise<API>;
+  setup: (_: DevframeScopedNodeContext, _: {
+    options?: Options;
+  }) => API | Promise<API>;
 }
 export interface DevframeServiceDescriptor<Options = any> {
   package: string;
@@ -314,17 +315,11 @@ export interface DevframeServiceDescriptor<Options = any> {
   required?: boolean;
   options?: Options;
 }
-export interface DevframeServiceInstallOptions {
-  resolveFrom?: string | null;
-}
 export interface DevframeServiceMeta {
   package: string;
   version: string;
   scope: string;
   meta?: Record<string, unknown>;
-}
-export interface DevframeServiceSetupInfo<Options = unknown> {
-  options?: Options;
 }
 export interface DevframeServicesHost {
   provide: <ID extends DevframeServiceId>(_: ID, _: DevframeServiceOf<ID>) => () => void;
@@ -332,9 +327,10 @@ export interface DevframeServicesHost {
   has: (_: DevframeServiceId) => boolean;
   whenAvailable: <ID extends DevframeServiceId>(_: ID, _: (_: DevframeServiceOf<ID>) => void) => () => void;
   keys: () => string[];
-  install: <API = unknown, Options = any>(_: DevframeServiceInput<API, Options>, _?: DevframeServiceInstallOptions) => Promise<API | undefined>;
+  install: <API = unknown, Options = any>(_: DevframeServiceInput<API, Options>, _?: {
+    resolveFrom?: string | null;
+  }) => Promise<API | undefined>;
   ready: () => Promise<void>;
-  readonly isReady: boolean;
 }
 export interface DevframeServicesRegistry {}
 export interface DevframeServicesScopeRegistry {}

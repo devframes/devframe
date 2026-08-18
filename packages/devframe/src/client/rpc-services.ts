@@ -43,9 +43,12 @@ export interface DevframeServicesClient {
   state: () => Promise<SharedState<DevframeServicesState>>
 }
 
+/** @internal */
 export function createDevframeServicesClient(rpc: DevframeRpcClient): DevframeServicesClient {
   let current: DevframeServicesState = {}
-  const handles = new Map<string, { entry: DevframeServiceMeta, handle: DevframeServiceClientHandle }>()
+  // Handles are cached per advertisement entry so repeated `get()` reads
+  // return a stable object (immer only replaces an entry when it changed).
+  const handles = new WeakMap<DevframeServiceMeta, DevframeServiceClientHandle>()
 
   let statePromise: Promise<SharedState<DevframeServicesState>> | undefined
   const state = () => {
@@ -72,18 +75,12 @@ export function createDevframeServicesClient(rpc: DevframeRpcClient): DevframeSe
       const entry = current[pkg]
       if (!entry)
         return undefined
-      let cached = handles.get(pkg)
-      if (!cached || cached.entry !== entry) {
-        cached = {
-          entry,
-          handle: {
-            ...entry,
-            rpc: rpc.scope(entry.scope).rpc,
-          },
-        }
-        handles.set(pkg, cached)
+      let handle = handles.get(entry)
+      if (!handle) {
+        handle = { ...entry, rpc: rpc.scope(entry.scope).rpc }
+        handles.set(entry, handle)
       }
-      return cached.handle as DevframeServiceClientHandle<DevframeServiceScopeOf<PKG>>
+      return handle as DevframeServiceClientHandle<DevframeServiceScopeOf<PKG>>
     },
   }
 }

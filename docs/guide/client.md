@@ -206,6 +206,17 @@ state.on('updated', (next) => {
 
 Client-side mutations round-trip through the server before reappearing locally. See [Shared State](./shared-state) for the full API.
 
+## Services
+
+`rpc.services` mirrors the server's wire-service advertisements, so a UI feature-detects a shared capability and degrades when it is absent:
+
+```ts
+if (rpc.services.has('@devframes/service-open'))
+  await rpc.services.get('@devframes/service-open')!.rpc.call('open-in-editor', { path })
+```
+
+See [Cross-Plugin Services](./services#wire-services).
+
 ## Settings
 
 A scoped client also exposes a top-level persisted `settings` store, synced from the server. Read and write per-user (`global`) or per-workspace (`project`) values:

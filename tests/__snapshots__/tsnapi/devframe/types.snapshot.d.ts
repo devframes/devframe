@@ -43,11 +43,9 @@ export { DevframeServiceDefinition }
 export { DevframeServiceDescriptor }
 export { DevframeServiceId }
 export { DevframeServiceInput }
-export { DevframeServiceInstallOptions }
 export { DevframeServiceMeta }
 export { DevframeServiceOf }
 export { DevframeServiceScopeOf }
-export { DevframeServiceSetupInfo }
 export { DevframeServicesHost }
 export { DevframeServicesRegistry }
 export { DevframeServicesScopeRegistry }

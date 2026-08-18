@@ -75,20 +75,6 @@ export type DevframeServiceScopeOf<PKG> = PKG extends keyof DevframeServicesScop
   : string
 
 /**
- * Runtime information threaded into a service definition's `setup`.
- */
-export interface DevframeServiceSetupInfo<Options = unknown> {
-  /**
-   * The merged option sets contributed by every installer of this service
-   * (declarative descriptors and explicit definitions alike), merged at the
-   * `ready()` barrier — via the definition's own {@link DevframeServiceDefinition.mergeOptions}
-   * when present, otherwise shallow-merged in declaration order (later sets
-   * win). `undefined` when no installer passed options.
-   */
-  options?: Options
-}
-
-/**
  * A **wire service** — a shared server-side capability (e.g. open-in-editor,
  * syntax highlighting) packaged so any devframe host can install it once and
  * every plugin/client can consume it without re-implementing or re-bundling
@@ -138,8 +124,11 @@ export interface DevframeServiceDefinition<API = unknown, Options = any> {
    * Construct the service: register its RPC functions on the pre-scoped
    * context and return its **node API** — the in-process surface other
    * plugins get from `ctx.services.get(package)` (no RPC hop server-side).
+   * `info.options` carries every installer's option sets merged at the
+   * `ready()` barrier (via {@link mergeOptions} when present, otherwise a
+   * shallow merge in declaration order — later sets win).
    */
-  setup: (ctx: DevframeScopedNodeContext, info: DevframeServiceSetupInfo<Options>) => API | Promise<API>
+  setup: (ctx: DevframeScopedNodeContext, info: { options?: Options }) => API | Promise<API>
 }
 
 /**
@@ -178,16 +167,6 @@ export interface DevframeServiceDescriptor<Options = any> {
  */
 export type DevframeServiceInput<API = unknown, Options = any>
   = DevframeServiceDescriptor<Options> | DevframeServiceDefinition<API, Options>
-
-export interface DevframeServiceInstallOptions {
-  /**
-   * Path or file URL (e.g. `import.meta.url`, or a resolved
-   * `<pkg>/package.json` path) the descriptor's package is resolved
-   * **from** — so a plugin-declared service resolves against the plugin's
-   * own dependencies. Falls back to the context's `workspaceRoot`.
-   */
-  resolveFrom?: string | null
-}
 
 /**
  * One service's advertisement entry, mirrored to clients through the
@@ -240,10 +219,15 @@ export interface DevframeServicesHost {
    * After the barrier, installs construct immediately; installing an
    * already-installed package returns the existing API (a warning is
    * emitted when the late install carried options, since they're ignored).
+   *
+   * `resolveFrom` is the path or file URL (e.g. `import.meta.url`) a
+   * descriptor's package resolves **from**, so a plugin-declared service
+   * resolves against the plugin's own dependencies; it falls back to the
+   * context's `workspaceRoot`.
    */
   install: <API = unknown, Options = any>(
     input: DevframeServiceInput<API, Options>,
-    options?: DevframeServiceInstallOptions,
+    options?: { resolveFrom?: string | null },
   ) => Promise<API | undefined>
   /**
    * Fire the collect-then-setup barrier: resolve every queued descriptor
@@ -255,6 +239,4 @@ export interface DevframeServicesHost {
    * service fails to import or misses its version range.
    */
   ready: () => Promise<void>
-  /** Whether the {@link ready} barrier has fired. */
-  readonly isReady: boolean
 }

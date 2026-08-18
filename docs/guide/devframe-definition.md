@@ -51,6 +51,7 @@ export default defineDevframe({
 | `basePath` | `string` | Optional mount path override. Defaults depend on the adapter: `/` for standalone (`cli` / `build`), `/.<id>/` for hosted (`vite` / `embedded`). |
 | `duplicationStrategy` | `'warn' \| 'silent' \| 'throw' \| 'duplicate'` | How a hub reacts when another devframe sharing this `id` is mounted onto the same hub. Defaults to `'warn'`. See [Hub](./hub). Hub adapters consult it; standalone adapters ignore it. |
 | `capabilities` | `{ dev?, build? }` | Per-runtime feature flags. A `boolean` applies to the runtime as a whole; an object enables individual features. |
+| `services` | `DevframeServiceInput[]` | Wire services this devframe consumes — descriptors (`{ package, version?, required?, options? }`) the adapter imports against the plugin's own dependencies, or ready definitions. See [Cross-Plugin Services](./services#wire-services). |
 | `setup` | `(ctx, info?) => void \| Promise<void>` | **Required.** Server-side entry point. Runs in every runtime. The optional second argument carries runtime metadata — most notably the parsed CLI `flags` when running under `createCac`. |
 | `cli` | `DevframeCliOptions` | Defaults for the CLI adapter. See [CLI options](#cli-options) below. |
 

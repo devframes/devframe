@@ -158,7 +158,6 @@ export declare function authenticateWithUrlOtp(_: Pick<DevframeRpcClient, 'isTru
 }): Promise<boolean>;
 export declare function consumeOtpFromUrl(_?: string): string | undefined;
 export declare function createClientSettings<T extends Record<string, any> = Record<string, any>>(_: DevframeRpcClient, _: string): DevframeSettings<T>;
-export declare function createDevframeServicesClient(_: DevframeRpcClient): DevframeServicesClient;
 export declare function createRpcStreamingClientHost(_: DevframeRpcClient): RpcStreamingClientHost;
 export declare function createScopedClientContext<NS extends string = string>(_: DevframeRpcClient, _: NS): DevframeScopedClientContext<NS>;
 export declare function getDevframeConnection(): DevframeConnection | undefined;

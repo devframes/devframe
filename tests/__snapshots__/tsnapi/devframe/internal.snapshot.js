@@ -9,6 +9,7 @@ export { createInstanceShell }
 export { createRpcWireCodec }
 export { DevframeAgentHost }
 export { diagnostics }
+export { installDefinitionServices }
 export { listLiveDevframeInstances }
 export { normalizeBasePath }
 export { normalizeHttpServerUrl }

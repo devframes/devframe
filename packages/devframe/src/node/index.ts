@@ -11,7 +11,6 @@
 // host-URL helpers stay fully internal (relative imports only).
 // `toAgentToolName` lives at `devframe/utils/agent-tool-name`.
 export * from './context'
-export * from './definition-services'
 // `RpcFunctionsHostImpl` stays internal; expose only the structural
 // `RpcFunctionsHost` type so consumers can type/cast `ctx.rpc` without
 // pulling in the implementation's `@internal` members.
