@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
-import { join } from 'pathe'
+import { isAbsolute, join } from 'pathe'
 
 /**
  * Turn a `resolveFrom` value (a file path, a file URL like `import.meta.url`,
@@ -16,6 +16,29 @@ function toRequireBase(resolveFrom: string): string {
   if (lastSegment.includes('.'))
     return resolveFrom
   return join(resolveFrom, '_devframe_resolve.js')
+}
+
+/**
+ * Normalize an `install()` `resolveFrom` into a resolution base. Paths and
+ * file URLs pass through; a bare npm package name (the common case: the
+ * declaring plugin's `packageName`) resolves to that package's location from
+ * `cwd`, so a service it declares resolves against the plugin's own
+ * dependencies. An unresolvable package name reads as no base (the caller's
+ * workspace fallbacks apply).
+ */
+export function expandResolveFrom(resolveFrom: string, cwd: string): string | undefined {
+  if (resolveFrom.startsWith('file://') || resolveFrom.startsWith('.') || isAbsolute(resolveFrom))
+    return resolveFrom
+  const require = createRequire(join(cwd, '_devframe_resolve.js'))
+  try {
+    return require.resolve(`${resolveFrom}/package.json`)
+  }
+  catch {}
+  try {
+    return require.resolve(resolveFrom)
+  }
+  catch {}
+  return undefined
 }
 
 /**

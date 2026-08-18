@@ -16,7 +16,6 @@ import { resolve } from 'pathe'
 import { joinURL } from 'ufo'
 import { DEVFRAME_CONNECTION_META_FILENAME } from '../constants'
 import { createHostContext } from '../node/context'
-import { installDefinitionServices } from '../node/definition-services'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { createInstanceShell, resolveInstanceRegister } from '../node/instance-shell'
@@ -290,7 +289,10 @@ export function initDevframe(
         host: hostImpl,
       })
       const setupInfo: DevframeSetupInfo = { flags: options.flags ?? {} }
-      await installDefinitionServices(context, def)
+      // Declarative services queue ahead of setup (their promises resolve at
+      // the ready() barrier below), resolving against the plugin's own deps.
+      for (const input of def.services ?? [])
+        void context.services.install(input, { resolveFrom: def.packageName })
       await def.setup(context, setupInfo)
       await context.services.ready()
 

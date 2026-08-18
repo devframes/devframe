@@ -208,6 +208,20 @@ describe('wire services (install / ready barrier)', () => {
     await expect(ctx.services.ready()).rejects.toThrowError(/Failed to import the required service package/)
   })
 
+  it('resolves a package-name resolveFrom through that package\'s own dependencies', async () => {
+    const { ctx, dir } = await createCtx()
+    // A "plugin" package whose own node_modules carries the service — the
+    // declarative flow passes the plugin's packageName as resolveFrom.
+    const pluginDir = join(dir, 'node_modules', '@test', 'plugin')
+    mkdirSync(pluginDir, { recursive: true })
+    writeFileSync(join(pluginDir, 'package.json'), JSON.stringify({ name: '@test/plugin', version: '0.0.0' }))
+    writeFakeServicePackage(pluginDir, '@test/nested-svc', '1.0.0')
+
+    const install = ctx.services.install({ package: '@test/nested-svc' }, { resolveFrom: '@test/plugin' })
+    await ctx.services.ready()
+    await expect(install).resolves.toEqual({ imported: true, options: undefined })
+  })
+
   it('imports a descriptor package relative to resolveFrom and installs its factory', async () => {
     const { ctx, dir } = await createCtx()
     writeFakeServicePackage(dir, '@test/imported-svc', '2.0.0')

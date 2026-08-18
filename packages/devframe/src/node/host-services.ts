@@ -8,10 +8,11 @@ import type {
   DevframeServicesHost,
   DevframeServicesState,
 } from 'devframe/types'
+import process from 'node:process'
 import { DEVFRAME_SERVICES_STATE_KEY } from 'devframe/constants'
 import { createDebug } from 'obug'
 import { diagnostics } from './diagnostics'
-import { importServicePackage, satisfiesVersionRange, shallowMergeOptionSets } from './services-install'
+import { expandResolveFrom, importServicePackage, satisfiesVersionRange, shallowMergeOptionSets } from './services-install'
 
 const debug = createDebug('devframe:services')
 
@@ -184,10 +185,11 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
     if (!def) {
       const descriptors = entries.map(entry => entry.input as DevframeServiceDescriptor)
       const required = descriptors.some(descriptor => descriptor.required === true)
+      const cwd = this.context?.cwd ?? process.cwd()
       const resolveFroms = [
-        ...entries.map(entry => entry.resolveFrom),
+        ...entries.map(entry => entry.resolveFrom && expandResolveFrom(entry.resolveFrom, cwd)),
         this.context?.workspaceRoot,
-        this.context?.cwd,
+        cwd,
       ]
       let mod: unknown
       try {

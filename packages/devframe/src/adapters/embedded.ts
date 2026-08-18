@@ -1,6 +1,5 @@
 import type { DevframeNodeContext } from '../types/context'
 import type { DevframeDefinition } from '../types/devframe'
-import { installDefinitionServices } from '../node/definition-services'
 
 export interface CreateEmbeddedOptions {
   /** Target context the devframe is registered into. Required. */
@@ -20,6 +19,7 @@ export async function createEmbedded(d: DevframeDefinition, options: CreateEmbed
   // Declarative services queue before setup; the owning host fires the
   // `ctx.services.ready()` barrier (post-barrier registration installs
   // immediately).
-  await installDefinitionServices(options.ctx, d)
+  for (const input of d.services ?? [])
+    void options.ctx.services.install(input, { resolveFrom: d.packageName })
   await d.setup(options.ctx)
 }

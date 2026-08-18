@@ -220,10 +220,11 @@ export interface DevframeServicesHost {
    * already-installed package returns the existing API (a warning is
    * emitted when the late install carried options, since they're ignored).
    *
-   * `resolveFrom` is the path or file URL (e.g. `import.meta.url`) a
-   * descriptor's package resolves **from**, so a plugin-declared service
-   * resolves against the plugin's own dependencies; it falls back to the
-   * context's `workspaceRoot`.
+   * `resolveFrom` is where a descriptor's package resolves **from**: a path
+   * or file URL (e.g. `import.meta.url`), or an npm package name — typically
+   * the declaring plugin's `packageName`, so its declared services resolve
+   * against the plugin's own dependencies. Falls back to the context's
+   * `workspaceRoot`.
    */
   install: <API = unknown, Options = any>(
     input: DevframeServiceInput<API, Options>,

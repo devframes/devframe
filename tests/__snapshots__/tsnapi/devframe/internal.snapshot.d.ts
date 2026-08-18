@@ -50,7 +50,6 @@ export declare class DevframeAgentHost implements DevframeAgentHost$1 {
 export declare function coerceAgentPositionalArgs(_: unknown, _: readonly unknown[] | undefined, _?: AgentArgsFallback): unknown[];
 export declare function createH3DevframeHost(_: CreateH3DevframeHostOptions): DevframeHost;
 export declare function createRpcWireCodec(_?: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>>): RpcWireCodec;
-export declare function installDefinitionServices(_: DevframeNodeContext, _: DevframeDefinition): void;
 export declare function normalizeHttpServerUrl(_: string, _: number | string): string;
 export declare function peekRpcWireFrame(_: string): {
   t?: string;

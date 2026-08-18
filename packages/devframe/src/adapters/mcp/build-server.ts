@@ -8,7 +8,6 @@ import { Server } from '@modelcontextprotocol/server'
 import { createHostContext } from 'devframe/node'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { join } from 'pathe'
-import { installDefinitionServices } from '../../node/definition-services'
 import { diagnostics } from '../../node/diagnostics'
 import { formatMcpError, stringifyForMcp } from './stringify'
 import { argsToJsonSchema, returnToJsonSchema } from './to-json-schema'
@@ -117,7 +116,8 @@ export async function createMcpServer(
     mode: 'dev',
     host,
   })
-  await installDefinitionServices(ctx, definition)
+  for (const input of definition.services ?? [])
+    void ctx.services.install(input, { resolveFrom: definition.packageName })
   await definition.setup(ctx)
   await ctx.services.ready()
 

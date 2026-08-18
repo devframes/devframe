@@ -14,7 +14,6 @@ import {
   DEVFRAME_RPC_DUMP_MANIFEST_FILENAME,
 } from '../constants'
 import { createHostContext } from '../node/context'
-import { installDefinitionServices } from '../node/definition-services'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { collectStaticRpcDump } from '../rpc/dump/static'
@@ -89,7 +88,8 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
     mode: 'build',
     host,
   })
-  await installDefinitionServices(ctx, d)
+  for (const input of d.services ?? [])
+    void ctx.services.install(input, { resolveFrom: d.packageName })
   await d.setup(ctx)
   await ctx.services.ready()
 
