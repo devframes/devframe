@@ -33,6 +33,7 @@ export { DevframeNodeRpcSessionMeta }
 export { DevframeRpcClientFunctions }
 export { DevframeRpcConnection }
 export { DevframeRpcConnectionRequest }
+export { DevframeRpcOptions }
 export { DevframeRpcServerFunctions }
 export { DevframeRpcSharedStates }
 export { DevframeRpcTransportKind }
@@ -54,6 +55,8 @@ export { DevframeSettings }
 export { DevframeSettingsRegistry }
 export { DevframeSettingsStore }
 export { DevframeSetupInfo }
+export { DevframeSnapshotRpcEntry }
+export { DevframeSnapshotRpcInputs }
 export { DevframeSseOptions }
 export { DevframeStorageScope }
 export { DevframeViewHost }

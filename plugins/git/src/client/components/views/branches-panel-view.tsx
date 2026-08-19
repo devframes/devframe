@@ -1,6 +1,6 @@
 'use client'
 
-import type { Branch, GitBranches } from '../../../index'
+import type { Branch, GitBranches } from '@devframes/service-git'
 import { Badge } from '../ui/badge'
 import { IconButton } from '../ui/button'
 import { Icon } from '../ui/icon'

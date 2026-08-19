@@ -1,6 +1,6 @@
 'use client'
 
-import type { CommitDetail } from '../../../index'
+import type { CommitDetail } from '@devframes/service-git'
 import { DiffPatchView } from '../diff/diff-view'
 import { Badge } from '../ui/badge'
 import { IconButton } from '../ui/button'

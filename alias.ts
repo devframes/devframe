@@ -11,6 +11,7 @@ export const alias = {
   'devframe/rpc/transports/sse-client': r('devframe/src/rpc/transports/sse-client.ts'),
   'devframe/rpc/transports/sse-server': r('devframe/src/rpc/transports/sse-server.ts'),
   'devframe/rpc/transports/ws-bun': r('devframe/src/rpc/transports/ws-bun.ts'),
+  'devframe/rpc/transports/ws-deno': r('devframe/src/rpc/transports/ws-deno.ts'),
   'devframe/rpc/transports/ws-server': r('devframe/src/rpc/transports/ws-server.ts'),
   'devframe/rpc/transports/ws-client': r('devframe/src/rpc/transports/ws-client.ts'),
   'devframe/rpc/client': r('devframe/src/rpc/client.ts'),
@@ -132,6 +133,7 @@ export const alias = {
   '@devframes/plugin-assets/cli': p('assets/src/cli.ts'),
   '@devframes/plugin-assets/vite': p('assets/src/vite.ts'),
   '@devframes/plugin-assets': p('assets/src/index.ts'),
+  '@devframes/service-git': s('git/src/index.ts'),
   '@devframes/service-open': s('open/src/index.ts'),
   '@devframes/service-shiki': s('shiki/src/index.ts'),
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import type { FileStatusCode } from '../../../index'
+import type { FileStatusCode } from '@devframes/service-git'
 import type { DiffChangeType, DiffFileChange } from './parse-patch'
 import { useMemo, useState } from 'react'
 import { cn } from '../../lib/utils'

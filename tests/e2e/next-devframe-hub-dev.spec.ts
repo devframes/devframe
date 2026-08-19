@@ -39,11 +39,12 @@ test.describe('devframe connect (next-devframe-hub)', () => {
       expect(hub.mcp.url).toMatch(/^http:\/\/(?:localhost|127\.0\.0\.1):9878\/__devframes\/__mcp$/)
 
       // The hub's agent surface flows through: the agent-flagged hub command,
-      // the built-in devframe_state_read, and the git plugin's agent-flagged reads.
+      // the built-in devframe_state_read, and the git service's agent-flagged
+      // reads (the git plugin now exposes git through `@devframes/service-git`).
       const toolNames = hub.mcp.tools.map((t: any) => t.name)
       expect(toolNames).toContain('example_next-devframe-hub_ping')
       expect(toolNames).toContain('devframe_state_read')
-      expect(toolNames).toContain('devframes_plugin_git_status')
+      expect(toolNames).toContain('devframes_service_git_status')
 
       // Call the agent-flagged hub command through the connector.
       const ping = parseToolText(await client.callTool({

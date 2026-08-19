@@ -1,7 +1,7 @@
+import type { GitDiff } from '@devframes/service-git'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ReactNode } from 'react'
 import type { BundledLanguage } from 'shiki'
-import type { GitDiff } from '../../../index'
 import type { ConnectionState } from '../rpc-provider'
 import { useState } from 'react'
 import { codeToTokens } from 'shiki'
@@ -14,7 +14,7 @@ index 1234567..89abcde 100644
 --- a/src/rpc/functions/log.ts
 +++ b/src/rpc/functions/log.ts
 @@ -72,4 +72,4 @@ export const log = defineRpcFunction({
-   name: 'devframes:plugin:git:log',
+   name: 'devframes:service:git:log',
    type: 'query',
 -  snapshot: true,
 +  dump: async (_ctx, handler) => { /* bake head of history */ },

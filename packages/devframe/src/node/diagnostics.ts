@@ -194,5 +194,10 @@ export const diagnostics = defineDiagnostics({
         `Invalid service "${p.package}": ${p.reason}`,
       fix: 'A service package\'s default export must be a factory returning a `DevframeServiceDefinition` — an object with `package`, `version`, `scope`, and a `setup` function.',
     },
+    DF0072: {
+      why: (p: { method: string }) =>
+        `\`rpc.snapshot\` names "${p.method}", but no RPC function is registered under that id — nothing to bake into the static build.`,
+      fix: 'Check the method id, and ensure the service/plugin that registers it is installed (e.g. declared in `services`) before the build collects the dump.',
+    },
   },
 })

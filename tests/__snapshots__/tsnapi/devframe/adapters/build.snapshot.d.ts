@@ -11,5 +11,6 @@ export interface CreateBuildOptions {
 // #endregion
 
 // #region Functions
+export declare function applySnapshotRpc(_: DevframeNodeContext, _: readonly DevframeSnapshotRpcEntry[] | undefined): void;
 export declare function createBuild(_: DevframeDefinition, _?: CreateBuildOptions): Promise<void>;
 // #endregion

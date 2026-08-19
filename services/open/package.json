@@ -1,7 +1,7 @@
 {
   "name": "@devframes/service-open",
   "type": "module",
-  "version": "0.9.0",
+  "version": "0.9.2",
   "description": "Devframe wire service that opens files in the user's editor or reveals them in the OS file explorer.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

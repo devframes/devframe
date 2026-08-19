@@ -341,6 +341,12 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "A service package's default export must be a factory returning a `DevframeServiceDefinition` — an object with `package`, `version`, `scope`, and a `setup` function.";
   };
+  readonly DF0072: {
+    readonly why: (p: {
+      method: string;
+    }) => string;
+    readonly fix: "Check the method id, and ensure the service/plugin that registers it is installed (e.g. declared in `services`) before the build collects the dump.";
+  };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
 }) => void]>;

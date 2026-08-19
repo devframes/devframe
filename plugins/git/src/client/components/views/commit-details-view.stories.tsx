@@ -1,5 +1,5 @@
+import type { CommitDetail } from '@devframes/service-git'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { CommitDetail } from '../../../index'
 import { CommitDetailsView } from './commit-details-view'
 
 const now = Date.now()

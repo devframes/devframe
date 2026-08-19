@@ -1,8 +1,8 @@
 'use client'
 
+import type { GitBranches } from '@devframes/service-git'
 import type { DevframeRpcClient } from 'devframe/client'
 import type { PointerEvent as ReactPointerEvent } from 'react'
-import type { GitBranches } from '../../index'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { connectionIndicator, nav as navBar, navBrand, tab as tabClass, tabsList } from '../lib/design'
 import { CommitDetailsPanel } from './commit-details-panel'
@@ -154,7 +154,7 @@ function DashboardBody() {
 
   const rightRail = useRailWidth('devframe-git:rail-right', 480, 340, 760, -1)
 
-  const branchesLoader = useCallback((rpc: DevframeRpcClient) => rpc.call('devframes:plugin:git:branches'), [])
+  const branchesLoader = useCallback((rpc: DevframeRpcClient) => rpc.call('devframes:service:git:branches'), [])
   const {
     data: branches,
     loading: branchesLoading,

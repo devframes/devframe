@@ -129,6 +129,9 @@ function examplesItems(prefix: string) {
     { text: 'hub-next-minimal', link: `${prefix}/examples/hub-next-minimal` },
     { text: 'hub-nitro-minimal', link: `${prefix}/examples/hub-nitro-minimal` },
     { text: 'hub-hono-minimal', link: `${prefix}/examples/hub-hono-minimal` },
+    { text: 'hub-fastify-minimal', link: `${prefix}/examples/hub-fastify-minimal` },
+    { text: 'hub-sveltekit-minimal', link: `${prefix}/examples/hub-sveltekit-minimal` },
+    { text: 'hub-deno-minimal', link: `${prefix}/examples/hub-deno-minimal` },
     { text: 'hub-rsbuild-minimal', link: `${prefix}/examples/hub-rsbuild-minimal` },
   ] satisfies DefaultTheme.NavItemWithLink[]
 }

@@ -64,12 +64,3 @@ export function createTempRepo(): TempRepo {
     cleanup: () => rmSync(dir, { recursive: true, force: true }),
   }
 }
-
-/** Create an empty (non-git) temp directory. */
-export function createTempDir(): TempRepo {
-  const dir = mkdtempSync(join(tmpdir(), 'devframe-git-bare-'))
-  return {
-    dir,
-    cleanup: () => rmSync(dir, { recursive: true, force: true }),
-  }
-}

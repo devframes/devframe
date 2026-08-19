@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    %sveltekit.head%
+  </head>
+  <body data-sveltekit-preload-data="hover" style="font-family: system-ui; padding: 2rem">
+    <div>%sveltekit.body%</div>
+    <!-- One script tag turns any page into a devtools host: the floating dock
+         mounts itself and connects through the namespace the __devframes route
+         serves. -->
+    <script type="module" src="/__devframes/embedded.js"></script>
+  </body>
+</html>

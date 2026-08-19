@@ -1,5 +1,5 @@
+import type { GitStatus } from '@devframes/service-git'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { GitStatus } from '../../../index'
 import { useState } from 'react'
 import { StatusPanelView } from './status-panel-view'
 

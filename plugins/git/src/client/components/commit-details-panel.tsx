@@ -1,7 +1,7 @@
 'use client'
 
+import type { CommitDetail } from '@devframes/service-git'
 import type { DevframeRpcClient } from 'devframe/client'
-import type { CommitDetail } from '../../index'
 import { useCallback } from 'react'
 import { useRpcResource } from './use-rpc-resource'
 import { CommitDetailsView } from './views/commit-details-view'
@@ -13,7 +13,7 @@ export interface CommitDetailsPanelProps {
 
 export function CommitDetailsPanel({ hash, onClose }: CommitDetailsPanelProps) {
   const loader = useCallback(
-    (rpc: DevframeRpcClient): Promise<CommitDetail> => rpc.call('devframes:plugin:git:show', { hash }),
+    (rpc: DevframeRpcClient): Promise<CommitDetail> => rpc.call('devframes:service:git:show', { hash }),
     [hash],
   )
   const { data, loading, error } = useRpcResource<CommitDetail>(loader)

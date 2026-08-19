@@ -52,6 +52,11 @@
       "dependsOn": ["@devframes/json-render#build"],
       "outputs": ["dist/**"]
     },
+    "@devframes/service-git#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe#build"],
+      "outputs": ["dist/**"]
+    },
     "@devframes/service-open#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build"],

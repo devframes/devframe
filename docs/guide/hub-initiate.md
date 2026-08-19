@@ -22,7 +22,7 @@ export const hub = initHub({
 
 ## The shared socket
 
-One transport serves the whole namespace, and the hub binds nothing on its own — the same four choices `initDevframe` offers, in the same precedence: `ws.port` pins a side-car, `server` shares the host's `node:http` upgrade at `<base>__ws`, `ws: { sidecar: true }` takes a free port (for Next.js, Nitro and Rsbuild hosts, whose handlers never see upgrades), and passing none of them leaves the socket to the host:
+One transport serves the whole namespace, and the hub binds nothing on its own — the same four choices `initDevframe` offers, in the same precedence: `ws.port` pins a side-car, `server` shares the host's `node:http` upgrade at `<base>__ws`, `ws: { sidecar: true }` takes a free port (for Next.js, Nitro, SvelteKit and Rsbuild hosts, whose handlers never see upgrades), and passing none of them leaves the socket to the host — a Node host hands over its server with `hub.attach(server)`, and Bun and Deno hosts complete the upgrade on their own origin with `attachBunWsTransport` / `attachDenoWsTransport`:
 
 ```ts
 import { serve } from '@hono/node-server'
@@ -125,4 +125,4 @@ Hosts that assemble `createHubContext` + `ctx.install` themselves (with their ow
 const hub = initHub({ base: DEVFRAMES_HUB_BASE, context: ctx })
 ```
 
-The instance then serves the hub-level endpoints and transport only; serve each frame's meta from `hub.connectionMeta()` yourself. The two reference examples — `examples/hub-vite` and `examples/hub-next` — use the declarative mode with their own hand-built viewer UIs, while the `hub-*-minimal` family (`hub-vite-minimal`, `hub-next-minimal`, `hub-nitro-minimal`, `hub-hono-minimal`, `hub-rsbuild-minimal`) shows the minimal `createUi()` mount across frameworks (the Hono one on Node and Bun).
+The instance then serves the hub-level endpoints and transport only; serve each frame's meta from `hub.connectionMeta()` yourself. The two reference examples — `examples/hub-vite` and `examples/hub-next` — use the declarative mode with their own hand-built viewer UIs, while the `hub-*-minimal` family (`hub-vite-minimal`, `hub-next-minimal`, `hub-nitro-minimal`, `hub-hono-minimal`, `hub-fastify-minimal`, `hub-sveltekit-minimal`, `hub-deno-minimal`, `hub-rsbuild-minimal`) shows the minimal `createUi()` mount across frameworks (the Hono one on Node and Bun, the Deno one on `Deno.serve`).

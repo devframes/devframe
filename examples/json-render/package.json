@@ -1,7 +1,7 @@
 {
   "name": "json-render",
   "type": "module",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "private": true,
   "description": "Standalone devframe that serves a JSON view spec with live state and an action bridge.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/json-render",

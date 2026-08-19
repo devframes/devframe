@@ -1,7 +1,7 @@
 'use client'
 
+import type { GitDiff } from '@devframes/service-git'
 import type { ReactNode } from 'react'
-import type { GitDiff } from '../../../index'
 import { cn } from '../../lib/utils'
 import { Badge } from '../ui/badge'
 import { IconButton } from '../ui/button'

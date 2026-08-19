@@ -16,6 +16,9 @@
       "devframe/rpc/transports/ws-bun": [
         "./packages/devframe/src/rpc/transports/ws-bun.ts"
       ],
+      "devframe/rpc/transports/ws-deno": [
+        "./packages/devframe/src/rpc/transports/ws-deno.ts"
+      ],
       "devframe/rpc/transports/ws-server": [
         "./packages/devframe/src/rpc/transports/ws-server.ts"
       ],
@@ -378,6 +381,9 @@
       ],
       "@devframes/plugin-assets": [
         "./plugins/assets/src/index.ts"
+      ],
+      "@devframes/service-git": [
+        "./services/git/src/index.ts"
       ],
       "@devframes/service-open": [
         "./services/open/src/index.ts"
