@@ -181,4 +181,17 @@ describe('@devframes/service-git', () => {
     )
     expect(status.isRepo).toBe(true)
   })
+
+  it('exposes agent-flagged read ops on the agent surface', async () => {
+    const repo = createTempRepo()
+    cleanups.push(repo.cleanup)
+    const ctx = await createHostContext({ cwd: repo.dir, mode: 'dev', host: nullHost(repo.dir) })
+    void ctx.services.install(createGitService())
+    await ctx.services.ready()
+
+    // Auto-discovered from the RPC `agent` field — the hub's MCP surfaces this
+    // as `devframes_service_git_status` (the e2e asserts that name).
+    const tool = ctx.agent.getTool('devframes:service:git:status')
+    expect(tool?.title).toBe('Git status')
+  })
 })
