@@ -1,6 +1,8 @@
-// Smallest possible devframe. The dock entry is auto-derived from
-// `id` / `name` / `icon` when this definition is mounted into Vite
-// DevTools via `createPluginFromDevframe(devframe)`.
+// Smallest possible devframe. The same definition serves anywhere:
+//   - standard handler: initDevframe(counter, { base: '/__counter/' }).handler
+//   - standalone CLI:    createCac(counter).parse()
+//   - composed in a hub: initHub({ devframes: [counter], ... })
+// A host derives its dock entry from `id` / `name` / `icon` automatically.
 import { defineDevframe, defineRpcFunction } from 'devframe'
 // Recommended: source version/packageName/homepage/description from your
 // package.json so the published metadata stays in sync. The import-attribute
@@ -14,6 +16,9 @@ export default defineDevframe({
   name: 'Counter',
   version: pkg.version,
   packageName: pkg.name,
+  // Always pass import.meta.url — the base the host resolves the tool's own
+  // companion packages (assets, services) against.
+  importMetaUrl: import.meta.url,
   homepage: pkg.homepage,
   description: pkg.description,
   icon: 'ph:counter-duotone',
