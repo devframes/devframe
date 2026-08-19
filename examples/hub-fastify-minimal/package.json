@@ -1,0 +1,31 @@
+{
+  "name": "hub-fastify-minimal",
+  "type": "module",
+  "version": "0.9.1",
+  "private": true,
+  "description": "Minimal Fastify host that mounts the devframe hub with nodeMiddleware.",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-assets": "workspace:*",
+    "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-data-inspector": "workspace:*",
+    "@devframes/plugin-git": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "@devframes/plugin-og": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
+    "@fastify/middie": "catalog:deps",
+    "devframe": "workspace:*",
+    "fastify": "catalog:deps"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:types",
+    "tsx": "catalog:build"
+  }
+}

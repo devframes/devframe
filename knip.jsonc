@@ -102,6 +102,12 @@
         "config": ["src/client/postcss.config.mjs"]
       }
     },
+    // The Deno entry runs via `deno run src/server.ts`, a command string knip
+    // doesn't parse (unlike `tsx`/`bun`), so name the entry explicitly — it
+    // pulls in `src/hub.ts` and every plugin dependency from there.
+    "examples/hub-deno-minimal": {
+      "entry": ["src/server.ts"]
+    },
     "packages/devframe": {
       // Every `package.json#exports` subpath maps to one of these source
       // files (see `tsdown.config.ts`'s `serverEntries`/`clientEntries`).
@@ -122,7 +128,7 @@
         "src/recipes/{common-rpc-functions,interactive-auth}.ts",
         "src/rpc/{index,client,server}.ts",
         "src/rpc/dump/index.ts",
-        "src/rpc/transports/{sse-client,sse-server,ws-bun,ws-client,ws-server}.ts",
+        "src/rpc/transports/{sse-client,sse-server,ws-bun,ws-deno,ws-client,ws-server}.ts",
         "src/types/index.ts",
         "src/utils/*.ts"
       ]

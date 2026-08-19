@@ -1,0 +1,28 @@
+{
+  "name": "hub-deno-minimal",
+  "type": "module",
+  "version": "0.9.1",
+  "private": true,
+  "description": "Minimal Deno host that serves the devframe hub over a fetch-upgrade WebSocket.",
+  "scripts": {
+    "dev": "deno run --allow-net --allow-read --allow-env --node-modules-dir src/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-assets": "workspace:*",
+    "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-data-inspector": "workspace:*",
+    "@devframes/plugin-git": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "@devframes/plugin-og": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
+    "devframe": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:types"
+  }
+}

@@ -23,6 +23,9 @@ The **minimal** family instead mounts one `initHub({ ui: createUi() })` handler 
 | [hub-next-minimal](./hub-next-minimal) | Next.js | The hub handler on an App Router catch-all route. |
 | [hub-nitro-minimal](./hub-nitro-minimal) | Nitro | The hub handler on a Nitro catch-all route. |
 | [hub-hono-minimal](./hub-hono-minimal) | Hono | The hub handler on Hono, running on Node and Bun. |
+| [hub-fastify-minimal](./hub-fastify-minimal) | Fastify | The hub handler on Fastify via `nodeMiddleware`. |
+| [hub-sveltekit-minimal](./hub-sveltekit-minimal) | SvelteKit | The hub handler on a SvelteKit catch-all endpoint. |
+| [hub-deno-minimal](./hub-deno-minimal) | Deno | The hub handler on `Deno.serve`, with a Deno fetch-upgrade socket. |
 | [hub-rsbuild-minimal](./hub-rsbuild-minimal) | Rsbuild | The hub handler on Rsbuild's dev middleware. |
 
 ## Run any example
