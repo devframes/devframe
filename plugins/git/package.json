@@ -64,7 +64,6 @@
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/plugin-git--assets": "workspace:*",
-    "@devframes/service-shiki": "workspace:*",
     "@floating-ui/react": "catalog:frontend",
     "@iconify-json/catppuccin": "catalog:frontend",
     "@radix-ui/react-scroll-area": "catalog:frontend",

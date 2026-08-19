@@ -34,11 +34,7 @@
       // `skills/devframe/templates/*.ts` are the devframe-authoring skill's
       // copy-and-run reference snippets (`skills/devframe/SKILL.md`) - each
       // one a standalone, runnable example, not imported by anything else.
-      "entry": ["design/*.ts", "skills/devframe/templates/*.ts", "scripts/smoke-bun.ts"],
-      // `spa-devframe.ts` imports `valibot` to illustrate schema validation
-      // for a consumer's own devframe - it's a dependency of the example a
-      // reader copies out, not of this repo's root tooling.
-      "ignoreDependencies": ["valibot"]
+      "entry": ["design/*.ts", "skills/devframe/templates/*.ts", "scripts/smoke-bun.ts"]
     },
     "docs": {
       // `devframe` is referenced only inside fenced code samples in the
