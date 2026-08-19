@@ -96,10 +96,10 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
   await ctx.services.ready()
   await d.setup(ctx)
 
-  // Bake declared `snapshotRpc` methods (typically a wire service's RPC the
+  // Bake declared `rpc.snapshot` methods (typically a wire service's RPC the
   // devframe doesn't own) into the static dump by attaching a `dump` to their
   // registered definitions — the service itself defines none.
-  applySnapshotRpc(ctx, d.snapshotRpc)
+  applySnapshotRpc(ctx, d.rpc?.snapshot)
 
   await fs.mkdir(resolve(outDir, DEVFRAME_RPC_DUMP_DIRNAME), { recursive: true })
 
@@ -142,7 +142,7 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
 }
 
 /**
- * Attach a `dump` to each {@link DevframeDefinition.snapshotRpc} target so the
+ * Attach a `dump` to each {@link DevframeRpcOptions.snapshot} target so the
  * static collector bakes it, even though the (service-owned) definition
  * declares no dump of its own. A bare method id becomes `snapshot: true`
  * (bakes the no-arg call); `{ method, inputs }` bakes one record per resolved

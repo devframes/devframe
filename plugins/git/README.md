@@ -55,7 +55,7 @@ All git work runs through the [`@devframes/service-git`](../../services/git)
 wire service, which this devframe declares (`services`) and its SPA calls
 directly over `devframes:service:git:*`. The read functions are `query`
 functions that degrade to an empty, `isRepo: false` result outside a git
-repository; the definition opts them into the static build via `snapshotRpc`
+repository; the definition opts them into the static build via `rpc.snapshot`
 (resolved live over WebSocket in dev, served from a build-time snapshot for
 static deploys).
 

@@ -69,13 +69,13 @@ describe('@devframes/plugin-git', () => {
   })
 })
 
-describe('@devframes/plugin-git (snapshotRpc build baking)', () => {
-  it('bakes the git service read ops declared in snapshotRpc', async () => {
+describe('@devframes/plugin-git (rpc.snapshot build baking)', () => {
+  it('bakes the git service read ops declared in rpc.snapshot', async () => {
     const repo = createTempRepo()
     try {
       const ctx = await createDashboardContext(repo.dir, 'build')
-      // Mirror `createBuild`: honor the definition's `snapshotRpc` before collecting.
-      applySnapshotRpc(ctx, createGitDevframe().snapshotRpc)
+      // Mirror `createBuild`: honor the definition's `rpc.snapshot` before collecting.
+      applySnapshotRpc(ctx, createGitDevframe().rpc?.snapshot)
       const dump = await collectStaticRpcDump(ctx.rpc.definitions.values(), ctx)
 
       const status = dump.manifest['devframes:service:git:status']

@@ -33,6 +33,7 @@ export { DevframeNodeRpcSessionMeta }
 export { DevframeRpcClientFunctions }
 export { DevframeRpcConnection }
 export { DevframeRpcConnectionRequest }
+export { DevframeRpcOptions }
 export { DevframeRpcServerFunctions }
 export { DevframeRpcSharedStates }
 export { DevframeRpcTransportKind }

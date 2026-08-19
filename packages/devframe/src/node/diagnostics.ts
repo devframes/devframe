@@ -196,7 +196,7 @@ export const diagnostics = defineDiagnostics({
     },
     DF0072: {
       why: (p: { method: string }) =>
-        `\`snapshotRpc\` names "${p.method}", but no RPC function is registered under that id — nothing to bake into the static build.`,
+        `\`rpc.snapshot\` names "${p.method}", but no RPC function is registered under that id — nothing to bake into the static build.`,
       fix: 'Check the method id, and ensure the service/plugin that registers it is installed (e.g. declared in `services`) before the build collects the dump.',
     },
   },

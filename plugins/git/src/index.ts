@@ -1,5 +1,5 @@
 // Types-only: loads service-git's registry augmentation so
-// `ctx.services.get('@devframes/service-git')` is typed in `snapshotRpc`.
+// `ctx.services.get('@devframes/service-git')` is typed in `rpc.snapshot`.
 import type {} from '@devframes/service-git'
 import type { DevframeDefinition, RemoteAssets } from 'devframe'
 import process from 'node:process'
@@ -82,22 +82,24 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
     // their no-arg call; log bakes the 200-commit head; show bakes one
     // (patch-less) record per commit, enumerated at build time via the
     // service's node API.
-    snapshotRpc: [
-      'devframes:service:git:status',
-      'devframes:service:git:branches',
-      'devframes:service:git:diff',
-      { method: 'devframes:service:git:log', inputs: [[{ limit: 200 }]] },
-      {
-        method: 'devframes:service:git:show',
-        inputs: async (ctx) => {
-          const git = ctx.services.get(GIT_SERVICE)
-          if (!git)
-            return []
-          const { commits } = await git.log({ limit: 200 })
-          return commits.map(commit => [{ hash: commit.hash, patch: false }])
+    rpc: {
+      snapshot: [
+        'devframes:service:git:status',
+        'devframes:service:git:branches',
+        'devframes:service:git:diff',
+        { method: 'devframes:service:git:log', inputs: [[{ limit: 200 }]] },
+        {
+          method: 'devframes:service:git:show',
+          inputs: async (ctx) => {
+            const git = ctx.services.get(GIT_SERVICE)
+            if (!git)
+              return []
+            const { commits } = await git.log({ limit: 200 })
+            return commits.map(commit => [{ hash: commit.hash, patch: false }])
+          },
         },
-      },
-    ],
+      ],
+    },
     setup() {},
   })
 }

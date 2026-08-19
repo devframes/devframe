@@ -147,7 +147,7 @@ export interface DevframeDefinition {
     build?: boolean;
   };
   services?: DevframeServiceInput[];
-  snapshotRpc?: DevframeSnapshotRpcEntry[];
+  rpc?: DevframeRpcOptions;
   setup: (_: DevframeNodeContext, _?: DevframeSetupInfo) => void | Promise<void>;
   cli?: DevframeCliOptions;
 }
@@ -228,6 +228,9 @@ export interface DevframeRpcConnectionRequest {
   headers?: {
     get: (_: string) => string | null | undefined;
   };
+}
+export interface DevframeRpcOptions {
+  snapshot?: DevframeSnapshotRpcEntry[];
 }
 export interface DevframeRpcServerFunctions {
   'anonymous:devframe:auth': (_: {
