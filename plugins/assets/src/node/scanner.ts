@@ -31,8 +31,12 @@ function toPublicPath(baseURL: string, posixPath: string): string {
   return joinURL(baseURL, encoded)
 }
 
-/** Builds an {@link AssetInfo} from an already-resolved `fs.Stats`. */
-export function statToAssetInfo(dir: string, baseURL: string, relPath: string, stat: Stats): AssetInfo {
+/**
+ * Builds an {@link AssetInfo} from an already-resolved `fs.Stats`. Pass
+ * `includeFsPath` (dev mode only) to attach the absolute `fsPath` the client
+ * hands to the open wire service.
+ */
+export function statToAssetInfo(dir: string, baseURL: string, relPath: string, stat: Stats, includeFsPath = false): AssetInfo {
   const posixPath = relPath.replace(/\\/g, '/')
   return {
     path: posixPath,
@@ -40,17 +44,18 @@ export function statToAssetInfo(dir: string, baseURL: string, relPath: string, s
     publicPath: toPublicPath(baseURL, posixPath),
     size: stat.size,
     mtime: stat.mtimeMs,
+    ...(includeFsPath ? { fsPath: join(dir, relPath) } : {}),
   }
 }
 
 /** Recursively lists every file under `dir`, sorted alphabetically by path. */
-export async function scanAssets(dir: string, baseURL: string): Promise<AssetInfo[]> {
+export async function scanAssets(dir: string, baseURL: string, includeFsPath = false): Promise<AssetInfo[]> {
   const files = await glob(['**/*'], { cwd: dir, onlyFiles: true, dot: false })
 
   const infos = await Promise.all(files.map(async (relPath): Promise<AssetInfo | undefined> => {
     try {
       const stat = await fsp.lstat(join(dir, relPath))
-      return statToAssetInfo(dir, baseURL, relPath, stat)
+      return statToAssetInfo(dir, baseURL, relPath, stat, includeFsPath)
     }
     catch {
       // Removed between the glob scan and the stat call — drop it silently,

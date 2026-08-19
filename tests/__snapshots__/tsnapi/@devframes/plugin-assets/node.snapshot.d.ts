@@ -18,6 +18,6 @@ export declare function disposeAssetsWatcher(_: DevframeNodeContext): Promise<vo
 export declare function getAssetsContext(_: DevframeNodeContext): AssetsContext;
 export declare function guessAssetType(_: string): AssetType;
 export declare function resolveAssetPath(_: string, _: string): string;
-export declare function scanAssets(_: string, _: string): Promise<AssetInfo[]>;
+export declare function scanAssets(_: string, _: string, _?: boolean): Promise<AssetInfo[]>;
 export declare function setupAssets(_: DevframeNodeContext, _: SetupAssetsOptions): Promise<void>;
 // #endregion

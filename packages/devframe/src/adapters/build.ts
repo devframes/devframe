@@ -88,10 +88,11 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
     mode: 'build',
     host,
   })
+  // Services ready before setup, so setup can consume them synchronously.
   for (const input of d.services ?? [])
     void ctx.services.install(input, { resolveFrom: d.packageName })
-  await d.setup(ctx)
   await ctx.services.ready()
+  await d.setup(ctx)
 
   await fs.mkdir(resolve(outDir, DEVFRAME_RPC_DUMP_DIRNAME), { recursive: true })
 

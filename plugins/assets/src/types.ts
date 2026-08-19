@@ -11,6 +11,12 @@ export interface AssetInfo {
   size: number
   /** `mtimeMs` — milliseconds since epoch. */
   mtime: number
+  /**
+   * Absolute filesystem path — populated in `dev` mode only (never baked
+   * into a static build's dump), so the client can hand it to the
+   * `@devframes/service-open` wire service for open-in-editor / reveal.
+   */
+  fsPath?: string
 }
 
 export interface AssetImageMeta {

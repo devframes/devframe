@@ -101,28 +101,35 @@ export default function createOpenService(options?: OpenServiceOptions): Devfram
 
 Two declaration merges make it fully typed for consumers: the fully-qualified RPC ids go into `DevframeRpcServerFunctions`, and the package → scope mapping into `DevframeServicesScopeRegistry` (so a client's `services.get()` returns a scoped, typed RPC handle).
 
-### Installing
+### Declaring
 
-A host with the factory at hand installs explicitly; a plugin declares what it consumes on its definition and the adapter resolves the package **against the plugin's own dependencies**:
+Services are **declarative**. A plugin lists what it consumes on its definition; a host lists shared ones on `initHub`. The adapter resolves each package — for a plugin, **against the plugin's own dependencies** — and constructs it:
 
 ```ts
-// host side (e.g. inside initHub's configure)
-ctx.services.install(createShikiService({ themes }))
-
-// plugin side — declarative
+// plugin side — on the definition
 defineDevframe({
   services: [
     { package: '@devframes/service-open' },
     { package: '@devframes/service-shiki', version: '^1', options: { langs: ['vue'] } },
   ],
 })
+
+// host side — shared services on initHub
+initHub({
+  services: [createShikiService({ themes })],
+  devframes: [/* … */],
+})
 ```
 
 Entries are optional by default — a package that isn't installed is skipped and clients see `has() === false`. Mark an entry `required: true` to fail hard instead ([`DF0067`](https://devfra.me/errors/DF0067) on a missing package, [`DF0068`](https://devfra.me/errors/DF0068) on an unsatisfied `version` range; without it a range mismatch only warns with [`DF0069`](https://devfra.me/errors/DF0069)).
 
-Installs queue until the adapter fires the `ctx.services.ready()` barrier after every devframe's setup has run. There each service is constructed **once**, with the option sets from every declarer merged — through the definition's `mergeOptions` when it declares one, otherwise shallow-merged in declaration order, so a host installing last wins. After the barrier, installing an already-installed package returns the existing API and warns ([`DF0066`](https://devfra.me/errors/DF0066)) when its options had to be ignored.
+### Lifecycle: ready before setup
+
+Services are constructed and made ready **before any `setup(ctx)` runs**. The hub collects every declared service (across all devframes plus `initHub`), constructs each **once** — deep-merging the option sets from every declarer (objects recurse, arrays union-dedupe, scalars take the later value; a service may override with its own `mergeOptions`) — and only then runs the setups. So `setup(ctx)` can consume a service synchronously via `ctx.services.get(pkg)`, including one another devframe declared.
 
 Server-side consumers get the node API from the same registry — `ctx.services.get('@devframes/service-open')` or `whenAvailable` — with no RPC hop.
+
+Declarative covers the common case. For a service whose configuration is only known at runtime, `ctx.services.install(input)` is the dynamic escape hatch: after the pre-setup construction it builds immediately; re-installing an already-constructed package returns the existing API and warns ([`DF0066`](https://devfra.me/errors/DF0066)) if it carried options that can no longer merge.
 
 ### Feature-detecting on the client
 

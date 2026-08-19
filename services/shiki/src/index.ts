@@ -103,11 +103,8 @@ export function createShikiService(options?: ShikiServiceOptions): DevframeServi
     version: pkg.version,
     scope: SHIKI_SERVICE_SCOPE,
     options,
-    mergeOptions: sets => sets.reduce((merged, set) => ({
-      ...merged,
-      ...set,
-      langs: [...new Set([...(merged.langs ?? []), ...(set.langs ?? [])])],
-    }), {}),
+    // Option sets from multiple installers merge via devframe's default
+    // deep-merge: `langs` union, `themes` deep-merged (per-key last-wins).
     setup(ctx, { options }) {
       const defaultThemes = options?.themes ?? SHIKI_DEFAULT_THEMES
 

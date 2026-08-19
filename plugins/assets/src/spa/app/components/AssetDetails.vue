@@ -1,4 +1,7 @@
 <script setup lang="ts">
+// Types-only: loads service-open's RPC/scope augmentations so the scoped
+// `open.rpc.call('open-in-editor', …)` below is fully typed.
+import type {} from '@devframes/service-open'
 import type { DevframeRpcClient } from 'devframe/client'
 import type { AssetImageMeta, AssetInfo } from '../../../types'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
@@ -119,13 +122,20 @@ async function handleRename(): Promise<void> {
 
 async function handleOpenInEditor(): Promise<void> {
   await runAction(async () => {
-    await props.rpc!.call('devframes:plugin:assets:open-in-editor', props.asset.path)
+    const open = props.rpc!.services.get('@devframes/service-open')
+    if (open && props.asset.fsPath)
+      await open.rpc.call('open-in-editor', { path: props.asset.fsPath })
   })
 }
 
 async function handleRevealInFolder(): Promise<void> {
   await runAction(async () => {
-    await props.rpc!.call('devframes:plugin:assets:reveal-in-folder', props.asset.path)
+    const open = props.rpc!.services.get('@devframes/service-open')
+    if (open && props.asset.fsPath) {
+      // Reveal the containing folder: pass the parent dir to open-in-finder.
+      const parent = props.asset.fsPath.replace(/[/\\][^/\\]*$/, '')
+      await open.rpc.call('open-in-finder', { path: parent })
+    }
   })
 }
 
@@ -219,10 +229,10 @@ function openInBrowser(): void {
       <ActionButton variant="primary" icon="i-ph-download-simple-duotone" @click="openInBrowser">
         Download
       </ActionButton>
-      <ActionButton v-if="openServiceAvailable" icon="i-ph-code-duotone" :disabled="busy" @click="handleOpenInEditor">
+      <ActionButton v-if="openServiceAvailable && asset.fsPath" icon="i-ph-code-duotone" :disabled="busy" @click="handleOpenInEditor">
         Open in Editor
       </ActionButton>
-      <ActionButton v-if="openServiceAvailable" icon="i-ph-folder-open-duotone" :disabled="busy" @click="handleRevealInFolder">
+      <ActionButton v-if="openServiceAvailable && asset.fsPath" icon="i-ph-folder-open-duotone" :disabled="busy" @click="handleRevealInFolder">
         Reveal in Folder
       </ActionButton>
       <ActionButton v-if="canWrite" icon="i-ph-text-aa-duotone" @click="openRenameDialog">

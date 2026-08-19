@@ -69,11 +69,8 @@ export function createOpenService(options?: OpenServiceOptions): DevframeService
     version: pkg.version,
     scope: OPEN_SERVICE_SCOPE,
     options,
-    mergeOptions: sets => sets.reduce((merged, set) => ({
-      ...merged,
-      ...set,
-      roots: [...new Set([...(merged.roots ?? []), ...(set.roots ?? [])])],
-    }), {}),
+    // Option sets from multiple installers merge via devframe's default
+    // deep-merge: `roots` union, `editor` last-wins.
     setup(ctx, { options }) {
       const allowedRoots = [ctx.workspaceRoot, ...(options?.roots ?? [])].map(root => resolve(root))
 

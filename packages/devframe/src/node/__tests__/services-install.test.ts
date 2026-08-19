@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { satisfiesVersionRange, shallowMergeOptionSets } from '../services-install'
+import { deepMergeOptionSets, satisfiesVersionRange } from '../services-install'
 
 describe('satisfiesVersionRange', () => {
   it('matches exact versions', () => {
@@ -57,13 +57,23 @@ describe('satisfiesVersionRange', () => {
   })
 })
 
-describe('shallowMergeOptionSets', () => {
-  it('merges plain objects in order, later wins', () => {
-    expect(shallowMergeOptionSets([{ a: 1, b: 1 }, { b: 2, c: 3 }])).toEqual({ a: 1, b: 2, c: 3 })
+describe('deepMergeOptionSets', () => {
+  it('merges plain objects in order, later scalars win', () => {
+    expect(deepMergeOptionSets([{ a: 1, b: 1 }, { b: 2, c: 3 }])).toEqual({ a: 1, b: 2, c: 3 })
   })
 
-  it('collapses to last-wins when a set is not a plain object', () => {
-    expect(shallowMergeOptionSets<unknown>([{ a: 1 }, ['x']])).toEqual(['x'])
-    expect(shallowMergeOptionSets<unknown>(['x', { a: 1 }])).toEqual({ a: 1 })
+  it('recurses into nested objects', () => {
+    expect(deepMergeOptionSets([{ nested: { x: 1, y: 1 } }, { nested: { y: 2, z: 3 } }]))
+      .toEqual({ nested: { x: 1, y: 2, z: 3 } })
+  })
+
+  it('unions + dedupes arrays', () => {
+    expect(deepMergeOptionSets([{ roots: ['a', 'b'] }, { roots: ['b', 'c'] }]))
+      .toEqual({ roots: ['a', 'b', 'c'] })
+  })
+
+  it('takes the later value for mismatched shapes', () => {
+    expect(deepMergeOptionSets<unknown>([{ a: 1 }, ['x']])).toEqual(['x'])
+    expect(deepMergeOptionSets<unknown>(['x', { a: 1 }])).toEqual({ a: 1 })
   })
 })

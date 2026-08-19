@@ -16,10 +16,11 @@ export interface CreateEmbeddedOptions {
  * effective default follows the hosted rule of `def.basePath ?? '/__<id>/'`.
  */
 export async function createEmbedded(d: DevframeDefinition, options: CreateEmbeddedOptions): Promise<void> {
-  // Declarative services queue before setup; the owning host fires the
-  // `ctx.services.ready()` barrier (post-barrier registration installs
-  // immediately).
+  // Services ready before setup. `ready()` is idempotent: on an
+  // already-running host it's a no-op and the fresh installs construct
+  // immediately; on a not-yet-started one it fires the initial barrier.
   for (const input of d.services ?? [])
     void options.ctx.services.install(input, { resolveFrom: d.packageName })
+  await options.ctx.services.ready()
   await d.setup(options.ctx)
 }

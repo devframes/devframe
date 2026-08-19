@@ -34,9 +34,5 @@ export const diagnostics = defineDiagnostics({
       why: 'The upload streaming channel is unavailable because this devframe was set up with `write: false`.',
       fix: 'This indicates an internal registration bug — `upload` should never be reachable without `write: true`. Please report it.',
     },
-    DP_ASSETS_0008: {
-      why: 'Cannot open the asset: the "@devframes/service-open" wire service is not installed on this host.',
-      fix: 'Install the service package next to the assets plugin (it installs it during setup), or install it host-side via `ctx.services.install(createOpenService())`.',
-    },
   },
 })

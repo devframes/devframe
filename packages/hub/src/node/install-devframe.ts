@@ -48,11 +48,22 @@ function nextAvailableDockId(views: DevframeHubContext['docks']['views'], baseId
  * machinery — e.g. `@vitejs/devtools-kit`'s `createPluginFromDevframe`
  * returns a Vite `Plugin` whose `devtools.setup` ultimately delegates here.
  */
-export async function installDevframe(
+/**
+ * Phase one of an install: run the duplication guard, serve the SPA + meta,
+ * register the iframe dock, and queue the definition's declarative wire
+ * services — everything up to (but not including) `setup(ctx)`. Returns a
+ * deferred setup thunk, or `null` when the devframe was deduplicated.
+ *
+ * The hub's initial batch uses this to collect every devframe's services
+ * across the whole hub, `ready()` them once, and only then run the setups —
+ * so services are ready before any setup, and a plugin can consume a service
+ * another plugin declared regardless of mount order.
+ */
+export async function prepareDevframe(
   ctx: DevframeHubContext,
   d: DevframeDefinition,
   options: InstallDevframeOptions = {},
-): Promise<void> {
+): Promise<(() => Promise<void>) | null> {
   const strategy = d.duplicationStrategy ?? 'warn'
   const isDuplicate = ctx.docks.views.has(d.id)
 
@@ -63,7 +74,7 @@ export async function installDevframe(
       diagnostics.DF8105({ id: d.id, name: d.name })
     // 'warn' and 'silent' both deduplicate: keep the first registration
     // and drop this later one.
-    return
+    return null
   }
 
   // The 'duplicate' strategy lets instances coexist, so the dock id (and,
@@ -107,11 +118,31 @@ export async function installDevframe(
     url: base,
   } as DevframeViewIframe)
 
-  // Queue the definition's declarative wire services ahead of its setup so
-  // their option sets precede setup-time installs in the merge order. The
-  // hub fires the `ctx.services.ready()` barrier once every devframe (and
-  // the host's own configuration) has installed.
+  // Queue the definition's declarative wire services. They're constructed at
+  // the `ctx.services.ready()` barrier the hub fires before running setups.
   for (const input of d.services ?? [])
     void ctx.services.install(input, { resolveFrom: d.packageName })
-  await d.setup(ctx)
+
+  return () => Promise.resolve(d.setup(ctx))
+}
+
+/**
+ * Install a {@link DevframeDefinition} into a hub in one call — serve its SPA,
+ * register its dock, ready its services, and run `setup(ctx)`. The imperative
+ * counterpart to the hub's declarative `devframes` list (which batches the
+ * phases via {@link prepareDevframe}); use it from `configure(ctx)` or
+ * wherever you hold the context to plug in an extra devframe after startup.
+ */
+export async function installDevframe(
+  ctx: DevframeHubContext,
+  d: DevframeDefinition,
+  options: InstallDevframeOptions = {},
+): Promise<void> {
+  const run = await prepareDevframe(ctx, d, options)
+  if (!run)
+    return
+  // `ready()` is idempotent: after the hub's initial barrier this constructs
+  // the just-queued services immediately, before this devframe's setup.
+  await ctx.services.ready()
+  await run()
 }

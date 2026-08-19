@@ -1,7 +1,7 @@
 import type { AssetsServer, TestClient } from './_utils'
 import { Buffer } from 'node:buffer'
 import fsp from 'node:fs/promises'
-import { join } from 'node:path'
+import { isAbsolute, join } from 'node:path'
 import process from 'node:process'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { bootClient, call, cleanupTempDir, createTempDir, startAssetsServer } from './_utils'
@@ -164,21 +164,29 @@ describe('assets plugin', () => {
     await expect(call(client, 'devframes:plugin:assets:mkdir', { path: 'x' })).rejects.toThrow()
   })
 
-  it('still registers open-in-editor and reveal-in-folder when write is disabled', async () => {
+  it('installs the open wire service (regardless of write) for the client to call directly', async () => {
     server = await startAssetsServer(dir, { write: false, watch: false })
 
-    // open-in-editor / reveal-in-folder launch external OS apps, so assert
-    // they're *registered* on the server context rather than invoking them
-    // (a real launch would spawn a process and hang the test runner). They
-    // must be available regardless of `write`; the write actions must not.
+    // Assets no longer wraps open-in-editor/reveal-in-folder — it declares
+    // `@devframes/service-open` (with the managed dir as an allowed root),
+    // which the client calls directly with the asset's absolute `fsPath`.
+    // The service is constructed before setup and its scoped RPC registered,
+    // regardless of `write`; the write actions must not be.
     const defs = server.ctx.rpc.definitions
-    expect(defs.has('devframes:plugin:assets:open-in-editor')).toBe(true)
-    expect(defs.has('devframes:plugin:assets:reveal-in-folder')).toBe(true)
-    expect(defs.has('devframes:plugin:assets:mkdir')).toBe(false)
-    // Both delegate to the open wire service the plugin installs during
-    // setup (with the managed dir as an allowed root).
     expect(server.ctx.services.has('@devframes/service-open')).toBe(true)
     expect(defs.has('devframes:service:open:open-in-editor')).toBe(true)
+    expect(defs.has('devframes:service:open:open-in-finder')).toBe(true)
+    expect(defs.has('devframes:plugin:assets:mkdir')).toBe(false)
+  })
+
+  it('exposes an absolute fsPath on listed assets in dev mode', async () => {
+    await fsp.writeFile(join(dir, 'note.txt'), 'hello')
+    server = await startAssetsServer(dir, { watch: false })
+    client = bootClient(server.port)
+    const assets = await call(client, 'devframes:plugin:assets:list')
+    expect(assets.length).toBeGreaterThan(0)
+    for (const asset of assets)
+      expect(asset.fsPath && isAbsolute(asset.fsPath)).toBeTruthy()
   })
 
   // The one test that needs the live watcher — every other test above opts
