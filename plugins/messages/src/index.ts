@@ -5,12 +5,12 @@ import { DEFAULT_PORT, PLUGIN_ID } from './constants'
 import { setupMessages } from './node/index'
 
 // The SPA ships in the lockstep `@devframes/plugin-messages--assets` package,
-// served on demand through devframe's remote-assets back-proxy; `resolveFrom`
-// serves a locally installed copy (a workspace link here) with zero network.
+// served on demand through devframe's remote-assets back-proxy. The definition's
+// `importMetaUrl` (below) supplies the default `resolveFrom`, so a locally
+// installed copy (a workspace link here) is served with zero network.
 const remoteAssets: RemoteAssets = {
   package: `${pkg.name}--assets`,
   version: pkg.version,
-  resolveFrom: import.meta.url,
 }
 // The panel `clientScript` bundle (`dist/client`) stays in this node package.
 
@@ -54,6 +54,7 @@ export function createMessagesDevframe(options: MessagesDevframeOptions = {}): D
     name: options.name ?? 'Messages',
     version: pkg.version,
     packageName: pkg.name,
+    importMetaUrl: import.meta.url,
     homepage: pkg.homepage,
     description: pkg.description,
     icon: options.icon ?? 'ph:notification-duotone',

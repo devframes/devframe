@@ -103,7 +103,7 @@ Two declaration merges make it fully typed for consumers: the fully-qualified RP
 
 ### Installing
 
-A host with the factory at hand installs explicitly; a plugin declares what it consumes on its definition and the adapter resolves the package **against the plugin's own dependencies**:
+A host with the factory at hand installs explicitly; a plugin declares what it consumes on its definition and the adapter resolves the package **against the plugin's own dependencies** — the base for that resolution is the definition's [`importMetaUrl`](./devframe-definition#resolving-against-the-plugins-own-dependencies), so a plugin ships a service package as its own dependency and users install nothing extra:
 
 ```ts
 // host side (e.g. inside initHub's configure)
@@ -111,6 +111,7 @@ ctx.services.install(createShikiService({ themes }))
 
 // plugin side — declarative
 defineDevframe({
+  importMetaUrl: import.meta.url, // resolution base for the declared packages
   services: [
     { package: '@devframes/service-open' },
     { package: '@devframes/service-shiki', version: '^1', options: { langs: ['vue'] } },

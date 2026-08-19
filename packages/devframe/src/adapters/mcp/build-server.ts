@@ -116,9 +116,10 @@ export async function createMcpServer(
     cwd: process.cwd(),
     mode: 'dev',
     host,
+    importMetaUrl: definition.importMetaUrl,
   })
   for (const input of definition.services ?? [])
-    void ctx.services.install(input, { resolveFrom: definition.packageName })
+    void ctx.services.install(input, { resolveFrom: definition.importMetaUrl })
   await definition.setup(ctx)
   await ctx.services.ready()
 

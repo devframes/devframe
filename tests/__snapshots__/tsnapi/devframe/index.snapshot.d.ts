@@ -132,6 +132,7 @@ export interface DevframeDefinition {
   name: string;
   version: string;
   packageName: string;
+  importMetaUrl?: string;
   homepage: string;
   description: string;
   icon?: string | {
@@ -357,7 +358,7 @@ export interface DevframeViewHost {
     baseUrl: string;
     source: StaticAssetsSource;
   }[];
-  hostStatic: (_: string, _: StaticAssetsSource) => void;
+  hostStatic: (_: string, _: StaticAssetsSource, _?: string | null) => void;
 }
 export interface DevframeWsOptions {
   route?: string;

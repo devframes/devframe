@@ -13,6 +13,7 @@ export default defineDevframe({
   name: 'Next Demo Tool',
   version: pkg.version,
   packageName: pkg.name,
+  importMetaUrl: import.meta.url,
   homepage: pkg.homepage,
   description: 'A tiny demo devframe mounted into the Next.js hub via its `devframes` list.',
   icon: 'ph:rocket-duotone',

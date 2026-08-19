@@ -91,7 +91,10 @@ export async function installDevframe(
     else
       diagnostics.DF8106({ id, name: d.name, base })
     const distSource = d.cli.distDir
-    ctx.views.hostStatic(base, typeof distSource === 'string' ? resolve(distSource) : distSource)
+    // Resolve the plugin's assets against *its* dependency graph, not the
+    // hub's: pass the devframe's own `importMetaUrl` as the default
+    // `resolveFrom`.
+    ctx.views.hostStatic(base, typeof distSource === 'string' ? resolve(distSource) : distSource, d.importMetaUrl)
   }
 
   ctx.docks.register({
@@ -112,6 +115,6 @@ export async function installDevframe(
   // hub fires the `ctx.services.ready()` barrier once every devframe (and
   // the host's own configuration) has installed.
   for (const input of d.services ?? [])
-    void ctx.services.install(input, { resolveFrom: d.packageName })
+    void ctx.services.install(input, { resolveFrom: d.importMetaUrl })
   await d.setup(ctx)
 }

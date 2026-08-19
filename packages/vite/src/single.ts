@@ -72,7 +72,7 @@ export function devframeVitePlugin(d: DevframeDefinition, options: DevframeViteP
       // Remote-assets sources resolve to the locally installed assets
       // package when present, otherwise to a caching CDN back-proxy, under
       // the h3 host's `project` storage convention.
-      const source = resolveStaticAssetsSource(distDir, join(process.cwd(), 'node_modules', `.${d.id}`, 'devframe'))
+      const source = resolveStaticAssetsSource(distDir, join(process.cwd(), 'node_modules', `.${d.id}`, 'devframe'), d.importMetaUrl)
       server.middlewares.use(base, serveStaticNodeMiddleware(typeof source === 'string' ? resolve(source) : source))
     },
   }

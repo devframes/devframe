@@ -19,6 +19,7 @@ export default defineDevframe({
   name: 'Demo Tool',
   version: pkg.version,
   packageName: pkg.name,
+  importMetaUrl: import.meta.url,
   homepage: pkg.homepage,
   description: 'A tiny demo devframe that plugs into the hub via its `devframes` list.',
   icon: 'ph:rocket-duotone',

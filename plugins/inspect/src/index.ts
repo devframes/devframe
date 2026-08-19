@@ -7,14 +7,14 @@ import { setupInspect } from './node/index'
 const DEFAULT_ID = 'devframes_plugin_inspect'
 
 // The Vue SPA ships in the lockstep-versioned `@devframes/plugin-inspect--assets`
-// package rather than inside this (slim) node package. `resolveFrom` lets a
-// locally installed copy (a workspace link in this monorepo, or an explicit
+// package rather than inside this (slim) node package. The definition's
+// `importMetaUrl` (below) supplies the default `resolveFrom`, letting a locally
+// installed copy (a workspace link in this monorepo, or an explicit
 // `npm install` for air-gapped setups) be served with zero network; otherwise
 // the assets stream on demand through devframe's caching CDN back-proxy.
 const distDir: RemoteAssets = {
   package: `${pkg.name}--assets`,
   version: pkg.version,
-  resolveFrom: import.meta.url,
 }
 
 export interface InspectDevframeOptions {
@@ -55,6 +55,7 @@ export function createInspectDevframe(options: InspectDevframeOptions = {}): Dev
     name: options.name ?? 'Devframe Inspector',
     version: pkg.version,
     packageName: pkg.name,
+    importMetaUrl: import.meta.url,
     homepage: pkg.homepage,
     description: pkg.description,
     icon: options.icon ?? 'ph:stethoscope-duotone',

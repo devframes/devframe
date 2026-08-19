@@ -395,14 +395,24 @@ function assertValidRemoteAssets(assets: RemoteAssets): void {
  *
  * A remote source's `package`/`version` are validated first (`DF0065`) — both
  * are interpolated into CDN URLs and the cache path.
+ *
+ * `defaultResolveFrom` (typically the declaring devframe's `importMetaUrl`)
+ * supplies a `resolveFrom` base for a remote source that doesn't set one:
+ * it is applied only when `source.resolveFrom` is `undefined`, so an explicit
+ * per-source string still wins and an explicit `null` still opts out of the
+ * installed-copy lookup.
  */
 export function resolveStaticAssetsSource(
   source: StaticAssetsSource,
   projectStorageDir: string,
+  defaultResolveFrom?: string | null,
 ): string | RemoteAssetsStore {
   if (typeof source === 'string')
     return source
   assertValidRemoteAssets(source)
-  return resolveInstalled(source)
-    ?? createStore(source, join(projectStorageDir, '.remote-assets', `${source.package.replace(/\//g, '+')}@${source.version}`))
+  const resolved: RemoteAssets = source.resolveFrom === undefined && defaultResolveFrom != null
+    ? { ...source, resolveFrom: defaultResolveFrom }
+    : source
+  return resolveInstalled(resolved)
+    ?? createStore(resolved, join(projectStorageDir, '.remote-assets', `${resolved.package.replace(/\//g, '+')}@${resolved.version}`))
 }

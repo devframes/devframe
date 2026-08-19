@@ -20,6 +20,6 @@ export async function createEmbedded(d: DevframeDefinition, options: CreateEmbed
   // `ctx.services.ready()` barrier (post-barrier registration installs
   // immediately).
   for (const input of d.services ?? [])
-    void options.ctx.services.install(input, { resolveFrom: d.packageName })
+    void options.ctx.services.install(input, { resolveFrom: d.importMetaUrl })
   await d.setup(options.ctx)
 }

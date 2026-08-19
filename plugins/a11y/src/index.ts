@@ -9,13 +9,13 @@ const DEFAULT_ID = 'devframes_plugin_a11y'
 const BASE_PATH = '/__devframes_plugin_a11y/'
 
 // The Solid panel SPA ships in the lockstep `@devframes/plugin-a11y--assets`
-// package, served on demand through devframe's remote-assets back-proxy;
-// `resolveFrom` serves a locally installed copy (a workspace link here) with
-// zero network. The host-page agent bundle (`dist/inject`, below) stays here.
+// package, served on demand through devframe's remote-assets back-proxy. The
+// definition's `importMetaUrl` (below) supplies the default `resolveFrom`, so a
+// locally installed copy (a workspace link here) is served with zero network.
+// The host-page agent bundle (`dist/inject`, below) stays here.
 const distDir: RemoteAssets = {
   package: `${pkg.name}--assets`,
   version: pkg.version,
-  resolveFrom: import.meta.url,
 }
 
 /**
@@ -83,6 +83,7 @@ export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeD
     name: options.name ?? 'A11y Inspector',
     version: pkg.version,
     packageName: pkg.name,
+    importMetaUrl: import.meta.url,
     homepage: pkg.homepage,
     description: pkg.description,
     icon: options.icon ?? 'ph:person-simple-circle-duotone',

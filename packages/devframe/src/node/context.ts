@@ -16,6 +16,15 @@ export interface CreateHostContextOptions {
   mode: 'dev' | 'build'
   host: DevframeHost
   /**
+   * `import.meta.url` of the module that defines the devframe this context
+   * serves (from `DevframeDefinition.importMetaUrl`). Supplies the default
+   * `resolveFrom` base for remote {@link DevframeViewHost.hostStatic} sources
+   * that don't set one, so a locally installed copy of an assets package is
+   * served with zero network. An internal plumbing detail — it isn't part of
+   * the public {@link DevframeNodeContext} surface.
+   */
+  importMetaUrl?: string
+  /**
    * Built-in RPC declarations to register on the host. Framework
    * adapters (vite, rolldown, cli) can pass the ones they need; the
    * host itself has no opinions about the built-in set.
@@ -32,7 +41,7 @@ export interface CreateHostContextOptions {
  * `commands` when mounted into Vite DevTools.
  */
 export async function createHostContext(options: CreateHostContextOptions): Promise<DevframeNodeContext> {
-  const { cwd, workspaceRoot = cwd, mode, host, builtinRpcDeclarations = [] } = options
+  const { cwd, workspaceRoot = cwd, mode, host, importMetaUrl, builtinRpcDeclarations = [] } = options
 
   const context: DevframeNodeContext = {
     cwd,
@@ -49,7 +58,7 @@ export async function createHostContext(options: CreateHostContextOptions): Prom
   } as unknown as DevframeNodeContext
 
   const rpcHost = new RpcFunctionsHostImpl(context)
-  const viewsHost = new DevframeViewHost(context)
+  const viewsHost = new DevframeViewHost(context, importMetaUrl)
   const diagnosticsHost = new DevframeDiagnosticsHost(context, [devframeDiagnostics, rpcDiagnostics])
   context.rpc = rpcHost
   context.views = viewsHost

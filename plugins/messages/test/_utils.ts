@@ -23,7 +23,7 @@ const SPA_DIST = localDistDir()
 
 /** Resolve the SPA to a local dir — the workspace-linked `--assets` package in dev. */
 function localDistDir(): string {
-  const resolved = resolveStaticAssetsSource(messagesDevframe.cli!.distDir!, path.join(os.tmpdir(), 'devframes_plugin_messages-test'))
+  const resolved = resolveStaticAssetsSource(messagesDevframe.cli!.distDir!, path.join(os.tmpdir(), 'devframes_plugin_messages-test'), messagesDevframe.importMetaUrl)
   if (typeof resolved !== 'string')
     throw new TypeError('these tests serve the local client SPA — build the plugin first')
   return resolved

@@ -11,6 +11,7 @@ export default defineDevframe({
   name: 'Files Inspector',
   version: pkg.version,
   packageName: pkg.name,
+  importMetaUrl: import.meta.url,
   homepage: pkg.homepage,
   description: pkg.description,
   icon: 'ph:folder-open-duotone',

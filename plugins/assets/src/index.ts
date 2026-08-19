@@ -10,12 +10,12 @@ export type { AssetImageMeta, AssetInfo, AssetType, CodeSnippet } from './types'
 export { DEFAULT_ALLOWED_UPLOAD_EXTENSIONS } from './types'
 
 // The SPA ships in the lockstep `@devframes/plugin-assets--assets` package,
-// served on demand through devframe's remote-assets back-proxy; `resolveFrom`
-// serves a locally installed copy (a workspace link here) with zero network.
+// served on demand through devframe's remote-assets back-proxy. The definition's
+// `importMetaUrl` (below) supplies the default `resolveFrom`, so a locally
+// installed copy (a workspace link here) is served with zero network.
 const remoteAssets: RemoteAssets = {
   package: `${pkg.name}--assets`,
   version: pkg.version,
-  resolveFrom: import.meta.url,
 }
 
 const DEFAULT_ID = 'devframes_plugin_assets'
@@ -109,6 +109,7 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
     name: options.name ?? 'Assets',
     version: pkg.version,
     packageName: pkg.name,
+    importMetaUrl: import.meta.url,
     homepage: pkg.homepage,
     description: pkg.description,
     icon: options.icon ?? 'ph:image-square-duotone',

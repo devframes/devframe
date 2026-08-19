@@ -20,10 +20,10 @@ function toRequireBase(resolveFrom: string): string {
 
 /**
  * Normalize an `install()` `resolveFrom` into a resolution base. Paths and
- * file URLs pass through; a bare npm package name (the common case: the
- * declaring plugin's `packageName`) resolves to that package's location from
- * `cwd`, so a service it declares resolves against the plugin's own
- * dependencies. An unresolvable package name reads as no base (the caller's
+ * file URLs pass through (the common case: the declaring plugin's
+ * `importMetaUrl`, so a service it declares resolves against the plugin's own
+ * dependencies); a bare npm package name resolves to that package's location
+ * from `cwd`. An unresolvable package name reads as no base (the caller's
  * workspace fallbacks apply).
  */
 export function expandResolveFrom(resolveFrom: string, cwd: string): string | undefined {

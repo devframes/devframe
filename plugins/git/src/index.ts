@@ -16,12 +16,12 @@ export type { UnstageArgs } from './rpc/functions/unstage.ts'
 
 // The Next.js static-export SPA ships in the lockstep
 // `@devframes/plugin-git--assets` package, served on demand through devframe's
-// remote-assets back-proxy; `resolveFrom` serves a locally installed copy (a
-// workspace link here) with zero network.
+// remote-assets back-proxy. The definition's `importMetaUrl` (below) supplies
+// the default `resolveFrom`, so a locally installed copy (a workspace link
+// here) is served with zero network.
 const remoteAssets: RemoteAssets = {
   package: `${pkg.name}--assets`,
   version: pkg.version,
-  resolveFrom: import.meta.url,
 }
 
 export interface GitDevframeOptions {
@@ -64,6 +64,7 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
     name: 'Git',
     version: pkg.version,
     packageName: pkg.name,
+    importMetaUrl: import.meta.url,
     homepage: pkg.homepage,
     description: pkg.description,
     icon: 'ph:git-branch-duotone',

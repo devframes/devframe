@@ -287,12 +287,13 @@ export function initDevframe(
         cwd: process.cwd(),
         mode: 'dev',
         host: hostImpl,
+        importMetaUrl: def.importMetaUrl,
       })
       const setupInfo: DevframeSetupInfo = { flags: options.flags ?? {} }
       // Declarative services queue ahead of setup (their promises resolve at
       // the ready() barrier below), resolving against the plugin's own deps.
       for (const input of def.services ?? [])
-        void context.services.install(input, { resolveFrom: def.packageName })
+        void context.services.install(input, { resolveFrom: def.importMetaUrl })
       await def.setup(context, setupInfo)
       await context.services.ready()
 
@@ -337,7 +338,7 @@ export function initDevframe(
       app.use(joinURL(base, DEVFRAME_CONNECTION_META_FILENAME), () => meta)
 
       if (distDir) {
-        const source = resolveStaticAssetsSource(distDir, context.host.getStorageDir('project'))
+        const source = resolveStaticAssetsSource(distDir, context.host.getStorageDir('project'), def.importMetaUrl)
         mountStaticHandler(app, base, typeof source === 'string' ? resolve(source) : source)
       }
     },

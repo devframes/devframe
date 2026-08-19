@@ -17,6 +17,7 @@ export default defineDevframe({
   name: 'My Devframe',
   version: '1.0.0',
   packageName: 'my-devframe',
+  importMetaUrl: import.meta.url,
   homepage: 'https://github.com/me/my-devframe',
   description: 'A one-line summary of what the tool does.',
   icon: 'ph:gauge-duotone',
@@ -45,6 +46,7 @@ export default defineDevframe({
 | `name` | `string` | **Required.** Display name shown in the dock and agent manifests. |
 | `version` | `string` | **Required.** Semver of the tool, surfaced in hub UIs and diagnostics. |
 | `packageName` | `string` | **Required.** npm package name the devframe ships in (e.g. `@scope/my-tool`). |
+| `importMetaUrl` | `string` | **Recommended.** Always pass `import.meta.url`. The resolution base for the tool's own dependency graph: it becomes the default `resolveFrom` for any [remote assets](./client-assets) the devframe hosts, and the base the host resolves declared [services](./services#wire-services) from — so a plugin ships an assets or service package as its own dependency instead of asking users to install it. See [Resolving against the plugin's own dependencies](#resolving-against-the-plugins-own-dependencies). |
 | `homepage` | `string` | **Required.** Project homepage or documentation URL. |
 | `description` | `string` | **Required.** One-line summary of what the tool does. |
 | `icon` | `string \| { light, dark }` | Optional Iconify name or URL; supports light/dark pairs. |
@@ -67,6 +69,7 @@ export default defineDevframe({
   name: 'My Devframe', // display label
   version: pkg.version,
   packageName: pkg.name,
+  importMetaUrl: import.meta.url,
   homepage: pkg.homepage,
   description: pkg.description,
   setup(ctx) { /* … */ },
@@ -74,6 +77,36 @@ export default defineDevframe({
 ```
 
 The default import with a `with { type: 'json' }` attribute resolves under both bundlers and Node's native TypeScript execution. Bundlers also support the destructured `import { version } from '../package.json'` form when the devframe is always bundled before it runs.
+
+### Resolving against the plugin's own dependencies
+
+A devframe often ships companion packages — a separate `--assets` package holding its built SPA, or a service package it consumes. `importMetaUrl` lets the host resolve those against the plugin's **own** installed dependencies rather than the consuming app's, so the plugin declares them as its dependencies and users install nothing extra.
+
+```ts
+import pkg from '../package.json' with { type: 'json' }
+
+export default defineDevframe({
+  id: 'my-devframe',
+  name: 'My Devframe',
+  version: pkg.version,
+  packageName: pkg.name,
+  importMetaUrl: import.meta.url,
+  homepage: pkg.homepage,
+  description: pkg.description,
+  cli: {
+    // Served from the locally installed `my-devframe--assets` — resolved via
+    // `importMetaUrl`, so it works under pnpm's strict layout with zero network.
+    distDir: { package: `${pkg.name}--assets`, version: pkg.version },
+  },
+  services: [
+    // Imported from `my-devframe`'s own dependency graph.
+    { package: '@scope/my-service', version: pkg.version },
+  ],
+  setup(ctx) { /* … */ },
+})
+```
+
+For a remote assets source, `importMetaUrl` is the default `resolveFrom`; a per-source `resolveFrom` still wins, and an explicit `resolveFrom: null` opts out of the installed-copy lookup. See [Client Assets](./client-assets) and [Cross-Plugin Services](./services#wire-services) for the full resolution order.
 
 ### Runtime flags
 

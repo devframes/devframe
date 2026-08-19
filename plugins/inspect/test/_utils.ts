@@ -27,7 +27,7 @@ const inspectDevframe = createInspectDevframe()
  * string) means that build hasn't run.
  */
 function localSpaDir(): string {
-  const resolved = resolveStaticAssetsSource(inspectDevframe.cli!.distDir!, path.join(os.tmpdir(), 'devframes_plugin_inspect-test'))
+  const resolved = resolveStaticAssetsSource(inspectDevframe.cli!.distDir!, path.join(os.tmpdir(), 'devframes_plugin_inspect-test'), inspectDevframe.importMetaUrl)
   if (typeof resolved !== 'string') {
     throw new TypeError(
       '[devframes_plugin_inspect] client SPA missing — run `pnpm -C plugins/inspect run build` first.',
