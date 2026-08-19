@@ -1,5 +1,6 @@
 import type { ClientScriptEntry, DevframeDockUserEntry } from '@devframes/hub'
 import type { DockClientScriptContext } from '@devframes/hub/client'
+import { clientScriptFailureHint, resolveClientModuleSpecifier } from '@devframes/hub/client'
 
 /**
  * Resolve the {@link ClientScriptEntry} a dock entry carries — an `action`'s
@@ -25,20 +26,30 @@ async function _executeSetupScript(
   const script = clientScriptOf(entry)
   if (!script?.importFrom)
     throw new Error(`[@devframes/hub-ui] Dock entry "${entry.id}" carries no client script to run`)
+  // A bare specifier resolves through the host-advertised template; URL
+  // specifiers pass through untouched. Mirrors `@devframes/hub`'s
+  // `createDevframeClientHost` (rpc reads optional-chained for partial stubs).
+  const specifier = resolveClientModuleSpecifier(script.importFrom, {
+    template: context.rpc.connectionMeta?.configs?.dock?.clientModuleResolution,
+    metaBaseUrl: context.rpc.connection?.metaBaseUrl,
+  })
   try {
     // Keep this a *native* dynamic import in every bundler — the specifier is
     // a runtime URL served by the hub, not a build-time module. Mirrors the
     // client-script loading of `@devframes/hub`'s `createDevframeClientHost`.
-    const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ script.importFrom)
+    const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ specifier)
     const fn = mod[script.importName ?? 'default']
     if (typeof fn !== 'function')
-      throw new Error(`[@devframes/hub-ui] "${script.importFrom}" exports no callable "${script.importName ?? 'default'}"`)
+      throw new Error(`[@devframes/hub-ui] "${specifier}" exports no callable "${script.importName ?? 'default'}"`)
     await fn(context)
   }
   catch (error) {
     // TODO: maybe popup a error toast here?
     // TODO: A unified logger API
-    console.error('[@devframes/hub-ui] Error executing client script', error)
+    console.error(
+      `[@devframes/hub-ui] Error executing client script from ${specifier}${clientScriptFailureHint(script.importFrom, specifier)}`,
+      error,
+    )
     throw error
   }
 }

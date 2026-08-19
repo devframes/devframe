@@ -333,3 +333,63 @@ describe('devframeDockHost ~builtin category', () => {
     expect(launcher?.digest).toBe('compiling…')
   })
 })
+
+describe('devframeDockHost bare-specifier client scripts', () => {
+  function withWarnSpy(run: (warn: ReturnType<typeof vi.spyOn>) => void): void {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      run(warn)
+    }
+    finally {
+      warn.mockRestore()
+    }
+  }
+
+  it('warns (DF8111) for a bare-specifier client script on a host without clientModuleResolution', () => {
+    withWarnSpy((warn) => {
+      const host = new DevframeDocksHost(createContext())
+      host.register({
+        type: 'action',
+        id: 'vue-tracer',
+        title: 'Vue Tracer',
+        icon: 'ph:crosshair-simple-duotone',
+        action: { importFrom: 'vite-plugin-vue-tracer/client/vite-devtools' },
+      })
+      expect(warn).toHaveBeenCalledOnce()
+      expect(warn.mock.calls[0]!.join(' ')).toMatch(/DF8111/)
+      expect(warn.mock.calls[0]!.join(' ')).toContain('vite-plugin-vue-tracer/client/vite-devtools')
+    })
+  })
+
+  it('stays silent when the host advertises clientModuleResolution', () => {
+    withWarnSpy((warn) => {
+      const context = createContext()
+      ;(context as { staticConfig: Record<string, unknown> }).staticConfig
+        = { dock: { clientModuleResolution: '/@id/{specifier}' } }
+      const host = new DevframeDocksHost(context)
+      host.register({
+        type: 'action',
+        id: 'vue-tracer',
+        title: 'Vue Tracer',
+        icon: 'ph:crosshair-simple-duotone',
+        action: { importFrom: 'vite-plugin-vue-tracer/client/vite-devtools' },
+      })
+      expect(warn).not.toHaveBeenCalled()
+    })
+  })
+
+  it('stays silent for URL client scripts on any host', () => {
+    withWarnSpy((warn) => {
+      const host = new DevframeDocksHost(createContext())
+      host.register({
+        type: 'iframe',
+        id: 'a11y',
+        title: 'A11y',
+        icon: 'ph:person-arms-spread-duotone',
+        url: '/__devframes/a11y/',
+        clientScript: { importFrom: '/@fs/abs/inject.js' },
+      })
+      expect(warn).not.toHaveBeenCalled()
+    })
+  })
+})

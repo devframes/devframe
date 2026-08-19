@@ -281,6 +281,29 @@ export interface DevframeDefinition {
   version: string
   /** npm package name the devframe ships in (e.g. `@scope/my-tool`). */
   packageName: string
+  /**
+   * `import.meta.url` of the module that defines this devframe. **Always
+   * provide it** (`importMetaUrl: import.meta.url`): it is the resolution base
+   * for the tool's own dependency graph, which lets the host resolve
+   * everything against the plugin's own installed packages rather than the
+   * consuming app's.
+   *
+   * - **Remote assets** — becomes the default `resolveFrom` for any remote
+   *   {@link StaticAssetsSource} the devframe hosts (its `cli.distDir`, and
+   *   every `ctx.views.hostStatic` call) that doesn't set one explicitly, so a
+   *   locally installed copy of the assets package is served with zero
+   *   network. A per-asset `resolveFrom` still wins, and an explicit
+   *   `resolveFrom: null` still opts out.
+   * - **Service dependencies** — becomes the base the host resolves declared
+   *   {@link DevframeServiceInput | services} from, so a plugin can ship a
+   *   service package as its own dependency instead of asking users to install
+   *   it.
+   *
+   * Optional for backward compatibility; omitting it falls back to
+   * runtime-directory resolution and disables the zero-network installed-copy
+   * fast paths above.
+   */
+  importMetaUrl?: string
   /** Project homepage or documentation URL. */
   homepage: string
   /** One-line summary of what the tool does. */

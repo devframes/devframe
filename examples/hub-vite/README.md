@@ -34,6 +34,7 @@ The **RPC & State Inspector** carries an **Instances** tab that lists every devf
 - `createDevframeClientHost()` boots the hub's framework-level client runtime in the host page: it publishes the shared client context and imports each dock's `clientScript` (here, the a11y agent) so plugins run code in the page being inspected
 - The **JSON Render** dock is rendered by a prebuilt module this page never compiles in: the host passes `renderers: [jsonRenderUiRenderer()]` to `initHub()`, the hub serves the module at `/__devframes/__renderers/json-render.mjs` and publishes it in the renderer manifest, and the client's renderer registry imports it lazily on first mount. (The sibling `hub-next` witness registers a local React renderer for the same type instead, which takes precedence over the manifest - the other side of the swap seam.)
 - The **No Renderer** dock witnesses the missing-renderer path: its type is covered by nothing, so `renderers.mount()` resolves `{ status: 'missing-renderer' }` and the shell shows *No renderer for "demo-unrendered" in the current environment* instead of a dead panel
+- The **Client Script Demo** dock witnesses **bare-specifier client scripts**: its `action.importFrom` is the npm package name `demo-dock-client`, resolved through the Vite host's advertised `clientModuleResolution` template (`'/@id/{specifier}'`, the `@devframes/vite/hub` default) - the script and its own bare `nanoevents` import load through Vite's module graph, shared with this very page. The sibling `hub-next` host has no such runtime capability, so it consumes the **same package** as a prebuilt self-contained bundle served by URL - the two shapes of `importFrom` side by side
 
 ## Build your own
 
@@ -46,6 +47,7 @@ The dock UI is plain DOM in `src/client/`. To skin your own viewer, read the sam
 | `src/vite-devframe-hub.ts` | The Vite host - one `initHub()` call mounted as connect middleware, plus instance-registry registration |
 | `vite.config.ts` | Passes the built-in plugins and demo devframes to the host's `devframes` option; attaches the a11y agent as its dock's `clientScript`; composes the json-render frontend via `renderers` |
 | `src/unrendered-dock.ts` | A dock type registered with no renderer on purpose - the missing-renderer fallback witness |
+| `../demo-dock-client/` | The shared demo client script, consumed here via bare specifier (`action: { importFrom: 'demo-dock-client' }`) |
 | `src/client/main.ts` | The browser UI that consumes the hub protocol, including the interactive-OTP authorization view |
 | `src/client/icons.ts` | Offline Phosphor icons for the dock |
 | `index.html` | The UI shell |

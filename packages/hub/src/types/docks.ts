@@ -164,7 +164,14 @@ export interface DevframeDockEntryBase {
 
 export interface ClientScriptEntry {
   /**
-   * The filepath or module name to import from
+   * What to import — either a **URL the host serves** (a self-contained ES
+   * module, e.g. `/@fs/<abs path>` under Vite or a statically-mounted bundle
+   * path), or a **bare npm specifier** (e.g.
+   * `'vite-plugin-vue-tracer/client/vite-devtools'`), a host-runtime
+   * capability resolved through the host-advertised
+   * `ConnectionMeta.configs.dock.clientModuleResolution` template. On a host
+   * that declares no template, ship a self-contained bundle and pass its URL
+   * instead (see `DF8111`).
    */
   importFrom: string
   /**
@@ -173,6 +180,24 @@ export interface ClientScriptEntry {
    * @default 'default'
    */
   importName?: string
+}
+
+declare module 'devframe/types' {
+  interface DevframeConnectionConfigsRegistry {
+    /** Static dock-layer config a hub host publishes through the connection handshake (`initHub({ clientModuleResolution })` → `ctx.staticConfig.dock`). */
+    dock: {
+      /**
+       * URL template resolving a **bare-specifier** client script to an
+       * importable URL on this host — `{specifier}` replaced with the bare
+       * specifier (a token-less template is used as a prefix). Declaring it
+       * advertises the host runtime can serve npm modules to the browser:
+       * Vite hosts declare `'/@id/{specifier}'`, routing the import (and its
+       * transitive bare imports) through the app's own module graph. Hosts
+       * without such a runtime (e.g. Next.js) leave it undeclared.
+       */
+      clientModuleResolution?: string
+    }
+  }
 }
 
 export interface DevframeViewIframe extends DevframeDockEntryBase {

@@ -19,6 +19,7 @@ export default defineDevframe({
   name: 'Next Tabbed Tool',
   version: pkg.version,
   packageName: pkg.name,
+  importMetaUrl: import.meta.url,
   homepage: pkg.homepage,
   description: 'A multi-view SPA hosted as shared-iframe hub docks with soft navigation.',
   icon: 'ph:squares-four-duotone',

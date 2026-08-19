@@ -33,6 +33,7 @@ export declare class DevframeDocksHost implements DevframeDocksHost$1 {
   };
   update(_: DevframeDockUserEntry): void;
   activate(_: string, _?: Record<string, unknown>): void;
+  private warnUnresolvableClientScript;
   private validateGroupMembership;
   private prepareRemoteRegistration;
 }

@@ -73,7 +73,7 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
   // A static deploy must be self-contained: a local dir (or a remote source
   // backed by a locally installed package) is copied; an uninstalled remote
   // source materializes every listed file from the provider.
-  const resolved = resolveStaticAssetsSource(distSource, host.getStorageDir('project'))
+  const resolved = resolveStaticAssetsSource(distSource, host.getStorageDir('project'), d.importMetaUrl)
   if (typeof resolved === 'string') {
     console.log(c.cyan`[devframe] copying SPA from ${resolved} -> ${outDir}`)
     await fs.cp(resolved, outDir, { recursive: true })
@@ -87,10 +87,11 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
     cwd: process.cwd(),
     mode: 'build',
     host,
+    importMetaUrl: d.importMetaUrl,
   })
   // Services ready before setup, so setup can consume them synchronously.
   for (const input of d.services ?? [])
-    void ctx.services.install(input, { resolveFrom: d.packageName })
+    void ctx.services.install(input, { resolveFrom: d.importMetaUrl })
   await ctx.services.ready()
   await d.setup(ctx)
 

@@ -30,7 +30,7 @@ const testDevframe = createOgDevframe({ fetch: testFetch })
 
 /** Resolve the SPA to a local dir — the workspace-linked `--assets` package in dev. */
 function localSpaDir(): string {
-  const resolved = resolveStaticAssetsSource(testDevframe.cli!.distDir!, path.join(os.tmpdir(), 'devframes_plugin_og-test'))
+  const resolved = resolveStaticAssetsSource(testDevframe.cli!.distDir!, path.join(os.tmpdir(), 'devframes_plugin_og-test'), testDevframe.importMetaUrl)
   if (typeof resolved !== 'string')
     throw new TypeError('Open Graph client SPA missing. Run the plugin build first.')
   return resolved

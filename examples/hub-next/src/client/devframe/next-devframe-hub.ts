@@ -126,6 +126,42 @@ async function loadA11yAgentMount(): Promise<A11yAgentMount | null> {
   }
 }
 
+/**
+ * URL base the demo dock-client bundle is served under - inside the hub
+ * namespace, so the one catch-all route reaches it.
+ */
+const DEMO_CLIENT_MOUNT_BASE = `${DEVFRAMES_HUB_BASE}demo-dock-client/`
+
+interface DemoDockClientMount {
+  /** On-disk directory holding the built self-contained bundle. */
+  dir: string
+  /** Same-origin URL of the bundle, importable by the hub client runtime. */
+  importFrom: string
+}
+
+/**
+ * Locate the shared demo dock-client script (examples/demo-dock-client) as a
+ * prebuilt **self-contained bundle**: this host declares no
+ * `clientModuleResolution` (Next's bundler exposes no browser-reachable
+ * on-demand module URL), so client scripts ship by URL here — the Vite
+ * reference host consumes the same package as a bare specifier instead.
+ * Loaded through the same bundler-ignored dynamic `import()` as the plugins.
+ * Returns `null` if unbuilt.
+ */
+async function loadDemoDockClientMount(): Promise<DemoDockClientMount | null> {
+  try {
+    const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ 'demo-dock-client/node')
+    const bundle = mod.demoDockClientBundlePath as string
+    return {
+      dir: dirname(bundle),
+      importFrom: `${DEMO_CLIENT_MOUNT_BASE}bundle.mjs`,
+    }
+  }
+  catch {
+    return null
+  }
+}
+
 export interface NextDevframeHubOptions {
   /** Pin the side-car RPC/WS port. Default: `initHub` walks a free port near 9777. */
   port?: number
@@ -185,6 +221,11 @@ export async function nextDevframeHub(
   // into the host page, where it scans this hub live; the panel iframe shares
   // the origin, so their BroadcastChannel connects.
   const a11yAgent = await loadA11yAgentMount()
+
+  // The shared demo dock-client script, served as a prebuilt self-contained
+  // bundle (see loadDemoDockClientMount above for why this host uses the
+  // URL shape rather than a bare specifier).
+  const demoDockClient = await loadDemoDockClientMount()
 
   // The reference json-render renderer module, loaded the same bundler-ignored
   // way so its `import.meta.url` bundle path resolves to the published `dist`.
@@ -288,6 +329,21 @@ export async function nextDevframeHub(
 
       if (a11yAgent)
         await ctx.host.mountStatic(A11Y_AGENT_MOUNT_BASE, a11yAgent.dir)
+
+      // The demo dock-client script - the same package the Vite reference
+      // host loads via a bare specifier - mounted statically and attached as
+      // a momentary `action` dock by its served URL.
+      if (demoDockClient) {
+        await ctx.host.mountStatic(DEMO_CLIENT_MOUNT_BASE, demoDockClient.dir)
+        ctx.docks.register({
+          type: 'action',
+          id: 'example:demo-client-script',
+          title: 'Client Script Demo',
+          icon: 'ph:plugs-connected-duotone',
+          category: 'app',
+          action: { importFrom: demoDockClient.importFrom },
+        })
+      }
 
       // Dogfood the opt-in JSON-render hub integration: author a view on the
       // hub context and project it onto a `json-render` dock. The client

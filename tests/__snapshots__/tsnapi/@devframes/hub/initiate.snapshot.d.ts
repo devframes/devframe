@@ -51,6 +51,7 @@ export interface InitHubOptions {
   mcp?: boolean | McpRouteOptions;
   origin?: string | (() => string);
   register?: boolean | Partial<DevframeInstanceRecord>;
+  clientModuleResolution?: string;
   cwd?: string;
   getStorageDir?: (_: DevframeStorageScope) => string;
   allowedOrigins?: readonly string[] | WsOriginRegistry | false;

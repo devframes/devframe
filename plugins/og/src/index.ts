@@ -6,12 +6,12 @@ import { setupOg } from './node/index'
 
 const DEFAULT_ID = 'devframes_plugin_og'
 // The SPA ships in the lockstep `@devframes/plugin-og--assets` package,
-// served on demand through devframe's remote-assets back-proxy; `resolveFrom`
-// serves a locally installed copy (a workspace link here) with zero network.
+// served on demand through devframe's remote-assets back-proxy. The definition's
+// `importMetaUrl` (below) supplies the default `resolveFrom`, so a locally
+// installed copy (a workspace link here) is served with zero network.
 const remoteAssets: RemoteAssets = {
   package: `${pkg.name}--assets`,
   version: pkg.version,
-  resolveFrom: import.meta.url,
 }
 
 export interface OgDevframeOptions {
@@ -41,6 +41,7 @@ export function createOgDevframe(options: OgDevframeOptions = {}): DevframeDefin
     name: options.name ?? 'Open Graph',
     version: pkg.version,
     packageName: pkg.name,
+    importMetaUrl: import.meta.url,
     homepage: pkg.homepage,
     description: pkg.description,
     icon: options.icon ?? 'ph:image-square-duotone',

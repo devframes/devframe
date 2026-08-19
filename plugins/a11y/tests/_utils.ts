@@ -18,7 +18,7 @@ const devframe = createA11yDevframe()
 
 /** Resolve the Solid panel SPA to a local dir — the workspace-linked `--assets` package in dev. */
 function localSpaDir(): string {
-  const resolved = resolveStaticAssetsSource(devframe.cli!.distDir!, resolve(os.tmpdir(), 'devframes_plugin_a11y-test'))
+  const resolved = resolveStaticAssetsSource(devframe.cli!.distDir!, resolve(os.tmpdir(), 'devframes_plugin_a11y-test'), devframe.importMetaUrl)
   if (typeof resolved !== 'string')
     throw new TypeError('[devframes_plugin_a11y] client SPA missing — run `pnpm -C plugins/a11y run build` first.')
   return resolved

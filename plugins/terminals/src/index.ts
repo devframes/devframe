@@ -38,13 +38,13 @@ export {
  * ```
  */
 // The SPA ships in the lockstep `@devframes/plugin-terminals--assets` package,
-// served on demand through devframe's remote-assets back-proxy; `resolveFrom`
-// serves a locally installed copy (a workspace link here) with zero network. The panel
+// served on demand through devframe's remote-assets back-proxy. The definition's
+// `importMetaUrl` (below) supplies the default `resolveFrom`, so a locally
+// installed copy (a workspace link here) is served with zero network. The panel
 // `clientScript` bundle (`dist/client`) stays in this node package.
 const remoteAssets: RemoteAssets = {
   package: `${pkg.name}--assets`,
   version: pkg.version,
-  resolveFrom: import.meta.url,
 }
 
 export function createTerminalsDevframe(options: TerminalsOptions = {}): DevframeDefinition {
@@ -55,6 +55,7 @@ export function createTerminalsDevframe(options: TerminalsOptions = {}): Devfram
     name: 'Terminals',
     version: pkg.version,
     packageName: pkg.name,
+    importMetaUrl: import.meta.url,
     homepage: pkg.homepage,
     description: pkg.description,
     icon: 'ph:terminal-window-duotone',

@@ -46,13 +46,13 @@ import pkg from '../package.json' with { type: 'json' }
 const distDir: RemoteAssets = {
   package: '@acme/my-tool-assets',
   version: pkg.version,
-  resolveFrom: import.meta.url,
 }
 
 export default defineDevframe({
   id: 'my-tool',
   version: pkg.version,
   packageName: pkg.name,
+  importMetaUrl: import.meta.url,
   cli: { distDir },
   setup(ctx) {
     // …
@@ -62,11 +62,13 @@ export default defineDevframe({
 
 The UI mounts as usual — the first request for each file is streamed from a CDN and written to a local cache; subsequent requests are served from disk.
 
+The definition's [`importMetaUrl`](./devframe-definition#resolving-against-the-plugins-own-dependencies) supplies the resolution base, so a remote source needs only its `package` and `version`. A per-source `resolveFrom` overrides that base for one source, and an explicit `resolveFrom: null` opts a source out of the installed-copy lookup entirely.
+
 ### How assets resolve
 
 For each request the source resolves in order:
 
-1. **Locally installed package** — resolved from `resolveFrom` (`import.meta.url`). If `@acme/my-tool-assets` is installed next to your tool, it's served directly with no network. This is the offline path.
+1. **Locally installed package** — resolved from `resolveFrom`, which defaults to the definition's `importMetaUrl`. If `@acme/my-tool-assets` is installed next to your tool, it's served directly with no network. This is the offline path.
 2. **On-disk cache** — files already fetched, under the project's storage directory.
 3. **CDN back-proxy** — [jsDelivr](https://www.jsdelivr.com/) by default, mirroring npm. Each file streams to the browser and is cached on the way past.
 
@@ -78,7 +80,7 @@ Exact-version URLs are immutable, so a cached file never goes stale.
 |-------|---------|
 | `package` | npm package holding the built assets. |
 | `version` | Exact version to serve — usually your tool's own `pkg.version`. |
-| `resolveFrom` | `import.meta.url` of the declaring module; enables the zero-network path from a locally installed copy. Omit to skip straight to cache + CDN. |
+| `resolveFrom` | Resolution base for the zero-network path from a locally installed copy. Defaults to the definition's `importMetaUrl`; set it to override that for one source, or to `null` to skip straight to cache + CDN. |
 | `path` | Subpath inside the package the assets live under. Defaults to `dist`. |
 | `provider` | `'jsdelivr'` (default), `'unpkg'`, or a custom provider for an internal mirror. |
 | `offline` | `true` serves only from a local install or the cache — never the network. |
@@ -109,7 +111,6 @@ A custom provider supplies the file URL, and optionally a file listing (used for
 const distDir: RemoteAssets = {
   package: '@acme/my-tool-assets',
   version: pkg.version,
-  resolveFrom: import.meta.url,
   provider: {
     fileUrl: (name, version, file) =>
       `https://npm.internal.acme.com/${name}@${version}/${file}`,
@@ -119,7 +120,7 @@ const distDir: RemoteAssets = {
 
 ### Publishing the assets
 
-The assets package is an ordinary npm package that ships the built UI under `path` (default `dist`) and exposes its `package.json` so `resolveFrom` can locate it:
+The assets package is an ordinary npm package that ships the built UI under `path` (default `dist`) and exposes its `package.json` so the resolver can locate it:
 
 ```json
 {

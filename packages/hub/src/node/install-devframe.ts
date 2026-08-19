@@ -102,7 +102,10 @@ export async function prepareDevframe(
     else
       diagnostics.DF8106({ id, name: d.name, base })
     const distSource = d.cli.distDir
-    ctx.views.hostStatic(base, typeof distSource === 'string' ? resolve(distSource) : distSource)
+    // Resolve the plugin's assets against *its* dependency graph, not the
+    // hub's: pass the devframe's own `importMetaUrl` as the default
+    // `resolveFrom`.
+    ctx.views.hostStatic(base, typeof distSource === 'string' ? resolve(distSource) : distSource, d.importMetaUrl)
   }
 
   ctx.docks.register({
@@ -121,7 +124,7 @@ export async function prepareDevframe(
   // Queue the definition's declarative wire services. They're constructed at
   // the `ctx.services.ready()` barrier the hub fires before running setups.
   for (const input of d.services ?? [])
-    void ctx.services.install(input, { resolveFrom: d.packageName })
+    void ctx.services.install(input, { resolveFrom: d.importMetaUrl })
 
   return () => Promise.resolve(d.setup(ctx))
 }

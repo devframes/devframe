@@ -15,6 +15,7 @@ export default defineDevframe({
   name: 'Next Runtime Snapshot',
   version: pkg.version,
   packageName: pkg.name,
+  importMetaUrl: import.meta.url,
   homepage: pkg.homepage,
   description: pkg.description,
   icon: 'ph:gauge-duotone',

@@ -222,6 +222,55 @@ describe('initHub', () => {
     }
   })
 
+  it('clientModuleResolution: advertised in ConnectionMeta.configs.dock and applied in __client-imports.js', async () => {
+    const wsPort = await getPort({ port: 18227, host: '127.0.0.1' })
+    const hub = initHub({
+      base: DEVFRAMES_HUB_BASE,
+      auth: false,
+      host: '127.0.0.1',
+      ws: { port: wsPort },
+      clientModuleResolution: '/@id/{specifier}',
+      devframes: [makeFrame('alpha')],
+      configure(ctx) {
+        // A bare-specifier client script (the vite-plugin-vue-tracer shape) —
+        // registered on a host that declared the resolution, so no DF8111.
+        ctx.docks.register({
+          type: 'action',
+          id: 'vue-tracer',
+          title: 'Vue Tracer',
+          icon: 'ph:crosshair-simple-duotone',
+          action: { importFrom: 'vite-plugin-vue-tracer/client/vite-devtools' },
+        })
+        // A URL client script stays verbatim in the imports module.
+        ctx.docks.register({
+          type: 'action',
+          id: 'bundled',
+          title: 'Bundled',
+          icon: 'ph:package-duotone',
+          action: { importFrom: '/__devframes/agent/inject.js' },
+        })
+      },
+    })
+
+    try {
+      await hub.ready
+      const origin = 'http://localhost:5173'
+
+      // Advertised to every client through the connection handshake.
+      const meta = await (await hub.handler(new Request(`${origin}/__devframes/__connection.json`))).json()
+      expect(meta.configs.dock).toEqual({ clientModuleResolution: '/@id/{specifier}' })
+
+      // Applied server-side in the generated dock-imports module, so external
+      // viewers importing it get resolvable URLs too.
+      const imports = await (await hub.handler(new Request(`${origin}/__devframes/__client-imports.js`))).text()
+      expect(imports).toContain('import("/@id/vite-plugin-vue-tracer/client/vite-devtools")')
+      expect(imports).toContain('import("/__devframes/agent/inject.js")')
+    }
+    finally {
+      await hub.close()
+    }
+  })
+
   it('aggregate MCP: one endpoint lists tools from every mounted frame', async () => {
     const wsPort = await getPort({ port: 18230, host: '127.0.0.1' })
     const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, mcp: true, devframes: [makeFrame('alpha'), makeFrame('beta')] })

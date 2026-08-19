@@ -103,11 +103,12 @@ Two declaration merges make it fully typed for consumers: the fully-qualified RP
 
 ### Declaring
 
-Services are **declarative**. A plugin lists what it consumes on its definition; a host lists shared ones on `initHub`. The adapter resolves each package — for a plugin, **against the plugin's own dependencies** — and constructs it:
+Services are **declarative**. A plugin lists what it consumes on its definition; a host lists shared ones on `initHub`. The adapter resolves each package — for a plugin, **against the plugin's own dependencies** via the definition's [`importMetaUrl`](./devframe-definition#resolving-against-the-plugins-own-dependencies), so a plugin ships a service package as its own dependency and users install nothing extra — and constructs it:
 
 ```ts
 // plugin side — on the definition
 defineDevframe({
+  importMetaUrl: import.meta.url, // resolution base for the declared packages
   services: [
     { package: '@devframes/service-open' },
     { package: '@devframes/service-shiki', version: '^1', options: { langs: ['vue'] } },

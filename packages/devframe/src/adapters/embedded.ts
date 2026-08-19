@@ -20,7 +20,7 @@ export async function createEmbedded(d: DevframeDefinition, options: CreateEmbed
   // already-running host it's a no-op and the fresh installs construct
   // immediately; on a not-yet-started one it fires the initial barrier.
   for (const input of d.services ?? [])
-    void options.ctx.services.install(input, { resolveFrom: d.packageName })
+    void options.ctx.services.install(input, { resolveFrom: d.importMetaUrl })
   await options.ctx.services.ready()
   await d.setup(options.ctx)
 }

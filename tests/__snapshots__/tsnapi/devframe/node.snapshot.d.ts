@@ -7,6 +7,7 @@ export interface CreateHostContextOptions {
   workspaceRoot?: string;
   mode: 'dev' | 'build';
   host: DevframeHost;
+  importMetaUrl?: string;
   builtinRpcDeclarations?: readonly RpcFunctionDefinitionAny[];
 }
 export interface CreateStorageOptions<T extends object> {

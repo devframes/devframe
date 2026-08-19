@@ -247,6 +247,24 @@ describe('resolveStaticAssetsSource (installed package)', () => {
     const { resolveFrom } = install('1.2.3')
     expect(typeof resolveStaticAssetsSource({ package: '@scope/other', version: '1.2.3', resolveFrom }, makeTmp())).not.toBe('string')
   })
+
+  it('defaults resolveFrom from the third argument when the source omits it', () => {
+    const { resolveFrom, distDir } = install('1.2.3')
+    // No per-source `resolveFrom` — the definition-level default resolves it.
+    expect(norm(resolveStaticAssetsSource({ package: '@scope/demo-client', version: '1.2.3' }, makeTmp(), resolveFrom) as string)).toBe(norm(distDir))
+  })
+
+  it('lets an explicit per-source resolveFrom win over the default', () => {
+    const { resolveFrom, distDir } = install('1.2.3')
+    // Default points nowhere useful; the explicit source value is used.
+    expect(norm(resolveStaticAssetsSource({ package: '@scope/demo-client', version: '1.2.3', resolveFrom }, makeTmp(), 'file:///nowhere/entry.mjs') as string)).toBe(norm(distDir))
+  })
+
+  it('honors an explicit resolveFrom: null (opts out of the installed lookup) despite a default', () => {
+    const { resolveFrom } = install('1.2.3')
+    // `null` skips the installed-copy step entirely — falls back to a store.
+    expect(typeof resolveStaticAssetsSource({ package: '@scope/demo-client', version: '1.2.3', resolveFrom: null }, makeTmp(), resolveFrom)).not.toBe('string')
+  })
 })
 
 describe('resolveStaticAssetsSource (validation)', () => {

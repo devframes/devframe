@@ -225,10 +225,9 @@ export interface DevframeServicesHost {
    * imported).
    *
    * `resolveFrom` is where a descriptor's package resolves **from**: a path
-   * or file URL (e.g. `import.meta.url`), or an npm package name — typically
-   * the declaring plugin's `packageName`, so its declared services resolve
-   * against the plugin's own dependencies. Falls back to the context's
-   * `workspaceRoot`.
+   * or file URL (e.g. the declaring devframe's `importMetaUrl`), or an npm
+   * package name, so its declared services resolve against the declarer's own
+   * dependencies. Falls back to the context's `workspaceRoot` then `cwd`.
    */
   install: <API = unknown, Options = any>(
     input: DevframeServiceInput<API, Options>,

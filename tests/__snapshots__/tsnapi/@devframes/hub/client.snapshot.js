@@ -27,5 +27,7 @@ export * from "devframe/client";
 // #endregion
 
 // #region Other
+export { clientScriptFailureHint }
+export { resolveClientModuleSpecifier }
 export { stripRemoteConnectionFromUrl }
 // #endregion

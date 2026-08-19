@@ -26,6 +26,7 @@ import type {
 import type { DockRenderer, DockRendererManifest, DockRenderersContext } from './renderers'
 import { connectDevframe } from 'devframe/client'
 import { createEventEmitter } from 'devframe/utils/events'
+import { clientScriptFailureHint, resolveClientModuleSpecifier } from '../client-modules'
 import { DEFAULT_CATEGORIES_ORDER, DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY } from '../constants'
 import { HUB_EVENTS } from '../events'
 import { getDevframeClientContext, setDevframeClientContext } from './context'
@@ -58,6 +59,15 @@ export interface DevframeClientHostOptions {
    * `custom-render`, and iframe `clientScript`). Default `true`.
    */
   loadClientScripts?: boolean
+  /**
+   * Resolve a **bare-specifier** client script (`importFrom` naming an npm
+   * module) to a URL this page can import — a viewer's own policy, winning
+   * over the host-advertised `ConnectionMeta.configs.dock.clientModuleResolution`
+   * template (return `undefined` to fall through to it). URL specifiers never
+   * reach this hook. E.g. on a Vite-served page:
+   * `resolveClientModule: s => `/@id/${s}``.
+   */
+  resolveClientModule?: (specifier: string) => string | undefined
   /**
    * Dock renderers to register at boot, keyed by dock `type`. The host
    * application injects the ones it wants (e.g.
@@ -502,10 +512,19 @@ export async function createDevframeClientHost(
   }
 
   async function runClientScript(entryId: string, script: ClientScriptEntry): Promise<void> {
+    // A bare specifier resolves through the explicit option, then the
+    // host-advertised template; URL specifiers pass through untouched. (The
+    // rpc reads are optional-chained for partial stubs — tests, bespoke
+    // viewers — where the template then resolves page-relative.)
+    const specifier = resolveClientModuleSpecifier(script.importFrom, {
+      resolveClientModule: options.resolveClientModule,
+      template: rpc.connectionMeta?.configs?.dock?.clientModuleResolution,
+      metaBaseUrl: rpc.connection?.metaBaseUrl,
+    })
     try {
       // Keep this a *native* dynamic import in every bundler — the specifier
       // is a runtime URL served by the host, not a build-time module.
-      const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ /* turbopackIgnore: true */ script.importFrom)
+      const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ /* turbopackIgnore: true */ specifier)
       const fn = mod[script.importName ?? 'default']
       if (typeof fn !== 'function')
         return
@@ -520,7 +539,10 @@ export async function createDevframeClientHost(
     }
     catch (error) {
       loadedScripts.delete(entryId)
-      console.error(`[@devframes/hub] failed to load client script for "${entryId}" from ${script.importFrom}`, error)
+      console.error(
+        `[@devframes/hub] failed to load client script for "${entryId}" from ${specifier}${clientScriptFailureHint(script.importFrom, specifier)}`,
+        error,
+      )
     }
   }
 }

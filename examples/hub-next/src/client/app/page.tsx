@@ -498,6 +498,8 @@ export default function Page() {
   }, [])
 
   const renderableDocks = useMemo(() => docks.filter(isRenderableDock), [docks])
+  // The rail also lists panel-less `action` docks as momentary buttons.
+  const railDocks = useMemo(() => docks.filter(d => isRenderableDock(d) || d.type === 'action'), [docks])
 
   // Wire each dock's state once so a selection change - from a click, or from
   // the frame-nav adapter reacting to in-frame navigation - updates the UI.
@@ -645,13 +647,21 @@ export default function Page() {
         <aside className="flex flex-col gap-0.5 of-auto border-r border-base bg-secondary p2">
           <h2 className="px2 py1 text-[0.68rem] uppercase tracking-wider color-muted">Docks</h2>
           <ul className="m0 flex flex-col list-none gap-0.5 p0">
-            {renderableDocks.length === 0
+            {railDocks.length === 0
               ? <li className="op-mute px2 text-sm">No docks</li>
-              : renderableDocks.map(dock => (
+              : railDocks.map(dock => (
                   <li key={dock.id}>
                     <button
                       type="button"
-                      onClick={() => void hostRef.current?.context.docks.switchEntry(dock.id)}
+                      onClick={() => {
+                        const ctx = hostRef.current?.context
+                        // Momentary action dock: fire its client script, keep
+                        // the panel selection as-is.
+                        if (dock.type === 'action')
+                          ctx?.docks.getStateById(dock.id)?.events.emit('entry:activated')
+                        else
+                          void ctx?.docks.switchEntry(dock.id)
+                      }}
                       className={`relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${dock.id === selectedDockId ? ' op100! bg-active border-base! color-base' : ''}`}
                       title={dock.title}
                     >

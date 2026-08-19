@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-terminals",
   "type": "module",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Devframe plugin providing terminal panels for streamed output and interactive PTY shells.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

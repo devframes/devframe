@@ -72,6 +72,10 @@ export const diagnostics = defineDiagnostics({
       why: (p: { type: string }) => `Dock type "${p.type}" is not a servable renderer-module name — the hub serves each module at \`<base>__renderers/<type>.mjs\``,
       fix: 'Renderer types become URL segments, so they may only contain letters, digits, `_`, `-`, and `.`. Use a route-safe dock type (e.g. `json-render`).',
     },
+    DF8111: {
+      why: (p: { id: string, specifier: string }) => `Dock "${p.id}" declares the bare-specifier client script "${p.specifier}", but this host advertises no client-module resolution — the browser cannot resolve a bare npm specifier natively, so the script will fail to load.`,
+      fix: 'Run under a host that declares `initHub({ clientModuleResolution })` (e.g. Vite\'s `\'/@id/{specifier}\'`), ship the script as a self-contained bundle served by URL, or resolve it in the viewer via `createDevframeClientHost({ resolveClientModule })` (then disregard this warning).',
+    },
     DF8200: {
       why: (p: { id: string }) => `Terminal session with id "${p.id}" already registered`,
     },

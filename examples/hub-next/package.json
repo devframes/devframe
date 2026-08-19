@@ -1,7 +1,7 @@
 {
   "name": "hub-next",
   "type": "module",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "description": "Next.js reference hub that exercises every devframe hub subsystem end to end.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-next",
@@ -27,6 +27,7 @@
     "@devframes/plugin-terminals": "workspace:*",
     "@json-render/react": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
+    "demo-dock-client": "workspace:*",
     "devframe": "workspace:*",
     "dompurify": "catalog:frontend",
     "json-render": "workspace:*",

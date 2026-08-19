@@ -459,9 +459,11 @@ function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientHost>>
   // (a click, or the frame-nav adapter reacting to in-frame navigation).
   const wired = new Set<string>()
   function render(): void {
-    const list = docksCtx.entries.filter(isRenderableDock)
-    if (!docksCtx.selectedId && list.length > 0)
-      void docksCtx.switchEntry(list[0].id)
+    // The rail also lists panel-less `action` docks as momentary buttons.
+    const list = docksCtx.entries.filter(d => isRenderableDock(d) || d.type === 'action')
+    const selectable = list.filter(isRenderableDock)
+    if (!docksCtx.selectedId && selectable.length > 0)
+      void docksCtx.switchEntry(selectable[0].id)
 
     for (const entry of list) {
       if (wired.has(entry.id))
@@ -478,7 +480,15 @@ function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientHost>>
   el.docks.addEventListener('click', (event) => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-dock-id]')
     const id = button?.dataset.dockId
-    if (id && id !== docksCtx.selectedId)
+    if (!id)
+      return
+    // Momentary action dock: fire its client script, keep the panel as-is.
+    const state = docksCtx.getStateById(id)
+    if (state?.entryMeta.type === 'action') {
+      state.events.emit('entry:activated')
+      return
+    }
+    if (id !== docksCtx.selectedId)
       void docksCtx.switchEntry(id)
   })
 

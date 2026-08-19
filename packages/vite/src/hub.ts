@@ -163,6 +163,10 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       const hub = initHub({
         base,
         cwd,
+        // Bare-specifier client scripts resolve through Vite's own module
+        // graph: `/@id/<specifier>` routes the import (and its transitive
+        // bare imports) through Vite's resolution and import-analysis.
+        clientModuleResolution: '/@id/{specifier}',
         origin: options.origin ?? (() => {
           const resolved = server.resolvedUrls?.local?.[0]
           return resolved ? new URL(resolved).origin : ''

@@ -49,7 +49,7 @@ export async function startDashboardServer(
 ): Promise<DashboardServer> {
   const devframe = createGitDevframe(options)
   // The client SPA ships in the workspace-linked `--assets` package in dev.
-  const distDir = resolveStaticAssetsSource(devframe.cli!.distDir!, resolve(tmpdir(), 'devframes_plugin_git-test'))
+  const distDir = resolveStaticAssetsSource(devframe.cli!.distDir!, resolve(tmpdir(), 'devframes_plugin_git-test'), devframe.importMetaUrl)
   if (typeof distDir !== 'string')
     throw new TypeError('these tests serve the local client SPA — build the plugin first')
   // The factory leaves basePath adapter-resolved; standalone defaults to '/'.
