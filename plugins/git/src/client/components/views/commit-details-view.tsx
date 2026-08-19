@@ -1,6 +1,7 @@
 'use client'
 
 import type { CommitDetail } from '../../../index'
+import { DiffPatchView } from '../diff/diff-view'
 import { Badge } from '../ui/badge'
 import { IconButton } from '../ui/button'
 import { FileIcon } from '../ui/file-icon'
@@ -8,7 +9,6 @@ import { Icon } from '../ui/icon'
 import { ScrollArea } from '../ui/scroll-area'
 import { Skeleton } from '../ui/skeleton'
 import { StatusMark } from '../ui/status-mark'
-import { DiffPatchView } from './diff-panel-view'
 
 export interface CommitDetailsViewProps {
   data: CommitDetail | null
@@ -130,7 +130,7 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
               {data.patch !== null
                 ? (
                     <div className="overflow-hidden rounded-md border">
-                      <DiffPatchView patch={data.patch} loading={false} truncated={data.truncated} scroll={false} collapsible />
+                      <DiffPatchView patch={data.patch} loading={false} truncated={data.truncated} scroll={false} layout="collapsible" />
                     </div>
                   )
                 : (

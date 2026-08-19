@@ -69,6 +69,13 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
     description: pkg.description,
     icon: 'ph:git-branch-duotone',
     basePath: options.basePath,
+    // Declared, not imperatively installed: devframe constructs it (merging
+    // options across every declarer) before setup. The diff viewer highlights
+    // patches through this service's `codeToTokens`; when a host doesn't
+    // advertise it, the client falls back to a plain, un-highlighted diff.
+    services: [
+      { package: '@devframes/service-shiki' },
+    ],
     cli: {
       command: 'devframe-git',
       port: options.port ?? 9710,

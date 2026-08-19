@@ -7,13 +7,15 @@ import { connectDevframe } from 'devframe/client'
 import { DEVFRAME_WS_ROUTE } from 'devframe/constants'
 import { createContext, use, useEffect, useState } from 'react'
 
-interface ConnectionState {
+export interface ConnectionState {
   rpc: DevframeRpcClient | null
   status: DevframeConnectionStatus
   error: string | null
 }
 
-const RpcContext = createContext<ConnectionState>({ rpc: null, status: 'connecting', error: null })
+// Exported so tests and Storybook can supply a mock connection (e.g. a stubbed
+// shiki service) through the same context the components read.
+export const RpcContext = createContext<ConnectionState>({ rpc: null, status: 'connecting', error: null })
 
 export function useRpc(): ConnectionState {
   return use(RpcContext)

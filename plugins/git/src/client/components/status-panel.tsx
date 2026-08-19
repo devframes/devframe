@@ -2,9 +2,9 @@
 
 import type { DevframeRpcClient } from 'devframe/client'
 import { useCallback, useState } from 'react'
+import { DiffPatchView } from './diff/diff-view'
 import { useRpc } from './rpc-provider'
 import { useRpcResource } from './use-rpc-resource'
-import { DiffPatchView } from './views/diff-panel-view'
 import { StatusPanelView } from './views/status-panel-view'
 
 function PatchViewer({ staged, path }: { staged: boolean, path: string }) {

@@ -1,19 +1,54 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { ReactNode } from 'react'
+import type { BundledLanguage } from 'shiki'
 import type { GitDiff } from '../../../index'
+import type { ConnectionState } from '../rpc-provider'
 import { useState } from 'react'
-import { DiffPanelView, DiffPatchView } from './diff-panel-view'
+import { codeToTokens } from 'shiki'
+import { DiffPatchView } from '../diff/diff-view'
+import { RpcContext } from '../rpc-provider'
+import { DiffPanelView } from './diff-panel-view'
 
 const PATCH = `diff --git a/src/rpc/functions/log.ts b/src/rpc/functions/log.ts
 index 1234567..89abcde 100644
 --- a/src/rpc/functions/log.ts
 +++ b/src/rpc/functions/log.ts
-@@ -72,7 +72,7 @@ export const log = defineRpcFunction({
+@@ -72,4 +72,4 @@ export const log = defineRpcFunction({
    name: 'devframes:plugin:git:log',
    type: 'query',
 -  snapshot: true,
 +  dump: async (_ctx, handler) => { /* bake head of history */ },
-   jsonSerializable: true,
-   setup: (ctx) => {`
+   jsonSerializable: true,`
+
+// Storybook has no host, so stand up a mock `@devframes/service-shiki` handle
+// that highlights in-browser with the real Shiki — the diff stories then render
+// true syntax colors through the same code path production uses.
+async function mockCodeToTokens({ code, lang, themes }: { code: string, lang?: string, themes?: { light: string, dark: string } }) {
+  const pair = themes ?? { light: 'vitesse-light', dark: 'vitesse-dark' }
+  try {
+    return await codeToTokens(code, { lang: (lang ?? 'text') as BundledLanguage, themes: pair })
+  }
+  catch {
+    return await codeToTokens(code, { lang: 'text' as BundledLanguage, themes: pair })
+  }
+}
+
+const mockConnection = {
+  rpc: {
+    services: {
+      has: () => true,
+      get: (pkg: string) => (pkg === '@devframes/service-shiki'
+        ? { scope: 'devframes:service:shiki', rpc: { call: (_name: string, input: Parameters<typeof mockCodeToTokens>[0]) => mockCodeToTokens(input) } }
+        : undefined),
+    },
+  },
+  status: 'connected',
+  error: null,
+} as unknown as ConnectionState
+
+function WithMockRpc({ children }: { children: ReactNode }) {
+  return <RpcContext value={mockConnection}>{children}</RpcContext>
+}
 
 const data: GitDiff = {
   isRepo: true,
@@ -37,17 +72,19 @@ function Harness(props: Partial<React.ComponentProps<typeof DiffPanelView>>) {
   const [staged, setStaged] = useState(false)
   const [selected, setSelected] = useState<string | null>('src/rpc/functions/log.ts')
   return (
-    <DiffPanelView
-      data={data}
-      loading={false}
-      staged={staged}
-      selected={selected}
-      onSelectScope={setStaged}
-      onSelectFile={setSelected}
-      onRefresh={() => undefined}
-      patchSlot={<DiffPatchView patch={PATCH} loading={false} truncated={false} />}
-      {...props}
-    />
+    <WithMockRpc>
+      <DiffPanelView
+        data={data}
+        loading={false}
+        staged={staged}
+        selected={selected}
+        onSelectScope={setStaged}
+        onSelectFile={setSelected}
+        onRefresh={() => undefined}
+        patchSlot={<DiffPatchView patch={PATCH} loading={false} truncated={false} />}
+        {...props}
+      />
+    </WithMockRpc>
   )
 }
 

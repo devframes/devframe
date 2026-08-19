@@ -47,10 +47,14 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "@devframes/plugin-git--assets": "workspace:*"
+    "@devframes/plugin-git--assets": "workspace:*",
+    "@devframes/service-shiki": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@devframes/plugin-git--assets": {
+      "optional": true
+    },
+    "@devframes/service-shiki": {
       "optional": true
     }
   },
@@ -62,9 +66,9 @@
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/plugin-git--assets": "workspace:*",
+    "@devframes/service-shiki": "workspace:*",
     "@floating-ui/react": "catalog:frontend",
     "@iconify-json/catppuccin": "catalog:frontend",
-    "@pierre/diffs": "catalog:frontend",
     "@radix-ui/react-scroll-area": "catalog:frontend",
     "@radix-ui/react-slot": "catalog:frontend",
     "@storybook/addon-a11y": "catalog:storybook",
@@ -76,10 +80,12 @@
     "@vitejs/plugin-react-oxc": "catalog:storybook",
     "clsx": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
+    "diff": "catalog:frontend",
     "h3": "catalog:deps",
     "next": "catalog:frontend",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",
+    "shiki": "catalog:deps",
     "storybook": "catalog:storybook",
     "tailwind-merge": "catalog:frontend",
     "tsdown": "catalog:build",
