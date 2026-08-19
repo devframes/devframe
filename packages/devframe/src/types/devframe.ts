@@ -363,7 +363,35 @@ export interface DevframeDefinition {
    * `client.services.has(pkg)` and degrade.
    */
   services?: DevframeServiceInput[]
+  /**
+   * Opt an RPC function into the static-build snapshot **without owning its
+   * definition** — the mechanism a devframe uses to bake a wire service's
+   * RPC (e.g. `@devframes/service-git`'s `status`/`log`/`show`) into its
+   * `build` export, since the service itself defines no `dump`/`snapshot`.
+   *
+   * Each entry is either a bare method id (bakes the no-argument call, like
+   * `snapshot: true`) or `{ method, inputs }` where `inputs` is the list of
+   * argument-tuples to bake — or an async provider given the node context
+   * (so it can enumerate at build time, e.g. read commit hashes via the
+   * service's node API). `createBuild` resolves these after setup and
+   * executes the target's own handler per tuple; the first tuple's result
+   * becomes the fallback so any call variant resolves to a baked value.
+   */
+  snapshotRpc?: DevframeSnapshotRpcEntry[]
   /** Server-side setup — the primary entrypoint. Runs in every runtime. */
   setup: (ctx: DevframeNodeContext, info?: DevframeSetupInfo) => void | Promise<void>
   cli?: DevframeCliOptions
 }
+
+/** Argument-tuples to bake for a {@link DevframeSnapshotRpcEntry}, or a provider that computes them at build time. */
+export type DevframeSnapshotRpcInputs
+  = readonly (readonly unknown[])[]
+    | ((ctx: DevframeNodeContext) => readonly (readonly unknown[])[] | Promise<readonly (readonly unknown[])[]>)
+
+/**
+ * One {@link DevframeDefinition.snapshotRpc} entry: a bare method id (bakes
+ * the no-argument call) or a method plus the argument-tuples to bake.
+ */
+export type DevframeSnapshotRpcEntry
+  = string
+    | { method: string, inputs: DevframeSnapshotRpcInputs }

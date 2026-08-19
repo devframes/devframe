@@ -132,6 +132,7 @@ export const alias = {
   '@devframes/plugin-assets/cli': p('assets/src/cli.ts'),
   '@devframes/plugin-assets/vite': p('assets/src/vite.ts'),
   '@devframes/plugin-assets': p('assets/src/index.ts'),
+  '@devframes/service-git': s('git/src/index.ts'),
   '@devframes/service-open': s('open/src/index.ts'),
   '@devframes/service-shiki': s('shiki/src/index.ts'),
 }

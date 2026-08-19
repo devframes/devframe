@@ -54,6 +54,8 @@ export { DevframeSettings }
 export { DevframeSettingsRegistry }
 export { DevframeSettingsStore }
 export { DevframeSetupInfo }
+export { DevframeSnapshotRpcEntry }
+export { DevframeSnapshotRpcInputs }
 export { DevframeSseOptions }
 export { DevframeStorageScope }
 export { DevframeViewHost }

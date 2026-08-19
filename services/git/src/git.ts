@@ -42,7 +42,7 @@ export async function tryGit(cwd: string, args: string[]): Promise<string | null
 }
 
 /**
- * Client-supplied revisions must not start with `-`, which Git would parse as
+ * Caller-supplied revisions must not start with `-`, which Git would parse as
  * an option before it treats the value as a revision.
  */
 export function isSafeRevision(rev: string): boolean {

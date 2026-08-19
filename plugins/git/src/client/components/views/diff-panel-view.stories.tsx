@@ -1,5 +1,5 @@
+import type { GitDiff } from '@devframes/service-git'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { GitDiff } from '../../../index'
 import { useState } from 'react'
 import { DiffPanelView, DiffPatchView } from './diff-panel-view'
 
@@ -8,7 +8,7 @@ index 1234567..89abcde 100644
 --- a/src/rpc/functions/log.ts
 +++ b/src/rpc/functions/log.ts
 @@ -72,7 +72,7 @@ export const log = defineRpcFunction({
-   name: 'devframes:plugin:git:log',
+   name: 'devframes:service:git:log',
    type: 'query',
 -  snapshot: true,
 +  dump: async (_ctx, handler) => { /* bake head of history */ },

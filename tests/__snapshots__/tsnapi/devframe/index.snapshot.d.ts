@@ -147,6 +147,7 @@ export interface DevframeDefinition {
     build?: boolean;
   };
   services?: DevframeServiceInput[];
+  snapshotRpc?: DevframeSnapshotRpcEntry[];
   setup: (_: DevframeNodeContext, _?: DevframeSetupInfo) => void | Promise<void>;
   cli?: DevframeCliOptions;
 }
@@ -478,6 +479,11 @@ export type DevframeServiceInput<API = unknown, Options = any> = DevframeService
 export type DevframeServiceOf<ID> = ID extends keyof DevframeServicesRegistry ? DevframeServicesRegistry[ID] : unknown;
 export type DevframeServiceScopeOf<PKG> = PKG extends keyof DevframeServicesScopeRegistry ? DevframeServicesScopeRegistry[PKG] & string : string;
 export type DevframeServicesState = Record<string, DevframeServiceMeta>;
+export type DevframeSnapshotRpcEntry = string | {
+  method: string;
+  inputs: DevframeSnapshotRpcInputs;
+};
+export type DevframeSnapshotRpcInputs = readonly (readonly unknown[])[] | ((_: DevframeNodeContext) => readonly (readonly unknown[])[] | Promise<readonly (readonly unknown[])[]>);
 export type DevframeStorageScope = 'workspace' | 'project' | 'global';
 export type RemoteAssetsProvider = 'jsdelivr' | 'unpkg' | RemoteAssetsProviderCustom;
 export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> & {

@@ -1802,6 +1802,9 @@ importers:
 
   plugins/git:
     dependencies:
+      '@devframes/service-git':
+        specifier: workspace:*
+        version: link:../../services/git
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -2183,6 +2186,21 @@ importers:
         version: 8.21.3
 
   plugins/terminals/assets-pkg: {}
+
+  services/git:
+    devDependencies:
+      '@types/node':
+        specifier: catalog:types
+        version: 26.2.0
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      tsdown:
+        specifier: catalog:build
+        version: 0.22.14(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(tsx@4.23.12)(typescript@6.0.3)
+      vitest:
+        specifier: catalog:testing
+        version: 4.1.10(@types/node@26.2.0)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0))
 
   services/open:
     dependencies:
@@ -18263,7 +18281,7 @@ snapshots:
       '@vueuse/shared': 14.4.0(vue@3.5.41(typescript@5.9.3))
       aria-hidden: 1.2.6
       defu: 6.1.7
-      ohash: 2.0.11
+      ohash: 2.0.12
       vue: 3.5.41(typescript@5.9.3)
     transitivePeerDependencies:
       - '@vue/composition-api'
@@ -18280,7 +18298,7 @@ snapshots:
       '@vueuse/shared': 14.4.0(vue@3.5.41(typescript@6.0.3))
       aria-hidden: 1.2.6
       defu: 6.1.7
-      ohash: 2.0.11
+      ohash: 2.0.12
       vue: 3.5.41(typescript@6.0.3)
     transitivePeerDependencies:
       - '@vue/composition-api'

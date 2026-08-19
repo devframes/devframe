@@ -34,6 +34,11 @@ export async function createDashboardContext(
     mount: (base, dir) => mountStaticHandler(app, base, dir),
   })
   const ctx = await createHostContext({ cwd, mode, host: h3Host })
+  // Mirror the adapters: install the declared wire services and ready them
+  // before setup, so `devframes:service:git:*` is registered.
+  for (const input of devframe.services ?? [])
+    void ctx.services.install(input, { resolveFrom: devframe.importMetaUrl })
+  await ctx.services.ready()
   await devframe.setup(ctx)
   return ctx
 }
@@ -64,6 +69,9 @@ export async function startDashboardServer(
     mount: (base, dir) => mountStaticHandler(app, base, dir),
   })
   const ctx = await createHostContext({ cwd, mode: 'dev', host: h3Host })
+  for (const input of devframe.services ?? [])
+    void ctx.services.install(input, { resolveFrom: devframe.importMetaUrl })
+  await ctx.services.ready()
   await devframe.setup(ctx)
 
   const metaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`

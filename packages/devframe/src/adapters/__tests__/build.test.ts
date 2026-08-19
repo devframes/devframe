@@ -1,7 +1,8 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { defineDevframe } from 'devframe'
+import { s } from 'devframe/utils/simple-schema'
 import { describe, expect, it } from 'vitest'
 import { createBuild } from '../build'
 
@@ -55,6 +56,58 @@ describe('adapters/build', () => {
     const outDir = mkdtempSync(join(tmpdir(), 'devframe-build-test-out-'))
     try {
       await expect(createBuild(baseDevframe(), { outDir })).resolves.toBeUndefined()
+    }
+    finally {
+      rmSync(outDir, { recursive: true, force: true })
+    }
+  })
+
+  it('bakes snapshotRpc methods a devframe does not own into the dump', async () => {
+    const outDir = mkdtempSync(join(tmpdir(), 'devframe-build-test-out-'))
+    // A dump-less query RPC (as a wire service would register) that the
+    // devframe opts into baking via `snapshotRpc` — string (no-arg), static
+    // inputs, and an async provider.
+    const def = baseDevframe({
+      setup: (ctx) => {
+        ctx.rpc.register({ name: 'demo:ping', type: 'query', jsonSerializable: true, handler: () => 'pong' })
+        ctx.rpc.register({
+          name: 'demo:echo',
+          type: 'query',
+          jsonSerializable: true,
+          args: [s.object({ value: s.string() })],
+          returns: s.object({ value: s.string() }),
+          handler: (input: { value: string }) => input,
+        })
+      },
+      snapshotRpc: [
+        'demo:ping',
+        { method: 'demo:echo', inputs: [[{ value: 'a' }]] },
+        { method: 'demo:echo', inputs: async () => [[{ value: 'b' }]] },
+      ],
+    })
+    try {
+      await createBuild(def, { outDir })
+      const manifest = JSON.parse(readFileSync(join(outDir, '__rpc-dump/index.json'), 'utf-8'))
+      // `demo:ping` baked its no-arg call + fallback (string form).
+      expect(manifest['demo:ping']?.type).toBe('query')
+      expect(manifest['demo:ping'].fallback).toBeTruthy()
+      // `demo:echo` baked a record per provided tuple (static + provider merged
+      // — the last snapshotRpc entry for a method wins).
+      expect(manifest['demo:echo']?.type).toBe('query')
+      expect(Object.keys(manifest['demo:echo'].records).length).toBeGreaterThanOrEqual(1)
+    }
+    finally {
+      rmSync(outDir, { recursive: true, force: true })
+    }
+  })
+
+  it('warns (DF0072) when snapshotRpc names an unregistered method', async () => {
+    const outDir = mkdtempSync(join(tmpdir(), 'devframe-build-test-out-'))
+    try {
+      // Does not throw — a missing target is a warning, the build proceeds.
+      await expect(
+        createBuild(baseDevframe({ snapshotRpc: ['does:not:exist'] }), { outDir }),
+      ).resolves.toBeUndefined()
     }
     finally {
       rmSync(outDir, { recursive: true, force: true })

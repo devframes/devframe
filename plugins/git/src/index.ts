@@ -1,18 +1,11 @@
+// Types-only: loads service-git's registry augmentation so
+// `ctx.services.get('@devframes/service-git')` is typed in `snapshotRpc`.
+import type {} from '@devframes/service-git'
 import type { DevframeDefinition, RemoteAssets } from 'devframe'
+import process from 'node:process'
 import { defineDevframe } from 'devframe'
 import { resolve } from 'pathe'
 import pkg from '../package.json' with { type: 'json' }
-import { configureGit } from './rpc/context.ts'
-import { readFunctions, writeFunctions } from './rpc/index.ts'
-
-export type { Branch, GitBranches } from './rpc/functions/branches.ts'
-export type { CommitArgs, CommitResult } from './rpc/functions/commit.ts'
-export type { DiffArgs, DiffFile, GitDiff } from './rpc/functions/diff.ts'
-export type { Commit, GitLog, LogArgs } from './rpc/functions/log.ts'
-export type { CommitDetail, CommitFile, ShowArgs } from './rpc/functions/show.ts'
-export type { StageArgs } from './rpc/functions/stage.ts'
-export type { FileStatusCode, GitStatus, StatusFileEntry } from './rpc/functions/status.ts'
-export type { UnstageArgs } from './rpc/functions/unstage.ts'
 
 // The Next.js static-export SPA ships in the lockstep
 // `@devframes/plugin-git--assets` package, served on demand through devframe's
@@ -23,6 +16,8 @@ const remoteAssets: RemoteAssets = {
   package: `${pkg.name}--assets`,
   version: pkg.version,
 }
+
+const GIT_SERVICE = '@devframes/service-git'
 
 export interface GitDevframeOptions {
   /** Repository directory to inspect. Defaults to the devframe `cwd`. */
@@ -37,11 +32,6 @@ export interface GitDevframeOptions {
   /** Preferred dev-server port (default 9710). */
   port?: number
   /**
-   * Enable staging, unstaging, and committing from the UI. Read-only by
-   * default; the standalone CLI also accepts a `--write` flag.
-   */
-  write?: boolean
-  /**
    * Require the trust handshake on the standalone server. Enabled by
    * default — `--open` embeds the current OTP in the opened URL, so the
    * tab authenticates automatically without extra prompts. Hosted adapters
@@ -51,14 +41,22 @@ export interface GitDevframeOptions {
 }
 
 /**
- * Create the Git dashboard devframe. Mount it into any host via devframe's
- * adapters, or run it standalone with the bundled CLI (`devframe-git`).
+ * Create the Git dashboard devframe. All git work runs through the
+ * `@devframes/service-git` wire service (declared below); the SPA calls its
+ * `devframes:service:git:*` RPC directly. Mount it into any host via
+ * devframe's adapters, or run it standalone with the bundled CLI
+ * (`devframe-git`).
  *
  * @experimental This plugin is experimental and may change without a major
  * version bump until it stabilizes.
  */
 export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDefinition {
   const distDir = options.distDir ?? remoteAssets
+  // Resolved at factory time (process.cwd() here equals the adapter's ctx.cwd)
+  // so it can ride the declarative service descriptor; omit to let the service
+  // default to the context cwd.
+  const cwd = options.repoRoot ? resolve(process.cwd(), options.repoRoot) : undefined
+
   return defineDevframe({
     id: 'devframes_plugin_git',
     name: 'Git',
@@ -76,23 +74,31 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
       // Gate the standalone server by default; `maybeOpenBrowser` folds the
       // current OTP into the `--open` URL so the tab lands already trusted.
       auth: options.auth ?? true,
-      configure(cli) {
-        cli.option('--write', 'Enable staging, unstaging, and committing from the UI')
+    },
+    // The git service backs every panel; the SPA calls it directly.
+    services: [{ package: GIT_SERVICE, ...(cwd ? { options: { cwd } } : {}) }],
+    // Bake repo state into the static build. The service defines no dump of
+    // its own, so the read ops are opted in here: status/branches/diff bake
+    // their no-arg call; log bakes the 200-commit head; show bakes one
+    // (patch-less) record per commit, enumerated at build time via the
+    // service's node API.
+    snapshotRpc: [
+      'devframes:service:git:status',
+      'devframes:service:git:branches',
+      'devframes:service:git:diff',
+      { method: 'devframes:service:git:log', inputs: [[{ limit: 200 }]] },
+      {
+        method: 'devframes:service:git:show',
+        inputs: async (ctx) => {
+          const git = ctx.services.get(GIT_SERVICE)
+          if (!git)
+            return []
+          const { commits } = await git.log({ limit: 200 })
+          return commits.map(commit => [{ hash: commit.hash, patch: false }])
+        },
       },
-    },
-    setup(ctx, info) {
-      const write = options.write ?? info?.flags?.write === true
-      configureGit(ctx, {
-        cwd: options.repoRoot ? resolve(options.repoRoot) : ctx.cwd,
-        write,
-      })
-      for (const fn of readFunctions)
-        ctx.rpc.register(fn)
-      if (write) {
-        for (const fn of writeFunctions)
-          ctx.rpc.register(fn)
-      }
-    },
+    ],
+    setup() {},
   })
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import type { Commit, CommitDetail } from '../../../index'
+import type { Commit, CommitDetail } from '@devframes/service-git'
 import type { GraphRow } from '../../lib/commit-graph'
 import type { GitRef } from '../../lib/refs'
 import {

@@ -1,7 +1,7 @@
 'use client'
 
+import type { Commit } from '@devframes/service-git'
 import type { DevframeRpcClient } from 'devframe/client'
-import type { Commit } from '../../index'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRpc } from './rpc-provider'
 import { LogPanelView } from './views/log-panel-view'
@@ -40,7 +40,7 @@ export function LogPanel({ branch, selectedHash, onSelectCommit }: LogPanelProps
     setLoading(true)
     setError(null)
     try {
-      const page = await client.call('devframes:plugin:git:log', {
+      const page = await client.call('devframes:service:git:log', {
         limit: PAGE,
         skip: nextSkip,
         ref: branch ?? undefined,
@@ -78,7 +78,7 @@ export function LogPanel({ branch, selectedHash, onSelectCommit }: LogPanelProps
 
   const loadStatus = useCallback(async (client: DevframeRpcClient) => {
     try {
-      const status = await client.call('devframes:plugin:git:status')
+      const status = await client.call('devframes:service:git:status')
       setCurrentBranch(status.branch)
       setWorkingChanges(
         status.staged.length + status.unstaged.length + status.untracked.length,
@@ -116,7 +116,7 @@ export function LogPanel({ branch, selectedHash, onSelectCommit }: LogPanelProps
     (hash: string) => {
       if (!rpc)
         return Promise.reject(new Error('rpc unavailable'))
-      return rpc.call('devframes:plugin:git:show', { hash, patch: false })
+      return rpc.call('devframes:service:git:show', { hash, patch: false })
     },
     [rpc],
   )

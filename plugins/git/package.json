@@ -55,6 +55,7 @@
     }
   },
   "dependencies": {
+    "@devframes/service-git": "workspace:*",
     "cac": "catalog:deps",
     "devframe": "workspace:*",
     "pathe": "catalog:deps"

@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-import type { DevframeDefinition } from '../types/devframe'
+import type { DevframeNodeContext } from '../types/context'
+import type { DevframeDefinition, DevframeSnapshotRpcEntry } from '../types/devframe'
 import type { StaticAssetsSource } from '../types/remote-assets'
 import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
@@ -95,6 +96,11 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
   await ctx.services.ready()
   await d.setup(ctx)
 
+  // Bake declared `snapshotRpc` methods (typically a wire service's RPC the
+  // devframe doesn't own) into the static dump by attaching a `dump` to their
+  // registered definitions — the service itself defines none.
+  applySnapshotRpc(ctx, d.snapshotRpc)
+
   await fs.mkdir(resolve(outDir, DEVFRAME_RPC_DUMP_DIRNAME), { recursive: true })
 
   const jsonSerializableMethods: string[] = []
@@ -133,4 +139,35 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
   )
 
   console.log(c.green`[devframe] built "${d.id}" -> ${outDir}`)
+}
+
+/**
+ * Attach a `dump` to each {@link DevframeDefinition.snapshotRpc} target so the
+ * static collector bakes it, even though the (service-owned) definition
+ * declares no dump of its own. A bare method id becomes `snapshot: true`
+ * (bakes the no-arg call); `{ method, inputs }` bakes one record per resolved
+ * argument-tuple by running the target's own handler, with the first tuple's
+ * output as the fallback.
+ */
+export function applySnapshotRpc(ctx: DevframeNodeContext, entries: readonly DevframeSnapshotRpcEntry[] | undefined): void {
+  for (const entry of entries ?? []) {
+    const method = typeof entry === 'string' ? entry : entry.method
+    const def = ctx.rpc.definitions.get(method)
+    if (!def) {
+      diagnostics.DF0072({ method })
+      continue
+    }
+    if (typeof entry === 'string') {
+      def.snapshot = true
+      continue
+    }
+    const inputsSpec = entry.inputs
+    def.dump = async (dumpCtx: DevframeNodeContext, handler: (...args: any[]) => any) => {
+      const tuples = typeof inputsSpec === 'function' ? await inputsSpec(dumpCtx) : inputsSpec
+      const records = []
+      for (const input of tuples)
+        records.push({ inputs: [...input] as any[], output: await handler(...input) })
+      return { records, fallback: records[0]?.output }
+    }
+  }
 }

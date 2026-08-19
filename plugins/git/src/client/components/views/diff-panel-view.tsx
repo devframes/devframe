@@ -1,8 +1,8 @@
 'use client'
 
+import type { FileStatusCode, GitDiff } from '@devframes/service-git'
 import type { FileDiffMetadata, FileDiffOptions } from '@pierre/diffs'
 import type { ReactNode } from 'react'
-import type { FileStatusCode, GitDiff } from '../../../index'
 import { parsePatchFiles } from '@pierre/diffs'
 import { FileDiff } from '@pierre/diffs/react'
 import { useMemo, useState } from 'react'

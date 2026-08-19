@@ -1,4 +1,4 @@
-import type { FileStatusCode } from '../../../index'
+import type { FileStatusCode } from '@devframes/service-git'
 import { cn } from '../../lib/utils'
 
 // A single-letter git status mark (A / M / D / R …), tinted by change kind —

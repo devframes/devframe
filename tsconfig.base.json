@@ -379,6 +379,9 @@
       "@devframes/plugin-assets": [
         "./plugins/assets/src/index.ts"
       ],
+      "@devframes/service-git": [
+        "./services/git/src/index.ts"
+      ],
       "@devframes/service-open": [
         "./services/open/src/index.ts"
       ],

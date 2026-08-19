@@ -1,7 +1,7 @@
 'use client'
 
+import type { GitStatus, StatusFileEntry } from '@devframes/service-git'
 import type { ReactNode } from 'react'
-import type { GitStatus, StatusFileEntry } from '../../../index'
 import { cn } from '../../lib/utils'
 import { Badge } from '../ui/badge'
 import { Button, IconButton } from '../ui/button'
