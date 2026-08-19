@@ -47,19 +47,16 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "@devframes/plugin-git--assets": "workspace:*",
-    "@devframes/service-shiki": "workspace:*"
+    "@devframes/plugin-git--assets": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@devframes/plugin-git--assets": {
-      "optional": true
-    },
-    "@devframes/service-shiki": {
       "optional": true
     }
   },
   "dependencies": {
     "@devframes/service-git": "workspace:*",
+    "@devframes/service-shiki": "workspace:*",
     "cac": "catalog:deps",
     "devframe": "workspace:*",
     "pathe": "catalog:deps"

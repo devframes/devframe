@@ -1970,6 +1970,9 @@ importers:
       '@devframes/service-git':
         specifier: workspace:*
         version: link:../../services/git
+      '@devframes/service-shiki':
+        specifier: workspace:*
+        version: link:../../services/shiki
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -1986,9 +1989,6 @@ importers:
       '@devframes/plugin-git--assets':
         specifier: workspace:*
         version: link:assets-pkg
-      '@devframes/service-shiki':
-        specifier: workspace:*
-        version: link:../../services/shiki
       '@floating-ui/react':
         specifier: catalog:frontend
         version: 0.27.20(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
