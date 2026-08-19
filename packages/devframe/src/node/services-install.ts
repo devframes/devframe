@@ -62,7 +62,11 @@ export async function importServicePackage(
       lastError = error
       continue
     }
-    return await import(pathToFileURL(resolved).href)
+    // `resolved` is a runtime-resolved absolute path, so this is a fully
+    // dynamic import. Mark it bundler-ignored (webpack / turbopack) so hosts
+    // that bundle devframe's node code — e.g. a Next.js hub — leave it as a
+    // real runtime import instead of failing with "expression too dynamic".
+    return await import(/* webpackIgnore: true */ /* @vite-ignore */ /* turbopackIgnore: true */ pathToFileURL(resolved).href)
   }
   throw lastError
 }
