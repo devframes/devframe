@@ -2,7 +2,6 @@ import type { RpcDefinitionsToFunctions } from 'devframe/rpc'
 import { messagesAdd } from './functions/add'
 import { messagesClear } from './functions/clear'
 import { messagesList } from './functions/list'
-import { messagesOpenFile } from './functions/open-file'
 import { messagesRemove } from './functions/remove'
 import { messagesUpdate } from './functions/update'
 
@@ -17,7 +16,6 @@ export const serverFunctions = [
   messagesUpdate,
   messagesRemove,
   messagesClear,
-  messagesOpenFile,
 ] as const
 
 declare module 'devframe' {

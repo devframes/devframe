@@ -26,7 +26,11 @@ export interface OpenServiceOptions {
 }
 
 export interface OpenInEditorInput {
-  /** Absolute path of the file to open. */
+  /**
+   * File to open — absolute, or relative to the service's `workspaceRoot`
+   * (so a client with only a workspace-relative path, e.g. a message's file
+   * position, can call this directly without a server-side bridge).
+   */
   path: string
   line?: number
   column?: number
@@ -57,11 +61,12 @@ declare module 'devframe' {
 /**
  * The open wire service — `open-in-editor` / `open-in-finder` RPC shared by
  * every plugin on the host, replacing per-plugin registrations of the
- * (deprecated) `devframe/recipes/common-rpc-functions` recipes. Callers pass
- * **absolute** paths; the service refuses paths outside the workspace root
- * and the configured extra {@link OpenServiceOptions.roots} (`DS_OPEN_0002`),
- * and gates editor commands to the `KNOWN_EDITORS` picklist so the RPC
- * surface can't spawn arbitrary commands.
+ * (deprecated) `devframe/recipes/common-rpc-functions` recipes. Paths may be
+ * absolute or relative to the `workspaceRoot`; the service refuses paths
+ * outside the workspace root and the configured extra
+ * {@link OpenServiceOptions.roots} (`DS_OPEN_0002`), and gates editor
+ * commands to the `KNOWN_EDITORS` picklist so the RPC surface can't spawn an
+ * arbitrary command.
  */
 export function createOpenService(options?: OpenServiceOptions): DevframeServiceDefinition<OpenServiceApi, OpenServiceOptions> {
   return {
@@ -74,11 +79,12 @@ export function createOpenService(options?: OpenServiceOptions): DevframeService
     setup(ctx, { options }) {
       const allowedRoots = [ctx.workspaceRoot, ...(options?.roots ?? [])].map(root => resolve(root))
 
-      /** Absolute + contained in one of the allowed roots, or throws. */
+      /**
+       * Resolve `path` (relative paths against `workspaceRoot`) and assert it
+       * lands inside one of the allowed roots, or throw.
+       */
       function assertAllowedPath(path: string): string {
-        if (!isAbsolute(path))
-          throw diagnostics.DS_OPEN_0001({ path })
-        const resolved = resolve(path)
+        const resolved = isAbsolute(path) ? resolve(path) : resolve(ctx.workspaceRoot, path)
         const contained = allowedRoots.some((root) => {
           const rel = relative(root, resolved)
           return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel))

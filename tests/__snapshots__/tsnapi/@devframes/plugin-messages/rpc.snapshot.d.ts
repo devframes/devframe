@@ -72,47 +72,5 @@ export declare const serverFunctions: readonly [{
   snapshot?: boolean;
   __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<void>>>> | undefined;
   __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<void>>> | undefined;
-}, {
-  name: "devframes:plugin:messages:open-file";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args: readonly [import("devframe/utils/simple-schema").SimpleSchema<{
-    file: string;
-    line?: number | undefined;
-    column?: number | undefined;
-  }, {
-    file: string;
-    line?: number | undefined;
-    column?: number | undefined;
-  }>];
-  returns: import("devframe/utils/simple-schema").SimpleSchema<void, void>;
-  jsonSerializable?: boolean;
-  agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: import("devframe").DevframeNodeContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
-    file: string;
-    line?: number | undefined;
-    column?: number | undefined;
-  }], import("devframe/rpc").Thenable<void>>>) | undefined;
-  handler?: ((args_0: {
-    file: string;
-    line?: number | undefined;
-    column?: number | undefined;
-  }) => import("devframe/rpc").Thenable<void>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[{
-    file: string;
-    line?: number | undefined;
-    column?: number | undefined;
-  }], import("devframe/rpc").Thenable<void>, import("devframe").DevframeNodeContext> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
-    file: string;
-    line?: number | undefined;
-    column?: number | undefined;
-  }], import("devframe/rpc").Thenable<void>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[{
-    file: string;
-    line?: number | undefined;
-    column?: number | undefined;
-  }], import("devframe/rpc").Thenable<void>>> | undefined;
 }];
 // #endregion

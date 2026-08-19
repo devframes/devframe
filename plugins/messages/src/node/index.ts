@@ -17,10 +17,10 @@ export function setupMessages(ctx: DevframeNodeContext): void {
   if (!getMessagesHost(ctx))
     diagnostics.DP_MESSAGES_0001({ id: PLUGIN_ID })
 
-  // The detail panel's "open file" affordance delegates to the
+  // The detail panel's "open file" affordance calls the
   // `@devframes/service-open` wire service (declared in the definition's
-  // `services`) through `devframes:plugin:messages:open-file`, which
-  // resolves workspace-relative file positions server-side.
+  // `services`) directly from the client — the service resolves the
+  // workspace-relative file position itself, so the plugin needs no bridge.
   for (const fn of serverFunctions)
     ctx.rpc.register(fn)
 }

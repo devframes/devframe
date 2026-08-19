@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { DevframeMessageAction, DevframeMessageEntry } from '@devframes/hub/types'
+// Types-only: loads service-open's RPC/scope augmentations so the scoped
+// `open.rpc.call('open-in-editor', …)` below is fully typed.
+import type {} from '@devframes/service-open'
 import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/client'
 import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import FormSearchField from '@antfu/design/components/Form/FormSearchField.vue'
@@ -108,7 +111,10 @@ async function onOpenFile(entry: DevframeMessageEntry): Promise<void> {
   if (!entry.filePosition)
     return
   const { file, line, column } = entry.filePosition
-  await props.rpc.call('devframes:plugin:messages:open-file', { file, line, column })
+  // Call the open wire service directly — it resolves the workspace-relative
+  // path itself. `file` may be relative or absolute.
+  const open = props.rpc.services.get('@devframes/service-open')
+  await open?.rpc.call('open-in-editor', { path: file, line, column })
 }
 </script>
 

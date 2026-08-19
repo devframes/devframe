@@ -66,15 +66,23 @@ describe('@devframes/service-open', () => {
     expect(launchEditor).toHaveBeenLastCalledWith(join(dir, 'a.ts'), 'zed')
   })
 
-  it('refuses relative paths and paths outside the allowed roots', async () => {
+  it('resolves relative paths against the workspace root', async () => {
+    const { ctx, dir } = await createCtx()
+    const install = ctx.services.install(createOpenService())
+    await ctx.services.ready()
+    const api = await install
+
+    await api!.openInEditor({ path: 'src/a.ts' })
+    expect(launchEditor).toHaveBeenCalledWith(join(dir, 'src/a.ts'), undefined)
+  })
+
+  it('refuses paths outside the allowed roots', async () => {
     const { ctx } = await createCtx()
     const install = ctx.services.install(createOpenService())
     await ctx.services.ready()
     const api = await install
 
-    await expect(api!.openInEditor({ path: 'src/a.ts' })).rejects.toThrowError(/not absolute/)
     await expect(api!.openInFinder({ path: '/etc/passwd' })).rejects.toThrowError(/outside the workspace root/)
-    expect(launchEditor).not.toHaveBeenCalled()
     expect(open).not.toHaveBeenCalled()
   })
 
