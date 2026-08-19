@@ -264,11 +264,16 @@
     "plugins/git": {
       // The React client build's root sits at `src/client` (`next dev
       // src/client`), not the workspace root, so knip's default PostCSS
-      // config glob (workspace-root `postcss.config.*`) misses it.
+      // config glob (workspace-root `postcss.config.*`) misses it — and for
+      // the same reason knip's Next plugin doesn't discover that nested app,
+      // so it never scans the client's only `@devframes/service-shiki` use (a
+      // type-only import in `src/client/.../use-diff-tokens.ts`, plus the
+      // `{ package }` service descriptor string in `src/index.ts`). Ignore it
+      // so the optional-peer dev link isn't reported unused.
       "postcss": {
         "config": ["src/client/postcss.config.mjs"]
       },
-      "ignoreDependencies": ["@devframes/plugin-git--assets"]
+      "ignoreDependencies": ["@devframes/plugin-git--assets", "@devframes/service-shiki"]
     }
   }
 }
