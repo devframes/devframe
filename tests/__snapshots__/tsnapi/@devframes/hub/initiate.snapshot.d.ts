@@ -37,6 +37,7 @@ export interface InitHubOptions {
   version?: string;
   base: string;
   devframes?: DevframesInput;
+  services?: DevframeServiceInput[];
   rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations'];
   context?: DevframeHubContext;
   configure?: (_: DevframeHubContext) => void | Promise<void>;

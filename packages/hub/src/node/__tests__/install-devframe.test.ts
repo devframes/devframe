@@ -19,6 +19,12 @@ function createContext(): DevframeHubContext {
     views: {
       hostStatic: () => {},
     },
+    // Minimal stub — these tests drive dock/setup wiring, not the services
+    // lifecycle (the demo devframe declares none).
+    services: {
+      install: () => Promise.resolve(undefined),
+      ready: () => Promise.resolve(),
+    },
   } as unknown as DevframeHubContext
   context.docks = new DevframeDocksHost(context)
   // `createHubContext` wires this; the hand-built fake context here does the

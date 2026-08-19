@@ -194,10 +194,5 @@ export const diagnostics = defineDiagnostics({
         `Invalid service "${p.package}": ${p.reason}`,
       fix: 'A service package\'s default export must be a factory returning a `DevframeServiceDefinition` — an object with `package`, `version`, `scope`, and a `setup` function.',
     },
-    DF0071: {
-      why: (p: { reason: string }) =>
-        `Deferred service installation failed while flushing on the first client connection: ${p.reason}`,
-      fix: 'Call `ctx.services.ready()` explicitly after every devframe\'s setup has run (the first-party adapters do) so installation errors surface at startup instead of at connect time.',
-    },
   },
 })

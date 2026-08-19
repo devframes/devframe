@@ -12,7 +12,7 @@ import process from 'node:process'
 import { DEVFRAME_SERVICES_STATE_KEY } from 'devframe/constants'
 import { createDebug } from 'obug'
 import { diagnostics } from './diagnostics'
-import { expandResolveFrom, importServicePackage, satisfiesVersionRange, shallowMergeOptionSets } from './services-install'
+import { deepMergeOptionSets, expandResolveFrom, importServicePackage, satisfiesVersionRange } from './services-install'
 
 const debug = createDebug('devframe:services')
 
@@ -225,15 +225,16 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
       diagnostics.DF0069({ package: pkg, required: descriptor.version, installed: def.version })
     }
 
-    // Merge every installer's option set in declaration order (later wins on
-    // the default shallow merge, so a host installing last takes precedence).
+    // Merge every installer's option set in declaration order (the default
+    // deep-merge unions arrays and lets later scalars win; a service may
+    // override with its own `mergeOptions`).
     const sets = entries
       .map(entry => entry.input.options)
       .filter(options => options !== undefined)
     const options = def.mergeOptions
       ? def.mergeOptions(sets)
       : sets.length > 0
-        ? shallowMergeOptionSets(sets)
+        ? deepMergeOptionSets(sets)
         : undefined
 
     if (!this.context)

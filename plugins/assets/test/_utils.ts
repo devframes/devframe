@@ -49,6 +49,11 @@ export async function startAssetsServer(
   })
 
   const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
+  // Mirror the adapters: queue the definition's declared wire services,
+  // ready them, THEN run setup (services ready before setup).
+  for (const input of definition.services ?? [])
+    void ctx.services.install(input, { resolveFrom: definition.packageName })
+  await ctx.services.ready()
   await definition.setup(ctx)
 
   const server = await serveTestContext({ context: ctx, host, port, app, auth: false })

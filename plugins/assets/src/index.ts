@@ -1,4 +1,5 @@
 import type { DevframeDefinition, RemoteAssets } from 'devframe'
+import process from 'node:process'
 import { defineDevframe } from 'devframe'
 import { resolve } from 'pathe'
 import pkg from '../package.json' with { type: 'json' }
@@ -96,6 +97,11 @@ export interface AssetsDevframeOptions {
  */
 export function createAssetsDevframe(options: AssetsDevframeOptions = {}): DevframeDefinition {
   const id = options.id ?? DEFAULT_ID
+  // Resolve the managed dir at factory time (process.cwd() here equals the
+  // adapter's ctx.cwd — same process) so it can be declared as a service-open
+  // allowed root before any setup runs. Only matters when `dir` points
+  // outside the workspace; an in-workspace `public/` is already allowed.
+  const dir = options.dir ? resolve(process.cwd(), options.dir) : resolve(process.cwd(), 'public')
   const distDir = options.distDir ?? remoteAssets
   const write = options.write ?? true
   const serveStatic = options.serveStatic ?? false
@@ -125,9 +131,18 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
       },
     },
     dock: { category: '~builtin' },
+    // Both wire services are declared, not imperatively installed: devframe
+    // constructs them (deep-merging options across every declarer) before
+    // setup runs. `service-open` gets the managed dir as an allowed root so
+    // out-of-workspace dirs open; the client hits it directly with the
+    // dev-only absolute `fsPath`. `service-shiki` backs server-highlighted
+    // text previews, with a plain `<pre>` fallback when it isn't advertised.
+    services: [
+      { package: '@devframes/service-open', options: { roots: [dir] } },
+      { package: '@devframes/service-shiki' },
+    ],
     async setup(ctx, info) {
       const readOnlyFlag = info?.flags?.readOnly === true
-      const dir = options.dir ? resolve(ctx.cwd, options.dir) : resolve(ctx.cwd, 'public')
       await setupAssets(ctx, {
         dir,
         write: readOnlyFlag ? false : write,

@@ -29,6 +29,8 @@ export default defineConfig({
       'plugins/a11y',
       'plugins/messages',
       'plugins/assets',
+      'services/open',
+      'services/shiki',
       'examples/hub-next',
       'packages/next',
       'packages/vite',

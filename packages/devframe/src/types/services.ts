@@ -210,15 +210,19 @@ export interface DevframeServicesHost {
   /** Ids of every currently-provided service. */
   keys: () => string[]
   /**
-   * Install a **wire service** (see {@link DevframeServiceDefinition}).
-   * Before {@link DevframeServicesHost.ready} fires, installs are queued —
-   * option sets from every installer accumulate and each service is
-   * constructed **once** at the barrier with the merged options; the
-   * returned promise resolves with the service's node API then (or
-   * `undefined` when an optional descriptor's package can't be imported).
-   * After the barrier, installs construct immediately; installing an
-   * already-installed package returns the existing API (a warning is
-   * emitted when the late install carried options, since they're ignored).
+   * Install a **wire service** (see {@link DevframeServiceDefinition}). The
+   * common path is declarative — list services on `DevframeDefinition.services`
+   * (or `initHub({ services })`) and the adapter installs them for you before
+   * `setup` runs. Call `install()` directly only for the dynamic escape hatch:
+   * a service configured at runtime from data unknown until then.
+   *
+   * Before the pre-setup ready fires, installs are queued and their option
+   * sets deep-merged, constructing each service **once**. After it, an install
+   * constructs immediately; installing an already-installed package returns
+   * the existing API (a warning — `DF0066` — when the late install carried
+   * options, since they're ignored). The returned promise resolves with the
+   * node API (or `undefined` when an optional descriptor's package can't be
+   * imported).
    *
    * `resolveFrom` is where a descriptor's package resolves **from**: a path
    * or file URL (e.g. the declaring devframe's `importMetaUrl`), or an npm
@@ -230,13 +234,14 @@ export interface DevframeServicesHost {
     options?: { resolveFrom?: string | null },
   ) => Promise<API | undefined>
   /**
-   * Fire the collect-then-setup barrier: resolve every queued descriptor
-   * (importing its package), merge option sets per service, construct each
-   * service once, `provide()` its node API under the package name, and
-   * advertise it to clients via the `devframe:services` shared state.
-   * Idempotent — adapters call it once after every devframe's `setup` has
-   * run; a repeat returns the same promise. Rejects when a `required`
-   * service fails to import or misses its version range.
+   * Construct every queued service — importing descriptor packages, merging
+   * option sets, `provide()`-ing each node API under its package name, and
+   * advertising it to clients via the `devframe:services` shared state.
+   * Idempotent. **Internal**: the adapters call it once, before running any
+   * `setup`, so services are ready for `setup` to consume; application code
+   * uses declarative `services` (or `install()` for the dynamic case) and
+   * never calls this. Rejects when a `required` service fails to import or
+   * misses its version range.
    */
   ready: () => Promise<void>
 }

@@ -290,12 +290,12 @@ export function initDevframe(
         importMetaUrl: def.importMetaUrl,
       })
       const setupInfo: DevframeSetupInfo = { flags: options.flags ?? {} }
-      // Declarative services queue ahead of setup (their promises resolve at
-      // the ready() barrier below), resolving against the plugin's own deps.
+      // Wire services are constructed and made ready BEFORE setup, so
+      // `setup(ctx)` can consume them synchronously (`ctx.services.get`).
       for (const input of def.services ?? [])
         void context.services.install(input, { resolveFrom: def.importMetaUrl })
-      await def.setup(context, setupInfo)
       await context.services.ready()
+      await def.setup(context, setupInfo)
 
       // Route-based MCP server (opt-in). Mounted before the SPA static
       // catch-all so the exact `<base>__mcp` route wins, and advertised in

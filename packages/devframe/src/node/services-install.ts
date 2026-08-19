@@ -180,13 +180,31 @@ export function satisfiesVersionRange(version: string, range: string): boolean {
   )
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/** Deep-merge two values with the service option-set rules (see below). */
+function deepMergeTwo(a: unknown, b: unknown): unknown {
+  // Arrays union-dedupe, so multiple installers' `roots` / `langs` accumulate.
+  if (Array.isArray(a) && Array.isArray(b))
+    return [...new Set([...a, ...b])]
+  if (isPlainObject(a) && isPlainObject(b)) {
+    const out: Record<string, unknown> = { ...a }
+    for (const key of Object.keys(b))
+      out[key] = key in a ? deepMergeTwo(a[key], b[key]) : b[key]
+    return out
+  }
+  // Scalars / mismatched shapes: later set wins (e.g. `themes` per key).
+  return b
+}
+
 /**
  * Default option-set merge when a service declares no `mergeOptions`:
- * shallow-merge plain objects in declaration order (later sets win); any
- * non-object set collapses the merge to "last one wins".
+ * deep-merge in declaration order — objects recurse, arrays union-dedupe,
+ * scalars take the later value. Covers the built-in services (`roots` /
+ * `langs` union, `themes` per-key last-wins) without a custom hook.
  */
-export function shallowMergeOptionSets<Options>(sets: Options[]): Options {
-  if (sets.some(set => typeof set !== 'object' || set === null || Array.isArray(set)))
-    return sets[sets.length - 1] as Options
-  return Object.assign({}, ...sets) as Options
+export function deepMergeOptionSets<Options>(sets: Options[]): Options {
+  return sets.reduce((merged, set) => deepMergeTwo(merged, set) as Options)
 }

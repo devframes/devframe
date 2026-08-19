@@ -1,5 +1,4 @@
 import type { DevframeNodeContext } from 'devframe'
-import { commonRpcFunctions } from 'devframe/recipes/common-rpc-functions'
 import { PLUGIN_ID } from '../constants'
 import { diagnostics } from '../diagnostics'
 import { getMessagesHost } from '../rpc/functions/_define'
@@ -18,18 +17,12 @@ export function setupMessages(ctx: DevframeNodeContext): void {
   if (!getMessagesHost(ctx))
     diagnostics.DP_MESSAGES_0001({ id: PLUGIN_ID })
 
+  // The detail panel's "open file" affordance calls the
+  // `@devframes/service-open` wire service (declared in the definition's
+  // `services`) directly from the client — the service resolves the
+  // workspace-relative file position itself, so the plugin needs no bridge.
   for (const fn of serverFunctions)
     ctx.rpc.register(fn)
-
-  // The detail panel's "open file" affordance uses devframe's prebuilt
-  // `devframe:open-in-editor` recipe. Another tool on the same connection
-  // may have registered the helpers already — skip those. The recipes are
-  // context-free (`SetupContext = undefined`, plain handlers); widening to
-  // the node collector's context is safe.
-  for (const fn of commonRpcFunctions) {
-    if (!ctx.rpc.definitions.has(fn.name))
-      ctx.rpc.register(fn as unknown as Parameters<typeof ctx.rpc.register>[0])
-  }
 }
 
 export { serverFunctions }

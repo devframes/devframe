@@ -341,12 +341,6 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "A service package's default export must be a factory returning a `DevframeServiceDefinition` — an object with `package`, `version`, `scope`, and a `setup` function.";
   };
-  readonly DF0071: {
-    readonly why: (p: {
-      reason: string;
-    }) => string;
-    readonly fix: "Call `ctx.services.ready()` explicitly after every devframe's setup has run (the first-party adapters do) so installation errors surface at startup instead of at connect time.";
-  };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
 }) => void]>;

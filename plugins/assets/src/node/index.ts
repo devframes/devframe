@@ -2,7 +2,7 @@ import type { DevframeNodeContext } from 'devframe'
 import { existsSync } from 'node:fs'
 import fsp from 'node:fs/promises'
 import { UPLOAD_CHANNEL } from '../rpc/functions/upload'
-import { alwaysFunctions, readFunctions, writeFunctions } from '../rpc/index'
+import { readFunctions, writeFunctions } from '../rpc/index'
 import { configureAssets } from './context'
 import { watchAssetsDir } from './watcher'
 
@@ -63,8 +63,6 @@ export async function setupAssets(ctx: DevframeNodeContext, options: SetupAssets
     ctx.views.hostStatic(options.baseURL, options.dir)
 
   for (const fn of readFunctions)
-    ctx.rpc.register(fn)
-  for (const fn of alwaysFunctions)
     ctx.rpc.register(fn)
   if (options.write) {
     for (const fn of writeFunctions)

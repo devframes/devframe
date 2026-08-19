@@ -43,14 +43,18 @@ describe('messages dev-server (hub context)', () => {
     expect(meta.websocket).toBe(server.port)
   })
 
-  it('registers the open-in-editor recipe alongside the feed RPCs', () => {
+  it('installs the open service (called directly by the client) alongside the feed RPCs', () => {
     const names = Array.from(server.ctx.rpc.definitions.keys())
     expect(names).toContain('devframes:plugin:messages:list')
     expect(names).toContain('devframes:plugin:messages:add')
     expect(names).toContain('devframes:plugin:messages:update')
     expect(names).toContain('devframes:plugin:messages:remove')
     expect(names).toContain('devframes:plugin:messages:clear')
-    expect(names).toContain('devframe:open-in-editor')
+    // The detail panel calls the declared `@devframes/service-open` wire
+    // service directly; the plugin registers no open-file bridge of its own.
+    expect(names).not.toContain('devframes:plugin:messages:open-file')
+    expect(names).toContain('devframes:service:open:open-in-editor')
+    expect(server.ctx.services.has('@devframes/service-open')).toBe(true)
   })
 
   it('lists server-side entries and delta-syncs from a cursor', async () => {

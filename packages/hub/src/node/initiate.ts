@@ -1,7 +1,7 @@
 import type { DevframeInstanceRecord } from 'devframe/internal'
 import type { DevframeAuthHandler } from 'devframe/node/auth'
 import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
-import type { ConnectionMeta, DevframeDefinition, DevframeSseOptions, DevframeStorageScope, DevframeWsOptions, McpRouteOptions } from 'devframe/types'
+import type { ConnectionMeta, DevframeDefinition, DevframeServiceInput, DevframeSseOptions, DevframeStorageScope, DevframeWsOptions, McpRouteOptions } from 'devframe/types'
 import type { Buffer } from 'node:buffer'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { Duplex } from 'node:stream'
@@ -21,6 +21,7 @@ import { resolveClientModuleSpecifier } from '../client-modules'
 import { DEVFRAMES_HUB_BASE, DOCK_RENDERERS_STATE_KEY, normalizeHubBase } from '../constants'
 import { createHubContext } from './context'
 import { diagnostics } from './diagnostics'
+import { prepareDevframe } from './install-devframe'
 
 /** A `devframes` entry with per-mount dock customization. */
 export interface HubDevframeEntry {
@@ -171,6 +172,14 @@ export interface InitHubOptions {
    * (category, icon, a `clientScript` to run in the host page, …).
    */
   devframes?: DevframesInput
+  /**
+   * Host-level wire services to install, on top of whatever the mounted
+   * devframes declare. Constructed (option sets merged) at the pre-setup
+   * barrier, so every devframe's `setup` sees them ready. Reach for this to
+   * configure a shared service centrally — e.g.
+   * `services: [createShikiService({ themes })]`.
+   */
+  services?: DevframeServiceInput[]
   /**
    * Extra RPC declarations registered at context creation, alongside the
    * hub built-ins — forwarded to `createHubContext`'s
@@ -499,9 +508,14 @@ export function initHub(options: InitHubOptions): HubInstance {
       }
 
       const devframes = await resolveDevframesInput(options.devframes ?? [])
-      // Mount each devframe under `<base><id>/` — its SPA, its meta, and its
-      // auto-registered iframe dock — after guarding the id against the
-      // reserved hub filenames that live directly under the base.
+      // Host-level services declared on `initHub` join the pre-setup
+      // collection alongside every devframe's own declared services.
+      for (const input of options.services ?? [])
+        void ctx.services.install(input)
+      // Pass 1 — mount each devframe under `<base><id>/` (SPA, meta, iframe
+      // dock) and queue its declared services, guarding the id against the
+      // reserved hub filenames. No setup yet.
+      const setups: (() => Promise<void>)[] = []
       for (const { devframe: def, dock } of devframes) {
         if ((RESERVED_HUB_PATHS as readonly string[]).includes(def.id))
           throw diagnostics.DF8000({ id: def.id })
@@ -511,9 +525,18 @@ export function initHub(options: InitHubOptions): HubInstance {
         if (!/^[\w.-]+$/.test(def.id))
           throw diagnostics.DF8004({ id: def.id })
         const frameBase = withTrailingSlash(joinURL(base, def.id))
-        await ctx.install(def, { base: frameBase, ...(dock ? { dock } : {}) })
+        const run = await prepareDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
+        if (run)
+          setups.push(run)
         frames.push({ id: def.id, base: frameBase, title: def.name })
       }
+
+      // Construct every collected service once, then run the setups — so a
+      // devframe's setup consumes services (its own or another devframe's)
+      // synchronously via `ctx.services.get`.
+      await ctx.services.ready()
+      for (const run of setups)
+        await run()
 
       await options.configure?.(ctx)
 
@@ -522,11 +545,6 @@ export function initHub(options: InitHubOptions): HubInstance {
       // installed devframes. The instance shell serializes `ctx.staticConfig`
       // into the connection meta right after this `init` returns.
       await options.ui?.setup?.(ctx)
-
-      // Wire-services barrier: every service declared by an installed
-      // devframe (or installed explicitly during `configure`) is constructed
-      // once here, with its option sets merged across declarers.
-      await ctx.services.ready()
 
       // Publish the renderer manifest — one `ClientScriptEntry` per dock
       // `type`, `importFrom` base-absolute so it resolves to the served module

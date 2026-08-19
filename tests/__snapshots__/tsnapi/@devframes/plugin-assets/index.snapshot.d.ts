@@ -13,6 +13,7 @@ export interface AssetInfo {
   publicPath: string;
   size: number;
   mtime: number;
+  fsPath?: string;
 }
 export interface AssetsDevframeOptions {
   id?: string;

@@ -19,8 +19,9 @@ const devtools = initDevframe(myDevframe, { base: '/__my-tool/' })
 ::: code-group
 
 ```ts [Vite]
+// vite.config.ts
+// connect-style middleware + Vite's own server for the socket
 import { initDevframe } from 'devframe/initiate'
-// vite.config.ts — connect-style middleware + Vite's own server for the socket
 import { defineConfig } from 'vite'
 import myDevframe from './devframe'
 
@@ -40,7 +41,8 @@ export default defineConfig({
 ```
 
 ```ts [Nitro]
-// routes/__my-tool/[...path].ts — plus routes/__my-tool/index.ts (same body)
+// routes/__my-tool/[...path].ts
+// routes/__my-tool/index.ts
 // for the namespace root, since a catch-all doesn't match its own empty path.
 import { defineHandler } from 'nitro'
 import { devtools } from '../../devtools'
@@ -49,7 +51,8 @@ export default defineHandler(event => devtools.handler(event.req))
 ```
 
 ```ts [Hono]
-// server.ts — `serve()` hands back the node server the socket rides on
+// server.ts
+// `serve()` hands back the node server the socket rides on
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { devtools } from './devtools'
@@ -60,9 +63,9 @@ devtools.attach(serve({ fetch: app.fetch, port: 3000 }))
 ```
 
 ```ts [Next.js]
+// app/%5F_my-tool/[[...path]]/route.ts
+// Next reserves `_`-prefixed folders, so the segment is URL-encoded (`%5F_` decodes to `__`).
 import { initDevframe } from 'devframe/initiate'
-// app/%5F_my-tool/[[...path]]/route.ts — Next reserves `_`-prefixed
-// folders, so the segment is URL-encoded (`%5F_` decodes to `__`).
 import myDevframe from '@/devframe'
 
 export const runtime = 'nodejs'

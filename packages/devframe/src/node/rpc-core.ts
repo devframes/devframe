@@ -130,25 +130,16 @@ export function createContextRpcServer(options: CreateContextRpcServerOptions): 
     })
   }
 
-  const onConnected = (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta): void => {
-    // Safety net for the services collect-then-setup barrier: a host that
-    // never called `ctx.services.ready()` still flushes deferred service
-    // installs before the first client is served. Idempotent and cheap once
-    // fired; failures are reported (not thrown) since a connect hook is no
-    // place to crash — adapters that `await ready()` surface them at startup.
-    void Promise.resolve()
-      .then(() => context.services.ready?.())
-      .catch((error) => {
-        const reason = error instanceof Error ? error.message : String(error)
-        diagnostics.DF0071({ reason, cause: error }, { method: 'error' })
-      })
-    const session: DevframeNodeRpcSession = {
-      meta,
-      rpc: rpcGroup.clients.find(client => (client as any).$meta === meta) as any,
-    }
-    authHandler?.onConnect(connection, session)
-    options.onPeerConnect?.(connection, session)
-  }
+  const onConnected = (authHandler || options.onPeerConnect)
+    ? (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta): void => {
+        const session: DevframeNodeRpcSession = {
+          meta,
+          rpc: rpcGroup.clients.find(client => (client as any).$meta === meta) as any,
+        }
+        authHandler?.onConnect(connection, session)
+        options.onPeerConnect?.(connection, session)
+      }
+    : undefined
 
   const onDisconnected = (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta): void => {
     options.onPeerDisconnect?.(connection, meta)

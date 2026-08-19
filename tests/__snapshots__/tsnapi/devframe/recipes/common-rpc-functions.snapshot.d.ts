@@ -6,6 +6,7 @@ export type KnownEditor = 'atom' | 'subl' | 'sublime' | 'sublime_text' | 'wstorm
 // #endregion
 
 // #region Variables
+/** @deprecated */
 export declare const commonRpcFunctions: readonly [{
   name: "devframe:open-in-editor";
   type?: "action" | undefined;
@@ -36,6 +37,7 @@ export declare const commonRpcFunctions: readonly [{
   __promise?: Thenable<RpcFunctionSetupResult<[string], Thenable<void>>> | undefined;
 }];
 export declare const KNOWN_EDITORS: KnownEditor[];
+/** @deprecated */
 export declare const openInEditor: {
   name: "devframe:open-in-editor";
   type?: "action" | undefined;
@@ -51,6 +53,7 @@ export declare const openInEditor: {
   __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], Thenable<void>>>> | undefined;
   __promise?: Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], Thenable<void>>> | undefined;
 };
+/** @deprecated */
 export declare const openInFinder: {
   name: "devframe:open-in-finder";
   type?: "action" | undefined;

@@ -121,8 +121,8 @@ function writeFakeServicePackage(dir: string, name: string, version: string): vo
   ].join('\n'))
 }
 
-describe('wire services (install / ready barrier)', () => {
-  it('queues installs and constructs once at the barrier with merged options', async () => {
+describe('wire services (install / ready)', () => {
+  it('queues installs and constructs once at ready() with merged options', async () => {
     const { ctx } = await createCtx()
     const setup = vi.fn((_ctx: unknown, info: { options?: any }) => ({ options: info.options }))
     const def = defineTestService({ setup, options: { a: 1, b: 1 } })
@@ -131,15 +131,26 @@ describe('wire services (install / ready barrier)', () => {
     // A second install of the same package contributes its options to the merge.
     const second = ctx.services.install({ package: '@test/svc', options: { b: 2, c: 3 } })
 
+    // The service's own setup runs at ready(), not before.
     expect(setup).not.toHaveBeenCalled()
     await ctx.services.ready()
 
     expect(setup).toHaveBeenCalledTimes(1)
-    // Shallow merge in declaration order — later sets win.
+    // Deep merge in declaration order — later scalars win.
     await expect(first).resolves.toEqual({ options: { a: 1, b: 2, c: 3 } })
     await expect(second).resolves.toEqual({ options: { a: 1, b: 2, c: 3 } })
     // The node API is provided under the package name.
     expect(ctx.services.get('@test/svc')).toEqual({ options: { a: 1, b: 2, c: 3 } })
+  })
+
+  it('deep-merges option sets: arrays union, nested objects recurse', async () => {
+    const { ctx } = await createCtx()
+    void ctx.services.install(defineTestService({ options: { roots: ['a'], nested: { x: 1 } } }))
+    void ctx.services.install({ package: '@test/svc', options: { roots: ['b', 'a'], nested: { y: 2 } } })
+    await ctx.services.ready()
+    expect(ctx.services.get('@test/svc')).toEqual({
+      options: { roots: ['a', 'b'], nested: { x: 1, y: 2 } },
+    })
   })
 
   it('uses the definition mergeOptions when declared', async () => {
@@ -164,7 +175,7 @@ describe('wire services (install / ready barrier)', () => {
     })
   })
 
-  it('creates an empty advertisement state at the barrier when nothing installs', async () => {
+  it('creates an empty advertisement state at ready() when nothing installs', async () => {
     const { ctx } = await createCtx()
     await ctx.services.ready()
     expect(ctx.rpc.sharedState.keys()).toContain(DEVFRAME_SERVICES_STATE_KEY)
@@ -182,7 +193,7 @@ describe('wire services (install / ready barrier)', () => {
     await expect((ctx.rpc.invokeLocal as (method: string) => Promise<unknown>)('test:svc:hello')).resolves.toBe('hi')
   })
 
-  it('post-barrier installs construct immediately; duplicates warn and return the first API', async () => {
+  it('post-ready installs construct immediately; duplicates warn and return the first API', async () => {
     const { ctx } = await createCtx()
     await ctx.services.ready()
     const api = await ctx.services.install(defineTestService({ options: { a: 1 } }))
