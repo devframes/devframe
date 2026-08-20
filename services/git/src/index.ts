@@ -6,10 +6,13 @@ import type {
   DiffArgs,
   GitBranches,
   GitDiff,
+  GitFile,
   GitLog,
   GitServiceApi,
   GitStatus,
+  GitTags,
   LogArgs,
+  ReadFileArgs,
   ShowArgs,
   StageArgs,
   UnstageArgs,
@@ -93,6 +96,16 @@ const commitDetailSchema = s.object({
   truncated: s.boolean(),
 })
 
+const gitFileSchema = s.object({
+  isRepo: s.boolean(),
+  found: s.boolean(),
+  ref: s.string(),
+  path: s.string(),
+  content: s.nullable(s.string()),
+  binary: s.boolean(),
+  truncated: s.boolean(),
+})
+
 const gitDiffSchema = s.object({
   isRepo: s.boolean(),
   staged: s.boolean(),
@@ -114,8 +127,10 @@ declare module 'devframe' {
     'devframes:service:git:status': () => Promise<GitStatus>
     'devframes:service:git:log': (args?: LogArgs) => Promise<GitLog>
     'devframes:service:git:show': (args: ShowArgs) => Promise<CommitDetail>
+    'devframes:service:git:readFile': (args: ReadFileArgs) => Promise<GitFile>
     'devframes:service:git:diff': (args?: DiffArgs) => Promise<GitDiff>
     'devframes:service:git:branches': () => Promise<GitBranches>
+    'devframes:service:git:tags': () => Promise<GitTags>
     'devframes:service:git:stage': (args: StageArgs) => Promise<GitStatus>
     'devframes:service:git:unstage': (args: UnstageArgs) => Promise<GitStatus>
     'devframes:service:git:commit': (args: CommitArgs) => Promise<CommitResult>
@@ -159,9 +174,9 @@ export function createGitService(options?: GitServiceOptions): DevframeServiceDe
         name: 'log',
         type: 'query',
         jsonSerializable: true,
-        args: [s.object({ limit: s.optional(s.number()), skip: s.optional(s.number()), ref: s.optional(s.string()) })],
+        args: [s.object({ limit: s.optional(s.number()), skip: s.optional(s.number()), ref: s.optional(s.string()), paths: s.optional(s.array(s.string())) })],
         returns: gitLogSchema,
-        agent: { title: 'Git log', description: 'Commit history of the inspected repository, newest first. Paginate with limit (1-200, default 30) and skip; pass ref to read another branch. Safe to call freely.' },
+        agent: { title: 'Git log', description: 'Commit history of the inspected repository, newest first. Paginate with limit (1-200, default 30) and skip; pass ref to read another branch, or paths to list only commits that touched those files/directories. Safe to call freely.' },
         handler: (args: LogArgs = {}): Promise<GitLog> => ops.log(args),
       }))
       ctx.rpc.register(defineRpcFunction({
@@ -172,6 +187,15 @@ export function createGitService(options?: GitServiceOptions): DevframeServiceDe
         returns: commitDetailSchema,
         agent: { title: 'Git show', description: 'Full detail of one commit by hash: metadata, changed files, and the unified patch (pass patch: false to skip it for large commits). Safe to call freely.' },
         handler: (args: ShowArgs): Promise<CommitDetail> => ops.show(args),
+      }))
+      ctx.rpc.register(defineRpcFunction({
+        name: 'readFile',
+        type: 'query',
+        jsonSerializable: true,
+        args: [s.object({ path: s.string(), ref: s.optional(s.string()) })],
+        returns: gitFileSchema,
+        agent: { title: 'Git read file', description: 'Read the contents of a single file at a commit-ish (default HEAD) — the raw text of a versioned file without checking it out. found is false when no such file exists at the ref; binary blobs return with content omitted. Safe to call freely.' },
+        handler: (args: ReadFileArgs): Promise<GitFile> => ops.readFile(args),
       }))
       ctx.rpc.register(defineRpcFunction({
         name: 'diff',
@@ -188,6 +212,13 @@ export function createGitService(options?: GitServiceOptions): DevframeServiceDe
         jsonSerializable: true,
         agent: { title: 'Git branches', description: 'List local branches with tracking state (ahead/behind, gone upstreams) and the current branch. Safe to call freely.' },
         handler: (): Promise<GitBranches> => ops.branches(),
+      }))
+      ctx.rpc.register(defineRpcFunction({
+        name: 'tags',
+        type: 'query',
+        jsonSerializable: true,
+        agent: { title: 'Git tags', description: 'List tags (newest first) with the target commit SHA, creation date, and message subject; annotated tags are flagged. Safe to call freely.' },
+        handler: (): Promise<GitTags> => ops.tags(),
       }))
 
       // Write ops (always registered — authorization is the host's concern).

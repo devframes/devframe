@@ -67,6 +67,8 @@ export interface LogArgs {
   skip?: number
   /** Optional ref/branch to read history from (default: current HEAD). */
   ref?: string
+  /** Restrict history to commits that touched these repo-relative path(s). */
+  paths?: string[]
 }
 
 export interface Branch {
@@ -85,6 +87,51 @@ export interface GitBranches {
   isRepo: boolean
   current: string | null
   branches: Branch[]
+}
+
+export interface Tag {
+  name: string
+  /** Short SHA of the commit the tag ultimately points to. */
+  sha: string
+  /**
+   * Tag creation date as epoch milliseconds — the tag's own date for
+   * annotated tags, the target commit's date for lightweight tags. `0` when
+   * the date can't be parsed.
+   */
+  date: number
+  /** Tag message subject (annotated) or target commit subject (lightweight). */
+  subject: string
+  /** `true` for annotated tags, which carry their own message and date. */
+  annotated: boolean
+}
+
+export interface GitTags {
+  isRepo: boolean
+  /** Tags, newest creation date first. */
+  tags: Tag[]
+}
+
+export interface ReadFileArgs {
+  /** Repo-relative path to the file. */
+  path: string
+  /** Commit-ish to read the file from (default: current HEAD). */
+  ref?: string
+}
+
+export interface GitFile {
+  /** `false` when the working directory is not inside a git repository. */
+  isRepo: boolean
+  /** `false` when no blob exists at `path` for `ref`. */
+  found: boolean
+  /** The resolved ref the file was read from. */
+  ref: string
+  path: string
+  /** File text, or `null` when not found or binary. */
+  content: string | null
+  /** `true` when the blob is binary (its `content` is omitted). */
+  binary: boolean
+  /** `true` when `content` was clipped to the internal char limit. */
+  truncated: boolean
 }
 
 export interface DiffFile {
@@ -189,8 +236,10 @@ export interface GitServiceApi {
   status: () => Promise<GitStatus>
   log: (args?: LogArgs) => Promise<GitLog>
   show: (args: ShowArgs) => Promise<CommitDetail>
+  readFile: (args: ReadFileArgs) => Promise<GitFile>
   diff: (args?: DiffArgs) => Promise<GitDiff>
   branches: () => Promise<GitBranches>
+  tags: () => Promise<GitTags>
   stage: (args: StageArgs) => Promise<GitStatus>
   unstage: (args: UnstageArgs) => Promise<GitStatus>
   commit: (args: CommitArgs) => Promise<CommitResult>

@@ -6,9 +6,12 @@ import type {
   DiffFile,
   FileStatusCode,
   GitBranches,
+  GitFile,
   GitServiceApi,
   GitStatus,
+  GitTags,
   StatusFileEntry,
+  Tag,
 } from './types'
 import {
   gitErrorMessage,
@@ -23,6 +26,9 @@ import {
 
 /** Hard cap on returned patch text to keep payloads bounded. */
 const PATCH_CHAR_LIMIT = 200_000
+
+/** Hard cap on returned raw file content to keep payloads bounded. */
+const FILE_CHAR_LIMIT = 500_000
 
 // --- status ---------------------------------------------------------------
 
@@ -169,6 +175,20 @@ const BRANCH_FORMAT = [
   '%(contents:subject)',
 ].join(UNIT)
 
+// --- tags ------------------------------------------------------------------
+
+// `creatordate` so annotated tags report their own date (a naive
+// `committerdate` is empty for annotated tags). `*objectname`/`*subject`
+// dereference annotated tags to their target commit.
+const TAG_FORMAT = [
+  '%(refname:short)',
+  '%(objecttype)',
+  '%(objectname:short)',
+  '%(*objectname:short)',
+  '%(creatordate:iso-strict)',
+  '%(contents:subject)',
+].join(UNIT)
+
 function parseTrack(track: string): { ahead: number, behind: number, gone: boolean } {
   if (track.includes('gone'))
     return { ahead: 0, behind: 0, gone: true }
@@ -259,10 +279,15 @@ function parseCommitNumstat(raw: string, status: Map<string, FileStatusCode>): C
   })
 }
 
+function clipText(raw: string, limit: number): { text: string, truncated: boolean } {
+  return raw.length > limit
+    ? { text: raw.slice(0, limit), truncated: true }
+    : { text: raw, truncated: false }
+}
+
 function clipPatch(raw: string): { patch: string, truncated: boolean } {
-  return raw.length > PATCH_CHAR_LIMIT
-    ? { patch: raw.slice(0, PATCH_CHAR_LIMIT), truncated: true }
-    : { patch: raw, truncated: false }
+  const { text, truncated } = clipText(raw, PATCH_CHAR_LIMIT)
+  return { patch: text, truncated }
 }
 
 // --- ops factory -----------------------------------------------------------
@@ -349,6 +374,11 @@ export function createGitOps(cwd: string): GitServiceApi {
           return { isRepo: true, commits: [], limit, skip, hasMore: false }
         command.push('--end-of-options', ref)
       }
+      // Pathspec after `--` — everything past it is treated as a path, never
+      // an option, so client paths need no dash guard here.
+      const paths = (args.paths ?? []).map(p => p.trim()).filter(Boolean)
+      if (paths.length > 0)
+        command.push('--', ...paths)
 
       const raw = await tryGit(cwd, command)
       const commits = raw ? parseLog(raw) : []
@@ -362,6 +392,34 @@ export function createGitOps(cwd: string): GitServiceApi {
       if (!root || !hash)
         return { ...EMPTY_DETAIL }
       return readCommit(hash, includePatch)
+    },
+
+    async readFile(args) {
+      const path = (args?.path ?? '').trim()
+      const ref = args?.ref?.trim() || 'HEAD'
+      const root = await resolveRoot()
+      const base: GitFile = { isRepo: !!root, found: false, ref, path, content: null, binary: false, truncated: false }
+      if (!root || !path)
+        return base
+      // The spec is one `<ref>:<path>` token; guarding the ref against a
+      // leading dash keeps the whole token from being read as an option.
+      if (!isSafeRevision(ref))
+        return base
+
+      // `runGit` (not `tryGit`) preserves the blob's exact bytes, including a
+      // trailing newline; a missing path exits non-zero and lands in `catch`.
+      let raw: string
+      try {
+        ;({ stdout: raw } = await runGit(cwd, ['show', '--end-of-options', `${ref}:${path}`]))
+      }
+      catch {
+        return base
+      }
+      // A NUL byte marks binary content — omit it rather than return garbage.
+      if (raw.includes('\0'))
+        return { ...base, found: true, binary: true }
+      const { text: content, truncated } = clipText(raw, FILE_CHAR_LIMIT)
+      return { ...base, found: true, content, truncated }
     },
 
     async diff(args = {}) {
@@ -414,6 +472,33 @@ export function createGitOps(cwd: string): GitServiceApi {
       })
       branches.sort((a, b) => Number(b.current) - Number(a.current))
       return { isRepo: true, current, branches }
+    },
+
+    async tags(): Promise<GitTags> {
+      const root = await resolveRoot()
+      if (!root)
+        return { isRepo: false, tags: [] }
+
+      const raw = await tryGit(cwd, ['for-each-ref', `--format=${TAG_FORMAT}`, 'refs/tags'])
+      if (!raw)
+        return { isRepo: true, tags: [] }
+
+      const tags: Tag[] = splitClean(raw, '\n').map((line) => {
+        const [name, objectType, objectSha, targetSha, isoDate, subject] = line.split(UNIT)
+        const annotated = objectType === 'tag'
+        const parsed = Date.parse(isoDate)
+        return {
+          name,
+          // Annotated tags dereference to their target commit; lightweight
+          // tags point straight at it.
+          sha: targetSha || objectSha,
+          date: Number.isNaN(parsed) ? 0 : parsed,
+          subject: subject ?? '',
+          annotated,
+        }
+      })
+      tags.sort((a, b) => b.date - a.date)
+      return { isRepo: true, tags }
     },
 
     async stage(args) {

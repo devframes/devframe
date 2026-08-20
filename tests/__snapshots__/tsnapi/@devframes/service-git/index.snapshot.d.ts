@@ -85,6 +85,15 @@ export interface GitDiff {
   patch: string | null;
   truncated: boolean;
 }
+export interface GitFile {
+  isRepo: boolean;
+  found: boolean;
+  ref: string;
+  path: string;
+  content: string | null;
+  binary: boolean;
+  truncated: boolean;
+}
 export interface GitLog {
   isRepo: boolean;
   commits: Commit[];
@@ -96,8 +105,10 @@ export interface GitServiceApi {
   status: () => Promise<GitStatus>;
   log: (_?: LogArgs) => Promise<GitLog>;
   show: (_: ShowArgs) => Promise<CommitDetail>;
+  readFile: (_: ReadFileArgs) => Promise<GitFile>;
   diff: (_?: DiffArgs) => Promise<GitDiff>;
   branches: () => Promise<GitBranches>;
+  tags: () => Promise<GitTags>;
   stage: (_: StageArgs) => Promise<GitStatus>;
   unstage: (_: UnstageArgs) => Promise<GitStatus>;
   commit: (_: CommitArgs) => Promise<CommitResult>;
@@ -120,9 +131,18 @@ export interface GitStatus {
   clean: boolean;
   canWrite: boolean;
 }
+export interface GitTags {
+  isRepo: boolean;
+  tags: Tag[];
+}
 export interface LogArgs {
   limit?: number;
   skip?: number;
+  ref?: string;
+  paths?: string[];
+}
+export interface ReadFileArgs {
+  path: string;
   ref?: string;
 }
 export interface ShowArgs {
@@ -136,6 +156,13 @@ export interface StatusFileEntry {
   path: string;
   from?: string;
   status: FileStatusCode;
+}
+export interface Tag {
+  name: string;
+  sha: string;
+  date: number;
+  subject: string;
+  annotated: boolean;
 }
 export interface UnstageArgs {
   paths: string[];

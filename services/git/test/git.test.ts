@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { createHostContext } from 'devframe/node'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createGitService } from '../src/index'
-import { createTempDir, createTempRepo } from './_repo'
+import { createPathRepo, createTempDir, createTempRepo } from './_repo'
 
 const cleanups: (() => void)[] = []
 afterEach(() => {
@@ -100,6 +100,76 @@ describe('@devframes/service-git', () => {
     expect(detail.files.find(f => f.path === 'a.txt')?.status).toBe('added')
   })
 
+  it('reads a file at a ref, signalling absence with found: false', async () => {
+    const repo = createTempRepo()
+    cleanups.push(repo.cleanup)
+    const git = await createGit(repo.dir)
+
+    // HEAD holds the committed README, not the modified working tree.
+    const readme = await git.readFile({ path: 'README.md' })
+    expect(readme.found).toBe(true)
+    expect(readme.binary).toBe(false)
+    expect(readme.ref).toBe('HEAD')
+    expect(readme.content).toBe('# Demo\n')
+
+    // `a.txt` only exists from the second commit — absent at the initial one.
+    const log = await git.log({})
+    const initHash = log.commits[1].hash
+    const atInit = await git.readFile({ path: 'a.txt', ref: initHash })
+    expect(atInit.found).toBe(false)
+    expect(atInit.content).toBeNull()
+    expect(atInit.ref).toBe(initHash)
+
+    const atHead = await git.readFile({ path: 'a.txt' })
+    expect(atHead.found).toBe(true)
+    expect(atHead.content).toBe('hello\n')
+  })
+
+  it('treats a dashed ref as invalid when reading a file', async () => {
+    const repo = createTempRepo()
+    cleanups.push(repo.cleanup)
+    const git = await createGit(repo.dir)
+
+    const marker = join(repo.dir, 'readfile-injected.txt')
+    const file = await git.readFile({ path: 'README.md', ref: `--output=${marker}` })
+    expect(file.found).toBe(false)
+    expect(existsSync(marker)).toBe(false)
+  })
+
+  it('lists tags newest-first with target sha, date, and annotation flag', async () => {
+    const repo = createTempRepo()
+    cleanups.push(repo.cleanup)
+    const git = await createGit(repo.dir)
+
+    const { tags } = await git.tags()
+    expect(tags.map(t => t.name)).toEqual(['v1.0.0', 'v0.0.1'])
+
+    const annotated = tags[0]
+    expect(annotated.annotated).toBe(true)
+    expect(annotated.subject).toBe('release one')
+    // `creatordate` populates for annotated tags (a naive committerdate is empty).
+    expect(annotated.date).toBe(Date.parse('2021-06-01T00:00:00Z'))
+
+    const lightweight = tags[1]
+    expect(lightweight.annotated).toBe(false)
+    expect(lightweight.date).toBeGreaterThan(0)
+    expect(lightweight.sha).toMatch(/^[0-9a-f]+$/)
+  })
+
+  it('scopes the log to commits touching given paths', async () => {
+    const repo = createPathRepo()
+    cleanups.push(repo.cleanup)
+    const git = await createGit(repo.dir)
+
+    expect((await git.log({})).commits).toHaveLength(3)
+
+    const src = await git.log({ paths: ['src'] })
+    expect(src.commits.map(c => c.subject)).toEqual(['fix: src a', 'feat: src a'])
+
+    const docs = await git.log({ paths: ['docs/b.md'] })
+    expect(docs.commits.map(c => c.subject)).toEqual(['docs: b'])
+  })
+
   it('lists local branches, current first', async () => {
     const repo = createTempRepo()
     cleanups.push(repo.cleanup)
@@ -166,7 +236,9 @@ describe('@devframes/service-git', () => {
     expect((await git.status()).isRepo).toBe(false)
     expect((await git.log({})).isRepo).toBe(false)
     expect((await git.branches()).isRepo).toBe(false)
+    expect((await git.tags()).isRepo).toBe(false)
     expect((await git.diff()).isRepo).toBe(false)
+    expect((await git.readFile({ path: 'README.md' })).isRepo).toBe(false)
   })
 
   it('registers scoped RPC that mirrors the node API', async () => {
