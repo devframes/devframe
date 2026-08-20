@@ -1,4 +1,10 @@
-import type { Spec } from '@json-render/core'
+import type {
+  Catalog,
+  InferCatalogComponents,
+  InferComponentProps,
+  Spec,
+  UIElement,
+} from '@json-render/core'
 import type { JsonRenderViewStateRef } from './view-ref'
 
 /**
@@ -6,7 +12,17 @@ import type { JsonRenderViewStateRef } from './view-ref'
  * `root` key, an `elements` map, and optional initial `state`. This alias is
  * the Devframes-facing name; it does not add or remove fields.
  */
-export type DevframeJsonRenderSpec = Spec
+export type DevframeJsonRenderSpec<Element extends UIElement = UIElement> = Omit<Spec, 'elements'> & {
+  elements: Record<string, Element>
+}
+
+/** Derive a discriminated element union from every component in a catalog. */
+export type CatalogUIElement<CatalogType extends Catalog> = {
+  [ComponentName in keyof InferCatalogComponents<CatalogType> & string]: UIElement<
+    ComponentName,
+    InferComponentProps<CatalogType, ComponentName>
+  >
+}[keyof InferCatalogComponents<CatalogType> & string]
 
 /**
  * A single JSON-Pointer patch to a view's `state` model. `path` is an
@@ -27,7 +43,7 @@ export interface JsonRenderStatePatch {
  * serializable {@link JsonRenderViewStateRef} that a hub dock (or any client
  * transport) uses to locate it.
  */
-export interface JsonRenderView {
+export interface JsonRenderView<SpecType extends DevframeJsonRenderSpec = DevframeJsonRenderSpec> {
   /** Author-supplied stable id, unique within the view's scope. */
   readonly id: string
   /** Human-facing label published in the view index (defaults to `id`). */
@@ -35,7 +51,7 @@ export interface JsonRenderView {
   /** The serializable reference clients subscribe through. */
   readonly ref: JsonRenderViewStateRef
   /** Replace the entire spec (a structural change replaces the whole spec). */
-  update: (spec: DevframeJsonRenderSpec) => void
+  update: (spec: SpecType) => void
   /**
    * Apply JSON-Pointer patches to the view's `state`. Travels as a
    * shared-state patch (not a whole-spec snapshot), so only the changed
@@ -43,7 +59,7 @@ export interface JsonRenderView {
    */
   patchState: (patches: JsonRenderStatePatch[]) => void
   /** Read the current spec (immutable). */
-  value: () => DevframeJsonRenderSpec
+  value: () => SpecType
   /** Unregister the shared state and its listeners. */
   dispose: () => void
 }

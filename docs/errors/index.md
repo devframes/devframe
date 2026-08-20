@@ -42,3 +42,5 @@ Emitted by `devframe` — framework-neutral host / shared-state / auth surface.
 | [DF0031](./DF0031) | error | Write to Closed Stream |
 | [DF0032](./DF0032) | error | Streaming Channel Already Registered |
 | [DF0033](./DF0033) | warn | Dev RPC Bridge Failed to Start |
+| [DF0073](./DF0073) | error | JSON-Render Spec Does Not Match Its Schema |
+| [DF0074](./DF0074) | error | JSON-Render Schema Is Asynchronous |

@@ -18,9 +18,9 @@ export interface JsonRenderViewStateRef {
  * rendered as-is (static: local state and bindings still work, but there is no
  * server-driven live update stream).
  */
-export interface JsonRenderViewInlineRef {
+export interface JsonRenderViewInlineRef<SpecType extends DevframeJsonRenderSpec = DevframeJsonRenderSpec> {
   /** The full spec, carried in the reference itself. */
-  spec: DevframeJsonRenderSpec
+  spec: SpecType
 }
 
 /**
@@ -30,4 +30,5 @@ export interface JsonRenderViewInlineRef {
  * the client subscribes through, or an {@link JsonRenderViewInlineRef.spec
  * inline spec} rendered directly.
  */
-export type JsonRenderViewRef = JsonRenderViewStateRef | JsonRenderViewInlineRef
+export type JsonRenderViewRef<SpecType extends DevframeJsonRenderSpec = DevframeJsonRenderSpec>
+  = JsonRenderViewStateRef | JsonRenderViewInlineRef<SpecType>

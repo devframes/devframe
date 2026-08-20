@@ -1522,6 +1522,9 @@ importers:
       '@json-render/core':
         specifier: catalog:deps
         version: 0.19.0(zod@4.4.3)
+      '@standard-schema/spec':
+        specifier: catalog:deps
+        version: 1.1.0
       zod:
         specifier: catalog:deps
         version: 4.4.3

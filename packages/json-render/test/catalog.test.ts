@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import type { CatalogUIElement, DevframeJsonRenderSpec, InferComponentProps } from '../src/index'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 import { baseCatalog, baseComponentNames, basePropSchemas } from '../src/index'
 
 describe('base catalog', () => {
@@ -52,5 +53,20 @@ describe('per-component prop validation', () => {
   it('tolerates dynamic `$bindState` expressions where a scalar is expected', () => {
     expect(basePropSchemas.TextInput.safeParse({ value: { $bindState: '/name' } }).success).toBe(true)
     expect(basePropSchemas.Switch.safeParse({ value: { $state: '/enabled' } }).success).toBe(true)
+  })
+})
+
+describe('catalog-derived element typing', () => {
+  it('narrows props when the element type is checked', () => {
+    type BaseCatalogElement = CatalogUIElement<typeof baseCatalog>
+    const assertNarrowing = (element: BaseCatalogElement): void => {
+      if (element.type === 'Button')
+        expectTypeOf(element.props).toEqualTypeOf<InferComponentProps<typeof baseCatalog, 'Button'>>()
+      if (element.type === 'Text')
+        expectTypeOf(element.props).toEqualTypeOf<InferComponentProps<typeof baseCatalog, 'Text'>>()
+    }
+
+    expectTypeOf<DevframeJsonRenderSpec<BaseCatalogElement>['elements'][string]>().toEqualTypeOf<BaseCatalogElement>()
+    expectTypeOf(assertNarrowing).toBeFunction()
   })
 })

@@ -35,7 +35,7 @@ export {
 } from './prop-schemas'
 
 // ── Devframes-facing type names ──────────────────────────────────────────
-export type { DevframeJsonRenderSpec, JsonRenderView } from './types'
+export type { CatalogUIElement, DevframeJsonRenderSpec, JsonRenderView } from './types'
 // ── View index (frontend view discovery) ─────────────────────────────────
 export { JSON_RENDER_INDEX_KEY } from './view-index'
 
