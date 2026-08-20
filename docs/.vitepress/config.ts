@@ -19,31 +19,44 @@ function listErrorCodes(prefix: string): string[] {
 function guideGroups(prefix: string) {
   return [
     {
-      text: 'Fundamentals',
+      text: 'Introduction',
       items: [
         { text: 'Introduction', link: `${prefix}/guide/` },
-        { text: 'Devframe Definition', link: `${prefix}/guide/devframe-definition` },
-        { text: 'RPC', link: `${prefix}/guide/rpc` },
-        { text: 'Shared State', link: `${prefix}/guide/shared-state` },
-        { text: 'Client Assets', link: `${prefix}/guide/client-assets` },
-        { text: 'Structured Diagnostics', link: `${prefix}/guide/diagnostics` },
-        { text: 'Agent-Native', link: `${prefix}/guide/agent-native` },
-        { text: 'JSON-Render', link: `${prefix}/guide/json-render` },
-        { text: 'Streaming', link: `${prefix}/guide/streaming` },
-        { text: 'Scoped Context', link: `${prefix}/guide/scoped-context` },
-        { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
       ],
     },
     {
-      text: 'Client & Security',
+      text: 'Define your tool',
       items: [
+        { text: 'Devframe Definition', link: `${prefix}/guide/devframe-definition` },
+        { text: 'RPC', link: `${prefix}/guide/rpc` },
+        { text: 'Shared State', link: `${prefix}/guide/shared-state` },
+        { text: 'Streaming', link: `${prefix}/guide/streaming` },
+        { text: 'Client Assets', link: `${prefix}/guide/client-assets` },
+        { text: 'Scoped Context', link: `${prefix}/guide/scoped-context` },
+        { text: 'JSON-Render', link: `${prefix}/guide/json-render` },
+        { text: 'Structured Diagnostics', link: `${prefix}/guide/diagnostics` },
+        { text: 'When Clauses', link: `${prefix}/guide/when-clauses` },
+      ],
+    },
+    {
+      text: 'Mount anywhere',
+      items: [
+        { text: 'The Standard Handler', link: `${prefix}/adapters/initiate` },
+        { text: 'Adapters', link: `${prefix}/adapters/` },
+        { text: 'Standalone CLI', link: `${prefix}/guide/standalone-cli` },
         { text: 'Client', link: `${prefix}/guide/client` },
         { text: 'Transports', link: `${prefix}/guide/transports` },
         { text: 'Security', link: `${prefix}/guide/security` },
       ],
     },
     {
-      text: 'Hub',
+      text: 'Visual & agentic',
+      items: [
+        { text: 'Agent-Native', link: `${prefix}/guide/agent-native` },
+      ],
+    },
+    {
+      text: 'Compose a hub',
       items: [
         { text: 'Hub', link: `${prefix}/guide/hub` },
         { text: 'Client Scripts & Context', link: `${prefix}/guide/client-context` },
@@ -54,17 +67,10 @@ function guideGroups(prefix: string) {
       ],
     },
     {
-      text: 'Customization',
+      text: 'Customize the UI',
       items: [
         { text: 'Build Your Own JSON-Render Frontend', link: `${prefix}/guide/build-your-own-json-render-frontend` },
         { text: 'Build Your Own Hub UI', link: `${prefix}/guide/build-your-own-hub-ui` },
-      ],
-    },
-    {
-      text: 'References',
-      items: [
-        { text: 'When Clauses', link: `${prefix}/guide/when-clauses` },
-        { text: 'Examples', link: `${prefix}/examples/` },
       ],
     },
   ] satisfies { text: string, items: DefaultTheme.NavItemWithLink[] }[]
@@ -73,9 +79,9 @@ function guideGroups(prefix: string) {
 function adaptersItems(prefix: string) {
   return [
     { text: 'Overview', link: `${prefix}/adapters/` },
-    { text: 'Initiate (middleware)', link: `${prefix}/adapters/initiate` },
-    { text: 'Dev', link: `${prefix}/adapters/dev` },
+    { text: 'The Standard Handler', link: `${prefix}/adapters/initiate` },
     { text: 'CLI', link: `${prefix}/adapters/cac` },
+    { text: 'Dev', link: `${prefix}/adapters/dev` },
     { text: 'Build', link: `${prefix}/adapters/build` },
     { text: 'Vite DevTools', link: `${prefix}/adapters/vite` },
     { text: 'Embedded', link: `${prefix}/adapters/embedded` },

@@ -51,7 +51,7 @@ ctx.commands.register({
 })
 ```
 
-`args` takes positional valibot schemas (a single `v.object(...)` is unwrapped into the tool's input object); omit it for a zero-argument tool. `safety` defaults to `'action'`. `when` clauses evaluate client-side only and are not enforced for agent calls — opt in a `when`-gated command only if running it outside its UI context is safe.
+`args` takes positional [Standard Schema](https://standardschema.dev/) schemas (valibot above; a single `v.object(...)` is unwrapped into the tool's input object); omit it for a zero-argument tool. `safety` defaults to `'action'`. `when` clauses evaluate client-side only and are not enforced for agent calls — opt in a `when`-gated command only if running it outside its UI context is safe.
 
 ## Cross-iframe dock activation
 

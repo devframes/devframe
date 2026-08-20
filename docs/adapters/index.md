@@ -4,14 +4,17 @@ outline: deep
 
 # Adapters
 
-An adapter takes a `DevframeDefinition` and deploys it into a specific runtime — a standalone CLI, a Vite plugin, a static snapshot, an embedded host, or an MCP server. Each adapter ships at its own entry point (`devframe/adapters/<name>`); the bundler pulls in only the ones you use.
+The lowest-level way to serve a devframe is [the standard handler](./initiate): `initDevframe(def, { base })` returns a Web Standard `(request: Request) => Promise<Response>` that mounts on any catch-all route. Every serving path below is built on it.
+
+Adapters package that same foundation into familiar entry points, so you rarely wire the handler by hand. Each adapter takes a `DevframeDefinition` and deploys it into a specific runtime — a standalone CLI, a dev server, a Vite plugin, a static snapshot, an embedded host, or an MCP server. Each ships at its own entry point (`devframe/adapters/<name>`), so the bundler pulls in only the ones you use.
 
 Every adapter factory has the shape `createXxx(devframeDef, options?)`. Some adapters draw on an optional peer dependency, installed only when you opt into that adapter: `cac` pulls in [`cac`](https://github.com/cacjs/cac), and `mcp` pulls in [`@modelcontextprotocol/server`](https://github.com/modelcontextprotocol/typescript-sdk).
 
 ## Comparison
 
-| Adapter | Entry | Factory | Best for |
+| Entry point | Module | Factory | Best for |
 |---------|-------|---------|----------|
+| [Standard Handler](./initiate) | `devframe/initiate` | `initDevframe(def, { base })` | Mounting the raw `Request → Response` handler into any host |
 | [`cac`](./cac) | `devframe/adapters/cac` | `createCac(def, options?)` | Standalone tools run via `node ./my-tool.js` |
 | [`dev`](./dev) | `devframe/adapters/dev` | `createDevServer(def, options?)` | Run the dev server programmatically — drive it from any CLI framework |
 | [`build`](./build) | `devframe/adapters/build` | `createBuild(def, options?)` | Offline reports, CI artifacts, deployable SPA snapshots |

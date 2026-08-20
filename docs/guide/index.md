@@ -2,37 +2,112 @@
 outline: deep
 ---
 
-# Devframe
+# Introduction
 
-**Devframe is an asset: define your devtool once, serve it anywhere.** You describe a single tool — its RPC surface, its data model, its SPA, its CLI shape — and the same definition deploys through any of the runtime adapters: a standalone CLI, a self-contained static report, an embedded SPA, an MCP server, and more. Devframe is framework- and build-tool-agnostic — it has no Vite dependency and no opinion on what UI framework your SPA uses.
+**Devframe is a framework-neutral foundation for building a devtool once, then bringing it to different hosts, standalone surfaces, and agents.** You describe a single tool — its RPC surface, its shared state, its web interface, its diagnostics, and its agent-facing surface — and the same definition mounts almost anywhere.
 
-[Vite DevTools](https://devtools.vite.dev/) is built on top of devframe. If you need an integrated multi-tool host (docks, command palette, terminals, cross-tool toasts), mount your devframe into Vite DevTools via the [`vite` adapter](/adapters/vite) — or build your own host adapter targeting any environment you like.
+Think of Devframe as [`unplugin`](https://unplugin.unjs.io/) for devtools. Where `unplugin` gives plugins a common interface across bundlers, Devframe gives devtools a common definition and a standard way to be mounted into different environments.
 
-## Design principles
+## The shared boundary
 
-Devframe keeps its surface focused on one tool, so the same definition stays portable across runtimes:
+Most devtools — inspectors, asset viewers, build analyzers, terminals, editor integrations — rebuild the same infrastructure: server–client communication, state synchronization, serialization, static asset hosting, and a web interface. Each one also has to decide, again, how to be embedded, standalone, deployable, or integrated into a larger devtools experience. That work is usually coupled to one framework and to how its dev server serves assets, handles requests, and upgrades connections, so similar features get rebuilt separately across the ecosystem.
 
-- **One tool per definition.** A devframe describes a single integration. Deploy it through any adapter; host-level features that only matter when several tools share a UI (palettes, cross-tool toasts, unified terminals) come from whichever host you mount into — Vite DevTools is one example.
-- **Headless.** Hook into `onReady`, `cli.configure`, and friends to print your own startup banners and styling — Devframe stays out of the way.
-- **App-owned file watching.** Wire your own watcher (chokidar, fs.watch, …) and signal change via `ctx.rpc.sharedState.set(...)` or event-typed RPCs.
-- **Context-aware mount paths.** Standalone adapters (`cli`, `build`) serve at `/` by default; hosted adapters (`vite`, `embedded`) serve at `/.<id>/`. Override via `DevframeDefinition.basePath`.
-- **SPAs own their base at runtime.** Build with relative asset paths (`vite.base: './'`); `connectDevframe` discovers the effective base from the executing script's location.
-- **CLI flags compose.** The `cac` instance is exposed to both the devframe (`cli.configure`) and the caller of `createCac`, so capability flags and app flags merge cleanly.
+Devframe frees a devtool from those framework-specific boundaries. A capability is defined once and can run on every supported host, so communities can improve one tool together instead of maintaining parallel versions of the same idea.
 
-## What Devframe provides
+## One definition, one standard handler
 
-| Subsystem | What it does |
-|-----------|--------------|
-| **[Devframe Definition](./devframe-definition)** | One `defineDevframe` call describes your tool once; the adapters deploy it anywhere. |
-| **[RPC](./rpc)** | Type-safe bidirectional calls built on birpc + valibot. Supports `query`, `static`, `action`, and `event` types. |
-| **[Shared State](./shared-state)** | Observable, patch-synced state that survives reconnects and bridges server ↔ browser. |
-| **[JSON-Render](./json-render)** | Opt-in data-driven UI — author a view as a serializable spec, render it standalone or in a hub dock with a replaceable frontend. |
-| **[Diagnostics](./diagnostics)** | Coded warnings/errors via `nostics` — registered into the host's shared lookup so adapters and consumers share the same surface. |
-| **[Streaming](./streaming)** | One-way (RPC streaming) and two-way (uploads) channel primitives for long-running data. |
-| **[When Clauses](./when-clauses)** | VS Code-style conditional expressions for docks, commands, and custom UI. |
-| **[Utilities](/helpers/utilities)** | Bundled helpers under `devframe/utils/*` — terminal colors, hashing, editor launch, structured-clone serialization, and more. |
-| **[Client](./client)** | Browser-side RPC client (`connectDevframe`) with auto-auth and WebSocket / static modes. |
-| **[Agent-Native](./agent-native)** | Opt-in exposure of your tool's surface to coding agents over MCP. |
+Every devframe starts with [`defineDevframe()`](./devframe-definition). At its core it associates the identity of a tool with the capabilities it provides:
+
+```ts
+import { defineDevframe } from 'devframe'
+import { inspectProject } from './rpc'
+
+export default defineDevframe({
+  id: 'my-tool',
+  name: 'My Tool',
+  // package metadata and client entry omitted…
+  setup(ctx) {
+    ctx.scope('my-tool').rpc.register(inspectProject)
+  },
+})
+```
+
+The definition is independent of its presentation. [`initDevframe()`](/adapters/initiate) turns it into a live instance whose `handler` is a Web Standard `(request: Request) => Promise<Response>`:
+
+```ts
+import { initDevframe } from 'devframe/initiate'
+import devframe from './devframe'
+
+const devtools = initDevframe(devframe, { base: '/__my-tool/' })
+
+devtools.handler
+// (request: Request) => Promise<Response>
+
+devtools.nodeMiddleware
+// (req, res, next) => void — for Connect-style servers (Vite, Rsbuild)
+```
+
+Behind this handler, Devframe serves the tool's web interface, connection metadata, live RPC, authentication, and the optional MCP endpoint under one namespace. The tool is no longer tied to a particular dev-server API; its boundary is the Web Standard `Request` and `Response`.
+
+Modern frameworks and runtimes already converge on that boundary. Hono and Nitro work with Web Standard requests directly; Next.js and SvelteKit expose route handlers; Vite and Rsbuild accept Connect-style middleware, for which the same instance provides `nodeMiddleware`. The host still decides how the live RPC connection attaches — sharing its HTTP server, receiving its upgrade events, or using a side-car — and that choice is advertised through `__connection.json`, invisible to the client. See [The Standard Handler](/adapters/initiate) for every mount pattern.
+
+## Adapters as conveniences
+
+Mounting the handler directly is the lowest-level option. For common entry points, [higher-level adapters](/adapters/) package the same foundation into familiar forms — a standalone CLI, a dedicated dev server, a Vite DevTools plugin, an MCP server, or a static report:
+
+```ts
+import { createPluginFromDevframe } from '@vitejs/devtools-kit/node'
+import { createBuild } from 'devframe/adapters/build'
+import { createCac } from 'devframe/adapters/cac'
+import { createDevServer } from 'devframe/adapters/dev'
+import { createMcpServer } from 'devframe/adapters/mcp'
+import devframe from './devframe'
+
+// Pick the entry points your package ships:
+export const runCli = () => createCac(devframe).parse()
+export const startServer = () => createDevServer(devframe)
+export const vitePlugin = createPluginFromDevframe(devframe)
+export const startMcp = () => createMcpServer(devframe, { transport: 'stdio' })
+export const buildReport = () => createBuild(devframe, { outDir: 'dist-static' })
+```
+
+A single package can ship several of these from one definition. A build inspector could offer a standalone CLI for any project, generate static reports in CI, appear as a dock inside Vite DevTools, and let an agent query the active build — all backed by the same tool.
+
+## Visual and agentic
+
+Once a devtool has a structured boundary, its visual panel is no longer the only interface. The same internal state and capabilities can also be consumed programmatically. Visualizations are effective for exploration, overview, and comparison; agents can retrieve focused context, correlate it with the codebase, and carry out multi-step actions. Both read from one source of truth.
+
+RPC functions stay private by default and explicitly opt into agent exposure. The [MCP adapter](/adapters/mcp) translates those functions, readable resources, and selected shared state into an agent-consumable surface, with descriptions, schemas, and safety metadata. See [Agent-Native](./agent-native).
+
+## From one devframe to a hub
+
+A single devframe is one portable tool. A complete devtools experience becomes more interesting when those tools meet and collaborate. [`@devframes/hub`](./hub) is the framework-neutral composition layer, providing shared concepts such as docks, commands, messages, and terminals. Each devframe runs against a shared context, so tools can contribute capabilities and interact with each other.
+
+The same mounting model scales to the whole collection — [`initHub()`](./hub-initiate) puts many devframes behind one Web Standard handler:
+
+```ts
+import { createUi } from '@devframes/hub-ui'
+import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
+import { createDataInspectorDevframe } from '@devframes/plugin-data-inspector'
+import { createTerminalsDevframe } from '@devframes/plugin-terminals'
+
+const hub = initHub({
+  base: DEVFRAMES_HUB_BASE,
+  devframes: [createDataInspectorDevframe(), createTerminalsDevframe()],
+  ui: createUi(),
+})
+
+hub.handler
+// the whole devtools collection as Request → Response
+```
+
+The mounted devframes share one RPC registry, state store, connection, auth gate, and optional aggregate MCP endpoint. The hub itself is headless: [`@devframes/hub-ui`](./build-your-own-hub-ui) provides a reference interface, and a product can bring its own UI without changing the underlying tools.
+
+## Inheriting the ecosystem
+
+Portability does not make every devtool generic. Framework-specific layers can offer richer experiences because they understand their framework's conventions and runtime — the universal parts are shared while the final integrations stay specific.
+
+[Vite DevTools](https://devtools.vite.dev/) is the first flagship host built on this foundation, using `initHub()` for composition and serving alongside its own Vite, Rolldown, Vitest, and Oxc tooling. The [framework packages](/frameworks/) — [`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), and [`@devframes/next`](/frameworks/next) — provide nicer conventions over the same handler for authoring a single devframe or mounting a whole hub. See [Built with Devframe](/examples/built-with) for tools already using it.
 
 ## Install
 
@@ -40,7 +115,7 @@ Devframe keeps its surface focused on one tool, so the same definition stays por
 pnpm add devframe
 ```
 
-`devframe` ships ESM-only and has no Vite dependency. Adapters with optional peers (the MCP adapter needs `@modelcontextprotocol/server`) surface the requirement at import time.
+`devframe` ships ESM-only and has no Vite dependency. Adapters with optional peers (for example, the MCP adapter needs `@modelcontextprotocol/server`) surface the requirement at import time.
 
 ## Hello, Devframe
 
@@ -72,8 +147,6 @@ const devframe = defineDevframe({
 await createCac(devframe).parse()
 ```
 
-The same definition can also be deployed through any of the other adapters — for example, mounted into Vite DevTools via the [`vite` adapter](/adapters/vite).
-
 Run it:
 
 ```sh
@@ -82,30 +155,26 @@ node ./my-devframe.js build  # self-contained static deploy in dist-static/
 node ./my-devframe.js mcp    # stdio MCP server
 ```
 
-The CLI adapter serves the SPA at `/` by default. When the same devframe is embedded inside a host (`vite`, `embedded`), the default becomes `/.my-devframe/`. Override either side via `defineDevframe({ basePath })`.
+The CLI adapter serves the SPA at `/` by default. When the same devframe is embedded inside a host (`vite`, `embedded`), the default becomes `/__my-devframe/`. Override either side via `defineDevframe({ basePath })`.
 
-## Adapters at a glance
+## What Devframe provides
 
-Devframe deploys the same `DevframeDefinition` through one of these adapters:
-
-| Adapter | Entry | Target |
-|---------|-------|--------|
-| `cli` | `createCac(d).parse()` | Standalone CLI with dev / build / mcp subcommands |
-| `vite` | `createPluginFromDevframe(d, opts?)` *(from `@vitejs/devtools-kit/node`)* | Mount the devframe into Vite DevTools (or another compatible host) |
-| `build` | `createBuild(d, opts?)` | Self-contained static deploy with baked RPC dumps |
-| `embedded` | `createEmbedded(d, { ctx })` | Runtime registration into an existing host |
-| `mcp` | `createMcpServer(d, opts)` | Model Context Protocol server |
-
-See [Adapters](/adapters/) for the full reference.
-
-## Framework- and build-tool-agnostic
-
-Devframe has zero dependencies on Vite or any `@vitejs/*` package — the same definition runs in any Node environment, with any UI framework, against any build tool. Vite DevTools is one host built on top of devframe; mount your definition there with the [`vite` adapter](/adapters/vite), or write adapters for any other host.
+| Subsystem | What it does |
+|-----------|--------------|
+| **[Devframe Definition](./devframe-definition)** | One `defineDevframe` call describes your tool once; the handler and adapters deploy it anywhere. |
+| **[RPC](./rpc)** | Type-safe bidirectional calls built on birpc, validated against any Standard Schema validator. Supports `query`, `static`, `action`, and `event` types. |
+| **[Shared State](./shared-state)** | Observable, patch-synced state that survives reconnects and bridges server ↔ browser. |
+| **[JSON-Render](./json-render)** | Opt-in data-driven UI — author a view as a serializable spec, render it standalone or in a hub dock with a replaceable frontend. |
+| **[Diagnostics](./diagnostics)** | Coded warnings/errors via `nostics` — registered into the host's shared lookup so adapters and consumers share the same surface. |
+| **[Streaming](./streaming)** | One-way (RPC streaming) and two-way (uploads) channel primitives for long-running data. |
+| **[When Clauses](./when-clauses)** | VS Code-style conditional expressions for docks, commands, and custom UI. |
+| **[The Standard Handler](/adapters/initiate)** | `initDevframe()` — the Web Standard `Request → Response` boundary every serving path is built on. |
+| **[Client](./client)** | Browser-side RPC client (`connectDevframe`) with auto-auth and WebSocket / static modes. |
+| **[Agent-Native](./agent-native)** | Opt-in exposure of your tool's surface to coding agents over MCP. |
 
 ## What's next
 
 - [Devframe Definition](./devframe-definition) — understand `defineDevframe` and the `DevframeNodeContext`
-- [Adapters](/adapters/) — pick the right deployment target for your tool
-- [RPC](./rpc) — define type-safe server functions your client can call
-- [Agent-Native](./agent-native) — expose your devframe to Claude Desktop, Cursor, or any MCP client
-
+- [The Standard Handler](/adapters/initiate) — mount the handler into any host
+- [Adapters](/adapters/) — pick a convenience entry point for your tool
+- [Hub](./hub) — compose many devframes behind one handler

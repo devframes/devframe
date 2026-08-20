@@ -1,6 +1,6 @@
-# Initiate (standard middleware)
+# The Standard Handler
 
-Serve a devframe from inside any app that can mount a catch-all route: `initDevframe(def, { base })` returns a live instance whose `.handler` — a web-standard `(request: Request) => Promise<Response>` — carries the whole surface (the SPA, `__connection.json` discovery, the WebSocket RPC endpoint, the auth gate, and the optional MCP route) under one mount base.
+`initDevframe()` is the boundary the whole project is built on: it turns a `DevframeDefinition` into a live instance whose `.handler` — a Web Standard `(request: Request) => Promise<Response>` — carries the entire surface (the SPA, `__connection.json` discovery, the WebSocket RPC endpoint, the auth gate, and the optional MCP route) under one mount base. Every other serving path — the [adapters](./), the [framework packages](/frameworks/), and the [hub](../guide/hub-initiate) — is assembled from it. Mount it from inside any app that can serve a catch-all route.
 
 ```ts
 import { initDevframe } from 'devframe/initiate'

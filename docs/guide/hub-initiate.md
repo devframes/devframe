@@ -18,7 +18,7 @@ export const hub = initHub({
 })
 ```
 
-`base` is required so the mount path is explicit; pass the exported `DEVFRAMES_HUB_BASE` for the conventional `/__devframes/`. The instance echoes the normalized value back as `hub.base`, so route guards and middleware reference it instead of repeating the string. Every mounted devframe runs its `setup()` against the **shared hub context**: one merged RPC registry (frames can call each other's functions), one shared-state store, one WebSocket transport, one Auth. The instance mirrors `initDevframe`'s surface — `base`, `handler`, `nodeMiddleware`, `attach`, `handleUpgrade`, `ready`, `context`, `connectionMeta()`, `close()` — and the same mount snippets apply; see [the initiate adapter](../adapters/initiate#mount-the-handler).
+`base` is required so the mount path is explicit; pass the exported `DEVFRAMES_HUB_BASE` for the conventional `/__devframes/`. The instance echoes the normalized value back as `hub.base`, so route guards and middleware reference it instead of repeating the string. Every mounted devframe runs its `setup()` against the **shared hub context**: one merged RPC registry (frames can call each other's functions), one shared-state store, one WebSocket transport, one Auth. The instance mirrors `initDevframe`'s surface — `base`, `handler`, `nodeMiddleware`, `attach`, `handleUpgrade`, `ready`, `context`, `connectionMeta()`, `close()` — and the same mount snippets apply; see [The Standard Handler](../adapters/initiate#mount-the-handler).
 
 ## The shared socket
 
