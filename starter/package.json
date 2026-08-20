@@ -1,0 +1,59 @@
+{
+  "name": "devframe-starter",
+  "type": "module",
+  "version": "0.9.4",
+  "private": true,
+  "packageManager": "pnpm@11.22.0",
+  "description": "Self-contained starter for a single devframe integration: a vanilla-TS Vite client, single + hub playgrounds, and unit + e2e tests.",
+  "author": "Anthony Fu <anthonyfu117@hotmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/devframes/devframe/tree/main/starter",
+  "repository": {
+    "directory": "starter",
+    "type": "git",
+    "url": "git+https://github.com/devframes/devframe.git"
+  },
+  "bugs": "https://github.com/devframes/devframe/issues",
+  "keywords": [
+    "devframe",
+    "devtools",
+    "starter",
+    "template"
+  ],
+  "main": "src/devframe.ts",
+  "bin": {
+    "devframe-starter": "./bin.mjs"
+  },
+  "scripts": {
+    "dev": "node bin.mjs",
+    "build": "vite build --config src/client/vite.config.ts",
+    "cli:build": "node bin.mjs build --out-dir dist/static",
+    "play": "vite --config playground/single/vite.config.ts",
+    "play:single": "vite --config playground/single/vite.config.ts",
+    "play:hub": "vite --config playground/hub/vite.config.ts",
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "release": "bumpp"
+  },
+  "dependencies": {
+    "@devframes/hub": "^0.9.4",
+    "@devframes/hub-ui": "^0.9.4",
+    "@devframes/vite": "^0.9.4",
+    "devframe": "^0.9.4"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^9.3.0",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.2.0",
+    "@types/ws": "^8.18.1",
+    "bumpp": "^12.2.1",
+    "eslint": "^10.8.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.1",
+    "vitest": "^4.1.10",
+    "ws": "^8.21.3"
+  }
+}

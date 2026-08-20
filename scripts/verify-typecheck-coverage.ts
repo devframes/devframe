@@ -22,7 +22,7 @@ const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 /**
  * Workspace globs, mirrored from `pnpm-workspace.yaml`'s `packages:` list.
  */
-const WORKSPACE_PATTERNS = ['packages/*', 'plugins/*', 'examples/*', 'storybook', 'docs']
+const WORKSPACE_PATTERNS = ['packages/*', 'plugins/*', 'examples/*', 'starter', 'storybook', 'docs']
 
 /**
  * Packages with a `tsconfig.json` that intentionally don't have a
