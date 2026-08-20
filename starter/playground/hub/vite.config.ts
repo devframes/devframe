@@ -36,8 +36,12 @@ export default defineConfig({
       devframes: [entry],
       // Use the default hub-ui, rebrand it to match the starter's accent color.
       ui: createUi({ branding: { primaryColor: '#10b981', productName: 'Devframe Starter' } }),
-      // Ungated localhost demo - skip the trust handshake.
-      auth: false,
+      // `auth` is left unset: gated by default (devframe's interactive
+      // OTP - a 6-digit code printed to the terminal, entered once in the
+      // reference UI's authorization view). `auth: false` would trust
+      // every connection that can reach this port instead; only reach for
+      // it on a tool that's genuinely single-user and loopback-only. See
+      // docs/guide/security.md.
     }),
   ],
 })

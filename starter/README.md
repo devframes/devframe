@@ -17,6 +17,8 @@ pnpm run lint
 pnpm run typecheck
 ```
 
+`pnpm run dev` and both playgrounds gate by default: opening the printed URL walks you through devframe's interactive OTP handshake (a 6-digit code) before the SPA can call RPC. That's intentional - see the `auth` comments in `src/devframe.ts` and `playground/*/vite.config.ts` before reaching for `auth: false`, which trusts every connection that can reach the port. For a one-off loopback-only session, pass `--no-auth` to the CLI instead (`pnpm run dev -- --no-auth`).
+
 ## File map
 
 | Path | Purpose |

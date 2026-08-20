@@ -25,9 +25,15 @@ export default defineDevframe({
     command: 'devframe-starter',
     port: 7391,
     distDir,
-    // Single-user localhost demo - skip the trust handshake so the served
-    // SPA can call RPC without an OTP round-trip.
-    auth: false,
+    // `auth` is deliberately left unset: gated by default (devframe's
+    // interactive OTP handshake - a 6-digit code printed to the terminal
+    // that trusts the browser before it can call any RPC function).
+    // `auth: false` would trust *any* connection that can reach the port
+    // instead - see docs/guide/security.md before reaching for it. A
+    // developer who wants to skip the prompt for a one-off loopback-only
+    // session can pass `--no-auth` per run (`devframe-starter --no-auth`)
+    // rather than baking the opt-out into the definition.
+    //
     // Serve the agent (MCP) surface over the dev server's `/__mcp` route.
     mcp: true,
   },

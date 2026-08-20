@@ -26,7 +26,14 @@ export default defineConfig({
   ],
   webServer: {
     command: 'pnpm run play:single',
-    env: { DEVFRAME_E2E_CWD: fixtureCwd },
+    env: {
+      DEVFRAME_E2E_CWD: fixtureCwd,
+      // Tells the bridge to skip the interactive OTP handshake - see the
+      // `auth` comment in `playground/single/vite.config.ts`. Real usage
+      // (a human running `pnpm run play:single`) never sets this and stays
+      // gated.
+      DEVFRAME_E2E: '1',
+    },
     // The SPA (this playground's own `index.html`) serves from Vite's root -
     // see `playground/single/vite.config.ts` for why it can't share the
     // RPC bridge's `/__devframe-starter/` base.

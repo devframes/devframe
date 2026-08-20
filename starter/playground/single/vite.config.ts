@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { devframeViteBridge } from '@devframes/vite/single'
 import { defineConfig } from 'vite'
@@ -29,8 +30,15 @@ export default defineConfig({
   plugins: [
     devframeViteBridge(devframe, {
       base: devframe.basePath,
-      // Ungated localhost demo - skip the trust handshake.
-      auth: false,
+      // Gated by default (devframe's interactive OTP) when unset, same as
+      // `bin.mjs dev` - see the comment on `cli` in `src/devframe.ts`.
+      // `DEVFRAME_E2E` is set only by `playwright.config.ts`'s
+      // `webServer.env`, so the automated e2e suite can drive the bridge
+      // without solving the OTP prompt; a plain `pnpm run play:single`
+      // still gates. Don't widen this to a bare `auth: false` - that
+      // trusts every connection that can reach the port, not just this
+      // test harness. See docs/guide/security.md.
+      auth: process.env.DEVFRAME_E2E ? false : undefined,
     }),
   ],
 })

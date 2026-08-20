@@ -37,6 +37,10 @@ describe('rpc functions', () => {
       // directly - an address-family mismatch that reads as a silent hang.
       host: '127.0.0.1',
       ws: { sidecar: true },
+      // Fine here (unlike the "real" surfaces in `src/devframe.ts` and
+      // `playground/`): this instance is a private, ephemeral test fixture
+      // - bound to loopback, torn down in `afterAll`, and never reachable
+      // by anything but this test process.
       auth: false,
     })
     await instance.ready
