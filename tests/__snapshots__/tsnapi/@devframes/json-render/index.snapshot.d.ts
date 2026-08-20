@@ -8,17 +8,17 @@ export interface JsonRenderIndexEntry {
   stateKey: string;
   title: string;
 }
-export interface JsonRenderView {
+export interface JsonRenderView<SpecType extends DevframeJsonRenderSpec = DevframeJsonRenderSpec> {
   readonly id: string;
   readonly title: string;
   readonly ref: JsonRenderViewStateRef;
-  update: (_: DevframeJsonRenderSpec) => void;
+  update: (_: SpecType) => void;
   patchState: (_: JsonRenderStatePatch[]) => void;
-  value: () => DevframeJsonRenderSpec;
+  value: () => SpecType;
   dispose: () => void;
 }
-export interface JsonRenderViewInlineRef {
-  spec: DevframeJsonRenderSpec;
+export interface JsonRenderViewInlineRef<SpecType extends DevframeJsonRenderSpec = DevframeJsonRenderSpec> {
+  spec: SpecType;
 }
 export interface JsonRenderViewStateRef {
   stateKey: string;
@@ -27,9 +27,12 @@ export interface JsonRenderViewStateRef {
 
 // #region Types
 export type BaseComponentName = keyof typeof basePropSchemas;
-export type DevframeJsonRenderSpec = Spec;
+export type CatalogUIElement<CatalogType extends Catalog> = { [ComponentName in keyof InferCatalogComponents<CatalogType> & string]: UIElement<ComponentName, InferComponentProps<CatalogType, ComponentName>>; }[keyof InferCatalogComponents<CatalogType> & string];
+export type DevframeJsonRenderSpec<Element extends UIElement = UIElement> = Omit<Spec, 'elements'> & {
+  elements: Record<string, Element>;
+};
 export type JsonRenderIndex = Record<string, JsonRenderIndexEntry>;
-export type JsonRenderViewRef = JsonRenderViewStateRef | JsonRenderViewInlineRef;
+export type JsonRenderViewRef<SpecType extends DevframeJsonRenderSpec = DevframeJsonRenderSpec> = JsonRenderViewStateRef | JsonRenderViewInlineRef<SpecType>;
 // #endregion
 
 // #region Variables
