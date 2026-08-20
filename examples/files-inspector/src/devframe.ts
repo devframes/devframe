@@ -16,10 +16,10 @@ export default defineDevframe({
   description: pkg.description,
   icon: 'ph:folder-open-duotone',
   basePath: BASE_PATH,
+  clientAssets: distDir,
   cli: {
     command: 'devframe-files-inspector',
     port: 9876,
-    distDir,
     // Single-user localhost demo - skip the trust handshake so the served
     // SPA can call RPC without an OTP round-trip.
     auth: false,

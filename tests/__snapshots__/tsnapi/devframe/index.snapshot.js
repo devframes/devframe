@@ -3,6 +3,7 @@
  */
 // #region Functions
 export function defineDevframe(_) {}
+export function resolveClientAssets(_) {}
 // #endregion
 
 // #region Variables

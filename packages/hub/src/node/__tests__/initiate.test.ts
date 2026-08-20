@@ -23,7 +23,7 @@ function makeFrame(id: string, distDir?: string): DevframeDefinition {
     packageName: `@test/${id}`,
     homepage: '',
     description: '',
-    ...(distDir ? { cli: { distDir } } : {}),
+    ...(distDir ? { clientAssets: distDir } : {}),
     setup(ctx: DevframeNodeContext) {
       ctx.rpc.register({ name: `${id}:probe`, type: 'query', handler: () => `ok:${id}` })
       ctx.agent.registerTool({

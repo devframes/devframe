@@ -26,7 +26,7 @@ export default defineConfig({
 
 ## `devframeVitePlugin` — static mount
 
-Mounts `def.cli.distDir` at `options.base` (`/__<id>/` by default) with SPA fallback. No RPC server is started — useful when you only need the SPA bundle served from a known path. `distDir` may be a local directory or a [remote assets](/guide/client-assets) package.
+Mounts `def.clientAssets` at `options.base` (`/__<id>/` by default) with SPA fallback. No RPC server is started — useful when you only need the SPA bundle served from a known path. `clientAssets` may be a local directory or a [remote assets](/guide/client-assets) package.
 
 | Option | Default | Description |
 |--------|---------|-------------|

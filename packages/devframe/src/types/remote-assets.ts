@@ -13,7 +13,7 @@
  *   3. The CDN {@link provider} — each requested file streams through to
  *      the browser while being written into the cache.
  *
- * Anywhere a static mount accepts a dist directory (`cli.distDir`,
+ * Anywhere a static mount accepts a dist directory (`clientAssets`,
  * `hostStatic`, `mountStatic`) it also accepts this object — see
  * {@link StaticAssetsSource}.
  */

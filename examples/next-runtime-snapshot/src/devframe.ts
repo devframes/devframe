@@ -20,10 +20,10 @@ export default defineDevframe({
   description: pkg.description,
   icon: 'ph:gauge-duotone',
   basePath: BASE_PATH,
+  clientAssets: distDir,
   cli: {
     command: 'next-runtime-snapshot',
     port: 9899,
-    distDir,
     auth: false,
   },
   setup(ctx) {

@@ -15,6 +15,7 @@ import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import { joinURL } from 'ufo'
 import { DEVFRAME_CONNECTION_META_FILENAME } from '../constants'
+import { resolveClientAssets } from '../define'
 import { createHostContext } from '../node/context'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
@@ -33,10 +34,11 @@ export interface InitDevframeOptions {
    */
   base: string
   /**
-   * Override `def.cli?.distDir`. When neither is set — or `false` is passed
-   * to suppress the definition's own `distDir` — the handler runs in
-   * **bridge mode**: only `__connection.json`, the WS endpoint, and the MCP
-   * route (when enabled) are served; the SPA is hosted elsewhere.
+   * Override the definition's `clientAssets` (or deprecated `cli.distDir`).
+   * When neither is set — or `false` is passed to suppress the definition's
+   * own client assets — the handler runs in **bridge mode**: only
+   * `__connection.json`, the WS endpoint, and the MCP route (when enabled) are
+   * served; the SPA is hosted elsewhere.
    */
   distDir?: StaticAssetsSource | false
   /**
@@ -247,7 +249,7 @@ export function initDevframe(
   options: InitDevframeOptions,
 ): DevframeInstance {
   const base = normalizeBasePath(options.base)
-  const distDir = options.distDir === false ? undefined : options.distDir ?? def.cli?.distDir
+  const distDir = options.distDir === false ? undefined : options.distDir ?? resolveClientAssets(def)
   const app = options.app ?? new H3()
   const host = options.host ?? def.cli?.host ?? 'localhost'
 

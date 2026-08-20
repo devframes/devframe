@@ -8,7 +8,7 @@ import { alias } from '../../../../alias'
 // the bundle is mount-path portable — it discovers its runtime base from
 // `document.baseURI` and connects via `connectDevframe()`. devframe's dev/build
 // adapters serve this directory verbatim (no HTML rewriting) when an app wires
-// `cli.distDir = jsonRenderSpaDir`.
+// `clientAssets = jsonRenderSpaDir`.
 export default defineConfig({
   base: './',
   root: fileURLToPath(new URL('.', import.meta.url)),

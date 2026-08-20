@@ -26,7 +26,7 @@ process.on('SIGINT', () => handle.close().then(() => process.exit(0)))
 | `host` | `def.cli?.host ?? 'localhost'` | Bind host. |
 | `port` | resolved via `resolveDevServerPort` | Port to listen on. |
 | `flags` | `{}` | Parsed flag bag forwarded to `setup(ctx, { flags })`. |
-| `distDir` | `def.cli?.distDir` | Required — throws when neither is set. |
+| `distDir` | `def.clientAssets` (falls back to deprecated `def.cli?.distDir`) | SPA dist override. When unset the server runs in bridge mode (meta + WS only). |
 | `basePath` | `resolveBasePath(def, 'standalone')` | Mount path override. |
 | `app` | fresh h3 app | Pre-configured h3 app to mount onto (custom middleware, auth, extra static assets). |
 | `openBrowser` | resolves from `flags.open` / `def.cli?.open` | Explicit on/off override. `false` disables; a string opens that relative path. |

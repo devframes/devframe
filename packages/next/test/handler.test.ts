@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createDevframeNextHandler } from '../src/handler'
 
-function makeDef(distDir: string): DevframeDefinition {
+function makeDef(clientAssets: string): DevframeDefinition {
   return {
     id: 'test-next',
     name: 'Test Next',
@@ -13,7 +13,7 @@ function makeDef(distDir: string): DevframeDefinition {
     packageName: '@test/next',
     homepage: '',
     description: '',
-    cli: { distDir },
+    clientAssets,
     setup() {},
   }
 }
@@ -60,8 +60,23 @@ describe('createDevframeNextHandler', () => {
 
   it('throws when the definition has no built SPA', () => {
     const def = makeDef('')
-    def.cli = undefined
-    expect(() => createDevframeNextHandler(def)).toThrow(/cli\.distDir/)
+    def.clientAssets = undefined
+    expect(() => createDevframeNextHandler(def)).toThrow(/clientAssets/)
+  })
+
+  it('falls back to the deprecated cli.distDir', async () => {
+    const dist = mkdtempSync(join(tmpdir(), 'df-next-legacy-'))
+    writeFileSync(join(dist, 'index.html'), '<!doctype html><title>ok</title>')
+
+    const def = makeDef('')
+    def.clientAssets = undefined
+    def.cli = { distDir: dist }
+
+    handler = createDevframeNextHandler(def, { host: '127.0.0.1' })
+    await handler.ready
+
+    const index = await handler.fetch(new Request('http://localhost:3000/__test-next/'))
+    expect(index.status).toBe(200)
   })
 
   it('forwards the mcp option and advertises the side-car endpoint', async () => {

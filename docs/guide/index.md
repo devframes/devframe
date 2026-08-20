@@ -58,9 +58,7 @@ const devframe = defineDevframe({
   homepage: 'https://github.com/me/my-devframe',
   description: 'A one-line summary of what the tool does.',
   icon: 'ph:gauge-duotone',
-  cli: {
-    distDir: 'client/dist',
-  },
+  clientAssets: 'client/dist',
   setup(ctx) {
     ctx.rpc.register(defineRpcFunction({
       name: 'my-devframe:hello',

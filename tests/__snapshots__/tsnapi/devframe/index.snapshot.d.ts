@@ -147,6 +147,7 @@ export interface DevframeDefinition {
     build?: boolean;
   };
   services?: DevframeServiceInput[];
+  clientAssets?: StaticAssetsSource;
   rpc?: DevframeRpcOptions;
   setup: (_: DevframeNodeContext, _?: DevframeSetupInfo) => void | Promise<void>;
   cli?: DevframeCliOptions;
@@ -506,6 +507,7 @@ export type StaticAssetsSource = string | RemoteAssets;
 
 // #region Functions
 export declare function defineDevframe(_: DevframeDefinition): DevframeDefinition;
+export declare function resolveClientAssets(_: DevframeDefinition): StaticAssetsSource | undefined;
 // #endregion
 
 // #region Variables

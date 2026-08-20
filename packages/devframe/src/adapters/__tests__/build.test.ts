@@ -21,7 +21,7 @@ function baseDevframe(overrides: Partial<ReturnType<typeof defineDevframe>> = {}
     packageName: 'devframe-build-test',
     homepage: 'https://example.test',
     description: 'Test devframe.',
-    cli: { distDir },
+    clientAssets: distDir,
     setup: () => {},
     ...overrides,
   })

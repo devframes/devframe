@@ -100,7 +100,7 @@ export default defineNuxtConfig({
 
 ### Relationship to `createCac`
 
-The bridge handles the **dev workflow**. Production deploys still go through `createCac` (or `createBuild`), which produces a static `__connection.json` + `__rpc-dump/` snapshot from `cli.distDir`:
+The bridge handles the **dev workflow**. Production deploys still go through `createCac` (or `createBuild`), which produces a static `__connection.json` + `__rpc-dump/` snapshot from `clientAssets`:
 
 ```
 my-tool/
@@ -110,7 +110,7 @@ my-tool/
 │   └── app/              # Nuxt SPA — uses `@devframes/nuxt`
 └── dist/
     ├── cli.mjs           # bundled Node entry
-    └── public/           # Nuxt build output, pointed at by cli.distDir
+    └── public/           # Nuxt build output, pointed at by clientAssets
 ```
 
 In dev (`nuxt dev`) the bridge is live. In production (`<your-cli> build`) the SPA loads the static dump.

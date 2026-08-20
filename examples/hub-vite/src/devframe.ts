@@ -24,9 +24,7 @@ export default defineDevframe({
   description: 'A tiny demo devframe that plugs into the hub via its `devframes` list.',
   icon: 'ph:rocket-duotone',
   basePath: '/__demo-tool/',
-  cli: {
-    distDir: fileURLToPath(new URL('../spa/demo-tool/', import.meta.url)),
-  },
+  clientAssets: fileURLToPath(new URL('../spa/demo-tool/', import.meta.url)),
   async setup(rawCtx) {
     const ctx = rawCtx as unknown as DevframeHubContext
 

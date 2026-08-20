@@ -23,7 +23,7 @@ export interface SnapshotServer extends StartedServer {
  * `packages/devframe/src/rpc/transports/ws.test.ts`.
  */
 export async function startSnapshotServer(): Promise<SnapshotServer> {
-  const distDir = devframe.cli!.distDir!
+  const distDir = devframe.clientAssets!
   if (typeof distDir !== 'string')
     throw new TypeError('these tests serve the local dist directory — build the SPA first')
   const basePath = devframe.basePath!

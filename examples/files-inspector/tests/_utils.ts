@@ -59,7 +59,7 @@ export interface InspectorServer extends StartedServer {
 export async function startInspectorServer(
   { cwd }: { cwd: string },
 ): Promise<InspectorServer> {
-  const distDir = devframe.cli!.distDir!
+  const distDir = devframe.clientAssets!
   if (typeof distDir !== 'string')
     throw new TypeError('these tests serve the local dist directory — build the SPA first')
   const basePath = devframe.basePath!

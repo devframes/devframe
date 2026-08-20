@@ -33,14 +33,14 @@ import { createCac } from 'devframe/adapters/cac'
 import { colors as c } from 'devframe/utils/colors'
 import { resolve } from 'pathe'
 
-const distDir = resolve(import.meta.dirname, '../dist/public')
+const clientAssets = resolve(import.meta.dirname, '../dist/public')
 
 const devframe = defineDevframe({
   id: 'my-tool',
   name: 'My Tool',
+  clientAssets,
   cli: {
     command: 'my-tool',
-    distDir,
     port: 7777,
     portRange: [7777, 9000],
     open: true, // auth defaults to on; `--open` embeds the current OTP so the tab lands authenticated
@@ -93,12 +93,12 @@ export default defineNuxtConfig({
   modules: ['@devframes/nuxt/single'],
   nitro: {
     preset: 'static',
-    output: { dir: './dist' }, // matches createCac's distDir of ./dist/public
+    output: { dir: './dist' }, // matches the definition's clientAssets of ./dist/public
   },
 })
 ```
 
-Build with `nuxt build` and point `cli.distDir` at `./dist/public`. The SPA discovers its effective base at runtime — no `--base` rewrite needed. See the [Nuxt docs](/frameworks/nuxt) for the full reference.
+Build with `nuxt build` and point `clientAssets` at `./dist/public`. The SPA discovers its effective base at runtime — no `--base` rewrite needed. See the [Nuxt docs](/frameworks/nuxt) for the full reference.
 
 ## Next.js SPA setup
 
@@ -118,7 +118,7 @@ export default {
 - **`assetPrefix: '.'`** is the setting that makes the build base-agnostic. Assets are referenced as `./_next/...` so the same bundle works at `/`, `/__my-tool/`, and any other mount path the host adapter chooses. Without it, Next.js bakes in `/_next/...` and the build only works at the root.
 - **`trailingSlash: true`** emits `foo/index.html` rather than `foo.html`, which composes cleanly with devframe's static-handler directory-with-index resolution.
 
-`next build` writes the export to `<project>/out/` next to `next.config.mjs`. Copy or move that to wherever you point `cli.distDir`:
+`next build` writes the export to `<project>/out/` next to `next.config.mjs`. Copy or move that to wherever you point `clientAssets`:
 
 ```json [package.json]
 {
@@ -133,9 +133,7 @@ import { fileURLToPath } from 'node:url'
 
 defineDevframe({
   id: 'my-tool',
-  cli: {
-    distDir: fileURLToPath(new URL('../dist/client', import.meta.url)),
-  },
+  clientAssets: fileURLToPath(new URL('../dist/client', import.meta.url)),
   // …
 })
 ```
@@ -185,8 +183,8 @@ const appFlags = defineCliFlags({
 defineDevframe({
   id: 'my-tool',
   name: 'My Tool',
+  clientAssets,
   cli: {
-    distDir,
     flags: appFlags,
   },
   setup(ctx, info) {
@@ -312,7 +310,8 @@ import { createDevServer } from 'devframe/adapters/dev'
 const devframe = defineDevframe({
   id: 'my-tool',
   name: 'My Tool',
-  cli: { distDir: './dist/public', port: 7777 },
+  clientAssets: './dist/public',
+  cli: { port: 7777 },
   setup(ctx, { flags }) { /* ... */ },
 })
 

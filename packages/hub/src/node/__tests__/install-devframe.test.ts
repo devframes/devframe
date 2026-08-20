@@ -147,7 +147,7 @@ describe('ctx.install', () => {
     ;(ctx.host as { mountConnectionMeta?: unknown }).mountConnectionMeta = mountConnectionMeta
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    await ctx.install(makeDevframe({ cli: { distDir: '/tmp/demo-dist' } }))
+    await ctx.install(makeDevframe({ clientAssets: '/tmp/demo-dist' }))
 
     expect(mountConnectionMeta).toHaveBeenCalledWith('/__demo/')
     expect(warn).not.toHaveBeenCalled()

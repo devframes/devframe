@@ -20,7 +20,7 @@ dashboard** that exercises **every base-catalog component** — `Stack`, `Card`,
   name into the `KeyValueTable`. Each is dispatched as an RPC call of the same
   name, with per-action loading and error surfacing.
 - **`@devframes/json-render-ui/spa`** — the prebuilt out-of-box SPA. This example
-  has **no client build**: `createJsonRenderDevframe(...)` points `cli.distDir` at
+  has **no client build**: `createJsonRenderDevframe(...)` points `clientAssets` at
   the shipped renderer, which discovers the view from the JSON-render view index
   and renders it with `JsonRenderView`.
 

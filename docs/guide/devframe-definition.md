@@ -54,6 +54,7 @@ export default defineDevframe({
 | `duplicationStrategy` | `'warn' \| 'silent' \| 'throw' \| 'duplicate'` | How a hub reacts when another devframe sharing this `id` is mounted onto the same hub. Defaults to `'warn'`. See [Hub](./hub). Hub adapters consult it; standalone adapters ignore it. |
 | `capabilities` | `{ dev?, build? }` | Per-runtime feature flags. A `boolean` applies to the runtime as a whole; an object enables individual features. |
 | `services` | `DevframeServiceInput[]` | Wire services this devframe consumes — descriptors (`{ package, version?, required?, options? }`) the adapter imports against the plugin's own dependencies, or ready definitions. See [Cross-Plugin Services](./services#wire-services). |
+| `clientAssets` | `string \| RemoteAssets` | The built SPA served as the devframe's UI — a local dist directory, or a [remote assets](./client-assets) package fetched on demand. Consumed by every adapter that serves the UI (`dev`, `build`, `vite`, `next`, hub). Supersedes the deprecated `cli.distDir`. See [Client Assets](./client-assets). |
 | `rpc` | `{ snapshot?: (string \| { method, inputs })[] }` | RPC-level config. `rpc.snapshot` opts an RPC function this devframe doesn't own (e.g. a wire service's) into the static build's dump. A bare method id bakes the no-argument call; `{ method, inputs }` bakes one record per argument-tuple, where `inputs` is a list of tuples or an async `(ctx) => tuples` provider (so it can enumerate at build time via the service's node API). The first tuple's result becomes the fallback. |
 | `setup` | `(ctx, info?) => void \| Promise<void>` | **Required.** Server-side entry point. Runs in every runtime. The optional second argument carries runtime metadata — most notably the parsed CLI `flags` when running under `createCac`. |
 | `cli` | `DevframeCliOptions` | Defaults for the CLI adapter. See [CLI options](#cli-options) below. |
@@ -94,11 +95,9 @@ export default defineDevframe({
   importMetaUrl: import.meta.url,
   homepage: pkg.homepage,
   description: pkg.description,
-  cli: {
-    // Served from the locally installed `my-devframe--assets` — resolved via
-    // `importMetaUrl`, so it works under pnpm's strict layout with zero network.
-    distDir: { package: `${pkg.name}--assets`, version: pkg.version },
-  },
+  // Served from the locally installed `my-devframe--assets` — resolved via
+  // `importMetaUrl`, so it works under pnpm's strict layout with zero network.
+  clientAssets: { package: `${pkg.name}--assets`, version: pkg.version },
   services: [
     // Imported from `my-devframe`'s own dependency graph.
     { package: '@scope/my-service', version: pkg.version },
@@ -108,6 +107,43 @@ export default defineDevframe({
 ```
 
 For a remote assets source, `importMetaUrl` is the default `resolveFrom`; a per-source `resolveFrom` still wins, and an explicit `resolveFrom: null` opts out of the installed-copy lookup. See [Client Assets](./client-assets) and [Cross-Plugin Services](./services#wire-services) for the full resolution order.
+
+### Serving the UI with `clientAssets`
+
+The devframe's UI is a built single-page app, and `clientAssets` — a top-level field — points at it. It takes either a **local dist directory** or a **remote assets package** ([full reference](./client-assets)). Every adapter that serves the UI (`dev`, `build`, the [Vite](/frameworks/vite) plugin, the [Next](/frameworks/next) handler, and the hub install path) reads this one value, so the UI is declared once and travels with the definition across viewers.
+
+```ts
+import { fileURLToPath } from 'node:url'
+
+export default defineDevframe({
+  id: 'my-devframe',
+  name: 'My Devframe',
+  version: pkg.version,
+  packageName: pkg.name,
+  importMetaUrl: import.meta.url,
+  homepage: pkg.homepage,
+  description: pkg.description,
+  // A local build resolved from the module, so it works from both source
+  // and the published package.
+  clientAssets: fileURLToPath(new URL('../dist/spa', import.meta.url)),
+  setup(ctx) { /* … */ },
+})
+```
+
+This value used to live under `cli.distDir`. That field is now **deprecated** but still honored as a fallback when `clientAssets` is unset, so existing definitions keep working unchanged:
+
+```ts
+export default defineDevframe({
+  // …
+  cli: {
+    // ⚠️ Deprecated — prefer the top-level `clientAssets`. Still read as a
+    // fallback for back-compat.
+    distDir: fileURLToPath(new URL('../dist/spa', import.meta.url)),
+  },
+})
+```
+
+For assets you host yourself — a second bundle, a runtime-decided source — call `ctx.views.hostStatic` in `setup` instead. See [Client Assets](./client-assets#programmatic-hosting-from-setup).
 
 ### Runtime flags
 
@@ -212,9 +248,9 @@ Each devframe-level host has a dedicated page:
 defineDevframe({
   id: 'my-devframe',
   name: 'My Devframe',
+  clientAssets: './client/dist', // built SPA served as the UI
   cli: {
     command: 'my-devframe', // binary name; default: the `id`
-    distDir: './client/dist', // required for dev / build
     port: 9876, // preferred port; default: 9999
     portRange: [9876, 10000], // forwarded to get-port-please
     random: false, // forwarded to get-port-please
@@ -236,7 +272,7 @@ defineDevframe({
 | Field | Type | Description |
 |-------|------|-------------|
 | `command` | `string` | Binary name surfaced in `--help`. Default: the definition's `id`. |
-| `distDir` | `string \| RemoteAssets` | SPA dist directory, or a [remote assets](./client-assets) package fetched on demand. **Required** for `dev` / `build`. |
+| `distDir` | `string \| RemoteAssets` | **Deprecated** — moved to the top-level [`clientAssets`](#serving-the-ui-with-clientassets). Still read as a fallback when `clientAssets` is unset. |
 | `port` | `number` | Preferred port for the dev server. |
 | `portRange` | `[number, number]` | Port scan range, passed through to `get-port-please`. |
 | `random` | `boolean` | Prefer a random open port. |

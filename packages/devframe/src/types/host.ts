@@ -33,8 +33,8 @@ export interface DevframeHost {
    * for cross-origin or sandboxed iframes. Implementations serve the same
    * meta they expose at the hub's own base.
    *
-   * Optional in the type, but a host that mounts a devframe with a servable
-   * `distDir` yet omits this hook triggers a `DF8106` diagnostic, since the
+   * Optional in the type, but a host that mounts a devframe with servable
+   * `clientAssets` yet omits this hook triggers a `DF8106` diagnostic, since the
    * SPA's `./__connection.json` fetch would otherwise fall through and break
    * silently. A static-snapshot host that bakes the meta into its served files
    * can implement it as a no-op to acknowledge this intentionally.

@@ -24,9 +24,7 @@ export default defineDevframe({
   description: 'A multi-view SPA hosted as shared-iframe hub docks with soft navigation.',
   icon: 'ph:squares-four-duotone',
   basePath: '/__tabbed-tool/',
-  cli: {
-    distDir: fileURLToPath(new URL('../spa/tabbed-tool/', import.meta.url)),
-  },
+  clientAssets: fileURLToPath(new URL('../spa/tabbed-tool/', import.meta.url)),
   async setup(rawCtx) {
     const ctx = rawCtx as unknown as DevframeHubContext
     await ctx.messages.add({

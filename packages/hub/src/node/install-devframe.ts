@@ -1,6 +1,7 @@
 import type { DevframeDefinition } from 'devframe/types'
 import type { DevframeViewIframe } from '../types/docks'
 import type { DevframeHubContext } from './context'
+import { resolveClientAssets } from 'devframe'
 import { resolveBasePath } from 'devframe/node/hub-internals'
 import { resolve } from 'pathe'
 import { diagnostics } from './diagnostics'
@@ -86,7 +87,8 @@ export async function prepareDevframe(
       ? resolveBasePath(d, 'hosted')
       : resolveBasePath({ ...d, id, basePath: undefined }, 'hosted'))
 
-  if (d.cli?.distDir) {
+  const clientAssets = resolveClientAssets(d)
+  if (clientAssets) {
     // Serve the hub's connection meta under the devframe's base so its SPA
     // discovers the RPC/WS endpoint via `connectDevframe()`'s relative
     // `./__connection.json` fetch — instead of relying on inheriting it from a
@@ -101,7 +103,7 @@ export async function prepareDevframe(
       await ctx.host.mountConnectionMeta(base)
     else
       diagnostics.DF8106({ id, name: d.name, base })
-    const distSource = d.cli.distDir
+    const distSource = clientAssets
     // Resolve the plugin's assets against *its* dependency graph, not the
     // hub's: pass the devframe's own `importMetaUrl` as the default
     // `resolveFrom`.

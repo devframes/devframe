@@ -3,6 +3,7 @@ import type { InitDevframeOptions } from 'devframe/initiate'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
+import { resolveClientAssets } from 'devframe'
 import { initDevframe } from 'devframe/initiate'
 
 export interface CreateDevframeNextHandlerOptions {
@@ -112,10 +113,10 @@ export function createDevframeNextHandler(
   def: DevframeDefinition,
   options: CreateDevframeNextHandlerOptions = {},
 ): DevframeNextHandler {
-  const distDir = def.cli?.distDir
+  const distDir = resolveClientAssets(def)
   if (!distDir) {
     throw new Error(
-      `[@devframes/next] createDevframeNextHandler("${def.id}") needs a built SPA to serve, but "cli.distDir" is not set on the devframe definition.`,
+      `[@devframes/next] createDevframeNextHandler("${def.id}") needs a built SPA to serve, but "clientAssets" is not set on the devframe definition.`,
     )
   }
 

@@ -166,10 +166,11 @@ export interface DevframeCliOptions {
    */
   mcp?: boolean | McpRouteOptions
   /**
-   * Author's SPA dist — served as the devframe's UI. A local directory, or
-   * a {@link StaticAssetsSource} remote declaration (`{ package, version }`)
-   * served through devframe's caching CDN back-proxy so the assets need not
-   * ship inside the node package.
+   * Author's SPA dist — served as the devframe's UI.
+   *
+   * @deprecated Moved to the top-level {@link DevframeDefinition.clientAssets}.
+   * Set `clientAssets` on the definition instead. This field is still read as a
+   * fallback when `clientAssets` is unset, so existing definitions keep working.
    */
   distDir?: StaticAssetsSource
   /**
@@ -289,7 +290,7 @@ export interface DevframeDefinition {
    * consuming app's.
    *
    * - **Remote assets** — becomes the default `resolveFrom` for any remote
-   *   {@link StaticAssetsSource} the devframe hosts (its `cli.distDir`, and
+   *   {@link StaticAssetsSource} the devframe hosts (its `clientAssets`, and
    *   every `ctx.views.hostStatic` call) that doesn't set one explicitly, so a
    *   locally installed copy of the assets package is served with zero
    *   network. A per-asset `resolveFrom` still wins, and an explicit
@@ -363,6 +364,17 @@ export interface DevframeDefinition {
    * `client.services.has(pkg)` and degrade.
    */
   services?: DevframeServiceInput[]
+  /**
+   * Author's SPA dist — served as the devframe's UI. A local directory, or
+   * a {@link StaticAssetsSource} remote declaration (`{ package, version }`)
+   * served through devframe's caching CDN back-proxy so the assets need not
+   * ship inside the node package.
+   *
+   * Consumed by every adapter that serves the UI (`dev`, `build`, `vite`,
+   * `next`, and the hub install path). When unset, the deprecated
+   * {@link DevframeCliOptions.distDir} is read as a fallback.
+   */
+  clientAssets?: StaticAssetsSource
   /** RPC-level configuration for this devframe (see {@link DevframeRpcOptions}). */
   rpc?: DevframeRpcOptions
   /** Server-side setup — the primary entrypoint. Runs in every runtime. */

@@ -18,9 +18,7 @@ export default defineDevframe({
   description: 'A tiny demo devframe mounted into the Next.js hub via its `devframes` list.',
   icon: 'ph:rocket-duotone',
   basePath: '/__next-demo-tool/',
-  cli: {
-    distDir: resolve(HERE, '../../../spa/next-demo-tool'),
-  },
+  clientAssets: resolve(HERE, '../../../spa/next-demo-tool'),
   async setup(rawCtx) {
     const ctx = rawCtx as unknown as DevframeHubContext
 

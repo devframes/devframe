@@ -4,11 +4,11 @@ outline: deep
 
 # Client Assets
 
-A devframe's UI is a built single-page app served as its client. `cli.distDir` tells devframe where those assets live — either a **local directory** bundled with your tool, or a **published npm package** fetched on demand.
+A devframe's UI is a built single-page app served as its client. The top-level `clientAssets` field tells devframe where those assets live — either a **local directory** bundled with your tool, or a **published npm package** fetched on demand.
 
 ## Mounting a local build
 
-The basic form points `cli.distDir` at the directory your SPA build produces. Resolve it from the module so it works from both source and the published package:
+The basic form points `clientAssets` at the directory your SPA build produces. Resolve it from the module so it works from both source and the published package:
 
 ```ts
 import { fileURLToPath } from 'node:url'
@@ -19,9 +19,7 @@ export default defineDevframe({
   id: 'my-tool',
   version: pkg.version,
   packageName: pkg.name,
-  cli: {
-    distDir: fileURLToPath(new URL('../dist/spa', import.meta.url)),
-  },
+  clientAssets: fileURLToPath(new URL('../dist/spa', import.meta.url)),
   setup(ctx) {
     // …
   },
@@ -30,20 +28,53 @@ export default defineDevframe({
 
 devframe serves that directory with SPA fallback (an unknown path resolves to `index.html`, so client-side routing works) and no-store caching for dev. Build your SPA with a relative base (`vite: { base: './' }`) so the bundle is mount-path portable — it discovers its runtime base from `document.baseURI` and works at `/`, `/__my-tool/`, or any mount point without rewriting.
 
-The [`dev`](/adapters/dev), [`build`](/adapters/build), and [Vite](/frameworks/vite) adapters all consume this same `distDir`.
+The [`dev`](/adapters/dev), [`build`](/adapters/build), and [Vite](/frameworks/vite) adapters all consume this same `clientAssets`.
+
+The earlier home for this value, `cli.distDir`, is deprecated but still read as a fallback when `clientAssets` is unset, so existing definitions keep working — move it up to the top level at your convenience.
+
+## Programmatic hosting from `setup`
+
+`clientAssets` is the declarative way to serve the tool's *primary* UI — the adapters resolve it and mount it at the base path for you. When you need to host assets yourself — mount a second static bundle at another path, decide the source at runtime, or serve extra directories alongside the main SPA — reach for `ctx.views.hostStatic` inside `setup`:
+
+```ts
+export default defineDevframe({
+  id: 'my-tool',
+  version: pkg.version,
+  packageName: pkg.name,
+  importMetaUrl: import.meta.url,
+  clientAssets: fileURLToPath(new URL('../dist/spa', import.meta.url)),
+  setup(ctx) {
+    // Serve an extra static bundle at a sibling base.
+    ctx.views.hostStatic(
+      '/docs/',
+      fileURLToPath(new URL('../dist/docs', import.meta.url)),
+    )
+
+    // A remote source works here too — same shape as `clientAssets`.
+    ctx.views.hostStatic('/legacy/', {
+      package: '@acme/my-tool-legacy-ui',
+      version: pkg.version,
+    })
+  },
+})
+```
+
+`hostStatic(baseUrl, source, defaultResolveFrom?)` accepts the same `StaticAssetsSource` (a local directory or a remote declaration) as `clientAssets`. In `dev` mode it registers the middleware live; in `build` mode it copies the files into the static output, so a programmatically hosted bundle survives `createBuild` too. The optional `defaultResolveFrom` overrides the context's own `importMetaUrl` as the resolution base for a remote source — a hub mounting assets on behalf of a plugin passes that plugin's `importMetaUrl` so they resolve against its dependency graph.
+
+Under the hood the adapters resolve `clientAssets` (falling back to the deprecated `cli.distDir`) with the exported `resolveClientAssets(def)` helper and hand it to the host's static mount — `hostStatic` is that same mechanism, exposed for your own bases.
 
 ## Remote assets
 
-Instead of a directory, `cli.distDir` can name a **published npm package** that holds the built UI. The assets are then fetched on demand and cached locally, so the node package doesn't bundle its SPA — keeping the installed footprint small, since a plugin's UI is usually the bulk of its tarball.
+Instead of a directory, `clientAssets` can name a **published npm package** that holds the built UI. The assets are then fetched on demand and cached locally, so the node package doesn't bundle its SPA — keeping the installed footprint small, since a plugin's UI is usually the bulk of its tarball.
 
-Give `cli.distDir` a `RemoteAssets` object naming the package and exact version:
+Give `clientAssets` a `RemoteAssets` object naming the package and exact version:
 
 ```ts
 import type { RemoteAssets } from 'devframe'
 import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 
-const distDir: RemoteAssets = {
+const clientAssets: RemoteAssets = {
   package: '@acme/my-tool-assets',
   version: pkg.version,
 }
@@ -53,7 +84,7 @@ export default defineDevframe({
   version: pkg.version,
   packageName: pkg.name,
   importMetaUrl: import.meta.url,
-  cli: { distDir },
+  clientAssets,
   setup(ctx) {
     // …
   },
@@ -108,7 +139,7 @@ That page also posts its failure to `window.parent` (`DEVFRAME_REMOTE_ASSETS_ERR
 A custom provider supplies the file URL, and optionally a file listing (used for correct 404s, SPA fallback, and static builds):
 
 ```ts
-const distDir: RemoteAssets = {
+const clientAssets: RemoteAssets = {
   package: '@acme/my-tool-assets',
   version: pkg.version,
   provider: {

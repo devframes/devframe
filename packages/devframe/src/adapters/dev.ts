@@ -32,11 +32,12 @@ export interface CreateDevServerOptions {
    */
   flags?: Record<string, unknown>
   /**
-   * Override `def.cli?.distDir`. When neither this option nor
-   * `def.cli?.distDir` is set, the dev server runs in **bridge mode** —
-   * only `__connection.json` and the WS endpoint are mounted; the SPA
-   * is expected to be hosted elsewhere (e.g. by a parent Vite/Nuxt
-   * dev server via `devframeViteBridge` from `@devframes/vite`).
+   * Override the definition's `clientAssets` (or deprecated `cli.distDir`).
+   * When neither this option nor the definition's client assets are set, the
+   * dev server runs in **bridge mode** — only `__connection.json` and the WS
+   * endpoint are mounted; the SPA is expected to be hosted elsewhere (e.g. by
+   * a parent Vite/Nuxt dev server via `devframeViteBridge` from
+   * `@devframes/vite`).
    */
   distDir?: StaticAssetsSource
   /**
@@ -125,7 +126,7 @@ export interface CreateDevServerOptions {
  * h3 + WebSocket RPC + (optionally) the author's SPA mounted at the
  * resolved base path.
  *
- * When `distDir` is omitted (and `def.cli?.distDir` is unset) the
+ * When `distDir` is omitted (and the definition's client assets are unset) the
  * server runs in **bridge mode**: only `__connection.json` and the WS
  * endpoint are mounted, with no SPA mount. The SPA is expected to be
  * hosted elsewhere (e.g. by a parent Vite/Nuxt dev server) — see

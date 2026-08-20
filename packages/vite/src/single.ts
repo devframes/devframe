@@ -4,6 +4,7 @@ import type { DevframeAuthHandler } from 'devframe/node/auth'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 import process from 'node:process'
+import { resolveClientAssets } from 'devframe'
 import { initDevframe } from 'devframe/initiate'
 import { diagnostics, normalizeBasePath, resolveBasePath } from 'devframe/internal'
 import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
@@ -49,7 +50,7 @@ export interface DevframeVitePluginOptions {
 }
 
 /**
- * Statically mount a devframe's built SPA (`def.cli.distDir`) at
+ * Statically mount a devframe's built SPA (`def.clientAssets`) at
  * `options.base` inside an existing Vite dev server. No RPC server is
  * started — reach for {@link devframeViteBridge} when the mounted UI
  * needs a live RPC/WebSocket connection back to the devframe.
@@ -61,7 +62,7 @@ export interface DevframeVitePluginOptions {
  */
 export function devframeVitePlugin(d: DevframeDefinition, options: DevframeVitePluginOptions = {}): DevframeVitePlugin {
   const base = normalizeMountBase(options.base ?? resolveBasePath(d, 'hosted'))
-  const distDir = d.cli?.distDir
+  const distDir = resolveClientAssets(d)
 
   return {
     name: `devframe:${d.id}`,
@@ -122,7 +123,7 @@ export interface DevframeViteBridgeOptions {
 
 /**
  * Bridge a devframe's RPC + WebSocket backend into an existing Vite dev
- * server: the host app owns the SPA (`distDir` is never mounted), and this
+ * server: the host app owns the SPA (`clientAssets` is never mounted), and this
  * plugin serves discovery (`<base>__connection.json`), the WebSocket RPC
  * upgrade (`<base>__ws`, shared on Vite's own HTTP server), and the
  * optional MCP route through {@link initDevframe}'s node middleware — so
@@ -159,7 +160,7 @@ export function devframeViteBridge(d: DevframeDefinition, options: DevframeViteB
         const created = initDevframe(d, {
           base,
           // The host app owns the SPA in bridge mode — never mount the
-          // definition's own distDir here.
+          // definition's own client assets here.
           distDir: false,
           flags: options.flags,
           host: options.host,

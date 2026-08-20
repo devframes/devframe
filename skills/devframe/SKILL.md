@@ -77,7 +77,7 @@ export default defineDevframe({
   homepage: pkg.homepage,
   description: pkg.description,
   icon: 'ph:magnifying-glass-duotone',
-  cli: { distDir: './client/dist' },
+  clientAssets: './client/dist', // built SPA served as the UI
   setup(ctx) {
     const my = ctx.scope('my-inspector') // preferred — auto-namespaces ids
     my.rpc.register(defineRpcFunction({
@@ -540,7 +540,7 @@ Built-in context: `clientType` (`'embedded' | 'standalone'`), `dockOpen`, `palet
 
 | Subcommand | Action |
 |------------|--------|
-| *(default)* | Dev server (port 9999 or `--port`) — WebSocket RPC, `cli.distDir` served at the base |
+| *(default)* | Dev server (port 9999 or `--port`) — WebSocket RPC, `clientAssets` served at the base |
 | `build` | Static snapshot → `./dist-static/` (`--out-dir`) |
 | `mcp` | stdio MCP server |
 

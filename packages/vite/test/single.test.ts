@@ -97,7 +97,7 @@ describe('devframeVitePlugin (static mount)', () => {
     const distDir = mkdtempSync(join(tmpdir(), 'devframe-vite-plugin-'))
     writeFileSync(join(distDir, 'index.html'), '<h1>hi</h1>')
 
-    const plugin = devframeVitePlugin(defineTestDef({ cli: { distDir } }), { base: '/__static-test/' })
+    const plugin = devframeVitePlugin(defineTestDef({ clientAssets: distDir }), { base: '/__static-test/' })
     vite = fakeViteServer()
     await vite.listen(vitePort, host)
     await plugin.configureServer?.(vite as any)

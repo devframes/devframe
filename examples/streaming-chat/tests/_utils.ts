@@ -29,7 +29,7 @@ export async function startStreamingChatServer(): Promise<StartedServer & {
   // Build the client only if a test exercises the served HTML - RPC-only
   // tests don't need the dist (we don't call assertClientBuilt unless the
   // test fetches index.html).
-  const distDir = devframe.cli!.distDir!
+  const distDir = devframe.clientAssets!
   if (typeof distDir !== 'string')
     throw new TypeError('these tests serve the local dist directory — build the SPA first')
   const basePath = devframe.basePath!

@@ -14,6 +14,7 @@ import {
   DEVFRAME_RPC_DUMP_DIRNAME,
   DEVFRAME_RPC_DUMP_MANIFEST_FILENAME,
 } from '../constants'
+import { resolveClientAssets } from '../define'
 import { createHostContext } from '../node/context'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
@@ -26,8 +27,9 @@ export interface CreateBuildOptions {
   /**
    * Override the SPA dist to copy into `outDir` — a local directory or a
    * remote-assets declaration (materialized in full at build time). When
-   * omitted the adapter reads `devframe.cli?.distDir` — authors typically
-   * set this once on the definition itself.
+   * omitted the adapter reads `devframe.clientAssets` (or the deprecated
+   * `devframe.cli?.distDir`) — authors typically set this once on the
+   * definition itself.
    */
   distDir?: StaticAssetsSource
   /**
@@ -61,9 +63,9 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
     throw diagnostics.DF0042({ id: d.id })
 
   const outDir = resolve(options.outDir ?? 'dist-static')
-  const distSource = options.distDir ?? d.cli?.distDir
+  const distSource = options.distDir ?? resolveClientAssets(d)
   if (!distSource)
-    throw new Error(`[devframe] createBuild: no distDir for "${d.id}". Set \`cli.distDir\` on the definition or pass it as an option.`)
+    throw new Error(`[devframe] createBuild: no client assets for "${d.id}". Set \`clientAssets\` on the definition or pass it as an option.`)
 
   if (existsSync(outDir))
     await fs.rm(outDir, { recursive: true })

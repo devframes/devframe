@@ -21,7 +21,7 @@ import { createCac } from 'devframe/adapters/cac'
 const devframe = defineDevframe({
   id: 'my-devframe',
   name: 'My Devframe',
-  cli: { distDir: './client/dist' },
+  clientAssets: './client/dist',
   setup(ctx) { /* register docks, RPC, etc. */ },
 })
 
@@ -66,9 +66,9 @@ The `cli` property lets the caller add ad-hoc commands and flags right before `p
 ```ts
 defineDevframe({
   id: 'my-devframe',
+  clientAssets: './client/dist', // built SPA served as the UI
   cli: {
     command: 'my-devframe', // binary name; default: the id
-    distDir: './client/dist', // required for dev/build
     port: 7777, // preferred port
     portRange: [7777, 9000], // passed through to get-port-please
     random: false, // passed through to get-port-please
@@ -87,7 +87,7 @@ defineDevframe({
 })
 ```
 
-`distDir` is the only required field; everything else has sensible defaults. The `configure` hook runs *before* the `configureCli` option passed to `createCac`, so the final tool author always has the last word on flags.
+The top-level [`clientAssets`](/guide/client-assets) supplies the SPA the dev/build commands serve; everything under `cli` has sensible defaults. The `configure` hook runs *before* the `configureCli` option passed to `createCac`, so the final tool author always has the last word on flags.
 
 ## Headless logging
 

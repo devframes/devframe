@@ -93,7 +93,7 @@ validation.
 
 `@devframes/json-render-ui/spa` ships a prebuilt renderer, so an app serves a
 JSON-render UI without authoring or building any client. Wrap the definition
-with `createJsonRenderDevframe` — it points `cli.distDir` at the shipped SPA
+with `createJsonRenderDevframe` — it points `clientAssets` at the shipped SPA
 (`jsonRenderSpaDir`):
 
 ```ts
@@ -153,7 +153,7 @@ It ships as two self-contained prebuilt bundles — the standalone SPA
 (`@devframes/json-render-ui/hub`) — each inlining Vue, the upstream renderer,
 and the compiled `@antfu/design` styles. A consuming app wires nothing and
 pulls no frontend package into its own graph: the SPA is served verbatim as
-`cli.distDir`, and the hub module is imported natively by the viewer from the
+`clientAssets`, and the hub module is imported natively by the viewer from the
 renderer manifest.
 
 ## Rendering inside a hub

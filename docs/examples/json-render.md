@@ -20,7 +20,7 @@ Package: `json-render` · frontend: **prebuilt `@devframes/json-render-ui/spa`**
 - **Action bridge** — the `Refresh` button's `press` action is dispatched as an
   RPC call of the same name; the handler bumps a counter and patches state, with
   per-action loading and error surfacing.
-- **Out-of-box SPA** — `createJsonRenderDevframe` points `cli.distDir` at the
+- **Out-of-box SPA** — `createJsonRenderDevframe` points `clientAssets` at the
   prebuilt `@devframes/json-render-ui/spa`, which discovers the view from the
   view index and renders it — no client build in the example.
 - **Static output** — `cli:build` snapshots the spec + state as a read-only

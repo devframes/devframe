@@ -20,10 +20,10 @@ export default defineDevframe({
   description: pkg.description,
   icon: 'ph:chat-circle-dots-duotone',
   basePath: BASE_PATH,
+  clientAssets: distDir,
   cli: {
     command: 'devframe-streaming-chat',
     port: 9897,
-    distDir,
     // Single-user localhost demo - skip the trust handshake that the
     // Vite-side surface requires.
     auth: false,
