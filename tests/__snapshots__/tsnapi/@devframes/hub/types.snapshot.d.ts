@@ -29,6 +29,7 @@ export { DevframeDockEntryBase }
 export { DevframeDockEntryCategory }
 export { DevframeDockEntryIcon }
 export { DevframeDockEntryRegistry }
+export { DevframeDockPanelStateEvent }
 export { DevframeDocksActiveState }
 export { DevframeDocksHost }
 export { DevframeDocksUserSettings }
