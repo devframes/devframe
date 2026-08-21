@@ -44,7 +44,7 @@ export const hub: HubInstance = globalRef.__hubSvelteKitMinimal ??= initHub({
   ui: createUi({ branding: { primaryColor: '#ff3e00', productName: 'Devframes on SvelteKit' } }),
   // Gate with devframe's interactive OTP (the default). The hub prints a
   // 6-digit code + magic link on startup, and the reference UI's authorization
-  // view exchanges it for a bearer token. See docs/guide/security.md.
+  // view exchanges it for a bearer token. See docs/content/1.guide/13.security.md.
   configure(ctx) {
     ctx.commands.register({
       id: 'example:hub-sveltekit-minimal:ping',

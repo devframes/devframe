@@ -41,7 +41,7 @@ Ahead-of-time build artifacts that live under `src/` - the shadow-root styleshee
 ## Conventions
 
 - RPC functions must use `defineRpcFunction`; always namespace IDs `devframes:plugin:<slug>:<fn-name>` (matching the plugin's `@devframes/plugin-<slug>` package name).
-- **No magic event names — use the centralized event maps.** Every event, broadcast, shared-state key, and channel name lives in one of two source-of-truth maps: `DEVFRAME_EVENTS` (`packages/devframe/src/events.ts`, re-exported from `devframe/constants`) for the core runtime, and `HUB_EVENTS` (`packages/hub/src/events.ts`, re-exported from `@devframes/hub/constants`) for the hub. Reference `DEVFRAME_EVENTS.*` / `HUB_EVENTS.*` at call sites (`.events.emit`/`.on`, `rpc.broadcast({ method })`, `sharedState.get(key)`, `defineHubRpcFunction({ name })`, `rpc.call`) instead of re-typing a string literal. The two maps and the [`docs/guide/events.md`](docs/guide/events.md) Events Reference are kept in lockstep: adding, renaming, or removing a name means editing the map **and** that page in the same change — every name in the maps appears in the tables, and vice versa. The only literals left are unavoidable type-position keys (the `EventEmitter<…>` maps in `types/*` and the `DevframeRpcClientFunctions`/`DevframeRpcServerFunctions` augmentations), which mirror the maps; a package that deliberately avoids a hub dependency (e.g. `@devframes/plugin-terminals`, which models the hub bridge structurally) keeps a local literal rather than importing `HUB_EVENTS`.
+- **No magic event names — use the centralized event maps.** Every event, broadcast, shared-state key, and channel name lives in one of two source-of-truth maps: `DEVFRAME_EVENTS` (`packages/devframe/src/events.ts`, re-exported from `devframe/constants`) for the core runtime, and `HUB_EVENTS` (`packages/hub/src/events.ts`, re-exported from `@devframes/hub/constants`) for the hub. Reference `DEVFRAME_EVENTS.*` / `HUB_EVENTS.*` at call sites (`.events.emit`/`.on`, `rpc.broadcast({ method })`, `sharedState.get(key)`, `defineHubRpcFunction({ name })`, `rpc.call`) instead of re-typing a string literal. The two maps and the [`docs/content/1.guide/20.events.md`](docs/content/1.guide/20.events.md) Events Reference are kept in lockstep: adding, renaming, or removing a name means editing the map **and** that page in the same change — every name in the maps appears in the tables, and vice versa. The only literals left are unavoidable type-position keys (the `EventEmitter<…>` maps in `types/*` and the `DevframeRpcClientFunctions`/`DevframeRpcServerFunctions` augmentations), which mirror the maps; a package that deliberately avoids a hub dependency (e.g. `@devframes/plugin-terminals`, which models the hub bridge structurally) keeps a local literal rather than importing `HUB_EVENTS`.
 - **Stay validator-neutral.** `devframe` and every `@devframes/*` package must not introduce a preferred schema validator dependency - no `valibot`, `zod`, `arktype`, etc. in their runtime `dependencies`. `args`/`returns`/flag schemas are typed against [Standard Schema](https://standardschema.dev/) (`@standard-schema/spec`, types-only); first-party code that needs to author a schema uses the built-in zero-dep `devframe/utils/simple-schema` builder (deliberately minimal - not a general validator). JSON-schema conversion uses each schema's own Standard JSON Schema converter (`~standard.jsonSchema`, implemented by e.g. zod 4) when present and degrades to a permissive object otherwise - no converter library and no vendor dependency is required. Docs, by contrast, should point *users* at a real validator for their own integrations - recommend **valibot** (lightest) or **zod** (worth reusing if they already pull it via the JSON-render or MCP integrations).
 - Shared state via `devframe/utils/shared-state`; keep values serializable.
 - Utility imports use the package-path form `devframe/utils/*`, never relative `../utils/*`.
@@ -132,12 +132,12 @@ Range allocation:
    diagnostics.DF0033({ id, reason, cause: error }, { method: 'warn' }) // attach cause
    ```
 
-3. **Create a docs page** at `docs/errors/DF0033.md` (when `docs/` lands):
+3. **Create a docs page** at `docs/content/6.errors/DF0033.md`:
    ```md
    ---
-   outline: deep
+   title: 'DF0033: Short Title'
+   description: 'Something went wrong with "{name}"'
    ---
-   # DF0033: Short Title
 
    ## Message
    > Something went wrong with "`{name}`"

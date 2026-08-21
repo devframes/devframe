@@ -6,7 +6,7 @@
 // `hub.handler` is a Web-Standard `(request: Request) => Promise<Response>`;
 // mount it on a catch-all route (Hono, Nitro, Next, SvelteKit, ...) exactly
 // like an `initDevframe` instance. `hub.nodeMiddleware` is the Connect-style
-// form for Vite/Rsbuild. See docs/adapters/initiate.md for the mount snippets
+// form for Vite/Rsbuild. See docs/content/2.adapters/1.initiate.md for the mount snippets
 // and the WebSocket-binding precedence (`ws.port` / `server` / `ws.sidecar` /
 // host-attached `hub.attach(server)`).
 import { createUi } from '@devframes/hub-ui'

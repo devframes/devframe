@@ -13,7 +13,13 @@ export default antfu({
     '**/.output',
     '**/out',
     '**/next-env.d.ts',
-    '**/.vitepress/cache',
-    '**/.vitepress/dist',
+    '**/.nuxt',
   ],
+}, {
+  // MDC component syntax (`::u-page-hero`, `#title` slot markers) is not
+  // ATX-heading markdown - don't lint it as such.
+  files: ['docs/content/**/*.md'],
+  rules: {
+    'markdown/no-missing-atx-heading-space': 'off',
+  },
 })

@@ -17,8 +17,8 @@ node_modules
 temp
 .turbo
 .ghfs
-**/.vitepress/cache
-**/.vitepress/dist
+.nuxt
+.data
 packages/devframe/skills
 test-results
 playwright-report

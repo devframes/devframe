@@ -3,16 +3,12 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "docs": "vitepress dev --port 5175",
-    "docs:build": "vitepress build",
-    "docs:serve": "vitepress serve --port 5175"
+    "docs": "nuxt dev --port 5175",
+    "docs:build": "nuxt build",
+    "docs:serve": "nuxt preview"
   },
-  "devDependencies": {
-    "devframe": "workspace:*",
-    "mermaid": "catalog:docs",
-    "tinyglobby": "catalog:deps",
-    "vitepress": "catalog:docs",
-    "vitepress-plugin-group-icons": "catalog:docs",
-    "vitepress-plugin-mermaid": "catalog:docs"
+  "dependencies": {
+    "comark-docs": "catalog:docs",
+    "nuxt": "catalog:build"
   }
 }

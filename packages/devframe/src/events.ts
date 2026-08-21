@@ -4,7 +4,7 @@
  * broadcast notifications — so these names live in one place instead of
  * scattered string literals.
  *
- * **Keep this in sync with [`docs/guide/events.md`](../../../docs/guide/events.md)**
+ * **Keep this in sync with [`docs/content/1.guide/20.events.md`](../../../docs/content/1.guide/20.events.md)**
  * (the "Core devframe events" section): every name here appears in that page's
  * tables, and every name there resolves to an entry here. Add, rename, or
  * remove a name in both places in the same change, and reference

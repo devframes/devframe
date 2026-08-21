@@ -1,3 +1,8 @@
+# The `comark-docs` layer (docs site theme, installed from GitHub) pins its
+# `comark`/`comark-content`/`@comark/nuxt` deps to pkg.pr.new snapshot URLs,
+# which pnpm 11 classifies as exotic subdependencies and blocks by default.
+# There is no per-package allowlist for this setting.
+blockExoticSubdeps: false
 allowBuilds:
   '@parcel/watcher': false
   esbuild: true
@@ -22,6 +27,10 @@ strictPeerDependencies: false
 trustPolicy: no-downgrade
 trustPolicyExclude:
   - tinyexec@1.2.2
+  - '@vercel/functions@3.9.3'
+  - '@vercel/oidc@3.8.4'
+  - '@vercel/cli-config@0.2.3'
+  - '@vercel/cli-exec@1.0.1'
 packages:
   - packages/*
   - plugins/*
@@ -114,10 +123,7 @@ catalogs:
     zigpty: ^0.2.1
     zod: ^4.4.3
   docs:
-    mermaid: ^11.16.1
-    vitepress: ^2.0.0-alpha.19
-    vitepress-plugin-group-icons: ^1.7.6
-    vitepress-plugin-mermaid: ^2.0.17
+    comark-docs: github:comarkdown/comark-docs
   frontend:
     '@antfu/design': ^0.3.4
     '@discoveryjs/discovery': 1.0.0-beta.99

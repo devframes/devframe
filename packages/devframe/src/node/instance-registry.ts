@@ -42,7 +42,7 @@ export interface DevframeInstanceRegistration {
   unregister: () => void
 }
 
-// The env var names below are documented (READMEs, `docs/adapters/mcp.md`)
+// The env var names below are documented (READMEs, `docs/content/2.adapters/7.mcp.md`)
 // as plain strings a user sets — nothing needs to import the constant, so
 // they (and the read/probe helpers) stay internal to this module rather
 // than joining the `devframe/node` public surface; see the barrel comment

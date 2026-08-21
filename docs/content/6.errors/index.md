@@ -1,0 +1,43 @@
+---
+title: 'Error Reference'
+description: 'Devframe uses structured diagnostics to surface actionable warnings and errors at runtime. Each diagnostic has a unique error code, a human-readable message, and a link back to this documentation.'
+---
+
+Devframe uses structured diagnostics to surface actionable warnings and errors at runtime. Each diagnostic has a unique error code, a human-readable message, and a link back to this documentation.
+
+## How error codes work
+
+- Codes follow the pattern **`DF` + 4-digit number** (e.g., `DF0001`).
+- Every error page includes the cause, recommended fix, and a reference to the source file that emits it.
+- The diagnostics system is powered by [`nostics`](https://www.npmjs.com/package/nostics), which provides structured diagnostic codes with docs URLs, ANSI-formatted console output, and pluggable reporters.
+
+## Devframe (DF)
+
+Emitted by `devframe` — framework-neutral host / shared-state / auth surface.
+
+| Code | Level | Title |
+|------|-------|-------|
+| [DF0006](/errors/DF0006) | error | RPC Function Not Registered |
+| [DF0007](/errors/DF0007) | error | AsyncLocalStorage Not Set |
+| [DF0008](/errors/DF0008) | error | View distDir Not Found |
+| [DF0012](/errors/DF0012) | warn | Storage Parse Failed |
+| [DF0013](/errors/DF0013) | error | Shared State Not Found |
+| [DF0014](/errors/DF0014) | error | Invalid Agent Field |
+| [DF0015](/errors/DF0015) | error | Agent Tool Already Registered |
+| [DF0016](/errors/DF0016) | error | Agent Resource Already Registered |
+| [DF0017](/errors/DF0017) | error | MCP Server Start Failure |
+| [DF0019](/errors/DF0019) | error | Agent Requires JSON-Serializable RPC |
+| [DF0020](/errors/DF0020) | error | Non-JSON Value in JSON-Serializable RPC |
+| [DF0021](/errors/DF0021) | error | RPC Function Already Registered |
+| [DF0022](/errors/DF0022) | error | RPC Function Not Registered (Update) |
+| [DF0023](/errors/DF0023) | error | RPC Function Not Registered (Get) |
+| [DF0024](/errors/DF0024) | error | Missing RPC Handler |
+| [DF0025](/errors/DF0025) | error | Function Not in Dump Store |
+| [DF0026](/errors/DF0026) | error | No Dump Match |
+| [DF0027](/errors/DF0027) | error | Invalid Dump Configuration |
+| [DF0028](/errors/DF0028) | error | Snapshot Type Mismatch |
+| [DF0029](/errors/DF0029) | warn | Stream Buffer Overflow |
+| [DF0030](/errors/DF0030) | error | Unknown Stream ID |
+| [DF0031](/errors/DF0031) | error | Write to Closed Stream |
+| [DF0032](/errors/DF0032) | error | Streaming Channel Already Registered |
+| [DF0033](/errors/DF0033) | warn | Dev RPC Bridge Failed to Start |

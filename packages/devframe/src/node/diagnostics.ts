@@ -2,7 +2,7 @@ import { defineDiagnostics } from 'devframe/utils/nostics'
 
 // DF00xx codes are allocated across packages (e.g. @devframes/json-render
 // owns DF0037–DF0041), so this file alone doesn't show the next free
-// number — check `docs/errors/` for the full allocation before adding one.
+// number — check `docs/content/6.errors/` for the full allocation before adding one.
 export const diagnostics = defineDiagnostics({
   docsBase: 'https://devfra.me/errors',
   codes: {
