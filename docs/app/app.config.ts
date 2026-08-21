@@ -7,6 +7,8 @@ export default defineAppConfig({
     title: 'Devframe',
     logo: {
       alt: 'Devframe',
+      light: '/logo.svg',
+      dark: '/logo.svg',
     },
     nav: [
       {
@@ -47,6 +49,67 @@ export default defineAppConfig({
   },
 
   docs: {
+    // Labeled sidebar groups per content section, consumed by the shadowed
+    // `useFilteredNavigation` composable (mirrors the old VitePress sidebar).
+    sidebarGroups: {
+      guide: [
+        { title: 'Introduction', items: ['/guide'] },
+        {
+          title: 'Define your tool',
+          items: [
+            '/guide/devframe-definition',
+            '/guide/rpc',
+            '/guide/shared-state',
+            '/guide/streaming',
+            '/guide/client-assets',
+            '/guide/scoped-context',
+            '/guide/json-render',
+            '/guide/diagnostics',
+            '/guide/when-clauses',
+          ],
+        },
+        {
+          title: 'Mount anywhere',
+          items: [
+            '/adapters/initiate',
+            '/adapters',
+            '/guide/standalone-cli',
+            '/guide/client',
+            '/guide/transports',
+            '/guide/security',
+          ],
+        },
+        { title: 'Agentic', items: ['/guide/agent-native'] },
+        {
+          title: 'Compose a hub',
+          items: [
+            '/guide/hub',
+            '/guide/client-context',
+            '/guide/hub-initiate',
+            '/guide/services',
+            '/guide/deep-linking',
+            '/guide/events',
+          ],
+        },
+        {
+          title: 'Customize the UI',
+          items: [
+            '/guide/build-your-own-json-render-frontend',
+            '/guide/build-your-own-hub-ui',
+          ],
+        },
+        { title: 'Ecosystem', items: ['/guide/built-with'] },
+        {
+          title: 'Migrations',
+          items: [
+            '/guide/migration-0.9',
+            '/guide/migration-0.8',
+            '/guide/migration-0.7',
+            '/guide/migration-0.6',
+          ],
+        },
+      ],
+    },
     ogImage: {
       tagline: 'Build a devtool once. Mount it anywhere.',
     },

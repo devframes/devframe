@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "comark-docs": "catalog:docs",
-    "nuxt": "catalog:build"
+    "nuxt": "catalog:build",
+    "ufo": "catalog:deps"
   }
 }

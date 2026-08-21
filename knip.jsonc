@@ -36,6 +36,12 @@
       // one a standalone, runnable example, not imported by anything else.
       "entry": ["design/*.ts", "skills/devframe/templates/*.ts", "scripts/smoke-bun.ts"]
     },
+    "docs": {
+      // Nuxt auto-registers `app/components` and `app/composables`; the files
+      // here shadow same-named pieces of the comark-docs layer (AppHeaderBrand,
+      // useFilteredNavigation, ...), so nothing imports them explicitly.
+      "entry": ["app/components/*.vue", "app/composables/*.ts"]
+    },
     "examples/hub-next": {
       // The React client build's root sits at `src/client` (`next dev
       // src/client`), not the workspace root, so knip's default PostCSS
