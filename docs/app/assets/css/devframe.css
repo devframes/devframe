@@ -26,12 +26,18 @@
  * these a higher specificity than the layer's plain `:root` / `.dark`, so they
  * win regardless of stylesheet load order.
  */
-:root:root {
+:root {
   --ui-primary: var(--ui-color-primary-500);
-  --ui-text-highlighted: var(--ui-color-primary-700);
 }
 
-:root.dark {
+.dark {
   --ui-primary: var(--ui-color-primary-400);
-  --ui-text-highlighted: var(--ui-color-primary-300);
+}
+
+[data-active].text-highlighted {
+  color: var(--ui-color-primary-500);
+}
+
+.dark [data-active].text-highlighted {
+  color: var(--ui-color-primary-400);
 }
