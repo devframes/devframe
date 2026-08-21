@@ -19,14 +19,19 @@
 }
 
 /*
- * The comark-docs layer pins the semantic `--ui-primary` to neutral for its
- * monochrome look; devframe uses its brand green as the primary accent
- * (buttons, links, active nav). Loaded after the layer's theme, so this wins.
+ * The comark-docs layer pins the semantic `--ui-primary` and highlighted text
+ * to neutral for its monochrome look; devframe uses its brand green for both
+ * the primary accent (buttons, links, active nav) and highlighted text
+ * (headings, emphasis). The doubled `:root:root` / `:root.dark` selectors give
+ * these a higher specificity than the layer's plain `:root` / `.dark`, so they
+ * win regardless of stylesheet load order.
  */
-:root {
+:root:root {
   --ui-primary: var(--ui-color-primary-500);
+  --ui-text-highlighted: var(--ui-color-primary-700);
 }
 
-.dark {
+:root.dark {
   --ui-primary: var(--ui-color-primary-400);
+  --ui-text-highlighted: var(--ui-color-primary-300);
 }

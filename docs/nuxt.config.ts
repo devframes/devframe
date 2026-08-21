@@ -1,5 +1,4 @@
 import process from 'node:process'
-import { fileURLToPath } from 'node:url'
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-08-21',
@@ -9,12 +8,6 @@ export default defineNuxtConfig({
   extends: [process.env.COMARK_DOCS_LAYER || 'comark-docs'],
 
   css: ['~/assets/css/devframe.css'],
-
-  // Redirect the layer's rangi highlighter import to a shim that renders code
-  // with Shiki's vitesse-light / vitesse-dark themes.
-  alias: {
-    'comark/plugins/rangi': fileURLToPath(new URL('./shims/rangi.ts', import.meta.url)),
-  },
 
   site: {
     url: 'https://devfra.me',
