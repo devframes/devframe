@@ -17,3 +17,16 @@
   --color-sage-900: #28352b;
   --color-sage-950: #131d16;
 }
+
+/*
+ * The comark-docs layer pins the semantic `--ui-primary` to neutral for its
+ * monochrome look; devframe uses its brand green as the primary accent
+ * (buttons, links, active nav). Loaded after the layer's theme, so this wins.
+ */
+:root {
+  --ui-primary: var(--ui-color-primary-500);
+}
+
+.dark {
+  --ui-primary: var(--ui-color-primary-400);
+}
