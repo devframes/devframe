@@ -247,6 +247,7 @@ export declare function createDockRenderersContext(_: CreateDockRenderersContext
 export declare function createMessagesClient(_: DevframeRpcClient, _?: MessagesClientOptions): DevframeMessagesClient;
 export declare function getDevframeClientContext(): DevframeClientContext | undefined;
 export declare function parseRemoteConnection(_?: string): RemoteConnectionInfo | null;
+export declare function reportDockPanelState(_: DevframeRpcClient, _: boolean): Promise<void>;
 export declare function resolveClientModuleSpecifier(_: string, _?: {
   resolveClientModule?: (_: string) => string | undefined;
   template?: string;

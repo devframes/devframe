@@ -32,6 +32,7 @@ import { HUB_EVENTS } from '../events'
 import { getDevframeClientContext, setDevframeClientContext } from './context'
 import { attachFrameNavClient } from './frame-nav'
 import { createMessagesClient } from './messages'
+import { reportDockPanelState } from './panel-state'
 import { createDockRenderersContext } from './renderers'
 
 const DOCKS_STATE_KEY = HUB_EVENTS.sharedState.docks
@@ -154,7 +155,10 @@ export async function createDevframeClientRuntime(
     ...options.categoryOrder,
   }
 
-  const panel = createPanelContext(clientType)
+  const sendPanelState = (open: boolean): void => {
+    void reportDockPanelState(rpc, open).catch(() => {})
+  }
+  const panel = createPanelContext(clientType, sendPanelState)
   const docks = createDocksContext()
   const commands = createCommandsContext()
   const renderers = createRenderersContext()
@@ -225,6 +229,7 @@ export async function createDevframeClientRuntime(
     )
   }
   setDevframeClientContext(context)
+  sendPanelState(panel.session.open)
 
   const loadedScripts = new Set<string>()
   if (loadScriptsEnabled) {
@@ -549,7 +554,10 @@ export async function createDevframeClientRuntime(
 
 // ── shared helpers ─────────────────────────────────────────────────────────
 
-function createPanelContext(clientType: DockClientType): DocksPanelContext {
+function createPanelContext(
+  clientType: DockClientType,
+  onOpenChange: (open: boolean) => void,
+): DocksPanelContext {
   const store: DocksPanelContext['store'] = {
     mode: 'edge',
     width: 480,
@@ -559,9 +567,17 @@ function createPanelContext(clientType: DockClientType): DocksPanelContext {
     position: 'right',
     inactiveTimeout: 0,
   }
+  let open = clientType === 'standalone'
   const session: DocksPanelContext['session'] = {
-    // A standalone runtime owns the page, so its "panel" is always open.
-    open: clientType === 'standalone',
+    get open() {
+      return open
+    },
+    set open(nextOpen) {
+      if (nextOpen === open)
+        return
+      open = nextOpen
+      onOpenChange(open)
+    },
     selectedDockId: null,
     selectedDockRoute: null,
   }

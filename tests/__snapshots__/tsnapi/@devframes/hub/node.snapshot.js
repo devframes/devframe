@@ -14,6 +14,7 @@ export { DevframeMessagesHost }
 export { DevframeTerminalsHost }
 export { hubCommandsExecute }
 export { hubDocksActivate }
+export { hubDocksPanelState }
 export { hubMessagesAdd }
 export { hubMessagesClear }
 export { hubMessagesRemove }

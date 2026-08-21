@@ -3,6 +3,7 @@ import type { SharedState } from 'devframe/utils/shared-state'
 import type { DevframeDockEntry } from '../../types/docks'
 import { createEventEmitter } from 'devframe/utils/events'
 import { describe, expect, it, vi } from 'vitest'
+import { HUB_EVENTS } from '../../events'
 import { getDevframeClientContext } from '../context'
 import { createDevframeClientRuntime } from '../host'
 
@@ -67,6 +68,26 @@ function groupEntry(id: string, extra?: Record<string, unknown>): DevframeDockEn
 }
 
 describe('createDevframeClientRuntime', () => {
+  it('reports its initial panel state and later open-state assignments', async () => {
+    expect.assertions(3)
+
+    const { rpc, calls } = createStubRpc()
+    const host = await createDevframeClientRuntime({ rpc, clientType: 'embedded' })
+
+    expect(calls).toEqual([[HUB_EVENTS.rpc.docksPanelState, false]])
+
+    host.context.panel.session.open = true
+    host.context.panel.session.open = true
+    expect(calls).toEqual([
+      [HUB_EVENTS.rpc.docksPanelState, false],
+      [HUB_EVENTS.rpc.docksPanelState, true],
+    ])
+
+    host.context.panel.session.open = false
+    expect(calls.at(-1)).toEqual([HUB_EVENTS.rpc.docksPanelState, false])
+    host.dispose()
+  })
+
   it('publishes the global client context with the full surface', async () => {
     const { rpc } = createStubRpc()
     const host = await createDevframeClientRuntime({ rpc })

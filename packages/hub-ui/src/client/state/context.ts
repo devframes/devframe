@@ -4,7 +4,7 @@ import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
 import type { Ref } from 'vue'
 import type { DevframeDocksUserSettings } from './dock-settings'
-import { attachFrameNavClient, createDockRenderersContext } from '@devframes/hub/client'
+import { attachFrameNavClient, createDockRenderersContext, reportDockPanelState } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY, HUB_EVENTS } from '@devframes/hub/constants'
 import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
@@ -648,12 +648,13 @@ export async function createDocksContext(
   // the captured session intent.
   // `switchEntry` then consumes the persisted iframe route when the view boots.
   const restoreAfterInitialization = async (): Promise<void> => {
+    await waitUntilTrusted()
+
     const restoreDockId = restoreIntent.selectedDockId
     if (!restoreIntent.open || restoreDockId == null)
       return
 
     await Promise.all([
-      waitUntilTrusted(),
       dockEntriesInitialSyncComplete,
       rendererManifestInitialSyncComplete,
     ])
@@ -669,7 +670,15 @@ export async function createDocksContext(
     initialRestorePending.value = false
     await switchEntry(restoreDockId)
   }
-  void restoreAfterInitialization()
+  const reportPanelStateAfterInitialization = async (): Promise<void> => {
+    await restoreAfterInitialization()
+    watch(
+      () => sessionStore.value.open,
+      open => void reportDockPanelState(rpc, open).catch(() => {}),
+      { immediate: true },
+    )
+  }
+  void reportPanelStateAfterInitialization()
 
   docksContextByRpc.set(rpc, docksContext)
   return docksContext

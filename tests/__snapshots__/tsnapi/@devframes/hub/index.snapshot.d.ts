@@ -109,6 +109,7 @@ export interface DevframeDocksHost {
   readonly events: EventEmitter<{
     'docks:entry:updated': (entry: DevframeDockUserEntry) => void;
     'docks:activate': (activation: DevframeDockActivation) => void;
+    'docks:panel:state': (event: DevframeDockPanelStateEvent) => void;
   }>;
   register: <T extends DevframeDockUserEntry>(_: T, _?: boolean) => {
     update: (_: Partial<T>) => void;
@@ -345,6 +346,18 @@ export type DevframeDockEntryCategory = 'framework' | 'app' | 'ui' | 'data' | 'w
 export type DevframeDockEntryIcon = string | {
   light: string;
   dark: string;
+};
+export type DevframeDockPanelStateEvent = {
+  type: 'connected';
+  sessionId: number;
+  open: boolean;
+} | {
+  type: 'changed';
+  sessionId: number;
+  open: boolean;
+} | {
+  type: 'disconnected';
+  sessionId: number;
 };
 export type DevframeDockUserEntry = DevframeDockEntryRegistry[keyof DevframeDockEntryRegistry];
 export type DevframeMessageAction = DevframeMessageActivateAction | DevframeMessageCommandAction;

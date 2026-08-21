@@ -10,6 +10,7 @@ export function createDockRenderersContext(_) {}
 export function createMessagesClient(_, _) {}
 export function getDevframeClientContext() {}
 export function parseRemoteConnection(_) {}
+export async function reportDockPanelState(_, _) {}
 export function resolveDockIcon(_, _) {}
 export function resolveDockUrl(_, _) {}
 export function setDevframeClientContext(_) {}
