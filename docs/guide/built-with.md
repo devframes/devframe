@@ -1,0 +1,57 @@
+---
+outline: deep
+---
+
+# Built with Devframe
+
+## Real-world DevTools
+
+- [**Vite DevTools**](https://devtools.vite.dev/) — bundles many devframes into one UI. Mount your own via the [`vite` adapter](/adapters/vite).
+- [**ESLint Config Inspector**](https://github.com/eslint/config-inspector) — inspects flat configs.
+- [**node-modules-inspector**](https://github.com/antfu/node-modules-inspector) — visualizes your `node_modules` dependency graph.
+
+## Builtin Plugins
+
+The [built-in plugins](/plugins/) are real tools built on Devframe, each in a different UI framework:
+
+| Plugin | UI framework | What it does |
+|--------|--------------|--------------|
+| [Data Inspector](/plugins/data-inspector) | Vue | Query live server-side objects with jora. |
+| [Devframe Inspector](/plugins/inspect) | Vue | Browse RPC, shared state, and agent surface. |
+| [Open Graph Viewer](/plugins/og) | Vue | Inspect Open Graph / Twitter metadata and card previews. |
+| [Accessibility Inspector](/plugins/a11y) | Solid | Run axe-core; list WCAG violations. |
+| [Git](/plugins/git) | React (Next.js) | Repository dashboard: status, graph, branches, diffs. |
+| [Terminals](/plugins/terminals) | Svelte | Stream output and run interactive PTY shells. |
+| [Code Server](/plugins/code-server) | Vue | Run VS Code in the browser. |
+| [Assets](/plugins/assets) | Vue | Browse, preview, upload, rename, and delete files. |
+
+## Playable Examples
+
+Runnable apps in the [repository](https://github.com/devframes/devframe/tree/main/examples), each a single node-side definition behind a different UI. Run one with:
+
+```sh
+pnpm install
+pnpm --filter <example-name> dev
+```
+
+| Example | UI | Shows |
+|---------|----|-------|
+| [files-inspector](https://github.com/devframes/devframe/tree/main/examples/files-inspector) | Preact | Lists cwd files over RPC. |
+| [json-render](https://github.com/devframes/devframe/tree/main/examples/json-render) | Vue | Server-authored view via `@devframes/json-render-ui`; live state + action bridge. |
+| [streaming-chat](https://github.com/devframes/devframe/tree/main/examples/streaming-chat) | Preact | Streams tokens; history in shared state. |
+| [next-runtime-snapshot](https://github.com/devframes/devframe/tree/main/examples/next-runtime-snapshot) | React (Next.js) | App Router SPA surfacing the Node runtime. |
+| [hub-vite](https://github.com/devframes/devframe/tree/main/examples/hub-vite) | Vanilla TS (Vite) | ~120-line Vite host wiring `@devframes/hub`; hand-built viewer. |
+| [hub-next](https://github.com/devframes/devframe/tree/main/examples/hub-next) | React (Next.js) | Same protocol, Next.js route. |
+
+The **minimal** family mounts `initHub({ ui: createUi() })` with `@devframes/hub-ui`:
+
+| Example | Host | Shows |
+|---------|------|-------|
+| [hub-vite-minimal](https://github.com/devframes/devframe/tree/main/examples/hub-vite-minimal) | Vite | Dev middleware. |
+| [hub-next-minimal](https://github.com/devframes/devframe/tree/main/examples/hub-next-minimal) | Next.js | App Router route. |
+| [hub-nitro-minimal](https://github.com/devframes/devframe/tree/main/examples/hub-nitro-minimal) | Nitro | Catch-all route. |
+| [hub-hono-minimal](https://github.com/devframes/devframe/tree/main/examples/hub-hono-minimal) | Hono | Node and Bun. |
+| [hub-fastify-minimal](https://github.com/devframes/devframe/tree/main/examples/hub-fastify-minimal) | Fastify | `nodeMiddleware`. |
+| [hub-sveltekit-minimal](https://github.com/devframes/devframe/tree/main/examples/hub-sveltekit-minimal) | SvelteKit | Catch-all endpoint. |
+| [hub-deno-minimal](https://github.com/devframes/devframe/tree/main/examples/hub-deno-minimal) | Deno | `Deno.serve` + upgrade socket. |
+| [hub-rsbuild-minimal](https://github.com/devframes/devframe/tree/main/examples/hub-rsbuild-minimal) | Rsbuild | Dev middleware. |

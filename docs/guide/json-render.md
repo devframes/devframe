@@ -112,7 +112,7 @@ A custom frontend renders straight from shared state: connect with
 `connectDevframe()`, read the view's state (keyed
 `devframe:json-render:<scope>:<id>`), subscribe to its `updated` events, and
 render each element with your own registry — the [Next hub
-example](/examples/hub-next) has a React renderer.
+example](https://github.com/devframes/devframe/tree/main/examples/hub-next) has a React renderer.
 
 In a **static** build the spec + state are snapshotted read-only; actions report
 as unavailable, while local state and bindings still work.
@@ -184,5 +184,5 @@ dependency; the hub acquires no Vue. A frontend's component registry is pluggabl
 too, to render a subset or theme the built-ins.
 
 See [Build your own JSON-Render frontend](./build-your-own-json-render-frontend)
-and the [`json-render` example](/examples/json-render) for a runnable end-to-end
+and the [`json-render` example](https://github.com/devframes/devframe/tree/main/examples/json-render) for a runnable end-to-end
 app.

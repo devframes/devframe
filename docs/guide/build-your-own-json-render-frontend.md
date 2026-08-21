@@ -2,7 +2,7 @@
 
 `@devframes/json-render-ui` is the reference frontend, not the protocol — any
 implementation of the renderer contract replaces it, in any framework. This page
-is that contract; the [Next hub witness](/examples/hub-next) ships a React one
+is that contract; the [Next hub witness](https://github.com/devframes/devframe/tree/main/examples/hub-next) ships a React one
 (`src/client/json-render/`).
 
 ## The contract

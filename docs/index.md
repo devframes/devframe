@@ -15,7 +15,7 @@ hero:
       link: /guide/
     - theme: alt
       text: Why Devframe
-      link: /guide/#the-shared-boundary
+      link: /guide/#why-it-exists
     - theme: alt
       text: View on GitHub
       link: https://github.com/devframes/devframe

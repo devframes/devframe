@@ -4,11 +4,19 @@ outline: deep
 
 # Introduction
 
-**Devframe is a framework-neutral foundation for building a devtool once, then bringing it to different hosts, standalone surfaces, and agents.** You describe one tool and one definition mounts almost anywhere: [`unplugin`](https://unplugin.unjs.io/) for devtools.
+**Devframe is a framework-neutral foundation for building a devtool once and running it everywhere — inside any host, as a standalone app, or through a coding agent.** A devtool here is anything that makes a program's implicit state visible and interactive: an inspector, a build or bundle analyzer, an asset viewer, a state or data explorer, a terminal. You describe such a tool one time, and the same definition mounts almost anywhere. Think of it as [`unplugin`](https://unplugin.unjs.io/) for devtools.
 
-## The shared boundary
+## Why it exists
 
-Most devtools rebuild the same infrastructure — server–client communication, state synchronization, serialization, static asset hosting, a web interface — coupled to one framework. Devframe frees a devtool from those boundaries: a capability defined once runs everywhere.
+Most devtools rebuild the same plumbing — server–client communication, state synchronization, serialization, static-asset hosting, a web interface — and wire it to one framework's dev server. The same idea then gets rebuilt, slightly differently, for the next framework, so effort fragments across the ecosystem instead of compounding.
+
+Devframe moves that boundary. A capability is defined once against a stable interface and runs on every supported host, so a good tool can be built once, travel further, and improve through the work of more communities.
+
+## Who it's for
+
+- **Devtool authors** who want one tool to run standalone, embed in a host, ship as a CLI or static report, and answer to an agent — without maintaining a separate version per environment.
+- **Framework and build-tool teams** who want to offer devtools without rebuilding shared infrastructure, and to inherit capabilities other communities already built.
+- **Anyone** who wants a tool's state and actions available to both a human UI and a coding agent from one source of truth.
 
 ## One definition, one standard handler
 
@@ -93,7 +101,7 @@ The mounted devframes share one RPC registry, state store, connection, auth gate
 
 ## Inheriting the ecosystem
 
-[Vite DevTools](https://devtools.vite.dev/) is the first flagship host, using `initHub()` alongside its own Vite, Rolldown, Vitest, and Oxc tooling. The [framework packages](/frameworks/) — [`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), [`@devframes/next`](/frameworks/next) — add conventions over the same handler. See [Built with Devframe](/examples/built-with).
+[Vite DevTools](https://devtools.vite.dev/) is the first flagship host, using `initHub()` alongside its own Vite, Rolldown, Vitest, and Oxc tooling. The [framework packages](/frameworks/) — [`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), [`@devframes/next`](/frameworks/next) — add conventions over the same handler. See [Built with Devframe](/guide/built-with).
 
 ## Install
 

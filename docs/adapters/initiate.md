@@ -40,6 +40,16 @@ export default defineConfig({
 })
 ```
 
+```ts [Nitro]
+// routes/__my-tool/[...path].ts
+// routes/__my-tool/index.ts
+// for the namespace root, since a catch-all doesn't match its own empty path.
+import { defineHandler } from 'nitro'
+import { devtools } from '../../devtools'
+
+export default defineHandler(event => devtools.handler(event.req))
+```
+
 ```ts [Hono]
 // server.ts
 // `serve()` hands back the node server the socket rides on
@@ -69,6 +79,31 @@ const devtools = g.devtools ??= initDevframe(myDevframe, {
   ws: { sidecar: true },
 })
 export const GET = devtools.handler
+```
+
+```ts [Nuxt]
+// server/middleware/devtools.ts
+import { devtools } from '../devtools'
+
+export default defineEventHandler((event) => {
+  const { pathname } = new URL(toWebRequest(event).url)
+  // `devtools.base` is the normalized mount base — no repeated string.
+  if (pathname.startsWith(devtools.base) || pathname === devtools.base.slice(0, -1))
+    return devtools.handler(toWebRequest(event))
+})
+```
+
+```ts [SvelteKit]
+// src/routes/%5F_my-tool/[...path]/+server.ts
+import myDevframe from '$lib/devframe'
+import { initDevframe } from 'devframe/initiate'
+
+const g = globalThis as { devtools?: ReturnType<typeof initDevframe> }
+const devtools = g.devtools ??= initDevframe(myDevframe, {
+  base: '/__my-tool/',
+  ws: { sidecar: true },
+})
+export const GET = ({ request }) => devtools.handler(request)
 ```
 
 :::

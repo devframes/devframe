@@ -135,4 +135,4 @@ Next has no native hub viewer, so this scope stays quiet. `createDevframeNextHos
 
 - [Vite](./vite)
 - [Hub](/guide/hub) — `initHub`, `ctx.install`, `DevframeHost`
-- [hub-next](/examples/hub-next)
+- [hub-next](https://github.com/devframes/devframe/tree/main/examples/hub-next)

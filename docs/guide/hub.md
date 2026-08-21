@@ -8,7 +8,7 @@ outline: deep
 
 <figure class="screenshot">
   <img src="/screenshots/hub-1.png" alt="Hub screenshot" />
-  <figcaption>Orchestrating multiple devtools (from <a href="/examples/hub-vite.html">A Playground</a>)</figcaption>
+  <figcaption>Orchestrating multiple devtools (from <a href="https://github.com/devframes/devframe/tree/main/examples/hub-vite">A Playground</a>)</figcaption>
 </figure>
 
 ## What the hub adds

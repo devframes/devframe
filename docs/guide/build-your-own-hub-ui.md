@@ -97,7 +97,7 @@ rebrands rendered content.
 ## Reference points
 
 - `packages/hub-ui` — the full reference viewer (Vue, `@antfu/design`).
-- [`examples/hub-vite`](/examples/hub-vite) and
-  [`examples/hub-next`](/examples/hub-next) — protocol witnesses: hand-rolled
+- [`examples/hub-vite`](https://github.com/devframes/devframe/tree/main/examples/hub-vite) and
+  [`examples/hub-next`](https://github.com/devframes/devframe/tree/main/examples/hub-next) — protocol witnesses: hand-rolled
   viewers in vanilla DOM and React, covering docks, the drawer subsystems, the
   renderer registry, and the missing-renderer fallback.

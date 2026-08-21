@@ -50,7 +50,7 @@ function guideGroups(prefix: string) {
       ],
     },
     {
-      text: 'Visual & agentic',
+      text: 'Agentic',
       items: [
         { text: 'Agent-Native', link: `${prefix}/guide/agent-native` },
       ],
@@ -71,6 +71,12 @@ function guideGroups(prefix: string) {
       items: [
         { text: 'Build Your Own JSON-Render Frontend', link: `${prefix}/guide/build-your-own-json-render-frontend` },
         { text: 'Build Your Own Hub UI', link: `${prefix}/guide/build-your-own-hub-ui` },
+      ],
+    },
+    {
+      text: 'Ecosystem',
+      items: [
+        { text: 'Built with Devframe', link: `${prefix}/guide/built-with` },
       ],
     },
   ] satisfies { text: string, items: DefaultTheme.NavItemWithLink[] }[]
@@ -121,27 +127,6 @@ function pluginsItems(prefix: string) {
   ] satisfies DefaultTheme.NavItemWithLink[]
 }
 
-function examplesItems(prefix: string) {
-  return [
-    { text: 'Overview', link: `${prefix}/examples/` },
-    { text: 'Built with Devframe', link: `${prefix}/examples/built-with` },
-    { text: 'files-inspector', link: `${prefix}/examples/files-inspector` },
-    { text: 'json-render', link: `${prefix}/examples/json-render` },
-    { text: 'streaming-chat', link: `${prefix}/examples/streaming-chat` },
-    { text: 'next-runtime-snapshot', link: `${prefix}/examples/next-runtime-snapshot` },
-    { text: 'hub-vite', link: `${prefix}/examples/hub-vite` },
-    { text: 'hub-next', link: `${prefix}/examples/hub-next` },
-    { text: 'hub-vite-minimal', link: `${prefix}/examples/hub-vite-minimal` },
-    { text: 'hub-next-minimal', link: `${prefix}/examples/hub-next-minimal` },
-    { text: 'hub-nitro-minimal', link: `${prefix}/examples/hub-nitro-minimal` },
-    { text: 'hub-hono-minimal', link: `${prefix}/examples/hub-hono-minimal` },
-    { text: 'hub-fastify-minimal', link: `${prefix}/examples/hub-fastify-minimal` },
-    { text: 'hub-sveltekit-minimal', link: `${prefix}/examples/hub-sveltekit-minimal` },
-    { text: 'hub-deno-minimal', link: `${prefix}/examples/hub-deno-minimal` },
-    { text: 'hub-rsbuild-minimal', link: `${prefix}/examples/hub-rsbuild-minimal` },
-  ] satisfies DefaultTheme.NavItemWithLink[]
-}
-
 export function devframeSidebar(prefix = ''): DefaultTheme.SidebarItem[] {
   return [
     {
@@ -164,10 +149,6 @@ export function devframeSidebar(prefix = ''): DefaultTheme.SidebarItem[] {
     {
       text: 'Plugins',
       items: pluginsItems(prefix),
-    },
-    {
-      text: 'Examples',
-      items: examplesItems(prefix),
     },
   ]
 }

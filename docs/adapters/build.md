@@ -23,7 +23,7 @@ await createBuild(devframe, {
 | Option | Default | Description |
 |--------|---------|-------------|
 | `outDir` | `dist-static` | Output directory (cleared). |
-| `distDir` | `def.clientAssets` (deprecated `def.cli?.distDir` fallback) | SPA dist override (or [remote assets](/guide/client-assets)). |
+| `distDir` | `def.clientAssets` | SPA dist override (or [remote assets](/guide/client-assets)). |
 | `pretty` | `false` | Pretty-print dump JSON. |
 
 The client runs read-only. For a custom URL base, build with relative asset paths (`vite.base: './'`).
