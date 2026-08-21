@@ -4,7 +4,7 @@ outline: deep
 
 # Scoped Context
 
-A scoped context is a namespaced view of the devframe context: it auto-prefixes every RPC id, shared-state key, and streaming channel with your tool's id, and adds a typed, persisted `settings` store. Use it from a single tool's code — server (`ctx.scope`) or browser (`client.scope`).
+A scoped context is a namespaced view of the context: it auto-prefixes every RPC id, shared-state key, and streaming channel with your tool's id, and adds a typed, persisted `settings` store, used from a single tool's code.
 
 ## Server side
 
@@ -30,28 +30,28 @@ export default defineDevframe({
 declare function loadModules(): { id: string }[]
 ```
 
-`ctx.scope(id)` is stable per id, re-exposing the unscoped surfaces (`views`, `diagnostics`, `agent`, `host`, `cwd`, `mode`), swapping in the auto-namespaced `rpc`, and keeping the original as `my.base`.
+`ctx.scope(id)` is stable per id, re-exposing unscoped surfaces (`views`, `diagnostics`, `agent`, `host`, `cwd`, `mode`), swapping in the auto-namespaced `rpc`, and keeping the original as `my.base`.
 
 ## Client side
 
-On the browser, `(await connectDevframe()).scope(id)` gives the matching view, namespaced like the server: `my.rpc` carries `call` / `callEvent` / `callOptional`, `register`, `sharedState`, and `streaming`, and `my.settings` is the settings store.
+`(await connectDevframe()).scope(id)` gives the matching view: `my.rpc` carries `call` / `callEvent` / `callOptional`, `register`, `sharedState`, and `streaming`, plus `my.settings`.
 
 ## Auto-namespacing
 
-Bare names are prefixed `<namespace>:` (`call('get-modules')` → `my-plugin:get-modules`); a name already containing `:` passes through unchanged, reaching another tool (`call('other-plugin:status')`).
+Bare names are prefixed `<namespace>:` (`call('get-modules')` → `my-plugin:get-modules`); a name with `:` passes through unchanged to another tool (`call('other-plugin:status')`).
 
-`register` accepts only bare names; an already-namespaced one throws [`DF0034`](../errors/DF0034) — use `ctx.base.rpc.register` for those.
+`register` accepts only bare names; an already-namespaced one throws [`DF0034`](../errors/DF0034) — use `ctx.base.rpc.register`.
 
 Bare names stay typed: `call('get-modules')` resolves to your [RPC registry](./rpc#type-safe-client-registry) entry, `sharedState('selection')` to the matching [`DevframeRpcSharedStates`](./shared-state#type-safe-keys) key.
 
 ## Settings
 
-`my.settings` is a persisted key-value store at the top level (alongside `my.rpc`), with two scopes:
+`my.settings` is a persisted key-value store (alongside `my.rpc`), with two scopes:
 
 - **`project`** — per-workspace values, under the host's `workspace` dir.
 - **`global`** — per-user values, under the host's `global` dir.
 
-Both are file-backed and synced to the browser over the shared-state protocol; a `set` propagates to every peer and survives restarts.
+Both are file-backed and synced to the browser over the shared-state protocol; a `set` propagates to peers, surviving restarts.
 
 ```ts
 const { settings } = my
@@ -70,7 +70,7 @@ Every method is async; the store resolves on first access.
 
 ### Typed settings
 
-Augment `DevframeSettingsRegistry` to type a namespace's settings once; the scope then types `settings.global` and `settings.project`:
+Augment `DevframeSettingsRegistry` to type a namespace's settings once; the scope types `settings.global` and `settings.project`:
 
 ```ts
 declare module 'devframe' {

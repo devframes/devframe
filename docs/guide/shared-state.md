@@ -4,7 +4,7 @@ outline: deep
 
 # Shared State
 
-Shared state is observable, immutable-by-default state synced between the server and every connected client: mutate a draft and Devframe broadcasts the patches. It survives reconnects — a newly connected client gets the current snapshot first.
+Shared state is observable, immutable-by-default state synced between server and every client, surviving reconnects — a new client gets the snapshot.
 
 ## Overview
 
@@ -25,7 +25,7 @@ flowchart LR
 
 ## Creating state
 
-In `setup`, use a [scoped context](./scoped-context) — `rpc.sharedState(key, options)` namespaces the key:
+A [scoped context](./scoped-context)'s `rpc.sharedState(key, options)` namespaces it:
 
 ```ts
 import { defineDevframe } from 'devframe'
@@ -48,11 +48,11 @@ export default defineDevframe({
 })
 ```
 
-This wraps `ctx.rpc.sharedState.get('my-devframe:state', options)`. Keys are namespaced `<devframe-id>:<key>`; the scope applies that prefix so you pass a bare key.
+The scope prefixes `<devframe-id>:` (wrapping `ctx.rpc.sharedState.get(...)`), so pass a bare key.
 
 ## Reading
 
-`state.value()` returns an immutable snapshot:
+`state.value()` returns an immutable snapshot.
 
 ```ts
 const current = state.value()
@@ -62,7 +62,7 @@ console.log(current.count)
 
 ## Mutating
 
-Pass a recipe function to `state.mutate()`:
+Pass a recipe to `state.mutate()`:
 
 ```ts
 state.mutate((draft) => {
@@ -71,11 +71,11 @@ state.mutate((draft) => {
 })
 ```
 
-Devframe applies the recipe to a draft, emits an `updated` event (with `SharedStatePatch[]` if enabled), and broadcasts to all clients. Mutations are idempotent across replay — a `syncIds` set ensures a client's round-tripped patch applies once.
+Devframe applies the recipe to a draft, emits `updated` (with `SharedStatePatch[]` if enabled), and broadcasts to clients; a `syncIds` set keeps mutations idempotent on replay.
 
 ## Patches (advanced)
 
-Enable patches for minimal network diffs; the `updated` event then carries a `Patch[]` alongside the new state:
+Enable patches for minimal network diffs; `updated` then carries `Patch[]`:
 
 ```ts
 const state = await ctx.rpc.sharedState.get('my-devframe:big-state', {
@@ -95,7 +95,7 @@ state.on('updated', (fullState, patches, syncId) => {
 
 ## Client-side access
 
-The same key is available on the browser RPC client, scoped the same way. Client mutations round-trip through the server before reappearing locally, so `state.value()` always reflects the authoritative source.
+The same key is on the browser RPC client, scoped identically; client mutations round-trip the server, keeping `state.value()` authoritative.
 
 ```ts
 import { connectDevframe } from 'devframe/client'
@@ -113,7 +113,7 @@ state.mutate((draft) => {
 
 ## Enumerating keys
 
-Both server and client hosts expose `keys()` and `onKeyAdded`:
+Both hosts expose `keys()` and `onKeyAdded`:
 
 ```ts
 for (const key of ctx.rpc.sharedState.keys()) {
@@ -125,11 +125,11 @@ const unsubscribe = ctx.rpc.sharedState.onKeyAdded((key) => {
 })
 ```
 
-Protocol adapters (e.g. the [MCP adapter](./agent-native)) use this to surface shared state as dynamic resources.
+Protocol adapters (e.g. [MCP](./agent-native)) surface shared state as dynamic resources.
 
 ## Type-safe keys
 
-Augment `DevframeRpcSharedStates` to type each key once; both server and client lookups then stay typed without per-call generics:
+Augment `DevframeRpcSharedStates` to type each key once; lookups stay typed:
 
 ```ts
 declare module 'devframe' {
@@ -142,8 +142,6 @@ declare module 'devframe' {
 }
 ```
 
-Both the direct and scoped lookups then return a state typed to the declared shape.
-
 ## When to use shared state vs RPC
 
 | Use shared state for | Use RPC for |
@@ -152,4 +150,4 @@ Both the direct and scoped lookups then return a state typed to the declared sha
 | Cross-client coordination | Commands / actions with side effects |
 | Data that should reappear after reconnect | Event streams (prefer `broadcast` / `callEvent`) |
 
-For short-lived actions and events, use `ctx.rpc.register` + `ctx.rpc.broadcast` — see [RPC](./rpc).
+For actions and events, use `ctx.rpc.register` + `broadcast` ([RPC](./rpc)).

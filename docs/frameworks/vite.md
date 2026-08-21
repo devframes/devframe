@@ -4,9 +4,9 @@ outline: deep
 
 # Vite
 
-`@devframes/vite` splits into **`@devframes/vite/single`** (dev-serve one devframe's SPA) and [**`@devframes/vite/hub`**](#mounting-a-hub) (mount a whole devframes-hub); the bare import throws.
+`@devframes/vite` splits into **`@devframes/vite/single`** (dev-serve one devframe's SPA) and [**`@devframes/vite/hub`**](#mounting-a-hub) (mount a devframes-hub); the bare import throws.
 
-The `single` scope exports `devframeVitePlugin`, `devframeViteBridge`, and `devframeVite`; also used by [`@devframes/nuxt`](./nuxt).
+`single` exports `devframeVitePlugin`, `devframeViteBridge`, and `devframeVite`; also used by [`@devframes/nuxt`](./nuxt).
 
 ```ts
 import { devframeViteBridge, devframeVitePlugin } from '@devframes/vite/single'
@@ -24,32 +24,32 @@ export default defineConfig({
 
 ## `devframeVitePlugin` — static mount
 
-Mounts `def.clientAssets` at `options.base` (`/__<id>/` default) with SPA fallback; no RPC server. `clientAssets` accepts a local directory or [remote assets](/guide/client-assets).
+Mounts `def.clientAssets` at `options.base` (`/__<id>/` default) with SPA fallback. `clientAssets` accepts a local directory or [remote assets](/guide/client-assets).
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `base` | `def.basePath ?? '/__<id>/'` | Mount path inside the Vite dev server. |
+| `base` | `def.basePath ?? '/__<id>/'` | Mount path. |
 
 ## `devframeViteBridge` — RPC bridge
 
-The host app owns the SPA; devframe spawns a separate RPC + WS server and registers Vite middleware at `<base>__connection.json`. To share the Vite server's port instead of a side-car, pass its HTTP server to [`initDevframe`](/adapters/initiate) / `initHub` via `server`.
+Devframe spawns a separate RPC + WS server and registers Vite middleware at `<base>__connection.json`. To share Vite's port, pass its HTTP server to [`initDevframe`](/adapters/initiate) / `initHub` via `server`.
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `base` | `def.basePath ?? '/__<id>/'` | Mount path inside the Vite dev server. |
-| `port` | share Vite's HTTP server | Pin a side-car port for the RPC socket instead. |
+| `base` | `def.basePath ?? '/__<id>/'` | Mount path. |
+| `port` | share Vite's HTTP server | Pin a side-car RPC port instead. |
 | `host` | `def.cli?.host ?? 'localhost'` | Bind host for a pinned side-car. |
-| `flags` | — | Forwarded to `def.setup(ctx, { flags })`. |
+| `flags` | — | To `def.setup(ctx, { flags })`. |
 | `auth` | gated (interactive OTP) | `false` to opt out, or a `DevframeAuthHandler` for a custom scheme. |
-| `mcp` | `def.cli?.mcp` | `true` or `McpRouteOptions` to expose the route-based MCP server at `<base>__mcp`. |
+| `mcp` | `def.cli?.mcp` | `true` or `McpRouteOptions` to expose the MCP route at `<base>__mcp`. |
 
 ## `devframeVite` — convenience wrapper
 
-`devframeVite(def, { bridge, ...opts })` forwards to `devframeViteBridge` when `bridge: true`, else `devframeVitePlugin` — use them directly when a devframe needs both (as `terminals`/`code-server` do).
+`devframeVite(def, { bridge, ...opts })` forwards to `devframeViteBridge` when `bridge: true`, else `devframeVitePlugin`; use them directly when a devframe needs both.
 
 ## Mounting a hub
 
-`@devframes/vite/hub` mounts a [devframes-hub](/guide/hub) with one `viteDevframeHub()` plugin: wraps `initHub`, shares Vite's HTTP server, defaults dock UI to `@devframes/hub-ui`.
+`@devframes/vite/hub` mounts a [devframes-hub](/guide/hub) with `viteDevframeHub()`: wraps `initHub`, shares Vite's HTTP server, defaults dock UI to `@devframes/hub-ui`.
 
 
 ```ts
@@ -61,4 +61,4 @@ export default defineConfig({
 })
 ```
 
-Pass `ui` to swap the viewer or `ui: false` for headless (via `@devframes/vite/hub/client`'s `mountDevframeHubClient()`). Vite DevTools (`@vitejs/devtools-kit`) supports this natively, so the plugin recommends it once (`{ quiet: true }` to silence).
+Pass `ui` to swap the viewer, `ui: false` for headless (via `@devframes/vite/hub/client`'s `mountDevframeHubClient()`). Vite DevTools (`@vitejs/devtools-kit`) supports this natively; recommended once (`{ quiet: true }` to silence).

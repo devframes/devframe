@@ -83,7 +83,7 @@ my-tool mcp                                 # agent exposure
 
 ## Nuxt SPA setup
 
-The devframe helper module sets `app.baseURL: './'` / `vite.base: './'` and injects a client plugin wiring `connectDevframe()` into `$rpc`:
+The Nuxt helper sets `app.baseURL: './'` / `vite.base: './'` and wires `connectDevframe()` into `$rpc` ([Nuxt docs](/frameworks/nuxt)).
 
 ```ts [nuxt.config.ts]
 export default defineNuxtConfig({
@@ -96,11 +96,9 @@ export default defineNuxtConfig({
 })
 ```
 
-Point `clientAssets` at `./dist/public`; see the [Nuxt docs](/frameworks/nuxt).
-
 ## Next.js SPA setup
 
-For a Next.js App Router SPA, use static export (devframe owns HTTP+RPC, Next.js produces the bundle). Three settings cover it:
+For a Next.js App Router SPA, static export needs:
 
 ```js [next.config.mjs]
 /** @type {import('next').NextConfig} */
@@ -112,11 +110,7 @@ export default {
 }
 ```
 
-- **`output: 'export'`** emits the SPA as static HTML/JS/CSS.
-- **`assetPrefix: '.'`** makes the build base-agnostic (`./_next/...`), so one bundle works at any mount path.
-- **`trailingSlash: true`** emits `foo/index.html`, composing with devframe's directory-with-index resolution.
-
-`next build` writes to `<project>/out/`; copy it wherever you point `clientAssets`:
+`assetPrefix: '.'` keeps assets base-agnostic; `trailingSlash: true` emits `foo/index.html` for directory-with-index resolution. Copy `next build`'s `out/` to `clientAssets`:
 
 ```json [package.json]
 {
@@ -136,11 +130,11 @@ defineDevframe({
 })
 ```
 
-Call `connectDevframe()` in a Client Component, sharing it via React context — see [Client](./client) and [`examples/next-runtime-snapshot`](https://github.com/devframes/devframe/tree/main/examples/next-runtime-snapshot).
+Call `connectDevframe()` in a Client Component — see [Client](./client) and [`examples/next-runtime-snapshot`](https://github.com/devframes/devframe/tree/main/examples/next-runtime-snapshot).
 
 ## Connecting from the client
 
-With the Nuxt helper, use `$rpc` directly:
+With the Nuxt helper, use `$rpc`:
 
 ```ts [app/composables/payload.ts]
 export async function fetchPayload() {
@@ -149,7 +143,7 @@ export async function fetchPayload() {
 }
 ```
 
-Otherwise, call `connectDevframe()`:
+Otherwise call `connectDevframe()`, which auto-resolves the connection descriptor relative to the page — dev (WebSocket) and static snapshot alike:
 
 ```ts
 import { connectDevframe } from 'devframe/client'
@@ -158,11 +152,9 @@ const my = (await connectDevframe()).scope('my-tool')
 const payload = await my.rpc.call('get-payload')
 ```
 
-`connectDevframe` auto-resolves the connection descriptor relative to the page — in dev (WebSocket) and in the built static snapshot (`static` backend reads the baked RPC dump).
-
 ## Typed CLI flags
 
-Declare tool flags with any [Standard Schema](https://standardschema.dev/) validator (valibot/zod/arktype) — validated at parse time, typed at the call site:
+Declare tool flags with any [Standard Schema](https://standardschema.dev/) validator (valibot/zod/arktype), validated at parse and typed at the call site:
 
 ```ts
 import type { InferCliFlags } from 'devframe/adapters/cac'
@@ -191,15 +183,15 @@ defineDevframe({
 })
 ```
 
-The adapter derives each flag's CAC option from its schema — booleans become `--verbose` / `--no-verbose`, else `--depth <value>`. Keys are camelCase in TS, kebab-case on the CLI (`configFile` → `--config-file`). Flags outside your schema (`--host`, `--port`, `cli.configure` additions) pass through.
+Booleans become `--verbose` / `--no-verbose`, else `--depth <value>`; keys are camelCase in TS, kebab-case on the CLI (`configFile` → `--config-file`). Flags outside the schema pass through.
 
 ## Common RPC functions
 
-Prebuilt recipes for opening a file in the editor or revealing a path in the OS explorer live in `devframe/recipes/common-rpc-functions` — see [Helpers → Common RPC Functions](/helpers/common-rpc-functions).
+Recipes for opening files in the editor or OS explorer live in `devframe/recipes/common-rpc-functions` ([Common RPC Functions](/helpers/common-rpc-functions)).
 
 ## Snapshot queries for static builds
 
-When an RPC function returns one payload per build (no varying args), set `snapshot: true`; the build adapter runs the handler once and bakes the result in:
+For an RPC function returning one payload per build, set `snapshot: true`; the build adapter runs the handler once, baking the result in:
 
 ```ts
 defineRpcFunction({
@@ -212,11 +204,11 @@ defineRpcFunction({
 })
 ```
 
-At build it runs once; the result is the no-args fallback for any deployed `rpc.call('my-tool:get-payload', …)`. In dev it's a normal `query`.
+It's the no-args fallback for any deployed `rpc.call('my-tool:get-payload', …)`; a normal `query` in dev.
 
 ## On-disk caching
 
-Persistence is the app's job ([`unstorage`](https://unstorage.unjs.io/) recommended). Keep cache paths under `node_modules/.cache/<your-devtool-id>/` so they rotate with `pnpm install`:
+Persistence is the app's job ([`unstorage`](https://unstorage.unjs.io/) recommended); keep cache paths under `node_modules/.cache/<your-devtool-id>/` to rotate with `pnpm install`.
 
 ```ts
 import { resolve } from 'pathe'
@@ -247,7 +239,7 @@ defineDevframe({
 
 ## Live-reload on config changes
 
-Filesystem watching is the app's job — wire your own chokidar and signal the client via shared state:
+Filesystem watching is the app's job — wire chokidar, signal the client via shared state.
 
 ```ts [src/cli.ts]
 defineDevframe({
@@ -276,7 +268,7 @@ defineDevframe({
 })
 ```
 
-On the client, subscribe to the version key:
+On the client:
 
 ```ts
 const my = (await connectDevframe()).scope('my-tool')
@@ -286,15 +278,13 @@ version.on('updated', () => fetchPayload().then(setData))
 
 ## Use your own CLI framework
 
-Reach for the three factories `createCac` wraps when you own a CLI framework (commander, yargs, oclif) or want a different command structure:
+Own a CLI framework (commander, yargs, oclif)? Use the three factories `createCac` wraps, against one `DevframeDefinition`:
 
 | Building block | Entry |
 |----------------|-------|
 | `createDevServer(def, opts?)` | `devframe/adapters/dev` |
 | `createBuild(def, opts?)`     | `devframe/adapters/build` |
 | `createMcpServer(def, opts?)` | `devframe/adapters/mcp` |
-
-All run against the same `DevframeDefinition`:
 
 ```ts [src/cli.ts]
 import process from 'node:process'
@@ -334,9 +324,7 @@ program
 await program.parseAsync()
 ```
 
-`createDevServer` returns a `StartedServer` handle: `origin`, `port`, `app`, `ws`, `rpcGroup`, `connectionMeta()`, `close()`.
-
-For typed flags, `parseCliFlags(schema, rawBag)` (from `devframe/adapters/cac`) validates a commander/yargs flag bag against a `CliFlagsSchema` — the same `defineCliFlags(...)` value from `cli.flags`.
+`createDevServer` returns a `StartedServer` handle (`origin`, `port`, `app`, `ws`, `rpcGroup`, `connectionMeta()`, `close()`). For typed flags, `parseCliFlags(schema, rawBag)` (`devframe/adapters/cac`) validates a commander/yargs bag against the `cli.flags` `CliFlagsSchema`.
 
 ## See also
 

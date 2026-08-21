@@ -4,7 +4,7 @@ outline: deep
 
 # Hub
 
-`@devframes/hub` adds orchestration for many devtools sharing a UI: a dock registry, terminal aggregation, message/toast queue, and command palette. It ships no UI — each framework kit provides its own atop the hub's RPC + shared-state protocol.
+`@devframes/hub` orchestrates many devtools sharing a UI: a dock registry, terminal aggregation, message/toast queue, and command palette. It ships no UI — each framework kit provides its own atop the hub's RPC + shared-state protocol.
 
 <figure class="screenshot">
   <img src="/screenshots/hub-1.png" alt="Hub screenshot" />
@@ -13,31 +13,31 @@ outline: deep
 
 ## What the hub adds
 
-A hub-aware node context (`DevframeHubContext`) adds four subsystems to `DevframeNodeContext`:
+`DevframeHubContext` adds four subsystems to `DevframeNodeContext`:
 
 | Subsystem | Surface | Purpose |
 |---|---|---|
-| `ctx.docks` | `register / update / values / activate` | Dock entries (iframes, launchers, custom-render) and groups; the union is **open** for opt-in types. `activate(dockId, params?)` sets the active dock — see [Cross-iframe dock activation](#cross-iframe-dock-activation). |
-| `ctx.terminals` | `register / startChildProcess` | Aggregate terminal sessions, streaming output; the source of truth for existing sessions — see [Terminals](/plugins/terminals#hub-aggregation). |
+| `ctx.docks` | `register / update / values / activate` | Dock entries (iframes, launchers, custom-render) and groups; `activate(dockId, params?)` sets the active dock ([Cross-iframe dock activation](#cross-iframe-dock-activation)). |
+| `ctx.terminals` | `register / startChildProcess` | Aggregate terminal sessions, streaming output ([Terminals](/plugins/terminals#hub-aggregation)). |
 | `ctx.messages` | `add / update / remove / clear` | Server-side toast/notification queue (FIFO, capped at 1000). |
 | `ctx.commands` | `register / execute / list` | Hierarchical command palette with keybindings and `when` clauses. |
 
-Data-driven UI panels are an opt-in [JSON-Render](/guide/json-render) integration (a `json-render` dock type), no hub dependency.
+Data-driven UI panels are an opt-in [JSON-Render](/guide/json-render) integration (a `json-render` dock type).
 
 ## Built-in RPC
 
-Every hub context auto-registers these client-callable RPC functions, type-checked by `rpc.call(...)`:
+Every hub context auto-registers these client-callable functions:
 
 - `hub:commands:execute` — invoke a server command by id.
 - `hub:docks:activate` — switch the active dock ([Cross-iframe dock activation](#cross-iframe-dock-activation)).
 - `hub:messages:add` / `update` / `remove` / `clear` — write the messages feed.
 - `hub:terminals:write` / `resize` — drive a PTY session by id.
 
-Host-specific capabilities (open in editor, reveal in finder) ship as kit-registered RPC functions.
+Host-specific capabilities (open in editor, reveal in finder) ship as kit-registered functions.
 
 ## Commands as agent tools
 
-A server command with an `agent` field ([agent surface](./agent-native)) becomes a `ctx.agent` tool for MCP clients:
+A server command with an `agent` field ([agent surface](./agent-native)) becomes a `ctx.agent` MCP tool:
 
 ```ts
 ctx.commands.register({
@@ -51,11 +51,11 @@ ctx.commands.register({
 })
 ```
 
-`args` takes positional [Standard Schema](https://standardschema.dev/) schemas (a single `v.object(...)` unwraps into the input object); omit for zero-arg. `safety` defaults to `'action'`. `when` clauses are unenforced for agent calls.
+`args` takes positional [Standard Schema](https://standardschema.dev/) schemas (a single `v.object(...)` unwraps into the input); omit for zero-arg. `safety` defaults to `'action'`; `when` clauses are unenforced for agent calls.
 
 ## Cross-iframe dock activation
 
-A mounted devframe's iframe can't reach the shell's active-dock state; `hub:docks:activate` asks the hub to switch it.
+A mounted devframe's iframe uses `hub:docks:activate` to switch the active dock.
 
 ```ts
 // From inside a mounted devframe's iframe (its own RPC client):
@@ -65,18 +65,16 @@ await rpc.call('hub:docks:activate', {
 })
 ```
 
-It mirrors into the `devframe:docks:active` shared-state slot, so a dock mounting in response converges on it. `params` is an opaque bag the target dock reads (the [terminals dock](/plugins/terminals#focusing-a-session) reads `params.sessionId`); unknown ids no-op ([DF8107](/errors/DF8107)).
-
-Server-side: `ctx.docks.activate(dockId, params?)`.
+It mirrors into the `devframe:docks:active` shared-state slot; the [terminals dock](/plugins/terminals#focusing-a-session) reads `params.sessionId`, unknown ids no-op ([DF8107](/errors/DF8107)). Server-side: `ctx.docks.activate(dockId, params?)`.
 
 ## Process-control launchers
 
-A `type: 'launcher'` dock entry is a one-click action tile. Three optional `launcher` fields turn it into a live process controller:
+A `type: 'launcher'` dock entry is a one-click action tile. Three optional `launcher` fields make it a live process controller:
 
 | Field | Purpose |
 |---|---|
-| `command` | Bound command id; out-of-process viewers dispatch via `hub:commands:execute`. Register a handler via `ctx.commands`. |
-| `terminalSessionId` | Tracked terminal session id; a "view in terminal" action calls `hub:docks:activate` with the terminals dock id and `{ sessionId }`. |
+| `command` | Bound command id; out-of-process viewers dispatch via `hub:commands:execute` (register a handler via `ctx.commands`). |
+| `terminalSessionId` | Tracked session id; a "view in terminal" action calls `hub:docks:activate` with the terminals dock id and `{ sessionId }`. |
 | `digest` | Latest progress line, shown inline; patch via `docks.update()`. |
 
 `onLaunch` lets a same-process host invoke directly; provide `command`, `onLaunch`, or both.
@@ -115,7 +113,7 @@ async function runBuild() {
 
 ## Mounting a devframe into a hub
 
-`ctx.install(def)` registers a `DevframeDefinition` as a dock and runs its `setup(ctx)` — the imperative counterpart to `initHub`'s `devframes` list:
+`ctx.install(def)` registers a `DevframeDefinition` as a dock and runs its `setup(ctx)` — the imperative counterpart to `initHub`'s `devframes` list.
 
 ```ts
 import { createHubContext } from '@devframes/hub/node'
@@ -124,11 +122,11 @@ const ctx = await createHubContext({ cwd, host, mode: 'dev' })
 await ctx.install(myDevframe)
 ```
 
-Framework kits wrap this in a plugin shell (`@vitejs/devtools-kit`'s `createPluginFromDevframe`).
+Framework kits wrap this in a plugin shell (e.g. `@vitejs/devtools-kit`'s `createPluginFromDevframe`).
 
 ### Connecting embedded SPAs
 
-A mounted SPA loads at `/__<id>/` and calls `connectDevframe()`, fetching `./__connection.json`. `ctx.install` serves it via the host's `mountConnectionMeta(base)`:
+A mounted SPA loads at `/__<id>/` and calls `connectDevframe()`, which fetches `./__connection.json` — served by the host's `mountConnectionMeta(base)`:
 
 ```ts
 const host: DevframeHost = {
@@ -148,11 +146,11 @@ const host: DevframeHost = {
 }
 ```
 
-A host omitting `mountConnectionMeta` (with servable `clientAssets`) triggers [`DF8106`](https://devfra.me/errors/DF8106) and falls back to same-origin inheritance.
+Omitting `mountConnectionMeta` (with servable `clientAssets`) triggers [`DF8106`](https://devfra.me/errors/DF8106) and falls back to same-origin inheritance.
 
 ### Bundled hosts (Next.js)
 
-Load node-side plugin packages via a dynamic `import()` with `webpackIgnore`/`turbopackIgnore` comments so Next's bundler keeps them as runtime imports:
+Load node-side plugin packages via dynamic `import()` with `webpackIgnore`/`turbopackIgnore` comments:
 
 ```ts
 const pkgs = ['@devframes/plugin-git', '@devframes/plugin-terminals']
@@ -166,18 +164,16 @@ for (const def of defs)
   await ctx.install(def)
 ```
 
-SPAs serve at `/__<id>/` with relative assets; set `skipTrailingSlashRedirect` so paths resolve under the mount base:
+SPAs serve at `/__<id>/` with relative assets; set `skipTrailingSlashRedirect`:
 
 ```js
 // next.config.mjs
 export default { skipTrailingSlashRedirect: true }
 ```
 
-[`examples/hub-next/`](https://github.com/devframes/devframe/tree/main/examples/hub-next) mounts the built-in plugins this way.
-
 ### Duplicate devframes
 
-When a devframe shares an already-mounted `id`, `duplicationStrategy` decides; by default the first wins:
+When a devframe shares an already-mounted `id`, `duplicationStrategy` decides:
 
 | Strategy | Behavior |
 |---|---|
@@ -196,7 +192,7 @@ defineDevframe({
 
 ## Grouping dock entries
 
-Related dock entries collapse under one dock-bar button (a `type: 'group'` entry); an entry whose `groupId` matches the group's `id` is a member.
+Related dock entries collapse under one dock-bar button (a `type: 'group'` entry); an entry whose `groupId` matches the group's `id` joins it.
 
 ```ts
 ctx.docks.register({
@@ -218,22 +214,15 @@ ctx.docks.register({
 })
 ```
 
-`groupId` (on any entry kind) makes it a member; group and members stay independent top-level entries in `devframe:docks`. `defaultChildId` opens on activation.
-
-Grouping affects the dock bar, not iframes. To share **one** soft-navigated iframe, give docks a shared `frameId` and mark the anchor with `subTabs` — see [Shared-iframe soft navigation](./client-context#shared-iframe-soft-navigation).
+Group and members stay independent top-level entries in `devframe:docks`; `defaultChildId` opens on activation. Grouping affects the dock bar, not iframes — to share **one** soft-navigated iframe, give docks a shared `frameId` and mark the anchor with `subTabs` ([Shared-iframe soft navigation](./client-context#shared-iframe-soft-navigation)).
 
 ### The dual role of `category`
 
-`category` sets an entry's outer dock-bar bucket (ordered by `DEFAULT_CATEGORIES_ORDER`), but shifts meaning in a group:
-
-- **Ungrouped entry** — `category` is the outer dock-bar bucket (default `'default'`).
-- **Grouped entry** — the outer bucket comes from the **group's** `category`; the member's own `category` becomes an **in-group sub-category**.
-
-A member whose `groupId` never resolves renders as a top-level entry using its own `category`.
+`category` (ordered by `DEFAULT_CATEGORIES_ORDER`, default `'default'`) sets an **ungrouped** entry's outer dock-bar bucket. A **grouped** entry takes its outer bucket from the **group's** `category`, and its own `category` becomes an **in-group sub-category**; a member whose `groupId` never resolves renders top-level under its own `category`.
 
 #### Known categories
 
-`DEFAULT_CATEGORIES_ORDER` (from `@devframes/hub`, `/node`, `/client`, `/constants`) names the default buckets, app-first:
+`DEFAULT_CATEGORIES_ORDER` (from `@devframes/hub`, `/node`, `/client`, `/constants`) names the default buckets:
 
 | Category | Weight | Typical use |
 |---|---|---|
@@ -252,7 +241,7 @@ Kits can interleave category ids or override weights; an unknown category sorts 
 
 ## The protocol — what the UI sees
 
-A hub-aware UI imports no hub classes; it reads three shared-state keys and one RPC method:
+A hub-aware UI imports no hub classes; it reads these shared-state keys and RPC methods:
 
 | Channel | Type | What it carries |
 |---|---|---|
@@ -263,20 +252,18 @@ A hub-aware UI imports no hub classes; it reads three shared-state keys and one 
 | `hub:commands:execute` RPC | `(id, ...args) => unknown` | Server-side command dispatch. |
 | `hub:docks:activate` RPC | `({ dockId, params? }) => void` | Switch the active dock. |
 
-Broadcast notifications (`devframe:docks:activate`, `devframe:terminals:updated`, `devframe:messages:updated`) arrive via `rpc.client.register(...)`; the client host registers `devframe:docks:activate` for you. See [Events Reference](./events).
+Broadcast notifications (`devframe:docks:activate`, `devframe:terminals:updated`, `devframe:messages:updated`) arrive via `rpc.client.register(...)`; the client host registers `devframe:docks:activate` for you ([Events Reference](./events)).
 
 ## Running plugin code in the host page
 
-The hub also ships a headless browser runtime, `createDevframeClientHost()` (`@devframes/hub/client`): booted in the host page, it assembles the client context and imports each dock entry's client script. See [Client Scripts & Client Context](./client-context).
+The hub ships a headless browser runtime, `createDevframeClientHost()` (`@devframes/hub/client`): booted in the host page, it assembles the client context and imports each dock entry's client script ([Client Scripts & Client Context](./client-context)).
 
 ## Example
 
-Two minimal hubs mount every built-in plugin behind an icon dock:
+Two minimal hubs mount every built-in plugin behind an icon dock, plus a "Tabbed Tool" demonstrating [shared-iframe soft navigation](./client-context#shared-iframe-soft-navigation):
 
 - [`examples/hub-vite/`](https://github.com/devframes/devframe/tree/main/examples/hub-vite) — a ~120-line Vite host with a vanilla DOM UI.
 - [`examples/hub-next/`](https://github.com/devframes/devframe/tree/main/examples/hub-next) — the same, from a Next.js App Router app.
-
-Both also mount a "Tabbed Tool" demonstrating [shared-iframe soft navigation](./client-context#shared-iframe-soft-navigation).
 
 ## Diagnostics
 

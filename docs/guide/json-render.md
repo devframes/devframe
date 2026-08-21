@@ -4,22 +4,19 @@ outline: deep
 
 # JSON-Render
 
-JSON-render lets a devframe describe a UI as **data** — a serializable spec of
-components — that any compatible frontend renders. It is **opt-in**: a plain app
-pulls zero JSON-render dependencies. Two packages:
+JSON-render describes a UI as **data** — a serializable component spec any
+frontend renders. **Opt-in**: a plain app pulls zero JSON-render
+dependencies. Two packages:
 
-- **`@devframes/json-render`** — the framework-neutral protocol layer (spec/catalog
-  types, base catalog, prop schemas, view reference, node runtime factory). Builds on
-  [`@json-render/core`](https://www.npmjs.com/package/@json-render/core), with no
-  Vue or DOM code.
-- **`@devframes/json-render-ui`** — the reference Vue frontend implementing the
-  base catalog with [`@antfu/design`](https://github.com/antfu/design); any
-  compatible frontend can replace it.
+- **`@devframes/json-render`** — framework-neutral protocol layer (spec/catalog
+  types, prop schemas, view refs, node runtime), built on
+  [`@json-render/core`](https://www.npmjs.com/package/@json-render/core).
+- **`@devframes/json-render-ui`** — reference Vue frontend implementing the
+  base catalog with [`@antfu/design`](https://github.com/antfu/design).
 
 ## Authoring a view
 
-`createJsonRenderView` registers the spec as shared state, validates props at
-ingress, and returns a handle:
+`createJsonRenderView` registers the spec as shared state, returning a handle:
 
 ```ts
 import { createJsonRenderView } from '@devframes/json-render/node'
@@ -50,39 +47,36 @@ export default defineDevframe({
 })
 ```
 
-The view id is scoped — `devframe:json-render:<scope>:<id>`; `scope` defaults to
+The view id is scoped `devframe:json-render:<scope>:<id>`, `scope` defaulting to
 the namespace or `global`. Diagnostics fire on invalid props
-([DF0038](/errors/DF0038)), a
-duplicate id ([DF0039](/errors/DF0039)), a disposed-view use
-([DF0040](/errors/DF0040)), and a non-serializable spec
+([DF0038](/errors/DF0038)), duplicate id ([DF0039](/errors/DF0039)), disposed-view
+use ([DF0040](/errors/DF0040)), non-serializable spec
 ([DF0041](/errors/DF0041)).
 
 ## The base catalog
 
 Catalog v1 ships fourteen components — `Stack`, `Card`, `Text`, `Badge`,
 `Button`, `Icon`, `Divider`, `TextInput`, `Switch`, `KeyValueTable`,
-`DataTable`, `CodeBlock`, `Progress`, `Tree`. A Devframes spec **is** an
-`@json-render/core` `Spec` plus a per-component Zod prop schema
-(`basePropSchemas`), validated at ingress (server) and render time (client);
-`$state` / `$bindState` bindings are accepted for scalar props.
+`DataTable`, `CodeBlock`, `Progress`, `Tree`. A spec **is** an `@json-render/core`
+`Spec` plus a per-component Zod prop schema (`basePropSchemas`), validated at
+ingress (server) and render time (client); `$state` / `$bindState` bindings work
+on scalar props.
 
 ## Actions and state
 
 - **State** is a JSON-serializable `Record<string, unknown>` addressed by JSON
   Pointer.
 - **Actions** are unrestricted: an element event dispatches an RPC call of the
-  same name — no allowlist, so a spec can invoke any RPC method the client can
-  reach. The reference bridge tracks per-action loading and surfaces RPC failures.
+  same name — no allowlist.
 - **Reserved built-ins** (`setState`, `pushState`, `removeState`,
-  `validateForm`) are handled client-side and never bridged to RPC.
+  `validateForm`) are handled client-side, never bridged to RPC.
 
 ## Rendering standalone
 
 ### Out-of-box SPA (no client build)
 
-`@devframes/json-render-ui/spa` ships a prebuilt renderer, so an app serves a
-JSON-render UI with no client build. Wrap the definition with
-`createJsonRenderDevframe` to point `clientAssets` at the shipped SPA:
+`createJsonRenderDevframe` points `clientAssets` at the prebuilt
+`@devframes/json-render-ui/spa` renderer:
 
 ```ts
 import { createJsonRenderDevframe } from '@devframes/json-render-ui/spa'
@@ -102,31 +96,25 @@ export default createJsonRenderDevframe({
 })
 ```
 
-The SPA discovers views from the **view index** (`JSON_RENDER_INDEX_KEY`), a
-shared state the node factory maintains; a single view renders full-bleed,
-multiple get a top-bar segmented switcher labeled by `title`.
+The SPA discovers views from the **view index** (`JSON_RENDER_INDEX_KEY`); one
+view renders full-bleed, multiple get a `title`-labeled switcher.
 
 ### Custom frontend
 
-A custom frontend renders straight from shared state: connect with
-`connectDevframe()`, read the view's state (keyed
-`devframe:json-render:<scope>:<id>`), subscribe to its `updated` events, and
-render each element with your own registry — the [Next hub
-example](https://github.com/devframes/devframe/tree/main/examples/hub-next) has a React renderer.
-
-In a **static** build the spec + state are snapshotted read-only; actions report
-as unavailable, while local state and bindings still work.
+A custom frontend renders from shared state: connect with `connectDevframe()`,
+read the view's state (keyed `devframe:json-render:<scope>:<id>`), subscribe to
+`updated` events, and render with your registry — the [Next
+hub example](https://github.com/devframes/devframe/tree/main/examples/hub-next) has a React renderer. In a
+**static** build spec + state are read-only: actions unavailable, local
+state and bindings still work.
 
 ### The reference frontend
 
-`@devframes/json-render-ui` ships two self-contained prebuilt bundles,
-`@devframes/json-render-ui/spa` and `@devframes/json-render-ui/hub`, pulling no
-frontend package into an app's graph.
+`@devframes/json-render-ui` ships prebuilt `/spa` and `/hub` bundles.
 
 ## Rendering inside a hub
 
-The `@devframes/json-render/hub` subpath adds the `json-render` dock type, routed
-through the hub's renderer registry:
+`@devframes/json-render/hub` adds a `json-render` dock type:
 
 ```ts
 // server — register a dock carrying the view's serializable reference,
@@ -147,13 +135,10 @@ initHub({
 })
 ```
 
-The hub serves the module and publishes it in the [renderer
-manifest](./hub-initiate#renderer-modules); the viewer imports it lazily on first
-mount of a `json-render` dock, or shows a missing-renderer fallback without a
-registration.
-
-A host page can register a renderer **locally** instead — any implementation of
-the `JsonRenderDockRenderer` contract, taking precedence over the manifest:
+The hub publishes the module in the [renderer
+manifest](./hub-initiate#renderer-modules), lazily imported on first mount (else a
+missing-renderer fallback). A host page can register a
+`JsonRenderDockRenderer` **locally** instead, overriding the manifest:
 
 ```ts
 // host page — a locally-bundled frontend wins over the manifest module
@@ -171,18 +156,13 @@ if (result.status === 'mounted')
 ```
 
 The dock carries a serializable `JsonRenderViewRef` in two shapes: `{ stateKey }`
-points at a live shared state (from `createJsonRenderView`), and `{ spec }`
-embeds the spec inline for a browser-synthesized view (see [client-only
-docks](./client-context#client-only-docks)).
+points at live shared state (`createJsonRenderView`); `{ spec }` embeds it inline
+for a browser-synthesized [client-only dock](./client-context#client-only-docks).
 
 ## Swapping the frontend
 
-The contract lives in the protocol package: `@devframes/json-render/hub` exports
-`JsonRenderDockRenderer` and `JsonRenderDockMountOptions`.
-`@devframes/json-render-ui` is the reference implementation, not a hard
-dependency; the hub acquires no Vue. A frontend's component registry is pluggable
-too, to render a subset or theme the built-ins.
-
+`@devframes/json-render/hub` exports the contract — `JsonRenderDockRenderer` and
+`JsonRenderDockMountOptions`; `@devframes/json-render-ui` is the pluggable
+reference implementation.
 See [Build your own JSON-Render frontend](./build-your-own-json-render-frontend)
-and the [`json-render` example](https://github.com/devframes/devframe/tree/main/examples/json-render) for a runnable end-to-end
-app.
+and the [`json-render` example](https://github.com/devframes/devframe/tree/main/examples/json-render).

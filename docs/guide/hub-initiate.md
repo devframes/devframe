@@ -1,6 +1,6 @@
 # Serve a Hub Anywhere
 
-`initHub()` from `@devframes/hub/initiate` puts a whole multi-devframe devtools install behind one web-standard handler: mount it on a catch-all route and every frame, the shared RPC socket, auth gate, discovery, and optional UI live under one namespace.
+`initHub()` from `@devframes/hub/initiate` serves a whole multi-devframe devtools install from one web-standard handler on a catch-all route.
 
 ```ts
 import { createUi } from '@devframes/hub-ui'
@@ -18,20 +18,13 @@ export const hub = initHub({
 })
 ```
 
-`base` is required (echoed back as `hub.base`). Each mounted devframe runs `setup()` against the **shared hub context**. The instance mirrors `initDevframe`'s surface (`base`, `handler`, `nodeMiddleware`, `attach`, `handleUpgrade`, `ready`, `context`, `connectionMeta()`, `close()`); see [The Standard Handler](../adapters/initiate#mount-the-handler).
+`base` is required (echoed as `hub.base`); each mounted devframe runs `setup()` against the **shared hub context**. The instance mirrors `initDevframe`'s surface — see [The Standard Handler](../adapters/initiate#mount-the-handler).
 
 ## The shared socket
 
-One transport serves the namespace — four choices, in precedence: `ws.port` pins a side-car; `server` shares the host's `node:http` upgrade at `<base>__ws`; `ws: { sidecar: true }` takes a free port; none leaves the socket to the host — a Node host uses `hub.attach(server)`, Bun/Deno `attachBunWsTransport` / `attachDenoWsTransport`:
+One transport serves the namespace, chosen in precedence: `ws.port` pins a side-car; `server` shares the host's `node:http` upgrade at `<base>__ws`; `ws: { sidecar: true }` takes a free port; none leaves the socket to the host — Node uses `hub.attach(server)`, Bun/Deno `attachBunWsTransport` / `attachDenoWsTransport`.
 
-```ts
-import { serve } from '@hono/node-server'
-
-// `serve()` returns the node server; the hub takes its upgrade events.
-const detach = hub.attach(serve({ fetch: app.fetch, port: 3000 }))
-```
-
-The advertised path is hub-base-absolute (`/__devframes/__ws`), so one meta document resolves to the same socket from every base. Dev-reevaluated hosts (Next, Nitro) memoize the instance on `globalThis`, reusing the hub across reloads.
+The advertised path is hub-base-absolute (`/__devframes/__ws`). Dev-reevaluated hosts (Next, Nitro) memoize it on `globalThis`.
 
 ## The namespace
 
@@ -46,11 +39,11 @@ The advertised path is hub-base-absolute (`/__devframes/__ws`), so one meta docu
 | `__client-imports.js` | dock client-script import map for viewers |
 | `__mcp` | aggregate MCP endpoint over the tool registry (opt-in `mcp`) |
 
-Frame ids become URL segments and are validated: reserved names throw `DF8000`; ids must be route-safe (`DF8004`).
+Frame ids become URL segments, validated: reserved names throw `DF8000`, non-route-safe `DF8004`.
 
 ## The `ui` slot
 
-The hub is headless; `DevframeHubUi` is pure data — whoever fills it decides the viewer:
+The hub is headless; `DevframeHubUi` is pure data:
 
 ```ts
 interface DevframeHubUi {
@@ -61,22 +54,18 @@ interface DevframeHubUi {
 }
 ```
 
-`@devframes/hub-ui`'s `createUi()` is the reference: a standalone viewer + floating dock, from one `<script type="module" src="/__devframes/embedded.js">` tag. Its `setup(ctx)` publishes config to `ctx.staticConfig.ui` (via `ConnectionMeta.configs.ui`):
+`@devframes/hub-ui`'s `createUi()` is the reference (viewer + floating dock); its `setup(ctx)` publishes config to `ctx.staticConfig.ui` (`ConnectionMeta.configs.ui`):
 
 - **`branding`** — rebrand the UI (logo, name, primary color).
 - **`dockPreferences`** — dock-bar: `categoryOrder`, floating-dock `maxVisibleItems`, first-run `defaultMode` (`'float'`/`'edge'`) and `defaultPosition`.
 - **`embeddedVisibility`** — the floating dock's reveal policy:
   - `'normal'` (default) — shows immediately.
-  - `'passive'` — starts hidden (console hint); `Shift+Alt+D` reveals it, persisted per-origin so later sessions start shown.
-  - `'hidden'` — starts hidden; `Shift+Alt+D` reveals it for the session only.
-
-```ts
-createUi({ embeddedVisibility: 'passive', dockPreferences: { defaultMode: 'edge' } })
-```
+  - `'passive'` — hidden until `Shift+Alt+D`, then persisted per-origin (later sessions start shown).
+  - `'hidden'` — hidden until `Shift+Alt+D`, that session only.
 
 ## Renderer modules
 
-An opt-in dock type's renderer (e.g. [JSON-Render](./json-render)) composes at the hub via `initHub({ renderers })`, which takes registrations `{ type, file, importName? }` (`file` is a prebuilt ES module exporting a `DockRenderer`), serves each at `<base>__renderers/<type>.mjs`, and publishes the **renderer manifest** into the `devframe:dock-renderers` slot. Hub-aware clients lazily import a module on first mount:
+A dock type's renderer (e.g. [JSON-Render](./json-render)) composes via `initHub({ renderers })`. Each registration `{ type, file, importName? }` (`file` = a prebuilt ES module exporting a `DockRenderer`) is served at `<base>__renderers/<type>.mjs` and published into the `devframe:dock-renderers` manifest; clients import it lazily on first mount:
 
 ```ts
 import { createUi } from '@devframes/hub-ui'
@@ -88,17 +77,17 @@ initHub({
 })
 ```
 
-A renderer registered in client code (`createDevframeClientHost({ renderers })`) takes precedence over the manifest; a type covered by neither renders the viewer's missing-renderer fallback. Modules are self-styling, shadow-root-safe.
+A client-registered renderer (`createDevframeClientHost({ renderers })`) overrides the manifest; an uncovered type shows the viewer's missing-renderer fallback.
 
 Registrations are validated fail-fast: one module per type (`DF8108`), an existing bundle (`DF8109`), a route-safe type name (`DF8110`).
 
 ## One Auth for the hub
 
-The hub has a **single Auth**: one gate at the shared transport covers every frame, built-ins, and the MCP route. Trust established once (OTP, magic link, or pre-shared token) unlocks the namespace; `auth: false` disables it for single-user localhost.
+The hub's **single Auth** is one gate at the shared transport for every frame, built-ins, and the MCP route; one handshake (OTP, magic link, or pre-shared token) unlocks the namespace; `auth: false` disables it for localhost.
 
 ## Singular vs hub mounting
 
-A devframe's SPA and RPC client code are byte-identical in both cases; differences are environmental:
+A devframe's SPA and RPC client are byte-identical in both cases; only the environment differs:
 
 | What the SPA / RPC client sees | Singular (`/__git/`) | Hub (`/__devframes/git/`) |
 | --- | --- | --- |
@@ -119,4 +108,4 @@ Hosts that assemble `createHubContext` + `ctx.install` themselves pass the conte
 const hub = initHub({ base: DEVFRAMES_HUB_BASE, context: ctx })
 ```
 
-It then serves only hub-level endpoints and transport; serve each frame's meta from `hub.connectionMeta()` yourself. `examples/hub-vite` and `examples/hub-next` use declarative mode with hand-built viewers; `hub-*-minimal` shows the minimal `createUi()` mount across many frameworks.
+It then serves only hub-level endpoints and transport; serve each frame's meta from `hub.connectionMeta()` yourself.

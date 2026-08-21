@@ -4,9 +4,9 @@ outline: deep
 
 # Nuxt
 
-`@devframes/nuxt` splits into `@devframes/nuxt/single` (author one devframe with Nuxt) and [`@devframes/nuxt/hub`](#mounting-a-hub) (mount a whole devframes-hub); the bare import throws, pointing to both.
+`@devframes/nuxt` splits into `@devframes/nuxt/single` (author one devframe) and [`@devframes/nuxt/hub`](#mounting-a-hub) (mount a devframes-hub); the bare import throws.
 
-The `single` module wires a Nuxt SPA as a devframe client, optionally serves a dev-time RPC bridge in `nuxt dev`, and types `useNuxtApp().$rpc` as `DevframeRpcClient`.
+The `single` module wires a Nuxt SPA as a devframe client and types `useNuxtApp().$rpc` as `DevframeRpcClient`.
 
 ## Install
 
@@ -46,8 +46,8 @@ export default defineNuxtConfig({
 })
 ```
 
-- **`baseURL`** defaults to `'./'`, resolved against `document.baseURI` at runtime.
-- **`skipAppDefaults: true`** disables the `app.baseURL` / `vite.base` defaults — for shipping absolute asset paths.
+- **`baseURL`** resolves against `document.baseURI` at runtime.
+- **`skipAppDefaults: true`** ships absolute asset paths.
 
 ## Dev-time RPC bridge
 
@@ -65,10 +65,10 @@ export default defineNuxtConfig({
 
 - Starts a WebSocket RPC server on a [`get-port-please`](https://github.com/unjs/get-port-please) port (respects `devframe.cli.port` / `portRange` / `random`).
 - Registers Vite middleware at `${baseURL}__connection.json`.
-- Runs `devframe.setup(ctx, { flags })`, registering your RPC functions.
-- Cleans up the bridge on Vite restart, `nuxt dev` shutdown, and bundle close.
+- Runs `devframe.setup(ctx, { flags })`.
+- Cleans up on Vite restart, `nuxt dev` shutdown, and bundle close.
 
-The bridge is **on by default** whenever `devframe` is set; disable it (client-only) with `devMiddleware: false`.
+On by default when `devframe` is set; disable it (client-only) with `devMiddleware: false`.
 
 ### Customizing the bridge
 
@@ -86,12 +86,12 @@ export default defineNuxtConfig({
 ```
 
 - **`port`** pins the bridge port (else `get-port-please` picks one).
-- **`host`** is the bridge bind host, defaulting to `nuxt.options.devServer.host ?? devframe.cli?.host ?? 'localhost'` (so `nuxt dev --host` propagates).
-- **`flags`** is forwarded to `devframe.setup(ctx, { flags })`.
+- **`host`** defaults to `nuxt.options.devServer.host ?? devframe.cli?.host ?? 'localhost'`.
+- **`flags`** → `devframe.setup(ctx, { flags })`.
 
 ### Relationship to `createCac`
 
-Production deploys use `createCac` (or `createBuild`), producing a static `__connection.json` + `__rpc-dump/` snapshot from `clientAssets`:
+Production uses `createCac` (or `createBuild`), producing a static `__connection.json` + `__rpc-dump/` snapshot from `clientAssets`:
 
 ```
 my-tool/
@@ -117,7 +117,7 @@ At runtime the SPA fetches `./__connection.json` and branches on `backend` — `
 
 ## Mounting a hub
 
-`@devframes/nuxt/hub` mounts a whole [devframes-hub](/guide/hub) alongside `nuxt dev`, wiring `@devframes/vite`'s hub plugin into Nuxt's Vite server and injecting `@devframes/hub-ui`'s dock. `ui` swaps the default, `ui: false` gives a headless hub driven by `@devframes/nuxt/hub/client`.
+`@devframes/nuxt/hub` mounts a whole [devframes-hub](/guide/hub) alongside `nuxt dev`, injecting `@devframes/hub-ui`'s dock. `ui` swaps the default; `ui: false` gives a headless hub via `@devframes/nuxt/hub/client`.
 
 ```ts [nuxt.config.ts]
 export default defineNuxtConfig({
@@ -125,7 +125,7 @@ export default defineNuxtConfig({
 })
 ```
 
-Nuxt DevTools (`@nuxt/devtools`) integrates the same protocol natively, so this module recommends it once (silence with `{ quiet: true }`).
+Nuxt DevTools (`@nuxt/devtools`) integrates the same protocol natively; this module recommends it once (silence with `{ quiet: true }`).
 
 ## See also
 

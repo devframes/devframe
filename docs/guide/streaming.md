@@ -4,7 +4,7 @@ outline: deep
 
 # Streaming
 
-Devframe's streaming channels push chunk-style data server→client over the RPC socket.
+Streaming channels push chunk-style data server→client over the RPC socket.
 
 ## Overview
 
@@ -21,11 +21,9 @@ sequenceDiagram
   Channel-->>Browser: end()
 ```
 
-A **channel** owns a wire namespace; each `channel.start()` produces one **stream** keyed by an id (auto-generated unless passed); subscribers join by `(channelName, id)`.
+A **channel** owns a wire namespace; each `channel.start()` makes one **stream** keyed by an id (auto unless passed), joined by `(channelName, id)`.
 
 ## Defining a channel
-
-In `setup`:
 
 ```ts
 import { defineDevframe, defineRpcFunction } from 'devframe'
@@ -64,8 +62,6 @@ export default defineDevframe({
 
 ## Producing — three surfaces, one stream
 
-`channel.start({ id? })`, three ways:
-
 ```ts
 const stream = channel.start({ id: 'optional-explicit-id' })
 
@@ -83,18 +79,9 @@ sourceReadable.pipeTo(stream.writable, { signal: stream.signal })
 const stream = await channel.pipeFrom(sourceReadable)
 ```
 
-```ts
-for (const token of source) {
-  if (stream.signal.aborted)
-    return
-  stream.write(token)
-}
-stream.close()
-```
-
 ### Node stream interop
 
-Node 17+ ships converters:
+Node 17+ converters:
 
 ```ts
 import { Readable, Writable } from 'node:stream'
@@ -108,7 +95,7 @@ Readable.fromWeb(reader.readable).pipe(targetNodeWritable)
 
 ## Consuming — `for await` or `pipeTo`
 
-The reader is an `AsyncIterable<T>` that also exposes `.readable` (a `ReadableStream<T>`); use one surface per reader (shared queue).
+The reader is an `AsyncIterable<T>` also exposing `.readable` (`ReadableStream<T>`), one per reader.
 
 ```ts
 import { connectDevframe } from 'devframe/client'
@@ -134,14 +121,14 @@ reader.cancel() // sends cancel upstream; server stream.signal flips
 
 | Event | Server | Client |
 |-------|--------|--------|
-| `stream.close()` / `stream.error(err)` | Broadcasts `end` | `for await` resolves or throws |
-| `reader.cancel()` | aborts `stream.signal` on **last**-subscriber cancel | Reader cancelled; `for await` ends |
-| WS disconnects | aborts `stream.signal` on **last**-subscriber drop | Reader stays alive; resubscribes on re-trust |
-| `chat` panel closes | Cancel cascades upstream | — |
+| `stream.close()` / `stream.error(err)` | broadcasts `end` | `for await` resolves or throws |
+| `reader.cancel()` | aborts `stream.signal` on **last**-subscriber cancel | `for await` ends |
+| WS disconnects | aborts `stream.signal` on **last**-subscriber drop | reader survives, resubscribes on re-trust |
+| `chat` panel closes | cancels upstream | — |
 
 ## Client-to-server uploads
 
-In reverse, an RPC call allocates the id, then events carry chunks.
+In reverse: an RPC call allocates the id; events carry chunks.
 
 ```ts
 // Server — typically inside an action handler
@@ -183,16 +170,11 @@ upload.close()
 fileReadable.pipeTo(upload.writable, { signal: upload.signal })
 ```
 
-Lifecycle mirrors outbound:
-
-- `upload.signal` aborts when the server calls `reader.cancel()` (broadcasting `upload-cancel`).
-- `upload.error(err)` throws inside the server's `for await`; a client disconnect exits with `UploadDisconnected`.
-
-Each `openInbound()` gives a fresh id; point-to-point: one producer, no fan-in, no replay.
+Lifecycle mirrors outbound: `upload.signal` aborts on `reader.cancel()` (broadcasting `upload-cancel`), `upload.error(err)` throws inside its `for await`, and a client disconnect exits with `UploadDisconnected`. Each `openInbound()` id is point-to-point — one producer, no fan-in or replay.
 
 ## Replay on reconnect
 
-With `replayWindow: N`, the server keeps the last `N` chunks; on resubscribe the client sends its highest seen sequence and the server replays newer chunks first.
+With `replayWindow: N`, the server keeps the last `N` chunks; a resubscribing client sends its highest seen sequence and the server replays newer ones.
 
 ```ts
 my.rpc.streaming.create<string>('chat', { // -> my-devframe:chat
@@ -201,11 +183,11 @@ my.rpc.streaming.create<string>('chat', { // -> my-devframe:chat
 })
 ```
 
-`closedStreamRetention` defaults to 30 s (`replayWindow > 0`).
+`closedStreamRetention` defaults to 30 s when `replayWindow > 0`.
 
 ## Backpressure
 
-The client keeps a bounded queue per subscription (`highWaterMark`, default 256); if the consumer falls behind, the oldest chunk drops, logging [`DF0029`](../errors/DF0029).
+The client keeps a bounded queue per subscription (`highWaterMark`, default 256); when the consumer falls behind, the oldest chunk drops, logging [`DF0029`](../errors/DF0029).
 
 ```ts
 const reader = my.rpc.streaming.subscribe('chat', id, { // -> my-devframe:chat
@@ -213,19 +195,17 @@ const reader = my.rpc.streaming.subscribe('chat', id, { // -> my-devframe:chat
 })
 ```
 
-For authoritative state, use [shared state](./shared-state).
-
-## When to use streaming vs events vs shared state
+## Streaming vs events vs shared state
 
 | Streaming | `event`-typed RPC | Shared state |
 |-----------|-------------------|--------------|
 | Token/chunk feeds (LLM deltas, logs) | Payload-less notifications (`refresh`, `clear`) | Long-lived UI state |
-| Per-call lifecycles, cancellation | Cross-cutting broadcast signals | Reactive snapshots surviving reconnect |
-| Replay on reconnect | Fire-and-forget signaling | Diff-based sync |
+| Per-call lifecycles, cancellation | Cross-cutting signals | Snapshots surviving reconnect |
+| Replay on reconnect | Fire-and-forget | Diff-based sync |
 | Client→server uploads (files, mic) | | |
 
 ## Reference
 
-- API: `RpcStreamingHost`, `RpcStreamingChannel<T>`, `StreamSink<T>`, `StreamReader<T>` in `devframe/types`.
-- Example: [`examples/streaming-chat`](https://github.com/devframes/devframe/tree/main/examples/streaming-chat).
+- `RpcStreamingHost`, `RpcStreamingChannel<T>`, `StreamSink<T>`, `StreamReader<T>` in `devframe/types`.
+- [`examples/streaming-chat`](https://github.com/devframes/devframe/tree/main/examples/streaming-chat).
 - Errors: [`DF0029`](../errors/DF0029) (overflow), [`DF0030`](../errors/DF0030) (unknown id), [`DF0031`](../errors/DF0031) (write to closed), [`DF0032`](../errors/DF0032) (name collision).

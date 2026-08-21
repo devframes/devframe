@@ -4,15 +4,11 @@ outline: deep
 
 # Agent-Native Devframe
 
-Devframe exposes the same surface a browser UI consumes — RPC functions, resources, shared state — to coding agents over MCP. Exposure is opt-in per function; functions stay private by default.
+Devframe exposes its browser-UI surface — RPC functions, resources, shared state — to agents over MCP, opt-in per function.
 
 ## How it works
 
-Three building blocks:
-
-1. **An `agent` field on `defineRpcFunction`** opts a function in.
-2. **`ctx.agent`** registers tools not backed by an RPC and exposes readable resources.
-3. **The MCP adapter** (`devframe/adapters/mcp`) serves the agent host as an [MCP](https://modelcontextprotocol.io) server.
+Three pieces: the **`agent` field** on `defineRpcFunction`, **`ctx.agent`** (non-RPC tools + resources), and the **MCP adapter** (`devframe/adapters/mcp`) serving an [MCP](https://modelcontextprotocol.io) server.
 
 ## Exposing an RPC function
 
@@ -37,14 +33,10 @@ export const getSessionSummary = defineRpcFunction({
 })
 ```
 
-Agent tools take one object input; prefer `args: [v.object({ ... })]`.
-
 ## Tool ids and wire names
 
-Every agent tool has two names:
-
-- **The id** — used to register and invoke in devframe. Colon-namespaced: `devframes:plugin:<slug>:<fn>` for plugin RPCs, `devframe:<area>:<fn>` for built-ins, command ids for hub-command tools.
-- **The wire name** — what MCP clients call, constrained to `^[a-zA-Z0-9_-]{1,128}$`. The adapter derives it: each run outside that set becomes one `_`, truncated to 128 chars.
+- **The id** — registers/invokes in devframe, colon-namespaced: `devframes:plugin:<slug>:<fn>` (plugin RPCs), `devframe:<area>:<fn>` (built-ins), command ids.
+- **The wire name** — what MCP clients call, constrained to `^[a-zA-Z0-9_-]{1,128}$`; runs outside that set collapse to `_`, truncated to 128.
 
 ```
 devframe:state:read          → devframe_state_read
@@ -52,11 +44,11 @@ devframes:plugin:git:status  → devframes_plugin_git_status
 my-plugin:summarize          → my-plugin_summarize
 ```
 
-Register with namespaced ids; `toAgentToolName` (`devframe/utils/agent-tool-name`, client-safe) predicts a wire name. Two ids that sanitize alike keep the first registration, hiding the later with `DF0047`.
+`toAgentToolName` (`devframe/utils/agent-tool-name`, client-safe) predicts a wire name; two ids sanitizing alike keep the first, the later hidden with `DF0047`.
 
 ## Registering a plugin tool
 
-Tools without a matching RPC register directly:
+Tools without a matching RPC register directly.
 
 ```ts
 export default defineDevframe({
@@ -76,7 +68,7 @@ export default defineDevframe({
 
 ## Deriving tools from other state
 
-Register a **provider** for tools derived from state you already maintain — queried at list/invoke time, so it stays the only copy:
+Register a **provider** for tools derived from state, queried at list/invoke time:
 
 ```ts
 const handle = ctx.agent.registerToolProvider(() =>
@@ -91,7 +83,7 @@ handle.notifyChanged() // fires tools/list_changed
 
 ## Registering a resource
 
-Readable state snapshots, by URI:
+Readable snapshots by URI:
 
 ```ts
 ctx.agent.registerResource({
@@ -103,11 +95,11 @@ ctx.agent.registerResource({
 })
 ```
 
-Every `ctx.rpc.sharedState` key is exposed as a `devframe://state/<key>` resource and via the built-in **`devframe:state:read` tool** (wire name `devframe_state_read`) — no args for the key list, a `key` for that value. Pass `exposeSharedState: false` (or a filter) to `createMcpServer` to opt out.
+Every `ctx.rpc.sharedState` key is exposed as a `devframe://state/<key>` resource and via the **`devframe:state:read` tool** (wire `devframe_state_read`): no args → key list, `key` → its value. `exposeSharedState: false` (or a filter) on `createMcpServer` opts out.
 
 ## Starting the MCP server
 
-Via the CLI:
+CLI:
 
 ```sh
 # Run your devtool with an MCP stdio server attached.
@@ -129,7 +121,7 @@ await createMcpServer(devframe, { transport: 'stdio' })
 
 ## Connecting Claude Desktop
 
-Add to `claude_desktop_config.json`:
+In `claude_desktop_config.json`:
 
 ```json
 {
@@ -142,11 +134,11 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
-Restart Claude Desktop; flagged tools and `registerTool` calls appear in the tool drawer, resources as `devframe://resource/<id>` and `devframe://state/<key>` URIs.
+Restart; tools appear in the drawer, resources as `devframe://resource/<id>` / `devframe://state/<key>` URIs.
 
 ## Writing descriptions agents act on
 
-A tool description is a prompt: state when to reach for the tool, not just what it returns:
+Describe *when* to use a tool, not just its return:
 
 <!-- eslint-skip -->
 
@@ -159,7 +151,7 @@ agent: { description: 'Summarize the current build session — durations, chunk 
 
 ## Gateway tools
 
-A gateway tool returns *instructions and locations* instead of work the agent does better directly:
+A gateway tool returns *instructions and locations*, not work agents do better:
 
 ```ts
 ctx.agent.registerTool({
@@ -175,23 +167,23 @@ ctx.agent.registerTool({
 
 ## Structured errors
 
-A coded diagnostic thrown from a handler crosses the MCP boundary as structured JSON:
+A coded diagnostic thrown from a handler crosses the MCP boundary as JSON:
 
 ```json
 { "error": { "code": "DF0017", "message": "…", "fix": "…", "docs": "https://devfra.me/errors/df0017" } }
 ```
 
-Prefer coded diagnostics from anything agent-reachable — agents act on `fix` and follow `docs`.
+Prefer coded diagnostics anywhere agent-reachable: agents act on `fix` and follow `docs`.
 
 ## Safety model
 
-- **`safety`** — one of `'read'`, `'action'`, `'destructive'`. Inferred from the RPC `type` (`static`/`query` → `read`, `action`/`event` → `action`), overridable.
-- The adapter maps `safety` to tool annotations (`readOnlyHint`, `destructiveHint`) clients use to decide whether to prompt.
+- **`safety`** — `'read'`, `'action'`, or `'destructive'`. Inferred from the RPC `type` (`static`/`query` → `read`, `action`/`event` → `action`), overridable.
+- The adapter maps `safety` to tool annotations (`readOnlyHint`, `destructiveHint`).
 
 ## CLI
 
 | Command | Description |
 |---------|-------------|
 | `<your-app> mcp` | Start the MCP server on `stdio`. |
-| `<your-app> dev --mcp` | Serve the agent surface on the `/__mcp` route. |
+| `<your-app> dev --mcp` | Serve the agent surface on `/__mcp`. |
 | `devframe connect` | Discover running devframes and proxy their tools — see [MCP adapter](/adapters/mcp#discovery-devframe-connect). |

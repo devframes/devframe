@@ -4,7 +4,7 @@ outline: deep
 
 # Client
 
-The browser-side client connects any surface — dock iframe, remote page, standalone SPA — to the Devframe server: type-safe RPC, shared state, and a dev-mode trust handshake.
+The browser client connects any surface — dock iframe, remote page, standalone SPA — to the Devframe server with type-safe RPC, shared state, and a trust handshake.
 
 ## Connecting
 
@@ -18,14 +18,11 @@ const rpc = await connectDevframe()
 const modules = await rpc.call('my-devframe:get-modules', { limit: 10 })
 ```
 
-`connectDevframe` auto-detects the backend via `__devframe/__connection.json`; no arguments at the default mount path.
+At the default mount path, `connectDevframe` needs no arguments — it auto-detects the backend via `__devframe/__connection.json`.
 
 ### Runtime basePath discovery
 
-One SPA artifact serves at `/`, `/__<id>/`, or any subpath, no rebuild:
-
-- Build with relative asset paths — Vite `base: './'`, Nuxt `vite.base: './'` + `app.baseURL: './'`.
-- Skip `baseURL` unless connecting across origins or to a non-colocated server.
+One SPA artifact serves at `/`, `/__<id>/`, or any subpath, no rebuild. Build with relative asset paths — Vite `base: './'`, Nuxt `vite.base: './'` + `app.baseURL: './'`.
 
 ### Sharing a connection with an external viewer
 
@@ -39,7 +36,7 @@ const connection = await setupDevframeConnection({
 })
 ```
 
-Pass it to `connectDevframe()` in the viewer:
+In the viewer:
 
 ```ts
 import { connectDevframe } from 'devframe/client'
@@ -47,9 +44,9 @@ import { connectDevframe } from 'devframe/client'
 const rpc = await connectDevframe({ connection })
 ```
 
-The client retains it as `rpc.connection`; cross-realm viewers read the value via `getDevframeConnection()` or `DEVFRAME_CONNECTION_KEY` (`devframe/constants`).
+The client retains it as `rpc.connection`; cross-realm viewers read it via `getDevframeConnection()` or `DEVFRAME_CONNECTION_KEY` (`devframe/constants`).
 
-An external viewer registers its origin before opening the WebSocket (requires `viewerOriginToken` in the host's connection metadata — see [External viewer origins](/guide/security#external-viewer-origins)):
+An external viewer registers its origin before the WebSocket opens (needs `viewerOriginToken` in the host's connection metadata; see [External viewer origins](/guide/security#external-viewer-origins)):
 
 ```ts
 import { registerDevframeViewerOrigin } from 'devframe/client'
@@ -62,7 +59,7 @@ await registerDevframeViewerOrigin(connection)
 | Option | Description |
 |--------|-------------|
 | `connection` | Connection prepared by `setupDevframeConnection()`. |
-| `baseURL` | Mount path to probe for `__connection.json` (array = fallback). Default `'./'` (relative to `document.baseURI`); use an absolute path (e.g. `'/__devframe/'`) from outside the SPA. |
+| `baseURL` | Mount path to probe for `__connection.json` (array = fallback). Default `'./'` (relative to `document.baseURI`); use an absolute path (`'/__devframe/'`) from outside the SPA. |
 | `authToken` | Override the auth token (default: a locally-persisted id). |
 | `cacheOptions` | `true` for default caching, or an options object. |
 | `callTimeout` | Ms before a pending `rpc.call` rejects with a `'timeout'` `DevframeConnectionError`; `0`/omit = wait forever. |
@@ -81,7 +78,7 @@ Per the `__devframe/__connection.json` backend:
 
 ## Trust & auth (WebSocket mode)
 
-`ensureTrusted()` resolves once the server accepts the client's stored token:
+`ensureTrusted()` resolves once the server trusts the client's stored token:
 
 ```ts
 const rpc = await connectDevframe()
@@ -94,17 +91,17 @@ if (!trusted) {
 }
 ```
 
-`connectDevframe()` kicks off the handshake without blocking. `rpc.call` / `rpc.callOptional` / `rpc.callEvent` hold anything issued before it settles; use `ensureTrusted()` for pending UI state.
+`connectDevframe()` starts the handshake without blocking; `rpc.call` / `rpc.callOptional` / `rpc.callEvent` hold anything issued before it settles.
 
 ### Authenticating with a one-time code
 
-The dev server prints a single-use 6-digit code (expires after five minutes, rotates after repeated wrong attempts); pass it to `requestTrustWithCode` to exchange for a persisted node-issued token shared with sibling tabs:
+The dev server prints a single-use 6-digit code (expires in five minutes, rotates after repeated wrong attempts); `requestTrustWithCode` exchanges it for a persisted node-issued token shared across sibling tabs:
 
 ```ts
 const ok = await rpc.requestTrustWithCode('047204')
 ```
 
-A host can embed the code in a link (`buildOtpAuthUrl(origin)`); `connectDevframe` reads the `devframe_otp` fragment parameter, exchanges it, and strips it from the URL. Rename it with `otpParam`, or `otpParam: false` to drive it yourself via `authenticateWithUrlOtp(rpc)` / `consumeOtpFromUrl()`.
+A host can embed the code in a link (`buildOtpAuthUrl(origin)`); `connectDevframe` reads the `devframe_otp` fragment, exchanges it, and strips the URL. Rename it with `otpParam`, or set `otpParam: false` to drive it yourself via `authenticateWithUrlOtp(rpc)` / `consumeOtpFromUrl()`.
 
 ### Re-using an existing token
 
@@ -116,7 +113,8 @@ const ok = await rpc.requestTrustWithToken('a1b2c3…')
 
 ### Broadcast-channel sync
 
-`connectDevframe` listens on a shared `BroadcastChannel` (`devframe-auth`) for `auth-update` messages, so when one tab authenticates, every open client trusts it.
+`connectDevframe` listens on a shared `BroadcastChannel` (`devframe-auth`) for `auth-update` messages; one tab authenticating trusts every open client.
+
 
 ## Calling functions
 
@@ -135,7 +133,7 @@ const maybe = await my.rpc.callOptional('get-modules', { limit: 10 })
 my.rpc.callEvent('notify', { message: 'hello' })
 ```
 
-Types flow from the server's `defineRpcFunction` definitions; the unscoped `rpc.call('my-devframe:get-modules', ...)` also works.
+Types flow from the server's `defineRpcFunction` definitions.
 
 ## Registering client functions
 
@@ -207,7 +205,7 @@ const rpc = await connectDevframe({ cacheOptions: true })
 
 ## Discovery (`__connection.json`)
 
-Devframe writes a JSON descriptor at `<base>/__connection.json`. HTTP and the WebSocket share one port — the socket binds to `<base>__ws`, advertised as a relative path:
+Devframe writes a JSON descriptor at `<base>/__connection.json`. The socket shares the HTTP port, binding to `<base>__ws` (advertised relative):
 
 ```json
 {
@@ -216,7 +214,7 @@ Devframe writes a JSON descriptor at `<base>/__connection.json`. HTTP and the We
 }
 ```
 
-The client resolves it against the origin it loaded from (`http`→`ws` / `https`→`wss`). The field also accepts a `number` (port on the page's host), a full `ws://`/`wss://` URL, or `{ port }` / `{ host }` for a cross-origin side-car.
+The client resolves it against its origin (`http`→`ws` / `https`→`wss`). The field also accepts a `number` (port on the page's host), a full `ws://`/`wss://` URL, or `{ port }` / `{ host }` for a cross-origin side-car.
 
 For static mode:
 
@@ -234,7 +232,7 @@ await connectDevframe({
 
 ## Remote docks
 
-Supporting hosts (Vite DevTools; see [its remote-client docs](https://devtools.vite.dev/kit/remote-client)) inject a connection descriptor into the iframe URL, which `connectDevframe` auto-detects:
+Supporting hosts (Vite DevTools; see [its remote-client docs](https://devtools.vite.dev/kit/remote-client)) inject a connection descriptor into the iframe URL that `connectDevframe` auto-detects:
 
 ```ts
 import { connectDevframe } from 'devframe/client'
@@ -243,7 +241,7 @@ const rpc = await connectDevframe()
 // Already wired to the local dev server via the injected descriptor.
 ```
 
-The descriptor's session-only, pre-approved token makes `ensureTrusted()` resolve immediately. An external hub builds a viewer URL from a trusted connection, `buildRemoteDevframeUrl()` keeping the token in the URL fragment:
+The descriptor's session-only, pre-approved token makes `ensureTrusted()` resolve immediately. An external hub builds a viewer URL from a trusted connection with `buildRemoteDevframeUrl()`, keeping the token in the URL fragment:
 
 ```ts
 import {
@@ -281,21 +279,21 @@ rpc.events.on('rpc:is-trusted:updated', (isTrusted) => {
 
 ### Connection status
 
-`rpc.status` collapses transport and trust into one value; `rpc.connectionError` holds the last connection-level `Error` (or `null` when healthy):
+`rpc.status` collapses transport and trust into one value; `rpc.connectionError` holds the last connection-level `Error` (`null` when healthy):
 
 | Status | Meaning |
 |--------|---------|
 | `connecting` | Establishing socket / handshake. Calls queue until open. |
 | `connected` | Socket open and trusted; calls are served. |
 | `unauthorized` | Socket open, trust refused. Prompt for [authentication](#authenticating-with-a-one-time-code). |
-| `disconnected` | Socket closed — dropped mid-session, or never opened. |
+| `disconnected` | Socket closed (dropped mid-session or never opened). |
 | `error` | Fatal — the socket errored or connection meta couldn't load. |
 
 A `static` backend has no live socket, so `rpc.status` stays `connected`.
 
 ### Calls fail fast
 
-When the socket closes or trust is refused, in-flight and new `rpc.call` promises reject with a `DevframeConnectionError` — its `kind`:
+When the socket closes or trust is refused, in-flight and new `rpc.call` promises reject with a `DevframeConnectionError`, its `kind`:
 
 - `'connection'` — the transport is down (`disconnected` / `error`).
 - `'auth'` — the client is `unauthorized`.

@@ -7,9 +7,9 @@ outline: deep
 > [!WARNING]
 > Experimental. `@devframes/next`'s API is still settling — expect changes before a stable release.
 
-`@devframes/next` hosts devframes from a Next.js App Router app through a route handler (Next runs on webpack/Turbopack, not [Vite](./vite)). A single `fetch` handler serves each SPA and its `__connection.json` via [`serveStaticHandler`](/adapters/dev).
+`@devframes/next` hosts devframes from a Next.js App Router app via a route handler: one `fetch` handler serves each SPA and its `__connection.json` via [`serveStaticHandler`](/adapters/dev).
 
-`@devframes/next` splits into `@devframes/next/single` and [`@devframes/next/hub`](#mounting-a-hub); the bare import throws. The `single` scope offers **`withDevframe()`**, **`createDevframeNextHandler()`**, and a React client at `@devframes/next/single/client`.
+It splits into `@devframes/next/single` and [`@devframes/next/hub`](#mounting-a-hub); the bare import throws. `single` gives **`withDevframe()`**, **`createDevframeNextHandler()`**, and a React client (`@devframes/next/single/client`).
 
 ## Config
 
@@ -21,11 +21,11 @@ export default withDevframe({
 })
 ```
 
-`withDevframe` sets `skipTrailingSlashRedirect: true` and preserves the rest (else Next re-roots the SPAs' relative assets and 404s them).
+`withDevframe` sets `skipTrailingSlashRedirect: true`, keeping the rest.
 
 ## Hosting a single devframe
 
-`createDevframeNextHandler(definition)` serves the built SPA and starts a side-car RPC/WebSocket server at `<base>/__connection.json`; delegate your route to `fetch`:
+`createDevframeNextHandler(definition)` serves the SPA and starts a side-car RPC/WS server:
 
 ```ts [app/__my-tool/[[...path]]/route.ts]
 import { createDevframeNextHandler } from '@devframes/next/single'
@@ -38,20 +38,20 @@ const handler = createDevframeNextHandler(myDevframe)
 export const GET = handler.fetch
 ```
 
-`close()` shuts the side-car down; `ready` resolves once it's listening.
+`close()` stops the side-car; `ready` resolves when listening.
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `base` | `def.basePath ?? '/__<id>/'` | Mount path for the SPA. |
+| `base` | `def.basePath ?? '/__<id>/'` | SPA mount path. |
 | `host` | `def.cli?.host ?? 'localhost'` | Side-car bind host. |
-| `port` | resolved from `def.cli?.port` | Side-car port. |
-| `flags` | — | Forwarded to `def.setup(ctx, { flags })`. |
-| `auth` | `false` | `true` for devframe's OTP gate, or a handler. |
-| `key` | `@devframes/next:<id>:<base>` | Memoization key on `globalThis`. |
+| `port` | from `def.cli?.port` | Side-car port. |
+| `flags` | — | Passed to `def.setup(ctx, { flags })`. |
+| `auth` | `false` | `true` for the OTP gate, or a handler. |
+| `key` | `@devframes/next:<id>:<base>` | `globalThis` memoization key. |
 
 ## Hosting a hub
 
-For many devframes, [`@devframes/hub`](/guide/hub)'s `initHub` assembles every frame under `<base><id>/` behind a single `handler`:
+[`@devframes/hub`](/guide/hub)'s `initHub` mounts every frame under `<base><id>/` behind one `handler` (memoize on `globalThis`; see `examples/hub-next`):
 
 ```ts [devframe/host.ts]
 import { DEVFRAMES_HUB_BASE, initHub } from '@devframes/hub/initiate'
@@ -77,11 +77,7 @@ export async function GET(request: Request): Promise<Response> {
 }
 ```
 
-Memoize the instance on `globalThis` so re-evaluation reuses one hub — see `examples/hub-next`.
-
 ## React client
-
-`@devframes/next/single/client` provides the RPC client to your component tree.
 
 ```tsx [app/providers.tsx]
 'use client'
@@ -92,7 +88,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 }
 ```
 
-`useRpc()` returns the connected `DevframeRpcClient`, or `null` while connecting. `useRpcStatus()` returns the live `{ status, error }`.
+`useRpc()` returns the `DevframeRpcClient` (`null` while connecting), `useRpcStatus()` the live `{ status, error }`; both throw outside `<RpcProvider>`.
 
 ```tsx [app/panel.tsx]
 'use client'
@@ -107,15 +103,13 @@ export function Panel() {
 }
 ```
 
-Both hooks throw outside a `<RpcProvider>`.
-
 ## Runtime
 
-Route handlers that call `fetch` pin `export const runtime = 'nodejs'` (the side-car is a Node process).
+Handlers calling `fetch` pin `runtime = 'nodejs'` (Node side-car).
 
 ## Mounting a hub
 
-`@devframes/next/hub`'s `nextDevframeHub()` is a route handle memoized on `globalThis`; `createNextDevframeHub()` is the underlying builder. The UI defaults to `@devframes/hub-ui`; `ui` swaps it, `ui: false` gives a headless hub driven by `@devframes/next/hub/client` (`useDevframeHubClient()`).
+`@devframes/next/hub`'s `nextDevframeHub()` is a `globalThis`-memoized handle; `createNextDevframeHub()` is the builder. UI defaults to `@devframes/hub-ui`; `ui` swaps it, `ui: false` gives a headless hub via `@devframes/next/hub/client`'s `useDevframeHubClient()`.
 
 ```ts [app/__devframes/[[...path]]/route.ts]
 import { nextDevframeHub } from '@devframes/next/hub'
@@ -129,10 +123,10 @@ export const POST = (req: Request) => hub.handler(req)
 export const DELETE = (req: Request) => hub.handler(req)
 ```
 
-Next has no native hub viewer, so this scope stays quiet. `createDevframeNextHost()` is the lower-level `DevframeHost` seam for `initHub({ context })`.
+No native hub viewer here, so this scope stays quiet; `createDevframeNextHost()` is the low-level `DevframeHost`.
 
 ## See also
 
 - [Vite](./vite)
-- [Hub](/guide/hub) — `initHub`, `ctx.install`, `DevframeHost`
+- [Hub](/guide/hub)
 - [hub-next](https://github.com/devframes/devframe/tree/main/examples/hub-next)

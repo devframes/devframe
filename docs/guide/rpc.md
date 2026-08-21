@@ -4,7 +4,7 @@ outline: deep
 
 # RPC
 
-Type-safe, bidirectional RPC between server and client, built on [`birpc`](https://github.com/antfu/birpc) and validated against any [Standard Schema](https://standardschema.dev/) validator. Dev runs over WebSocket; build/SPA serves a pre-computed static dump so the client works offline.
+Type-safe, bidirectional RPC built on [`birpc`](https://github.com/antfu/birpc), validated against any [Standard Schema](https://standardschema.dev/) validator. Dev runs over WebSocket; build/SPA serves a pre-computed static dump.
 
 ## Overview
 
@@ -38,7 +38,7 @@ export const getModules = defineRpcFunction({
 })
 ```
 
-Register it in `setup` via a [scoped context](./scoped-context); `ctx.scope(id)` auto-namespaces ids:
+Register it via a [scoped context](./scoped-context) — `ctx.scope(id)` auto-namespaces ids:
 
 ```ts
 import { defineDevframe } from 'devframe'
@@ -56,7 +56,7 @@ export default defineDevframe({
 
 ### Naming convention
 
-Scope with your devframe id, kebab-case for the action (`my-devframe:get-modules`).
+Scope with your devframe id, then a kebab-case action: `my-devframe:get-modules`.
 
 ### Function types
 
@@ -69,54 +69,21 @@ Scope with your devframe id, kebab-case for the action (`my-devframe:get-modules
 
 ### Handler arguments
 
-Handlers accept any serializable arguments. Declared `args` schemas (any [Standard Schema](https://standardschema.dev/) validator) validate each argument at the boundary. Extra object fields the schema omits still reach the handler.
+Handlers accept any serializable arguments. Declared `args` schemas validate each at the boundary; extra object fields still reach the handler.
 
 > [!TIP]
 > If your app already pulls in **zod**, use it for your RPC schemas to reuse a dependency you already ship.
-
-```ts
-defineRpcFunction({
-  name: 'get-file',
-  type: 'query',
-  args: [v.object({ path: v.string(), includeSource: v.optional(v.boolean()) })],
-  returns: v.object({ path: v.string(), source: v.optional(v.string()) }),
-  setup: () => ({
-    handler: async ({ path, includeSource }) => ({
-      path,
-      source: includeSource ? await readFile(path, 'utf-8') : undefined,
-    }),
-  }),
-})
-```
 
 > [!WARNING]
 > Declared `args`/`returns` schemas are enforced at runtime; failing arguments or return values are rejected with `DF0043` / `DF0044`.
 
 ### Setup vs handler
 
-Use `setup(ctx)` (returns `{ handler, dump? }`) when the handler needs the `DevframeNodeContext`; use `handler(...)` shorthand otherwise.
-
-```ts
-// With setup:
-defineRpcFunction({
-  name: 'count',
-  type: 'query',
-  setup: ctx => ({
-    handler: async () => ctx.rpc.sharedState.keys().length,
-  }),
-})
-
-// Shorthand:
-defineRpcFunction({
-  name: 'echo',
-  type: 'query',
-  handler: (msg: string) => msg,
-})
-```
+Use `setup(ctx)` (returns `{ handler, dump? }`) when the handler needs `DevframeNodeContext`; otherwise the `handler(...)` shorthand.
 
 ## Broadcasting
 
-`rpc.broadcast` sends to every connected client; a scoped context namespaces the method name:
+`rpc.broadcast` sends to every connected client; a scoped context namespaces the method:
 
 ```ts
 defineDevframe({
@@ -144,7 +111,7 @@ defineDevframe({
 
 ## Streaming
 
-For chunk-style server→client feeds, use [streaming channels](./streaming):
+For server→client chunk feeds, use [streaming channels](./streaming):
 
 ```ts
 const channel = ctx.rpc.streaming.create<string>('my-devframe:chat', {
@@ -163,11 +130,12 @@ const my = ctx.scope('my-devframe')
 const modules = await my.rpc.call('get-modules', { limit: 10 })
 ```
 
-It wraps `ctx.rpc.invokeLocal(...)`; pass a fully-qualified name (with `:`) to call another tool's function.
+It wraps `ctx.rpc.invokeLocal(...)`; a fully-qualified name (with `:`) calls another tool's function.
 
 ## Client-side calls
 
-From the browser, [`connectDevframe`](./client) (or `getDevframeRpcClient`) returns a scoped client:
+From the browser, [`connectDevframe`](./client) (or `getDevframeRpcClient`) returns a client:
+
 
 ```ts
 import { connectDevframe } from 'devframe/client'
@@ -178,13 +146,11 @@ const my = client.scope('my-devframe')
 const modules = await my.rpc.call('get-modules', { limit: 10 })
 ```
 
-Client-side registration (server→client) uses `my.rpc.register()`, mirror of the server-side `rpc.register()`.
+Client-side registration (server→client) uses `my.rpc.register()`.
 
 ## Type-safe client registry
 
-Two augmentable interfaces — `DevframeRpcServerFunctions` (client→server) and `DevframeRpcClientFunctions` (server→client) — put each registered name on the typed client, augmented via `declare module 'devframe'`.
-
-The recommended pattern feeds a const array through `RpcDefinitionsToFunctionsWithNamespace`, which prefixes each bare name with your devframe id:
+Two augmentable interfaces — `DevframeRpcServerFunctions` (client→server) and `DevframeRpcClientFunctions` (server→client) — type each registered name on the client via `declare module 'devframe'`. Feed a const array through `RpcDefinitionsToFunctionsWithNamespace`, which prefixes each bare name with your id:
 
 ```ts
 import type { RpcDefinitionsToFunctionsWithNamespace } from 'devframe/rpc'
@@ -198,33 +164,13 @@ declare module 'devframe' {
 }
 ```
 
-If you define functions with full namespaced names, use `RpcDefinitionsToFunctions<typeof serverFunctions>` (no namespace argument) and the unscoped `ctx.rpc.register`. Every registered name is then autocompletable and argument-typed:
+For fully namespaced names, use `RpcDefinitionsToFunctions<typeof serverFunctions>` (no namespace argument) with the unscoped `ctx.rpc.register`. For a one-off, declare a single key with `RpcFunctionDefinitionToFunction<typeof getModules>`.
 
-```ts
-import { connectDevframe } from 'devframe/client'
-
-const my = (await connectDevframe()).scope('my-devframe')
-const modules = await my.rpc.call('get-modules', { limit: 10 })
-//                          ^? typed from the augmentation above
-```
-
-For one-off augmentations, declare a single key with `RpcFunctionDefinitionToFunction`:
-
-```ts
-import type { RpcFunctionDefinitionToFunction } from 'devframe/rpc'
-
-declare module 'devframe' {
-  interface DevframeRpcServerFunctions {
-    'my-devframe:get-modules': RpcFunctionDefinitionToFunction<typeof getModules>
-  }
-}
-```
-
-Augment `declare module 'devframe'` or `declare module 'devframe/types'` where these interfaces live; re-exporting under a renamed alias won't merge into the base.
+Augment these interfaces where they live (`devframe` or `devframe/types`); a renamed re-export won't merge into the base.
 
 ## Static dumps
 
-For `static` functions, Devframe records the handler's output during `createBuild` and bakes it in:
+For `static` functions, Devframe records the handler output during `createBuild`:
 
 ```ts
 defineRpcFunction({
@@ -238,7 +184,7 @@ defineRpcFunction({
 })
 ```
 
-For `query` functions, provide an explicit `dump` enumerating argument sets to pre-compute:
+For `query` functions, an explicit `dump` enumerates argument sets to pre-compute:
 
 ```ts
 defineRpcFunction({
@@ -254,39 +200,30 @@ defineRpcFunction({
 })
 ```
 
-Static clients resolve calls from the baked dump; unmatched arguments resolve to `dump.fallback` (or throw without one).
+Static clients resolve from the baked dump; unmatched arguments hit `dump.fallback` (or throw).
 
 ## JSON-serializable declaration
 
-The WS transport picks one of two encoders per RPC function:
+The WS transport picks one of two encoders per function:
 
 | `jsonSerializable` | Encoder | Wire prefix | Round-trips |
 |---|---|---|---|
 | `false` (default) | `structured-clone-es` | `s:` | `Map`, `Set`, `Date`, `BigInt`, cycles, class instances |
 | `true` (opt-in) | strict `JSON.stringify` | _(unprefixed)_ | JSON-only |
 
-The wire stays plain JSON when every participating function is JSON-flagged.
+When every function is JSON-flagged, the wire stays plain JSON.
 
 ### Discovering shape errors during dev
 
-When a `jsonSerializable: true` handler returns a value JSON cannot round-trip (`Map`, `Date`, …), the strict serializer throws [`DF0020`](../errors/DF0020) synchronously:
-
-```ts
-defineRpcFunction({
-  name: 'graph',
-  jsonSerializable: true,
-  // ⚠ throws DF0020 because Map cannot round-trip through JSON
-  handler: () => ({ nodes: new Map([['a', 1]]) }),
-})
-```
+When a `jsonSerializable: true` handler returns a value JSON cannot round-trip (`Map`, `Date`, …), the strict serializer throws [`DF0020`](../errors/DF0020).
 
 ### MCP requires JSON
 
-`agent: {...}` requires `jsonSerializable: true`; registering one without the other throws [`DF0019`](../errors/DF0019).
+`agent: {...}` requires `jsonSerializable: true`; one without the other throws [`DF0019`](../errors/DF0019).
 
 ## Agent exposure
 
-Add an `agent` field to surface the function to coding agents over MCP.
+Add an `agent` field to surface the function to agents over MCP:
 
 ```ts
 defineRpcFunction({
@@ -308,6 +245,6 @@ defineRpcFunction({
 
 ## What's next
 
-- [Shared State](./shared-state) — observable state synced across clients
+- [Shared State](./shared-state) — state synced across clients
 - [Client](./client) — connecting from the browser
 - [Agent-Native](./agent-native) — exposing RPCs to agents

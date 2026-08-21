@@ -4,11 +4,11 @@ outline: deep
 
 # Client Assets
 
-A devframe's UI is a built SPA. The top-level `clientAssets` field says where those assets live — a **local directory** bundled with your tool, or a **published npm package** fetched on demand.
+A devframe's UI is a built SPA; `clientAssets` says where it lives — a **local directory** or **published npm package**.
 
 ## Mounting a local build
 
-Point `clientAssets` at your SPA build directory, resolved from the module (works from source and the published package):
+Point `clientAssets` at your SPA build directory, resolved from the module:
 
 ```ts
 import { fileURLToPath } from 'node:url'
@@ -26,13 +26,13 @@ export default defineDevframe({
 })
 ```
 
-devframe serves it with SPA fallback (unknown paths → `index.html`) and no-store dev caching. Build the SPA with a relative base (`vite: { base: './' }`) so it reads its runtime base from `document.baseURI`.
+devframe serves it with SPA fallback (unknown paths → `index.html`) and no-store dev caching. Build the SPA with a relative base (`vite: { base: './' }`); it reads its runtime base from `document.baseURI`.
 
-The [`dev`](/adapters/dev), [`build`](/adapters/build), and [Vite](/frameworks/vite) adapters consume this same `clientAssets`. The earlier `cli.distDir` is deprecated but still read as a fallback when `clientAssets` is unset.
+The [`dev`](/adapters/dev), [`build`](/adapters/build), and [Vite](/frameworks/vite) adapters share `clientAssets`; the deprecated `cli.distDir` is a fallback when it's unset.
 
 ## Programmatic hosting from `setup`
 
-`clientAssets` serves the *primary* UI. To host assets yourself — a second bundle, a runtime-decided source, extra directories — use `ctx.views.hostStatic` in `setup`:
+To host assets beyond the *primary* UI, use `ctx.views.hostStatic`:
 
 ```ts
 export default defineDevframe({
@@ -57,11 +57,11 @@ export default defineDevframe({
 })
 ```
 
-`hostStatic(baseUrl, source, defaultResolveFrom?)` accepts the same `StaticAssetsSource` as `clientAssets`; in `dev` it registers middleware live, in `build` it copies files into the static output.
+`hostStatic(baseUrl, source, defaultResolveFrom?)` takes `clientAssets`'s `StaticAssetsSource`; `dev` registers middleware live, `build` copies into the static output.
 
 ## Remote assets
 
-Instead of a directory, give `clientAssets` a `RemoteAssets` object naming a **published npm package** and exact version — fetched on demand and cached locally, so the node package doesn't bundle its SPA:
+Give `clientAssets` a `RemoteAssets` object naming a **published npm package** and exact version:
 
 ```ts
 import type { RemoteAssets } from 'devframe'
@@ -85,48 +85,46 @@ export default defineDevframe({
 })
 ```
 
-The definition's [`importMetaUrl`](./devframe-definition#resolving-against-the-plugins-own-dependencies) supplies the resolution base.
+The definition's [`importMetaUrl`](./devframe-definition#resolving-against-the-plugins-own-dependencies) is the resolution base.
 
 ### How assets resolve
 
-Per request, the source resolves in order:
+Per request, resolution tries in order:
 
-1. **Locally installed package** — resolved from `resolveFrom` (default `importMetaUrl`); served directly, no network.
+1. **Locally installed package** — resolved from `resolveFrom` (default `importMetaUrl`); served with no network.
 2. **On-disk cache** — files already fetched, under the project's storage directory.
-3. **CDN back-proxy** — [jsDelivr](https://www.jsdelivr.com/) by default; each file streams to the browser, cached in passing. Exact-version URLs are immutable, so cached files never go stale.
+3. **CDN back-proxy** — [jsDelivr](https://www.jsdelivr.com/) by default; exact-version URLs are immutable, so caches never stale.
 
 ### Options
 
 | Field | Purpose |
 |-------|---------|
-| `package` | npm package holding the built assets. |
-| `version` | Exact version, usually your tool's `pkg.version`. |
-| `resolveFrom` | Resolution base for the local path. Defaults to `importMetaUrl`; `null` skips to cache + CDN. |
+| `package` | npm package with the built assets. |
+| `version` | Exact version, usually your `pkg.version`. |
+| `resolveFrom` | Local-path resolution base. Defaults to `importMetaUrl`; `null` skips to cache + CDN. |
 | `path` | Subpath the assets live under (default `dist`). |
-| `provider` | `'jsdelivr'` (default), `'unpkg'`, or a custom provider for an internal mirror. |
-| `offline` | `true` serves only from a local install or cache, never the network. |
+| `provider` | `'jsdelivr'` (default), `'unpkg'`, or a custom provider (internal mirror). |
+| `offline` | `true` serves only from local install or cache, never network. |
 
 An invalid npm name or non-exact version throws [`DF0065`](../errors/DF0065).
 
 ### Offline and air-gapped use
 
-Install the assets package explicitly; resolution step 1 serves it locally:
+Install the assets package explicitly — step 1 serves it locally. Set `offline: true` to never contact the CDN, or point `provider` at a mirror:
 
 ```sh
 npm install @acme/my-tool-assets
 ```
 
-Set `offline: true` to never contact the CDN, or point `provider` at an npm mirror.
-
 ### When the assets can't be reached
 
-A file absent from local install and cache, with the provider unreachable, raises [`DF0060`](../errors/DF0060). An HTML navigation gets a self-contained page with the package, install command, provider error, and retry button.
+A file absent from local install and cache, with the provider unreachable, raises [`DF0060`](../errors/DF0060); an HTML navigation gets a self-contained error page.
 
-It also posts the failure to `window.parent` (`DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE` from `devframe/constants`, payload `RemoteAssetsErrorMessage`), so an embedding viewer renders it itself ([`@devframes/hub-ui`](./build-your-own-hub-ui) shows a panel over the dock frame).
+It also posts the failure to `window.parent` (`DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE` from `devframe/constants`, payload `RemoteAssetsErrorMessage`) for an embedding viewer like [`@devframes/hub-ui`](./build-your-own-hub-ui).
 
 ### Custom provider
 
-A custom provider supplies the file URL, optionally a file listing (404s, SPA fallback, static builds):
+A custom provider supplies the file URL, optionally a listing:
 
 ```ts
 const clientAssets: RemoteAssets = {
@@ -141,7 +139,7 @@ const clientAssets: RemoteAssets = {
 
 ### Publishing the assets
 
-An ordinary npm package ships the built UI under `path` (default `dist`), exposing its `package.json` so the resolver finds it:
+An ordinary npm package ships the built UI under `path` (default `dist`) and exposes its `package.json` for the resolver:
 
 ```json
 {
@@ -152,4 +150,4 @@ An ordinary npm package ships the built UI under `path` (default `dist`), exposi
 }
 ```
 
-Keep its version in lockstep with the tool, so `version: pkg.version` matches the UI.
+Keep its version in lockstep with the tool.

@@ -4,7 +4,7 @@ outline: deep
 
 # Devframe Definition
 
-A Devframe tool is one `defineDevframe` call, returning a portable `DevframeDefinition` any [adapter](/adapters/) consumes.
+One `defineDevframe` call returns a portable `DevframeDefinition` any [adapter](/adapters/) consumes.
 
 ## Minimal definition
 
@@ -48,11 +48,11 @@ export default defineDevframe({
 | `homepage` | `string` | **Required.** Homepage/docs URL. |
 | `description` | `string` | **Required.** One-line summary. |
 | `icon` | `string \| { light, dark }` | Optional Iconify name or URL; light/dark pairs. |
-| `basePath` | `string` | Optional mount-path override. Default `/` standalone (`cli`/`build`), `/.<id>/` hosted (`vite`/`embedded`). |
+| `basePath` | `string` | Optional mount-path override. Default `/` standalone (`cli`/`build`), `/__<id>/` hosted (`vite`/`embedded`). |
 | `duplicationStrategy` | `'warn' \| 'silent' \| 'throw' \| 'duplicate'` | Hub reaction when another devframe shares this `id`. Default `'warn'`. See [Hub](./hub); standalone adapters ignore it. |
 | `capabilities` | `{ dev?, build? }` | Per-runtime feature flags. `boolean` = whole runtime; object = individual features. |
 | `services` | `DevframeServiceInput[]` | Wire services consumed — descriptors (`{ package, version?, required?, options? }`) imported against the plugin's own deps, or ready definitions. See [Cross-Plugin Services](./services#wire-services). |
-| `clientAssets` | `string \| RemoteAssets` | Built SPA served as the UI — local dist dir or [remote assets](./client-assets). Read by every UI-serving adapter (`dev`, `build`, `vite`, `next`, hub). Supersedes deprecated `cli.distDir`. |
+| `clientAssets` | `string \| RemoteAssets` | Built SPA served as the UI — local dist dir or [remote assets](./client-assets). Read by every UI-serving adapter (`dev`, `build`, `vite`, `next`, hub). |
 | `rpc` | `{ snapshot?: (string \| { method, inputs })[] }` | RPC config. `rpc.snapshot` opts an RPC this devframe doesn't own into the static dump. Bare method id bakes the no-arg call; `{ method, inputs }` bakes one record per argument-tuple (`inputs` = tuples or async `(ctx) => tuples`). First tuple = fallback. |
 | `setup` | `(ctx, info?) => void \| Promise<void>` | **Required.** Server-side entry point, run in every runtime. Optional 2nd arg carries runtime metadata — notably parsed CLI `flags` under `createCac`. |
 | `cli` | `DevframeCliOptions` | CLI adapter defaults. See [CLI options](#cli-options). |
@@ -78,26 +78,17 @@ export default defineDevframe({
 
 ### Resolving against the plugin's own dependencies
 
-`importMetaUrl` resolves companion packages against the plugin's **own** dependencies, so users install nothing extra:
+`importMetaUrl` resolves companion packages against the plugin's **own** dependencies:
 
 ```ts
-import pkg from '../package.json' with { type: 'json' }
-
 export default defineDevframe({
-  id: 'my-devframe',
-  name: 'My Devframe',
-  version: pkg.version,
-  packageName: pkg.name,
+  // …metadata as above
   importMetaUrl: import.meta.url,
-  homepage: pkg.homepage,
-  description: pkg.description,
-  // Served from the locally installed `my-devframe--assets` — resolved via
-  // `importMetaUrl`, so it works under pnpm's strict layout with zero network.
+  // Served from the locally installed `my-devframe--assets`, resolved via
+  // `importMetaUrl` — works under pnpm's strict layout with zero network.
   clientAssets: { package: `${pkg.name}--assets`, version: pkg.version },
-  services: [
-    // Imported from `my-devframe`'s own dependency graph.
-    { package: '@scope/my-service', version: pkg.version },
-  ],
+  // Imported from `my-devframe`'s own dependency graph.
+  services: [{ package: '@scope/my-service', version: pkg.version }],
   setup(ctx) { /* … */ },
 })
 ```
@@ -110,30 +101,12 @@ For remote assets, `importMetaUrl` is the default `resolveFrom`; a per-source va
 import { fileURLToPath } from 'node:url'
 
 export default defineDevframe({
-  id: 'my-devframe',
-  name: 'My Devframe',
-  version: pkg.version,
-  packageName: pkg.name,
+  // …metadata as above
   importMetaUrl: import.meta.url,
-  homepage: pkg.homepage,
-  description: pkg.description,
-  // A local build resolved from the module, so it works from both source
-  // and the published package.
+  // A local build resolved from the module — works from source and the
+  // published package.
   clientAssets: fileURLToPath(new URL('../dist/spa', import.meta.url)),
   setup(ctx) { /* … */ },
-})
-```
-
-The deprecated `cli.distDir` remains a fallback:
-
-```ts
-export default defineDevframe({
-  // …
-  cli: {
-    // ⚠️ Deprecated — prefer the top-level `clientAssets`. Still read as a
-    // fallback for back-compat.
-    distDir: fileURLToPath(new URL('../dist/spa', import.meta.url)),
-  },
 })
 ```
 
@@ -218,7 +191,7 @@ ctx.staticConfig['my-plugin'] = { featureFlag: true }
 | `project` | per-checkout, `<cwd>/node_modules/.<app>/devframe/` | caches, personal settings |
 | `global` | per-user, `~/.<app>/devframe/` | auth tokens, machine-wide prefs |
 
-`ctx.scope(id)` returns a namespace-scoped view auto-prefixing every RPC id, shared-state key, and streaming channel, plus a persisted `settings` store (`project`/`global` scopes use the matching storage classes). The recommended entry point — [Scoped Context](./scoped-context).
+`ctx.scope(id)` returns a namespace-scoped view ([Scoped Context](./scoped-context)) auto-prefixing every RPC id, shared-state key, and streaming channel, plus a persisted `settings` store (`project`/`global` scopes use the matching storage classes).
 
 Host adapters can augment `ctx` — e.g. the [`vite` adapter](/adapters/vite)'s dock, command, message, and terminal hosts.
 
@@ -254,7 +227,6 @@ defineDevframe({
 | Field | Type | Description |
 |-------|------|-------------|
 | `command` | `string` | Binary name in `--help`. Default: the `id`. |
-| `distDir` | `string \| RemoteAssets` | **Deprecated** — use top-level [`clientAssets`](#serving-the-ui-with-clientassets); read as a fallback. |
 | `port` | `number` | Preferred dev-server port. |
 | `portRange` | `[number, number]` | Port scan range (`get-port-please`). |
 | `random` | `boolean` | Prefer a random open port. |

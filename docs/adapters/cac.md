@@ -4,15 +4,13 @@ outline: deep
 
 # CLI (cac)
 
-Wraps a `DevframeDefinition` in a [`cac`](https://github.com/cacjs/cac)-powered CLI with `dev`, `build`, and `mcp` commands.
-
-`cac` is an optional peer of this adapter:
+A [`cac`](https://github.com/cacjs/cac) CLI around a `DevframeDefinition` with `dev`, `build`, and `mcp` commands. `cac` is an optional peer:
 
 ```sh
 npm install devframe cac
 ```
 
-Tools using the [lower-level factories](#use-your-own-cli-framework) need no `cac`.
+The [lower-level factories](#use-your-own-cli-framework) need no `cac`.
 
 ```ts
 import { defineDevframe } from 'devframe'
@@ -28,8 +26,6 @@ const devframe = defineDevframe({
 await createCac(devframe).parse()
 ```
 
-Running the binary:
-
 ```sh
 my-devframe                     # dev server at http://localhost:9999/
 my-devframe --port 8080
@@ -38,7 +34,7 @@ my-devframe build --out-dir dist-static --base /devframe/
 my-devframe mcp                 # stdio MCP server
 ```
 
-The SPA serves at `/` standalone, `/__devframe/` when hosted ([Mount paths](./#mount-paths)).
+The SPA serves at `/` standalone, `/__devframe/` hosted ([Mount paths](./#mount-paths)).
 
 ## Options
 
@@ -47,10 +43,10 @@ The SPA serves at `/` standalone, `/__devframe/` when hosted ([Mount paths](./#m
 | Option | Default | Description |
 |--------|---------|-------------|
 | `defaultPort` | `9999` (or `def.cli?.port`) | Dev port if `--port` unset. |
-| `configureCli` | — | `(cli: CAC) => void` — add commands/flags post-`cli.configure`. |
+| `configureCli` | — | `(cli: CAC) => void` — add commands/flags. |
 | `onReady` | — | `(info: { origin, port, app }) => void \| Promise<void>` — once listening. |
 
-`createCac` returns a `CacHandle`:
+Returns a `CacHandle`:
 
 ```ts
 interface CacHandle {
@@ -58,8 +54,6 @@ interface CacHandle {
   parse: (argv?: string[]) => Promise<void>
 }
 ```
-
-Add commands/flags via `cli` before `parse()`.
 
 ## Definition-level `cli` fields
 
@@ -91,7 +85,7 @@ defineDevframe({
 
 ## Headless logging
 
-Wire `onReady` to print a banner:
+Print a banner via `onReady`:
 
 ```ts
 await createCac(devframe, {
@@ -103,7 +97,7 @@ await createCac(devframe, {
 
 ## Use your own CLI framework
 
-Drop to the peer factories for a commander/yargs program or other structure:
+Peer factories for a commander/yargs program:
 
 | Building block | Entry | Purpose |
 |----------------|-------|---------|

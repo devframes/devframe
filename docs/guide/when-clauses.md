@@ -4,15 +4,13 @@ outline: deep
 
 # When Clauses
 
-When clauses gate visibility and executability of docks, commands, and any UI surface, matching [VS Code's when-clause contexts](https://code.visualstudio.com/api/references/when-clause-contexts) against a reactive context object.
-
-The evaluator is the [`whenexpr`](https://github.com/antfu/whenexpr) package; devframe re-exports `evaluateWhen`, `resolveContextValue`, and `WhenExpression<Ctx, S>` from `devframe/utils/when`.
+When clauses gate visibility and executability of docks, commands, and UI surfaces via [VS Code's when-clause contexts](https://code.visualstudio.com/api/references/when-clause-contexts). The evaluator [`whenexpr`](https://github.com/antfu/whenexpr) re-exports at `devframe/utils/when`.
 
 ## Usage
 
 ### On commands
 
-Gates palette visibility and shortcut triggering:
+Gates palette visibility and shortcuts.
 
 ```ts
 ctx.commands.register({
@@ -25,7 +23,7 @@ ctx.commands.register({
 
 ### On dock entries
 
-Gates dock-bar visibility:
+Gates dock-bar visibility.
 
 ```ts
 ctx.docks.register({
@@ -40,7 +38,7 @@ ctx.docks.register({
 
 ### Render-only visibility on dock entries
 
-A dock entry also takes `visibility`, a second expression that hides only its dock-bar button while leaving it registered and reachable via `docks.activate()`/`switchEntry()`, RPC, and raw entry-list walks; `when` remains its general relevance switch. The canonical case is a shared-frame anchor (`subTabs`) that stays registered to drive the postMessage nav loop while only its member tabs render.
+A dock entry also takes `visibility`, a second expression that hides only its dock-bar button while keeping the entry registered and reachable (e.g. a `subTabs` anchor).
 
 ```ts
 ctx.docks.register({
@@ -61,13 +59,13 @@ ctx.docks.register({
 | Category | Operators | Example |
 |----------|-----------|---------|
 | Bare truthy | identifier | `dockOpen` |
-| Literals | `true`, `false`, numbers, strings | `true`, `42`, `'dev'` |
+| Literals | `true`, `false`, numbers, strings | `42`, `'dev'` |
 | Unary | `!`, `-`, `+` | `!paletteOpen` |
 | Logical | `&&`, `\|\|` | `dockOpen && !paletteOpen` |
 | Equality | `==`, `!=`, `===`, `!==` | `clientType == embedded` |
 | Relational | `<`, `<=`, `>`, `>=` | `count >= 10` |
 | Arithmetic | `+`, `-`, `*`, `/`, `%` | `(a + b) * c` |
-| Grouping | `( … )` | `(a \|\| b) && c` |
+| Grouping | `( … )` | `(a \|\| b)` |
 
 ### Precedence (low → high)
 
@@ -75,8 +73,8 @@ ctx.docks.register({
 
 ### `==` vs `===`
 
-- **`==` / `!=`** — VS Code idiom; right-hand side is a single token (identifier, quoted string, number, boolean), compared as strings.
-- **`===` / `!==`** — JS strict equality; both sides full expressions, no coercion.
+- **`==` / `!=`** — VS Code idiom; RHS a single token, compared as a string.
+- **`===` / `!==`** — JS strict equality; full expressions both sides, no coercion.
 
 ```ts
 evaluateWhen('clientType == embedded', ctx) // string-style
@@ -99,22 +97,20 @@ when: 'my-devtool.ready' // custom plugin context
 
 | Variable | Type | Description |
 |----------|------|-------------|
-| `clientType` | `'embedded' \| 'standalone'` | `embedded` when running inside the host app overlay, `standalone` in a separate window. |
-| `dockOpen` | `boolean` | Whether the dock panel is currently open. |
-| `paletteOpen` | `boolean` | Whether the command palette is currently open. |
-| `dockSelectedId` | `string` | ID of the currently selected dock entry. Empty string `''` when none. |
+| `clientType` | `'embedded' \| 'standalone'` | `embedded` in the host overlay, `standalone` in a separate window. |
+| `dockOpen` | `boolean` | Dock panel open. |
+| `paletteOpen` | `boolean` | Command palette open. |
+| `dockSelectedId` | `string` | Selected dock entry ID; `''` if none. |
 
 ## Namespaced context keys
 
-Plugins add keys with `.` or `:` separators:
+Plugins add keys with `.` or `:`:
 
 ```ts
 context['my-devtool.ready'] = true
 context['my-devtool:step'] = 'build'
 context.myDevtool = { ready: true, step: 'build' } // nested form
 ```
-
-All three work in expressions:
 
 ```ts
 when: 'my-devtool.ready'
@@ -124,11 +120,11 @@ when: 'myDevtool.ready'
 
 ### Lookup order
 
-Resolving `my-devtool.ready` tries an exact match (`ctx['my-devtool.ready']`), then the nested path (`ctx['my-devtool']?.ready`). Flat keys win when both exist.
+Resolves the exact key `ctx['my-devtool.ready']` first, then nested `ctx['my-devtool']?.ready`; flat wins.
 
 ## Type-safe `when` clauses
 
-`defineCommand` and `defineDockEntry` validate `when:` against `WhenContext` at compile time:
+`defineCommand` and `defineDockEntry` type-check `when:` against `WhenContext`.
 
 ```ts
 import { defineCommand } from 'devframe'
@@ -151,7 +147,7 @@ defineCommand({
 
 ### Key validation with plugin contexts
 
-The default `WhenContext` leaves plugin keys open-ended (`[key: string]: unknown`), covering expression shape only. For key-name validation, declare a narrower context and a typed wrapper:
+The default `WhenContext` leaves plugin keys open-ended (`[key: string]: unknown`). To validate names, declare a narrower context and wrapper:
 
 ```ts
 import type { WhenContext, WhenExpression } from 'devframe/utils/when'
@@ -211,12 +207,12 @@ resolveContextValue('my-devtool.ready', ctx) // true
 
 ### `evaluateWhen(expression, ctx, options?)`
 
-Returns `boolean`. Pass `{ strict: true }` to throw on unknown keys.
+Returns `boolean`; `{ strict: true }` throws on unknown keys.
 
 ### `resolveContextValue(key, ctx)`
 
-Returns the current value of a single (possibly namespaced) key.
+Returns one (possibly namespaced) key's value.
 
 ### `WhenExpression<Ctx, S>`
 
-The branded expression type from `whenexpr`, for building typed `define*` helpers — see [Key validation with plugin contexts](#key-validation-with-plugin-contexts).
+The branded `whenexpr` expression type for typed `define*` helpers ([above](#key-validation-with-plugin-contexts)).

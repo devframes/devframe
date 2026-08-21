@@ -4,7 +4,7 @@ outline: deep
 
 # Dev
 
-`createCac`'s building block: h3 + WebSocket RPC + the SPA at the resolved base path. Use it in a custom CLI or with middleware.
+`createCac`'s building block: h3 + WebSocket RPC + the SPA at the resolved base path.
 
 ```ts
 import { createDevServer } from 'devframe/adapters/dev'
@@ -19,13 +19,13 @@ const handle = await createDevServer(devframe, {
 process.on('SIGINT', () => handle.close().then(() => process.exit(0)))
 ```
 
-Returns the `StartedServer` (origin, port, h3 app, WS server, RPC group, `close()`).
+Returns a `StartedServer`: origin, port, h3 app, WS server, RPC group, `close()`.
 
 | Option | Default | Description |
 |--------|---------|-------------|
 | `host` | `def.cli?.host ?? 'localhost'` | Bind host. |
 | `port` | resolved via `resolveDevServerPort` | Listen port. |
-| `flags` | `{}` | Passed to `setup(ctx, { flags })`. |
+| `flags` | `{}` | To `setup(ctx, { flags })`. |
 | `distDir` | `def.clientAssets` (falls back to deprecated `def.cli?.distDir`) | SPA dist; unset = bridge mode. |
 | `basePath` | `resolveBasePath(def, 'standalone')` | Mount override. |
 | `app` | fresh h3 app | Mount onto. |
@@ -35,7 +35,7 @@ Returns the `StartedServer` (origin, port, h3 app, WS server, RPC group, `close(
 
 ## WebSocket endpoint
 
-The RPC socket shares the HTTP port on `__ws`, advertised *relative* so the client dials its own origin through a reverse proxy. Configure `def.cli.ws`:
+The RPC socket shares the HTTP port at `__ws`, advertised *relative*. Configure `def.cli.ws`:
 
 | Field | Scenario | Advertised `websocket` |
 |-------|----------|------------------------|
@@ -43,11 +43,11 @@ The RPC socket shares the HTTP port on `__ws`, advertised *relative* so the clie
 | `port` | different port | `{ port, path: <route> }` |
 | `url` | remote origin | URL verbatim |
 
-Precedence `url` > `port` > `route`; for `url` the socket stays local on `route` — point your tunnel there.
+Precedence `url` > `port` > `route`; `url` keeps the socket local on `route`.
 
 ## Port resolution
 
-`resolveDevServerPort(def, opts?)` resolves a port before start:
+`resolveDevServerPort(def, opts?)` resolves a port before start.
 
 ```ts
 import { resolveDevServerPort } from 'devframe/adapters/dev'

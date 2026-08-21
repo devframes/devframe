@@ -4,9 +4,7 @@ outline: deep
 
 # Migrating to 0.9
 
-0.9 removes the compatibility shims deprecated across the 0.7 series and trims the public API of `devframe` and `@devframes/hub`. Each change has a drop-in replacement — update import paths and a few call sites.
-
-Framework adapters (`@devframes/vite` / `@devframes/nuxt` / `@devframes/next`) each split into `.../single` (author one devframe's SPA) and `.../hub` (mount a whole `@devframes/hub`); the bare root throws with a pointer to both.
+0.9 removes the compatibility shims deprecated across the 0.7 series and trims the public API of `devframe` and `@devframes/hub`. Each change has a drop-in replacement.
 
 ## `devframe/adapters/cli` is removed
 
@@ -32,7 +30,7 @@ import { createCac } from 'devframe/adapters/cac'
 await createCac(devframe).parse()
 ```
 
-The typed-flag helpers `defineCliFlags` and `parseCliFlags` live on `devframe/adapters/cac` too.
+Typed-flag helpers `defineCliFlags` and `parseCliFlags` live on `devframe/adapters/cac` too.
 
 ## `devframe/recipes/open-helpers` is removed
 
@@ -52,7 +50,7 @@ import { commonRpcFunctions } from 'devframe/recipes/common-rpc-functions'
 
 ## RPC dump re-exports move to `devframe/rpc/dump`
 
-The aliases re-exporting static-dump helpers from the `devframe/rpc` barrel are removed; import from `devframe/rpc/dump`:
+Static-dump re-exports from the `devframe/rpc` barrel are removed; import from `devframe/rpc/dump`:
 
 ```ts
 // 0.8.x
@@ -66,7 +64,7 @@ This covers every dump export: `collectStaticRpcDump`, `createClientFromDump`, `
 
 ## `@devframes/hub` json-render shims are removed
 
-json-render moved into the opt-in [`@devframes/json-render`](./json-render) integration in 0.7; the hub-local shims are now removed:
+json-render moved into the opt-in [`@devframes/json-render`](./json-render) integration in 0.7; the hub-local shims are removed:
 
 | 0.8.x (`@devframes/hub`) | 0.9 (`@devframes/json-render`) |
 |---|---|
@@ -95,11 +93,11 @@ const view = createJsonRenderView(ctx, {
 })
 ```
 
-`createJsonRenderView` returns a view with a serializable `ref` (shared-state key or inline spec). Project it onto a hub dock via `toJsonRenderDockEntry` (`@devframes/json-render/hub`), which contributes the `'json-render'` dock type.
+`createJsonRenderView` returns a view with a serializable `ref`. Project it onto a hub dock via `toJsonRenderDockEntry` (`@devframes/json-render/hub`), which contributes the `'json-render'` dock type.
 
 ## `defineDevframe` moves to the package root
 
-`defineDevframe` now lives on `devframe` alongside `defineRpcFunction`; `devframe/types` is now type-only. Import values and types from `devframe`:
+`defineDevframe` lives on `devframe` alongside `defineRpcFunction`; `devframe/types` is type-only. Import values and types from `devframe`:
 
 | 0.8.x | 0.9 |
 |-------|-----|
@@ -125,7 +123,7 @@ Two unused utility subpaths are removed:
 
 `devframe/node` keeps only the context API — `createHostContext`, `createStorage` (with their options types), and `RpcFunctionsHost`. Serve via the adapters or [`devframe/initiate`](../adapters/initiate).
 
-Internal host implementations and low-level factories are no longer exported:
+Internal host implementations and factories are no longer exported:
 
 | Removed from `devframe/node` | Notes |
 |---|---|
@@ -136,7 +134,7 @@ Internal host implementations and low-level factories are no longer exported:
 
 ## Cross-package internals move to `devframe/internal`
 
-The low-level primitives shared between `devframe` and its integrations move from `devframe/node` to the new **unstable** `devframe/internal` entry point:
+Low-level primitives shared between `devframe` and its integrations move from `devframe/node` to the new **unstable** `devframe/internal` entry point:
 
 | Moved | From | To |
 |---|---|---|
@@ -149,7 +147,7 @@ The low-level primitives shared between `devframe` and its integrations move fro
 
 ## `startHttpAndWs` is removed
 
-The `startHttpAndWs` primitive is gone; `createDevServer`, `initDevframe`, and `initHub` own the binding internally. `StartHttpAndWsOptions` is removed; `StartedServer` stays (re-exported from `devframe/internal`).
+`startHttpAndWs` is gone; `createDevServer`, `initDevframe`, and `initHub` own the binding internally. `StartHttpAndWsOptions` is removed; `StartedServer` stays (re-exported from `devframe/internal`).
 
 | 0.8.x | 0.9 |
 |---|---|
@@ -171,8 +169,6 @@ httpServer.listen(port)
 ```
 
 ## `@devframes/hub`'s `mountDevframe` is removed - use `ctx.install`
-
-`mountDevframe(ctx, def, options)` becomes `ctx.install`; `MountDevframeOptions` is renamed `InstallDevframeOptions`. `initHub`'s `devframes` list runs the same path.
 
 | 0.8.x | 0.9 |
 |---|---|
@@ -198,7 +194,7 @@ await ctx.install(myDevframe)
 
 ## `@devframes/hub` category order lives only on `/constants`
 
-`DEFAULT_CATEGORIES_ORDER` now lives only on `@devframes/hub/constants`; the re-exports from `@devframes/hub`, `@devframes/hub/node`, and `@devframes/hub/client` are removed:
+`DEFAULT_CATEGORIES_ORDER` now lives only on `@devframes/hub/constants`; re-exports from `@devframes/hub`, `@devframes/hub/node`, and `@devframes/hub/client` are removed:
 
 ```ts
 // 0.9
@@ -207,7 +203,7 @@ import { DEFAULT_CATEGORIES_ORDER } from '@devframes/hub/constants'
 
 ## The Vite bridge moves to `@devframes/vite`
 
-`devframe/helpers/vite` is now its own package `@devframes/vite`. The single `viteDevBridge` becomes three purpose-named plugins on `@devframes/vite/single`:
+`devframe/helpers/vite` is its own package `@devframes/vite`. `viteDevBridge` becomes three purpose-named plugins on `@devframes/vite/single`:
 
 | 0.8.x | 0.9 |
 |---|---|
@@ -216,7 +212,7 @@ import { DEFAULT_CATEGORIES_ORDER } from '@devframes/hub/constants'
 | `viteDevBridge(def, { devMiddleware: true })` (RPC bridge) | `devframeViteBridge(def)` |
 | `viteDevBridge(def, { devMiddleware: { port, host, flags } })` | `devframeViteBridge(def, { port, host, flags })` |
 
-The `devMiddleware` option is gone: `devframeVitePlugin` is the static mount, `devframeViteBridge` the RPC bridge with options flattened to the top level (`port`, `host`, `flags`, `auth`, `mcp`). `devframeVite(def, { bridge })` picks between them.
+The `devMiddleware` option is gone; bridge options flatten to the top level (`port`, `host`, `flags`, `auth`, `mcp`). `devframeVite(def, { bridge })` picks between the two plugins.
 
 ```ts
 // 0.8.x
@@ -240,7 +236,7 @@ export default defineConfig({
 
 ## Built-in plugins' `/vite` subpath is removed
 
-Each plugin's `@devframes/plugin-<name>/vite` export is removed. For a Vite app, mount into [Vite DevTools](https://devtools.vite.dev) with `createPluginFromDevframe` (`@vitejs/devtools-kit/node`):
+Each plugin's `@devframes/plugin-<name>/vite` export is removed. For Vite, mount into [Vite DevTools](https://devtools.vite.dev) with `createPluginFromDevframe` (`@vitejs/devtools-kit/node`):
 
 ```ts
 // 0.8.x
@@ -276,7 +272,7 @@ export default defineConfig({
 
 ## Built-in plugins' default export is now the factory, not an instance
 
-Every built-in plugin used to export a pre-built `DevframeDefinition` at module scope. The default export is now the `create<X>Devframe` factory; call it to get an instance:
+The default export is now the `create<X>Devframe` factory, not a pre-built `DevframeDefinition`; call it to get an instance:
 
 ```ts
 // 0.8.x
@@ -294,7 +290,7 @@ await ctx.install(createA11yDevframe())
 
 ## `@devframes/nuxt` and `@devframes/next` split into `/single` and `/hub`
 
-Both now serve their single-devframe surface from `.../single`; the bare root throws with a pointer to the two scopes.
+Both serve their single-devframe surface from `.../single`; the bare root throws.
 
 Nuxt — register the module by its subpath:
 
@@ -316,7 +312,7 @@ Next — helpers and the React client move down a level:
 
 ## Mounting a hub: the new `/hub` scope
 
-`@devframes/vite/hub`, `@devframes/nuxt/hub`, and `@devframes/next/hub` mount a whole `@devframes/hub` without hand-rolled `initHub` glue. Each wraps `initHub` and defaults the UI to `@devframes/hub-ui`'s `createUi()` (override with `ui`, or `ui: false` for headless).
+`@devframes/vite/hub`, `@devframes/nuxt/hub`, and `@devframes/next/hub` mount a whole `@devframes/hub`, wrapping `initHub` and defaulting the UI to `@devframes/hub-ui`'s `createUi()` (override with `ui`, or `ui: false` for headless).
 
 ```ts
 // Vite
@@ -336,4 +332,4 @@ export const POST = (req: Request) => hub.handler(req)
 export const DELETE = (req: Request) => hub.handler(req)
 ```
 
-`@devframes/vite/hub` and `@devframes/nuxt/hub` print a one-time recommendation to prefer the native [Vite DevTools](https://devtools.vite.dev) / [Nuxt DevTools](https://devtools.nuxt.com) (silence with `{ quiet: true }`); `@devframes/next/hub` stays quiet.
+`@devframes/vite/hub` and `@devframes/nuxt/hub` recommend the native [Vite DevTools](https://devtools.vite.dev) / [Nuxt DevTools](https://devtools.nuxt.com) once (silence with `{ quiet: true }`); `@devframes/next/hub` stays quiet.
