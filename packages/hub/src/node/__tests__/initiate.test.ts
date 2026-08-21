@@ -7,6 +7,7 @@ import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
 import { describe, expect, it } from 'vitest'
+import { DOCK_RENDERERS_STATE_KEY } from '../../constants'
 import { DEVFRAMES_HUB_BASE, initHub } from '../initiate'
 
 function makeDist(html: string): string {
@@ -44,6 +45,23 @@ function connectWsClient(url: string) {
 }
 
 describe('initHub', () => {
+  it('publishes an empty renderer manifest when no renderers are registered', async () => {
+    expect.assertions(2)
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false })
+
+    try {
+      await hub.ready
+      const context = await hub.context
+      expect(context.rpc.sharedState.keys()).toContain(DOCK_RENDERERS_STATE_KEY)
+
+      const rendererManifest = await context.rpc.sharedState.get(DOCK_RENDERERS_STATE_KEY)
+      expect(rendererManifest.value()).toEqual({})
+    }
+    finally {
+      await hub.close()
+    }
+  })
+
   it('connectionMeta() before ready throws DF8003', () => {
     const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false })
     expect(() => hub.connectionMeta()).toThrow(/DF8003|finished initializing/)

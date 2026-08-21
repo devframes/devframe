@@ -546,24 +546,22 @@ export function initHub(options: InitHubOptions): HubInstance {
       // into the connection meta right after this `init` returns.
       await options.ui?.setup?.(ctx)
 
-      // Publish the renderer manifest — one `ClientScriptEntry` per dock
-      // `type`, `importFrom` base-absolute so it resolves to the served module
-      // from any page depth. Clients read it from shared state and import a
-      // module lazily the first time a dock of that type mounts.
-      if (rendererRegistrations.length > 0) {
-        const manifest: Record<string, ClientScriptEntry> = {}
-        for (const registration of rendererRegistrations) {
-          manifest[registration.type] = {
-            importFrom: joinURL(base, '__renderers', `${registration.type}.mjs`),
-            ...(registration.importName ? { importName: registration.importName } : {}),
-          }
+      // Publish the authoritative renderer manifest, including an empty one.
+      // Each `importFrom` is base-absolute so it resolves to the served module
+      // from any page depth. Clients import a module lazily the first time a
+      // dock of that type mounts.
+      const manifest: Record<string, ClientScriptEntry> = {}
+      for (const registration of rendererRegistrations) {
+        manifest[registration.type] = {
+          importFrom: joinURL(base, '__renderers', `${registration.type}.mjs`),
+          ...(registration.importName ? { importName: registration.importName } : {}),
         }
-        const manifestState = await ctx.rpc.sharedState.get<Record<string, ClientScriptEntry>>(
-          DOCK_RENDERERS_STATE_KEY,
-          { initialValue: {} },
-        )
-        manifestState.mutate(() => manifest)
       }
+      const manifestState = await ctx.rpc.sharedState.get<Record<string, ClientScriptEntry>>(
+        DOCK_RENDERERS_STATE_KEY,
+        { initialValue: {} },
+      )
+      manifestState.mutate(() => manifest)
 
       // Aggregate MCP — one Streamable-HTTP endpoint over the shared
       // context's whole registry (tool ids are namespaced per plugin, and the
