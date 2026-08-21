@@ -25,9 +25,11 @@ export const Gallery = story({
   elements: {
     root: { type: 'Stack', props: { gap: 12 }, children: ['title', 'row', 'card', 'progress', 'table', 'tree'] },
     title: { type: 'Text', props: { text: 'JSON-render gallery', variant: 'heading' }, children: [] },
-    row: { type: 'Stack', props: { direction: 'row', gap: 8 }, children: ['b1', 'b2', 'badge'] },
+    row: { type: 'Stack', props: { direction: 'row', gap: 8, wrap: true }, children: ['b1', 'b2', 'b3', 'b4', 'badge'] },
     b1: { type: 'Button', props: { label: 'Primary', variant: 'primary' }, children: [] },
-    b2: { type: 'Button', props: { label: 'Ghost', variant: 'ghost', icon: 'plus' }, children: [] },
+    b2: { type: 'Button', props: { label: 'Secondary', variant: 'secondary' }, children: [] },
+    b3: { type: 'Button', props: { label: 'Ghost', variant: 'ghost', icon: 'ph:plus' }, children: [] },
+    b4: { type: 'Button', props: { label: 'Danger', variant: 'danger' }, children: [] },
     badge: { type: 'Badge', props: { text: 'success', variant: 'success' }, children: [] },
     card: { type: 'Card', props: { title: 'Details', collapsible: true }, children: ['kv'] },
     kv: { type: 'KeyValueTable', props: { data: { name: 'devframe', version: '0.7.5' } }, children: [] },
@@ -47,6 +49,20 @@ export const Controls = story({
     code: { type: 'CodeBlock', props: { filename: 'hello.ts', language: 'ts', code: 'export const x = 1' }, children: [] },
   },
   state: { name: '', enabled: true },
+})
+
+export const ComponentSurfaces = story({
+  root: 'root',
+  elements: {
+    root: { type: 'Stack', props: { gap: 12 }, children: ['openCard', 'collapsedCard', 'table'] },
+    openCard: { type: 'Card', props: { title: 'Raised panel', collapsible: true }, children: ['input', 'code', 'inlineCode'] },
+    input: { type: 'TextInput', props: { label: 'Sunken input', value: 'devframe' }, children: [] },
+    code: { type: 'CodeBlock', props: { filename: 'panel.ts', language: 'ts', code: 'export const material = "sunken"' }, children: [] },
+    inlineCode: { type: 'Text', props: { text: 'bg-panel-sunken', variant: 'code' }, children: [] },
+    collapsedCard: { type: 'Card', props: { title: 'Collapsed panel', collapsible: true, defaultCollapsed: true }, children: ['collapsedText'] },
+    collapsedText: { type: 'Text', props: { text: 'Hidden until expanded.' }, children: [] },
+    table: { type: 'DataTable', props: { rows: [{ layer: 'raised', alpha: '13%' }, { layer: 'sunken', alpha: '5%' }] }, children: [] },
+  },
 })
 
 export const Loading: StoryObj = story({ root: 'a', elements: { a: { type: 'Text', props: {}, children: [] } } }, { loading: true })

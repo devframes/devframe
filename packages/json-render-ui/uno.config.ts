@@ -37,6 +37,8 @@ export default defineConfig({
   // shadow-root surface/text tokens.
   safelist: [...shadowSurfaceSafelist, 'badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],
   shortcuts: {
+    'bg-panel-raised': 'bg-hover',
+    'bg-panel-sunken': 'bg-code',
     'z-nav': 'z-[30]',
     'z-dropdown': 'z-[40]',
     'z-tooltip': 'z-[45]',

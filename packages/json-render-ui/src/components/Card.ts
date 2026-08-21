@@ -21,16 +21,16 @@ export const Card: JrComponent<CardProps> = ({ props, children, loading }) => {
     : (children as any)
 
   if (props.collapsible) {
-    return h(LayoutCard, { padding: false }, () => h('details', { open: !props.defaultCollapsed }, [
-      h('summary', { class: `${headerClass} cursor-pointer select-none list-none` }, [
+    return h(LayoutCard, { padding: false, class: 'bg-panel-raised!' }, () => h('details', { class: 'group', open: !props.defaultCollapsed }, [
+      h('summary', { class: `${headerClass} cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden` }, [
         h('span', props.title ?? ''),
-        h('span', { class: 'color-faint text-xs' }, '▾'),
+        h('span', { 'class': 'i-ph:caret-right size-4 shrink-0 color-muted transition-transform group-open:rotate-90', 'aria-hidden': 'true' }),
       ]),
       h('div', { class: 'p4' }, [body]),
     ]))
   }
 
-  return h(LayoutCard, { padding: false }, () => [
+  return h(LayoutCard, { padding: false, class: 'bg-panel-raised!' }, () => [
     props.title ? h('div', { class: headerClass }, props.title) : null,
     h('div', { class: 'p4' }, [body]),
   ])

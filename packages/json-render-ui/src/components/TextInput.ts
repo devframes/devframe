@@ -24,6 +24,7 @@ export const TextInput: JrComponent<TextInputProps> = ({ props, on, bindings }) 
     'placeholder': props.placeholder,
     'type': props.type ?? 'text',
     'disabled': props.disabled || props.loading,
+    'class': 'bg-panel-sunken!',
   })
   if (props.label) {
     return h('label', { class: 'flex flex-col gap-1 text-sm color-muted' }, [

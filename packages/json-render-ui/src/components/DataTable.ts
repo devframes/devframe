@@ -29,15 +29,15 @@ export const DataTable: JrComponent<DataTableProps> = ({ props, on, bindings, lo
   const [, setSelected] = useBoundProp<unknown>(undefined, bindings?.value)
   const wrapperStyle = props.height != null ? { maxHeight: `${props.height}px` } : undefined
 
-  return h('div', { class: 'rounded border border-base overflow-auto', style: wrapperStyle }, [
+  return h('div', { class: 'rounded border border-base overflow-auto bg-panel-sunken', style: wrapperStyle }, [
     h('table', { class: 'w-full text-sm border-collapse' }, [
-      h('thead', { class: 'sticky top-0 bg-secondary' }, [
+      h('thead', { class: 'sticky top-0 bg-panel-raised' }, [
         h('tr', columns.map(col =>
           h('th', { class: 'text-left px2 py1.5 color-muted font-medium border-b border-base' }, col.label ?? col.key))),
       ]),
       h('tbody', rows.map((row, index) =>
         h('tr', {
-          class: 'border-b border-base hover:bg-secondary cursor-pointer',
+          class: 'border-b border-base hover:bg-panel-raised cursor-pointer',
           onClick: () => {
             // Deliver row + index into bound state, then fire the action.
             setSelected({ row, index })

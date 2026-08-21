@@ -103,7 +103,7 @@ export const JsonRenderView = defineComponent({
 
       const staticNote = !props.interactive
         ? h('div', {
-            class: 'rounded border border-base bg-secondary color-faint text-xs px2 py1 mb2',
+            class: 'rounded border border-base bg-panel-raised color-faint text-xs px2 py1 mb2',
           }, 'Interactive actions are unavailable in static output.')
         : null
 

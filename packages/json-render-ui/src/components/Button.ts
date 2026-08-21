@@ -27,10 +27,14 @@ export const Button: JrComponent<ButtonProps> = ({ props, on }) => {
     ActionButton,
     {
       variant: buttonVariant[variant] ?? 'action',
+      size: 'sm',
       disabled: props.disabled,
       loading: props.loading,
       // `danger` isn't an ActionButton variant — override the primary tint.
-      class: variant === 'danger' ? 'bg-red! color-white! border-red! hover:bg-red/90!' : undefined,
+      class: [
+        'h-8 px-2.5!',
+        variant === 'danger' ? 'bg-red! color-white! border-red! hover:bg-red/90!' : undefined,
+      ],
       onClick: () => on('press').emit(),
     },
     // Render the dynamic Icon in the slot (ActionButton's own `icon` prop is a

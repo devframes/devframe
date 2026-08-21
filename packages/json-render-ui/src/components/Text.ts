@@ -13,7 +13,7 @@ const textVariant: Record<string, { tag: string, class: string }> = {
   subheading: { tag: 'h3', class: 'text-base font-medium' },
   body: { tag: 'p', class: 'text-sm' },
   caption: { tag: 'span', class: 'text-xs color-faint' },
-  code: { tag: 'code', class: 'text-sm font-mono bg-secondary rounded px1 py0.5' },
+  code: { tag: 'code', class: 'text-sm font-mono bg-panel-sunken rounded px1 py0.5' },
 }
 
 const colorClass: Record<string, string> = {
