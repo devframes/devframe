@@ -22,6 +22,7 @@ import { DEVFRAMES_HUB_BASE, DOCK_RENDERERS_STATE_KEY, normalizeHubBase } from '
 import { createHubContext } from './context'
 import { diagnostics } from './diagnostics'
 import { prepareDevframe } from './install-devframe'
+import { disconnectDockPanelState } from './panel-state'
 
 /** A `devframes` entry with per-mount dock customization. */
 export interface HubDevframeEntry {
@@ -429,6 +430,7 @@ export function initHub(options: InitHubOptions): HubInstance {
   const cwd = options.cwd ?? process.cwd()
   const frames: { id: string, base: string, title: string }[] = []
   const rendererRegistrations = resolveRendererRegistrations(options.renderers ?? [])
+  let initializedContext: DevframeHubContext | undefined
 
   const shell = createInstanceShell<DevframeHubContext>({
     base,
@@ -441,6 +443,10 @@ export function initHub(options: InitHubOptions): HubInstance {
     sse: options.sse,
     allowedOrigins: options.allowedOrigins,
     destroyUnmatchedUpgrades: options.destroyUnmatchedUpgrades,
+    onPeerDisconnect: (_connection, sessionMeta) => {
+      if (initializedContext)
+        disconnectDockPanelState(initializedContext.docks, sessionMeta.id)
+    },
     register: resolveInstanceRegister(options.register, {
       id: options.name ?? 'devframes-hub',
       ...(options.name !== undefined ? { name: options.name } : {}),
@@ -495,6 +501,7 @@ export function initHub(options: InitHubOptions): HubInstance {
           ...(options.rpcDeclarations ? { builtinRpcDeclarations: options.rpcDeclarations } : {}),
         })
       }
+      initializedContext = ctx
 
       // Publish the host's bare-specifier resolution template before anything
       // registers a dock, so the docks host's bare-specifier capability check

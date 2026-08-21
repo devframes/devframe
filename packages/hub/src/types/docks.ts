@@ -5,6 +5,7 @@ export interface DevframeDocksHost {
   readonly events: EventEmitter<{
     'docks:entry:updated': (entry: DevframeDockUserEntry) => void
     'docks:activate': (activation: DevframeDockActivation) => void
+    'docks:panel:state': (event: DevframeDockPanelStateEvent) => void
   }>
 
   register: <T extends DevframeDockUserEntry>(entry: T, force?: boolean) => {
@@ -28,6 +29,12 @@ export interface DevframeDocksHost {
    */
   activate: (dockId: string, params?: Record<string, unknown>) => void
 }
+
+/** Lifecycle event for one viewer's dock panel over an RPC connection. */
+export type DevframeDockPanelStateEvent
+  = | { type: 'connected', sessionId: number, open: boolean }
+    | { type: 'changed', sessionId: number, open: boolean }
+    | { type: 'disconnected', sessionId: number }
 
 /**
  * A request to switch the active dock. `params` is an opaque, serializable

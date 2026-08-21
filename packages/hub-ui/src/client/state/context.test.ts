@@ -1,6 +1,7 @@
 import type { DevframeDockEntry } from '@devframes/hub'
 import type { DevframeRpcClient, DockSessionStorage } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
+import { HUB_EVENTS } from '@devframes/hub/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { describe, expect, it, vi } from 'vitest'
@@ -73,6 +74,38 @@ async function flushRestore(): Promise<void> {
 }
 
 describe('createDocksContext', () => {
+  it('reports the restored panel state and later open-state transitions', async () => {
+    expect.assertions(4)
+
+    const { rpc, sharedStates, trust } = createStubRpc()
+    const session = ref<DockSessionStorage>({
+      open: true,
+      selectedDockId: 'git',
+      selectedDockRoute: null,
+    })
+    await createDocksContext('embedded', rpc, undefined, session)
+
+    trust()
+    sharedStates.get('devframe:docks')!.push([gitEntry])
+    sharedStates.get('devframe:dock-renderers')!.push({})
+    await flushRestore()
+    await vi.waitFor(() => {
+      if (vi.mocked(rpc.call).mock.calls.length !== 1)
+        throw new Error('waiting for the restored panel state report')
+    })
+
+    expect(rpc.call).toHaveBeenCalledTimes(1)
+    expect(rpc.call).toHaveBeenLastCalledWith(HUB_EVENTS.rpc.docksPanelState, true)
+
+    session.value.open = false
+    await nextTick()
+    expect(rpc.call).toHaveBeenLastCalledWith(HUB_EVENTS.rpc.docksPanelState, false)
+
+    session.value.open = false
+    await nextTick()
+    expect(rpc.call).toHaveBeenCalledTimes(2)
+  })
+
   it('mounts a restored dock once after all initial server state arrives', async () => {
     expect.assertions(7)
 

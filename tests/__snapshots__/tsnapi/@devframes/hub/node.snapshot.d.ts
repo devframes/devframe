@@ -132,6 +132,21 @@ export declare const hubDocksActivate: {
     params?: Record<string, unknown>;
   }], Promise<void>>> | undefined;
 };
+export declare const hubDocksPanelState: {
+  name: "hub:docks:panel-state";
+  type?: "action" | undefined;
+  cacheable?: boolean;
+  args?: undefined;
+  returns?: undefined;
+  jsonSerializable?: boolean;
+  agent?: import("devframe").RpcFunctionAgentOptions;
+  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[open: boolean], Promise<void>>>) | undefined;
+  handler?: ((open: boolean) => Promise<void>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[open: boolean], Promise<void>, DevframeHubContext> | undefined;
+  snapshot?: boolean;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[open: boolean], Promise<void>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[open: boolean], Promise<void>>> | undefined;
+};
 export declare const hubMessagesAdd: {
   name: "hub:messages:add";
   type?: "action" | undefined;
