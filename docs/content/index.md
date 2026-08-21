@@ -54,16 +54,19 @@ A framework-neutral foundation for devtools. One definition becomes a Web Standa
   :::
 ::
 
+<!-- 
 ::u-page-section
   :::callout
   ---
   icon: i-lucide-newspaper
   to: https://antfu.me/posts/pluggable-extensible-playful-devtools
   target: _blank
+  class: 'max-w-3xl mx-auto mt-[-10]'
   ---
   Read the announcement — **Pluggable, Extensible, and Playful DevTools** — for the vision behind devframe.
   :::
 ::
+-->
 
 ::landing-features
 #headline
