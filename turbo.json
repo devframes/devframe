@@ -147,6 +147,11 @@
       "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
     },
+    "devframe-starter#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe#build"],
+      "outputs": ["dist/**"]
+    },
     "streaming-chat-example#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build"],
@@ -170,6 +175,12 @@
     "files-inspector-example#cli:build": {
       "outputLogs": "new-only",
       "dependsOn": ["files-inspector-example#build"],
+      "env": ["DEVFRAME_E2E_CWD"],
+      "outputs": ["dist/static/**"]
+    },
+    "devframe-starter#cli:build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe-starter#build"],
       "env": ["DEVFRAME_E2E_CWD"],
       "outputs": ["dist/static/**"]
     },

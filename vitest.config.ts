@@ -35,6 +35,7 @@ export default defineConfig({
       'examples/hub-next',
       'packages/next',
       'packages/vite',
+      'starter',
       {
         test: {
           name: 'tests',

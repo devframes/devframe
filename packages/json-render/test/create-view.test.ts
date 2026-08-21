@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { DevframeHost, DevframeNodeContext } from 'devframe'
 import type { DevframeJsonRenderSpec } from '../src/types'
 import { mkdtempSync } from 'node:fs'
@@ -93,6 +94,100 @@ describe('createJsonRenderView validation', () => {
     const circular: any = { root: 'a', elements: {} }
     circular.self = circular
     expect(() => createJsonRenderView(ctx, { id: 'circular', spec: circular })).toThrow(expect.objectContaining({ code: 'DF0041' }))
+  })
+
+  it('uses a custom Standard Schema instead of base catalog validation', () => {
+    expect.assertions(1)
+    const schema: StandardSchemaV1 = {
+      '~standard': {
+        version: 1,
+        vendor: 'test',
+        validate: value => ({ value }),
+      },
+    }
+
+    const view = createJsonRenderView(ctx, {
+      id: 'custom',
+      spec: { root: 'a', elements: { a: { type: 'Button', props: { variant: 'custom' } } } },
+      schema,
+    })
+
+    expect(view.value().elements.a?.props).toEqual({ variant: 'custom' })
+  })
+
+  it('rejects a spec that fails its custom Standard Schema', () => {
+    expect.assertions(1)
+    const schema: StandardSchemaV1 = {
+      '~standard': {
+        version: 1,
+        vendor: 'test',
+        validate: () => ({ issues: [{ message: 'Expected a supported root', path: ['root'] }] }),
+      },
+    }
+
+    expect(() => createJsonRenderView(ctx, { id: 'custom-invalid', spec, schema })).toThrow(
+      expect.objectContaining({ code: 'DF0073' }),
+    )
+  })
+
+  it('keeps the previous spec when a custom schema rejects an update', () => {
+    expect.assertions(2)
+    const schema: StandardSchemaV1 = {
+      '~standard': {
+        version: 1,
+        vendor: 'test',
+        validate: (value) => {
+          const candidate = value as DevframeJsonRenderSpec
+          return candidate.root === 'a'
+            ? { value }
+            : { issues: [{ message: 'Only root a is supported', path: ['root'] }] }
+        },
+      },
+    }
+    const view = createJsonRenderView(ctx, { id: 'stable', spec, schema })
+
+    expect(() => view.update({ root: 'b', elements: {} })).toThrow(expect.objectContaining({ code: 'DF0073' }))
+    expect(view.value().root).toBe('a')
+  })
+
+  it('disables prop validation when schema is false', () => {
+    expect.assertions(1)
+    const view = createJsonRenderView(ctx, {
+      id: 'permissive',
+      spec: { root: 'a', elements: { a: { type: 'Button', props: { variant: 'custom' } } } },
+      schema: false,
+    })
+
+    expect(view.value().elements.a?.props).toEqual({ variant: 'custom' })
+  })
+
+  it('uses Standard Schema as a guard without applying transformed output', () => {
+    expect.assertions(1)
+    const schema: StandardSchemaV1 = {
+      '~standard': {
+        version: 1,
+        vendor: 'test',
+        validate: () => ({ value: { root: 'transformed', elements: {} } }),
+      },
+    }
+    const view = createJsonRenderView(ctx, { id: 'guard-only', spec, schema })
+
+    expect(view.value().root).toBe('a')
+  })
+
+  it('rejects asynchronous Standard Schemas with a clear diagnostic', () => {
+    expect.assertions(1)
+    const schema: StandardSchemaV1 = {
+      '~standard': {
+        version: 1,
+        vendor: 'test',
+        validate: async value => ({ value }),
+      },
+    }
+
+    expect(() => createJsonRenderView(ctx, { id: 'async-schema', spec, schema })).toThrow(
+      expect.objectContaining({ code: 'DF0074' }),
+    )
   })
 })
 

@@ -1,0 +1,9 @@
+.DS_Store
+.turbo
+*.log
+coverage
+dist
+node_modules
+playwright-report
+test-results
+temp

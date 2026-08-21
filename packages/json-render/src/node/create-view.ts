@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { DevframeNodeContext, DevframeScopedNodeContext } from 'devframe'
 import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
 import type { DevframeJsonRenderSpec, JsonRenderStatePatch, JsonRenderView } from '../types'
@@ -8,7 +9,7 @@ import { JSON_RENDER_INDEX_KEY } from '../view-index'
 import { diagnostics } from './diagnostics'
 
 /** Options for {@link createJsonRenderView}. */
-export interface CreateJsonRenderViewOptions {
+export interface CreateJsonRenderViewOptions<SpecType extends DevframeJsonRenderSpec = DevframeJsonRenderSpec> {
   /**
    * Stable, author-supplied id, unique within the view's scope. Forms the
    * shared-state key `devframe:json-render:<scope>:<id>` and never changes
@@ -16,7 +17,9 @@ export interface CreateJsonRenderViewOptions {
    */
   id: string
   /** The initial spec. */
-  spec: DevframeJsonRenderSpec
+  spec: SpecType
+  /** A replacement Standard Schema validator, or `false` to disable validation. */
+  schema?: StandardSchemaV1 | false
   /**
    * Override the scope segment of the view's stable id. Defaults to the
    * context's namespace when created from a scoped context, otherwise
@@ -98,9 +101,43 @@ function validateElementProps(id: string, spec: DevframeJsonRenderSpec): void {
   }
 }
 
+function formatStandardSchemaIssues(issues: readonly StandardSchemaV1.Issue[]): string {
+  return issues
+    .map((issue) => {
+      const path = issue.path
+        ?.map(segment => typeof segment === 'object' ? String(segment.key) : String(segment))
+        .join('.')
+      return `${path || '(root)'}: ${issue.message}`
+    })
+    .join('; ')
+}
+
+function isPromise<Result>(value: Result | Promise<Result>): value is Promise<Result> {
+  return typeof (value as Promise<Result>).then === 'function'
+}
+
+function validateSpec(
+  id: string,
+  spec: DevframeJsonRenderSpec,
+  schema: StandardSchemaV1 | false | undefined,
+): void {
+  if (schema === false)
+    return
+  if (!schema) {
+    validateElementProps(id, spec)
+    return
+  }
+
+  const result = schema['~standard'].validate(spec)
+  if (isPromise(result))
+    throw diagnostics.DF0074({ id })
+  if (result.issues)
+    throw diagnostics.DF0073({ id, issues: formatStandardSchemaIssues(result.issues) })
+}
+
 // Ensure the spec always carries a `state` object so JSON-Pointer patches
 // into `/state/...` have a container to target.
-function normalizeSpec(spec: DevframeJsonRenderSpec): DevframeJsonRenderSpec {
+function normalizeSpec<SpecType extends DevframeJsonRenderSpec>(spec: SpecType): SpecType {
   return spec.state ? spec : { ...spec, state: {} }
 }
 
@@ -119,10 +156,10 @@ function normalizeSpec(spec: DevframeJsonRenderSpec): DevframeJsonRenderSpec {
  * view.dispose()
  * ```
  */
-export function createJsonRenderView(
+export function createJsonRenderView<SpecType extends DevframeJsonRenderSpec = DevframeJsonRenderSpec>(
   ctx: AnyContext,
-  options: CreateJsonRenderViewOptions,
-): JsonRenderView {
+  options: CreateJsonRenderViewOptions<SpecType>,
+): JsonRenderView<SpecType> {
   const scoped = isScoped(ctx)
   const baseCtx = scoped ? ctx.base : ctx
   const scope = options.scope ?? (scoped ? ctx.namespace : 'global')
@@ -135,10 +172,10 @@ export function createJsonRenderView(
     throw diagnostics.DF0039({ id, scope })
 
   const initial = normalizeSpec(options.spec)
-  validateElementProps(id, initial)
+  validateSpec(id, initial, options.schema)
   assertJsonSerializable(id, initial)
 
-  const state: SharedState<DevframeJsonRenderSpec> = createSharedState({
+  const state: SharedState<SpecType> = createSharedState({
     initialValue: initial,
     enablePatches: true,
   })
@@ -165,11 +202,11 @@ export function createJsonRenderView(
     id,
     title,
     ref: { stateKey },
-    value: () => state.value() as DevframeJsonRenderSpec,
+    value: () => state.value() as SpecType,
     update(spec) {
       assertLive()
       const next = normalizeSpec(spec)
-      validateElementProps(id, next)
+      validateSpec(id, next, options.schema)
       assertJsonSerializable(id, next)
       state.mutate(() => next)
     },

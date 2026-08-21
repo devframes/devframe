@@ -21,6 +21,10 @@ minimumReleaseAgeExclude:
   - tsdown@0.22.14
   - verkit@0.3.0
   - structured-clone-es@2.0.1
+  - '@devframes/hub-ui@0.9.4'
+  - '@devframes/hub@0.9.4'
+  - '@devframes/json-render@0.9.4'
+  - '@devframes/vite@0.9.4'
 shamefullyHoist: true
 shellEmulator: true
 strictPeerDependencies: false
@@ -37,6 +41,7 @@ packages:
   - plugins/*/assets-pkg
   - services/*
   - examples/*
+  - starter
   - storybook
   - docs
 
