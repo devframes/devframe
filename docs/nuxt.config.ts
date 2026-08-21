@@ -8,12 +8,12 @@ export default defineNuxtConfig({
   extends: [process.env.COMARK_DOCS_LAYER || 'comark-docs'],
 
   site: {
-    url: 'https://devframe.dev',
+    url: 'https://devfra.me',
     name: 'Devframe',
   },
 
   llms: {
-    domain: 'https://devframe.dev',
+    domain: 'https://devfra.me',
     title: 'Devframe',
     description:
       'Framework-neutral foundation for building devtools — one definition becomes a Web Standard handler, a CLI, a static report, an MCP server, or a hub dock.',

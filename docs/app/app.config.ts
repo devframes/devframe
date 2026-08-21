@@ -60,7 +60,7 @@ export default defineAppConfig({
       applicationCategory: 'DeveloperApplication',
       operatingSystem: 'Any',
       license: 'https://github.com/devframes/devframe/blob/main/LICENSE.md',
-      sameAs: ['https://github.com/devframes/devframe'],
+      sameAs: ['https://github.com/devframes/devframe', 'https://devfra.me'],
       programmingLanguage: 'TypeScript',
     },
   },
