@@ -41,3 +41,7 @@
 .dark [data-active].text-highlighted {
   color: var(--ui-color-primary-400);
 }
+
+.mermaid svg {
+  width: 100%;
+}
