@@ -1,0 +1,19 @@
+/*
+ * Devframe brand palette (sage green, anchored on the old VitePress brand
+ * color #517158). Nuxt UI maps `--ui-color-primary-*` to `var(--color-sage-*)`
+ * when `ui.colors.primary` is `sage`, so defining these custom properties is
+ * enough to theme every primary accent (links, section labels, syntax hints).
+ */
+:root {
+  --color-sage-50: #f3f7f3;
+  --color-sage-100: #e3ede4;
+  --color-sage-200: #c8dcca;
+  --color-sage-300: #9fc0a4;
+  --color-sage-400: #6f9d77;
+  --color-sage-500: #517158;
+  --color-sage-600: #445f4a;
+  --color-sage-700: #384d3d;
+  --color-sage-800: #2f3f33;
+  --color-sage-900: #28352b;
+  --color-sage-950: #131d16;
+}

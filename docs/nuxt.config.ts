@@ -7,6 +7,8 @@ export default defineNuxtConfig({
   // COMARK_DOCS_LAYER=../../comark-docs pnpm docs
   extends: [process.env.COMARK_DOCS_LAYER || 'comark-docs'],
 
+  css: ['~/assets/css/devframe.css'],
+
   site: {
     url: 'https://devfra.me',
     name: 'Devframe',

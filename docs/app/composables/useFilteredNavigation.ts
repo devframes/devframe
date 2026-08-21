@@ -55,7 +55,16 @@ export function useFilteredNavigation(): ComputedRef<NavItem[]> {
       ? headerGroups
       : nav.map(item => ({ label: item.title, sections: [segmentOf(item.path, base)] }))
 
-    const active = groups.find(group => group.sections?.includes(seg)) ?? groups[0]
+    const matched = groups.find(group => group.sections?.includes(seg))
+    // A section reachable only through a manual tab (e.g. migrations, under the
+    // version dropdown) still gets its own flat sidebar.
+    if (!matched) {
+      const node = nav.find(item => segmentOf(item.path, base) === seg)
+      if (node)
+        return (node.children ?? []).filter(child => child.path !== node.path)
+    }
+
+    const active = matched ?? groups[0]
     const sections = active?.sections
     // Manual tabs (no sections) have no content sidebar; fall back to the full tree.
     if (!sections?.length)

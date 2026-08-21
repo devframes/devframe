@@ -1,3 +1,5 @@
+import devframePkg from '../../packages/devframe/package.json'
+
 export default defineAppConfig({
   seo: {
     siteName: 'Devframe',
@@ -21,6 +23,20 @@ export default defineAppConfig({
       },
       { label: 'Plugins', sections: ['plugins'], link: 'section' as const },
       { label: 'Errors', sections: ['errors'], link: 'section' as const },
+      {
+        label: `v${devframePkg.version}`,
+        to: '/migrations',
+        activePath: '/migrations',
+        children: [
+          { label: 'Migrations overview', to: '/migrations' },
+          { label: 'Migrating to 0.9', to: '/migrations/migration-0.9' },
+          { label: 'Migrating to 0.8', to: '/migrations/migration-0.8' },
+          { label: 'Migrating to 0.7', to: '/migrations/migration-0.7' },
+          { label: 'Migrating to 0.6', to: '/migrations/migration-0.6' },
+          { label: 'Release notes', to: 'https://github.com/devframes/devframe/releases' },
+          { label: 'Contributing', to: 'https://github.com/devframes/devframe/blob/main/CONTRIBUTING.md' },
+        ],
+      },
     ],
   },
 
@@ -99,15 +115,6 @@ export default defineAppConfig({
           ],
         },
         { title: 'Ecosystem', items: ['/guide/built-with'] },
-        {
-          title: 'Migrations',
-          items: [
-            '/guide/migration-0.9',
-            '/guide/migration-0.8',
-            '/guide/migration-0.7',
-            '/guide/migration-0.6',
-          ],
-        },
       ],
     },
     ogImage: {
@@ -130,7 +137,7 @@ export default defineAppConfig({
 
   ui: {
     colors: {
-      primary: 'green',
+      primary: 'sage',
       neutral: 'neutral',
     },
   },

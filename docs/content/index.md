@@ -43,16 +43,6 @@ A framework-neutral foundation for devtools. One definition becomes a Web Standa
 
   :::u-button
   ---
-  to: /guide#why-it-exists
-  color: neutral
-  variant: subtle
-  size: lg
-  ---
-  Why Devframe
-  :::
-
-  :::u-button
-  ---
   icon: i-simple-icons-github
   color: neutral
   variant: ghost
@@ -61,6 +51,17 @@ A framework-neutral foundation for devtools. One definition becomes a Web Standa
   target: _blank
   ---
   View on GitHub
+  :::
+::
+
+::u-page-section
+  :::callout
+  ---
+  icon: i-lucide-newspaper
+  to: https://antfu.me/posts/pluggable-extensible-playful-devtools
+  target: _blank
+  ---
+  Read the announcement — **Pluggable, Extensible, and Playful DevTools** — for the vision behind devframe.
   :::
 ::
 
@@ -124,6 +125,219 @@ One definition, every entry point
   :::
 ::
 
+::landing-tabs
+---
+items:
+  - icon: i-simple-icons-hono
+    title: Hono
+    description: Pass the Web Standard request straight to the handler.
+  - icon: i-lucide-server
+    title: Nitro
+    description: Mount the same handler on a catch-all event route.
+  - icon: i-simple-icons-nextdotjs
+    title: Next.js
+    description: Wire the handler into an App Router route handler.
+  - icon: i-simple-icons-vite
+    title: Vite
+    description: Use the connect-style middleware the same instance provides.
+---
+
+#headline
+Portability
+
+#title
+The same handler, mounted natively
+
+#description
+A devframe's boundary is simply the Web Standard `Request` and `Response`. Any framework that speaks that — or connect-style middleware — mounts the same tool and inherits the whole ecosystem. Only the host-facing glue changes. [See all adapters](/adapters/initiate).
+
+#code-0
+  ```ts [server.ts]
+  import { Hono } from 'hono'
+  import { devtools } from './devtools'
+
+  const app = new Hono()
+
+  app.all(`${devtools.base}*`, c => devtools.handler(c.req.raw))
+  ```
+
+#code-1
+  ```ts [routes/[...devtools].ts]
+  import { devtools } from '../devtools'
+
+  export default defineEventHandler(event => devtools.handler(toWebRequest(event)))
+  ```
+
+#code-2
+  ```ts [app/__my-tool/[...all]/route.ts]
+  import { devtools } from '@/devtools'
+
+  export const GET = (req: Request) => devtools.handler(req)
+  export const POST = GET
+  ```
+
+#code-3
+  ```ts [vite.config.ts]
+  import { devtools } from './devtools'
+
+  export default defineConfig({
+    plugins: [{
+      name: 'my-tool',
+      configureServer: server => server.middlewares.use(devtools.nodeMiddleware),
+    }],
+  })
+  ```
+::
+
+::landing-tabs
+---
+reverse: true
+items:
+  - icon: i-lucide-terminal
+    title: CLI
+    description: Ship a standalone command any project can run.
+  - icon: i-lucide-server-cog
+    title: Dev server
+    description: A dedicated dev server for local iteration.
+  - icon: i-lucide-bot
+    title: MCP
+    description: Expose the tool to coding agents over MCP.
+  - icon: i-lucide-package
+    title: Static report
+    description: Build a self-contained SPA snapshot for CI.
+---
+
+#headline
+Adapters
+
+#title
+Package it the way your tool ships
+
+#description
+The handler is the smallest common denominator. Higher-level adapters package that same definition into familiar forms — pick the entry points your package needs. [Browse the adapters](/adapters).
+
+#code-0
+  ```ts [cli.ts]
+  import { createCac } from 'devframe/adapters/cac'
+  import myDevframe from './my-tool'
+
+  createCac(myDevframe).parse()
+  ```
+
+#code-1
+  ```ts [dev.ts]
+  import { createDevServer } from 'devframe/adapters/dev'
+  import myDevframe from './my-tool'
+
+  createDevServer(myDevframe)
+  ```
+
+#code-2
+  ```ts [mcp.ts]
+  import { createMcpServer } from 'devframe/adapters/mcp'
+  import myDevframe from './my-tool'
+
+  createMcpServer(myDevframe, { transport: 'stdio' })
+  ```
+
+#code-3
+  ```ts [report.ts]
+  import { createBuild } from 'devframe/adapters/build'
+  import myDevframe from './my-tool'
+
+  createBuild(myDevframe, { outDir: 'dist-static' })
+  ```
+::
+
+::landing-tabs
+---
+items:
+  - icon: i-lucide-eye
+    title: Visual
+    description: Explore, overview, and compare through a web UI.
+  - icon: i-lucide-bot
+    title: Agentic
+    description: Retrieve focused context and carry out multi-step actions.
+---
+
+#headline
+Interfaces
+
+#title
+One capability, two interfaces
+
+#description
+RPC functions stay private by default and opt into agent exposure explicitly. The [MCP adapter](/adapters/mcp) translates those functions, resources, and selected shared state into an agent-consumable surface — the presentation changes, the source of truth stays the same.
+
+#code-0
+  ```ts [rpc.ts]
+  import { defineRpcFunction } from 'devframe'
+
+  export const inspectBuild = defineRpcFunction({
+    name: 'inspect-build',
+    type: 'query',
+    handler: () => readBuildGraph(),
+  })
+  ```
+
+#code-1
+  ```ts [rpc.ts]
+  export const inspectBuild = defineRpcFunction({
+    name: 'inspect-build',
+    type: 'query',
+    // opt this capability into the agent surface
+    agent: { description: 'Read the current build graph and chunk sizes.' },
+    handler: () => readBuildGraph(),
+  })
+  ```
+::
+
+::landing-tabs
+---
+reverse: true
+items:
+  - icon: i-lucide-layout-dashboard
+    title: Compose
+    description: Register many devframes as plugins of one hub.
+  - icon: i-lucide-plug
+    title: Mount
+    description: Serve the whole collection behind one handler.
+---
+
+#headline
+Hub
+
+#title
+From one devframe to a devtools host
+
+#description
+When several devtools run at once, discovery becomes the problem. `@devframes/hub` is a headless composition layer: many devframes register docks, commands, terminals, and shared state, and appear through one consistent entry. [Learn about the hub](/guide/hub).
+
+#code-0
+  ```ts [hub.ts]
+  import { initHub } from '@devframes/hub/initiate'
+  import { createTerminalsDevframe } from '@devframes/plugin-terminals'
+
+  const hub = initHub({
+    base: '/__devframes/',
+    devframes: [
+      createTerminalsDevframe(),
+      // ...more devframes
+    ],
+    ui: await import('@devframes/hub-ui').then(m => m.createUi()),
+  })
+  ```
+
+#code-1
+  ```ts [server.ts]
+  import { Hono } from 'hono'
+  import { hub } from './hub'
+
+  // the same handler/middleware API as a standalone devframe
+  new Hono().all(`${hub.base}*`, c => hub.handler(c.req.raw))
+  ```
+::
+
 ::landing-cta
 ---
 links:
@@ -131,11 +345,13 @@ links:
     to: /guide
     trailingIcon: i-lucide-arrow-right
     size: lg
-  - label: Browse the plugins
-    to: /plugins
+  - label: Read the announcement
+    to: https://antfu.me/posts/pluggable-extensible-playful-devtools
+    target: _blank
     color: neutral
     variant: subtle
     size: lg
+    icon: i-lucide-newspaper
 ---
 #title
 Ship your devtool everywhere
