@@ -88,7 +88,7 @@ export function sharedStateToRef<T>(sharedState: SharedState<T>): ShallowRef<T> 
   return ref
 }
 
-export function waitForInitialSharedStateSync<Value>(
+export function waitForInitialSharedStateSync<Value extends object>(
   sharedState: SharedState<Value>,
   pendingValue: Value,
 ): Promise<void> {

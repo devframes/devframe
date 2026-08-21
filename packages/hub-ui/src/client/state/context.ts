@@ -6,6 +6,7 @@ import type { Ref } from 'vue'
 import type { DevframeDocksUserSettings } from './dock-settings'
 import { attachFrameNavClient, createDockRenderersContext } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY, HUB_EVENTS } from '@devframes/hub/constants'
+import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
 import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_UI_HIDE_EVENT } from '../constants'
 import { useBranding } from './branding'
@@ -621,7 +622,7 @@ export async function createDocksContext(
     if (rpc.isTrusted)
       return
     await new Promise<void>((resolve) => {
-      const stopListening = rpc.events.on('rpc:is-trusted:updated', (isTrusted) => {
+      const stopListening = rpc.events.on(DEVFRAME_EVENTS.client.isTrustedUpdated, (isTrusted) => {
         if (!isTrusted)
           return
         stopListening()

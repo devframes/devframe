@@ -1,6 +1,7 @@
 import type { DevframeDockEntry } from '@devframes/hub'
 import type { DevframeRpcClient, DockSessionStorage } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
+import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { describe, expect, it, vi } from 'vitest'
@@ -61,7 +62,7 @@ function createStubRpc() {
     sharedStates,
     trust() {
       isTrusted = true
-      events.emit('rpc:is-trusted:updated', true)
+      events.emit(DEVFRAME_EVENTS.client.isTrustedUpdated, true)
     },
   }
 }
