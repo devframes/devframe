@@ -4,11 +4,11 @@ outline: deep
 
 # Deep Linking
 
-Send a user straight to a specific view inside a devframe — a particular terminal session, a particular data source — from another dock, an agent, or a copied URL. There are two paths: the hub relays a **dock activation** to focus a dock in place, and a standalone SPA reads its own **URL hash** to restore the view on load.
+Send a user to a view inside a devframe — from another dock, agent, or copied URL — two ways: the hub relays a **dock activation** to focus a dock in place; a standalone SPA reads its **URL hash** to restore the view.
 
 ## Focusing a dock inside a hub
 
-The viewer's active dock is client-local state — which dock is on screen lives in the shell page, not in shared state. A mounted devframe runs in its own iframe on its own RPC client, so it reaches that selection through the hub. `hub:docks:activate` switches the active dock and carries an opaque `params` bag the target dock reads:
+The active dock is client-local state in the shell page. A mounted devframe, in its own iframe and RPC client, reaches it via the hub: `hub:docks:activate` switches the active dock, carrying an opaque `params` bag the target reads:
 
 ```ts
 await rpc.call('hub:docks:activate', {
@@ -17,26 +17,13 @@ await rpc.call('hub:docks:activate', {
 })
 ```
 
-The hub broadcasts the request live and mirrors it into the [`devframe:docks:active`](/guide/shared-state) shared-state slot, so a dock that mounts *because* of the switch still converges on the request instead of missing the broadcast. The target dock subscribes to that slot, filters on its own `dockId`, and reads the `params` field it recognizes — see [Cross-iframe dock activation](/guide/hub#cross-iframe-dock-activation) for the full relay.
+The hub broadcasts the request and mirrors it into the [`devframe:docks:active`](/guide/shared-state) slot, so a dock mounting *because* of the switch converges on it. The target subscribes, filters on its `dockId`, and reads `params` — see [Cross-iframe dock activation](/guide/hub#cross-iframe-dock-activation).
 
-```mermaid
-sequenceDiagram
-  participant Source as Other dock / agent
-  participant Hub
-  participant Slot as devframe:docks:active
-  participant Target as Target dock
-  Source->>Hub: hub:docks:activate { dockId, params }
-  Hub->>Slot: mirror latest activation
-  Hub-->>Target: switch active dock (if open)
-  Slot-->>Target: read on mount + on update
-  Target->>Target: params.dockId matches? focus params.<key>
-```
-
-Focus is one-shot and tolerant: the [terminals dock](/plugins/terminals#focusing-a-session) reads `params.sessionId`, the [Data Inspector](/plugins/data-inspector#deep-linking) reads `params.sourceId`, and a target that names something not yet registered waits for it to appear, then fires once — the user's own clicks stay honored afterward. An id that never arrives is a no-op; a `dockId` the viewer doesn't know degrades to a warning ([DF8107](/errors/DF8107)).
+Focus is one-shot: the [terminals dock](/plugins/terminals#focusing-a-session) reads `params.sessionId`, the [Data Inspector](/plugins/data-inspector#deep-linking) `params.sourceId`; a target naming something unregistered waits, then fires once. An id that never arrives is a no-op; an unknown `dockId` warns ([DF8107](/errors/DF8107)).
 
 ## Standalone URL deep links
 
-Running standalone — a CLI server, a static build — a devframe SPA owns its own URL. Encode the shareable view in the **hash** (`#…`): it round-trips through a copied link, survives a reload, and stays clear of the query string that the server handshake (`?devframe_auth_token=`) rides on. Parse it with `URLSearchParams` for a familiar key/value shape:
+Standalone, a devframe SPA owns its own URL. Encode the shareable view in the **hash** (`#…`): it round-trips a copied link, survives reload, and stays clear of the handshake query string (`?devframe_auth_token=`). Parse with `URLSearchParams`:
 
 ```ts
 // read on load
@@ -50,6 +37,6 @@ history.replaceState(history.state, '', `#${params.toString()}`)
 window.addEventListener('hashchange', applyState)
 ```
 
-The [terminals dock](/plugins/terminals#deep-linking) keys a single selection as `#id=<sessionId>`; the [Data Inspector](/plugins/data-inspector#deep-linking) encodes its whole workbench — `#source=…&query=…` plus filter and auto-rerun flags — so a link reproduces an exact query result. Read the hash once at boot to restore the view, then keep it in sync as the user works. `replaceState` writes never fire `hashchange`, so the boot read, the live listener, and the write-back compose without looping.
+The [terminals dock](/plugins/terminals#deep-linking) keys a selection as `#id=<sessionId>`; the [Data Inspector](/plugins/data-inspector#deep-linking) encodes its workbench (`#source=…&query=…` plus filter/auto-rerun flags). `replaceState` writes never fire `hashchange`, so boot read, live listener, and write-back don't loop.
 
-Keep credentials out of anything shareable. A pre-shared handshake token belongs in the query string and should be scrubbed from the address bar as soon as it's read, the way the Data Inspector consumes `?devframe_auth_token=` — never in the hash a user copies to share a view.
+Keep credentials out of anything shareable: a handshake token belongs in the query string, scrubbed once read (as the Data Inspector does), never in a copyable hash.

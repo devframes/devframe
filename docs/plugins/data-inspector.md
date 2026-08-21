@@ -4,7 +4,7 @@ outline: deep
 
 # Data Inspector
 
-An interactive query workbench for live server-side objects, built as a **Vue** SPA. Plugins and hosts register **data sources**; you compose [jora](https://discoveryjs.github.io/jora/) queries against them — executed in the process that owns the objects — and explore normalized results in a struct view with type badges, a data-shape panel, filters, and saved queries.
+A **Vue** query workbench for live server-side objects: register **data sources**, then compose [jora](https://discoveryjs.github.io/jora/) queries that run in the owning process.
 
 Package: `@devframes/plugin-data-inspector` · framework: **Vue + Vite**
 
@@ -20,19 +20,17 @@ Package: `@devframes/plugin-data-inspector` · framework: **Vue + Vite**
 
 ## What it does
 
-- **Query workbench** — a CodeMirror jora editor with syntax highlighting and server-computed autocomplete; queries auto-run as you type, with a client-side syntax gate so malformed input never hits the wire. A toolbar copies the query, and the editor pairs with expand-all / collapse-all and copy-as-JSON controls over the results. Source, query, filters, and the auto-rerun setting persist in the URL hash, so any workbench state is shareable (see [Deep linking](#deep-linking)).
-- **Auto rerun** — an optional poller under the filters (`auto rerun every N seconds`) re-runs the current query against the live object on a fixed period, so a value that changes over time updates on its own. Ticks are skipped while a run is in flight or the query is syntactically broken.
-- **Result viewer** — results normalize to strict JSON (circulars become `$ref` markers; Maps, Sets, class instances, functions, and Dates get type badges) with per-query stats: jora / normalize / rpc timings, payload size, node count. The value-actions popup copies paths and turns any key into a query.
-- **Lazy expansion** — deep graphs return one level at a time: a node past the depth cap renders a `load deeper` link that fetches just that subtree with a fresh budget and splices it in place, so a huge object stays responsive and loads on demand.
-- **Data shape panel** — a one-level type skeleton of the active source, independent of the query; click a property to query it.
-- **Filters** — exclude functions, `_`-prefixed, or `$`-prefixed properties from results and skeleton alike.
-- **Saved queries** — recipes (`query` + optional title/description + the filters they were authored with), id-keyed, in two scopes: **workspace** (committable, shared with the team) and **project** (per-checkout).
+- **Query workbench** — a CodeMirror jora editor with server-computed autocomplete; queries auto-run as you type. State persists in the URL hash ([Deep linking](#deep-linking)).
+- **Auto rerun** — an optional poller (`auto rerun every N seconds`); ticks skip while a run is in flight or broken.
+- **Result viewer** — results normalize to strict JSON (circulars → `$ref`; Maps, Sets, class instances, functions, Dates get type badges) with per-query stats.
+- **Expansion, shape & filters** — a node past the depth cap fetches lazily via `load deeper`; a data-shape panel shows a one-level skeleton; filters exclude functions and `_`/`$`-prefixed properties.
+- **Saved queries** — recipes (`query` + title/description + authoring filters) in **workspace** (committable) and **project** (per-checkout) scopes.
 
-A built-in **example source** is always registered alongside your own: it exposes the devframe context (registered RPC functions, services, storage dirs), OS info, and live process stats — with query-time getters that change on every re-run — plus a small playground branch exercising every viewer capability. Opt out with `createDataInspectorDevframe({ exampleSource: false })` (CLI: `--no-example`, agent: `DEVFRAME_DATA_INSPECTOR_EXAMPLE=0`).
+A built-in **example source** registers by default; opt out with `createDataInspectorDevframe({ exampleSource: false })` (CLI `--no-example`, agent `DEVFRAME_DATA_INSPECTOR_EXAMPLE=0`).
 
 ## Providing data sources
 
-The registry is **process-global**: register from anywhere in the process — plugin setup, host hooks, application code — before or after the inspector mounts.
+The registry is **process-global** — register from anywhere, before or after mount.
 
 ```ts
 import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
@@ -67,9 +65,9 @@ interface DataSourceEntry {
 }
 ```
 
-Live objects passed to `data` stay live — every query reads their current state. `registerDataSource` returns an unregister function, and connected workbenches refresh their source list on every change.
+Live objects stay live; `registerDataSource` returns an unregister callback.
 
-Integrations that prefer zero package dependency consume the same registry through the typed [context service](../guide/devframe-definition#cross-plugin-services):
+Zero-dependency integrations use the typed [context service](../guide/devframe-definition#cross-plugin-services):
 
 ```ts
 ctx.services.whenAvailable('devframes:plugin:data-inspector:sources', (sources) => {
@@ -78,13 +76,13 @@ ctx.services.whenAvailable('devframes:plugin:data-inspector:sources', (sources) 
 ```
 
 > [!WARNING]
-> Queries are eval-grade access to registered objects: jora can invoke any function reachable as an own property and fires own getters. Register live objects with that in mind, and keep inspector endpoints on loopback.
+> Queries are eval-grade: jora invokes any function reachable as an own property and fires own getters. Register live objects accordingly, and keep endpoints on loopback.
 
 ## Deep linking
 
-The whole workbench state lives in the URL hash — `#source=<id>&query=<jora>` plus the filter and auto-rerun flags — so a copied link reproduces an exact query result. It's read on load and kept in sync (via `replaceState`) as you work, and a `hashchange` listener re-applies it on back/forward and manual edits. The handshake token rides the query string (`?devframe_auth_token=`) and is scrubbed on read, so it never lands in a link you share.
+Workbench state lives in the URL hash (`#source=<id>&query=<jora>`, filters). The handshake token rides the query string (`?devframe_auth_token=`), scrubbed on read so it stays out of shared links.
 
-Mounted in a hub, another dock can jump the user straight to a source through [dock activation](../guide/deep-linking#focusing-a-dock-inside-a-hub) — an activation targeting `devframes:plugin:data-inspector` with a `sourceId` selects that source, waiting for it to register if it hasn't yet:
+In a hub, another dock can jump to a source via [dock activation](../guide/deep-linking#focusing-a-dock-inside-a-hub): target `devframes:plugin:data-inspector` with a `sourceId` (waiting for it to register).
 
 ```ts
 await rpc.call('hub:docks:activate', {
@@ -102,38 +100,26 @@ pnpx @devframes/plugin-data-inspector build stats.json     # self-contained stat
 pnpx @devframes/plugin-data-inspector attach               # attach to a process running the agent
 ```
 
-`.json` files parse whole; `.jsonl` / `.ndjson` parse as an array of records. `build` writes a static site embedding the dataset — the same query engine runs client-side there, so saved recipes keep working.
+`.json` parses whole; `.jsonl` / `.ndjson` as an array of records. `build` embeds the dataset in a static site.
 
 ## Mount into a Vite host
 
-For a [Vite DevTools](https://devtools.vite.dev) app, mount the panel with `createPluginFromDevframe` from `@vitejs/devtools-kit/node`:
+In [Vite DevTools](https://devtools.vite.dev):
 
 ```ts
-import createDataInspectorDevframe from '@devframes/plugin-data-inspector'
-import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
 // vite.config.ts
+import createDataInspectorDevframe from '@devframes/plugin-data-inspector'
 import { createPluginFromDevframe } from '@vitejs/devtools-kit/node'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
     createPluginFromDevframe(createDataInspectorDevframe()),
-    {
-      name: 'my-app:data-sources',
-      configureServer(server) {
-        registerDataSource({
-          id: 'vite:server',
-          title: 'Vite Dev Server',
-          data: () => server,
-          queries: [{ title: 'Plugin names', query: 'config.plugins.name' }],
-        })
-      },
-    },
   ],
 })
 ```
 
-Without Vite DevTools, `devframeVite` from `@devframes/vite/single` mounts the panel directly, no DevTools dock required — swap it in for `createPluginFromDevframe` above:
+Register sources with `registerDataSource`; or use `devframeVite` from `@devframes/vite/single`:
 
 ```ts
 import { devframeVite } from '@devframes/vite/single'
@@ -141,11 +127,9 @@ import { devframeVite } from '@devframes/vite/single'
 devframeVite(createDataInspectorDevframe())
 ```
 
-Hub hosts mount an instance from the default export like any devframe definition.
-
 ## Programmatic
 
-`createDataInspectorDevframe(options)` returns a definition you can deploy through any adapter:
+`createDataInspectorDevframe(options)` returns a definition for any adapter:
 
 ```ts
 import { createDataInspectorDevframe } from '@devframes/plugin-data-inspector'
@@ -157,7 +141,7 @@ export default createDataInspectorDevframe({
 
 ## Attach to another Node process
 
-The target process opts in by starting the agent:
+The target starts the agent:
 
 ```ts
 import { exposeDataInspector } from '@devframes/plugin-data-inspector/inject'
@@ -167,15 +151,15 @@ await exposeDataInspector({
 })
 ```
 
-`sources` registers the given entries before the endpoint opens — a convenience over calling `registerDataSource` yourself; both paths share the one process-global registry. Call `exposeDataInspector()` with no sources to expose whatever is already registered.
+`sources` pre-registers entries; call it empty to expose whatever's registered.
 
-Or with zero code changes:
+Or with no code changes:
 
 ```sh
 DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject server.js
 ```
 
-On this zero-code path there is nowhere to call `registerDataSource`, so the agent auto-registers a **`globalThis`** source. Assign anything you want to inspect onto the global object and query it live:
+The zero-code path auto-registers a **`globalThis`** source — assign anything onto it and query live:
 
 ```ts
 // somewhere in the running process
@@ -183,22 +167,22 @@ globalThis.store = store
 globalThis.cache = cache
 ```
 
-Then query `store`, `cache`, or `keys($)` to see what's there. The source reads `globalThis` at query time, so assignments made after the agent started show up on the next run. Opt out with `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
+It reads `globalThis` at query time, so later assignments show up next run. Opt out: `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
 
-The agent binds `127.0.0.1`, requires devframe's trust handshake with a per-run pre-shared token, and advertises its endpoint in `node_modules/.data-inspector/agent.json` — `pnpx @devframes/plugin-data-inspector attach` consumes it automatically (or pass `ws://…` and `--token` explicitly). Queries execute inside the target process, where the live objects are. Treat the endpoint like a debugger port.
+The agent binds `127.0.0.1`, requires the trust handshake with a per-run token, and writes its endpoint to `node_modules/.data-inspector/agent.json`; `attach` reads it (or pass `ws://…` and `--token`). Treat it as a debugger port.
 
 ## RPC surface
 
-All functions are namespaced `devframes:plugin:data-inspector:*`:
+Namespaced `devframes:plugin:data-inspector:*`:
 
 | Function | Type | Returns |
 |----------|------|---------|
-| `sources` | `query` | Every registered source (meta and suggested queries). |
-| `query` | `query` | Runs a jora query against a source; normalized result with stats. |
-| `queryPath` | `query` | Re-runs a query and returns a fresh, depth-limited slice of the subtree at a node path (lazy expansion). |
-| `skeleton` | `query` | The type skeleton of a source, honoring the filter options. |
-| `suggest` | `query` | Autocomplete candidates from jora's stat mode at a cursor position. |
-| `saved:list` / `saved:save` / `saved:delete` | `query` / `action` | Saved-query recipes in the `workspace` and `project` scopes. |
+| `sources` | `query` | Every registered source (meta, suggested queries). |
+| `query` | `query` | Runs a jora query; normalized result with stats. |
+| `queryPath` | `query` | Depth-limited subtree slice (lazy expansion). |
+| `skeleton` | `query` | A source's type skeleton, honoring filters. |
+| `suggest` | `query` | Autocomplete candidates at a cursor. |
+| `saved:list` / `saved:save` / `saved:delete` | `query` / `action` | Saved-query recipes (`workspace`, `project` scopes). |
 
 ## Source
 

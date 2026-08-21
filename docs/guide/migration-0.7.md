@@ -4,21 +4,19 @@ outline: deep
 
 # Migrating to 0.7
 
-0.7 moves the `cac` CLI framework out of `devframe`'s bundled dependencies (renaming the adapter that wraps it) and moves json-render out of `@devframes/hub` into its own opt-in integration. This page covers the changes between 0.6.x and 0.7.
+0.7 makes `cac` an optional peer and moves json-render out of `@devframes/hub` into an opt-in package.
 
 ## `cac` is now an optional peer dependency
 
-`devframe` no longer depends on [`cac`](https://github.com/cacjs/cac) directly — it moved to an optional `peerDependency`. Any project that calls into the CLI adapter (formerly `createCli`, now `createCac`) needs to install `cac` itself:
+`devframe` no longer bundles [`cac`](https://github.com/cacjs/cac) — it's an optional `peerDependency`. Projects using `createCac` (formerly `createCli`) install `cac`:
 
 ```sh
 npm install devframe cac
 ```
 
-Tools that don't use the CLI adapter — a Vite-hosted plugin, an embedded devframe, anything built from the [lower-level factories](./standalone-cli#use-your-own-cli-framework) — are unaffected and never need `cac` installed.
+Tools not using the CLI adapter — Vite plugins, embedded devframes, the [lower-level factories](./standalone-cli#use-your-own-cli-framework) — never need `cac`.
 
 ## `devframe/adapters/cli` → `devframe/adapters/cac`
-
-The adapter itself is renamed, and its factory with it:
 
 | 0.6.x | 0.7 |
 |-------|-----|
@@ -40,13 +38,11 @@ import { createCac } from 'devframe/adapters/cac'
 await createCac(devframe).parse()
 ```
 
-`devframe/adapters/cli` still exports `createCli` as a deprecated alias of `createCac` (same for `CreateCliOptions` and `CliHandle`), so existing imports keep compiling — but the underlying `cac` peer dependency still needs installing per above, and the alias will be removed in a future major release. Move call sites over now rather than waiting for that removal.
-
-See [CLI (cac)](/adapters/cac) for the full adapter reference.
+`devframe/adapters/cli` still exports the old names as deprecated aliases (imports keep compiling), but you still need the `cac` peer; removed in a future major.
 
 ## json-render moves out of `@devframes/hub`
 
-The hub is now json-render-agnostic — `defineJsonRenderSpec`, `ctx.createJsonRenderer`, and the `JsonRenderSpec` / `JsonRenderElement` / `JsonRenderer` types move to the opt-in [`@devframes/json-render`](./json-render) integration, which contributes its own `json-render` dock type to the hub's open dock union instead of the hub shipping one.
+The hub is now json-render-agnostic: `defineJsonRenderSpec`, `ctx.createJsonRenderer`, and the JSON-render types move to the opt-in [`@devframes/json-render`](./json-render).
 
 | 0.6.x (`@devframes/hub`) | 0.7 (`@devframes/json-render`) |
 |---|---|
@@ -72,6 +68,4 @@ const view = createJsonRenderView(ctx, {
 })
 ```
 
-`@devframes/hub` still exports `defineJsonRenderSpec` as a deprecated identity function (same for the `JsonRenderSpec` / `JsonRenderElement` / `JsonRenderer` types) and still runs `ctx.createJsonRenderer` (against its own pre-0.7 shared-state implementation, not `@devframes/json-render`), so existing call sites keep working through 0.7 unmodified — but it no longer registers anything with the hub's dock union on its own, and won't gain the new dock projection or `registerRenderer()` support that `createJsonRenderView` gets. Move call sites over to `createJsonRenderView` now; `ctx.createJsonRenderer` and the other aliases above are removed in 0.8.
-
-See [JSON-Render](./json-render) for the full integration reference.
+`@devframes/hub` still exports `defineJsonRenderSpec` (deprecated) and runs `ctx.createJsonRenderer`, so 0.7 call sites keep working — but nothing registers with the dock union or gains `registerRenderer()`; removed in 0.8.

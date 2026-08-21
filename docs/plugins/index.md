@@ -4,30 +4,26 @@ outline: deep
 
 # Built-in Plugins
 
-Devframe ships a set of ready-to-run plugins. Each is a complete `DevframeDefinition` you can launch as a standalone CLI, mount into a Vite host, or dock inside a [hub](/guide/hub) — the same definition, deployed through any [adapter](/adapters/).
-
-Each plugin is built with a **different UI framework**. That is deliberate: devframe's client layer (`connectDevframe`, [RPC](/guide/rpc), and [shared state](/guide/shared-state)) is framework-neutral, so every plugin author picks whatever they like for the SPA. The collection doubles as living proof that devframe leaves the framework choice entirely to the author.
+Devframe ships ready-to-run plugins. Each is a complete `DevframeDefinition` — launch it standalone, mount it into a Vite host, or dock it inside a [hub](/guide/hub) through any [adapter](/adapters/).
 
 | Plugin | UI framework | What it does |
 |--------|--------------|--------------|
-| [Data Inspector](./data-inspector) | Vue | Query live server-side objects with jora — sources contributed by plugins, hosts, data files, or attached processes. |
-| [Devframe Inspector](./inspect) | Vue | Browse the RPC registry, invoke read-only queries, watch shared state update live, and explore the agent surface. |
-| [Open Graph Viewer](./og) | Vue | Inspect Open Graph and Twitter metadata and compare social-card previews. |
-| [Accessibility Inspector](./a11y) | Solid | Run axe-core against a host app, list WCAG violations, and highlight the offending element in the page on hover. |
-| [Git](./git) | React (Next.js) | A repository dashboard — status, a commit graph, branches, and diffs, with optional staging and committing. |
-| [Terminals](./terminals) | Svelte | Stream read-only command output and run fully interactive PTY shells in the browser. |
-| [Code Server](./code-server) | Vue | Launch VS Code in the browser (code-server, `code serve-web`, or a tunnel) on demand and embed it in an auto-authenticated iframe. |
-| [Assets](./assets) | Vue | Browse, preview, upload, rename, and delete the files in a managed directory. |
+| [Data Inspector](./data-inspector) | Vue | Query live server-side objects with jora. |
+| [Devframe Inspector](./inspect) | Vue | Browse RPC, shared state, and agent surface. |
+| [Open Graph Viewer](./og) | Vue | Inspect Open Graph / Twitter metadata and card previews. |
+| [Accessibility Inspector](./a11y) | Solid | Run axe-core; list WCAG violations. |
+| [Git](./git) | React (Next.js) | Repository dashboard: status, graph, branches, diffs. |
+| [Terminals](./terminals) | Svelte | Stream output and run interactive PTY shells. |
+| [Code Server](./code-server) | Vue | Run VS Code in the browser. |
+| [Assets](./assets) | Vue | Browse, preview, upload, rename, and delete files. |
 
 ## One client, any framework
 
-The collection spans Vue, Solid, React, and Svelte, yet every plugin shares the same node-side surface: register RPC functions, publish shared state, and connect from the browser with `connectDevframe`. Whatever renders the UI, it talks to the backend through the same protocol — the framework-free Vite hub example drives it with a handful of DOM calls.
-
-This is the framework-agnostic promise in practice. The browser bundle is the author's to choose; devframe handles the transport, the data model, the adapters, and the agent surface underneath.
+Each plugin picks its own UI framework yet shares one node-side surface — [RPC](/guide/rpc), [shared state](/guide/shared-state), and `connectDevframe`.
 
 ## Running a plugin
 
-Most plugins publish a `bin`, so the quickest path is `pnpx`:
+Most plugins publish a `bin`:
 
 ```sh
 pnpx @devframes/plugin-inspect      # the Devframe Inspector, standalone
@@ -36,4 +32,4 @@ pnpx @devframes/plugin-git          # the Git dashboard against the current repo
 pnpx @devframes/plugin-assets       # manage the files under <cwd>/public
 ```
 
-Each also exports a `create…Devframe` factory (or, for the Accessibility Inspector, a ready-made definition) you can drive through any adapter — see the individual pages for the factory name, options, and host-mount snippets.
+Each also exports a `create…Devframe` factory; see each page for options.

@@ -4,7 +4,7 @@ outline: deep
 
 # Devframe Definition
 
-Every Devframe tool starts with a single `defineDevframe` call. The returned `DevframeDefinition` is a portable value that any of the [adapters](/adapters/) can consume — the same definition runs under `createCac`, `createBuild`, `createMcpServer`, the `vite` adapter's `createPluginFromDevframe`, and so on.
+A Devframe tool is one `defineDevframe` call, returning a portable `DevframeDefinition` any [adapter](/adapters/) consumes.
 
 ## Minimal definition
 
@@ -36,32 +36,30 @@ export default defineDevframe({
 })
 ```
 
-`ctx.scope(id)` is the preferred way to consume the context — see [Scoped Context](./scoped-context). Host adapters (such as the [`vite` adapter](/adapters/vite) for Vite DevTools) derive their mount entry from `id`, `name`, `icon`, and `basePath` automatically.
-
 ## Definition fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | `string` | **Required.** Unique, namespaced identifier (kebab-case). Used as a prefix for RPC names, dock IDs, and MCP tool names. |
-| `name` | `string` | **Required.** Display name shown in the dock and agent manifests. |
-| `version` | `string` | **Required.** Semver of the tool, surfaced in hub UIs and diagnostics. |
-| `packageName` | `string` | **Required.** npm package name the devframe ships in (e.g. `@scope/my-tool`). |
-| `importMetaUrl` | `string` | **Recommended.** Always pass `import.meta.url`. The resolution base for the tool's own dependency graph: it becomes the default `resolveFrom` for any [remote assets](./client-assets) the devframe hosts, and the base the host resolves declared [services](./services#wire-services) from — so a plugin ships an assets or service package as its own dependency instead of asking users to install it. See [Resolving against the plugin's own dependencies](#resolving-against-the-plugins-own-dependencies). |
-| `homepage` | `string` | **Required.** Project homepage or documentation URL. |
-| `description` | `string` | **Required.** One-line summary of what the tool does. |
-| `icon` | `string \| { light, dark }` | Optional Iconify name or URL; supports light/dark pairs. |
-| `basePath` | `string` | Optional mount path override. Defaults depend on the adapter: `/` for standalone (`cli` / `build`), `/.<id>/` for hosted (`vite` / `embedded`). |
-| `duplicationStrategy` | `'warn' \| 'silent' \| 'throw' \| 'duplicate'` | How a hub reacts when another devframe sharing this `id` is mounted onto the same hub. Defaults to `'warn'`. See [Hub](./hub). Hub adapters consult it; standalone adapters ignore it. |
-| `capabilities` | `{ dev?, build? }` | Per-runtime feature flags. A `boolean` applies to the runtime as a whole; an object enables individual features. |
-| `services` | `DevframeServiceInput[]` | Wire services this devframe consumes — descriptors (`{ package, version?, required?, options? }`) the adapter imports against the plugin's own dependencies, or ready definitions. See [Cross-Plugin Services](./services#wire-services). |
-| `clientAssets` | `string \| RemoteAssets` | The built SPA served as the devframe's UI — a local dist directory, or a [remote assets](./client-assets) package fetched on demand. Consumed by every adapter that serves the UI (`dev`, `build`, `vite`, `next`, hub). Supersedes the deprecated `cli.distDir`. See [Client Assets](./client-assets). |
-| `rpc` | `{ snapshot?: (string \| { method, inputs })[] }` | RPC-level config. `rpc.snapshot` opts an RPC function this devframe doesn't own (e.g. a wire service's) into the static build's dump. A bare method id bakes the no-argument call; `{ method, inputs }` bakes one record per argument-tuple, where `inputs` is a list of tuples or an async `(ctx) => tuples` provider (so it can enumerate at build time via the service's node API). The first tuple's result becomes the fallback. |
-| `setup` | `(ctx, info?) => void \| Promise<void>` | **Required.** Server-side entry point. Runs in every runtime. The optional second argument carries runtime metadata — most notably the parsed CLI `flags` when running under `createCac`. |
-| `cli` | `DevframeCliOptions` | Defaults for the CLI adapter. See [CLI options](#cli-options) below. |
+| `id` | `string` | **Required.** Unique namespaced id (kebab-case); prefixes RPC/dock/MCP-tool names. |
+| `name` | `string` | **Required.** Display name (dock, agent manifests). |
+| `version` | `string` | **Required.** Semver; shown in hub UIs, diagnostics. |
+| `packageName` | `string` | **Required.** npm package (`@scope/my-tool`). |
+| `importMetaUrl` | `string` | **Recommended.** Pass `import.meta.url` — the deps resolution base: default `resolveFrom` for [remote assets](./client-assets) and declared [services](./services#wire-services). |
+| `homepage` | `string` | **Required.** Homepage/docs URL. |
+| `description` | `string` | **Required.** One-line summary. |
+| `icon` | `string \| { light, dark }` | Optional Iconify name or URL; light/dark pairs. |
+| `basePath` | `string` | Optional mount-path override. Default `/` standalone (`cli`/`build`), `/.<id>/` hosted (`vite`/`embedded`). |
+| `duplicationStrategy` | `'warn' \| 'silent' \| 'throw' \| 'duplicate'` | Hub reaction when another devframe shares this `id`. Default `'warn'`. See [Hub](./hub); standalone adapters ignore it. |
+| `capabilities` | `{ dev?, build? }` | Per-runtime feature flags. `boolean` = whole runtime; object = individual features. |
+| `services` | `DevframeServiceInput[]` | Wire services consumed — descriptors (`{ package, version?, required?, options? }`) imported against the plugin's own deps, or ready definitions. See [Cross-Plugin Services](./services#wire-services). |
+| `clientAssets` | `string \| RemoteAssets` | Built SPA served as the UI — local dist dir or [remote assets](./client-assets). Read by every UI-serving adapter (`dev`, `build`, `vite`, `next`, hub). Supersedes deprecated `cli.distDir`. |
+| `rpc` | `{ snapshot?: (string \| { method, inputs })[] }` | RPC config. `rpc.snapshot` opts an RPC this devframe doesn't own into the static dump. Bare method id bakes the no-arg call; `{ method, inputs }` bakes one record per argument-tuple (`inputs` = tuples or async `(ctx) => tuples`). First tuple = fallback. |
+| `setup` | `(ctx, info?) => void \| Promise<void>` | **Required.** Server-side entry point, run in every runtime. Optional 2nd arg carries runtime metadata — notably parsed CLI `flags` under `createCac`. |
+| `cli` | `DevframeCliOptions` | CLI adapter defaults. See [CLI options](#cli-options). |
 
 ### Sourcing metadata from `package.json`
 
-Keep `version`, `packageName`, `homepage`, and `description` in sync with the package you publish by importing them straight from its `package.json`. Note that the package's `name` field maps to `packageName` — the devframe `name` is a separate display label.
+Import metadata from `package.json` (`name` → `packageName`; devframe `name` is a separate display label):
 
 ```ts
 import pkg from '../package.json' with { type: 'json' }
@@ -78,11 +76,9 @@ export default defineDevframe({
 })
 ```
 
-The default import with a `with { type: 'json' }` attribute resolves under both bundlers and Node's native TypeScript execution. Bundlers also support the destructured `import { version } from '../package.json'` form when the devframe is always bundled before it runs.
-
 ### Resolving against the plugin's own dependencies
 
-A devframe often ships companion packages — a separate `--assets` package holding its built SPA, or a service package it consumes. `importMetaUrl` lets the host resolve those against the plugin's **own** installed dependencies rather than the consuming app's, so the plugin declares them as its dependencies and users install nothing extra.
+`importMetaUrl` resolves companion packages against the plugin's **own** dependencies, so users install nothing extra:
 
 ```ts
 import pkg from '../package.json' with { type: 'json' }
@@ -106,11 +102,9 @@ export default defineDevframe({
 })
 ```
 
-For a remote assets source, `importMetaUrl` is the default `resolveFrom`; a per-source `resolveFrom` still wins, and an explicit `resolveFrom: null` opts out of the installed-copy lookup. See [Client Assets](./client-assets) and [Cross-Plugin Services](./services#wire-services) for the full resolution order.
+For remote assets, `importMetaUrl` is the default `resolveFrom`; a per-source value wins; `resolveFrom: null` opts out.
 
 ### Serving the UI with `clientAssets`
-
-The devframe's UI is a built single-page app, and `clientAssets` — a top-level field — points at it. It takes either a **local dist directory** or a **remote assets package** ([full reference](./client-assets)). Every adapter that serves the UI (`dev`, `build`, the [Vite](/frameworks/vite) plugin, the [Next](/frameworks/next) handler, and the hub install path) reads this one value, so the UI is declared once and travels with the definition across viewers.
 
 ```ts
 import { fileURLToPath } from 'node:url'
@@ -130,7 +124,7 @@ export default defineDevframe({
 })
 ```
 
-This value used to live under `cli.distDir`. That field is now **deprecated** but still honored as a fallback when `clientAssets` is unset, so existing definitions keep working unchanged:
+The deprecated `cli.distDir` remains a fallback:
 
 ```ts
 export default defineDevframe({
@@ -143,11 +137,11 @@ export default defineDevframe({
 })
 ```
 
-For assets you host yourself — a second bundle, a runtime-decided source — call `ctx.views.hostStatic` in `setup` instead. See [Client Assets](./client-assets#programmatic-hosting-from-setup).
+For assets you host yourself, call `ctx.views.hostStatic` in `setup` — [Client Assets](./client-assets#programmatic-hosting-from-setup).
 
 ### Runtime flags
 
-The `ctx.mode` field is either `'dev'` or `'build'`. Use it to gate work that should only run in one runtime:
+`ctx.mode` (`'dev'`/`'build'`) gates runtime-specific work:
 
 ```ts
 defineDevframe({
@@ -164,7 +158,7 @@ defineDevframe({
 })
 ```
 
-The CLI dev server sets `mode: 'dev'`; `createBuild` sets `mode: 'build'`.
+The CLI dev server sets `mode: 'dev'`; `createBuild`, `'build'`.
 
 ## The setup context
 
@@ -190,7 +184,7 @@ interface DevframeNodeContext {
 
 ### Cross-plugin services
 
-`ctx.services` is a typed, namespaced registry through which one integration exposes a capability and others consume it without a hard package dependency — see [Cross-Plugin Services](./services).
+`ctx.services` is a typed, namespaced registry — one integration exposes a capability, others consume it ([Cross-Plugin Services](./services)).
 
 ```ts
 ctx.services.provide('my-plugin:sources', sources)
@@ -202,7 +196,7 @@ ctx.services.whenAvailable('my-plugin:sources', (sources) => {
 
 ### Static connection configs
 
-`ctx.staticConfig` is this context's own `ConnectionMeta.configs` — static, boot-time data delivered once through the connection handshake every client already performs, and read-only from the browser. It's a plain, **non-reactive** object: write it during `setup(ctx)`, never during the session (it's serialized once, after setup). Contrast it with `ctx.scope(id).settings`, which is mutable and synced bidirectionally over shared-state RPC for the life of the session.
+`ctx.staticConfig` is this context's own `ConnectionMeta.configs` — read-only boot-time data from the connection handshake; write it during `setup(ctx)`. Contrast `ctx.scope(id).settings` (mutable, synced).
 
 ```ts
 declare module 'devframe/types' {
@@ -214,35 +208,23 @@ declare module 'devframe/types' {
 ctx.staticConfig['my-plugin'] = { featureFlag: true }
 ```
 
-`updater` receives whatever's been contributed to that key so far (or `undefined` on the first contribution), so multiple contributors sharing a key — a hub aggregating each installed devframe's own preference, for example — own their own merge semantics (overwrite, shallow-merge a record, …) rather than the host imposing one.
-
 ### Storage scopes
 
-`ctx.host.getStorageDir(scope)` places persisted state in one of three classes:
+`ctx.host.getStorageDir(scope)` places persisted state in three classes:
 
 | Scope | Placement | For |
 |-------|-----------|-----|
-| `workspace` | committable, conventionally `<workspaceRoot>/.devframe/` | team-shared files: saved presets, shared configuration |
-| `project` | per-checkout, conventionally `<cwd>/node_modules/.<app>/devframe/` | caches, personal settings |
-| `global` | per-user, conventionally `~/.<app>/devframe/` | auth tokens, machine-wide preferences |
+| `workspace` | committable, `<workspaceRoot>/.devframe/` | team-shared: saved presets, config |
+| `project` | per-checkout, `<cwd>/node_modules/.<app>/devframe/` | caches, personal settings |
+| `global` | per-user, `~/.<app>/devframe/` | auth tokens, machine-wide prefs |
 
-Scoped settings (`ctx.scope(id).settings`) persist their `project` scope through the `project` storage class and their `global` scope through `global`. Hosts implement the placement — see the host example in the [Hub guide](./hub).
+`ctx.scope(id)` returns a namespace-scoped view auto-prefixing every RPC id, shared-state key, and streaming channel, plus a persisted `settings` store (`project`/`global` scopes use the matching storage classes). The recommended entry point — [Scoped Context](./scoped-context).
 
-`ctx.scope(id)` returns a namespace-scoped view that auto-prefixes every RPC id, shared-state key, and streaming channel and adds a persisted top-level `settings` store. It's the recommended entry point from a single tool's setup code — see [Scoped Context](./scoped-context).
-
-Host adapters can augment `ctx` with additional surfaces. For example, the [`vite` adapter](/adapters/vite) exposes Vite DevTools' dock, command, message, and terminal hosts via an optional `setup` hook on `createPluginFromDevframe` — consult the host's docs for those extras.
-
-Each devframe-level host has a dedicated page:
-- [Scoped Context](./scoped-context) — `ctx.scope(id)`, `settings`
-- [RPC](./rpc) — `ctx.rpc`
-- [Shared State](./shared-state) — `ctx.rpc.sharedState`
-- [Diagnostics](./diagnostics) — `ctx.diagnostics`
-- [Agent-Native](./agent-native) — `ctx.agent`
-- [Cross-Plugin Services](./services) — `ctx.services`
+Host adapters can augment `ctx` — e.g. the [`vite` adapter](/adapters/vite)'s dock, command, message, and terminal hosts.
 
 ## CLI options
 
-`cli` configures the CLI adapter's defaults and plugs additional flags/commands into the CAC instance:
+`cli` sets CLI-adapter defaults and plugs flags/commands into CAC:
 
 ```ts
 defineDevframe({
@@ -271,23 +253,19 @@ defineDevframe({
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `command` | `string` | Binary name surfaced in `--help`. Default: the definition's `id`. |
-| `distDir` | `string \| RemoteAssets` | **Deprecated** — moved to the top-level [`clientAssets`](#serving-the-ui-with-clientassets). Still read as a fallback when `clientAssets` is unset. |
-| `port` | `number` | Preferred port for the dev server. |
-| `portRange` | `[number, number]` | Port scan range, passed through to `get-port-please`. |
+| `command` | `string` | Binary name in `--help`. Default: the `id`. |
+| `distDir` | `string \| RemoteAssets` | **Deprecated** — use top-level [`clientAssets`](#serving-the-ui-with-clientassets); read as a fallback. |
+| `port` | `number` | Preferred dev-server port. |
+| `portRange` | `[number, number]` | Port scan range (`get-port-please`). |
 | `random` | `boolean` | Prefer a random open port. |
 | `host` | `string` | Default bind host. |
-| `open` | `boolean \| string` | `true` opens the origin, a string opens a specific path, `false` disables. Matches the `--open` / `--no-open` flags. When `auth` is on, the opened URL embeds the current OTP so the tab authenticates automatically. |
-| `auth` | `boolean` | Disable the WS trust flow when the tool is localhost-only and single-user. Default `true`. |
-| `configure` | `(cli: CAC) => void` | Contribute capability flags/commands. Runs before `createCac`'s `configureCli` option so the final tool author always has the last word. |
-
-`setup(ctx, info)` receives `info.flags` populated from both devframe's built-in flags and any you declared via `configure` — saves duplicating flag parsing.
-
-See [Adapters](/adapters/) for how each adapter consumes these.
+| `open` | `boolean \| string` | `true` = origin, string = a path, `false` = off (`--open`/`--no-open`). With `auth`, embeds the OTP. |
+| `auth` | `boolean` | Disable WS trust flow when localhost-only, single-user. Default `true`. |
+| `configure` | `(cli: CAC) => void` | Contribute flags/commands before `createCac`'s `configureCli`. |
 
 ## Multiple runtimes, one definition
 
-The definition is a plain value, so wire it into multiple adapters from the same file:
+Wire the definition into multiple adapters from one file:
 
 ```ts
 import { createPluginFromDevframe } from '@vitejs/devtools-kit/node'
@@ -308,6 +286,6 @@ export const myPlugin = () => createPluginFromDevframe(devframe)
 
 ## What's next
 
-- [Adapters](/adapters/) — pick a deployment target
+- [Adapters](/adapters/) — deployment targets
 - [RPC](./rpc) — register server functions
-- [`vite` adapter](/adapters/vite) — mount your devframe into Vite DevTools or another compatible host
+- [`vite` adapter](/adapters/vite) — mount into a host

@@ -4,17 +4,17 @@ outline: deep
 
 # Events Reference
 
-Devframe carries change notifications across a few distinct channels. What separates them is **direction and reach**: an in-process event bus that never leaves the node process, server RPC methods a client calls, and server-pushed broadcasts and shared state a client reads.
+Devframe carries change notifications across channels separated by **direction and reach**: an in-process node event bus, server RPC methods a client calls, and server-pushed broadcasts and shared state a client reads.
 
-Two naming prefixes mark the wire surface: `hub:` for hub-layer server RPC (client → server actions), and `devframe:` for the client-facing devframe protocol (broadcasts, shared state, and streams pushed server → client). The internal event bus mirrors the same plural subsystem vocabulary (`docks`, `terminals`, `messages`, `commands`), so each internal event lines up with its wire counterpart — `docks:activate` fans out to `devframe:docks:activate`.
+Two prefixes mark the wire surface: `hub:` for hub-layer server RPC (client → server), and `devframe:` for the client-facing devframe protocol (broadcasts, shared state, streams, server → client). The internal event bus mirrors the same subsystem vocabulary (`docks`, `terminals`, `messages`, `commands`) — `docks:activate` fans out to `devframe:docks:activate`.
 
-Every name on this page has one home in code: the [`HUB_EVENTS`](https://github.com/devframes/devframe/blob/main/packages/hub/src/events.ts) map (`@devframes/hub/constants`) backs the hub tables, and the [`DEVFRAME_EVENTS`](https://github.com/devframes/devframe/blob/main/packages/devframe/src/events.ts) map (`devframe/constants`) backs the core tables. Call sites reference `HUB_EVENTS.*` / `DEVFRAME_EVENTS.*` rather than re-typing a literal, and this page and those maps move together — changing one without the other is a bug.
+Every name here has one home in code: the [`HUB_EVENTS`](https://github.com/devframes/devframe/blob/main/packages/hub/src/events.ts) map (`@devframes/hub/constants`) backs the hub tables, the [`DEVFRAME_EVENTS`](https://github.com/devframes/devframe/blob/main/packages/devframe/src/events.ts) map (`devframe/constants`) backs the core tables. Call sites reference `HUB_EVENTS.*` / `DEVFRAME_EVENTS.*` rather than a literal; this page moves with those maps.
 
 ## Hub events
 
 ### Internal node event bus
 
-Each subsystem host emits on `ctx.<subsystem>.events`. These fire and are consumed **inside the same node process** — chiefly by `createHubContext`, which fans them out onto the wire. They never cross to the browser.
+Each subsystem host emits on `ctx.<subsystem>.events`. These fire and are consumed **inside the same node process** — chiefly by `createHubContext`, which fans them onto the wire — never crossing to the browser.
 
 | Event | Emitted by | Consumed by | Payload |
 |---|---|---|---|
@@ -24,11 +24,9 @@ Each subsystem host emits on `ctx.<subsystem>.events`. These fire and are consum
 | `messages:added` / `messages:updated` / `messages:removed` / `messages:cleared` | `MessagesHost` mutations | context → `devframe:messages:updated`; messages plugin | entry / entry / id / — |
 | `commands:registered` / `commands:unregistered` | `CommandsHost` register / update / unregister | context → `devframe:commands` shared state | entry / id |
 
-The `docks:entry:updated` and `terminals:session:updated` middle nouns (`entry`, `session`) name the specific record type; the messages and commands subsystems imply their record in the subsystem name, so they carry the verb directly.
-
 ### Server RPC methods — client → server
 
-A connected client (any mounted iframe or panel, on its own RPC client) calls these; the hub node handles them. Carry the `hub:` prefix.
+A connected client calls these; the hub node handles them. They carry the `hub:` prefix.
 
 | Method | Signature | Purpose |
 |---|---|---|
@@ -46,7 +44,7 @@ A connected client (any mounted iframe or panel, on its own RPC client) calls th
 
 ### Broadcasts & shared state — server → client
 
-The server pushes these; a hub-aware client reads or subscribes. Carry the `devframe:` prefix. A UI subscribes to broadcasts via `rpc.client.register(...)`; the [client host](./client-context) registers the `devframe:docks:activate` handler for you.
+The server pushes these; a hub-aware client reads or subscribes via `rpc.client.register(...)`. They carry the `devframe:` prefix. The [client host](./client-context) registers the `devframe:docks:activate` handler for you.
 
 | Name | Kind | Carries |
 |---|---|---|
@@ -59,17 +57,15 @@ The server pushes these; a hub-aware client reads or subscribes. Carry the `devf
 | `devframe:user-settings` | shared state | Persisted per-workspace hub settings (`DevframeDocksUserSettings`). |
 | `devframe:terminals` | streaming channel | Live terminal output stream, keyed by session id. |
 
-The [`devframe:docks:active`](./shared-state) mirror pairs with the `devframe:docks:activate` broadcast: the broadcast reaches docks already on screen, while the mirror lets a dock that mounts *because* of the switch converge on the same request instead of missing it.
-
 ## Core devframe events
 
-The core `devframe` runtime (below the hub) carries its own notification channels — the agent host's change events, the client connection lifecycle, and the server-pushed broadcasts that power shared state and streaming. These are backed by `DEVFRAME_EVENTS` (`devframe/constants`).
+The core `devframe` runtime carries its own notification channels, backed by `DEVFRAME_EVENTS` (`devframe/constants`).
 
-This map covers notifications only. The request/response RPC endpoints of the shared-state, streaming, and auth-handshake protocols (`devframe:rpc:server-state:*`, `devframe:streaming:subscribe`, `anonymous:devframe:auth`, …) are defined at their handlers and typed in `types/rpc-augments.ts` — they aren't events.
+This map covers notifications only. The request/response RPC endpoints (`devframe:rpc:server-state:*`, `devframe:streaming:subscribe`, `anonymous:devframe:auth`, …) are defined at their handlers and typed in `types/rpc-augments.ts` — not events.
 
 ### Node host bus
 
-Emitted on `ctx.agent.events` as the agent-exposed tool/resource surface changes; protocol adapters (e.g. the MCP server) subscribe to re-publish their manifest.
+Emitted on `ctx.agent.events` as the agent's tool/resource surface changes; protocol adapters (e.g. the MCP server) subscribe to re-publish their manifest.
 
 | Event | Emitted by | Payload |
 |---|---|---|
@@ -79,7 +75,7 @@ Emitted on `ctx.agent.events` as the agent-exposed tool/resource surface changes
 
 ### Client connection events
 
-Emitted on the RPC client's `rpc.events` emitter (`RpcClientEvents`) for a UI to track connection lifecycle and surface errors.
+Emitted on the RPC client's `rpc.events` emitter (`RpcClientEvents`) for a UI to track connection lifecycle and errors.
 
 | Event | Carries |
 |---|---|
@@ -90,7 +86,7 @@ Emitted on the RPC client's `rpc.events` emitter (`RpcClientEvents`) for a UI to
 
 ### Broadcasts — server → client
 
-Pushed from the server to subscribed clients over the `devframe:` protocol. Wired by the framework's own hosts; not registered manually.
+Pushed from server to subscribed clients over the `devframe:` protocol. Wired by the framework's own hosts.
 
 | Name | Carries |
 |---|---|
@@ -101,4 +97,4 @@ Pushed from the server to subscribed clients over the `devframe:` protocol. Wire
 | `devframe:streaming:end` | A streaming terminator (optionally an error). |
 | `devframe:streaming:upload-cancel` | Server-side cancel of an in-flight upload. |
 
-Plus one `postMessage` channel, `devframe:remote-assets-error`, that the remote-assets fallback page posts to `window.parent` so an embedding viewer can replace the bare 502 page with its own UI.
+Plus one `postMessage` channel, `devframe:remote-assets-error`, that the remote-assets fallback page posts to `window.parent` so an embedding viewer can replace the bare 502 page.

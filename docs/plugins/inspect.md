@@ -4,33 +4,31 @@ outline: deep
 
 # Devframe Inspector
 
-A self-inspector for any devframe connection, built as a **Vue** SPA. It browses the RPC registry, invokes read-only functions and shows their results, watches shared-state keys update live, and explores the agent-exposed surface — including the host's, when mounted into one.
+A self-inspector for any devframe connection, including the host's — a **Vue** SPA.
 
 Package: `@devframes/plugin-inspect` · framework: **Vue + Vite**
 
 <figure class="screenshot">
-  <img src="/screenshots/plugin-inspect-1.png" alt="Devframe Inspector screenshot" />
-  <figcaption>Devframe Inspector showing rpc functions list</figcaption>
+  <img src="/screenshots/plugin-inspect-1.png" alt="Inspector" />
+  <figcaption>RPC functions list</figcaption>
 </figure>
 
 <figure class="screenshot">
-  <img src="/screenshots/plugin-inspect-2.png" alt="Devframe Inspector screenshot" />
-  <figcaption>Devframe Inspector showing agent tools</figcaption>
+  <img src="/screenshots/plugin-inspect-2.png" alt="Inspector" />
+  <figcaption>Agent tools</figcaption>
 </figure>
 
 <figure class="screenshot">
-  <img src="/screenshots/plugin-inspect-3.png" alt="Devframe Inspector screenshot" />
-  <figcaption>Devframe Inspector showing history panels</figcaption>
+  <img src="/screenshots/plugin-inspect-3.png" alt="Inspector" />
+  <figcaption>History panels</figcaption>
 </figure>
 
 ## What it does
 
-- **Functions** — every registered RPC function with its type, JSON-serializable / snapshot flags, args and return JSON Schema, and agent exposure. Read-only `query` / `static` functions can be invoked inline and their result envelope inspected.
-- **State** — the keys of every shared-state entry, with a live JSON tree that flashes the paths that change as patches arrive.
-- **Agent** — the agent manifest: the tools and readable resources the devframe exposes to coding agents.
-- **History** — a recordable timeline of RPC calls and shared-state updates observed over the connection.
-
-The three introspection `query` functions are agent-exposed and bake into the static dump, so the inspector still lists functions, state keys, and the agent surface when deployed as a static SPA.
+- **Functions** — type, flags, JSON Schema, agent exposure; read-only `query` / `static` invokable inline.
+- **State** — shared-state keys in a live JSON tree that flashes changes.
+- **Agent** — tools and resources for agents.
+- **History** — a timeline of RPC calls and shared-state updates.
 
 ## Standalone
 
@@ -38,11 +36,9 @@ The three introspection `query` functions are agent-exposed and bake into the st
 pnpx @devframes/plugin-inspect
 ```
 
-Opens the inspector against a fresh standalone devframe connection — handy as a reference and for poking at the introspection RPCs themselves. The CLI prints the URL it serves on.
-
 ## Mount into a Vite host
 
-For a [Vite DevTools](https://devtools.vite.dev) app, mount the panel with `createPluginFromDevframe` from `@vitejs/devtools-kit/node`:
+For a [Vite DevTools](https://devtools.vite.dev) app:
 
 ```ts
 // vite.config.ts
@@ -57,7 +53,7 @@ export default defineConfig({
 })
 ```
 
-Without Vite DevTools, `devframeVite` from `@devframes/vite/single` mounts the panel directly, no DevTools dock required:
+Or mount directly with `devframeVite` from `@devframes/vite/single`:
 
 ```ts
 // vite.config.ts
@@ -74,7 +70,7 @@ export default defineConfig({
 
 ## Programmatic
 
-`createInspectDevframe(options)` returns a definition you can deploy through any adapter:
+`createInspectDevframe(options)` returns a definition for any adapter:
 
 ```ts
 import { createInspectDevframe } from '@devframes/plugin-inspect'
@@ -89,10 +85,10 @@ All functions are namespaced `devframes:plugin:inspect:*`:
 
 | Function | Type | Returns |
 |----------|------|---------|
-| `list-functions` | `query` (snapshot) | Every registered RPC function with metadata. |
-| `invoke` | `action` | Invokes a read-only `query` / `static` function and returns a result envelope; refuses `action` / `event` functions. |
-| `list-state-keys` | `query` (snapshot) | The keys of every shared-state entry. |
-| `describe-agent` | `query` (snapshot) | The agent manifest — tools and readable resources. |
+| `list-functions` | `query` (snapshot) | RPC functions with metadata. |
+| `invoke` | `action` | Invokes a read-only `query` / `static`; refuses `action`/`event`. |
+| `list-state-keys` | `query` (snapshot) | Shared-state keys. |
+| `describe-agent` | `query` (snapshot) | Agent manifest — tools and resources. |
 
 ## Source
 

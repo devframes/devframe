@@ -4,18 +4,18 @@ outline: deep
 
 # hub-vite
 
-A protocol-witness host: a small Vite plugin that wires [`@devframes/hub`](/guide/hub) into a Vite dev server with **one `initHub()` call** and a hand-built **vanilla TypeScript** viewer, so nothing distracts from the hub protocol itself. Every framework's hub host follows the same shape.
+A small Vite plugin wiring [`@devframes/hub`](/guide/hub) into a dev server with **one `initHub()` call** and a hand-built **vanilla TypeScript** viewer.
 
 Package: `hub-vite` · framework: **Vanilla TypeScript (Vite)**
 
 ## What it proves
 
-- `initHub({ base, devframes, configure })` boots the whole hub — merged RPC registry, shared state, docks/terminals/messages/commands — from one call, mounted as connect middleware (`server.middlewares.use(hub.nodeMiddleware)`).
-- The WebSocket RPC upgrade shares Vite's own dev server at `<base>__ws` — zero extra ports.
-- The browser viewer connects via `connectDevframe({ baseURL: hub.base })`, discovering the endpoint through the hub's `__connection.json`.
-- The opt-in [JSON-render](/guide/json-render) hub integration end to end, plus [client-only docks](/guide/client-context#client-only-docks) the page registers itself with `context.docks.register()`.
+- `initHub({ base, devframes, configure })` boots the whole hub, mounted as connect middleware (`server.middlewares.use(hub.nodeMiddleware)`).
+- The WebSocket RPC upgrade shares Vite's dev server at `<base>__ws`; no extra ports.
+- The viewer connects via `connectDevframe({ baseURL: hub.base })`, discovered from `__connection.json`.
+- Opt-in [JSON-render](/guide/json-render), plus [client-only docks](/guide/client-context#client-only-docks) via `context.docks.register()`.
 
-For the minimal counterpart — the hub UI supplied by `@devframes/hub-ui` instead of a hand-built viewer — see [hub-vite-minimal](./hub-vite-minimal).
+Minimal counterpart (`@devframes/hub-ui` viewer): [hub-vite-minimal](./hub-vite-minimal).
 
 ## Run it
 
@@ -24,7 +24,7 @@ pnpm install
 pnpm --filter hub-vite dev
 ```
 
-Open the printed URL to see the docks, commands, messages, and terminals the hub exposes.
+Open the printed URL for the hub's docks and terminals.
 
 ## Source
 

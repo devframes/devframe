@@ -4,27 +4,22 @@ outline: deep
 
 # json-render
 
-A standalone devframe that serves a **JSON-render view**: the server authors an
-`@json-render/core` spec once, and the prebuilt `@devframes/json-render-ui` SPA
-renders it — the app ships no client build of its own.
+The server authors an `@json-render/core` spec that the prebuilt
+`@devframes/json-render-ui` SPA renders — no client build.
 
 Package: `json-render` · frontend: **prebuilt `@devframes/json-render-ui/spa`**
 
 ## What it shows
 
 - **`createJsonRenderView`** — registers the spec as shared state, validates
-  element props at ingress, and returns a handle with `update` / `patchState` /
-  `dispose`.
-- **Live state** — the server ticks `uptime` every second via `patchState`, so
-  the view updates without replacing the whole spec.
-- **Action bridge** — the `Refresh` button's `press` action is dispatched as an
-  RPC call of the same name; the handler bumps a counter and patches state, with
-  per-action loading and error surfacing.
-- **Out-of-box SPA** — `createJsonRenderDevframe` points `clientAssets` at the
-  prebuilt `@devframes/json-render-ui/spa`, which discovers the view from the
-  view index and renders it — no client build in the example.
-- **Static output** — `cli:build` snapshots the spec + state as a read-only
-  render; the action bridge reports actions as unavailable (no live RPC).
+  props; handle: `update` / `patchState` / `dispose`.
+- **Live state** — server ticks `uptime` every second via `patchState`.
+- **Action bridge** — `Refresh`'s `press` action dispatches as a same-named
+  RPC call; per-action loading/error.
+- **Out-of-box SPA** — `createJsonRenderDevframe` sets `clientAssets` to
+  `@devframes/json-render-ui/spa`.
+- **Static output** — `cli:build` snapshots spec + state read-only; actions
+  unavailable (no live RPC).
 
 ## Run it
 
@@ -33,7 +28,7 @@ pnpm --filter json-render dev         # CLI dev server (live RPC)
 pnpm --filter json-render cli:build   # static deploy → dist/static
 ```
 
-The dev server serves the SPA at `/__json-render/`.
+Served at `/__json-render/`.
 
 ## Source
 

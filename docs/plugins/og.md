@@ -4,15 +4,15 @@ outline: deep
 
 # Open Graph Viewer
 
-Inspect a page's resolved Open Graph and Twitter metadata and compare its social cards across common platforms, built as a **Vue** SPA.
+Inspect a page's Open Graph / Twitter metadata and social cards, built as a **Vue + Vite** SPA.
 
-Package: `@devframes/plugin-og` · framework: **Vue + Vite**
+Package: `@devframes/plugin-og`
 
 ## What it does
 
-Enter any HTTP or HTTPS page reachable from the devframe process. The viewer resolves relative image and icon URLs against the fetched document, renders the resulting social cards for Twitter, Facebook, LinkedIn, and Telegram, and identifies missing metadata with a ready-to-use Nuxt `useSeoMeta()` snippet.
+Enter any HTTP/HTTPS URL. It resolves relative image/icon URLs, renders social cards for Twitter, Facebook, LinkedIn, and Telegram, and flags missing metadata with a Nuxt `useSeoMeta()` snippet.
 
-The standalone server requires devframe's trust handshake by default because it can request developer-supplied URLs. Set `auth: false` only for an isolated local environment.
+The standalone server requires devframe's trust handshake; set `auth: false` only for isolated local use.
 
 ## Standalone
 
@@ -22,7 +22,7 @@ pnpx @devframes/plugin-og
 
 ## Mount into a Vite host
 
-For a [Vite DevTools](https://devtools.vite.dev) app, mount the panel with `createPluginFromDevframe` from `@vitejs/devtools-kit/node`:
+With [Vite DevTools](https://devtools.vite.dev):
 
 ```ts
 // vite.config.ts
@@ -37,24 +37,11 @@ export default defineConfig({
 })
 ```
 
-Without Vite DevTools, `devframeVite` from `@devframes/vite/single` mounts the panel directly, no DevTools dock required:
-
-```ts
-// vite.config.ts
-import createOgDevframe from '@devframes/plugin-og'
-import { devframeVite } from '@devframes/vite/single'
-import { defineConfig } from 'vite'
-
-export default defineConfig({
-  plugins: [
-    devframeVite(createOgDevframe()),
-  ],
-})
-```
+Or use `devframeVite(createOgDevframe())` from `@devframes/vite/single`.
 
 ## Programmatic
 
-`createOgDevframe(options)` returns a definition you can deploy through any adapter:
+`createOgDevframe(options)` returns a definition for any adapter:
 
 ```ts
 import { createOgDevframe } from '@devframes/plugin-og'
@@ -64,15 +51,15 @@ export default createOgDevframe({
 })
 ```
 
-`defaultUrl` supplies the initial target and makes `devframe build` bake that page into the static RPC dump. The resulting report keeps its assets relative and runs from any deployment path.
+`defaultUrl` sets the initial target and bakes it into the static build.
 
 ## RPC surface
 
-All functions are namespaced `devframes:plugin:og:*`:
+Namespaced `devframes:plugin:og:*`:
 
 | Function | Type | Returns |
 |----------|------|---------|
-| `resolve-metadata` | `query` | Fetches an HTTP or HTTPS page and returns its normalized title, language, Open Graph, Twitter, and link metadata. |
+| `resolve-metadata` | `query` | Fetches a page; returns title, language, Open Graph, Twitter, link metadata. |
 
 ## Source
 

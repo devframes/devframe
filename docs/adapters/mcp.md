@@ -4,7 +4,7 @@ outline: deep
 
 # MCP
 
-Translates a devframe's agent host into a [Model Context Protocol](https://modelcontextprotocol.io) server so coding agents (Claude Desktop, Cursor, Zed, Claude Code) can call flagged RPCs and read exposed resources.
+Translates a devframe's agent host into a [Model Context Protocol](https://modelcontextprotocol.io) server: agents call flagged RPCs and read exposed resources.
 
 ```ts
 import { createMcpServer } from 'devframe/adapters/mcp'
@@ -13,11 +13,11 @@ import devframe from './devframe'
 await createMcpServer(devframe, { transport: 'stdio' })
 ```
 
-`@modelcontextprotocol/server` is a peer dependency — install it when shipping MCP support. `createMcpServer` speaks the `stdio` transport, spawned per session by the client.
+`@modelcontextprotocol/server` is a peer dependency. `createMcpServer` speaks `stdio`, spawned per session.
 
 ## Route-based server
 
-The dev server can expose the same agent surface over HTTP, so an MCP client connects to the **running** server and sees live tool and resource changes. Enable it with `cli.mcp`:
+The dev server exposes the same surface over HTTP with live changes. Enable with `cli.mcp`:
 
 ```ts
 import { defineDevframe } from 'devframe'
@@ -30,22 +30,13 @@ export default defineDevframe({
 })
 ```
 
-The endpoint speaks the MCP Streamable-HTTP transport at `/__mcp` (relative to the base path — `/__<id>/__mcp` under a host), sharing the dev server's origin and port. The `--mcp` and `--no-mcp` flags override the definition per run. `__connection.json` advertises the route so in-browser tooling can discover it.
+The endpoint speaks Streamable-HTTP at `/__mcp` (`/__<id>/__mcp` under a host), sharing its origin/port. `--mcp` / `--no-mcp` override per run; `__connection.json` advertises the route.
 
-Each client session gets its own MCP server built from the live context, correlated by the `Mcp-Session-Id` header, so `tools/list_changed` and `resources/list_changed` notifications reach connected clients as the tool evolves. The endpoint binds to the same loopback host as the dev server and applies an origin gate: a request must carry an `Origin` that is loopback (or on the configured allow-list). Unlike the WS transport it rejects `Origin`-less requests, so a route-based endpoint isn't reachable by an arbitrary local process — native clients (like `devframe connect`) send their loopback origin explicitly. Widen the gate for a tunnel or LAN origin:
-
-```ts
-defineDevframe({
-  // …
-  cli: {
-    mcp: { allowedOrigins: ['https://tunnel.example.com'] },
-  },
-})
-```
+Each session gets its own MCP server from the live context, keyed by `Mcp-Session-Id`. An origin gate requires `Origin` be loopback (or allow-listed); unlike WS it rejects `Origin`-less requests — `devframe connect` sends its loopback origin explicitly. Widen for a tunnel/LAN origin with `cli: { mcp: { allowedOrigins: ['https://tunnel.example.com'] } }`.
 
 ### Hosted bridges
 
-Both hosted bridges forward the same option to their side-car dev server and advertise the endpoint (with its port) in the `__connection.json` they serve:
+Both bridges forward the option to their side-car dev server, advertising the endpoint in `__connection.json`:
 
 ```ts
 // Vite (@devframes/vite)
@@ -57,7 +48,7 @@ createDevframeNextHandler(devframe, { mcp: true })
 
 ## Custom hosts
 
-`createMcpFetchHandler(ctx, options)` returns the endpoint as a web-standard `Request → Response` handler plus a `dispose()` for session teardown — mount it on any fetch-shaped server (a Next.js App Router route, a custom Node server). The h3 `mountMcpHttp` used by the dev server is a thin wrapper over it.
+`createMcpFetchHandler(ctx, options)` returns the endpoint as a `Request → Response` handler plus a `dispose()` for teardown — mount it on any fetch server.
 
 ```ts
 import { createMcpFetchHandler } from 'devframe/adapters/mcp'
@@ -72,7 +63,7 @@ const mcp = createMcpFetchHandler(ctx, {
 
 ## Discovery: `devframe connect`
 
-The `devframe` bin ships an MCP **connector** — a thin discovery + proxy server in the shape [next-devtools-mcp](https://github.com/vercel/next-devtools-mcp) validated. Configure it once in an agent client and it finds every running devframe:
+The `devframe` bin ships an MCP **connector** ([next-devtools-mcp](https://github.com/vercel/next-devtools-mcp)-style) that finds every running devframe. Configure it once:
 
 ```json
 {
@@ -82,11 +73,11 @@ The `devframe` bin ships an MCP **connector** — a thin discovery + proxy serve
 }
 ```
 
-It exposes two gateway tools (the wire names of the `devframe:connect:*` ids — see [tool ids and wire names](/guide/agent-native#tool-ids-and-wire-names)):
+Two gateway tools (`devframe:connect:*` ids — see [tool ids and wire names](/guide/agent-native#tool-ids-and-wire-names)):
 
-- **`devframe_connect_list-instances`** — discover running devframe dev servers and list each one's MCP tools. Instances running without an MCP route are listed with a hint to restart with `--mcp`.
-- **`devframe_connect_call-tool`** — invoke one tool on one instance (`{ port, tool, args }`) over its Streamable-HTTP endpoint.
+- **`devframe_connect_list-instances`** — list running dev servers and their MCP tools; those without a route hint at `--mcp`.
+- **`devframe_connect_call-tool`** — invoke one tool on an instance (`{ port, tool, args }`) over Streamable-HTTP.
 
-Discovery reads the **instance registry**: every `createDevServer` (CLI `dev`, `devframeViteBridge`, `@devframes/next`'s handler) writes a record to `~/.devframe/instances/<pid>-<port>.json` on boot and removes it on close; readers prune records whose liveness probe fails. The connector dials each instance's endpoint with the instance's own loopback origin, so it clears the route's origin gate without any configuration. In-process hosts register explicitly with `registerDevframeInstance` from `devframe/node` — see `createDevframeNextHost().mountMcp` for serving MCP on a Next app's own origin. `--port <n>` probes an explicit port besides the registry; `DEVFRAME_INSTANCES_DIR` relocates the registry and `DEVFRAME_DISABLE_INSTANCE_REGISTRY=1` opts a server out.
+Discovery reads the **instance registry**: every `createDevServer` writes `~/.devframe/instances/<pid>-<port>.json` on boot; the connector dials each with its loopback origin. In-process hosts register via `registerDevframeInstance` (`devframe/node`). `--port <n>` probes an explicit port; `DEVFRAME_INSTANCES_DIR` relocates the registry, `DEVFRAME_DISABLE_INSTANCE_REGISTRY=1` opts out.
 
-See the [Agent-Native](/guide/agent-native) page for the full API, safety model, and Claude Desktop integration example.
+See [Agent-Native](/guide/agent-native) for the full API, safety model, and example.

@@ -4,7 +4,7 @@ outline: deep
 
 # Streaming
 
-Devframe's streaming-channel API provides server→client push for chunk-style data — chat deltas, log lines, build progress. It runs over the same WebSocket transport as the rest of the RPC layer and adds the conventions every chunked feed needs: stream IDs, cooperative cancellation, replay on reconnect, and first-class Web Streams interop.
+Devframe's streaming channels push chunk-style data server→client over the RPC socket.
 
 ## Overview
 
@@ -21,11 +21,11 @@ sequenceDiagram
   Channel-->>Browser: end()
 ```
 
-A **channel** owns a wire namespace. Each call to `channel.start()` produces an individual **stream** keyed by an id (auto-generated unless you pass one). Subscribers join by `(channelName, id)`.
+A **channel** owns a wire namespace; each `channel.start()` produces one **stream** keyed by an id (auto-generated unless passed); subscribers join by `(channelName, id)`.
 
 ## Defining a channel
 
-Create the channel once in `setup`. Channels are framework-neutral, so the same code works under every adapter (`cli`, `vite`, `embedded`):
+In `setup`:
 
 ```ts
 import { defineDevframe, defineRpcFunction } from 'devframe'
@@ -62,11 +62,9 @@ export default defineDevframe({
 })
 ```
 
-The channel name follows the same `<plugin-id>:<name>` convention as RPC functions — the scoped `my.rpc.streaming.create('chat')` applies the prefix for you.
-
 ## Producing — three surfaces, one stream
 
-The handle returned by `channel.start({ id? })` is both an imperative producer and a Web Streams `WritableStream<T>`:
+`channel.start({ id? })`, three ways:
 
 ```ts
 const stream = channel.start({ id: 'optional-explicit-id' })
@@ -85,8 +83,6 @@ sourceReadable.pipeTo(stream.writable, { signal: stream.signal })
 const stream = await channel.pipeFrom(sourceReadable)
 ```
 
-Producers should poll `stream.signal.aborted` and exit cooperatively when it flips:
-
 ```ts
 for (const token of source) {
   if (stream.signal.aborted)
@@ -96,9 +92,9 @@ for (const token of source) {
 stream.close()
 ```
 
-### Node.js stream interop
+### Node stream interop
 
-Web Streams are the canonical surface. Node 17+ ships standard-library converters for bridging to `node:stream`:
+Node 17+ ships converters:
 
 ```ts
 import { Readable, Writable } from 'node:stream'
@@ -112,7 +108,7 @@ Readable.fromWeb(reader.readable).pipe(targetNodeWritable)
 
 ## Consuming — `for await` or `pipeTo`
 
-The client returns a reader that's both an `AsyncIterable<T>` and exposes a `ReadableStream<T>`:
+The reader is an `AsyncIterable<T>` that also exposes `.readable` (a `ReadableStream<T>`); use one surface per reader (shared queue).
 
 ```ts
 import { connectDevframe } from 'devframe/client'
@@ -134,22 +130,18 @@ await reader.readable.pipeTo(downloadWritable)
 reader.cancel() // sends cancel upstream; server stream.signal flips
 ```
 
-Use one surface per reader — they share a single internal queue, so concurrent draining races.
-
 ## Lifecycle and cancellation
 
-| Event | Server side | Client side |
-|-------|-------------|-------------|
-| Producer calls `stream.close()` / `stream.error(err)` | Broadcasts `end` to subscribers | `for await` resolves (success) or throws (error) |
-| Consumer calls `reader.cancel()` | Server's `stream.signal` aborts when the **last** subscriber cancels — handlers should poll and exit | Reader marks itself cancelled; `for await` ends without iterating |
-| WS disconnects | When the **last** subscriber drops, server aborts `stream.signal` | Reader stays alive; resubscribes automatically when trust is re-established |
-| `chat` panel closes mid-stream | Reader cancel cascades upstream | — |
-
-A stream with multiple subscribers stays alive until the last one cancels or disconnects. Producers should make `stream.signal.aborted` part of their inner loop.
+| Event | Server | Client |
+|-------|--------|--------|
+| `stream.close()` / `stream.error(err)` | Broadcasts `end` | `for await` resolves or throws |
+| `reader.cancel()` | aborts `stream.signal` on **last**-subscriber cancel | Reader cancelled; `for await` ends |
+| WS disconnects | aborts `stream.signal` on **last**-subscriber drop | Reader stays alive; resubscribes on re-trust |
+| `chat` panel closes | Cancel cascades upstream | — |
 
 ## Client-to-server uploads
 
-The same channel works in reverse for chunk-style uploads — file content, mic / screen-share frames, browser-side logs forwarded to disk, anything that would otherwise need a hand-rolled multipart-over-HTTP. The pattern: one regular RPC call allocates the id, then dedicated streaming events carry the chunks.
+In reverse, an RPC call allocates the id, then events carry chunks.
 
 ```ts
 // Server — typically inside an action handler
@@ -191,17 +183,16 @@ upload.close()
 fileReadable.pipeTo(upload.writable, { signal: upload.signal })
 ```
 
-Lifecycle mirrors the outbound case:
+Lifecycle mirrors outbound:
 
-- `upload.signal` aborts when the **server** calls `reader.cancel()` (the server cancellation broadcasts an `upload-cancel` to the uploading session).
-- `upload.error(err)` propagates as a thrown error inside the server's `for await`.
-- If the client disconnects mid-upload, the server's `for await` exits with an `UploadDisconnected` error so consumers can clean up.
+- `upload.signal` aborts when the server calls `reader.cancel()` (broadcasting `upload-cancel`).
+- `upload.error(err)` throws inside the server's `for await`; a client disconnect exits with `UploadDisconnected`.
 
-Each `openInbound()` allocates a fresh server-side id owned by exactly one uploading session. Uploads are point-to-point: one producer, no fan-in, no shared subscribers, no replay (reconnect means the client restarts).
+Each `openInbound()` gives a fresh id; point-to-point: one producer, no fan-in, no replay.
 
 ## Replay on reconnect
 
-With `replayWindow: N`, the server keeps a rolling buffer of the last `N` chunks per stream. On (re)subscribe, the client passes the highest sequence number it has seen, and the server replays anything newer before resuming live.
+With `replayWindow: N`, the server keeps the last `N` chunks; on resubscribe the client sends its highest seen sequence and the server replays newer chunks first.
 
 ```ts
 my.rpc.streaming.create<string>('chat', { // -> my-devframe:chat
@@ -210,11 +201,11 @@ my.rpc.streaming.create<string>('chat', { // -> my-devframe:chat
 })
 ```
 
-`closedStreamRetention` defaults to 30 seconds when `replayWindow > 0` (so a panel re-opened seconds after a chat finishes still gets the full transcript). Set it explicitly to tune retention.
+`closedStreamRetention` defaults to 30 s (`replayWindow > 0`).
 
 ## Backpressure
 
-The client maintains a bounded queue per subscription (`highWaterMark`, default 256). When the consumer falls behind, the oldest queued chunk drops and a [`DF0029`](../errors/DF0029) warning is logged. This is best-effort — sufficient for current streaming use cases without threading transport-level backpressure through birpc.
+The client keeps a bounded queue per subscription (`highWaterMark`, default 256); if the consumer falls behind, the oldest chunk drops, logging [`DF0029`](../errors/DF0029).
 
 ```ts
 const reader = my.rpc.streaming.subscribe('chat', id, { // -> my-devframe:chat
@@ -222,19 +213,19 @@ const reader = my.rpc.streaming.subscribe('chat', id, { // -> my-devframe:chat
 })
 ```
 
-When you need authoritative state rather than every intermediate value, [shared state](./shared-state) carries Immer patches with delivery guarantees — structured rather than streaming.
+For authoritative state, use [shared state](./shared-state).
 
 ## When to use streaming vs events vs shared state
 
-| Use streaming for | Use `event`-typed RPC for | Use shared state for |
-|-------------------|---------------------------|----------------------|
-| Token / chunk feeds (LLM deltas, build logs) | Notifications without payload (`refresh`, `clear`) | Long-lived UI state (selections, panel layout) |
-| Per-call lifecycles with cancellation | Cross-cutting signals broadcast to all clients | Reactive snapshots that survive reconnect |
-| Replay on reconnect | Fire-and-forget signaling | Diff-based sync between clients |
-| Client-to-server uploads (files, mic frames) | | |
+| Streaming | `event`-typed RPC | Shared state |
+|-----------|-------------------|--------------|
+| Token/chunk feeds (LLM deltas, logs) | Payload-less notifications (`refresh`, `clear`) | Long-lived UI state |
+| Per-call lifecycles, cancellation | Cross-cutting broadcast signals | Reactive snapshots surviving reconnect |
+| Replay on reconnect | Fire-and-forget signaling | Diff-based sync |
+| Client→server uploads (files, mic) | | |
 
 ## Reference
 
-- API surface: `RpcStreamingHost`, `RpcStreamingChannel<T>`, `StreamSink<T>`, `StreamReader<T>` in `devframe/types`.
-- Working example: [`examples/streaming-chat`](https://github.com/devframes/devframe/tree/main/examples/streaming-chat).
-- Errors: [`DF0029`](../errors/DF0029) (overflow), [`DF0030`](../errors/DF0030) (unknown stream id), [`DF0031`](../errors/DF0031) (write to closed stream), [`DF0032`](../errors/DF0032) (channel name collision).
+- API: `RpcStreamingHost`, `RpcStreamingChannel<T>`, `StreamSink<T>`, `StreamReader<T>` in `devframe/types`.
+- Example: [`examples/streaming-chat`](https://github.com/devframes/devframe/tree/main/examples/streaming-chat).
+- Errors: [`DF0029`](../errors/DF0029) (overflow), [`DF0030`](../errors/DF0030) (unknown id), [`DF0031`](../errors/DF0031) (write to closed), [`DF0032`](../errors/DF0032) (name collision).

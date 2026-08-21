@@ -5,9 +5,9 @@ outline: deep
 # Common RPC Functions
 
 > [!WARNING]
-> Deprecated in favor of the [`@devframes/service-open` wire service](/guide/services#built-in-services) — one host-level installation shared by every plugin, feature-detectable from clients, with workspace-root path containment on top of the editor gating. The recipe keeps working; removal lands in a future major.
+> Deprecated for the [`@devframes/service-open` wire service](/guide/services#built-in-services) — one host-level install shared by every plugin, feature-detectable from clients, with workspace-root path containment atop the editor gating. The recipe keeps working; removal in a future major.
 
-Prebuilt RPC actions for the two file-system actions every CLI devtool needs — opening a file in the editor, revealing a path in the OS file explorer. Use the recipe instead of re-implementing them so every devframe converges on the same registered names and payload shape.
+Prebuilt RPC actions: open a file in an editor, reveal a path in the OS.
 
 ```ts
 import { commonRpcFunctions } from 'devframe/recipes/common-rpc-functions'
@@ -25,17 +25,15 @@ defineDevframe({
 
 | Export | Registered name | Type | Args | Purpose |
 |--------|------------------|------|------|---------|
-| `openInEditor` | `devframe:open-in-editor` | `action` | `[filename: string, editor?: KnownEditor]` | Open the file in the user's editor via [`launchEditor`](./utilities#devframe-utils-launch-editor). `filename` accepts `file`, `file:line`, or `file:line:column`. The optional `editor` picks the editor command explicitly instead of relying on auto-detection. |
-| `openInFinder` | `devframe:open-in-finder` | `action` | `[path: string]` | Reveal the path in the OS file explorer via [`open`](./utilities#devframe-utils-open). |
-| `commonRpcFunctions` | — | `readonly [openInEditor, openInFinder]` | — | Convenience array for batch registration. |
-| `KNOWN_EDITORS` | — | `readonly string[]` | — | The editor commands `openInEditor`'s `editor` argument accepts (`code`, `vim`, `subl`, `idea`, …). |
+| `openInEditor` | `devframe:open-in-editor` | `action` | `[filename: string, editor?: KnownEditor]` | Open via [`launchEditor`](./utilities#devframe-utils-launch-editor); `filename` = `file`/`file:line`/`file:line:column`. |
+| `openInFinder` | `devframe:open-in-finder` | `action` | `[path: string]` | Reveal via [`open`](./utilities#devframe-utils-open) |
+| `commonRpcFunctions` | — | `readonly [openInEditor, openInFinder]` | — | Batch-registration array. |
+| `KNOWN_EDITORS` | — | `readonly string[]` | — | Accepted commands (`code`, `vim`, …). |
 | `KnownEditor` | — | type | — | Union of `KNOWN_EDITORS`. |
 
-Both functions are `action`-type RPCs returning `void`, and their arguments are schema-validated — `openInEditor`'s `editor` argument is restricted to `KNOWN_EDITORS`, so a value outside that list fails validation rather than reaching the underlying `launch-editor` process spawn. Both handlers dynamically `import()` their underlying `devframe/utils/*` implementation, so the `launch-editor` and `open` dependencies only load when the recipe actually runs.
+Both `action` RPCs lazy-`import()` their `devframe/utils/*` deps.
 
 ## Pick and choose
-
-Register only the helper you need rather than the whole array:
 
 ```ts
 import { openInEditor } from 'devframe/recipes/common-rpc-functions'
@@ -50,8 +48,6 @@ defineDevframe({
 
 ## On the client
 
-The SPA calls these like any other RPC:
-
 ```ts
 const rpc = await connectDevframe()
 await rpc.call('devframe:open-in-editor', 'src/main.ts:42:7')
@@ -59,4 +55,4 @@ await rpc.call('devframe:open-in-editor', 'src/main.ts:42:7', 'code')
 await rpc.call('devframe:open-in-finder', '/abs/path/to/dir')
 ```
 
-`launchEditor`'s editor auto-detection reads the `LAUNCH_EDITOR` environment variable on the server side when no `editor` argument is passed — there is no client-side configuration.
+Auto-detection reads server-side `LAUNCH_EDITOR` when no `editor` is passed.

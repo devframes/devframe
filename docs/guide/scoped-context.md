@@ -4,22 +4,11 @@ outline: deep
 
 # Scoped Context
 
-A scoped context is a namespaced view of the devframe context that auto-prefixes every RPC id, shared-state key, and streaming channel with your tool's id, and adds a typed, persisted `settings` store. It is the preferred way to consume the context from a single tool's code — both on the server (`ctx.scope`) and in the browser (`client.scope`).
-
-```ts
-const my = ctx.scope('my-plugin')
-
-my.rpc.register(getModules) // registers `my-plugin:get-modules`
-await my.rpc.call('get-modules') // calls `my-plugin:get-modules`
-const state = await my.rpc.sharedState('selection') // `my-plugin:selection`
-await my.settings.project.set('theme', 'dark')
-```
-
-You hand a namespace once and stop repeating it on every id.
+A scoped context is a namespaced view of the devframe context: it auto-prefixes every RPC id, shared-state key, and streaming channel with your tool's id, and adds a typed, persisted `settings` store. Use it from a single tool's code — server (`ctx.scope`) or browser (`client.scope`).
 
 ## Server side
 
-`setup(ctx)` receives the full `DevframeNodeContext`. Derive a scoped view from it with `ctx.scope(id)` — conventionally your devframe `id`:
+`setup(ctx)` receives the full `DevframeNodeContext`; scope it with `ctx.scope(id)`, conventionally your devframe `id`:
 
 ```ts twoslash
 import { defineDevframe, defineRpcFunction } from 'devframe'
@@ -41,46 +30,28 @@ export default defineDevframe({
 declare function loadModules(): { id: string }[]
 ```
 
-`ctx.scope(id)` returns the same object for a given id on repeated calls, so it's cheap to call wherever you need it. The scoped context re-exposes the unscoped surfaces (`views`, `diagnostics`, `agent`, `host`, `cwd`, `mode`) unchanged, replaces `rpc` with the auto-namespaced surface, and keeps the original context available as `my.base`.
+`ctx.scope(id)` is stable per id, re-exposing the unscoped surfaces (`views`, `diagnostics`, `agent`, `host`, `cwd`, `mode`), swapping in the auto-namespaced `rpc`, and keeping the original as `my.base`.
 
 ## Client side
 
-`connectDevframe()` returns the RPC client; `client.scope(id)` gives the matching browser-side view:
-
-```ts twoslash
-import { connectDevframe } from 'devframe/client'
-
-const client = await connectDevframe()
-const my = client.scope('my-plugin')
-
-const modules = await my.rpc.call('get-modules')
-const selection = await my.rpc.sharedState('selection', { initialValue: { id: '' } })
-const theme = await my.settings.project.get('theme')
-```
-
-The scoped surface mirrors the server: `my.rpc` carries `call` / `callEvent` / `callOptional`, `register` (server→client functions), `sharedState`, and `streaming`; `my.settings` is the top-level settings store.
+On the browser, `(await connectDevframe()).scope(id)` gives the matching view, namespaced like the server: `my.rpc` carries `call` / `callEvent` / `callOptional`, `register`, `sharedState`, and `streaming`, and `my.settings` is the settings store.
 
 ## Auto-namespacing
 
-Bare names are prefixed with `<namespace>:`. A name that already contains a `:` is treated as fully-qualified and passed through unchanged, so you can reach another tool's surface explicitly:
+Bare names are prefixed `<namespace>:` (`call('get-modules')` → `my-plugin:get-modules`); a name already containing `:` passes through unchanged, reaching another tool (`call('other-plugin:status')`).
 
-```ts
-await my.rpc.call('get-modules') //          -> my-plugin:get-modules
-await my.rpc.call('other-plugin:status') //  -> other-plugin:status (unchanged)
-```
+`register` accepts only bare names; an already-namespaced one throws [`DF0034`](../errors/DF0034) — use `ctx.base.rpc.register` for those.
 
-`register` is stricter: it auto-namespaces and only accepts bare names. Passing an already-namespaced name throws [`DF0034`](../errors/DF0034) — register through `ctx.base.rpc.register` if you need a fully-qualified name.
-
-Bare names also stay fully typed: a scoped `call('get-modules')` resolves to the `my-plugin:get-modules` entry in your [RPC registry augmentation](./rpc#type-safe-client-registry), and `sharedState('selection')` to the matching [`DevframeRpcSharedStates`](./shared-state#type-safe-keys) key.
+Bare names stay typed: `call('get-modules')` resolves to your [RPC registry](./rpc#type-safe-client-registry) entry, `sharedState('selection')` to the matching [`DevframeRpcSharedStates`](./shared-state#type-safe-keys) key.
 
 ## Settings
 
-`my.settings` is a persisted key-value store, living at the top level of the scoped context (alongside `my.rpc`, not under it). It has two scopes:
+`my.settings` is a persisted key-value store at the top level (alongside `my.rpc`), with two scopes:
 
-- **`project`** — per-workspace values, persisted under the host's `workspace` storage dir. Project-local settings.
-- **`global`** — per-user values, persisted under the host's `global` storage dir. Machine-wide preferences.
+- **`project`** — per-workspace values, under the host's `workspace` dir.
+- **`global`** — per-user values, under the host's `global` dir.
 
-Both are file-backed on the server and synced to the browser over the shared-state protocol, so a `set` on either side propagates to every connected peer and survives restarts.
+Both are file-backed and synced to the browser over the shared-state protocol; a `set` propagates to every peer and survives restarts.
 
 ```ts
 const { settings } = my
@@ -95,11 +66,11 @@ const off = await settings.global.onChange((value) => {
 })
 ```
 
-Every method is async because the underlying store is resolved on first access.
+Every method is async; the store resolves on first access.
 
 ### Typed settings
 
-Augment `DevframeSettingsRegistry` to type a namespace's settings shape once; `ctx.scope('my-plugin')` then types `settings.global` and `settings.project` automatically:
+Augment `DevframeSettingsRegistry` to type a namespace's settings once; the scope then types `settings.global` and `settings.project`:
 
 ```ts
 declare module 'devframe' {
@@ -118,10 +89,10 @@ await my.settings.project.set('theme', 'dark') // ✓ typed
 await my.settings.project.set('theme', 'blue') // ✗ not assignable
 ```
 
-Namespaces without an augmentation fall back to an open record.
+Unaugmented namespaces fall back to an open record.
 
 ## What's next
 
-- [RPC](./rpc) — register and call functions
-- [Shared State](./shared-state) — observable state synced across clients
-- [Client](./client) — connecting from the browser
+- [RPC](./rpc)
+- [Shared State](./shared-state)
+- [Client](./client)

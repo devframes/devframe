@@ -4,16 +4,16 @@ outline: deep
 
 # Transports
 
-Devframe serves live RPC over two interchangeable transports — a WebSocket and an SSE endpoint — so a client connects even where the WebSocket upgrade is unavailable (serverless platforms, buffering reverse proxies, restrictive corporate networks). Both speak the identical birpc wire protocol with the same per-method serialization, auth handshake, origin policy, shared state, and streaming; switching transports changes nothing about how you write or call RPC functions.
+Devframe serves live RPC over two interchangeable transports — WebSocket and SSE — so a client connects even where the WebSocket upgrade is unavailable (serverless, buffering proxies). Both speak the identical birpc wire protocol, so switching changes nothing about how you write or call RPC.
 
 ## What the server binds
 
 A live instance binds both by default:
 
-- **WebSocket** at `<base>__ws` — the primary transport, one full-duplex socket.
-- **SSE** at `<base>__sse` — one method-dispatched route: `GET` opens the server→client event stream, `POST` carries client→server RPC frames. It rides the same HTTP surface that serves `__connection.json`, so wherever discovery works, SSE works — including through the Vite bridge's middleware and `initDevframe`'s `handler` / `nodeMiddleware` on hosts that never see upgrade events.
+- **WebSocket** at `<base>__ws` — primary, one full-duplex socket.
+- **SSE** at `<base>__sse` — one method-dispatched route: `GET` opens the server→client stream, `POST` carries client→server frames. It rides the same HTTP surface as `__connection.json`, so wherever discovery works SSE works — including middleware-only hosts (the Vite bridge, `initDevframe`'s `handler` / `nodeMiddleware`) that never see upgrade events.
 
-`__connection.json` advertises what's bound; `backend` names the server's primary transport:
+`__connection.json` advertises what's bound; `backend` is the primary:
 
 ```json
 {
@@ -23,7 +23,7 @@ A live instance binds both by default:
 }
 ```
 
-The SSE stream carries a keep-alive comment every 30 seconds so idle connections survive intermediaries. Both endpoints share one session space — auth trust, shared-state subscriptions, and streaming replay behave identically on either.
+The SSE stream sends a keep-alive comment every 30 seconds so idle connections survive intermediaries. Both endpoints share one session space, behaving identically for auth, shared-state, and streaming replay.
 
 ### Configuring
 
@@ -39,13 +39,13 @@ initDevframe(def, { base: '/__my-tool/', server, sse: false })
 initDevframe(def, { base: '/__my-tool/', server, sse: { route: '__events' } })
 ```
 
-`ws: false` together with `sse: false` runs an RPC-less shell (`backend: 'none'`) — the SPA, discovery, and MCP routes still serve. The same options apply to `createDevServer`, `initHub`, and a definition's `cli.ws` / `cli.sse` defaults.
+`ws: false` + `sse: false` runs an RPC-less shell (`backend: 'none'`); the SPA, discovery, and MCP routes still serve. The same options apply to `createDevServer`, `initHub`, and `cli.ws` / `cli.sse` defaults.
 
 ## What the client picks
 
-`connectDevframe` trusts the server's advertisement: it connects over the declared primary, preferring the WebSocket when both endpoints are present. A server that binds no socket advertises SSE as its primary, so the client lands there with no probing or fallback logic.
+`connectDevframe` connects over the declared primary, preferring WebSocket when both are present; a socket-less server advertises SSE as primary, so the client lands there with no probing.
 
-Pin a transport explicitly when you know better than the advertisement — the typical case is an intermediary that silently strips WS upgrades, which the server cannot detect:
+Pin a transport when you know better than the advertisement — e.g. an intermediary that silently strips WS upgrades, which the server can't detect:
 
 ```ts
 const client = await connectDevframe({ transport: 'sse' })
@@ -53,6 +53,6 @@ const client = await connectDevframe({ transport: 'sse' })
 client.transport // 'websocket' | 'sse' | 'static' — what actually connected
 ```
 
-Pinning a transport the server doesn't advertise rejects with a clear error. SSE endpoints resolve with the same proxy-safe rules as WebSocket ones: relative paths against `__connection.json`'s own URL, an explicit `host`/`port` only for a genuinely cross-origin endpoint.
+Pinning an unadvertised transport rejects with a clear error. SSE follows the same proxy-safe rules as WebSocket: relative paths against `__connection.json`'s URL, explicit `host`/`port` only for a cross-origin endpoint.
 
-A dropped SSE stream ends the client exactly like a closed socket — pending calls reject, the status moves to `disconnected`, and reconnecting means calling `connectDevframe` again.
+A dropped SSE stream ends the client like a closed socket: pending calls reject, status moves to `disconnected`, reconnect by calling `connectDevframe` again.

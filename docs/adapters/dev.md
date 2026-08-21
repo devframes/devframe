@@ -4,7 +4,7 @@ outline: deep
 
 # Dev
 
-The `dev` adapter is the building block `createCac` uses internally — h3 + WebSocket RPC + the author's SPA mounted at the resolved base path. Reach for it directly to mount the dev server inside an existing CLI program (commander, yargs, hand-rolled CAC) or to attach custom middleware to the underlying h3 app.
+`createCac`'s building block: h3 + WebSocket RPC + the SPA at the resolved base path. Use it in a custom CLI or with middleware.
 
 ```ts
 import { createDevServer } from 'devframe/adapters/dev'
@@ -19,48 +19,35 @@ const handle = await createDevServer(devframe, {
 process.on('SIGINT', () => handle.close().then(() => process.exit(0)))
 ```
 
-`createDevServer` returns the underlying `StartedServer` (origin, port, h3 app, WS server, RPC group, `close()`) so callers can integrate it into their own process lifecycle.
+Returns the `StartedServer` (origin, port, h3 app, WS server, RPC group, `close()`).
 
 | Option | Default | Description |
 |--------|---------|-------------|
 | `host` | `def.cli?.host ?? 'localhost'` | Bind host. |
-| `port` | resolved via `resolveDevServerPort` | Port to listen on. |
-| `flags` | `{}` | Parsed flag bag forwarded to `setup(ctx, { flags })`. |
-| `distDir` | `def.clientAssets` (falls back to deprecated `def.cli?.distDir`) | SPA dist override. When unset the server runs in bridge mode (meta + WS only). |
-| `basePath` | `resolveBasePath(def, 'standalone')` | Mount path override. |
-| `app` | fresh h3 app | Pre-configured h3 app to mount onto (custom middleware, auth, extra static assets). |
-| `openBrowser` | resolves from `flags.open` / `def.cli?.open` | Explicit on/off override. `false` disables; a string opens that relative path. |
-| `ws` | `def.cli?.ws` | How the browser reaches the RPC WebSocket — see below. |
-| `onReady` | — | Callback when the WS server is bound. |
+| `port` | resolved via `resolveDevServerPort` | Listen port. |
+| `flags` | `{}` | Passed to `setup(ctx, { flags })`. |
+| `distDir` | `def.clientAssets` (falls back to deprecated `def.cli?.distDir`) | SPA dist; unset = bridge mode. |
+| `basePath` | `resolveBasePath(def, 'standalone')` | Mount override. |
+| `app` | fresh h3 app | Mount onto. |
+| `openBrowser` | resolves from `flags.open` / `def.cli?.open` | `false` off; string opens a path. |
+| `ws` | `def.cli?.ws` | RPC WebSocket — see below. |
+| `onReady` | — | WS-bind callback. |
 
 ## WebSocket endpoint
 
-By default the RPC socket shares the HTTP server's port and binds to the `__ws` route next to `__connection.json`. The descriptor advertises a *relative* path, so the client connects to its own origin — the link follows the page through a reverse proxy that rewrites the domain, port, or subpath. Configure the three connection scenarios via `def.cli.ws` (or the `ws` call-site option):
-
-```ts
-defineDevframe({
-  // 1. Same server, a custom route (default route is `__ws`):
-  cli: { ws: { route: '__sockets' } },
-
-  // 2. A dedicated port on the same host:
-  cli: { ws: { port: 9788 } },
-
-  // 3. A remote, fully-qualified endpoint (e.g. a tunnel/relay):
-  cli: { ws: { url: 'wss://devtools.example.com/relay/__ws' } },
-})
-```
+The RPC socket shares the HTTP port on `__ws`, advertised *relative* so the client dials its own origin through a reverse proxy. Configure `def.cli.ws`:
 
 | Field | Scenario | Advertised `websocket` |
 |-------|----------|------------------------|
-| `route` | same server, different route | `{ path: <route> }` (same origin) |
-| `port` | different port | `{ port, path: <route> }` (page host) |
-| `url` | remote, different origin | the URL string, used verbatim |
+| `route` | same server, other route | `{ path: <route> }` |
+| `port` | different port | `{ port, path: <route> }` |
+| `url` | remote origin | URL verbatim |
 
-Precedence is `url` > `port` > `route`. In the remote case the dev server still hosts the socket locally on `route`; point your tunnel at it.
+Precedence `url` > `port` > `route`; for `url` the socket stays local on `route` — point your tunnel there.
 
 ## Port resolution
 
-`resolveDevServerPort(def, opts?)` resolves a port up-front (to print or log it) before the server starts:
+`resolveDevServerPort(def, opts?)` resolves a port before start:
 
 ```ts
 import { resolveDevServerPort } from 'devframe/adapters/dev'
@@ -71,5 +58,5 @@ const port = await resolveDevServerPort(devframe, { host: '127.0.0.1' })
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `host` | `def.cli?.host ?? 'localhost'` | Bind host (passed to `get-port-please` for in-use detection). |
-| `defaultPort` | `def.cli?.port ?? 9999` | Override the preferred port. |
+| `host` | `def.cli?.host ?? 'localhost'` | Bind host (`get-port-please` detection). |
+| `defaultPort` | `def.cli?.port ?? 9999` | Preferred-port override. |

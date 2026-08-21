@@ -1,10 +1,9 @@
 # Build Your Own Hub UI
 
-A hub viewer is a replaceable implementation of two contracts — the node-side
-`ui` slot and the client-side context — so you can ship a completely custom
-devtools surface (your framework, your design system) on top of the hub's
-infrastructure. `@devframes/hub-ui` is the reference implementation of both;
-this page is the map for writing another.
+A hub viewer implements two contracts — the node-side `ui` slot and the
+client-side context — to ship a custom devtools surface on the hub's
+infrastructure. `@devframes/hub-ui` is the reference; this page maps out writing
+another.
 
 ## The node seam: `DevframeHubUi`
 
@@ -20,28 +19,22 @@ interface DevframeHubUi {
 }
 ```
 
-Ship a function returning this object (the reference is `createUi()`), with
-prebuilt assets: the viewer SPA is built with relative asset paths, and the
-embedded entry is one self-contained ES module that mounts your dock into any
-host page.
+Ship a function returning this object (the reference is `createUi()`) with
+prebuilt assets: the viewer SPA uses relative asset paths, and the embedded
+entry is a self-contained ES module that mounts your dock into any host page.
 
-`setup(ctx)` runs once during hub init — write your static, boot-time config
-to `ctx.staticConfig`, which is serialized into `ConnectionMeta.configs` and
-read by the client from the one connection handshake it already performs. The
-reference UI's `createUi({ branding })` uses it to set
+`setup(ctx)` runs once during hub init — write boot-time config to
+`ctx.staticConfig`, serialized into `ConnectionMeta.configs` and read by the
+client from its connection handshake. The reference UI sets
 `ctx.staticConfig.ui = { branding, … }`; the hub never interprets what you
-write. It's the structured, read-only counterpart to `assets` (arbitrary
-served files).
+write.
 
 ## The client contracts
 
-A viewer renders from the hub's shared state and drives it through
-`@devframes/hub/client`. The simplest boot is
-[`createDevframeClientHost()`](./client-context) — it assembles the whole
-`DevframeClientContext` (docks, commands, renderers, when-clauses, connection)
-and loads dock client scripts for you; the reference UI assembles the same
-context shape with its own reactive machinery instead. Either way, honor these
-contracts:
+A viewer renders from the hub's shared state via `@devframes/hub/client`. The
+simplest boot is [`createDevframeClientHost()`](./client-context), which
+assembles the whole `DevframeClientContext` (docks, commands, renderers,
+when-clauses, connection) and loads dock client scripts. Honor these contracts:
 
 ### Dock entry types
 
@@ -61,21 +54,18 @@ Honor `when` / `visibility` clauses, `category` grouping (order from
 `DEFAULT_CATEGORIES_ORDER` in `@devframes/hub/constants`), and the
 `hub:docks:activate` broadcast.
 
-An `iframe` entry whose devframe serves its UI from a [remote assets
-package](./client-assets) can also report that those assets are unreachable: its
-fallback page posts a `RemoteAssetsErrorMessage`
-(`DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE`, both re-exported from
-`@devframes/hub/constants`) to `window.parent`. Match the message against the
-frame's own `contentWindow` and you can offer the install command and a retry in
-your own UI; leaving it alone keeps the fallback page visible inside the frame.
+An `iframe` entry serving its UI from a [remote assets package](./client-assets)
+can report those assets unreachable: its fallback page posts a
+`RemoteAssetsErrorMessage` (`DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE`, both
+from `@devframes/hub/constants`) to `window.parent`. Match it against the frame's
+`contentWindow` to offer the install command and a retry; leaving it alone keeps
+the fallback page visible.
 
 ### The renderer registry and its fallback
 
 **Every other dock type routes through the dock-renderer registry** — build it
-with `createDockRenderersContext()` from `@devframes/hub/client` so local
-registrations, the hub's [renderer
-manifest](./hub-initiate#renderer-modules), and the typed mount result behave
-like every other viewer:
+with `createDockRenderersContext()` from `@devframes/hub/client`, wiring local
+registrations and the hub's [renderer manifest](./hub-initiate#renderer-modules):
 
 ```ts
 import { createDockRenderersContext } from '@devframes/hub/client'
@@ -88,30 +78,26 @@ const renderers = createDockRenderersContext({
 const result = await renderers.mount(entry, container)
 ```
 
-The mount result is the fallback contract. A viewer shows a visible state for
-each variant instead of a dead panel:
+Show a visible state for each mount-result variant:
 
 - `{ status: 'mounted', dispose }` — the renderer owns the container; call
   `dispose` when the view unmounts.
-- `{ status: 'missing-renderer' }` — render a fallback view: *No renderer for
-  "`<type>`" in the current environment*. `renderers.has(type)` answers up
-  front, so you can render this declaratively without a mount attempt.
+- `{ status: 'missing-renderer' }` — render a fallback: *No renderer for
+  "`<type>`" in the current environment* (`renderers.has(type)` answers up front).
 - `{ status: 'load-error', error }` — the module failed to import or the
-  renderer threw; render the error with a retry affordance (a failed import is
-  not cached, so retrying re-imports).
+  renderer threw; render the error with a retry (retrying re-imports).
 
 ### The theme contract for renderers
 
-Renderer modules style themselves (they may attach a shadow root inside your
-container). Your part: keep a live `dark` class on the mount container
-reflecting your color mode, and let CSS custom properties inherit — a
-`--devframe-primary` set on an ancestor rebrands rendered content too.
+Renderer modules style themselves (possibly attaching a shadow root inside your
+container). Keep a live `dark` class on the mount container for your color mode,
+and let CSS custom properties inherit — a `--devframe-primary` on an ancestor
+rebrands rendered content.
 
 ## Reference points
 
 - `packages/hub-ui` — the full reference viewer (Vue, `@antfu/design`).
 - [`examples/hub-vite`](/examples/hub-vite) and
-  [`examples/hub-next`](/examples/hub-next) — protocol witnesses: complete
-  hand-rolled viewers in ~500 lines of vanilla DOM and React respectively,
-  covering docks, the drawer subsystems, the renderer registry, and the
-  missing-renderer fallback.
+  [`examples/hub-next`](/examples/hub-next) — protocol witnesses: hand-rolled
+  viewers in vanilla DOM and React, covering docks, the drawer subsystems, the
+  renderer registry, and the missing-renderer fallback.

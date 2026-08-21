@@ -4,7 +4,7 @@ outline: deep
 
 # Embedded
 
-Register a devframe into an already-running context at runtime. Mirrors the [`vite`](./vite) adapter's plugin-scan, but for callers that need dynamic, post-startup registration. The host decides the mount path; `embedded` is a hosted adapter and inherits the `/__<id>/` default when one is needed.
+Register a devframe into an already-running context at runtime — dynamic, post-startup registration (unlike [`vite`](./vite)'s plugin-scan). Inherits the hosted `/__<id>/` default.
 
 ```ts
 import { createEmbedded } from 'devframe/adapters/embedded'
@@ -15,6 +15,4 @@ await createEmbedded(devframe, { ctx: existingCtx })
 
 | Option | Required | Description |
 |--------|----------|-------------|
-| `ctx` | ✓ | Target `DevframeNodeContext` the devframe is registered into. |
-
-Useful when a host loads devframes based on runtime conditions (feature flags, user opt-in, dynamic discovery) rather than static config.
+| `ctx` | ✓ | Target `DevframeNodeContext` to register into. |

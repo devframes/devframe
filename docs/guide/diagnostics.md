@@ -4,7 +4,7 @@ outline: deep
 
 # Structured Diagnostics
 
-`ctx.diagnostics` is a thin layer over [`nostics`](https://www.npmjs.com/package/nostics) that lets integrations register coded errors and warnings into a shared lookup without depending on `nostics` directly. Use it for author-defined coded diagnostics — errors, warnings, deprecations — with a stable code, a documentation URL, and a structured payload. For free-form runtime output that should appear in the Devframe UI, use [`ctx.messages`](https://devtools.vite.dev/kit/messages).
+`ctx.diagnostics` is a thin layer over [`nostics`](https://www.npmjs.com/package/nostics) for author-defined coded diagnostics, each with a stable code, docs URL, and structured payload.
 
 | Surface | Purpose | Example |
 |---------|---------|---------|
@@ -26,7 +26,7 @@ interface DevframeDiagnosticsHost {
 }
 ```
 
-The host ships pre-seeded with devframe's own `DF*` codes, plus the host package's codes (`DTK*` for `@vitejs/devtools`, etc.). Call `register()` to add your own.
+The host ships pre-seeded with devframe's `DF*` codes plus the host package's (`DTK*`, etc.); call `register()` to add your own.
 
 ## Register your own codes
 
@@ -61,9 +61,9 @@ export function MyPlugin(): PluginWithDevTools {
 
 ## Code conventions
 
-Codes are 4-letter prefix + 4-digit number (e.g. `MYP0001`). Pick a prefix specific to your plugin or tool — short enough to type, distinctive enough to avoid collisions with other integrations.
+Codes are a 4-letter prefix + 4-digit number (e.g. `MYP0001`); pick one distinctive enough to avoid collisions.
 
-Prefixes already in use in this monorepo:
+Prefixes in use:
 
 | Prefix | Owner |
 |--------|-------|
@@ -72,11 +72,11 @@ Prefixes already in use in this monorepo:
 | `RDDT` | `@vitejs/devtools-rolldown` |
 | `VDT` | `@vitejs/devtools-vite` (reserved) |
 
-Each definition supports a `why` (string or function — the message) and an optional `fix` (string or function — the suggested resolution). The `docsBase` on `defineDiagnostics({...})` auto-attaches the URL to every emitted diagnostic. See [`nostics`](https://www.npmjs.com/package/nostics) for the full schema.
+A definition takes a `why` (message) and optional `fix` (resolution), string or function; `docsBase` auto-attaches the URL to each diagnostic.
 
 ## Emit a diagnostic
 
-Each registered code becomes a `DiagnosticHandle` on the typed result of `defineDiagnostics()` (and through the shared `ctx.diagnostics.logger` lookup). Each handle is a callable — invoke it to report (returns the `Diagnostic`), or prefix with `throw` to raise.
+Each registered code becomes a callable `DiagnosticHandle` — call it to report, or `throw` to raise.
 
 ```ts
 // Throw — control flow stops here
@@ -92,36 +92,15 @@ myDiagnostics.MYP0002({}, { method: 'error' })
 throw myDiagnostics.MYP0001({ name: 'foo', cause: error })
 ```
 
-The callable returns a `Diagnostic` (which extends `Error`). Prefix with `throw` so TypeScript narrows the lines after as unreachable:
-
-```ts
-throw myDiagnostics.MYP0001({ name })
-```
+The returned `Diagnostic` extends `Error`, so `throw` narrows following lines as unreachable.
 
 ## Typed handle reference
 
-`ctx.diagnostics.logger` is loosely typed — it covers an unbounded set of registered codes, beyond what TypeScript can narrow. For autocompletion on your plugin's specific codes, keep the typed result of `defineDiagnostics()`:
-
-```ts
-const myDiagnostics = ctx.diagnostics.defineDiagnostics({
-  docsBase: 'https://example.com/errors',
-  codes: {
-    MYP0001: { why: (p: { name: string }) => `…${p.name}` },
-  },
-})
-
-// Register so the shared lookup can also see it
-ctx.diagnostics.register(myDiagnostics)
-
-// Use the typed handle directly for autocompletion
-myDiagnostics.MYP0001({ name: 'foo' })
-```
-
-The host's `defineDiagnostics()` pre-wires its ANSI console reporter, so both the typed handle and the shared lookup produce the same output.
+`ctx.diagnostics.logger` is loosely typed over all registered codes; for autocompletion, keep and call the typed result of `defineDiagnostics()` directly, whose pre-wired ANSI reporter gives it and the lookup identical output.
 
 ## Document your codes
 
-Pair each code with a documentation page. devframe and the published Vite DevTools packages follow this layout:
+Pair each code with a documentation page:
 
 ```
 docs/errors/
@@ -130,11 +109,8 @@ docs/errors/
   MYP0002.md
 ```
 
-Each page covers the message, cause, example, and fix — see any [DF code page](https://devfra.me/errors/) for the canonical template. Setting `docsBase` on `defineDiagnostics({...})` auto-attaches the URL to every emitted diagnostic.
+Each page covers message, cause, example, and fix; see any [DF code page](https://devfra.me/errors/) for the template.
 
 ## When to use what
 
-- **`ctx.diagnostics`** — coded conditions worth looking up: misconfiguration, deprecations, validation failures, internal invariants. Always docs-backed. Often thrown.
-- **`ctx.messages`** — user-facing activity surfaces in the Devframe UI: progress indicators, audit results, "URL copied" toasts. Just a message and a level.
-
-Diagnostics target tool authors and CI; messages target the human in front of the Devframe panel.
+**`ctx.diagnostics`** covers coded, docs-backed conditions, targeting tool authors and CI; **`ctx.messages`** covers user-facing UI activity, targeting the human at the panel.

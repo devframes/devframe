@@ -4,22 +4,22 @@ outline: deep
 
 # Terminals
 
-A portable terminal panel built as a **Svelte** SPA on top of [xterm.js](https://xtermjs.org/). It streams read-only command output and runs fully interactive PTY shells — TUI-capable — in the browser. The same definition runs standalone, mounts into a Vite host, or docks inside a hub.
+A terminal panel — a **Svelte** SPA on [xterm.js](https://xtermjs.org/): streams read-only command output and runs interactive, TUI-capable PTY shells.
 
-Package: `@devframes/plugin-terminals` · framework: **Svelte + xterm.js**
+Package: `@devframes/plugin-terminals`
 
 <figure class="screenshot">
   <img src="/screenshots/plugin-terminals-1.png" alt="Terminals screenshot" />
-  <figcaption>Terminals plugin allowing interactive and read-only terminal sessions in the browser</figcaption>
+  <figcaption>Interactive and read-only terminal sessions in the browser</figcaption>
 </figure>
 
 ## What it does
 
-- **Read-only output** — stream the output of a command into a terminal view via devframe's [streaming channels](/guide/streaming).
-- **Interactive shells** — spawn PTY-backed sessions you can type into, including full-screen TUI programs. Sessions can be renamed, resized, restarted, and removed; the session list lives in shared state so every panel stays in sync.
-- **Presets** — declare named commands the user can launch with one click.
+- **Read-only output** — a command's output via devframe's [streaming channels](/guide/streaming).
+- **Interactive shells** — PTY-backed sessions you can type into, including full-screen TUI programs; rename, resize, restart, remove.
+- **Presets** — named commands launchable in one click.
 
-Interactive shells run on a real pseudo-terminal via [`zigpty`](https://github.com/pithings/zigpty)'s prebuilt native bindings (Linux/macOS/Windows, x64/arm64, no install scripts). Where the bindings can't load, sessions degrade to pipe-based terminal emulation.
+Interactive shells use [`zigpty`](https://github.com/pithings/zigpty)'s prebuilt native bindings (Linux/macOS/Windows, x64/arm64), falling back to pipe-based emulation where they can't load.
 
 ## Standalone
 
@@ -43,7 +43,7 @@ export default defineConfig({
 
 ## Programmatic
 
-`createTerminalsDevframe(options)` returns a definition you can deploy through any adapter. Declare presets to seed the launcher:
+`createTerminalsDevframe(options)` returns a definition; declare presets to seed the launcher:
 
 ```ts
 import { createTerminalsDevframe } from '@devframes/plugin-terminals'
@@ -57,15 +57,15 @@ export default createTerminalsDevframe({
 
 ## Hub aggregation
 
-Mounted into a hub, the plugin owns PTY/child-process spawning and its own streaming channel (`devframes:plugin:terminals:output`) — that's what the panel renders. It also mirrors every session it spawns into `ctx.terminals` (the hub's aggregate registry, streaming on `devframe:terminals`) so other tools — a launcher dock, a custom panel — see the same session list without depending on the plugin's own types. A session started the other way, via `ctx.terminals.startChildProcess` / `startPtySession` directly (e.g. from a launcher dock), shows up in the terminals panel too — the plugin reads foreign hub sessions read-only and renders them alongside its own, subscribing to the hub's channel for their output.
+Mounted into a hub, the plugin spawns on its own channel (`devframes:plugin:terminals:output`) and mirrors every session into `ctx.terminals` (the hub's registry, on `devframe:terminals`), so other tools share the list; foreign hub sessions render read-only.
 
-`ctx.terminals` is the source of truth for "what sessions exist"; the plugin is the panel that renders them and the one PTY-capable provider among possibly several session sources. The plugin never imports `@devframes/hub`'s types to stay mountable without a hub — it duck-types the minimal `register` / `update` / `events` shape it needs.
+`ctx.terminals` is the source of truth; the plugin is the sole PTY provider and duck-types a minimal `register` / `update` / `events` shape to run without `@devframes/hub`.
 
-A session from `ctx.terminals.startChildProcess()` carries a `getResult()` accessor shaped like `tinyexec`'s `Result` — `await`able to `{ stdout, stderr, exitCode }` (captured separately from the merged display stream), with live `pid` / `exitCode` / `killed` getters and `kill()` in the meantime. That's the seam for migrating an existing `tinyexec`/`execa`-based "run a subprocess and get its result" API onto the hub's terminals: keep the same calling code, swap the runner for `startChildProcess()`, and the session's output shows up in every hub-aware terminal panel for free.
+`startChildProcess()` sessions carry a `getResult()` accessor (`tinyexec`'s `Result`: `await`able `{ stdout, stderr, exitCode }`, plus live getters and `kill()`) — a `tinyexec`/`execa` runner drop-in.
 
 ## Focusing a session
 
-The panel reacts to the hub's [cross-iframe dock activation](/guide/hub#cross-iframe-dock-activation): when an activation targets this dock (`dockId: 'devframes_plugin_terminals'`) and carries a `sessionId`, the panel selects that session. This lets another tool spawn a build and jump the user straight to its output:
+Via the hub's [cross-iframe dock activation](/guide/hub#cross-iframe-dock-activation), an activation with a `sessionId` selects that session — a tool can jump the user to a build's output:
 
 ```ts
 // e.g. right after ctx.terminals.startChildProcess(..., { id: sessionId, ... })
@@ -75,30 +75,30 @@ await rpc.call('hub:docks:activate', {
 })
 ```
 
-It works whether the panel is already open (it reacts to the `devframe:docks:active` shared-state slot) or mounts in response to the switch (it reads the slot on start and converges). Focus is one-shot: an unknown or not-yet-arrived session id waits for that session to appear, and the user's own tab clicks are always honored afterward. A session id that never appears is a no-op — the default selection (most-recent session) stands.
+Focus is one-shot; an unknown id waits for the session to appear.
 
 ## Deep linking
 
-Running standalone, the panel keeps the selected session in the URL hash as `#id=<sessionId>`: it selects that session on load if the id is live (otherwise the most-recent one), writes the hash with `replaceState` as tabs change, and honors back/forward and manual edits through a `hashchange` listener. So a copied link reopens on the same terminal. See the [deep-linking guide](/guide/deep-linking) for the pattern across devframes.
+Standalone, the panel keeps the selected session in the URL hash (`#id=<sessionId>`), so a copied link reopens the same terminal ([deep-linking guide](/guide/deep-linking)).
 
 ## RPC surface
 
-All functions are namespaced `devframes:plugin:terminals:*`:
+Namespaced `devframes:plugin:terminals:*`:
 
 | Function | Type | Purpose |
 |----------|------|---------|
-| `list` | `query` (snapshot) | The current sessions with their status, mode, and command. |
-| `presets` | `query` (snapshot) | The declared launcher presets. |
-| `spawn` | `action` | Start a new session from a preset id, or a command + mode. Interactive sessions accept input; readonly sessions only stream output. |
-| `write` | `action` | Send input to an interactive session. |
-| `resize` | `action` | Resize a session's PTY to the given columns and rows. |
-| `restart` | `action` | Restart a session's process, keeping its id and scrollback. |
+| `list` | `query` (snapshot) | Current sessions (status, mode, command). |
+| `presets` | `query` (snapshot) | Declared launcher presets. |
+| `spawn` | `action` | Start from a preset id or command + mode. |
+| `write` | `action` | Input to an interactive session. |
+| `resize` | `action` | Resize the PTY (columns × rows). |
+| `restart` | `action` | Restart the process, keeping scrollback. |
 | `rename` | `action` | Rename a session. |
-| `terminate` | `action` | End a session's running process; keeps the session and its scrollback. |
-| `remove` | `action` | Kill a session and discard it (process, stream, and scrollback). |
-| `clear-exited` | `action` | Discard every stopped session at once; running sessions are left untouched. |
+| `terminate` | `action` | End the process; keep the session. |
+| `remove` | `action` | Kill and discard the session. |
+| `clear-exited` | `action` | Discard all stopped sessions. |
 
-Status (and every mutation above) is mirrored into shared state, so every connected panel stays in sync.
+Status and mutations mirror into shared state, keeping panels in sync.
 
 ## Source
 
