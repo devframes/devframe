@@ -158,6 +158,9 @@ catalogs:
       specifier: ^4.4.3
       version: 4.4.3
   docs:
+    '@shikijs/themes':
+      specifier: ^4.4.3
+      version: 4.4.3
     comark-docs:
       specifier: github:comarkdown/comark-docs
       version: 0.0.1
@@ -478,6 +481,9 @@ importers:
 
   docs:
     dependencies:
+      '@shikijs/themes':
+        specifier: catalog:docs
+        version: 4.4.3
       comark-docs:
         specifier: catalog:docs
         version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/afa7835620294a86ea2306384e58f63f3b6e418c(50cc5ca6743ab464694f44de3ba95231)

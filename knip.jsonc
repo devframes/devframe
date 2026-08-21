@@ -40,7 +40,12 @@
       // Nuxt auto-registers `app/components` and `app/composables`; the files
       // here shadow same-named pieces of the comark-docs layer (AppHeaderBrand,
       // useFilteredNavigation, ...), so nothing imports them explicitly.
-      "entry": ["app/components/*.vue", "app/composables/*.ts"]
+      // `shims/rangi.ts` is wired in through `nuxt.config.ts`'s `alias`.
+      "entry": ["app/components/*.vue", "app/composables/*.ts", "shims/*.ts"],
+      // `comark` is the comark-docs layer's own (pkg.pr.new pinned) dep; the
+      // rangi->shiki shim imports `comark/plugins/shiki` from it, resolved
+      // through the workspace's hoisted store.
+      "ignoreDependencies": ["comark"]
     },
     "examples/hub-next": {
       // The React client build's root sits at `src/client` (`next dev

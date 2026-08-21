@@ -8,6 +8,7 @@
     "docs:serve": "nuxt preview"
   },
   "dependencies": {
+    "@shikijs/themes": "catalog:docs",
     "comark-docs": "catalog:docs",
     "nuxt": "catalog:build",
     "ufo": "catalog:deps"
