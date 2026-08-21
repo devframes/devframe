@@ -30,12 +30,12 @@ export interface BuildShadowCssOptions {
    */
   primaryRampPath: string
   /**
-   * Absolute path to a hand-authored stylesheet run through the generator's
-   * configured transformers (directives, variant groups) and merged in
-   * right after the CSS reset. Omit for a package with no hand-written
-   * styles.
+   * One or more absolute paths to hand-authored stylesheets run through the
+   * generator's configured transformers (directives, variant groups) and
+   * merged in order right after the CSS reset. Omit for a package with no
+   * hand-written styles.
    */
-  userStylePath?: string
+  userStylePath?: string | readonly string[]
   /**
    * Prefix Wind's `--un-*` custom properties are renamed to (see
    * `namespaceShadowCssVars`) — unique per shadow-root surface so two
@@ -93,16 +93,16 @@ export async function buildShadowCss(options: BuildShadowCssOptions): Promise<Bu
     await generator.applyExtractors(content, file, tokens)
   }
 
-  // The hand-written stylesheet (if any) may use `--at-apply` — run it
-  // through the configured transformers (directives, variant groups) before
-  // merging.
-  const userStyle = userStylePath
-    ? new MagicString(await fs.readFile(userStylePath, 'utf-8').catch(() => ''))
-    : undefined
-  if (userStyle) {
+  // Hand-written stylesheets may use `--at-apply`. Run each through the
+  // configured transformers before merging them in the caller's order.
+  const userStylePaths = typeof userStylePath === 'string' ? [userStylePath] : (userStylePath ?? [])
+  const userStyles: string[] = []
+  for (const userStylePath of userStylePaths) {
+    const userStyle = new MagicString(await fs.readFile(userStylePath, 'utf-8').catch(() => ''))
     for (const transformer of generator.config.transformers ?? []) {
-      await transformer.transform(userStyle, userStylePath!, { uno: generator } as any)
+      await transformer.transform(userStyle, userStylePath, { uno: generator } as any)
     }
+    userStyles.push(userStyle.toString())
   }
 
   const primaryRamp = await fs.readFile(primaryRampPath, 'utf-8')
@@ -126,7 +126,7 @@ export async function buildShadowCss(options: BuildShadowCssOptions): Promise<Bu
   // `namespaceShadowCssVars`).
   let css = [
     reset,
-    userStyle?.toString(),
+    ...userStyles,
     unoCss,
     surfacesCss,
     primaryRamp,

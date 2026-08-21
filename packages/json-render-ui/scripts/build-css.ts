@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { colors as c } from 'devframe/utils/colors'
@@ -12,12 +13,17 @@ import config from '../uno.config'
 // host page. See `design/build-shadow-css.ts` for the shared pipeline
 // (mirrored by `@devframes/hub-ui`'s `scripts/build-css.ts`).
 const SRC_DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'src')
+const moduleRequire = createRequire(import.meta.url)
 
 const { sourceCount, css } = await buildShadowCss({
   srcDir: SRC_DIR,
   globs: ['components/**/*.ts', 'renderer.ts', 'dock-renderer.ts', 'renderer-module/**/*.ts'],
   config,
   primaryRampPath: join(SRC_DIR, 'renderer-module/primary-ramp.css'),
+  userStylePath: [
+    moduleRequire.resolve('@antfu/design/styles/scrollbar.css'),
+    join(SRC_DIR, 'renderer-module/style.css'),
+  ],
   varPrefix: '--un-jr-',
 })
 console.log(`${c.green('✓')} CSS built (${sourceCount} sources, ${(css.length / 1024).toFixed(1)} kB)`)

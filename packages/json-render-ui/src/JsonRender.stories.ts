@@ -1,8 +1,9 @@
 import type { Spec } from '@devframes/json-render'
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { h } from 'vue'
+import { h, onMounted, onUnmounted, useTemplateRef } from 'vue'
 import { baseRegistry } from './registry'
 import { JsonRenderView } from './renderer'
+import jsonRenderDockRenderer from './renderer-module'
 
 // A no-op RPC — stories don't dispatch real actions.
 const rpc = { call: async () => undefined }
@@ -20,7 +21,7 @@ const meta: Meta = {
 }
 export default meta
 
-export const Gallery = story({
+const gallerySpec: Spec = {
   root: 'root',
   elements: {
     root: { type: 'Stack', props: { gap: 12 }, children: ['title', 'row', 'card', 'progress', 'table', 'tree'] },
@@ -35,7 +36,9 @@ export const Gallery = story({
     table: { type: 'DataTable', props: { rows: [{ id: 1, name: 'a' }, { id: 2, name: 'b' }] }, children: [] },
     tree: { type: 'Tree', props: { data: { a: 1, b: [true, 'x'] } }, children: [] },
   },
-})
+}
+
+export const Gallery = story(gallerySpec)
 
 export const Controls = story({
   root: 'root',
@@ -103,3 +106,42 @@ export const SubsetRegistry: StoryObj = story(
   },
   { registry: subsetRegistry },
 )
+
+const dockRendererContext = {
+  rpc: { call: rpc.call, connectionMeta: undefined },
+} as unknown as Parameters<typeof jsonRenderDockRenderer>[0]['context']
+
+/** Mounts the shipped dock renderer so the story exercises its shadow root and adopted stylesheet. */
+export const InShadowRoot: StoryObj = {
+  render: () => ({
+    setup() {
+      const host = useTemplateRef<HTMLDivElement>('host')
+      let dispose: (() => void) | undefined
+      let mountToken = 0
+      onMounted(async () => {
+        const token = ++mountToken
+        const instance = await jsonRenderDockRenderer({
+          entry: {
+            id: 'story',
+            title: 'Story',
+            icon: 'ph:cube-duotone',
+            type: 'json-render',
+            view: { spec: gallerySpec },
+          },
+          container: host.value!,
+          context: dockRendererContext,
+        })
+        if (token !== mountToken) {
+          instance.dispose?.()
+          return
+        }
+        dispose = instance.dispose
+      })
+      onUnmounted(() => {
+        mountToken++
+        dispose?.()
+      })
+      return () => h('div', { ref: 'host', class: 'w-full h-80 rounded-lg bg-grid' })
+    },
+  }),
+}

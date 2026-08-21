@@ -46,29 +46,32 @@ const jsonRenderDockRenderer: JsonRenderDockRenderer = async ({ entry, container
     shadow.append(style)
   }
 
-  // Carries the `.dark`/`.light` class that class-based utilities resolve
-  // against (kept in sync with the viewer's container class), and the native
-  // `color-scheme` for scrollbars and form controls.
+  // Keep the scheme class on an ancestor. Wind3 emits descendant selectors
+  // such as `.dark .bg-base`, which do not match an element carrying both
+  // classes itself.
+  const colorSchemeRoot = document.createElement('div')
+  colorSchemeRoot.style.display = 'contents'
   const root = document.createElement('div')
-  root.className = 'w-full h-full of-auto p4 bg-base color-base font-sans text-sm'
+  root.className = 'devframes-json-render-scroll-root w-full h-full of-auto p4 color-base font-sans text-sm'
   const syncScheme = (): void => {
     const dark = isDarkFor(container)
-    root.classList.toggle('dark', dark)
-    root.classList.toggle('light', !dark)
-    root.style.colorScheme = dark ? 'dark' : 'light'
+    colorSchemeRoot.classList.toggle('dark', dark)
+    colorSchemeRoot.classList.toggle('light', !dark)
+    colorSchemeRoot.style.colorScheme = dark ? 'dark' : 'light'
   }
   syncScheme()
   const observer = new MutationObserver(syncScheme)
   observer.observe(container, { attributes: true, attributeFilter: ['class'] })
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-  shadow.append(root)
+  colorSchemeRoot.append(root)
+  shadow.append(colorSchemeRoot)
 
   const instance = await inner({ entry, container: root, context })
   return {
     dispose() {
       observer.disconnect()
       instance.dispose?.()
-      root.remove()
+      colorSchemeRoot.remove()
     },
   }
 }
