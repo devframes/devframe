@@ -135,6 +135,40 @@ export default defineAppConfig({
     },
   },
 
+  assistant: {
+    enabled: true,
+    faqQuestions: [
+      {
+        category: 'Getting Started',
+        items: [
+          'What is Devframe and what problem does it solve?',
+          'How do I define a devframe and mount it with the Vite adapter?',
+        ],
+      },
+      {
+        category: 'RPC & State',
+        items: [
+          'How do I define an RPC function with defineRpcFunction?',
+          'How does shared state stay in sync between server and client?',
+        ],
+      },
+      {
+        category: 'Adapters',
+        items: [
+          'What adapters can one devframe definition run under?',
+          'How do I build a standalone CLI from a devframe?',
+        ],
+      },
+      {
+        category: 'Hub',
+        items: [
+          'How do I compose multiple integrations into a hub?',
+          'How do I build my own hub UI on top of the hub protocol?',
+        ],
+      },
+    ],
+  },
+
   ui: {
     colors: {
       primary: 'sage',
