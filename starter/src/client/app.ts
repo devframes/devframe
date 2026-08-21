@@ -1,13 +1,9 @@
 import type { DevframeScopedClientContext } from 'devframe/client'
+import type { StarterItem, StarterState } from '../rpc/functions/get-state.ts'
 import { connectDevframe } from 'devframe/client'
 
 const NAMESPACE = 'devframe-starter'
 type StarterCtx = DevframeScopedClientContext<typeof NAMESPACE>
-
-interface Item {
-  name: string
-  kind: 'dir' | 'file'
-}
 
 function h<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -37,7 +33,7 @@ export interface MountOptions {
   baseURL?: string
 }
 
-/** Boot the SPA into `root`: connect to devframe, then render the list. */
+/** Boot the SPA into `root`: connect to devframe, then render its state. */
 export async function mount(root: HTMLElement, options: MountOptions = {}): Promise<void> {
   root.replaceChildren(h('div', { class: 'connecting' }, ['Connecting to devframe…']))
 
@@ -46,15 +42,20 @@ export async function mount(root: HTMLElement, options: MountOptions = {}): Prom
 
   const listCard = h('div', { class: 'card' })
   const count = h('span', { class: 'count' }, ['0'])
+  const nodeCode = h('code', {}, ['…'])
+  const cwdCode = h('code', {}, ['…'])
   const refreshBtn = h('button', { type: 'button' }, ['Refresh'])
 
   async function refresh(): Promise<void> {
     refreshBtn.disabled = true
     refreshBtn.textContent = 'Loading…'
     try {
-      const items = await ctx.rpc.call('list-items') as Item[]
-      count.textContent = String(items.length)
-      renderList(listCard, items)
+      // The one RPC round trip this SPA makes.
+      const state = await ctx.rpc.call('get-state') as StarterState
+      count.textContent = String(state.items.length)
+      nodeCode.textContent = state.node
+      cwdCode.textContent = state.cwd
+      renderList(listCard, state.items)
     }
     finally {
       refreshBtn.disabled = false
@@ -63,8 +64,6 @@ export async function mount(root: HTMLElement, options: MountOptions = {}): Prom
   }
   refreshBtn.addEventListener('click', () => void refresh())
 
-  const info = await ctx.rpc.call('get-info') as { cwd: string, node: string }
-
   root.replaceChildren(
     h('div', { class: 'app' }, [
       h('header', { class: 'nav' }, [
@@ -72,7 +71,7 @@ export async function mount(root: HTMLElement, options: MountOptions = {}): Prom
         h('span', { class: 'spacer' }),
         h('small', { class: 'meta' }, [
           'node ',
-          h('code', {}, [info.node]),
+          nodeCode,
           ' · backend ',
           h('code', {}, [ctx.base.connectionMeta.backend]),
         ]),
@@ -85,7 +84,7 @@ export async function mount(root: HTMLElement, options: MountOptions = {}): Prom
           refreshBtn,
         ]),
         listCard,
-        h('p', { class: 'meta' }, ['cwd: ', h('code', {}, [info.cwd])]),
+        h('p', { class: 'meta' }, ['cwd: ', cwdCode]),
       ]),
     ]),
   )
@@ -93,7 +92,7 @@ export async function mount(root: HTMLElement, options: MountOptions = {}): Prom
   await refresh()
 }
 
-function renderList(card: HTMLElement, items: Item[]): void {
+function renderList(card: HTMLElement, items: StarterItem[]): void {
   if (items.length === 0) {
     card.replaceChildren(h('p', { class: 'empty' }, ['Nothing in the working directory.']))
     return

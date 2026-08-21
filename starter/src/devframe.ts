@@ -33,9 +33,6 @@ export default defineDevframe({
     // developer who wants to skip the prompt for a one-off loopback-only
     // session can pass `--no-auth` per run (`devframe-starter --no-auth`)
     // rather than baking the opt-out into the definition.
-    //
-    // Serve the agent (MCP) surface over the dev server's `/__mcp` route.
-    mcp: true,
   },
   setup(ctx) {
     // A scoped context auto-namespaces every registered id with `NAMESPACE:`.

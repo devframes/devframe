@@ -28,12 +28,10 @@
     "dev": "node bin.mjs",
     "build": "vite build --config src/client/vite.config.ts",
     "cli:build": "node bin.mjs build --out-dir dist/static",
-    "play": "vite --config playground/single/vite.config.ts",
     "play:single": "vite --config playground/single/vite.config.ts",
     "play:hub": "vite --config playground/hub/vite.config.ts",
     "lint": "eslint",
     "test": "vitest run",
-    "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "release": "bumpp"

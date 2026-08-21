@@ -11,11 +11,11 @@ import devframe from '../src/devframe.ts'
 
 // The public `initDevframe` handler used by every hosted adapter (see
 // `@devframes/vite/single`) - a side-car WS server on a free port, no SPA
-// (`distDir: false`), so this test exercises the RPC functions over the real
-// wire without booting the CLI dev server or building the client first.
+// (`distDir: false`), so this test exercises `get-state` over the real wire
+// without booting the CLI dev server or building the client first.
 vi.stubGlobal('WebSocket', WebSocket)
 
-describe('rpc functions', () => {
+describe('get-state', () => {
   let tmpDir: string
   let instance: ReturnType<typeof initDevframe>
   let rpc: ReturnType<typeof createRpcClient<any, any>>
@@ -25,7 +25,7 @@ describe('rpc functions', () => {
     await writeFile(path.join(tmpDir, 'file1.txt'), '')
     await writeFile(path.join(tmpDir, 'file2.txt'), '')
     await mkdir(path.join(tmpDir, 'dir1'))
-    // The RPC functions fall back to this env var over `ctx.cwd` so tests
+    // `get-state` falls back to this env var over `ctx.cwd` so tests
     // control the working directory without touching the real `process.cwd()`.
     process.env.DEVFRAME_E2E_CWD = tmpDir
 
@@ -58,17 +58,16 @@ describe('rpc functions', () => {
     delete process.env.DEVFRAME_E2E_CWD
   })
 
-  it('get-info returns node version and cwd', async () => {
-    const info = await rpc.$call('devframe-starter:get-info')
-    expect(info).toEqual({ node: process.version, cwd: tmpDir })
-  })
-
-  it('list-items lists files and directories, sorted, dotfiles excluded', async () => {
-    const items = await rpc.$call('devframe-starter:list-items')
-    expect(items).toEqual([
-      { name: 'dir1', kind: 'dir' },
-      { name: 'file1.txt', kind: 'file' },
-      { name: 'file2.txt', kind: 'file' },
-    ])
+  it('returns runtime info and the working directory listing, sorted with dotfiles excluded', async () => {
+    const state = await rpc.$call('devframe-starter:get-state')
+    expect(state).toEqual({
+      node: process.version,
+      cwd: tmpDir,
+      items: [
+        { name: 'dir1', kind: 'dir' },
+        { name: 'file1.txt', kind: 'file' },
+        { name: 'file2.txt', kind: 'file' },
+      ],
+    })
   })
 })

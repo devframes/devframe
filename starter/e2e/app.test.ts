@@ -2,9 +2,9 @@ import process from 'node:process'
 import { expect, test } from '@playwright/test'
 
 // Exercises the single playground end to end: the vanilla-TS SPA connects
-// over the real WebSocket RPC bridge and renders the `list-items` /
-// `get-info` results for the fixed `./fixtures` directory (wired via
-// `playwright.config.ts`'s `webServer.env.DEVFRAME_E2E_CWD`).
+// over the real WebSocket RPC bridge and renders the `get-state` result for
+// the fixed `./fixtures` directory (wired via `playwright.config.ts`'s
+// `webServer.env.DEVFRAME_E2E_CWD`).
 test('connects and renders the list of items', async ({ page }) => {
   await page.goto('/')
 
@@ -18,7 +18,7 @@ test('connects and renders the list of items', async ({ page }) => {
   await expect(items.nth(1)).toContainText('file1.txt')
   await expect(items.nth(1)).toContainText('file')
 
-  // The "cwd" / "node" info line renders from the `get-info` RPC call.
+  // The "node" info line renders from the same `get-state` call.
   await expect(page.locator('.meta code').first()).toContainText(process.version)
 })
 

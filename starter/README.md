@@ -24,7 +24,7 @@ pnpm run typecheck
 | Path | Purpose |
 |------|---------|
 | `src/devframe.ts` | The single `DevframeDefinition` every surface below consumes. |
-| `src/rpc/` | RPC function definitions (`get-info` static, `list-items` query+snapshot) and their namespace declaration. |
+| `src/rpc/` | The one RPC function (`get-state` - a query+snapshot returning runtime info and a directory listing) and its namespace declaration. |
 | `src/client/` | The vanilla-TS SPA: `index.html`, `main.ts`, `app.ts`, `styles.css`. |
 | `src/shared/base-path.ts` | The devframe's base path, shared between the node-side definition and browser-side client entries. |
 | `bin.mjs` | `createCac(devframe).parse()` - exposes `dev`, `build`, `mcp`. |
