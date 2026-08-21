@@ -24,6 +24,8 @@ export default mergeConfigs([
       },
     },
     shortcuts: {
+      /** Use the lighter glass in light mode while retaining dark-mode contrast. */
+      'bg-dock-glass': 'bg-glass dark:bg-[#111]/80',
       // Dock-shell z-layers (named — the design preset blocks plain
       // `z-<number>`). The floating shell layers sit at the very top of the
       // host page's stacking order, mirroring the upstream dock.

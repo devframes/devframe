@@ -407,7 +407,7 @@ const dragPreviewStyle = computed<CSSProperties | undefined>(() => {
 <template>
   <div
     id="devframes-edge-panel"
-    class="bg-glass:80 border border-base color-base shadow overflow-clip z-floating-anchor font-sans text-[15px] box-border"
+    class="bg-dock-glass border border-base color-base shadow overflow-clip z-floating-anchor font-sans text-[15px] box-border"
     :class="[panelLayoutClass, { 'devframes-edge-collapsed': isCollapsed }]"
     :style="panelStyle"
     @mousemove="bringUp"

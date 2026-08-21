@@ -175,7 +175,7 @@ onMounted(() => {
   <div
     v-show="context.docks.selected && context.docks.selected.type !== 'action'"
     ref="dockPanel"
-    class="bg-glass:80 rounded-lg border border-base color-base shadow overflow-hidden"
+    class="bg-dock-glass rounded-lg border border-base color-base shadow overflow-hidden"
     :style="panelStyle"
     @contextmenu="openContextMenu"
   >

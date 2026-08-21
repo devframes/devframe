@@ -72,3 +72,37 @@ export const RightAnchored: Story = {
     ),
   }),
 }
+
+function patternedPanelStory(theme: 'light' | 'dark'): Story {
+  return {
+    globals: { theme },
+    render: () => ({
+      setup: () => mountWithContext(
+        { entries: categorizedEntries, selectedId: 'overview', panel: { position: 'bottom', left: 50, top: 100, width: 60, height: 60 } },
+        ctx => h('div', { class: 'relative w-screen h-screen overflow-hidden bg-secondary bg-grid-24' }, [
+          h('div', {
+            'aria-hidden': 'true',
+            'class': 'pointer-events-none absolute left-[14%] top-[36%] h-72 w-72 rounded-full bg-primary-500 op40',
+          }),
+          h('div', {
+            'aria-hidden': 'true',
+            'class': 'pointer-events-none absolute right-[12%] bottom-[8%] h-40 w-72 rounded-3xl bg-active',
+          }),
+          h('div', { id: 'devframes-anchor', style: { left: '50vw', top: '100vh' } }, [
+            h(DockPanel, {
+              context: ctx,
+              selected: ctx.docks.selected,
+              panelMargins: MARGINS,
+            }, { view: ({ entry }: any) => body(entry) }),
+          ]),
+        ]),
+      ),
+    }),
+  }
+}
+
+/** Tinted glass panel material blurring a grid in light mode. */
+export const GlassMaterialLight: Story = patternedPanelStory('light')
+
+/** Tinted glass panel material blurring a grid in dark mode. */
+export const GlassMaterialDark: Story = patternedPanelStory('dark')
