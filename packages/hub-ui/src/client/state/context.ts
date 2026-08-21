@@ -11,7 +11,7 @@ import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_
 import { useBranding } from './branding'
 import { createCommandsContext } from './commands'
 import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, getRegisteredGroupIds, resolveCommandIcon, resolveGroupDefaultChild } from './dock-settings'
-import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE, sharedStateToRef, useDocksEntries } from './docks'
+import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE, sharedStateToRef, useDocksEntries, waitForInitialSharedStateSync } from './docks'
 import { createClientMessagesClient } from './messages-client'
 import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDockPopupOpen } from './popup'
 import { executeSetupScript } from './setup-script'
@@ -27,16 +27,22 @@ export async function createDocksContext(
     return docksContextByRpc.get(rpc)!
   }
 
-  const dockEntries = await useDocksEntries(rpc)
+  const { entries: dockEntries, initialSyncComplete: dockEntriesInitialSyncComplete } = await useDocksEntries(rpc)
 
   // The hub's renderer manifest (`initHub({ renderers })`): dock type →
   // prebuilt renderer-module entry. The registry below lazy-imports a module
   // the first time a dock of its type mounts; locally-registered renderers win.
+  /** Identity marker replaced by the first server response, including an empty manifest. */
+  const pendingRendererManifest: DockRendererManifest = {}
   const rendererManifestState = await rpc.sharedState.get<DockRendererManifest>(
     DOCK_RENDERERS_STATE_KEY,
-    { initialValue: {} },
+    { initialValue: pendingRendererManifest },
   )
   const rendererManifest = sharedStateToRef(rendererManifestState)
+  const rendererManifestInitialSyncComplete = waitForInitialSharedStateSync(
+    rendererManifestState,
+    pendingRendererManifest,
+  )
 
   // Client-only dock registry (0.7.10 `DocksEntriesContext` API). Docks
   // registered here live in this page only, merged over the server-provided
@@ -85,6 +91,10 @@ export async function createDocksContext(
   const restoreIntent = {
     ...sessionStore.value,
   }
+  /** Keep the persisted view unmounted until its server-backed registries are ready. */
+  const initialRestorePending = ref(
+    restoreIntent.open && restoreIntent.selectedDockId != null,
+  )
 
   // `selectedDockId` is backed by the session store so the current selection both
   // drives the UI and persists across reloads through one source of truth.
@@ -101,11 +111,13 @@ export async function createDocksContext(
     },
   })
 
-  const selected = computed(
-    () => entries.value.find(entry => entry.id === selectedDockId.value)
+  const selected = computed(() => {
+    if (initialRestorePending.value)
+      return null
+    return entries.value.find(entry => entry.id === selectedDockId.value)
       ?? BUILTIN_ENTRIES.find(entry => entry.id === selectedDockId.value)
-      ?? null,
-  )
+      ?? null
+  })
 
   const dockEntryStateMap: Map<string, DockEntryState> = reactive(new Map())
   watchEffect(() => {
@@ -200,12 +212,14 @@ export async function createDocksContext(
 
   const switchEntry = async (id: string | null = null) => {
     if (id == null) {
+      initialRestorePending.value = false
       selectedDockId.value = null
       sessionStore.value.open = false
       sessionStore.value.selectedDockRoute = null
       return true
     }
     if (id === '~client-auth-notice') {
+      initialRestorePending.value = false
       selectedDockId.value = id
       sessionStore.value.open = true
       return true
@@ -273,6 +287,7 @@ export async function createDocksContext(
     if (entry.type === 'iframe' && entry.frameId && !entry.subTabs)
       frameNavCurrentMember.set(entry.frameId, entry.id)
 
+    initialRestorePending.value = false
     selectedDockId.value = entry.id
     sessionStore.value.open = true
     // Only an iframe dock owns an address-bar route; ViewIframe keeps
@@ -602,28 +617,47 @@ export async function createDocksContext(
     return switchEntry(entry.id)
   })
 
-  // Restore the persisted selection once the RPC is trusted. A reload starts
-  // untrusted, and Dock.vue force-closes the panel during that window (and a
-  // revocation clears the selection), so the durable intent captured in
-  // `restoreIntent` is re-applied here after the handshake — re-running the
-  // dock's setup script and re-opening the panel on the dock the developer left
-  // open. `switchEntry` reads `session.selectedDockRoute` back through `consumeBootRoute`
-  // when the restored iframe boots.
-  const applyRestore = (): void => {
-    if (restoreIntent.open && restoreIntent.selectedDockId != null)
-      void switchEntry(restoreIntent.selectedDockId)
-  }
-  if (rpc.isTrusted) {
-    applyRestore()
-  }
-  else {
-    const off = rpc.events.on('rpc:is-trusted:updated', (isTrusted) => {
-      if (!isTrusted)
-        return
-      off()
-      applyRestore()
+  const waitUntilTrusted = async (): Promise<void> => {
+    if (rpc.isTrusted)
+      return
+    await new Promise<void>((resolve) => {
+      const stopListening = rpc.events.on('rpc:is-trusted:updated', (isTrusted) => {
+        if (!isTrusted)
+          return
+        stopListening()
+        resolve()
+      })
     })
   }
+
+  // A reload starts untrusted, and Dock.vue temporarily closes the panel during
+  // that window. The trust event precedes the asynchronous `devframe:docks`
+  // and renderer-manifest responses, so wait for all three before re-applying
+  // the captured session intent.
+  // `switchEntry` then consumes the persisted iframe route when the view boots.
+  const restoreAfterInitialization = async (): Promise<void> => {
+    const restoreDockId = restoreIntent.selectedDockId
+    if (!restoreIntent.open || restoreDockId == null)
+      return
+
+    await Promise.all([
+      waitUntilTrusted(),
+      dockEntriesInitialSyncComplete,
+      rendererManifestInitialSyncComplete,
+    ])
+
+    if (!initialRestorePending.value)
+      return
+
+    if (selectedDockId.value !== restoreDockId) {
+      initialRestorePending.value = false
+      return
+    }
+
+    initialRestorePending.value = false
+    await switchEntry(restoreDockId)
+  }
+  void restoreAfterInitialization()
 
   docksContextByRpc.set(rpc, docksContext)
   return docksContext

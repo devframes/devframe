@@ -88,13 +88,38 @@ export function sharedStateToRef<T>(sharedState: SharedState<T>): ShallowRef<T> 
   return ref
 }
 
-const docksEntriesRefByRpc = new WeakMap<DevframeRpcClient, ShallowRef<DevframeDockEntry[]>>()
-export async function useDocksEntries(rpc: DevframeRpcClient): Promise<Ref<DevframeDockEntry[]>> {
-  if (docksEntriesRefByRpc.has(rpc)) {
-    return docksEntriesRefByRpc.get(rpc)!
+export function waitForInitialSharedStateSync<Value>(
+  sharedState: SharedState<Value>,
+  pendingValue: Value,
+): Promise<void> {
+  if (sharedState.value() !== pendingValue)
+    return Promise.resolve()
+
+  return new Promise<void>((resolve) => {
+    const stopListening = sharedState.on('updated', () => {
+      stopListening()
+      resolve()
+    })
+  })
+}
+
+interface DocksEntriesState {
+  entries: ShallowRef<DevframeDockEntry[]>
+  initialSyncComplete: Promise<void>
+}
+
+const docksEntriesStateByRpc = new WeakMap<DevframeRpcClient, DocksEntriesState>()
+export async function useDocksEntries(rpc: DevframeRpcClient): Promise<DocksEntriesState> {
+  if (docksEntriesStateByRpc.has(rpc)) {
+    return docksEntriesStateByRpc.get(rpc)!
   }
-  const state = await rpc.sharedState.get('devframe:docks', { initialValue: [] })
-  const docksEntriesRef = sharedStateToRef(state)
-  docksEntriesRefByRpc.set(rpc, docksEntriesRef)
-  return docksEntriesRef
+
+  /** Identity marker replaced by the first server response, including an empty registry. */
+  const pendingEntries: DevframeDockEntry[] = []
+  const state = await rpc.sharedState.get('devframe:docks', { initialValue: pendingEntries })
+  const entries = sharedStateToRef(state)
+  const initialSyncComplete = waitForInitialSharedStateSync(state, pendingEntries)
+  const docksEntriesState = { entries, initialSyncComplete }
+  docksEntriesStateByRpc.set(rpc, docksEntriesState)
+  return docksEntriesState
 }

@@ -59,7 +59,9 @@ async function mount(): Promise<void> {
   }
 }
 
-onMounted(mount)
+onMounted(() => {
+  void mount()
+})
 watch(() => props.entry.id, () => {
   void mount()
 })
