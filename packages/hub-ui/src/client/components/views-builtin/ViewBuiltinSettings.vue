@@ -48,7 +48,7 @@ const settingsStore = props.context.docks.settings
     </div>
 
     <!-- Tab content -->
-    <div class="flex-1 overflow-auto p8">
+    <div class="flex-1 overflow-auto p8" style="scrollbar-gutter: stable;">
       <div class="max-w-200 mx-auto">
         <SettingsAppearance
           v-if="activeTab === 'appearance'"
