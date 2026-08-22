@@ -23,6 +23,7 @@ export const HUB_EVENTS = {
   bus: {
     docksEntryUpdated: 'docks:entry:updated',
     docksActivate: 'docks:activate',
+    docksPanelState: 'docks:panel:state',
     terminalsSessionUpdated: 'terminals:session:updated',
     messagesAdded: 'messages:added',
     messagesUpdated: 'messages:updated',
@@ -34,6 +35,7 @@ export const HUB_EVENTS = {
   /** Server RPC methods a connected client calls (client → server), `hub:` prefix. */
   rpc: {
     docksActivate: 'hub:docks:activate',
+    docksPanelState: 'hub:docks:panel:state',
     commandsExecute: 'hub:commands:execute',
     messagesAdd: 'hub:messages:add',
     messagesUpdate: 'hub:messages:update',

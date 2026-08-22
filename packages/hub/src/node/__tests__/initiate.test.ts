@@ -1,4 +1,5 @@
 import type { DevframeDefinition, DevframeNodeContext, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
+import type { DevframeDockPanelStateEvent } from '../../types/docks'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
@@ -6,8 +7,9 @@ import { join } from 'node:path'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { DOCK_RENDERERS_STATE_KEY } from '../../constants'
+import { HUB_EVENTS } from '../../events'
 import { DEVFRAMES_HUB_BASE, initHub } from '../initiate'
 
 function makeDist(html: string): string {
@@ -38,10 +40,12 @@ function makeFrame(id: string, distDir?: string): DevframeDefinition {
 }
 
 function connectWsClient(url: string) {
-  return createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>(
+  const channel = createWsRpcChannel({ url })
+  const client = createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>(
     {} as DevframeRpcClientFunctions,
-    { channel: createWsRpcChannel({ url }) },
+    { channel },
   )
+  return Object.assign(client, { close: channel.close })
 }
 
 describe('initHub', () => {
@@ -149,6 +153,63 @@ describe('initHub', () => {
       await hubRef.close()
       server.close()
       server.closeAllConnections()
+    }
+  })
+
+  it('tracks panel state by RPC connection and emits disconnect separately from close', async () => {
+    expect.assertions(9)
+
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 18215, host })
+    const hub = initHub({
+      base: DEVFRAMES_HUB_BASE,
+      auth: false,
+      host,
+      ws: { port },
+      devframes: [makeFrame('alpha')],
+    })
+    const clients: ReturnType<typeof connectWsClient>[] = []
+
+    try {
+      await hub.ready
+      const context = await hub.context
+      const lifecycleEvents: DevframeDockPanelStateEvent[] = []
+      context.docks.events.on(HUB_EVENTS.bus.docksPanelState, event => lifecycleEvents.push(event))
+
+      const firstClient = connectWsClient(`ws://${host}:${port}/__ws`)
+      const secondClient = connectWsClient(`ws://${host}:${port}/__ws`)
+      clients.push(firstClient, secondClient)
+
+      await firstClient.$call(HUB_EVENTS.rpc.docksPanelState, true)
+      await firstClient.$call(HUB_EVENTS.rpc.docksPanelState, true)
+      await firstClient.$call(HUB_EVENTS.rpc.docksPanelState, false)
+      await secondClient.$call(HUB_EVENTS.rpc.docksPanelState, false)
+
+      expect(lifecycleEvents).toHaveLength(3)
+      expect(lifecycleEvents[0]).toMatchObject({ type: 'connected', open: true })
+      expect(typeof lifecycleEvents[0]!.sessionId).toBe('number')
+      expect(lifecycleEvents[1]).toEqual({ type: 'changed', sessionId: lifecycleEvents[0]!.sessionId, open: false })
+      expect(lifecycleEvents[2]).toMatchObject({ type: 'connected', open: false })
+      expect(lifecycleEvents[2]!.sessionId).not.toBe(lifecycleEvents[0]!.sessionId)
+
+      firstClient.close()
+      await vi.waitFor(() => {
+        if (lifecycleEvents.length !== 4)
+          throw new Error('waiting for the first client to disconnect')
+      })
+      expect(lifecycleEvents[3]).toEqual({ type: 'disconnected', sessionId: lifecycleEvents[0]!.sessionId })
+
+      const reconnectedClient = connectWsClient(`ws://${host}:${port}/__ws`)
+      clients.push(reconnectedClient)
+      await reconnectedClient.$call(HUB_EVENTS.rpc.docksPanelState, true)
+
+      expect(lifecycleEvents[4]).toMatchObject({ type: 'connected', open: true })
+      expect([lifecycleEvents[0]!.sessionId, lifecycleEvents[2]!.sessionId]).not.toContain(lifecycleEvents[4]!.sessionId)
+    }
+    finally {
+      for (const client of clients)
+        client.close()
+      await hub.close()
     }
   })
 
