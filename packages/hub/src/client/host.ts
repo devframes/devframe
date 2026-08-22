@@ -467,6 +467,11 @@ export async function createDevframeClientRuntime(
       },
       settings,
       paletteOpen: false,
+      paletteScopeId: null,
+      openPalette(atCommandId?: string) {
+        ctx.paletteScopeId = atCommandId ?? null
+        ctx.paletteOpen = true
+      },
     }
     return ctx
   }

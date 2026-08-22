@@ -189,3 +189,140 @@ describe('createDocksContext', () => {
     expect(session.value.open).toBe(false)
   })
 })
+
+const groupEntries = [
+  { id: 'tools', type: 'group', title: 'Tools', icon: 'ph:wrench-duotone' },
+  { id: 'tools:a', type: 'iframe', title: 'A', icon: 'ph:file-duotone', url: '/a', groupId: 'tools' },
+  { id: 'tools:b', type: 'iframe', title: 'B', icon: 'ph:file-duotone', url: '/b', groupId: 'tools', category: 'app' },
+  { id: 'solo', type: 'group', title: 'Solo', icon: 'ph:circle-duotone' },
+  { id: 'solo:only', type: 'iframe', title: 'Only', icon: 'ph:file-duotone', url: '/only', groupId: 'solo' },
+  { id: 'defaulted', type: 'group', title: 'Defaulted', icon: 'ph:star-duotone', defaultChildId: 'defaulted:second' },
+  { id: 'defaulted:first', type: 'iframe', title: 'First', icon: 'ph:file-duotone', url: '/first', groupId: 'defaulted' },
+  { id: 'defaulted:second', type: 'iframe', title: 'Second', icon: 'ph:file-duotone', url: '/second', groupId: 'defaulted' },
+  { id: 'empty', type: 'group', title: 'Empty', icon: 'ph:prohibit-duotone' },
+] satisfies DevframeDockEntry[]
+
+async function createGroupedContext() {
+  const { rpc, sharedStates, trust } = createStubRpc()
+  const context = await createDocksContext('embedded', rpc, undefined, ref<DockSessionStorage>({
+    open: false,
+    selectedDockId: null,
+    selectedDockRoute: null,
+  }))
+
+  trust()
+  sharedStates.get('devframe:docks')!.push(groupEntries)
+  sharedStates.get('devframe:dock-renderers')!.push({})
+  await flushRestore()
+
+  return context
+}
+
+/**
+ * Activating a group by id — what a keyboard shortcut and a palette pick both
+ * do — must never invent a member for the user.
+ */
+describe('dock group command activation', () => {
+  it('opens the palette scoped to the group when no member is an obvious target', async () => {
+    expect.assertions(3)
+
+    const context = await createGroupedContext()
+    await context.commands.execute('devframes:docks:tools')
+
+    expect(context.commands.paletteOpen).toBe(true)
+    expect(context.commands.paletteScopeId).toBe('devframes:docks:tools')
+    // No member was picked on the user's behalf.
+    expect(context.docks.selected).toBeNull()
+  })
+
+  it('closes that palette again on a second activation while it stays scoped', async () => {
+    expect.assertions(1)
+
+    const context = await createGroupedContext()
+    await context.commands.execute('devframes:docks:tools')
+    await context.commands.execute('devframes:docks:tools')
+
+    expect(context.commands.paletteOpen).toBe(false)
+  })
+
+  it('re-scopes instead of closing once the palette has stepped back to the root', async () => {
+    expect.assertions(2)
+
+    const context = await createGroupedContext()
+    await context.commands.execute('devframes:docks:tools')
+    // What the palette does when Escape or Backspace pops the last crumb: the
+    // list is still open, but no longer showing the group.
+    context.commands.paletteScopeId = null
+    await context.commands.execute('devframes:docks:tools')
+
+    expect(context.commands.paletteOpen).toBe(true)
+    expect(context.commands.paletteScopeId).toBe('devframes:docks:tools')
+  })
+
+  it('opens the sole visible member directly instead of a one-item palette', async () => {
+    expect.assertions(2)
+
+    const context = await createGroupedContext()
+    await context.commands.execute('devframes:docks:solo')
+
+    expect(context.docks.selected?.id).toBe('solo:only')
+    expect(context.commands.paletteOpen).toBe(false)
+  })
+
+  it('honors `defaultChildId` over both the palette and member order', async () => {
+    expect.assertions(2)
+
+    const context = await createGroupedContext()
+    await context.commands.execute('devframes:docks:defaulted')
+
+    expect(context.docks.selected?.id).toBe('defaulted:second')
+    expect(context.commands.paletteOpen).toBe(false)
+  })
+
+  it('reopens the last-opened member ahead of `defaultChildId`', async () => {
+    expect.assertions(2)
+
+    const context = await createGroupedContext()
+    await context.docks.switchEntry('defaulted:first')
+    await context.docks.switchEntry(null)
+    await nextTick()
+    await context.commands.execute('devframes:docks:defaulted')
+
+    expect(context.docks.selected?.id).toBe('defaulted:first')
+    expect(context.commands.paletteOpen).toBe(false)
+  })
+
+  it('registers no command for a group with nothing to activate', async () => {
+    expect.assertions(1)
+
+    const context = await createGroupedContext()
+
+    await expect(context.commands.execute('devframes:docks:empty')).rejects.toThrow(/not found/)
+  })
+
+  it('executes a group member command nested below its group', async () => {
+    expect.assertions(1)
+
+    const context = await createGroupedContext()
+    await context.commands.execute('devframes:docks:tools:b')
+
+    expect(context.docks.selected?.id).toBe('tools:b')
+  })
+
+  it('hangs members directly off their group even when sub-categories differ', async () => {
+    expect.assertions(1)
+
+    const context = await createGroupedContext()
+    const docks = context.commands.commands.find(c => c.id === 'devframes:docks')
+    const tools = docks?.children?.find(c => c.id === 'devframes:docks:tools')
+
+    // `tools:a` (default) and `tools:b` (app) land in different in-group
+    // sub-categories. The dock rail draws a divider between them; the command
+    // tree keeps them siblings, so reaching one is a single step rather than
+    // picking an inert category row first.
+    expect(tools?.children?.map(c => c.id)).toEqual([
+      'devframes:docks:tools:a',
+      'devframes:docks:tools:b',
+    ])
+  })
+})

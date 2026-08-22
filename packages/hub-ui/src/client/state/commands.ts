@@ -6,7 +6,7 @@ import type { ShallowRef } from 'vue'
 import { evaluateWhen } from 'devframe/utils/when'
 import { computed, markRaw, reactive, ref, watch } from 'vue'
 import { sharedStateToRef } from './docks'
-import { collectAllKeybindings, filterCommandsByWhen, normalizeKeyEvent } from './keybindings'
+import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, normalizeKeyEvent } from './keybindings'
 import { useDockPopupWindow, useIsDockPopupOpen } from './popup'
 
 const commandsContextByRpc = new WeakMap<DevframeRpcClient, CommandsContext>()
@@ -33,6 +33,9 @@ export async function createCommandsContext(
   const shortcutOverrides = computed(() => settings.value.commandShortcuts ?? {})
 
   const paletteOpen = ref(false)
+  // See `CommandsContext.paletteScopeId` for the contract; the palette owns
+  // clearing it.
+  const paletteScopeId = ref<string | null>(null)
   const isDockPopupOpen = useIsDockPopupOpen()
 
   const getWhenContext = (): WhenContext => {
@@ -71,25 +74,13 @@ export async function createCommandsContext(
     }
   }
 
-  function findCommand(id: string): DevframeCommandEntry | undefined {
-    // Search top-level
-    const topLevel = commands.value.find(c => c.id === id)
-    if (topLevel)
-      return topLevel
-
-    // Search children
-    for (const cmd of commands.value) {
-      if (cmd.children) {
-        const child = cmd.children.find(c => c.id === id)
-        if (child)
-          return child as DevframeCommandEntry
-      }
-    }
-    return undefined
+  function openPalette(atCommandId?: string): void {
+    paletteScopeId.value = atCommandId ?? null
+    paletteOpen.value = true
   }
 
   async function execute(id: string, ...args: any[]): Promise<unknown> {
-    const cmd = findCommand(id)
+    const cmd = findCommandDeep(commands.value, id)
     if (!cmd) {
       throw new Error(`Command "${id}" not found`)
     }
@@ -119,7 +110,7 @@ export async function createCommandsContext(
     if (overrides !== undefined)
       return overrides
 
-    const cmd = findCommand(id)
+    const cmd = findCommandDeep(commands.value, id)
     return cmd?.keybindings ?? []
   }
 
@@ -136,6 +127,8 @@ export async function createCommandsContext(
     getKeybindings,
     settings: markRaw(settingsState),
     paletteOpen,
+    paletteScopeId,
+    openPalette,
   })
 
   commandsContextByRpc.set(rpc, commandsContext)
@@ -162,9 +155,7 @@ function setupShortcutListener(
       if (keybinding.key !== pressed)
         continue
       // Check command-level when clause
-      const cmd: DevframeCommandEntry | undefined
-        = commands.value.find(c => c.id === id)
-          ?? commands.value.flatMap(c => c.children as DevframeCommandEntry[] ?? []).find(c => c.id === id)
+      const cmd = findCommandDeep(commands.value, id)
       if (cmd?.when && !evaluateWhen(cmd.when, whenCtx))
         continue
 
