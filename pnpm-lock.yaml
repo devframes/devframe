@@ -1558,6 +1558,9 @@ importers:
       '@unocss/preset-icons':
         specifier: catalog:frontend
         version: 66.7.5
+      '@unocss/reset':
+        specifier: catalog:frontend
+        version: 66.7.5
       '@vitejs/plugin-vue':
         specifier: catalog:build
         version: 6.0.8(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))

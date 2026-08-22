@@ -1,4 +1,7 @@
 import type { Decorator, Preview } from '@storybook/vue3-vite'
+// Before `virtual:uno.css`, mirroring the SPA entry and the shadow-root build —
+// see `src/spa/main.ts` for why the reset is load-bearing here.
+import '@unocss/reset/tailwind.css'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
 

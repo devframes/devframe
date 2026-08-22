@@ -4,6 +4,17 @@ import { JSON_RENDER_INDEX_KEY } from '@devframes/json-render'
 import { connectDevframe } from 'devframe/client'
 import { computed, createApp, defineComponent, h, ref, shallowReactive, shallowRef, watch } from 'vue'
 import { JsonRenderView } from '../renderer'
+// The same Tailwind preflight `scripts/build-css.ts` prepends to the shipped
+// shadow-root stylesheet — first, so `virtual:uno.css`'s utilities win over its
+// resets, matching the production build's `[reset, userStyle, unoCss]` order.
+// The `@antfu/design` component ports depend on it: `btn-action` (what
+// `Button.ts` maps `secondary`/`ghost` onto) sets a border and `op75` but *no*
+// base `background-color` — only one on `:hover` — so without the reset the UA
+// default `button { background-color: buttonface }` wins and every non-primary
+// button renders as a solid light-grey box. The dock renderer never showed this
+// because its stylesheet is built with the reset baked in; this SPA and the
+// Storybook canvas are the two surfaces that have to import it themselves.
+import '@unocss/reset/tailwind.css'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
 
