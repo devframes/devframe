@@ -3,7 +3,7 @@ import type { DevframeCommandEntry, DevframeCommandKeybinding } from '@devframes
 import type { DocksContext } from '@devframes/hub/client'
 import DisplayKbd from '@antfu/design/components/Display/DisplayKbd.vue'
 import { computed, nextTick, ref, watch } from 'vue'
-import { filterCommandsByWhen, formatKeybinding, isKeybindingOverrideDifferentFromDefault, isMac, KNOWN_BROWSER_SHORTCUTS } from '../../state/keybindings'
+import { filterCommandsByWhen, findCommandDeep, formatKeybinding, isKeybindingOverrideDifferentFromDefault, isMac, KNOWN_BROWSER_SHORTCUTS, walkCommands } from '../../state/keybindings'
 import { useSettings } from '../../state/settings-defaults'
 import DockIcon from '../dock/DockIcon.vue'
 
@@ -19,7 +19,8 @@ const shortcutSearch = ref('')
 interface ShortcutRow {
   command: DevframeCommandEntry
   parentTitle?: string
-  indent: boolean
+  /** Nesting level — 0 for a top-level command, +1 per ancestor. */
+  depth: number
 }
 
 // This page is only reachable with the dock open and the palette closed, so `when`
@@ -34,20 +35,24 @@ const availableCommands = computed(() => filterCommandsByWhen(
   { ...props.context.when.context, dockOpen: true, paletteOpen: false },
 ))
 
+/**
+ * One row per command at every depth, in tree order, so anything the palette
+ * can run can be given a shortcut here.
+ *
+ * Nesting runs deeper than a parent and its children: a dock group's members sit
+ * two levels below the `Docks` command, and a devframe's own `children` go deeper
+ * still.
+ */
 const shortcutRows = computed<ShortcutRow[]>(() => {
   const rows: ShortcutRow[] = []
-  for (const cmd of availableCommands.value) {
-    rows.push({ command: cmd, indent: false })
-    if (cmd.children) {
-      for (const child of cmd.children) {
-        rows.push({
-          command: child as DevframeCommandEntry,
-          parentTitle: cmd.title,
-          indent: true,
-        })
-      }
-    }
-  }
+  walkCommands(availableCommands.value, (cmd, ancestors) => {
+    const parentTitle = ancestors.at(-1)?.title
+    rows.push({
+      command: cmd,
+      ...(parentTitle ? { parentTitle } : {}),
+      depth: ancestors.length,
+    })
+  })
   return rows
 })
 
@@ -66,6 +71,16 @@ function getEffectiveKeybindings(id: string): DevframeCommandKeybinding[] {
   return commandsCtx.getKeybindings(id)
 }
 
+/**
+ * Indent one step per nesting level. An inline style rather than a class, since
+ * the depth is only known at runtime and UnoCSS generates utilities from source
+ * — a computed `ml-${depth * 6}` would never be emitted. One step is `ml-6`
+ * worth of space.
+ */
+function rowIndentStyle(row: ShortcutRow): Record<string, string> {
+  return row.depth > 0 ? { marginLeft: `${row.depth * 1.5}rem` } : {}
+}
+
 function isExecutable(command: DevframeCommandEntry): boolean {
   return command.source === 'server' || !!command.action
 }
@@ -75,16 +90,7 @@ function isOverridden(id: string): boolean {
 }
 
 function getDefaultKeybindings(id: string): DevframeCommandKeybinding[] {
-  for (const cmd of commandsCtx.commands) {
-    if (cmd.id === id)
-      return cmd.keybindings ?? []
-    if (cmd.children) {
-      const child = cmd.children.find(c => c.id === id)
-      if (child)
-        return child.keybindings ?? []
-    }
-  }
-  return []
+  return findCommandDeep(commandsCtx.commands, id)?.keybindings ?? []
 }
 
 function clearShortcut(commandId: string) {
@@ -281,9 +287,9 @@ watch(editorOpen, async (v) => {
         v-if="row.command.icon"
         :icon="row.command.icon"
         class="w-4 h-4 shrink-0 op60"
-        :class="{ 'ml-6': row.indent }"
+        :style="rowIndentStyle(row)"
       />
-      <div v-else :class="{ 'ml-6': row.indent }" class="w-4 h-4 shrink-0" />
+      <div v-else :style="rowIndentStyle(row)" class="w-4 h-4 shrink-0" />
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-1.5">
           <span class="truncate text-sm">{{ row.command.title }}</span>

@@ -59,9 +59,62 @@ export function isKeybindingOverrideDifferentFromDefault(
 }
 
 /**
+ * What a `walkCommands` visitor can ask the walk to do next: `'skip'` leaves the
+ * current command's subtree unvisited, `'stop'` ends the whole walk.
+ */
+export type WalkCommandsSignal = 'skip' | 'stop'
+
+/**
+ * Walk the command tree depth-first, parents before their children, and hand
+ * each command its chain of ancestors (outermost first, empty at the top level).
+ *
+ * Commands nest arbitrarily deep — dock-navigation commands reach `Docks` ›
+ * group › member, and a devframe's own `children` go deeper still — so read-only
+ * consumers share this walk rather than recursing themselves. Transforms that
+ * rebuild the tree (see {@link filterCommandsByWhen}) still recurse on their
+ * own, since they need to return a new node per level.
+ */
+export function walkCommands(
+  commands: DevframeCommandEntry[],
+  visit: (cmd: DevframeCommandEntry, ancestors: DevframeCommandEntry[]) => WalkCommandsSignal | void,
+  ancestors: DevframeCommandEntry[] = [],
+): WalkCommandsSignal | void {
+  for (const cmd of commands) {
+    const signal = visit(cmd, ancestors)
+    if (signal === 'stop')
+      return 'stop'
+    if (signal === 'skip' || !cmd.children?.length)
+      continue
+    // `children` is typed `Server[] | Client[]` rather than `(Server | Client)[]`,
+    // so walking it widens the element type — same cast the other child-walking
+    // call sites use.
+    if (walkCommands(cmd.children as DevframeCommandEntry[], visit, [...ancestors, cmd]) === 'stop')
+      return 'stop'
+  }
+}
+
+/**
+ * Find a command by id at any depth. Returns the first match in depth-first
+ * order — ids are expected to be unique across the tree.
+ */
+export function findCommandDeep(
+  commands: DevframeCommandEntry[],
+  id: string,
+): DevframeCommandEntry | undefined {
+  let found: DevframeCommandEntry | undefined
+  walkCommands(commands, (cmd) => {
+    if (cmd.id !== id)
+      return
+    found = cmd
+    return 'stop'
+  })
+  return found
+}
+
+/**
  * Drop the commands whose `when` clause does not hold in the current context,
- * children included — `when` is documented to control palette visibility, but
- * nothing evaluated it for nested entries.
+ * descendants included at every depth — `when` controls palette visibility at
+ * any nesting level.
  *
  * A parent that survives is shallow-cloned so its `children` can be narrowed
  * without mutating the registry. Callers therefore get fresh parent objects on
@@ -73,21 +126,22 @@ export function filterCommandsByWhen(
 ): DevframeCommandEntry[] {
   const isAvailable = (cmd: { when?: string }) => !cmd.when || evaluateWhen(cmd.when, ctx)
 
-  const result: DevframeCommandEntry[] = []
-  for (const cmd of commands) {
-    if (!isAvailable(cmd))
-      continue
-    if (!cmd.children) {
-      result.push(cmd)
-      continue
+  const filter = (list: DevframeCommandEntry[]): DevframeCommandEntry[] => {
+    const result: DevframeCommandEntry[] = []
+    for (const cmd of list) {
+      if (!isAvailable(cmd))
+        continue
+      if (!cmd.children) {
+        result.push(cmd)
+        continue
+      }
+      const children = filter(cmd.children as DevframeCommandEntry[])
+      result.push({ ...cmd, children } as DevframeCommandEntry)
     }
-    // `children` is typed `Server[] | Client[]` rather than `(Server | Client)[]`,
-    // so filtering it in place widens the element type — same cast the other
-    // child-walking call sites use.
-    const children = (cmd.children as DevframeCommandEntry[]).filter(isAvailable)
-    result.push({ ...cmd, children } as DevframeCommandEntry)
+    return result
   }
-  return result
+
+  return filter(commands)
 }
 
 export function collectAllKeybindings(
@@ -96,19 +150,11 @@ export function collectAllKeybindings(
 ): Array<{ id: string, keybinding: DevframeCommandKeybinding }> {
   const result: Array<{ id: string, keybinding: DevframeCommandKeybinding }> = []
 
-  for (const cmd of commands.value) {
+  walkCommands(commands.value, (cmd) => {
     for (const kb of getKeybindings(cmd.id)) {
       result.push({ id: cmd.id, keybinding: kb })
     }
-    // Also collect from children
-    if (cmd.children) {
-      for (const child of cmd.children) {
-        for (const kb of getKeybindings(child.id)) {
-          result.push({ id: child.id, keybinding: kb })
-        }
-      }
-    }
-  }
+  })
 
   return result
 }
