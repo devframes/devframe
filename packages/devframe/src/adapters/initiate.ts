@@ -19,6 +19,7 @@ import { resolveClientAssets } from '../define'
 import { createHostContext } from '../node/context'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
+import { importRuntimeModule } from '../node/import-runtime-module'
 import { createInstanceShell, resolveInstanceRegister } from '../node/instance-shell'
 import { normalizeBasePath } from './_shared'
 import { resolveDevServerPort, resolveMcpConnectionMeta } from './dev'
@@ -311,7 +312,7 @@ export function initDevframe(
         const mcpPath = joinURL(base, mcpMeta.path)
         let mountMcpHttp: typeof import('./mcp/http').mountMcpHttp
         try {
-          ;({ mountMcpHttp } = await import('./mcp/http'))
+          ;({ mountMcpHttp } = await importRuntimeModule<typeof import('./mcp')>('devframe/adapters/mcp'))
         }
         catch (error) {
           const reason = error instanceof Error ? error.message : String(error)

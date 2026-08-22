@@ -90,6 +90,7 @@ catalogs:
     '@sveltejs/adapter-node': ^5.3.3
     '@sveltejs/kit': ^2.46.4
     '@vitejs/plugin-vue': ^6.0.8
+    esbuild: ^0.28.0
     lightningcss: ^1.33.0
     magic-string: ^1.2.0
     mlly: ^1.8.2

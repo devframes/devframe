@@ -12,6 +12,7 @@ import type { DevframeDefinition } from '../types/devframe'
 import process from 'node:process'
 import cac from 'cac'
 import { colors as c } from 'devframe/utils/colors'
+import { importRuntimeModule } from '../node/import-runtime-module'
 import { createBuild } from './build'
 import { createDevServer, resolveDevServerPort } from './dev'
 import { flagKeyToOption, isBooleanFlag, parseCliFlags } from './flags'
@@ -124,7 +125,7 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
       // MCP clients expect JSON-RPC on stdout — route welcome/logging
       // noise out of the way. Logs-SDK diagnostics land on stderr by
       // default, so nothing extra needed beyond not printing here.
-      const { createMcpServer } = await import('./mcp')
+      const { createMcpServer } = await importRuntimeModule<typeof import('./mcp')>('devframe/adapters/mcp')
       await createMcpServer(d, {
         transport: 'stdio',
         // Deliberately go to stderr: stdout is the MCP transport.

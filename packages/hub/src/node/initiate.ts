@@ -12,7 +12,7 @@ import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import process from 'node:process'
 import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_DOCK_IMPORTS_FILENAME, DEVFRAME_MCP_ROUTE, DEVFRAME_WS_ROUTE } from 'devframe/constants'
-import { createH3DevframeHost, createInstanceShell, resolveInstanceRegister } from 'devframe/internal'
+import { createH3DevframeHost, createInstanceShell, importRuntimeModule, resolveInstanceRegister } from 'devframe/internal'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
@@ -571,7 +571,7 @@ export function initHub(options: InitHubOptions): HubInstance {
         return { context: ctx }
 
       const mcpRoute = withoutLeadingSlash(mcpConfig.path ?? DEVFRAME_MCP_ROUTE)
-      const { mountMcpHttp } = await import('devframe/adapters/mcp')
+      const { mountMcpHttp } = await importRuntimeModule<typeof import('devframe/adapters/mcp')>('devframe/adapters/mcp')
       const mounted = mountMcpHttp(app, ctx, joinURL(base, mcpRoute), {
         serverName: options.name ?? 'devframes-hub',
         serverVersion: options.version ?? '0.0.0',
