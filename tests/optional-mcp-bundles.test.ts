@@ -1,5 +1,5 @@
 import type { Plugin } from 'esbuild'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { build } from 'esbuild'
@@ -12,6 +12,7 @@ const entries = [
   'packages/hub/dist/node/initiate.mjs',
   'packages/next/dist/hub.mjs',
 ]
+const nextServerChunks = join(root, 'examples/hub-next/src/client/.next/server/chunks')
 const temporaryDirectories: string[] = []
 
 afterEach(() => {
@@ -97,5 +98,15 @@ describe('optional MCP peers in consumer bundles', () => {
     finally {
       await hub.close()
     }
+  })
+
+  it('preserves the runtime importer in Next production bundles', () => {
+    const runtimeImportChunks = readdirSync(nextServerChunks)
+      .filter(file => file.endsWith('.js'))
+      .map(file => readFileSync(join(nextServerChunks, file), 'utf8'))
+      .filter(source => source.includes('packages/devframe/src/node/import-runtime-module.ts'))
+
+    expect(runtimeImportChunks).not.toHaveLength(0)
+    expect(runtimeImportChunks.join('\n')).not.toContain('Cannot find module as expression is too dynamic')
   })
 })

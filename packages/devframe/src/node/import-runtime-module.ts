@@ -1,5 +1,4 @@
-import { createRequire } from 'node:module'
-import { pathToFileURL } from 'node:url'
+import { importServicePackage } from './services-install'
 
 /**
  * Resolve and import a package at runtime without adding it to a consumer's
@@ -9,6 +8,5 @@ import { pathToFileURL } from 'node:url'
  * @internal
  */
 export async function importRuntimeModule<T = unknown>(specifier: string): Promise<T> {
-  const resolved = createRequire(import.meta.url).resolve(specifier)
-  return await import(/* webpackIgnore: true */ /* @vite-ignore */ /* turbopackIgnore: true */ pathToFileURL(resolved).href) as T
+  return await importServicePackage(specifier, [import.meta.url]) as T
 }
