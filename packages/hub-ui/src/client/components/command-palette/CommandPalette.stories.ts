@@ -45,3 +45,25 @@ export const Open: Story = {
     ),
   }),
 }
+
+/**
+ * The palette opened *scoped* to a dock group, listing only that group's
+ * members — what activating a group with no `defaultChildId` does, so a group
+ * stays reachable by keyboard with the choice of member left to the user.
+ * Backspace or Escape steps back out to the root list.
+ */
+export const ScopedToGroup: Story = {
+  render: () => ({
+    setup: () => mountWithContext(
+      { entries: groupedEntries },
+      ctx => h(defineComponent({
+        setup() {
+          onMounted(() => {
+            ctx.commands.openPalette('devframes:docks:playground')
+          })
+          return () => h(CommandPalette, { context: ctx })
+        },
+      })),
+    ),
+  }),
+}

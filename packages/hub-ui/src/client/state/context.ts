@@ -11,7 +11,7 @@ import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vu
 import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_UI_HIDE_EVENT } from '../constants'
 import { useBranding } from './branding'
 import { createCommandsContext } from './commands'
-import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, getRegisteredGroupIds, resolveCommandIcon, resolveGroupDefaultChild } from './dock-settings'
+import { docksGroupByCategories, getGroupMembers, getRegisteredGroupIds, resolveCommandIcon, resolveGroupDefaultChild } from './dock-settings'
 import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE, sharedStateToRef, useDocksEntries, waitForInitialSharedStateSync } from './docks'
 import { createClientMessagesClient } from './messages-client'
 import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDockPopupOpen } from './popup'
@@ -513,31 +513,62 @@ export async function createDocksContext(
       },
     })
 
+    // Activating a *group* by id — its shortcut, or picking it in the palette —
+    // must not guess a member on the user's behalf. An unambiguous target (the
+    // author's `defaultChildId`, or a lone visible member, which is a choice of
+    // one rather than a guess) opens directly, exactly like an ungrouped dock.
+    // Anything else hands the choice back to the user through the palette,
+    // scoped to that group's members, so a group stays reachable by keyboard
+    // alone without a default being invented for it. The dock-bar button is
+    // unaffected — clicking still opens the member popover.
+    const activateGroup = (
+      commandId: string,
+      directId: string | undefined,
+    ) => {
+      if (directId) {
+        toggleEntry(directId)
+        return
+      }
+      // Pressing the same shortcut again closes the palette it just opened.
+      if (commandsContext.paletteOpen && commandsContext.paletteScopeId === commandId) {
+        commandsContext.paletteOpen = false
+        return
+      }
+      commandsContext.openPalette(commandId)
+    }
+
     // Mirror the dock-bar collapse in the palette: members nest under their
     // group's command, and grouped members drop out of the top level.
     const registeredGroupIds = getRegisteredGroupIds(entries.value)
     const dockChildren: DevframeClientCommand[] = entries.value
       .filter(entry => entry.type !== '~builtin')
       .filter(entry => !(entry.groupId && registeredGroupIds.has(entry.groupId)))
-      .map((entry) => {
+      .flatMap((entry): DevframeClientCommand[] => {
         if (entry.type !== 'group')
-          return toCommand(entry)
-        // Members nest under the group, split by their in-group sub-category.
-        // A single sub-category (the common case) is flattened directly so the
-        // palette doesn't add a pointless one-item drill-down level.
-        const memberGroups = getGroupMembersGrouped(entries.value, entry.id, settings.value, { whenContext: getWhenContext() })
-        const children: DevframeClientCommand[] = memberGroups.length <= 1
-          ? (memberGroups[0]?.[1] ?? []).map(toCommand)
-          : memberGroups.map(([category, members]) => ({
-              id: `devframes:docks:${entry.id}:cat:${category}`,
-              source: 'client' as const,
-              title: getCategoryLabel(category),
-              children: members.map(toCommand),
-            }))
-        return {
+          return [toCommand(entry)]
+        // Members hang directly off their group, in the dock bar's sub-category
+        // order. The bar's sub-category *dividers* have no counterpart here: a
+        // category is not something you can run, so turning one into a command
+        // would put an inert row between the user and every member — an extra
+        // keystroke in the palette, and a row in the shortcut settings with
+        // nothing to bind. Ordering carries the grouping instead.
+        const visibleMembers = getGroupMembers(entries.value, entry.id, settings.value, { whenContext: getWhenContext() })
+        const defaultChildId = resolveGroupDefaultChild(entries.value, entry.id, entry.defaultChildId, getWhenContext())?.id
+        // Same empty-group rule the dock bar applies (`DockEntries.isDockVisible`):
+        // with no visible member and no reachable `defaultChildId` there is
+        // nothing to activate, so the group gets no command at all rather than a
+        // dead row in the palette and the shortcut settings.
+        if (visibleMembers.length === 0 && !defaultChildId)
+          return []
+        const commandId = `devframes:docks:${entry.id}`
+        return [{
           ...toCommand(entry),
-          children,
-        }
+          action: () => activateGroup(
+            commandId,
+            defaultChildId ?? (visibleMembers.length === 1 ? visibleMembers[0]!.id : undefined),
+          ),
+          children: visibleMembers.map(toCommand),
+        }]
       })
 
     if (dockChildren.length > 0) {
