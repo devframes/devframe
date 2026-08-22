@@ -65,7 +65,7 @@ declare module 'devframe/types' {
      *
      * @internal
      */
-    'hub:docks:panel-state': (open: boolean) => Promise<void>
+    'hub:docks:panel:state': (open: boolean) => Promise<void>
     /**
      * Invoke a registered server command by id; trailing args are forwarded to
      * the command's handler. Handled by
