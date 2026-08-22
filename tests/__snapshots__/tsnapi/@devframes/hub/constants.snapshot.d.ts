@@ -25,7 +25,7 @@ export declare const HUB_EVENTS: {
   };
   readonly rpc: {
     readonly docksActivate: "hub:docks:activate";
-    readonly docksPanelState: "hub:docks:panel-state";
+    readonly docksPanelState: "hub:docks:panel:state";
     readonly commandsExecute: "hub:commands:execute";
     readonly messagesAdd: "hub:messages:add";
     readonly messagesUpdate: "hub:messages:update";

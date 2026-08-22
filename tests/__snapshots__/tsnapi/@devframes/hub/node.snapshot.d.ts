@@ -133,7 +133,7 @@ export declare const hubDocksActivate: {
   }], Promise<void>>> | undefined;
 };
 export declare const hubDocksPanelState: {
-  name: "hub:docks:panel-state";
+  name: "hub:docks:panel:state";
   type?: "action" | undefined;
   cacheable?: boolean;
   args?: undefined;
