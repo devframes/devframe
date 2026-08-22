@@ -637,6 +637,7 @@ export async function createDocksContext(
   // the captured session intent.
   // `switchEntry` then consumes the persisted iframe route when the view boots.
   const restoreAfterInitialization = async (): Promise<void> => {
+    // The authorization gate can still clear the live session on reload, so restore only after it settles.
     await waitUntilTrusted()
 
     const restoreDockId = restoreIntent.selectedDockId
