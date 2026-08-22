@@ -48,6 +48,7 @@
     "@unocss/reset": "catalog:frontend",
     "bumpp": "catalog:tooling",
     "crossws": "catalog:deps",
+    "esbuild": "catalog:build",
     "eslint": "catalog:tooling",
     "h3": "catalog:deps",
     "knip": "catalog:tooling",

@@ -1,5 +1,6 @@
 import type { ConnectionMeta, DevframeHost, DevframeNodeContext, DevframeStorageScope } from 'devframe'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
+import { importRuntimeModule } from 'devframe/internal'
 import { serveStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 
@@ -163,7 +164,7 @@ export function createDevframeNextHost(
       connectionMeta = meta
     },
     async mountMcp(ctx, path, mcpOptions = {}) {
-      const { createMcpFetchHandler } = await import('devframe/adapters/mcp')
+      const { createMcpFetchHandler } = await importRuntimeModule<typeof import('devframe/adapters/mcp')>('devframe/adapters/mcp')
       const handler = createMcpFetchHandler(ctx, {
         serverName: mcpOptions.serverName ?? 'devframe (next)',
         serverVersion: mcpOptions.serverVersion ?? '0.0.0',
