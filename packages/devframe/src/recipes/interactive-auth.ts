@@ -24,6 +24,14 @@ export interface CreateInteractiveAuthOptions {
    */
   banner?: (info: { code: string, url: string }) => void
   /**
+   * Called once a code exchange succeeds, so a host rendering its own
+   * banner can retract it. Fires after the rotated code is printed, so
+   * such a host drops that follow-up too and calls `auth.printBanner()`
+   * when it next wants a code on screen. Connect-time trust from a static
+   * or remote-dock token doesn't call this.
+   */
+  onTrusted?: (info: { session: DevframeNodeRpcSession, authToken: string }) => void
+  /**
    * The base URL the magic link should point at. Defaults to
    * `context.host.resolveOrigin()`.
    */
@@ -125,6 +133,8 @@ export function createInteractiveAuth(
       // The code was just consumed (success or a rotating failure) — the
       // next `printBanner()` call shows whatever code is current now.
       printBanner()
+      if (authToken)
+        options.onTrusted?.({ session, authToken })
       return { authToken }
     },
   })
