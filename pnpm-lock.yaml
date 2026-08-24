@@ -62,8 +62,8 @@ catalogs:
       specifier: ^1.19.17
       version: 1.19.17
     '@json-render/core':
-      specifier: ^0.19.0
-      version: 0.19.0
+      specifier: ^0.20.0
+      version: 0.20.0
     '@modelcontextprotocol/client':
       specifier: ^2.0.0
       version: 2.0.0
@@ -181,11 +181,11 @@ catalogs:
       specifier: ^1.2.2
       version: 1.2.2
     '@json-render/react':
-      specifier: ^0.19.0
-      version: 0.19.0
+      specifier: ^0.20.0
+      version: 0.20.0
     '@json-render/vue':
-      specifier: ^0.19.0
-      version: 0.19.0
+      specifier: ^0.20.0
+      version: 0.20.0
     '@radix-ui/react-scroll-area':
       specifier: ^1.2.18
       version: 1.2.18
@@ -785,7 +785,7 @@ importers:
         version: link:../../plugins/terminals
       '@json-render/react':
         specifier: catalog:frontend
-        version: 0.19.0(react@19.2.8)(zod@4.4.3)
+        version: 0.20.0(react@19.2.8)(zod@4.4.3)
       colorjs.io:
         specifier: catalog:frontend
         version: 0.7.1
@@ -1517,7 +1517,7 @@ importers:
     dependencies:
       '@json-render/core':
         specifier: catalog:deps
-        version: 0.19.0(zod@4.4.3)
+        version: 0.20.0(zod@4.4.3)
       '@standard-schema/spec':
         specifier: catalog:deps
         version: 1.1.0
@@ -1554,7 +1554,7 @@ importers:
         version: 1.2.2
       '@json-render/vue':
         specifier: catalog:frontend
-        version: 0.19.0(vue@3.5.41(typescript@6.0.3))(zod@4.4.3)
+        version: 0.20.0(vue@3.5.41(typescript@6.0.3))(zod@4.4.3)
       '@storybook/addon-docs':
         specifier: catalog:storybook
         version: 10.5.8(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(esbuild@0.28.0)(rollup@4.60.3)(storybook@10.5.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0))
@@ -3768,18 +3768,18 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@json-render/core@0.19.0':
-    resolution: {integrity: sha512-vvcyZ+10EDZKbEyB1J2kXOGfDaiZR2LurZGSqi2r5STHyKr+Te85DWaBxTwRGgM7U1LtIvNx85BzzjElRKoAIg==}
+  '@json-render/core@0.20.0':
+    resolution: {integrity: sha512-cXAXn7h3QaylefQgh85AEGPuVq4C8SJ3k9JqigWLJhaBSozF1Fmsrm43DP16RmkqNiVgj5pBRdmB48lEO5qlow==}
     peerDependencies:
       zod: ^4.0.0
 
-  '@json-render/react@0.19.0':
-    resolution: {integrity: sha512-kTW6b6cSNRrlEfCUf/69SLoLn+CufC968ruge9tnQlp9pDTGG/SK8pgM541FdgwMFA4zm3s5mpM3G8rdODKc/A==}
+  '@json-render/react@0.20.0':
+    resolution: {integrity: sha512-arRrlf7zeIJYM6i2JHcTBKW5Kl+ErBtoNR29h4i6rG4AtTzLmaWDgPTs35pr3MdSCTp0UxKwY4O3vWMdUihpRQ==}
     peerDependencies:
       react: ^19.2.3
 
-  '@json-render/vue@0.19.0':
-    resolution: {integrity: sha512-WWvjQnsYJsHvc61Y18z3n0feFIGDrL00ltezh4d2FGs9yrpNXhw3bZVvAi1jB7yq8/rB7nC2VF/CVu+Qg56Wgg==}
+  '@json-render/vue@0.20.0':
+    resolution: {integrity: sha512-vASy4ygzrv/h2yxwiEUkX/HomYcJ30T3oYL1LMknvAdNu4bwljDHEkx0tLxvYiogmwDQfT9nfFI5UzpbpHtVEQ==}
     peerDependencies:
       vue: ^3.5.0
       zod: ^4.0.0
@@ -13285,20 +13285,20 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@json-render/core@0.19.0(zod@4.4.3)':
+  '@json-render/core@0.20.0(zod@4.4.3)':
     dependencies:
       zod: 4.4.3
 
-  '@json-render/react@0.19.0(react@19.2.8)(zod@4.4.3)':
+  '@json-render/react@0.20.0(react@19.2.8)(zod@4.4.3)':
     dependencies:
-      '@json-render/core': 0.19.0(zod@4.4.3)
+      '@json-render/core': 0.20.0(zod@4.4.3)
       react: 19.2.8
     transitivePeerDependencies:
       - zod
 
-  '@json-render/vue@0.19.0(vue@3.5.41(typescript@6.0.3))(zod@4.4.3)':
+  '@json-render/vue@0.20.0(vue@3.5.41(typescript@6.0.3))(zod@4.4.3)':
     dependencies:
-      '@json-render/core': 0.19.0(zod@4.4.3)
+      '@json-render/core': 0.20.0(zod@4.4.3)
       vue: 3.5.41(typescript@6.0.3)
       zod: 4.4.3
 
