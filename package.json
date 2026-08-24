@@ -59,6 +59,7 @@
     "prompts": "catalog:tooling",
     "simple-git-hooks": "catalog:tooling",
     "skills-npm": "catalog:tooling",
+    "tinyexec": "catalog:deps",
     "tinyglobby": "catalog:deps",
     "tsnapi": "catalog:testing",
     "tsx": "catalog:build",
