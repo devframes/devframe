@@ -170,6 +170,7 @@ The CLI adapter serves the SPA at `/`; embedded in a host (`vite`, `embedded`) t
 ## What's next
 
 - [Devframe Definition](/guide/devframe-definition) — `defineDevframe` and `DevframeNodeContext`
+- [Project Structure](/guide/project-structure) — a recommended folder layout for a devframe package
 - [The Standard Handler](/adapters/initiate) — mount into any host
 - [Adapters](/adapters) — convenience entry points
 - [Hub](/guide/hub) — compose many devframes
