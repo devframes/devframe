@@ -139,8 +139,12 @@ describe('recipes/interactive-auth', () => {
 
   it('onTrusted() fires once a code exchange succeeds, after the rotated code is printed', async () => {
     const banners: { code: string, url: string }[] = []
-    const trusted: { authToken: string }[] = []
-    const { server, host, port } = await startAuthenticatedServer(banners, false, info => trusted.push(info))
+    const trusted: { authToken: string, bannerCountAtCall: number, lastBannerCode?: string }[] = []
+    const { server, host, port } = await startAuthenticatedServer(banners, false, info => trusted.push({
+      authToken: info.authToken,
+      bannerCountAtCall: banners.length,
+      lastBannerCode: banners.at(-1)?.code,
+    }))
 
     try {
       const client = connectClient(host, port)
@@ -151,7 +155,8 @@ describe('recipes/interactive-auth', () => {
       const { authToken } = await client.$call('anonymous:devframe:auth:exchange', { code, ua: 'test', origin: 'http://localhost' })
 
       expect(trusted.map(info => info.authToken)).toEqual([authToken])
-      expect(banners.at(-1)!.code).toBe(getTempAuthCode())
+      expect(trusted[0]!.bannerCountAtCall).toBe(banners.length)
+      expect(trusted[0]!.lastBannerCode).toBe(getTempAuthCode())
       client.$close()
     }
     finally {
