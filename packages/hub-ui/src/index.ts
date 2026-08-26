@@ -33,8 +33,14 @@ function clientDir(): string {
 }
 
 export interface CreateUiOptions {
-  /** Serve the standalone viewer SPA at the hub base. Default: `true`. */
-  viewer?: boolean
+  /**
+   * Serve the standalone viewer SPA at the hub base. Pass an object to
+   * customize the viewer surface. Default: `true`.
+   */
+  viewer?: boolean | {
+    /** Page background used around transparent renderer content. Default: `'default'`. */
+    background?: 'default' | 'transparent'
+  }
   /** Serve the floating-dock bootstrap at `<base>embedded.js`. Default: `true`. */
   embedded?: boolean
   /**
@@ -87,12 +93,22 @@ export interface CreateUiOptions {
  */
 export function createUi(options: CreateUiOptions = {}): DevframeHubUi {
   const client = clientDir()
+  const viewerBackground = typeof options.viewer === 'object' ? options.viewer.background : undefined
   return {
     ...(options.viewer !== false
       ? { viewer: { distDir: join(client, 'standalone') } }
       : {}),
     ...(options.embedded !== false
       ? { embedded: { entry: join(client, 'embedded.js') } }
+      : {}),
+    ...(options.viewer !== false
+      ? {
+          assets: {
+            '__hub-ui.css': () => viewerBackground === 'transparent'
+              ? 'html,body{background:transparent!important}'
+              : '',
+          },
+        }
       : {}),
     // Publish the reference UI's config through the generic `ctx.staticConfig`
     // — it rides the connection handshake to every mounted frame and the
