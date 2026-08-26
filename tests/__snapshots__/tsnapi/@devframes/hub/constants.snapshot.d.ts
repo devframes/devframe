@@ -15,6 +15,7 @@ export declare const HUB_EVENTS: {
     readonly docksEntryUpdated: "docks:entry:updated";
     readonly docksActivate: "docks:activate";
     readonly terminalsSessionUpdated: "terminals:session:updated";
+    readonly terminalsSessionOutput: "terminals:session:output";
     readonly messagesAdded: "messages:added";
     readonly messagesUpdated: "messages:updated";
     readonly messagesRemoved: "messages:removed";

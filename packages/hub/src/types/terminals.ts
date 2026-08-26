@@ -6,6 +6,8 @@ export interface DevframeTerminalsHost {
   readonly sessions: Map<string, DevframeTerminalSession>
   readonly events: EventEmitter<{
     'terminals:session:updated': (session: DevframeTerminalSession) => void
+    /** Live output chunks consumed from a session stream. Chunks are not replayed. */
+    'terminals:session:output': (sessionId: string, chunk: string) => void
   }>
 
   register: (session: DevframeTerminalSession) => DevframeTerminalSession

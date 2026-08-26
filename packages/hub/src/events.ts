@@ -24,6 +24,7 @@ export const HUB_EVENTS = {
     docksEntryUpdated: 'docks:entry:updated',
     docksActivate: 'docks:activate',
     terminalsSessionUpdated: 'terminals:session:updated',
+    terminalsSessionOutput: 'terminals:session:output',
     messagesAdded: 'messages:added',
     messagesUpdated: 'messages:updated',
     messagesRemoved: 'messages:removed',

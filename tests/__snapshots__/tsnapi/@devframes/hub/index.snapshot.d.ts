@@ -265,6 +265,7 @@ export interface DevframeTerminalsHost {
   readonly sessions: Map<string, DevframeTerminalSession>;
   readonly events: EventEmitter<{
     'terminals:session:updated': (session: DevframeTerminalSession) => void;
+    'terminals:session:output': (sessionId: string, chunk: string) => void;
   }>;
   register: (_: DevframeTerminalSession) => DevframeTerminalSession;
   update: (_: DevframeTerminalSession) => void;

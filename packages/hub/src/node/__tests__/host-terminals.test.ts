@@ -72,6 +72,49 @@ async function waitUntil(assertion: () => void): Promise<void> {
 }
 
 describe('devframeTerminalHost stream lifecycle', () => {
+  it('emits each consumed output chunk with its session id', async () => {
+    const { host } = createTerminalHost()
+    const output: Array<[sessionId: string, chunk: string]> = []
+    let controller: ReadableStreamDefaultController<string>
+    const stream = new ReadableStream<string>({
+      start(_controller) {
+        controller = _controller
+      },
+    })
+
+    host.events.on('terminals:session:output', (sessionId, chunk) => output.push([sessionId, chunk]))
+    host.register({ id: 'terminal', title: 'Terminal', status: 'running', stream })
+    controller!.enqueue('first')
+    controller!.enqueue('second')
+
+    await waitUntil(() => {
+      expect(output).toEqual([
+        ['terminal', 'first'],
+        ['terminal', 'second'],
+      ])
+    })
+  })
+
+  it('emits output from child-process sessions', async () => {
+    const { host } = createTerminalHost()
+    const output: Array<[sessionId: string, chunk: string]> = []
+    host.events.on('terminals:session:output', (sessionId, chunk) => output.push([sessionId, chunk]))
+
+    const session = await host.startChildProcess({
+      command: process.execPath,
+      args: ['-e', 'process.stdout.write("child output")'],
+    }, {
+      id: 'child',
+      title: 'Child',
+    })
+
+    await session.getResult()
+    await waitUntil(() => {
+      expect(output.map(([, chunk]) => chunk).join('')).toContain('child output')
+    })
+    expect(output.every(([sessionId]) => sessionId === 'child')).toBe(true)
+  })
+
   it('cancels a bound stream when a session is removed', async () => {
     const { host, sinks } = createTerminalHost()
     let controller: ReadableStreamDefaultController<string>

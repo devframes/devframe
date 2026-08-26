@@ -128,6 +128,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
             break
           if (result.done)
             break
+          this.events.emit(HUB_EVENTS.bus.terminalsSessionOutput, session.id, result.value)
           // Mirror to the legacy session.buffer used by `terminals:read` —
           // bounded tail kept for the snapshot endpoint.
           sessionBuffer.push(result.value)
