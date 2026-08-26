@@ -1,10 +1,10 @@
 /**
- * Mirrors scan results into the hub's messages feed when the agent is booted
- * as a dock **client script** (`createDevframeClientHost()` calls the agent's
+ * Mirrors scan results into the hub's messages feed when the page script is booted
+ * as a dock **client script** (`createDevframeClientHost()` calls the page script's
  * default export with its `DockClientScriptContext`).
  *
  * The hub context is consumed by duck-typing a minimal structural slice, so
- * the agent keeps no build- or runtime dependency on `@devframes/hub` and the
+ * the page script keeps no build- or runtime dependency on `@devframes/hub` and the
  * bundle stays self-contained — a standalone `<script type="module">` boot
  * simply has no messages client and skips the feed. Mirrors the pattern used
  * by the terminals and code-server plugins for `ctx.terminals`.
@@ -13,7 +13,7 @@ import type { Impact, ScanReport } from '../shared/protocol.ts'
 import { A11Y_DEFAULT_DOCK_ID } from '../shared/protocol.ts'
 
 /**
- * Structural slice of the hub's `DevframeMessageAction` the agent emits — a
+ * Structural slice of the hub's `DevframeMessageAction` the page script emits — a
  * labeled control that, when clicked in the messages panel, activates a dock
  * (deep-linking via `params`). Kept as a discriminated union so future action
  * kinds can be added without reshaping the field.
@@ -25,7 +25,7 @@ interface HubMessageAction {
   activate: { dockId: string, params?: Record<string, unknown> }
 }
 
-/** Structural slice of the hub's `DevframeMessageEntryInput` the agent emits. */
+/** Structural slice of the hub's `DevframeMessageEntryInput` the page script emits. */
 export interface HubMessageInput {
   id?: string
   message: string
@@ -47,17 +47,17 @@ export interface HubMessageInput {
   status?: 'loading' | 'idle'
 }
 
-/** Structural slice of the hub's `DevframeMessagesClient` the agent calls. */
+/** Structural slice of the hub's `DevframeMessagesClient` the page script calls. */
 export interface HubMessagesClient {
   add: (input: HubMessageInput) => Promise<unknown>
   remove: (id: string) => Promise<void>
 }
 
 /**
- * Structural slice of the hub's `DockClientScriptContext` the agent accepts.
- * Every field is optional so any argument — or none — boots the agent.
+ * Structural slice of the hub's `DockClientScriptContext` the page script accepts.
+ * Every field is optional so any argument — or none — boots the page script.
  */
-export interface A11yAgentContext {
+export interface A11yPageScriptContext {
   messages?: HubMessagesClient
 }
 
@@ -87,7 +87,7 @@ export interface MessagesReporter {
 export interface MessagesReporterOptions {
   /**
    * Resolve the current bounding box of a violating element from its axe
-   * target selectors — the agent supplies a live-DOM implementation. A stale
+   * target selectors — the page script supplies a live-DOM implementation. A stale
    * box is fine: each re-scan refreshes the entry.
    */
   resolveBoundingBox?: (target: string[]) => { x: number, y: number, width: number, height: number } | undefined

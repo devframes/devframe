@@ -1,6 +1,6 @@
 import type { DevframeConnectionStatus } from 'devframe/client'
 import type { Accessor } from 'solid-js'
-import type { AgentConfig, Impact } from '../../shared/protocol.ts'
+import type { Impact, PageScriptConfig } from '../../shared/protocol.ts'
 import { connectDevframe } from 'devframe/client'
 import { createSignal } from 'solid-js'
 import { A11Y_DOCKS_ACTIVE_KEY } from '../../shared/protocol.ts'
@@ -19,8 +19,8 @@ interface A11yConfig {
   dockId: string
   /** Auto-pin all of a route's violations the first time it's scanned. */
   defaultHighlight: boolean
-  /** Runtime configuration forwarded to the in-page agent. */
-  agent: AgentConfig
+  /** Runtime configuration forwarded to the page script. */
+  pageScript: PageScriptConfig
   impacts: ImpactMeta[]
 }
 
@@ -47,7 +47,7 @@ export interface DevframeState {
 
 /**
  * Connect to the devframe backend for supplementary data: the impact legend,
- * the runtime config the panel forwards to the agent, and the dock-activation
+ * the runtime config the panel forwards to the page script, and the dock-activation
  * shared state that powers deep-linking (e.g. a messages-feed entry navigating
  * here). Intentionally non-blocking and failure-tolerant — the panel's core
  * scan loop runs over BroadcastChannel, so the UI stays useful even if the
@@ -95,7 +95,7 @@ export function connectDevframeState(): DevframeState {
       }
     })
     .catch(() => {
-      // No reachable backend (e.g. agent loaded outside a devframe host).
+      // No reachable backend (e.g. the page script loaded outside a running devframe).
       setStatus('error')
     })
 

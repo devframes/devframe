@@ -200,16 +200,16 @@ export function App() {
     },
   }
 
-  // ── config → agent, and initial auto-scan default ─────────────────────────
+  // ── config → page script, and initial auto-scan default ─────────────────────────
   let autoInit = false
   createEffect(() => {
     const cfg = devframe.config()
     if (!cfg)
       return
-    channel.sendConfig(cfg.agent)
+    channel.sendConfig(cfg.pageScript)
     if (!autoInit && storedAuto == null) {
       autoInit = true
-      setAutoScan(cfg.agent.autoScan)
+      setAutoScan(cfg.pageScript.autoScan)
     }
   })
 
@@ -230,7 +230,7 @@ export function App() {
       setExpandedRoutes(prev => (prev.has(r) ? prev : new Set(prev).add(r)))
   })
 
-  // Push the highlight set to the in-page agent: the hovered impact's elements
+  // Push the highlight set to the page script: the hovered impact's elements
   // while a summary chip is hovered, otherwise the selection.
   createEffect(() => {
     const hov = hoverImpact()
@@ -315,7 +315,7 @@ export function App() {
   return (
     <div class="flex flex-col h-full min-h-0 bg-base color-base font-sans">
       <Header
-        agentReady={channel.agentReady()}
+        pageScriptReady={channel.pageScriptReady()}
         scanning={channel.scanning()}
         selectedCount={selectedItems().length}
         onGenerate={() => setDialogOpen(true)}
@@ -332,17 +332,17 @@ export function App() {
 
       <div id="a11y-scroll" class="a11y-scroll flex-1 min-h-0 overflow-y-auto px-4 pb-5">
         <Switch>
-          {/* No agent has announced itself on this origin yet. */}
-          <Match when={!channel.state() && !channel.agentReady()}>
+          {/* No page script has announced itself on this origin yet. */}
+          <Match when={!channel.state() && !channel.pageScriptReady()}>
             <EmptyState
               icon="i-ph-plugs-duotone text-4xl"
               title="No page connected"
-              body="Load the inspector agent in the app you want to check, then this panel will list its accessibility issues live."
+              body="Load the inspector page script in the app you want to check, then this panel will list its accessibility issues live."
               code={SNIPPET}
             />
           </Match>
 
-          {/* Agent present, first state not in yet. */}
+          {/* Page script present, first state not in yet. */}
           <Match when={!channel.state()}>
             <EmptyState
               icon="i-ph-plugs-duotone text-4xl"

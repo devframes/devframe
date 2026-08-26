@@ -2,7 +2,7 @@ import { Show } from 'solid-js'
 import { button, nav, navBrand } from '../design'
 
 interface HeaderProps {
-  agentReady: boolean
+  pageScriptReady: boolean
   scanning: boolean
   selectedCount: number
   onGenerate: () => void
@@ -12,9 +12,9 @@ interface HeaderProps {
 /** The top nav bar: brand, connection status, generate-prompts, and rescan. */
 export function Header(props: HeaderProps) {
   const statusLabel = () =>
-    !props.agentReady ? 'No page connected' : props.scanning ? 'Scanning…' : 'Connected'
+    !props.pageScriptReady ? 'No page connected' : props.scanning ? 'Scanning…' : 'Connected'
   const dotClass = () =>
-    !props.agentReady ? 'bg-neutral-400' : props.scanning ? 'bg-primary-500 animate-pulse' : 'bg-success'
+    !props.pageScriptReady ? 'bg-neutral-400' : props.scanning ? 'bg-primary-500 animate-pulse' : 'bg-success'
 
   return (
     <header class={nav()}>
@@ -46,7 +46,7 @@ export function Header(props: HeaderProps) {
         type="button"
         class={button({ variant: 'secondary', size: 'sm' })}
         onClick={() => props.onRescan()}
-        disabled={!props.agentReady || props.scanning}
+        disabled={!props.pageScriptReady || props.scanning}
       >
         <span aria-hidden class="i-ph-arrows-clockwise shrink-0" classList={{ 'animate-spin': props.scanning }} />
         Rescan

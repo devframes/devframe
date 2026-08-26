@@ -47,15 +47,15 @@ describe('dev-server (CLI surface)', () => {
       nodeAttr: string
       dockId: string
       defaultHighlight: boolean
-      agent: { autoScan: boolean, logIssues: boolean, activateDockId: string }
+      pageScript: { autoScan: boolean, logIssues: boolean, activateDockId: string }
       impacts: { id: string }[]
     }
     expect(config.channel).toBe('devframes:plugin:a11y')
     expect(config.nodeAttr).toBe('data-df-a11y-node')
     expect(config.impacts.map(i => i.id)).toEqual(['critical', 'serious', 'moderate', 'minor'])
-    // Runtime config the panel forwards to the in-page agent.
+    // Runtime config the panel forwards to the page script.
     expect(config.dockId).toBe('devframes_plugin_a11y')
     expect(config.defaultHighlight).toBe(false)
-    expect(config.agent).toMatchObject({ autoScan: true, logIssues: true, activateDockId: 'devframes_plugin_a11y' })
+    expect(config.pageScript).toMatchObject({ autoScan: true, logIssues: true, activateDockId: 'devframes_plugin_a11y' })
   })
 })

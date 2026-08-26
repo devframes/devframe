@@ -14,7 +14,7 @@ type Story = StoryObj<typeof meta>
 function noop() {}
 const base = { selectedCount: 0, onGenerate: noop, onRescan: noop }
 
-export const Connected: Story = { args: { ...base, agentReady: true, scanning: false } }
-export const Scanning: Story = { args: { ...base, agentReady: true, scanning: true } }
-export const WithSelection: Story = { args: { ...base, agentReady: true, scanning: false, selectedCount: 3 } }
-export const Disconnected: Story = { args: { ...base, agentReady: false, scanning: false } }
+export const Connected: Story = { args: { ...base, pageScriptReady: true, scanning: false } }
+export const Scanning: Story = { args: { ...base, pageScriptReady: true, scanning: true } }
+export const WithSelection: Story = { args: { ...base, pageScriptReady: true, scanning: false, selectedCount: 3 } }
+export const Disconnected: Story = { args: { ...base, pageScriptReady: false, scanning: false } }

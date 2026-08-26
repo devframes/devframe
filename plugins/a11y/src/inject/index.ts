@@ -1,5 +1,5 @@
 /**
- * The a11y inspector **agent** — injected into the host application's page.
+ * The a11y inspector **page script** — injected into the user app's page.
  *
  * It runs axe-core against the live DOM, tracks violations per route, broadcasts
  * the whole {@link A11yState} aggregate to the panel, and draws transient +
@@ -16,11 +16,11 @@
 import type {
   A11yMessage,
   A11yState,
-  AgentConfig,
+  PageScriptConfig,
   PinTarget,
   ScanReport,
 } from '../shared/protocol.ts'
-import type { A11yAgentContext } from './messages.ts'
+import type { A11yPageScriptContext } from './messages.ts'
 import type { PinInfo } from './overlay.ts'
 import {
   A11Y_CHANNEL,
@@ -34,7 +34,7 @@ import { resolveElement, scan } from './scanner.ts'
 
 const GLOBAL_FLAG = '__DF_A11Y_AGENT__'
 
-function start(context?: A11yAgentContext) {
+function start(context?: A11yPageScriptContext) {
   const w = window as unknown as Record<string, unknown>
   if (w[GLOBAL_FLAG])
     return
@@ -46,7 +46,7 @@ function start(context?: A11yAgentContext) {
 
   // Booted as a hub dock client script — mirror the active route's scan into
   // the hub's messages feed. Standalone boots have no context and skip it.
-  const config: AgentConfig = { logIssues: true, autoScan: true }
+  const config: PageScriptConfig = { logIssues: true, autoScan: true }
 
   const reporter = context?.messages
     ? createMessagesReporter(context.messages, {
@@ -251,7 +251,7 @@ function start(context?: A11yAgentContext) {
     const message = event.data
     switch (message.type) {
       case 'a11y:panel-ready':
-        post({ type: 'a11y:agent-ready', url: location.href, route: activeRoute })
+        post({ type: 'a11y:page-script-ready', url: location.href, route: activeRoute })
         if (routes.size > 0)
           broadcastState()
         else
@@ -312,7 +312,7 @@ function start(context?: A11yAgentContext) {
     }
   })
 
-  function applyConfig(next: AgentConfig) {
+  function applyConfig(next: PageScriptConfig) {
     config.logIssues = next.logIssues
     config.axeTags = next.axeTags
     config.axeRunOptions = next.axeRunOptions
@@ -327,7 +327,7 @@ function start(context?: A11yAgentContext) {
   bindInteractions()
 
   // Announce ourselves and run the first scan once the page has settled.
-  post({ type: 'a11y:agent-ready', url: location.href, route: activeRoute })
+  post({ type: 'a11y:page-script-ready', url: location.href, route: activeRoute })
   if (routes.size > 0)
     broadcastState()
   if (document.readyState === 'complete')
@@ -347,16 +347,16 @@ function findRule(report: ScanReport | null, nodeId: string) {
  * Client-script entry the hub runtime calls after importing this module,
  * passing its `DockClientScriptContext`. The live scan/highlight loop rides
  * the same-origin BroadcastChannel either way; when the context carries a
- * `messages` client (duck-typed — see {@link A11yAgentContext}), the agent
+ * `messages` client (duck-typed — see {@link A11yPageScriptContext}), the page script
  * additionally mirrors each scan into the hub's messages feed. `start()` is
  * idempotent.
  */
-export default function runA11yAgent(context?: A11yAgentContext): void {
+export default function runA11yPageScript(context?: A11yPageScriptContext): void {
   start(context)
 }
 
 // Also self-boot so a plain `<script type="module" src=".../inject.js">`
-// (the standalone demo, any non-hub host) starts the agent on load — deferred
+// (the standalone demo, any non-hub host page) starts the page script on load — deferred
 // one macrotask so a hub host that imports this module calls the default
 // export (microtask-chained after the import) first, letting the context-ful
 // boot win the `__DF_A11Y_AGENT__` guard.
