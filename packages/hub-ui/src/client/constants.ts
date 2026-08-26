@@ -39,7 +39,7 @@ export const BUILTIN_ENTRY_CLIENT_AUTH_NOTICE: DevframeViewBuiltin = Object.free
 })
 
 /**
- * The viewer's own Settings view. hub-ui owns this `~builtin` dock rather than
+ * The hub UI provider's own Settings view. hub-ui owns this `~builtin` dock rather than
  * leaning on a host to register it server-side — so the Settings tab is visible
  * by default in every consumer of the reference UI (the standalone viewer and
  * the embedded dock alike). A `~builtin` view defaults its category to

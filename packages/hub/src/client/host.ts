@@ -61,7 +61,7 @@ export interface DevframeClientHostOptions {
   loadClientScripts?: boolean
   /**
    * Resolve a **bare-specifier** client script (`importFrom` naming an npm
-   * module) to a URL this page can import — a viewer's own policy, winning
+   * module) to a URL this page can import — a hub UI provider's own policy, winning
    * over the host-advertised `ConnectionMeta.configs.dock.clientModuleResolution`
    * template (return `undefined` to fall through to it). URL specifiers never
    * reach this hook. E.g. on a Vite-served page:
@@ -116,7 +116,7 @@ export interface DevframeClientHost {
  * dock entry's client script into this page — the devframe equivalent of the
  * runtime `@vitejs/devtools-kit` injects into a host app.
  *
- * A viewer keeps rendering its own dock UI (reading the same shared state); this
+ * A hub UI provider keeps rendering its own dock UI (reading the same shared state); this
  * runtime is what gives plugin client scripts a live host context to run in.
  */
 export async function createDevframeClientHost(
@@ -357,7 +357,7 @@ export async function createDevframeClientHost(
         void switchEntry(id)
       },
       // A mirror of the session field, so a persisting host reads and writes the
-      // selected iframe's route through the same context every viewer uses.
+      // selected iframe's route through the same context every hub UI provider uses.
       get selectedRoute() {
         return panel.session.selectedDockRoute
       },
@@ -484,7 +484,7 @@ export async function createDevframeClientHost(
       manifest: () => renderersManifestState.value() as DockRendererManifest,
       onMounted(dispose, entry) {
         mountedDisposers.add(dispose)
-        // Dispose when the dock deactivates — the Vite viewer leaked here by
+        // Dispose when the dock deactivates — the Vite hub UI provider leaked here by
         // never unsubscribing the renderer's shared-state listeners.
         const offDeactivate = entryToStateMap.get(entry.id)?.events.on('entry:deactivated', dispose)
         return () => {
@@ -515,7 +515,7 @@ export async function createDevframeClientHost(
     // A bare specifier resolves through the explicit option, then the
     // host-advertised template; URL specifiers pass through untouched. (The
     // rpc reads are optional-chained for partial stubs — tests, bespoke
-    // viewers — where the template then resolves page-relative.)
+    // hub UI providers — where the template then resolves page-relative.)
     const specifier = resolveClientModuleSpecifier(script.importFrom, {
       resolveClientModule: options.resolveClientModule,
       template: rpc.connectionMeta?.configs?.dock?.clientModuleResolution,

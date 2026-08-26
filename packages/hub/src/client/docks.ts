@@ -21,7 +21,7 @@ export interface DockPanelStorage {
 
 /**
  * Per-tab UI state of the dock panel, distinct from the browser-shared geometry
- * in {@link DockPanelStorage}. A viewer persists this to `sessionStorage` so a
+ * in {@link DockPanelStorage}. A hub UI provider persists this to `sessionStorage` so a
  * reload (or the RPC auth handshake that follows one) restores the panel to
  * exactly where the developer left it — which dock was open, and the
  * address-bar route of that dock's iframe. Kept `sessionStorage`-scoped (not
@@ -69,7 +69,7 @@ export interface DocksContext extends DevframeRpcContext {
    */
   readonly when: WhenClauseContext
   /**
-   * The live connection status of the underlying devframe client, so a viewer
+   * The live connection status of the underlying RPC client, so a hub UI provider
    * can render one central connection indicator for every docked plugin
    * instead of each plugin surfacing its own.
    */
@@ -109,7 +109,7 @@ export interface DocksPanelContext {
   /**
    * Per-tab session UI state — whether the panel is open, which dock is
    * selected, and that dock's iframe route. Restored across reloads (and the
-   * auth handshake that follows one) by a viewer that persists it to
+   * auth handshake that follows one) by a hub UI provider that persists it to
    * `sessionStorage`.
    */
   session: DockSessionStorage
@@ -165,7 +165,7 @@ export interface DocksEntriesContext {
    * {@link entries}. Unlike a dock registered on the node
    * {@link import('../types/docks').DevframeDocksHost}, it never flows into
    * shared state, so it stays local to this client instead of syncing to the
-   * hub or other viewers — for a view a client host synthesizes itself.
+   * hub or other hub UI providers — for a view the client runtime synthesizes itself.
    *
    * Throws when `id` already names a client dock, unless `force` is set. A
    * client dock sharing an id with a server dock overrides it in the local

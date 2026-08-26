@@ -117,7 +117,7 @@ export default defineConfig({
       devframes: [
         demoDevframe,
         // Every built-in plugin, dogfooded end-to-end through the hub mount
-        // path - the same set a full viewer like vite-devtools would surface.
+        // path - the same set a full hub UI provider like vite-devtools would surface.
         gitDevframe,
         terminalsDevframe,
         codeServerDevframe,

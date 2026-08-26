@@ -10,7 +10,7 @@ import type { DevframeViewLauncher } from '@devframes/hub/types'
 import '@devframes/json-render/hub'
 
 /**
- * hub-ui's reference-viewer settings, merged onto the hub's generic
+ * hub-ui's own reference-UI settings, merged onto the hub's generic
  * {@link DevframeDocksUserSettings} — the hub core stays unaware of them.
  * Every field is optional so the hub's `DEFAULT_STATE_USER_SETTINGS()` (which
  * knows nothing about them) stays assignable; an absent value reads as the
@@ -41,7 +41,7 @@ declare module '@devframes/hub/types' {
 /**
  * A selectable launch root offered by a launcher dock entry.
  *
- * When a launcher supplies {@link HubViewLauncher.launcher.roots}, the viewer
+ * When a launcher supplies {@link HubViewLauncher.launcher.roots}, the hub UI provider
  * renders a picker above the launch button. The selected root's
  * {@link DevframeLaunchRoot.value} is forwarded to the launch as `{ root }`,
  * where a process launcher uses it as the spawned process's `cwd`.
@@ -67,7 +67,7 @@ export interface HubViewLauncher extends DevframeViewLauncher {
   launcher: DevframeViewLauncher['launcher'] & {
     /**
      * Selectable launch roots, owner-populated via `docks.update()`. When
-     * present the viewer renders a picker; the chosen root's `value` is
+     * present the hub UI provider renders a picker; the chosen root's `value` is
      * forwarded to the bound launch command as a `{ root }` payload.
      */
     roots?: DevframeLaunchRoot[]

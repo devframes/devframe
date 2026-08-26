@@ -147,7 +147,7 @@ function createClientNotesUrl(): string {
 <p>This dock was registered in the browser with
   <code>host.context.docks.register()</code>. It lives only in this page - it
   never enters the <code>devframe:docks</code> shared state, so it is not synced
-  to the hub server or to any other connected viewer.</p>
+  to the hub node side or to any other connected surface.</p>
 <p>Patch it live through the returned handle with <code>update()</code> (its
   <code>badge</code> was set that way), or remove it with <code>dispose()</code>.</p>`
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))

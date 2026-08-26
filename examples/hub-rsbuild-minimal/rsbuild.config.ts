@@ -48,7 +48,7 @@ let hub: HubInstance | undefined
 // A server-authored JSON-render dock: the whole view is this serializable
 // spec — no client build. It renders through whatever `'json-render'`
 // renderer the hub composes (below, the reference `@devframes/json-render-ui`
-// module); without one, the viewer shows its missing-renderer fallback.
+// module); without one, the hub UI provider shows its missing-renderer fallback.
 const jsonRenderSpec: DevframeJsonRenderSpec = {
   root: 'root',
   elements: {
@@ -84,7 +84,7 @@ export default defineConfig({
         ui: createUi({ branding: { primaryColor: '#ff5e00', productName: 'Devframes on Rsbuild' } }),
         // Serve the reference json-render frontend as a prebuilt renderer
         // module — the one-liner that makes `'json-render'` docks render in
-        // the prebuilt viewer. Swap it for any community implementation of
+        // the prebuilt hub UI provider. Swap it for any community implementation of
         // the same contract.
         renderers: [jsonRenderUiRenderer()],
         configure(ctx) {

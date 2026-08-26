@@ -6,13 +6,13 @@ The minimal [Rsbuild](https://rsbuild.dev) host for `@devframes/hub`: one `initH
 pnpm --filter hub-rsbuild-minimal dev
 ```
 
-Open the printed URL - the host page carries the floating dock via one injected script tag - or `/__devframes/` for the standalone viewer.
+Open the printed URL - the host page carries the floating dock via one injected script tag - or `/__devframes/` for the standalone hub UI.
 
 ## How it works
 
 [`rsbuild.config.ts`](./rsbuild.config.ts) is the entire host-framework integration:
 
-- `initHub({ devframes: [inspect, messages], ui: createUi({ branding }) })` runs in Rsbuild's Node config process (never bundled into the browser), so `createUi()`'s prebuilt viewer/dock and the devframes' node code work unchanged. `branding.primaryColor` is Rsbuild's own orange (`#ff5e00`) — a rebrand reaches every `primary`-based color in the dock, no CSS required.
+- `initHub({ devframes: [inspect, messages], ui: createUi({ branding }) })` runs in Rsbuild's Node config process (never bundled into the browser), so `createUi()`'s prebuilt standalone UI + floating dock and the devframes' node code work unchanged. `branding.primaryColor` is Rsbuild's own orange (`#ff5e00`) — a rebrand reaches every `primary`-based color in the dock, no CSS required.
 - `dev.setupMiddlewares` unshifts `hub.nodeMiddleware`, which owns the whole `/__devframes/` namespace and hands everything else back to Rsbuild.
 - The RPC WebSocket runs on a side-car port (`ws: { sidecar: true }`, since Rsbuild's middleware stack never hands over upgrades), advertised through `__connection.json`; the browser client discovers it automatically.
 - `html.tags` injects `<script type="module" src="/__devframes/embedded.js">`, so the floating dock mounts itself.

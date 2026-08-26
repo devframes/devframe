@@ -16,7 +16,7 @@ import { setupEmbeddedVisibility } from './visibility'
 let dockEl: HTMLElement | undefined
 
 async function mountDock(): Promise<void> {
-  // A mounted frame's SPA runs inside the viewer's iframes on the same
+  // A mounted frame's SPA runs inside the hub UI provider's iframes on the same
   // origin — never stack a second dock inside them.
   if (window.parent !== window)
     return

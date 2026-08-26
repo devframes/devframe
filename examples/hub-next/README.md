@@ -1,6 +1,6 @@
 # Next Devframe Hub
 
-A tiny, copyable **vite-devtools-style hub on Next.js**. [vite-devtools](https://github.com/vitejs/devtools) is the full Vite viewer built on `@devframes/hub`; this example wears the same shape - an icon dock, an iframe stage, a subsystem drawer - but hosts it from a Next.js App Router app with one `initHub()` instance behind one catch-all route. It's the reference for bringing the same devframes to any non-Vite host framework.
+A tiny, copyable **vite-devtools-style hub on Next.js**. [vite-devtools](https://github.com/vitejs/devtools) is the full Vite hub UI provider built on `@devframes/hub`; this example wears the same shape - an icon dock, an iframe stage, a subsystem drawer - but hosts it from a Next.js App Router app with one `initHub()` instance behind one catch-all route. It's the reference for bringing the same devframes to any non-Vite host framework.
 
 `src/client/devframe/next-devframe-hub.ts` is the entire node side: a single `initHub()` call from `@devframes/hub/initiate`.
 
@@ -11,7 +11,7 @@ pnpm install
 pnpm --filter hub-next dev
 ```
 
-On first load the hub asks you to authorize. `initHub()` gates every connection by default (devframe's interactive OTP), so it prints a 6-digit code and a magic link in the terminal, and the page shows an authorization view that exchanges the code for a bearer token stored in the browser. The viewer opts out of devframe's native `prompt()` (`simpleAuth: false`) to render that view; open the magic link instead to authorize without typing. Each embedded SPA then inherits the token the host page stored.
+On first load the hub asks you to authorize. `initHub()` gates every connection by default (devframe's interactive OTP), so it prints a 6-digit code and a magic link in the terminal, and the page shows an authorization view that exchanges the code for a bearer token stored in the browser. The hub UI provider opts out of devframe's native `prompt()` (`simpleAuth: false`) to render that view; open the magic link instead to authorize without typing. Each embedded SPA then inherits the token the host page stored.
 
 Open the printed URL. The dock rail on the left lists every mounted tool with its icon:
 
@@ -42,11 +42,11 @@ The instance is memoized on `globalThis`, so Next's dev-time module re-evaluatio
 
 - `initHub()` boots a whole hub with no Vite-specific code path - devframes, shared RPC registry, WS transport, MCP, and discovery behind one framework-agnostic handler
 - Every `devframes` entry is mounted as a dock and served at `/__devframes/<id>/` with its own `__connection.json`, so the embedded SPA connects straight back to the hub
-- One authorization covers the whole hub: `initHub()` gates the shared transport by default, so a single OTP handshake trusts every mounted devframe, the discovery endpoints, and the built-ins. The viewer drives its own authorization view (`simpleAuth: false`) and each embedded SPA inherits the stored token
+- One authorization covers the whole hub: `initHub()` gates the shared transport by default, so a single OTP handshake trusts every mounted devframe, the discovery endpoints, and the built-ins. The hub UI provider drives its own authorization view (`simpleAuth: false`) and each embedded SPA inherits the stored token
 - The browser reads `devframe:docks` / `devframe:commands` shared state and dispatches commands over RPC - byte-for-byte the same protocol the Vite host speaks
 - `createDevframeClientHost()` boots the hub's framework-level client runtime in the host page: it publishes the shared client context and imports each dock's `clientScript` (here, the a11y page script) so devframes run page scripts in the user app's page
 - The **JSON Render** dock renders through a **local React renderer** (`src/client/json-render/react-renderer.tsx` - a compact React port of the base catalog) registered at `createDevframeClientHost({ renderers })`. The hub *also* publishes the reference Vue frontend through its renderer manifest (`renderers: [jsonRenderUiRenderer()]` on `initHub`), but local registration takes precedence - witnessing that any frontend implementing the `JsonRenderDockRenderer` contract can replace the reference one. Delete the local `renderers` option and the same dock renders via the manifest-served module instead. (The sibling `hub-vite` witness ships no local renderer and consumes the manifest directly - the other side of the swap seam.)
-- The **No Renderer** dock witnesses the missing-renderer path: its type is covered by nothing, so `renderers.mount()` resolves `{ status: 'missing-renderer' }` and the viewer shows *No renderer for "demo-unrendered" in the current environment* instead of a dead panel
+- The **No Renderer** dock witnesses the missing-renderer path: its type is covered by nothing, so `renderers.mount()` resolves `{ status: 'missing-renderer' }` and the hub UI provider shows *No renderer for "demo-unrendered" in the current environment* instead of a dead panel
 - The **Client Script Demo** dock witnesses the **URL shape of client scripts**: the Next host declares no `clientModuleResolution` (Next's bundler exposes no browser-reachable on-demand module URL, so bare-specifier client scripts are unsupported here), so it mounts `demo-dock-client`'s prebuilt self-contained bundle statically and passes the served URL as `action.importFrom`. The sibling `hub-vite` host consumes the **same package** as a bare npm specifier through its `/@id/{specifier}` template - the two shapes of `importFrom` side by side
 
 ## Hosting built-in devframes in a bundler

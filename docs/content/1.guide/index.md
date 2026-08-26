@@ -98,11 +98,11 @@ hub.handler
 // the whole devtools collection as Request → Response
 ```
 
-The mounted devframes share one RPC registry, state store, connection, auth gate, and optional aggregate MCP endpoint. The hub is headless: [`@devframes/hub-ui`](/guide/build-your-own-hub-ui) is a reference viewer a product can replace.
+The mounted devframes share one RPC registry, state store, connection, auth gate, and optional aggregate MCP endpoint. The hub is headless: [`@devframes/hub-ui`](/guide/build-your-own-hub-ui) is a reference hub UI provider a product can replace.
 
 ## Inheriting the ecosystem
 
-[Vite DevTools](https://devtools.vite.dev/) is the first flagship viewer, using `initHub()` alongside its own Vite, Rolldown, Vitest, and Oxc tooling. The [framework kits](/frameworks) — [`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), [`@devframes/next`](/frameworks/next) — add conventions over the same handler. See [Built with Devframe](/guide/built-with).
+[Vite DevTools](https://devtools.vite.dev/) is the first flagship hub UI provider, using `initHub()` alongside its own Vite, Rolldown, Vitest, and Oxc tooling. The [framework kits](/frameworks) — [`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), [`@devframes/next`](/frameworks/next) — add conventions over the same handler. See [Built with Devframe](/guide/built-with).
 
 ## Install
 

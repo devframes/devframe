@@ -53,7 +53,7 @@ export interface ViteDevframeHubOptions {
    * The hub's UI slot. Defaults to `@devframes/hub-ui`'s `createUi()` (the
    * reference floating dock + standalone viewer) when omitted — install
    * `@devframes/hub-ui` for that default. Pass your own {@link DevframeHubUi}
-   * to swap the viewer, or `false` for a headless hub (serve your own UI
+   * to swap the hub UI provider, or `false` for a headless hub (serve your own UI
    * against `@devframes/hub/client`).
    */
   ui?: DevframeHubUi | false

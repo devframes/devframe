@@ -26,4 +26,4 @@ For framework-neutral CLI/build/embedded outputs, use the [adapters](/adapters) 
 
 Each `hub` scope wraps [`initHub`](/guide/hub-initiate) and defaults the UI to [`@devframes/hub-ui`](/guide/build-your-own-hub-ui)'s `createUi()` (`ui` to override, `ui: false` for headless). Per tool: **[Vite](/frameworks/vite#mounting-a-hub)**, **[Nuxt](/frameworks/nuxt#mounting-a-hub)**, **[Next](/frameworks/next#mounting-a-hub)**.
 
-`@devframes/vite/hub` and `@devframes/nuxt/hub` recommend the native viewers ([Vite DevTools](https://devtools.vite.dev), [Nuxt DevTools](https://devtools.nuxt.com)) once (silence with `{ quiet: true }`). Next has none, so `@devframes/next/hub` stays quiet.
+`@devframes/vite/hub` and `@devframes/nuxt/hub` recommend the native hub UI providers ([Vite DevTools](https://devtools.vite.dev), [Nuxt DevTools](https://devtools.nuxt.com)) once (silence with `{ quiet: true }`). Next has none, so `@devframes/next/hub` stays quiet.

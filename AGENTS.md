@@ -2,9 +2,9 @@
 
 ## Positioning
 
-**`devframe`** is the framework-neutral container for one devtool integration, portable across viewers. Build a single tool (its RPC, its SPA, its diagnostics, its CLI/build/embedded outputs) without caring how it'll be displayed. A devframe runs standalone (CLI, static deploy, embedded SPA) just as well as it mounts inside a hub.
+**`devframe`** is the framework-neutral container for one devtool integration, portable across hub UI providers. Build a single tool (its RPC, its SPA, its diagnostics, its CLI/build/embedded outputs) without caring how it'll be displayed. A devframe runs standalone (CLI, static deploy, embedded SPA) just as well as it mounts inside a hub.
 
-**`@devframes/hub`** is the framework-neutral hub layer that sits on top of devframe and provides the multi-devframe orchestration (docks, terminals, messages, commands). It does not ship UI - viewers (e.g. `@vitejs/devtools-kit`) provide their own UI on top of the hub's RPC + shared-state protocol. It does ship a **headless client runtime** (`createDevframeClientHost()` from `@devframes/hub/client`): booted in the host page, it assembles the shared `DevframeClientContext` (panel, docks, commands, when) and imports each dock entry's client script (`action` / `custom-render` / iframe `clientScript`) into that page - how a built-in devframe like the a11y inspector runs its page script inside the user app's page. See `examples/hub-vite/` for a working ~120-line Vite host demonstrating the protocol end to end.
+**`@devframes/hub`** is the framework-neutral hub layer that sits on top of devframe and provides the multi-devframe orchestration (docks, terminals, messages, commands). It does not ship UI - hub UI providers (e.g. `@vitejs/devtools-kit`) provide their own UI on top of the hub's RPC + shared-state protocol. It does ship a **headless client runtime** (`createDevframeClientHost()` from `@devframes/hub/client`): booted in the host page, it assembles the shared `DevframeClientContext` (panel, docks, commands, when) and imports each dock entry's client script (`action` / `custom-render` / iframe `clientScript`) into that page - how a built-in devframe like the a11y inspector runs its page script inside the user app's page. See `examples/hub-vite/` for a working ~120-line Vite host demonstrating the protocol end to end.
 
 ## Terminology
 
@@ -15,7 +15,7 @@ The docs' canonical vocabulary lives in [`docs/content/1.guide/1.terms.md`](docs
 - **host framework** is the environment a devframe or hub mounts into (a Vite dev server, a Next.js app, a Hono server); named forms like "the Vite host" are fine. **host page** is the browser document where the client runtime boots; **user app** is the application being developed and inspected.
 - A devframe's two halves are the **node side** and the **browser side**.
 - Browser-side terms: **client runtime** (`createDevframeClientHost()`), **client context**, **client script**, **page script** (a devframe's script in the user app's page - never "agent"; **coding agent** is the only agent), **RPC client** (`connectDevframe()`), **SPA**, **panel** (a devframe's SPA as a rendered surface), **surface** (any rendered browser view - say "API", not "API surface").
-- Hub terms: **viewer** (a hub UI implementation - never "shell"), **dock entry** / **dock rail** / **dock panel**, **mounted devframe** (never "frame").
+- Hub terms: **hub UI provider** (a hub UI implementation - never "shell" or bare "viewer"; "external viewer" stays for cross-origin surfaces in the security docs), **dock entry** / **dock rail** / **dock panel**, **mounted devframe** (never "frame").
 - The three communication paths: **RPC** (browser side ↔ node side), the **client context** (client scripts ↔ client runtime), and the **in-page channel** (page script ↔ panel, same-origin in-browser).
 - Storage scopes: **workspace scope** (committable, per-repo), **project scope** (per-checkout), **global scope** (per-user) - never describe the project scope as "per-workspace".
 - **framework kits** are `@devframes/vite` / `@devframes/nuxt` / `@devframes/next`; refer to external products by their full names (`@vitejs/devtools-kit`, `@nuxt/devtools`).
@@ -72,8 +72,8 @@ The framework kits - `@devframes/vite`, `@devframes/nuxt`, `@devframes/next` - e
 - **`.../single`** - **build & dev-serve a single devframe's SPA** with that tool (the "I'm authoring one devframe" scope). Vite: the `devframeVitePlugin` / `devframeViteBridge` / `devframeVite` plugins. Next: `withDevframe` + `createDevframeNextHandler`, with its React client at `.../single/client`. Nuxt: the Nuxt module (registered as `modules: ['@devframes/nuxt/single']`).
 - **`.../hub`** - **mount a whole `@devframes/hub` (many devframes) inside that tool** (the "I'm standing up devtools" scope). Wraps `initHub`, defaults the UI slot to `@devframes/hub-ui`'s `createUi()` (overridable via `ui`, or `ui: false` for headless), and ships a browser client helper at `.../hub/client` (a thin, lifecycle-managing wrapper over `@devframes/hub/client`'s `createDevframeClientHost`). `@devframes/hub` and `@devframes/hub-ui` are **optional peers** of these packages; `hub-ui` is loaded lazily (a bundler-ignored dynamic `import()` in the Next hub) so it stays optional and its `import.meta.url` asset lookups resolve at request time.
 - **The bare root (`.`) throws** a helpful error pointing at the two subpaths - never put real code on it.
-- **Vite and Nuxt already have native hub viewers** (`@vitejs/devtools-kit`, `@nuxt/devtools`), so `@devframes/vite/hub` and `@devframes/nuxt/hub` still work but emit a one-time `console.warn` recommending those (silence with `{ quiet: true }`). `@devframes/next/hub` has no native counterpart, so it warns nothing.
-- The **full hub examples** (`examples/hub-vite`, `examples/hub-next`) consume `.../hub` on the node side but keep hand-rolling their own viewer against `@devframes/hub/client` with `ui: false` - that hand-rolled viewer is the whole point of those reference hosts. The **minimal** ones (`examples/hub-*-minimal`) consume `.../hub` with the default `@devframes/hub-ui` and inject its `embedded.js`, needing no browser-side code.
+- **Vite and Nuxt already have native hub UI providers** (`@vitejs/devtools-kit`, `@nuxt/devtools`), so `@devframes/vite/hub` and `@devframes/nuxt/hub` still work but emit a one-time `console.warn` recommending those (silence with `{ quiet: true }`). `@devframes/next/hub` has no native counterpart, so it warns nothing.
+- The **full hub examples** (`examples/hub-vite`, `examples/hub-next`) consume `.../hub` on the node side but keep hand-rolling their own hub UI provider against `@devframes/hub/client` with `ui: false` - that hand-rolled hub UI provider is the whole point of those reference hosts. The **minimal** ones (`examples/hub-*-minimal`) consume `.../hub` with the default `@devframes/hub-ui` and inject its `embedded.js`, needing no browser-side code.
 
 ### Design system
 
@@ -95,7 +95,7 @@ All five built-in plugins - and every example under `examples/` - share one desi
 
 ### Devframe design principles
 
-These reinforce devframe's positioning as "the container for one devtool integration, portable to multiple viewers". When in doubt, err on the side of "devframe provides primitives, the hub provides UX".
+These reinforce devframe's positioning as "the container for one devtool integration, portable to multiple hub UI providers". When in doubt, err on the side of "devframe provides primitives, the hub provides UX".
 
 - **Single-integration scope.** Devframe describes one tool. If a feature only makes sense when multiple tools share a UI - docking, a unified command palette, cross-tool toasts, terminal aggregation - it belongs in a hub package, not here.
 - **Headless by default.** No default startup banners, no opinionated logging to stdout, no default styling. Provide hooks (`onReady`, `cli.configure`, etc.); let the application print its own branding. Structured diagnostics via `nostics` are fine - ad-hoc `console.log`s baked into adapters are not.

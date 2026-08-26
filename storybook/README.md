@@ -1,7 +1,6 @@
 # @devframes/storybook
 
-The unified Storybook host, built as a **hub** on `@devframes/hub`: the
-hub supplies the viewer and each built-in devframe's Storybook is its own dock,
+The unified Storybook host, built as a **hub** on `@devframes/hub`: `@devframes/hub-ui` supplies the UI and each built-in devframe's Storybook is its own dock,
 alongside the live terminals devframe running as a real mounted devframe.
 
 ## How it works

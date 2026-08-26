@@ -133,7 +133,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
   }
 
   /**
-   * Warn (don't throw — a viewer-side `resolveClientModule` may still cover
+   * Warn (don't throw — a client-runtime `resolveClientModule` override may still cover
    * it) when a dock declares a **bare-specifier** client script on a host
    * that advertises no `staticConfig.dock.clientModuleResolution`: the
    * browser cannot resolve a bare npm specifier natively, so the script is

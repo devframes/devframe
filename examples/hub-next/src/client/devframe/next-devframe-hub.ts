@@ -269,7 +269,7 @@ export async function nextDevframeHub(
     // over the same catch-all route as the SPAs.
     mcp: true,
     // This host renders its own React UI in `app/page.tsx`, so skip the
-    // default `@devframes/hub-ui` viewer/embedded slot.
+    // default `@devframes/hub-ui` standalone/embedded slot.
     ui: false,
     // Next route handlers can't accept WS upgrades — `createNextDevframeHub`
     // runs the socket on a side-car (a free port near 9777, or the pinned one).
@@ -317,7 +317,7 @@ export async function nextDevframeHub(
       })
 
       // The hub synthesizes no built-in docks - a high-level integration
-      // registers the viewer's native views it wants, declaring the `~builtin`
+      // registers the hub UI provider's native views it wants, declaring the `~builtin`
       // category itself so this Settings tab groups and sorts last.
       ctx.docks.register({
         type: '~builtin',

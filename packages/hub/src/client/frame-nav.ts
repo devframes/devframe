@@ -3,7 +3,7 @@ import type { DockRegistration, DocksEntriesContext } from './docks'
 import { HUB_EVENTS } from '../events'
 
 /**
- * Shared-iframe soft navigation — the viewer-side half of a host↔iframe
+ * Shared-iframe soft navigation — the hub-UI-provider-side half of a host-page↔iframe
  * `postMessage` protocol.
  *
  * An {@link DevframeViewIframe.subTabs anchor} iframe dock owns one live iframe
@@ -216,7 +216,7 @@ export function attachFrameNavClient(options: FrameNavClientOptions): FrameNavCl
       else {
         const handle = docks.register(entry) as DockRegistration<DevframeViewIframe>
         const record: MemberRecord = { tab, handle }
-        // Selecting the member dock in the viewer drives a soft-nav.
+        // Selecting the member dock in the hub UI provider drives a soft-nav.
         record.off = docks
           .getStateById(entry.id)
           ?.events
