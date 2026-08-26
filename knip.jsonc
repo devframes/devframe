@@ -20,7 +20,13 @@
   // packages (`create<X>Service`) follow the same rule.
   "ignoreIssues": {
     "plugins/*/src/index.ts": ["duplicates"],
-    "services/*/src/index.ts": ["duplicates"]
+    "services/*/src/index.ts": ["duplicates"],
+    // Deprecated rename aliases (old name re-exported next to its canonical
+    // replacement, kept for back-compat until the next major): the terms-page
+    // renames left `createDevframeClientHost` → `createDevframeClientRuntime`
+    // and `AGENT_DISCOVERY_FILE` → `DISCOVERY_FILE` aliases behind.
+    "packages/hub/src/client/host.ts": ["duplicates"],
+    "plugins/data-inspector/src/inject/index.ts": ["duplicates"]
   },
   "workspaces": {
     ".": {

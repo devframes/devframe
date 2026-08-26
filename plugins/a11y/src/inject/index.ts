@@ -32,7 +32,7 @@ import { createMessagesReporter } from './messages.ts'
 import { createOverlay } from './overlay.ts'
 import { resolveElement, scan } from './scanner.ts'
 
-const GLOBAL_FLAG = '__DF_A11Y_AGENT__'
+const GLOBAL_FLAG = '__DF_A11Y_PAGE_SCRIPT__'
 
 function start(context?: A11yPageScriptContext) {
   const w = window as unknown as Record<string, unknown>
@@ -359,5 +359,5 @@ export default function runA11yPageScript(context?: A11yPageScriptContext): void
 // (the standalone demo, any non-hub host page) starts the page script on load — deferred
 // one macrotask so a hub host that imports this module calls the default
 // export (microtask-chained after the import) first, letting the context-ful
-// boot win the `__DF_A11Y_AGENT__` guard.
+// boot win the `__DF_A11Y_PAGE_SCRIPT__` guard.
 setTimeout(start, 0)

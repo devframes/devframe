@@ -1,13 +1,13 @@
 'use client'
 
-import type { DevframeClientHost, DevframeClientHostOptions } from '@devframes/hub/client'
-import { createDevframeClientHost } from '@devframes/hub/client'
+import type { DevframeClientRuntime, DevframeClientRuntimeOptions } from '@devframes/hub/client'
+import { createDevframeClientRuntime } from '@devframes/hub/client'
 import { DEVFRAMES_HUB_BASE } from '@devframes/hub/constants'
 import { useEffect, useState } from 'react'
 
-export type { DevframeClientHost, DevframeClientHostOptions } from '@devframes/hub/client'
+export type { DevframeClientHost, DevframeClientHostOptions, DevframeClientRuntime, DevframeClientRuntimeOptions } from '@devframes/hub/client'
 
-export interface UseDevframeHubClientOptions extends DevframeClientHostOptions {
+export interface UseDevframeHubClientOptions extends DevframeClientRuntimeOptions {
   /**
    * Hub mount base to connect to. Forwarded as `connect.baseURL` when no
    * `rpc` / `connect.baseURL` is supplied.
@@ -22,7 +22,7 @@ export interface UseDevframeHubClientOptions extends DevframeClientHostOptions {
  * the browser half of {@link import('./hub').nextDevframeHub}. Connects RPC to
  * the hub (defaulting `base` to `/__devframes/`), assembles the shared
  * `DevframeClientContext`, imports each dock's client script into the page,
- * and disposes on unmount. Returns the {@link DevframeClientHost} once ready
+ * and disposes on unmount. Returns the {@link DevframeClientRuntime} once ready
  * (`null` while connecting).
  *
  * Only needed when you render your own dock UI (or override the hub's `ui`).
@@ -34,15 +34,15 @@ export interface UseDevframeHubClientOptions extends DevframeClientHostOptions {
  */
 export function useDevframeHubClient(
   options: UseDevframeHubClientOptions = {},
-): DevframeClientHost | null {
+): DevframeClientRuntime | null {
   const { base = DEVFRAMES_HUB_BASE, rpc, connect } = options
-  const [host, setHost] = useState<DevframeClientHost | null>(null)
+  const [host, setHost] = useState<DevframeClientRuntime | null>(null)
 
   useEffect(() => {
     let disposed = false
-    let created: DevframeClientHost | undefined
+    let created: DevframeClientRuntime | undefined
 
-    void createDevframeClientHost({
+    void createDevframeClientRuntime({
       ...options,
       ...(rpc ? { rpc } : { connect: { baseURL: base, ...connect } }),
     }).then((next) => {

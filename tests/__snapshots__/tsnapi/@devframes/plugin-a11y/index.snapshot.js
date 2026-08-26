@@ -7,6 +7,7 @@ export function createA11yDevframe(_) {}
 
 // #region Variables
 export var a11yAgentBundlePath /* const */
+export var a11yPageScriptBundlePath /* const */
 // #endregion
 
 // #region Default Export

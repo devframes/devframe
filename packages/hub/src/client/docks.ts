@@ -138,7 +138,7 @@ export interface DocksEntriesContext {
    * The resolved top-level category ordering — `DEFAULT_CATEGORIES_ORDER`,
    * overridden by every installed devframe's own `dock.categoryOrder`
    * (`ConnectionMeta.configs.dock.categoryOrder`), overridden again by the
-   * host page's own `createDevframeClientHost({ categoryOrder })`. Fixed
+   * host page's own `createDevframeClientRuntime({ categoryOrder })`. Fixed
    * for the life of the session — resolved once at boot.
    */
   readonly categoryOrder: Record<string, number>

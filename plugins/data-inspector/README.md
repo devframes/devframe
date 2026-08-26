@@ -87,7 +87,7 @@ DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject 
 
 On the zero-code path there's nowhere to call `registerDataSource`, so the inject entry auto-registers a **`globalThis`** source: assign what you want to inspect onto the global object (`globalThis.store = store`) and query it live. Opt out with `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
 
-The inject entry binds `127.0.0.1`, requires devframe's trust handshake with a per-run token by default, and advertises its endpoint in `node_modules/.data-inspector/agent.json`, which `pnpx @devframes/plugin-data-inspector attach` picks up automatically.
+The inject entry binds `127.0.0.1`, requires devframe's trust handshake with a per-run token by default, and advertises its endpoint in `node_modules/.data-inspector/discovery.json`, which `pnpx @devframes/plugin-data-inspector attach` picks up automatically.
 
 > [!WARNING]
 > A connected inspector runs eval-grade jora queries against live objects: queries can invoke functions reachable as own properties and fire getters. Treat the inject endpoint like a debugger port — keep it on loopback and keep auth on.

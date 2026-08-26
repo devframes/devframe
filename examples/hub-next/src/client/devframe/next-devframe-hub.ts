@@ -114,7 +114,7 @@ interface A11yAgentMount {
 async function loadA11yAgentMount(): Promise<A11yAgentMount | null> {
   try {
     const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-a11y')
-    const bundle = mod.a11yAgentBundlePath as string
+    const bundle = mod.a11yPageScriptBundlePath as string
     return {
       dockId: (mod.default as () => DevframeDefinition)().id,
       dir: dirname(bundle),

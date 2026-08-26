@@ -1,12 +1,12 @@
-import type { DevframeClientHost, DevframeClientHostOptions } from '@devframes/hub/client'
+import type { DevframeClientRuntime, DevframeClientRuntimeOptions } from '@devframes/hub/client'
 import type { Ref } from 'vue'
-import { createDevframeClientHost } from '@devframes/hub/client'
+import { createDevframeClientRuntime } from '@devframes/hub/client'
 import { DEVFRAMES_HUB_BASE } from '@devframes/hub/constants'
 import { onScopeDispose, shallowRef } from 'vue'
 
-export type { DevframeClientHost, DevframeClientHostOptions } from '@devframes/hub/client'
+export type { DevframeClientHost, DevframeClientHostOptions, DevframeClientRuntime, DevframeClientRuntimeOptions } from '@devframes/hub/client'
 
-export interface UseDevframeHubClientOptions extends DevframeClientHostOptions {
+export interface UseDevframeHubClientOptions extends DevframeClientRuntimeOptions {
   /**
    * Hub mount base to connect to. Forwarded as `connect.baseURL` when no
    * `rpc` / `connect.baseURL` is supplied.
@@ -22,7 +22,7 @@ export interface UseDevframeHubClientOptions extends DevframeClientHostOptions {
  * hub (defaulting `base` to `/__devframes/`), assembles the shared
  * `DevframeClientContext`, imports each dock's client script into the page,
  * and disposes when the current effect scope is torn down. Returns a ref that
- * resolves to the {@link DevframeClientHost} (`null` while connecting).
+ * resolves to the {@link DevframeClientRuntime} (`null` while connecting).
  *
  * Client-only: call it inside `<script setup>` on a client-rendered component
  * (e.g. under `<ClientOnly>`), never during SSR. Only needed when you render
@@ -31,12 +31,12 @@ export interface UseDevframeHubClientOptions extends DevframeClientHostOptions {
  */
 export function useDevframeHubClient(
   options: UseDevframeHubClientOptions = {},
-): Ref<DevframeClientHost | null> {
+): Ref<DevframeClientRuntime | null> {
   const { base = DEVFRAMES_HUB_BASE, connect, ...rest } = options
-  const host = shallowRef<DevframeClientHost | null>(null)
+  const host = shallowRef<DevframeClientRuntime | null>(null)
   let disposed = false
 
-  void createDevframeClientHost({
+  void createDevframeClientRuntime({
     ...rest,
     ...(rest.rpc ? {} : { connect: { baseURL: base, ...connect } }),
   }).then((created) => {

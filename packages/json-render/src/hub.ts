@@ -37,7 +37,7 @@ export type JsonRenderDockMountOptions = DockRendererMountOptions<DevframeJsonRe
  * The renderer contract for `'json-render'` docks: a hub `DockRenderer`
  * narrowed to {@link DevframeJsonRenderDockEntry}. Implement it to replace
  * the reference frontend — register the implementation locally
- * (`createDevframeClientHost({ renderers })`) or ship it as a prebuilt
+ * (`createDevframeClientRuntime({ renderers })`) or ship it as a prebuilt
  * module registered through the hub's renderer manifest
  * (`initHub({ renderers })`).
  */

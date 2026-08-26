@@ -24,7 +24,7 @@ export interface SetupDataInspectorOptions {
  * registry changes so connected UIs refresh their source list live.
  *
  * Called from the definition's `setup(ctx)` and reusable by host adapters
- * (the CLI and the in-process agent wire their own contexts through this).
+ * (the CLI and the inject endpoint wire their own contexts through this).
  */
 export function setupDataInspector(ctx: DevframeNodeContext, options: SetupDataInspectorOptions = {}): void {
   for (const fn of serverFunctions)

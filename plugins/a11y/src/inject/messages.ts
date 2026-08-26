@@ -1,6 +1,6 @@
 /**
  * Mirrors scan results into the hub's messages feed when the page script is booted
- * as a dock **client script** (`createDevframeClientHost()` calls the page script's
+ * as a dock **client script** (`createDevframeClientRuntime()` calls the page script's
  * default export with its `DockClientScriptContext`).
  *
  * The hub context is consumed by duck-typing a minimal structural slice, so

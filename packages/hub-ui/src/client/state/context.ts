@@ -313,7 +313,7 @@ export async function createDocksContext(
   // and drives the bidirectional nav loop (selecting a member soft-navigates
   // the shared frame; the app's `navigated` report moves the dock highlight).
   //
-  // Our shell runs its own dock machinery instead of hub's `createDevframeClientHost`,
+  // Our shell runs its own dock machinery instead of hub's `createDevframeClientRuntime`,
   // so we replicate the host's `maybeAttachFrameNav`: one adapter per `frameId`,
   // torn down when the anchor is removed.
   //

@@ -210,7 +210,7 @@ export interface InitHubOptions {
    * `<base>__renderers/<type>.mjs` and published in the renderer manifest;
    * clients import a module lazily the first time a dock of its `type`
    * mounts. Renderers registered directly in client code
-   * (`createDevframeClientHost({ renderers })`) take precedence.
+   * (`createDevframeClientRuntime({ renderers })`) take precedence.
    *
    * ```ts
    * import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'

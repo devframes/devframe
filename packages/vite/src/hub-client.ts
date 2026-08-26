@@ -1,10 +1,10 @@
-import type { DevframeClientHost, DevframeClientHostOptions } from '@devframes/hub/client'
-import { createDevframeClientHost } from '@devframes/hub/client'
+import type { DevframeClientRuntime, DevframeClientRuntimeOptions } from '@devframes/hub/client'
+import { createDevframeClientRuntime } from '@devframes/hub/client'
 import { DEVFRAMES_HUB_BASE } from '@devframes/hub/constants'
 
-export type { DevframeClientHost, DevframeClientHostOptions } from '@devframes/hub/client'
+export type { DevframeClientHost, DevframeClientHostOptions, DevframeClientRuntime, DevframeClientRuntimeOptions } from '@devframes/hub/client'
 
-export interface MountDevframeHubClientOptions extends DevframeClientHostOptions {
+export interface MountDevframeHubClientOptions extends DevframeClientRuntimeOptions {
   /**
    * Hub mount base to connect to. Forwarded as `connect.baseURL` when no
    * `rpc` / `connect.baseURL` is supplied.
@@ -20,7 +20,7 @@ export interface MountDevframeHubClientOptions extends DevframeClientHostOptions
  * (defaulting `base` to `/__devframes/`), assembles the shared
  * `DevframeClientContext`, and imports each dock's client script into the
  * page. A thin default-applying wrapper over `@devframes/hub/client`'s
- * `createDevframeClientHost`.
+ * `createDevframeClientRuntime`.
  *
  * Only needed when you render your own dock UI (or override the hub's `ui`).
  * With the default `@devframes/hub-ui`, its injected `embedded.js` boots the
@@ -28,9 +28,9 @@ export interface MountDevframeHubClientOptions extends DevframeClientHostOptions
  */
 export function mountDevframeHubClient(
   options: MountDevframeHubClientOptions = {},
-): Promise<DevframeClientHost> {
+): Promise<DevframeClientRuntime> {
   const { base = DEVFRAMES_HUB_BASE, connect, ...rest } = options
-  return createDevframeClientHost({
+  return createDevframeClientRuntime({
     ...rest,
     ...(rest.rpc ? {} : { connect: { baseURL: base, ...connect } }),
   })

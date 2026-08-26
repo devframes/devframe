@@ -1,5 +1,5 @@
 import type { DevframeDockEntry } from '@devframes/hub/types'
-import { connectDevframe, createDevframeClientHost } from '@devframes/hub/client'
+import { connectDevframe, createDevframeClientRuntime } from '@devframes/hub/client'
 import { mountAppUnderTest } from './app-under-test'
 import { iconClass } from './icons'
 import 'virtual:uno.css'
@@ -43,7 +43,7 @@ async function main() {
   // imports each dock's client script into this page - here, the a11y agent,
   // which then scans this document live and mirrors findings into the messages
   // feed. The rail below reads the same `devframe:docks` shared state.
-  const host = await createDevframeClientHost({ rpc })
+  const host = await createDevframeClientRuntime({ rpc })
   const docksCtx = host.context.docks
 
   const docks = await rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks', { initialValue: [] })

@@ -7,7 +7,7 @@ import type {
 } from '@devframes/hub/types'
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
-import { connectDevframe, createDevframeClientHost, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
+import { connectDevframe, createDevframeClientRuntime, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
 import { dockIconSvg } from './icons'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
@@ -338,7 +338,7 @@ async function main(): Promise<void> {
   // context and imports each dock's client script into this page (e.g. the
   // a11y agent). `json-render` docks render through the module the hub serves
   // via its renderer manifest - imported lazily by the registry on first mount.
-  const host = await createDevframeClientHost({ rpc })
+  const host = await createDevframeClientRuntime({ rpc })
   const docksCtx = host.context.docks
 
   // Two *client-only* docks, registered on the client host context so they
@@ -368,7 +368,7 @@ async function main(): Promise<void> {
 
 // ── the dock rail + stage ────────────────────────────────────────────────────
 
-function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientHost>>): void {
+function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientRuntime>>): void {
   const docksCtx = host.context.docks
 
   // Keep-alive iframe pool: one iframe per `frameId` (shared-frame docks) or

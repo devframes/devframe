@@ -24,12 +24,15 @@ const distDir: RemoteAssets = {
  * scan it (its default export boots the page script; importing it does too).
  *
  * A hub attaches this as the a11y dock's `clientScript`, resolved to a URL the
- * page can import: `/@fs/${a11yAgentBundlePath}` for a Vite host, or a
+ * page can import: `/@fs/${a11yPageScriptBundlePath}` for a Vite host, or a
  * statically-served path for others (see the minimal hub examples). Resolves
  * under `<pkg>/dist/inject/inject.js` from both the source and the published
  * entry. Requires the built bundle (`pnpm -C plugins/a11y build`).
  */
-export const a11yAgentBundlePath: string = fileURLToPath(new URL('../dist/inject/inject.js', import.meta.url))
+export const a11yPageScriptBundlePath: string = fileURLToPath(new URL('../dist/inject/inject.js', import.meta.url))
+
+/** @deprecated Renamed — use {@link a11yPageScriptBundlePath}. */
+export const a11yAgentBundlePath: string = a11yPageScriptBundlePath
 
 export interface A11yDevframeOptions {
   /** Override the devframe id (and the default CLI command / mount path). */

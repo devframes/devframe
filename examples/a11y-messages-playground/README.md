@@ -62,13 +62,13 @@ and attaches the a11y page script as the a11y dock's `clientScript`:
 a11yMessagesPlayground({
   devframes: [a11yDevframe, messagesDevframe],
   clientScripts: {
-    [a11yDevframe.id]: { importFrom: `/@fs/${a11yAgentBundlePath}` },
+    [a11yDevframe.id]: { importFrom: `/@fs/${a11yPageScriptBundlePath}` },
   },
 })
 ```
 
 `src/client/main.ts` boots the hub's client runtime with
-`createDevframeClientHost()`, which imports that page script into the host page (so it
+`createDevframeClientRuntime()`, which imports that page script into the host page (so it
 scans the app under test) and renders the dock rail from `devframe:docks` shared
 state. The navigation itself rides existing hub primitives: the messages panel
 calls `hub:docks:activate`, the hub broadcasts it, and the client runtime switches

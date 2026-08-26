@@ -54,9 +54,9 @@ page script itself free of any RPC dependency.
 
 devframe deliberately provides no access to the user app's DOM, so the
 page script is the author-provided bridge into the user app's page. In a hub, the
-page script is the a11y dock's **client script**: attach `a11yAgentBundlePath` as the
+page script is the a11y dock's **client script**: attach `a11yPageScriptBundlePath` as the
 dock's `clientScript` (resolved to an importable URL — `/@fs/…` under Vite, or a
-statically-served path) and the hub's client runtime (`createDevframeClientHost`
+statically-served path) and the hub's client runtime (`createDevframeClientRuntime`
 from `@devframes/hub/client`) imports it into the host page and calls its
 default export with the client-script context. Booted that way, the page script also
 mirrors the active route's scan into the hub's **messages feed** — a summary entry
@@ -115,7 +115,7 @@ pnpm -C plugins/a11y dev         # from source: same, at /__devframes_plugin_a11
 
 | Path | Export | Purpose |
 |------|--------|---------|
-| `src/index.ts` | `.` | `createA11yDevframe()` (also the default export); `a11yAgentBundlePath` — the page-script module a hub attaches as this dock's client script |
+| `src/index.ts` | `.` | `createA11yDevframe()` (also the default export); `a11yPageScriptBundlePath` — the page-script module a hub attaches as this dock's client script |
 | `src/node/index.ts` | `/node` | `setupA11y(ctx, options?)` — registers the RPC functions with the runtime config |
 | `src/cli.ts` | `/cli` | `createA11yCli()` — backs the `devframes_plugin_a11y` bin |
 | `src/client/index.ts` | `/client` | `connectA11y()` — typed browser RPC client wrapper |

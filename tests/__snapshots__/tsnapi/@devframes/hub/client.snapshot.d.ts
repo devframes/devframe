@@ -17,11 +17,11 @@ export interface CreateDockRenderersContextOptions {
   manifest?: () => DockRendererManifest;
   onMounted?: (_: () => void, _: DevframeDockEntry) => (() => void) | void;
 }
-export interface DevframeClientHost {
+export interface DevframeClientRuntime {
   context: DevframeClientContext;
   dispose: () => void;
 }
-export interface DevframeClientHostOptions {
+export interface DevframeClientRuntimeOptions {
   rpc?: DevframeRpcClient;
   connect?: DevframeRpcClientOptions;
   clientType?: DockClientType;
@@ -192,6 +192,10 @@ export interface WhenClauseContext {
 // #region Types
 export type ConnectRemoteDevframeOptions = Omit<DevframeRpcClientOptions, 'connectionMeta' | 'authToken'>;
 export type DevframeClientContext = DocksContext;
+/** @deprecated */
+export type DevframeClientHost = DevframeClientRuntime;
+/** @deprecated */
+export type DevframeClientHostOptions = DevframeClientRuntimeOptions;
 export type DockClientType = 'embedded' | 'standalone';
 export type DockRenderer<Entry extends DevframeDockEntry = DevframeDockEntry> = (_: DockRendererMountOptions<Entry>) => DockRendererInstance | Promise<DockRendererInstance>;
 export type DockRendererManifest = Record<string, ClientScriptEntry>;
@@ -236,7 +240,7 @@ export declare function attachFrameNavClient(_: FrameNavClientOptions): FrameNav
 export declare function buildRemoteDevframeUrl(_: string, _: DevframeConnection): string;
 export declare function clientScriptFailureHint(_: string, _: string): string;
 export declare function connectRemoteDevframe(_?: ConnectRemoteDevframeOptions): Promise<DevframeRpcClient>;
-export declare function createDevframeClientHost(_?: DevframeClientHostOptions): Promise<DevframeClientHost>;
+export declare function createDevframeClientRuntime(_?: DevframeClientRuntimeOptions): Promise<DevframeClientRuntime>;
 export declare function createDockRenderersContext(_: CreateDockRenderersContextOptions): DockRenderersContext;
 export declare function createMessagesClient(_: DevframeRpcClient, _?: MessagesClientOptions): DevframeMessagesClient;
 export declare function getDevframeClientContext(): DevframeClientContext | undefined;
@@ -255,6 +259,8 @@ export declare function watchFrameLocation(_: WatchFrameLocationOptions): () => 
 
 // #region Variables
 export declare const CLIENT_CONTEXT_KEY: string;
+/** @deprecated */
+export declare const createDevframeClientHost: typeof createDevframeClientRuntime;
 export declare const FRAME_NAV_CHANNEL: string;
 export declare const FRAME_NAV_VERSION: number;
 // #endregion
