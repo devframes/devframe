@@ -2,7 +2,7 @@
 
 End-to-end devframe demo with a **Next.js App Router** SPA. Shows that any
 React+Next.js build is a drop-in replacement for a Preact+Vite SPA: devframe
-serves the static export, the client calls into the host Node process via
+serves the static export, the SPA calls into the node side via
 type-safe RPC.
 
 ## What it shows

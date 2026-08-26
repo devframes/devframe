@@ -1,7 +1,7 @@
 ---
 navigation: false
 title: 'Build a devtool once. Mount it anywhere.'
-description: 'Devframe is a framework-neutral foundation for devtools. One definition becomes a Web Standard handler you can mount into any host, ship as a CLI or static report, and expose to coding agents.'
+description: 'Devframe is a framework-neutral foundation for devtools. One definition becomes a Web Standard handler you can mount into any host framework, ship as a CLI or static report, and expose to coding agents.'
 ---
 
 ::u-page-hero
@@ -19,7 +19,7 @@ const myDevframe = defineDevframe({
   view: { type: 'spa', distDir: './dist/client' },
 })
 
-// one Request → Response handler, any host
+// one Request → Response handler, any host framework
 const { handler } = initDevframe(myDevframe, {
   base: '/__my-tool/',
 })
@@ -29,7 +29,7 @@ const { handler } = initDevframe(myDevframe, {
 Build a devtool once. Mount it anywhere.
 
 #description
-A framework-neutral foundation for devtools. One definition becomes a Web Standard handler you can mount into any host, ship as a CLI or static report, and expose to coding agents.
+A framework-neutral foundation for devtools. One definition becomes a Web Standard handler you can mount into any host framework, ship as a CLI or static report, and expose to coding agents.
 
 #links
   :::u-button
@@ -121,10 +121,10 @@ One definition, every entry point
 
   :::landing-feature-card{icon="i-lucide-palette" to="/plugins"}
   #title
-  Built-in Plugins, Any Framework
+  Built-in Devframes, Any Framework
 
   #description
-  Official plugins span Vue, Svelte, Solid, and React — devframe owns the protocol and leaves the UI framework to the author.
+  The built-in devframes span Vue, Svelte, Solid, and React — devframe owns the protocol and leaves the UI framework to the author.
   :::
 ::
 
@@ -152,7 +152,7 @@ Portability
 The same handler, mounted natively
 
 #description
-A devframe's boundary is simply the Web Standard `Request` and `Response`. Any framework that speaks that — or connect-style middleware — mounts the same tool and inherits the whole ecosystem. Only the host-facing glue changes. [See all adapters](/adapters/initiate).
+A devframe's boundary is simply the Web Standard `Request` and `Response`. Any framework that speaks that — or connect-style middleware — mounts the same tool and inherits the whole ecosystem. Only the host-framework-facing glue changes. [See all adapters](/adapters/initiate).
 
 #code-0
   ```ts [server.ts]
@@ -270,7 +270,7 @@ Interfaces
 One capability, two interfaces
 
 #description
-RPC functions stay private by default and opt into agent exposure explicitly. The [MCP adapter](/adapters/mcp) translates those functions, resources, and selected shared state into an agent-consumable surface — the presentation changes, the source of truth stays the same.
+RPC functions stay private by default and opt into agent exposure explicitly. The [MCP adapter](/adapters/mcp) translates those functions, resources, and selected shared state into an agent-consumable interface — the presentation changes, the source of truth stays the same.
 
 #code-0
   ```ts [rpc.ts]
@@ -288,7 +288,7 @@ RPC functions stay private by default and opt into agent exposure explicitly. Th
   export const inspectBuild = defineRpcFunction({
     name: 'inspect-build',
     type: 'query',
-    // opt this capability into the agent surface
+    // opt this capability into agent exposure
     agent: { description: 'Read the current build graph and chunk sizes.' },
     handler: () => readBuildGraph(),
   })
@@ -301,7 +301,7 @@ reverse: true
 items:
   - icon: i-lucide-layout-dashboard
     title: Compose
-    description: Register many devframes as plugins of one hub.
+    description: Register many devframes into one hub.
   - icon: i-lucide-plug
     title: Mount
     description: Serve the whole collection behind one handler.
@@ -311,7 +311,7 @@ items:
 Hub
 
 #title
-From one devframe to a devtools host
+From one devframe to a devtools hub
 
 #description
 When several devtools run at once, discovery becomes the problem. `@devframes/hub` is a headless composition layer: many devframes register docks, commands, terminals, and shared state, and appear through one consistent entry. [Learn about the hub](/guide/hub).

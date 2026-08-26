@@ -1,6 +1,6 @@
 # devframe-starter
 
-Self-contained starter for a single [devframe](https://github.com/devframes/devframe) integration: a vanilla-TS Vite client, a CLI dev/build/MCP shell, single + hub playgrounds, and unit + e2e tests. Copy this folder out of the monorepo as the seed for a new devframe - it pins real dependency versions (no `catalog:`/`workspace:*`) so it installs standalone.
+Self-contained starter for a single [devframe](https://github.com/devframes/devframe): a vanilla-TS Vite client, a CLI (dev/build/MCP), single + hub playgrounds, and unit + e2e tests. Copy this folder out of the monorepo as the seed for a new devframe - it pins real dependency versions (no `catalog:`/`workspace:*`) so it installs standalone.
 
 ## Run
 
@@ -10,7 +10,7 @@ pnpm run build         # build the vanilla-TS SPA into dist/client
 pnpm run dev            # CLI dev server - http://localhost:7391/__devframe-starter/
 pnpm run cli:build      # static deploy in ./dist/static
 pnpm run play:single    # Vite playground: SPA at /, RPC bridge at /__devframe-starter/
-pnpm run play:hub       # Vite playground: mounted as a dock inside a devframes hub
+pnpm run play:hub       # Vite playground: mounted as a dock inside a hub
 pnpm run test           # unit tests (vitest)
 pnpm run test:e2e       # e2e tests (playwright, against the single playground)
 pnpm run lint
@@ -29,7 +29,7 @@ pnpm run typecheck
 | `src/shared/base-path.ts` | The devframe's base path, shared between the node-side definition and browser-side client entries. |
 | `bin.mjs` | `createCac(devframe).parse()` - exposes `dev`, `build`, `mcp`. |
 | `playground/single/` | Vite dev-serves the SPA (with HMR) while `devframeViteBridge` answers RPC/discovery at the devframe's own base - see the comment in its `vite.config.ts` for why the two can't share one base. |
-| `playground/hub/` | A minimal `@devframes/hub` host that mounts this devframe as an iframe dock (requires `pnpm run build` first). |
+| `playground/hub/` | A minimal hub (`@devframes/hub`) that mounts this devframe as an iframe dock (requires `pnpm run build` first). |
 | `test/` | Unit tests - RPC functions over a real WebSocket, no browser. |
 | `e2e/` | Playwright tests against the single playground, using the checked-in `e2e/fixtures/` directory as a fixed working directory. |
 

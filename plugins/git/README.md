@@ -1,12 +1,12 @@
 # @devframes/plugin-git
 
 > [!WARNING] Experimental
-> This plugin is experimental and may change without a major version bump until
+> This devframe is experimental and may change without a major version bump until
 > it stabilizes.
 
-Git integration for [devframe](https://github.com/devframes/devframe) — a
+A git devframe built on [devframe](https://github.com/devframes/devframe) — a
 repository dashboard with a **Next.js App Router + shadcn/ui** SPA over
-type-safe RPC. The host process shells out to `git` and exposes the repository;
+type-safe RPC. The node side shells out to `git` and exposes the repository;
 the same bundle runs as a live dev server or a fully static deployment.
 
 Status, a SourceTree-style **commit graph**, branches, and diffs, plus staging,
@@ -33,7 +33,7 @@ pnpx @devframes/plugin-git --port 4000
 ## Programmatic
 
 `createGitDevframe(options)` returns a devframe definition you can mount into
-any host with devframe's adapters, or drive yourself.
+any host framework with devframe's adapters, or drive yourself.
 
 ```ts
 import { createGitDevframe } from '@devframes/plugin-git'
@@ -49,7 +49,7 @@ await createCac(createGitDevframe({ repoRoot: process.cwd() })).parse()
 | `distDir` | bundled SPA | Override the served SPA directory. |
 | `port` | `9710` | Preferred dev-server port. |
 
-## RPC surface
+## RPC
 
 All git work runs through the [`@devframes/service-git`](../../services/git)
 wire service, which this devframe declares (`services`) and its SPA calls
@@ -68,7 +68,7 @@ static deploys).
   a unified patch for a selected file.
 
 Write actions are `action` functions — always exposed by the service, with
-write authorization governed by the host's connection-trust boundary. Each
+write authorization governed by the connection-trust boundary. Each
 returns fresh status (commit returns a result):
 
 - `devframes:service:git:stage` — `git add` the given paths.

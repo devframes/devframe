@@ -5,7 +5,7 @@ alongside **[`@devframes/plugin-messages`](../../plugins/messages)** - and, abov
 all, the **message → dock navigation** they share.
 
 Where [`vite-devframe-hub`](../vite-devframe-hub) mounts every
-built-in plugin against the hub's own (mostly accessible) UI, this example ships a
+built-in devframe against the hub's own (mostly accessible) UI, this example ships a
 deliberately **inaccessible, multi-route app under test** so the a11y scanner
 always has real violations to find, track per route, and link back to from the
 messages feed.
@@ -17,8 +17,8 @@ pnpm install
 pnpm --filter a11y-messages-playground dev
 ```
 
-The `dev` script builds the workspace first (the a11y agent bundle and both
-plugin SPAs must exist), then starts Vite bound to `0.0.0.0`. Open the printed
+The `dev` script builds the workspace first (the a11y page-script bundle and both
+devframe SPAs must exist), then starts Vite bound to `0.0.0.0`. Open the printed
 URL.
 
 ## What you'll see
@@ -40,7 +40,7 @@ The window is split in two:
    load; the Dashboard shows the totals and severity breakdown.
 2. **Route tracking** - click the route tabs in the app under test (`Home`,
    `Images`, `Forms`, `Contrast`). Each navigation is a `history.pushState`,
-   which the agent patches - the Violations tab accrues one group per route.
+   which the page script patches - the Violations tab accrues one group per route.
 3. **Select + highlight** - hover a violation to ring the element in the page;
    tick a violation's checkbox to highlight all its elements with numbered
    badges, then hit **Generate fix prompts** in the nav for a paste-ready AI
@@ -54,9 +54,9 @@ The window is split in two:
 
 ## How it's wired
 
-`src/a11y-messages-playground.ts` is the whole host - a ~120-line Vite plugin
-that runs `@devframes/hub` in the dev server, mounts the two plugins as docks,
-and attaches the a11y agent as the a11y dock's `clientScript`:
+`src/a11y-messages-playground.ts` is the entire host-framework integration - a ~120-line Vite plugin
+that runs `@devframes/hub` in the dev server, mounts the two devframes as docks,
+and attaches the a11y page script as the a11y dock's `clientScript`:
 
 ```ts
 a11yMessagesPlayground({
@@ -68,10 +68,10 @@ a11yMessagesPlayground({
 ```
 
 `src/client/main.ts` boots the hub's client runtime with
-`createDevframeClientHost()`, which imports that agent into the host page (so it
+`createDevframeClientHost()`, which imports that page script into the host page (so it
 scans the app under test) and renders the dock rail from `devframe:docks` shared
 state. The navigation itself rides existing hub primitives: the messages panel
-calls `hub:docks:activate`, the hub broadcasts it, and the client host switches
+calls `hub:docks:activate`, the hub broadcasts it, and the client runtime switches
 the focused dock - the same path a manual dock click takes.
 
 ## Files
@@ -79,8 +79,8 @@ the focused dock - the same path a manual dock click takes.
 | File | Role |
 |---|---|
 | `src/a11y-messages-playground.ts` | The Vite host - hub context, static + connection-meta mounts, side-car WS, instance-registry registration |
-| `vite.config.ts` | Mounts a11y + messages; attaches the a11y agent as its dock's `clientScript` |
-| `src/client/main.ts` | Boots the client host, renders the dock rail + iframe stage |
-| `src/client/app-under-test.ts` | The intentionally-broken, multi-route app the agent scans |
+| `vite.config.ts` | Mounts a11y + messages; attaches the a11y page script as its dock's `clientScript` |
+| `src/client/main.ts` | Boots the client runtime, renders the dock rail + iframe stage |
+| `src/client/app-under-test.ts` | The intentionally-broken, multi-route app the page script scans |
 | `src/client/icons.ts` | Offline Phosphor icons for the dock rail |
-| `index.html` | The two-pane shell (app under test · devtools) |
+| `index.html` | The two-pane host page (app under test · devtools) |

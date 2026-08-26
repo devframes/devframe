@@ -1,13 +1,13 @@
 # @devframes/plugin-inspect
 
 > [!WARNING] Experimental
-> This plugin is experimental and may change without a major version bump until
+> This devframe is experimental and may change without a major version bump until
 > it stabilizes.
 
-A devframe plugin that inspects *its own* connection (and, when mounted in a
-host, the host's): browse every registered RPC function with its metadata,
+A built-in devframe that inspects *its own* connection (and, when mounted in a
+hub, the hub's): browse every registered RPC function with its metadata,
 invoke read-only `query`/`static` functions and inspect the results, watch
-shared-state keys update live, explore the agent-exposed surface, and — while
+shared-state keys update live, explore the agent-exposed API, and — while
 running against a live backend — list the other devframe dev servers running
 alongside it.
 
@@ -47,7 +47,7 @@ import { createInspectDevframe } from '@devframes/plugin-inspect'
 const devframe = createInspectDevframe({ port: 9100 })
 ```
 
-## RPC surface
+## RPC
 
 All functions are namespaced `devframes:plugin:inspect:*`:
 
@@ -61,6 +61,6 @@ All functions are namespaced `devframes:plugin:inspect:*`:
 
 The three snapshot `query` functions are agent-exposed (read-only) and bake into
 the static dump, so the inspector still lists functions, state keys, and the
-agent surface when deployed as a static SPA. `list-instances` is live rather
+agent-exposed API when deployed as a static SPA. `list-instances` is live rather
 than baked (the set of running processes is meaningless in a static dump), so
 the Instances tab appears only against a live backend.

@@ -1,10 +1,10 @@
 # @devframes/plugin-code-server
 
 > [!WARNING] Experimental
-> This plugin is experimental and may change without a major version bump until
+> This devframe is experimental and may change without a major version bump until
 > it stabilizes.
 
-Run VS Code in the browser as a devframe panel. The plugin detects a local
+Run VS Code in the browser as a devframe panel. The devframe detects a local
 editor binary, launches it on demand, and embeds the editor in an
 auto-authenticated `<iframe>`. The launcher is a **Vue** SPA built on the shared
 `@antfu/design` system.
@@ -17,7 +17,7 @@ auto-authenticated `<iframe>`. The launcher is a **Vue** SPA built on the shared
 - **Launch** — the launcher's button starts the editor as a managed child
   process bound to a free port, scoped to the workspace. Readiness is probed
   before the iframe loads.
-- **Auto-auth** — the plugin generates fresh auth material per launch and hands
+- **Auto-auth** — the devframe generates fresh auth material per launch and hands
   it to the already-authorized devframe client, so the editor opens already
   signed in. `code-server` uses a session cookie (`HASHED_PASSWORD`);
   `code serve-web` uses a connection token on the URL (`?tkn=`).
@@ -94,4 +94,4 @@ pnpm build-storybook   # static build
 ```
 
 Stories: connecting, not-installed, launch, launch (serve-web), launch-error,
-starting, tunnel-login, and a running editor frame (mock editor).
+starting, tunnel-login, and a running `EditorFrame` (mock editor).

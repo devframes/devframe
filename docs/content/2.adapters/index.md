@@ -26,7 +26,7 @@ SPA basePath depends on the adapter:
 | Adapter kind | Default basePath | Reason |
 |--------------|------------------|--------|
 | `cli`, `build` (standalone) | `/` | Owns the origin. |
-| `vite`, `embedded` (hosted) | `/__<id>/` | Shares a host's origin. |
+| `vite`, `embedded` (hosted) | `/__<id>/` | Shares a host framework's origin. |
 
 Override with `DevframeDefinition.basePath`:
 
@@ -38,4 +38,4 @@ defineDevframe({
 })
 ```
 
-The client discovers its SPA base at runtime — see [Client](/guide/client#runtime-basepath-discovery).
+The SPA discovers its base at runtime — see [Client](/guide/client#runtime-basepath-discovery).

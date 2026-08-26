@@ -1,14 +1,14 @@
 # @devframes/storybook
 
-The unified Storybook host, built as a **devframe hub** on `@devframes/hub`: the
-hub is the shell and each built-in plugin's Storybook is its own dock, alongside
-the live terminals plugin running as a real integration.
+The unified Storybook host, built as a **hub** on `@devframes/hub`: the
+hub supplies the viewer and each built-in devframe's Storybook is its own dock,
+alongside the live terminals devframe running as a real mounted devframe.
 
 ## How it works
 
-The whole host is one Vite plugin (`src/hub.ts`): one `initHub()` call mounts
-the terminals plugin (via the `devframes` list) and, in its `configure(ctx)`
-step, registers a launcher dock (and a bound command) per plugin Storybook —
+The whole host-framework integration is one Vite plugin (`src/hub.ts`): one `initHub()` call mounts
+the terminals devframe (via the `devframes` list) and, in its `configure(ctx)`
+step, registers a launcher dock (and a bound command) per built-in devframe's Storybook —
 all behind the hub's connect middleware on a side-car RPC/WS server.
 
 Each Storybook dock is a `type: 'launcher'` tile with a **Start** button — the
@@ -18,7 +18,7 @@ Once launched, the tile swaps in place for the running Storybook's iframe, kept
 mounted so its state survives tab switches. Where the iframe points depends on
 the mode:
 
-- **dev** (`vite`) — the launch command spawns the plugin's `storybook dev`
+- **dev** (`vite`) — the launch command spawns the devframe's `storybook dev`
   through `ctx.terminals`, the hub's terminals subsystem, so each Storybook is a
   read-only terminal session (open the **Terminals** dock to watch its output
   stream live). As it boots, the tail of that output is patched onto the
@@ -29,7 +29,7 @@ the mode:
 
 ## Run it
 
-Build the plugin SPAs the hub mounts (terminals) once:
+Build the devframe SPAs the hub mounts (terminals) once:
 
 ```sh
 pnpm build
@@ -49,7 +49,7 @@ ports forwarded.
 ### Preview — pre-built Storybooks on one origin
 
 ```sh
-pnpm storybook:build                       # produces storybook-static/<plugin>
+pnpm storybook:build                       # produces storybook-static/<id>
 pnpm --filter @devframes/storybook build    # builds the hub UI → dist/
 pnpm --filter @devframes/storybook preview
 ```
