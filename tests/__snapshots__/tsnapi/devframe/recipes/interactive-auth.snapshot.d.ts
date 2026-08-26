@@ -8,6 +8,10 @@ export interface CreateInteractiveAuthOptions {
     code: string;
     url: string;
   }) => void;
+  onTrusted?: (_: {
+    session: DevframeNodeRpcSession;
+    authToken: string;
+  }) => void;
   serverUrl?: () => string;
 }
 // #endregion

@@ -29,6 +29,7 @@ async function createTestContext(): Promise<DevframeNodeContext> {
 async function startAuthenticatedServer(
   banners: { code: string, url: string }[] = [],
   preTrust = false,
+  onTrusted?: (info: { authToken: string }) => void,
 ) {
   const context = await createTestContext()
   context.rpc.register({
@@ -38,6 +39,7 @@ async function startAuthenticatedServer(
   })
   const auth = createInteractiveAuth(context, {
     banner: info => banners.push(info),
+    onTrusted,
   })
 
   const host = '127.0.0.1'
@@ -129,6 +131,33 @@ describe('recipes/interactive-auth', () => {
       await expect(returning.$call('test:trusted-only' as any)).resolves.toBe('ok')
       expect(getTempAuthCode()).toBe(codeAfterExchange)
       returning.$close()
+    }
+    finally {
+      await server.close()
+    }
+  })
+
+  it('onTrusted() fires once a code exchange succeeds, after the rotated code is printed', async () => {
+    const banners: { code: string, url: string }[] = []
+    const trusted: { authToken: string, bannerCountAtCall: number, lastBannerCode?: string }[] = []
+    const { server, host, port } = await startAuthenticatedServer(banners, false, info => trusted.push({
+      authToken: info.authToken,
+      bannerCountAtCall: banners.length,
+      lastBannerCode: banners.at(-1)?.code,
+    }))
+
+    try {
+      const client = connectClient(host, port)
+      await client.$call('anonymous:devframe:auth:exchange', { code: 'wrong1', ua: 'test', origin: 'http://localhost' })
+      expect(trusted).toHaveLength(0)
+
+      const code = getTempAuthCode()
+      const { authToken } = await client.$call('anonymous:devframe:auth:exchange', { code, ua: 'test', origin: 'http://localhost' })
+
+      expect(trusted.map(info => info.authToken)).toEqual([authToken])
+      expect(trusted[0]!.bannerCountAtCall).toBe(banners.length)
+      expect(trusted[0]!.lastBannerCode).toBe(getTempAuthCode())
+      client.$close()
     }
     finally {
       await server.close()
