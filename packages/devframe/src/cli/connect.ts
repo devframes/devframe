@@ -255,7 +255,14 @@ async function withInstanceClient<T>(
     new URL(url),
     { requestInit: { headers: { origin } } },
   )
-  const client = new sdk.Client({ name: 'devframe-connect', version: '0.0.0' })
+  // Negotiate the era with `server/discover`, falling back to the 2025
+  // `initialize` handshake for a 2025-only instance. Devframe's own route is
+  // stateless 2026-07-28, but a mixed fleet (older instances, third-party
+  // MCP servers reached by port) may still be 2025-era.
+  const client = new sdk.Client(
+    { name: 'devframe-connect', version: '0.0.0' },
+    { versionNegotiation: { mode: 'auto' } },
+  )
   await client.connect(transport)
   try {
     return await fn(client)

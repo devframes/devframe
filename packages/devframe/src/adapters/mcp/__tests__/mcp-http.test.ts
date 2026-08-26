@@ -68,15 +68,20 @@ describe('mcp adapter (streamable http route)', () => {
     })
   }
 
-  it('establishes a stateful session and lists agent tools', async () => {
+  it('serves the modern era statelessly and lists agent tools', async () => {
     const started = await boot()
     const transport = originTransport(started)
-    const client = new Client({ name: 'test-client', version: '0.0.0' })
+    // Negotiate the 2026-07-28 era via `server/discover`.
+    const client = new Client(
+      { name: 'test-client', version: '0.0.0' },
+      { versionNegotiation: { mode: 'auto' } },
+    )
     try {
       await client.connect(transport)
-      // Stateful mode issues an Mcp-Session-Id on initialize.
-      expect(transport.sessionId).toBeTypeOf('string')
-      expect(transport.sessionId!.length).toBeGreaterThan(0)
+      // Stateless per-request serving: the modern era negotiates no
+      // `Mcp-Session-Id` — there is no session to key state on.
+      expect(client.getProtocolEra()).toBe('modern')
+      expect(transport.sessionId).toBeUndefined()
 
       const tools = await client.listTools()
       expect(tools.tools.map(t => t.name)).toContain('greet')
@@ -90,53 +95,17 @@ describe('mcp adapter (streamable http route)', () => {
     }
   })
 
-  it('tears the session down on DELETE and rejects reuse of the id', async () => {
+  it('answers a bare GET with 405 (no session lifecycle)', async () => {
     const started = await boot()
-    const url = `${started.origin}/__mcp`
-
-    // Initialize over raw HTTP to capture the issued session id from the
-    // response header (the body is an SSE stream we can discard).
-    const originHeader = { origin: started.origin }
-    const init = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'accept': 'application/json, text/event-stream',
-        ...originHeader,
-      },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'initialize',
-        params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'x', version: '0' } },
-      }),
+    // Stateless serving has no session stream to open — the SDK answers a
+    // GET (a 2025 session operation) with `405 Method Not Allowed` rather
+    // than falling through to the SPA static catch-all.
+    const res = await fetch(`${started.origin}/__mcp`, {
+      method: 'GET',
+      headers: { accept: 'text/event-stream', origin: started.origin },
     })
-    const sessionId = init.headers.get('mcp-session-id')
-    await init.body?.cancel()
-    expect(sessionId).toBeTruthy()
-
-    // DELETE ends the session.
-    const del = await fetch(url, {
-      method: 'DELETE',
-      headers: { 'mcp-session-id': sessionId!, ...originHeader },
-    })
-    await del.body?.cancel()
-    expect(del.status).toBeLessThan(300)
-
-    // Reusing the terminated id is no longer a known session — the server
-    // answers 404 rather than falling through to the SPA static catch-all.
-    const stale = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'accept': 'application/json, text/event-stream',
-        'mcp-session-id': sessionId!,
-        ...originHeader,
-      },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list' }),
-    })
-    await stale.body?.cancel()
-    expect(stale.status).toBe(404)
+    await res.body?.cancel()
+    expect(res.status).toBe(405)
   })
 
   it('rejects an Origin-less request', async () => {

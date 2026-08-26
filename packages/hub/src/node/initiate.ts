@@ -331,7 +331,7 @@ export interface HubInstance {
   context: Promise<DevframeHubContext>
   /** The `ConnectionMeta` served at `<base>__connection.json` (and every frame base). */
   connectionMeta: () => ConnectionMeta
-  /** Tear down: WS transport/side-car, MCP sessions. */
+  /** Tear down: WS transport/side-car, MCP handler. */
   close: () => Promise<void>
 }
 

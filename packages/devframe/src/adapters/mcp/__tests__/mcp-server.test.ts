@@ -15,7 +15,7 @@ function nullHost(): DevframeHost {
 async function bootPair() {
   const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
 
-  const { server, dispose } = buildMcpServerFromContext(ctx, {
+  const server = buildMcpServerFromContext(ctx, {
     serverName: 'test',
     serverVersion: '0.0.0-test',
     exposeSharedState: true,
@@ -31,7 +31,6 @@ async function bootPair() {
     ctx,
     client,
     cleanup: async () => {
-      dispose()
       await client.close()
       await server.close()
     },
@@ -314,7 +313,7 @@ describe('mcp adapter (in-memory)', () => {
 
   it('hides devframe:state:read when shared-state exposure is disabled', async () => {
     const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
-    const { server, dispose } = buildMcpServerFromContext(ctx, {
+    const server = buildMcpServerFromContext(ctx, {
       serverName: 'test',
       serverVersion: '0.0.0-test',
       exposeSharedState: false,
@@ -328,7 +327,6 @@ describe('mcp adapter (in-memory)', () => {
       expect(listed.tools.map(t => t.name)).not.toContain('devframe_state_read')
     }
     finally {
-      dispose()
       await client.close()
       await server.close()
     }
@@ -338,7 +336,7 @@ describe('mcp adapter (in-memory)', () => {
     const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
     await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
     await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
-    const { server, dispose } = buildMcpServerFromContext(ctx, {
+    const server = buildMcpServerFromContext(ctx, {
       serverName: 'test',
       serverVersion: '0.0.0-test',
       exposeSharedState: key => key.startsWith('visible:'),
@@ -355,7 +353,6 @@ describe('mcp adapter (in-memory)', () => {
       expect(hidden.isError).toBe(true)
     }
     finally {
-      dispose()
       await client.close()
       await server.close()
     }

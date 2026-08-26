@@ -40,18 +40,28 @@ export interface McpServerHandle {
   stop: () => Promise<void>
 }
 
+export interface BuildMcpServerOptions {
+  serverName: string
+  serverVersion: string
+  exposeSharedState: boolean | ((k: string) => boolean)
+}
+
 /**
- * Wire an MCP {@link Server} to a devframe context. Returns the server
- * plus a disposal function for the subscriptions it sets up. The
- * transport is the caller's responsibility — `createMcpServer` connects
- * stdio; tests can connect an {@link InMemoryTransport} instead.
+ * Build a fresh MCP {@link Server} over a devframe context, registering its
+ * tool and resource handlers. This is a pure factory — it sets up no
+ * long-lived subscriptions and holds no per-connection state, so it is safe
+ * to call once per request under `createMcpHandler` or once per connection
+ * under `serveStdio`. Change notifications are published separately: over
+ * HTTP through the handler's `notify` bus (see `createMcpFetchHandler`), and
+ * on stdio through the connection's own `send*ListChanged` calls (see
+ * {@link bridgeListChanged}, wired by `serveStdio`).
  *
  * @internal
  */
 export function buildMcpServerFromContext(
   ctx: DevframeNodeContext,
-  options: { serverName: string, serverVersion: string, exposeSharedState: boolean | ((k: string) => boolean) },
-): { server: Server, dispose: () => void } {
+  options: BuildMcpServerOptions,
+): Server {
   const server = new Server(
     {
       name: options.serverName,
@@ -68,23 +78,35 @@ export function buildMcpServerFromContext(
   registerToolHandlers(server, ctx, options.exposeSharedState)
   registerResourceHandlers(server, ctx, options.exposeSharedState)
 
-  const notify = (method: string): void => {
-    server.notification({ method }).catch(() => { /* ignore transport errors */ })
-  }
+  return server
+}
+
+/**
+ * Publish devframe's `list_changed` events through a set of typed sinks:
+ * `tools()` for tool-list changes and `resources()` for resource-list
+ * changes (shared-state keys are surfaced as resources). Returns an
+ * unsubscribe function.
+ *
+ * The HTTP path passes the handler's `notify` bus sugar; the stdio path
+ * passes the pinned server's `send*ListChanged` methods, which `serveStdio`
+ * routes onto the connection's active `subscriptions/listen` streams.
+ *
+ * @internal
+ */
+export function bridgeListChanged(
+  ctx: DevframeNodeContext,
+  sinks: { tools: () => void, resources: () => void },
+): () => void {
   const offManifest = ctx.agent.events.on(DEVFRAME_EVENTS.bus.agentManifestChanged, () => {
-    notify('notifications/tools/list_changed')
-    notify('notifications/resources/list_changed')
+    sinks.tools()
+    sinks.resources()
   })
   const offKeyAdded = ctx.rpc.sharedState.onKeyAdded(() => {
-    notify('notifications/resources/list_changed')
+    sinks.resources()
   })
-
-  return {
-    server,
-    dispose: () => {
-      offManifest()
-      offKeyAdded()
-    },
+  return () => {
+    offManifest()
+    offKeyAdded()
   }
 }
 
@@ -124,16 +146,34 @@ export async function createMcpServer(
   await ctx.services.ready()
   await definition.setup(ctx)
 
-  const { server, dispose } = buildMcpServerFromContext(ctx, {
+  const buildOptions: BuildMcpServerOptions = {
     serverName: options.serverName ?? `${definition.id} (devframe)`,
     serverVersion: options.serverVersion ?? definition.version ?? '0.0.0',
     exposeSharedState: options.exposeSharedState ?? true,
-  })
+  }
 
-  const { startStdioTransport } = await import('./transports')
-  let stop: () => Promise<void>
+  // `serveStdio` owns the connection's era decision and pins ONE instance
+  // for its lifetime. Each pinned server sets up its own `list_changed`
+  // bridge over the connection's `send*ListChanged` calls (routed onto the
+  // active `subscriptions/listen` streams on a modern connection, sent
+  // unsolicited on a 2025-era one) and tears it down when that server
+  // closes.
+  let handle: import('@modelcontextprotocol/server/stdio').StdioServerHandle
   try {
-    stop = await startStdioTransport(server)
+    const { serveStdio } = await import('@modelcontextprotocol/server/stdio')
+    handle = serveStdio(() => {
+      const server = buildMcpServerFromContext(ctx, buildOptions)
+      const unbridge = bridgeListChanged(ctx, {
+        tools: () => { void server.sendToolListChanged().catch(() => {}) },
+        resources: () => { void server.sendResourceListChanged().catch(() => {}) },
+      })
+      const priorOnClose = server.onclose
+      server.onclose = () => {
+        unbridge()
+        priorOnClose?.()
+      }
+      return server
+    })
   }
   catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
@@ -144,8 +184,7 @@ export async function createMcpServer(
 
   return {
     async stop() {
-      dispose()
-      await stop()
+      await handle.close()
     },
   }
 }
