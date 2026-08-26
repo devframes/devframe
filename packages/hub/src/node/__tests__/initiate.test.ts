@@ -297,49 +297,20 @@ describe('initHub', () => {
       await hub.ready
       expect(hub.connectionMeta().mcp).toEqual({ path: '__mcp' })
 
+      // The endpoint is stateless: a single `tools/list` POST is answered per
+      // request, with no `initialize` handshake and no `Mcp-Session-Id`.
       const origin = 'http://localhost:3000'
-      const init = await hub.handler(new Request(`${origin}/__devframes/__mcp`, {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'accept': 'application/json, text/event-stream',
-          origin,
-        },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'initialize',
-          params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'x', version: '0' } },
-        }),
-      }))
-      expect(init.status).toBe(200)
-      const sessionId = init.headers.get('mcp-session-id')
-      expect(sessionId).toBeTruthy()
-      await init.body?.cancel()
-
-      const initialized = await hub.handler(new Request(`${origin}/__devframes/__mcp`, {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'accept': 'application/json, text/event-stream',
-          'mcp-session-id': sessionId!,
-          origin,
-        },
-        body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }),
-      }))
-      await initialized.body?.cancel()
-
       const list = await hub.handler(new Request(`${origin}/__devframes/__mcp`, {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
           'accept': 'application/json, text/event-stream',
-          'mcp-session-id': sessionId!,
           origin,
         },
         body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list' }),
       }))
       expect(list.status).toBe(200)
+      expect(list.headers.get('mcp-session-id')).toBeNull()
       const raw = await list.text()
       // Tools from both frames surface through the one aggregate endpoint.
       expect(raw).toContain('alpha-tool')

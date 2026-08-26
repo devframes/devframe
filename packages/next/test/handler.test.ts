@@ -98,7 +98,9 @@ describe('createDevframeNextHandler', () => {
 
     // The advertised endpoint answers MCP initialize through the route
     // handler when a loopback Origin (required by the route's gate) is
-    // presented.
+    // presented. A 2025-era `initialize` is served statelessly through the
+    // SDK's default legacy path — answered per request with no
+    // `Mcp-Session-Id`.
     const origin = 'http://localhost:3000'
     const initBody = JSON.stringify({
       jsonrpc: '2.0',
@@ -116,7 +118,7 @@ describe('createDevframeNextHandler', () => {
       body: initBody,
     }))
     expect(init.status).toBe(200)
-    expect(init.headers.get('mcp-session-id')).toBeTruthy()
+    expect(init.headers.get('mcp-session-id')).toBeNull()
     await init.body?.cancel()
 
     // Without an Origin header the same request is rejected.
