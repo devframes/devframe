@@ -48,7 +48,7 @@ export const hub: HubInstance = globalRef.__hubNitroMinimal ??= initHub({
   ui: createUi({ branding: { primaryColor: '#ff2056', productName: 'Devframes on Nitro' } }),
   // Gate with devframe's interactive OTP (the default). The hub prints a
   // 6-digit code + magic link on startup, and the reference UI's authorization
-  // view exchanges it for a bearer token. See docs/content/1.guide/13.security.md.
+  // view exchanges it for a bearer token. See docs/content/1.guide/15.security.md.
   configure(ctx) {
     ctx.commands.register({
       id: 'example:hub-nitro-minimal:ping',

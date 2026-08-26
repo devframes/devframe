@@ -45,7 +45,7 @@ export const hub: HubInstance = globalRef.__hubHonoMinimal ??= initHub({
   ui: createUi({ branding: { primaryColor: '#e36002', productName: 'Devframes on Hono' } }),
   // Gate with devframe's interactive OTP (the default). The hub prints a
   // 6-digit code + magic link on startup, and the reference UI's authorization
-  // view exchanges it for a bearer token. See docs/content/1.guide/13.security.md.
+  // view exchanges it for a bearer token. See docs/content/1.guide/15.security.md.
   configure(ctx) {
     ctx.commands.register({
       id: 'example:hub-hono-minimal:ping',
