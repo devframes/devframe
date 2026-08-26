@@ -173,7 +173,7 @@ export interface DevframeMessageEntry {
   category?: string;
   labels?: string[];
   actions?: DevframeMessageAction[];
-  autoDismiss?: number;
+  autoDismiss?: number | false;
   autoDelete?: number;
   timestamp: number;
   status?: 'loading' | 'idle';

@@ -111,7 +111,7 @@ export interface DevframeMessageEntry {
   /**
    * Time in ms to auto-dismiss the toast notification (client-side)
    */
-  autoDismiss?: number
+  autoDismiss?: number | false
   /**
    * Time in ms to auto-delete this message entry (server-side)
    */

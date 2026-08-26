@@ -21,10 +21,13 @@ export function addToast(entry: DevframeMessageEntry): void {
     existing.entry = entry
     // Reset auto-dismiss timer
     const timer = timers.get(entry.id)
-    if (timer)
+    if (timer) {
       clearTimeout(timer)
+      timers.delete(entry.id)
+    }
     const timeout = entry.autoDismiss ?? 5000
-    timers.set(entry.id, setTimeout(dismissToast, timeout, entry.id))
+    if (timeout !== false)
+      timers.set(entry.id, setTimeout(dismissToast, timeout, entry.id))
     return
   }
 
@@ -32,7 +35,8 @@ export function addToast(entry: DevframeMessageEntry): void {
   toasts.push(item)
 
   const timeout = entry.autoDismiss ?? 5000
-  timers.set(entry.id, setTimeout(dismissToast, timeout, entry.id))
+  if (timeout !== false)
+    timers.set(entry.id, setTimeout(dismissToast, timeout, entry.id))
 }
 
 export function dismissToast(id: string): void {
