@@ -3,6 +3,7 @@
 .eslintcache
 .generated
 .idea
+.env
 *.log
 *.tgz
 *.tsbuildinfo
