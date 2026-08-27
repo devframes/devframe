@@ -15,4 +15,6 @@ Helpers are the optional layer around `defineDevframe`: prebuilt RPC recipes and
 
 Unlike [adapters](/adapters), which deploy a `DevframeDefinition` as a runnable deployment (CLI, dev server, build, MCP), a helper is a recipe or utility composed with one.
 
+For the full lookup tables — every `devframe/utils/*` subpath and `devframe/recipes/*` recipe at a glance — see [Helpers & Utilities](/references/helpers) in the references.
+
 To integrate a devframe or hub with a meta-framework, see the [framework kits](/frameworks).
