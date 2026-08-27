@@ -236,7 +236,7 @@ function reset(): void {
 
 <template>
   <div class="not-prose rounded-xl border border-default divide-y divide-default overflow-hidden">
-    <div class="flex items-center justify-between gap-4 px-5 py-4 sm:px-6 bg-muted">
+    <div class="flex items-center justify-between gap-4 px-5 py-3 sm:px-6 bg-muted">
       <div>
         <p class="font-medium text-highlighted">
           What kind of devtool do you want to build?
@@ -260,52 +260,54 @@ function reset(): void {
     <div
       v-for="section in sections"
       :key="section.key"
-      class="p-5 sm:p-6"
+      class="px-5 py-4 sm:px-6"
     >
-      <p class="font-medium text-highlighted">
-        {{ section.title }}
-      </p>
-      <p class="text-sm text-muted mt-0.5 mb-4">
-        {{ section.hint }}
-      </p>
+      <div class="flex flex-wrap items-baseline gap-x-2 mb-3">
+        <p class="font-medium text-highlighted">
+          {{ section.title }}
+        </p>
+        <p class="text-sm text-muted">
+          {{ section.hint }}
+        </p>
+      </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
         <button
           v-for="item in section.items"
           :key="item.value"
           type="button"
           role="checkbox"
           :aria-checked="isChecked(section.key, item.value)"
-          class="relative flex flex-col items-start gap-3 rounded-lg border p-4 text-left transition-colors cursor-pointer"
+          class="relative flex items-center gap-3 rounded-lg border p-3 text-left transition-colors cursor-pointer"
           :class="isChecked(section.key, item.value)
             ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
             : 'border-default hover:border-accented hover:bg-elevated/50'"
           @click="toggle(section.key, item.value)"
         >
-          <UIcon
-            v-if="isChecked(section.key, item.value)"
-            name="i-lucide-circle-check"
-            class="absolute top-3 right-3 size-4 text-primary"
-          />
           <span
-            class="inline-flex items-center justify-center size-9 rounded-full transition-colors"
+            class="inline-flex items-center justify-center size-8 shrink-0 rounded-full transition-colors"
             :class="isChecked(section.key, item.value) ? 'bg-primary/10 text-primary' : 'bg-elevated text-muted'"
           >
-            <UIcon :name="item.icon" class="size-4.5" />
+            <UIcon :name="item.icon" class="size-4" />
           </span>
-          <span>
-            <span class="block text-sm font-medium text-highlighted pe-4">{{ item.label }}</span>
+          <span class="min-w-0 flex-1">
+            <span class="block text-sm font-medium text-highlighted">{{ item.label }}</span>
             <span
               v-if="item.description"
               class="block text-xs text-muted mt-0.5"
             >{{ item.description }}</span>
           </span>
+          <UIcon
+            v-if="isChecked(section.key, item.value)"
+            name="i-lucide-circle-check"
+            class="size-4 shrink-0 text-primary"
+          />
         </button>
       </div>
     </div>
 
-    <div class="p-5 sm:p-6 bg-muted">
-      <p class="font-medium text-highlighted mb-3">
+    <div class="px-5 py-4 sm:px-6 bg-muted">
+      <p class="font-medium text-highlighted mb-2">
         {{ hasSelections ? 'Recommended docs, based on your answers' : 'Start here' }}
       </p>
       <UPageList divide>
