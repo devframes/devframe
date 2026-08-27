@@ -14,8 +14,31 @@ interface WizardItem {
   value: string
   label: string
   icon: string
+  /** Accent color key from `ICON_COLORS`, giving each item its own tinted badge. */
+  color: keyof typeof ICON_COLORS
   description?: string
 }
+
+/**
+ * Per-item icon badge colors. Spelled out as full class strings (not
+ * interpolated) so Tailwind's scanner keeps them in the build.
+ */
+const ICON_COLORS = {
+  sky: 'bg-sky-500/10 text-sky-500',
+  indigo: 'bg-indigo-500/10 text-indigo-500',
+  violet: 'bg-violet-500/10 text-violet-500',
+  purple: 'bg-purple-500/10 text-purple-500',
+  fuchsia: 'bg-fuchsia-500/10 text-fuchsia-500',
+  pink: 'bg-pink-500/10 text-pink-500',
+  rose: 'bg-rose-500/10 text-rose-500',
+  amber: 'bg-amber-500/10 text-amber-500',
+  orange: 'bg-orange-500/10 text-orange-500',
+  emerald: 'bg-emerald-500/10 text-emerald-500',
+  teal: 'bg-teal-500/10 text-teal-500',
+  cyan: 'bg-cyan-500/10 text-cyan-500',
+  blue: 'bg-blue-500/10 text-blue-500',
+  green: 'bg-green-500/10 text-green-500',
+} as const
 
 interface WizardSection {
   key: string
@@ -38,9 +61,9 @@ const sections: WizardSection[] = [
     title: 'Target environments',
     hint: 'What do you expect your tool to work with?',
     items: [
-      { value: 'standalone', label: 'Standalone', icon: 'i-lucide-terminal', description: 'A CLI or dev server with no host framework' },
-      { value: 'framework', label: 'Specific framework', icon: 'i-lucide-shapes', description: 'Specifically for frameworks like Vite, Next.js, Nuxt, etc.' },
-      { value: 'all', label: 'All frameworks', icon: 'i-lucide-infinity', description: 'I want to support as many frameworks as possible' },
+      { value: 'standalone', label: 'Standalone', icon: 'i-lucide-terminal', color: 'sky', description: 'A CLI or dev server with no host framework' },
+      { value: 'framework', label: 'Specific framework', icon: 'i-lucide-shapes', color: 'violet', description: 'Specifically for frameworks like Vite, Next.js, Nuxt, etc.' },
+      { value: 'all', label: 'All frameworks', icon: 'i-lucide-infinity', color: 'emerald', description: 'I want to support as many frameworks as possible' },
     ],
   },
   {
@@ -48,8 +71,8 @@ const sections: WizardSection[] = [
     title: 'Data source',
     hint: 'Where do you want to visualize data from?',
     items: [
-      { value: 'node', label: 'The node side', icon: 'i-lucide-server', description: 'Server state, build output, the filesystem, child processes' },
-      { value: 'browser', label: 'The user\'s web app', icon: 'i-lucide-app-window', description: 'State living in the page you\'re developing' },
+      { value: 'node', label: 'The node side', icon: 'i-lucide-server', color: 'indigo', description: 'Server state, build output, the filesystem, child processes' },
+      { value: 'browser', label: 'The user\'s web app', icon: 'i-lucide-app-window', color: 'cyan', description: 'State living in the page you\'re developing' },
     ],
   },
   {
@@ -57,10 +80,10 @@ const sections: WizardSection[] = [
     title: 'Data availability',
     hint: 'When is the data available?',
     items: [
-      { value: 'dev', label: 'Development time', icon: 'i-lucide-code', description: 'Live, over a running dev server' },
-      { value: 'build', label: 'Production build time', icon: 'i-lucide-hammer', description: 'Data from the production build' },
-      { value: 'static', label: 'Statically available', icon: 'i-lucide-hard-drive', description: 'Local filesystem, uploaded files, etc.' },
-      { value: 'remote', label: 'Remotely', icon: 'i-lucide-cloud', description: 'Over the web' },
+      { value: 'dev', label: 'Development time', icon: 'i-lucide-code', color: 'blue', description: 'Live, over a running dev server' },
+      { value: 'build', label: 'Production build time', icon: 'i-lucide-hammer', color: 'amber', description: 'Data from the production build' },
+      { value: 'static', label: 'Statically available', icon: 'i-lucide-hard-drive', color: 'teal', description: 'Local filesystem, uploaded files, etc.' },
+      { value: 'remote', label: 'Remotely', icon: 'i-lucide-cloud', color: 'sky', description: 'Over the web' },
     ],
   },
   {
@@ -68,9 +91,9 @@ const sections: WizardSection[] = [
     title: 'Frontend approach',
     hint: 'How do you want to build the frontend view?',
     items: [
-      { value: 'framework', label: 'A preferred framework', icon: 'i-lucide-component', description: 'Vue, React, Svelte, Solid...' },
-      { value: 'webcomponents', label: 'Web Components', icon: 'i-lucide-box', description: 'Use Web Components for renderering' },
-      { value: 'nodeside', label: 'Build it on the node side', icon: 'i-lucide-braces', description: 'Describe the UI as data instead of shipping a bundle' },
+      { value: 'framework', label: 'A preferred framework', icon: 'i-lucide-component', color: 'green', description: 'Vue, React, Svelte, Solid...' },
+      { value: 'webcomponents', label: 'Web Components', icon: 'i-lucide-box', color: 'orange', description: 'Use Web Components for renderering' },
+      { value: 'nodeside', label: 'Build it on the node side', icon: 'i-lucide-braces', color: 'purple', description: 'Describe the UI as data instead of shipping a bundle' },
     ],
   },
   {
@@ -78,11 +101,11 @@ const sections: WizardSection[] = [
     title: 'Other requirements',
     hint: 'Any specific requirements?',
     items: [
-      { value: 'agent', label: 'Exposed to coding agents', icon: 'i-lucide-bot', description: 'Some functionality should be available to coding agents.' },
-      { value: 'terminal', label: 'Sub process access', icon: 'i-lucide-square-terminal', description: 'Need to spawn other child process from the node side' },
-      { value: 'streaming', label: 'Streaming data', icon: 'i-lucide-radio', description: 'Push chunk-style data from the node side to the browser side' },
-      { value: 'deep-linking', label: 'Deep linking', icon: 'i-lucide-link', description: 'Shareable URLs into a specific view' },
-      { value: 'overlay', label: 'User app overlay', icon: 'i-lucide-layers', description: 'I want to overlay a UI on top of the user\'s web app' },
+      { value: 'agent', label: 'Exposed to coding agents', icon: 'i-lucide-bot', color: 'pink', description: 'Some functionality should be available to coding agents.' },
+      { value: 'terminal', label: 'Sub process access', icon: 'i-lucide-square-terminal', color: 'amber', description: 'Need to spawn other child process from the node side' },
+      { value: 'streaming', label: 'Streaming data', icon: 'i-lucide-radio', color: 'rose', description: 'Push chunk-style data from the node side to the browser side' },
+      { value: 'deep-linking', label: 'Deep linking', icon: 'i-lucide-link', color: 'cyan', description: 'Shareable URLs into a specific view' },
+      { value: 'overlay', label: 'User app overlay', icon: 'i-lucide-layers', color: 'fuchsia', description: 'I want to overlay a UI on top of the user\'s web app' },
     ],
   },
 ]
@@ -135,9 +158,7 @@ const RECOMMENDATIONS: Record<string, string[]> = {
   'dataSource:browser': ['/guide/client-context', '/guide/deep-linking', '/plugins/a11y'],
 
   'environments:standalone': ['/guide/standalone-cli', '/adapters/cac', '/adapters/build'],
-  'environments:vite': ['/frameworks/vite', '/adapters/vite'],
-  'environments:next': ['/frameworks/next'],
-  'environments:framework': ['/frameworks/nuxt', '/adapters/embedded'],
+  'environments:framework': ['/frameworks/vite', '/frameworks/next', '/frameworks/nuxt', '/adapters/vite', '/adapters/embedded'],
   'environments:all': ['/adapters/initiate', '/adapters', '/guide/devframe-definition'],
 
   'availability:dev': ['/guide/rpc', '/guide/transports'],
@@ -149,14 +170,11 @@ const RECOMMENDATIONS: Record<string, string[]> = {
   'frontend:webcomponents': ['/guide/hub', '/guide/build-your-own-hub-ui'],
   'frontend:nodeside': ['/guide/json-render', '/guide/build-your-own-json-render-frontend'],
 
-  'agent:agent': ['/guide/agent-native', '/adapters/mcp'],
-
-  'requirements:streaming': ['/guide/streaming'],
-  'requirements:overlay': ['/guide/client-context', '/plugins/a11y'],
-  'requirements:hub': ['/guide/hub', '/guide/hub-initiate', '/guide/services'],
-  'requirements:security': ['/guide/security', '/helpers/interactive-auth'],
-  'requirements:deep-linking': ['/guide/deep-linking'],
+  'requirements:agent': ['/guide/agent-native', '/adapters/mcp'],
   'requirements:terminal': ['/plugins/terminals'],
+  'requirements:streaming': ['/guide/streaming'],
+  'requirements:deep-linking': ['/guide/deep-linking'],
+  'requirements:overlay': ['/guide/client-context', '/plugins/a11y'],
 }
 
 const selections = reactive<Record<string, string[]>>(
@@ -261,7 +279,6 @@ function reset(): void {
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-        <!-- Add colors for different items -->
         <button
           v-for="item in section.items"
           :key="item.value"
@@ -275,8 +292,8 @@ function reset(): void {
           @click="toggle(section.key, item.value)"
         >
           <span
-            class="inline-flex items-center justify-center size-8 shrink-0 rounded-full transition-colors"
-            :class="isChecked(section.key, item.value) ? 'bg-primary/10 text-primary' : 'bg-elevated text-muted'"
+            class="inline-flex items-center justify-center size-8 shrink-0 rounded-full"
+            :class="ICON_COLORS[item.color]"
           >
             <UIcon :name="item.icon" class="size-4" />
           </span>
@@ -287,28 +304,39 @@ function reset(): void {
               class="block text-xs text-muted mt-0.5"
             >{{ item.description }}</span>
           </span>
+          <UIcon
+            v-if="isChecked(section.key, item.value)"
+            name="i-lucide-circle-check"
+            class="size-4 shrink-0 text-primary"
+          />
         </button>
       </div>
     </div>
 
     <div class="px-5 py-4 sm:px-6 bg-muted">
-      <p class="font-medium text-highlighted mb-2">
+      <p class="font-medium text-highlighted mb-3">
         {{ hasSelections ? 'Recommended docs, based on your answers' : 'Start here' }}
       </p>
-      <!-- TODO: use inline elements, instead UPage -->
-      <UPageList divide>
-        <UPageCard
+      <div class="flex flex-col divide-y divide-default rounded-lg border border-default overflow-hidden bg-default">
+        <NuxtLink
           v-for="doc in recommendedDocs"
           :key="doc.path"
           :to="doc.path"
-          :icon="doc.icon"
-          :title="doc.title"
-          :description="doc.description"
-          orientation="horizontal"
-          variant="ghost"
-          :ui="{ container: 'p-3 sm:p-3', leadingIcon: 'size-5' }"
-        />
-      </UPageList>
+          class="group flex items-center gap-3 p-3 transition-colors hover:bg-elevated/50"
+        >
+          <span class="inline-flex items-center justify-center size-8 shrink-0 rounded-full bg-elevated text-muted">
+            <UIcon :name="doc.icon" class="size-4" />
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block text-sm font-medium text-highlighted">{{ doc.title }}</span>
+            <span class="block text-xs text-muted mt-0.5">{{ doc.description }}</span>
+          </span>
+          <UIcon
+            name="i-lucide-arrow-right"
+            class="size-4 shrink-0 text-dimmed transition-transform group-hover:translate-x-0.5 group-hover:text-muted"
+          />
+        </NuxtLink>
+      </div>
     </div>
   </div>
 </template>
