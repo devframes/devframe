@@ -166,7 +166,7 @@ const RECOMMENDATIONS: Record<string, string[]> = {
   'dataSource:browser': ['/guide/client-context', '/guide/deep-linking', '/plugins/a11y'],
 
   'environments:standalone': ['/guide/standalone-cli', '/adapters/cac', '/adapters/build'],
-  'environments:framework': ['/frameworks/vite', '/frameworks/next', '/frameworks/nuxt', '/adapters/vite', '/adapters/embedded'],
+  'environments:framework': ['/adapters'],
   'environments:all': ['/adapters/initiate', '/adapters', '/guide/devframe-definition'],
 
   'availability:dev': ['/guide/rpc', '/guide/transports'],
@@ -281,9 +281,6 @@ function reset(): void {
         <p class="flex items-center gap-2 font-medium text-highlighted">
           <UIcon :name="section.icon" class="size-4 text-muted" />
           {{ section.hint }}
-        </p>
-        <p class="text-xs text-muted uppercase tracking-widest">
-          {{ section.title }}
         </p>
       </div>
 

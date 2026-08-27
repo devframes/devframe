@@ -98,6 +98,7 @@ export default defineAppConfig({
             '/adapters',
             '/guide/standalone-cli',
             '/guide/client',
+            '/guide/in-page-channel',
             '/guide/transports',
             '/guide/security',
           ],
