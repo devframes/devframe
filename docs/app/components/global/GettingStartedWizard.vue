@@ -277,7 +277,7 @@ function buildAssistantPrompt(): string {
   const intro = lines.length
     ? `I want to build a devtool with Devframe. Here's what I have in mind:\n${lines.join('\n')}`
     : `I want to get started building a devtool with Devframe.`
-  return `${intro}\n\nWhich Devframe features fit this, and which docs should I read (in order)? Please outline a concrete plan.`
+  return `${intro}\n\nWhich Devframe features fit this, and what should I know to build it? Point me to the docs worth reading.`
 }
 
 /**
@@ -299,7 +299,7 @@ function buildCopyPrompt(): string {
     'Please help me design and implement this with Devframe. Relevant documentation:',
     ...docs,
     '',
-    'Explain which Devframe primitives to use and give me a step-by-step implementation plan.',
+    'Which Devframe primitives fit this, and what should I know to build it?',
   ].join('\n')
 }
 
