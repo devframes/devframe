@@ -272,6 +272,10 @@ export async function createDocksContext(
         return false
     }
 
+    initialRestorePending.value = false
+    selectedDockId.value = entry.id
+    sessionStore.value.open = true
+
     // If has import script, run it
     if (
       (entry.type === 'action')
@@ -302,9 +306,6 @@ export async function createDocksContext(
     if (entry.groupId)
       (sessionStore.value.groupLastChildIds ??= {})[entry.groupId] = entry.id
 
-    initialRestorePending.value = false
-    selectedDockId.value = entry.id
-    sessionStore.value.open = true
     // Only an iframe dock owns an address-bar route; ViewIframe keeps
     // `session.selectedDockRoute` current for it. Clear it for anything else so a stale
     // route from a previous iframe isn't persisted against a non-iframe dock.
@@ -687,26 +688,24 @@ export async function createDocksContext(
     initialRestorePending.value = false
     await switchEntry(restoreDockId)
   }
-  const startPanelStateEvents = (): void => {
-    let previousPanelState = docksContext.panel.state
-    watch(
-      [panelVisible, () => sessionStore.value.open, selectedDockId],
-      () => {
-        const panelState = docksContext.panel.state
-        if (
-          panelState.state === previousPanelState.state
-          && panelState.selectedDockId === previousPanelState.selectedDockId
-        ) {
-          return
-        }
+  let previousPanelState = docksContext.panel.state
+  watch(
+    [panelVisible, () => sessionStore.value.open, selectedDockId],
+    () => {
+      const panelState = docksContext.panel.state
+      if (
+        panelState.state === previousPanelState.state
+        && panelState.selectedDockId === previousPanelState.selectedDockId
+      ) {
+        return
+      }
 
-        previousPanelState = panelState
-        panelEvents.emit(HUB_EVENTS.client.docksPanelStateChanged, panelState)
-      },
-      { flush: 'post' },
-    )
-  }
-  void restoreAfterInitialization().then(startPanelStateEvents, startPanelStateEvents)
+      previousPanelState = panelState
+      panelEvents.emit(HUB_EVENTS.client.docksPanelStateChanged, panelState)
+    },
+    { flush: 'post' },
+  )
+  void restoreAfterInitialization()
 
   docksContextByRpc.set(rpc, docksContext)
   return docksContext

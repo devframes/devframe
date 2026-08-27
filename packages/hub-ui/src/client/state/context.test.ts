@@ -72,13 +72,11 @@ async function flushRestore(): Promise<void> {
   await Promise.resolve()
   await Promise.resolve()
   await nextTick()
-  await Promise.resolve()
-  await Promise.resolve()
 }
 
 describe('createDocksContext', () => {
   it('exposes restored panel state and emits selected, hidden, and closed changes', async () => {
-    expect.assertions(8)
+    expect.assertions(9)
 
     const { rpc, sharedStates, trust } = createStubRpc()
     const panelVisible = ref(false)
@@ -93,6 +91,13 @@ describe('createDocksContext', () => {
       HUB_EVENTS.client.docksPanelStateChanged,
       panelState => panelStates.push(panelState),
     )
+
+    panelVisible.value = true
+    await nextTick()
+    expect(panelStates).toEqual([{ state: 'open', selectedDockId: 'git' }])
+    panelVisible.value = false
+    await nextTick()
+    panelStates.length = 0
 
     trust()
     sharedStates.get('devframe:docks')!.push([gitEntry])
@@ -129,11 +134,15 @@ describe('createDocksContext', () => {
   })
 
   it('mounts a restored dock once after all initial server state arrives', async () => {
-    expect.assertions(7)
+    expect.assertions(8)
 
     const { rpc, sharedStates, trust } = createStubRpc()
     const executeSetupScriptMock = vi.mocked(executeSetupScript)
     executeSetupScriptMock.mockClear()
+    let setupPanelState: DevframeDockPanelState | undefined
+    executeSetupScriptMock.mockImplementationOnce(async (_dockEntry, scriptContext) => {
+      setupPanelState = scriptContext.panel.state
+    })
     const session = ref<DockSessionStorage>({
       open: true,
       selectedDockId: 'git',
@@ -159,6 +168,7 @@ describe('createDocksContext', () => {
 
     expect(context.docks.selected?.id).toBe('git')
     expect(session.value.open).toBe(true)
+    expect(setupPanelState).toEqual({ state: 'open', selectedDockId: 'git' })
     expect(executeSetupScriptMock).toHaveBeenCalledOnce()
   })
 

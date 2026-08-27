@@ -126,7 +126,7 @@ export interface WhenClauseContext {
 export type DevframeClientContext = DocksContext
 
 export interface DocksPanelEvents {
-  'panel:state:changed': (state: DevframeDockPanelState) => void
+  'panel:state:changed': (panelState: DevframeDockPanelState) => void
 }
 
 export interface DocksPanelContext {
