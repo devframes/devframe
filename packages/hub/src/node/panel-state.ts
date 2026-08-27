@@ -8,6 +8,10 @@ export function updateDockPanelState(
   sessionId: number,
   panelState: DevframeDockPanelState,
 ): void {
+  const currentState: DevframeDockPanelState = typeof panelState.selectedDockId === 'string'
+    ? { state: panelState.state, selectedDockId: panelState.selectedDockId }
+    : { state: panelState.state }
+
   let sessionStates = dockPanelStates.get(docks)
   if (!sessionStates) {
     sessionStates = new Map()
@@ -16,13 +20,12 @@ export function updateDockPanelState(
 
   const previousState = sessionStates.get(sessionId)
   if (
-    previousState?.state === panelState.state
-    && previousState.selectedDockId === panelState.selectedDockId
+    previousState?.state === currentState.state
+    && previousState.selectedDockId === currentState.selectedDockId
   ) {
     return
   }
 
-  const currentState: DevframeDockPanelState = { ...panelState }
   sessionStates.set(sessionId, currentState)
   const event: DevframeDockPanelStateEvent = previousState === undefined
     ? { type: 'connected', sessionId, ...currentState }

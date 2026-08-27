@@ -231,15 +231,17 @@ describe('devframeDockHost panel state', () => {
     const events: DevframeDockPanelStateEvent[] = []
     host.events.on(HUB_EVENTS.bus.docksPanelState, event => events.push(event))
 
-    updateDockPanelState(host, 11, { state: 'closed' })
+    updateDockPanelState(host, 11, { state: 'closed', selectedDockId: undefined })
     updateDockPanelState(host, 11, { state: 'closed' })
     updateDockPanelState(host, 11, { state: 'open', selectedDockId: 'git' })
     updateDockPanelState(host, 11, { state: 'open', selectedDockId: 'inspect' })
+    updateDockPanelState(host, 11, { state: 'open', selectedDockId: undefined })
 
     expect(events).toEqual([
       { type: 'connected', sessionId: 11, state: 'closed' },
       { type: 'changed', sessionId: 11, state: 'open', selectedDockId: 'git' },
       { type: 'changed', sessionId: 11, state: 'open', selectedDockId: 'inspect' },
+      { type: 'changed', sessionId: 11, state: 'open' },
     ])
   })
 
