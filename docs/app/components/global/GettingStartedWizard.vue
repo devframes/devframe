@@ -2,23 +2,25 @@
 /**
  * Interactive "what should I read" wizard for the Getting Started guide.
  *
- * Every question is a checkbox group (multiple answers allowed per question,
- * since a real devtool usually spans more than one answer — e.g. it reads
- * from both the node side and the user's web app). Selections persist to
- * `localStorage` so a reader can leave the page and pick up where they left
- * off; the recommended reading list at the bottom recomputes from whatever
- * is currently checked.
+ * Every question is a grid of selectable cards (multiple answers allowed per
+ * question, since a real devtool usually spans more than one answer — e.g.
+ * it reads from both the node side and the user's web app). Selections
+ * persist to `localStorage` so a reader can leave the page and pick up where
+ * they left off; the recommended reading list at the bottom recomputes from
+ * whatever is currently checked.
  */
 
 interface WizardItem {
   value: string
   label: string
+  icon: string
   description?: string
 }
 
 interface WizardSection {
   key: string
-  legend: string
+  title: string
+  hint: string
   items: WizardItem[]
 }
 
@@ -33,59 +35,65 @@ const STORAGE_KEY = 'devframe-docs:getting-started'
 const sections: WizardSection[] = [
   {
     key: 'dataSource',
-    legend: 'Where do you want to visualize data from?',
+    title: 'Data source',
+    hint: 'Where do you want to visualize data from?',
     items: [
-      { value: 'node', label: 'The node side', description: 'Server state, build output, the filesystem, child processes' },
-      { value: 'browser', label: 'The user\'s web app', description: 'State living in the page you\'re developing' },
+      { value: 'node', label: 'The node side', icon: 'i-lucide-server', description: 'Server state, build output, the filesystem, child processes' },
+      { value: 'browser', label: 'The user\'s web app', icon: 'i-lucide-app-window', description: 'State living in the page you\'re developing' },
     ],
   },
   {
     key: 'environments',
-    legend: 'What do you expect your tool to work with?',
+    title: 'Target environments',
+    hint: 'What do you expect your tool to work with?',
     items: [
-      { value: 'standalone', label: 'Standalone', description: 'A CLI or dev server with no host framework' },
-      { value: 'vite', label: 'Vite' },
-      { value: 'next', label: 'Next.js' },
-      { value: 'framework', label: 'A specific framework', description: 'Nuxt, or a host framework the kits don\'t cover yet' },
-      { value: 'all', label: 'All frameworks', description: 'Anything that speaks a Web Standard Request/Response' },
+      { value: 'standalone', label: 'Standalone', icon: 'i-lucide-terminal', description: 'A CLI or dev server with no host framework' },
+      { value: 'vite', label: 'Vite', icon: 'i-simple-icons-vite' },
+      { value: 'next', label: 'Next.js', icon: 'i-simple-icons-nextdotjs' },
+      { value: 'framework', label: 'A specific framework', icon: 'i-lucide-puzzle', description: 'Nuxt, or a host framework the kits don\'t cover yet' },
+      { value: 'all', label: 'All frameworks', icon: 'i-lucide-infinity', description: 'Anything that speaks a Web Standard Request/Response' },
     ],
   },
   {
     key: 'availability',
-    legend: 'When is the data available?',
+    title: 'Data availability',
+    hint: 'When is the data available?',
     items: [
-      { value: 'dev', label: 'Development time', description: 'Live, over a running dev server' },
-      { value: 'build', label: 'Production build time' },
-      { value: 'static', label: 'Statically available', description: 'Local filesystem, a static dump, etc.' },
-      { value: 'remote', label: 'Remotely', description: 'Over the web, not on localhost' },
+      { value: 'dev', label: 'Development time', icon: 'i-lucide-code', description: 'Live, over a running dev server' },
+      { value: 'build', label: 'Production build time', icon: 'i-lucide-hammer' },
+      { value: 'static', label: 'Statically available', icon: 'i-lucide-hard-drive', description: 'Local filesystem, a static dump, etc.' },
+      { value: 'remote', label: 'Remotely', icon: 'i-lucide-cloud', description: 'Over the web, not on localhost' },
     ],
   },
   {
     key: 'frontend',
-    legend: 'How do you want to build the frontend view?',
+    title: 'Frontend approach',
+    hint: 'How do you want to build the frontend view?',
     items: [
-      { value: 'framework', label: 'A preferred framework', description: 'Vue, React, Svelte, Solid...' },
-      { value: 'webcomponents', label: 'Web Components' },
-      { value: 'nodeside', label: 'Build the frontend on the node side', description: 'Describe the UI as data instead of shipping a bundle' },
+      { value: 'framework', label: 'A preferred framework', icon: 'i-lucide-component', description: 'Vue, React, Svelte, Solid...' },
+      { value: 'webcomponents', label: 'Web Components', icon: 'i-lucide-box' },
+      { value: 'nodeside', label: 'Build it on the node side', icon: 'i-lucide-braces', description: 'Describe the UI as data instead of shipping a bundle' },
     ],
   },
   {
     key: 'agent',
-    legend: 'Should it also work with a coding agent?',
+    title: 'Agent support',
+    hint: 'Should it also work with a coding agent?',
     items: [
-      { value: 'agent', label: 'Yes, expose it to a coding agent', description: 'Same RPC functions, resources, and state, over MCP' },
+      { value: 'agent', label: 'Yes, expose it to a coding agent', icon: 'i-lucide-bot', description: 'Same RPC functions, resources, and state, over MCP' },
     ],
   },
   {
     key: 'requirements',
-    legend: 'Any specific requirements?',
+    title: 'Other requirements',
+    hint: 'Any specific requirements?',
     items: [
-      { value: 'streaming', label: 'Streaming data' },
-      { value: 'overlay', label: 'An overlay on the user\'s web app' },
-      { value: 'hub', label: 'Composing with other devtools', description: 'One UI, many devframes' },
-      { value: 'security', label: 'Authentication' },
-      { value: 'deep-linking', label: 'Deep linking', description: 'Shareable URLs into a specific view' },
-      { value: 'terminal', label: 'Terminal / process access' },
+      { value: 'streaming', label: 'Streaming data', icon: 'i-lucide-radio' },
+      { value: 'overlay', label: 'An overlay on the user\'s web app', icon: 'i-lucide-layers' },
+      { value: 'hub', label: 'Composing with other devtools', icon: 'i-lucide-layout-dashboard', description: 'One UI, many devframes' },
+      { value: 'security', label: 'Authentication', icon: 'i-lucide-shield-check' },
+      { value: 'deep-linking', label: 'Deep linking', icon: 'i-lucide-link', description: 'Shareable URLs into a specific view' },
+      { value: 'terminal', label: 'Terminal / process access', icon: 'i-lucide-square-terminal' },
     ],
   },
 ]
@@ -104,7 +112,7 @@ const DOC_CATALOG: Record<string, DocEntry> = {
   '/guide/security': { title: 'Security', description: 'Localhost binding and a trust handshake before a browser can call RPC.', icon: 'i-lucide-shield-check' },
   '/guide/agent-native': { title: 'Agent-Native Devframe', description: 'Expose RPC functions, resources, and shared state to coding agents over MCP.', icon: 'i-lucide-bot' },
   '/guide/hub': { title: 'Hub', description: 'Orchestrate many devtools sharing one UI — docks, terminals, messages, commands.', icon: 'i-lucide-layout-dashboard' },
-  '/guide/client-context': { title: 'Client Scripts & Client Context', description: 'How a dock client script runs a devframe\'s code inside the host page.', icon: 'i-lucide-code-2' },
+  '/guide/client-context': { title: 'Client Scripts & Client Context', description: 'How a dock client script runs a devframe\'s code inside the host page.', icon: 'i-lucide-code' },
   '/guide/hub-initiate': { title: 'Serve a Hub Anywhere', description: 'initHub() serves a whole multi-devframe install from one handler.', icon: 'i-lucide-server-cog' },
   '/guide/services': { title: 'Cross-Devframe Services', description: 'Expose a typed, namespaced capability to every devframe in a hub.', icon: 'i-lucide-share-2' },
   '/guide/deep-linking': { title: 'Deep Linking', description: 'Send a user to a specific view inside a devframe from a URL or an agent.', icon: 'i-lucide-link' },
@@ -193,12 +201,25 @@ watch(selections, (value) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
 }, { deep: true })
 
-const hasSelections = computed(() => sections.some(section => selections[section.key].length > 0))
+function isChecked(sectionKey: string, value: string): boolean {
+  return selections[sectionKey]!.includes(value)
+}
+
+function toggle(sectionKey: string, value: string): void {
+  const current = selections[sectionKey]!
+  const index = current.indexOf(value)
+  if (index === -1)
+    current.push(value)
+  else
+    current.splice(index, 1)
+}
+
+const hasSelections = computed(() => sections.some(section => selections[section.key]!.length > 0))
 
 const recommendedDocs = computed(() => {
   const paths = new Set(BASE_DOCS)
   for (const section of sections) {
-    for (const value of selections[section.key]) {
+    for (const value of selections[section.key]!) {
       for (const path of RECOMMENDATIONS[`${section.key}:${value}`] ?? [])
         paths.add(path)
     }
@@ -208,14 +229,14 @@ const recommendedDocs = computed(() => {
     .map(path => ({ path, ...DOC_CATALOG[path]! }))
 })
 
-function reset() {
+function reset(): void {
   for (const section of sections) selections[section.key] = []
 }
 </script>
 
 <template>
   <div class="not-prose rounded-xl border border-default divide-y divide-default overflow-hidden">
-    <div class="flex items-center justify-between gap-4 px-5 py-4 bg-muted">
+    <div class="flex items-center justify-between gap-4 px-5 py-4 sm:px-6 bg-muted">
       <div>
         <p class="font-medium text-highlighted">
           What kind of devtool do you want to build?
@@ -236,22 +257,54 @@ function reset() {
       />
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-default">
-      <div
-        v-for="section in sections"
-        :key="section.key"
-        class="bg-default p-5"
-      >
-        <UCheckboxGroup
-          v-model="selections[section.key]"
-          :legend="section.legend"
-          :items="section.items"
-          :ui="{ legend: 'text-base font-medium text-highlighted mb-3' }"
-        />
+    <div
+      v-for="section in sections"
+      :key="section.key"
+      class="p-5 sm:p-6"
+    >
+      <p class="font-medium text-highlighted">
+        {{ section.title }}
+      </p>
+      <p class="text-sm text-muted mt-0.5 mb-4">
+        {{ section.hint }}
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <button
+          v-for="item in section.items"
+          :key="item.value"
+          type="button"
+          role="checkbox"
+          :aria-checked="isChecked(section.key, item.value)"
+          class="relative flex flex-col items-start gap-3 rounded-lg border p-4 text-left transition-colors cursor-pointer"
+          :class="isChecked(section.key, item.value)
+            ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
+            : 'border-default hover:border-accented hover:bg-elevated/50'"
+          @click="toggle(section.key, item.value)"
+        >
+          <UIcon
+            v-if="isChecked(section.key, item.value)"
+            name="i-lucide-circle-check"
+            class="absolute top-3 right-3 size-4 text-primary"
+          />
+          <span
+            class="inline-flex items-center justify-center size-9 rounded-full transition-colors"
+            :class="isChecked(section.key, item.value) ? 'bg-primary/10 text-primary' : 'bg-elevated text-muted'"
+          >
+            <UIcon :name="item.icon" class="size-4.5" />
+          </span>
+          <span>
+            <span class="block text-sm font-medium text-highlighted pe-4">{{ item.label }}</span>
+            <span
+              v-if="item.description"
+              class="block text-xs text-muted mt-0.5"
+            >{{ item.description }}</span>
+          </span>
+        </button>
       </div>
     </div>
 
-    <div class="p-5 bg-muted">
+    <div class="p-5 sm:p-6 bg-muted">
       <p class="font-medium text-highlighted mb-3">
         {{ hasSelections ? 'Recommended docs, based on your answers' : 'Start here' }}
       </p>
