@@ -3,7 +3,7 @@
  * Same-origin demo host for the a11y inspector.
  *
  * Serves three things off one origin so the page script (host page) and the
- * panel (devtools iframe) share a BroadcastChannel:
+ * panel (devtools iframe) can handshake their in-page channel:
  *
  *   GET  /                              → the demo page (intentional a11y bugs)
  *   GET  /__df-inject/inject.js         → the page script bundle
@@ -14,7 +14,7 @@
  *   node demo/server.mjs          dev    — live WebSocket RPC (`assets-pkg/dist`)
  *   node demo/server.mjs build    static — baked RPC dump,    (`dist/static`)
  *
- * The scan/highlight loop is identical in both: it rides the BroadcastChannel,
+ * The scan/highlight loop is identical in both: it rides the in-page channel,
  * not the devframe backend.
  */
 import { existsSync } from 'node:fs'

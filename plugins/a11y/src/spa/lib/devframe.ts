@@ -35,7 +35,7 @@ export interface DevframeState {
   backend: Accessor<string | null>
   /**
    * Connection status of the (optional) devframe backend. The panel's core
-   * scan loop runs over BroadcastChannel, so this is informational only —
+   * scan loop runs over the in-page channel, so this is informational only —
    * surfaced as a tag rather than blocking the UI.
    */
   status: Accessor<DevframeConnectionStatus | null>
@@ -50,7 +50,7 @@ export interface DevframeState {
  * the runtime config the panel forwards to the page script, and the dock-activation
  * shared state that powers deep-linking (e.g. a messages-feed entry navigating
  * here). Intentionally non-blocking and failure-tolerant — the panel's core
- * scan loop runs over BroadcastChannel, so the UI stays useful even if the
+ * scan loop runs over the in-page channel, so the UI stays useful even if the
  * backend is unreachable.
  */
 export function connectDevframeState(): DevframeState {

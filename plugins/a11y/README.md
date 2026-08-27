@@ -37,16 +37,18 @@ Three pieces, two of them browser-side:
 
 | Piece | Runs in | Role |
 |-------|---------|------|
-| **Page script** (`src/inject`) | the user app's page | runs axe-core, tracks routes, broadcasts the aggregate state, draws the preview + pinned rings |
+| **Page script** (`src/inject`) | the user app's page | runs axe-core, tracks routes, owns the aggregate state, draws the preview + pinned rings |
 | **Panel** (`src/spa`) | the devtools iframe | Solid SPA: Dashboard + grouped violations, fires preview/pin/rescan |
 | **Node** (`src/index.ts`, `src/node`, `src/rpc`) | the node side | `get-config` RPC (impact taxonomy + runtime config) — live in dev, baked in a static build |
 
-The page script and panel talk over the in-page channel (a same-origin
-[`BroadcastChannel`](src/shared/protocol.ts)), not the devframe RPC backend. That
-is what keeps the live loop working in **both modes**: neither half needs a
-server to reach the other, only a shared browser origin (host page + panel
-iframe). The page script owns the authoritative route → report map and broadcasts the
-whole aggregate on every change, so the panel stays a pure render of it. devframe
+The page script and panel talk over devframe's in-page channel
+([`devframe/in-page-channel`](../../packages/devframe/src/in-page-channel/index.ts),
+contract in [`src/shared/protocol.ts`](src/shared/protocol.ts)), not the devframe
+RPC backend. That is what keeps the live loop working in **both modes**: neither
+half needs a server to reach the other, only a same-origin handshake in the same
+tab. The page script owns the authoritative route → report map as the channel's
+shared state — replayed to late-joining panels, streamed as patches on every
+change — so the panel stays a pure render of it. devframe
 RPC carries the data model on top — `get-config` is a `static` function, so it
 resolves over WebSocket in dev and from the baked dump in a static build; the
 panel forwards its runtime-config slice to the page script over the channel, keeping the
@@ -120,7 +122,7 @@ pnpm -C plugins/a11y dev         # from source: same, at /__devframes_plugin_a11
 | `src/cli.ts` | `/cli` | `createA11yCli()` — backs the `devframes_plugin_a11y` bin |
 | `src/client/index.ts` | `/client` | `connectA11y()` — typed browser RPC client wrapper |
 | `src/rpc/` | — | `get-config` static RPC + the type-safe client registry |
-| `src/shared/protocol.ts` | — | the page script ↔ panel in-page channel (`BroadcastChannel`) contract |
+| `src/shared/protocol.ts` | — | the page script ↔ panel in-page channel contract (`A11yChannelProtocol`) |
 | `src/inject/` | — | the page script (axe scan, highlight overlay, hub messages mirror) → `dist/inject/inject.js` |
 | `src/spa/` | — | the Solid panel SPA → `assets-pkg/dist` (ships in `@devframes/plugin-a11y--assets`) |
 | `demo/` | — | same-origin host page + server (dev + static modes) |

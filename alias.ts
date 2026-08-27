@@ -23,6 +23,7 @@ export const alias = {
   'devframe/node/hub-internals': r('devframe/src/node/hub-internals/index.ts'),
   'devframe/node': r('devframe/src/node/index.ts'),
   'devframe/internal': r('devframe/src/internal/index.ts'),
+  'devframe/in-page-channel': r('devframe/src/in-page-channel/index.ts'),
   'devframe/constants': r('devframe/src/constants.ts'),
   'devframe/utils/agent-tool-name': r('devframe/src/utils/agent-tool-name.ts'),
   'devframe/utils/colors': r('devframe/src/utils/colors.ts'),

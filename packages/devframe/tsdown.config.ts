@@ -71,6 +71,7 @@ const nodeDeps = {
 // Shared by the runtime client build and the combined dts build below.
 const clientEntries = {
   'client/index': 'src/client/index.ts',
+  'in-page-channel/index': 'src/in-page-channel/index.ts',
   'utils/agent-tool-name': 'src/utils/agent-tool-name.ts',
   'utils/colors': 'src/utils/colors.ts',
   'utils/crypto-token': 'src/utils/crypto-token.ts',
@@ -151,6 +152,7 @@ export default defineConfig([
         await checkClientDist({
           entries: [
             resolve(distDir, 'client/index.mjs'),
+            resolve(distDir, 'in-page-channel/index.mjs'),
             resolve(distDir, 'utils/agent-tool-name.mjs'),
             resolve(distDir, 'utils/colors.mjs'),
             resolve(distDir, 'utils/crypto-token.mjs'),

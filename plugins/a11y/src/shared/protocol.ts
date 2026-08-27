@@ -1,25 +1,27 @@
 /**
- * Wire contract shared by the two browser-side halves of the a11y inspector:
+ * Contract shared by the two browser-side halves of the a11y inspector:
  *
  *  - the **page script** — injected into the user app's page, runs axe-core,
  *    tracks issues per route, and owns the highlight overlay (`src/inject`);
  *  - the **panel** — the Solid SPA that lists violations (`src/client`).
  *
- * They talk over a same-origin {@link https://developer.mozilla.org/docs/Web/API/BroadcastChannel BroadcastChannel}
- * rather than the devframe RPC backend. That keeps the live scan/highlight loop
- * working identically whether the plugin is running as a dev server (WebSocket
- * RPC) or as a baked static build — neither half needs a server to find the
- * other, only a shared browser origin (host page + devtools iframe).
+ * They talk over devframe's in-page channel (`devframe/in-page-channel`)
+ * rather than the devframe RPC backend. That keeps the live scan/highlight
+ * loop working identically whether the plugin is running as a dev server
+ * (WebSocket RPC) or as a baked static build — neither half needs a server
+ * to find the other, only a same-origin handshake in the same tab.
  *
- * The page script owns the authoritative route → report map (backed by
- * sessionStorage) and broadcasts the whole {@link A11yState} aggregate on every
- * change, so the panel stays a pure render of it. Runtime configuration
- * (`get-config`, a `static` RPC the panel resolves) is forwarded to the page script
- * over the same channel as an {@link PageScriptConfig}, keeping the page script itself
- * free of any RPC dependency.
+ * The page script owns the authoritative {@link A11yState} aggregate as the
+ * channel's shared state, so the panel stays a pure render of it: it is
+ * replayed to late-joining panels and streamed as patches on every change.
+ * The panel drives the page script through the channel functions declared in
+ * {@link A11yChannelProtocol}. Runtime configuration (`get-config`, a
+ * `static` RPC the panel resolves) is forwarded to the page script over the
+ * same channel, keeping the page script itself free of any RPC dependency.
  */
+import type { InPageChannelProtocol } from 'devframe/in-page-channel'
 
-/** BroadcastChannel name. Namespaced with the devframe id, per convention. */
+/** In-page channel name. Namespaced with the devframe id, per convention. */
 export const A11Y_CHANNEL = 'devframes:plugin:a11y'
 
 /** Default dock id — the devframe id a hub registers the panel under. */
@@ -111,15 +113,17 @@ export interface ScanReport {
 }
 
 /**
- * The whole route → report aggregate the page script broadcasts. `routes` holds one
- * report per tracked route; `activeRoute` is the pathname currently in view in
- * the host page.
+ * The whole route → report aggregate the page script owns as the channel's
+ * shared state. `routes` holds one report per tracked route; `activeRoute`
+ * is the pathname currently in view in the host page.
  */
 export interface A11yState {
   /** axe engine version (from the most recent scan). */
   engine: string
   /** `location.pathname` currently in view in the host page. */
   activeRoute: string
+  /** Whether the page script is mid-scan. */
+  scanning: boolean
   /** One report per tracked route. */
   routes: ScanReport[]
 }
@@ -154,74 +158,40 @@ export interface PageScriptConfig {
   activateDockId?: string
 }
 
-/* ── page script → panel ─────────────────────────────────────────────────────── */
-
-interface PageScriptReadyMessage {
-  type: 'a11y:page-script-ready'
-  url: string
-  route: string
+/**
+ * The a11y inspector's in-page channel contract: every function the page
+ * script implements for its panels, and the shared {@link A11yState}
+ * aggregate the page script owns. All functions are fire-and-forget events —
+ * results flow back through the shared state.
+ */
+export interface A11yChannelProtocol extends InPageChannelProtocol {
+  pageScript: {
+    /**
+     * Draw the transient hover-preview ring around a node's element.
+     * `nodeId` is a {@link ViolationNode.id} (mirrored to
+     * {@link A11Y_NODE_ATTR}); `target` is the axe selector fallback.
+     */
+    'highlight': (nodeId: string, target: string[]) => void
+    /** Clear the transient hover-preview ring. */
+    'clear-highlight': () => void
+    /** Replace the pinned (numbered) highlight set, drawn in the given order. */
+    'set-pins': (pins: PinTarget[]) => void
+    /** Re-run the scan. */
+    'rescan': () => void
+    /** Forward runtime configuration (resolved from the `get-config` RPC). */
+    'set-config': (config: PageScriptConfig) => void
+    /** Toggle the interaction-driven auto-scan. */
+    'set-autoscan': (enabled: boolean) => void
+    /** Drop one route's tracked history. */
+    'clear-route': (route: string) => void
+    /** Drop the whole tracked-route history. */
+    'clear-all': () => void
+  }
+  sharedStates: {
+    /** The authoritative route → report aggregate the page script owns. */
+    state: A11yState
+  }
 }
-interface StateMessage {
-  type: 'a11y:state'
-  state: A11yState
-}
-interface ScanningMessage {
-  type: 'a11y:scanning'
-  route: string
-}
-
-type PageScriptToPanel = PageScriptReadyMessage | StateMessage | ScanningMessage
-
-/* ── panel → page script ─────────────────────────────────────────────────────── */
-
-interface PanelReadyMessage {
-  type: 'a11y:panel-ready'
-}
-interface ConfigMessage {
-  type: 'a11y:config'
-  config: PageScriptConfig
-}
-interface HighlightMessage {
-  type: 'a11y:highlight'
-  /** Node id from {@link ViolationNode.id}; falls back to the first target. */
-  nodeId: string
-  target: string[]
-}
-interface ClearHighlightMessage {
-  type: 'a11y:clear'
-}
-interface PinsMessage {
-  type: 'a11y:pins'
-  /** The full desired pin set; the page script draws numbered rings in this order. */
-  pins: PinTarget[]
-}
-interface RescanMessage {
-  type: 'a11y:rescan'
-}
-interface SetAutoScanMessage {
-  type: 'a11y:set-autoscan'
-  enabled: boolean
-}
-interface ClearRouteMessage {
-  type: 'a11y:clear-route'
-  route: string
-}
-interface ClearAllMessage {
-  type: 'a11y:clear-all'
-}
-
-type PanelToPageScript
-  = | PanelReadyMessage
-    | ConfigMessage
-    | HighlightMessage
-    | ClearHighlightMessage
-    | PinsMessage
-    | RescanMessage
-    | SetAutoScanMessage
-    | ClearRouteMessage
-    | ClearAllMessage
-
-export type A11yMessage = PageScriptToPanel | PanelToPageScript
 
 /** Empty per-impact counter — handy initial value. */
 export function emptyCounts(): Record<Impact, number> {

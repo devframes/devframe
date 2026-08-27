@@ -27,6 +27,7 @@
     "./adapters/mcp": "./dist/adapters/mcp.mjs",
     "./client": "./dist/client/index.mjs",
     "./constants": "./dist/constants.mjs",
+    "./in-page-channel": "./dist/in-page-channel/index.mjs",
     "./initiate": "./dist/adapters/initiate.mjs",
     "./internal": "./dist/internal/index.mjs",
     "./node": "./dist/node/index.mjs",

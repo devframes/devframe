@@ -33,8 +33,13 @@ export declare const DEVFRAME_EVENTS: {
     readonly streamingEnd: "devframe:streaming:end";
     readonly streamingUploadCancel: "devframe:streaming:upload-cancel";
   };
+  readonly inPageChannel: {
+    readonly panelStateUpdated: "devframe:in-page:panel-state:updated";
+    readonly panelStatePatch: "devframe:in-page:panel-state:patch";
+  };
   readonly postMessage: {
     readonly remoteAssetsError: "devframe:remote-assets-error";
+    readonly inPageChannel: "devframe:in-page-channel";
   };
 };
 export declare const DEVFRAME_MCP_ROUTE: string;

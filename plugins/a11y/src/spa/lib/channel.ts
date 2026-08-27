@@ -1,12 +1,13 @@
 import type { Accessor } from 'solid-js'
-import type { A11yMessage, A11yState, PageScriptConfig, PinTarget } from '../../shared/protocol.ts'
+import type { A11yChannelProtocol, A11yState, PageScriptConfig, PinTarget } from '../../shared/protocol.ts'
+import { connectPanelChannel } from 'devframe/in-page-channel'
 import { createSignal, onCleanup } from 'solid-js'
 import { A11Y_CHANNEL } from '../../shared/protocol.ts'
 
 export interface A11yChannel {
   /** Latest full route → report aggregate, or `null` until the page script reports in. */
   state: Accessor<A11yState | null>
-  /** Whether a page script has announced itself on this origin. */
+  /** Whether a page script is connected on the in-page channel. */
   pageScriptReady: Accessor<boolean>
   /** Whether the page script is mid-scan. */
   scanning: Accessor<boolean>
@@ -31,64 +32,52 @@ export interface A11yChannel {
 }
 
 /**
- * Panel half of the in-page channel (a `BroadcastChannel`). Returns reactive accessors
- * that track the page script's aggregate state plus the actions the UI fires on
- * hover/click/rescan.
+ * Panel half of the a11y in-page channel (`devframe/in-page-channel`).
+ * Returns reactive accessors that mirror the page script's authoritative
+ * {@link A11yState} plus the actions the UI fires on hover/click/rescan.
+ *
+ * Connection handling is the channel's job: the handshake retries until a
+ * page script answers (it may load after the panel), actions fired while
+ * `connecting` are buffered, and a page-script reload re-handshakes and
+ * re-seeds the state automatically. Until then `pageScriptReady` stays
+ * `false` and `state` stays `null` — the UI renders its fallback from those.
  */
 export function createA11yChannel(): A11yChannel {
   const [state, setState] = createSignal<A11yState | null>(null)
   const [pageScriptReady, setPageScriptReady] = createSignal(false)
-  const [scanning, setScanning] = createSignal(false)
-  const [activeRoute, setActiveRoute] = createSignal<string | null>(null)
+  // Optimistic scanning flag so the UI reacts to `rescan` immediately; the
+  // authoritative flag inside `A11yState` takes over on the next update.
+  const [localScanning, setLocalScanning] = createSignal(false)
 
-  const channel = new BroadcastChannel(A11Y_CHANNEL)
-  const post = (message: A11yMessage) => channel.postMessage(message)
+  const channel = connectPanelChannel<A11yChannelProtocol>({ name: A11Y_CHANNEL })
+  channel.events.on('status:updated', status => setPageScriptReady(status === 'connected'))
 
-  channel.addEventListener('message', (event: MessageEvent<A11yMessage>) => {
-    const message = event.data
-    switch (message.type) {
-      case 'a11y:page-script-ready':
-        setPageScriptReady(true)
-        setActiveRoute(message.route)
-        // Closes the startup race: if our panel-ready landed before the page script
-        // was listening, asking again now pulls down the current state.
-        if (!state())
-          post({ type: 'a11y:panel-ready' })
-        break
-      case 'a11y:state':
-        setPageScriptReady(true)
-        setScanning(false)
-        setActiveRoute(message.state.activeRoute)
-        setState(message.state)
-        break
-      case 'a11y:scanning':
-        setPageScriptReady(true)
-        setActiveRoute(message.route)
-        setScanning(true)
-        break
+  void channel.sharedState.get('state').then((shared) => {
+    const apply = (value: A11yState): void => {
+      setLocalScanning(false)
+      setState({ ...value })
     }
+    apply(shared.value() as A11yState)
+    shared.on('updated', fullState => apply(fullState as A11yState))
   })
-
-  // Announce the panel so a previously-loaded page script replays its current state.
-  post({ type: 'a11y:panel-ready' })
 
   onCleanup(() => channel.close())
 
   return {
     state,
     pageScriptReady,
-    scanning,
-    activeRoute,
-    preview: node => post({ type: 'a11y:highlight', nodeId: node.id, target: node.target }),
-    clearPreview: () => post({ type: 'a11y:clear' }),
-    setPins: pins => post({ type: 'a11y:pins', pins }),
+    scanning: () => state()?.scanning || localScanning(),
+    activeRoute: () => state()?.activeRoute ?? null,
+    preview: node => channel.callEvent('highlight', node.id, node.target),
+    clearPreview: () => channel.callEvent('clear-highlight'),
+    setPins: pins => channel.callEvent('set-pins', pins),
     rescan: () => {
-      setScanning(true)
-      post({ type: 'a11y:rescan' })
+      setLocalScanning(true)
+      channel.callEvent('rescan')
     },
-    sendConfig: config => post({ type: 'a11y:config', config }),
-    setAutoScan: enabled => post({ type: 'a11y:set-autoscan', enabled }),
-    clearRoute: route => post({ type: 'a11y:clear-route', route }),
-    clearAll: () => post({ type: 'a11y:clear-all' }),
+    sendConfig: config => channel.callEvent('set-config', config),
+    setAutoScan: enabled => channel.callEvent('set-autoscan', enabled),
+    clearRoute: route => channel.callEvent('clear-route', route),
+    clearAll: () => channel.callEvent('clear-all'),
   }
 }

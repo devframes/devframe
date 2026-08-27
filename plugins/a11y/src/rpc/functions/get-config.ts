@@ -45,7 +45,7 @@ export interface A11yRuntimeConfig {
  * so the value resolves live over WebSocket in dev and is baked into the RPC
  * dump for static builds — the panel's legend + runtime config render the same
  * in both modes. The panel forwards the `pageScript` slice to the page script over
- * the BroadcastChannel, keeping the page script free of any RPC dependency.
+ * the in-page channel, keeping the page script free of any RPC dependency.
  */
 export function createGetConfig(options: A11yRuntimeConfig = {}) {
   const dockId = options.dockId ?? A11Y_DEFAULT_DOCK_ID

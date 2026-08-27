@@ -57,8 +57,20 @@ export const DEVFRAME_EVENTS = {
     streamingEnd: 'devframe:streaming:end',
     streamingUploadCancel: 'devframe:streaming:upload-cancel',
   },
+  /**
+   * In-page channel notifications the page script pushes to its panels
+   * (page script → panel), `devframe:` prefix. The paired request methods
+   * (`devframe:in-page:page-state:subscribe`/`set`/`patch`) are call
+   * endpoints, not events, and are defined at their handlers
+   * (`in-page-channel/state.ts`).
+   */
+  inPageChannel: {
+    panelStateUpdated: 'devframe:in-page:panel-state:updated',
+    panelStatePatch: 'devframe:in-page:panel-state:patch',
+  },
   /** `postMessage` channels the runtime posts across window boundaries. */
   postMessage: {
     remoteAssetsError: 'devframe:remote-assets-error',
+    inPageChannel: 'devframe:in-page-channel',
   },
 } as const

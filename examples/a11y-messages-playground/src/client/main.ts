@@ -49,7 +49,7 @@ async function main() {
   const docks = await rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks', { initialValue: [] })
 
   // Keep-alive iframe pool: one iframe per dock, toggled by visibility so the
-  // a11y panel keeps its BroadcastChannel connection while you switch docks.
+  // a11y panel keeps its in-page channel connection while you switch docks.
   const iframePool = new Map<string, HTMLIFrameElement>()
 
   function ensureIframe(entry: DevframeDockEntry & { url: string }): HTMLIFrameElement {

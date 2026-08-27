@@ -126,6 +126,7 @@
         "src/adapters/{build,cac,dev,embedded,initiate}.ts",
         "src/adapters/mcp/index.ts",
         "src/client/index.ts",
+        "src/in-page-channel/index.ts",
         "src/internal/index.ts",
         "src/node/index.ts",
         "src/node/{auth,hub-internals}/index.ts",

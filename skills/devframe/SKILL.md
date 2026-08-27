@@ -434,6 +434,10 @@ const data = await my.rpc.call('get-stats', { limit: 10 })
 
 Use `my.rpc.sharedState(key)` for observable state, `my.rpc.register(...)` to receive broadcasts from the node side, `my.rpc.callOptional(...)` when a missing handler should resolve to `undefined`, and `my.settings.{project,global}` for persisted settings synced from the node side.
 
+### In-page channel (page script ↔ panel, server-free)
+
+For a live inspect-the-page loop, `devframe/in-page-channel` connects a devframe's **page script** (in the user app's page) to its **panels** entirely in the browser — no server, so it works identically in dev and static builds. Declare one shared protocol type; the page script is `createPageScriptChannel<P>({ name, functions })`, each panel `connectPanelChannel<P>({ name })`. Functions use `defineChannelFunction` (the `defineRpcFunction` shape: `type: 'event'` fans out to every panel, `query`/`action` are request/response); `channel.sharedState.get(key)` mirrors `rpc.sharedState` with the page script as authority (panels get automatic replay). The handshake is panel-initiated with retry — boot order and reloads don't matter — and panels expose `status`/`whenConnected(ms)` for "page script not loaded" fallbacks. Channel names follow `devframes:plugin:<slug>`. The a11y inspector's scan/highlight loop is the reference use.
+
 ## The Hub
 
 A single devframe is one portable tool; a hub is where many tools **meet and collaborate**. `@devframes/hub` is the framework-neutral composition layer. It adds the orchestration subsystems that only make sense when tools share a UI, and it ships no UI of its own - a hub UI provider fills the `ui` slot.

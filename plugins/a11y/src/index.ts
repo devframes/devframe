@@ -73,7 +73,7 @@ export interface A11yDevframeOptions {
  * Build a {@link DevframeDefinition} for the a11y inspector. The same
  * definition runs standalone (`/cli`, `/build`) and mounts into a host
  * (`/vite`, hub). The panel talks to the page script over the in-page channel
- * (a same-origin BroadcastChannel), so the scan/highlight loop works identically in dev
+ * (`devframe/in-page-channel`), so the scan/highlight loop works identically in dev
  * (live WebSocket RPC) and in a baked static build.
  *
  * @experimental This plugin is experimental and may change without a major

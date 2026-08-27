@@ -52,6 +52,9 @@
       "devframe/internal": [
         "./packages/devframe/src/internal/index.ts"
       ],
+      "devframe/in-page-channel": [
+        "./packages/devframe/src/in-page-channel/index.ts"
+      ],
       "devframe/constants": [
         "./packages/devframe/src/constants.ts"
       ],

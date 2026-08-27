@@ -1,11 +1,13 @@
 /**
  * The a11y inspector **page script** — injected into the user app's page.
  *
- * It runs axe-core against the live DOM, tracks violations per route, broadcasts
- * the whole {@link A11yState} aggregate to the panel, and draws transient +
- * pinned highlight rings around elements the panel asks about. It talks to the
- * panel purely over a same-origin BroadcastChannel, so it needs no server — the
- * loop works the same in dev and in a static build.
+ * It runs axe-core against the live DOM, tracks violations per route, owns
+ * the whole {@link A11yState} aggregate as the in-page channel's shared
+ * state, and draws transient + pinned highlight rings around elements the
+ * panel asks about. It talks to the panel purely over devframe's in-page
+ * channel (`devframe/in-page-channel`), so it needs no server — the loop
+ * works the same in dev and in a static build, and every connected panel
+ * (dock iframe, popup, Document PiP) converges on the same state.
  *
  * Load it from the host page with a single module script, e.g.
  * `<script type="module" src="/__df-inject/inject.js"></script>` — or let a
@@ -13,15 +15,10 @@
  * export receives the hub's client-script context and additionally mirrors
  * each scan into the hub's messages feed.
  */
-import type {
-  A11yMessage,
-  A11yState,
-  PageScriptConfig,
-  PinTarget,
-  ScanReport,
-} from '../shared/protocol.ts'
+import type { A11yChannelProtocol, PageScriptConfig, PinTarget, ScanReport } from '../shared/protocol.ts'
 import type { A11yPageScriptContext } from './messages.ts'
 import type { PinInfo } from './overlay.ts'
+import { createPageScriptChannel, defineChannelFunction } from 'devframe/in-page-channel'
 import {
   A11Y_CHANNEL,
   A11Y_DEFAULT_DOCK_ID,
@@ -34,13 +31,12 @@ import { resolveElement, scan } from './scanner.ts'
 
 const GLOBAL_FLAG = '__DF_A11Y_PAGE_SCRIPT__'
 
-function start(context?: A11yPageScriptContext) {
+async function start(context?: A11yPageScriptContext): Promise<void> {
   const w = window as unknown as Record<string, unknown>
   if (w[GLOBAL_FLAG])
     return
   w[GLOBAL_FLAG] = true
 
-  const channel = new BroadcastChannel(A11Y_CHANNEL)
   const overlay = createOverlay()
   document.documentElement.appendChild(overlay.root)
 
@@ -77,8 +73,6 @@ function start(context?: A11yPageScriptContext) {
   let rescanQueued = false
   let debounceTimer = 0
 
-  const post = (message: A11yMessage) => channel.postMessage(message)
-
   function loadRoutes(): [string, ScanReport][] {
     try {
       const raw = sessionStorage.getItem(A11Y_STORAGE_KEY)
@@ -100,11 +94,104 @@ function start(context?: A11yPageScriptContext) {
     }
   }
 
-  function buildState(): A11yState {
-    return { engine, activeRoute, routes: [...routes.values()] }
-  }
-  function broadcastState() {
-    post({ type: 'a11y:state', state: buildState() })
+  const channel = createPageScriptChannel<A11yChannelProtocol>({
+    name: A11Y_CHANNEL,
+    functions: [
+      defineChannelFunction({
+        name: 'highlight',
+        type: 'event',
+        jsonSerializable: true,
+        handler: (nodeId: string, target: string[]) => {
+          const el = document.querySelector(`[${A11Y_NODE_ATTR}="${CSS.escape(nodeId)}"]`)
+            ?? resolveElement(target)
+          if (el) {
+            const active = routes.get(activeRoute) ?? null
+            const impact = findImpact(active, nodeId) ?? 'minor'
+            const ruleId = findRule(active, nodeId) ?? 'element'
+            overlay.preview(el, { impact, ruleId })
+          }
+          else {
+            overlay.clearPreview()
+          }
+        },
+      }),
+      defineChannelFunction({
+        name: 'clear-highlight',
+        type: 'event',
+        handler: () => overlay.clearPreview(),
+      }),
+      defineChannelFunction({
+        name: 'set-pins',
+        type: 'event',
+        jsonSerializable: true,
+        handler: (pins: PinTarget[]) => {
+          const infos: PinInfo[] = []
+          pins.forEach((pin, i) => {
+            const info = resolvePin(pin, i + 1)
+            if (info)
+              infos.push(info)
+          })
+          overlay.setPins(infos)
+        },
+      }),
+      defineChannelFunction({
+        name: 'rescan',
+        type: 'event',
+        handler: () => void runScan(),
+      }),
+      defineChannelFunction({
+        name: 'set-config',
+        type: 'event',
+        handler: (next: PageScriptConfig) => applyConfig(next),
+      }),
+      defineChannelFunction({
+        name: 'set-autoscan',
+        type: 'event',
+        jsonSerializable: true,
+        handler: (enabled: boolean) => {
+          config.autoScan = enabled
+          if (enabled)
+            bindInteractions()
+          else
+            unbindInteractions()
+        },
+      }),
+      defineChannelFunction({
+        name: 'clear-route',
+        type: 'event',
+        jsonSerializable: true,
+        handler: (route: string) => {
+          routes.delete(route)
+          loggedRules.delete(route)
+          saveRoutes()
+          publishState()
+        },
+      }),
+      defineChannelFunction({
+        name: 'clear-all',
+        type: 'event',
+        handler: () => {
+          routes.clear()
+          loggedRules.clear()
+          saveRoutes()
+          publishState()
+        },
+      }),
+    ],
+  })
+
+  // The page script is the authority for the aggregate; connected panels are
+  // seeded on handshake and converge through patches.
+  const state = await channel.sharedState.get('state', {
+    initialValue: { engine, activeRoute, scanning: false, routes: [...routes.values()] },
+  })
+  function publishState() {
+    state.mutate((draft) => {
+      draft.engine = engine
+      draft.activeRoute = activeRoute
+      draft.scanning = scanning
+      draft.routes = [...routes.values()]
+    })
   }
 
   const observer = new MutationObserver((records) => {
@@ -183,7 +270,7 @@ function start(context?: A11yPageScriptContext) {
     }
     scanning = true
     activeRoute = location.pathname
-    post({ type: 'a11y:scanning', route: activeRoute })
+    publishState()
     reporter?.scanning()
     // Suspend observation so attribute-stamping during the scan doesn't
     // retrigger us.
@@ -195,7 +282,6 @@ function start(context?: A11yPageScriptContext) {
       activeRoute = report.route
       saveRoutes()
       logNewIssues(report)
-      broadcastState()
       reporter?.report(report)
     }
     catch (error) {
@@ -205,6 +291,7 @@ function start(context?: A11yPageScriptContext) {
     finally {
       observe()
       scanning = false
+      publishState()
       if (rescanQueued) {
         rescanQueued = false
         scheduleScan()
@@ -220,7 +307,7 @@ function start(context?: A11yPageScriptContext) {
       return
     activeRoute = location.pathname
     overlay.setPins([])
-    broadcastState()
+    publishState()
     scheduleScan()
   }
   const origPush = history.pushState
@@ -247,71 +334,6 @@ function start(context?: A11yPageScriptContext) {
     return { el, impact: pin.impact, ruleId: pin.ruleId, number }
   }
 
-  channel.addEventListener('message', (event: MessageEvent<A11yMessage>) => {
-    const message = event.data
-    switch (message.type) {
-      case 'a11y:panel-ready':
-        post({ type: 'a11y:page-script-ready', url: location.href, route: activeRoute })
-        if (routes.size > 0)
-          broadcastState()
-        else
-          void runScan()
-        break
-      case 'a11y:config':
-        applyConfig(message.config)
-        break
-      case 'a11y:highlight': {
-        const el = document.querySelector(`[${A11Y_NODE_ATTR}="${CSS.escape(message.nodeId)}"]`)
-          ?? resolveElement(message.target)
-        if (el) {
-          const active = routes.get(activeRoute) ?? null
-          const impact = findImpact(active, message.nodeId) ?? 'minor'
-          const ruleId = findRule(active, message.nodeId) ?? 'element'
-          overlay.preview(el, { impact, ruleId })
-        }
-        else {
-          overlay.clearPreview()
-        }
-        break
-      }
-      case 'a11y:clear':
-        overlay.clearPreview()
-        break
-      case 'a11y:pins': {
-        const infos: PinInfo[] = []
-        message.pins.forEach((pin, i) => {
-          const info = resolvePin(pin, i + 1)
-          if (info)
-            infos.push(info)
-        })
-        overlay.setPins(infos)
-        break
-      }
-      case 'a11y:rescan':
-        void runScan()
-        break
-      case 'a11y:set-autoscan':
-        config.autoScan = message.enabled
-        if (message.enabled)
-          bindInteractions()
-        else
-          unbindInteractions()
-        break
-      case 'a11y:clear-route':
-        routes.delete(message.route)
-        loggedRules.delete(message.route)
-        saveRoutes()
-        broadcastState()
-        break
-      case 'a11y:clear-all':
-        routes.clear()
-        loggedRules.clear()
-        saveRoutes()
-        broadcastState()
-        break
-    }
-  })
-
   function applyConfig(next: PageScriptConfig) {
     config.logIssues = next.logIssues
     config.axeTags = next.axeTags
@@ -324,12 +346,16 @@ function start(context?: A11yPageScriptContext) {
       unbindInteractions()
   }
 
+  // A panel with nothing to show yet triggers the first scan; state replay to
+  // late joiners is the channel's job.
+  channel.events.on('panel:connected', () => {
+    if (routes.size === 0 && !scanning)
+      void runScan()
+  })
+
   bindInteractions()
 
-  // Announce ourselves and run the first scan once the page has settled.
-  post({ type: 'a11y:page-script-ready', url: location.href, route: activeRoute })
-  if (routes.size > 0)
-    broadcastState()
+  // Run the first scan once the page has settled.
   if (document.readyState === 'complete')
     void runScan()
   else
@@ -346,13 +372,13 @@ function findRule(report: ScanReport | null, nodeId: string) {
 /**
  * Client-script entry the hub runtime calls after importing this module,
  * passing its `DockClientScriptContext`. The live scan/highlight loop rides
- * the same-origin BroadcastChannel either way; when the context carries a
- * `messages` client (duck-typed — see {@link A11yPageScriptContext}), the page script
+ * the in-page channel either way; when the context carries a `messages`
+ * client (duck-typed — see {@link A11yPageScriptContext}), the page script
  * additionally mirrors each scan into the hub's messages feed. `start()` is
  * idempotent.
  */
 export default function runA11yPageScript(context?: A11yPageScriptContext): void {
-  start(context)
+  void start(context)
 }
 
 // Also self-boot so a plain `<script type="module" src=".../inject.js">`
