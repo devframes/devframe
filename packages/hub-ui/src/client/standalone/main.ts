@@ -18,18 +18,22 @@ import { DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
 // off the document lets custom backgrounds composite with the host page.
 const brandingBackground = useBrandingBackground()
 
+function applyViewerBackground(documentElement: HTMLElement, background: string | undefined): void {
+  if (background === undefined || !CSS.supports('background', background)) {
+    documentElement.classList.remove('viewer-background-custom')
+    documentElement.style.removeProperty('--devframes-viewer-background')
+    return
+  }
+
+  documentElement.classList.add('viewer-background-custom')
+  documentElement.style.setProperty('--devframes-viewer-background', background)
+}
+
 watchEffect(() => {
   const el = document.documentElement
   el.classList.toggle('dark', isDark.value)
   el.classList.toggle('light', !isDark.value)
-
-  const background = brandingBackground.value
-  const hasValidBackground = background !== undefined && CSS.supports('background', background)
-  el.classList.toggle('viewer-background-custom', hasValidBackground)
-  if (hasValidBackground)
-    el.style.setProperty('--devframes-viewer-background', background)
-  else
-    el.style.removeProperty('--devframes-viewer-background')
+  applyViewerBackground(el, brandingBackground.value)
 })
 
 async function main(): Promise<void> {
