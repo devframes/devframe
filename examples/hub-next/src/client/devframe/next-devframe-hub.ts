@@ -89,44 +89,6 @@ async function loadJsonRenderUiRenderer(): Promise<DockRendererRegistration> {
 }
 
 /**
- * URL base the a11y agent module is served under - inside the hub namespace,
- * so the one catch-all route reaches it.
- */
-const A11Y_AGENT_MOUNT_BASE = `${DEVFRAMES_HUB_BASE}df-a11y-agent/`
-
-interface A11yAgentMount {
-  /** The a11y devframe's dock id - the dock the client script attaches to. */
-  dockId: string
-  /** On-disk directory holding the built agent module. */
-  dir: string
-  /** Same-origin URL of the agent module, importable by the hub client runtime. */
-  importFrom: string
-}
-
-/**
- * Locate the a11y inspector's in-page **agent** module so the hub can serve it
- * same-origin and attach it to the a11y dock as its client script - the hub
- * client runtime (booted in `app/page.tsx`) imports it into the host page,
- * where it scans this hub live. Loaded through the same bundler-ignored dynamic
- * `import()` as the plugins, since the package resolves its `dist` via
- * `import.meta.url`. Returns `null` if unavailable.
- */
-async function loadA11yAgentMount(): Promise<A11yAgentMount | null> {
-  try {
-    const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/plugin-a11y')
-    const bundle = mod.a11yPageScriptBundlePath as string
-    return {
-      dockId: (mod.default as () => DevframeDefinition)().id,
-      dir: dirname(bundle),
-      importFrom: `${A11Y_AGENT_MOUNT_BASE}inject.js`,
-    }
-  }
-  catch {
-    return null
-  }
-}
-
-/**
  * URL base the demo dock-client bundle is served under - inside the hub
  * namespace, so the one catch-all route reaches it.
  */
@@ -215,13 +177,6 @@ export async function nextDevframeHub(
   const nextPort = Number(process.env.PORT ?? 3000)
   const origin = `http://${hostName}:${nextPort}`
 
-  // Serve the a11y inspector's in-page agent same-origin (inside the hub
-  // namespace, via the catch-all route) and attach it to the a11y dock as its
-  // client script. The hub client runtime booted in `app/page.tsx` imports it
-  // into the host page, where it scans this hub live; the panel iframe shares
-  // the origin, so their BroadcastChannel connects.
-  const a11yAgent = await loadA11yAgentMount()
-
   // The shared demo dock-client script, served as a prebuilt self-contained
   // bundle (see loadDemoDockClientMount above for why this host uses the
   // URL shape rather than a bare specifier).
@@ -231,18 +186,18 @@ export async function nextDevframeHub(
   // way so its `import.meta.url` bundle path resolves to the published `dist`.
   const jsonRenderRenderer = await loadJsonRenderUiRenderer()
 
-  // Demo devframes alongside the dogfooded built-in plugin packages. The
-  // shared-iframe soft-navigation demo mounts as a `subTabs` anchor (a shared
-  // `frameId` + the postmessage protocol) so the client host attaches the
-  // frame-nav adapter, materializing one client-only dock per tab the SPA's
-  // shim reports - all sharing one iframe.
+  // Demo devframes alongside the dogfooded built-in plugin packages. The a11y
+  // inspector declares its own page script (its dock's `clientScript`) by path,
+  // so the hub serves it same-origin and the hub client runtime booted in
+  // `app/page.tsx` imports it into the host page automatically - it scans this
+  // hub live with no host-side wiring. The shared-iframe soft-navigation demo
+  // mounts as a `subTabs` anchor (a shared `frameId` + the postmessage
+  // protocol) so the client host attaches the frame-nav adapter, materializing
+  // one client-only dock per tab the SPA's shim reports - all sharing one
+  // iframe.
   const devframes: (DevframeDefinition | HubDevframeEntry)[] = [
     demoDevframe,
-    ...(await loadBuiltinPlugins()).map<DevframeDefinition | HubDevframeEntry>(def =>
-      a11yAgent && def.id === a11yAgent.dockId
-        ? { devframe: def, dock: { clientScript: { importFrom: a11yAgent.importFrom } } }
-        : def,
-    ),
+    ...await loadBuiltinPlugins(),
     await loadDataInspectorDevframe(),
     await loadAssetsDevframe(),
     {
@@ -326,9 +281,6 @@ export async function nextDevframeHub(
         icon: 'ph:gear-duotone',
         category: '~builtin',
       })
-
-      if (a11yAgent)
-        await ctx.host.mountStatic(A11Y_AGENT_MOUNT_BASE, a11yAgent.dir)
 
       // The demo dock-client script - the same package the Vite reference
       // host loads via a bare specifier - mounted statically and attached as

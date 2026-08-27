@@ -1,5 +1,4 @@
 import type { HubInstance } from '@devframes/hub/initiate'
-import type { ClientScriptEntry } from '@devframes/hub/types'
 import type { DevframeDefinition } from 'devframe'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { Server as NodeHttpServer } from 'node:http'
@@ -14,22 +13,17 @@ export interface A11yMessagesPlaygroundOptions {
   port?: number
   /** Devframes to mount as docks (here: a11y + messages). */
   devframes?: DevframeDefinition[]
-  /**
-   * Per-dock client scripts, keyed by devframe id. Attached to the mounted
-   * iframe dock so the hub client runtime imports them into the host page -
-   * this is how the a11y inspector's in-page agent gets into the page it scans.
-   */
-  clientScripts?: Record<string, ClientScriptEntry>
 }
 
 /**
  * A tiny Vite plugin that runs `@devframes/hub` inside the Vite dev server -
  * the same shape as `examples/hub-vite`, trimmed to the two plugins this
  * playground pairs (a11y + messages). One `initHub()` call assembles the whole
- * hub: it mounts each devframe as a dock (attaching the a11y agent as its
- * client script), shares the WebSocket with Vite's own server, serves the
- * discovery endpoints, and registers the playground in the global instance
- * registry.
+ * hub: it mounts each devframe as a dock, shares the WebSocket with Vite's own
+ * server, serves the discovery endpoints, and registers the playground in the
+ * global instance registry. The a11y inspector declares its own page script
+ * (its dock's `clientScript`), so the hub serves it same-origin and boots it -
+ * no client-script wiring here.
  */
 export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = {}): Plugin {
   const base = normalizeBase(options.base ?? '/__hub/')
@@ -70,10 +64,7 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
             return join(cwd, 'node_modules/.a11y-messages-playground')
           return join(homedir(), '.a11y-messages-playground')
         },
-        devframes: (options.devframes ?? []).map((def) => {
-          const clientScript = options.clientScripts?.[def.id]
-          return clientScript ? { devframe: def, dock: { clientScript } } : def
-        }),
+        devframes: options.devframes ?? [],
         // List the playground alongside standalone devframes in discovery
         // tooling (`devframe connect`, the inspector's Instances tab).
         register: {

@@ -23,11 +23,13 @@ const distDir: RemoteAssets = {
  * — the dock **client script** the client runtime imports into the host page to
  * scan it (its default export boots the page script; importing it does too).
  *
- * A hub attaches this as the a11y dock's `clientScript`, resolved to a URL the
- * page can import: `/@fs/${a11yPageScriptBundlePath}` for a Vite host, or a
- * statically-served path for others (see the minimal hub examples). Resolves
- * under `<pkg>/dist/inject/inject.js` from both the source and the published
- * entry. Requires the built bundle (`pnpm -C plugins/a11y build`).
+ * The definition already declares this path as its dock `clientScript`, so the
+ * hub install path serves it same-origin and rewrites it to a URL — mounting by
+ * package name (`devframes: ['@devframes/plugin-a11y']`) needs no host wiring.
+ * This export stays available for hosts that mount the module themselves (e.g.
+ * a Vite host serving it via `/@fs/${a11yPageScriptBundlePath}`). Resolves under
+ * `<pkg>/dist/inject/inject.js` from both the source and the published entry.
+ * Requires the built bundle (`pnpm -C plugins/a11y build`).
  */
 export const a11yPageScriptBundlePath: string = fileURLToPath(new URL('../dist/inject/inject.js', import.meta.url))
 
@@ -91,6 +93,14 @@ export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeD
     description: pkg.description,
     icon: options.icon ?? 'ph:person-simple-circle-duotone',
     basePath: options.basePath ?? BASE_PATH,
+    // Declare the page script by path so any hub serves it same-origin and
+    // boots it automatically — no per-host `clientScript` wiring. The hub
+    // install path mounts the file's directory under the mount base and
+    // rewrites this to the served URL.
+    dock: {
+      category: '~builtin',
+      clientScript: { importFrom: a11yPageScriptBundlePath },
+    },
     cli: {
       command: id,
       port: options.port ?? 9899,

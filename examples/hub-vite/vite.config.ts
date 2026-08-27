@@ -2,7 +2,7 @@ import type { DevframeHubContext } from '@devframes/hub/node'
 import { defineHubRpcFunction } from '@devframes/hub'
 import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
-import createA11yDevframe, { a11yPageScriptBundlePath } from '@devframes/plugin-a11y'
+import createA11yDevframe from '@devframes/plugin-a11y'
 import createAssetsDevframe from '@devframes/plugin-assets'
 import createCodeServerDevframe from '@devframes/plugin-code-server'
 import { createDataInspectorDevframe } from '@devframes/plugin-data-inspector'
@@ -142,13 +142,11 @@ export default defineConfig({
           },
         },
       ],
-      // Attach the a11y inspector's in-page agent as its dock's client script.
-      // The hub client runtime (booted in src/client/main.ts) imports it into
-      // this page so the docked panel scans the host live - no bespoke
-      // injection plugin needed. `/@fs/` lets Vite serve the built module.
-      clientScripts: {
-        [a11yDevframe.id]: { importFrom: `/@fs/${a11yPageScriptBundlePath}` },
-      },
+      // The a11y inspector declares its own page script (its dock's
+      // `clientScript`) by path, so the hub serves it same-origin and the hub
+      // client runtime (booted in src/client/main.ts) imports it into this page
+      // automatically - the docked panel scans the host live with no host-side
+      // wiring.
       // Serve the reference json-render frontend as a prebuilt renderer
       // module: the hub publishes it in the renderer manifest and the client
       // (src/client/main.ts) imports it lazily the first time a

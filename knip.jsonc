@@ -66,6 +66,7 @@
       // deliberately invisible to bundlers (and knip) so Next never inlines
       // their node-only code. They're genuinely used at runtime.
       "ignoreDependencies": [
+        "@devframes/plugin-a11y",
         "@devframes/plugin-code-server",
         "@devframes/plugin-git",
         "@devframes/plugin-inspect",

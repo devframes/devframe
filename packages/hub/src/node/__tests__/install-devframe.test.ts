@@ -1,6 +1,6 @@
 import type { DevframeDefinition, DevframeDuplicationStrategy } from 'devframe/types'
 import type { DevframeHubContext } from '../context'
-import { mkdtempSync } from 'node:fs'
+import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { defineDevframe } from 'devframe'
@@ -12,7 +12,7 @@ function createContext(): DevframeHubContext {
   const storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-install-'))
   const context = {
     host: {
-      mountStatic: () => {},
+      mountStatic: vi.fn(),
       resolveOrigin: () => 'http://localhost:5173',
       getStorageDir: () => storageDir,
     },
@@ -161,6 +161,59 @@ describe('ctx.install', () => {
 
     expect(warn).toHaveBeenCalledTimes(1)
     expect(warn.mock.calls[0].join(' ')).toContain('DF8106')
+  })
+
+  it('serves an absolute-path page script under the mount base and rewrites it to the served URL', async () => {
+    const ctx = createContext()
+    const dir = mkdtempSync(join(tmpdir(), 'devframe-page-script-'))
+    const scriptPath = join(dir, 'inject.js')
+    writeFileSync(scriptPath, 'export default () => {}')
+
+    await ctx.install(makeDevframe({
+      dock: { clientScript: { importFrom: scriptPath } },
+    }))
+
+    expect(ctx.host.mountStatic).toHaveBeenCalledWith('/__demo/__page-script/', dir)
+    expect(ctx.docks.views.get('demo')).toMatchObject({
+      clientScript: { importFrom: '/__demo/__page-script/inject.js' },
+    })
+  })
+
+  it('leaves a URL or bare-specifier page script untouched (no mount)', async () => {
+    const ctx = createContext()
+
+    await ctx.install(makeDevframe({
+      dock: { clientScript: { importFrom: '/@fs/abs/inject.js' } },
+    }))
+    await ctx.install(makeDevframe({
+      id: 'bare',
+      dock: { clientScript: { importFrom: 'some-pkg/client' } },
+    }))
+
+    expect(ctx.host.mountStatic).not.toHaveBeenCalled()
+    expect(ctx.docks.views.get('demo')).toMatchObject({
+      clientScript: { importFrom: '/@fs/abs/inject.js' },
+    })
+    expect(ctx.docks.views.get('bare')).toMatchObject({
+      clientScript: { importFrom: 'some-pkg/client' },
+    })
+  })
+
+  it('lets a per-mount clientScript override the definition default before serving', async () => {
+    const ctx = createContext()
+    const dir = mkdtempSync(join(tmpdir(), 'devframe-page-script-'))
+    const scriptPath = join(dir, 'inject.js')
+    writeFileSync(scriptPath, 'export default () => {}')
+
+    await ctx.install(
+      makeDevframe({ dock: { clientScript: { importFrom: scriptPath } } }),
+      { dock: { clientScript: { importFrom: '/@fs/override/inject.js' } } },
+    )
+
+    expect(ctx.host.mountStatic).not.toHaveBeenCalled()
+    expect(ctx.docks.views.get('demo')).toMatchObject({
+      clientScript: { importFrom: '/@fs/override/inject.js' },
+    })
   })
 
   it('lets instances coexist under disambiguated ids when "duplicate"', async () => {
