@@ -14,9 +14,6 @@ export default defineConfig({
   optimizeDeps: { exclude: ['@antfu/design'] },
   plugins: [
     UnoCSS(),
-    // The a11y inspector ships its own page script (its dock's `clientScript`),
-    // so the hub serves it same-origin and boots it - the panel scans this page
-    // live with no wiring here.
     a11yMessagesPlayground({
       devframes: [a11yDevframe, messagesDevframe],
     }),

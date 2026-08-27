@@ -21,9 +21,7 @@ export interface A11yMessagesPlaygroundOptions {
  * playground pairs (a11y + messages). One `initHub()` call assembles the whole
  * hub: it mounts each devframe as a dock, shares the WebSocket with Vite's own
  * server, serves the discovery endpoints, and registers the playground in the
- * global instance registry. The a11y inspector declares its own page script
- * (its dock's `clientScript`), so the hub serves it same-origin and boots it -
- * no client-script wiring here.
+ * global instance registry.
  */
 export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = {}): Plugin {
   const base = normalizeBase(options.base ?? '/__hub/')

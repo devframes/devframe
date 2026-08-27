@@ -57,7 +57,7 @@ The built-in devframes run node-side (child processes, the native `zigpty` PTY b
 
 | File | Role |
 |---|---|
-| `src/client/devframe/next-devframe-hub.ts` | The Next host - one `initHub()` call: devframes (the a11y page script rides along automatically as its dock's declared `clientScript`), hub RPCs, commands, the json-render dock + renderer manifest, instance-registry registration |
+| `src/client/devframe/next-devframe-hub.ts` | The Next host - one `initHub()` call: devframes, hub RPCs, commands, the json-render dock + renderer manifest, instance-registry registration |
 | `src/client/devframe/unrendered-dock.ts` | A dock type registered with no renderer on purpose - the missing-renderer fallback witness |
 | `../demo-dock-client/` | The shared demo client script, consumed here as a statically-mounted self-contained bundle |
 | `src/client/app/%5F_devframes/[[...path]]/route.ts` | The one catch-all - delegates every `/__devframes/*` request to the instance's `handler` |

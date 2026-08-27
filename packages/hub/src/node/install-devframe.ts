@@ -40,17 +40,11 @@ function nextAvailableDockId(views: DevframeHubContext['docks']['views'], baseId
 }
 
 /**
- * Resolve a dock's `clientScript` (its **page script**) into one importable by
- * the host page. When `importFrom` names an **absolute filesystem path** to a
- * built module, serve its directory under the devframe's mount base
- * (`<base>__page-script/`) and rewrite `importFrom` to that served URL — so a
- * definition can name its page script by path and every host gets a URL for
- * free. A URL or bare-specifier `importFrom` (or no client script) passes
- * through untouched.
- *
- * The distinction between a filesystem path and an already-servable root path
- * (`/@fs/…`, `/mounted/bundle.js`) is that only the former exists on disk, so
- * that is the test used.
+ * When a dock's `clientScript.importFrom` names an **absolute filesystem path**
+ * to a built module, serve its directory under the devframe's mount base
+ * (`<base>__page-script/`) and rewrite `importFrom` to that served URL. A URL or
+ * bare specifier (distinguished by not existing on disk) passes through
+ * untouched, as does an absent client script.
  */
 async function resolvePageScriptClientScript(
   ctx: DevframeHubContext,
@@ -117,9 +111,9 @@ export async function prepareDevframe(
       ? resolveBasePath(d, 'hosted')
       : resolveBasePath({ ...d, id, basePath: undefined }, 'hosted'))
 
-  // The effective dock defaults: definition-level `dock` beneath per-mount
-  // `options.dock`. Resolved here (before the SPA mount) so a page script
-  // declared as an absolute path can be served ahead of the SPA catch-all.
+  // Definition-level `dock` beneath per-mount `options.dock`. Resolved before
+  // the SPA mount so an absolute-path page script is served ahead of the SPA
+  // catch-all.
   const dockDefaults = { ...d.dock, ...options.dock }
   const clientScript = await resolvePageScriptClientScript(ctx, dockDefaults.clientScript, base)
   if (clientScript)
@@ -152,11 +146,9 @@ export async function prepareDevframe(
     id,
     title: d.name,
     icon: d.icon,
-    // Definition-level `dock` defaults sit above the name/icon-derived
-    // defaults; per-mount `options.dock` overrides them (both folded into
-    // `dockDefaults`, with an absolute-path page script already served and
-    // rewritten to a URL); `type`/`url` (and `id`) stay locked, derived from
-    // the definition.
+    // Dock defaults (definition + per-mount, folded into `dockDefaults`) sit
+    // above the name/icon-derived defaults; `type`/`url` (and `id`) stay locked,
+    // derived from the definition.
     ...dockDefaults,
     type: 'iframe',
     url: base,

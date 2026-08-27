@@ -265,22 +265,12 @@ export interface DevframeDockDefaults {
   groupId?: string
   /**
    * A client script the hub imports into the host page for this devframe (its
-   * **page script**) — the mechanism a devframe like the a11y inspector uses to
-   * run its scan loop in the user app's page. `importFrom` is one of:
-   *
-   * - an **absolute filesystem path** to a built, self-contained ES module (e.g.
-   *   the plugin's `dist/inject/inject.js`, named from its own `import.meta.url`).
-   *   The hub install path serves the file's directory under the devframe's mount
-   *   base and rewrites `importFrom` to that served URL, so a definition can name
-   *   its page script itself and `devframes: ['@devframes/plugin-x']` works with
-   *   no host-side wiring;
-   * - a **URL** the host already serves (`/@fs/<abs>` under Vite, a
-   *   statically-mounted bundle path); or
-   * - a **bare npm specifier**, resolved through the host-advertised
-   *   `clientModuleResolution` template.
-   *
-   * URL and bare-specifier values pass through untouched — only an absolute path
-   * is mounted and rewritten.
+   * **page script**). `importFrom` is an **absolute filesystem path** to a built
+   * ES module, a **URL** the host serves, or a **bare npm specifier**. An
+   * absolute path is served by the hub install path (its directory mounted under
+   * the devframe's mount base, `importFrom` rewritten to the served URL), so a
+   * definition names its own page script and mounting by package name needs no
+   * host wiring; URL and bare-specifier values pass through untouched.
    */
   clientScript?: {
     /** What to import: an absolute filesystem path, a served URL, or a bare npm specifier. */

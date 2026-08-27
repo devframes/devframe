@@ -2,8 +2,8 @@ import type { DevframeDefinition, DevframeDuplicationStrategy } from 'devframe/t
 import type { DevframeHubContext } from '../context'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import { defineDevframe } from 'devframe'
+import { dirname, join } from 'pathe'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DevframeDocksHost } from '../host-docks'
 import { installDevframe } from '../install-devframe'
@@ -165,15 +165,14 @@ describe('ctx.install', () => {
 
   it('serves an absolute-path page script under the mount base and rewrites it to the served URL', async () => {
     const ctx = createContext()
-    const dir = mkdtempSync(join(tmpdir(), 'devframe-page-script-'))
-    const scriptPath = join(dir, 'inject.js')
+    const scriptPath = join(mkdtempSync(join(tmpdir(), 'devframe-page-script-')), 'inject.js')
     writeFileSync(scriptPath, 'export default () => {}')
 
     await ctx.install(makeDevframe({
       dock: { clientScript: { importFrom: scriptPath } },
     }))
 
-    expect(ctx.host.mountStatic).toHaveBeenCalledWith('/__demo/__page-script/', dir)
+    expect(ctx.host.mountStatic).toHaveBeenCalledWith('/__demo/__page-script/', dirname(scriptPath))
     expect(ctx.docks.views.get('demo')).toMatchObject({
       clientScript: { importFrom: '/__demo/__page-script/inject.js' },
     })

@@ -45,7 +45,7 @@ The dock UI is plain DOM in `src/client/`. To skin your own hub UI provider, rea
 | File | Role |
 |---|---|
 | `src/vite-devframe-hub.ts` | The Vite host - one `initHub()` call mounted as connect middleware, plus instance-registry registration |
-| `vite.config.ts` | Passes the built-in and demo devframes to the hub's `devframes` option (the a11y page script rides along automatically as its dock's declared `clientScript`); composes the json-render frontend via `renderers` |
+| `vite.config.ts` | Passes the built-in and demo devframes to the hub's `devframes` option; composes the json-render frontend via `renderers` |
 | `src/unrendered-dock.ts` | A dock type registered with no renderer on purpose - the missing-renderer fallback witness |
 | `../demo-dock-client/` | The shared demo client script, consumed here via bare specifier (`action: { importFrom: 'demo-dock-client' }`) |
 | `src/client/main.ts` | The browser UI that consumes the hub protocol, including the interactive-OTP authorization view |

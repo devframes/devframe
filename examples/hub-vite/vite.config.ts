@@ -142,11 +142,6 @@ export default defineConfig({
           },
         },
       ],
-      // The a11y inspector declares its own page script (its dock's
-      // `clientScript`) by path, so the hub serves it same-origin and the hub
-      // client runtime (booted in src/client/main.ts) imports it into this page
-      // automatically - the docked panel scans the host live with no host-side
-      // wiring.
       // Serve the reference json-render frontend as a prebuilt renderer
       // module: the hub publishes it in the renderer manifest and the client
       // (src/client/main.ts) imports it lazily the first time a

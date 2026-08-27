@@ -186,15 +186,11 @@ export async function nextDevframeHub(
   // way so its `import.meta.url` bundle path resolves to the published `dist`.
   const jsonRenderRenderer = await loadJsonRenderUiRenderer()
 
-  // Demo devframes alongside the dogfooded built-in plugin packages. The a11y
-  // inspector declares its own page script (its dock's `clientScript`) by path,
-  // so the hub serves it same-origin and the hub client runtime booted in
-  // `app/page.tsx` imports it into the host page automatically - it scans this
-  // hub live with no host-side wiring. The shared-iframe soft-navigation demo
-  // mounts as a `subTabs` anchor (a shared `frameId` + the postmessage
-  // protocol) so the client host attaches the frame-nav adapter, materializing
-  // one client-only dock per tab the SPA's shim reports - all sharing one
-  // iframe.
+  // Demo devframes alongside the dogfooded built-in plugin packages. The
+  // shared-iframe soft-navigation demo mounts as a `subTabs` anchor (a shared
+  // `frameId` + the postmessage protocol) so the client host attaches the
+  // frame-nav adapter, materializing one client-only dock per tab the SPA's
+  // shim reports - all sharing one iframe.
   const devframes: (DevframeDefinition | HubDevframeEntry)[] = [
     demoDevframe,
     ...await loadBuiltinPlugins(),

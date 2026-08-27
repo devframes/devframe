@@ -56,8 +56,7 @@ The window is split in two:
 
 `src/a11y-messages-playground.ts` is the entire host-framework integration - a ~120-line Vite plugin
 that runs `@devframes/hub` in the dev server and mounts the two devframes as docks.
-The a11y inspector declares its own page script as the a11y dock's `clientScript`, so
-the hub serves it same-origin and boots it - the host passes only the devframes:
+The a11y inspector declares its own page script, so the host passes only the devframes:
 
 ```ts
 a11yMessagesPlayground({
@@ -77,7 +76,7 @@ the focused dock - the same path a manual dock click takes.
 | File | Role |
 |---|---|
 | `src/a11y-messages-playground.ts` | The Vite host - hub context, static + connection-meta mounts, side-car WS, instance-registry registration |
-| `vite.config.ts` | Mounts a11y + messages (the a11y page script rides along as its dock's declared `clientScript`) |
+| `vite.config.ts` | Mounts a11y + messages |
 | `src/client/main.ts` | Boots the client runtime, renders the dock rail + iframe stage |
 | `src/client/app-under-test.ts` | The intentionally-broken, multi-route app the page script scans |
 | `src/client/icons.ts` | Offline Phosphor icons for the dock rail |
