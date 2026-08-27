@@ -12,7 +12,7 @@ export default function Page() {
           <code>/__devframes/embedded.js</code>
         </li>
         <li>
-          the standalone viewer lives at
+          the standalone hub UI lives at
           {' '}
           <a href="/__devframes/">/__devframes/</a>
         </li>

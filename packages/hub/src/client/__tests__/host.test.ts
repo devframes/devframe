@@ -4,7 +4,7 @@ import type { DevframeDockEntry } from '../../types/docks'
 import { createEventEmitter } from 'devframe/utils/events'
 import { describe, expect, it, vi } from 'vitest'
 import { getDevframeClientContext } from '../context'
-import { createDevframeClientHost } from '../host'
+import { createDevframeClientRuntime } from '../host'
 
 interface StubSharedState<T> extends SharedState<T> {
   /** Replace the state wholesale and emit `updated` (simulates a server patch). */
@@ -66,10 +66,10 @@ function groupEntry(id: string, extra?: Record<string, unknown>): DevframeDockEn
   return { id, title: id, icon: 'ph:folder', type: 'group', ...extra } as DevframeDockEntry
 }
 
-describe('createDevframeClientHost', () => {
+describe('createDevframeClientRuntime', () => {
   it('publishes the global client context with the full surface', async () => {
     const { rpc } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
 
     expect(getDevframeClientContext()).toBe(host.context)
     expect(host.context.clientType).toBe('standalone')
@@ -86,7 +86,7 @@ describe('createDevframeClientHost', () => {
 
   it('reconciles dock entries from shared state and tracks per-entry state', async () => {
     const { rpc, states } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
     const docksState = states.get('devframe:docks')!
 
     docksState.push([iframeEntry('one'), iframeEntry('two')])
@@ -101,7 +101,7 @@ describe('createDevframeClientHost', () => {
 
   it('keeps a `visibility: false` entry in the raw model, activatable by id', async () => {
     const { rpc, states } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
     states.get('devframe:docks')!.push([
       iframeEntry('anchor', { subTabs: { protocol: 'postmessage' }, visibility: 'false' }),
       iframeEntry('visible'),
@@ -119,7 +119,7 @@ describe('createDevframeClientHost', () => {
 
   it('groups entries by category — grouped members bucket under their group, orphans by their own', async () => {
     const { rpc, states } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
 
     states.get('devframe:docks')!.push([
       // (a) member with groupId + its own category → outer bucket = group's category ('framework'),
@@ -159,7 +159,7 @@ describe('createDevframeClientHost', () => {
 
   it('merges the host-page categoryOrder option beneath DEFAULT_CATEGORIES_ORDER', async () => {
     const { rpc, states } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc, categoryOrder: { app: -200, web: 999 } })
+    const host = await createDevframeClientRuntime({ rpc, categoryOrder: { app: -200, web: 999 } })
 
     states.get('devframe:docks')!.push([
       iframeEntry('app-entry', { category: 'app' }),
@@ -175,7 +175,7 @@ describe('createDevframeClientHost', () => {
 
   it('switches entries with activation/deactivation events and when-context updates', async () => {
     const { rpc, states } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
     states.get('devframe:docks')!.push([iframeEntry('one'), iframeEntry('two')])
 
     const activated: string[] = []
@@ -202,7 +202,7 @@ describe('createDevframeClientHost', () => {
 
   it('switches the active dock when the hub broadcasts devframe:docks:activate', async () => {
     const { rpc, states, definitions } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
     states.get('devframe:docks')!.push([iframeEntry('one'), iframeEntry('devframes_plugin_terminals')])
 
     // Simulate the hub's server→client broadcast.
@@ -219,7 +219,7 @@ describe('createDevframeClientHost', () => {
 
   it('registers, updates, and disposes client-only docks merged with server entries', async () => {
     const { rpc, states } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
     const docks = host.context.docks
     states.get('devframe:docks')!.push([iframeEntry('server')])
 
@@ -257,7 +257,7 @@ describe('createDevframeClientHost', () => {
 
   it('imports the client script of a client-registered dock', async () => {
     const { rpc } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
 
     const received: any[] = []
     ;(globalThis as any).__DF_TEST_CLIENT_DOCK__ = (ctx: any) => received.push(ctx)
@@ -273,7 +273,7 @@ describe('createDevframeClientHost', () => {
 
   it('executes client commands locally and server commands over hub:commands:execute', async () => {
     const { rpc, calls } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
 
     const ran: any[] = []
     const off = host.context.commands.register({
@@ -298,7 +298,7 @@ describe('createDevframeClientHost', () => {
 
   it('imports a dock entry client script and hands it the script context', async () => {
     const { rpc, states, calls } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
 
     const received: any[] = []
     ;(globalThis as any).__DF_TEST_SCRIPT__ = (ctx: any) => received.push(ctx)
@@ -327,10 +327,10 @@ describe('createDevframeClientHost', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     try {
       const { rpc } = createStubRpc()
-      const first = await createDevframeClientHost({ rpc })
+      const first = await createDevframeClientRuntime({ rpc })
       expect(warn).not.toHaveBeenCalled()
 
-      const second = await createDevframeClientHost({ rpc })
+      const second = await createDevframeClientRuntime({ rpc })
       expect(warn).toHaveBeenCalledOnce()
       expect(getDevframeClientContext()).toBe(second.context)
 

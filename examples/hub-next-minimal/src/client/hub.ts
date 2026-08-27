@@ -9,7 +9,7 @@ import { createNextDevframeHub } from '@devframes/next/hub'
 // A server-authored JSON-render dock: the whole view is this serializable
 // spec — no client build. It renders through whatever `'json-render'`
 // renderer the hub composes (below, the reference `@devframes/json-render-ui`
-// module); without one, the viewer shows its missing-renderer fallback.
+// module); without one, the hub UI provider shows its missing-renderer fallback.
 const jsonRenderSpec: DevframeJsonRenderSpec = {
   root: 'root',
   elements: {
@@ -29,7 +29,7 @@ const jsonRenderDock: DevframeJsonRenderDockEntry = {
 }
 
 // The plugin packages and `@devframes/hub-ui` resolve their prebuilt `dist`
-// (SPA assets, the embedded/viewer bundles) via `new URL('../dist/...',
+// (SPA assets, the embedded/standalone bundles) via `new URL('../dist/...',
 // import.meta.url)`. Loaded with a runtime dynamic `import()` carrying
 // `webpackIgnore` / `turbopackIgnore` so Next's bundler leaves them alone and
 // Node resolves the published `dist` at request time - a static import would
@@ -72,7 +72,7 @@ async function loadHub(): Promise<HubInstance> {
   ]
   // `@devframes/next/hub` runs the socket on a side-car (Next routes can't
   // accept WS upgrades). This host overrides the default UI slot to rebrand
-  // the reference viewer to Next.js/Vercel's monochrome black — one field, no
+  // the reference hub UI to Next.js/Vercel's monochrome black — one field, no
   // CSS: `createUi`'s `branding` option publishes
   // `ConnectionMeta.configs.ui.branding`, which the dock reads at connect
   // time and feeds into `--devframe-primary` (see `@devframes/hub-ui`'s
@@ -82,7 +82,7 @@ async function loadHub(): Promise<HubInstance> {
     ui: (hubUi.createUi as typeof CreateUi)({ branding: { primaryColor: '#3f8ba9', productName: 'Devframes on Next.js' } }),
     // Serve the reference json-render frontend as a prebuilt renderer module
     // — the one-liner that makes `'json-render'` docks render in the prebuilt
-    // viewer. Swap it for any community implementation of the same contract.
+    // hub UI provider. Swap it for any community implementation of the same contract.
     renderers: [(jsonRenderUi.jsonRenderUiRenderer as typeof JsonRenderUiRenderer)()],
     configure(ctx) {
       ctx.docks.register(jsonRenderDock)

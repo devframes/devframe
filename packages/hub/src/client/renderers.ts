@@ -118,7 +118,7 @@ export interface CreateDockRenderersContextOptions {
 
 /**
  * Build the {@link DockRenderersContext} shared by every hub-aware client —
- * `createDevframeClientHost` and viewers that assemble their own context
+ * `createDevframeClientRuntime` and hub UI providers that assemble their own context
  * (`@devframes/hub-ui`) both delegate here so local-first resolution, lazy
  * manifest imports, and the typed mount result behave identically everywhere.
  */

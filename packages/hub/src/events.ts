@@ -3,7 +3,7 @@
  * key, and channel name the hub uses — the single source of truth that keeps
  * these names out of scattered string literals.
  *
- * **Keep this in sync with [`docs/content/1.guide/20.events.md`](../../../docs/content/1.guide/20.events.md)**
+ * **Keep this in sync with [`docs/content/8.references/3.events.md`](../../../docs/content/8.references/3.events.md)**
  * (the Hub Events Reference): every name here appears in that page's tables, and
  * every name there resolves to an entry here. Add, rename, or remove a name in
  * both places in the same change, and reference `HUB_EVENTS.*` from call sites

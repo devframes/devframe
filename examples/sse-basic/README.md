@@ -1,6 +1,6 @@
 # sse-basic
 
-The smallest SSE-only devframe: `ws: false` binds no WebSocket, so every RPC frame - calls, shared state, the auth handshake - rides plain HTTP at `/__sse-basic/__sse`. This is the transport for hosts and proxies where the WebSocket upgrade isn't available.
+The smallest SSE-only devframe: `ws: false` binds no WebSocket, so every RPC frame - calls, shared state, the auth handshake - rides plain HTTP at `/__sse-basic/__sse`. This is the transport for host frameworks and proxies where the WebSocket upgrade isn't available.
 
 ```sh
 pnpm --filter sse-basic dev

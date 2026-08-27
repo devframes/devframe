@@ -1,10 +1,10 @@
 # @devframes/plugin-data-inspector
 
-Inspect live server-side objects interactively. Other plugins and hosts register **data sources**; the workbench composes [jora](https://github.com/discoveryjs/jora) queries against them — executed in the process that owns the objects — and renders normalized results in a [discovery.js](https://github.com/discoveryjs/discovery) struct view with type badges, a shape panel, saved queries, and shareable URL state. Deep graphs expand a level at a time (`load deeper` fetches each subtree on demand), an optional poller re-runs the query every N seconds, and a toolbar offers expand/collapse-all and copy.
+Inspect live server-side objects interactively. Other devframes and host frameworks register **data sources**; the workbench composes [jora](https://github.com/discoveryjs/jora) queries against them — executed in the process that owns the objects — and renders normalized results in a [discovery.js](https://github.com/discoveryjs/discovery) struct view with type badges, a shape panel, saved queries, and shareable URL state. Deep graphs expand a level at a time (`load deeper` fetches each subtree on demand), an optional poller re-runs the query every N seconds, and a toolbar offers expand/collapse-all and copy.
 
 ## Register a data source
 
-The registry is **process-global** — register from anywhere, before or after the plugin mounts:
+The registry is **process-global** — register from anywhere, before or after the devframe mounts:
 
 ```ts
 import { registerDataSource } from '@devframes/plugin-data-inspector/registry'
@@ -18,7 +18,7 @@ registerDataSource({
 })
 ```
 
-Integrations that prefer zero package dependency consume the same store through the typed context service:
+Devframes that prefer zero package dependency consume the same store through the typed context service:
 
 ```ts
 ctx.services.whenAvailable('devframes:plugin:data-inspector:sources', (sources) => {
@@ -30,7 +30,7 @@ ctx.services.whenAvailable('devframes:plugin:data-inspector:sources', (sources) 
 
 Sources opt into live edits with `writable: true`: on the root view (`$`), every value grows an edit affordance that opens a side panel — set a value (string / number / boolean / null / undefined / JSON), add or delete entries, rename keys — and the mutation is applied **in place to the live object** through the `write` RPC. Read-only stays the default; `static: true` sources are memoized snapshots and always stay read-only (declaring both reports `DP_DATA_INSPECTOR_0004`).
 
-`registerDataSource` returns a handle; call `notifyChanged()` whenever the data changes outside the inspector so connected views re-run, or hand the plugin a bridge to the source's own change signal via `subscribe`:
+`registerDataSource` returns a handle; call `notifyChanged()` whenever the data changes outside the inspector so connected views re-run, or hand the devframe a bridge to the source's own change signal via `subscribe`:
 
 ```ts
 const handle = registerDataSource({
@@ -63,7 +63,7 @@ devframeVite(createDataInspectorDevframe())
 ```sh
 pnpx @devframes/plugin-data-inspector stats.json trace.jsonl # inspect local data files
 pnpx @devframes/plugin-data-inspector build stats.json       # self-contained static export
-pnpx @devframes/plugin-data-inspector attach                 # attach to a process running the agent
+pnpx @devframes/plugin-data-inspector attach                 # attach to a process running the inject entry
 ```
 
 Static exports embed the dataset and run the same query engine client-side, so saved recipes stay portable.
@@ -85,12 +85,12 @@ or with zero code changes:
 DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject server.js
 ```
 
-On the zero-code path there's nowhere to call `registerDataSource`, so the agent auto-registers a **`globalThis`** source: assign what you want to inspect onto the global object (`globalThis.store = store`) and query it live. Opt out with `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
+On the zero-code path there's nowhere to call `registerDataSource`, so the inject entry auto-registers a **`globalThis`** source: assign what you want to inspect onto the global object (`globalThis.store = store`) and query it live. Opt out with `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
 
-The agent binds `127.0.0.1`, requires devframe's trust handshake with a per-run token by default, and advertises its endpoint in `node_modules/.data-inspector/agent.json`, which `pnpx @devframes/plugin-data-inspector attach` picks up automatically.
+The inject entry binds `127.0.0.1`, requires devframe's trust handshake with a per-run token by default, and advertises its endpoint in `node_modules/.data-inspector/discovery.json`, which `pnpx @devframes/plugin-data-inspector attach` picks up automatically.
 
 > [!WARNING]
-> A connected inspector runs eval-grade jora queries against live objects: queries can invoke functions reachable as own properties and fire getters. Treat the agent endpoint like a debugger port — keep it on loopback and keep auth on.
+> A connected inspector runs eval-grade jora queries against live objects: queries can invoke functions reachable as own properties and fire getters. Treat the inject endpoint like a debugger port — keep it on loopback and keep auth on.
 
 ## Saved queries
 

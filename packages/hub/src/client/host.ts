@@ -39,7 +39,7 @@ const COMMANDS_STATE_KEY = HUB_EVENTS.sharedState.commands
 const USER_SETTINGS_STATE_KEY = HUB_EVENTS.sharedState.userSettings
 const DOCKS_ACTIVATE_EVENT = HUB_EVENTS.broadcast.docksActivate
 
-export interface DevframeClientHostOptions {
+export interface DevframeClientRuntimeOptions {
   /**
    * An already-connected RPC client. When omitted, one is created via
    * `connectDevframe(connect)` — pass `connect.baseURL` to point at the hub's
@@ -61,7 +61,7 @@ export interface DevframeClientHostOptions {
   loadClientScripts?: boolean
   /**
    * Resolve a **bare-specifier** client script (`importFrom` naming an npm
-   * module) to a URL this page can import — a viewer's own policy, winning
+   * module) to a URL this page can import — a hub UI provider's own policy, winning
    * over the host-advertised `ConnectionMeta.configs.dock.clientModuleResolution`
    * template (return `undefined` to fall through to it). URL specifiers never
    * reach this hook. E.g. on a Vite-served page:
@@ -96,32 +96,32 @@ export interface DevframeClientHostOptions {
    * @example
    * ```ts
    * // Surface `data` tools ahead of `app` tools, hub-wide.
-   * createDevframeClientHost({ categoryOrder: { data: 50 } })
+   * createDevframeClientRuntime({ categoryOrder: { data: 50 } })
    * ```
    */
   categoryOrder?: Record<string, number>
 }
 
-export interface DevframeClientHost {
-  /** The assembled, globally-registered client host context. */
+export interface DevframeClientRuntime {
+  /** The assembled, globally-registered client context. */
   context: DevframeClientContext
   /** Tear down listeners and stop tracking newly-registered client scripts. */
   dispose: () => void
 }
 
 /**
- * Boot the framework-level client host: connect RPC, assemble the full
+ * Boot the client runtime: connect RPC, assemble the full
  * {@link DevframeClientContext} (panel, docks, commands, when) from the hub's
  * shared state, publish it at `__DEVFRAME_HUB_CLIENT_CONTEXT__`, and load every
  * dock entry's client script into this page — the devframe equivalent of the
  * runtime `@vitejs/devtools-kit` injects into a host app.
  *
- * A viewer keeps rendering its own dock UI (reading the same shared state); this
+ * A hub UI provider keeps rendering its own dock UI (reading the same shared state); this
  * runtime is what gives plugin client scripts a live host context to run in.
  */
-export async function createDevframeClientHost(
-  options: DevframeClientHostOptions = {},
-): Promise<DevframeClientHost> {
+export async function createDevframeClientRuntime(
+  options: DevframeClientRuntimeOptions = {},
+): Promise<DevframeClientRuntime> {
   const clientType: DockClientType = options.clientType ?? 'standalone'
   const rpc = options.rpc ?? await connectDevframe(options.connect)
   // Set by createRenderersContext(); teardown disposes every live mount.
@@ -220,8 +220,8 @@ export async function createDevframeClientHost(
 
   if (getDevframeClientContext()) {
     console.warn(
-      '[@devframes/hub] A client host context is already published on this page — replacing it. '
-      + 'Boot createDevframeClientHost() once per page (e.g. HTML injection combined with a manual import boots it twice).',
+      '[@devframes/hub] A client context is already published on this page — replacing it. '
+      + 'Boot createDevframeClientRuntime() once per page (e.g. HTML injection combined with a manual import boots it twice).',
     )
   }
   setDevframeClientContext(context)
@@ -357,7 +357,7 @@ export async function createDevframeClientHost(
         void switchEntry(id)
       },
       // A mirror of the session field, so a persisting host reads and writes the
-      // selected iframe's route through the same context every viewer uses.
+      // selected iframe's route through the same context every hub UI provider uses.
       get selectedRoute() {
         return panel.session.selectedDockRoute
       },
@@ -484,7 +484,7 @@ export async function createDevframeClientHost(
       manifest: () => renderersManifestState.value() as DockRendererManifest,
       onMounted(dispose, entry) {
         mountedDisposers.add(dispose)
-        // Dispose when the dock deactivates — the Vite viewer leaked here by
+        // Dispose when the dock deactivates — the Vite hub UI provider leaked here by
         // never unsubscribing the renderer's shared-state listeners.
         const offDeactivate = entryToStateMap.get(entry.id)?.events.on('entry:deactivated', dispose)
         return () => {
@@ -515,7 +515,7 @@ export async function createDevframeClientHost(
     // A bare specifier resolves through the explicit option, then the
     // host-advertised template; URL specifiers pass through untouched. (The
     // rpc reads are optional-chained for partial stubs — tests, bespoke
-    // viewers — where the template then resolves page-relative.)
+    // hub UI providers — where the template then resolves page-relative.)
     const specifier = resolveClientModuleSpecifier(script.importFrom, {
       resolveClientModule: options.resolveClientModule,
       template: rpc.connectionMeta?.configs?.dock?.clientModuleResolution,
@@ -604,3 +604,12 @@ function groupByCategory(entries: DevframeDockEntry[], categoryOrder: Record<str
     ([a], [b]) => (categoryOrder[a] ?? 0) - (categoryOrder[b] ?? 0),
   )
 }
+
+/** @deprecated Renamed — use {@link DevframeClientRuntimeOptions}. */
+export type DevframeClientHostOptions = DevframeClientRuntimeOptions
+
+/** @deprecated Renamed — use {@link DevframeClientRuntime}. */
+export type DevframeClientHost = DevframeClientRuntime
+
+/** @deprecated Renamed — use {@link createDevframeClientRuntime}. */
+export const createDevframeClientHost: typeof createDevframeClientRuntime = createDevframeClientRuntime

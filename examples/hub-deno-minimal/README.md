@@ -6,7 +6,7 @@ The minimal [Deno](https://deno.com) host for `@devframes/hub` — one `initHub(
 pnpm --filter hub-deno-minimal dev
 ```
 
-Open <http://localhost:5182> — the host page carries the floating dock via one script tag — or <http://localhost:5182/__devframes/> for the standalone viewer.
+Open <http://localhost:5182> — the host page carries the floating dock via one script tag — or <http://localhost:5182/__devframes/> for the standalone hub UI.
 
 ## How it works
 

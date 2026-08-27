@@ -1,4 +1,4 @@
-import type { AgentConfig } from '../../shared/protocol.ts'
+import type { PageScriptConfig } from '../../shared/protocol.ts'
 import { defineRpcFunction } from 'devframe'
 import { A11Y_CHANNEL, A11Y_DEFAULT_DOCK_ID, A11Y_NODE_ATTR, IMPACT_ORDER } from '../../shared/protocol.ts'
 
@@ -44,12 +44,12 @@ export interface A11yRuntimeConfig {
  * Build the `get-config` RPC function from author options. Declared `static`,
  * so the value resolves live over WebSocket in dev and is baked into the RPC
  * dump for static builds — the panel's legend + runtime config render the same
- * in both modes. The panel forwards the `agent` slice to the in-page agent over
- * the BroadcastChannel, keeping the agent free of any RPC dependency.
+ * in both modes. The panel forwards the `pageScript` slice to the page script over
+ * the BroadcastChannel, keeping the page script free of any RPC dependency.
  */
 export function createGetConfig(options: A11yRuntimeConfig = {}) {
   const dockId = options.dockId ?? A11Y_DEFAULT_DOCK_ID
-  const agent: AgentConfig = {
+  const pageScript: PageScriptConfig = {
     logIssues: options.logIssues ?? true,
     autoScan: options.autoScan ?? true,
     axeTags: options.axe?.tags,
@@ -66,7 +66,7 @@ export function createGetConfig(options: A11yRuntimeConfig = {}) {
       docsBase: 'https://dequeuniversity.com/rules/axe/',
       dockId,
       defaultHighlight: options.defaultHighlight ?? false,
-      agent,
+      pageScript,
       impacts: IMPACT_ORDER.map(id => ({ id, ...IMPACT_COPY[id] })),
     }),
   })

@@ -11,7 +11,7 @@ import type {
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import type { FormEvent } from 'react'
-import { connectDevframe, createDevframeClientHost, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
+import { connectDevframe, createDevframeClientRuntime, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createReactJsonRenderDockRenderer } from '../json-render/react-renderer'
 import { dockIconSvg } from './icons'
@@ -49,7 +49,7 @@ interface Status {
 
 type IframeDock = DevframeDockEntry & { type: 'iframe', url: string }
 type TerminalSummary = Pick<DevframeTerminalSession, 'id' | 'title' | 'status' | 'description'>
-type ClientHost = Awaited<ReturnType<typeof createDevframeClientHost>>
+type ClientHost = Awaited<ReturnType<typeof createDevframeClientRuntime>>
 
 function isIframeDock(d: DevframeDockEntry): d is IframeDock {
   return d.type === 'iframe' && typeof (d as { url?: unknown }).url === 'string'
@@ -87,7 +87,7 @@ function createClientNotesUrl(): string {
 <p>This dock was registered in the browser with
   <code>host.context.docks.register()</code>. It lives only in this page - it
   never enters the <code>devframe:docks</code> shared state, so it is not synced
-  to the hub server or to any other connected viewer.</p>
+  to the hub node side or to any other connected surface.</p>
 <p>Patch it live through the returned handle with <code>update()</code> (its
   <code>badge</code> was set that way), or remove it with <code>dispose()</code>.</p>`
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
@@ -418,7 +418,7 @@ export default function Page() {
         // implementing the `JsonRenderDockRenderer` contract can replace the
         // reference one. Delete this `renderers` option and the same dock
         // renders through the manifest-served Vue module instead.
-        const clientHost = await createDevframeClientHost({
+        const clientHost = await createDevframeClientRuntime({
           rpc,
           renderers: { 'json-render': createReactJsonRenderDockRenderer() },
         })

@@ -7,5 +7,7 @@ export async function exposeDataInspector(_) {}
 // #endregion
 
 // #region Variables
+/** @deprecated */
 export var AGENT_DISCOVERY_FILE /* const */
+export var DISCOVERY_FILE /* const */
 // #endregion

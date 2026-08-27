@@ -33,15 +33,15 @@ describe('createGetConfig', () => {
     const cfg = createGetConfig().handler!() as any
     expect(cfg.dockId).toBe('devframes_plugin_a11y')
     expect(cfg.defaultHighlight).toBe(false)
-    expect(cfg.agent.autoScan).toBe(true)
-    expect(cfg.agent.logIssues).toBe(true)
-    expect(cfg.agent.activateDockId).toBe('devframes_plugin_a11y')
+    expect(cfg.pageScript.autoScan).toBe(true)
+    expect(cfg.pageScript.logIssues).toBe(true)
+    expect(cfg.pageScript.activateDockId).toBe('devframes_plugin_a11y')
     // Broadened default tag set includes WCAG 2.2 + best-practice.
     expect([...DEFAULT_AXE_TAGS]).toContain('best-practice')
     expect([...DEFAULT_AXE_TAGS]).toContain('wcag22aa')
   })
 
-  it('threads author options through to the agent config and dock id', () => {
+  it('threads author options through to the page script config and dock id', () => {
     const cfg = createGetConfig({
       dockId: 'my_a11y',
       autoScan: false,
@@ -51,7 +51,7 @@ describe('createGetConfig', () => {
     }).handler!() as any
     expect(cfg.dockId).toBe('my_a11y')
     expect(cfg.defaultHighlight).toBe(true)
-    expect(cfg.agent).toMatchObject({
+    expect(cfg.pageScript).toMatchObject({
       autoScan: false,
       logIssues: false,
       axeTags: ['wcag2a'],

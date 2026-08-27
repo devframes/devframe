@@ -4,7 +4,7 @@
  *
  * The store is **process-global**, held under a `Symbol.for` key on
  * `globalThis`: registrations need no devframe context (register before any
- * context exists — CLI, agent, early plugin code), duplicate copies of this
+ * context exists — CLI, inject endpoint, early setup code), duplicate copies of this
  * module converge on one store, and setup ordering can never drop a source.
  *
  * ```ts

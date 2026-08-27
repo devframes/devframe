@@ -15,10 +15,10 @@ export interface JsonRenderDockRendererOptions {
 
 /**
  * Build a hub dock renderer for `'json-render'` entries. Register it at
- * `createDevframeClientHost` boot:
+ * `createDevframeClientRuntime` boot:
  *
  * ```ts
- * createDevframeClientHost({
+ * createDevframeClientRuntime({
  *   renderers: { 'json-render': createJsonRenderDockRenderer() },
  * })
  * ```

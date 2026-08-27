@@ -5,7 +5,7 @@
 export function attachFrameNavClient(_) {}
 export function buildRemoteDevframeUrl(_, _) {}
 export async function connectRemoteDevframe(_) {}
-export async function createDevframeClientHost(_) {}
+export async function createDevframeClientRuntime(_) {}
 export function createDockRenderersContext(_) {}
 export function createMessagesClient(_, _) {}
 export function getDevframeClientContext() {}
@@ -18,6 +18,8 @@ export function watchFrameLocation(_) {}
 
 // #region Variables
 export var CLIENT_CONTEXT_KEY /* const */
+/** @deprecated */
+export var createDevframeClientHost /* const */
 export var FRAME_NAV_CHANNEL /* const */
 export var FRAME_NAV_VERSION /* const */
 // #endregion

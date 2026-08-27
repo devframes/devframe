@@ -67,7 +67,7 @@ export const hubCommandsExecute = defineHubRpcFunction({
  * messages subsystem. Marked `from: 'browser'`. Returns the serializable
  * entry (the mutation handle stays server-side).
  *
- * Pairs with the client-side {@link import('../client').createDevframeClientHost}
+ * Pairs with the client-side {@link import('../client').createDevframeClientRuntime}
  * context, whose `messages` client dispatches through these built-ins so a
  * dock client script can report into the same feed the server writes to.
  */

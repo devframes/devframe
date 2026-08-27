@@ -1,10 +1,10 @@
 # @devframes/plugin-messages
 
 > [!WARNING] Experimental
-> This plugin is experimental and may change without a major version bump until
+> This devframe is experimental and may change without a major version bump until
 > it stabilizes.
 
-A devframe plugin that surfaces the hub message feed (`ctx.messages`) as a
+A built-in devframe that surfaces the hub message feed (`ctx.messages`) as a
 portable panel: browse diagnostics and notifications from every mounted tool,
 filter by level / source / category / label, inspect stack traces, element and
 file positions, and jump to the offending file in your editor.
@@ -22,10 +22,10 @@ import createMessagesDevframe from '@devframes/plugin-messages'
 await hubContext.install(createMessagesDevframe())
 ```
 
-The hub's `ctx.messages` host feeds the panel live — every
+The hub's `ctx.messages` feeds the panel live — every
 `ctx.messages.add(...)` from any mounted tool shows up, updates stream over
 the `devframe:messages:updated` broadcast, and dismissals write back through
-the plugin's namespaced RPCs. On a plain (non-hub) context the plugin warns
+the devframe's namespaced RPCs. On a plain (non-hub) context the devframe warns
 (`DP_MESSAGES_0001`) and serves an empty feed.
 
 ## Embed the panel directly
@@ -45,4 +45,4 @@ pnpx @devframes/plugin-messages
 ```
 
 `pnpm dev` in this package self-hosts the SPA against a demo-seeded messages
-host, so the feed is lively without a full hub.
+feed, so the feed is lively without a full hub.

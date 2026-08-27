@@ -13,7 +13,7 @@ import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 
 // The whole devtools installation in one call: two plugins mounted under
 // /__devframes/, the reference UI filling the hub's ui slot (the standalone
-// viewer at the namespace root + the floating dock at embedded.js), and the
+// hub UI at the namespace root + the floating dock at embedded.js), and the
 // RPC socket on a side-car port advertised via __connection.json - Nitro's
 // route handlers never deal with WebSocket upgrades, so `ws.sidecar` asks
 // for a socket of its own.

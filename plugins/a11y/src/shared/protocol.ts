@@ -1,7 +1,7 @@
 /**
  * Wire contract shared by the two browser-side halves of the a11y inspector:
  *
- *  - the **agent** — injected into the host application's page, runs axe-core,
+ *  - the **page script** — injected into the user app's page, runs axe-core,
  *    tracks issues per route, and owns the highlight overlay (`src/inject`);
  *  - the **panel** — the Solid SPA that lists violations (`src/client`).
  *
@@ -11,11 +11,11 @@
  * RPC) or as a baked static build — neither half needs a server to find the
  * other, only a shared browser origin (host page + devtools iframe).
  *
- * The agent owns the authoritative route → report map (backed by
+ * The page script owns the authoritative route → report map (backed by
  * sessionStorage) and broadcasts the whole {@link A11yState} aggregate on every
  * change, so the panel stays a pure render of it. Runtime configuration
- * (`get-config`, a `static` RPC the panel resolves) is forwarded to the agent
- * over the same channel as an {@link AgentConfig}, keeping the agent itself
+ * (`get-config`, a `static` RPC the panel resolves) is forwarded to the page script
+ * over the same channel as an {@link PageScriptConfig}, keeping the page script itself
  * free of any RPC dependency.
  */
 
@@ -25,14 +25,14 @@ export const A11Y_CHANNEL = 'devframes:plugin:a11y'
 /** Default dock id — the devframe id a hub registers the panel under. */
 export const A11Y_DEFAULT_DOCK_ID = 'devframes_plugin_a11y'
 
-/** sessionStorage key the agent persists its route → report map under. */
+/** sessionStorage key the page script persists its route → report map under. */
 export const A11Y_STORAGE_KEY = 'devframes:plugin:a11y:routes'
 
 /** Shared-state slot the hub mirrors the active dock activation into. */
 export const A11Y_DOCKS_ACTIVE_KEY = 'devframe:docks:active'
 
 /**
- * Attribute the agent stamps on each violating element so the panel can ask
+ * Attribute the page script stamps on each violating element so the panel can ask
  *  for a stable target that survives re-scans and DOM reshuffles.
  */
 export const A11Y_NODE_ATTR = 'data-df-a11y-node'
@@ -59,7 +59,7 @@ export type Impact = (typeof IMPACT_ORDER)[number]
 /**
  * Severity palette — the one expressive, domain-specific color in the tool.
  * Shared by both halves so the panel chips/spines and the in-page highlight
- * ring (drawn by the injected agent via inline styles) stay in lockstep.
+ * ring (drawn by the page script via inline styles) stay in lockstep.
  */
 export const IMPACT_COLOR: Record<Impact, string> = {
   critical: '#ff5c7a',
@@ -69,7 +69,7 @@ export const IMPACT_COLOR: Record<Impact, string> = {
 }
 
 export interface ViolationNode {
-  /** Stable id the agent assigned (mirrored to {@link A11Y_NODE_ATTR}). */
+  /** Stable id the page script assigned (mirrored to {@link A11Y_NODE_ATTR}). */
   id: string
   /** axe target selector(s) that resolve to the element. */
   target: string[]
@@ -111,7 +111,7 @@ export interface ScanReport {
 }
 
 /**
- * The whole route → report aggregate the agent broadcasts. `routes` holds one
+ * The whole route → report aggregate the page script broadcasts. `routes` holds one
  * report per tracked route; `activeRoute` is the pathname currently in view in
  * the host page.
  */
@@ -124,7 +124,7 @@ export interface A11yState {
   routes: ScanReport[]
 }
 
-/** A single element to pin/highlight, carried from panel to agent. */
+/** A single element to pin/highlight, carried from panel to page script. */
 export interface PinTarget {
   /** Node id from {@link ViolationNode.id}. */
   nodeId: string
@@ -136,9 +136,9 @@ export interface PinTarget {
 
 /**
  * Runtime configuration the panel resolves from the `get-config` RPC and
- * forwards to the agent over the channel (the agent keeps no RPC dependency).
+ * forwards to the page script over the channel (the page script keeps no RPC dependency).
  */
-export interface AgentConfig {
+export interface PageScriptConfig {
   /** Log newly-appeared violations to the browser console. */
   logIssues: boolean
   /** Rescan on debounced user interaction, on top of the DOM MutationObserver. */
@@ -154,10 +154,10 @@ export interface AgentConfig {
   activateDockId?: string
 }
 
-/* ── agent → panel ─────────────────────────────────────────────────────── */
+/* ── page script → panel ─────────────────────────────────────────────────────── */
 
-interface AgentReadyMessage {
-  type: 'a11y:agent-ready'
+interface PageScriptReadyMessage {
+  type: 'a11y:page-script-ready'
   url: string
   route: string
 }
@@ -170,16 +170,16 @@ interface ScanningMessage {
   route: string
 }
 
-type AgentToPanel = AgentReadyMessage | StateMessage | ScanningMessage
+type PageScriptToPanel = PageScriptReadyMessage | StateMessage | ScanningMessage
 
-/* ── panel → agent ─────────────────────────────────────────────────────── */
+/* ── panel → page script ─────────────────────────────────────────────────────── */
 
 interface PanelReadyMessage {
   type: 'a11y:panel-ready'
 }
 interface ConfigMessage {
   type: 'a11y:config'
-  config: AgentConfig
+  config: PageScriptConfig
 }
 interface HighlightMessage {
   type: 'a11y:highlight'
@@ -192,7 +192,7 @@ interface ClearHighlightMessage {
 }
 interface PinsMessage {
   type: 'a11y:pins'
-  /** The full desired pin set; the agent draws numbered rings in this order. */
+  /** The full desired pin set; the page script draws numbered rings in this order. */
   pins: PinTarget[]
 }
 interface RescanMessage {
@@ -210,7 +210,7 @@ interface ClearAllMessage {
   type: 'a11y:clear-all'
 }
 
-type PanelToAgent
+type PanelToPageScript
   = | PanelReadyMessage
     | ConfigMessage
     | HighlightMessage
@@ -221,7 +221,7 @@ type PanelToAgent
     | ClearRouteMessage
     | ClearAllMessage
 
-export type A11yMessage = AgentToPanel | PanelToAgent
+export type A11yMessage = PageScriptToPanel | PanelToPageScript
 
 /** Empty per-impact counter — handy initial value. */
 export function emptyCounts(): Record<Impact, number> {

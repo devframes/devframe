@@ -1,4 +1,4 @@
-import createA11yDevframe, { a11yAgentBundlePath } from '@devframes/plugin-a11y'
+import createA11yDevframe, { a11yPageScriptBundlePath } from '@devframes/plugin-a11y'
 import createMessagesDevframe from '@devframes/plugin-messages'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
@@ -20,7 +20,7 @@ export default defineConfig({
       // Vite's `/@fs/` so it shares this page's origin (the BroadcastChannel the
       // agent and panel talk over rides that origin).
       clientScripts: {
-        [a11yDevframe.id]: { importFrom: `/@fs/${a11yAgentBundlePath}` },
+        [a11yDevframe.id]: { importFrom: `/@fs/${a11yPageScriptBundlePath}` },
       },
     }),
   ],

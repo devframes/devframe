@@ -3,5 +3,10 @@
   "framework": "nuxtjs",
   "buildCommand": "pnpm run docs:build",
   "installCommand": "pnpm install --frozen-lockfile",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- ':!content'"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- ':!content'",
+  "redirects": [
+    { "source": "/guide/terms", "destination": "/references/terms", "permanent": true },
+    { "source": "/guide/when-clauses", "destination": "/references/when-clauses", "permanent": true },
+    { "source": "/guide/events", "destination": "/references/events", "permanent": true }
+  ]
 }

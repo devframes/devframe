@@ -12,24 +12,27 @@ const BASE_PATH = '/__devframes_plugin_a11y/'
 // package, served on demand through devframe's remote-assets back-proxy. The
 // definition's `importMetaUrl` (below) supplies the default `resolveFrom`, so a
 // locally installed copy (a workspace link here) is served with zero network.
-// The host-page agent bundle (`dist/inject`, below) stays here.
+// The page-script bundle (`dist/inject`, below) stays here.
 const distDir: RemoteAssets = {
   package: `${pkg.name}--assets`,
   version: pkg.version,
 }
 
 /**
- * Absolute path to the built in-page **agent** module (`dist/inject/inject.js`)
- * — the dock **client script** the hub runtime imports into the host page to
- * scan it (its default export boots the agent; importing it does too).
+ * Absolute path to the built **page script** module (`dist/inject/inject.js`)
+ * — the dock **client script** the client runtime imports into the host page to
+ * scan it (its default export boots the page script; importing it does too).
  *
  * A hub attaches this as the a11y dock's `clientScript`, resolved to a URL the
- * page can import: `/@fs/${a11yAgentBundlePath}` for a Vite host, or a
+ * page can import: `/@fs/${a11yPageScriptBundlePath}` for a Vite host, or a
  * statically-served path for others (see the minimal hub examples). Resolves
  * under `<pkg>/dist/inject/inject.js` from both the source and the published
  * entry. Requires the built bundle (`pnpm -C plugins/a11y build`).
  */
-export const a11yAgentBundlePath: string = fileURLToPath(new URL('../dist/inject/inject.js', import.meta.url))
+export const a11yPageScriptBundlePath: string = fileURLToPath(new URL('../dist/inject/inject.js', import.meta.url))
+
+/** @deprecated Renamed — use {@link a11yPageScriptBundlePath}. */
+export const a11yAgentBundlePath: string = a11yPageScriptBundlePath
 
 export interface A11yDevframeOptions {
   /** Override the devframe id (and the default CLI command / mount path). */
@@ -69,8 +72,8 @@ export interface A11yDevframeOptions {
 /**
  * Build a {@link DevframeDefinition} for the a11y inspector. The same
  * definition runs standalone (`/cli`, `/build`) and mounts into a host
- * (`/vite`, hub). The panel talks to the in-page agent over a same-origin
- * BroadcastChannel, so the scan/highlight loop works identically in dev
+ * (`/vite`, hub). The panel talks to the page script over the in-page channel
+ * (a same-origin BroadcastChannel), so the scan/highlight loop works identically in dev
  * (live WebSocket RPC) and in a baked static build.
  *
  * @experimental This plugin is experimental and may change without a major

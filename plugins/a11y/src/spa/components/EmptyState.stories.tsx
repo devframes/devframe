@@ -15,7 +15,7 @@ export const NoPage: Story = {
   args: {
     icon: 'i-ph-plugs-duotone text-4xl',
     title: 'No page connected',
-    body: 'Load the inspector agent in the app you want to check, then this panel will list its accessibility issues live.',
+    body: 'Load the inspector page script in the app you want to check, then this panel will list its accessibility issues live.',
     code: '<script type="module" src="…/inject.js"></script>',
   },
 }

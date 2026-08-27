@@ -3,7 +3,7 @@ import type { SharedState } from 'devframe/utils/shared-state'
 import type { DevframeDockEntry } from '../../types/docks'
 import { createEventEmitter } from 'devframe/utils/events'
 import { describe, expect, it, vi } from 'vitest'
-import { createDevframeClientHost } from '../host'
+import { createDevframeClientRuntime } from '../host'
 
 interface StubSharedState<T> extends SharedState<T> {
   push: (next: T) => void
@@ -57,7 +57,7 @@ const container = {} as HTMLElement
 describe('client host renderer registry', () => {
   it('registers renderers injected at boot', async () => {
     const { rpc } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc, renderers: { 'json-render': async () => ({}) } })
+    const host = await createDevframeClientRuntime({ rpc, renderers: { 'json-render': async () => ({}) } })
     expect(host.context.renderers.has('json-render')).toBe(true)
     host.dispose()
   })
@@ -65,7 +65,7 @@ describe('client host renderer registry', () => {
   it('routes a dock type to its renderer and resolves a mounted result', async () => {
     const { rpc } = createStubRpc()
     const renderer = vi.fn(async () => ({ dispose: vi.fn() }))
-    const host = await createDevframeClientHost({ rpc, renderers: { 'json-render': renderer } })
+    const host = await createDevframeClientRuntime({ rpc, renderers: { 'json-render': renderer } })
 
     const result = await host.context.renderers.mount(jsonRenderEntry, container)
     expect(renderer).toHaveBeenCalledWith(expect.objectContaining({ entry: jsonRenderEntry, container, context: host.context }))
@@ -77,7 +77,7 @@ describe('client host renderer registry', () => {
 
   it('warns and resolves missing-renderer when no renderer covers the type', async () => {
     const { rpc } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     expect(host.context.renderers.has('json-render')).toBe(false)
     const result = await host.context.renderers.mount(jsonRenderEntry, container)
@@ -89,7 +89,7 @@ describe('client host renderer registry', () => {
 
   it('lazily imports a manifest renderer module and reuses it', async () => {
     const { rpc, states } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
     const moduleUrl = 'data:text/javascript,globalThis.__manifestMounts = 0; export default () => { globalThis.__manifestMounts += 1; return {} }'
     states.get('devframe:dock-renderers')!.push({ 'json-render': { importFrom: moduleUrl } })
 
@@ -108,7 +108,7 @@ describe('client host renderer registry', () => {
   it('prefers a locally-registered renderer over the manifest', async () => {
     const { rpc, states } = createStubRpc()
     const local = vi.fn(async () => ({}))
-    const host = await createDevframeClientHost({ rpc, renderers: { 'json-render': local } })
+    const host = await createDevframeClientRuntime({ rpc, renderers: { 'json-render': local } })
     states.get('devframe:dock-renderers')!.push({
       'json-render': { importFrom: 'data:text/javascript,export default () => { throw new Error("manifest module must not load") }' },
     })
@@ -121,7 +121,7 @@ describe('client host renderer registry', () => {
 
   it('resolves load-error when the manifest module fails to import', async () => {
     const { rpc, states } = createStubRpc()
-    const host = await createDevframeClientHost({ rpc })
+    const host = await createDevframeClientRuntime({ rpc })
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
     states.get('devframe:dock-renderers')!.push({
       'json-render': { importFrom: 'data:text/javascript,throw new Error("boom")' },
@@ -139,7 +139,7 @@ describe('client host renderer registry', () => {
 
   it('resolves load-error when the renderer itself throws at mount', async () => {
     const { rpc } = createStubRpc()
-    const host = await createDevframeClientHost({
+    const host = await createDevframeClientRuntime({
       rpc,
       renderers: { 'json-render': () => { throw new Error('mount failed') } },
     })
@@ -153,7 +153,7 @@ describe('client host renderer registry', () => {
   it('disposes a mounted renderer when the dock deactivates', async () => {
     const { rpc, states } = createStubRpc()
     const disposeSpy = vi.fn()
-    const host = await createDevframeClientHost({ rpc, renderers: { 'json-render': async () => ({ dispose: disposeSpy }) } })
+    const host = await createDevframeClientRuntime({ rpc, renderers: { 'json-render': async () => ({ dispose: disposeSpy }) } })
 
     // Seed the dock so the entry state exists (needed for deactivation hooks).
     states.get('devframe:docks')!.push([jsonRenderEntry])
@@ -168,7 +168,7 @@ describe('client host renderer registry', () => {
   it('disposes live mounts on host teardown', async () => {
     const { rpc } = createStubRpc()
     const disposeSpy = vi.fn()
-    const host = await createDevframeClientHost({ rpc, renderers: { 'json-render': async () => ({ dispose: disposeSpy }) } })
+    const host = await createDevframeClientRuntime({ rpc, renderers: { 'json-render': async () => ({ dispose: disposeSpy }) } })
     await host.context.renderers.mount(jsonRenderEntry, container)
     host.dispose()
     expect(disposeSpy).toHaveBeenCalledTimes(1)

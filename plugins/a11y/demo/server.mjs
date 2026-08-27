@@ -2,11 +2,11 @@
 /**
  * Same-origin demo host for the a11y inspector.
  *
- * Serves three things off one origin so the injected agent (host page) and the
+ * Serves three things off one origin so the page script (host page) and the
  * panel (devtools iframe) share a BroadcastChannel:
  *
  *   GET  /                              → the demo page (intentional a11y bugs)
- *   GET  /__df-inject/inject.js         → the injected agent bundle
+ *   GET  /__df-inject/inject.js         → the page script bundle
  *   GET  /__devframes_plugin_a11y/**  → the Solid panel SPA
  *
  * Two modes prove the plugin works either way:
@@ -76,7 +76,7 @@ async function main() {
     return demoHtml
   })
 
-  // 2. The injected agent bundle.
+  // 2. The page script bundle.
   mountStaticHandler(app, '/__df-inject/', injectDir)
 
   if (mode === 'dev') {

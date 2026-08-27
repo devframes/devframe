@@ -58,7 +58,7 @@ export const diagnostics = defineDiagnostics({
     },
     DF8107: {
       why: (p: { id: string }) => `Dock activation requested for unknown dock id "${p.id}"`,
-      fix: 'Pass a `dockId` that matches a registered dock entry. The activation is still broadcast, but no viewer will switch to it. Ids are case-sensitive — check for typos, and ensure the target dock is registered before activating it.',
+      fix: 'Pass a `dockId` that matches a registered dock entry. The activation is still broadcast, but no hub UI provider will switch to it. Ids are case-sensitive — check for typos, and ensure the target dock is registered before activating it.',
     },
     DF8108: {
       why: (p: { type: string }) => `A renderer module is already registered for dock type "${p.type}"`,
@@ -74,7 +74,7 @@ export const diagnostics = defineDiagnostics({
     },
     DF8111: {
       why: (p: { id: string, specifier: string }) => `Dock "${p.id}" declares the bare-specifier client script "${p.specifier}", but this host advertises no client-module resolution — the browser cannot resolve a bare npm specifier natively, so the script will fail to load.`,
-      fix: 'Run under a host that declares `initHub({ clientModuleResolution })` (e.g. Vite\'s `\'/@id/{specifier}\'`), ship the script as a self-contained bundle served by URL, or resolve it in the viewer via `createDevframeClientHost({ resolveClientModule })` (then disregard this warning).',
+      fix: 'Run under a host framework that declares `initHub({ clientModuleResolution })` (e.g. Vite\'s `\'/@id/{specifier}\'`), ship the script as a self-contained bundle served by URL, or resolve it in the hub UI provider via `createDevframeClientRuntime({ resolveClientModule })` (then disregard this warning).',
     },
     DF8200: {
       why: (p: { id: string }) => `Terminal session with id "${p.id}" already registered`,

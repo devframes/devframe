@@ -24,14 +24,14 @@
  * ```
  *
  * On that zero-code path there's nowhere to call `registerDataSource`, so the
- * agent auto-registers a **`globalThis`** source: assign anything you want to
+ * inject endpoint auto-registers a **`globalThis`** source: assign anything you want to
  * inspect onto the global object (`globalThis.store = store`) and query it
  * live. Opt out with `DEVFRAME_DATA_INSPECTOR_GLOBAL=0`.
  *
  * It binds `127.0.0.1` and requires devframe's trust handshake by
  * default: a random pre-shared token is minted per run, printed to stderr,
  * and written (with the endpoint) to the discovery file
- * `<cwd>/node_modules/.data-inspector/agent.json`, which
+ * `<cwd>/node_modules/.data-inspector/discovery.json`, which
  * `devframe-data-inspector attach` consumes automatically. Connected
  * inspectors run eval-grade queries against live objects in this process —
  * treat the endpoint like a debugger port.
@@ -51,10 +51,10 @@ import { randomToken } from 'devframe/utils/crypto-token'
 import { getPort } from 'devframe/utils/get-port'
 
 /** Discovery file path, relative to the target process's cwd. */
-export const AGENT_DISCOVERY_FILE = 'node_modules/.data-inspector/agent.json'
+export const DISCOVERY_FILE = 'node_modules/.data-inspector/discovery.json'
 
-export interface AgentDiscovery {
-  /** WS endpoint of the agent, e.g. `ws://127.0.0.1:9878`. */
+export interface InjectDiscovery {
+  /** WS endpoint of the inject endpoint, e.g. `ws://127.0.0.1:9878`. */
   websocket: string
   /** Pre-shared token the inspector must present. Absent when `auth: false`. */
   token?: string
@@ -93,7 +93,7 @@ export interface ExposeDataInspectorOptions {
   exampleSource?: boolean
 }
 
-export interface DataInspectorAgent {
+export interface DataInspectorEndpoint {
   websocket: string
   token?: string
   close: () => Promise<void>
@@ -117,9 +117,9 @@ export function createGlobalThisDataSource(): DataSourceEntry {
   }
 }
 
-/** Start the agent endpoint in the current process. */
-export async function exposeDataInspector(options: ExposeDataInspectorOptions = {}): Promise<DataInspectorAgent> {
-  // Deferred so `--import`ing the agent never pulls the whole node surface
+/** Start the inject endpoint in the current process. */
+export async function exposeDataInspector(options: ExposeDataInspectorOptions = {}): Promise<DataInspectorEndpoint> {
+  // Deferred so `--import`ing the inject entry never pulls the whole node module graph
   // into processes that don't enable it.
   const { setupDataInspector } = await import('../node/index')
 
@@ -155,7 +155,7 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
     ? createInteractiveAuth(context, { clientAuthTokens: [token!], banner: () => {} })
     : false
 
-  // A bare WS RPC endpoint — no SPA, no discovery routes — so the agent
+  // A bare WS RPC endpoint — no SPA, no discovery routes — so the inject endpoint
   // binds the still-public transport primitives directly rather than the
   // full-instance factories. The socket claims every upgrade on the port, so
   // the advertised endpoint stays the bare `ws://127.0.0.1:<port>`.
@@ -176,9 +176,9 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
     })
   })
 
-  const discoveryPath = join(cwd, AGENT_DISCOVERY_FILE)
+  const discoveryPath = join(cwd, DISCOVERY_FILE)
   if (options.discoveryFile !== false) {
-    const discovery: AgentDiscovery = { websocket, token, pid: process.pid, startedAt: Date.now() }
+    const discovery: InjectDiscovery = { websocket, token, pid: process.pid, startedAt: Date.now() }
     mkdirSync(dirname(discoveryPath), { recursive: true })
     writeFileSync(discoveryPath, `${JSON.stringify(discovery, null, 2)}\n`)
     process.once('exit', () => {
@@ -190,9 +190,9 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
   }
 
   if (!options.silent) {
-    // The agent runs inside arbitrary user processes: stderr, not stdout,
+    // The inject endpoint runs inside arbitrary user processes: stderr, not stdout,
     // so it never corrupts piped program output.
-    console.error(`[data-inspector] agent listening on ${websocket} (pid ${process.pid})`)
+    console.error(`[data-inspector] inject endpoint listening on ${websocket} (pid ${process.pid})`)
     console.error(`[data-inspector] attach with: devframe-data-inspector attach${options.discoveryFile === false && token ? ` ${websocket} --token ${token}` : ''}`)
   }
 
@@ -224,6 +224,15 @@ if (process.env.DEVFRAME_DATA_INSPECTOR === '1' || process.env.DEVFRAME_DATA_INS
     // `globalThis` so assigning to it is enough to inspect anything.
     sources: process.env.DEVFRAME_DATA_INSPECTOR_GLOBAL !== '0' ? [createGlobalThisDataSource()] : undefined,
   }).catch((error) => {
-    console.error('[data-inspector] agent failed to start:', error)
+    console.error('[data-inspector] inject endpoint failed to start:', error)
   })
 }
+
+/** @deprecated Renamed — use {@link DISCOVERY_FILE} (the file moved to `discovery.json`; `attach` still falls back to the old `agent.json`). */
+export const AGENT_DISCOVERY_FILE: string = DISCOVERY_FILE
+
+/** @deprecated Renamed — use {@link InjectDiscovery}. */
+export type AgentDiscovery = InjectDiscovery
+
+/** @deprecated Renamed — use {@link DataInspectorEndpoint}. */
+export type DataInspectorAgent = DataInspectorEndpoint

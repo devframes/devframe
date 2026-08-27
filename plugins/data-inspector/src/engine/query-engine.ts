@@ -1,7 +1,7 @@
 /// <reference path="./jora.d.ts" />
 /**
  * Isomorphic jora execution. Runs server-side against LIVE objects (dev,
- * agent-attach) and client-side against NORMALIZED datasets (static
+ * inject-endpoint attach) and browser-side against NORMALIZED datasets (static
  * exports), so the same saved query works in both worlds:
  *
  *   - the Map/Set bridge methods duck-type live collections, Map-shaped

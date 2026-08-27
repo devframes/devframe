@@ -44,7 +44,7 @@ export interface NextDevframeHubOptions {
    * The hub's UI slot. Defaults to `@devframes/hub-ui`'s `createUi()` (loaded
    * through a bundler-ignored dynamic `import()` so its `import.meta.url` asset
    * lookups resolve at request time). Pass your own {@link DevframeHubUi} to
-   * swap the viewer, or `false` for a headless hub.
+   * swap the hub UI provider, or `false` for a headless hub.
    */
   ui?: DevframeHubUi | false
   /** The hub's single auth gate. Gates by default; `false` opts out. */

@@ -6,7 +6,7 @@ The minimal [Fastify](https://fastify.dev) host for `@devframes/hub` — one `in
 pnpm --filter hub-fastify-minimal dev
 ```
 
-Open <http://localhost:5183> — the host page carries the floating dock via one script tag — or <http://localhost:5183/__devframes/> for the standalone viewer.
+Open <http://localhost:5183> — the host page carries the floating dock via one script tag — or <http://localhost:5183/__devframes/> for the standalone hub UI.
 
 ## How it works
 

@@ -71,7 +71,7 @@ export interface CreateUiOptions {
 /**
  * The reference implementation of the hub's {@link DevframeHubUi} slot —
  * prebuilt from this package's web components (the floating `DockEmbedded`
- * bootstrap and the standalone `DockStandalone` viewer), styled with the
+ * bootstrap and the standalone `DockStandalone` SPA), styled with the
  * shared devframe design system.
  *
  * ```ts
@@ -82,7 +82,7 @@ export interface CreateUiOptions {
  * ```
  *
  * The hub stays headless either way — this object is one implementation of
- * the slot; a viewer product (or your own) supplies a different one to the
+ * the slot; a hub UI provider (a product's or your own) supplies a different one to the
  * same option and reuses all the infrastructure.
  */
 export function createUi(options: CreateUiOptions = {}): DevframeHubUi {

@@ -34,7 +34,7 @@ node bin.mjs build --out-dir dist/static   # static snapshot (read-only; actions
 In the static build, the spec + state are snapshotted as a read-only render and
 the action bridge reports actions as unavailable — there is no live RPC.
 
-## Reused by the hub shells
+## Reused by the hub examples
 
 The view is factored into `src/dashboard.ts` and exported as
 `json-render/dashboard` (`createDashboardView(ctx)` + `dashboardSpec`),

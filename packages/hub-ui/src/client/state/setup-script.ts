@@ -28,7 +28,7 @@ async function _executeSetupScript(
     throw new Error(`[@devframes/hub-ui] Dock entry "${entry.id}" carries no client script to run`)
   // A bare specifier resolves through the host-advertised template; URL
   // specifiers pass through untouched. Mirrors `@devframes/hub`'s
-  // `createDevframeClientHost` (rpc reads optional-chained for partial stubs).
+  // `createDevframeClientRuntime` (rpc reads optional-chained for partial stubs).
   const specifier = resolveClientModuleSpecifier(script.importFrom, {
     template: context.rpc.connectionMeta?.configs?.dock?.clientModuleResolution,
     metaBaseUrl: context.rpc.connection?.metaBaseUrl,
@@ -36,7 +36,7 @@ async function _executeSetupScript(
   try {
     // Keep this a *native* dynamic import in every bundler — the specifier is
     // a runtime URL served by the hub, not a build-time module. Mirrors the
-    // client-script loading of `@devframes/hub`'s `createDevframeClientHost`.
+    // client-script loading of `@devframes/hub`'s `createDevframeClientRuntime`.
     const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ specifier)
     const fn = mod[script.importName ?? 'default']
     if (typeof fn !== 'function')

@@ -3,12 +3,12 @@
  *
  * ```sh
  * devframe-data-inspector stats.json trace.jsonl   # inspect local data files
- * devframe-data-inspector attach                   # attach via ./node_modules/.data-inspector/agent.json
+ * devframe-data-inspector attach                   # attach via ./node_modules/.data-inspector/discovery.json
  * devframe-data-inspector attach ws://127.0.0.1:9878 --token <token>
  * devframe-data-inspector build stats.json         # self-contained static export
  * ```
  */
-import type { AgentDiscovery } from './inject/index'
+import type { InjectDiscovery } from './inject/index'
 import { existsSync, readFileSync } from 'node:fs'
 import { cp, mkdir, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
@@ -22,7 +22,7 @@ import { getPort } from 'devframe/utils/get-port'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import pkg from '../package.json' with { type: 'json' }
 import { createDataInspectorDevframe } from './index'
-import { AGENT_DISCOVERY_FILE } from './inject/index'
+import { DISCOVERY_FILE } from './inject/index'
 import { createFileDataSource, loadDataFile } from './node/files'
 import { listDataSources, registerDataSource } from './registry/index'
 
@@ -67,7 +67,7 @@ export function createDataInspectorCli() {
     })
 
   cli
-    .command('attach [endpoint]', 'Attach to a process running the data-inspector agent')
+    .command('attach [endpoint]', 'Attach to a process running the data-inspector inject endpoint')
     .option('--token <token>', 'Pre-shared token (defaults to the discovery file\'s)')
     .option('--port <port>', 'Local port for the inspector UI')
     .option('--host <host>', 'Host to bind the UI to', { default: '127.0.0.1' })
@@ -75,16 +75,19 @@ export function createDataInspectorCli() {
       let websocket = endpoint
       let token = flags.token
       if (!websocket) {
-        // No endpoint given: discover the agent advertised by a process
-        // started from this directory.
-        const discoveryPath = resolve(process.cwd(), AGENT_DISCOVERY_FILE)
-        if (!existsSync(discoveryPath)) {
-          console.error(`No agent endpoint given and no discovery file at ${discoveryPath}.`)
-          console.error('Start the target with the agent (see @devframes/plugin-data-inspector/inject) or pass a ws:// endpoint.')
+        // No endpoint given: discover the inject endpoint advertised by a
+        // process started from this directory. Falls back to the pre-rename
+        // `agent.json` written by older versions.
+        const discoveryPath = resolve(process.cwd(), DISCOVERY_FILE)
+        const legacyPath = resolve(process.cwd(), 'node_modules/.data-inspector/agent.json')
+        const foundPath = existsSync(discoveryPath) ? discoveryPath : existsSync(legacyPath) ? legacyPath : undefined
+        if (!foundPath) {
+          console.error(`No endpoint given and no discovery file at ${discoveryPath}.`)
+          console.error('Start the target with the inject endpoint (see @devframes/plugin-data-inspector/inject) or pass a ws:// endpoint.')
           process.exitCode = 1
           return
         }
-        const discovery = JSON.parse(readFileSync(discoveryPath, 'utf-8')) as AgentDiscovery
+        const discovery = JSON.parse(readFileSync(foundPath, 'utf-8')) as InjectDiscovery
         websocket = discovery.websocket
         token ??= discovery.token
       }

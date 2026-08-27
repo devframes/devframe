@@ -6,7 +6,7 @@
 [![JSDocs][jsdocs-src]][jsdocs-href]
 [![License][license-src]][license-href]
 
-Framework-neutral foundation for building generic devframes.
+Framework-neutral foundation for building DevTools.
 
 Documentation: [https://devfra.me/](https://devfra.me/).
 

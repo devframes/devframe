@@ -12,7 +12,7 @@ import { DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
 // shell stays frameworkless on purpose; everything visual lives inside the
 // custom element's shadow root.
 
-// The viewer page runs in the light DOM, so mirror the color mode onto the
+// The standalone page runs in the light DOM, so mirror the color mode onto the
 // document element — its background and native controls follow the
 // Auto/Light/Dark choice.
 watchEffect(() => {

@@ -1,14 +1,14 @@
 ---
-title: 'Built-in Plugins'
-description: 'Devframe ships ready-to-run plugins. Each is a complete DevframeDefinition — launch it standalone, mount it into a Vite host, or dock it inside a hub through any adapter.'
+title: 'Built-in Devframes'
+description: 'Devframe ships ready-to-run built-in devframes. Each is a complete DevframeDefinition — launch it standalone, mount it into a Vite host, or dock it inside a hub through any adapter.'
 ---
 
-Devframe ships ready-to-run plugins. Each is a complete `DevframeDefinition` — launch it standalone, mount it into a Vite host, or dock it inside a [hub](/guide/hub) through any [adapter](/adapters).
+Devframe ships ready-to-run built-in devframes. Each is a complete `DevframeDefinition` — launch it standalone, mount it into a Vite host, or dock it inside a [hub](/guide/hub) through any [adapter](/adapters).
 
-| Plugin | UI framework | What it does |
+| Devframe | UI framework | What it does |
 |--------|--------------|--------------|
 | [Data Inspector](/plugins/data-inspector) | Vue | Query live server-side objects with jora. |
-| [Devframe Inspector](/plugins/inspect) | Vue | Browse RPC, shared state, and agent surface. |
+| [Devframe Inspector](/plugins/inspect) | Vue | Browse RPC, shared state, and agent exposure. |
 | [Open Graph Viewer](/plugins/og) | Vue | Inspect Open Graph / Twitter metadata and card previews. |
 | [Accessibility Inspector](/plugins/a11y) | Solid | Run axe-core; list WCAG violations. |
 | [Git](/plugins/git) | React (Next.js) | Repository dashboard: status, graph, branches, diffs. |
@@ -16,13 +16,13 @@ Devframe ships ready-to-run plugins. Each is a complete `DevframeDefinition` —
 | [Code Server](/plugins/code-server) | Vue | Run VS Code in the browser. |
 | [Assets](/plugins/assets) | Vue | Browse, preview, upload, rename, and delete files. |
 
-## One client, any framework
+## One RPC client, any framework
 
-Each plugin picks its own UI framework yet shares one node-side surface — [RPC](/guide/rpc), [shared state](/guide/shared-state), and `connectDevframe`.
+Each devframe picks its own UI framework yet shares one node-side API — [RPC](/guide/rpc), [shared state](/guide/shared-state), and `connectDevframe`.
 
-## Running a plugin
+## Running a built-in devframe
 
-Most plugins publish a `bin`:
+Most built-in devframes publish a `bin`:
 
 ```sh
 pnpx @devframes/plugin-inspect      # the Devframe Inspector, standalone
