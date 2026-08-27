@@ -84,11 +84,11 @@ export default defineAppConfig({
             '/guide/devframe-definition',
             '/guide/rpc',
             '/guide/shared-state',
-            '/guide/streaming',
             '/guide/client-assets',
             '/guide/scoped-context',
             '/guide/json-render',
             '/guide/diagnostics',
+            '/guide/streaming',
           ],
         },
         {
