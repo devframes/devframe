@@ -21,7 +21,6 @@ import type {
   DockClientType,
   DockEntryState,
   DocksEntriesContext,
-  DockSessionStorage,
   DocksPanelContext,
   DocksPanelEvents,
   WhenClauseContext,
@@ -127,7 +126,6 @@ export async function createDevframeClientRuntime(
 ): Promise<DevframeClientRuntime> {
   const clientType: DockClientType = options.clientType ?? 'standalone'
   const rpc = options.rpc ?? await connectDevframe(options.connect)
-  let disposed = false
   // Set by createRenderersContext(); teardown disposes every live mount.
   let mountedRenderers: Set<() => void> | undefined
 
@@ -158,7 +156,7 @@ export async function createDevframeClientRuntime(
     ...options.categoryOrder,
   }
 
-  const panel = createPanelContext(clientType, () => disposed)
+  const panel = createPanelContext(clientType)
   const docks = createDocksContext()
   const commands = createCommandsContext()
   const renderers = createRenderersContext()
@@ -239,7 +237,6 @@ export async function createDevframeClientRuntime(
   return {
     context,
     dispose() {
-      disposed = true
       for (const off of disposers.splice(0)) off()
       for (const disposeAdapter of frameNavAdapters.values()) disposeAdapter()
       frameNavAdapters.clear()
@@ -554,10 +551,7 @@ export async function createDevframeClientRuntime(
 
 // ── shared helpers ─────────────────────────────────────────────────────────
 
-function createPanelContext(
-  clientType: DockClientType,
-  isDisposed: () => boolean,
-): DocksPanelContext {
+function createPanelContext(clientType: DockClientType): DocksPanelContext {
   const store: DocksPanelContext['store'] = {
     mode: 'edge',
     width: 480,
@@ -571,8 +565,17 @@ function createPanelContext(
   let selectedDockId: string | null = null
   const events = createEventEmitter<DocksPanelEvents>()
   let panelStateChangePending = false
-  let previousPanelState: DevframeDockPanelState
-  let panelContext: DocksPanelContext
+
+  function createDockPanelState(): DevframeDockPanelState {
+    const panelState: DevframeDockPanelState = {
+      state: open ? 'open' : 'closed',
+    }
+    if (selectedDockId !== null)
+      panelState.selectedDockId = selectedDockId
+    return panelState
+  }
+
+  let previousPanelState = createDockPanelState()
 
   function schedulePanelStateChange(): void {
     if (panelStateChangePending)
@@ -580,10 +583,7 @@ function createPanelContext(
     panelStateChangePending = true
     queueMicrotask(() => {
       panelStateChangePending = false
-      if (isDisposed())
-        return
-
-      const panelState = panelContext.state
+      const panelState = createDockPanelState()
       if (
         panelState.state === previousPanelState.state
         && panelState.selectedDockId === previousPanelState.selectedDockId
@@ -617,9 +617,9 @@ function createPanelContext(
     },
     selectedDockRoute: null,
   }
-  panelContext = {
+  return {
     get state() {
-      return createDockPanelState(session)
+      return createDockPanelState()
     },
     events,
     store,
@@ -630,17 +630,6 @@ function createPanelContext(
       return store.position === 'left' || store.position === 'right'
     },
   }
-  previousPanelState = panelContext.state
-  return panelContext
-}
-
-function createDockPanelState(session: DockSessionStorage): DevframeDockPanelState {
-  const panelState: DevframeDockPanelState = {
-    state: session.open ? 'open' : 'closed',
-  }
-  if (session.selectedDockId !== null)
-    panelState.selectedDockId = session.selectedDockId
-  return panelState
 }
 
 function groupByCategory(entries: DevframeDockEntry[], categoryOrder: Record<string, number>): DevframeDockEntriesGrouped {

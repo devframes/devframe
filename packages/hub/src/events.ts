@@ -9,11 +9,9 @@
  * both places in the same change, and reference `HUB_EVENTS.*` from call sites
  * instead of re-typing a literal.
  *
- * The `.events` EventEmitter maps in `types/{docks,terminals,messages,commands}.ts`
- * and `client/docks.ts`, plus the RPC augmentation interfaces in
- * `node/context.ts`, declare these same names as type-level keys (a literal is
- * unavoidable in a type position); those declarations mirror this map and move
- * with it.
+ * The `.events` EventEmitter maps and RPC augmentation interfaces declare these
+ * same names as type-level keys (a literal is unavoidable in a type position);
+ * those declarations mirror this map and move with it.
  */
 export const HUB_EVENTS = {
   /**

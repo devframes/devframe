@@ -19,32 +19,12 @@ import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDo
 import { executeSetupScript } from './setup-script'
 
 const docksContextByRpc = new WeakMap<DevframeRpcClient, DocksContext>()
-
-function createDockPanelState(
-  visible: boolean,
-  open: boolean,
-  selectedDockId: string | null,
-): DevframeDockPanelState {
-  let state: DevframeDockPanelState['state']
-  if (!visible)
-    state = 'hidden'
-  else if (open)
-    state = 'open'
-  else
-    state = 'closed'
-
-  const panelState: DevframeDockPanelState = { state }
-  if (selectedDockId !== null)
-    panelState.selectedDockId = selectedDockId
-  return panelState
-}
-
 export async function createDocksContext(
   clientType: 'embedded' | 'standalone',
   rpc: DevframeRpcClient,
   panelStore?: Ref<DockPanelStorage>,
   sessionStore?: Ref<DockSessionStorage>,
-  panelVisible: Ref<boolean | undefined> = ref(true),
+  panelVisible: Ref<boolean> = ref(true),
 ): Promise<DocksContext> {
   if (docksContextByRpc.has(rpc)) {
     return docksContextByRpc.get(rpc)!
@@ -601,11 +581,18 @@ export async function createDocksContext(
   docksContext = reactive({
     panel: {
       get state() {
-        return createDockPanelState(
-          panelVisible.value !== false,
-          sessionStore.value.open,
-          selectedDockId.value,
-        )
+        let state: DevframeDockPanelState['state']
+        if (!panelVisible.value)
+          state = 'hidden'
+        else if (sessionStore.value.open)
+          state = 'open'
+        else
+          state = 'closed'
+
+        const panelState: DevframeDockPanelState = { state }
+        if (selectedDockId.value !== null)
+          panelState.selectedDockId = selectedDockId.value
+        return panelState
       },
       events: markRaw(panelEvents),
       store: panelStore,
@@ -679,14 +666,12 @@ export async function createDocksContext(
   // the captured session intent.
   // `switchEntry` then consumes the persisted iframe route when the view boots.
   const restoreAfterInitialization = async (): Promise<void> => {
-    // The authorization gate can still clear the live session on reload, so restore only after it settles.
-    await waitUntilTrusted()
-
     const restoreDockId = restoreIntent.selectedDockId
     if (!restoreIntent.open || restoreDockId == null)
       return
 
     await Promise.all([
+      waitUntilTrusted(),
       dockEntriesInitialSyncComplete,
       rendererManifestInitialSyncComplete,
     ])

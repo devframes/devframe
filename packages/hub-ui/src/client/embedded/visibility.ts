@@ -60,6 +60,10 @@ export interface EmbeddedVisibilityHandlers {
   hide: () => void
 }
 
+export function isEmbeddedDockInitiallyVisible(mode: EmbeddedVisibility): boolean {
+  return mode === 'normal' || (mode === 'passive' && readPersistedReveal())
+}
+
 /**
  * Drive the embedded dock's reveal lifecycle for the resolved
  * {@link EmbeddedVisibility} mode: decide whether to show on boot, wire the
@@ -73,7 +77,7 @@ export function setupEmbeddedVisibility(
   label: string,
   handlers: EmbeddedVisibilityHandlers,
 ): void {
-  let shown = mode === 'normal' || (mode === 'passive' && readPersistedReveal())
+  let shown = isEmbeddedDockInitiallyVisible(mode)
 
   function reveal(): void {
     if (shown)
@@ -95,14 +99,10 @@ export function setupEmbeddedVisibility(
     handlers.hide()
   }
 
-  if (shown) {
+  if (shown)
     handlers.show()
-  }
-  else {
-    handlers.hide()
-    if (mode === 'passive')
-      printHint(label)
-  }
+  else if (mode === 'passive')
+    printHint(label)
 
   // Shift+Alt+D toggles the dock — the always-available "summon" chord.
   window.addEventListener('keydown', (e) => {

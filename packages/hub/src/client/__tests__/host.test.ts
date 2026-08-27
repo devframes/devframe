@@ -69,9 +69,9 @@ function groupEntry(id: string, extra?: Record<string, unknown>): DevframeDockEn
 
 describe('createDevframeClientRuntime', () => {
   it('exposes panel state and emits coalesced changes', async () => {
-    expect.assertions(7)
+    expect.assertions(6)
 
-    const { rpc, calls, states } = createStubRpc()
+    const { rpc, states } = createStubRpc()
     const host = await createDevframeClientRuntime({ rpc, clientType: 'embedded' })
     const panelStates: DevframeDockPanelState[] = []
 
@@ -100,7 +100,6 @@ describe('createDevframeClientRuntime', () => {
     const cleared = host.context.docks.switchEntry(null)
     await cleared
     expect(panelStates.at(-1)).toEqual({ state: 'closed' })
-    expect(calls).toEqual([])
     host.dispose()
   })
 

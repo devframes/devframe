@@ -81,7 +81,7 @@ describe('createDocksContext', () => {
     expect.assertions(8)
 
     const { rpc, sharedStates, trust } = createStubRpc()
-    const panelVisible = ref<boolean>()
+    const panelVisible = ref(false)
     const session = ref<DockSessionStorage>({
       open: true,
       selectedDockId: 'git',
@@ -98,12 +98,12 @@ describe('createDocksContext', () => {
     sharedStates.get('devframe:docks')!.push([gitEntry])
     sharedStates.get('devframe:dock-renderers')!.push({})
     await flushRestore()
-    expect(rpc.call).not.toHaveBeenCalled()
+    expect(context.panel.state).toEqual({ state: 'hidden', selectedDockId: 'git' })
+    expect(panelStates).toEqual([])
 
     panelVisible.value = true
     await nextTick()
-    expect(context.panel.state).toEqual({ state: 'open', selectedDockId: 'git' })
-    expect(panelStates).toEqual([])
+    expect(panelStates.at(-1)).toEqual({ state: 'open', selectedDockId: 'git' })
 
     session.value.selectedDockId = '~settings'
     await nextTick()
@@ -125,7 +125,7 @@ describe('createDocksContext', () => {
     panelVisible.value = true
     session.value.open = false
     await nextTick()
-    expect(panelStates).toHaveLength(4)
+    expect(panelStates).toHaveLength(5)
   })
 
   it('mounts a restored dock once after all initial server state arrives', async () => {
