@@ -19,6 +19,8 @@ Devframe moves that boundary. A capability is defined once against a stable inte
 
 With a coding agent to scaffold the boilerplate, Devframe is also a fast foundation for standing up a bespoke, specific-need, or even one-off devtool.
 
+New here? [Answer a few questions about your devtool](/guide/getting-started) and get a reading list tailored to it.
+
 ## One definition, one standard handler
 
 Every devframe starts with [`defineDevframe()`](/guide/devframe-definition), pairing a tool's identity with its capabilities.

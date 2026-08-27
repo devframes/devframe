@@ -74,6 +74,7 @@ export default defineAppConfig({
           title: 'Introduction',
           items: [
             '/guide',
+            '/guide/getting-started',
             '/guide/tutorial-server-data-inspector',
           ],
         },
