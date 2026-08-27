@@ -31,6 +31,8 @@ export interface DevframeBranding {
   wordmark?: BrandingLogo
   /** Brand color; feeds `--devframe-primary` and the whole primary ramp. */
   primaryColor?: string
+  /** Standalone viewer background. Default: `'default'`. */
+  background?: 'default' | 'transparent'
   /** Short line for the auth screen and the standalone meta description. */
   tagline?: string
   /** Favicon URL — applied on the standalone viewer and the popped-out window only. */

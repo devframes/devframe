@@ -39,6 +39,7 @@ async function main(): Promise<void> {
   // established above.
   const branding = setBranding(rpc.connectionMeta.configs?.ui?.branding || {})
   applyDocumentHead(document, branding)
+  document.documentElement.classList.toggle('viewer-background-transparent', branding.background === 'transparent')
 
   // Per-tab session UI state (which dock is open + its route). `sessionStorage`
   // so a reload restores the selection after the auth handshake, per-tab.

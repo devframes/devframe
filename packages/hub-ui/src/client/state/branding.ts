@@ -9,6 +9,7 @@ export interface ResolvedBranding {
   logo?: BrandingLogo
   wordmark?: BrandingLogo
   primaryColor?: string
+  background: 'default' | 'transparent'
   tagline?: string
   favicon?: string
   windowTitle: string
@@ -23,6 +24,7 @@ function resolveDefaults(branding: DevframeBranding): ResolvedBranding {
     logo: branding.logo,
     wordmark: branding.wordmark,
     primaryColor: branding.primaryColor,
+    background: branding.background || 'default',
     tagline: branding.tagline,
     favicon: branding.favicon,
     windowTitle: branding.windowTitle?.trim() || productName,

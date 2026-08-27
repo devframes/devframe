@@ -3,9 +3,7 @@
  */
 // #region Interfaces
 export interface CreateUiOptions {
-  viewer?: boolean | {
-    background?: 'default' | 'transparent';
-  };
+  viewer?: boolean;
   embedded?: boolean;
   branding?: DevframeBranding;
   embeddedVisibility?: EmbeddedVisibility;
@@ -16,6 +14,7 @@ export interface DevframeBranding {
   logo?: BrandingLogo;
   wordmark?: BrandingLogo;
   primaryColor?: string;
+  background?: 'default' | 'transparent';
   tagline?: string;
   favicon?: string;
   windowTitle?: string;
