@@ -29,6 +29,7 @@ export function DEFAULT_DOCK_SESSION_STORE(): DockSessionStorage {
     open: false,
     selectedDockId: null,
     selectedDockRoute: null,
+    recentDockId: null,
   }
 }
 

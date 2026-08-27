@@ -110,6 +110,7 @@ export interface DockSessionStorage {
   open: boolean;
   selectedDockId: string | null;
   selectedDockRoute: string | null;
+  recentDockId?: string | null;
 }
 export interface DocksPanelContext {
   store: DockPanelStorage;

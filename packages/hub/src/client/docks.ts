@@ -40,6 +40,16 @@ export interface DockSessionStorage {
    * reload. `null` when the selected dock has no iframe route to remember.
    */
   selectedDockRoute: string | null
+  /**
+   * The dock entry most recently selected from beyond the float bar's inline
+   * capacity — from the overflow popover or from inside a dock group. A hub UI
+   * provider raises this entry into a dedicated slot between the bar's visible
+   * items and the overflow button, so deselecting it (or selecting a visible
+   * neighbour) keeps it one click away instead of folding it straight back
+   * into the overflow. `null` (or absent, for stores persisted before this
+   * field existed) when no entry has been raised.
+   */
+  recentDockId?: string | null
 }
 
 export type DockClientType = 'embedded' | 'standalone'

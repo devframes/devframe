@@ -133,6 +133,22 @@ export const LowerCapacity: Story = {
   args: { maxVisibleItems: 3 },
 }
 
+/**
+ * A recent dock raised out of the overflow: selecting an entry from the
+ * overflow popover reserves the slot between the divider and the overflow
+ * button for it, and deselecting it (or selecting a visible neighbour) keeps
+ * it there instead of folding it straight back into the overflow.
+ */
+export const WithRecentDock: Story = {
+  ...floatStory({
+    entries: overflowEntries,
+    selectedId: 'network',
+    session: { recentDockId: 'network' },
+    panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 },
+  }),
+  args: { maxVisibleItems: 3 },
+}
+
 /** `maxVisibleItems: 9` — a higher capacity absorbs the overflow set inline. */
 export const HigherCapacity: Story = {
   ...floatStory({ entries: overflowEntries, panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 } }),

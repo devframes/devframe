@@ -3,9 +3,10 @@ import type { DocksContext } from '@devframes/hub/client'
 import type { CSSProperties } from 'vue'
 import type { DockLayout } from './dock-layout'
 import { useEventListener, useScreenSafeArea, whenever } from '@vueuse/core'
-import { computed, onMounted, reactive, ref, useTemplateRef } from 'vue'
+import { computed, onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
 import { BUILTIN_ENTRY_CLIENT_AUTH_NOTICE } from '../../constants'
-import { docksSplitGroupsWithCapacity } from '../../state/dock-settings'
+import { docksSplitGroupsWithCapacity, getEntryGroup, resolveNextRecentDockId, resolveRecentDockEntry } from '../../state/dock-settings'
+import { sharedStateToRef } from '../../state/docks'
 import { setDocksOverflowPanel, useDocksGroupPanel } from '../../state/floating-tooltip'
 import { useIsRpcTrusted } from '../../utils/useIsRpcTrusted'
 import BrandMark from '../icons/BrandMark.vue'
@@ -17,6 +18,7 @@ import {
   resolveViewportMargins,
   snapDockPercent,
 } from './dock-layout'
+import DockEntries from './DockEntries.vue'
 import DockEntriesWithCategories from './DockEntriesWithCategories.vue'
 import DockOverflowButton from './DockOverflowButton.vue'
 
@@ -92,12 +94,44 @@ const isRpcTrusted = useIsRpcTrusted(context, (isTrusted) => {
 
 const groupedEntries = computed(() => context.docks.groupedEntries)
 
+const settings = sharedStateToRef(context.docks.settings)
+
+// The recent dock: the entry last selected from beyond the bar — the overflow
+// popover or a group popover — raised into its own slot between the visible
+// items and the overflow button so deselecting it keeps it one click away.
+// Persisted per-tab in the session store; resolved to `null` when the id no
+// longer maps to a raisable entry.
+const recentEntry = computed(() => resolveRecentDockEntry({
+  entries: context.docks.entries,
+  groups: groupedEntries.value,
+  recentId: context.panel.session.recentDockId,
+  settings: settings.value,
+  whenContext: context.when.context,
+}))
+
 const splitEntries = computed(() => {
-  return docksSplitGroupsWithCapacity(groupedEntries.value, layout.value.maxVisibleItems)
+  return docksSplitGroupsWithCapacity(groupedEntries.value, layout.value.maxVisibleItems, recentEntry.value)
 })
 
 const selectedEntry = computed(() => {
   return context.docks.selected
+})
+
+// Remember the recent dock whenever the selection lands on an entry that has
+// no slot on the bar as currently rendered (grouped members always; top-level
+// entries when picked from the overflow popover). Observing the selection —
+// rather than the bar's own click handlers — also covers selections made via
+// the command palette, an RPC activation, or the session restore.
+watch(selectedEntry, (entry) => {
+  if (!entry)
+    return
+  context.panel.session.recentDockId = resolveNextRecentDockId({
+    groups: groupedEntries.value,
+    capacity: layout.value.maxVisibleItems,
+    recentEntry: recentEntry.value,
+    selected: entry,
+    selectedIsGroupMember: !!getEntryGroup(context.docks.entries, entry),
+  })
 })
 
 onMounted(async () => {
@@ -311,6 +345,14 @@ onMounted(() => {
 
           <template v-if="splitEntries.overflow.length > 0">
             <div class="border-base m1 h-20px w-px border-r-1.5" />
+            <DockEntries
+              v-if="splitEntries.recent"
+              :context="context"
+              :entries="[splitEntries.recent]"
+              :is-vertical="context.panel.isVertical"
+              :selected="selectedEntry"
+              @select="(e) => context.docks.switchEntry(e?.id)"
+            />
             <DockOverflowButton
               :context="context"
               :is-vertical="context.panel.isVertical"
