@@ -34,6 +34,16 @@ const STORAGE_KEY = 'devframe-docs:getting-started'
 
 const sections: WizardSection[] = [
   {
+    key: 'environments',
+    title: 'Target environments',
+    hint: 'What do you expect your tool to work with?',
+    items: [
+      { value: 'standalone', label: 'Standalone', icon: 'i-lucide-terminal', description: 'A CLI or dev server with no host framework' },
+      { value: 'framework', label: 'Specific framework', icon: 'i-lucide-shapes', description: 'Specifically for frameworks like Vite, Next.js, Nuxt, etc.' },
+      { value: 'all', label: 'All frameworks', icon: 'i-lucide-infinity', description: 'I want to support as many frameworks as possible' },
+    ],
+  },
+  {
     key: 'dataSource',
     title: 'Data source',
     hint: 'Where do you want to visualize data from?',
@@ -43,26 +53,14 @@ const sections: WizardSection[] = [
     ],
   },
   {
-    key: 'environments',
-    title: 'Target environments',
-    hint: 'What do you expect your tool to work with?',
-    items: [
-      { value: 'standalone', label: 'Standalone', icon: 'i-lucide-terminal', description: 'A CLI or dev server with no host framework' },
-      { value: 'vite', label: 'Vite', icon: 'i-simple-icons-vite' },
-      { value: 'next', label: 'Next.js', icon: 'i-simple-icons-nextdotjs' },
-      { value: 'framework', label: 'A specific framework', icon: 'i-lucide-puzzle', description: 'Nuxt, or a host framework the kits don\'t cover yet' },
-      { value: 'all', label: 'All frameworks', icon: 'i-lucide-infinity', description: 'Anything that speaks a Web Standard Request/Response' },
-    ],
-  },
-  {
     key: 'availability',
     title: 'Data availability',
     hint: 'When is the data available?',
     items: [
       { value: 'dev', label: 'Development time', icon: 'i-lucide-code', description: 'Live, over a running dev server' },
-      { value: 'build', label: 'Production build time', icon: 'i-lucide-hammer' },
-      { value: 'static', label: 'Statically available', icon: 'i-lucide-hard-drive', description: 'Local filesystem, a static dump, etc.' },
-      { value: 'remote', label: 'Remotely', icon: 'i-lucide-cloud', description: 'Over the web, not on localhost' },
+      { value: 'build', label: 'Production build time', icon: 'i-lucide-hammer', description: 'Data from the production build' },
+      { value: 'static', label: 'Statically available', icon: 'i-lucide-hard-drive', description: 'Local filesystem, uploaded files, etc.' },
+      { value: 'remote', label: 'Remotely', icon: 'i-lucide-cloud', description: 'Over the web' },
     ],
   },
   {
@@ -71,16 +69,8 @@ const sections: WizardSection[] = [
     hint: 'How do you want to build the frontend view?',
     items: [
       { value: 'framework', label: 'A preferred framework', icon: 'i-lucide-component', description: 'Vue, React, Svelte, Solid...' },
-      { value: 'webcomponents', label: 'Web Components', icon: 'i-lucide-box' },
+      { value: 'webcomponents', label: 'Web Components', icon: 'i-lucide-box', description: 'Use Web Components for renderering' },
       { value: 'nodeside', label: 'Build it on the node side', icon: 'i-lucide-braces', description: 'Describe the UI as data instead of shipping a bundle' },
-    ],
-  },
-  {
-    key: 'agent',
-    title: 'Agent support',
-    hint: 'Should it also work with a coding agent?',
-    items: [
-      { value: 'agent', label: 'Yes, expose it to a coding agent', icon: 'i-lucide-bot', description: 'Same RPC functions, resources, and state, over MCP' },
     ],
   },
   {
@@ -88,12 +78,11 @@ const sections: WizardSection[] = [
     title: 'Other requirements',
     hint: 'Any specific requirements?',
     items: [
-      { value: 'streaming', label: 'Streaming data', icon: 'i-lucide-radio' },
-      { value: 'overlay', label: 'An overlay on the user\'s web app', icon: 'i-lucide-layers' },
-      { value: 'hub', label: 'Composing with other devtools', icon: 'i-lucide-layout-dashboard', description: 'One UI, many devframes' },
-      { value: 'security', label: 'Authentication', icon: 'i-lucide-shield-check' },
+      { value: 'agent', label: 'Exposed to coding agents', icon: 'i-lucide-bot', description: 'Some functionality should be available to coding agents.' },
+      { value: 'terminal', label: 'Sub process access', icon: 'i-lucide-square-terminal', description: 'Need to spawn other child process from the node side' },
+      { value: 'streaming', label: 'Streaming data', icon: 'i-lucide-radio', description: 'Push chunk-style data from the node side to the browser side' },
       { value: 'deep-linking', label: 'Deep linking', icon: 'i-lucide-link', description: 'Shareable URLs into a specific view' },
-      { value: 'terminal', label: 'Terminal / process access', icon: 'i-lucide-square-terminal' },
+      { value: 'overlay', label: 'User app overlay', icon: 'i-lucide-layers', description: 'I want to overlay a UI on top of the user\'s web app' },
     ],
   },
 ]
@@ -242,7 +231,7 @@ function reset(): void {
           What kind of devtool do you want to build?
         </p>
         <p class="text-sm text-muted mt-0.5">
-          Check whatever applies — answers save in your browser.
+          Multi-select, check whatever applies (selection persists in localStorage)
         </p>
       </div>
       <UButton
@@ -264,14 +253,15 @@ function reset(): void {
     >
       <div class="flex flex-wrap items-baseline gap-x-2 mb-3">
         <p class="font-medium text-highlighted">
-          {{ section.title }}
-        </p>
-        <p class="text-sm text-muted">
           {{ section.hint }}
+        </p>
+        <p class="text-xs text-muted uppercase tracking-widest">
+          {{ section.title }}
         </p>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+        <!-- Add colors for different items -->
         <button
           v-for="item in section.items"
           :key="item.value"
@@ -280,7 +270,7 @@ function reset(): void {
           :aria-checked="isChecked(section.key, item.value)"
           class="relative flex items-center gap-3 rounded-lg border p-3 text-left transition-colors cursor-pointer"
           :class="isChecked(section.key, item.value)
-            ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
+            ? 'border-primary/80 bg-primary/10 ring-1 ring-primary/20'
             : 'border-default hover:border-accented hover:bg-elevated/50'"
           @click="toggle(section.key, item.value)"
         >
@@ -297,11 +287,6 @@ function reset(): void {
               class="block text-xs text-muted mt-0.5"
             >{{ item.description }}</span>
           </span>
-          <UIcon
-            v-if="isChecked(section.key, item.value)"
-            name="i-lucide-circle-check"
-            class="size-4 shrink-0 text-primary"
-          />
         </button>
       </div>
     </div>
@@ -310,6 +295,7 @@ function reset(): void {
       <p class="font-medium text-highlighted mb-2">
         {{ hasSelections ? 'Recommended docs, based on your answers' : 'Start here' }}
       </p>
+      <!-- TODO: use inline elements, instead UPage -->
       <UPageList divide>
         <UPageCard
           v-for="doc in recommendedDocs"
