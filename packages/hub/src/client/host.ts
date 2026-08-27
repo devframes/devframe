@@ -10,6 +10,7 @@ import type {
   ClientScriptEntry,
   DevframeDockEntriesGrouped,
   DevframeDockEntry,
+  DevframeDockPanelState,
   DevframeViewIframe,
 } from '../types/docks'
 import type { DevframeDocksUserSettings } from '../types/settings'
@@ -158,10 +159,7 @@ export async function createDevframeClientRuntime(
   }
 
   const reportPanelState = (session: DockSessionStorage): void => {
-    void reportDockPanelState(rpc, {
-      state: session.open ? 'open' : 'closed',
-      ...(session.selectedDockId !== null ? { selectedDockId: session.selectedDockId } : {}),
-    }).catch(() => {})
+    void reportDockPanelState(rpc, createDockPanelState(session)).catch(() => {})
   }
   let panelStateReportPending = false
   const schedulePanelStateReport = (session: DockSessionStorage): void => {
@@ -616,6 +614,15 @@ function createPanelContext(
       return store.position === 'left' || store.position === 'right'
     },
   }
+}
+
+function createDockPanelState(session: DockSessionStorage): DevframeDockPanelState {
+  const panelState: DevframeDockPanelState = {
+    state: session.open ? 'open' : 'closed',
+  }
+  if (session.selectedDockId !== null)
+    panelState.selectedDockId = session.selectedDockId
+  return panelState
 }
 
 function groupByCategory(entries: DevframeDockEntry[], categoryOrder: Record<string, number>): DevframeDockEntriesGrouped {

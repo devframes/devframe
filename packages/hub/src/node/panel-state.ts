@@ -22,10 +22,7 @@ export function updateDockPanelState(
     return
   }
 
-  const currentState: DevframeDockPanelState = {
-    state: panelState.state,
-    ...(panelState.selectedDockId !== undefined ? { selectedDockId: panelState.selectedDockId } : {}),
-  }
+  const currentState: DevframeDockPanelState = { ...panelState }
   sessionStates.set(sessionId, currentState)
   const event: DevframeDockPanelStateEvent = previousState === undefined
     ? { type: 'connected', sessionId, ...currentState }

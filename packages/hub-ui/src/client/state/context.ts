@@ -1,4 +1,4 @@
-import type { DevframeClientCommand, DevframeDockEntry, DevframeDockUserEntry, DevframeRpcClientFunctions, DevframeViewIframe } from '@devframes/hub'
+import type { DevframeClientCommand, DevframeDockEntry, DevframeDockPanelState, DevframeDockUserEntry, DevframeRpcClientFunctions, DevframeViewIframe } from '@devframes/hub'
 import type { CommandsContext, DevframeClientContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockPanelStorage, DockRegistration, DockRendererManifest, DocksContext, DockSessionStorage } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
@@ -18,6 +18,26 @@ import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDo
 import { executeSetupScript } from './setup-script'
 
 const docksContextByRpc = new WeakMap<DevframeRpcClient, DocksContext>()
+
+function createDockPanelState(
+  visible: boolean,
+  open: boolean,
+  selectedDockId: string | null,
+): DevframeDockPanelState {
+  let state: DevframeDockPanelState['state']
+  if (!visible)
+    state = 'hidden'
+  else if (open)
+    state = 'open'
+  else
+    state = 'closed'
+
+  const panelState: DevframeDockPanelState = { state }
+  if (selectedDockId !== null)
+    panelState.selectedDockId = selectedDockId
+  return panelState
+}
+
 export async function createDocksContext(
   clientType: 'embedded' | 'standalone',
   rpc: DevframeRpcClient,
@@ -679,10 +699,8 @@ export async function createDocksContext(
       ([visible, open, currentSelectedDockId]) => {
         if (visible === undefined)
           return
-        void reportDockPanelState(rpc, {
-          state: visible ? (open ? 'open' : 'closed') : 'hidden',
-          ...(currentSelectedDockId !== null ? { selectedDockId: currentSelectedDockId } : {}),
-        }).catch(() => {})
+        const panelState = createDockPanelState(visible, open, currentSelectedDockId)
+        void reportDockPanelState(rpc, panelState).catch(() => {})
       },
       { immediate: true },
     )
