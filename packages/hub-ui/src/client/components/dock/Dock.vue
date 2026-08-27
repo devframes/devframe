@@ -6,7 +6,7 @@ import { useEventListener, useScreenSafeArea, whenever } from '@vueuse/core'
 import { computed, onMounted, reactive, ref, useTemplateRef } from 'vue'
 import { BUILTIN_ENTRY_CLIENT_AUTH_NOTICE } from '../../constants'
 import { docksSplitGroupsWithCapacity } from '../../state/dock-settings'
-import { setDocksOverflowPanel } from '../../state/floating-tooltip'
+import { setDocksOverflowPanel, useDocksGroupPanel } from '../../state/floating-tooltip'
 import { useIsRpcTrusted } from '../../utils/useIsRpcTrusted'
 import BrandMark from '../icons/BrandMark.vue'
 import {
@@ -175,8 +175,14 @@ function bringUp() {
 
 const isHidden = computed(() => false)
 
+// An open group menu popover anchors to a dock-bar button — collapsing the rail
+// out from under it would leave the menu floating, detached from its trigger.
+const docksGroupPanel = useDocksGroupPanel()
+
 const isMinimized = computed(() => {
   if (context.panel.store.inactiveTimeout < 0)
+    return false
+  if (docksGroupPanel.value)
     return false
   if (context.panel.store.inactiveTimeout === 0)
     return true

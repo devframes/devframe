@@ -7,7 +7,7 @@ import { useEventListener } from '@vueuse/core'
 import { computed, h, onMounted, ref, useTemplateRef } from 'vue'
 import { getEntryGroup } from '../../state/dock-settings'
 import { sharedStateToRef } from '../../state/docks'
-import { setEdgePositionDropdown, setFloatingTooltip, useEdgePositionDropdown } from '../../state/floating-tooltip'
+import { setEdgePositionDropdown, setFloatingTooltip, useDocksGroupPanel, useEdgePositionDropdown } from '../../state/floating-tooltip'
 import { useIframePanes } from '../../utils/useIframePanes'
 import BrandMark from '../icons/BrandMark.vue'
 import ViewEntry from '../views/ViewEntry.vue'
@@ -60,12 +60,18 @@ function bringUp() {
   }, +store.inactiveTimeout || 0)
 }
 
+// An open group menu popover anchors to a toolbar button — collapsing the
+// toolbar out from under it would leave the menu floating, detached from it.
+const docksGroupPanel = useDocksGroupPanel()
+
 const isCollapsed = computed(() => {
   if (!settings.value.autoCollapseEdgeToolbar)
     return false
   if (store.inactiveTimeout < 0)
     return false
   if (context.panel.isDragging)
+    return false
+  if (docksGroupPanel.value)
     return false
   if (hasPanelContent.value)
     return false
