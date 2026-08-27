@@ -103,7 +103,7 @@ This is the portability trick and the thing to reach for whenever a host framewo
 
 ```ts
 import { initDevframe } from 'devframe/initiate'
-import myDevframe from './devframe'
+import myDevframe from './my-tool'
 
 const devtools = initDevframe(myDevframe, { base: '/__my-tool/' })
 // devtools.base, .handler, .nodeMiddleware, .attach, .handleUpgrade,
@@ -243,7 +243,7 @@ declare module 'devframe' {
 ```
 
 ```ts
-// src/devframe.ts
+// src/my-tool.ts
 import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { setMyToolContext } from './context'
@@ -410,10 +410,10 @@ Or register tools / resources directly on `ctx.agent.registerTool({ id, descript
 ```ts
 import { createMcpServer } from 'devframe/adapters/mcp'
 
-await createMcpServer(devframe, { transport: 'stdio' })
+await createMcpServer(myDevframe, { transport: 'stdio' })
 ```
 
-`@modelcontextprotocol/server` is a peer dependency. The CLI adapter also exposes `my-devframe mcp` (route node-side logs to stderr - stdout is the transport). Safety classifications (`'read' | 'action' | 'destructive'`) drive MCP hint annotations that coding agents use to prompt for confirmation. In a hub, `ctx.commands` entries opt into the same agent-facing API with an `agent` field and reach MCP through the aggregate endpoint.
+`@modelcontextprotocol/server` is a peer dependency. The CLI adapter also exposes `my-tool mcp` (route node-side logs to stderr - stdout is the transport). Safety classifications (`'read' | 'action' | 'destructive'`) drive MCP hint annotations that coding agents use to prompt for confirmation. In a hub, `ctx.commands` entries opt into the same agent-facing API with an `agent` field and reach MCP through the aggregate endpoint.
 
 ## Author SPA
 
@@ -540,7 +540,7 @@ Built-in context: `clientType` (`'embedded' | 'standalone'`), `dockOpen`, `palet
 
 ## CLI adapter subcommands
 
-`createCac(devframe).parse()` gives three subcommands out of the box:
+`createCac(myDevframe).parse()` gives three subcommands out of the box:
 
 | Subcommand | Action |
 |------------|--------|

@@ -32,7 +32,7 @@ Override with `DevframeDefinition.basePath`:
 
 ```ts
 defineDevframe({
-  id: 'my-devframe',
+  id: 'my-tool',
   basePath: '/devframes/', // force this base regardless of adapter
   setup(ctx) { /* … */ },
 })

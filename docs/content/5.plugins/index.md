@@ -1,9 +1,9 @@
 ---
 title: 'Built-in Devframes'
-description: 'Devframe ships ready-to-run built-in devframes. Each is a complete DevframeDefinition — launch it standalone, mount it into a Vite host, or dock it inside a hub through any adapter.'
+description: 'Devframe also provides ready-to-run built-in example devframes. You can use them to compose your own DevTools solution, use them standalone, or as a reference for building your own devframe.'
 ---
 
-Devframe ships ready-to-run built-in devframes. Each is a complete `DevframeDefinition` — launch it standalone, mount it into a Vite host, or dock it inside a [hub](/guide/hub) through any [adapter](/adapters).
+Devframe also provides ready-to-run built-in example devframes. You can use them to compose your own DevTools solution, use them standalone, or as a reference for building your own devframe.
 
 | Devframe | UI framework | What it does |
 |--------|--------------|--------------|
