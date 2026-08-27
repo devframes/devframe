@@ -3,6 +3,8 @@ import type { BrandingLogo, DevframeBranding } from '../../types'
 import { computed, ref } from 'vue'
 import { isDark } from './color-mode'
 
+type ColorSchemeValue = string | { light: string, dark: string }
+
 /** Branding with defaults resolved — what the UI actually renders. */
 export interface ResolvedBranding {
   productName: string
@@ -54,7 +56,7 @@ export function useBrandingBackground(): Ref<string | undefined> {
   return computed(() => resolveColorSchemeValue(currentBranding.value.background, isDark.value))
 }
 
-function resolveColorSchemeValue(value: BrandingLogo | undefined, dark: boolean): string | undefined {
+function resolveColorSchemeValue(value: ColorSchemeValue | undefined, dark: boolean): string | undefined {
   if (!value)
     return undefined
   if (typeof value === 'string')
