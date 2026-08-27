@@ -18,6 +18,7 @@ export declare const DEVFRAME_EVENTS: {
     readonly agentToolUnregistered: "agent:tool:unregistered";
     readonly agentResourceRegistered: "agent:resource:registered";
     readonly agentResourceUnregistered: "agent:resource:unregistered";
+    readonly agentResourceUpdated: "agent:resource:updated";
   };
   readonly client: {
     readonly isTrustedUpdated: "rpc:is-trusted:updated";

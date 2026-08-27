@@ -1,7 +1,7 @@
 import type { StartedServer } from '../../../node/instance-shell'
 import type { DevframeDefinition } from '../../../types/devframe'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createDevServer } from '../../dev'
 
 function defineTestDef(overrides?: Partial<DevframeDefinition>): DevframeDefinition {
@@ -82,6 +82,7 @@ describe('mcp adapter (streamable http route)', () => {
       // `Mcp-Session-Id` — there is no session to key state on.
       expect(client.getProtocolEra()).toBe('modern')
       expect(transport.sessionId).toBeUndefined()
+      expect(client.getServerCapabilities()?.resources).toEqual({ listChanged: true, subscribe: true })
 
       const tools = await client.listTools()
       expect(tools.tools.map(t => t.name)).toContain('greet')
@@ -89,6 +90,124 @@ describe('mcp adapter (streamable http route)', () => {
       const result = await client.callTool({ name: 'greet', arguments: { name: 'devframe' } })
       const content = result.content as Array<{ type: string, text: string }>
       expect(JSON.parse(content[0]!.text)).toEqual({ greeting: 'hi devframe' })
+    }
+    finally {
+      await client.close()
+    }
+  })
+
+  it('delivers filtered resource updates through modern subscriptions/listen', async () => {
+    let notifyBuildUpdated!: () => void
+    let notifyIgnoredUpdated!: () => void
+    let updateExistingState!: () => void
+    let createAndUpdateLateState!: () => Promise<void>
+    const started = await boot(defineTestDef({
+      async setup(ctx) {
+        const build = ctx.agent.registerResource({
+          id: 'build',
+          name: 'Build',
+          read: () => ({ json: { status: 'ok' } }),
+        })
+        const ignored = ctx.agent.registerResource({
+          id: 'ignored',
+          name: 'Ignored',
+          read: () => ({ json: { ignored: true } }),
+        })
+        const existingState = await ctx.rpc.sharedState.get('build:status', {
+          initialValue: { revision: 0 },
+        })
+        notifyBuildUpdated = build.notifyUpdated
+        notifyIgnoredUpdated = ignored.notifyUpdated
+        updateExistingState = () => existingState.mutate(value => void (value.revision += 1))
+        createAndUpdateLateState = async () => {
+          const lateState = await ctx.rpc.sharedState.get('build:late', {
+            initialValue: { revision: 0 },
+          })
+          lateState.mutate(value => void (value.revision += 1))
+        }
+      },
+    }))
+    const client = new Client(
+      { name: 'test-client', version: '0.0.0' },
+      { versionNegotiation: { mode: 'auto' } },
+    )
+    const updates: string[] = []
+    client.setNotificationHandler('notifications/resources/updated', (notification) => {
+      updates.push(notification.params.uri)
+    })
+
+    await client.connect(originTransport(started))
+    const subscription = await client.listen({
+      resourceSubscriptions: [
+        'devframe://resource/build',
+        'devframe://state/build%3Astatus',
+        'devframe://state/build%3Alate',
+      ],
+    })
+    try {
+      notifyIgnoredUpdated()
+      notifyBuildUpdated()
+      updateExistingState()
+      await createAndUpdateLateState()
+
+      await vi.waitFor(() => expect(updates).toEqual([
+        'devframe://resource/build',
+        'devframe://state/build%3Astatus',
+        'devframe://state/build%3Alate',
+      ]))
+    }
+    finally {
+      await subscription.close()
+      await client.close()
+    }
+  })
+
+  it('keeps legacy resource access pull-only', async () => {
+    const started = await boot(defineTestDef({
+      setup(ctx) {
+        ctx.agent.registerResource({
+          id: 'build',
+          name: 'Build',
+          read: () => ({ json: { status: 'ok' } }),
+        })
+      },
+    }))
+    const client = new Client({ name: 'legacy-test-client', version: '0.0.0' })
+    try {
+      await client.connect(originTransport(started))
+      expect(client.getProtocolEra()).toBe('legacy')
+      expect(client.getServerCapabilities()?.resources).toEqual({})
+
+      const resources = await client.listResources()
+      expect(resources.resources.map(resource => resource.uri)).toContain('devframe://resource/build')
+      const result = await client.readResource({ uri: 'devframe://resource/build' })
+      expect(JSON.parse((result.contents[0] as { text: string }).text)).toEqual({ status: 'ok' })
+    }
+    finally {
+      await client.close()
+    }
+  })
+
+  it('can disable implicit shared-state MCP exposure for the HTTP route', async () => {
+    server = await createDevServer(defineTestDef({
+      async setup(ctx) {
+        await ctx.rpc.sharedState.get('hidden:state', { initialValue: { value: true } })
+      },
+    }), {
+      host: '127.0.0.1',
+      port: 0,
+      mcp: { exposeSharedState: false },
+    })
+    const client = new Client(
+      { name: 'test-client', version: '0.0.0' },
+      { versionNegotiation: { mode: 'auto' } },
+    )
+    try {
+      await client.connect(originTransport(server))
+      const resources = await client.listResources()
+      const tools = await client.listTools()
+      expect(resources.resources).toEqual([])
+      expect(tools.tools.map(tool => tool.name)).not.toContain('devframe_state_read')
     }
     finally {
       await client.close()

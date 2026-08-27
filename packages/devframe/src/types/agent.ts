@@ -80,19 +80,51 @@ export interface AgentResource {
   mimeType?: string
 }
 
-/**
- * Input accepted by `DevframeAgentHost.registerResource()`.
- */
+/** One concrete resource returned by a resource template's list callback. */
+export type AgentResourceListItem = Omit<AgentResource, 'id'>
+
+export interface AgentResourceList {
+  resources: readonly AgentResourceListItem[]
+}
+
+export type AgentResourceVariables = Readonly<Record<string, string | string[]>>
+
+/** A resource accepted by `DevframeAgentHost.registerResource()`. */
 export interface AgentResourceInput {
   id: string
+  /** Optional URI override — if omitted, a `devframe://resource/<id>` URI is generated. */
+  uri?: string
   name: string
   description?: string
   mimeType?: string
-  /** Optional URI override — if omitted, a `devframe://resource/<id>` URI is generated. */
-  uri?: string
   /** Snapshot reader. Called on each read. */
-  read: () => Promise<AgentResourceContent> | AgentResourceContent
+  read: (uri: URL) => Promise<AgentResourceContent> | AgentResourceContent
 }
+
+/** Serializable description of a dynamic resource URI template. */
+export interface AgentResourceTemplate {
+  id: string
+  uriTemplate: string
+  name: string
+  description?: string
+  mimeType?: string
+}
+
+/** A URI template accepted by `DevframeAgentHost.registerResource()`. */
+export interface AgentResourceTemplateInput {
+  id: string
+  uriTemplate: string
+  name: string
+  description?: string
+  mimeType?: string
+  list?: () => AgentResourceList | Promise<AgentResourceList>
+  read: (
+    uri: URL,
+    variables: AgentResourceVariables,
+  ) => Promise<AgentResourceContent> | AgentResourceContent
+}
+
+export type AgentResourceDefinition = AgentResourceInput | AgentResourceTemplateInput
 
 /**
  * Payload returned by `AgentResourceInput.read`. Either `text` or `json` must be set.
@@ -110,6 +142,7 @@ export interface AgentResourceContent {
 export interface AgentManifest {
   tools: readonly AgentTool[]
   resources: readonly AgentResource[]
+  resourceTemplates: readonly AgentResourceTemplate[]
 }
 
 /**
@@ -117,6 +150,14 @@ export interface AgentManifest {
  */
 export interface AgentHandle {
   unregister: () => void
+}
+
+export interface AgentResourceHandle extends AgentHandle {
+  notifyUpdated: () => void
+}
+
+export interface AgentResourceTemplateHandle extends AgentHandle {
+  notifyUpdated: (uri: string) => void
 }
 
 /**
@@ -144,14 +185,25 @@ export interface AgentToolProviderHandle extends AgentHandle {
   notifyChanged: () => void
 }
 
+/** A lazy resource source, queried for listing and resolution. */
+export type AgentResourceProvider = () => readonly AgentResourceDefinition[]
+
+export interface AgentResourceProviderHandle extends AgentHandle {
+  /** Signal that the provider's resource membership or metadata changed. */
+  notifyChanged: () => void
+  /** Signal that one concrete URI changed. */
+  notifyUpdated: (uri: string) => void
+}
+
 /**
  * Events emitted by `DevframeAgentHost`.
  */
 export interface DevframeAgentHostEvents {
   'agent:tool:registered': (tool: AgentTool) => void
   'agent:tool:unregistered': (id: string) => void
-  'agent:resource:registered': (resource: AgentResource) => void
+  'agent:resource:registered': (resource: AgentResource | AgentResourceTemplate) => void
   'agent:resource:unregistered': (id: string) => void
+  'agent:resource:updated': (uri: string) => void
   /**
    * Fires when the unified manifest changes — including when a new
    * RPC function with an `agent` field is registered on `ctx.rpc`.
@@ -183,8 +235,13 @@ export interface DevframeAgentHost {
    */
   registerToolProvider: (provider: AgentToolProvider) => AgentToolProviderHandle
 
-  /** Register a readable resource. */
-  registerResource: (resource: AgentResourceInput) => AgentHandle
+  /** Register a readable resource or URI template. */
+  registerResource: {
+    (resource: AgentResourceInput): AgentResourceHandle
+    (resource: AgentResourceTemplateInput): AgentResourceTemplateHandle
+  }
+  /** Register a lazy source of resources and URI templates. */
+  registerResourceProvider: (provider: AgentResourceProvider) => AgentResourceProviderHandle
   /** Unregister a previously registered resource by id. */
   unregisterResource: (id: string) => boolean
 
@@ -201,12 +258,14 @@ export interface DevframeAgentHost {
    */
   invoke: (id: string, args: unknown) => Promise<unknown>
 
-  /** Read a resource by id. */
-  read: (id: string) => Promise<AgentResourceContent>
+  /** Read a resource or resolved template by id. */
+  read: (id: string, uri?: string | URL, variables?: AgentResourceVariables) => Promise<AgentResourceContent>
+  /** Enumerate the concrete resources supplied by a template. */
+  listResourceInstances: (id: string) => Promise<AgentResourceList>
 
   /** Look up a tool by id (returns the serializable projection). */
   getTool: (id: string) => AgentTool | undefined
-  /** Look up a resource by id. */
+  /** Look up a resource by id or exact URI. */
   getResource: (id: string) => AgentResource | undefined
 }
 

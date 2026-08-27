@@ -321,7 +321,7 @@ export function initDevframe(
         const mounted = mountMcpHttp(app, context, mcpPath, {
           serverName: `${def.id} (devframe)`,
           serverVersion: def.version ?? '0.0.0',
-          exposeSharedState: true,
+          exposeSharedState: mcpConfig.exposeSharedState ?? true,
           allowedOrigins: mcpConfig.allowedOrigins,
         })
         mcpDispose = mounted.dispose

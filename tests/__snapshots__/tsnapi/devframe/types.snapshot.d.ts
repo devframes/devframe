@@ -6,7 +6,17 @@ export { AgentHandle }
 export { AgentManifest }
 export { AgentResource }
 export { AgentResourceContent }
+export { AgentResourceDefinition }
+export { AgentResourceHandle }
 export { AgentResourceInput }
+export { AgentResourceList }
+export { AgentResourceListItem }
+export { AgentResourceProvider }
+export { AgentResourceProviderHandle }
+export { AgentResourceTemplate }
+export { AgentResourceTemplateHandle }
+export { AgentResourceTemplateInput }
+export { AgentResourceVariables }
 export { AgentTool }
 export { AgentToolInput }
 export { AgentToolProvider }

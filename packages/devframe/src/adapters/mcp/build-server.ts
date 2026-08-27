@@ -1,10 +1,10 @@
-import type { Tool } from '@modelcontextprotocol/server'
+import type { McpRequestContext, Resource, Tool, Variables } from '@modelcontextprotocol/server'
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { RpcFunctionDefinitionAnyWithContext } from 'devframe/rpc'
 import type { AgentTool, DevframeDefinition, DevframeHost, DevframeNodeContext } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
-import { Server } from '@modelcontextprotocol/server'
+import { Server, UriTemplate } from '@modelcontextprotocol/server'
 import { createHostContext } from 'devframe/node'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { join } from 'pathe'
@@ -43,18 +43,15 @@ export interface McpServerHandle {
 export interface BuildMcpServerOptions {
   serverName: string
   serverVersion: string
-  exposeSharedState: boolean | ((k: string) => boolean)
+  exposeSharedState: boolean | ((key: string) => boolean)
+  era: McpRequestContext['era']
 }
 
 /**
  * Build a fresh MCP {@link Server} over a devframe context, registering its
- * tool and resource handlers. This is a pure factory — it sets up no
- * long-lived subscriptions and holds no per-connection state, so it is safe
- * to call once per request under `createMcpHandler` or once per connection
- * under `serveStdio`. Change notifications are published separately: over
- * HTTP through the handler's `notify` bus (see `createMcpFetchHandler`), and
- * on stdio through the connection's own `send*ListChanged` calls (see
- * {@link bridgeListChanged}, wired by `serveStdio`).
+ * tool and resource handlers. The protocol era controls only the advertised
+ * resource update capabilities; listing and reading use the same handlers in
+ * both eras. Long-lived update listeners are installed by the serving entry.
  *
  * @internal
  */
@@ -70,7 +67,9 @@ export function buildMcpServerFromContext(
     {
       capabilities: {
         tools: { listChanged: true },
-        resources: { listChanged: true },
+        resources: options.era === 'modern'
+          ? { listChanged: true, subscribe: true }
+          : {},
       },
     },
   )
@@ -82,31 +81,43 @@ export function buildMcpServerFromContext(
 }
 
 /**
- * Publish devframe's `list_changed` events through a set of typed sinks:
- * `tools()` for tool-list changes and `resources()` for resource-list
- * changes (shared-state keys are surfaced as resources). Returns an
- * unsubscribe function.
- *
- * The HTTP path passes the handler's `notify` bus sugar; the stdio path
- * passes the pinned server's `send*ListChanged` methods, which `serveStdio`
- * routes onto the connection's active `subscriptions/listen` streams.
+ * Publish devframe changes through the MCP 2026 update bus. Shared-state
+ * values use their encoded resource URI, and newly registered keys also
+ * invalidate the resource list.
  *
  * @internal
  */
-export function bridgeListChanged(
+export function bridgeMcpUpdates(
   ctx: DevframeNodeContext,
-  sinks: { tools: () => void, resources: () => void },
+  exposeSharedState: boolean | ((key: string) => boolean),
+  sinks: {
+    toolsChanged: () => void
+    resourcesChanged: () => void
+    resourceUpdated: (uri: string) => void
+  },
 ): () => void {
+  const stateFilter = sharedStateFilter(exposeSharedState)
   const offManifest = ctx.agent.events.on(DEVFRAME_EVENTS.bus.agentManifestChanged, () => {
-    sinks.tools()
-    sinks.resources()
+    sinks.toolsChanged()
+    sinks.resourcesChanged()
   })
-  const offKeyAdded = ctx.rpc.sharedState.onKeyAdded(() => {
-    sinks.resources()
+  const offResourceUpdated = ctx.agent.events.on(DEVFRAME_EVENTS.bus.agentResourceUpdated, (uri) => {
+    sinks.resourceUpdated(uri)
   })
+  const offKeyAdded = ctx.rpc.sharedState.onKeyAdded((key) => {
+    if (stateFilter?.(key))
+      sinks.resourcesChanged()
+  })
+  const offStateUpdated = ctx.rpc.sharedState.onUpdated((key) => {
+    if (stateFilter?.(key))
+      sinks.resourceUpdated(sharedStateResourceUri(key))
+  })
+
   return () => {
     offManifest()
+    offResourceUpdated()
     offKeyAdded()
+    offStateUpdated()
   }
 }
 
@@ -146,27 +157,33 @@ export async function createMcpServer(
   await ctx.services.ready()
   await definition.setup(ctx)
 
-  const buildOptions: BuildMcpServerOptions = {
+  const buildOptions: Omit<BuildMcpServerOptions, 'era'> = {
     serverName: options.serverName ?? `${definition.id} (devframe)`,
     serverVersion: options.serverVersion ?? definition.version ?? '0.0.0',
     exposeSharedState: options.exposeSharedState ?? true,
   }
 
-  // `serveStdio` owns the connection's era decision and pins ONE instance
-  // for its lifetime. Each pinned server sets up its own `list_changed`
-  // bridge over the connection's `send*ListChanged` calls (routed onto the
-  // active `subscriptions/listen` streams on a modern connection, sent
-  // unsolicited on a 2025-era one) and tears it down when that server
-  // closes.
+  // `serveStdio` owns the protocol-era decision and pins one instance for
+  // the connection lifetime. Modern instances bridge resource changes into
+  // `subscriptions/listen`; legacy instances retain tool-list invalidations
+  // while resources remain pull-only.
   let handle: import('@modelcontextprotocol/server/stdio').StdioServerHandle
   try {
     const { serveStdio } = await import('@modelcontextprotocol/server/stdio')
-    handle = serveStdio(() => {
-      const server = buildMcpServerFromContext(ctx, buildOptions)
-      const unbridge = bridgeListChanged(ctx, {
-        tools: () => { void server.sendToolListChanged().catch(() => {}) },
-        resources: () => { void server.sendResourceListChanged().catch(() => {}) },
+    handle = serveStdio((requestContext) => {
+      const server = buildMcpServerFromContext(ctx, {
+        ...buildOptions,
+        era: requestContext.era,
       })
+      const unbridge = requestContext.era === 'modern'
+        ? bridgeMcpUpdates(ctx, buildOptions.exposeSharedState, {
+            toolsChanged: () => { void server.sendToolListChanged().catch(() => {}) },
+            resourcesChanged: () => { void server.sendResourceListChanged().catch(() => {}) },
+            resourceUpdated: (uri) => { void server.sendResourceUpdated({ uri }).catch(() => {}) },
+          })
+        : ctx.agent.events.on(DEVFRAME_EVENTS.bus.agentManifestChanged, () => {
+            void server.sendToolListChanged().catch(() => {})
+          })
       const priorOnClose = server.onclose
       server.onclose = () => {
         unbridge()
@@ -203,6 +220,10 @@ function sharedStateFilter(exposeSharedState: boolean | ((key: string) => boolea
   if (exposeSharedState === false)
     return undefined
   return typeof exposeSharedState === 'function' ? exposeSharedState : () => true
+}
+
+function sharedStateResourceUri(key: string): string {
+  return `devframe://state/${encodeURIComponent(key)}`
 }
 
 function readStateToolProjection(): Tool {
@@ -332,21 +353,30 @@ function registerResourceHandlers(
   ctx: DevframeNodeContext,
   exposeSharedState: boolean | ((key: string) => boolean),
 ): void {
+  const stateFilter = sharedStateFilter(exposeSharedState)
+
   server.setRequestHandler('resources/list', async () => {
-    const resources = ctx.agent.list().resources.map(resource => ({
+    const manifest = ctx.agent.list()
+    const resources: Resource[] = manifest.resources.map(resource => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
       mimeType: resource.mimeType,
     }))
 
-    if (exposeSharedState !== false) {
-      const filter = typeof exposeSharedState === 'function' ? exposeSharedState : () => true
+    const listedTemplateResources = await Promise.all(
+      manifest.resourceTemplates.map(template => ctx.agent.listResourceInstances(template.id)),
+    )
+    for (const listed of listedTemplateResources) {
+      resources.push(...listed.resources)
+    }
+
+    if (stateFilter) {
       for (const key of ctx.rpc.sharedState.keys()) {
-        if (!filter(key))
+        if (!stateFilter(key))
           continue
         resources.push({
-          uri: `devframe://state/${encodeURIComponent(key)}`,
+          uri: sharedStateResourceUri(key),
           name: key,
           description: `Shared state: ${key}`,
           mimeType: 'application/json',
@@ -357,24 +387,35 @@ function registerResourceHandlers(
     return { resources }
   })
 
+  server.setRequestHandler('resources/templates/list', async () => {
+    const resourceTemplates = ctx.agent.list().resourceTemplates.map(template => ({
+      uriTemplate: template.uriTemplate,
+      name: template.name,
+      description: template.description,
+      mimeType: template.mimeType,
+    }))
+    return { resourceTemplates }
+  })
+
   server.setRequestHandler('resources/read', async (request) => {
     const { uri } = request.params
-    const parsed = parseResourceUri(uri)
+    const resource = resolveAgentResource(ctx, uri)
 
-    if (parsed.kind === 'resource') {
-      const content = await ctx.agent.read(parsed.id)
+    if (resource) {
+      const content = await ctx.agent.read(resource.id, uri, resource.variables)
       return {
         contents: [
           {
             uri,
-            mimeType: content.mimeType ?? 'application/json',
+            mimeType: content.mimeType ?? resource.mimeType ?? 'application/json',
             text: content.text ?? stringifyForMcp(content.json),
           },
         ],
       }
     }
 
-    if (parsed.kind === 'state') {
+    const parsed = parseResourceUri(uri)
+    if (parsed.kind === 'state' && stateFilter?.(parsed.key) && ctx.rpc.sharedState.keys().includes(parsed.key)) {
       const state = await ctx.rpc.sharedState.get(parsed.key)
       return {
         contents: [
@@ -389,6 +430,27 @@ function registerResourceHandlers(
 
     throw new Error(`[devframe/mcp] unknown resource URI "${uri}"`)
   })
+}
+
+function resolveAgentResource(
+  ctx: DevframeNodeContext,
+  uri: string,
+): { id: string, variables: Variables, mimeType?: string } | undefined {
+  const manifest = ctx.agent.list()
+  const resource = manifest.resources.find(candidate => candidate.uri === uri)
+  if (resource)
+    return { id: resource.id, variables: {}, mimeType: resource.mimeType }
+
+  for (const template of manifest.resourceTemplates) {
+    const variables = new UriTemplate(template.uriTemplate).match(uri)
+    if (variables) {
+      return {
+        id: template.id,
+        variables,
+        mimeType: template.mimeType,
+      }
+    }
+  }
 }
 
 /**
@@ -446,7 +508,13 @@ function parseResourceUri(uri: string): { kind: 'resource', id: string } | { kin
   if (!match)
     return { kind: 'unknown' }
   const [, kind, rest] = match
-  const decoded = decodeURIComponent(rest!)
+  let decoded: string
+  try {
+    decoded = decodeURIComponent(rest!)
+  }
+  catch {
+    return { kind: 'unknown' }
+  }
   if (kind === 'resource')
     return { kind: 'resource', id: decoded }
   return { kind: 'state', key: decoded }
