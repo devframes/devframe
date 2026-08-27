@@ -61,7 +61,7 @@ function resolveColorSchemeValue(value: ColorSchemeValue | undefined, dark: bool
     return undefined
   if (typeof value === 'string')
     return value
-  return dark ? (value.dark || value.light) : value.light
+  return dark ? (value.dark ?? value.light) : value.light
 }
 
 // --- Applying to the DOM --------------------------------------------------
