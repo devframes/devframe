@@ -1,4 +1,4 @@
-import type { DevframeDockPanelStateEvent, DevframeViewLauncher } from '../../types/docks'
+import type { DevframeViewLauncher } from '../../types/docks'
 import type { DevframeHubContext } from '../context'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -7,9 +7,7 @@ import { REMOTE_CONNECTION_KEY } from 'devframe/constants'
 import { getInternalContext } from 'devframe/node/hub-internals'
 import { describe, expect, it, vi } from 'vitest'
 import { parseRemoteConnection } from '../../client/remote'
-import { HUB_EVENTS } from '../../events'
 import { DevframeDocksHost } from '../host-docks'
-import { disconnectDockPanelState, updateDockPanelState } from '../panel-state'
 
 function createContext(): DevframeHubContext {
   const storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-docks-'))
@@ -220,49 +218,6 @@ describe('devframeDockHost activate', () => {
     finally {
       warn.mockRestore()
     }
-  })
-})
-
-describe('devframeDockHost panel state', () => {
-  it('emits the first report and changed values while suppressing duplicates', () => {
-    expect.assertions(1)
-
-    const host = new DevframeDocksHost(createContext())
-    const events: DevframeDockPanelStateEvent[] = []
-    host.events.on(HUB_EVENTS.bus.docksPanelState, event => events.push(event))
-
-    updateDockPanelState(host, 11, { state: 'closed', selectedDockId: undefined })
-    updateDockPanelState(host, 11, { state: 'closed' })
-    updateDockPanelState(host, 11, { state: 'open', selectedDockId: 'git' })
-    updateDockPanelState(host, 11, { state: 'open', selectedDockId: 'inspect' })
-    updateDockPanelState(host, 11, { state: 'open', selectedDockId: undefined })
-
-    expect(events).toEqual([
-      { type: 'connected', sessionId: 11, state: 'closed' },
-      { type: 'changed', sessionId: 11, state: 'open', selectedDockId: 'git' },
-      { type: 'changed', sessionId: 11, state: 'open', selectedDockId: 'inspect' },
-      { type: 'changed', sessionId: 11, state: 'open' },
-    ])
-  })
-
-  it('tracks sessions independently and disconnects only reporting sessions', () => {
-    expect.assertions(1)
-
-    const host = new DevframeDocksHost(createContext())
-    const events: DevframeDockPanelStateEvent[] = []
-    host.events.on(HUB_EVENTS.bus.docksPanelState, event => events.push(event))
-
-    updateDockPanelState(host, 11, { state: 'open', selectedDockId: 'git' })
-    updateDockPanelState(host, 12, { state: 'hidden' })
-    disconnectDockPanelState(host, 99)
-    disconnectDockPanelState(host, 11)
-    disconnectDockPanelState(host, 11)
-
-    expect(events).toEqual([
-      { type: 'connected', sessionId: 11, state: 'open', selectedDockId: 'git' },
-      { type: 'connected', sessionId: 12, state: 'hidden' },
-      { type: 'disconnected', sessionId: 11 },
-    ])
   })
 })
 

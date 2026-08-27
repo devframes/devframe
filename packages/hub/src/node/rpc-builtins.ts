@@ -1,5 +1,4 @@
 import type { RpcFunctionDefinitionAny } from 'devframe/rpc'
-import type { DevframeDockPanelState } from '../types/docks'
 import type { DevframeMessageEntry, DevframeMessageEntryInput } from '../types/messages'
 import type {
   DevframeChildProcessTerminalSession,
@@ -8,7 +7,6 @@ import type {
 import { defineHubRpcFunction } from '../define'
 import { HUB_EVENTS } from '../events'
 import { diagnostics } from './diagnostics'
-import { updateDockPanelState } from './panel-state'
 
 /**
  * Resolve an interactive (PTY) terminal session by id, or throw. Sessions
@@ -222,19 +220,6 @@ export const hubDocksActivate = defineHubRpcFunction({
   }),
 })
 
-/** Record the current viewer connection's dock-panel state. */
-export const hubDocksPanelState = defineHubRpcFunction({
-  name: HUB_EVENTS.rpc.docksPanelState,
-  type: 'action',
-  setup: context => ({
-    async handler(panelState: DevframeDockPanelState): Promise<void> {
-      const session = context.rpc.getCurrentRpcSession()
-      if (session)
-        updateDockPanelState(context.docks, session.meta.id, panelState)
-    },
-  }),
-})
-
 /**
  * Framework-neutral RPC declarations auto-registered by
  * {@link createHubContext}. Provide additional RPCs by passing your own
@@ -244,7 +229,6 @@ export const hubDocksPanelState = defineHubRpcFunction({
 export const builtinHubRpcDeclarations: readonly RpcFunctionDefinitionAny[] = [
   hubCommandsExecute,
   hubDocksActivate,
-  hubDocksPanelState,
   hubMessagesAdd,
   hubMessagesUpdate,
   hubMessagesRemove,

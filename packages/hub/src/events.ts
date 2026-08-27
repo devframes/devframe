@@ -10,9 +10,10 @@
  * instead of re-typing a literal.
  *
  * The `.events` EventEmitter maps in `types/{docks,terminals,messages,commands}.ts`
- * and the RPC augmentation interfaces in `node/context.ts` declare these same
- * names as type-level keys (a literal is unavoidable in a type position); those
- * declarations mirror this map and move with it.
+ * and `client/docks.ts`, plus the RPC augmentation interfaces in
+ * `node/context.ts`, declare these same names as type-level keys (a literal is
+ * unavoidable in a type position); those declarations mirror this map and move
+ * with it.
  */
 export const HUB_EVENTS = {
   /**
@@ -23,7 +24,6 @@ export const HUB_EVENTS = {
   bus: {
     docksEntryUpdated: 'docks:entry:updated',
     docksActivate: 'docks:activate',
-    docksPanelState: 'docks:panel:state',
     terminalsSessionUpdated: 'terminals:session:updated',
     messagesAdded: 'messages:added',
     messagesUpdated: 'messages:updated',
@@ -35,7 +35,6 @@ export const HUB_EVENTS = {
   /** Server RPC methods a connected client calls (client → server), `hub:` prefix. */
   rpc: {
     docksActivate: 'hub:docks:activate',
-    docksPanelState: 'hub:docks:panel:state',
     commandsExecute: 'hub:commands:execute',
     messagesAdd: 'hub:messages:add',
     messagesUpdate: 'hub:messages:update',
@@ -46,6 +45,10 @@ export const HUB_EVENTS = {
     terminalsTerminate: 'hub:terminals:terminate',
     terminalsRestart: 'hub:terminals:restart',
     terminalsRemove: 'hub:terminals:remove',
+  },
+  /** Client-context events emitted inside the host page. */
+  client: {
+    docksPanelStateChanged: 'panel:state:changed',
   },
   /** Broadcast notifications the server pushes to clients (server → client), `devframe:` prefix. */
   broadcast: {

@@ -30,7 +30,6 @@ export { DevframeDockEntryCategory }
 export { DevframeDockEntryIcon }
 export { DevframeDockEntryRegistry }
 export { DevframeDockPanelState }
-export { DevframeDockPanelStateEvent }
 export { DevframeDocksActiveState }
 export { DevframeDocksHost }
 export { DevframeDocksUserSettings }

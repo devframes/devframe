@@ -57,16 +57,6 @@ declare module 'devframe/types' {
      */
     'hub:docks:activate': (input: { dockId: string, params?: Record<string, unknown> }) => Promise<void>
     /**
-     * Report this viewer connection's current dock-panel state. The server
-     * resolves the connection's session id and emits the typed lifecycle event
-     * on `ctx.docks.events`.
-     *
-     * Use `reportDockPanelState()` from `@devframes/hub/client`.
-     *
-     * @internal
-     */
-    'hub:docks:panel:state': (panelState: import('../types/docks').DevframeDockPanelState) => Promise<void>
-    /**
      * Invoke a registered server command by id; trailing args are forwarded to
      * the command's handler. Handled by
      * {@link import('./rpc-builtins').hubCommandsExecute}.

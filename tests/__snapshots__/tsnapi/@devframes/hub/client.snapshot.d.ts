@@ -114,12 +114,17 @@ export interface DockSessionStorage {
   groupLastChildIds?: Record<string, string>;
 }
 export interface DocksPanelContext {
+  readonly state: DevframeDockPanelState;
+  readonly events: EventEmitter<DocksPanelEvents>;
   store: DockPanelStorage;
   session: DockSessionStorage;
   isDragging: boolean;
   isResizing: boolean;
   readonly isVertical: boolean;
   consumeBootRoute?: (_: string) => string | null;
+}
+export interface DocksPanelEvents {
+  'panel:state:changed': (_: DevframeDockPanelState) => void;
 }
 export interface FrameLocationHistory {
   pushState: (..._: any[]) => void;
@@ -247,7 +252,6 @@ export declare function createDockRenderersContext(_: CreateDockRenderersContext
 export declare function createMessagesClient(_: DevframeRpcClient, _?: MessagesClientOptions): DevframeMessagesClient;
 export declare function getDevframeClientContext(): DevframeClientContext | undefined;
 export declare function parseRemoteConnection(_?: string): RemoteConnectionInfo | null;
-export declare function reportDockPanelState(_: DevframeRpcClient, _: DevframeDockPanelState): Promise<void>;
 export declare function resolveClientModuleSpecifier(_: string, _?: {
   resolveClientModule?: (_: string) => string | undefined;
   template?: string;

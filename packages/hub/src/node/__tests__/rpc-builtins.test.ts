@@ -1,11 +1,7 @@
-import type { DevframeDockPanelStateEvent } from '../../types/docks'
 import type { DevframeHubContext } from '../context'
-import { createEventEmitter } from 'devframe/utils/events'
 import { describe, expect, it, vi } from 'vitest'
-import { HUB_EVENTS } from '../../events'
 import {
   hubDocksActivate,
-  hubDocksPanelState,
   hubTerminalsRemove,
   hubTerminalsResize,
   hubTerminalsRestart,
@@ -140,28 +136,5 @@ describe('hub docks activate RPC', () => {
     const fn = await hubDocksActivate.setup!(ctx)
     await fn.handler!({ dockId: 'devframes_plugin_messages' })
     expect(activate).toHaveBeenCalledWith('devframes_plugin_messages', undefined)
-  })
-})
-
-describe('hub docks panel-state RPC', () => {
-  it('derives the session id from the active RPC handler context', async () => {
-    expect.assertions(2)
-
-    const events = createEventEmitter<{
-      'docks:panel:state': (event: DevframeDockPanelStateEvent) => void
-    }>()
-    const lifecycleEvents: DevframeDockPanelStateEvent[] = []
-    events.on(HUB_EVENTS.bus.docksPanelState, event => lifecycleEvents.push(event))
-    const getCurrentRpcSession = vi.fn(() => ({ meta: { id: 73 } }))
-    const ctx = {
-      docks: { events },
-      rpc: { getCurrentRpcSession },
-    } as unknown as DevframeHubContext
-
-    const fn = await hubDocksPanelState.setup!(ctx)
-    await fn.handler!({ state: 'open', selectedDockId: 'git' })
-
-    expect(getCurrentRpcSession).toHaveBeenCalledOnce()
-    expect(lifecycleEvents).toEqual([{ type: 'connected', sessionId: 73, state: 'open', selectedDockId: 'git' }])
   })
 })

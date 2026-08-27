@@ -14,7 +14,6 @@ export declare const HUB_EVENTS: {
   readonly bus: {
     readonly docksEntryUpdated: "docks:entry:updated";
     readonly docksActivate: "docks:activate";
-    readonly docksPanelState: "docks:panel:state";
     readonly terminalsSessionUpdated: "terminals:session:updated";
     readonly messagesAdded: "messages:added";
     readonly messagesUpdated: "messages:updated";
@@ -25,7 +24,6 @@ export declare const HUB_EVENTS: {
   };
   readonly rpc: {
     readonly docksActivate: "hub:docks:activate";
-    readonly docksPanelState: "hub:docks:panel:state";
     readonly commandsExecute: "hub:commands:execute";
     readonly messagesAdd: "hub:messages:add";
     readonly messagesUpdate: "hub:messages:update";
@@ -36,6 +34,9 @@ export declare const HUB_EVENTS: {
     readonly terminalsTerminate: "hub:terminals:terminate";
     readonly terminalsRestart: "hub:terminals:restart";
     readonly terminalsRemove: "hub:terminals:remove";
+  };
+  readonly client: {
+    readonly docksPanelStateChanged: "panel:state:changed";
   };
   readonly broadcast: {
     readonly docksActivate: "devframe:docks:activate";

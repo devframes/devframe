@@ -1,6 +1,6 @@
 import type { DevframeRpcClient } from 'devframe/client'
 import type { SharedState } from 'devframe/utils/shared-state'
-import type { DevframeDockEntry } from '../../types/docks'
+import type { DevframeDockEntry, DevframeDockPanelState } from '../../types/docks'
 import { createEventEmitter } from 'devframe/utils/events'
 import { describe, expect, it, vi } from 'vitest'
 import { HUB_EVENTS } from '../../events'
@@ -68,32 +68,39 @@ function groupEntry(id: string, extra?: Record<string, unknown>): DevframeDockEn
 }
 
 describe('createDevframeClientRuntime', () => {
-  it('reports complete panel snapshots and coalesces related session changes', async () => {
-    expect.assertions(4)
+  it('exposes panel state and emits coalesced changes', async () => {
+    expect.assertions(7)
 
     const { rpc, calls, states } = createStubRpc()
     const host = await createDevframeClientRuntime({ rpc, clientType: 'embedded' })
+    const panelStates: DevframeDockPanelState[] = []
 
-    expect(calls).toEqual([[HUB_EVENTS.rpc.docksPanelState, { state: 'closed' }]])
+    expect(host.context.panel.state).toEqual({ state: 'closed' })
+    host.context.panel.events.on(
+      HUB_EVENTS.client.docksPanelStateChanged,
+      panelState => panelStates.push(panelState),
+    )
 
-    states.get('devframe:docks')!.push([iframeEntry('one')])
+    states.get('devframe:docks')!.push([iframeEntry('one'), iframeEntry('two')])
     host.context.panel.session.open = true
     const switched = host.context.docks.switchEntry('one')
     await switched
-    expect(calls).toEqual([
-      [HUB_EVENTS.rpc.docksPanelState, { state: 'closed' }],
-      [HUB_EVENTS.rpc.docksPanelState, { state: 'open', selectedDockId: 'one' }],
-    ])
+    expect(panelStates).toEqual([{ state: 'open', selectedDockId: 'one' }])
+    expect(host.context.panel.state).toEqual({ state: 'open', selectedDockId: 'one' })
 
     host.context.panel.session.open = true
     host.context.panel.session.selectedDockId = 'one'
     await Promise.resolve()
-    expect(calls).toHaveLength(2)
+    expect(panelStates).toHaveLength(1)
+
+    await host.context.docks.switchEntry('two')
+    expect(panelStates.at(-1)).toEqual({ state: 'open', selectedDockId: 'two' })
 
     host.context.panel.session.open = false
     const cleared = host.context.docks.switchEntry(null)
     await cleared
-    expect(calls.at(-1)).toEqual([HUB_EVENTS.rpc.docksPanelState, { state: 'closed' }])
+    expect(panelStates.at(-1)).toEqual({ state: 'closed' })
+    expect(calls).toEqual([])
     host.dispose()
   })
 

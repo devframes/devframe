@@ -1,12 +1,13 @@
 import type { DevframeClientCommand, DevframeDockEntry, DevframeDockPanelState, DevframeDockUserEntry, DevframeRpcClientFunctions, DevframeViewIframe } from '@devframes/hub'
-import type { CommandsContext, DevframeClientContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockPanelStorage, DockRegistration, DockRendererManifest, DocksContext, DockSessionStorage } from '@devframes/hub/client'
+import type { CommandsContext, DevframeClientContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockPanelStorage, DockRegistration, DockRendererManifest, DocksContext, DockSessionStorage, DocksPanelEvents } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
 import type { Ref } from 'vue'
 import type { DevframeDocksUserSettings } from './dock-settings'
-import { attachFrameNavClient, createDockRenderersContext, reportDockPanelState } from '@devframes/hub/client'
+import { attachFrameNavClient, createDockRenderersContext } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY, HUB_EVENTS } from '@devframes/hub/constants'
 import { DEVFRAME_EVENTS } from 'devframe/constants'
+import { createEventEmitter } from 'devframe/utils/events'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
 import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_UI_HIDE_EVENT } from '../constants'
 import { useBranding } from './branding'
@@ -193,6 +194,7 @@ export async function createDocksContext(
   }
 
   panelStore ||= ref(DEFAULT_DOCK_PANEL_STORE())
+  const panelEvents = createEventEmitter<DocksPanelEvents>()
   let docksContext: DocksContext
 
   let _settingsStorePromise: Promise<SharedState<DevframeDocksUserSettings>> | undefined
@@ -598,6 +600,14 @@ export async function createDocksContext(
 
   docksContext = reactive({
     panel: {
+      get state() {
+        return createDockPanelState(
+          panelVisible.value !== false,
+          sessionStore.value.open,
+          selectedDockId.value,
+        )
+      },
+      events: markRaw(panelEvents),
       store: panelStore,
       session: sessionStore,
       isDragging: false,
@@ -692,20 +702,26 @@ export async function createDocksContext(
     initialRestorePending.value = false
     await switchEntry(restoreDockId)
   }
-  const reportPanelStateAfterInitialization = async (): Promise<void> => {
-    await restoreAfterInitialization()
+  const startPanelStateEvents = (): void => {
+    let previousPanelState = docksContext.panel.state
     watch(
       [panelVisible, () => sessionStore.value.open, selectedDockId],
-      ([visible, open, currentSelectedDockId]) => {
-        if (visible === undefined)
+      () => {
+        const panelState = docksContext.panel.state
+        if (
+          panelState.state === previousPanelState.state
+          && panelState.selectedDockId === previousPanelState.selectedDockId
+        ) {
           return
-        const panelState = createDockPanelState(visible, open, currentSelectedDockId)
-        void reportDockPanelState(rpc, panelState).catch(() => {})
+        }
+
+        previousPanelState = panelState
+        panelEvents.emit(HUB_EVENTS.client.docksPanelStateChanged, panelState)
       },
-      { immediate: true },
+      { flush: 'post' },
     )
   }
-  void reportPanelStateAfterInitialization()
+  void restoreAfterInitialization().then(startPanelStateEvents, startPanelStateEvents)
 
   docksContextByRpc.set(rpc, docksContext)
   return docksContext

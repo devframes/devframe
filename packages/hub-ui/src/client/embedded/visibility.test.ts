@@ -7,7 +7,7 @@ afterEach(() => {
 })
 
 describe('setupEmbeddedVisibility', () => {
-  it('reports the initial hidden state and later reveal and conceal transitions', () => {
+  it('handles the initial hidden state and later reveal and conceal transitions', () => {
     expect.assertions(5)
 
     const listeners = new Map<string, EventListener>()
