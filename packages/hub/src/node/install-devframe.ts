@@ -40,11 +40,9 @@ function nextAvailableDockId(views: DevframeHubContext['docks']['views'], baseId
 }
 
 /**
- * When a dock's `clientScript.importFrom` names an **absolute filesystem path**
- * to a built module, serve its directory under the devframe's mount base
- * (`<base>__page-script/`) and rewrite `importFrom` to that served URL. A URL or
- * bare specifier (distinguished by not existing on disk) passes through
- * untouched, as does an absent client script.
+ * When a dock's `clientScript.importFrom` is an absolute filesystem path, serve
+ * its directory under `<base>__page-script/` and rewrite `importFrom` to that
+ * URL. A URL or bare specifier (not existing on disk) passes through untouched.
  */
 async function resolvePageScriptClientScript(
   ctx: DevframeHubContext,
@@ -111,9 +109,8 @@ export async function prepareDevframe(
       ? resolveBasePath(d, 'hosted')
       : resolveBasePath({ ...d, id, basePath: undefined }, 'hosted'))
 
-  // Definition-level `dock` beneath per-mount `options.dock`. Resolved before
-  // the SPA mount so an absolute-path page script is served ahead of the SPA
-  // catch-all.
+  // Definition `dock` beneath per-mount `options.dock`. Resolved before the SPA
+  // mount so an absolute-path page script is served ahead of the SPA catch-all.
   const dockDefaults = { ...d.dock, ...options.dock }
   const clientScript = await resolvePageScriptClientScript(ctx, dockDefaults.clientScript, base)
   if (clientScript)
@@ -146,9 +143,8 @@ export async function prepareDevframe(
     id,
     title: d.name,
     icon: d.icon,
-    // Dock defaults (definition + per-mount, folded into `dockDefaults`) sit
-    // above the name/icon-derived defaults; `type`/`url` (and `id`) stay locked,
-    // derived from the definition.
+    // `dockDefaults` sits above the name/icon defaults; `type`/`url`/`id` stay
+    // locked, derived from the definition.
     ...dockDefaults,
     type: 'iframe',
     url: base,

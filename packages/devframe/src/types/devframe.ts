@@ -264,16 +264,13 @@ export interface DevframeDockDefaults {
   /** Id of the dock group this entry collapses under, if any. */
   groupId?: string
   /**
-   * A client script the hub imports into the host page for this devframe (its
-   * **page script**). `importFrom` is an **absolute filesystem path** to a built
-   * ES module, a **URL** the host serves, or a **bare npm specifier**. An
-   * absolute path is served by the hub install path (its directory mounted under
-   * the devframe's mount base, `importFrom` rewritten to the served URL), so a
-   * definition names its own page script and mounting by package name needs no
-   * host wiring; URL and bare-specifier values pass through untouched.
+   * A client script the hub imports into the host page (this devframe's **page
+   * script**). An absolute-path `importFrom` is served by the hub under the
+   * mount base and rewritten to that URL, so mounting by package name needs no
+   * host wiring; a URL or bare specifier passes through untouched.
    */
   clientScript?: {
-    /** What to import: an absolute filesystem path, a served URL, or a bare npm specifier. */
+    /** An absolute filesystem path, a served URL, or a bare npm specifier. */
     importFrom: string
     /**
      * The name to import the module as.

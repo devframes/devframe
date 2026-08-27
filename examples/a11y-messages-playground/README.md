@@ -55,8 +55,8 @@ The window is split in two:
 ## How it's wired
 
 `src/a11y-messages-playground.ts` is the entire host-framework integration - a ~120-line Vite plugin
-that runs `@devframes/hub` in the dev server and mounts the two devframes as docks.
-The a11y inspector declares its own page script, so the host passes only the devframes:
+that runs `@devframes/hub` in the dev server and mounts the two devframes as docks
+(the a11y inspector declares its own page script):
 
 ```ts
 a11yMessagesPlayground({

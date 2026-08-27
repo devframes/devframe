@@ -23,11 +23,10 @@ const distDir: RemoteAssets = {
  * — the dock **client script** the client runtime imports into the host page to
  * scan it (its default export boots the page script; importing it does too).
  *
- * The definition already declares this path as its dock `clientScript`, so a
- * hub serves it same-origin and boots it with no host wiring. Exported for
- * hosts that mount the module themselves (e.g. via `/@fs/` under Vite).
- * Resolves under `<pkg>/dist/inject/inject.js` from both the source and the
- * published entry. Requires the built bundle (`pnpm -C plugins/a11y build`).
+ * The definition already declares this as its dock `clientScript`, so a hub
+ * serves it with no host wiring. Exported for hosts that mount the module
+ * themselves (e.g. via `/@fs/` under Vite). Requires the built bundle
+ * (`pnpm -C plugins/a11y build`).
  */
 export const a11yPageScriptBundlePath: string = fileURLToPath(new URL('../dist/inject/inject.js', import.meta.url))
 
@@ -91,8 +90,7 @@ export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeD
     description: pkg.description,
     icon: options.icon ?? 'ph:person-simple-circle-duotone',
     basePath: options.basePath ?? BASE_PATH,
-    // Declare the page script by path; the hub serves it same-origin and boots
-    // it with no per-host wiring.
+    // Declare the page script by path; the hub serves it with no host wiring.
     dock: {
       category: '~builtin',
       clientScript: { importFrom: a11yPageScriptBundlePath },
