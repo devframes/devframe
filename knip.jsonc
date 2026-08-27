@@ -46,7 +46,12 @@
       // Nuxt auto-registers `app/components` and `app/composables`; the files
       // here shadow same-named pieces of the comark-docs layer (AppHeaderBrand,
       // useFilteredNavigation, ...), so nothing imports them explicitly.
-      "entry": ["app/components/*.vue", "app/composables/*.ts"]
+      "entry": ["app/components/*.vue", "app/composables/*.ts"],
+      // `app/components/AssistantChat.vue` shadows the comark-docs layer's own
+      // component and mirrors its imports verbatim (see the file header). These
+      // packages are provided transitively by the `comark-docs` layer, not
+      // declared in `docs/package.json`, so knip sees them as unlisted.
+      "ignoreDependencies": ["ai", "@ai-sdk/vue", "@comark/nuxt.*", "@nuxt/ui.*"]
     },
     "examples/hub-next": {
       // The React client build's root sits at `src/client` (`next dev
