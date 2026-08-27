@@ -30,6 +30,7 @@ export function DEFAULT_DOCK_SESSION_STORE(): DockSessionStorage {
     selectedDockId: null,
     selectedDockRoute: null,
     recentDockId: null,
+    groupLastChildIds: {},
   }
 }
 

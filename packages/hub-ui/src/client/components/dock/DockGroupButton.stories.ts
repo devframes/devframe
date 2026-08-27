@@ -20,7 +20,7 @@ const meta = {
   parameters: {
     docs: {
       description: {
-        component: 'The dock-bar button representing a group. Click behaviour depends on the group: a group with `defaultChildId` opens that member directly, otherwise it reveals a popover of members. `FloatingElements` is mounted alongside so the popover renders.',
+        component: 'The dock-bar button representing a group. Clicking opens the member last opened in the group (remembered per tab), then the group\'s `defaultChildId`; with neither it reveals a popover of members. `FloatingElements` is mounted alongside so the popover renders.',
       },
     },
   },
@@ -30,8 +30,9 @@ export default meta
 type Story = StoryObj
 
 /**
- * A popover-only group (no `defaultChildId`): clicking reveals the member
- * popover.
+ * A popover-only group (no `defaultChildId`): the first click reveals the
+ * member popover. Picking a member records it as the group's last-opened
+ * child, so later clicks reopen it directly.
  */
 export const PopoverOnly: Story = {
   render: () => ({
@@ -53,7 +54,8 @@ export const PopoverOnly: Story = {
 
 /**
  * A group with a `defaultChildId`: clicking opens that member straight away
- * instead of showing the popover.
+ * instead of showing the popover — until another member becomes the group's
+ * last-opened child, which then takes precedence.
  */
 export const WithDefaultChild: Story = {
   render: () => ({

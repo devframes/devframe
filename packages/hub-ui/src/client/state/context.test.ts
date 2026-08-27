@@ -131,6 +131,43 @@ describe('createDocksContext', () => {
     expect(session.value.open).toBe(true)
   })
 
+  it('reopens a group\'s last-opened member ahead of defaultChildId', async () => {
+    expect.assertions(4)
+
+    const { rpc, sharedStates, trust } = createStubRpc()
+    // No `groupLastChildIds` seed — mirrors a session store persisted before
+    // the field existed.
+    const session = ref<DockSessionStorage>({
+      open: false,
+      selectedDockId: null,
+      selectedDockRoute: null,
+    })
+    const context = await createDocksContext('embedded', rpc, undefined, session)
+
+    trust()
+    sharedStates.get('devframe:docks')!.push([
+      { id: 'nuxt', type: 'group', title: 'Nuxt', icon: 'ph:cube-duotone', defaultChildId: 'nuxt:overview' },
+      { id: 'nuxt:overview', type: 'iframe', url: '/', title: 'Overview', icon: 'ph:cube-duotone', groupId: 'nuxt' },
+      { id: 'nuxt:modules', type: 'iframe', url: '/', title: 'Modules', icon: 'ph:cube-duotone', groupId: 'nuxt' },
+    ] satisfies DevframeDockEntry[])
+    sharedStates.get('devframe:dock-renderers')!.push({})
+    await flushRestore()
+
+    // Without memory the group activation resolves to `defaultChildId`.
+    await context.docks.switchEntry('nuxt')
+    expect(context.docks.selected?.id).toBe('nuxt:overview')
+
+    // Opening another member records it as the group's last-opened child.
+    await context.docks.switchEntry('nuxt:modules')
+    expect(session.value.groupLastChildIds).toEqual({ nuxt: 'nuxt:modules' })
+
+    // Closing and re-activating the group reopens the remembered member.
+    await context.docks.switchEntry(null)
+    expect(context.docks.selected).toBeNull()
+    await context.docks.switchEntry('nuxt')
+    expect(context.docks.selected?.id).toBe('nuxt:modules')
+  })
+
   it('keeps a dock closed when the user closes it before initialization finishes', async () => {
     expect.assertions(2)
 

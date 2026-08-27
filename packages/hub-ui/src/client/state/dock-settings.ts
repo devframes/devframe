@@ -220,6 +220,28 @@ export function resolveGroupDefaultChild(
 }
 
 /**
+ * Resolve the member a group activation opens, layering the per-tab "last
+ * opened member" memory (`DockSessionStorage.groupLastChildIds`) over the
+ * author's `defaultChildId`. The remembered member wins while it still
+ * resolves — it exists in the group and its `when` clause holds — so reopening
+ * a group lands back on the member the developer last used; otherwise the
+ * `defaultChildId` target is tried under the same rules (both via
+ * {@link resolveGroupDefaultChild}, so the render-only `visibility` clause is
+ * ignored for either candidate). Returns `undefined` when neither resolves —
+ * the caller falls back to its own behavior (the dock-bar group button opens
+ * the member popover; `switchEntry` picks the first member).
+ */
+export function resolveGroupPreferredChild(
+  entries: DevframeDockEntry[],
+  group: DevframeViewGroup,
+  lastChildId: string | undefined,
+  whenContext?: WhenContext,
+): DevframeDockEntry | undefined {
+  return resolveGroupDefaultChild(entries, group.id, lastChildId, whenContext)
+    ?? resolveGroupDefaultChild(entries, group.id, group.defaultChildId, whenContext)
+}
+
+/**
  * Group and sort dock entries based on user settings.
  * Filters out hidden entries and categories, then sorts by custom order and
  * default order within each category.

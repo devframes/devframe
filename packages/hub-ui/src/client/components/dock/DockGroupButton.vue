@@ -3,7 +3,7 @@ import type { DevframeDockEntry, DevframeViewGroup } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import { watchDebounced } from '@vueuse/core'
 import { computed, h, ref, useTemplateRef } from 'vue'
-import { getGroupMembers, getGroupMembersGrouped, resolveGroupDefaultChild } from '../../state/dock-settings'
+import { getGroupMembers, getGroupMembersGrouped, resolveGroupPreferredChild } from '../../state/dock-settings'
 import { setDocksGroupPanel, useDocksGroupPanel } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
 import { accentVarStyle } from '../../utils/accent-color'
@@ -101,13 +101,14 @@ function onClick() {
     emit('select', undefined!)
     return
   }
-  // `defaultChildId` opens its member directly; otherwise reveal the popover.
-  // Resolved regardless of the target's render-only `visibility` (a hidden
-  // button must still fire), but honoring its `when` clause.
-  const fallback = resolveGroupDefaultChild(
+  // The member last opened in this group this tab — then the author's
+  // `defaultChildId` — opens directly; otherwise reveal the popover. Resolved
+  // regardless of the target's render-only `visibility` (a hidden button must
+  // still fire), but honoring its `when` clause.
+  const fallback = resolveGroupPreferredChild(
     props.context.docks.entries,
-    props.group.id,
-    props.group.defaultChildId,
+    props.group,
+    props.context.panel.session.groupLastChildIds?.[props.group.id],
     props.context.when.context,
   )
   if (fallback) {

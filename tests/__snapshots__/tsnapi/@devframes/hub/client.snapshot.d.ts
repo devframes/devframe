@@ -111,6 +111,7 @@ export interface DockSessionStorage {
   selectedDockId: string | null;
   selectedDockRoute: string | null;
   recentDockId?: string | null;
+  groupLastChildIds?: Record<string, string>;
 }
 export interface DocksPanelContext {
   store: DockPanelStorage;

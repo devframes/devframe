@@ -50,6 +50,17 @@ export interface DockSessionStorage {
    * field existed) when no entry has been raised.
    */
   recentDockId?: string | null
+  /**
+   * The member most recently opened in each dock group, keyed by group id.
+   * Recorded whenever a grouped member is selected (from the group popover,
+   * the group sidebar, the command palette, or an RPC activation), and read
+   * back when the group is activated again: the remembered member reopens
+   * directly, taking precedence over the group's own
+   * {@link import('../types/docks').DevframeViewGroup.defaultChildId defaultChildId}.
+   * A group is only listed once one of its members has been opened this tab
+   * (absent for stores persisted before this field existed).
+   */
+  groupLastChildIds?: Record<string, string>
 }
 
 export type DockClientType = 'embedded' | 'standalone'

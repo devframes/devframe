@@ -1,6 +1,7 @@
 import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeViewGroup } from '@devframes/hub'
+import type { WhenContext } from 'devframe/utils/when'
 import { describe, expect, it } from 'vitest'
-import { docksSplitGroupsWithCapacity, resolveNextRecentDockId, resolveRecentDockEntry } from './dock-settings'
+import { docksSplitGroupsWithCapacity, resolveGroupPreferredChild, resolveNextRecentDockId, resolveRecentDockEntry } from './dock-settings'
 
 function iframe(id: string, extra: Partial<DevframeDockEntry> = {}): DevframeDockEntry {
   return { id, type: 'iframe', url: '/', title: id.toUpperCase(), icon: 'ph:cube-duotone', ...extra } as DevframeDockEntry
@@ -101,6 +102,36 @@ describe('resolveNextRecentDockId', () => {
 
   it('keeps a naturally-visible selection from claiming the slot', () => {
     expect(next(null, a)).toBeNull()
+  })
+})
+
+describe('resolveGroupPreferredChild', () => {
+  const g = group('g', { defaultChildId: 'g:default' }) as DevframeViewGroup
+  const defaultMember = iframe('g:default', { groupId: 'g' })
+  const otherMember = iframe('g:other', { groupId: 'g' })
+  const entries = [a, g, defaultMember, otherMember]
+
+  it('prefers the last-opened member over defaultChildId', () => {
+    expect(resolveGroupPreferredChild(entries, g, 'g:other')).toBe(otherMember)
+  })
+
+  it('falls back to defaultChildId before any member has been opened', () => {
+    expect(resolveGroupPreferredChild(entries, g, undefined)).toBe(defaultMember)
+  })
+
+  it('falls back to defaultChildId when the remembered member is gone', () => {
+    expect(resolveGroupPreferredChild([a, g, defaultMember], g, 'g:other')).toBe(defaultMember)
+  })
+
+  it('falls back to defaultChildId when the remembered member fails its when clause', () => {
+    const whenContext: WhenContext = { clientType: 'standalone', dockOpen: false, paletteOpen: false, dockSelectedId: '' }
+    const gated = iframe('g:gated', { groupId: 'g', when: 'clientType == embedded' })
+    expect(resolveGroupPreferredChild([g, defaultMember, gated], g, 'g:gated', whenContext)).toBe(defaultMember)
+  })
+
+  it('resolves nothing for a popover-only group without memory', () => {
+    const bare = group('bare') as DevframeViewGroup
+    expect(resolveGroupPreferredChild([bare, iframe('bare:x', { groupId: 'bare' })], bare, undefined)).toBeUndefined()
   })
 })
 

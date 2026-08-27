@@ -11,7 +11,7 @@ import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vu
 import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_UI_HIDE_EVENT } from '../constants'
 import { useBranding } from './branding'
 import { createCommandsContext } from './commands'
-import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, getRegisteredGroupIds, resolveCommandIcon, resolveGroupDefaultChild } from './dock-settings'
+import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, getRegisteredGroupIds, resolveCommandIcon, resolveGroupPreferredChild } from './dock-settings'
 import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE, sharedStateToRef, useDocksEntries, waitForInitialSharedStateSync } from './docks'
 import { createClientMessagesClient } from './messages-client'
 import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDockPopupOpen } from './popup'
@@ -233,13 +233,14 @@ export async function createDocksContext(
       return false
 
     // A group has no view of its own — resolve to the member it represents.
-    // Prefer the author's `defaultChildId` (honoring its `when` clause but
-    // ignoring its render-only `visibility` — see `resolveGroupDefaultChild`),
-    // otherwise the first member. With neither, the group is popover-only and
-    // selecting it is a no-op here (the dock-bar group button opens the
-    // member popover instead).
+    // Prefer the member last opened in this group this tab, then the author's
+    // `defaultChildId` (each honoring its `when` clause but ignoring its
+    // render-only `visibility` — see `resolveGroupPreferredChild`), otherwise
+    // the first member. With none, the group is popover-only and selecting it
+    // is a no-op here (the dock-bar group button opens the member popover
+    // instead).
     if (entry.type === 'group') {
-      const target = resolveGroupDefaultChild(entries.value, entry.id, entry.defaultChildId, getWhenContext())?.id
+      const target = resolveGroupPreferredChild(entries.value, entry, sessionStore.value.groupLastChildIds?.[entry.id], getWhenContext())?.id
         ?? getGroupMembers(entries.value, entry.id)[0]?.id
       if (!target)
         return false
@@ -290,6 +291,13 @@ export async function createDocksContext(
     // the usually-hidden anchor later lands back on this visible tab.
     if (entry.type === 'iframe' && entry.frameId && !entry.subTabs)
       frameNavCurrentMember.set(entry.frameId, entry.id)
+
+    // Remember a grouped member as its group's last-opened child so the next
+    // activation of the group reopens it directly, ahead of `defaultChildId`
+    // (see `resolveGroupPreferredChild`). Guarded assignment: a session store
+    // persisted before this field existed has no map yet.
+    if (entry.groupId)
+      (sessionStore.value.groupLastChildIds ??= {})[entry.groupId] = entry.id
 
     initialRestorePending.value = false
     selectedDockId.value = entry.id
