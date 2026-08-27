@@ -38,6 +38,21 @@ export interface AgentTool {
   examples?: readonly { args: unknown[], description?: string }[]
 }
 
+/** One progress update reported while an agent tool invocation is running. */
+export interface AgentToolProgress {
+  /** Completed work. Must be finite and increase within one invocation. */
+  progress: number
+  /** Optional finite work estimate. */
+  total?: number
+  /** Optional human-readable status. */
+  message?: string
+}
+
+/** Request-bound capabilities available to a registered or provider tool handler. */
+export interface AgentToolInvocationContext {
+  reportProgress: (update: AgentToolProgress) => Promise<void>
+}
+
 /**
  * Input accepted by `DevframeAgentHost.registerTool()`. Handler is
  * stripped from the serializable `AgentTool` projection.
@@ -62,8 +77,8 @@ export interface AgentToolInput {
   inputSchema?: unknown
   outputSchema?: unknown
   examples?: readonly { args: unknown[], description?: string }[]
-  /** Invoked when the tool is called. Receives args as provided by the caller. */
-  handler: (args: any) => unknown | Promise<unknown>
+  /** Invoked when the tool is called. The request-bound context is available to registered and provider tools. */
+  handler: (args: any, context?: AgentToolInvocationContext) => unknown | Promise<unknown>
 }
 
 /**
@@ -256,7 +271,7 @@ export interface DevframeAgentHost {
    * Invoke any tool by id. Routes to the underlying RPC handler for
    * `kind === 'rpc'`, or to the registered handler for `kind === 'tool'`.
    */
-  invoke: (id: string, args: unknown) => Promise<unknown>
+  invoke: (id: string, args: unknown, invocationContext?: AgentToolInvocationContext) => Promise<unknown>
 
   /** Read a resource or resolved template by id. */
   read: (id: string, uri?: string | URL, variables?: AgentResourceVariables) => Promise<AgentResourceContent>

@@ -96,6 +96,45 @@ describe('mcp adapter (streamable http route)', () => {
     }
   })
 
+  it('delivers request-bound tool progress before the route-based result', async () => {
+    expect.assertions(1)
+    const started = await boot(defineTestDef({
+      setup(ctx) {
+        ctx.agent.registerTool({
+          id: 'build',
+          description: 'Build the project.',
+          handler: async (_args, invocation) => {
+            await invocation?.reportProgress({ progress: 1, total: 2, message: 'Compiling' })
+            await invocation?.reportProgress({ progress: 2, total: 2, message: 'Testing' })
+            return { status: 'complete' }
+          },
+        })
+      },
+    }))
+    const client = new Client(
+      { name: 'progress-test-client', version: '0.0.0' },
+      { versionNegotiation: { mode: 'auto' } },
+    )
+    const events: unknown[] = []
+    try {
+      await client.connect(originTransport(started))
+      const result = await client.callTool(
+        { name: 'build', arguments: {} },
+        { onprogress: progress => events.push({ type: 'progress', ...progress }) },
+      )
+      events.push({ type: 'result', structuredContent: result.structuredContent })
+
+      expect(events).toEqual([
+        { type: 'progress', progress: 1, total: 2, message: 'Compiling' },
+        { type: 'progress', progress: 2, total: 2, message: 'Testing' },
+        { type: 'result', structuredContent: undefined },
+      ])
+    }
+    finally {
+      await client.close()
+    }
+  })
+
   it('delivers filtered resource updates through modern subscriptions/listen', async () => {
     let notifyBuildUpdated!: () => void
     let notifyIgnoredUpdated!: () => void

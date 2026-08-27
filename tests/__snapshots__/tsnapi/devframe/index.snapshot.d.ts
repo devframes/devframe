@@ -88,7 +88,15 @@ export interface AgentToolInput {
     args: unknown[];
     description?: string;
   }[];
-  handler: (_: any) => unknown | Promise<unknown>;
+  handler: (_: any, _?: AgentToolInvocationContext) => unknown | Promise<unknown>;
+}
+export interface AgentToolInvocationContext {
+  reportProgress: (_: AgentToolProgress) => Promise<void>;
+}
+export interface AgentToolProgress {
+  progress: number;
+  total?: number;
+  message?: string;
 }
 export interface AgentToolProviderHandle extends AgentHandle {
   notifyChanged: () => void;
@@ -129,7 +137,7 @@ export interface DevframeAgentHost {
   registerResourceProvider: (_: AgentResourceProvider) => AgentResourceProviderHandle;
   unregisterResource: (_: string) => boolean;
   list: () => AgentManifest;
-  invoke: (_: string, _: unknown) => Promise<unknown>;
+  invoke: (_: string, _: unknown, _?: AgentToolInvocationContext) => Promise<unknown>;
   read: (_: string, _?: string | URL, _?: AgentResourceVariables) => Promise<AgentResourceContent>;
   listResourceInstances: (_: string) => Promise<AgentResourceList>;
   getTool: (_: string) => AgentTool | undefined;

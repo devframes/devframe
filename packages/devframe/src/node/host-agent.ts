@@ -16,6 +16,8 @@ import type {
   AgentResourceVariables,
   AgentTool,
   AgentToolInput,
+  AgentToolInvocationContext,
+  AgentToolProgress,
   AgentToolProvider,
   AgentToolProviderHandle,
   DevframeAgentHostEvents,
@@ -31,7 +33,50 @@ import { diagnostics } from './diagnostics'
 
 interface RegisteredTool {
   readonly tool: AgentTool
-  readonly handler?: (args: any) => unknown | Promise<unknown>
+  readonly handler?: AgentToolInput['handler']
+}
+
+function validateToolProgress(update: AgentToolProgress, previousProgress: number | undefined): void {
+  if (!Number.isFinite(update.progress))
+    throw diagnostics.DF0071({ reason: `\`progress\` must be finite, received ${String(update.progress)}` })
+  if (update.total !== undefined && !Number.isFinite(update.total))
+    throw diagnostics.DF0071({ reason: `\`total\` must be finite, received ${String(update.total)}` })
+  if (previousProgress !== undefined && update.progress <= previousProgress) {
+    throw diagnostics.DF0071({
+      reason: `\`progress\` must increase beyond ${previousProgress}, received ${update.progress}`,
+    })
+  }
+}
+
+async function invokeToolHandler(
+  handler: AgentToolInput['handler'],
+  args: unknown,
+  invocationContext?: AgentToolInvocationContext,
+): Promise<unknown> {
+  if (!invocationContext)
+    return await handler(args)
+
+  let active = true
+  let previousProgress: number | undefined
+  let pendingReports = Promise.resolve()
+  const context: AgentToolInvocationContext = {
+    reportProgress(update) {
+      if (!active)
+        return Promise.resolve()
+      validateToolProgress(update, previousProgress)
+      previousProgress = update.progress
+      pendingReports = pendingReports.then(() => invocationContext.reportProgress(update))
+      return pendingReports
+    },
+  }
+
+  try {
+    return await handler(args, context)
+  }
+  finally {
+    active = false
+    await pendingReports
+  }
 }
 
 function isResourceTemplate(input: AgentResourceDefinition): input is AgentResourceTemplateInput {
@@ -217,10 +262,10 @@ export class DevframeAgentHost implements DevframeAgentHostType {
     return this._projectResource(input) as AgentResource
   }
 
-  async invoke(id: string, args: unknown): Promise<unknown> {
+  async invoke(id: string, args: unknown, invocationContext?: AgentToolInvocationContext): Promise<unknown> {
     const plain = this.tools.get(id)
     if (plain?.handler) {
-      return await plain.handler(args)
+      return await invokeToolHandler(plain.handler, args, invocationContext)
     }
 
     const rpcDef = this._findRpcDefinition(id)
@@ -235,7 +280,7 @@ export class DevframeAgentHost implements DevframeAgentHostType {
 
     const provided = this._collectProviderTools().find(t => t.tool.id === id)
     if (provided) {
-      return await provided.input.handler(args)
+      return await invokeToolHandler(provided.input.handler, args, invocationContext)
     }
 
     throw new Error(`[devframe/agent] tool "${id}" not found`)

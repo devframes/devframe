@@ -19,6 +19,8 @@ export { AgentResourceTemplateInput }
 export { AgentResourceVariables }
 export { AgentTool }
 export { AgentToolInput }
+export { AgentToolInvocationContext }
+export { AgentToolProgress }
 export { AgentToolProvider }
 export { AgentToolProviderHandle }
 export { ConnectionMeta }

@@ -209,6 +209,52 @@ describe('mcp adapter (in-memory)', () => {
     }
   })
 
+  it('uses a no-op progress reporter when the caller provides no token', async () => {
+    expect.assertions(1)
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.agent.registerTool({
+        id: 'quiet-progress',
+        description: 'Report progress without a listening caller.',
+        handler: async (_args, invocation) => {
+          await invocation?.reportProgress({ progress: 1, message: 'Running' })
+          return 'complete'
+        },
+      })
+
+      const result = await client.callTool({ name: 'quiet-progress', arguments: {} })
+      expect((result.content[0] as { text: string }).text).toBe('complete')
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('returns DF0071 when tool progress does not increase', async () => {
+    expect.assertions(2)
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.agent.registerTool({
+        id: 'invalid-progress',
+        description: 'Report invalid progress.',
+        handler: async (_args, invocation) => {
+          await invocation?.reportProgress({ progress: 1 })
+          await invocation?.reportProgress({ progress: 1 })
+        },
+      })
+
+      const result = await client.callTool(
+        { name: 'invalid-progress', arguments: {} },
+        { onprogress: () => {} },
+      )
+      expect(result.isError).toBe(true)
+      expect((result.content[0] as { text: string }).text).toContain('DF0071')
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
   it('lists and reads registered resources', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {
@@ -459,6 +505,40 @@ describe('mcp adapter (in-memory)', () => {
 })
 
 describe('mcp adapter (stdio)', () => {
+  it('delivers request-bound tool progress before the stdio result', async () => {
+    expect.assertions(1)
+    const fixture = fileURLToPath(new URL('./fixtures/progress-stdio-server.ts', import.meta.url))
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', 'tsx', fixture],
+      cwd: process.cwd(),
+      stderr: 'pipe',
+    })
+    const client = new Client(
+      { name: 'stdio-progress-test-client', version: '0.0.0' },
+      { versionNegotiation: { mode: 'auto' } },
+    )
+    const events: unknown[] = []
+
+    try {
+      await client.connect(transport)
+      const result = await client.callTool(
+        { name: 'build', arguments: {} },
+        { onprogress: progress => events.push({ type: 'progress', ...progress }) },
+      )
+      events.push({ type: 'result', text: (result.content[0] as { text: string }).text })
+
+      expect(events).toEqual([
+        { type: 'progress', progress: 1, total: 2, message: 'Compiling' },
+        { type: 'progress', progress: 2, total: 2, message: 'Testing' },
+        { type: 'result', text: '{\n  "status": "complete"\n}' },
+      ])
+    }
+    finally {
+      await client.close()
+    }
+  })
+
   it('lists, reads, and receives modern updates for registered, template, and shared-state resources', async () => {
     const fixture = fileURLToPath(new URL('./fixtures/resource-stdio-server.ts', import.meta.url))
     const transport = new StdioClientTransport({

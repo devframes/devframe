@@ -1,7 +1,7 @@
-import type { McpRequestContext, Resource, Tool, Variables } from '@modelcontextprotocol/server'
+import type { McpRequestContext, Resource, ServerContext, Tool, Variables } from '@modelcontextprotocol/server'
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { RpcFunctionDefinitionAnyWithContext } from 'devframe/rpc'
-import type { AgentTool, DevframeDefinition, DevframeHost, DevframeNodeContext } from 'devframe/types'
+import type { AgentTool, AgentToolInvocationContext, DevframeDefinition, DevframeHost, DevframeNodeContext } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { Server, UriTemplate } from '@modelcontextprotocol/server'
@@ -262,6 +262,44 @@ async function readStateResult(
   return { key, value: state.value() }
 }
 
+interface McpToolInvocation {
+  context: AgentToolInvocationContext
+  flushProgress: () => Promise<void>
+}
+
+function createMcpToolInvocation(requestContext: ServerContext): McpToolInvocation {
+  const progressToken = requestContext.mcpReq._meta?.progressToken
+  if (progressToken === undefined) {
+    return {
+      context: { reportProgress: async () => {} },
+      flushProgress: async () => {},
+    }
+  }
+
+  let progressReported = false
+  return {
+    context: {
+      async reportProgress(update) {
+        progressReported = true
+        await requestContext.mcpReq.notify({
+          method: 'notifications/progress',
+          params: {
+            progressToken,
+            progress: update.progress,
+            ...(update.total === undefined ? {} : { total: update.total }),
+            ...(update.message === undefined ? {} : { message: update.message }),
+          },
+        })
+      },
+    },
+    async flushProgress() {
+      /** Let the SDK transport flush progress before the terminal response. */
+      if (progressReported)
+        await new Promise<void>(resolve => setImmediate(resolve))
+    },
+  }
+}
+
 function registerToolHandlers(
   server: Server,
   ctx: DevframeNodeContext,
@@ -305,8 +343,9 @@ function registerToolHandlers(
     return { tools }
   })
 
-  server.setRequestHandler('tools/call', async (request) => {
+  server.setRequestHandler('tools/call', async (request, requestContext) => {
     const { name, arguments: args } = request.params
+    const invocation = createMcpToolInvocation(requestContext)
     try {
       const tool = resolveTool(name)
       // Built-in shared-state read. A registered agent tool resolving to
@@ -323,7 +362,12 @@ function registerToolHandlers(
       const outputSchema = tool
         ? usableOutputSchema(tool.outputSchema ?? computeOutputSchema(tool, ctx))
         : undefined
-      const result = await ctx.agent.invoke(tool?.id ?? name, args ?? {})
+      const result = await ctx.agent.invoke(
+        tool?.id ?? name,
+        args ?? {},
+        invocation.context,
+      )
+      await invocation.flushProgress()
       return {
         content: [
           {
@@ -335,6 +379,7 @@ function registerToolHandlers(
       }
     }
     catch (error) {
+      await invocation.flushProgress()
       return {
         isError: true,
         content: [

@@ -38,7 +38,7 @@ export declare class DevframeAgentHost implements DevframeAgentHost$1 {
   list(): AgentManifest;
   getTool(_: string): AgentTool | undefined;
   getResource(_: string): AgentResource | undefined;
-  invoke(_: string, _: unknown): Promise<unknown>;
+  invoke(_: string, _: unknown, _?: AgentToolInvocationContext): Promise<unknown>;
   read(_: string, _?: string | URL, _?: AgentResourceVariables): Promise<AgentResourceContent>;
   listResourceInstances(_: string): Promise<AgentResourceList>;
   _dispose(): void;
@@ -348,6 +348,12 @@ export declare const diagnostics: import("nostics").Diagnostics<{
       reason: string;
     }) => string;
     readonly fix: "A service package's default export must be a factory returning a `DevframeServiceDefinition` — an object with `package`, `version`, `scope`, and a `setup` function.";
+  };
+  readonly DF0071: {
+    readonly why: (p: {
+      reason: string;
+    }) => string;
+    readonly fix: "Report finite numbers and increase `progress` on every call within one tool invocation.";
   };
   readonly DF0072: {
     readonly why: (p: {
