@@ -14,7 +14,10 @@ export interface DevframeBranding {
   logo?: BrandingLogo;
   wordmark?: BrandingLogo;
   primaryColor?: string;
-  background?: 'default' | 'transparent';
+  background?: string | {
+    light: string;
+    dark: string;
+  };
   tagline?: string;
   favicon?: string;
   windowTitle?: string;

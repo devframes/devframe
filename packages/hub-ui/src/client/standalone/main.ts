@@ -2,7 +2,7 @@ import type { DockSessionStorage } from '@devframes/hub/client'
 import { getDevframeRpcClient, setDevframeClientContext } from '@devframes/hub/client'
 import { useSessionStorage } from '@vueuse/core'
 import { watchEffect } from 'vue'
-import { applyDocumentHead, applyPrimaryColor, setBranding } from '../state/branding'
+import { applyDocumentHead, applyPrimaryColor, setBranding, useBrandingBackground } from '../state/branding'
 import { isDark } from '../state/color-mode'
 import { DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
 
@@ -15,11 +15,21 @@ import { DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
 // The standalone viewer runs in the light DOM, so mirror the color mode onto the
 // document element — its background follows the Auto/Light/Dark choice. The
 // component tree carries `color-scheme` for its native controls; keeping that
-// off the document lets the transparent viewer reveal the host page.
+// off the document lets custom backgrounds composite with the host page.
+const brandingBackground = useBrandingBackground()
+
 watchEffect(() => {
   const el = document.documentElement
   el.classList.toggle('dark', isDark.value)
   el.classList.toggle('light', !isDark.value)
+
+  const background = brandingBackground.value
+  const hasValidBackground = background !== undefined && CSS.supports('background', background)
+  el.classList.toggle('viewer-background-custom', hasValidBackground)
+  if (hasValidBackground)
+    el.style.setProperty('--devframes-viewer-background', background)
+  else
+    el.style.removeProperty('--devframes-viewer-background')
 })
 
 async function main(): Promise<void> {
@@ -39,7 +49,6 @@ async function main(): Promise<void> {
   // established above.
   const branding = setBranding(rpc.connectionMeta.configs?.ui?.branding || {})
   applyDocumentHead(document, branding)
-  document.documentElement.classList.toggle('viewer-background-transparent', branding.background === 'transparent')
 
   // Per-tab session UI state (which dock is open + its route). `sessionStorage`
   // so a reload restores the selection after the auth handshake, per-tab.

@@ -9,7 +9,7 @@ export interface ResolvedBranding {
   logo?: BrandingLogo
   wordmark?: BrandingLogo
   primaryColor?: string
-  background: 'default' | 'transparent'
+  background?: DevframeBranding['background']
   tagline?: string
   favicon?: string
   windowTitle: string
@@ -24,7 +24,7 @@ function resolveDefaults(branding: DevframeBranding): ResolvedBranding {
     logo: branding.logo,
     wordmark: branding.wordmark,
     primaryColor: branding.primaryColor,
-    background: branding.background || 'default',
+    background: branding.background,
     tagline: branding.tagline,
     favicon: branding.favicon,
     windowTitle: branding.windowTitle?.trim() || productName,
@@ -46,15 +46,20 @@ export function setBranding(branding: DevframeBranding): ResolvedBranding {
 
 /** The logo/wordmark URL for the current color scheme, reactive to it. */
 export function useBrandingLogo(pick: (b: ResolvedBranding) => BrandingLogo | undefined = b => b.logo): Ref<string | undefined> {
-  return computed(() => resolveLogo(pick(currentBranding.value), isDark.value))
+  return computed(() => resolveColorSchemeValue(pick(currentBranding.value), isDark.value))
 }
 
-function resolveLogo(logo: BrandingLogo | undefined, dark: boolean): string | undefined {
-  if (!logo)
+/** The standalone viewer background for the current color scheme. */
+export function useBrandingBackground(): Ref<string | undefined> {
+  return computed(() => resolveColorSchemeValue(currentBranding.value.background, isDark.value))
+}
+
+function resolveColorSchemeValue(value: BrandingLogo | undefined, dark: boolean): string | undefined {
+  if (!value)
     return undefined
-  if (typeof logo === 'string')
-    return logo
-  return dark ? (logo.dark || logo.light) : logo.light
+  if (typeof value === 'string')
+    return value
+  return dark ? (value.dark || value.light) : value.light
 }
 
 // --- Applying to the DOM --------------------------------------------------
