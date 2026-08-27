@@ -1,4 +1,4 @@
-import type { InPageChannelProtocol, PageScriptChannel, PanelChannel } from './types'
+import type { ConnectPanelChannelOptions, CreatePageScriptChannelOptions, InPageChannelProtocol, PageScriptChannel, PanelChannel } from './types'
 import { describe, expect, it, vi } from 'vitest'
 import { defineChannelFunction } from './index'
 import { InPageChannelError } from './internal'
@@ -40,8 +40,8 @@ function until(predicate: () => boolean, timeoutMs = 2000): Promise<void> {
 const noHandshake = { window: false as const, heartbeat: false as const }
 
 function createLinkedPair(options?: {
-  pageScript?: Partial<Parameters<typeof createPageScriptChannel>[0]>
-  panel?: Partial<Parameters<typeof connectPanelChannel>[0]>
+  pageScript?: Partial<CreatePageScriptChannelOptions<TestProtocol>>
+  panel?: Partial<ConnectPanelChannelOptions<TestProtocol>>
 }): { pageScript: PageScriptChannel<TestProtocol>, panel: PanelChannel<TestProtocol>, dispose: () => void } {
   const { port1, port2 } = new MessageChannel()
   const pageScript = createPageScriptChannel<TestProtocol>({

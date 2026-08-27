@@ -1,0 +1,79 @@
+import type { InPageChannelProtocol } from './types'
+import { describe, it } from 'vitest'
+import { createPageScriptChannel } from './page-script'
+import { connectPanelChannel } from './panel'
+
+interface TestProtocol extends InPageChannelProtocol {
+  pageScript: {
+    echo: (value: string) => string
+    sum: (a: number, b: number) => number
+    save: (value: string) => Promise<void>
+  }
+  panel: {
+    notify: (message: string) => void
+  }
+}
+
+describe('in-page channel function definitions', () => {
+  it('infers page-script handlers from the protocol name', () => {
+    createPageScriptChannel<TestProtocol>({
+      name: 'devframes:test',
+      functions: [
+        {
+          name: 'echo',
+          handler: value => value.toUpperCase(),
+        },
+        {
+          name: 'sum',
+          handler: (a, b) => a + b,
+        },
+        {
+          name: 'save',
+          handler: () => {},
+        },
+      ],
+    })
+  })
+
+  it('infers panel handlers from the protocol name', () => {
+    const { port1 } = new MessageChannel()
+    const channel = connectPanelChannel<TestProtocol>({
+      name: 'devframes:test',
+      window: false,
+      transport: port1,
+      functions: [{
+        name: 'notify',
+        handler: (message) => {
+          void message
+        },
+      }],
+    })
+    channel.close()
+  })
+
+  it('rejects names from the remote side', () => {
+    createPageScriptChannel<TestProtocol>({
+      name: 'devframes:test',
+      functions: [
+        {
+          // @ts-expect-error `notify` is implemented by panels.
+          name: 'notify',
+          handler: (message: string) => void message,
+        },
+      ],
+    })
+  })
+
+  it('rejects handlers incompatible with the named protocol function', () => {
+    createPageScriptChannel<TestProtocol>({
+      name: 'devframes:test',
+      functions: [
+        // @ts-expect-error `echo` accepts and returns a string.
+        {
+          name: 'echo',
+          handler: (value: number) => value,
+        },
+      ],
+    })
+  })
+})

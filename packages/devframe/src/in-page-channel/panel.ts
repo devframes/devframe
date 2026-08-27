@@ -45,7 +45,7 @@ const DEFAULT_EVENT_BUFFER_LIMIT = 64
  * the UI can key a fallback state off `status` / `whenConnected()`.
  */
 export function connectPanelChannel<P extends InPageChannelProtocol>(
-  options: ConnectPanelChannelOptions,
+  options: ConnectPanelChannelOptions<P>,
 ): PanelChannel<P> {
   const { name } = options
   const callTimeoutMs = options.callTimeoutMs ?? DEFAULT_CALL_TIMEOUT_MS

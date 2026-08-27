@@ -45,7 +45,7 @@ interface PeerInternal<P extends InPageChannelProtocol> {
  * handshake. No server is involved at any point.
  */
 export function createPageScriptChannel<P extends InPageChannelProtocol>(
-  options: CreatePageScriptChannelOptions,
+  options: CreatePageScriptChannelOptions<P>,
 ): PageScriptChannel<P> {
   const { name } = options
   const callTimeoutMs = options.callTimeoutMs ?? DEFAULT_CALL_TIMEOUT_MS

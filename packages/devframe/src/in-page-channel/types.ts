@@ -30,6 +30,9 @@ type SharedStates<P extends InPageChannelProtocol>
 
 type FnArgs<F> = F extends (...args: infer A) => any ? A : never
 type FnReturn<F> = F extends (...args: any[]) => infer R ? Awaited<R> : never
+type ProtocolHandler<F> = F extends (...args: any[]) => any
+  ? (...args: FnArgs<F>) => Thenable<FnReturn<F>>
+  : never
 
 /**
  * Types of an in-page channel function — `RpcFunctionType` minus the
@@ -78,6 +81,40 @@ export type InPageFunctionDefinition<
 /** Loosely-typed definition — the registration unit both endpoints accept. */
 export type InPageFunctionDefinitionAny = InPageFunctionDefinition<string, any, any, any, any, any>
 
+type ProtocolSide = 'pageScript' | 'panel'
+type ProtocolSideFunctions<
+  P extends InPageChannelProtocol,
+  SIDE extends ProtocolSide,
+> = SideFunctions<NonNullable<P[SIDE]>>
+
+/**
+ * A function definition constrained by one side of an in-page channel
+ * protocol. The `name` discriminant selects the matching protocol function,
+ * which contextually types the handler's arguments and return value.
+ */
+export type InPageFunctionDefinitionFor<
+  P extends InPageChannelProtocol,
+  SIDE extends ProtocolSide,
+> = {
+  [NAME in keyof ProtocolSideFunctions<P, SIDE> & string]: {
+    name: NAME
+    type?: InPageFunctionType
+    /** Optional Standard Schema array validating the arguments. */
+    args?: RpcArgsSchema
+    /** Optional Standard Schema validating the resolved return value. */
+    returns?: RpcReturnSchema
+    jsonSerializable?: boolean
+    handler: ProtocolHandler<ProtocolSideFunctions<P, SIDE>[NAME]>
+  }
+}[keyof ProtocolSideFunctions<P, SIDE> & string]
+
+type InPageFunctionOption<
+  P extends InPageChannelProtocol,
+  SIDE extends ProtocolSide,
+> = InPageChannelProtocol extends P
+  ? InPageFunctionDefinitionAny
+  : InPageFunctionDefinitionFor<P, SIDE>
+
 /**
  * Connection lifecycle of a panel endpoint: `connecting` (handshake retry
  * loop running, outgoing traffic buffered) → `connected` → back to
@@ -91,8 +128,6 @@ interface InPageChannelCommonOptions {
    * (e.g. `devframes:plugin:a11y`). Both endpoints must use the same name.
    */
   name: string
-  /** Implementations of this endpoint's side of the protocol. */
-  functions?: readonly InPageFunctionDefinitionAny[]
   /**
    * Origins accepted during the handshake (and used as `targetOrigin` when
    * posting handshake messages). The in-page channel is same-origin by
@@ -123,7 +158,9 @@ interface InPageChannelCommonOptions {
 }
 
 /** Options for {@link createPageScriptChannel}. */
-export interface CreatePageScriptChannelOptions extends InPageChannelCommonOptions {
+export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
+  /** Implementations of the protocol's page-script functions. */
+  functions?: readonly InPageFunctionOption<Protocol, 'pageScript'>[]
   /**
    * Window whose `message` events carry panel hellos. Defaults to the
    * global `window`; pass `false` to skip the handshake listener entirely
@@ -133,7 +170,9 @@ export interface CreatePageScriptChannelOptions extends InPageChannelCommonOptio
 }
 
 /** Options for {@link connectPanelChannel}. */
-export interface ConnectPanelChannelOptions extends InPageChannelCommonOptions {
+export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
+  /** Implementations of the protocol's panel functions. */
+  functions?: readonly InPageFunctionOption<Protocol, 'panel'>[]
   /**
    * The panel's own window (listens for the handshake grant). Defaults to
    * the global `window`; pass `false` with `transport` to skip the handshake.
