@@ -46,7 +46,7 @@
   width: 100%;
 }
 
-/* Do not render "description" slot */
-[data-slot="description"] {
+/* Do not render "description" slot in page, as the content are duplicated */
+[data-slot="wrapper"] + [data-slot="description"] {
   display: none;
 }

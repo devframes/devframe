@@ -3,7 +3,7 @@
 // persistent top-right nav, next to the version history button.
 const { header, footer, assistant } = useAppConfig()
 const content = useDocsContent()
-const historyOpen = useVersionHistory()
+// const historyOpen = useVersionHistory()
 const assistantOpen = useAssistant()
 const navigation = useMainNavigation()
 </script>
@@ -39,7 +39,7 @@ const navigation = useMainNavigation()
         class="p-2"
       />
 
-      <UButton
+      <!-- <UButton
         icon="i-lucide-history"
         :color="content.mode === 'prod' ? 'neutral' : 'warning'"
         :variant="content.mode === 'prod' ? 'outline' : 'subtle'"
@@ -47,7 +47,7 @@ const navigation = useMainNavigation()
         :ui="{ leadingIcon: 'size-4' }"
         class="p-2"
         @click="historyOpen = !historyOpen"
-      />
+      /> -->
 
       <template v-if="header?.links">
         <UButton
