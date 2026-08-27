@@ -14,36 +14,39 @@ interface WizardItem {
   value: string
   label: string
   icon: string
-  /** Accent color key from `ICON_COLORS`, giving each item its own tinted badge. */
-  color: keyof typeof ICON_COLORS
+  /** Accent color key from `ITEM_COLORS`, applied once the item is selected. */
+  color: keyof typeof ITEM_COLORS
   description?: string
 }
 
 /**
- * Per-item icon badge colors. Spelled out as full class strings (not
- * interpolated) so Tailwind's scanner keeps them in the build.
+ * Per-item accent colors, applied only to a *selected* card (its badge, plus
+ * the card's border/background/ring); unselected cards stay neutral gray.
+ * Spelled out as full class strings (not interpolated) so Tailwind's scanner
+ * keeps them in the build.
  */
-const ICON_COLORS = {
-  sky: 'bg-sky-500/10 text-sky-500',
-  indigo: 'bg-indigo-500/10 text-indigo-500',
-  violet: 'bg-violet-500/10 text-violet-500',
-  purple: 'bg-purple-500/10 text-purple-500',
-  fuchsia: 'bg-fuchsia-500/10 text-fuchsia-500',
-  pink: 'bg-pink-500/10 text-pink-500',
-  rose: 'bg-rose-500/10 text-rose-500',
-  amber: 'bg-amber-500/10 text-amber-500',
-  orange: 'bg-orange-500/10 text-orange-500',
-  emerald: 'bg-emerald-500/10 text-emerald-500',
-  teal: 'bg-teal-500/10 text-teal-500',
-  cyan: 'bg-cyan-500/10 text-cyan-500',
-  blue: 'bg-blue-500/10 text-blue-500',
-  green: 'bg-green-500/10 text-green-500',
+const ITEM_COLORS = {
+  sky: { badge: 'bg-sky-500/10 text-sky-500', card: 'border-sky-500/60 bg-sky-500/5 ring-1 ring-sky-500/20' },
+  indigo: { badge: 'bg-indigo-500/10 text-indigo-500', card: 'border-indigo-500/60 bg-indigo-500/5 ring-1 ring-indigo-500/20' },
+  violet: { badge: 'bg-violet-500/10 text-violet-500', card: 'border-violet-500/60 bg-violet-500/5 ring-1 ring-violet-500/20' },
+  purple: { badge: 'bg-purple-500/10 text-purple-500', card: 'border-purple-500/60 bg-purple-500/5 ring-1 ring-purple-500/20' },
+  fuchsia: { badge: 'bg-fuchsia-500/10 text-fuchsia-500', card: 'border-fuchsia-500/60 bg-fuchsia-500/5 ring-1 ring-fuchsia-500/20' },
+  pink: { badge: 'bg-pink-500/10 text-pink-500', card: 'border-pink-500/60 bg-pink-500/5 ring-1 ring-pink-500/20' },
+  rose: { badge: 'bg-rose-500/10 text-rose-500', card: 'border-rose-500/60 bg-rose-500/5 ring-1 ring-rose-500/20' },
+  amber: { badge: 'bg-amber-500/10 text-amber-500', card: 'border-amber-500/60 bg-amber-500/5 ring-1 ring-amber-500/20' },
+  orange: { badge: 'bg-orange-500/10 text-orange-500', card: 'border-orange-500/60 bg-orange-500/5 ring-1 ring-orange-500/20' },
+  emerald: { badge: 'bg-emerald-500/10 text-emerald-500', card: 'border-emerald-500/60 bg-emerald-500/5 ring-1 ring-emerald-500/20' },
+  teal: { badge: 'bg-teal-500/10 text-teal-500', card: 'border-teal-500/60 bg-teal-500/5 ring-1 ring-teal-500/20' },
+  cyan: { badge: 'bg-cyan-500/10 text-cyan-500', card: 'border-cyan-500/60 bg-cyan-500/5 ring-1 ring-cyan-500/20' },
+  blue: { badge: 'bg-blue-500/10 text-blue-500', card: 'border-blue-500/60 bg-blue-500/5 ring-1 ring-blue-500/20' },
+  green: { badge: 'bg-green-500/10 text-green-500', card: 'border-green-500/60 bg-green-500/5 ring-1 ring-green-500/20' },
 } as const
 
 interface WizardSection {
   key: string
   title: string
   hint: string
+  icon: string
   items: WizardItem[]
 }
 
@@ -60,6 +63,7 @@ const sections: WizardSection[] = [
     key: 'environments',
     title: 'Target environments',
     hint: 'What do you expect your tool to work with?',
+    icon: 'i-lucide-target',
     items: [
       { value: 'standalone', label: 'Standalone', icon: 'i-lucide-terminal', color: 'sky', description: 'A CLI or dev server with no host framework' },
       { value: 'framework', label: 'Specific framework', icon: 'i-lucide-shapes', color: 'violet', description: 'Specifically for frameworks like Vite, Next.js, Nuxt, etc.' },
@@ -70,6 +74,7 @@ const sections: WizardSection[] = [
     key: 'dataSource',
     title: 'Data source',
     hint: 'Where do you want to visualize data from?',
+    icon: 'i-lucide-database',
     items: [
       { value: 'node', label: 'The node side', icon: 'i-lucide-server', color: 'indigo', description: 'Server state, build output, the filesystem, child processes' },
       { value: 'browser', label: 'The user\'s web app', icon: 'i-lucide-app-window', color: 'cyan', description: 'State living in the page you\'re developing' },
@@ -79,6 +84,7 @@ const sections: WizardSection[] = [
     key: 'availability',
     title: 'Data availability',
     hint: 'When is the data available?',
+    icon: 'i-lucide-clock',
     items: [
       { value: 'dev', label: 'Development time', icon: 'i-lucide-code', color: 'blue', description: 'Live, over a running dev server' },
       { value: 'build', label: 'Production build time', icon: 'i-lucide-hammer', color: 'amber', description: 'Data from the production build' },
@@ -90,6 +96,7 @@ const sections: WizardSection[] = [
     key: 'frontend',
     title: 'Frontend approach',
     hint: 'How do you want to build the frontend view?',
+    icon: 'i-lucide-palette',
     items: [
       { value: 'framework', label: 'A preferred framework', icon: 'i-lucide-component', color: 'green', description: 'Vue, React, Svelte, Solid...' },
       { value: 'webcomponents', label: 'Web Components', icon: 'i-lucide-box', color: 'orange', description: 'Use Web Components for renderering' },
@@ -100,6 +107,7 @@ const sections: WizardSection[] = [
     key: 'requirements',
     title: 'Other requirements',
     hint: 'Any specific requirements?',
+    icon: 'i-lucide-list-checks',
     items: [
       { value: 'agent', label: 'Exposed to coding agents', icon: 'i-lucide-bot', color: 'pink', description: 'Some functionality should be available to coding agents.' },
       { value: 'terminal', label: 'Sub process access', icon: 'i-lucide-square-terminal', color: 'amber', description: 'Need to spawn other child process from the node side' },
@@ -270,7 +278,8 @@ function reset(): void {
       class="px-5 py-4 sm:px-6"
     >
       <div class="flex flex-wrap items-baseline gap-x-2 mb-3">
-        <p class="font-medium text-highlighted">
+        <p class="flex items-center gap-2 font-medium text-highlighted">
+          <UIcon :name="section.icon" class="size-4 text-muted" />
           {{ section.hint }}
         </p>
         <p class="text-xs text-muted uppercase tracking-widest">
@@ -287,13 +296,13 @@ function reset(): void {
           :aria-checked="isChecked(section.key, item.value)"
           class="relative flex items-center gap-3 rounded-lg border p-3 text-left transition-colors cursor-pointer"
           :class="isChecked(section.key, item.value)
-            ? 'border-primary/80 bg-primary/10 ring-1 ring-primary/20'
+            ? ITEM_COLORS[item.color].card
             : 'border-default hover:border-accented hover:bg-elevated/50'"
           @click="toggle(section.key, item.value)"
         >
           <span
-            class="inline-flex items-center justify-center size-8 shrink-0 rounded-full"
-            :class="ICON_COLORS[item.color]"
+            class="inline-flex items-center justify-center size-8 shrink-0 rounded-full transition-colors"
+            :class="isChecked(section.key, item.value) ? ITEM_COLORS[item.color].badge : 'bg-elevated text-muted'"
           >
             <UIcon :name="item.icon" class="size-4" />
           </span>
@@ -304,11 +313,6 @@ function reset(): void {
               class="block text-xs text-muted mt-0.5"
             >{{ item.description }}</span>
           </span>
-          <UIcon
-            v-if="isChecked(section.key, item.value)"
-            name="i-lucide-circle-check"
-            class="size-4 shrink-0 text-primary"
-          />
         </button>
       </div>
     </div>
