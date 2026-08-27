@@ -9,13 +9,16 @@ function createContext(): DevframeHubContext {
 }
 
 describe('createUi branding background', () => {
-  it('keeps the viewer stylesheet static', () => {
-    expect.assertions(2)
+  it('defines the viewer background through a static token', () => {
+    expect.assertions(5)
 
     const html = readFileSync(join(import.meta.dirname, '..', 'dist', 'client', 'standalone', 'index.html'), 'utf8')
 
     expect(html).not.toContain('__hub-ui.css')
     expect(html).toContain('html.viewer-background-transparent')
+    expect(html).toContain('--devframes-viewer-background: transparent')
+    expect(html).toContain('background: var(--devframes-viewer-background)')
+    expect(html).toMatch(/html\.viewer-background-transparent\s*\{[^}]*color-scheme:\s*normal/)
   })
 
   it('preserves the default viewer background', () => {

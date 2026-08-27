@@ -12,14 +12,14 @@ import { DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
 // shell stays frameworkless on purpose; everything visual lives inside the
 // custom element's shadow root.
 
-// The standalone page runs in the light DOM, so mirror the color mode onto the
-// document element — its background and native controls follow the
-// Auto/Light/Dark choice.
+// The standalone viewer runs in the light DOM, so mirror the color mode onto the
+// document element — its background follows the Auto/Light/Dark choice. The
+// component tree carries `color-scheme` for its native controls; keeping that
+// off the document lets the transparent viewer reveal the host page.
 watchEffect(() => {
   const el = document.documentElement
   el.classList.toggle('dark', isDark.value)
   el.classList.toggle('light', !isDark.value)
-  el.style.colorScheme = isDark.value ? 'dark' : 'light'
 })
 
 async function main(): Promise<void> {
