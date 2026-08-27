@@ -3,7 +3,7 @@ import type { InPageChannelProtocol, InPageSharedStateHost } from './types'
 import { nanoid } from 'devframe/utils/nanoid'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { DEVFRAME_EVENTS } from '../events'
-import { InPageChannelError } from './errors'
+import { InPageChannelError } from './internal'
 
 /**
  * The channel shared-state layer — `createSharedState` pumped over the

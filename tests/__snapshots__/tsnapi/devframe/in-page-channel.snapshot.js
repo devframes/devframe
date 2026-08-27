@@ -12,11 +12,5 @@ export class InPageChannelError extends Error {
 // #region Functions
 export function connectPanelChannel(_) {}
 export function createPageScriptChannel(_) {}
-export function defaultHandshakeTargets(_) {}
 export function defineChannelFunction(_) {}
-// #endregion
-
-// #region Variables
-export var IN_PAGE_CHANNEL_TAG /* const */
-export var IN_PAGE_CHANNEL_VERSION /* const */
 // #endregion

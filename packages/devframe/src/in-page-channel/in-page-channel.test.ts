@@ -1,7 +1,7 @@
 import type { InPageChannelProtocol, PageScriptChannel, PanelChannel } from './types'
 import { describe, expect, it, vi } from 'vitest'
-import { defineChannelFunction } from './define'
-import { InPageChannelError } from './errors'
+import { defineChannelFunction } from './index'
+import { InPageChannelError } from './internal'
 import { createPageScriptChannel } from './page-script'
 import { connectPanelChannel } from './panel'
 import { IN_PAGE_CHANNEL_TAG, IN_PAGE_CHANNEL_VERSION } from './protocol'
@@ -47,7 +47,6 @@ function createLinkedPair(options?: {
   const pageScript = createPageScriptChannel<TestProtocol>({
     name: 'devframes:test',
     ...noHandshake,
-    transport: port1,
     functions: [
       defineChannelFunction({ name: 'echo', handler: (value: string) => value }),
       defineChannelFunction({ name: 'sum', type: 'query', handler: (a: number, b: number) => a + b }),
@@ -58,6 +57,7 @@ function createLinkedPair(options?: {
     ],
     ...options?.pageScript,
   })
+  pageScript.addPanelPort(port1)
   const panel = connectPanelChannel<TestProtocol>({
     name: 'devframes:test',
     ...noHandshake,
@@ -142,7 +142,6 @@ describe('in-page channel over bring-your-own ports', () => {
     const pageScript = createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
       ...noHandshake,
-      transport: port1,
       functions: [
         defineChannelFunction({
           name: 'note',
@@ -152,6 +151,7 @@ describe('in-page channel over bring-your-own ports', () => {
         }),
       ],
     })
+    pageScript.addPanelPort(port1)
     const panel = connectPanelChannel<TestProtocol>({
       name: 'devframes:test',
       ...noHandshake,
@@ -174,8 +174,9 @@ describe('in-page channel over bring-your-own ports', () => {
     const pageScript = createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
       ...noHandshake,
-      transport: [a.port1, b.port1],
     })
+    pageScript.addPanelPort(a.port1)
+    pageScript.addPanelPort(b.port1)
     const received: string[] = []
     const panelA = connectPanelChannel<TestProtocol>({
       name: 'devframes:test',
@@ -211,8 +212,8 @@ describe('in-page channel over bring-your-own ports', () => {
     const pageScript = createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
       ...noHandshake,
-      transport: port1,
     })
+    pageScript.addPanelPort(port1)
     const panel = connectPanelChannel<TestProtocol>({
       name: 'devframes:test',
       ...noHandshake,
@@ -236,11 +237,11 @@ describe('in-page channel over bring-your-own ports', () => {
     const pageScript = createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
       ...noHandshake,
-      transport: port1,
       functions: [
         defineChannelFunction({ name: 'echo', handler: (value: any) => value }),
       ],
     })
+    pageScript.addPanelPort(port1)
     const panel = connectPanelChannel<TestProtocol>({
       name: 'devframes:test',
       ...noHandshake,
@@ -315,8 +316,9 @@ describe('in-page channel shared state', () => {
     const pageScript = createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
       ...noHandshake,
-      transport: [a.port1, b.port1],
     })
+    pageScript.addPanelPort(a.port1)
+    pageScript.addPanelPort(b.port1)
     const panelA = connectPanelChannel<TestProtocol>({ name: 'devframes:test', ...noHandshake, transport: a.port2 })
     const panelB = connectPanelChannel<TestProtocol>({ name: 'devframes:test', ...noHandshake, transport: b.port2 })
     try {

@@ -12,67 +12,21 @@ export interface ConnectPanelChannelOptions extends InPageChannelCommonOptions {
 }
 export interface CreatePageScriptChannelOptions extends InPageChannelCommonOptions {
   window?: Window | false;
-  transport?: MessagePort | MessagePort[];
-}
-export interface InPageChannelCommonOptions extends InPageChannelSerializationOptions {
-  name: string;
-  functions?: readonly InPageFunctionDefinitionAny[];
-  allowedOrigins?: string[];
-  callTimeoutMs?: number;
-  heartbeat?: InPageChannelHeartbeatOptions | false;
-}
-export interface InPageChannelGrant {
-  channel: typeof IN_PAGE_CHANNEL_TAG;
-  v: number;
-  kind: 'grant';
-  name: string;
-  panelId: string;
-  instanceId: string;
-}
-export interface InPageChannelHeartbeatOptions {
-  intervalMs?: number;
-  timeoutMs?: number;
-}
-export interface InPageChannelHello {
-  channel: typeof IN_PAGE_CHANNEL_TAG;
-  v: number;
-  kind: 'hello';
-  name: string;
-  panelId: string;
-  instanceId?: string;
 }
 export interface InPageChannelProtocol {
   pageScript?: Record<string, (...args: any[]) => any>;
   panel?: Record<string, (...args: any[]) => any>;
   sharedStates?: Record<string, object>;
 }
-export interface InPageChannelSerializationOptions {
-  serialize?: (_: unknown) => unknown;
-  deserialize?: (_: unknown) => unknown;
-}
-export interface InPageFunctionSetupResult<ARGS extends any[], RETURN = void> {
-  handler?: (..._: ARGS) => RETURN;
-}
-export interface InPageSharedStateGetOptions<T extends object> {
-  initialValue?: T;
-}
-export interface InPageSharedStateHost<P extends InPageChannelProtocol> {
-  get: <K extends keyof InPageSharedStates<P> & string>(_: K, _?: InPageSharedStateGetOptions<InPageSharedStates<P>[K]>) => Promise<SharedState<InPageSharedStates<P>[K]>>;
-}
 export interface PageScriptChannel<P extends InPageChannelProtocol> {
   readonly name: string;
   readonly instanceId: string;
   readonly panels: readonly PanelPeer<P>[];
   readonly events: Pick<EventEmitter<PageScriptChannelEvents<P>>, 'on' | 'once'>;
-  register: (_: InPageFunctionDefinitionAny) => void;
-  callEvent: <K extends keyof InPagePanelFunctions<P> & string>(_: K, ..._: FnArgs<InPagePanelFunctions<P>[K]>) => void;
+  callEvent: <K extends keyof PanelFunctions<P> & string>(_: K, ..._: FnArgs<PanelFunctions<P>[K]>) => void;
   readonly sharedState: InPageSharedStateHost<P>;
   addPanelPort: (_: MessagePort) => PanelPeer<P>;
   close: () => void;
-}
-export interface PageScriptChannelEvents<P extends InPageChannelProtocol> {
-  'panel:connected': (_: PanelPeer<P>) => void;
-  'panel:disconnected': (_: PanelPeer<P>) => void;
 }
 export interface PanelChannel<P extends InPageChannelProtocol> {
   readonly name: string;
@@ -82,33 +36,25 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
   } | undefined;
   readonly events: Pick<EventEmitter<PanelChannelEvents>, 'on' | 'once'>;
   whenConnected: (_?: number) => Promise<void>;
-  register: (_: InPageFunctionDefinitionAny) => void;
-  call: <K extends keyof InPagePageScriptFunctions<P> & string>(_: K, ..._: FnArgs<InPagePageScriptFunctions<P>[K]>) => Promise<FnReturn<InPagePageScriptFunctions<P>[K]>>;
-  callEvent: <K extends keyof InPagePageScriptFunctions<P> & string>(_: K, ..._: FnArgs<InPagePageScriptFunctions<P>[K]>) => void;
+  call: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => Promise<FnReturn<PageScriptFunctions<P>[K]>>;
+  callEvent: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => void;
   readonly sharedState: InPageSharedStateHost<P>;
   close: () => void;
 }
-export interface PanelChannelEvents {
-  'status:updated': (_: InPageChannelStatus) => void;
-}
 export interface PanelPeer<P extends InPageChannelProtocol> {
   readonly id: string;
-  call: <K extends keyof InPagePanelFunctions<P> & string>(_: K, ..._: FnArgs<InPagePanelFunctions<P>[K]>) => Promise<FnReturn<InPagePanelFunctions<P>[K]>>;
-  callEvent: <K extends keyof InPagePanelFunctions<P> & string>(_: K, ..._: FnArgs<InPagePanelFunctions<P>[K]>) => void;
+  call: <K extends keyof PanelFunctions<P> & string>(_: K, ..._: FnArgs<PanelFunctions<P>[K]>) => Promise<FnReturn<PanelFunctions<P>[K]>>;
   close: () => void;
 }
 // #endregion
 
 // #region Types
-export type InPageChannelEndpoint = PageScriptChannel<any> | PanelChannel<any>;
 export type InPageChannelErrorCode = 'timeout' |
 'closed' |
 'not-serializable' |
 'not-cloneable' |
 'invalid-args' |
-'state-uninitialized' |
-'no-targets';
-export type InPageChannelHandshakeMessage = InPageChannelHello | InPageChannelGrant;
+'state-uninitialized';
 export type InPageChannelStatus = 'connecting' | 'connected' | 'closed';
 export type InPageFunctionDefinition<NAME extends string, TYPE extends InPageFunctionType = 'query', ARGS extends any[] = [], RETURN = void, AS extends RpcArgsSchema | undefined = undefined, RS extends RpcReturnSchema | undefined = undefined> = [AS, RS] extends [undefined, undefined] ? {
   name: NAME;
@@ -116,30 +62,22 @@ export type InPageFunctionDefinition<NAME extends string, TYPE extends InPageFun
   args?: AS;
   returns?: RS;
   jsonSerializable?: boolean;
-  setup?: (context: InPageChannelEndpoint) => Thenable<InPageFunctionSetupResult<ARGS, RETURN>>;
-  handler?: (...args: ARGS) => RETURN;
+  handler: (...args: ARGS) => RETURN;
 } : {
   name: NAME;
   type?: TYPE;
   args: AS;
   returns: RS;
   jsonSerializable?: boolean;
-  setup?: (context: InPageChannelEndpoint) => Thenable<InPageFunctionSetupResult<InferArgsType<AS>, Thenable<InferReturnType<RS>>>>;
-  handler?: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>;
+  handler: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>;
 };
-export type InPageFunctionDefinitionAny = InPageFunctionDefinition<string, any, any, any, any, any>;
-export type InPageFunctionType = 'action' | 'event' | 'query';
-export type InPagePageScriptFunctions<P extends InPageChannelProtocol> = SideFunctions<NonNullable<P['pageScript']>>;
-export type InPagePanelFunctions<P extends InPageChannelProtocol> = SideFunctions<NonNullable<P['panel']>>;
-export type InPageSharedStates<P extends InPageChannelProtocol> = P['sharedStates'] extends Record<string, object> ? P['sharedStates'] : Record<string, never>;
 // #endregion
 
 // #region Classes
 export declare class InPageChannelError extends Error {
   readonly code: InPageChannelErrorCode;
   name: string;
-  constructor(
-  _: InPageChannelErrorCode, _: string, _?: {
+  constructor(_: InPageChannelErrorCode, _: string, _?: {
     cause?: unknown;
   });
 }
@@ -148,11 +86,5 @@ export declare class InPageChannelError extends Error {
 // #region Functions
 export declare function connectPanelChannel<P extends InPageChannelProtocol>(_: ConnectPanelChannelOptions): PanelChannel<P>;
 export declare function createPageScriptChannel<P extends InPageChannelProtocol>(_: CreatePageScriptChannelOptions): PageScriptChannel<P>;
-export declare function defaultHandshakeTargets(_: Window): Window[];
 export declare function defineChannelFunction<NAME extends string, TYPE extends InPageFunctionType, ARGS extends any[], RETURN = void, const AS extends RpcArgsSchema | undefined = undefined, const RS extends RpcReturnSchema | undefined = undefined>(_: InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>): InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>;
-// #endregion
-
-// #region Variables
-export declare const IN_PAGE_CHANNEL_TAG: "devframe:in-page-channel";
-export declare const IN_PAGE_CHANNEL_VERSION: number;
 // #endregion

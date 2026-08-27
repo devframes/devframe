@@ -1,5 +1,4 @@
-import type { AttachedChannelPort } from './port'
-import type { InPageChannelHello } from './protocol'
+import type { AttachedChannelPort } from './internal'
 import type {
   ConnectPanelChannelOptions,
   InPageChannelProtocol,
@@ -9,8 +8,17 @@ import type {
 } from './types'
 import { createEventEmitter } from 'devframe/utils/events'
 import { nanoid } from 'devframe/utils/nanoid'
-import { InPageChannelError, warnOnce } from './errors'
-import { attachChannelPort, withCallDeadline } from './port'
+import {
+  attachChannelPort,
+  createLocalFunctionRegistry,
+  DEFAULT_CALL_TIMEOUT_MS,
+  deserializeResult,
+  InPageChannelError,
+  resolveHeartbeat,
+  serializeArgs,
+  warnOnce,
+  withCallDeadline,
+} from './internal'
 import {
   defaultHandshakeTargets,
   IN_PAGE_CHANNEL_TAG,
@@ -18,21 +26,11 @@ import {
   isHandshakeMessage,
   resolveAllowedOrigins,
 } from './protocol'
-import { createLocalFunctionRegistry } from './registry'
 import { createPanelStateHost } from './state'
 
-const DEFAULT_CALL_TIMEOUT_MS = 15_000
 const DEFAULT_HELLO_INTERVAL_MS = 300
 const HELLO_INTERVAL_CAP_MS = 3_000
-const HELLO_BACKOFF_FACTOR = 1.5
 const DEFAULT_EVENT_BUFFER_LIMIT = 64
-const DEFAULT_HEARTBEAT_INTERVAL_MS = 5_000
-const DEFAULT_HEARTBEAT_TIMEOUT_MS = 12_000
-
-interface PendingCall {
-  run: () => void
-  reject: (error: unknown) => void
-}
 
 /**
  * Connect the panel endpoint of an in-page channel.
@@ -43,8 +41,8 @@ interface PendingCall {
  * order never matters, and a reload of either side is just a re-handshake
  * (`WindowProxy` references survive navigations). While `connecting`,
  * outgoing calls and events are buffered; when no page script exists at all
- * (e.g. the panel is opened standalone), the endpoint stays `connecting`
- * and the UI can key a fallback state off `status` / `whenConnected()`.
+ * (e.g. the panel opened standalone), the endpoint stays `connecting` and
+ * the UI can key a fallback state off `status` / `whenConnected()`.
  */
 export function connectPanelChannel<P extends InPageChannelProtocol>(
   options: ConnectPanelChannelOptions,
@@ -56,45 +54,32 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     ? undefined
     : options.window ?? (typeof window === 'undefined' ? undefined : window)
   const allowedOrigins = resolveAllowedOrigins(options.allowedOrigins, win)
-  const heartbeat = options.heartbeat === false
-    ? undefined
-    : {
-        intervalMs: options.heartbeat?.intervalMs ?? DEFAULT_HEARTBEAT_INTERVAL_MS,
-        timeoutMs: options.heartbeat?.timeoutMs ?? DEFAULT_HEARTBEAT_TIMEOUT_MS,
-      }
-  const serialization = { serialize: options.serialize, deserialize: options.deserialize }
+  const heartbeat = resolveHeartbeat(options.heartbeat)
+  const codec = { serialize: options.serialize, deserialize: options.deserialize }
   const panelId = nanoid()
   const targets = options.targets ?? (win ? defaultHandshakeTargets(win) : [])
   const canHandshake = !!win && targets.length > 0
 
   const events = createEventEmitter<PanelChannelEvents>()
-  // Lazily dereferenced: `setup(context)` only runs once the channel exists.
-  let channelRef: PanelChannel<P>
-  const registry = createLocalFunctionRegistry(() => channelRef, serialization)
+  const registry = createLocalFunctionRegistry(codec)
+  for (const definition of options.functions ?? [])
+    registry.register(definition)
 
   let status: InPageChannelStatus = 'connecting'
   let attached: AttachedChannelPort | undefined
   let pageScriptInfo: { instanceId: string } | undefined
   let helloTimer: ReturnType<typeof setTimeout> | undefined
-  let helloDelay = options.helloIntervalMs ?? DEFAULT_HELLO_INTERVAL_MS
   let heartbeatTimer: ReturnType<typeof setInterval> | undefined
   let droppedEventsWarned = false
-  const pendingCalls: PendingCall[] = []
+  const pendingCalls: { run: () => void, reject: (error: unknown) => void }[] = []
   const eventBuffer: { method: string, args: unknown[] }[] = []
   const connectedWaiters: { resolve: () => void, reject: (error: unknown) => void }[] = []
 
-  function serializeArgs(args: unknown[]): unknown[] {
-    return serialization.serialize ? args.map(serialization.serialize) : args
-  }
-  function deserializeResult(result: unknown): unknown {
-    return serialization.deserialize && result !== undefined ? serialization.deserialize(result) : result
-  }
-
   function setStatus(next: InPageChannelStatus): void {
-    if (status === next)
-      return
-    status = next
-    events.emit('status:updated', next)
+    if (status !== next) {
+      status = next
+      events.emit('status:updated', next)
+    }
   }
 
   const stateHost = createPanelStateHost<P>({
@@ -134,28 +119,18 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     const attempt = new Promise<unknown>((resolve, reject) => {
       const run = (): void => {
         attached!.rpc.$call(method, ...args)
-          .then(result => resolve(deserializeResult(result)), reject)
+          .then(result => resolve(deserializeResult(codec, result)), reject)
       }
-      if (status === 'connected' && attached) {
+      if (status === 'connected' && attached)
         run()
-        return
-      }
-      pendingCalls.push({ run, reject })
+      else
+        pendingCalls.push({ run, reject })
     })
     return withCallDeadline(
       attempt,
       callTimeoutMs,
       () => `in-page channel "${name}": call "${method}" timed out after ${callTimeoutMs}ms (status: ${status}${status === 'connecting' ? ' — is the page script loaded?' : ''})`,
     )
-  }
-
-  function flushBuffers(): void {
-    const calls = pendingCalls.splice(0)
-    for (const call of calls)
-      call.run()
-    const buffered = eventBuffer.splice(0)
-    for (const { method, args } of buffered)
-      sendEventNow(method, args)
   }
 
   function adoptPort(port: MessagePort, info?: { instanceId: string }): void {
@@ -171,14 +146,36 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
       onPeerClosed: () => handleDisconnect('the page script went away'),
     })
     pageScriptInfo = info
-    stopHelloLoop()
+    stopTimers()
     setStatus('connected')
-    startHeartbeat()
-    flushBuffers()
+    if (heartbeat) {
+      heartbeatTimer = setInterval(() => {
+        if (!attached)
+          return
+        if (Date.now() - attached.lastActivity > heartbeat.timeoutMs)
+          handleDisconnect('the page script went silent (heartbeat timeout)')
+        else
+          attached.postControl('ping')
+      }, heartbeat.intervalMs)
+    }
+    for (const call of pendingCalls.splice(0))
+      call.run()
+    for (const { method, args } of eventBuffer.splice(0))
+      sendEventNow(method, args)
     stateHost.resubscribe()
-    const waiters = connectedWaiters.splice(0)
-    for (const waiter of waiters)
+    for (const waiter of connectedWaiters.splice(0))
       waiter.resolve()
+  }
+
+  function stopTimers(): void {
+    if (helloTimer) {
+      clearTimeout(helloTimer)
+      helloTimer = undefined
+    }
+    if (heartbeatTimer) {
+      clearInterval(heartbeatTimer)
+      heartbeatTimer = undefined
+    }
   }
 
   function handleDisconnect(reason: string): void {
@@ -187,55 +184,41 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     attached?.dispose({ reason })
     attached = undefined
     pageScriptInfo = undefined
-    stopHeartbeat()
+    stopTimers()
     setStatus('connecting')
-    if (canHandshake) {
+    if (canHandshake)
       startHelloLoop()
-    }
-    else {
+    else
       warnOnce(`in-page channel "${name}": transport lost (${reason}) and the panel has no handshake targets — staying disconnected`)
-    }
-  }
-
-  // ── handshake ─────────────────────────────────────────────────────────
-
-  function postHellos(): void {
-    const hello: InPageChannelHello = {
-      channel: IN_PAGE_CHANNEL_TAG,
-      v: IN_PAGE_CHANNEL_VERSION,
-      kind: 'hello',
-      name,
-      panelId,
-      instanceId: options.instanceId,
-    }
-    for (const target of targets) {
-      for (const origin of allowedOrigins) {
-        try {
-          target.postMessage(hello, origin)
-        }
-        catch {
-          // Unreachable target/origin pair — the loop keeps retrying.
-        }
-      }
-    }
   }
 
   function startHelloLoop(): void {
     if (helloTimer || !canHandshake || status !== 'connecting')
       return
-    helloDelay = options.helloIntervalMs ?? DEFAULT_HELLO_INTERVAL_MS
+    let delay = options.helloIntervalMs ?? DEFAULT_HELLO_INTERVAL_MS
     const tick = (): void => {
-      postHellos()
-      helloDelay = Math.min(helloDelay * HELLO_BACKOFF_FACTOR, HELLO_INTERVAL_CAP_MS)
-      helloTimer = setTimeout(tick, helloDelay)
+      const hello = {
+        channel: IN_PAGE_CHANNEL_TAG,
+        v: IN_PAGE_CHANNEL_VERSION,
+        kind: 'hello' as const,
+        name,
+        panelId,
+        instanceId: options.instanceId,
+      }
+      for (const target of targets) {
+        for (const origin of allowedOrigins) {
+          try {
+            target.postMessage(hello, origin)
+          }
+          catch {
+            // Unreachable target/origin pair — the loop keeps retrying.
+          }
+        }
+      }
+      delay = Math.min(delay * 1.5, HELLO_INTERVAL_CAP_MS)
+      helloTimer = setTimeout(tick, delay)
     }
     tick()
-  }
-  function stopHelloLoop(): void {
-    if (helloTimer) {
-      clearTimeout(helloTimer)
-      helloTimer = undefined
-    }
   }
 
   const onWindowMessage = (event: MessageEvent): void => {
@@ -255,36 +238,20 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     if (options.instanceId && data.instanceId !== options.instanceId)
       return
     const port = event.ports?.[0]
-    if (!port)
-      return
-    adoptPort(port, { instanceId: data.instanceId })
+    if (port)
+      adoptPort(port, { instanceId: data.instanceId! })
   }
 
-  // ── heartbeat ─────────────────────────────────────────────────────────
+  win?.addEventListener('message', onWindowMessage)
 
-  function startHeartbeat(): void {
-    if (!heartbeat || heartbeatTimer)
-      return
-    heartbeatTimer = setInterval(() => {
-      if (!attached)
-        return
-      if (Date.now() - attached.lastActivity > heartbeat.timeoutMs) {
-        handleDisconnect('the page script went silent (heartbeat timeout)')
-        return
-      }
-      attached.postControl('ping')
-    }, heartbeat.intervalMs)
-  }
-  function stopHeartbeat(): void {
-    if (heartbeatTimer) {
-      clearInterval(heartbeatTimer)
-      heartbeatTimer = undefined
-    }
-  }
+  if (options.transport)
+    adoptPort(options.transport)
+  else if (canHandshake)
+    startHelloLoop()
+  else
+    warnOnce(`in-page channel "${name}": the panel has no handshake targets (not embedded, no opener) and no transport — calls will buffer until a transport appears or the channel is closed`)
 
-  // ── public surface ────────────────────────────────────────────────────
-
-  const channel: PanelChannel<P> = {
+  return {
     name,
     get status() {
       return status
@@ -296,9 +263,8 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     whenConnected: (timeoutMs?: number) => {
       if (status === 'connected')
         return Promise.resolve()
-      if (status === 'closed') {
+      if (status === 'closed')
         return Promise.reject(new InPageChannelError('closed', `in-page channel "${name}" is closed`))
-      }
       return new Promise<void>((resolve, reject) => {
         const waiter = { resolve, reject }
         connectedWaiters.push(waiter)
@@ -317,16 +283,14 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
         }
       })
     },
-    register: definition => registry.register(definition),
-    call: (fnName, ...args) => enqueueCall(fnName, serializeArgs(args)) as Promise<any>,
-    callEvent: (fnName, ...args) => sendEvent(fnName, serializeArgs(args)),
+    call: (fnName, ...args) => enqueueCall(fnName, serializeArgs(codec, args)) as Promise<any>,
+    callEvent: (fnName, ...args) => sendEvent(fnName, serializeArgs(codec, args)),
     sharedState: stateHost,
     close: () => {
       if (status === 'closed')
         return
       setStatus('closed')
-      stopHelloLoop()
-      stopHeartbeat()
+      stopTimers()
       win?.removeEventListener('message', onWindowMessage)
       attached?.dispose({ bye: true, reason: 'the panel closed the channel' })
       attached = undefined
@@ -339,22 +303,4 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
         waiter.reject(closedError)
     },
   }
-
-  channelRef = channel
-  for (const definition of options.functions ?? [])
-    registry.register(definition)
-
-  win?.addEventListener('message', onWindowMessage)
-
-  if (options.transport) {
-    adoptPort(options.transport)
-  }
-  else if (canHandshake) {
-    startHelloLoop()
-  }
-  else {
-    warnOnce(`in-page channel "${name}": the panel has no handshake targets (not embedded, no opener) and no transport — calls will buffer until a transport appears or the channel is closed`)
-  }
-
-  return channel
 }

@@ -3,9 +3,9 @@ import { DEVFRAME_EVENTS } from '../events'
 
 /**
  * Wire protocol of the in-page channel handshake and its port-level control
- * frames. The envelope is transport-neutral by design: it identifies the
+ * frames. The envelope is transport-neutral by design — it identifies the
  * protocol (`channel` tag + `v`), the user channel (`name`), and the peers
- * (`panelId`, `instanceId`), so a future cross-tab transport (e.g. a
+ * (`panelId`, `instanceId`) — so a future cross-tab transport (e.g. a
  * `BroadcastChannel`) can reuse it unchanged.
  */
 
@@ -15,33 +15,22 @@ export const IN_PAGE_CHANNEL_TAG = DEVFRAME_EVENTS.postMessage.inPageChannel
 /** Envelope version — bump on breaking wire changes. */
 export const IN_PAGE_CHANNEL_VERSION = 1
 
-/** Panel → page script: "grant me a port for channel `name`". */
-export interface InPageChannelHello {
+/**
+ * The handshake envelope. A panel posts a `hello` ("grant me a port for
+ * channel `name`"); the page script answers with a `grant`, the dedicated
+ * `MessagePort` transferred alongside.
+ */
+export interface InPageChannelHandshakeMessage {
   channel: typeof IN_PAGE_CHANNEL_TAG
   v: number
-  kind: 'hello'
+  kind: 'hello' | 'grant'
   /** User channel name (e.g. `devframes:plugin:a11y`). */
   name: string
-  /** Unique id of the asking panel endpoint. */
+  /** The asking panel's id (grants echo it, so a panel matches its own hello). */
   panelId: string
-  /** Optional pin: only the page script with this instance id may answer. */
+  /** Hello: optional instance pin. Grant: the answering page script's instance id. */
   instanceId?: string
 }
-
-/** Page script → panel: "here is your port" (transferred alongside). */
-export interface InPageChannelGrant {
-  channel: typeof IN_PAGE_CHANNEL_TAG
-  v: number
-  kind: 'grant'
-  /** User channel name, echoed. */
-  name: string
-  /** The asking panel's id, echoed so the panel matches its own hello. */
-  panelId: string
-  /** The answering page script's instance id. */
-  instanceId: string
-}
-
-export type InPageChannelHandshakeMessage = InPageChannelHello | InPageChannelGrant
 
 /**
  * Port-level control frames, filtered out before birpc sees the stream:

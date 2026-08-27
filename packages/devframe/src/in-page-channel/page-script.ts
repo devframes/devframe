@@ -1,5 +1,4 @@
-import type { AttachedChannelPort } from './port'
-import type { InPageChannelGrant } from './protocol'
+import type { AttachedChannelPort } from './internal'
 import type {
   CreatePageScriptChannelOptions,
   InPageChannelProtocol,
@@ -9,8 +8,16 @@ import type {
 } from './types'
 import { createEventEmitter } from 'devframe/utils/events'
 import { nanoid } from 'devframe/utils/nanoid'
-import { warnOnce } from './errors'
-import { attachChannelPort, withCallDeadline } from './port'
+import {
+  attachChannelPort,
+  createLocalFunctionRegistry,
+  DEFAULT_CALL_TIMEOUT_MS,
+  deserializeResult,
+  resolveHeartbeat,
+  serializeArgs,
+  warnOnce,
+  withCallDeadline,
+} from './internal'
 import {
   IN_PAGE_CHANNEL_TAG,
   IN_PAGE_CHANNEL_VERSION,
@@ -18,12 +25,7 @@ import {
   resolveAllowedOrigins,
   resolveInstanceId,
 } from './protocol'
-import { createLocalFunctionRegistry } from './registry'
 import { createPageScriptStateHost } from './state'
-
-const DEFAULT_CALL_TIMEOUT_MS = 15_000
-const DEFAULT_HEARTBEAT_INTERVAL_MS = 5_000
-const DEFAULT_HEARTBEAT_TIMEOUT_MS = 12_000
 
 interface PeerInternal<P extends InPageChannelProtocol> {
   id: string
@@ -36,9 +38,9 @@ interface PeerInternal<P extends InPageChannelProtocol> {
 /**
  * Create the page-script endpoint of an in-page channel.
  *
- * It listens for panel hellos on the host page's window, answers each with
- * a dedicated `MessageChannel` port (same-origin enforced both ways), and
- * keeps one live peer per panel — dock iframe, popup, and Document-PiP
+ * It listens for panel hellos on the host page's window and answers each
+ * with a dedicated `MessageChannel` port (same-origin enforced both ways),
+ * keeping one live peer per panel — dock iframe, popup, and Document-PiP
  * panels all handshake the same way, and a panel reload is simply a new
  * handshake. No server is involved at any point.
  */
@@ -52,25 +54,19 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     : options.window ?? (typeof window === 'undefined' ? undefined : window)
   const allowedOrigins = resolveAllowedOrigins(options.allowedOrigins, win)
   const instanceId = resolveInstanceId(win)
-  const heartbeat = options.heartbeat === false
-    ? undefined
-    : {
-        intervalMs: options.heartbeat?.intervalMs ?? DEFAULT_HEARTBEAT_INTERVAL_MS,
-        timeoutMs: options.heartbeat?.timeoutMs ?? DEFAULT_HEARTBEAT_TIMEOUT_MS,
-      }
-  const serialization = { serialize: options.serialize, deserialize: options.deserialize }
+  const heartbeat = resolveHeartbeat(options.heartbeat)
+  const codec = { serialize: options.serialize, deserialize: options.deserialize }
 
   const events = createEventEmitter<PageScriptChannelEvents<P>>()
   const peers = new Map<string, PeerInternal<P>>()
   let closed = false
   let heartbeatTimer: ReturnType<typeof setInterval> | undefined
 
-  // Lazily dereferenced: `setup(context)` only runs once the channel exists.
-  let channelRef: PageScriptChannel<P>
-  const registry = createLocalFunctionRegistry(() => channelRef, serialization)
-  const stateHost = createPageScriptStateHost<P>(() => statePeers())
+  const registry = createLocalFunctionRegistry(codec)
+  for (const definition of options.functions ?? [])
+    registry.register(definition)
 
-  function* statePeers() {
+  const stateHost = createPageScriptStateHost<P>(function* () {
     for (const peer of peers.values()) {
       yield {
         subscribedStates: peer.subscribedStates,
@@ -79,14 +75,7 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
         },
       }
     }
-  }
-
-  function serializeArgs(args: unknown[]): unknown[] {
-    return serialization.serialize ? args.map(serialization.serialize) : args
-  }
-  function deserializeResult(result: unknown): unknown {
-    return serialization.deserialize && result !== undefined ? serialization.deserialize(result) : result
-  }
+  })
 
   function removePeer(id: string, disposeOptions?: { bye?: boolean, reason?: string }): void {
     const peer = peers.get(id)
@@ -94,8 +83,10 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
       return
     peers.delete(id)
     peer.attached.dispose(disposeOptions)
-    if (peers.size === 0)
-      stopHeartbeat()
+    if (peers.size === 0 && heartbeatTimer) {
+      clearInterval(heartbeatTimer)
+      heartbeatTimer = undefined
+    }
     events.emit('panel:disconnected', peer.peer)
   }
 
@@ -104,13 +95,7 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     // grant) replaces the previous port.
     removePeer(id, { reason: 'the panel re-connected' })
 
-    const internal: PeerInternal<P> = {
-      id,
-      subscribedStates: new Set(),
-      internalHandlers: {},
-      attached: undefined as unknown as AttachedChannelPort,
-      peer: undefined as unknown as PanelPeer<P>,
-    }
+    const internal = { id, subscribedStates: new Set<string>() } as PeerInternal<P>
     internal.internalHandlers = stateHost.createPeerHandlers({
       subscribedStates: internal.subscribedStates,
       callEventRaw: (method, args) => {
@@ -128,42 +113,24 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     internal.peer = {
       id,
       call: (fnName, ...args) => withCallDeadline(
-        internal.attached.rpc.$call(fnName, ...serializeArgs(args)).then(deserializeResult) as Promise<any>,
+        internal.attached.rpc.$call(fnName, ...serializeArgs(codec, args)).then(result => deserializeResult(codec, result)) as Promise<any>,
         callTimeoutMs,
         () => `in-page channel "${name}": call "${fnName}" to panel "${id}" timed out after ${callTimeoutMs}ms`,
       ),
-      callEvent: (fnName, ...args) => {
-        void internal.attached.rpc.$callRaw({
-          method: fnName,
-          args: serializeArgs(args),
-          event: true,
-          optional: true,
-        }).catch(() => {})
-      },
       close: () => removePeer(id, { bye: true, reason: 'the page script closed this panel' }),
     }
     peers.set(id, internal)
-    startHeartbeat()
+    if (heartbeat && !heartbeatTimer) {
+      heartbeatTimer = setInterval(() => {
+        const now = Date.now()
+        for (const peer of [...peers.values()]) {
+          if (now - peer.attached.lastActivity > heartbeat.timeoutMs)
+            removePeer(peer.id, { reason: 'the panel went silent (heartbeat timeout)' })
+        }
+      }, heartbeat.intervalMs)
+    }
     events.emit('panel:connected', internal.peer)
     return internal.peer
-  }
-
-  function startHeartbeat(): void {
-    if (!heartbeat || heartbeatTimer)
-      return
-    heartbeatTimer = setInterval(() => {
-      const now = Date.now()
-      for (const peer of [...peers.values()]) {
-        if (now - peer.attached.lastActivity > heartbeat.timeoutMs)
-          removePeer(peer.id, { reason: 'the panel went silent (heartbeat timeout)' })
-      }
-    }, heartbeat.intervalMs)
-  }
-  function stopHeartbeat(): void {
-    if (heartbeatTimer) {
-      clearInterval(heartbeatTimer)
-      heartbeatTimer = undefined
-    }
   }
 
   const onWindowMessage = (event: MessageEvent): void => {
@@ -188,10 +155,10 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
 
     const messageChannel = new MessageChannel()
     addPeer(messageChannel.port1, data.panelId)
-    const grant: InPageChannelGrant = {
+    const grant = {
       channel: IN_PAGE_CHANNEL_TAG,
       v: IN_PAGE_CHANNEL_VERSION,
-      kind: 'grant',
+      kind: 'grant' as const,
       name,
       panelId: data.panelId,
       instanceId,
@@ -207,16 +174,15 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
 
   win?.addEventListener('message', onWindowMessage)
 
-  const channel: PageScriptChannel<P> = {
+  return {
     name,
     instanceId,
     get panels() {
       return [...peers.values()].map(peer => peer.peer)
     },
     events: { on: events.on, once: events.once },
-    register: definition => registry.register(definition),
     callEvent: (fnName, ...args) => {
-      const wireArgs = serializeArgs(args)
+      const wireArgs = serializeArgs(codec, args)
       for (const peer of peers.values()) {
         void peer.attached.rpc.$callRaw({
           method: fnName,
@@ -235,18 +201,6 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
       win?.removeEventListener('message', onWindowMessage)
       for (const id of [...peers.keys()])
         removePeer(id, { bye: true, reason: 'the page script closed the channel' })
-      stopHeartbeat()
     },
   }
-
-  channelRef = channel
-  for (const definition of options.functions ?? [])
-    registry.register(definition)
-  const transports = options.transport === undefined
-    ? []
-    : Array.isArray(options.transport) ? options.transport : [options.transport]
-  for (const port of transports)
-    channel.addPanelPort(port)
-
-  return channel
 }
