@@ -1,9 +1,9 @@
 ---
 title: 'Introduction'
-description: 'Devframe is a framework-neutral foundation for building a devtool once and running it everywhere — inside any host framework, as a standalone tool, or through a coding agent. A devtool here is anything that makes a program''s implicit state visible and interactive: an inspector, a build or bundle analyzer,…'
+description: 'Devframe is a framework-neutral foundation for building a devtool once and running it everywhere - inside any host framework, as a standalone tool, or through a coding agent.'
 ---
 
-**Devframe is a framework-neutral foundation for building a devtool once and running it everywhere — inside any host framework, as a standalone tool, or through a coding agent.** A devtool here is anything that makes a program's implicit state visible and interactive: an inspector, a build or bundle analyzer, an asset viewer, a state or data explorer, a terminal. You describe such a tool one time, and the same definition mounts almost anywhere. Think of it as [`unplugin`](https://unplugin.unjs.io/) for devtools.
+**Devframe is a framework-neutral foundation for building a devtool once and running it everywhere - inside any host framework, as a standalone tool, or through a coding agent.** A devtool here is anything that makes a program's implicit state visible and interactive: an inspector, a build or bundle analyzer, an asset viewer, a state or data explorer, a terminal. You describe such a tool one time, and the same definition mounts almost anywhere. Think of it as [`unplugin`](https://unplugin.unjs.io/) for devtools.
 
 ## Why it exists
 

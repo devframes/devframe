@@ -45,3 +45,8 @@
 .mermaid svg {
   width: 100%;
 }
+
+/* Do not render "description" slot */
+[data-slot="description"] {
+  display: none;
+}
