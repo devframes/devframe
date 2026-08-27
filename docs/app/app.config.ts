@@ -22,6 +22,7 @@ export default defineAppConfig({
         sections: ['adapters', 'frameworks', 'helpers'],
       },
       { label: 'Plugins', sections: ['plugins'], link: 'section' as const },
+      { label: 'Reference', sections: ['references'], link: 'section' as const },
       { label: 'Errors', sections: ['errors'], link: 'section' as const },
       {
         label: `v${devframePkg.version}`,
@@ -87,7 +88,7 @@ export default defineAppConfig({
             '/guide/scoped-context',
             '/guide/json-render',
             '/guide/diagnostics',
-            '/guide/when-clauses',
+            '/references/when-clauses',
           ],
         },
         {
@@ -110,7 +111,7 @@ export default defineAppConfig({
             '/guide/hub-initiate',
             '/guide/services',
             '/guide/deep-linking',
-            '/guide/events',
+            '/references/events',
           ],
         },
         {
@@ -171,7 +172,7 @@ export default defineAppConfig({
       {
         category: 'Hub',
         items: [
-          'How do I compose multiple integrations into a hub?',
+          'How do I compose multiple devframes into a hub?',
           'How do I build my own hub UI on top of the hub protocol?',
         ],
       },

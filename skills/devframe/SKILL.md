@@ -615,7 +615,7 @@ Devframe-level (one portable tool):
 - [Scoped Context](https://devfra.me/guide/scoped-context) — `ctx.scope(id)`, auto-namespacing, `settings`
 - [Adapters](https://devfra.me/adapters/) — cli / dev / build / mcp / embedded
 - [RPC](https://devfra.me/guide/rpc) — types, Standard Schema, broadcasts, dumps
-- [Shared State](https://devfra.me/guide/shared-state) · [Streaming](https://devfra.me/guide/streaming) · [When Clauses](https://devfra.me/guide/when-clauses)
+- [Shared State](https://devfra.me/guide/shared-state) · [Streaming](https://devfra.me/guide/streaming) · [When Clauses](https://devfra.me/references/when-clauses)
 - [Diagnostics](https://devfra.me/guide/diagnostics) · [Services](https://devfra.me/guide/services) · [Client](https://devfra.me/guide/client)
 - [Security](https://devfra.me/guide/security) · [Agent-Native](https://devfra.me/guide/agent-native)
 

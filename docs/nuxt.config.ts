@@ -22,7 +22,7 @@ export default defineNuxtConfig({
     full: {
       title: 'Devframe Documentation',
       description:
-        'Complete Devframe documentation as plain markdown — guide, adapters, frameworks, helpers, plugins, and the error reference.',
+        'Complete Devframe documentation as plain markdown — guide, adapters, frameworks, helpers, plugins, references, and the error reference.',
     },
   },
 

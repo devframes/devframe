@@ -162,7 +162,7 @@ The CLI adapter serves the SPA at `/`; embedded in a host framework (`vite`, `em
 | **[JSON-Render](/guide/json-render)** | Opt-in data-driven UI — a serializable view spec, rendered standalone or in a hub dock. |
 | **[Diagnostics](/guide/diagnostics)** | Coded warnings/errors via `nostics`, in the host framework's shared lookup. |
 | **[Streaming](/guide/streaming)** | One-way (RPC streaming) and two-way (uploads) channel primitives. |
-| **[When Clauses](/guide/when-clauses)** | VS Code-style conditional expressions for docks, commands, and custom UI. |
+| **[When Clauses](/references/when-clauses)** | VS Code-style conditional expressions for docks, commands, and custom UI. |
 | **[The Standard Handler](/adapters/initiate)** | `initDevframe()` — the Web Standard `Request → Response` boundary. |
 | **[Client](/guide/client)** | Browser RPC client (`connectDevframe`), auto-auth, WebSocket / static modes. |
 | **[Agent-Native](/guide/agent-native)** | Opt-in exposure of your tool's capabilities to coding agents over MCP. |
