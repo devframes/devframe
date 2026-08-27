@@ -33,6 +33,7 @@ export const DEVFRAME_EVENTS = {
     agentToolUnregistered: 'agent:tool:unregistered',
     agentResourceRegistered: 'agent:resource:registered',
     agentResourceUnregistered: 'agent:resource:unregistered',
+    agentResourceUpdated: 'agent:resource:updated',
   },
   /**
    * Client-side RPC connection `EventEmitter` events (`rpc.events`) a UI

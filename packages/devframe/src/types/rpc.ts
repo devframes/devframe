@@ -86,6 +86,10 @@ export interface RpcSharedStateHost {
    * as dynamic resources.
    */
   onKeyAdded: (fn: (key: string) => void) => () => void
+  /** Subscribe to shared-state keys being removed through {@link delete}. */
+  onKeyRemoved: (fn: (key: string) => void) => () => void
+  /** Subscribe to updates from any registered shared-state key. */
+  onUpdated: (fn: (key: string) => void) => () => void
   /**
    * Unregister a shared state and drop its broadcast listeners. Returns
    * `true` when a state was removed, `false` when the key was unknown.

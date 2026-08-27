@@ -1,6 +1,8 @@
 import type { RpcFunctionDefinitionAnyWithContext } from '../../rpc/types'
+import type { AgentResourceVariables } from '../../types/agent'
 import type { DevframeNodeContext } from '../../types/context'
 import { describe, expect, it, vi } from 'vitest'
+import { DEVFRAME_EVENTS } from '../../events'
 import { DevframeAgentHost } from '../host-agent'
 import { RpcFunctionsHostImpl } from '../host-functions'
 
@@ -248,6 +250,80 @@ describe('devToolsAgentHost', () => {
 
       const content = await ctx.agent.read('my-resource')
       expect(content).toEqual({ json: { hello: 'world' } })
+    })
+
+    it('registers a URI template and reads a concrete URI with parsed variables', async () => {
+      expect.assertions(6)
+      const ctx = createContext()
+      const read = vi.fn((_uri: URL, _variables: AgentResourceVariables) => ({ text: 'artifact' }))
+      ctx.agent.registerResource({
+        id: 'artifact',
+        uriTemplate: 'devframe://resource/artifacts/{artifactId}/files/{path}',
+        name: 'Artifact file',
+        read,
+      })
+
+      expect(ctx.agent.list().resources).toEqual([])
+      expect(ctx.agent.list().resourceTemplates).toEqual([{
+        id: 'artifact',
+        uriTemplate: 'devframe://resource/artifacts/{artifactId}/files/{path}',
+        name: 'Artifact file',
+        description: undefined,
+        mimeType: undefined,
+      }])
+
+      const uri = 'devframe://resource/artifacts/42/files/output.json'
+      const variables = { artifactId: '42', path: 'output.json' }
+      const content = await ctx.agent.read('artifact', uri, variables)
+      expect(read).toHaveBeenCalledOnce()
+      expect(read.mock.calls[0]![0]).toEqual(new URL(uri))
+      expect(read.mock.calls[0]![1]).toEqual(variables)
+      expect(content).toEqual({ text: 'artifact' })
+    })
+
+    it('emits updates through a registered resource handle', () => {
+      expect.assertions(4)
+      const ctx = createContext()
+      const updated = vi.fn()
+      ctx.agent.events.on(DEVFRAME_EVENTS.bus.agentResourceUpdated, updated)
+      const resource = ctx.agent.registerResource({
+        id: 'status',
+        uri: 'https://example.com/status',
+        name: 'Status',
+        read: () => ({ text: 'ok' }),
+      })
+
+      resource.notifyUpdated()
+      expect(updated).toHaveBeenCalledOnce()
+      expect(updated).toHaveBeenCalledWith('https://example.com/status')
+
+      resource.unregister()
+      expect(ctx.agent.list().resources).toEqual([])
+      resource.notifyUpdated()
+      expect(updated).toHaveBeenCalledOnce()
+    })
+
+    it('emits concrete URI updates through a registered template handle', () => {
+      expect.assertions(4)
+      const ctx = createContext()
+      const updated = vi.fn()
+      ctx.agent.events.on(DEVFRAME_EVENTS.bus.agentResourceUpdated, updated)
+      const template = ctx.agent.registerResource({
+        id: 'artifact',
+        uriTemplate: 'devframe://resource/artifacts/{artifactId}',
+        name: 'Artifact',
+        read: () => ({ text: 'artifact' }),
+      })
+      const uri = 'devframe://resource/artifacts/42'
+
+      template.notifyUpdated(uri)
+      expect(updated).toHaveBeenCalledOnce()
+      expect(updated).toHaveBeenCalledWith(uri)
+
+      template.unregister()
+      expect(ctx.agent.list().resourceTemplates).toEqual([])
+      template.notifyUpdated(uri)
+      expect(updated).toHaveBeenCalledOnce()
     })
 
     it('throws DF0016 on duplicate id', () => {

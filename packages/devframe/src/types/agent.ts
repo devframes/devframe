@@ -81,7 +81,7 @@ export interface AgentResource {
 }
 
 /**
- * Input accepted by `DevframeAgentHost.registerResource()`.
+ * Concrete resource input accepted by `DevframeAgentHost.registerResource()`.
  */
 export interface AgentResourceInput {
   id: string
@@ -94,8 +94,35 @@ export interface AgentResourceInput {
   read: () => Promise<AgentResourceContent> | AgentResourceContent
 }
 
+/** Serializable description of a dynamic resource URI template. */
+export interface AgentResourceTemplate {
+  id: string
+  /** RFC 6570 URI template used by MCP clients. */
+  uriTemplate: string
+  name: string
+  description?: string
+  mimeType?: string
+}
+
+/** Variables parsed from a concrete URI matched against an RFC 6570 template. */
+export type AgentResourceVariables = Readonly<Record<string, string | string[]>>
+
+/** A dynamic URI template accepted by `DevframeAgentHost.registerResource()`. */
+export interface AgentResourceTemplateInput {
+  id: string
+  uriTemplate: string
+  name: string
+  description?: string
+  mimeType?: string
+  /** Snapshot reader. Receives the concrete URI and its parsed template variables. */
+  read: (
+    uri: URL,
+    variables: AgentResourceVariables,
+  ) => Promise<AgentResourceContent> | AgentResourceContent
+}
+
 /**
- * Payload returned by `AgentResourceInput.read`. Either `text` or `json` must be set.
+ * Payload returned by a resource reader. Either `text` or `json` must be set.
  */
 export interface AgentResourceContent {
   text?: string
@@ -110,6 +137,7 @@ export interface AgentResourceContent {
 export interface AgentManifest {
   tools: readonly AgentTool[]
   resources: readonly AgentResource[]
+  resourceTemplates: readonly AgentResourceTemplate[]
 }
 
 /**
@@ -117,6 +145,16 @@ export interface AgentManifest {
  */
 export interface AgentHandle {
   unregister: () => void
+}
+
+export interface AgentResourceHandle extends AgentHandle {
+  /** Publish an invalidation for this resource's URI. */
+  notifyUpdated: () => void
+}
+
+export interface AgentResourceTemplateHandle extends AgentHandle {
+  /** Publish an invalidation for one concrete URI matched by the template. */
+  notifyUpdated: (uri: string) => void
 }
 
 /**
@@ -150,8 +188,9 @@ export interface AgentToolProviderHandle extends AgentHandle {
 export interface DevframeAgentHostEvents {
   'agent:tool:registered': (tool: AgentTool) => void
   'agent:tool:unregistered': (id: string) => void
-  'agent:resource:registered': (resource: AgentResource) => void
+  'agent:resource:registered': (resource: AgentResource | AgentResourceTemplate) => void
   'agent:resource:unregistered': (id: string) => void
+  'agent:resource:updated': (uri: string) => void
   /**
    * Fires when the unified manifest changes — including when a new
    * RPC function with an `agent` field is registered on `ctx.rpc`.
@@ -183,8 +222,11 @@ export interface DevframeAgentHost {
    */
   registerToolProvider: (provider: AgentToolProvider) => AgentToolProviderHandle
 
-  /** Register a readable resource. */
-  registerResource: (resource: AgentResourceInput) => AgentHandle
+  /** Register a readable resource or URI template. */
+  registerResource: {
+    (resource: AgentResourceInput): AgentResourceHandle
+    (resource: AgentResourceTemplateInput): AgentResourceTemplateHandle
+  }
   /** Unregister a previously registered resource by id. */
   unregisterResource: (id: string) => boolean
 
@@ -201,8 +243,12 @@ export interface DevframeAgentHost {
    */
   invoke: (id: string, args: unknown) => Promise<unknown>
 
-  /** Read a resource by id. */
-  read: (id: string) => Promise<AgentResourceContent>
+  /** Read a concrete resource by id, or a template by id and concrete URI. */
+  read: (
+    id: string,
+    uri?: string | URL,
+    variables?: AgentResourceVariables,
+  ) => Promise<AgentResourceContent>
 
   /** Look up a tool by id (returns the serializable projection). */
   getTool: (id: string) => AgentTool | undefined

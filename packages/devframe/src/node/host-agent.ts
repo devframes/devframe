@@ -4,7 +4,12 @@ import type {
   AgentManifest,
   AgentResource,
   AgentResourceContent,
+  AgentResourceHandle,
   AgentResourceInput,
+  AgentResourceTemplate,
+  AgentResourceTemplateHandle,
+  AgentResourceTemplateInput,
+  AgentResourceVariables,
   AgentTool,
   AgentToolInput,
   AgentToolProvider,
@@ -25,9 +30,14 @@ interface RegisteredTool {
   readonly handler?: (args: any) => unknown | Promise<unknown>
 }
 
-interface RegisteredResource {
-  readonly resource: AgentResource
-  readonly read: () => Promise<AgentResourceContent> | AgentResourceContent
+type AgentResourceDefinition = AgentResourceInput | AgentResourceTemplateInput
+
+function isResourceTemplate(input: AgentResourceDefinition): input is AgentResourceTemplateInput {
+  return 'uriTemplate' in input
+}
+
+function resourceUri(input: AgentResourceInput): string {
+  return input.uri ?? `devframe://resource/${encodeURIComponent(input.id)}`
 }
 
 /**
@@ -40,7 +50,7 @@ export class DevframeAgentHost implements DevframeAgentHostType {
   public readonly events: EventEmitter<DevframeAgentHostEvents> = createEventEmitter()
 
   private readonly tools = new Map<string, RegisteredTool>()
-  private readonly resources = new Map<string, RegisteredResource>()
+  private readonly resources = new Map<string, AgentResourceDefinition>()
   private readonly providers = new Set<AgentToolProvider>()
   private _rpcUnsubscribe: (() => void) | undefined
 
@@ -92,23 +102,37 @@ export class DevframeAgentHost implements DevframeAgentHostType {
     }
   }
 
-  registerResource(input: AgentResourceInput): AgentHandle {
+  registerResource(input: AgentResourceInput): AgentResourceHandle
+  registerResource(input: AgentResourceTemplateInput): AgentResourceTemplateHandle
+  registerResource(input: AgentResourceDefinition): AgentResourceHandle | AgentResourceTemplateHandle {
     if (this.resources.has(input.id))
       throw diagnostics.DF0016({ id: input.id })
 
-    const resource: AgentResource = {
-      id: input.id,
-      name: input.name,
-      description: input.description,
-      mimeType: input.mimeType ?? 'application/json',
-      uri: input.uri ?? `devframe://resource/${encodeURIComponent(input.id)}`,
-    }
-    this.resources.set(resource.id, { resource, read: input.read })
+    const resource = this._projectResource(input)
+    this.resources.set(input.id, input)
     this.events.emit(DEVFRAME_EVENTS.bus.agentResourceRegistered, resource)
     this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
 
+    const isRegistered = (): boolean => this.resources.get(input.id) === input
+    const unregister = (): void => {
+      if (isRegistered())
+        this.unregisterResource(input.id)
+    }
+    if (isResourceTemplate(input)) {
+      return {
+        notifyUpdated: (uri) => {
+          if (isRegistered())
+            this.events.emit(DEVFRAME_EVENTS.bus.agentResourceUpdated, uri)
+        },
+        unregister,
+      }
+    }
     return {
-      unregister: () => this.unregisterResource(resource.id),
+      notifyUpdated: () => {
+        if (isRegistered())
+          this.events.emit(DEVFRAME_EVENTS.bus.agentResourceUpdated, resourceUri(input))
+      },
+      unregister,
     }
   }
 
@@ -124,7 +148,15 @@ export class DevframeAgentHost implements DevframeAgentHostType {
   list(): AgentManifest {
     const rpcTools = this._collectRpcTools()
     const plainTools = Array.from(this.tools.values()).map(t => t.tool)
-    const resources = Array.from(this.resources.values()).map(r => r.resource)
+    const resources: AgentResource[] = []
+    const resourceTemplates: AgentResourceTemplate[] = []
+    for (const input of this.resources.values()) {
+      const resource = this._projectResource(input)
+      if (isResourceTemplate(input))
+        resourceTemplates.push(resource as AgentResourceTemplate)
+      else
+        resources.push(resource as AgentResource)
+    }
 
     // Provider tools are queried lazily; earlier sources win on id collision.
     const seen = new Set([...rpcTools, ...plainTools].map(t => t.id))
@@ -139,6 +171,7 @@ export class DevframeAgentHost implements DevframeAgentHostType {
     return {
       tools: [...rpcTools, ...plainTools, ...providerTools],
       resources,
+      resourceTemplates,
     }
   }
 
@@ -153,7 +186,10 @@ export class DevframeAgentHost implements DevframeAgentHostType {
   }
 
   getResource(id: string): AgentResource | undefined {
-    return this.resources.get(id)?.resource
+    const input = this.resources.get(id)
+    if (!input || isResourceTemplate(input))
+      return undefined
+    return this._projectResource(input) as AgentResource
   }
 
   async invoke(id: string, args: unknown): Promise<unknown> {
@@ -180,11 +216,19 @@ export class DevframeAgentHost implements DevframeAgentHostType {
     throw new Error(`[devframe/agent] tool "${id}" not found`)
   }
 
-  async read(id: string): Promise<AgentResourceContent> {
+  async read(
+    id: string,
+    uri?: string | URL,
+    variables: AgentResourceVariables = {},
+  ): Promise<AgentResourceContent> {
     const entry = this.resources.get(id)
     if (!entry)
       throw new Error(`[devframe/agent] resource "${id}" not found`)
-    return await entry.read()
+    if (!isResourceTemplate(entry))
+      return await entry.read()
+    if (!uri)
+      throw new Error(`[devframe/agent] resource template "${id}" requires a URI`)
+    return await entry.read(uri instanceof URL ? uri : new URL(uri), variables)
   }
 
   /** @internal */
@@ -221,6 +265,26 @@ export class DevframeAgentHost implements DevframeAgentHostType {
       inputSchema: input.inputSchema,
       outputSchema: input.outputSchema,
       examples: input.examples,
+    }
+  }
+
+  private _projectResource(input: AgentResourceDefinition): AgentResource | AgentResourceTemplate {
+    if (isResourceTemplate(input)) {
+      return {
+        id: input.id,
+        uriTemplate: input.uriTemplate,
+        name: input.name,
+        description: input.description,
+        mimeType: input.mimeType,
+      }
+    }
+
+    return {
+      id: input.id,
+      uri: resourceUri(input),
+      name: input.name,
+      description: input.description,
+      mimeType: input.mimeType ?? 'application/json',
     }
   }
 
