@@ -159,9 +159,9 @@ describe('hub docks panel-state RPC', () => {
     } as unknown as DevframeHubContext
 
     const fn = await hubDocksPanelState.setup!(ctx)
-    await fn.handler!(true)
+    await fn.handler!({ state: 'open', selectedDockId: 'git' })
 
     expect(getCurrentRpcSession).toHaveBeenCalledOnce()
-    expect(lifecycleEvents).toEqual([{ type: 'connected', sessionId: 73, open: true }])
+    expect(lifecycleEvents).toEqual([{ type: 'connected', sessionId: 73, state: 'open', selectedDockId: 'git' }])
   })
 })

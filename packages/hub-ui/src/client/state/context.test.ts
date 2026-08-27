@@ -75,36 +75,54 @@ async function flushRestore(): Promise<void> {
 }
 
 describe('createDocksContext', () => {
-  it('reports the restored panel state and later open-state transitions', async () => {
-    expect.assertions(4)
+  it('reports restored, selected, hidden, and closed panel snapshots', async () => {
+    expect.assertions(8)
 
     const { rpc, sharedStates, trust } = createStubRpc()
+    const panelVisible = ref<boolean>()
     const session = ref<DockSessionStorage>({
       open: true,
       selectedDockId: 'git',
       selectedDockRoute: null,
     })
-    await createDocksContext('embedded', rpc, undefined, session)
+    await createDocksContext('embedded', rpc, undefined, session, panelVisible)
 
     trust()
     sharedStates.get('devframe:docks')!.push([gitEntry])
     sharedStates.get('devframe:dock-renderers')!.push({})
     await flushRestore()
+    expect(rpc.call).not.toHaveBeenCalled()
+
+    panelVisible.value = true
+    await nextTick()
     await vi.waitFor(() => {
       if (vi.mocked(rpc.call).mock.calls.length !== 1)
         throw new Error('waiting for the restored panel state report')
     })
-
     expect(rpc.call).toHaveBeenCalledTimes(1)
-    expect(rpc.call).toHaveBeenLastCalledWith(HUB_EVENTS.rpc.docksPanelState, true)
+    expect(rpc.call).toHaveBeenLastCalledWith(HUB_EVENTS.rpc.docksPanelState, { state: 'open', selectedDockId: 'git' })
+
+    session.value.selectedDockId = '~settings'
+    await nextTick()
+    expect(rpc.call).toHaveBeenLastCalledWith(HUB_EVENTS.rpc.docksPanelState, { state: 'open', selectedDockId: '~settings' })
+
+    panelVisible.value = false
+    await nextTick()
+    expect(rpc.call).toHaveBeenLastCalledWith(HUB_EVENTS.rpc.docksPanelState, { state: 'hidden', selectedDockId: '~settings' })
 
     session.value.open = false
+    session.value.selectedDockId = null
     await nextTick()
-    expect(rpc.call).toHaveBeenLastCalledWith(HUB_EVENTS.rpc.docksPanelState, false)
+    expect(rpc.call).toHaveBeenLastCalledWith(HUB_EVENTS.rpc.docksPanelState, { state: 'hidden' })
 
+    panelVisible.value = true
+    await nextTick()
+    expect(rpc.call).toHaveBeenLastCalledWith(HUB_EVENTS.rpc.docksPanelState, { state: 'closed' })
+
+    panelVisible.value = true
     session.value.open = false
     await nextTick()
-    expect(rpc.call).toHaveBeenCalledTimes(2)
+    expect(rpc.call).toHaveBeenCalledTimes(5)
   })
 
   it('mounts a restored dock once after all initial server state arrives', async () => {

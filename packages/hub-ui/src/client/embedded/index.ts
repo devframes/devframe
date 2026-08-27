@@ -1,6 +1,7 @@
 import type { DockPanelStorage, DockSessionStorage } from '@devframes/hub/client'
 import { getDevframeRpcClient, setDevframeClientContext } from '@devframes/hub/client'
 import { useLocalStorage, useSessionStorage } from '@vueuse/core'
+import { ref } from 'vue'
 import { applyPrimaryColor, setBranding } from '../state/branding'
 import { DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
 import { setupEmbeddedVisibility } from './visibility'
@@ -74,8 +75,9 @@ async function mountDock(): Promise<void> {
   // carried by the connection we just established above.
   const branding = setBranding(rpc.connectionMeta.configs?.ui?.branding || {})
 
+  const panelVisible = ref<boolean>()
   const { createDocksContext } = await import('../state/context')
-  const context = await createDocksContext('embedded', rpc, state, session)
+  const context = await createDocksContext('embedded', rpc, state, session, panelVisible)
   setDevframeClientContext(context)
 
   const { DockEmbedded } = await import('../components/DockEmbedded')
@@ -97,8 +99,12 @@ async function mountDock(): Promise<void> {
       show: () => {
         if (dockEl && !dockEl.isConnected)
           document.body.appendChild(dockEl)
+        panelVisible.value = true
       },
-      hide: () => dockEl?.remove(),
+      hide: () => {
+        dockEl?.remove()
+        panelVisible.value = false
+      },
     },
   )
 }

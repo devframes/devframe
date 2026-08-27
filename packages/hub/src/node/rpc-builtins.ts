@@ -1,4 +1,5 @@
 import type { RpcFunctionDefinitionAny } from 'devframe/rpc'
+import type { DevframeDockPanelState } from '../types/docks'
 import type { DevframeMessageEntry, DevframeMessageEntryInput } from '../types/messages'
 import type {
   DevframeChildProcessTerminalSession,
@@ -226,10 +227,10 @@ export const hubDocksPanelState = defineHubRpcFunction({
   name: HUB_EVENTS.rpc.docksPanelState,
   type: 'action',
   setup: context => ({
-    async handler(open: boolean): Promise<void> {
+    async handler(panelState: DevframeDockPanelState): Promise<void> {
       const session = context.rpc.getCurrentRpcSession()
       if (session)
-        updateDockPanelState(context.docks, session.meta.id, open)
+        updateDockPanelState(context.docks, session.meta.id, panelState)
     },
   }),
 })

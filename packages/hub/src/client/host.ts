@@ -20,6 +20,7 @@ import type {
   DockClientType,
   DockEntryState,
   DocksEntriesContext,
+  DockSessionStorage,
   DocksPanelContext,
   WhenClauseContext,
 } from './docks'
@@ -125,6 +126,7 @@ export async function createDevframeClientRuntime(
 ): Promise<DevframeClientRuntime> {
   const clientType: DockClientType = options.clientType ?? 'standalone'
   const rpc = options.rpc ?? await connectDevframe(options.connect)
+  let disposed = false
   // Set by createRenderersContext(); teardown disposes every live mount.
   let mountedRenderers: Set<() => void> | undefined
 
@@ -155,10 +157,24 @@ export async function createDevframeClientRuntime(
     ...options.categoryOrder,
   }
 
-  const sendPanelState = (open: boolean): void => {
-    void reportDockPanelState(rpc, open).catch(() => {})
+  const reportPanelState = (session: DockSessionStorage): void => {
+    void reportDockPanelState(rpc, {
+      state: session.open ? 'open' : 'closed',
+      ...(session.selectedDockId !== null ? { selectedDockId: session.selectedDockId } : {}),
+    }).catch(() => {})
   }
-  const panel = createPanelContext(clientType, sendPanelState)
+  let panelStateReportPending = false
+  const schedulePanelStateReport = (session: DockSessionStorage): void => {
+    if (panelStateReportPending)
+      return
+    panelStateReportPending = true
+    queueMicrotask(() => {
+      panelStateReportPending = false
+      if (!disposed)
+        reportPanelState(session)
+    })
+  }
+  const panel = createPanelContext(clientType, schedulePanelStateReport)
   const docks = createDocksContext()
   const commands = createCommandsContext()
   const renderers = createRenderersContext()
@@ -229,7 +245,7 @@ export async function createDevframeClientRuntime(
     )
   }
   setDevframeClientContext(context)
-  sendPanelState(panel.session.open)
+  reportPanelState(panel.session)
 
   const loadedScripts = new Set<string>()
   if (loadScriptsEnabled) {
@@ -240,6 +256,7 @@ export async function createDevframeClientRuntime(
   return {
     context,
     dispose() {
+      disposed = true
       for (const off of disposers.splice(0)) off()
       for (const disposeAdapter of frameNavAdapters.values()) disposeAdapter()
       frameNavAdapters.clear()
@@ -556,7 +573,7 @@ export async function createDevframeClientRuntime(
 
 function createPanelContext(
   clientType: DockClientType,
-  onOpenChange: (open: boolean) => void,
+  onSessionChange: (session: DockSessionStorage) => void,
 ): DocksPanelContext {
   const store: DocksPanelContext['store'] = {
     mode: 'edge',
@@ -568,6 +585,7 @@ function createPanelContext(
     inactiveTimeout: 0,
   }
   let open = clientType === 'standalone'
+  let selectedDockId: string | null = null
   const session: DocksPanelContext['session'] = {
     get open() {
       return open
@@ -576,9 +594,17 @@ function createPanelContext(
       if (nextOpen === open)
         return
       open = nextOpen
-      onOpenChange(open)
+      onSessionChange(session)
     },
-    selectedDockId: null,
+    get selectedDockId() {
+      return selectedDockId
+    },
+    set selectedDockId(nextSelectedDockId) {
+      if (nextSelectedDockId === selectedDockId)
+        return
+      selectedDockId = nextSelectedDockId
+      onSessionChange(session)
+    },
     selectedDockRoute: null,
   }
   return {

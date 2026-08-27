@@ -1,12 +1,12 @@
-import type { DevframeDockPanelStateEvent, DevframeDocksHost } from '../types/docks'
+import type { DevframeDockPanelState, DevframeDockPanelStateEvent, DevframeDocksHost } from '../types/docks'
 import { HUB_EVENTS } from '../events'
 
-const dockPanelStates = new WeakMap<DevframeDocksHost, Map<number, boolean>>()
+const dockPanelStates = new WeakMap<DevframeDocksHost, Map<number, DevframeDockPanelState>>()
 
 export function updateDockPanelState(
   docks: DevframeDocksHost,
   sessionId: number,
-  open: boolean,
+  panelState: DevframeDockPanelState,
 ): void {
   let sessionStates = dockPanelStates.get(docks)
   if (!sessionStates) {
@@ -14,14 +14,22 @@ export function updateDockPanelState(
     dockPanelStates.set(docks, sessionStates)
   }
 
-  const previousOpen = sessionStates.get(sessionId)
-  if (previousOpen === open)
+  const previousState = sessionStates.get(sessionId)
+  if (
+    previousState?.state === panelState.state
+    && previousState.selectedDockId === panelState.selectedDockId
+  ) {
     return
+  }
 
-  sessionStates.set(sessionId, open)
-  const event: DevframeDockPanelStateEvent = previousOpen === undefined
-    ? { type: 'connected', sessionId, open }
-    : { type: 'changed', sessionId, open }
+  const currentState: DevframeDockPanelState = {
+    state: panelState.state,
+    ...(panelState.selectedDockId !== undefined ? { selectedDockId: panelState.selectedDockId } : {}),
+  }
+  sessionStates.set(sessionId, currentState)
+  const event: DevframeDockPanelStateEvent = previousState === undefined
+    ? { type: 'connected', sessionId, ...currentState }
+    : { type: 'changed', sessionId, ...currentState }
   docks.events.emit(HUB_EVENTS.bus.docksPanelState, event)
 }
 

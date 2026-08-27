@@ -180,16 +180,16 @@ describe('initHub', () => {
       const secondClient = connectWsClient(`ws://${host}:${port}/__ws`)
       clients.push(firstClient, secondClient)
 
-      await firstClient.$call(HUB_EVENTS.rpc.docksPanelState, true)
-      await firstClient.$call(HUB_EVENTS.rpc.docksPanelState, true)
-      await firstClient.$call(HUB_EVENTS.rpc.docksPanelState, false)
-      await secondClient.$call(HUB_EVENTS.rpc.docksPanelState, false)
+      await firstClient.$call(HUB_EVENTS.rpc.docksPanelState, { state: 'open', selectedDockId: 'git' })
+      await firstClient.$call(HUB_EVENTS.rpc.docksPanelState, { state: 'open', selectedDockId: 'git' })
+      await firstClient.$call(HUB_EVENTS.rpc.docksPanelState, { state: 'closed' })
+      await secondClient.$call(HUB_EVENTS.rpc.docksPanelState, { state: 'hidden' })
 
       expect(lifecycleEvents).toHaveLength(3)
-      expect(lifecycleEvents[0]).toMatchObject({ type: 'connected', open: true })
+      expect(lifecycleEvents[0]).toMatchObject({ type: 'connected', state: 'open', selectedDockId: 'git' })
       expect(typeof lifecycleEvents[0]!.sessionId).toBe('number')
-      expect(lifecycleEvents[1]).toEqual({ type: 'changed', sessionId: lifecycleEvents[0]!.sessionId, open: false })
-      expect(lifecycleEvents[2]).toMatchObject({ type: 'connected', open: false })
+      expect(lifecycleEvents[1]).toEqual({ type: 'changed', sessionId: lifecycleEvents[0]!.sessionId, state: 'closed' })
+      expect(lifecycleEvents[2]).toMatchObject({ type: 'connected', state: 'hidden' })
       expect(lifecycleEvents[2]!.sessionId).not.toBe(lifecycleEvents[0]!.sessionId)
 
       firstClient.close()
@@ -201,9 +201,9 @@ describe('initHub', () => {
 
       const reconnectedClient = connectWsClient(`ws://${host}:${port}/__ws`)
       clients.push(reconnectedClient)
-      await reconnectedClient.$call(HUB_EVENTS.rpc.docksPanelState, true)
+      await reconnectedClient.$call(HUB_EVENTS.rpc.docksPanelState, { state: 'open' })
 
-      expect(lifecycleEvents[4]).toMatchObject({ type: 'connected', open: true })
+      expect(lifecycleEvents[4]).toMatchObject({ type: 'connected', state: 'open' })
       expect([lifecycleEvents[0]!.sessionId, lifecycleEvents[2]!.sessionId]).not.toContain(lifecycleEvents[4]!.sessionId)
     }
     finally {

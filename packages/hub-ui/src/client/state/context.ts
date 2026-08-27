@@ -23,6 +23,7 @@ export async function createDocksContext(
   rpc: DevframeRpcClient,
   panelStore?: Ref<DockPanelStorage>,
   sessionStore?: Ref<DockSessionStorage>,
+  panelVisible: Ref<boolean | undefined> = ref(true),
 ): Promise<DocksContext> {
   if (docksContextByRpc.has(rpc)) {
     return docksContextByRpc.get(rpc)!
@@ -674,8 +675,15 @@ export async function createDocksContext(
   const reportPanelStateAfterInitialization = async (): Promise<void> => {
     await restoreAfterInitialization()
     watch(
-      () => sessionStore.value.open,
-      open => void reportDockPanelState(rpc, open).catch(() => {}),
+      [panelVisible, () => sessionStore.value.open, selectedDockId],
+      ([visible, open, currentSelectedDockId]) => {
+        if (visible === undefined)
+          return
+        void reportDockPanelState(rpc, {
+          state: visible ? (open ? 'open' : 'closed') : 'hidden',
+          ...(currentSelectedDockId !== null ? { selectedDockId: currentSelectedDockId } : {}),
+        }).catch(() => {})
+      },
       { immediate: true },
     )
   }

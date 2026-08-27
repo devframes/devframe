@@ -68,23 +68,32 @@ function groupEntry(id: string, extra?: Record<string, unknown>): DevframeDockEn
 }
 
 describe('createDevframeClientRuntime', () => {
-  it('reports its initial panel state and later open-state assignments', async () => {
-    expect.assertions(3)
+  it('reports complete panel snapshots and coalesces related session changes', async () => {
+    expect.assertions(4)
 
-    const { rpc, calls } = createStubRpc()
+    const { rpc, calls, states } = createStubRpc()
     const host = await createDevframeClientRuntime({ rpc, clientType: 'embedded' })
 
-    expect(calls).toEqual([[HUB_EVENTS.rpc.docksPanelState, false]])
+    expect(calls).toEqual([[HUB_EVENTS.rpc.docksPanelState, { state: 'closed' }]])
 
+    states.get('devframe:docks')!.push([iframeEntry('one')])
     host.context.panel.session.open = true
-    host.context.panel.session.open = true
+    const switched = host.context.docks.switchEntry('one')
+    await switched
     expect(calls).toEqual([
-      [HUB_EVENTS.rpc.docksPanelState, false],
-      [HUB_EVENTS.rpc.docksPanelState, true],
+      [HUB_EVENTS.rpc.docksPanelState, { state: 'closed' }],
+      [HUB_EVENTS.rpc.docksPanelState, { state: 'open', selectedDockId: 'one' }],
     ])
 
+    host.context.panel.session.open = true
+    host.context.panel.session.selectedDockId = 'one'
+    await Promise.resolve()
+    expect(calls).toHaveLength(2)
+
     host.context.panel.session.open = false
-    expect(calls.at(-1)).toEqual([HUB_EVENTS.rpc.docksPanelState, false])
+    const cleared = host.context.docks.switchEntry(null)
+    await cleared
+    expect(calls.at(-1)).toEqual([HUB_EVENTS.rpc.docksPanelState, { state: 'closed' }])
     host.dispose()
   })
 

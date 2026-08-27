@@ -95,10 +95,14 @@ export function setupEmbeddedVisibility(
     handlers.hide()
   }
 
-  if (shown)
+  if (shown) {
     handlers.show()
-  else if (mode === 'passive')
-    printHint(label)
+  }
+  else {
+    handlers.hide()
+    if (mode === 'passive')
+      printHint(label)
+  }
 
   // Shift+Alt+D toggles the dock — the always-available "summon" chord.
   window.addEventListener('keydown', (e) => {

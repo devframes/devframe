@@ -140,12 +140,12 @@ export declare const hubDocksPanelState: {
   returns?: undefined;
   jsonSerializable?: boolean;
   agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[open: boolean], Promise<void>>>) | undefined;
-  handler?: ((open: boolean) => Promise<void>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[open: boolean], Promise<void>, DevframeHubContext> | undefined;
+  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[panelState: DevframeDockPanelState], Promise<void>>>) | undefined;
+  handler?: ((panelState: DevframeDockPanelState) => Promise<void>) | undefined;
+  dump?: import("devframe/rpc").RpcDump<[panelState: DevframeDockPanelState], Promise<void>, DevframeHubContext> | undefined;
   snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[open: boolean], Promise<void>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[open: boolean], Promise<void>>> | undefined;
+  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[panelState: DevframeDockPanelState], Promise<void>>>> | undefined;
+  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[panelState: DevframeDockPanelState], Promise<void>>> | undefined;
 };
 export declare const hubMessagesAdd: {
   name: "hub:messages:add";

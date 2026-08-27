@@ -30,10 +30,16 @@ export interface DevframeDocksHost {
   activate: (dockId: string, params?: Record<string, unknown>) => void
 }
 
+/** Current state reported by one dock-panel viewer. */
+export interface DevframeDockPanelState {
+  state: 'open' | 'closed' | 'hidden'
+  selectedDockId?: string
+}
+
 /** Lifecycle event for one viewer's dock panel over an RPC connection. */
 export type DevframeDockPanelStateEvent
-  = | { type: 'connected', sessionId: number, open: boolean }
-    | { type: 'changed', sessionId: number, open: boolean }
+  = | ({ type: 'connected', sessionId: number } & DevframeDockPanelState)
+    | ({ type: 'changed', sessionId: number } & DevframeDockPanelState)
     | { type: 'disconnected', sessionId: number }
 
 /**

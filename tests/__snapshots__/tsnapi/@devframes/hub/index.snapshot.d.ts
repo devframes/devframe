@@ -101,6 +101,10 @@ export interface DevframeDockEntryRegistry {
   'group': DevframeViewGroup;
   '~builtin': DevframeViewBuiltin;
 }
+export interface DevframeDockPanelState {
+  state: 'open' | 'closed' | 'hidden';
+  selectedDockId?: string;
+}
 export interface DevframeDocksActiveState {
   activation: DevframeDockActivation | null;
 }
@@ -347,15 +351,13 @@ export type DevframeDockEntryIcon = string | {
   light: string;
   dark: string;
 };
-export type DevframeDockPanelStateEvent = {
+export type DevframeDockPanelStateEvent = ({
   type: 'connected';
   sessionId: number;
-  open: boolean;
-} | {
+} & DevframeDockPanelState) | ({
   type: 'changed';
   sessionId: number;
-  open: boolean;
-} | {
+} & DevframeDockPanelState) | {
   type: 'disconnected';
   sessionId: number;
 };

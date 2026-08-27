@@ -231,13 +231,15 @@ describe('devframeDockHost panel state', () => {
     const events: DevframeDockPanelStateEvent[] = []
     host.events.on(HUB_EVENTS.bus.docksPanelState, event => events.push(event))
 
-    updateDockPanelState(host, 11, false)
-    updateDockPanelState(host, 11, false)
-    updateDockPanelState(host, 11, true)
+    updateDockPanelState(host, 11, { state: 'closed' })
+    updateDockPanelState(host, 11, { state: 'closed' })
+    updateDockPanelState(host, 11, { state: 'open', selectedDockId: 'git' })
+    updateDockPanelState(host, 11, { state: 'open', selectedDockId: 'inspect' })
 
     expect(events).toEqual([
-      { type: 'connected', sessionId: 11, open: false },
-      { type: 'changed', sessionId: 11, open: true },
+      { type: 'connected', sessionId: 11, state: 'closed' },
+      { type: 'changed', sessionId: 11, state: 'open', selectedDockId: 'git' },
+      { type: 'changed', sessionId: 11, state: 'open', selectedDockId: 'inspect' },
     ])
   })
 
@@ -248,15 +250,15 @@ describe('devframeDockHost panel state', () => {
     const events: DevframeDockPanelStateEvent[] = []
     host.events.on(HUB_EVENTS.bus.docksPanelState, event => events.push(event))
 
-    updateDockPanelState(host, 11, true)
-    updateDockPanelState(host, 12, false)
+    updateDockPanelState(host, 11, { state: 'open', selectedDockId: 'git' })
+    updateDockPanelState(host, 12, { state: 'hidden' })
     disconnectDockPanelState(host, 99)
     disconnectDockPanelState(host, 11)
     disconnectDockPanelState(host, 11)
 
     expect(events).toEqual([
-      { type: 'connected', sessionId: 11, open: true },
-      { type: 'connected', sessionId: 12, open: false },
+      { type: 'connected', sessionId: 11, state: 'open', selectedDockId: 'git' },
+      { type: 'connected', sessionId: 12, state: 'hidden' },
       { type: 'disconnected', sessionId: 11 },
     ])
   })
