@@ -1,5 +1,7 @@
 ---
 title: 'Introduction'
+navigation:
+  icon: i-lucide-book-open
 description: 'Devframe is a framework-neutral foundation for building a devtool once and running it everywhere - inside any host framework, as a standalone tool, or through a coding agent.'
 ---
 

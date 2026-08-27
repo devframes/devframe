@@ -1,5 +1,7 @@
 ---
 title: 'Frameworks'
+navigation:
+  icon: i-lucide-layers
 description: 'The framework kits — @devframes/vite, @devframes/nuxt, @devframes/next — integrate devframe with a meta-framework''s dev server. Two subpaths:'
 ---
 

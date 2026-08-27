@@ -1,5 +1,7 @@
 ---
 title: 'Built-in Devframes'
+navigation:
+  icon: i-lucide-palette
 description: 'Devframe also provides ready-to-run built-in example devframes. You can use them to compose your own DevTools solution, use them standalone, or as a reference for building your own devframe.'
 ---
 

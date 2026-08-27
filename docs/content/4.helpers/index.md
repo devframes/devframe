@@ -1,5 +1,7 @@
 ---
 title: 'Helpers'
+navigation:
+  icon: i-lucide-wrench
 description: 'Helpers are the optional layer around defineDevframe: prebuilt RPC recipes and low-level utilities from the devframe package.'
 ---
 

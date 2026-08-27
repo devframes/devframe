@@ -1,5 +1,7 @@
 ---
 title: 'Adapters'
+navigation:
+  icon: i-lucide-plug
 description: 'The lowest-level path is the standard handler, initDevframe(def, { base }) — a Web Standard (request: Request) => Promise<Response> for any catch-all route. Every path below builds on it.'
 ---
 

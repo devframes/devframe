@@ -1,5 +1,7 @@
 ---
 title: 'References'
+navigation:
+  icon: i-lucide-book-marked
 description: 'Lookup pages the guides link into: the canonical terms, the when-clause contexts, and every event name on the wire.'
 ---
 
