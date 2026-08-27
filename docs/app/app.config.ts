@@ -88,7 +88,6 @@ export default defineAppConfig({
             '/guide/scoped-context',
             '/guide/json-render',
             '/guide/diagnostics',
-            '/references/when-clauses',
           ],
         },
         {
@@ -111,7 +110,6 @@ export default defineAppConfig({
             '/guide/hub-initiate',
             '/guide/services',
             '/guide/deep-linking',
-            '/references/events',
           ],
         },
         {
