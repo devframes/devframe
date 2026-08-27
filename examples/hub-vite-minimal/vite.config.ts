@@ -1,6 +1,8 @@
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
+import { styleText } from 'node:util'
 import { createUi } from '@devframes/hub-ui'
+import { HUB_EVENTS } from '@devframes/hub/constants'
 import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import { createA11yDevframe } from '@devframes/plugin-a11y'
 import { createAssetsDevframe } from '@devframes/plugin-assets'
@@ -78,6 +80,10 @@ export default defineConfig({
       // the same contract.
       renderers: [jsonRenderUiRenderer()],
       configure(ctx) {
+        ctx.docks.events.on(HUB_EVENTS.bus.docksPanelState, (event) => {
+          console.info(styleText('cyan', '🔄 [hub-vite-minimal]'), 'Dock panel state updated', event)
+        })
+
         ctx.docks.register(jsonRenderDock)
       },
       // Gate with devframe's interactive OTP (the default): the hub prints a

@@ -1,7 +1,5 @@
 import type { DevframeHubContext } from '@devframes/hub/node'
-import { styleText } from 'node:util'
 import { defineHubRpcFunction } from '@devframes/hub'
-import { HUB_EVENTS } from '@devframes/hub/constants'
 import { jsonRenderUiRenderer } from '@devframes/json-render-ui/hub'
 import { toJsonRenderDockEntry } from '@devframes/json-render/hub'
 import createA11yDevframe from '@devframes/plugin-a11y'
@@ -151,10 +149,6 @@ export default defineConfig({
       // into this host's own bundle.
       renderers: [jsonRenderUiRenderer()],
       configure: async (context) => {
-        context.docks.events.on(HUB_EVENTS.bus.docksPanelState, (event) => {
-          console.info(styleText('cyan', '🔄 [hub-vite]'), 'Dock panel state updated', event)
-        })
-
         // Seed a sample command directly on the hub so the UI shows something
         // even without any plugged-in devframes.
         context.commands.register({
