@@ -247,6 +247,81 @@ const recommendedDocs = computed(() => {
 function reset(): void {
   for (const section of sections) selections[section.key] = []
 }
+
+// --- Prompt composition -----------------------------------------------------
+
+const appConfig = useAppConfig()
+const assistantEnabled = computed(() => Boolean((appConfig as { assistant?: { enabled?: boolean } }).assistant?.enabled))
+
+const site = useSiteConfig()
+/** Absolute base for doc links in the copyable prompt (external LLMs need full URLs). */
+const siteOrigin = computed(() => (site.url || 'https://devfra.me').replace(/\/$/, ''))
+
+/** One "Section: label, label" line per answered question. */
+function selectionLines(): string[] {
+  const lines: string[] = []
+  for (const section of sections) {
+    const chosen = section.items.filter(item => selections[section.key]!.includes(item.value))
+    if (chosen.length)
+      lines.push(`- ${section.title}: ${chosen.map(item => item.label).join(', ')}`)
+  }
+  return lines
+}
+
+/**
+ * Prompt for the in-docs Ask AI assistant. It already has the docs as tools
+ * (search/read), so this stays concise and leans on those.
+ */
+function buildAssistantPrompt(): string {
+  const lines = selectionLines()
+  const intro = lines.length
+    ? `I want to build a devtool with Devframe. Here's what I have in mind:\n${lines.join('\n')}`
+    : `I want to get started building a devtool with Devframe.`
+  return `${intro}\n\nWhich Devframe features fit this, and which docs should I read (in order)? Please outline a concrete plan.`
+}
+
+/**
+ * Prompt for pasting into any external LLM. It has no Devframe context, so this
+ * bundles a short description, the intent, and absolute links to every
+ * recommended doc.
+ */
+function buildCopyPrompt(): string {
+  const origin = siteOrigin.value
+  const lines = selectionLines()
+  const docs = recommendedDocs.value.map(doc => `- ${doc.title} (${origin}${doc.path}): ${doc.description}`)
+  return [
+    `I'm building a developer tool with Devframe (${origin}).`,
+    '',
+    'Devframe is a framework-neutral foundation for building a devtool once and running it anywhere: mounted inside any host framework (Vite, Nuxt, Next.js, …), as a standalone CLI or a static build, or exposed to coding agents over MCP. A devframe pairs a node side with a browser side over type-safe RPC and shared state, and ships its UI as a built SPA.',
+    '',
+    lines.length ? `What I want to build:\n${lines.join('\n')}` : 'I am just getting started and want a solid foundation.',
+    '',
+    'Please help me design and implement this with Devframe. Relevant documentation:',
+    ...docs,
+    '',
+    'Explain which Devframe primitives to use and give me a step-by-step implementation plan.',
+  ].join('\n')
+}
+
+const assistantPrompt = useAssistantPrompt()
+const assistantOpen = useAssistant()
+
+function askAI(): void {
+  assistantPrompt.value = buildAssistantPrompt()
+  assistantOpen.value = true
+}
+
+const promptCopied = ref(false)
+async function copyPrompt(): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(buildCopyPrompt())
+    promptCopied.value = true
+    setTimeout(() => (promptCopied.value = false), 1500)
+  }
+  catch {
+    // Clipboard unavailable (e.g. insecure context) - ignore.
+  }
+}
 </script>
 
 <template>
@@ -318,9 +393,31 @@ function reset(): void {
     </div>
 
     <div class="px-5 py-4 sm:px-6 bg-muted">
-      <p class="font-medium text-highlighted mb-3">
-        {{ hasSelections ? 'Recommended docs, based on your answers' : 'Start here' }}
-      </p>
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <p class="font-medium text-highlighted">
+          {{ hasSelections ? 'Recommended docs, based on your answers' : 'Start here' }}
+        </p>
+        <div class="flex items-center gap-2">
+          <UButton
+            v-if="assistantEnabled"
+            label="Ask AI"
+            icon="i-lucide-sparkles"
+            color="primary"
+            size="sm"
+            class="cursor-pointer"
+            @click="askAI"
+          />
+          <UButton
+            :label="promptCopied ? 'Copied!' : 'Copy prompt'"
+            :icon="promptCopied ? 'i-lucide-check' : 'i-lucide-copy'"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            class="cursor-pointer"
+            @click="copyPrompt"
+          />
+        </div>
+      </div>
       <div class="flex flex-col divide-y divide-default rounded-lg border border-default overflow-hidden bg-default">
         <NuxtLink
           v-for="doc in recommendedDocs"
