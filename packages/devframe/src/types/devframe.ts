@@ -263,6 +263,21 @@ export interface DevframeDockDefaults {
   badge?: string
   /** Id of the dock group this entry collapses under, if any. */
   groupId?: string
+  /**
+   * A client script the hub imports into the host page (this devframe's **page
+   * script**). An absolute-path `importFrom` is served by the hub under the
+   * mount base and rewritten to that URL, so mounting by package name needs no
+   * host wiring; a URL or bare specifier passes through untouched.
+   */
+  clientScript?: {
+    /** An absolute filesystem path, a served URL, or a bare npm specifier. */
+    importFrom: string
+    /**
+     * The name to import the module as.
+     * @default 'default'
+     */
+    importName?: string
+  }
 }
 
 /**

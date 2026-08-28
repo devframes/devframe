@@ -24,6 +24,7 @@ export default defineAppConfig({
       { label: 'Add-ons', sections: ['add-ons'], link: 'section' as const },
       { label: 'Reference', sections: ['references'], link: 'section' as const },
       { label: 'Errors', sections: ['errors'], link: 'section' as const },
+      // { label: 'Blog', sections: ['posts'], link: 'section' as const },
       {
         label: `v${devframePkg.version}`,
         to: '/migrations',
@@ -124,6 +125,12 @@ export default defineAppConfig({
         {
           title: 'Ecosystem',
           items: ['/guide/built-with'],
+        },
+      ],
+      posts: [
+        {
+          title: 'Blog',
+          items: ['/posts/pluggable-extensible-playful-devtools'],
         },
       ],
     },

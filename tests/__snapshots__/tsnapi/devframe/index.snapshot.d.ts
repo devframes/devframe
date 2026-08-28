@@ -169,6 +169,10 @@ export interface DevframeDockDefaults {
   visibility?: string;
   badge?: string;
   groupId?: string;
+  clientScript?: {
+    importFrom: string;
+    importName?: string;
+  };
 }
 export interface DevframeHost {
   mountStatic: (_: string, _: string | RemoteAssetsStore) => void | Promise<void>;

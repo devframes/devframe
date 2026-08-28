@@ -46,7 +46,70 @@
   width: 100%;
 }
 
-/* Do not render "description" slot in page, as the content are duplicated */
-[data-slot="wrapper"] + [data-slot="description"] {
-  display: none;
+.post-diagram-frame {
+  width: min(52rem, calc(100vw - 1rem));
+  margin-inline: calc(50% - min(26rem, calc(50vw - 0.5rem)));
+  background: linear-gradient(to bottom right, #88888810, #88888815);
+  box-shadow: 0 1.25rem 4rem rgb(0 0 0 / 5%);
+}
+
+.dark .post-diagram-frame {
+  box-shadow: 0 1.25rem 4rem rgb(0 0 0 / 40%);
+}
+
+@media (max-width: 39.999rem) {
+  .post-diagram-frame {
+    width: 100%;
+    margin-inline: 0;
+  }
+}
+
+.terminal-window {
+  position: relative;
+  overflow: hidden;
+  margin: 1.2em 0;
+  border: 1px solid var(--ui-border);
+  border-radius: 0.75rem;
+  background: var(--ui-bg);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 5%);
+}
+
+.terminal-window::before {
+  display: block;
+  height: 2rem;
+  border-bottom: 1px solid var(--ui-border);
+  background: var(--ui-bg-elevated);
+  content: '';
+}
+
+.terminal-window::after {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.8rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow:
+    1.2rem 0 #febc2e,
+    2.4rem 0 #28c840;
+  content: '';
+}
+
+.terminal-window > div {
+  margin: 0;
+}
+
+.terminal-window > pre,
+.terminal-window > div > pre {
+  overflow-x: auto;
+  margin: 0 !important;
+  padding: 1.2rem 1.35rem 1.35rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+}
+
+.dark .terminal-window {
+  box-shadow: 0 10px 30px rgb(0 0 0 / 27%);
 }

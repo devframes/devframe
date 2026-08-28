@@ -1,4 +1,4 @@
-import createA11yDevframe, { a11yPageScriptBundlePath } from '@devframes/plugin-a11y'
+import createA11yDevframe from '@devframes/plugin-a11y'
 import createMessagesDevframe from '@devframes/plugin-messages'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
@@ -16,12 +16,6 @@ export default defineConfig({
     UnoCSS(),
     a11yMessagesPlayground({
       devframes: [a11yDevframe, messagesDevframe],
-      // Attach the a11y page script as the a11y dock's client script - served
-      // over Vite's `/@fs/` so it shares this page's origin (the in-page
-      // channel the page script and panel talk over is same-origin).
-      clientScripts: {
-        [a11yDevframe.id]: { importFrom: `/@fs/${a11yPageScriptBundlePath}` },
-      },
     }),
   ],
 })

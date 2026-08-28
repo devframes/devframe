@@ -174,12 +174,33 @@ catalogs:
     '@floating-ui/react':
       specifier: ^0.27.20
       version: 0.27.20
+    '@iconify-json/carbon':
+      specifier: ^1.2.25
+      version: 1.2.25
     '@iconify-json/catppuccin':
       specifier: ^1.2.17
       version: 1.2.17
+    '@iconify-json/icon-park-outline':
+      specifier: ^1.2.4
+      version: 1.2.4
+    '@iconify-json/logos':
+      specifier: ^1.2.13
+      version: 1.2.13
+    '@iconify-json/octicon':
+      specifier: ^1.2.32
+      version: 1.2.32
     '@iconify-json/ph':
       specifier: ^1.2.2
       version: 1.2.2
+    '@iconify-json/ri':
+      specifier: ^1.2.10
+      version: 1.2.10
+    '@iconify-json/twemoji':
+      specifier: ^1.2.5
+      version: 1.2.5
+    '@iconify-json/unjs':
+      specifier: ^1.2.4
+      version: 1.2.4
     '@json-render/react':
       specifier: ^0.20.0
       version: 0.20.0
@@ -192,6 +213,9 @@ catalogs:
     '@radix-ui/react-slot':
       specifier: ^1.3.3
       version: 1.3.3
+    '@shikijs/magic-move':
+      specifier: ^4.4.3
+      version: 4.4.3
     '@sveltejs/vite-plugin-svelte':
       specifier: ^7.3.0
       version: 7.3.0
@@ -222,6 +246,9 @@ catalogs:
     colorjs.io:
       specifier: ^0.7.1
       version: 0.7.1
+    d3-shape:
+      specifier: ^3.2.0
+      version: 3.2.0
     diff:
       specifier: ^9.0.0
       version: 9.0.0
@@ -353,6 +380,9 @@ catalogs:
     '@types/codemirror':
       specifier: ^5.60.18
       version: 5.60.18
+    '@types/d3-shape':
+      specifier: ^3.2.0
+      version: 3.2.0
     '@types/node':
       specifier: ^26.2.0
       version: 26.2.0
@@ -495,15 +525,52 @@ importers:
 
   docs:
     dependencies:
+      '@iconify-json/carbon':
+        specifier: catalog:frontend
+        version: 1.2.25
+      '@iconify-json/icon-park-outline':
+        specifier: catalog:frontend
+        version: 1.2.4
+      '@iconify-json/logos':
+        specifier: catalog:frontend
+        version: 1.2.13
+      '@iconify-json/octicon':
+        specifier: catalog:frontend
+        version: 1.2.32
+      '@iconify-json/ph':
+        specifier: catalog:frontend
+        version: 1.2.2
+      '@iconify-json/ri':
+        specifier: catalog:frontend
+        version: 1.2.10
+      '@iconify-json/twemoji':
+        specifier: catalog:frontend
+        version: 1.2.5
+      '@iconify-json/unjs':
+        specifier: catalog:frontend
+        version: 1.2.4
+      '@shikijs/magic-move':
+        specifier: catalog:frontend
+        version: 4.4.3(react@19.2.8)(shiki@4.4.3)(solid-js@1.9.15)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vue@3.5.41(typescript@6.0.3))
       comark-docs:
         specifier: catalog:docs
         version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/afa7835620294a86ea2306384e58f63f3b6e418c(patch_hash=598160bc9822caa3c4681e6cf74f5d9299e68f550ae36c8c2ce3a5553cb2ad31)(50cc5ca6743ab464694f44de3ba95231)
+      d3-shape:
+        specifier: catalog:frontend
+        version: 3.2.0
       nuxt:
         specifier: catalog:build
         version: 4.5.2(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0(supports-color@10.2.2)))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.0(supports-color@10.2.2)))(@oxc-project/types@0.143.0)(@parcel/watcher@2.5.6)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(@types/node@26.2.0)(@vercel/functions@3.9.3(ws@8.21.3))(@vitejs/devtools-kit@0.4.9(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(@vue/compiler-sfc@3.5.41)(db0@0.3.4)(esbuild@0.28.0)(eslint@10.8.1(jiti@2.7.0)(supports-color@10.2.2))(ioredis@5.10.1(supports-color@10.2.2))(lightningcss@1.33.0)(magicast@0.5.4)(optionator@0.9.4)(oxc-parser@0.143.0)(rolldown@1.2.3)(rollup-plugin-visualizer@7.0.1(rolldown@1.2.3)(rollup@4.60.3))(rollup@4.60.3)(srvx@0.11.22)(supports-color@10.2.2)(terser@5.47.1)(tsx@4.23.12)(typescript@6.0.3)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0))(yaml@2.9.0)
+      shiki:
+        specifier: catalog:deps
+        version: 4.4.3
       ufo:
         specifier: catalog:deps
         version: 1.6.4
+    devDependencies:
+      '@types/d3-shape':
+        specifier: catalog:types
+        version: 3.2.0
 
   examples/a11y-messages-playground:
     dependencies:
@@ -3386,17 +3453,38 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
+  '@iconify-json/carbon@1.2.25':
+    resolution: {integrity: sha512-7GLgXnmi47Skh8DcPPiP8U3vgm3rOVziEe+flCdG/kwiVaeb649U3Eqt/ej4f3NvlZK8BrOxpR3xQlWFLZYblQ==}
+
   '@iconify-json/catppuccin@1.2.17':
     resolution: {integrity: sha512-l1pFOADEUlw+j7V+yfFzBowdE4deeMuI4amqfKaN+7uTI9B0Ho24C86DitQk5zb62NkEM9poOyfuG7WS2bw6jg==}
+
+  '@iconify-json/icon-park-outline@1.2.4':
+    resolution: {integrity: sha512-NyZxXe2gD2TbTOyoRRMdtEJhr6i2KQCdDlYYoOn5oZLndQjwpIhw79hzeFhXvP38/o40D3gQ+l+IaSJgbB+0TQ==}
+
+  '@iconify-json/logos@1.2.13':
+    resolution: {integrity: sha512-Up54ZnIuiuBgGAsuzhR1nvKqwq8VE6YM3XLwVB6IgY+7NAasz6WKu9Ay5hGfAkfuOKowodfwDC8ozReEBYrWRg==}
 
   '@iconify-json/lucide@1.2.124':
     resolution: {integrity: sha512-mO6JyBVNER7uXEkW2bXiN9Rrm6w91IXxwnNmIMbu2KZX0ZPcVZH1xDUTw94pryxESUIpBhinkOUIZIav+TA9ng==}
 
+  '@iconify-json/octicon@1.2.32':
+    resolution: {integrity: sha512-gkb+HMhBxZzVvOQhs4NZg0AtMJ8uht6bc8fG757gDOpXjjAOcNe2KrJDd8ydGVmRZoNBIexJAovz8b+no4oTuA==}
+
   '@iconify-json/ph@1.2.2':
     resolution: {integrity: sha512-PgkEZNtqa8hBGjHXQa4pMwZa93hmfu8FUSjs/nv4oUU6yLsgv+gh9nu28Kqi8Fz9CCVu4hj1MZs9/60J57IzFw==}
 
+  '@iconify-json/ri@1.2.10':
+    resolution: {integrity: sha512-WWMhoncVVM+Xmu9T5fgu2lhYRrKTEWhKk3Com0KiM111EeEsRLiASjpsFKnC/SrB6covhUp95r2mH8tGxhgd5Q==}
+
   '@iconify-json/simple-icons@1.2.93':
     resolution: {integrity: sha512-/XhANjfGYOuqvSR3TmUnkQkINvQ4GVjVuukvymRbxtVFBvIq/yiXJqCDycKcQPT401OYT9H2vIY6ihAlz1QIAw==}
+
+  '@iconify-json/twemoji@1.2.5':
+    resolution: {integrity: sha512-uKpuIEV0v6K5BW3Mjdyl+XKFVAbbcPxAgifKvEMtZoUZB5+YiY5zaMm2uNNCxyXzAWU9yNLlj41WU6/mvgALsw==}
+
+  '@iconify-json/unjs@1.2.4':
+    resolution: {integrity: sha512-ueSrChjHps8u6jTSDYTAp+4OQ/k+E11PbKZQjKkDVnOxNpC+/fUXXkYgrnqEUgT0rSvUiS0B7X5A8GcsP/PjOA==}
 
   '@iconify-json/vscode-icons@1.2.73':
     resolution: {integrity: sha512-qoJ5ZYQbes3Wi3+5A65c0vBKG8iCNXcpEIObgJ8e8fltLIG3U/zgA3Ft3+tUCupEl/kO9vIPht85n1kjJVyDMw==}
@@ -5587,6 +5675,27 @@ packages:
     resolution: {integrity: sha512-ePic0yfAJGOF83D5wBHK/00EjK65oahBYxFk5epgq33WRv7X9UuxLEV8PtR0szC0z8dl7INIpIodB99JRFlR+A==}
     engines: {node: '>=20'}
 
+  '@shikijs/magic-move@4.4.3':
+    resolution: {integrity: sha512-VTrZHsGLvi9HzpgV93plXY1JGAJJaQdxIfPAbWpYDRV/6pqndV4yuLfj6CasnHVxd80VSUb2CnKFidbjEa8H6A==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      react: ^18.2.0 || ^19.0.0
+      shiki: ^4.0.0
+      solid-js: ^1.9.1
+      svelte: ^5.0.0-0
+      vue: ^3.4.0
+    peerDependenciesMeta:
+      react:
+        optional: true
+      shiki:
+        optional: true
+      solid-js:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+
   '@shikijs/primitive@4.4.3':
     resolution: {integrity: sha512-m0wBeLDQDeIxRdUmrCPdQqfuUamDwRL5isCfYbguKD6NiaKpVbsv+3J81DyIKgNW5h4WAIIr8T4EkgQrBBxvaQ==}
     engines: {node: '>=20'}
@@ -6196,6 +6305,12 @@ packages:
 
   '@types/cookie@0.6.0':
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
+
+  '@types/d3-path@3.1.1':
+    resolution: {integrity: sha512-VMZBYyQvbGmWyWVea0EHs/BwLgxc+MKi1zLDCONksozI4YJMcTt8ZEuIR4Sb1MMTE8MMW49v0IwI5+b7RmfWlg==}
+
+  '@types/d3-shape@3.2.0':
+    resolution: {integrity: sha512-kVd74ta9eof3eJOvbNd1vGKS/XERRyQbT26Og63hIsvDO84cjD5gEOhsXf26w3FSoNlPVz84DOFcKv/oou+fMw==}
 
   '@types/debug@4.1.13':
     resolution: {integrity: sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==}
@@ -7634,6 +7749,14 @@ packages:
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
+  d3-path@3.1.0:
+    resolution: {integrity: sha512-p3KP5HCf/bvjBSSKuXid6Zqijx7wIfNW+J/maPs+iwR35at5JCbLUT0LzF1cnjbCHWhqzQTIN2Jpe8pRebIEFQ==}
+    engines: {node: '>=12'}
+
+  d3-shape@3.2.0:
+    resolution: {integrity: sha512-SaLBuwGm3MOViRq2ABk3eLoxwZELpH6zhl3FbAoJ7Vm1gofKx6El1Ib5z23NUEhF9AsGl7y+dzLe5Cw2AArGTA==}
+    engines: {node: '>=12'}
+
   db0@0.3.4:
     resolution: {integrity: sha512-RiXXi4WaNzPTHEOu8UPQKMooIbqOEyqA1t7Z6MsdxSCeb8iUC9ko3LcmsLmeUt2SM5bctfArZKkRQggKZz7JNw==}
     peerDependencies:
@@ -7726,6 +7849,9 @@ packages:
 
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
+
+  diff-match-patch-es@2.0.1:
+    resolution: {integrity: sha512-+Sl+/H47ArQiKPp8fA307M1RwyCwFqNhggw0mAEFherLNL/J2ZUFZsnELj65Cir91VfVPx3jlNzeKBdr+QAFTw==}
 
   diff-sequences@29.6.3:
     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
@@ -12995,7 +13121,19 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
+  '@iconify-json/carbon@1.2.25':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify-json/catppuccin@1.2.17':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/icon-park-outline@1.2.4':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/logos@1.2.13':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -13003,11 +13141,27 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
+  '@iconify-json/octicon@1.2.32':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify-json/ph@1.2.2':
     dependencies:
       '@iconify/types': 2.0.0
 
+  '@iconify-json/ri@1.2.10':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify-json/simple-icons@1.2.93':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/twemoji@1.2.5':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/unjs@1.2.4':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -15293,6 +15447,17 @@ snapshots:
     dependencies:
       '@shikijs/types': 4.4.3
 
+  '@shikijs/magic-move@4.4.3(react@19.2.8)(shiki@4.4.3)(solid-js@1.9.15)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vue@3.5.41(typescript@6.0.3))':
+    dependencies:
+      diff-match-patch-es: 2.0.1
+      ohash: 2.0.12
+    optionalDependencies:
+      react: 19.2.8
+      shiki: 4.4.3
+      solid-js: 1.9.15
+      svelte: 5.56.9(@typescript-eslint/types@8.67.0)
+      vue: 3.5.41(typescript@6.0.3)
+
   '@shikijs/primitive@4.4.3':
     dependencies:
       '@shikijs/types': 4.4.3
@@ -15968,6 +16133,12 @@ snapshots:
       '@types/tern': 0.23.9
 
   '@types/cookie@0.6.0': {}
+
+  '@types/d3-path@3.1.1': {}
+
+  '@types/d3-shape@3.2.0':
+    dependencies:
+      '@types/d3-path': 3.1.1
 
   '@types/debug@4.1.13':
     dependencies:
@@ -17622,6 +17793,12 @@ snapshots:
 
   csstype@3.2.3: {}
 
+  d3-path@3.1.0: {}
+
+  d3-shape@3.2.0:
+    dependencies:
+      d3-path: 3.1.0
+
   db0@0.3.4: {}
 
   debug@4.4.3(supports-color@10.2.2):
@@ -17670,6 +17847,8 @@ snapshots:
   devlop@1.1.0:
     dependencies:
       dequal: 2.0.3
+
+  diff-match-patch-es@2.0.1: {}
 
   diff-sequences@29.6.3: {}
 

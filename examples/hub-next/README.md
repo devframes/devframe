@@ -20,7 +20,7 @@ Open the printed URL. The dock rail on the left lists every mounted tool with it
 
 Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`, and a **Transport** section showing which RPC transport the connection runs on (`websocket` or `sse`) with a segmented Auto / WS / SSE toggle - the choice rides a `?transport=` URL param and reconnects the whole client runtime on the pinned transport.
 
-The A11y Inspector shows a live axe-core report of this hub's own page: the hub serves the devframe's page-script module (`a11yPageScriptBundlePath`) same-origin inside the hub namespace and attaches it as the a11y dock's `clientScript` (the `{ devframe, dock }` entry form); the hub client runtime - `createDevframeClientRuntime()` booted in `app/page.tsx` - imports it into the page, so the docked panel and the page script share the origin and tab their in-page channel handshakes across.
+The A11y Inspector shows a live axe-core report of this hub's own page: the devframe declares its own page-script module as the a11y dock's `clientScript`, so the hub serves it same-origin with no host wiring; the hub client runtime - `createDevframeClientRuntime()` booted in `app/page.tsx` - imports it into the page, so the docked panel and the page script share the origin and tab their in-page channel handshakes across.
 
 The **RPC & State Inspector** carries an **Instances** tab that lists every devframe dev server running on your machine. The hub registers itself in the shared registry (`~/.devframe/instances/`) on startup via `registerDevframeInstance()`, so it shows up as "this instance"; start another example (e.g. `pnpm --filter hub-vite dev`, or any `node bin.mjs` CLI example) in a second terminal and it appears there too, each linking to its own SPA.
 
@@ -57,7 +57,7 @@ The built-in devframes run node-side (child processes, the native `zigpty` PTY b
 
 | File | Role |
 |---|---|
-| `src/client/devframe/next-devframe-hub.ts` | The Next host - one `initHub()` call: devframes (incl. the a11y page script as its dock's `clientScript`), hub RPCs, commands, the json-render dock + renderer manifest, instance-registry registration |
+| `src/client/devframe/next-devframe-hub.ts` | The Next host - one `initHub()` call: devframes, hub RPCs, commands, the json-render dock + renderer manifest, instance-registry registration |
 | `src/client/devframe/unrendered-dock.ts` | A dock type registered with no renderer on purpose - the missing-renderer fallback witness |
 | `../demo-dock-client/` | The shared demo client script, consumed here as a statically-mounted self-contained bundle |
 | `src/client/app/%5F_devframes/[[...path]]/route.ts` | The one catch-all - delegates every `/__devframes/*` request to the instance's `handler` |

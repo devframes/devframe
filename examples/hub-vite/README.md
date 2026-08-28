@@ -20,7 +20,7 @@ Open the printed URL. The dock rail on the left lists every mounted tool with it
 
 Selecting a tool loads its SPA in the stage. The bottom drawer mirrors the hub's **Commands**, **Messages**, and **Terminals** subsystems, plus a button that dispatches a command through `hub:commands:execute`, and a **Transport** section showing which RPC transport the connection runs on (`websocket` or `sse`) with a segmented Auto / WS / SSE toggle - the choice rides a `?transport=` URL param and reconnects the whole client runtime on the pinned transport.
 
-The A11y Inspector shows a live axe-core report of this hub's own page. `vite.config.ts` attaches the devframe's page script as the a11y dock's `clientScript` (served via `/@fs/`), and the hub client runtime - `createDevframeClientRuntime()` booted in `src/client/main.ts` - imports it into the host page. Panel and page script share the Vite origin and tab their in-page channel handshakes across; hover a violation to ring the offending element in the hub UI.
+The A11y Inspector shows a live axe-core report of this hub's own page. The devframe declares its own page script as the a11y dock's `clientScript`, so the hub serves it same-origin and the hub client runtime - `createDevframeClientRuntime()` booted in `src/client/main.ts` - imports it into the host page automatically (no wiring in `vite.config.ts`). Panel and page script share the Vite origin and tab their in-page channel handshakes across; hover a violation to ring the offending element in the hub UI.
 
 The **RPC & State Inspector** carries an **Instances** tab that lists every devframe dev server running on your machine. The hub registers itself in the shared registry (`~/.devframe/instances/`) on startup via `registerDevframeInstance()`, so it shows up as "this instance"; start another example (`pnpm --filter a11y-messages-playground dev`, or any `node bin.mjs` CLI example) in a second terminal and it appears there too, each linking to its own SPA.
 
@@ -45,7 +45,7 @@ The dock UI is plain DOM in `src/client/`. To skin your own hub UI provider, rea
 | File | Role |
 |---|---|
 | `src/vite-devframe-hub.ts` | The Vite host - one `initHub()` call mounted as connect middleware, plus instance-registry registration |
-| `vite.config.ts` | Passes the built-in and demo devframes to the hub's `devframes` option; attaches the a11y page script as its dock's `clientScript`; composes the json-render frontend via `renderers` |
+| `vite.config.ts` | Passes the built-in and demo devframes to the hub's `devframes` option; composes the json-render frontend via `renderers` |
 | `src/unrendered-dock.ts` | A dock type registered with no renderer on purpose - the missing-renderer fallback witness |
 | `../demo-dock-client/` | The shared demo client script, consumed here via bare specifier (`action: { importFrom: 'demo-dock-client' }`) |
 | `src/client/main.ts` | The browser UI that consumes the hub protocol, including the interactive-OTP authorization view |

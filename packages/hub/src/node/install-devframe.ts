@@ -1,9 +1,11 @@
 import type { DevframeDefinition } from 'devframe/types'
-import type { DevframeViewIframe } from '../types/docks'
+import type { ClientScriptEntry, DevframeViewIframe } from '../types/docks'
 import type { DevframeHubContext } from './context'
+import { existsSync } from 'node:fs'
 import { resolveClientAssets } from 'devframe'
 import { resolveBasePath } from 'devframe/node/hub-internals'
-import { resolve } from 'pathe'
+import { basename, dirname, isAbsolute, resolve } from 'pathe'
+import { joinURL, withTrailingSlash } from 'ufo'
 import { diagnostics } from './diagnostics'
 
 export interface InstallDevframeOptions {
@@ -35,6 +37,26 @@ function nextAvailableDockId(views: DevframeHubContext['docks']['views'], baseId
   while (views.has(`${baseId}-${n}`))
     n++
   return `${baseId}-${n}`
+}
+
+/**
+ * When a dock's `clientScript.importFrom` is an absolute filesystem path, serve
+ * its directory under `<base>__page-script/` and rewrite `importFrom` to that
+ * URL. A URL or bare specifier (not existing on disk) passes through untouched.
+ */
+async function resolvePageScriptClientScript(
+  ctx: DevframeHubContext,
+  clientScript: ClientScriptEntry | undefined,
+  base: string,
+): Promise<ClientScriptEntry | undefined> {
+  if (!clientScript?.importFrom)
+    return clientScript
+  const { importFrom } = clientScript
+  if (!isAbsolute(importFrom) || !existsSync(importFrom))
+    return clientScript
+  const scriptBase = withTrailingSlash(joinURL(base, '__page-script'))
+  await ctx.host.mountStatic(scriptBase, dirname(importFrom))
+  return { ...clientScript, importFrom: joinURL(scriptBase, basename(importFrom)) }
 }
 
 /**
@@ -87,6 +109,13 @@ export async function prepareDevframe(
       ? resolveBasePath(d, 'hosted')
       : resolveBasePath({ ...d, id, basePath: undefined }, 'hosted'))
 
+  // Definition `dock` beneath per-mount `options.dock`. Resolved before the SPA
+  // mount so an absolute-path page script is served ahead of the SPA catch-all.
+  const dockDefaults = { ...d.dock, ...options.dock }
+  const clientScript = await resolvePageScriptClientScript(ctx, dockDefaults.clientScript, base)
+  if (clientScript)
+    dockDefaults.clientScript = clientScript
+
   const clientAssets = resolveClientAssets(d)
   if (clientAssets) {
     // Serve the hub's connection meta under the devframe's base so its SPA
@@ -114,11 +143,9 @@ export async function prepareDevframe(
     id,
     title: d.name,
     icon: d.icon,
-    // Definition-level `dock` defaults sit above the name/icon-derived
-    // defaults; per-mount `options.dock` overrides them; `type`/`url`
-    // (and `id`) stay locked, derived from the definition.
-    ...d.dock,
-    ...options.dock,
+    // `dockDefaults` sits above the name/icon defaults; `type`/`url`/`id` stay
+    // locked, derived from the definition.
+    ...dockDefaults,
     type: 'iframe',
     url: base,
   } as DevframeViewIframe)

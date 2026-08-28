@@ -8,8 +8,22 @@
     "docs:serve": "nuxt preview"
   },
   "dependencies": {
+    "@iconify-json/carbon": "catalog:frontend",
+    "@iconify-json/icon-park-outline": "catalog:frontend",
+    "@iconify-json/logos": "catalog:frontend",
+    "@iconify-json/octicon": "catalog:frontend",
+    "@iconify-json/ph": "catalog:frontend",
+    "@iconify-json/ri": "catalog:frontend",
+    "@iconify-json/twemoji": "catalog:frontend",
+    "@iconify-json/unjs": "catalog:frontend",
+    "@shikijs/magic-move": "catalog:frontend",
     "comark-docs": "catalog:docs",
+    "d3-shape": "catalog:frontend",
     "nuxt": "catalog:build",
+    "shiki": "catalog:deps",
     "ufo": "catalog:deps"
+  },
+  "devDependencies": {
+    "@types/d3-shape": "catalog:types"
   }
 }

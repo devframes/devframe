@@ -55,7 +55,11 @@ export function useFilteredNavigation(): ComputedRef<NavItem[]> {
       ? headerGroups
       : nav.map(item => ({ label: item.title, sections: [segmentOf(item.path, base)] }))
 
+    const sidebarGroups = (appConfig as { docs?: { sidebarGroups?: Record<string, SidebarGroup[]> } })
+      .docs
+      ?.sidebarGroups
     const matched = groups.find(group => group.sections?.includes(seg))
+      ?? (sidebarGroups?.[seg] ? { label: seg, sections: [seg] } : undefined)
     // A section reachable only through a manual tab (e.g. migrations, under the
     // version dropdown) still gets its own flat sidebar.
     if (!matched) {
@@ -71,9 +75,6 @@ export function useFilteredNavigation(): ComputedRef<NavItem[]> {
       return nav
 
     // Single-section tab with configured groups: labeled subsections.
-    const sidebarGroups = (appConfig as { docs?: { sidebarGroups?: Record<string, SidebarGroup[]> } })
-      .docs
-      ?.sidebarGroups
     const groupsConfig = sections.length === 1 ? sidebarGroups?.[sections[0]!] : undefined
     if (groupsConfig) {
       // Index every page by base-relative path, preferring leaf pages over
