@@ -14,6 +14,12 @@ interface TestProtocol extends InPageChannelProtocol {
   }
 }
 
+interface PageScriptOnlyProtocol extends InPageChannelProtocol {
+  pageScript: {
+    echo: (value: string) => string
+  }
+}
+
 describe('In-page script channel', () => {
   const channel = createPageScriptChannel<TestProtocol>({
     name: 'devframes:test',
@@ -117,6 +123,18 @@ describe('In-page script channel', () => {
       // @ts-expect-error `notify` requires a string.
       panel.call('notify', false)
     })
+
+    it('rejects calls when the protocol omits panel functions', () => {
+      const pageScriptOnlyChannel = createPageScriptChannel<PageScriptOnlyProtocol>({
+        name: 'devframes:page-script-only',
+        functions: {
+          echo: { handler: value => value },
+        },
+      })
+
+      // @ts-expect-error The protocol has no panel functions.
+      pageScriptOnlyChannel.callEvent('notify', 'ready')
+    })
   })
 
   describe('Event checking', () => {
@@ -197,6 +215,21 @@ describe('Panel channel', () => {
             // @ts-expect-error `notify` accepts a string.
             handler: (message: number) => void message,
           },
+        },
+      })
+    })
+
+    it('rejects definitions when the protocol omits panel functions', () => {
+      connectPanelChannel<PageScriptOnlyProtocol>({
+        name: 'devframes:page-script-only',
+        functions: {},
+      })
+
+      connectPanelChannel<PageScriptOnlyProtocol>({
+        name: 'devframes:page-script-only',
+        functions: {
+          // @ts-expect-error The protocol has no panel functions.
+          notify: { handler: () => {} },
         },
       })
     })

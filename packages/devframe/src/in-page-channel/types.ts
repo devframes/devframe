@@ -22,9 +22,13 @@ export interface InPageChannelProtocol {
   sharedStates?: Record<string, object>
 }
 
-type SideFunctions<S> = S extends Record<string, (...args: any[]) => any> ? S : Record<string, never>
-type PageScriptFunctions<P extends InPageChannelProtocol> = SideFunctions<NonNullable<P['pageScript']>>
-type PanelFunctions<P extends InPageChannelProtocol> = SideFunctions<NonNullable<P['panel']>>
+type SideFunctions<P, S> = InPageChannelProtocol extends P
+  ? Record<string, (...args: any[]) => any>
+  : S extends Record<string, (...args: any[]) => any>
+    ? string extends keyof S ? Record<never, never> : S
+    : Record<never, never>
+type PageScriptFunctions<P extends InPageChannelProtocol> = SideFunctions<P, NonNullable<P['pageScript']>>
+type PanelFunctions<P extends InPageChannelProtocol> = SideFunctions<P, NonNullable<P['panel']>>
 type SharedStates<P extends InPageChannelProtocol>
   = P['sharedStates'] extends Record<string, object> ? P['sharedStates'] : Record<string, never>
 
@@ -113,7 +117,9 @@ interface InPageFunctionOption<F> {
  */
 type CreatePageScriptChannelOptionsFunctions<P extends InPageChannelProtocol> = {
   [NAME in keyof PageScriptFunctions<P> & string]: InPageFunctionOption<PageScriptFunctions<P>[NAME]>
-}
+} extends infer FUNCTIONS
+  ? keyof FUNCTIONS extends never ? Record<string, never> : FUNCTIONS
+  : never
 
 /**
  * Functions implemented by {@link connectPanelChannel}.
@@ -122,7 +128,9 @@ type CreatePageScriptChannelOptionsFunctions<P extends InPageChannelProtocol> = 
  */
 type ConnectPanelChannelOptionsFunctions<P extends InPageChannelProtocol> = {
   [NAME in keyof PanelFunctions<P> & string]: InPageFunctionOption<PanelFunctions<P>[NAME]>
-}
+} extends infer FUNCTIONS
+  ? keyof FUNCTIONS extends never ? Record<string, never> : FUNCTIONS
+  : never
 
 /**
  * Connection lifecycle of a panel endpoint: `connecting` (handshake retry

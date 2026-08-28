@@ -2,6 +2,7 @@ import type { AttachedChannelPort } from './internal'
 import type {
   CreatePageScriptChannelOptions,
   InPageChannelProtocol,
+  InPageFunctionDefinitionAny,
   PageScriptChannel,
   PageScriptChannelEvents,
   PanelPeer,
@@ -63,7 +64,7 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
   let heartbeatTimer: ReturnType<typeof setInterval> | undefined
 
   const registry = createLocalFunctionRegistry(codec)
-  for (const [fnName, definition] of Object.entries(options.functions ?? {}))
+  for (const [fnName, definition] of Object.entries(options.functions) as [string, Omit<InPageFunctionDefinitionAny, 'name'>][])
     registry.register({ ...definition, name: fnName })
 
   const stateHost = createPageScriptStateHost<P>(function* () {

@@ -3,6 +3,7 @@ import type {
   ConnectPanelChannelOptions,
   InPageChannelProtocol,
   InPageChannelStatus,
+  InPageFunctionDefinitionAny,
   PanelChannel,
   PanelChannelEvents,
 } from './types'
@@ -62,7 +63,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
 
   const events = createEventEmitter<PanelChannelEvents>()
   const registry = createLocalFunctionRegistry(codec)
-  for (const [fnName, definition] of Object.entries(options.functions ?? {}))
+  for (const [fnName, definition] of Object.entries(options.functions) as [string, Omit<InPageFunctionDefinitionAny, 'name'>][])
     registry.register({ ...definition, name: fnName })
 
   let status: InPageChannelStatus = 'connecting'
