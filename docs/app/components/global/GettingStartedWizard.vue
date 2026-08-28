@@ -140,8 +140,8 @@ const DOC_CATALOG: Record<string, DocEntry> = {
   '/guide/build-your-own-json-render-frontend': { title: 'Build Your Own JSON-Render Frontend', description: 'Implement the renderer contract in your own framework instead of the reference one.', icon: 'i-lucide-component' },
   '/guide/build-your-own-hub-ui': { title: 'Build Your Own Hub UI', description: 'The two contracts a hub UI provider implements — node side and browser side.', icon: 'i-lucide-layout-panel-left' },
   '/guide/standalone-cli': { title: 'Standalone CLI with Devframe', description: 'npx my-tool starts a dev server serving your SPA over type-safe RPC.', icon: 'i-lucide-terminal' },
-  '/helpers/interactive-auth': { title: 'Interactive Auth', description: 'An OTP auth layer over devframe\'s node-side primitives.', icon: 'i-lucide-key-round' },
-  '/helpers/utilities': { title: 'Utilities', description: 'Small, stable helpers bundled into devframe — no npm install.', icon: 'i-lucide-wrench' },
+  '/references/interactive-auth': { title: 'Interactive Auth', description: 'An OTP auth layer over devframe\'s node-side primitives.', icon: 'i-lucide-key-round' },
+  '/references/utilities': { title: 'Utilities', description: 'Small, stable helpers bundled into devframe — no npm install.', icon: 'i-lucide-wrench' },
   '/adapters': { title: 'Adapters', description: 'Every path from a DevframeDefinition to a running devframe.', icon: 'i-lucide-shuffle' },
   '/adapters/initiate': { title: 'The Standard Handler', description: 'initDevframe() turns a definition into a Web Standard Request → Response handler.', icon: 'i-lucide-server' },
   '/adapters/cac': { title: 'CLI (cac)', description: 'A cac CLI around a DevframeDefinition with dev, build, and mcp commands.', icon: 'i-lucide-square-terminal' },
@@ -153,8 +153,8 @@ const DOC_CATALOG: Record<string, DocEntry> = {
   '/frameworks/vite': { title: 'Vite', description: 'Author one devframe\'s SPA, or mount a whole hub, from a Vite plugin.', icon: 'i-simple-icons-vite' },
   '/frameworks/next': { title: 'Next', description: 'Host devframes from a Next.js App Router app via a route handler.', icon: 'i-simple-icons-nextdotjs' },
   '/frameworks/nuxt': { title: 'Nuxt', description: 'A Nuxt module split into authoring one devframe or mounting a hub.', icon: 'i-simple-icons-nuxtdotjs' },
-  '/plugins/a11y': { title: 'Accessibility Inspector', description: 'Runs axe-core against the user app and highlights violations in the page.', icon: 'i-lucide-accessibility' },
-  '/plugins/terminals': { title: 'Terminals', description: 'A terminal panel built on xterm.js.', icon: 'i-lucide-square-terminal' },
+  '/add-ons/devframes/a11y': { title: 'Accessibility Inspector', description: 'Runs axe-core against the user app and highlights violations in the page.', icon: 'i-lucide-accessibility' },
+  '/add-ons/devframes/terminals': { title: 'Terminals', description: 'A terminal panel built on xterm.js.', icon: 'i-lucide-square-terminal' },
 }
 
 /** Always worth reading, regardless of what's checked above. */
@@ -162,8 +162,8 @@ const BASE_DOCS = ['/guide', '/guide/devframe-definition', '/guide/tutorial-serv
 
 /** `${section.key}:${item.value}` -> doc routes that answer is worth reading. */
 const RECOMMENDATIONS: Record<string, string[]> = {
-  'dataSource:node': ['/guide/rpc', '/guide/shared-state', '/helpers/utilities'],
-  'dataSource:browser': ['/guide/client-context', '/guide/deep-linking', '/plugins/a11y'],
+  'dataSource:node': ['/guide/rpc', '/guide/shared-state', '/references/utilities'],
+  'dataSource:browser': ['/guide/client-context', '/guide/deep-linking', '/add-ons/devframes/a11y'],
 
   'environments:standalone': ['/guide/standalone-cli', '/adapters/cac', '/adapters/build'],
   'environments:framework': ['/adapters'],
@@ -171,7 +171,7 @@ const RECOMMENDATIONS: Record<string, string[]> = {
 
   'availability:dev': ['/guide/rpc', '/guide/transports'],
   'availability:build': ['/adapters/build', '/guide/client-assets'],
-  'availability:static': ['/adapters/build', '/helpers/utilities'],
+  'availability:static': ['/adapters/build', '/references/utilities'],
   'availability:remote': ['/guide/transports', '/guide/security'],
 
   'frontend:framework': ['/guide/client-assets', '/guide/client'],
@@ -179,10 +179,10 @@ const RECOMMENDATIONS: Record<string, string[]> = {
   'frontend:nodeside': ['/guide/json-render', '/guide/build-your-own-json-render-frontend'],
 
   'requirements:agent': ['/guide/agent-native', '/adapters/mcp'],
-  'requirements:terminal': ['/plugins/terminals'],
+  'requirements:terminal': ['/add-ons/devframes/terminals'],
   'requirements:streaming': ['/guide/streaming'],
   'requirements:deep-linking': ['/guide/deep-linking'],
-  'requirements:overlay': ['/guide/client-context', '/plugins/a11y'],
+  'requirements:overlay': ['/guide/client-context', '/add-ons/devframes/a11y'],
 }
 
 const selections = reactive<Record<string, string[]>>(

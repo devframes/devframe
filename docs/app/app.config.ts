@@ -19,9 +19,9 @@ export default defineAppConfig({
       },
       {
         label: 'Adapters',
-        sections: ['adapters', 'frameworks', 'helpers'],
+        sections: ['adapters', 'frameworks'],
       },
-      { label: 'Plugins', sections: ['plugins'], link: 'section' as const },
+      { label: 'Add-ons', sections: ['add-ons'], link: 'section' as const },
       { label: 'Reference', sections: ['references'], link: 'section' as const },
       { label: 'Errors', sections: ['errors'], link: 'section' as const },
       {

@@ -119,7 +119,7 @@ One definition, every entry point
   `@devframes/hub` composes many devframes behind one handler with docks, commands, terminals, and messages.
   :::
 
-  :::landing-feature-card{icon="i-lucide-palette" to="/plugins"}
+  :::landing-feature-card{icon="i-lucide-palette" to="/add-ons"}
   #title
   Built-in Devframes, Any Framework
 

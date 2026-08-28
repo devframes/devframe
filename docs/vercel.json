@@ -7,6 +7,19 @@
   "redirects": [
     { "source": "/guide/terms", "destination": "/references/terms", "permanent": true },
     { "source": "/guide/when-clauses", "destination": "/references/when-clauses", "permanent": true },
-    { "source": "/guide/events", "destination": "/references/events", "permanent": true }
+    { "source": "/guide/events", "destination": "/references/events", "permanent": true },
+    { "source": "/plugins", "destination": "/add-ons", "permanent": true },
+    { "source": "/plugins/data-inspector", "destination": "/add-ons/devframes/data-inspector", "permanent": true },
+    { "source": "/plugins/inspect", "destination": "/add-ons/devframes/inspect", "permanent": true },
+    { "source": "/plugins/og", "destination": "/add-ons/devframes/og", "permanent": true },
+    { "source": "/plugins/a11y", "destination": "/add-ons/devframes/a11y", "permanent": true },
+    { "source": "/plugins/git", "destination": "/add-ons/devframes/git", "permanent": true },
+    { "source": "/plugins/terminals", "destination": "/add-ons/devframes/terminals", "permanent": true },
+    { "source": "/plugins/code-server", "destination": "/add-ons/devframes/code-server", "permanent": true },
+    { "source": "/plugins/assets", "destination": "/add-ons/devframes/assets", "permanent": true },
+    { "source": "/helpers", "destination": "/references/helpers", "permanent": true },
+    { "source": "/helpers/utilities", "destination": "/references/utilities", "permanent": true },
+    { "source": "/helpers/common-rpc-functions", "destination": "/references/common-rpc-functions", "permanent": true },
+    { "source": "/helpers/interactive-auth", "destination": "/references/interactive-auth", "permanent": true }
   ]
 }
