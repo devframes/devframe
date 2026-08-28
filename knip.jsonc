@@ -51,7 +51,12 @@
       // component and mirrors its imports verbatim (see the file header). These
       // packages are provided transitively by the `comark-docs` layer, not
       // declared in `docs/package.json`, so knip sees them as unlisted.
-      "ignoreDependencies": ["ai", "@ai-sdk/vue", "@comark/nuxt.*", "@nuxt/ui.*"]
+      //
+      // `@shikijs/magic-move` is declared in `docs/package.json` but only ever
+      // referenced as the `@shikijs/magic-move/style.css` subpath in the
+      // `nuxt.config.ts` `css` array; knip can't map that CSS-only subpath back
+      // to the package, so it mis-reports the (genuinely-listed) dep as unlisted.
+      "ignoreDependencies": ["ai", "@ai-sdk/vue", "@comark/nuxt.*", "@nuxt/ui.*", "@shikijs/magic-move"]
     },
     "examples/hub-next": {
       // The React client build's root sits at `src/client` (`next dev
