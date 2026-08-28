@@ -54,10 +54,10 @@ function dispatchAction(action: DevframeMessageAction) {
       <div
         v-for="toast of toasts"
         :key="toast.id"
-        class="bg-glass:80 border color-base border-base shadow-xl cursor-pointer transition-colors rounded"
+        class="bg-glass:80 border color-base border-base shadow-xl cursor-pointer hover:bg-glass:90 transition-colors rounded"
         @click="openMessages(toast.id)"
       >
-        <MessageItem :entry="toast.entry" compact class="px-3 py-2.5 hover:bg-active">
+        <MessageItem :entry="toast.entry" compact class="px-3 py-2.5">
           <template #actions>
             <button
               v-for="action of toast.entry.actions"
