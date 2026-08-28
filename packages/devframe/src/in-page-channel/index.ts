@@ -17,7 +17,6 @@ export type {
   InPageChannelProtocol,
   InPageChannelStatus,
   InPageFunctionDefinition,
-  InPageFunctionDefinitionFor,
   PageScriptChannel,
   PanelChannel,
   PanelPeer,
@@ -32,37 +31,14 @@ export type {
  * constant.
  */
 export function defineChannelFunction<
-  const NAME extends string,
+  NAME extends string,
+  TYPE extends InPageFunctionType,
   ARGS extends any[],
   RETURN = void,
-  TYPE extends InPageFunctionType = 'query',
+  const AS extends RpcArgsSchema | undefined = undefined,
+  const RS extends RpcReturnSchema | undefined = undefined,
 >(
-  definition: {
-    name: NAME
-    type?: TYPE
-    args?: undefined
-    returns?: undefined
-    jsonSerializable?: boolean
-    handler: (...args: ARGS) => RETURN
-  },
-): InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN>
-export function defineChannelFunction<
-  const NAME extends string,
-  const AS extends RpcArgsSchema,
-  const RS extends RpcReturnSchema,
-  TYPE extends InPageFunctionType = 'query',
->(
-  definition: {
-    name: NAME
-    type?: TYPE
-    args: AS
-    returns: RS
-    jsonSerializable?: boolean
-    handler: InPageFunctionDefinition<NAME, TYPE, never, never, AS, RS>['handler']
-  },
-): InPageFunctionDefinition<NAME, TYPE, never, never, AS, RS>
-export function defineChannelFunction(
-  definition: InPageFunctionDefinition<string, InPageFunctionType, any[], any, any, any>,
-): InPageFunctionDefinition<string, InPageFunctionType, any[], any, any, any> {
+  definition: InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>,
+): InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS> {
   return definition
 }

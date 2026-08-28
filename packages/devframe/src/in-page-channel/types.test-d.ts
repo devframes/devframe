@@ -1,5 +1,5 @@
 import type { InPageChannelProtocol } from './types'
-import { describe, it } from 'vitest'
+import { describe, expectTypeOf, it } from 'vitest'
 import { createPageScriptChannel } from './page-script'
 import { connectPanelChannel } from './panel'
 
@@ -20,13 +20,22 @@ describe('in-page channel function definitions', () => {
       name: 'devframes:test',
       functions: {
         echo: {
-          handler: value => value.toUpperCase(),
+          handler: (value) => {
+            expectTypeOf(value).toEqualTypeOf<string>()
+            return value.toUpperCase()
+          },
         },
         sum: {
-          handler: (a, b) => a + b,
+          handler: (a, b) => {
+            expectTypeOf(a).toEqualTypeOf<number>()
+            expectTypeOf(b).toEqualTypeOf<number>()
+            return a + b
+          },
         },
         save: {
-          handler: () => {},
+          handler: (value) => {
+            expectTypeOf(value).toEqualTypeOf<string>()
+          },
         },
       },
     })
@@ -41,7 +50,7 @@ describe('in-page channel function definitions', () => {
       functions: {
         notify: {
           handler: (message) => {
-            void message
+            expectTypeOf(message).toEqualTypeOf<string>()
           },
         },
       },
