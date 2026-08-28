@@ -19,8 +19,6 @@
  * `static` RPC the panel resolves) is forwarded to the page script over the
  * same channel, keeping the page script itself free of any RPC dependency.
  */
-import type { InPageChannelProtocol } from 'devframe/in-page-channel'
-
 /** In-page channel name. Namespaced with the devframe id, per convention. */
 export const A11Y_CHANNEL = 'devframes:plugin:a11y'
 
@@ -164,7 +162,7 @@ export interface PageScriptConfig {
  * aggregate the page script owns. All functions are fire-and-forget events —
  * results flow back through the shared state.
  */
-export interface A11yChannelProtocol extends InPageChannelProtocol {
+export interface A11yChannelProtocol {
   pageScript: {
     /**
      * Draw the transient hover-preview ring around a node's element.
@@ -187,6 +185,7 @@ export interface A11yChannelProtocol extends InPageChannelProtocol {
     /** Drop the whole tracked-route history. */
     'clear-all': () => void
   }
+  panel: Record<string, never>
   sharedStates: {
     /** The authoritative route → report aggregate the page script owns. */
     state: A11yState

@@ -1,9 +1,8 @@
-import type { InPageChannelProtocol } from './types'
 import { describe, expectTypeOf, it } from 'vitest'
 import { createPageScriptChannel } from './page-script'
 import { connectPanelChannel } from './panel'
 
-interface TestProtocol extends InPageChannelProtocol {
+interface TestProtocol {
   pageScript: {
     echo: (value: string) => string
     sum: (a: number, b: number) => number
@@ -14,10 +13,11 @@ interface TestProtocol extends InPageChannelProtocol {
   }
 }
 
-interface PageScriptOnlyProtocol extends InPageChannelProtocol {
+interface PageScriptOnlyProtocol {
   pageScript: {
     echo: (value: string) => string
   }
+  panel: Record<string, never>
 }
 
 describe('In-page script channel', () => {
@@ -124,7 +124,7 @@ describe('In-page script channel', () => {
       panel.call('notify', false)
     })
 
-    it('rejects calls when the protocol omits panel functions', () => {
+    it('rejects calls when the protocol declares no panel functions', () => {
       const pageScriptOnlyChannel = createPageScriptChannel<PageScriptOnlyProtocol>({
         name: 'devframes:page-script-only',
         functions: {
@@ -219,7 +219,7 @@ describe('Panel channel', () => {
       })
     })
 
-    it('rejects definitions when the protocol omits panel functions', () => {
+    it('accepts an explicitly empty panel function map', () => {
       connectPanelChannel<PageScriptOnlyProtocol>({
         name: 'devframes:page-script-only',
         functions: {},
