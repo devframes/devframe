@@ -54,7 +54,7 @@ function dispatchAction(action: DevframeMessageAction) {
       <div
         v-for="toast of toasts"
         :key="toast.id"
-        class="bg-glass:80 border color-base border-base shadow-xl cursor-pointer hover:bg-glass:90 transition-colors rounded"
+        class="bg-toast-glass border color-base border-base shadow-xl cursor-pointer transition-colors rounded"
         @click="openMessages(toast.id)"
       >
         <MessageItem :entry="toast.entry" compact class="px-3 py-2.5">
