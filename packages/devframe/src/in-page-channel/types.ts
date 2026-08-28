@@ -174,7 +174,7 @@ interface InPageChannelCommonOptions {
 /** Options for {@link createPageScriptChannel}. */
 export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
   /** Implementations of the protocol's page-script functions. */
-  functions?: CreatePageScriptChannelOptionsFunctions<Protocol>
+  functions: CreatePageScriptChannelOptionsFunctions<Protocol>
   /**
    * Window whose `message` events carry panel hellos. Defaults to the
    * global `window`; pass `false` to skip the handshake listener entirely
@@ -186,7 +186,7 @@ export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelPr
 /** Options for {@link connectPanelChannel}. */
 export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
   /** Implementations of the protocol's panel functions. */
-  functions?: ConnectPanelChannelOptionsFunctions<Protocol>
+  functions: ConnectPanelChannelOptionsFunctions<Protocol>
   /**
    * The panel's own window (listens for the handshake grant). Defaults to
    * the global `window`; pass `false` with `transport` to skip the handshake.

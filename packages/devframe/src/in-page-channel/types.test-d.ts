@@ -59,6 +59,11 @@ describe('in-page channel function definitions', () => {
   })
 
   it('requires every function from the local protocol side', () => {
+    // @ts-expect-error `functions` is required.
+    createPageScriptChannel<TestProtocol>({ name: 'devframes:test' })
+    // @ts-expect-error `functions` is required.
+    connectPanelChannel<TestProtocol>({ name: 'devframes:test' })
+
     createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
       // @ts-expect-error `sum` and `save` are required.
@@ -97,9 +102,16 @@ describe('in-page channel function definitions', () => {
 })
 
 describe('page-script channel types', () => {
-  it('types calls to panel functions', () => {
-    const channel = createPageScriptChannel<TestProtocol>({ name: 'devframes:test' })
+  const channel = createPageScriptChannel<TestProtocol>({
+    name: 'devframes:test',
+    functions: {
+      echo: { handler: value => value },
+      sum: { handler: (a, b) => a + b },
+      save: { handler: () => {} },
+    },
+  })
 
+  it('types calls to panel functions', () => {
     expectTypeOf(channel.callEvent('notify', 'ready')).toEqualTypeOf<void>()
 
     // @ts-expect-error Page-script functions cannot be called on panels.
@@ -113,7 +125,6 @@ describe('page-script channel types', () => {
   })
 
   it('types connected panel peers and their calls', () => {
-    const channel = createPageScriptChannel<TestProtocol>({ name: 'devframes:test' })
     const unsubscribe = channel.events.on('panel:connected', (panel) => {
       expectTypeOf(panel.id).toEqualTypeOf<string>()
       expectTypeOf(panel.call('notify', 'ready')).toEqualTypeOf<Promise<void>>()
@@ -129,7 +140,6 @@ describe('page-script channel types', () => {
   })
 
   it('types disconnected panel peers and one-time listeners', () => {
-    const channel = createPageScriptChannel<TestProtocol>({ name: 'devframes:test' })
     const unsubscribe = channel.events.once('panel:disconnected', (panel) => {
       expectTypeOf(panel.id).toEqualTypeOf<string>()
       expectTypeOf(panel.call('notify', 'bye')).toEqualTypeOf<Promise<void>>()
@@ -143,9 +153,14 @@ describe('page-script channel types', () => {
 })
 
 describe('panel channel types', () => {
-  it('types calls and their resolved results', () => {
-    const channel = connectPanelChannel<TestProtocol>({ name: 'devframes:test' })
+  const channel = connectPanelChannel<TestProtocol>({
+    name: 'devframes:test',
+    functions: {
+      notify: { handler: () => {} },
+    },
+  })
 
+  it('types calls and their resolved results', () => {
     expectTypeOf(channel.call('echo', 'hello')).toEqualTypeOf<Promise<string>>()
     expectTypeOf(channel.call('sum', 1, 2)).toEqualTypeOf<Promise<number>>()
     expectTypeOf(channel.call('save', 'draft')).toEqualTypeOf<Promise<void>>()
@@ -161,8 +176,6 @@ describe('panel channel types', () => {
   })
 
   it('types fire-and-forget calls to page-script functions', () => {
-    const channel = connectPanelChannel<TestProtocol>({ name: 'devframes:test' })
-
     expectTypeOf(channel.callEvent('echo', 'hello')).toEqualTypeOf<void>()
     expectTypeOf(channel.callEvent('sum', 1, 2)).toEqualTypeOf<void>()
     expectTypeOf(channel.callEvent('save', 'draft')).toEqualTypeOf<void>()
@@ -176,7 +189,6 @@ describe('panel channel types', () => {
   })
 
   it('types status listeners and channel state', () => {
-    const channel = connectPanelChannel<TestProtocol>({ name: 'devframes:test' })
     const unsubscribe = channel.events.on('status:updated', (status) => {
       expectTypeOf(status).toEqualTypeOf<'connecting' | 'connected' | 'closed'>()
     })
