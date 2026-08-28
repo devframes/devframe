@@ -108,12 +108,17 @@ export type InPageFunctionDefinitionFor<
   }
 }[keyof ProtocolSideFunctions<P, SIDE> & string]
 
-type InPageFunctionOption<
+type InPageFunctionOptions<
   P extends InPageChannelProtocol,
   SIDE extends ProtocolSide,
 > = InPageChannelProtocol extends P
-  ? InPageFunctionDefinitionAny
-  : InPageFunctionDefinitionFor<P, SIDE>
+  ? Record<string, Omit<InPageFunctionDefinitionAny, 'name'>>
+  : {
+      [NAME in keyof ProtocolSideFunctions<P, SIDE> & string]: Omit<
+        Extract<InPageFunctionDefinitionFor<P, SIDE>, { name: NAME }>,
+        'name'
+      >
+    }
 
 /**
  * Connection lifecycle of a panel endpoint: `connecting` (handshake retry
@@ -160,7 +165,7 @@ interface InPageChannelCommonOptions {
 /** Options for {@link createPageScriptChannel}. */
 export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
   /** Implementations of the protocol's page-script functions. */
-  functions?: readonly InPageFunctionOption<Protocol, 'pageScript'>[]
+  functions?: InPageFunctionOptions<Protocol, 'pageScript'>
   /**
    * Window whose `message` events carry panel hellos. Defaults to the
    * global `window`; pass `false` to skip the handshake listener entirely
@@ -172,7 +177,7 @@ export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelPr
 /** Options for {@link connectPanelChannel}. */
 export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
   /** Implementations of the protocol's panel functions. */
-  functions?: readonly InPageFunctionOption<Protocol, 'panel'>[]
+  functions?: InPageFunctionOptions<Protocol, 'panel'>
   /**
    * The panel's own window (listens for the handshake grant). Defaults to
    * the global `window`; pass `false` with `transport` to skip the handshake.

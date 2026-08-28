@@ -63,8 +63,8 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
   let heartbeatTimer: ReturnType<typeof setInterval> | undefined
 
   const registry = createLocalFunctionRegistry(codec)
-  for (const definition of options.functions ?? [])
-    registry.register(definition)
+  for (const [fnName, definition] of Object.entries(options.functions ?? {}))
+    registry.register({ ...definition, name: fnName })
 
   const stateHost = createPageScriptStateHost<P>(function* () {
     for (const peer of peers.values()) {

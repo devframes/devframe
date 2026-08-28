@@ -18,20 +18,17 @@ describe('in-page channel function definitions', () => {
   it('infers page-script handlers from the protocol name', () => {
     createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
-      functions: [
-        {
-          name: 'echo',
+      functions: {
+        echo: {
           handler: value => value.toUpperCase(),
         },
-        {
-          name: 'sum',
+        sum: {
           handler: (a, b) => a + b,
         },
-        {
-          name: 'save',
+        save: {
           handler: () => {},
         },
-      ],
+      },
     })
   })
 
@@ -41,39 +38,51 @@ describe('in-page channel function definitions', () => {
       name: 'devframes:test',
       window: false,
       transport: port1,
-      functions: [{
-        name: 'notify',
-        handler: (message) => {
-          void message
+      functions: {
+        notify: {
+          handler: (message) => {
+            void message
+          },
         },
-      }],
+      },
     })
     channel.close()
   })
 
-  it('rejects names from the remote side', () => {
+  it('requires every function from the local protocol side', () => {
     createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
-      functions: [
-        {
-          // @ts-expect-error `notify` is implemented by panels.
-          name: 'notify',
-          handler: (message: string) => void message,
-        },
-      ],
+      // @ts-expect-error `sum` and `save` are required.
+      functions: {
+        echo: { handler: value => value },
+      },
+    })
+  })
+
+  it('rejects keys from the remote side', () => {
+    createPageScriptChannel<TestProtocol>({
+      name: 'devframes:test',
+      functions: {
+        echo: { handler: value => value },
+        sum: { handler: (a, b) => a + b },
+        save: { handler: () => {} },
+        // @ts-expect-error `notify` is implemented by panels.
+        notify: { handler: (message: string) => void message },
+      },
     })
   })
 
   it('rejects handlers incompatible with the named protocol function', () => {
     createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
-      functions: [
-        // @ts-expect-error `echo` accepts and returns a string.
-        {
-          name: 'echo',
+      functions: {
+        echo: {
+          // @ts-expect-error `echo` accepts and returns a string.
           handler: (value: number) => value,
         },
-      ],
+        sum: { handler: (a, b) => a + b },
+        save: { handler: () => {} },
+      },
     })
   })
 })

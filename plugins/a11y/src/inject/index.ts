@@ -18,7 +18,7 @@
 import type { A11yChannelProtocol, PageScriptConfig, PinTarget, ScanReport } from '../shared/protocol.ts'
 import type { A11yPageScriptContext } from './messages.ts'
 import type { PinInfo } from './overlay.ts'
-import { createPageScriptChannel, defineChannelFunction } from 'devframe/in-page-channel'
+import { createPageScriptChannel } from 'devframe/in-page-channel'
 import {
   A11Y_CHANNEL,
   A11Y_DEFAULT_DOCK_ID,
@@ -96,9 +96,8 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
 
   const channel = createPageScriptChannel<A11yChannelProtocol>({
     name: A11Y_CHANNEL,
-    functions: [
-      defineChannelFunction({
-        name: 'highlight',
+    functions: {
+      'highlight': {
         type: 'event',
         jsonSerializable: true,
         handler: (nodeId: string, target: string[]) => {
@@ -114,14 +113,12 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
             overlay.clearPreview()
           }
         },
-      }),
-      defineChannelFunction({
-        name: 'clear-highlight',
+      },
+      'clear-highlight': {
         type: 'event',
         handler: () => overlay.clearPreview(),
-      }),
-      defineChannelFunction({
-        name: 'set-pins',
+      },
+      'set-pins': {
         type: 'event',
         jsonSerializable: true,
         handler: (pins: PinTarget[]) => {
@@ -133,19 +130,16 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
           })
           overlay.setPins(infos)
         },
-      }),
-      defineChannelFunction({
-        name: 'rescan',
+      },
+      'rescan': {
         type: 'event',
         handler: () => void runScan(),
-      }),
-      defineChannelFunction({
-        name: 'set-config',
+      },
+      'set-config': {
         type: 'event',
         handler: (next: PageScriptConfig) => applyConfig(next),
-      }),
-      defineChannelFunction({
-        name: 'set-autoscan',
+      },
+      'set-autoscan': {
         type: 'event',
         jsonSerializable: true,
         handler: (enabled: boolean) => {
@@ -155,9 +149,8 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
           else
             unbindInteractions()
         },
-      }),
-      defineChannelFunction({
-        name: 'clear-route',
+      },
+      'clear-route': {
         type: 'event',
         jsonSerializable: true,
         handler: (route: string) => {
@@ -166,9 +159,8 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
           saveRoutes()
           publishState()
         },
-      }),
-      defineChannelFunction({
-        name: 'clear-all',
+      },
+      'clear-all': {
         type: 'event',
         handler: () => {
           routes.clear()
@@ -176,8 +168,8 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
           saveRoutes()
           publishState()
         },
-      }),
-    ],
+      },
+    },
   })
 
   // The page script is the authority for the aggregate; connected panels are
