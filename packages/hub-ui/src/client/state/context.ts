@@ -14,6 +14,7 @@ import { createCommandsContext } from './commands'
 import { docksGroupByCategories, getGroupMembers, getRegisteredGroupIds, resolveCommandIcon, resolveGroupPreferredChild } from './dock-settings'
 import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE, sharedStateToRef, useDocksEntries, waitForInitialSharedStateSync } from './docks'
 import { createClientMessagesClient } from './messages-client'
+import { dockCommandId } from './palette'
 import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDockPopupOpen } from './popup'
 import { executeSetupScript } from './setup-script'
 
@@ -515,7 +516,7 @@ export async function createDocksContext(
     cleanupDocksCommand?.()
 
     const toCommand = (entry: DevframeDockEntry): DevframeClientCommand => ({
-      id: `devframes:docks:${entry.id}`,
+      id: dockCommandId(entry.id),
       source: 'client' as const,
       title: entry.title,
       icon: resolveCommandIcon(entry.icon),
@@ -576,7 +577,7 @@ export async function createDocksContext(
         // dead row in the palette and the shortcut settings.
         if (visibleMembers.length === 0 && !preferredChildId)
           return []
-        const commandId = `devframes:docks:${entry.id}`
+        const commandId = dockCommandId(entry.id)
         return [{
           ...toCommand(entry),
           action: () => activateGroup(

@@ -259,6 +259,20 @@ describe('dock group command activation', () => {
     expect(context.commands.paletteScopeId).toBe('devframes:docks:tools')
   })
 
+  it('re-scopes after the palette steps back to the Docks parent', async () => {
+    expect.assertions(2)
+
+    const context = await createGroupedContext()
+    await context.commands.execute('devframes:docks:tools')
+    // The palette keeps its scope aligned with the breadcrumb whose children
+    // are currently visible.
+    context.commands.paletteScopeId = 'devframes:docks'
+    await context.commands.execute('devframes:docks:tools')
+
+    expect(context.commands.paletteOpen).toBe(true)
+    expect(context.commands.paletteScopeId).toBe('devframes:docks:tools')
+  })
+
   it('opens the sole visible member directly instead of a one-item palette', async () => {
     expect.assertions(2)
 

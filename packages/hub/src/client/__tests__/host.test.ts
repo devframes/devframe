@@ -296,6 +296,43 @@ describe('createDevframeClientRuntime', () => {
     host.dispose()
   })
 
+  it('executes nested client commands locally and resolves their default keybindings', async () => {
+    const { rpc, calls } = createStubRpc()
+    const host = await createDevframeClientRuntime({ rpc })
+
+    const ran: string[] = []
+    const off = host.context.commands.register({
+      id: 'test:parent',
+      title: 'Parent',
+      source: 'client',
+      children: [{
+        id: 'test:parent:child',
+        title: 'Child',
+        source: 'client',
+        children: [{
+          id: 'test:parent:child:grandchild',
+          title: 'Grandchild',
+          source: 'client',
+          keybindings: [{ key: 'Mod+Shift+C' }],
+          action: (value: string) => {
+            ran.push(value)
+          },
+        }],
+      }],
+    })
+
+    await host.context.commands.execute('test:parent:child:grandchild', 'nested')
+
+    expect(ran).toEqual(['nested'])
+    expect(calls).toEqual([])
+    expect(host.context.commands.getKeybindings('test:parent:child:grandchild')).toEqual([
+      { key: 'Mod+Shift+C' },
+    ])
+
+    off()
+    host.dispose()
+  })
+
   it('imports a dock entry client script and hands it the script context', async () => {
     const { rpc, states, calls } = createStubRpc()
     const host = await createDevframeClientRuntime({ rpc })

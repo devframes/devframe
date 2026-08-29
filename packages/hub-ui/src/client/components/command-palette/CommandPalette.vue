@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { DevframeClientCommand, DevframeCommandEntry } from '@devframes/hub'
+import type { DevframeClientCommand } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import type { PaletteCrumb, PaletteFlatItem } from '../../state/palette'
 import Fuse from 'fuse.js'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
-import { flattenPaletteCommands, paletteScopeTrail } from '../../state/palette'
+import { flattenPaletteCommands, paletteActionKeepsOpen, paletteScopeTrail, paletteTrailScopeId, reconcilePaletteTrail, resolvePaletteSelection } from '../../state/palette'
 import BrandWordmark from '../icons/BrandWordmark.vue'
 import CommandPaletteItem from './CommandPaletteItem.vue'
 
@@ -70,7 +70,10 @@ function showScope(scopeId: string | null) {
   search.value = ''
   selectedIndex.value = 0
   dynamicItems.value = undefined
-  breadcrumb.value = paletteScopeTrail(commandsCtx.value.paletteCommands, scopeId)
+  const next = paletteScopeTrail(commandsCtx.value.paletteCommands, scopeId)
+  breadcrumb.value = next
+  if (scopeId != null && !next.some(crumb => crumb.id === scopeId))
+    commandsCtx.value.paletteScopeId = null
 }
 
 watch(show, (v) => {
@@ -96,8 +99,23 @@ watch(show, (v) => {
 // group picked from the root list, say. `show` stays `true` throughout, so the
 // drill-down follows the scope itself rather than the open transition.
 watch(() => commandsCtx.value.paletteScopeId, (scopeId) => {
-  if (show.value && scopeId)
+  if (show.value)
     showScope(scopeId)
+})
+
+// A command tree can change while the palette is open (dock registration,
+// `when` context, or a client command update). Rebuild each crumb by id so the
+// rendered rows and their actions always come from the live tree.
+watch(() => commandsCtx.value.paletteCommands, (commands) => {
+  if (!show.value || breadcrumb.value.length === 0)
+    return
+  const scopeId = commandsCtx.value.paletteScopeId
+  const scopeWasActive = scopeId != null && breadcrumb.value.some(crumb => crumb.id === scopeId)
+  const next = reconcilePaletteTrail(commands, breadcrumb.value, scopeId)
+  breadcrumb.value = next
+  selectedIndex.value = Math.min(selectedIndex.value, Math.max(filtered.value.length - 1, 0))
+  if (scopeWasActive && scopeId != null && !next.some(crumb => crumb.id === scopeId))
+    commandsCtx.value.paletteScopeId = null
 })
 
 function moveSelected(delta: number) {
@@ -120,17 +138,16 @@ function scrollToItem() {
 const loadingId = ref<string | null>(null)
 
 async function enterItem(flatItem: PaletteFlatItem) {
-  const entry = flatItem.entry
+  // The row may have been rendered just before the command tree changed. Look
+  // it up again so a removed entry no-ops and a replacement runs its new action.
+  const entry = activeItems.value.find(item => item.entry.id === flatItem.entry.id)?.entry
+  if (!entry)
+    return
 
-  // If has static children, drill down
-  if (entry.children && entry.children.length > 0) {
-    breadcrumb.value.push({
-      title: entry.title,
-      items: entry.children as DevframeCommandEntry[],
-    })
-    search.value = ''
-    selectedIndex.value = 0
-    dynamicItems.value = undefined
+  // Ordinary command parents drill down. Dock groups are actionable parents:
+  // their action opens a preferred member or scopes the palette for a choice.
+  if (resolvePaletteSelection(entry, props.context.docks.entries) === 'drill') {
+    commandsCtx.value.paletteScopeId = entry.id
     return
   }
 
@@ -149,6 +166,8 @@ async function enterItem(flatItem: PaletteFlatItem) {
     catch (err) {
       console.error(`[@devframes/hub-ui] Command "${entry.id}" failed:`, err)
     }
+    if (paletteActionKeepsOpen(entry, props.context.docks.entries, commandsCtx.value.paletteOpen, commandsCtx.value.paletteScopeId))
+      return
     close()
     return
   }
@@ -193,7 +212,7 @@ function goBack() {
   }
   if (breadcrumb.value.length > 0) {
     breadcrumb.value.pop()
-    dropScopeAtRoot()
+    commandsCtx.value.paletteScopeId = paletteTrailScopeId(breadcrumb.value)
     search.value = ''
     selectedIndex.value = 0
     return
@@ -204,19 +223,9 @@ function goBack() {
 /** Jump to the level the crumb at `index` sits above. */
 function goToCrumb(index: number) {
   breadcrumb.value.splice(index)
-  dropScopeAtRoot()
+  commandsCtx.value.paletteScopeId = paletteTrailScopeId(breadcrumb.value)
   search.value = ''
   selectedIndex.value = 0
-}
-
-/**
- * Stepping back out to the root list leaves the palette unscoped, so the
- * shortcut that scoped it drills back in instead of reading as "press again to
- * close".
- */
-function dropScopeAtRoot() {
-  if (breadcrumb.value.length === 0)
-    commandsCtx.value.paletteScopeId = null
 }
 
 function onKeyDown(e: KeyboardEvent) {
