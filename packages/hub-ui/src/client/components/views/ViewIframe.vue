@@ -191,7 +191,7 @@ function refresh() {
 
   assetsError.value = null
   isIframeLoading.value = true
-  const src = iframe.src
+  const src = currentUrl.value
   iframe.src = ''
   iframe.src = src
   currentUrl.value = src
