@@ -203,7 +203,7 @@ declare module 'devframe/types' {
 export interface DevframeViewIframe extends DevframeDockEntryBase {
   type: 'iframe'
   url: string
-  /** Show the iframe address bar regardless of the user's global setting. */
+  /** Request the address bar for this iframe dock. The user's global always-show setting forces it on for every iframe. */
   showAddressBar?: boolean
   /** Optional address-bar controls. Omitted values retain the existing origin-based behavior. */
   controls?: {
