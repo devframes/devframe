@@ -106,7 +106,7 @@ function setDockMode(mode: string) {
       </button>
       <div class="flex flex-col">
         <span class="text-sm">Always show iframe address bars</span>
-        <span class="text-xs op50">Show the address bar for every iframe dock. When disabled, only docks that request it show one.</span>
+        <span class="text-xs op50">Show the address bar for every iframe dock.</span>
       </div>
     </label>
 
