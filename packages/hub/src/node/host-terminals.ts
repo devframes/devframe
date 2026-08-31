@@ -8,6 +8,8 @@ import type {
   DevframeChildProcessResult,
   DevframeChildProcessTerminalSession,
   DevframePtyExecuteOptions,
+  DevframePtyOutput,
+  DevframePtyResult,
   DevframePtyTerminalSession,
   DevframeTerminalSession,
   DevframeTerminalSessionBase,
@@ -365,6 +367,8 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
 
     let controller: ReadableStreamDefaultController<string> | undefined
     let pty: IPty | undefined
+    let currentResult: DevframePtyResult | undefined
+    let killCurrentRun: (() => void) | undefined
     let runId = 0
     let streamClosed = false
     let session: DevframePtyTerminalSession
@@ -409,7 +413,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         controller = _controller
       },
       cancel() {
-        pty?.kill()
+        killCurrentRun?.()
         pty = undefined
         closeStream()
       },
@@ -430,12 +434,36 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
           ...(executeOptions.env ?? {}),
         },
       })
-      proc.onData((data) => {
-        if (streamClosed || currentRun !== runId)
+      const outputChunks: string[] = []
+      let killed = false
+      let settled = false
+      let settledExitCode: number | undefined
+      let resolveOutput!: (output: DevframePtyOutput) => void
+      const outputPromise = new Promise<DevframePtyOutput>((resolve) => {
+        resolveOutput = resolve
+      })
+
+      const settle = (exitCode: number, signal: number): void => {
+        if (settled)
           return
-        controller?.enqueue(typeof data === 'string' ? data : data.toString('utf8'))
+        settled = true
+        killed ||= signal !== 0
+        settledExitCode = killed ? undefined : exitCode
+        resolveOutput({
+          output: outputChunks.join(''),
+          exitCode: settledExitCode,
+          signal: signal === 0 ? undefined : signal,
+        })
+      }
+
+      proc.onData((data) => {
+        const text = typeof data === 'string' ? data : data.toString('utf8')
+        outputChunks.push(text)
+        if (!streamClosed && currentRun === runId)
+          controller?.enqueue(text)
       })
       proc.onExit(({ exitCode, signal }) => {
+        settle(exitCode, signal)
         if (currentRun !== runId)
           return
         closeStream()
@@ -444,6 +472,24 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         // code is a crash, matching the child-process comment above.
         markStatus(signal === 0 && exitCode !== 0 ? 'error' : 'stopped')
       })
+      currentResult = {
+        get pid() {
+          return proc.pid
+        },
+        get exitCode() {
+          return killed ? undefined : (proc.exitCode ?? settledExitCode)
+        },
+        get killed() {
+          return killed
+        },
+        then: (onfulfilled, onrejected) => outputPromise.then(onfulfilled, onrejected),
+      }
+      killCurrentRun = () => {
+        if (proc.exitCode !== null)
+          return
+        killed = true
+        proc.kill()
+      }
       return proc
     }
 
@@ -490,8 +536,9 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
           return undefined
         }
       },
+      getResult: () => currentResult!,
       terminate: async () => {
-        pty?.kill()
+        killCurrentRun?.()
         pty = undefined
         closeStream()
         markStatus('stopped')
@@ -499,7 +546,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       restart: async () => {
         if (streamClosed)
           throw diagnostics.DF8206({ id: terminal.id })
-        pty?.kill()
+        killCurrentRun?.()
         pty = spawnPty()
         markStatus('running')
       },

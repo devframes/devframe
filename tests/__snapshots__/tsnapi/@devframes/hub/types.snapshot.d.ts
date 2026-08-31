@@ -52,6 +52,8 @@ export { DevframeMessagesLevelShortcuts }
 export { DevframeMessagesListDelta }
 export { DevframeNodeRpcSession }
 export { DevframePtyExecuteOptions }
+export { DevframePtyOutput }
+export { DevframePtyResult }
 export { DevframePtyTerminalSession }
 export { DevframeRpcClientFunctions }
 export { DevframeRpcServerFunctions }

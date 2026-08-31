@@ -229,6 +229,16 @@ export interface DevframePtyExecuteOptions {
   cols?: number;
   rows?: number;
 }
+export interface DevframePtyOutput {
+  output: string;
+  exitCode: number | undefined;
+  signal: number | undefined;
+}
+export interface DevframePtyResult extends PromiseLike<DevframePtyOutput> {
+  readonly pid: number | undefined;
+  readonly exitCode: number | undefined;
+  readonly killed: boolean;
+}
 export interface DevframePtyTerminalSession extends DevframeTerminalSession {
   type: 'pty';
   interactive: true;
@@ -236,6 +246,7 @@ export interface DevframePtyTerminalSession extends DevframeTerminalSession {
   write: (_: string) => void;
   resize: (_: number, _: number) => void;
   getProcessName: () => string | undefined;
+  getResult: () => DevframePtyResult;
   terminate: () => Promise<void>;
   restart: () => Promise<void>;
 }

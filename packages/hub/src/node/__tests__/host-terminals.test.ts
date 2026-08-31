@@ -418,6 +418,118 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
     })
   })
 
+  itPty('getResult() resolves merged PTY output after natural exit', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("out"); process.stderr.write("err")'],
+    }, { id: 'pty-result', title: 'PTY result' })
+    const result = session.getResult()
+
+    expect(result.pid).toBeTypeOf('number')
+    expect(result.exitCode).toBeUndefined()
+    expect(result.killed).toBe(false)
+
+    const output = await result
+    expect(output.output).toContain('out')
+    expect(output.output).toContain('err')
+    expect(output.exitCode).toBe(0)
+    expect(output.signal).toBeUndefined()
+    expect(result.exitCode).toBe(0)
+    expect(result.killed).toBe(false)
+  })
+
+  itPty('getResult() preserves a non-zero PTY exit code', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("failed"); process.exit(3)'],
+    }, { id: 'pty-result-error', title: 'PTY result error' })
+    const result = session.getResult()
+
+    await expect(result).resolves.toMatchObject({
+      output: expect.stringContaining('failed'),
+      exitCode: 3,
+      signal: undefined,
+    })
+    expect(result.exitCode).toBe(3)
+    expect(result.killed).toBe(false)
+  })
+
+  itPty('getResult() marks a terminated PTY run as killed', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("started"); setInterval(() => {}, 4000)'],
+    }, { id: 'pty-result-terminate', title: 'PTY result terminate' })
+    const result = session.getResult()
+    await waitUntil(() => {
+      expect(session.buffer?.join('')).toContain('started')
+    })
+
+    await session.terminate()
+
+    expect(result.killed).toBe(true)
+    expect(result.exitCode).toBeUndefined()
+    await expect(result).resolves.toMatchObject({
+      output: expect.stringContaining('started'),
+      exitCode: undefined,
+      signal: expect.any(Number),
+    })
+  })
+
+  itPty('isolates getResult() output between independently spawned PTY sessions', async () => {
+    const { host } = createTerminalHost()
+
+    const firstSession = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("first-run")'],
+    }, { id: 'pty-result-first', title: 'First PTY result' })
+    const secondSession = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("second-run")'],
+    }, { id: 'pty-result-second', title: 'Second PTY result' })
+
+    const [firstOutput, secondOutput] = await Promise.all([firstSession.getResult(), secondSession.getResult()])
+    expect(firstOutput.output).toContain('first-run')
+    expect(firstOutput.output).not.toContain('second-run')
+    expect(secondOutput.output).toContain('second-run')
+    expect(secondOutput.output).not.toContain('first-run')
+  })
+
+  itPty('getResult() isolates the previous PTY run after restart()', async () => {
+    const { host } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("run:" + process.pid); setInterval(() => {}, 4000)'],
+    }, { id: 'pty-result-restart', title: 'PTY result restart' })
+    const firstResult = session.getResult()
+    await waitUntil(() => {
+      expect(session.buffer?.join('')).toContain(`run:${firstResult.pid}`)
+    })
+
+    await session.restart()
+    const secondResult = session.getResult()
+    expect(secondResult).not.toBe(firstResult)
+    expect(secondResult.pid).not.toBe(firstResult.pid)
+    await waitUntil(() => {
+      expect(session.buffer?.join('')).toContain(`run:${secondResult.pid}`)
+    })
+
+    await session.terminate()
+    const [firstOutput, secondOutput] = await Promise.all([firstResult, secondResult])
+    expect(firstResult.killed).toBe(true)
+    expect(secondResult.killed).toBe(true)
+    expect(firstOutput.output).toContain(`run:${firstResult.pid}`)
+    expect(firstOutput.output).not.toContain(`run:${secondResult.pid}`)
+    expect(secondOutput.output).toContain(`run:${secondResult.pid}`)
+    expect(secondOutput.output).not.toContain(`run:${firstResult.pid}`)
+  })
+
   itPty('does not accept resize after termination without throwing', async () => {
     const { host } = createTerminalHost()
 

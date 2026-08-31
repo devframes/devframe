@@ -129,6 +129,25 @@ export interface DevframePtyExecuteOptions {
   rows?: number
 }
 
+/**
+ * The settled outcome of a {@link DevframePtyTerminalSession} run. PTYs merge
+ * stdout and stderr into one terminal output stream, so the captured text is
+ * exposed as a single `output` value.
+ */
+export interface DevframePtyOutput {
+  output: string
+  exitCode: number | undefined
+  signal: number | undefined
+}
+
+/** A live handle on the current PTY run's merged output and process state. */
+export interface DevframePtyResult extends PromiseLike<DevframePtyOutput> {
+  readonly pid: number | undefined
+  /** `undefined` while the process is running or after a signal kill. */
+  readonly exitCode: number | undefined
+  readonly killed: boolean
+}
+
 export interface DevframePtyTerminalSession extends DevframeTerminalSession {
   type: 'pty'
   interactive: true
@@ -139,6 +158,11 @@ export interface DevframePtyTerminalSession extends DevframeTerminalSession {
   resize: (cols: number, rows: number) => void
   /** Current foreground process name, when the backend can resolve it. */
   getProcessName: () => string | undefined
+  /**
+   * Get a live handle on the current run's outcome. Call it again after
+   * `restart()` to track the new run.
+   */
+  getResult: () => DevframePtyResult
   terminate: () => Promise<void>
   /** Throws `DF8206` once the session's output stream has closed (after a natural exit or `terminate()`) — drop it with `ctx.terminals.remove(session)` and start a fresh session instead. */
   restart: () => Promise<void>
