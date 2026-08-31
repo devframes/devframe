@@ -226,10 +226,41 @@ function pathMatches(a: string, b: string): boolean {
   return strip(a) === strip(b)
 }
 
+/**
+ * Whether `hostname` names a loopback host: `localhost` (or any `*.localhost`
+ * subdomain), the IPv6 loopback `::1`, or an IPv4 literal inside the
+ * `127.0.0.0/8` loopback block.
+ *
+ * The IPv4 case is matched **structurally** — the whole hostname must be a
+ * canonical dotted-decimal IPv4 literal whose first octet is `127`. A bare
+ * `startsWith('127.')` prefix check would also accept an attacker-controlled
+ * DNS name that merely *begins* with `127.` (`127.attacker.example`,
+ * `127.0.0.1.attacker.example`), letting a cross-origin browser page defeat
+ * the loopback origin gate that guards the RPC/MCP surface (a DNS-rebinding /
+ * cross-site WebSocket-hijacking bypass). Requiring a real IPv4 literal keeps
+ * genuine loopback addresses (`127.0.0.1`, `127.5.5.5`) allowed while rejecting
+ * those DNS names.
+ */
 export function isLoopbackHostname(hostname: string): boolean {
   const h = hostname.replace(/^\[|\]$/g, '') // strip IPv6 brackets
-  return h === 'localhost' || h === '127.0.0.1' || h === '::1'
-    || h.endsWith('.localhost') || h.startsWith('127.')
+  if (h === 'localhost' || h.endsWith('.localhost') || h === '::1')
+    return true
+  return isLoopbackIPv4(h)
+}
+
+/** A canonical dotted-decimal IPv4 literal in `127.0.0.0/8`. */
+function isLoopbackIPv4(hostname: string): boolean {
+  const octets = hostname.split('.')
+  if (octets.length !== 4 || !octets.every(isDecimalOctet))
+    return false
+  return Number(octets[0]) === 127
+}
+
+/** A single canonical IPv4 octet: 1–3 digits, no leading zero, value 0–255. */
+function isDecimalOctet(part: string): boolean {
+  if (!/^\d{1,3}$/.test(part) || (part.length > 1 && part[0] === '0'))
+    return false
+  return Number(part) <= 255
 }
 
 /**
