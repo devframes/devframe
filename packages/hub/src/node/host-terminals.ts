@@ -468,10 +468,10 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
           return
         closeStream()
         /**
-         * A signal kill (terminate()/restart()) and a clean exit are deliberate stops.
-         * Only an unsignalled non-zero exit code is a crash, matching the child-process path.
+         * Killed runs and clean exits are stopped. Only a non-killed non-zero exit
+         * code is a crash, matching the child-process path.
          */
-        markStatus(signal === 0 && exitCode !== 0 ? 'error' : 'stopped')
+        markStatus(!killed && exitCode !== 0 ? 'error' : 'stopped')
       })
       currentResult = {
         get pid() {

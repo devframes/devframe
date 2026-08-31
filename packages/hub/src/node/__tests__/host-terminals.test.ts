@@ -476,9 +476,11 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
   })
 
   itPty('getResult() marks a terminated PTY run as killed', async () => {
-    expect.assertions(4)
+    expect.assertions(6)
 
     const { host } = createTerminalHost()
+    const updates: string[] = []
+    host.events.on('terminals:session:updated', session => updates.push(session.status))
 
     const session = await host.startPtySession({
       command: NODE,
@@ -502,6 +504,8 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
       await expect(result).resolves.toHaveProperty('signal', undefined)
     else
       await expect(result).resolves.toHaveProperty('signal', expect.any(Number))
+    expect(session.status).toBe('stopped')
+    expect(updates).not.toContain('error')
   })
 
   itPty('getResult() isolates the previous PTY run after restart()', async () => {
