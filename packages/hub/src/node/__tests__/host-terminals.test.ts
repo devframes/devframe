@@ -538,17 +538,17 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
     expect(secondOutput.output).not.toContain(`run:${firstResult.pid}`)
   })
 
-  itPty('reports a structured error when restart fails to spawn a PTY', async () => {
-    expect.assertions(5)
+  itPty('allows retry after a structured PTY restart spawn error', async () => {
+    expect.assertions(9)
 
     const { host } = createTerminalHost()
     const session = await host.startPtySession({
       command: NODE,
-      args: ['-e', 'process.stdout.write("started"); setInterval(() => {}, 4000)'],
+      args: ['-e', 'process.stdout.write("started:" + process.pid); setInterval(() => {}, 4000)'],
     }, { id: 'pty-result-restart-error', title: 'PTY result restart error' })
     const result = session.getResult()
     await waitUntil(() => {
-      if (!session.buffer?.join('').includes('started'))
+      if (!session.buffer?.join('').includes(`started:${result.pid}`))
         throw new Error('PTY output has not started')
     })
     zigptyModuleMock.spawn.mockImplementationOnce(() => {
@@ -559,10 +559,22 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
     expect(session.status).toBe('error')
     expect(session.getProcessName()).toBeUndefined()
     expect(session.getResult()).toBe(result)
+
+    await expect(session.restart()).resolves.toBeUndefined()
+    expect(session.status).toBe('running')
+    const retryResult = session.getResult()
+    expect(retryResult).not.toBe(result)
+    await waitUntil(() => {
+      if (!session.buffer?.join('').includes(`started:${retryResult.pid}`))
+        throw new Error('Retried PTY output has not started')
+    })
+    expect(session.buffer?.join('')).toContain(`started:${retryResult.pid}`)
+    await session.terminate()
     await expect(result).resolves.toMatchObject({
-      output: expect.stringContaining('started'),
+      output: expect.stringContaining(`started:${result.pid}`),
       exitCode: undefined,
     })
+    await retryResult
   })
 
   itPty('does not accept resize after termination without throwing', async () => {

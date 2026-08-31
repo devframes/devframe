@@ -548,12 +548,12 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         if (streamClosed)
           throw diagnostics.DF8206({ id: terminal.id })
         killCurrentRun?.()
+        killCurrentRun = undefined
         pty = undefined
         try {
           pty = spawnPty()
         }
         catch (error) {
-          errorStream(error)
           markStatus('error')
           throw diagnostics.DF8203({
             command: executeOptions.command,
