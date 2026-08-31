@@ -421,7 +421,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
 
     const spawnPty = (): IPty => {
       const currentRun = ++runId
-      const proc = spawn(executeOptions.command, executeOptions.args ?? [], {
+      const ptyProcess = spawn(executeOptions.command, executeOptions.args ?? [], {
         name: PTY_TERM_NAME,
         cols,
         rows,
@@ -456,28 +456,29 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         })
       }
 
-      proc.onData((data) => {
+      ptyProcess.onData((data) => {
         const text = typeof data === 'string' ? data : data.toString('utf8')
         outputChunks.push(text)
         if (!streamClosed && currentRun === runId)
           controller?.enqueue(text)
       })
-      proc.onExit(({ exitCode, signal }) => {
+      ptyProcess.onExit(({ exitCode, signal }) => {
         settle(exitCode, signal)
         if (currentRun !== runId)
           return
         closeStream()
-        // A signal kill (terminate()/restart()) is a deliberate stop; a clean
-        // exit is a deliberate stop too. Only an unsignalled non-zero exit
-        // code is a crash, matching the child-process comment above.
+        /**
+         * A signal kill (terminate()/restart()) and a clean exit are deliberate stops.
+         * Only an unsignalled non-zero exit code is a crash, matching the child-process path.
+         */
         markStatus(signal === 0 && exitCode !== 0 ? 'error' : 'stopped')
       })
       currentResult = {
         get pid() {
-          return proc.pid
+          return ptyProcess.pid
         },
         get exitCode() {
-          return killed ? undefined : (proc.exitCode ?? settledExitCode)
+          return killed ? undefined : (ptyProcess.exitCode ?? settledExitCode)
         },
         get killed() {
           return killed
@@ -485,12 +486,12 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         then: (onfulfilled, onrejected) => outputPromise.then(onfulfilled, onrejected),
       }
       killCurrentRun = () => {
-        if (proc.exitCode !== null)
+        if (ptyProcess.exitCode !== null)
           return
         killed = true
-        proc.kill()
+        ptyProcess.kill()
       }
-      return proc
+      return ptyProcess
     }
 
     try {
@@ -547,7 +548,18 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         if (streamClosed)
           throw diagnostics.DF8206({ id: terminal.id })
         killCurrentRun?.()
-        pty = spawnPty()
+        pty = undefined
+        try {
+          pty = spawnPty()
+        }
+        catch (error) {
+          errorStream(error)
+          markStatus('error')
+          throw diagnostics.DF8203({
+            command: executeOptions.command,
+            reason: error instanceof Error ? error.message : String(error),
+          })
+        }
         markStatus('running')
       },
     }

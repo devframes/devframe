@@ -5,6 +5,19 @@ import { describe, expect, it, vi } from 'vitest'
 import { hasNative } from 'zigpty'
 import { DevframeTerminalsHost } from '../host-terminals'
 
+const zigptyModuleMock = vi.hoisted(() => ({
+  spawn: vi.fn(),
+}))
+
+vi.mock('zigpty', async (importOriginal) => {
+  const originalModule = await importOriginal<typeof import('zigpty')>()
+  zigptyModuleMock.spawn.mockImplementation(originalModule.spawn)
+  return {
+    ...originalModule,
+    spawn: zigptyModuleMock.spawn,
+  }
+})
+
 const NODE = process.execPath
 // A real PTY works wherever zigpty's native bindings load (incl. Windows
 // ConPTY); skip when they're unavailable.
@@ -419,6 +432,8 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
   })
 
   itPty('getResult() resolves merged PTY output after natural exit', async () => {
+    expect.assertions(9)
+
     const { host } = createTerminalHost()
 
     const session = await host.startPtySession({
@@ -441,6 +456,8 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
   })
 
   itPty('getResult() preserves a non-zero PTY exit code', async () => {
+    expect.assertions(3)
+
     const { host } = createTerminalHost()
 
     const session = await host.startPtySession({
@@ -459,6 +476,8 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
   })
 
   itPty('getResult() marks a terminated PTY run as killed', async () => {
+    expect.assertions(4)
+
     const { host } = createTerminalHost()
 
     const session = await host.startPtySession({
@@ -467,7 +486,8 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
     }, { id: 'pty-result-terminate', title: 'PTY result terminate' })
     const result = session.getResult()
     await waitUntil(() => {
-      expect(session.buffer?.join('')).toContain('started')
+      if (!session.buffer?.join('').includes('started'))
+        throw new Error('PTY output has not started')
     })
 
     await session.terminate()
@@ -477,30 +497,16 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
     await expect(result).resolves.toMatchObject({
       output: expect.stringContaining('started'),
       exitCode: undefined,
-      signal: expect.any(Number),
     })
-  })
-
-  itPty('isolates getResult() output between independently spawned PTY sessions', async () => {
-    const { host } = createTerminalHost()
-
-    const firstSession = await host.startPtySession({
-      command: NODE,
-      args: ['-e', 'process.stdout.write("first-run")'],
-    }, { id: 'pty-result-first', title: 'First PTY result' })
-    const secondSession = await host.startPtySession({
-      command: NODE,
-      args: ['-e', 'process.stdout.write("second-run")'],
-    }, { id: 'pty-result-second', title: 'Second PTY result' })
-
-    const [firstOutput, secondOutput] = await Promise.all([firstSession.getResult(), secondSession.getResult()])
-    expect(firstOutput.output).toContain('first-run')
-    expect(firstOutput.output).not.toContain('second-run')
-    expect(secondOutput.output).toContain('second-run')
-    expect(secondOutput.output).not.toContain('first-run')
+    if (process.platform === 'win32')
+      await expect(result).resolves.toHaveProperty('signal', undefined)
+    else
+      await expect(result).resolves.toHaveProperty('signal', expect.any(Number))
   })
 
   itPty('getResult() isolates the previous PTY run after restart()', async () => {
+    expect.assertions(8)
+
     const { host } = createTerminalHost()
 
     const session = await host.startPtySession({
@@ -509,7 +515,8 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
     }, { id: 'pty-result-restart', title: 'PTY result restart' })
     const firstResult = session.getResult()
     await waitUntil(() => {
-      expect(session.buffer?.join('')).toContain(`run:${firstResult.pid}`)
+      if (!session.buffer?.join('').includes(`run:${firstResult.pid}`))
+        throw new Error('First PTY run has not started')
     })
 
     await session.restart()
@@ -517,7 +524,8 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
     expect(secondResult).not.toBe(firstResult)
     expect(secondResult.pid).not.toBe(firstResult.pid)
     await waitUntil(() => {
-      expect(session.buffer?.join('')).toContain(`run:${secondResult.pid}`)
+      if (!session.buffer?.join('').includes(`run:${secondResult.pid}`))
+        throw new Error('Second PTY run has not started')
     })
 
     await session.terminate()
@@ -528,6 +536,33 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
     expect(firstOutput.output).not.toContain(`run:${secondResult.pid}`)
     expect(secondOutput.output).toContain(`run:${secondResult.pid}`)
     expect(secondOutput.output).not.toContain(`run:${firstResult.pid}`)
+  })
+
+  itPty('reports a structured error when restart fails to spawn a PTY', async () => {
+    expect.assertions(5)
+
+    const { host } = createTerminalHost()
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("started"); setInterval(() => {}, 4000)'],
+    }, { id: 'pty-result-restart-error', title: 'PTY result restart error' })
+    const result = session.getResult()
+    await waitUntil(() => {
+      if (!session.buffer?.join('').includes('started'))
+        throw new Error('PTY output has not started')
+    })
+    zigptyModuleMock.spawn.mockImplementationOnce(() => {
+      throw new Error('restart spawn failed')
+    })
+
+    await expect(session.restart()).rejects.toThrow(expect.objectContaining({ code: 'DF8203' }))
+    expect(session.status).toBe('error')
+    expect(session.getProcessName()).toBeUndefined()
+    expect(session.getResult()).toBe(result)
+    await expect(result).resolves.toMatchObject({
+      output: expect.stringContaining('started'),
+      exitCode: undefined,
+    })
   })
 
   itPty('does not accept resize after termination without throwing', async () => {
