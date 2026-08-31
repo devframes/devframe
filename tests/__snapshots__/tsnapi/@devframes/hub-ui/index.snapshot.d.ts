@@ -14,10 +14,7 @@ export interface DevframeBranding {
   logo?: BrandingLogo;
   wordmark?: BrandingLogo;
   primaryColor?: string;
-  background?: string | {
-    light: string;
-    dark: string;
-  };
+  background?: ViewerBackground;
   tagline?: string;
   favicon?: string;
   windowTitle?: string;
@@ -31,7 +28,15 @@ export interface DevframeDockPreferences {
 // #endregion
 
 // #region Types
+export type ColorSchemeValue = string | {
+  light: string;
+  dark: string;
+};
 export type EmbeddedVisibility = 'normal' | 'passive' | 'hidden';
+export type ViewerBackground = ColorSchemeValue | {
+  standalone: ColorSchemeValue;
+  iframe?: ColorSchemeValue;
+};
 // #endregion
 
 // #region Functions
