@@ -13,16 +13,16 @@ import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
-import { joinURL } from 'ufo'
+import { joinURL, withoutLeadingSlash } from 'ufo'
 import { resolveClientAssets } from '../client-assets'
-import { DEVFRAME_CONNECTION_META_FILENAME } from '../constants'
+import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_MCP_ROUTE } from '../constants'
 import { createHostContext } from '../node/context'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { importRuntimeModule } from '../node/import-runtime-module'
 import { createInstanceShell, resolveInstanceRegister } from '../node/instance-shell'
-import { normalizeBasePath } from './_shared'
-import { resolveDevServerPort, resolveMcpConnectionMeta } from './dev'
+import { normalizeBasePath, resolveMcpConfig } from './_shared'
+import { resolveDevServerPort } from './dev'
 
 export interface InitDevframeOptions {
   /**
@@ -303,13 +303,17 @@ export function initDevframe(
       // Route-based MCP server (opt-in). Mounted before the SPA static
       // catch-all so the exact `<base>__mcp` route wins, and advertised in
       // `__connection.json`. The MCP SDK stays an optional peer — its code is
-      // only pulled in (dynamically) when the route is enabled.
-      const mcpOption = options.mcp ?? def.cli?.mcp
-      const mcpMeta = resolveMcpConnectionMeta(def, mcpOption)
+      // only pulled in (dynamically) when the route is enabled. Resolving the
+      // config validates the authorization policy up front: a `mcp: true`
+      // shorthand with no `DEVFRAME_MCP_AUTH_TOKEN`, or an object with no
+      // `authorization`, throws `DF0077` here rather than mounting the route.
+      const mcpConfig = resolveMcpConfig(options.mcp ?? def.cli?.mcp)
+      let mcpMeta: ConnectionMeta['mcp']
       let mcpDispose: (() => Promise<void>) | undefined
-      if (mcpMeta) {
-        const mcpConfig = mcpOption === true || mcpOption === undefined ? {} : mcpOption as McpRouteOptions
-        const mcpPath = joinURL(base, mcpMeta.path)
+      if (mcpConfig) {
+        const mcpRoute = withoutLeadingSlash(mcpConfig.path ?? DEVFRAME_MCP_ROUTE)
+        mcpMeta = { path: mcpRoute }
+        const mcpPath = joinURL(base, mcpRoute)
         let mountMcpHttp: typeof import('./mcp/http').mountMcpHttp
         try {
           ;({ mountMcpHttp } = await importRuntimeModule<typeof import('./mcp')>('devframe/adapters/mcp'))
@@ -322,6 +326,7 @@ export function initDevframe(
           serverName: `${def.id} (devframe)`,
           serverVersion: def.version ?? '0.0.0',
           exposeSharedState: true,
+          authorization: mcpConfig.authorization,
           allowedOrigins: mcpConfig.allowedOrigins,
         })
         mcpDispose = mounted.dispose

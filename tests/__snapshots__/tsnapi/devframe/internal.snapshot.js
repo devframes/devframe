@@ -18,5 +18,6 @@ export { registerDevframeInstance }
 export { resolveBasePath }
 export { resolveClientAssets }
 export { resolveInstanceRegister }
+export { resolveMcpConfig }
 export { samePath }
 // #endregion

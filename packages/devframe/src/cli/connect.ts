@@ -18,6 +18,47 @@ export interface ConnectServerOptions {
   instancesDir?: string
   /** Probe timeout per instance, ms. Default 1000. */
   timeoutMs?: number
+  /**
+   * The bearer credential the connector presents to each instance's
+   * authenticated MCP route, sent as `Authorization: Bearer <token>`.
+   *
+   * - a **string** — one shared token for every instance;
+   * - a **resolver** `(record) => string | undefined` — a per-instance token,
+   *   for connecting to a fleet with distinct credentials (return `undefined`
+   *   to send none for that instance).
+   *
+   * The token is only ever placed in a request header: it never enters the
+   * instance registry records, the indexed results, connection URLs, or
+   * formatted errors. Left unset, no `Authorization` header is sent — only an
+   * instance whose route opted out of identity (`authorization: false`) will
+   * answer.
+   */
+  authToken?: string | ((record: DevframeInstanceRecord) => string | undefined)
+}
+
+/**
+ * Resolve the per-record bearer from the {@link ConnectServerOptions.authToken}
+ * option. Exported for focused tests of the credential resolution.
+ */
+export function resolveAuthToken(
+  authToken: ConnectServerOptions['authToken'],
+  record: DevframeInstanceRecord,
+): string | undefined {
+  return typeof authToken === 'function' ? authToken(record) : authToken
+}
+
+/**
+ * Build the request headers the connector sends to one instance's MCP route:
+ * the instance's own (loopback) `origin` so the route's origin gate accepts
+ * this native client, plus `Authorization: Bearer <token>` when a bearer is
+ * configured. The bearer appears **only** here — never in the connection URL,
+ * the registry records, or the indexed results. Exported for focused tests.
+ */
+export function buildInstanceRequestHeaders(url: string, token: string | undefined): Record<string, string> {
+  const headers: Record<string, string> = { origin: new URL(url).origin }
+  if (token)
+    headers.authorization = `Bearer ${token}`
+  return headers
 }
 
 export interface ConnectServerHandle {
@@ -164,7 +205,7 @@ async function index(sdk: ConnectSdk, options: ConnectServerOptions): Promise<un
     }
     const url = `${record.origin}${mcp.path}`
     try {
-      entry.mcp = { url, tools: await listInstanceTools(sdk, url) }
+      entry.mcp = { url, tools: await listInstanceTools(sdk, url, resolveAuthToken(options.authToken, record)) }
     }
     catch (error) {
       entry.mcp = { url, error: error instanceof Error ? error.message : String(error) }
@@ -202,8 +243,8 @@ async function probePort(port: number, timeoutMs?: number): Promise<DevframeInst
   }
 }
 
-async function listInstanceTools(sdk: ConnectSdk, url: string): Promise<{ name: string, description?: string }[]> {
-  return withInstanceClient(sdk, url, async (client) => {
+async function listInstanceTools(sdk: ConnectSdk, url: string, token: string | undefined): Promise<{ name: string, description?: string }[]> {
+  return withInstanceClient(sdk, url, token, async (client) => {
     const listed = await client.listTools()
     return listed.tools.map((tool: { name: string, description?: string }) => ({
       name: tool.name,
@@ -231,7 +272,7 @@ async function call(
     throw diagnostics.DF0051({ port: args.port })
 
   const url = `${record.origin}${record.mcp.path}`
-  return withInstanceClient(sdk, url, async (client) => {
+  return withInstanceClient(sdk, url, resolveAuthToken(options.authToken, record), async (client) => {
     const result = await client.callTool({ name: args.tool!, arguments: args.args ?? {} })
     return {
       instance: { id: record.id, port: record.port },
@@ -246,14 +287,16 @@ async function call(
 async function withInstanceClient<T>(
   sdk: ConnectSdk,
   url: string,
+  token: string | undefined,
   fn: (client: InstanceType<ConnectSdk['Client']>) => Promise<T>,
 ): Promise<T> {
-  // Send the instance's own (loopback) origin so the MCP route's origin gate,
-  // which rejects `Origin`-less requests, accepts this native client.
-  const origin = new URL(url).origin
+  // The instance's own (loopback) origin (so the route's origin gate, which
+  // rejects `Origin`-less requests, accepts this native client) plus the
+  // bearer (when configured) — the `Authorization` header being the only place
+  // the credential ever appears.
   const transport = new sdk.StreamableHTTPClientTransport(
     new URL(url),
-    { requestInit: { headers: { origin } } },
+    { requestInit: { headers: buildInstanceRequestHeaders(url, token) } },
   )
   // Negotiate the era with `server/discover`, falling back to the 2025
   // `initialize` handshake for a 2025-only instance. Devframe's own route is

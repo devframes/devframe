@@ -390,6 +390,7 @@ export interface EventUnsubscribe {
 }
 export interface McpRouteOptions {
   path?: string;
+  authorization: McpAuthorization;
   allowedOrigins?: readonly string[] | false;
 }
 export interface RemoteAssets {
@@ -493,6 +494,7 @@ export type DevframeSnapshotRpcEntry = string | {
 };
 export type DevframeSnapshotRpcInputs = readonly (readonly unknown[])[] | ((_: DevframeNodeContext) => readonly (readonly unknown[])[] | Promise<readonly (readonly unknown[])[]>);
 export type DevframeStorageScope = 'workspace' | 'project' | 'global';
+export type McpAuthorization = string | ((_: Request) => boolean | Promise<boolean>) | false;
 export type RemoteAssetsProvider = 'jsdelivr' | 'unpkg' | RemoteAssetsProviderCustom;
 export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> & {
   invokeLocal: <T extends keyof DevframeRpcServerFunctions, Args extends Parameters<DevframeRpcServerFunctions[T]>>(_: T, ..._: Args) => Promise<Awaited<ReturnType<DevframeRpcServerFunctions[T]>>>;

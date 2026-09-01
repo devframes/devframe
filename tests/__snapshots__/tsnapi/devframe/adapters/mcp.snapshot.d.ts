@@ -6,6 +6,7 @@ export interface CreateMcpFetchHandlerOptions {
   serverName: string;
   serverVersion: string;
   exposeSharedState: boolean | ((_: string) => boolean);
+  authorization: McpAuthorization;
   allowedOrigins?: readonly string[] | false;
 }
 export interface CreateMcpServerOptions {

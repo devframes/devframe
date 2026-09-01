@@ -291,7 +291,9 @@ describe('initHub', () => {
 
   it('aggregate MCP: one endpoint lists tools from every mounted frame', async () => {
     const wsPort = await getPort({ port: 18230, host: '127.0.0.1' })
-    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, mcp: true, devframes: [makeFrame('alpha'), makeFrame('beta')] })
+    // An origin-only opt-out keeps this loopback-bound fixture free of bearer
+    // plumbing; the identity gate itself is covered in mcp-http.test.ts.
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, mcp: { authorization: false }, devframes: [makeFrame('alpha'), makeFrame('beta')] })
 
     try {
       await hub.ready
@@ -319,6 +321,13 @@ describe('initHub', () => {
     finally {
       await hub.close()
     }
+  })
+
+  it('aggregate MCP: mcp: true without DEVFRAME_MCP_AUTH_TOKEN fails startup (DF0077)', async () => {
+    const wsPort = await getPort({ port: 18235, host: '127.0.0.1' })
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, mcp: true, devframes: [makeFrame('alpha')] })
+    await expect(hub.ready).rejects.toThrow(/DF0077|authorization policy/)
+    await hub.close()
   })
 
   it('single hub Auth: one gate covers every frame on the shared socket', async () => {

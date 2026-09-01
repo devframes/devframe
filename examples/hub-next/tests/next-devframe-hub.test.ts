@@ -3,11 +3,22 @@ import { getTempAuthCode } from 'devframe/node/auth'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 import { nextDevframeHub } from '../src/client/devframe/next-devframe-hub'
 
 vi.stubGlobal('WebSocket', WebSocket)
+
+// The example enables its aggregate MCP route with the environment-backed
+// `mcp: true` policy, so a bearer must be configured or the hub refuses to
+// start (DF0077). Provide it for the duration of each test.
+beforeEach(() => {
+  vi.stubEnv('DEVFRAME_MCP_AUTH_TOKEN', 'a-high-entropy-example-test-token')
+})
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
 
 /** The side-car WS port advertised by the hub's connection meta. */
 function wsPortOf(hub: HubInstance): number {

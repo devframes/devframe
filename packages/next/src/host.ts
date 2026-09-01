@@ -1,4 +1,4 @@
-import type { ConnectionMeta, DevframeHost, DevframeNodeContext, DevframeStorageScope } from 'devframe'
+import type { ConnectionMeta, DevframeHost, DevframeNodeContext, DevframeStorageScope, McpAuthorization } from 'devframe'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { importRuntimeModule } from 'devframe/internal'
 import { serveStaticHandler } from 'devframe/utils/serve-static'
@@ -26,6 +26,15 @@ export interface CreateDevframeNextHostOptions {
 }
 
 export interface DevframeNextHostMcpOptions {
+  /**
+   * The endpoint's identity policy — **required**, since the route grants
+   * access to privileged agent tools. A bearer token string (matched in
+   * constant time), a `(request) => boolean` callback, or `false` for an
+   * origin-only local opt-out. Checked after the origin gate; see
+   * {@link McpAuthorization}. Back a bearer with an environment variable
+   * (e.g. `process.env.DEVFRAME_MCP_AUTH_TOKEN`) — never a literal.
+   */
+  authorization: McpAuthorization
   /** Name reported in the MCP handshake. Default: `'devframe (next)'`. */
   serverName?: string
   /** Version reported in the MCP handshake. Default: `'0.0.0'`. */
@@ -35,7 +44,8 @@ export interface DevframeNextHostMcpOptions {
   /**
    * Origin allow-list beyond the loopback default. `false` disables the
    * origin gate entirely. Note the MCP route rejects `Origin`-less requests
-   * (see `createMcpFetchHandler`).
+   * (see `createMcpFetchHandler`). This hardens the request; `authorization`
+   * proves identity.
    */
   allowedOrigins?: readonly string[] | false
 }
@@ -79,7 +89,7 @@ export interface DevframeNextHost {
   mountMcp: (
     ctx: DevframeNodeContext,
     path: string,
-    options?: DevframeNextHostMcpOptions,
+    options: DevframeNextHostMcpOptions,
   ) => Promise<{ dispose: () => Promise<void> }>
 }
 
@@ -163,12 +173,13 @@ export function createDevframeNextHost(
     setConnectionMeta(meta) {
       connectionMeta = meta
     },
-    async mountMcp(ctx, path, mcpOptions = {}) {
+    async mountMcp(ctx, path, mcpOptions) {
       const { createMcpFetchHandler } = await importRuntimeModule<typeof import('devframe/adapters/mcp')>('devframe/adapters/mcp')
       const handler = createMcpFetchHandler(ctx, {
         serverName: mcpOptions.serverName ?? 'devframe (next)',
         serverVersion: mcpOptions.serverVersion ?? '0.0.0',
         exposeSharedState: mcpOptions.exposeSharedState ?? true,
+        authorization: mcpOptions.authorization,
         allowedOrigins: mcpOptions.allowedOrigins,
       })
       const key = stripTrailingSlash(path)

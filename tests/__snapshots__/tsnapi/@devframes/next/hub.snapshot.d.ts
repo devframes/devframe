@@ -11,11 +11,12 @@ export interface DevframeNextHost {
   host: DevframeHost;
   fetch: (_: Request) => Promise<Response>;
   setConnectionMeta: (_: ConnectionMeta) => void;
-  mountMcp: (_: DevframeNodeContext, _: string, _?: DevframeNextHostMcpOptions) => Promise<{
+  mountMcp: (_: DevframeNodeContext, _: string, _: DevframeNextHostMcpOptions) => Promise<{
     dispose: () => Promise<void>;
   }>;
 }
 export interface DevframeNextHostMcpOptions {
+  authorization: McpAuthorization;
   serverName?: string;
   serverVersion?: string;
   exposeSharedState?: boolean | ((_: string) => boolean);

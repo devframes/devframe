@@ -50,8 +50,11 @@ export interface NextDevframeHubOptions {
   /** The hub's single auth gate. Gates by default; `false` opts out. */
   auth?: InitHubOptions['auth']
   /**
-   * Expose the aggregate MCP endpoint at `<base>__mcp`. Default: `true`
-   * (the Next hub's agent surface rides the same catch-all route).
+   * Expose the aggregate MCP endpoint at `<base>__mcp`. Disabled by default —
+   * the endpoint exposes privileged agent tools, so opt in with an explicit
+   * authorization policy: `mcp: true` reads the bearer from
+   * `DEVFRAME_MCP_AUTH_TOKEN`, or pass an object with an explicit
+   * `authorization`.
    */
   mcp?: InitHubOptions['mcp']
   /** Public origin the Next app is reachable at. Default: derived from `PORT`. */
@@ -70,7 +73,8 @@ export interface NextDevframeHubOptions {
  * Build a devframes-hub for a Next.js App Router app: one `initHub()` call
  * mounting every devframe under `<base><id>/` behind one web-standard
  * `handler`, with the RPC socket on a side-car (Next routes can't accept WS
- * upgrades) and the aggregate MCP route on by default. The UI defaults to
+ * upgrades) and the aggregate MCP route opt-in (pass `mcp` with an explicit
+ * authorization policy to enable it). The UI defaults to
  * `@devframes/hub-ui`'s `createUi()`, loaded lazily via a bundler-ignored
  * dynamic `import()` so its asset lookups resolve at request time; pass `ui`
  * to swap it or `ui: false` for a headless hub.
@@ -94,8 +98,10 @@ export async function createNextDevframeHub(options: NextDevframeHubOptions = {}
     auth: options.auth,
     // Next route handlers can't accept WS upgrades — always a side-car socket.
     ws: options.port != null ? { port: options.port } : { sidecar: true },
-    // The Next hub's agent surface rides the same catch-all route by default.
-    mcp: options.mcp ?? true,
+    // MCP is opt-in: the aggregate endpoint exposes privileged agent tools, so
+    // the caller supplies an explicit authorization policy (undefined leaves
+    // the route unmounted).
+    ...(options.mcp !== undefined ? { mcp: options.mcp } : {}),
     ...(ui ? { ui } : {}),
     ...(options.renderers ? { renderers: options.renderers } : {}),
     ...(options.rpcDeclarations ? { rpcDeclarations: options.rpcDeclarations } : {}),

@@ -209,5 +209,9 @@ export const diagnostics = defineDiagnostics({
         `\`attach\` / \`handleUpgrade\` drive a raw \`node:http\` upgrade into crossws's Node adapter, which refuses to run on ${p.runtime}.`,
       fix: 'On Bun/Deno, serve the advertised `__ws` route from `Bun.serve` / `Deno.serve` with `attachBunWsTransport` / `attachDenoWsTransport` (see the hub-deno-minimal example), or connect over the SSE endpoint instead.',
     },
+    DF0077: {
+      why: 'The route-based MCP server needs an authorization policy, but none is configured — refusing to mount an unauthenticated agent endpoint.',
+      fix: 'Set the `DEVFRAME_MCP_AUTH_TOKEN` environment variable (the bearer `mcp: true` requires), or pass an explicit `authorization` on the MCP options — a non-empty bearer token string, a `(request) => boolean` callback, or `false` for an origin-only local opt-out.',
+    },
   },
 })

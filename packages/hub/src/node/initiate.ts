@@ -12,7 +12,7 @@ import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import process from 'node:process'
 import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_DOCK_IMPORTS_FILENAME, DEVFRAME_MCP_ROUTE, DEVFRAME_WS_ROUTE } from 'devframe/constants'
-import { createH3DevframeHost, createInstanceShell, importRuntimeModule, resolveInstanceRegister } from 'devframe/internal'
+import { createH3DevframeHost, createInstanceShell, importRuntimeModule, resolveInstanceRegister, resolveMcpConfig } from 'devframe/internal'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
@@ -255,7 +255,10 @@ export interface InitHubOptions {
   /**
    * Expose the **aggregate** MCP endpoint at `<base>__mcp` — one
    * Streamable-HTTP server over the shared context's whole tool registry
-   * (ids are already namespaced per plugin). Disabled by default.
+   * (ids are already namespaced per plugin). Disabled by default. When
+   * enabled it requires an authorization policy: `true` reads the bearer from
+   * `DEVFRAME_MCP_AUTH_TOKEN` (startup fails with `DF0077` when it is
+   * missing/empty), an object carries an explicit {@link McpRouteOptions.authorization}.
    */
   mcp?: boolean | McpRouteOptions
   /**
@@ -565,8 +568,11 @@ export function initHub(options: InitHubOptions): HubInstance {
 
       // Aggregate MCP — one Streamable-HTTP endpoint over the shared
       // context's whole registry (tool ids are namespaced per plugin, and the
-      // wire-name collision policy is `createMcpFetchHandler`'s own).
-      const mcpConfig = options.mcp === true ? {} : options.mcp
+      // wire-name collision policy is `createMcpFetchHandler`'s own). Resolving
+      // the config validates the authorization policy up front: `mcp: true`
+      // with no `DEVFRAME_MCP_AUTH_TOKEN`, or an object with no
+      // `authorization`, throws `DF0077` here rather than mounting the route.
+      const mcpConfig = resolveMcpConfig(options.mcp)
       if (!mcpConfig)
         return { context: ctx }
 
@@ -576,6 +582,7 @@ export function initHub(options: InitHubOptions): HubInstance {
         serverName: options.name ?? 'devframes-hub',
         serverVersion: options.version ?? '0.0.0',
         exposeSharedState: true,
+        authorization: mcpConfig.authorization,
         allowedOrigins: mcpConfig.allowedOrigins,
       })
       return { context: ctx, mcp: { path: mcpRoute }, dispose: mounted.dispose }

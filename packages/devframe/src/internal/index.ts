@@ -37,7 +37,8 @@
 // - `diagnostics` — devframe core's structured diagnostics instance
 //   (`DF00xx`), so a first-party integration built outside this package can
 //   report against the same registered codes instead of minting its own.
-export { normalizeBasePath, resolveBasePath } from '../adapters/_shared'
+export { normalizeBasePath, resolveBasePath, resolveMcpConfig } from '../adapters/_shared'
+export type { ResolvedMcpConfig } from '../adapters/_shared'
 export { resolveClientAssets } from '../client-assets'
 export { coerceAgentPositionalArgs } from '../node/agent-args'
 export type { AgentArgsFallback } from '../node/agent-args'

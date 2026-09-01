@@ -85,6 +85,25 @@ export interface DevframeSseOptions {
 }
 
 /**
+ * The identity policy the route-based MCP endpoint enforces once a request
+ * clears the origin gate. `Origin` proves nothing about *who* is calling — any
+ * native client can send any `Origin` — so this is the endpoint's actual
+ * authentication, kept independent of the origin/DNS-rebinding check:
+ *
+ * - a non-empty **bearer token string** — the request must carry
+ *   `Authorization: Bearer <token>`, compared in constant time;
+ * - a **callback** `(request) => boolean | Promise<boolean>` — a custom
+ *   identity check (validate a signed header, an mTLS-derived claim, …). It
+ *   only governs identity and cannot relax the origin gate;
+ * - `false` — an explicit **origin-only opt-out** for a loopback-bound local
+ *   tool that owns its trust boundary another way. Use it sparingly.
+ */
+export type McpAuthorization
+  = | string
+    | ((request: Request) => boolean | Promise<boolean>)
+    | false
+
+/**
  * Configuration for the route-based MCP server mounted alongside the dev
  * server (opt-in via {@link DevframeCliOptions.mcp}). The endpoint speaks
  * the MCP Streamable-HTTP transport over the same origin as the SPA,
@@ -98,6 +117,18 @@ export interface McpRouteOptions {
    */
   path?: string
   /**
+   * The endpoint's identity policy — **required** for an object config, since
+   * the route grants access to privileged agent tools. See
+   * {@link McpAuthorization} for the accepted forms (bearer token, callback,
+   * or explicit `false` for an origin-only local opt-out). The `mcp: true`
+   * shorthand reads its bearer from the `DEVFRAME_MCP_AUTH_TOKEN` environment
+   * variable instead of this field.
+   *
+   * This is checked **after** the origin gate below — identity and
+   * origin/DNS-rebinding protection are separate defenses.
+   */
+  authorization: McpAuthorization
+  /**
    * Extra `Origin` header values to accept beyond the loopback default
    * (`localhost`/`127.0.0.1`/`::1` and any `Origin`-less native client).
    * Add your LAN/tunnel origin here when reaching the endpoint from another
@@ -107,7 +138,8 @@ export interface McpRouteOptions {
    * This is the endpoint's DNS-rebinding protection — the shared
    * `isAllowedOrigin` gate the WS upgrade already uses, applied as external
    * middleware (the approach the MCP SDK now recommends over its own
-   * deprecated `allowedHosts`/`allowedOrigins` transport flags).
+   * deprecated `allowedHosts`/`allowedOrigins` transport flags). It hardens
+   * the request; {@link McpRouteOptions.authorization} proves identity.
    */
   allowedOrigins?: readonly string[] | false
 }
@@ -158,9 +190,12 @@ export interface DevframeCliOptions {
    * stdio `mcp` command, but against the live, running server.
    *
    * - `false` / omitted (default) — no MCP route is mounted.
-   * - `true` — mount at the default `__mcp` route with the loopback-only
-   *   origin gate.
-   * - {@link McpRouteOptions} — customise the route path / allowed origins.
+   * - `true` — mount at the default `__mcp` route, requiring the bearer token
+   *   read from the `DEVFRAME_MCP_AUTH_TOKEN` environment variable (startup
+   *   fails with `DF0077` when it is missing/empty, so the route is never
+   *   mounted unauthenticated).
+   * - {@link McpRouteOptions} — customise the route path / allowed origins,
+   *   with an explicit {@link McpAuthorization} policy (required).
    *
    * The `--mcp` / `--no-mcp` CLI flags override this per run.
    */

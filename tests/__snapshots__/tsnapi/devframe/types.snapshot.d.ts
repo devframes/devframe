@@ -64,6 +64,7 @@ export { DevframeWsOptions }
 export { EventEmitter }
 export { EventsMap }
 export { EventUnsubscribe }
+export { McpAuthorization }
 export { McpRouteOptions }
 export { RemoteAssets }
 export { RemoteAssetsErrorMessage }
