@@ -56,6 +56,7 @@
     "./utils/nanoid": "./dist/utils/nanoid.mjs",
     "./utils/nostics": "./dist/utils/nostics.mjs",
     "./utils/open": "./dist/utils/open.mjs",
+    "./utils/origin": "./dist/utils/origin.mjs",
     "./utils/remote-assets": "./dist/utils/remote-assets.mjs",
     "./utils/simple-schema": "./dist/utils/simple-schema.mjs",
     "./utils/serve-static": "./dist/utils/serve-static.mjs",

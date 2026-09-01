@@ -14,6 +14,7 @@ import type { DevframeInstanceRecord, DevframeInstanceRegistration } from './ins
 import type { ContextRpcServer } from './rpc-core'
 import { createServer } from 'node:http'
 import process from 'node:process'
+import { validateOriginCandidate } from 'devframe/utils/origin'
 import { defineHandler, H3 as H3App, toNodeHandler } from 'h3'
 import { joinURL, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { DEVFRAME_SSE_ROUTE, DEVFRAME_WS_ROUTE } from '../constants'
@@ -604,75 +605,25 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     }).catch(() => {})
   }
 
-  // `isLoopbackHostname` lives in the WS transport module (whose top-level
-  // `crossws` import instance-shell keeps out of its own static graph), so it
-  // is pulled in lazily and cached the first time a candidate needs checking.
-  // An explicit or already-derived origin short-circuits before this loads, so
-  // the common cases (a pinned dev-server origin, every request after the
-  // first valid one) never touch the transport module.
-  let loopbackCheck: ((hostname: string) => boolean) | undefined
-  async function ensureLoopbackCheck(): Promise<(hostname: string) => boolean> {
-    if (!loopbackCheck) {
-      const mod = await import('devframe/rpc/transports/ws-server')
-      loopbackCheck = mod.isLoopbackHostname
-    }
-    return loopbackCheck
-  }
-
   /**
-   * Canonicalize a request-derived origin candidate and decide whether it may
-   * back the advertised origin. That origin becomes the destination of the OTP
-   * magic link, so a raw inbound authority is never trusted: a candidate is
-   * adopted only when its parsed hostname is loopback, or when its canonical
-   * origin exactly matches a configured `allowedOrigins` entry. A dynamic
-   * `WsOriginRegistry` or a disabled gate (`false`) offers no static list to
-   * match, so non-loopback adoption stays off there — those deployments supply
-   * an explicit `origin`. Returns the canonical origin, or `undefined` to
-   * reject (credentials, a path, a query, a fragment, a malformed port, a
-   * non-HTTP(S) scheme, or an untrusted host). Forwarded headers are never
-   * consulted.
+   * Consider a request-derived origin candidate for the advertised public
+   * origin (which backs the OTP magic link). Delegates the trust decision to
+   * {@link validateOriginCandidate}: only a loopback host or an exact
+   * `allowedOrigins` match is adopted, so a raw inbound `Host`/URL authority
+   * never redirects the credential-bearing link. A dynamic `WsOriginRegistry`
+   * or a disabled gate offers no static list, so it passes none and only
+   * loopback candidates qualify.
+   *
+   * Keeps the first-valid-origin behavior: an invalid candidate is ignored
+   * without setting `derivedOrigin`, so it neither prints a banner nor
+   * registers a poisoned origin, and a later valid candidate can still be
+   * adopted. Silent by design — a diagnostic here would let an unauthenticated
+   * request amplify log noise.
    */
-  function validateOriginCandidate(
-    candidate: string,
-    isLoopback: (hostname: string) => boolean,
-  ): string | undefined {
-    let url: URL
-    try {
-      url = new URL(candidate)
-    }
-    catch {
-      return undefined
-    }
-    if (url.protocol !== 'http:' && url.protocol !== 'https:')
-      return undefined
-    // A canonical origin carries no credentials, path, query, or fragment; any
-    // of these means the candidate was a full or poisoned URL, not a bare
-    // authority safe to advertise.
-    if (url.username || url.password || url.search || url.hash)
-      return undefined
-    if (url.pathname !== '/' && url.pathname !== '')
-      return undefined
-    const canonical = url.origin
-    if (canonical === 'null')
-      return undefined
-    if (isLoopback(url.hostname))
-      return canonical
-    const allowed = options.allowedOrigins
-    if (Array.isArray(allowed) && allowed.includes(canonical))
-      return canonical
-    return undefined
-  }
-
-  /**
-   * Consider a request-derived origin candidate. Keeps the first-valid-origin
-   * behavior: an invalid candidate is ignored without setting `derivedOrigin`,
-   * so it neither prints a banner nor registers a poisoned origin, and a later
-   * valid candidate can still be adopted. Silent by design — a diagnostic here
-   * would let an unauthenticated request amplify log noise.
-   */
-  async function noteOrigin(candidate: string): Promise<void> {
+  function noteOrigin(candidate: string): void {
     if (derivedOrigin === undefined && !explicitOrigin()) {
-      const accepted = validateOriginCandidate(candidate, await ensureLoopbackCheck())
+      const allowed = options.allowedOrigins
+      const accepted = validateOriginCandidate(candidate, Array.isArray(allowed) ? allowed : undefined)
       if (accepted !== undefined)
         derivedOrigin = accepted
     }
@@ -926,7 +877,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
 
   async function handleRequest(request: Request): Promise<Response> {
     await initPromise
-    await noteOrigin(new URL(request.url).origin)
+    noteOrigin(new URL(request.url).origin)
     const response = await app.fetch(request)
     // Normalize a miss to a bare 404: an unmounted path falls through to
     // h3's default JSON-error handler, but for an asset host a body-less
@@ -957,7 +908,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
         const host = req.headers.host
         if (host) {
           const encrypted = (req.socket as { encrypted?: boolean }).encrypted
-          await noteOrigin(`${encrypted ? 'https' : 'http'}://${host}`)
+          noteOrigin(`${encrypted ? 'https' : 'http'}://${host}`)
         }
         if (!nodeHandler) {
           const { toNodeHandler } = await import('h3/node')
