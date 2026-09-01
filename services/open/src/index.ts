@@ -1,11 +1,28 @@
 import type { KnownEditor } from 'devframe/recipes/common-rpc-functions'
 import type { DevframeServiceDefinition } from 'devframe/types'
+import { realpath } from 'node:fs/promises'
 import { defineRpcFunction } from 'devframe'
 import { KNOWN_EDITORS } from 'devframe/recipes/common-rpc-functions'
 import { s } from 'devframe/utils/simple-schema'
-import { isAbsolute, relative, resolve } from 'pathe'
+import { dirname, isAbsolute, normalize, relative, resolve } from 'pathe'
 import pkg from '../package.json' with { type: 'json' }
 import { diagnostics } from './diagnostics'
+
+/** Canonical path of the nearest existing ancestor of `absolute`. */
+async function nearestExistingCanonical(absolute: string): Promise<string> {
+  let current = absolute
+  for (;;) {
+    try {
+      return normalize(await realpath(current))
+    }
+    catch {
+      const parent = dirname(current)
+      if (parent === current)
+        return current
+      current = parent
+    }
+  }
+}
 
 export const OPEN_SERVICE_PACKAGE = '@devframes/service-open'
 export const OPEN_SERVICE_SCOPE = 'devframes:service:open'
@@ -79,14 +96,27 @@ export function createOpenService(options?: OpenServiceOptions): DevframeService
     setup(ctx, { options }) {
       const allowedRoots = [ctx.workspaceRoot, ...(options?.roots ?? [])].map(root => resolve(root))
 
+      // Canonicalize the allowed roots once (resolving any symlink in the
+      // root paths themselves) so containment compares canonical to
+      // canonical.
+      let canonicalRootsPromise: Promise<string[]> | undefined
+      const canonicalRoots = (): Promise<string[]> => (canonicalRootsPromise ??= Promise.all(
+        allowedRoots.map(async root => nearestExistingCanonical(root)),
+      ))
+
       /**
-       * Resolve `path` (relative paths against `workspaceRoot`) and assert it
-       * lands inside one of the allowed roots, or throw.
+       * Resolve `path` (relative paths against `workspaceRoot`) and assert
+       * its canonical location lands inside one of the allowed roots, or
+       * throw. Canonicalizing the nearest existing ancestor rejects a
+       * symlink that would redirect the open outside every allowed root,
+       * while still allowing not-yet-existing files under a root.
        */
-      function assertAllowedPath(path: string): string {
+      async function assertAllowedPath(path: string): Promise<string> {
         const resolved = isAbsolute(path) ? resolve(path) : resolve(ctx.workspaceRoot, path)
-        const contained = allowedRoots.some((root) => {
-          const rel = relative(root, resolved)
+        const roots = await canonicalRoots()
+        const canonical = await nearestExistingCanonical(resolved)
+        const contained = roots.some((root) => {
+          const rel = relative(root, canonical)
           return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel))
         })
         if (!contained)
@@ -96,7 +126,7 @@ export function createOpenService(options?: OpenServiceOptions): DevframeService
 
       const api: OpenServiceApi = {
         async openInEditor(input) {
-          const path = assertAllowedPath(input.path)
+          const path = await assertAllowedPath(input.path)
           const target = input.line != null
             ? `${path}:${input.line}${input.column != null ? `:${input.column}` : ''}`
             : path
@@ -104,7 +134,7 @@ export function createOpenService(options?: OpenServiceOptions): DevframeService
           launchEditor(target, input.editor ?? options?.editor)
         },
         async openInFinder(input) {
-          const path = assertAllowedPath(input.path)
+          const path = await assertAllowedPath(input.path)
           const { open } = await import('devframe/utils/open')
           await open(path)
         },

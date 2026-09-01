@@ -26,7 +26,7 @@ export const readText = defineAssetsRpc({
       // See `list.ts` for why the async handler is cast.
       handler: (async (path: string, limit: number = DEFAULT_LIMIT): Promise<string | null> => {
         try {
-          const content = await fsp.readFile(assets.resolvePath(path), 'utf-8')
+          const content = await fsp.readFile(await assets.resolveReadPath(path), 'utf-8')
           return content.slice(0, limit)
         }
         catch {

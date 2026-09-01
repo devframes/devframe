@@ -30,7 +30,7 @@ export const readImageMeta = defineAssetsRpc({
       // See `list.ts` for why the async handler is cast.
       handler: (async (path: string): Promise<AssetImageMeta | null> => {
         try {
-          const buffer = await fsp.readFile(assets.resolvePath(path))
+          const buffer = await fsp.readFile(await assets.resolveReadPath(path))
           const meta = imageMeta(buffer)
           return { width: meta.width, height: meta.height, orientation: meta.orientation }
         }

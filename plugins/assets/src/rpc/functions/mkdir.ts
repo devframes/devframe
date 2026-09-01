@@ -24,11 +24,14 @@ export const mkdir = defineAssetsRpc({
     return {
       // See `list.ts` for why the async handler is cast.
       handler: (async ({ path }: { path: string }): Promise<void> => {
-        const absolute = assets.resolvePath(path)
+        const absolute = await assets.assertMutationPath(path)
         const stat = await fsp.stat(absolute).catch(() => undefined)
         if (stat && !stat.isDirectory())
           throw diagnostics.DP_ASSETS_0005({ path })
         await fsp.mkdir(absolute, { recursive: true })
+        // Re-check after creation: reject any symlink component that
+        // materialized under the root before anything follows this path.
+        await assets.assertMutationPath(path)
       }) as any,
     }
   },

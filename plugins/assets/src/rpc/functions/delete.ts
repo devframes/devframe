@@ -26,7 +26,8 @@ export const deleteAssets = defineAssetsRpc({
       handler: (async ({ paths }: { paths: string[] }): Promise<{ deleted: string[] }> => {
         const deleted: string[] = []
         for (const path of paths) {
-          const absolute = assets.resolvePath(path)
+          // Reject any pre-existing symlink component right before unlinking.
+          const absolute = await assets.assertMutationPath(path)
           try {
             await fsp.unlink(absolute)
             deleted.push(path)

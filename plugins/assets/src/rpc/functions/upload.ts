@@ -49,8 +49,11 @@ export const upload = defineAssetsRpc({
           })
         }
 
-        const absolute = assets.resolvePath(path)
+        const absolute = await assets.assertMutationPath(path)
         await fsp.mkdir(dirname(absolute), { recursive: true })
+        // Re-check after the parent dirs are created and reject any
+        // pre-existing symlink component before we open the write stream.
+        await assets.assertMutationPath(path)
 
         const channel = assets.uploadChannel
         if (!channel)

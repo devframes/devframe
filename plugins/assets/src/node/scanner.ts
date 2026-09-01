@@ -50,11 +50,17 @@ export function statToAssetInfo(dir: string, baseURL: string, relPath: string, s
 
 /** Recursively lists every file under `dir`, sorted alphabetically by path. */
 export async function scanAssets(dir: string, baseURL: string, includeFsPath = false): Promise<AssetInfo[]> {
-  const files = await glob(['**/*'], { cwd: dir, onlyFiles: true, dot: false })
+  // Never traverse into or across symlinks — a symlink inside the managed
+  // directory must not expose files (or whole trees) that live outside it.
+  const files = await glob(['**/*'], { cwd: dir, onlyFiles: true, dot: false, followSymbolicLinks: false })
 
   const infos = await Promise.all(files.map(async (relPath): Promise<AssetInfo | undefined> => {
     try {
       const stat = await fsp.lstat(join(dir, relPath))
+      // `lstat` describes the link itself; drop any symlink entry so the
+      // listing only ever names real files contained in the root.
+      if (stat.isSymbolicLink())
+        return undefined
       return statToAssetInfo(dir, baseURL, relPath, stat, includeFsPath)
     }
     catch {

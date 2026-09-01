@@ -1,5 +1,5 @@
 import type { DevframeNodeContext, RpcStreamingChannel } from 'devframe'
-import { resolveAssetPath } from './paths'
+import { assertAssetMutationPath, resolveAssetPath, resolveAssetReadPath } from './paths'
 
 export interface AssetsConfig {
   /** Directory this devframe manages. */
@@ -19,8 +19,19 @@ export interface AssetsConfig {
 }
 
 export interface AssetsContext extends AssetsConfig {
-  /** Resolve a root-relative path to an absolute one, rejecting escapes. */
+  /** Resolve a root-relative path to an absolute one, rejecting lexical escapes. */
   resolvePath: (relativePath: string) => string
+  /**
+   * Resolve a path for a read, allowing an in-root symlink only when its
+   * canonical target stays inside the managed root.
+   */
+  resolveReadPath: (relativePath: string) => Promise<string>
+  /**
+   * Resolve a path for a mutation, rejecting every pre-existing symlink
+   * component. Call again after creating directories and right before the
+   * mutating I/O.
+   */
+  assertMutationPath: (relativePath: string) => Promise<string>
 }
 
 const configs = new WeakMap<DevframeNodeContext, AssetsConfig>()
@@ -54,6 +65,8 @@ export function getAssetsContext(ctx: DevframeNodeContext): AssetsContext {
     baseURL: config?.baseURL ?? '/',
     uploadChannel: config?.uploadChannel,
     resolvePath: (relativePath: string) => resolveAssetPath(dir, relativePath),
+    resolveReadPath: (relativePath: string) => resolveAssetReadPath(dir, relativePath),
+    assertMutationPath: (relativePath: string) => assertAssetMutationPath(dir, relativePath),
   }
   contexts.set(ctx, built)
   return built
