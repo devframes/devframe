@@ -1,6 +1,7 @@
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, devices } from '@playwright/test'
+import { MCP_AUTH_TOKEN } from './tests/e2e/_support/mcp-auth'
 
 const fixtureCwd = fileURLToPath(new URL('./tests/e2e/fixtures', import.meta.url))
 const serveStatic = fileURLToPath(new URL('./tests/e2e/_support/serve-static.mjs', import.meta.url))
@@ -83,7 +84,9 @@ export default defineConfig({
     {
       command: 'pnpm exec next dev src/client -p 9878',
       cwd: 'examples/hub-next',
-      env: { PORT: '9878', DEVFRAME_INSTANCES_DIR: nextHubRegistry },
+      // The example's aggregate MCP route uses the env-backed `mcp: true`
+      // policy, so the server needs the same bearer the connect spec presents.
+      env: { PORT: '9878', DEVFRAME_INSTANCES_DIR: nextHubRegistry, DEVFRAME_MCP_AUTH_TOKEN: MCP_AUTH_TOKEN },
       url: 'http://localhost:9878/',
       timeout: 120_000,
       reuseExistingServer: !process.env.CI,
