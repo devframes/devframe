@@ -22,6 +22,29 @@ class WriteError extends Error {
   }
 }
 
+/**
+ * Property names that reach or replace a shared prototype through ordinary
+ * property access (`__proto__`, `constructor.prototype`, …). Plain-object
+ * set/add/rename destinations reject these; Map keys are data, not property
+ * names, and never go through this check.
+ */
+const UNSAFE_OBJECT_KEYS = new Set(['__proto__', 'prototype', 'constructor'])
+
+/** Reject a plain-object property name that could reach a shared prototype. */
+function assertSafeObjectKey(key: string): void {
+  if (UNSAFE_OBJECT_KEYS.has(key))
+    throw new WriteError('InvalidKey', `"${key}" is a prototype-sensitive property name`)
+}
+
+/**
+ * Create an own data property with a plain descriptor, bypassing any setter
+ * inherited from the prototype chain. Used for every write that introduces a
+ * property name the target doesn't already own (`add`, `rename`'s new key).
+ */
+function defineOwnDataProperty(target: object, key: string, value: unknown): void {
+  Object.defineProperty(target, key, { configurable: true, enumerable: true, writable: true, value })
+}
+
 /** Decode a discriminated wire value into the raw JS value to write. */
 function decode(value: WriteValue): unknown {
   return value.kind === 'undefined' ? undefined : value.value
@@ -86,9 +109,15 @@ function setAt(parent: object, seg: PathSegment, value: unknown, opts: WriteAppl
       }
       assertMutableObject(parent)
       const key = at as string
-      const desc = Object.getOwnPropertyDescriptor(parent, key)
-      if (desc && !desc.writable && !desc.set)
+      assertSafeObjectKey(key)
+      if (!Object.hasOwn(parent, key))
+        throw new WriteError('PathNotFound', `property "${key}" does not exist`)
+      const desc = Object.getOwnPropertyDescriptor(parent, key)!
+      if (!desc.writable && !desc.set)
         throw new WriteError('ReadonlyProperty', `property "${key}" has no setter`)
+      // The property is verified own, so bracket assignment can only run
+      // this object's own setter (or write its own data slot) — never one
+      // inherited from a shared prototype.
       const record = parent as Record<string, unknown>
       record[key] = value
       return
@@ -195,8 +224,11 @@ function addTo(container: object, key: WriteValue | undefined, value: unknown, o
   const propKey = decodeKey(key, 'add')
   if (typeof propKey !== 'string')
     throw new WriteError('InvalidKey', 'an object property key must be a string')
-  const record = container as Record<string, unknown>
-  record[propKey] = value
+  assertSafeObjectKey(propKey)
+  // A fresh own data property, never a bracket assignment: the key is new to
+  // this object, so assignment would otherwise walk the prototype chain and
+  // could run an inherited setter.
+  defineOwnDataProperty(container, propKey, value)
 }
 
 function renameAt(parent: object, seg: PathSegment, newKey: unknown): void {
@@ -218,11 +250,14 @@ function renameAt(parent: object, seg: PathSegment, newKey: unknown): void {
       throw new WriteError('PathNotFound', `property "${key}" does not exist`)
     if (typeof newKey !== 'string')
       throw new WriteError('InvalidKey', 'an object property key must be a string')
+    assertSafeObjectKey(newKey)
     if (newKey === key)
       return
     const value = (parent as Record<string, unknown>)[key]
     delete (parent as Record<string, unknown>)[key]
-    ;(parent as Record<string, unknown>)[newKey] = value
+    // The new key is fresh to this object; define it directly rather than
+    // assigning through the prototype chain.
+    defineOwnDataProperty(parent, newKey, value)
     return
   }
   if (kind === 'mk' || kind === 'mv') {

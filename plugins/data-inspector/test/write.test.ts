@@ -181,6 +181,108 @@ describe('applyWrite — rename', () => {
   })
 })
 
+describe('applyWrite — prototype-chain safety', () => {
+  const unsafeKeys = ['__proto__', 'prototype', 'constructor'] as const
+
+  it('rejects set of prototype-sensitive destination keys', () => {
+    for (const key of unsafeKeys) {
+      const root = {}
+      const out = applyWrite(root, { op: 'set', path: [['k', key]], value: json({ polluted: true }) })
+      expect(out).toMatchObject({ ok: false, error: { name: 'InvalidKey' } })
+    }
+    expect(Object.prototype).not.toHaveProperty('polluted')
+  })
+
+  it('rejects add of prototype-sensitive destination keys', () => {
+    for (const key of unsafeKeys) {
+      const out = applyWrite({}, { op: 'add', path: [], key: json(key), value: json({ polluted: true }) })
+      expect(out).toMatchObject({ ok: false, error: { name: 'InvalidKey' } })
+    }
+    expect(Object.prototype).not.toHaveProperty('polluted')
+  })
+
+  it('rejects rename onto a prototype-sensitive destination key', () => {
+    for (const key of unsafeKeys) {
+      const root = { a: 1 }
+      const out = applyWrite(root, { op: 'rename', path: [['k', 'a']], key: json(key) })
+      expect(out).toMatchObject({ ok: false, error: { name: 'InvalidKey' } })
+      expect(root).toEqual({ a: 1 })
+    }
+    expect(Object.prototype).not.toHaveProperty('polluted')
+  })
+
+  it('treats an inherited property as absent, reporting nested set as PathNotFound', () => {
+    const proto = { shared: { secret: 1 } }
+    const root = Object.create(proto) as Record<string, unknown>
+    // `shared` is inherited, not an own property of `root`.
+    const out = applyWrite(root, { op: 'set', path: [['k', 'shared'], ['k', 'secret']], value: json(2) })
+    expect(out).toMatchObject({ ok: false, error: { name: 'PathNotFound' } })
+    expect(proto.shared.secret).toBe(1)
+  })
+
+  it('treats an inherited property as absent, reporting delete/rename as PathNotFound', () => {
+    const proto = { shared: 1 }
+    const root = Object.create(proto) as Record<string, unknown>
+    expect(applyWrite(root, { op: 'delete', path: [['k', 'shared']] })).toMatchObject({ ok: false, error: { name: 'PathNotFound' } })
+    expect(applyWrite(root, { op: 'rename', path: [['k', 'shared']], key: json('renamed') })).toMatchObject({ ok: false, error: { name: 'PathNotFound' } })
+    expect(proto.shared).toBe(1)
+  })
+
+  it('add creates an own data property without invoking an inherited setter', () => {
+    const proto: Record<string, unknown> = {}
+    let setterCalls = 0
+    const bumpSetterCalls = () => setterCalls++
+    Object.defineProperty(proto, 'name', { configurable: true, enumerable: true, get: () => 'proto-value', set: bumpSetterCalls })
+    try {
+      const root: Record<string, unknown> = Object.create(proto)
+      const out = applyWrite(root, { op: 'add', path: [], key: json('name'), value: json('own-value') })
+      expect(out.ok).toBe(true)
+      expect(setterCalls).toBe(0)
+      expect(Object.hasOwn(root, 'name')).toBe(true)
+      expect(root.name).toBe('own-value')
+    }
+    finally {
+      delete proto.name
+    }
+  })
+
+  it('rename creates an own data property at the destination without invoking an inherited setter', () => {
+    const proto: Record<string, unknown> = {}
+    let setterCalls = 0
+    const bumpSetterCalls = () => setterCalls++
+    Object.defineProperty(proto, 'name', { configurable: true, enumerable: true, get: () => 'proto-value', set: bumpSetterCalls })
+    try {
+      const root: Record<string, unknown> = Object.create(proto)
+      root.oldKey = 'own-value'
+      const out = applyWrite(root, { op: 'rename', path: [['k', 'oldKey']], key: json('name') })
+      expect(out.ok).toBe(true)
+      expect(setterCalls).toBe(0)
+      expect(Object.hasOwn(root, 'name')).toBe(true)
+      expect(root.name).toBe('own-value')
+    }
+    finally {
+      delete proto.name
+    }
+  })
+
+  it('lets a Map use __proto__/prototype/constructor as ordinary data keys', () => {
+    const map = new Map<unknown, unknown>()
+    for (const key of unsafeKeys) {
+      const out = applyWrite(map, { op: 'add', path: [], key: json(key), value: json(`value:${key}`) })
+      expect(out.ok).toBe(true)
+    }
+    for (const key of unsafeKeys)
+      expect(map.get(key)).toBe(`value:${key}`)
+
+    expect(applyWrite(map, { op: 'set', path: [['k', '__proto__']], value: json('updated') })).toMatchObject({ ok: true })
+    expect(map.get('__proto__')).toBe('updated')
+
+    expect(applyWrite(map, { op: 'rename', path: [['k', 'prototype']], key: json('renamed-prototype') })).toMatchObject({ ok: true })
+    expect(map.get('renamed-prototype')).toBe('value:prototype')
+    expect(map.has('prototype')).toBe(false)
+  })
+})
+
 describe('applyWrite — request typing', () => {
   it('round-trips through JSON (wire-safety of the request shape)', () => {
     const request: WriteRequest = { op: 'set', path: [['k', 'a'], ['i', 0]], value: { kind: 'undefined' } }
