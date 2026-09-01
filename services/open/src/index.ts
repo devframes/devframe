@@ -94,28 +94,23 @@ export function createOpenService(options?: OpenServiceOptions): DevframeService
     // Option sets from multiple installers merge via devframe's default
     // deep-merge: `roots` union, `editor` last-wins.
     setup(ctx, { options }) {
-      const allowedRoots = [ctx.workspaceRoot, ...(options?.roots ?? [])].map(root => resolve(root))
-
-      // Canonicalize the allowed roots once (resolving any symlink in the
-      // root paths themselves) so containment compares canonical to
-      // canonical.
-      let canonicalRootsPromise: Promise<string[]> | undefined
-      const canonicalRoots = (): Promise<string[]> => (canonicalRootsPromise ??= Promise.all(
-        allowedRoots.map(async root => nearestExistingCanonical(root)),
-      ))
+      // Canonicalize each allowed root once (resolving symlinks in the root
+      // paths themselves) so containment compares canonical to canonical.
+      const allowedRoots = Promise.all(
+        [ctx.workspaceRoot, ...(options?.roots ?? [])].map(r => nearestExistingCanonical(resolve(r))),
+      )
 
       /**
        * Resolve `path` (relative paths against `workspaceRoot`) and assert
        * its canonical location lands inside one of the allowed roots, or
-       * throw. Canonicalizing the nearest existing ancestor rejects a
-       * symlink that would redirect the open outside every allowed root,
-       * while still allowing not-yet-existing files under a root.
+       * throw. Canonicalizing the nearest existing ancestor rejects a symlink
+       * that would redirect the open outside every allowed root, while still
+       * allowing not-yet-existing files under a root.
        */
       async function assertAllowedPath(path: string): Promise<string> {
         const resolved = isAbsolute(path) ? resolve(path) : resolve(ctx.workspaceRoot, path)
-        const roots = await canonicalRoots()
         const canonical = await nearestExistingCanonical(resolved)
-        const contained = roots.some((root) => {
+        const contained = (await allowedRoots).some((root) => {
           const rel = relative(root, canonical)
           return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel))
         })

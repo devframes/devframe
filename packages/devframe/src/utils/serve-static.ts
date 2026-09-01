@@ -31,38 +31,25 @@ interface ResolvedFile {
 
 const HTML_EXTENSIONS = ['.html', '.htm']
 
-/** `child === root` or a path nested beneath it, using pathe's `/` separator. */
-function isWithin(child: string, root: string): boolean {
-  return child === root || child.startsWith(root + sep)
-}
-
 /**
- * The canonical (symlink-resolved) served root. Falls back to the lexical
- * path when the directory does not exist yet so an empty deployment simply
- * serves nothing rather than throwing.
+ * The canonical (symlink-resolved) served root, falling back to the lexical
+ * path when the directory doesn't exist yet (an empty deployment then serves
+ * nothing rather than throwing).
  */
 async function canonicalRoot(absDir: string): Promise<string> {
-  try {
-    return normalize(await realpath(absDir))
-  }
-  catch {
-    return absDir
-  }
+  return realpath(absDir).then(normalize, () => absDir)
 }
 
 /**
- * Stat a candidate file and confirm its canonical target stays inside the
- * canonical served root, so a symlink inside the root can only resolve to a
- * file that is still within the root. A symlink escaping the root reads as a
- * miss (`null`), not a leak.
+ * Stat a candidate file, confirming its canonical target stays inside the
+ * canonical served root — a symlink inside the root can only resolve to a
+ * file still within it; one escaping the root reads as a miss, not a leak.
  */
 async function statFile(abs: string, realRoot: string): Promise<ResolvedFile | null> {
   try {
     const s = await stat(abs)
-    if (!s.isFile())
-      return null
     const real = normalize(await realpath(abs))
-    if (!isWithin(real, realRoot))
+    if (!s.isFile() || (real !== realRoot && !real.startsWith(realRoot + sep)))
       return null
     return { abs, size: s.size, mtime: s.mtime }
   }
@@ -228,10 +215,9 @@ export function serveStaticHandler(
     return serveRemoteAssetsHandler(source)
   const absDir = resolve(source)
   const opts = normalizeOptions(options)
-  // Canonicalize the served root once and reuse it — the containment check
-  // compares every candidate's canonical path against this.
-  let realRootPromise: Promise<string> | undefined
-  const getRealRoot = (): Promise<string> => (realRootPromise ??= canonicalRoot(absDir))
+  // Canonicalize the served root once; the containment check compares every
+  // candidate's canonical path against it.
+  const realRoot = canonicalRoot(absDir)
   return defineHandler(async (event) => {
     const method = event.req.method
     if (method !== 'GET' && method !== 'HEAD') {
@@ -239,7 +225,7 @@ export function serveStaticHandler(
       event.res.headers.set('Allow', 'GET, HEAD')
       return ''
     }
-    const file = await resolveTarget(absDir, await getRealRoot(), event.url.pathname, opts.indexNames, opts.single)
+    const file = await resolveTarget(absDir, await realRoot, event.url.pathname, opts.indexNames, opts.single)
     if (!file) {
       event.res.status = 404
       return ''
@@ -283,8 +269,7 @@ export function serveStaticNodeMiddleware(
 ): (req: IncomingMessage, res: ServerResponse, next?: (err?: Error) => void) => void {
   const absDir = typeof source === 'string' ? resolve(source) : undefined
   const opts = normalizeOptions(options)
-  let realRootPromise: Promise<string> | undefined
-  const getRealRoot = (dir: string): Promise<string> => (realRootPromise ??= canonicalRoot(dir))
+  const realRoot = absDir === undefined ? undefined : canonicalRoot(absDir)
   return (req, res, next) => {
     void (async () => {
       const method = req.method
@@ -317,7 +302,7 @@ export function serveStaticNodeMiddleware(
         return
       }
 
-      const file = await resolveTarget(absDir, await getRealRoot(absDir), url, opts.indexNames, opts.single)
+      const file = await resolveTarget(absDir, await realRoot!, url, opts.indexNames, opts.single)
       if (!file) {
         if (next) {
           next()
