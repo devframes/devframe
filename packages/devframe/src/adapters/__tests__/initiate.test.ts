@@ -352,6 +352,128 @@ describe('adapters/handler', () => {
     }
   })
 
+  it('a hostile first request never becomes the OTP-link origin; a later loopback one does', async () => {
+    const wsPort = await getPort({ port: 18180, host: '127.0.0.1' })
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const devtools = initDevframe(defineTestDef('handler-poison'), { base: '/__handler-poison/', host: '127.0.0.1', ws: { port: wsPort } })
+
+    try {
+      await devtools.ready
+      // A first request forging a non-loopback Host must not print, adopt, or
+      // register that authority as the magic-link origin.
+      await devtools.handler(new Request('http://evil.example.com/__handler-poison/__connection.json', {
+        headers: { host: 'evil.example.com' },
+      }))
+      expect(spy).not.toHaveBeenCalled()
+
+      // A later loopback request is trusted, adopted, and prints exactly one
+      // link pointing at that origin — the rejected candidate never locked it
+      // out.
+      await devtools.handler(new Request('http://localhost:4321/__handler-poison/__connection.json'))
+      expect(spy).toHaveBeenCalledTimes(1)
+      const link = String(spy.mock.calls[0])
+      expect(link).toContain('http://localhost:4321/#')
+      expect(link).not.toContain('evil.example.com')
+      // The credential rides the fragment; assert only its presence.
+      expect(link).toContain('#devframe_otp=')
+
+      // The first-valid origin is pinned: a second loopback request neither
+      // re-prints nor moves it.
+      await devtools.handler(new Request('http://127.0.0.1:9999/__handler-poison/__connection.json'))
+      expect(spy).toHaveBeenCalledTimes(1)
+    }
+    finally {
+      spy.mockRestore()
+      await devtools.close()
+    }
+  })
+
+  it('adopts an exactly allow-listed non-loopback origin, but rejects a prefix/suffix near-match', async () => {
+    const wsPort = await getPort({ port: 18181, host: '127.0.0.1' })
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const devtools = initDevframe(defineTestDef('handler-allow'), {
+      base: '/__handler-allow/',
+      host: '127.0.0.1',
+      ws: { port: wsPort },
+      allowedOrigins: ['https://tools.example.com'],
+    })
+
+    try {
+      await devtools.ready
+      // Only prefix/suffix-matches the allow-list entry — never adopted.
+      await devtools.handler(new Request('https://tools.example.com.evil.com/__handler-allow/__connection.json', {
+        headers: { host: 'tools.example.com.evil.com' },
+      }))
+      await devtools.handler(new Request('https://evil.tools.example.com/__handler-allow/__connection.json', {
+        headers: { host: 'evil.tools.example.com' },
+      }))
+      expect(spy).not.toHaveBeenCalled()
+
+      // The exact allow-listed origin is adopted.
+      await devtools.handler(new Request('https://tools.example.com/__handler-allow/__connection.json', {
+        headers: { host: 'tools.example.com' },
+      }))
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(String(spy.mock.calls[0])).toContain('https://tools.example.com/#')
+    }
+    finally {
+      spy.mockRestore()
+      await devtools.close()
+    }
+  })
+
+  it('an explicit origin wins regardless of the inbound Host', async () => {
+    const wsPort = await getPort({ port: 18182, host: '127.0.0.1' })
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const devtools = initDevframe(defineTestDef('handler-pinned'), {
+      base: '/__handler-pinned/',
+      host: '127.0.0.1',
+      ws: { port: wsPort },
+      origin: 'https://pinned.example.com',
+    })
+
+    try {
+      await devtools.ready
+      // A pinned origin needs no request: the banner points at it from the
+      // start, ignoring whatever Host a request forges.
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(String(spy.mock.calls[0])).toContain('https://pinned.example.com/#')
+
+      await devtools.handler(new Request('http://evil.example.com/__handler-pinned/__connection.json', {
+        headers: { host: 'evil.example.com' },
+      }))
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(String(spy.mock.calls[0])).toContain('https://pinned.example.com/#')
+      expect(String(spy.mock.calls[0])).not.toContain('evil.example.com')
+    }
+    finally {
+      spy.mockRestore()
+      await devtools.close()
+    }
+  })
+
+  it('canonicalizes the protocol and default port of an adopted origin', async () => {
+    const wsPort = await getPort({ port: 18183, host: '127.0.0.1' })
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const devtools = initDevframe(defineTestDef('handler-canon'), { base: '/__handler-canon/', host: '127.0.0.1', ws: { port: wsPort } })
+
+    try {
+      await devtools.ready
+      // An explicit :80 default port canonicalizes away in the advertised
+      // origin, so the link carries no redundant port.
+      await devtools.handler(new Request('http://localhost:80/__handler-canon/__connection.json', {
+        headers: { host: 'localhost:80' },
+      }))
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(String(spy.mock.calls[0])).toContain('http://localhost/#')
+      expect(String(spy.mock.calls[0])).not.toContain('localhost:80')
+    }
+    finally {
+      spy.mockRestore()
+      await devtools.close()
+    }
+  })
+
   it('bridge mode: without a distDir only meta + WS are served', async () => {
     const wsPort = await getPort({ port: 18160, host: '127.0.0.1' })
     const devtools = initDevframe(defineTestDef('handler-bridge'), { base: '/__handler-bridge/', auth: false, ws: { port: wsPort } })
