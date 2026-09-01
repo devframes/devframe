@@ -293,8 +293,7 @@ export interface DevframeViewGroup extends DevframeDockEntryBase {
 export interface DevframeViewIframe extends DevframeDockEntryBase {
   type: 'iframe';
   url: string;
-  showAddressBar?: boolean;
-  controls?: {
+  addressBar?: boolean | {
     back?: boolean;
     reload?: boolean;
     openExternal?: boolean;

@@ -20,7 +20,8 @@ const props = defineProps<{
 
 const settings = useSettings(props.context)
 const isEdgeMode = computed(() => props.context.panel.store.mode === 'edge')
-const showAddressBar = computed(() => settings.value.showIframeAddressBar || props.entry.showAddressBar === true)
+const addressBarControls = computed(() => typeof props.entry.addressBar === 'object' ? props.entry.addressBar : undefined)
+const showAddressBar = computed(() => settings.value.showIframeAddressBar || Boolean(props.entry.addressBar))
 
 const ADDRESS_BAR_HEIGHT = 40
 
@@ -83,9 +84,9 @@ const isCrossOrigin = computed(() => {
     return true // Assume cross-origin if URL parsing fails
   }
 })
-const showBack = computed(() => props.entry.controls?.back ?? !isCrossOrigin.value)
-const showReload = computed(() => props.entry.controls?.reload ?? !isCrossOrigin.value)
-const showOpenExternal = computed(() => props.entry.controls?.openExternal ?? false)
+const showBack = computed(() => addressBarControls.value?.back ?? !isCrossOrigin.value)
+const showReload = computed(() => addressBarControls.value?.reload ?? !isCrossOrigin.value)
+const showOpenExternal = computed(() => addressBarControls.value?.openExternal ?? false)
 
 // Display URL - hides host if same as current page. The remote connection
 // descriptor is stripped so its auth token can't be read (or copied) out of the

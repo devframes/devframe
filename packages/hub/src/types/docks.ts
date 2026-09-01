@@ -203,15 +203,13 @@ declare module 'devframe/types' {
 export interface DevframeViewIframe extends DevframeDockEntryBase {
   type: 'iframe'
   url: string
-  /** Request the address bar for this iframe dock. The user's global always-show setting forces it on for every iframe. */
-  showAddressBar?: boolean
-  /** Optional address-bar controls. Omitted values retain the existing origin-based behavior. */
-  controls?: {
+  /** Request the address bar for this iframe dock. Pass an object to configure its controls. The user's global always-show setting forces it on for every iframe. */
+  addressBar?: boolean | {
     /** Override Back visibility. Cross-origin history access may still be blocked by the browser. */
     back?: boolean
     /** Override Reload visibility. */
     reload?: boolean
-    /** Override the built-in action that opens the displayed HTTP(S) URL in a new tab. */
+    /** Override Open externally visibility. */
     openExternal?: boolean
   }
   /**
