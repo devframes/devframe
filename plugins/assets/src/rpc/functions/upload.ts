@@ -6,6 +6,7 @@ import { s } from 'devframe/utils/simple-schema'
 import { dirname, extname } from 'pathe'
 import { diagnostics } from '../../diagnostics'
 import { getAssetsContext } from '../../node/context'
+import { assertAssetMutationPath } from '../../node/paths'
 
 const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
 
@@ -49,11 +50,11 @@ export const upload = defineAssetsRpc({
           })
         }
 
-        const absolute = await assets.assertMutationPath(path)
+        const absolute = await assertAssetMutationPath(assets.dir, path)
         await fsp.mkdir(dirname(absolute), { recursive: true })
         // Re-check after the parent dirs are created and reject any
         // pre-existing symlink component before we open the write stream.
-        await assets.assertMutationPath(path)
+        await assertAssetMutationPath(assets.dir, path)
 
         const channel = assets.uploadChannel
         if (!channel)

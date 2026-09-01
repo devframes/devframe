@@ -5,6 +5,7 @@ import { createDefineWrapperWithContext } from 'devframe/rpc'
 import { s } from 'devframe/utils/simple-schema'
 import { imageMeta } from 'image-meta'
 import { getAssetsContext } from '../../node/context'
+import { resolveAssetReadPath } from '../../node/paths'
 
 const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
 
@@ -30,7 +31,7 @@ export const readImageMeta = defineAssetsRpc({
       // See `list.ts` for why the async handler is cast.
       handler: (async (path: string): Promise<AssetImageMeta | null> => {
         try {
-          const buffer = await fsp.readFile(await assets.resolveReadPath(path))
+          const buffer = await fsp.readFile(await resolveAssetReadPath(assets.dir, path))
           const meta = imageMeta(buffer)
           return { width: meta.width, height: meta.height, orientation: meta.orientation }
         }

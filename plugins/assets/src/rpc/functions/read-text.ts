@@ -3,6 +3,7 @@ import fsp from 'node:fs/promises'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
 import { s } from 'devframe/utils/simple-schema'
 import { getAssetsContext } from '../../node/context'
+import { resolveAssetReadPath } from '../../node/paths'
 
 const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
 
@@ -26,7 +27,7 @@ export const readText = defineAssetsRpc({
       // See `list.ts` for why the async handler is cast.
       handler: (async (path: string, limit: number = DEFAULT_LIMIT): Promise<string | null> => {
         try {
-          const content = await fsp.readFile(await assets.resolveReadPath(path), 'utf-8')
+          const content = await fsp.readFile(await resolveAssetReadPath(assets.dir, path), 'utf-8')
           return content.slice(0, limit)
         }
         catch {

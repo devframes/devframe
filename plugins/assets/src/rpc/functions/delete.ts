@@ -3,6 +3,7 @@ import fsp from 'node:fs/promises'
 import { createDefineWrapperWithContext } from 'devframe/rpc'
 import { s } from 'devframe/utils/simple-schema'
 import { getAssetsContext } from '../../node/context'
+import { assertAssetMutationPath } from '../../node/paths'
 
 const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
 
@@ -27,7 +28,7 @@ export const deleteAssets = defineAssetsRpc({
         const deleted: string[] = []
         for (const path of paths) {
           // Reject any pre-existing symlink component right before unlinking.
-          const absolute = await assets.assertMutationPath(path)
+          const absolute = await assertAssetMutationPath(assets.dir, path)
           try {
             await fsp.unlink(absolute)
             deleted.push(path)

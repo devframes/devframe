@@ -32,7 +32,5 @@ interface AssetsConfig {
 }
 interface AssetsContext extends AssetsConfig {
   resolvePath: (_: string) => string;
-  resolveReadPath: (_: string) => Promise<string>;
-  assertMutationPath: (_: string) => Promise<string>;
 }
 // #endregion
