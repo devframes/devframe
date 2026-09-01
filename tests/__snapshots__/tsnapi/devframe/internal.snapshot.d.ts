@@ -349,6 +349,18 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "Check the method id, and ensure the service/plugin that registers it is installed (e.g. declared in `services`) before the build collects the dump.";
   };
+  readonly DF0075: {
+    readonly why: (p: {
+      runtime: string;
+    }) => string;
+    readonly fix: "Keep the SSE endpoint enabled (drop `sse: false`) so clients connect over it on Bun/Deno, or move the socket to a side-car (`ws: { sidecar: true }`) which binds the native WebSocket adapter on its own port.";
+  };
+  readonly DF0076: {
+    readonly why: (p: {
+      runtime: string;
+    }) => string;
+    readonly fix: "On Bun/Deno, serve the advertised `__ws` route from `Bun.serve` / `Deno.serve` with `attachBunWsTransport` / `attachDenoWsTransport` (see the hub-deno-minimal example), or connect over the SSE endpoint instead.";
+  };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
 }) => void]>;
