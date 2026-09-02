@@ -1,8 +1,11 @@
+import type { AgentResourceVariables } from '../../../types/agent'
 import type { DevframeHost } from '../../../types/host'
+import { fileURLToPath } from 'node:url'
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client'
+import { StdioClientTransport } from '@modelcontextprotocol/client/stdio'
 import { createHostContext } from 'devframe/node'
-import { describe, expect, it } from 'vitest'
-import { buildMcpServerFromContext } from '../build-server'
+import { describe, expect, it, vi } from 'vitest'
+import { bridgeMcpUpdates, buildMcpServerFromContext } from '../build-server'
 
 function nullHost(): DevframeHost {
   return {
@@ -19,7 +22,7 @@ async function bootPair() {
     serverName: 'test',
     serverVersion: '0.0.0-test',
     exposeSharedState: true,
-  })
+  }, { listChanged: true })
 
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
   await server.connect(serverTransport)
@@ -38,6 +41,61 @@ async function bootPair() {
 }
 
 describe('mcp adapter (in-memory)', () => {
+  it('bridges resource and shared-state updates until disposed', async () => {
+    expect.assertions(6)
+    const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
+    const visibleState = await ctx.rpc.sharedState.get('visible:existing', {
+      initialValue: { count: 0 },
+    })
+    await ctx.rpc.sharedState.get('hidden:existing', {
+      initialValue: { count: 0 },
+    })
+    const toolsChanged = vi.fn()
+    const resourcesChanged = vi.fn()
+    const resourceUpdated = vi.fn()
+    const dispose = bridgeMcpUpdates(ctx, key => key.startsWith('visible:'), {
+      toolsChanged,
+      resourcesChanged,
+      resourceUpdated,
+    })
+    const resource = ctx.agent.registerResource({
+      id: 'status',
+      name: 'Status',
+      read: () => ({ json: { status: 'ok' } }),
+    })
+
+    resource.notifyUpdated()
+    visibleState.mutate(value => void (value.count += 1))
+    const lateState = await ctx.rpc.sharedState.get('visible:late', {
+      initialValue: { count: 0 },
+    })
+    lateState.mutate(value => void (value.count += 1))
+    const hiddenState = await ctx.rpc.sharedState.get('hidden:late', {
+      initialValue: { count: 0 },
+    })
+    hiddenState.mutate(value => void (value.count += 1))
+    ctx.rpc.sharedState.delete('visible:late')
+    ctx.rpc.sharedState.delete('hidden:late')
+
+    expect(toolsChanged).toHaveBeenCalledOnce()
+    expect(resourcesChanged).toHaveBeenCalledTimes(3)
+    expect(resourceUpdated.mock.calls).toEqual([
+      ['devframe://resource/status'],
+      ['devframe://state/visible%3Aexisting'],
+      ['devframe://state/visible%3Alate'],
+    ])
+
+    dispose()
+    resource.notifyUpdated()
+    visibleState.mutate(value => void (value.count += 1))
+    await ctx.rpc.sharedState.get('visible:after-dispose', {
+      initialValue: { count: 0 },
+    })
+    expect(toolsChanged).toHaveBeenCalledOnce()
+    expect(resourcesChanged).toHaveBeenCalledTimes(3)
+    expect(resourceUpdated).toHaveBeenCalledTimes(3)
+  })
+
   it('lists tools registered via ctx.agent.registerTool', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {
@@ -231,6 +289,83 @@ describe('mcp adapter (in-memory)', () => {
     }
   })
 
+  it('reads resources from their explicit URI', async () => {
+    expect.assertions(3)
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      const read = vi.fn(() => ({ json: { status: 'ok' } }))
+      ctx.agent.registerResource({
+        id: 'current-build',
+        uri: 'https://example.com/build/current',
+        name: 'Current build',
+        read,
+      })
+
+      const listed = await client.listResources()
+      expect(listed.resources.map(resource => resource.uri)).toContain('https://example.com/build/current')
+      const result = await client.readResource({ uri: 'https://example.com/build/current' })
+      const content = result.contents[0] as { text: string }
+      expect(JSON.parse(content.text)).toEqual({ status: 'ok' })
+      expect(read).toHaveBeenCalledOnce()
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('lists URI templates and resolves exact resources before templates in registration order', async () => {
+    expect.assertions(10)
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      const exactRead = vi.fn(() => ({ text: 'exact' }))
+      const firstTemplateRead = vi.fn((_uri: URL, _variables: AgentResourceVariables) => ({ text: 'first template' }))
+      const secondTemplateRead = vi.fn((_uri: URL, _variables: AgentResourceVariables) => ({ text: 'second template' }))
+      const exactUri = 'devframe://resource/artifacts/known/files/output.json'
+      ctx.agent.registerResource({
+        id: 'known-artifact',
+        uri: exactUri,
+        name: 'Known artifact',
+        read: exactRead,
+      })
+      ctx.agent.registerResource({
+        id: 'artifact-file',
+        uriTemplate: 'devframe://resource/artifacts/{artifactId}/files/{path}',
+        name: 'Artifact file',
+        read: firstTemplateRead,
+      })
+      ctx.agent.registerResource({
+        id: 'fallback-artifact-file',
+        uriTemplate: 'devframe://resource/artifacts/{artifactId}/files/{fileName}',
+        name: 'Fallback artifact file',
+        read: secondTemplateRead,
+      })
+
+      const resources = await client.listResources()
+      expect(resources.resources.map(resource => resource.uri)).toEqual([exactUri])
+      const templates = await client.listResourceTemplates()
+      expect(templates.resourceTemplates.map(template => template.name)).toEqual([
+        'Artifact file',
+        'Fallback artifact file',
+      ])
+
+      const exact = await client.readResource({ uri: exactUri })
+      expect((exact.contents[0] as { text: string }).text).toBe('exact')
+      expect(exactRead).toHaveBeenCalledOnce()
+      expect(firstTemplateRead).not.toHaveBeenCalled()
+
+      const dynamicUri = 'devframe://resource/artifacts/42/files/report.json'
+      const dynamic = await client.readResource({ uri: dynamicUri })
+      expect((dynamic.contents[0] as { text: string }).text).toBe('first template')
+      expect(firstTemplateRead).toHaveBeenCalledOnce()
+      expect(firstTemplateRead.mock.calls[0]![0]).toEqual(new URL(dynamicUri))
+      expect(firstTemplateRead.mock.calls[0]![1]).toEqual({ artifactId: '42', path: 'report.json' })
+      expect(secondTemplateRead).not.toHaveBeenCalled()
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
   it('surfaces shared-state keys as MCP resources', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {
@@ -317,7 +452,7 @@ describe('mcp adapter (in-memory)', () => {
       serverName: 'test',
       serverVersion: '0.0.0-test',
       exposeSharedState: false,
-    })
+    }, { listChanged: true })
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
     await server.connect(serverTransport)
     const client = new Client({ name: 'test-client', version: '0.0.0' })
@@ -340,7 +475,7 @@ describe('mcp adapter (in-memory)', () => {
       serverName: 'test',
       serverVersion: '0.0.0-test',
       exposeSharedState: key => key.startsWith('visible:'),
-    })
+    }, { listChanged: true })
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
     await server.connect(serverTransport)
     const client = new Client({ name: 'test-client', version: '0.0.0' })
@@ -355,6 +490,109 @@ describe('mcp adapter (in-memory)', () => {
     finally {
       await client.close()
       await server.close()
+    }
+  })
+})
+
+describe('mcp adapter (stdio)', () => {
+  it('delivers filtered resource updates through the pinned MCP 2026 instance', async () => {
+    expect.assertions(10)
+    const fixture = fileURLToPath(new URL('./fixtures/resource-stdio-server.ts', import.meta.url))
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', 'tsx', fixture],
+      cwd: process.cwd(),
+      stderr: 'pipe',
+    })
+    const client = new Client(
+      { name: 'stdio-test-client', version: '0.0.0' },
+      { versionNegotiation: { mode: 'auto' } },
+    )
+    let subscription: Awaited<ReturnType<typeof client.listen>> | undefined
+    const updates: string[] = []
+    client.setNotificationHandler('notifications/resources/updated', (notification) => {
+      updates.push(notification.params.uri)
+    })
+
+    try {
+      await client.connect(transport)
+      expect(client.getProtocolEra()).toBe('modern')
+      expect(client.getServerCapabilities()?.resources).toEqual({ listChanged: true, subscribe: true })
+      const resources = await client.listResources()
+      expect(resources.resources.map(resource => resource.uri)).toEqual(expect.arrayContaining([
+        'https://example.com/status',
+        'devframe://state/stdio%3Acounter',
+      ]))
+
+      const fixed = await client.readResource({ uri: 'https://example.com/status' })
+      expect(JSON.parse((fixed.contents[0] as { text: string }).text)).toEqual({ status: 'ok' })
+      const templates = await client.listResourceTemplates()
+      expect(templates.resourceTemplates.map(template => template.uriTemplate)).toEqual([
+        'devframe://resource/artifacts/{artifactId}',
+      ])
+      const artifact = await client.readResource({ uri: 'devframe://resource/artifacts/42' })
+      expect(JSON.parse((artifact.contents[0] as { text: string }).text)).toEqual({ artifactId: '42' })
+
+      subscription = await client.listen({
+        resourceSubscriptions: [
+          'https://example.com/status',
+          'devframe://resource/artifacts/42',
+          'devframe://state/stdio%3Acounter',
+        ],
+      })
+      const increment = await client.callTool({ name: 'increment-state', arguments: {} })
+      expect(increment.isError).toBeFalsy()
+      const updatedState = await client.readResource({ uri: 'devframe://state/stdio%3Acounter' })
+      expect(JSON.parse((updatedState.contents[0] as { text: string }).text)).toEqual({ count: 1 })
+      await vi.waitFor(() => {
+        if (updates.length !== 3)
+          throw new Error('Waiting for resource update notifications')
+      })
+      expect(updates).toEqual([
+        'devframe://state/stdio%3Acounter',
+        'https://example.com/status',
+        'devframe://resource/artifacts/42',
+      ])
+      expect(updates).not.toContain('devframe://resource/ignored')
+    }
+    finally {
+      await subscription?.close()
+      await client.close()
+    }
+  })
+
+  it('keeps MCP 2025 stdio resource access pull-only', async () => {
+    expect.assertions(7)
+    const fixture = fileURLToPath(new URL('./fixtures/resource-stdio-server.ts', import.meta.url))
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', 'tsx', fixture],
+      cwd: process.cwd(),
+      stderr: 'pipe',
+    })
+    const client = new Client({ name: 'mcp-2025-stdio-test-client', version: '0.0.0' })
+
+    try {
+      await client.connect(transport)
+      expect(client.getProtocolEra()).toBe('legacy')
+      expect(client.getServerCapabilities()?.resources).toEqual({ listChanged: true })
+      const resources = await client.listResources()
+      expect(resources.resources.map(resource => resource.uri)).toEqual(expect.arrayContaining([
+        'https://example.com/status',
+        'devframe://state/stdio%3Acounter',
+      ]))
+      const resource = await client.readResource({ uri: 'https://example.com/status' })
+      expect(JSON.parse((resource.contents[0] as { text: string }).text)).toEqual({ status: 'ok' })
+      const templates = await client.listResourceTemplates()
+      expect(templates.resourceTemplates.map(template => template.uriTemplate)).toEqual([
+        'devframe://resource/artifacts/{artifactId}',
+      ])
+      const artifact = await client.readResource({ uri: 'devframe://resource/artifacts/42' })
+      expect(JSON.parse((artifact.contents[0] as { text: string }).text)).toEqual({ artifactId: '42' })
+      await expect(client.subscribeResource({ uri: 'https://example.com/status' })).rejects.toThrow()
+    }
+    finally {
+      await client.close()
     }
   })
 })

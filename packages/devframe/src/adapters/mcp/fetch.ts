@@ -1,7 +1,7 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import { createMcpHandler } from '@modelcontextprotocol/server'
 import { isAllowedOrigin } from 'devframe/rpc/transports/ws-server'
-import { bridgeListChanged, buildMcpServerFromContext } from './build-server'
+import { bridgeMcpUpdates, buildMcpServerFromContext, mcpResourceCapabilitiesFor } from './build-server'
 
 export interface CreateMcpFetchHandlerOptions {
   /** Name reported in the MCP handshake. */
@@ -43,9 +43,10 @@ export interface McpFetchHandler {
  * through the SDK's {@link createMcpHandler}, which builds a fresh MCP server
  * (from the shared, live `ctx` via `buildMcpServerFromContext`) for each
  * request — no `Mcp-Session-Id` registry, no session-local routing, no
- * GET/DELETE teardown protocol. 2025-era clients are still served through the
- * SDK's default stateless legacy path. `list_changed` events reach modern
- * `subscriptions/listen` streams through the handler's `notify` bus.
+ * GET/DELETE teardown protocol. MCP 2025 callers use the SDK's stateless
+ * fallback for list/read requests. MCP 2026 `subscriptions/listen` streams
+ * receive list and resource-content invalidations through the handler's
+ * `notify` bus.
  *
  * The origin gate guards every request: loopback-default DNS-rebinding
  * protection that — unlike the WS upgrade's `isAllowedOrigin` — also rejects
@@ -58,18 +59,24 @@ export function createMcpFetchHandler(
 ): McpFetchHandler {
   const allowedOrigins = options.allowedOrigins
 
-  const handler = createMcpHandler(() => buildMcpServerFromContext(ctx, {
-    serverName: options.serverName,
-    serverVersion: options.serverVersion,
-    exposeSharedState: options.exposeSharedState,
-  }))
+  const handler = createMcpHandler(requestContext => buildMcpServerFromContext(
+    ctx,
+    {
+      serverName: options.serverName,
+      serverVersion: options.serverVersion,
+      exposeSharedState: options.exposeSharedState,
+    },
+    mcpResourceCapabilitiesFor(requestContext),
+  ))
 
-  // A single, long-lived bridge from devframe's change events onto the
-  // handler's `subscriptions/listen` bus — published once for the endpoint,
-  // not per (ephemeral, per-request) server instance.
-  const unbridge = bridgeListChanged(ctx, {
-    tools: () => { handler.notify.toolsChanged() },
-    resources: () => { handler.notify.resourcesChanged() },
+  // A single, long-lived bridge publishes devframe changes onto the handler's
+  // `subscriptions/listen` bus once for the endpoint, not per ephemeral server
+  // instance. The SDK filters resource updates by each stream's
+  // `resourceSubscriptions`.
+  const unbridge = bridgeMcpUpdates(ctx, options.exposeSharedState, {
+    toolsChanged: () => { handler.notify.toolsChanged() },
+    resourcesChanged: () => { handler.notify.resourcesChanged() },
+    resourceUpdated: (uri) => { handler.notify.resourceUpdated(uri) },
   })
 
   async function handle(req: Request): Promise<Response> {

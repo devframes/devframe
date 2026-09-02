@@ -110,6 +110,12 @@ export interface McpRouteOptions {
    * deprecated `allowedHosts`/`allowedOrigins` transport flags).
    */
   allowedOrigins?: readonly string[] | false
+  /**
+   * Expose shared-state keys as MCP resources and through the built-in
+   * `devframe_state_read` tool. Defaults to `true`; pass a predicate to
+   * expose selected keys.
+   */
+  exposeSharedState?: boolean | ((key: string) => boolean)
 }
 
 export interface DevframeCliOptions {

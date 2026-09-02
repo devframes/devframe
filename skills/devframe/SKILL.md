@@ -405,7 +405,33 @@ defineRpcFunction({
 })
 ```
 
-Or register tools / resources directly on `ctx.agent.registerTool({ id, description, safety, handler })` and `ctx.agent.registerResource({ id, name, mimeType, read })`. Expose the API over MCP:
+Or register tools and resources directly. Resources accept an optional custom URI and return a handle for publishing content invalidations.
+
+```ts
+const resource = ctx.agent.registerResource({
+  id: 'current-build',
+  uri: 'build://current',
+  name: 'Current build',
+  read: () => ({ json: readCurrentBuild() }),
+})
+
+buildEvents.on('changed', () => resource.notifyUpdated())
+```
+
+Use an RFC 6570 URI template when the resource URI contains variables. The reader receives the concrete URI and parsed variables.
+
+```ts
+const artifact = ctx.agent.registerResource({
+  id: 'artifact',
+  uriTemplate: 'build://artifacts/{artifactId}',
+  name: 'Build artifact',
+  read: (_uri, variables) => ({ json: readArtifact(String(variables.artifactId)) }),
+})
+
+artifact.notifyUpdated('build://artifacts/current')
+```
+
+`notifyUpdated` sends the concrete URI through MCP 2026 `subscriptions/listen` when the MCP caller's `resourceSubscriptions` filter contains it. MCP 2025 callers pull current values through the resource list, template list, and read methods. Expose the agent API over MCP:
 
 ```ts
 import { createMcpServer } from 'devframe/adapters/mcp'
