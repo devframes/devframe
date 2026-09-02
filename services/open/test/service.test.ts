@@ -1,6 +1,7 @@
 import type { DevframeHost } from 'devframe/types'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import process from 'node:process'
 import { createHostContext } from 'devframe/node'
 // `pathe` (not `node:path`) so the expected paths use the same normalized
 // forward-slash form the service resolves to on every OS.
@@ -97,6 +98,35 @@ describe('@devframes/service-open', () => {
     await invoke(ctx, 'devframes:service:open:open-in-editor', { path: join(extra, 'b.ts') })
     // Union kept the first installer's roots; later editor option won.
     expect(launchEditor).toHaveBeenCalledWith(join(extra, 'b.ts'), 'zed')
+  })
+
+  it.skipIf(process.platform === 'win32')('refuses a symlink that escapes every allowed root', async () => {
+    const { ctx, dir } = await createCtx()
+    const outside = mkdtempSync(join(tmpdir(), 'devframe-service-open-outside-'))
+    tempDirs.push(outside)
+    writeFileSync(join(outside, 'secret.txt'), 'top secret', 'utf-8')
+    // A symlink inside the workspace root pointing at a file outside it.
+    symlinkSync(join(outside, 'secret.txt'), join(dir, 'leak.txt'))
+
+    const install = ctx.services.install(createOpenService())
+    await ctx.services.ready()
+    const api = await install
+
+    await expect(api!.openInFinder({ path: join(dir, 'leak.txt') })).rejects.toThrowError(/outside the workspace root/)
+    expect(open).not.toHaveBeenCalled()
+  })
+
+  it.skipIf(process.platform === 'win32')('allows a symlink whose canonical target stays inside an allowed root', async () => {
+    const { ctx, dir } = await createCtx()
+    writeFileSync(join(dir, 'real.txt'), 'contained', 'utf-8')
+    symlinkSync(join(dir, 'real.txt'), join(dir, 'alias.txt'))
+
+    const install = ctx.services.install(createOpenService())
+    await ctx.services.ready()
+    const api = await install
+
+    await api!.openInFinder({ path: join(dir, 'alias.txt') })
+    expect(open).toHaveBeenCalledWith(join(dir, 'alias.txt'))
   })
 
   it('rejects unknown editor commands at the RPC boundary', async () => {

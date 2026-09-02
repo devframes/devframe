@@ -3,7 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { ReadableStream as NodeWebReadableStream } from 'node:stream/web'
 import type { RemoteAssetsErrorMessage, RemoteAssetsStore } from '../types/remote-assets'
 import { createReadStream } from 'node:fs'
-import { stat } from 'node:fs/promises'
+import { realpath, stat } from 'node:fs/promises'
 import { Readable } from 'node:stream'
 import { defineHandler, H3 } from 'h3'
 import { lookup } from 'mrmime'
@@ -31,10 +31,25 @@ interface ResolvedFile {
 
 const HTML_EXTENSIONS = ['.html', '.htm']
 
-async function statFile(abs: string): Promise<ResolvedFile | null> {
+/**
+ * The canonical (symlink-resolved) served root, falling back to the lexical
+ * path when the directory doesn't exist yet (an empty deployment then serves
+ * nothing rather than throwing).
+ */
+async function canonicalRoot(absDir: string): Promise<string> {
+  return realpath(absDir).then(normalize, () => absDir)
+}
+
+/**
+ * Stat a candidate file, confirming its canonical target stays inside the
+ * canonical served root — a symlink inside the root can only resolve to a
+ * file still within it; one escaping the root reads as a miss, not a leak.
+ */
+async function statFile(abs: string, realRoot: string): Promise<ResolvedFile | null> {
   try {
     const s = await stat(abs)
-    if (!s.isFile())
+    const real = normalize(await realpath(abs))
+    if (!s.isFile() || (real !== realRoot && !real.startsWith(realRoot + sep)))
       return null
     return { abs, size: s.size, mtime: s.mtime }
   }
@@ -45,6 +60,7 @@ async function statFile(abs: string): Promise<ResolvedFile | null> {
 
 async function resolveTarget(
   absDir: string,
+  realRoot: string,
   urlPath: string,
   indexNames: string[],
   single: boolean,
@@ -67,7 +83,7 @@ async function resolveTarget(
   if (abs !== absDir && !abs.startsWith(absDir + sep))
     return null
 
-  const direct = await statFile(abs)
+  const direct = await statFile(abs, realRoot)
   if (direct)
     return direct
 
@@ -75,7 +91,7 @@ async function resolveTarget(
     const s = await stat(abs)
     if (s.isDirectory()) {
       for (const name of indexNames) {
-        const candidate = await statFile(join(abs, name))
+        const candidate = await statFile(join(abs, name), realRoot)
         if (candidate)
           return candidate
       }
@@ -90,7 +106,7 @@ async function resolveTarget(
   // fallback so pretty-URL deployments resolve to the right page.
   if (!extname(cleaned)) {
     for (const ext of HTML_EXTENSIONS) {
-      const candidate = await statFile(abs + ext)
+      const candidate = await statFile(abs + ext, realRoot)
       if (candidate)
         return candidate
     }
@@ -98,7 +114,7 @@ async function resolveTarget(
 
   const fallbackIndex = indexNames[0]
   if (single && fallbackIndex && !/\.[a-z0-9]+$/i.test(cleaned)) {
-    const indexFile = await statFile(join(absDir, fallbackIndex))
+    const indexFile = await statFile(join(absDir, fallbackIndex), realRoot)
     if (indexFile)
       return indexFile
   }
@@ -199,6 +215,9 @@ export function serveStaticHandler(
     return serveRemoteAssetsHandler(source)
   const absDir = resolve(source)
   const opts = normalizeOptions(options)
+  // Canonicalize the served root once; the containment check compares every
+  // candidate's canonical path against it.
+  const realRoot = canonicalRoot(absDir)
   return defineHandler(async (event) => {
     const method = event.req.method
     if (method !== 'GET' && method !== 'HEAD') {
@@ -206,7 +225,7 @@ export function serveStaticHandler(
       event.res.headers.set('Allow', 'GET, HEAD')
       return ''
     }
-    const file = await resolveTarget(absDir, event.url.pathname, opts.indexNames, opts.single)
+    const file = await resolveTarget(absDir, await realRoot, event.url.pathname, opts.indexNames, opts.single)
     if (!file) {
       event.res.status = 404
       return ''
@@ -250,6 +269,7 @@ export function serveStaticNodeMiddleware(
 ): (req: IncomingMessage, res: ServerResponse, next?: (err?: Error) => void) => void {
   const absDir = typeof source === 'string' ? resolve(source) : undefined
   const opts = normalizeOptions(options)
+  const realRoot = absDir === undefined ? undefined : canonicalRoot(absDir)
   return (req, res, next) => {
     void (async () => {
       const method = req.method
@@ -282,7 +302,7 @@ export function serveStaticNodeMiddleware(
         return
       }
 
-      const file = await resolveTarget(absDir, url, opts.indexNames, opts.single)
+      const file = await resolveTarget(absDir, await realRoot!, url, opts.indexNames, opts.single)
       if (!file) {
         if (next) {
           next()

@@ -20,7 +20,8 @@ const props = defineProps<{
 
 const settings = useSettings(props.context)
 const isEdgeMode = computed(() => props.context.panel.store.mode === 'edge')
-const showAddressBar = computed(() => settings.value.showIframeAddressBar)
+const addressBarControls = computed(() => typeof props.entry.addressBar === 'object' ? props.entry.addressBar : undefined)
+const showAddressBar = computed(() => settings.value.showIframeAddressBar || Boolean(props.entry.addressBar))
 
 const ADDRESS_BAR_HEIGHT = 40
 
@@ -77,13 +78,15 @@ const currentPageOrigin = computed(() => {
 // Check if iframe URL is cross-origin
 const isCrossOrigin = computed(() => {
   try {
-    const url = new URL(currentUrl.value)
-    return url.origin !== currentPageOrigin.value
+    return new URL(currentUrl.value).origin !== currentPageOrigin.value
   }
   catch {
     return true // Assume cross-origin if URL parsing fails
   }
 })
+const showBack = computed(() => addressBarControls.value?.back ?? !isCrossOrigin.value)
+const showReload = computed(() => addressBarControls.value?.reload ?? !isCrossOrigin.value)
+const showOpenExternal = computed(() => addressBarControls.value?.openExternal ?? false)
 
 // Display URL - hides host if same as current page. The remote connection
 // descriptor is stripped so its auth token can't be read (or copied) out of the
@@ -189,10 +192,20 @@ function refresh() {
 
   assetsError.value = null
   isIframeLoading.value = true
-  // Reload by reassigning the src
-  const src = iframe.src
+  const src = currentUrl.value
   iframe.src = ''
   iframe.src = src
+  currentUrl.value = src
+  editingUrl.value = src
+}
+
+function openExternally() {
+  try {
+    const url = new URL(stripRemoteConnectionFromUrl(currentUrl.value))
+    if (url.protocol === 'http:' || url.protocol === 'https:')
+      window.open(url.href, '_blank', 'noopener,noreferrer')
+  }
+  catch {}
 }
 
 let onIframeLoad: (() => void) | undefined
@@ -322,39 +335,36 @@ onUnmounted(() => {
   <div class="w-full h-full flex flex-col">
     <div
       v-if="showAddressBar"
-      class="flex-none px-2 w-full flex items-center gap-1 border-base border-b"
+      class="flex-none px-2 w-full flex items-center gap-1 color-base border-base border-b"
       :style="{ height: `${ADDRESS_BAR_HEIGHT}px` }"
     >
-      <!-- Navigation buttons (hidden for cross-origin) -->
-      <template v-if="!isCrossOrigin">
-        <!-- Back button -->
-        <button
-          class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray/15 transition-colors shrink-0"
-          title="Back"
-          @click="goBack"
-        >
-          <div class="i-ph-caret-left op60 w-4.5 h-4.5" />
-        </button>
-
-        <!-- Refresh button -->
-        <button
-          class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray/15 transition-colors shrink-0"
-          title="Refresh"
-          @click="refresh"
-        >
-          <div class="i-ph-arrow-clockwise op60 w-4.5 h-4.5" />
-        </button>
-      </template>
+      <button
+        v-if="showBack"
+        class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray/15 transition-colors shrink-0"
+        title="Back"
+        @click="goBack"
+      >
+        <div class="i-ph-caret-left op60 w-4.5 h-4.5" />
+      </button>
 
       <!-- Cross-origin badge -->
       <div
-        v-else
+        v-if="isCrossOrigin"
         class="flex items-center gap-1 px2 py1 rounded text-xs bg-amber/10 text-amber border border-amber/20 shrink-0"
-        title="Cross-origin iframe - navigation controls unavailable"
+        title="Cross-origin iframe"
       >
         <div class="i-ph-globe text-sm" />
         <span>Cross-Origin</span>
       </div>
+
+      <button
+        v-if="showReload"
+        class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray/15 transition-colors shrink-0"
+        title="Reload"
+        @click="refresh"
+      >
+        <div class="i-ph-arrow-clockwise op60 w-4.5 h-4.5" />
+      </button>
 
       <!-- URL input -->
       <div class="flex-1 flex items-center h-7 px-2.5 rounded bg-gray/5 border border-transparent hover:border-gray/10 focus-within:border-gray/15 transition-colors">
@@ -376,6 +386,15 @@ onUnmounted(() => {
           class="i-ph-circle-notch text-sm op40 ml-2 shrink-0 animate-spin"
         />
       </div>
+
+      <button
+        v-if="showOpenExternal"
+        class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray/15 transition-colors shrink-0"
+        title="Open externally"
+        @click="openExternally"
+      >
+        <div class="i-ph-arrow-square-out-duotone op60 w-4.5 h-4.5" />
+      </button>
     </div>
     <div
       ref="viewFrame"

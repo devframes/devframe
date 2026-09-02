@@ -1,31 +1,13 @@
 diff --git a/server/utils/content.ts b/server/utils/content.ts
-index e30eeb312d00dd6111b5574680e6b8b725d7cb76..2d6d6e570dfef6537276dc4a613f3cd5fcbf4e8c 100644
 --- a/server/utils/content.ts
 +++ b/server/utils/content.ts
-@@ -1,14 +1,15 @@
- import { defineContentPlugin, type ComarkContent, type CacheOptions, comarkContent  } from 'comark-content';
- import fs from 'comark-content/sources/fs'
- import github from 'comark-content/sources/github'
+@@ -4 +4 @@
 -import rangi from 'comark/plugins/rangi'
 +import shiki from 'comark/plugins/shiki'
- import security from 'comark/plugins/security'
- import emoji from 'comark/plugins/emoji'
- import toc from 'comark/plugins/toc'
- import mermaid from 'comark/plugins/mermaid'
- import yaml from 'comark-content/plugins/yaml'
- import tracingOtel from 'comark-content/plugins/tracing/otel'
--import { githubLight, githubDark } from 'rangi/themes'
+@@ -12 +12,2 @@
+-import { geistTheme } from '../../utils/geist-theme.ts'
 +import vitesseDark from '@shikijs/themes/vitesse-dark'
 +import vitesseLight from '@shikijs/themes/vitesse-light'
- import { contentTracer } from './tracer.ts'
- 
- // Rebuilt only when the head advances (see `getProdContent`). Holds the *promise*, not the instance: the
-@@ -18,7 +19,7 @@ let content: Promise<ComarkContent> | undefined
- // Bump CONTENT_PARSER_VERSION in `cache.ts` when these plugins or their options change cached output.
- const comarkPlugins = [
-   mermaid({ theme: 'zinc-light', themeDark: 'zinc-dark' }),
--  rangi({ theme: { light: githubLight, dark: githubDark } }),
+@@ -21 +22 @@
+-  rangi({ theme: geistTheme }),
 +  shiki({ registerDefaultThemes: false, themes: { light: vitesseLight, dark: vitesseDark } }),
-   toc({ depth: 3 }),
-   emoji(),
-   security({

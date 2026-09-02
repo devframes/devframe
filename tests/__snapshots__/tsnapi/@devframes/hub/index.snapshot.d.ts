@@ -308,6 +308,11 @@ export interface DevframeViewGroup extends DevframeDockEntryBase {
 export interface DevframeViewIframe extends DevframeDockEntryBase {
   type: 'iframe';
   url: string;
+  addressBar?: boolean | {
+    back?: boolean;
+    reload?: boolean;
+    openExternal?: boolean;
+  };
   frameId?: string;
   clientScript?: ClientScriptEntry;
   navTarget?: NavTarget;

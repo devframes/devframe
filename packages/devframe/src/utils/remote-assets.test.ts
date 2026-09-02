@@ -1,10 +1,10 @@
 import type { AddressInfo } from 'node:net'
 import type { MockInstance } from 'vitest'
-import type { RemoteAssets, RemoteAssetsErrorMessage, RemoteAssetsStore } from '../types/remote-assets'
+import type { RemoteAssets, RemoteAssetsErrorMessage, RemoteAssetsProviderCustom, RemoteAssetsStore } from '../types/remote-assets'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { H3, toNodeHandler } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -186,6 +186,43 @@ describe('resolveStaticAssetsSource (remote store)', () => {
     expect(readFileSync(join(target, 'index.html'), 'utf8')).toBe('<html>remote index</html>')
     expect(readFileSync(join(target, 'assets/app.js'), 'utf8')).toBe('console.log("app")')
     expect(existsSync(join(target, 'package.json'))).toBe(false)
+  })
+
+  it('rejects unsafe provider-listed paths before fetching or writing them', async () => {
+    const calls: string[] = []
+    const fetchImpl: typeof globalThis.fetch = async (input) => {
+      const url = String(input)
+      calls.push(url)
+      return url.endsWith('/dist/assets/app.js') ? new Response('console.log("app")') : new Response('should never be served')
+    }
+    const provider: RemoteAssetsProviderCustom = {
+      fileUrl: (pkg, version, filePath) => `https://mirror.example.com/${pkg}@${version}/${filePath}`,
+      // A compromised (or merely buggy) custom provider — every entry below is
+      // unsafe or out of scope except the one normal nested asset.
+      listFiles: async () => [
+        'package.json', // ordinary file outside the selected prefix — stays ignored
+        'dist/assets/app.js', // a normal nested asset — still materializes
+        'dist/../evil-traversal.txt', // prefixed traversal entry
+        '/outside/evil-absolute.txt', // absolute path entry
+        'dist/evil\\..\\..\\evil-backslash.txt', // backslash traversal entry — rejected on every platform
+        'dist-confusable/evil-prefix.txt', // prefix-confusion entry — outside the selected prefix
+      ],
+    }
+    const store = storeFor({ fetch: fetchImpl }, makeTmp(), { provider })
+    const target = makeTmp()
+
+    await store.materialize(target)
+
+    // The one normal nested asset still materializes.
+    expect(readFileSync(join(target, 'assets/app.js'), 'utf8')).toBe('console.log("app")')
+    // Nothing else was fetched...
+    expect(calls).toEqual([expect.stringContaining('/dist/assets/app.js')])
+    // ...or written, inside or outside the target directory.
+    expect(existsSync(join(target, 'package.json'))).toBe(false)
+    expect(existsSync(join(target, 'evil-traversal.txt'))).toBe(false)
+    expect(existsSync(join(dirname(target), 'evil-traversal.txt'))).toBe(false)
+    expect(existsSync(join(target, 'evil-backslash.txt'))).toBe(false)
+    expect(existsSync(join(dirname(target), 'evil-prefix.txt'))).toBe(false)
   })
 
   it('supports the unpkg provider URL scheme', async () => {
