@@ -23,12 +23,12 @@ export type RpcFunctionType = 'static' | 'action' | 'event' | 'query'
 /**
  * Agent exposure settings for an RPC function. When this field is set,
  * the function is surfaced to agents (e.g. via the devframe MCP adapter)
- * as a callable tool. Functions without an `agent` field are not exposed —
+ * as a callable tool. Functions without an `agent` field are not exposed -
  * default-deny.
  */
 export interface RpcFunctionAgentOptions {
   /**
-   * Human-readable description shown to the agent. Required — agents
+   * Human-readable description shown to the agent. Required - agents
    * rely on this to decide when to invoke the tool. Keep it to ~1–3
    * sentences explaining what the tool does and when to use it.
    */
@@ -41,9 +41,9 @@ export interface RpcFunctionAgentOptions {
   /**
    * Safety classification. Drives MCP annotations (`readOnlyHint`,
    * `destructiveHint`) downstream.
-   * - `'read'` — no side effects; safe to call freely.
-   * - `'action'` — mutates state but not destructive.
-   * - `'destructive'` — may perform destructive updates.
+   * - `'read'` - no side effects; safe to call freely.
+   * - `'action'` - mutates state but not destructive.
+   * - `'destructive'` - may perform destructive updates.
    *
    * When omitted it is inferred from the function `type`:
    *   - `'static'` / `'query'` → `'read'`
@@ -172,16 +172,16 @@ export interface RpcFunctionDefinitionBase {
   type?: RpcFunctionType
   /**
    * Declares whether this function's args/return are JSON-serializable
-   * — i.e. no `Map`, `Set`, `Date`, `BigInt`, class instances, circular
+   * - i.e. no `Map`, `Set`, `Date`, `BigInt`, class instances, circular
    * references, `undefined` leaves, `Symbol`, or `Function` values.
    *
-   * - `true` — args and return are encoded with strict `JSON.stringify`
+   * - `true` - args and return are encoded with strict `JSON.stringify`
    *   on the wire and on disk. Misshapen values throw `DF0019` at the
    *   sender, surfacing the bug *during the offending call* rather than
    *   silently coercing to `{}` later. Required for `agent` exposure.
-   * - `false` (default) — payloads use `structured-clone-es`, which
+   * - `false` (default) - payloads use `structured-clone-es`, which
    *   round-trips Maps/Sets/cycles. Functions in this mode cannot be
-   *   exposed via the `agent` field — registration throws `DF0018`.
+   *   exposed via the `agent` field - registration throws `DF0018`.
    */
   jsonSerializable?: boolean
 }
@@ -248,9 +248,9 @@ export type RpcFunctionDefinition<
          * Declares whether this function's args/return are JSON-serializable
          * (no Map/Set/Date/BigInt/cycles/class instances/undefined/Symbol/Function).
          *
-         * - `true` — wire and dump use strict `JSON.stringify`; misshapen
+         * - `true` - wire and dump use strict `JSON.stringify`; misshapen
          *   values throw `DF0019` at the call site. Required for `agent`.
-         * - `false` (default) — `structured-clone-es` round-trips fancy
+         * - `false` (default) - `structured-clone-es` round-trips fancy
          *   types. Cannot be `agent`-exposed (registration throws `DF0018`).
          */
         jsonSerializable?: boolean
@@ -271,7 +271,7 @@ export type RpcFunctionDefinition<
          * handler once with no arguments and stores the result as both a
          * no-args record and the fallback so any call variant resolves
          * to the same snapshot. Only valid on `query` (or untyped)
-         * functions — `static` already has equivalent default behavior.
+         * functions - `static` already has equivalent default behavior.
          */
         snapshot?: boolean
         /** Per-context setup-result cache, populated by `getRpcResolvedSetupResult`. @internal */
@@ -294,9 +294,9 @@ export type RpcFunctionDefinition<
          * Declares whether this function's args/return are JSON-serializable
          * (no Map/Set/Date/BigInt/cycles/class instances/undefined/Symbol/Function).
          *
-         * - `true` — wire and dump use strict `JSON.stringify`; misshapen
+         * - `true` - wire and dump use strict `JSON.stringify`; misshapen
          *   values throw `DF0019` at the call site. Required for `agent`.
-         * - `false` (default) — `structured-clone-es` round-trips fancy
+         * - `false` (default) - `structured-clone-es` round-trips fancy
          *   types. Cannot be `agent`-exposed (registration throws `DF0018`).
          */
         jsonSerializable?: boolean
@@ -309,7 +309,7 @@ export type RpcFunctionDefinition<
         setup?: (context: CONTEXT) => Thenable<RpcFunctionSetupResult<InferArgsType<AS>, Thenable<InferReturnType<RS>>>>
         /**
          * Function implementation (required if setup doesn't provide one).
-         * The declared `returns` schema describes the *resolved* value —
+         * The declared `returns` schema describes the *resolved* value -
          * async handlers return a promise of it (the runtime always awaits).
          */
         handler?: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>
@@ -321,7 +321,7 @@ export type RpcFunctionDefinition<
          * handler once with no arguments and stores the result as both a
          * no-args record and the fallback so any call variant resolves
          * to the same snapshot. Only valid on `query` (or untyped)
-         * functions — `static` already has equivalent default behavior.
+         * functions - `static` already has equivalent default behavior.
          */
         snapshot?: boolean
         /** Per-context setup-result cache, populated by `getRpcResolvedSetupResult`. @internal */

@@ -11,7 +11,7 @@ import { serverFunctions } from '../rpc/index'
  *
  * The plugin reads the feed from the hub-attached `ctx.messages` host. On a
  * plain (non-hub) context it warns once and keeps the RPC surface registered
- * as no-ops, so the panel still renders — with an empty feed.
+ * as no-ops, so the panel still renders - with an empty feed.
  */
 export function setupMessages(ctx: DevframeNodeContext): void {
   if (!getMessagesHost(ctx))
@@ -19,7 +19,7 @@ export function setupMessages(ctx: DevframeNodeContext): void {
 
   // The detail panel's "open file" affordance calls the
   // `@devframes/service-open` wire service (declared in the definition's
-  // `services`) directly from the client — the service resolves the
+  // `services`) directly from the client - the service resolves the
   // workspace-relative file position itself, so the plugin needs no bridge.
   for (const fn of serverFunctions)
     ctx.rpc.register(fn)

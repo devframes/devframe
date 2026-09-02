@@ -47,7 +47,7 @@ export interface Commit {
   body: string
   /** Ref names pointing at this commit (branches, tags, HEAD). */
   refs: string[]
-  /** Full parent hashes — drives the commit graph. */
+  /** Full parent hashes - drives the commit graph. */
   parents: string[]
 }
 
@@ -94,7 +94,7 @@ export interface Tag {
   /** Short SHA of the commit the tag ultimately points to. */
   sha: string
   /**
-   * Tag creation date as epoch milliseconds — the tag's own date for
+   * Tag creation date as epoch milliseconds - the tag's own date for
    * annotated tags, the target commit's date for lightweight tags. `0` when
    * the date can't be parsed.
    */
@@ -148,7 +148,7 @@ export interface GitDiff {
   files: DiffFile[]
   totalAdditions: number
   totalDeletions: number
-  /** Unified patch text — populated when `path` targets a single file. */
+  /** Unified patch text - populated when `path` targets a single file. */
   patch: string | null
   /** `true` when `patch` was clipped to the internal char limit. */
   truncated: boolean

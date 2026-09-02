@@ -7,7 +7,7 @@ import { defineDataInspectorRpc, NS } from './_define'
  * Lazily expand a depth-truncated node. Re-runs the base jora query against
  * the live source, re-descends to the node addressed by `path` (a `NodePath`
  * lifted from the `$truncated: 'depth'` marker the client is expanding), and
- * returns just that subtree normalized with a fresh depth budget — so huge
+ * returns just that subtree normalized with a fresh depth budget - so huge
  * graphs load a level at a time instead of all at once.
  */
 export const queryPath = defineDataInspectorRpc({

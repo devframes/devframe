@@ -6,7 +6,7 @@ import { resolveHubCommands } from './_hub-commands'
 /**
  * Execute a hub command by id and return a result envelope, mirroring
  * `devframes:plugin:inspect:invoke`. Unlike that function, this one is not
- * gated to read-only types — a command is, by construction, something a
+ * gated to read-only types - a command is, by construction, something a
  * user explicitly runs (unlike an arbitrary RPC `action`, which may be a
  * side effect the inspector shouldn't fire unprompted).
  *

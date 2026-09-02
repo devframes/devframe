@@ -67,7 +67,7 @@ export function useCodeServer() {
     if (!client)
       return undefined
     try {
-      return await (client.call as unknown as LooseCall)(method, ...args) as T
+      return await (client.call as LooseCall)(method, ...args) as T
     }
     catch (error) {
       server.status = 'error'

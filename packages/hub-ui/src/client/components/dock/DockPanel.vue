@@ -101,7 +101,7 @@ const panelStyle = computed(() => {
 
   // The panel's docked edge is otherwise pinned to the dock's center (a 50%
   // overlap). Shift it away from the edge so the dock only overlaps the panel
-  // by `panelOverlapFactor` of its thickness — `0.5` keeps the legacy overlap,
+  // by `panelOverlapFactor` of its thickness - `0.5` keeps the legacy overlap,
   // lower values slide the panel clear of the bar.
   const overlapOffset = dockThickness * (0.5 - layout.value.panelOverlapFactor)
   const isVerticalDock = store.position === 'left' || store.position === 'right'

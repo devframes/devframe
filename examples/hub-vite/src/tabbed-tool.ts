@@ -13,8 +13,10 @@ import pkg from '../package.json' with { type: 'json' }
  * multi-tab tool like Nuxt DevTools.
  */
 export default defineDevframe({
-  // Colon-free: the hub instance derives the mount path (`/__devframes/<id>/`)
-  // from the id, and `:` is a route-param marker to the router underneath.
+  /**
+   * Colon-free: the hub instance derives the mount path (`/__devframes/<id>/`)
+   * from the id, and `:` is a route-param marker to the router underneath.
+   */
   id: 'tabbed-tool',
   name: 'Tabbed Tool',
   version: pkg.version,
@@ -26,7 +28,7 @@ export default defineDevframe({
   basePath: '/__tabbed-tool/',
   clientAssets: fileURLToPath(new URL('../spa/tabbed-tool/', import.meta.url)),
   async setup(rawCtx) {
-    const ctx = rawCtx as unknown as DevframeHubContext
+    const ctx = rawCtx as DevframeHubContext
     await ctx.messages.add({
       level: 'info',
       message: 'Tabbed Tool mounted as a shared-iframe anchor',

@@ -45,7 +45,7 @@ export function resolveHubCommands(ctx: object): HubCommandsHostLike | undefined
  * serializable shape the inspector sends over RPC, recursing into
  * children. `hasHandler` survives the projection even though the hub's
  * own `commands.list()` strips `handler` entirely before it's callable
- * from here — reading the raw command straight off `host.commands`
+ * from here - reading the raw command straight off `host.commands`
  * preserves that flag.
  */
 export function projectCommand(cmd: HubCommandLike): DevframeInspectCommandInfo {

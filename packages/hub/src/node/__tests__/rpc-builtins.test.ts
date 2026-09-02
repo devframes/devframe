@@ -9,8 +9,15 @@ import {
   hubTerminalsWrite,
 } from '../rpc-builtins'
 
+type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> }
+
+/** Build a hub context stub from the slice a test exercises. */
+function mockHubContext(partial: DeepPartial<DevframeHubContext>): DevframeHubContext {
+  return partial as DevframeHubContext
+}
+
 function contextWithSessions(sessions: Map<string, any>): DevframeHubContext {
-  return { terminals: { sessions } } as unknown as DevframeHubContext
+  return mockHubContext({ terminals: { sessions } })
 }
 
 describe('hub terminal write/resize RPC', () => {
@@ -88,9 +95,9 @@ describe('hub terminal terminate/restart/remove RPC', () => {
     const terminate = vi.fn()
     const remove = vi.fn()
     const session = { id: 'log', type: 'child-process', terminate }
-    const ctx = {
+    const ctx = mockHubContext({
       terminals: { sessions: new Map([['log', session]]), remove },
-    } as unknown as DevframeHubContext
+    })
     const fn = await hubTerminalsRemove.setup!(ctx)
     await fn.handler!('log')
     expect(terminate).toHaveBeenCalledOnce()
@@ -100,9 +107,9 @@ describe('hub terminal terminate/restart/remove RPC', () => {
   it('removes a bare registered session without a terminate handle', async () => {
     const remove = vi.fn()
     const session = { id: 'mirror' }
-    const ctx = {
+    const ctx = mockHubContext({
       terminals: { sessions: new Map([['mirror', session]]), remove },
-    } as unknown as DevframeHubContext
+    })
     const fn = await hubTerminalsRemove.setup!(ctx)
     await fn.handler!('mirror')
     expect(remove).toHaveBeenCalledWith(session)
@@ -110,9 +117,9 @@ describe('hub terminal terminate/restart/remove RPC', () => {
 
   it('rejects removing an unknown session', async () => {
     const remove = vi.fn()
-    const ctx = {
+    const ctx = mockHubContext({
       terminals: { sessions: new Map(), remove },
-    } as unknown as DevframeHubContext
+    })
     const fn = await hubTerminalsRemove.setup!(ctx)
     await expect(fn.handler!('nope')).rejects.toThrow(/not registered/i)
     expect(remove).not.toHaveBeenCalled()
@@ -122,7 +129,7 @@ describe('hub terminal terminate/restart/remove RPC', () => {
 describe('hub docks activate RPC', () => {
   it('forwards dockId and params to docks.activate', async () => {
     const activate = vi.fn()
-    const ctx = { docks: { activate } } as unknown as DevframeHubContext
+    const ctx = mockHubContext({ docks: { activate } })
 
     const fn = await hubDocksActivate.setup!(ctx)
     await fn.handler!({ dockId: 'devframes_plugin_terminals', params: { sessionId: 'sess-1' } })
@@ -131,7 +138,7 @@ describe('hub docks activate RPC', () => {
 
   it('forwards a bare dockId without params', async () => {
     const activate = vi.fn()
-    const ctx = { docks: { activate } } as unknown as DevframeHubContext
+    const ctx = mockHubContext({ docks: { activate } })
 
     const fn = await hubDocksActivate.setup!(ctx)
     await fn.handler!({ dockId: 'devframes_plugin_messages' })

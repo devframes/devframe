@@ -35,18 +35,14 @@ const builtinDevframes = [
 // embedded-script URL - no duplicated string literal.
 const base = DEVFRAMES_HUB_BASE
 
-// The minimal Rsbuild host: one `initHub()` call mounted into the dev
-// server's middleware stack. It's created lazily inside `server.setup` (not
-// at module scope) so merely importing this config never spawns the hub's
-// side-car server, and the `??=` keeps a re-run reusing the live one -
-// config readers (Rsbuild, knip, tests) stay side-effect free. `initHub` runs
-// here in Rsbuild's Node process, never bundled into the browser, so
-// `createUi()`'s prebuilt assets and the plugins' node code work unchanged;
-// the dock UI comes from `@devframes/hub-ui` via the `ui` slot.
+// Created lazily inside `server.setup`, not at module scope, so importing this
+// config never spawns the hub's side-car; the `??=` keeps a re-run reusing the
+// live one. `initHub` runs in Rsbuild's Node process, so `createUi()`'s
+// prebuilt assets and the plugins' node code work unbundled.
 let hub: HubInstance | undefined
 
 // A server-authored JSON-render dock: the whole view is this serializable
-// spec — no client build. It renders through whatever `'json-render'`
+// spec - no client build. It renders through whatever `'json-render'`
 // renderer the hub composes (below, the reference `@devframes/json-render-ui`
 // module); without one, the hub UI provider shows its missing-renderer fallback.
 const jsonRenderSpec: DevframeJsonRenderSpec = {
@@ -70,33 +66,41 @@ const jsonRenderDock: DevframeJsonRenderDockEntry = {
 export default defineConfig({
   source: { entry: { index: './src/index.ts' } },
   server: {
-    // Runs before Rsbuild's built-in middlewares, so the hub owns
-    // `/__devframes/*` and hands everything else back to Rsbuild via next().
+    /**
+     * Runs before Rsbuild's built-in middlewares, so the hub owns
+     * `/__devframes/*` and hands everything else back to Rsbuild via next().
+     */
     setup({ server }) {
       hub ??= initHub({
         base,
         devframes: builtinDevframes,
-        // Rebrand the reference UI to Rsbuild's own orange — one field, no
-        // CSS: `createUi`'s `branding` option publishes
-        // `ConnectionMeta.configs.ui.branding`, which the dock reads at
-        // connect time and feeds into `--devframe-primary` (see
-        // `@devframes/hub-ui`'s `primary-ramp.css`).
+        /**
+         * Rebrand the reference UI to Rsbuild's own orange - one field, no
+         * CSS: `createUi`'s `branding` option publishes
+         * `ConnectionMeta.configs.ui.branding`, which the dock reads at
+         * connect time and feeds into `--devframe-primary` (see
+         * `@devframes/hub-ui`'s `primary-ramp.css`).
+         */
         ui: createUi({ branding: { primaryColor: '#ff5e00', productName: 'Devframes on Rsbuild' } }),
-        // Serve the reference json-render frontend as a prebuilt renderer
-        // module — the one-liner that makes `'json-render'` docks render in
-        // the prebuilt hub UI provider. Swap it for any community implementation of
-        // the same contract.
+        /**
+         * Serve the reference json-render frontend as a prebuilt renderer
+         * module - the one-liner that makes `'json-render'` docks render in
+         * the prebuilt hub UI provider. Swap it for any community implementation of
+         * the same contract.
+         */
         renderers: [jsonRenderUiRenderer()],
         configure(ctx) {
           ctx.docks.register(jsonRenderDock)
         },
-        // Gate with devframe's interactive OTP (the default). The hub prints a
-        // 6-digit code + magic link on startup, and the reference UI's
-        // authorization view exchanges it for a bearer token. See
-        // docs/content/1.guide/13.security.md.
-        // Rsbuild's middleware stack never hands over WebSocket upgrades, so
-        // the socket gets its own side-car port, advertised through
-        // `__connection.json`.
+        /**
+         * Gate with devframe's interactive OTP (the default). The hub prints a
+         * 6-digit code + magic link on startup, and the reference UI's
+         * authorization view exchanges it for a bearer token. See
+         * docs/content/1.guide/13.security.md.
+         * Rsbuild's middleware stack never hands over WebSocket upgrades, so
+         * the socket gets its own side-car port, advertised through
+         * `__connection.json`.
+         */
         ws: { sidecar: true },
       })
       server.middlewares.use(hub.nodeMiddleware)
@@ -104,8 +108,10 @@ export default defineConfig({
   },
   html: {
     title: 'Hub Rsbuild (minimal)',
-    // The floating-dock bootstrap - one dev-only module script, the whole
-    // embedded integration.
+    /**
+     * The floating-dock bootstrap - one dev-only module script, the whole
+     * embedded integration.
+     */
     tags: [
       { tag: 'script', attrs: { type: 'module', src: `${base}embedded.js` }, append: true },
     ],

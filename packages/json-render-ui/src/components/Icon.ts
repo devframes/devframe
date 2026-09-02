@@ -10,7 +10,7 @@ interface IconProps {
 
 /**
  * Fully dynamic icon: wraps `@antfu/design`'s `DisplayIconifyRemoteIcon`, which
- * fetches the (sanitized) SVG from the Iconify API with `color=currentColor` —
+ * fetches the (sanitized) SVG from the Iconify API with `color=currentColor` -
  * so the icon inherits the surrounding text color (e.g. white inside a primary
  * button). A deliberate, documented deviation from the repo's Phosphor-first
  * convention, which governs a surface's own chrome, not spec-driven content

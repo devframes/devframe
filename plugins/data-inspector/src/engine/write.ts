@@ -4,7 +4,7 @@
  * Ops are container-generic on the wire (`set` / `delete` / `add` / `rename`);
  * this module resolves the path with the same descent semantics as the
  * normalizer's `navigate` (filter options shift array indices) and dispatches
- * on the container it finds — plain object, array, Map, or Set. Every failure
+ * on the container it finds - plain object, array, Map, or Set. Every failure
  * returns a named error outcome; nothing here throws.
  */
 import type { NodePath, PathSegment, WriteOutcome, WriteRequest, WriteValue } from './contract'
@@ -99,38 +99,42 @@ function resolveParent(root: unknown, path: NodePath, opts: WriteApplyOptions): 
   return parent
 }
 
+/** Set an own property, requiring it already exists and is writable. */
+function setObjectProperty(parent: object, key: string, value: unknown): void {
+  assertMutableObject(parent)
+  assertSafeObjectKey(key)
+  if (!Object.hasOwn(parent, key))
+    throw new WriteError('PathNotFound', `property "${key}" does not exist`)
+  const desc = Object.getOwnPropertyDescriptor(parent, key)!
+  if (!desc.writable && !desc.set)
+    throw new WriteError('ReadonlyProperty', `property "${key}" has no setter`)
+  // The property is verified own, so bracket assignment only runs this
+  // object's own setter (or writes its own slot), never an inherited one.
+  const record = parent as Record<string, unknown>
+  record[key] = value
+}
+
+function setArrayIndex(parent: object, at: number, value: unknown, opts: WriteApplyOptions): void {
+  if (!Array.isArray(parent))
+    throw new WriteError('WrongContainer', 'an index step needs an array')
+  const index = realIndex(parent, at, opts)
+  if (index < 0 || index >= parent.length)
+    throw new WriteError('PathNotFound', `array index ${at} does not exist`)
+  parent[index] = value
+}
+
 function setAt(parent: object, seg: PathSegment, value: unknown, opts: WriteApplyOptions): void {
   const [kind, at] = seg
   switch (kind) {
-    case 'k': {
-      if (parent instanceof Map) {
+    case 'k':
+      if (parent instanceof Map)
         parent.set(at, value)
-        return
-      }
-      assertMutableObject(parent)
-      const key = at as string
-      assertSafeObjectKey(key)
-      if (!Object.hasOwn(parent, key))
-        throw new WriteError('PathNotFound', `property "${key}" does not exist`)
-      const desc = Object.getOwnPropertyDescriptor(parent, key)!
-      if (!desc.writable && !desc.set)
-        throw new WriteError('ReadonlyProperty', `property "${key}" has no setter`)
-      // The property is verified own, so bracket assignment can only run
-      // this object's own setter (or write its own data slot) — never one
-      // inherited from a shared prototype.
-      const record = parent as Record<string, unknown>
-      record[key] = value
+      else
+        setObjectProperty(parent, at as string, value)
       return
-    }
-    case 'i': {
-      if (!Array.isArray(parent))
-        throw new WriteError('WrongContainer', 'an index step needs an array')
-      const index = realIndex(parent, at as number, opts)
-      if (index < 0 || index >= parent.length)
-        throw new WriteError('PathNotFound', `array index ${at} does not exist`)
-      parent[index] = value
+    case 'i':
+      setArrayIndex(parent, at as number, value, opts)
       return
-    }
     case 's': {
       if (!(parent instanceof Set))
         throw new WriteError('WrongContainer', 'a set step needs a Set')
@@ -156,32 +160,38 @@ function setAt(parent: object, seg: PathSegment, value: unknown, opts: WriteAppl
   }
 }
 
+function deleteObjectProperty(parent: object, key: string): void {
+  assertMutableObject(parent)
+  if (!Object.hasOwn(parent, key))
+    throw new WriteError('PathNotFound', `property "${key}" does not exist`)
+  if (!delete (parent as Record<string, unknown>)[key])
+    throw new WriteError('ReadonlyProperty', `property "${key}" cannot be deleted`)
+}
+
+function deleteArrayIndex(parent: object, at: number, opts: WriteApplyOptions): void {
+  if (!Array.isArray(parent))
+    throw new WriteError('WrongContainer', 'an index step needs an array')
+  const index = realIndex(parent, at, opts)
+  if (index < 0 || index >= parent.length)
+    throw new WriteError('PathNotFound', `array index ${at} does not exist`)
+  parent.splice(index, 1)
+}
+
 function deleteAt(parent: object, seg: PathSegment, opts: WriteApplyOptions): void {
   const [kind, at] = seg
   switch (kind) {
-    case 'k': {
+    case 'k':
       if (parent instanceof Map) {
         if (!parent.delete(at))
           throw new WriteError('PathNotFound', `Map key "${at}" does not exist`)
-        return
       }
-      assertMutableObject(parent)
-      const key = at as string
-      if (!Object.hasOwn(parent, key))
-        throw new WriteError('PathNotFound', `property "${key}" does not exist`)
-      if (!delete (parent as Record<string, unknown>)[key])
-        throw new WriteError('ReadonlyProperty', `property "${key}" cannot be deleted`)
+      else {
+        deleteObjectProperty(parent, at as string)
+      }
       return
-    }
-    case 'i': {
-      if (!Array.isArray(parent))
-        throw new WriteError('WrongContainer', 'an index step needs an array')
-      const index = realIndex(parent, at as number, opts)
-      if (index < 0 || index >= parent.length)
-        throw new WriteError('PathNotFound', `array index ${at} does not exist`)
-      parent.splice(index, 1)
+    case 'i':
+      deleteArrayIndex(parent, at as number, opts)
       return
-    }
     case 's': {
       if (!(parent instanceof Set))
         throw new WriteError('WrongContainer', 'a set step needs a Set')
@@ -231,43 +241,53 @@ function addTo(container: object, key: WriteValue | undefined, value: unknown, o
   defineOwnDataProperty(container, propKey, value)
 }
 
+function renameMapNamedKey(map: Map<unknown, unknown>, at: string | number, newKey: unknown): void {
+  if (!map.has(at))
+    throw new WriteError('PathNotFound', `Map key "${at}" does not exist`)
+  if (newKey === at)
+    return
+  const value = map.get(at)
+  map.delete(at)
+  map.set(newKey, value)
+}
+
+function renameObjectKey(parent: object, key: string, newKey: unknown): void {
+  assertMutableObject(parent)
+  if (!Object.hasOwn(parent, key))
+    throw new WriteError('PathNotFound', `property "${key}" does not exist`)
+  if (typeof newKey !== 'string')
+    throw new WriteError('InvalidKey', 'an object property key must be a string')
+  assertSafeObjectKey(newKey)
+  if (newKey === key)
+    return
+  const value = (parent as Record<string, unknown>)[key]
+  delete (parent as Record<string, unknown>)[key]
+  // The new key is fresh to this object; define it directly rather than
+  // assigning through the prototype chain.
+  defineOwnDataProperty(parent, newKey, value)
+}
+
+function renameMapEntry(parent: object, at: number, newKey: unknown): void {
+  if (!(parent instanceof Map))
+    throw new WriteError('WrongContainer', 'a map-entry step needs a Map')
+  const [oldKey, value] = entryAt(parent, at)
+  if (newKey === oldKey)
+    return
+  parent.delete(oldKey)
+  parent.set(newKey, value)
+}
+
 function renameAt(parent: object, seg: PathSegment, newKey: unknown): void {
   const [kind, at] = seg
-  if (kind === 'k' && parent instanceof Map) {
-    if (!parent.has(at))
-      throw new WriteError('PathNotFound', `Map key "${at}" does not exist`)
-    if (newKey === at)
-      return
-    const value = parent.get(at)
-    parent.delete(at)
-    parent.set(newKey, value)
-    return
-  }
   if (kind === 'k') {
-    assertMutableObject(parent)
-    const key = at as string
-    if (!Object.hasOwn(parent, key))
-      throw new WriteError('PathNotFound', `property "${key}" does not exist`)
-    if (typeof newKey !== 'string')
-      throw new WriteError('InvalidKey', 'an object property key must be a string')
-    assertSafeObjectKey(newKey)
-    if (newKey === key)
-      return
-    const value = (parent as Record<string, unknown>)[key]
-    delete (parent as Record<string, unknown>)[key]
-    // The new key is fresh to this object; define it directly rather than
-    // assigning through the prototype chain.
-    defineOwnDataProperty(parent, newKey, value)
+    if (parent instanceof Map)
+      renameMapNamedKey(parent, at, newKey)
+    else
+      renameObjectKey(parent, at as string, newKey)
     return
   }
   if (kind === 'mk' || kind === 'mv') {
-    if (!(parent instanceof Map))
-      throw new WriteError('WrongContainer', 'a map-entry step needs a Map')
-    const [oldKey, value] = entryAt(parent, at as number)
-    if (newKey === oldKey)
-      return
-    parent.delete(oldKey)
-    parent.set(newKey, value)
+    renameMapEntry(parent, at as number, newKey)
     return
   }
   throw new WriteError('WrongContainer', 'only keyed entries (objects, Maps) can be renamed')

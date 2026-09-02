@@ -66,7 +66,7 @@ export function useAssets(): UseAssetsResult {
     await client.ensureTrusted()
 
     // Another consumer sharing this rpc client may have registered the
-    // handler already — chain onto it instead of replacing it, mirroring
+    // handler already - chain onto it instead of replacing it, mirroring
     // the messages plugin's client-side event wiring.
     const existing = client.client.definitions.get(CHANGED_EVENT)
     if (existing) {

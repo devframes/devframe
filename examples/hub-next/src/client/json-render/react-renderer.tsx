@@ -9,13 +9,11 @@ import { defineRegistry, JSONUIProvider, Renderer, useBoundProp } from '@json-re
 import { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-// A deliberately small **React** implementation of the base catalog — the
-// "registry replacement" seam: this Next host renders a server-authored
-// json-render spec with its own React components instead of the reference Vue
-// frontend (@devframes/json-render-ui). It covers the components the demo
-// specs use, styled with the same @antfu/design semantic tokens so it matches
-// the rest of the hub. `createReactJsonRenderDockRenderer()` at the bottom is
-// what `app/page.tsx` registers on the client host.
+// A small **React** implementation of the base catalog - the "registry
+// replacement" seam: this Next host renders a server-authored json-render spec
+// with its own React components instead of the reference Vue frontend, styled
+// with the same @antfu/design tokens. `createReactJsonRenderDockRenderer()`
+// below is what `app/page.tsx` registers on the client host.
 
 // ── component helpers ───────────────────────────────────────────────────────
 
@@ -327,7 +325,7 @@ function JsonRenderView({ spec, rpc, viewId }: { spec: Spec | null, rpc: ViewRpc
 
 /**
  * A dock renderer implementing the `JsonRenderDockRenderer` contract from
- * `@devframes/json-render/hub` — this example's React frontend replacing the
+ * `@devframes/json-render/hub` - this example's React frontend replacing the
  * reference Vue one. For a shared-state view it subscribes to the live spec;
  * for an inline view (`entry.view.spec`) it renders the embedded spec
  * directly. Disposes cleanly either way.
@@ -336,8 +334,8 @@ export function createReactJsonRenderDockRenderer(): JsonRenderDockRenderer {
   return async ({ entry, container, context }) => {
     const view: JsonRenderViewRef = entry.view
     // The action bridge only needs a loose `call(method, …)`; the client's
-    // typed rpc narrows `method` to known keys, so widen it here.
-    const rpc = context.rpc as unknown as ViewRpc
+    // typed rpc narrows `method` to known keys, so widen that method here.
+    const rpc: ViewRpc = { call: context.rpc.call as ViewRpc['call'] }
     const viewId = 'stateKey' in view ? view.stateKey : entry.id
     const root = createRoot(container)
 
@@ -346,7 +344,7 @@ export function createReactJsonRenderDockRenderer(): JsonRenderDockRenderer {
       return { dispose: () => root.unmount() }
     }
 
-    const state = await context.rpc.sharedState.get<Spec>(view.stateKey, { initialValue: null as unknown as Spec })
+    const state = await context.rpc.sharedState.get<Spec>(view.stateKey)
     const render = () => root.render(<JsonRenderView spec={state.value() as Spec | null} rpc={rpc} viewId={viewId} />)
     render()
     const off = state.on('updated', render)

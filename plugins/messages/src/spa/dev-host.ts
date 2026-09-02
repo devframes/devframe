@@ -10,7 +10,7 @@ import { createMessagesDevframe } from '../index'
  * and reads whatever hub host it's mounted on; this harness stands in for a
  * hub by attaching a real `DevframeMessagesHost` to the plain devframe
  * context, wiring the change broadcast the way `createHubContext` does, and
- * seeding a lively demo feed. Production adapters never load this module —
+ * seeding a lively demo feed. Production adapters never load this module -
  * the hub import stays lazy so loading the Vite config needs no hub build.
  */
 export function createMessagesDevDevframe(): DevframeDefinition {
@@ -42,7 +42,7 @@ function seedDemoMessages(messages: DevframeMessagesHostType): void {
   void messages.add({
     level: 'success',
     message: 'Messages dev harness started',
-    description: 'This feed is seeded demo data — a hub host feeds the real one.',
+    description: 'This feed is seeded demo data - a hub host feeds the real one.',
     category: 'demo',
   })
   void messages.add({
@@ -92,7 +92,7 @@ function seedDemoMessages(messages: DevframeMessagesHostType): void {
     category: 'runtime',
   })
 
-  // A loading entry that resolves — exercises the update path end to end.
+  // A loading entry that resolves - exercises the update path end to end.
   void messages.add({
     id: 'demo:typecheck',
     level: 'info',
@@ -110,7 +110,7 @@ function seedDemoMessages(messages: DevframeMessagesHostType): void {
     })
   }, 4000)
 
-  // A slow heartbeat with `autoDelete` — exercises removals + delta sync.
+  // A slow heartbeat with `autoDelete` - exercises removals + delta sync.
   let beat = 0
   setInterval(() => {
     beat += 1

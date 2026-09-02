@@ -36,7 +36,7 @@ describe('buildFixPrompt', () => {
 
   it('carries the full fixing context: rule, impact, WCAG tags, docs, selector, markup, and hint', () => {
     const out = buildFixPrompt(items)
-    expect(out).toContain('### image-alt — Fix image-alt')
+    expect(out).toContain('### image-alt - Fix image-alt')
     expect(out).toContain('- Impact: critical')
     expect(out).toContain('- WCAG: wcag2a, wcag111')
     expect(out).toContain('- Docs: https://dequeuniversity.com/rules/axe/image-alt')

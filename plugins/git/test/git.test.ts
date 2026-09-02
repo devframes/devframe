@@ -18,7 +18,7 @@ function bootRpc(port: number) {
   return createRpcClient<any, any>({}, { channel })
 }
 
-// The plugin now owns no git logic — these are integration checks that it
+// The plugin now owns no git logic - these are integration checks that it
 // declares `@devframes/service-git` and the SPA can reach it over RPC. The
 // git behavior itself is covered by `services/git`.
 describe('@devframes/plugin-git', () => {

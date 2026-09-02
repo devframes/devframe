@@ -12,8 +12,7 @@ const remoteAssets: RemoteAssets = {
   package: `${pkg.name}--assets`,
   version: pkg.version,
 }
-// The panel `clientScript` bundle (`dist/client`) stays in this node package.
-
+/** The panel `clientScript` bundle (`dist/client`) stays in this node package. */
 export interface MessagesDevframeOptions {
   /** Override the devframe id (and default CLI command / mount path). */
   id?: string
@@ -30,7 +29,7 @@ export interface MessagesDevframeOptions {
   port?: number
   /**
    * Require the trust handshake on the standalone server. Enabled by
-   * default — `--open` embeds the current OTP in the opened URL, so the
+   * default - `--open` embeds the current OTP in the opened URL, so the
    * tab authenticates automatically without extra prompts. Hosted adapters
    * manage their own auth and ignore this.
    */
@@ -38,7 +37,7 @@ export interface MessagesDevframeOptions {
 }
 
 /**
- * Build a {@link DevframeDefinition} for the hub message feed panel —
+ * Build a {@link DevframeDefinition} for the hub message feed panel -
  * a portable view over `ctx.messages`, ported from vitejs/devtools'
  * built-in Messages view. The same definition runs standalone
  * (`/cli`, `/build`) and mounts into a host (`/vite`, hub);
@@ -63,16 +62,20 @@ export function createMessagesDevframe(options: MessagesDevframeOptions = {}): D
       command: id,
       port: options.port ?? DEFAULT_PORT,
       distDir: remoteAssets,
-      // Gate the standalone server by default; `maybeOpenBrowser` folds the
-      // current OTP into the `--open` URL so the tab lands already trusted.
-      // Hosted adapters (Vite/hub) supply their own auth layer and ignore this.
+      /**
+       * Gate the standalone server by default; `maybeOpenBrowser` folds the
+       * current OTP into the `--open` URL so the tab lands already trusted.
+       * Hosted adapters (Vite/hub) supply their own auth layer and ignore this.
+       */
       auth: options.auth ?? true,
     },
     dock: {
       category: '~builtin',
     },
-    // Backs the detail panel's "open file" affordance; the panel hides it
-    // when the service isn't advertised.
+    /**
+     * Backs the detail panel's "open file" affordance; the panel hides it
+     * when the service isn't advertised.
+     */
     services: [{ package: '@devframes/service-open' }],
     setup(ctx) {
       setupMessages(ctx)
@@ -82,7 +85,7 @@ export function createMessagesDevframe(options: MessagesDevframeOptions = {}): D
 
 export default createMessagesDevframe
 export { DEFAULT_PORT, MESSAGES_UPDATED_EVENT, PLUGIN_ID } from './constants'
-// The plugin's data vocabulary is the hub's — re-exported so the SPA, the
+// The plugin's data vocabulary is the hub's - re-exported so the SPA, the
 // embeddable client, and consumers can type against the plugin package alone.
 export type {
   DevframeMessageEntry,

@@ -42,13 +42,13 @@ describe('inspector static build', () => {
       await readFile(path.join(outDir, DEVFRAME_RPC_DUMP_MANIFEST_FILENAME), 'utf-8'),
     ) as Record<string, unknown>
 
-    // `invoke` is an `action` with no dump — it must not appear.
+    // `invoke` is an `action` with no dump - it must not appear.
     expect(manifest['devframes:plugin:inspect:invoke']).toBeUndefined()
     // The snapshot `query` functions bake into the static dump.
     expect(manifest['devframes:plugin:inspect:list-functions']).toBeTruthy()
     expect(manifest['devframes:plugin:inspect:list-state-keys']).toBeTruthy()
     expect(manifest['devframes:plugin:inspect:describe-agent']).toBeTruthy()
-    // list-commands is a snapshot query too — bakes to an empty list outside a hub.
+    // list-commands is a snapshot query too - bakes to an empty list outside a hub.
     expect(manifest['devframes:plugin:inspect:list-commands']).toBeTruthy()
   })
 })

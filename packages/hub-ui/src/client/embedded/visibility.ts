@@ -22,7 +22,7 @@ function persistReveal(revealed: boolean): void {
   }
   catch {
     // Private-mode / disabled storage: reveal stays session-only, which is a
-    // safe degradation — the dock is still reachable via the shortcut.
+    // safe degradation - the dock is still reachable via the shortcut.
   }
 }
 
@@ -36,11 +36,11 @@ function revealShortcutLabel(): string {
 }
 
 function printHint(label: string): void {
-  // Intentional user-facing hint (not a diagnostic) — the whole point of
+  // Intentional user-facing hint (not a diagnostic) - the whole point of
   // passive mode is this one console line pointing at the reveal shortcut.
   // eslint-disable-next-line no-console
   console.info(
-    `%c${label}%c is in passive mode — press %c${revealShortcutLabel()}%c to reveal the devtools.`,
+    `%c${label}%c is in passive mode - press %c${revealShortcutLabel()}%c to reveal the devtools.`,
     'font-weight:bold',
     '',
     'font-weight:bold',
@@ -104,7 +104,7 @@ export function setupEmbeddedVisibility(
   else if (mode === 'passive')
     printHint(label)
 
-  // Shift+Alt+D toggles the dock — the always-available "summon" chord.
+  // Shift+Alt+D toggles the dock - the always-available "summon" chord.
   window.addEventListener('keydown', (e) => {
     if (!isRevealChord(e))
       return

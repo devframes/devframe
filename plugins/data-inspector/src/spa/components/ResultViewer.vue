@@ -66,9 +66,9 @@ watch(() => props.canEdit, (value) => {
 
 const lockTooltip = computed(() => {
   if (props.editHint === 'readonly-source')
-    return 'Read-only source — register it with writable: true to edit values'
+    return 'Read-only source - register it with writable: true to edit values'
   if (props.editHint === 'derived-view')
-    return 'Editing applies on the root view — clear the query (or run $) to edit'
+    return 'Editing applies on the root view - clear the query (or run $) to edit'
   return ''
 })
 

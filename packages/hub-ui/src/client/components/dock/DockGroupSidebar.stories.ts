@@ -26,7 +26,7 @@ type Story = StoryObj
 
 /**
  * The group rail shown down the side of a panel when the active entry belongs
- * to a group — the group anchor on top, its members below.
+ * to a group - the group anchor on top, its members below.
  */
 export const Default: Story = {
   render: () => ({
@@ -41,7 +41,7 @@ export const Default: Story = {
   }),
 }
 
-/** A different member active — the highlight follows the selection. */
+/** A different member active - the highlight follows the selection. */
 export const WithSelection: Story = {
   render: () => ({
     setup: () => mountWithContext(

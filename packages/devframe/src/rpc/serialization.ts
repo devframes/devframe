@@ -14,7 +14,7 @@ import { diagnostics } from './diagnostics'
  *
  * birpc envelopes always start with `{`, so a leading byte that is not
  * `s` is unambiguously JSON. Each direction independently chooses its
- * encoding from local definitions — request and response are not
+ * encoding from local definitions - request and response are not
  * coupled by a mirror rule.
  */
 export const STRUCTURED_CLONE_PREFIX = 's:'
@@ -27,16 +27,16 @@ export const STRUCTURED_CLONE_PREFIX = 's:'
  * instances, or `undefined` inside an array (silently becomes `null`).
  *
  * Native pass-throughs (no extra work needed):
- *   - circular references — `JSON.stringify` raises `TypeError`.
- *   - `BigInt` at top level — caught here for a friendlier error path.
+ *   - circular references - `JSON.stringify` raises `TypeError`.
+ *   - `BigInt` at top level - caught here for a friendlier error path.
  *
  * Lenient cases (allowed without throwing):
- *   - `undefined` as an object property — legitimate optional field;
+ *   - `undefined` as an object property - legitimate optional field;
  *     JSON.stringify just omits it.
- *   - `undefined` at the root — legitimate "action returned nothing".
- *   - `Symbol` / `Function` values — semantically "drop me" in JSON.
+ *   - `undefined` at the root - legitimate "action returned nothing".
+ *   - `Symbol` / `Function` values - semantically "drop me" in JSON.
  *
- * `fnName` is used only for the diagnostic message — pass the RPC
+ * `fnName` is used only for the diagnostic message - pass the RPC
  * function name when calling from a wire serializer / dump writer so
  * the error points at the offending function.
  */
@@ -55,31 +55,33 @@ export function strictJsonStringify(value: unknown, fnName: string = ''): string
         throw nonJsonAt(fnName, 'undefined', holder, key)
       return val
     }
-    if (original === null)
-      return val
-
-    if (typeof original === 'bigint')
-      throw nonJsonAt(fnName, 'BigInt', holder, key)
-
-    if (typeof original === 'object') {
-      if (original instanceof Map)
-        throw nonJsonAt(fnName, 'Map', holder, key)
-      if (original instanceof Set)
-        throw nonJsonAt(fnName, 'Set', holder, key)
-      if (original instanceof Date)
-        throw nonJsonAt(fnName, 'Date', holder, key)
-      if (Array.isArray(original))
-        return val
-      const proto = Object.getPrototypeOf(original)
-      if (proto !== null && proto !== Object.prototype) {
-        const ctorName = (original as { constructor?: { name?: string } }).constructor?.name
-          ?? 'class instance'
-        throw nonJsonAt(fnName, ctorName, holder, key)
-      }
-    }
+    if (original !== null)
+      assertJsonSafe(original, holder, key, fnName)
 
     return val
   })
+}
+
+/** Throw `DF0020` when `original` is a type JSON can't round-trip losslessly. */
+function assertJsonSafe(original: unknown, holder: unknown, key: string, fnName: string): void {
+  if (typeof original === 'bigint')
+    throw nonJsonAt(fnName, 'BigInt', holder, key)
+  if (typeof original !== 'object')
+    return
+  if (original instanceof Map)
+    throw nonJsonAt(fnName, 'Map', holder, key)
+  if (original instanceof Set)
+    throw nonJsonAt(fnName, 'Set', holder, key)
+  if (original instanceof Date)
+    throw nonJsonAt(fnName, 'Date', holder, key)
+  if (Array.isArray(original))
+    return
+  const proto = Object.getPrototypeOf(original)
+  if (proto !== null && proto !== Object.prototype) {
+    const ctorName = (original as { constructor?: { name?: string } }).constructor?.name
+      ?? 'class instance'
+    throw nonJsonAt(fnName, ctorName, holder, key)
+  }
 }
 
 function nonJsonAt(fnName: string, type: string, parent: unknown, key: string): Error {

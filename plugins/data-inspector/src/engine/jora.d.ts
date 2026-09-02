@@ -1,5 +1,5 @@
 /**
- * Minimal jora typings — the package ships none. Referenced via a
+ * Minimal jora typings - the package ships none. Referenced via a
  * triple-slash directive from `query-engine.ts` so every TS program that
  * pulls the engine in (this package, the SPA, source-aliased consumers)
  * sees the declaration.

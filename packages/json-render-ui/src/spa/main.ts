@@ -4,16 +4,10 @@ import { JSON_RENDER_INDEX_KEY } from '@devframes/json-render'
 import { connectDevframe } from 'devframe/client'
 import { computed, createApp, defineComponent, h, ref, shallowReactive, shallowRef, watch } from 'vue'
 import { JsonRenderView } from '../renderer'
-// The same Tailwind preflight `scripts/build-css.ts` prepends to the shipped
-// shadow-root stylesheet — first, so `virtual:uno.css`'s utilities win over its
-// resets, matching the production build's `[reset, userStyle, unoCss]` order.
-// The `@antfu/design` component ports depend on it: `btn-action` (what
-// `Button.ts` maps `secondary`/`ghost` onto) sets a border and `op75` but *no*
-// base `background-color` — only one on `:hover` — so without the reset the UA
-// default `button { background-color: buttonface }` wins and every non-primary
-// button renders as a solid light-grey box. The dock renderer never showed this
-// because its stylesheet is built with the reset baked in; this SPA and the
-// Storybook canvas are the two surfaces that have to import it themselves.
+// The Tailwind preflight, imported first so `virtual:uno.css` utilities win
+// over its resets. Without it the UA `button { background-color: buttonface }`
+// wins and `btn-action` buttons (no base background) render as grey boxes. The
+// dock renderer bakes the reset in; this SPA and Storybook import it themselves.
 import '@unocss/reset/tailwind.css'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
@@ -35,10 +29,13 @@ async function main(): Promise<void> {
 
   const rpc = await connectDevframe()
   const interactive = rpc.connectionMeta.backend !== 'static'
+  // The action bridge only needs a loose `call(method, …)`; the client's typed
+  // rpc narrows `method` to known keys, so widen that method here.
+  const bridgeRpc: ActionBridgeRpc = { call: rpc.call as ActionBridgeRpc['call'] }
 
   // Discover every live view from the single view-index shared state, then
   // subscribe to each view's own state. The author never wires a view id into
-  // the client — publishing a view is enough for it to appear here.
+  // the client - publishing a view is enough for it to appear here.
   const indexState = await rpc.sharedState.get<JsonRenderIndex>(JSON_RENDER_INDEX_KEY, { initialValue: {} })
   // Seed the current server value before mounting so an empty tree isn't
   // mistaken for "no views" during the first round-trip.
@@ -77,7 +74,7 @@ async function main(): Promise<void> {
           subscribed.add(entry.stateKey)
           specs[entry.stateKey] = undefined
           void rpc.sharedState
-            .get<DevframeJsonRenderSpec>(entry.stateKey, { initialValue: null as unknown as DevframeJsonRenderSpec })
+            .get<DevframeJsonRenderSpec>(entry.stateKey)
             .then((state) => {
               specs[entry.stateKey] = state.value() as DevframeJsonRenderSpec | null
               state.on('updated', () => {
@@ -113,7 +110,7 @@ async function main(): Promise<void> {
         const activeEntry = list.find(e => e.stateKey === active.value) ?? list[0]
         const spec = specs[activeEntry.stateKey]
 
-        // A single view renders on its own — no nav. The top bar (brand +
+        // A single view renders on its own - no nav. The top bar (brand +
         // segmented view switcher) only appears once there's more than one.
         const multiple = list.length > 1
 
@@ -132,7 +129,7 @@ async function main(): Promise<void> {
           h('div', { class: 'p6' }, [
             h(JsonRenderView, {
               spec: spec ?? null,
-              rpc: rpc as unknown as ActionBridgeRpc,
+              rpc: bridgeRpc,
               viewId: activeEntry.stateKey,
               interactive,
               loading: spec === undefined,

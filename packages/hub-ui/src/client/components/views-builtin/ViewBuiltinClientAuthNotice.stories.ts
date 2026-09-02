@@ -10,7 +10,7 @@ const meta = {
   parameters: {
     docs: {
       description: {
-        component: 'The authorization prompt shown when the client is not yet trusted — explains the risk and takes a one-time code.',
+        component: 'The authorization prompt shown when the client is not yet trusted - explains the risk and takes a one-time code.',
       },
     },
   },

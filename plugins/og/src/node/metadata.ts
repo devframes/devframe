@@ -53,7 +53,7 @@ function resolveTagValue(name: string, value: string, baseUrl: string): string {
 }
 
 export function parseOgMetadata(html: string, url: string): OgHeadTag[] {
-  const document = parse(html) as unknown as HtmlNode
+  const document = parse(html) as HtmlNode
   const htmlElement = findElement(document, 'html')
   const head = findElement(document, 'head')
   if (!head)

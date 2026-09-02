@@ -17,7 +17,7 @@
  *
  * The dock's shadow root is built on Wind3, which bakes `primary`-based
  * utilities (`text-primary`, `bg-primary`, `btn-primary`, `ring-primary-500`,
- * …) to literal `rgb()` triplets rather than referencing these variables —
+ * …) to literal `rgb()` triplets rather than referencing these variables -
  * `scripts/build-css.ts` rewires those baked colors into CSS relative-color
  * syntax reading `--colors-primary-<stop>` (see `rewireBakedPrimaryColors` in
  * `design/uno.config.ts`) so this block actually retints them, not just the

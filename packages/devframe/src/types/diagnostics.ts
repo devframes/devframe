@@ -11,7 +11,7 @@ export type DevframeDiagnosticsLogger = Record<string, any>
 
 /**
  * Options accepted by the host's `defineDiagnostics()` factory. Re-exported
- * from `devframe/utils/nostics` — the same shape every module-level
+ * from `devframe/utils/nostics` - the same shape every module-level
  * `diagnostics.ts` (devframe core, `@devframes/hub`, the built-in plugins)
  * accepts, since `host.defineDiagnostics()` and the top-level
  * `defineDiagnostics` from `devframe/utils/nostics` pre-wire the identical
@@ -20,7 +20,7 @@ export type DevframeDiagnosticsLogger = Record<string, any>
 export type { DevframeDefineDiagnosticsOptions } from 'devframe/utils/nostics'
 
 /**
- * Host for structured diagnostics — a thin layer over `nostics` that lets
+ * Host for structured diagnostics - a thin layer over `nostics` that lets
  * integrations register their own coded errors/warnings into a shared
  * registry without taking a direct dependency on `nostics`.
  *
@@ -45,9 +45,9 @@ export type { DevframeDefineDiagnosticsOptions } from 'devframe/utils/nostics'
 export interface DevframeDiagnosticsHost {
   /**
    * Proxy-backed lookup of every registered diagnostic handle by code name.
-   * Resolves to a `nostics` `DiagnosticHandle` — a callable that builds a
+   * Resolves to a `nostics` `DiagnosticHandle` - a callable that builds a
    * diagnostic and routes it through registered reporters; prefix with
-   * `throw` to raise. Loosely typed — for autocompletion, keep a reference
+   * `throw` to raise. Loosely typed - for autocompletion, keep a reference
    * to the typed result of `defineDiagnostics()` instead.
    */
   readonly logger: DevframeDiagnosticsLogger
@@ -56,7 +56,7 @@ export interface DevframeDiagnosticsHost {
    * Register additional diagnostic definitions with this host. After
    * registration, codes from the new definition are reachable via
    * `host.logger.CODE`. Plugins that want shared output formatting should
-   * build their diagnostics via `host.defineDiagnostics()` first — that
+   * build their diagnostics via `host.defineDiagnostics()` first - that
    * factory pre-wires the host's ANSI console reporter.
    */
   register: (definitions: Record<string, unknown>) => void

@@ -24,5 +24,5 @@ export const Dev: Story = { args: base }
 /** Baked static build. */
 export const Static: Story = { args: { ...base, backend: () => 'static' } }
 
-/** Degraded backend connection — surfaced as a quiet amber tag. */
+/** Degraded backend connection - surfaced as a quiet amber tag. */
 export const Degraded: Story = { args: { ...base, status: () => 'disconnected' } }

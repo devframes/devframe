@@ -63,7 +63,7 @@ describe('validateRpcReturn', () => {
 
   it('returns the original value, preserving fields beyond the schema', async () => {
     // Mirrors a real plugin (terminals) whose return schema is a subset of
-    // the payload — validation must not drop the undeclared field.
+    // the payload - validation must not drop the undeclared field.
     const schema = v.object({ id: v.string() })
     const value = { id: 'x', restartable: false }
     await expect(validateRpcReturn('fn', schema, value)).resolves.toEqual({ id: 'x', restartable: false })
@@ -110,7 +110,7 @@ describe('getRpcHandler validation wrapping', () => {
       name: 'bad-return',
       args: [],
       returns: v.number(),
-      // Handler lies about its return type at runtime.
+      /** Handler lies about its return type at runtime. */
       handler: () => 'not-a-number' as never,
     })
     const handler = await getRpcHandler(fn, undefined)

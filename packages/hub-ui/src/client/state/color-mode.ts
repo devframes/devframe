@@ -5,7 +5,7 @@ export type ColorSchemePreference = 'auto' | 'light' | 'dark'
 
 /**
  * Shared with plugin SPAs served same-origin under the hub base, so writing
- * this key here propagates into the iframes via `storage` events — one switch
+ * this key here propagates into the iframes via `storage` events - one switch
  * drives the dock shell and every inner integration at once.
  */
 const COLOR_SCHEME_STORAGE_KEY = 'devframes-color-scheme'
@@ -18,7 +18,7 @@ export const colorSchemePreference = useStorage<ColorSchemePreference>(
 
 const preferredDark = usePreferredDark()
 
-/** Resolved dark state — `auto` defers to the OS `prefers-color-scheme`. */
+/** Resolved dark state - `auto` defers to the OS `prefers-color-scheme`. */
 export const isDark = computed(() =>
   colorSchemePreference.value === 'auto'
     ? preferredDark.value

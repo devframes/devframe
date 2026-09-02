@@ -5,7 +5,7 @@ import '../src/spa/app/assets/main.css'
 
 // Drive the shared `@antfu/design` tokens off the toolbar theme toggle: dark mode
 // is the `.dark` class on `<html>`, and the canvas takes the semantic
-// `bg-base`/`color-base` surface — matching every other devframe surface.
+// `bg-base`/`color-base` surface - matching every other devframe surface.
 function applyTheme(theme: string): void {
   document.documentElement.classList.toggle('dark', theme !== 'light')
   document.body.classList.add('bg-base', 'color-base', 'font-sans')

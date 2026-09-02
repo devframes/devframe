@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * The edit side panel: one panel handling every write op for the node the
- * pencil was clicked on — set (with a type picker), rename key, add an
+ * pencil was clicked on - set (with a type picker), rename key, add an
  * entry to a container, and delete. Values travel as discriminated
  * `WriteValue` payloads so `undefined` survives JSON transport.
  */
@@ -31,7 +31,7 @@ const node = computed(() => navigateNormalized(wb.result.value, props.path))
 
 const breadcrumb = computed(() => formatNodePath(props.path))
 
-/** Container kind of the node — decides whether the "add" section shows. */
+/** Container kind of the node - decides whether the "add" section shows. */
 const containerKind = computed<'object' | 'array' | 'map' | 'set' | null>(() => {
   const value = node.value
   if (Array.isArray(value))

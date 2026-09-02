@@ -33,14 +33,11 @@ describe('mcp adapter (streamable http route)', () => {
   })
 
   async function boot(def = defineTestDef()): Promise<StartedServer> {
-    // `port: 0` lets the OS assign a fresh ephemeral port per test. Without
-    // it every test binds the same default port, and since they all share
-    // one process, Node's global `fetch()` (undici) pools keep-alive
-    // sockets per origin (`http://127.0.0.1:<port>`) — a later test can get
-    // handed a stale, already-closed socket left over from an earlier
-    // test's (torn-down) server, failing instantly with a socket error, or
-    // making that earlier server's `close()` hang until undici's
-    // keep-alive timeout releases it.
+    // `port: 0` gives each test a fresh ephemeral port. Sharing one default
+    // port across tests lets undici's keep-alive pool (keyed per origin) hand
+    // a later test a stale socket from an earlier torn-down server - failing
+    // with a socket error, or hanging that server's `close()` until the
+    // keep-alive timeout.
     server = await createDevServer(def, { host: '127.0.0.1', port: 0, mcp: true })
     return server
   }
@@ -60,8 +57,8 @@ describe('mcp adapter (streamable http route)', () => {
     expect(meta.mcp).toBeUndefined()
   })
 
-  // A native MCP client must send a (loopback) Origin so the route's gate —
-  // which rejects Origin-less requests — accepts it.
+  // A native MCP client must send a (loopback) Origin so the route's gate -
+  // which rejects Origin-less requests - accepts it.
   function originTransport(started: StartedServer): StreamableHTTPClientTransport {
     return new StreamableHTTPClientTransport(new URL(`${started.origin}/__mcp`), {
       requestInit: { headers: { origin: started.origin } },
@@ -79,7 +76,7 @@ describe('mcp adapter (streamable http route)', () => {
     try {
       await client.connect(transport)
       // Stateless per-request serving: the modern era negotiates no
-      // `Mcp-Session-Id` — there is no session to key state on.
+      // `Mcp-Session-Id` - there is no session to key state on.
       expect(client.getProtocolEra()).toBe('modern')
       expect(transport.sessionId).toBeUndefined()
 
@@ -97,7 +94,7 @@ describe('mcp adapter (streamable http route)', () => {
 
   it('answers a bare GET with 405 (no session lifecycle)', async () => {
     const started = await boot()
-    // Stateless serving has no session stream to open — the SDK answers a
+    // Stateless serving has no session stream to open - the SDK answers a
     // GET (a 2025 session operation) with `405 Method Not Allowed` rather
     // than falling through to the SPA static catch-all.
     const res = await fetch(`${started.origin}/__mcp`, {
@@ -111,7 +108,7 @@ describe('mcp adapter (streamable http route)', () => {
   it('rejects an Origin-less request', async () => {
     const started = await boot()
     // Unlike the WS transport, the MCP route does not allow Origin-less
-    // requests — a route-based endpoint would otherwise be reachable by any
+    // requests - a route-based endpoint would otherwise be reachable by any
     // local process.
     const res = await fetch(`${started.origin}/__mcp`, {
       method: 'POST',

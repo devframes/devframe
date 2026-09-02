@@ -42,13 +42,28 @@ function validateServiceDefinition(def: DevframeServiceDefinition): void {
 }
 
 /**
+ * Merge every installer's option set in declaration order (the default
+ * deep-merge unions arrays and lets later scalars win; a service may override
+ * with its own `mergeOptions`).
+ */
+function mergeInstallerOptions(def: DevframeServiceDefinition, entries: PendingServiceEntry[]): unknown {
+  const sets = entries
+    .map(entry => entry.input.options)
+    .filter(options => options !== undefined)
+  if (def.mergeOptions)
+    return def.mergeOptions(sets)
+  return sets.length > 0 ? deepMergeOptionSets(sets) : undefined
+}
+
+/**
  * Cross-plugin service registry (see `types/services.ts` for the contract).
  * Values are held per context instance; `whenAvailable` subscriptions make
- * the mechanism robust against setup ordering between provider and consumer.
+ * the mechanism work regardless of setup ordering between provider and
+ * consumer.
  *
  * On top of the in-process `provide`/`get` tier, this host implements the
  * **wire-service** lifecycle: `install()` queues definitions/descriptors,
- * `ready()` fires the collect-then-setup barrier — importing descriptor
+ * `ready()` fires the collect-then-setup barrier - importing descriptor
  * packages, merging option sets per service, constructing each service once,
  * providing its node API under the package name, and advertising it to
  * clients through the `devframe:services` shared state.
@@ -133,7 +148,7 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
       }
     })
     // Mark a rejection as handled on this branch so a fire-and-forget
-    // `install()` never crashes the process — awaiting callers (and the
+    // `install()` never crashes the process - awaiting callers (and the
     // adapter's awaited `ready()`) still observe it.
     promise.catch(() => {})
     return promise as Promise<API | undefined>
@@ -181,61 +196,14 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
 
     const definitions = entries.filter(entry => isServiceDefinition(entry.input))
     let def = definitions[0]?.input as DevframeServiceDefinition | undefined
-
     if (!def) {
-      const descriptors = entries.map(entry => entry.input as DevframeServiceDescriptor)
-      const required = descriptors.some(descriptor => descriptor.required === true)
-      const cwd = this.context?.cwd ?? process.cwd()
-      const resolveFroms = [
-        ...entries.map(entry => entry.resolveFrom && expandResolveFrom(entry.resolveFrom, cwd)),
-        this.context?.workspaceRoot,
-        cwd,
-      ]
-      let mod: unknown
-      try {
-        mod = await importServicePackage(pkg, resolveFroms)
-      }
-      catch (error) {
-        const reason = error instanceof Error ? error.message : String(error)
-        if (required)
-          throw diagnostics.DF0067({ package: pkg, reason, cause: error })
-        debug('optional service %s not importable, skipping: %s', pkg, reason)
+      def = await this.importServiceDefinition(pkg, entries)
+      if (!def)
         return undefined
-      }
-      const factory = (mod as { default?: unknown }).default
-      if (typeof factory !== 'function')
-        throw diagnostics.DF0070({ package: pkg, reason: 'its default export is not a factory function' })
-      def = await (factory as () => DevframeServiceDefinition | Promise<DevframeServiceDefinition>)()
-      if (!def || typeof def.setup !== 'function')
-        throw diagnostics.DF0070({ package: pkg, reason: 'its factory did not return a definition with a `setup` function' })
-      if (typeof def.package !== 'string' || def.package.length === 0)
-        def = { ...def, package: pkg }
-      validateServiceDefinition(def)
     }
 
-    // Version-range checks against the resolved definition's real version.
-    for (const entry of entries) {
-      const descriptor = entry.input as DevframeServiceDescriptor
-      if (isServiceDefinition(entry.input) || typeof descriptor.version !== 'string')
-        continue
-      if (satisfiesVersionRange(def.version, descriptor.version))
-        continue
-      if (descriptor.required === true)
-        throw diagnostics.DF0068({ package: pkg, required: descriptor.version, installed: def.version })
-      diagnostics.DF0069({ package: pkg, required: descriptor.version, installed: def.version })
-    }
-
-    // Merge every installer's option set in declaration order (the default
-    // deep-merge unions arrays and lets later scalars win; a service may
-    // override with its own `mergeOptions`).
-    const sets = entries
-      .map(entry => entry.input.options)
-      .filter(options => options !== undefined)
-    const options = def.mergeOptions
-      ? def.mergeOptions(sets)
-      : sets.length > 0
-        ? deepMergeOptionSets(sets)
-        : undefined
+    this.checkVersionRanges(pkg, def, entries)
+    const options = mergeInstallerOptions(def, entries)
 
     if (!this.context)
       throw diagnostics.DF0070({ package: pkg, reason: 'this services host has no node context to install into' })
@@ -247,6 +215,60 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
     this.provide(def.package, api as DevframeServiceOf<string>)
     await this.advertise(def)
     return api
+  }
+
+  /**
+   * Import a descriptor-only package, run its factory, and validate the
+   * resulting definition. Returns `undefined` when an optional package can't
+   * be imported (the install is skipped); throws for a required one.
+   */
+  private async importServiceDefinition(
+    pkg: string,
+    entries: PendingServiceEntry[],
+  ): Promise<DevframeServiceDefinition | undefined> {
+    const descriptors = entries.map(entry => entry.input as DevframeServiceDescriptor)
+    const required = descriptors.some(descriptor => descriptor.required === true)
+    const cwd = this.context?.cwd ?? process.cwd()
+    const resolveFroms = [
+      ...entries.map(entry => entry.resolveFrom && expandResolveFrom(entry.resolveFrom, cwd)),
+      this.context?.workspaceRoot,
+      cwd,
+    ]
+    let mod: unknown
+    try {
+      mod = await importServicePackage(pkg, resolveFroms)
+    }
+    catch (error) {
+      const reason = error instanceof Error ? error.message : String(error)
+      if (required)
+        throw diagnostics.DF0067({ package: pkg, reason, cause: error })
+      debug('optional service %s not importable, skipping: %s', pkg, reason)
+      return undefined
+    }
+    const factory = (mod as { default?: unknown }).default
+    if (typeof factory !== 'function')
+      throw diagnostics.DF0070({ package: pkg, reason: 'its default export is not a factory function' })
+    let def = await (factory as () => DevframeServiceDefinition | Promise<DevframeServiceDefinition>)()
+    if (!def || typeof def.setup !== 'function')
+      throw diagnostics.DF0070({ package: pkg, reason: 'its factory did not return a definition with a `setup` function' })
+    if (typeof def.package !== 'string' || def.package.length === 0)
+      def = { ...def, package: pkg }
+    validateServiceDefinition(def)
+    return def
+  }
+
+  /** Version-range checks against the resolved definition's real version. */
+  private checkVersionRanges(pkg: string, def: DevframeServiceDefinition, entries: PendingServiceEntry[]): void {
+    for (const entry of entries) {
+      const descriptor = entry.input as DevframeServiceDescriptor
+      if (isServiceDefinition(entry.input) || typeof descriptor.version !== 'string')
+        continue
+      if (satisfiesVersionRange(def.version, descriptor.version))
+        continue
+      if (descriptor.required === true)
+        throw diagnostics.DF0068({ package: pkg, required: descriptor.version, installed: def.version })
+      diagnostics.DF0069({ package: pkg, required: descriptor.version, installed: def.version })
+    }
   }
 
   private advertisementState() {

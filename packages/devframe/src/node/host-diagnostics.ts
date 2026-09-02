@@ -8,8 +8,10 @@ export class DevframeDiagnosticsHost implements DevframeDiagnosticsHostType {
     get: (_, code: string) => this._registry[code],
   })
 
-  // Already pre-wires devframe's ANSI console reporter — no extra merging
-  // needed here, the host's `defineDiagnostics` just is the shared one.
+  /**
+   * Already pre-wires devframe's ANSI console reporter - no extra merging
+   * needed here, the host's `defineDiagnostics` just is the shared one.
+   */
   readonly defineDiagnostics: DevframeDiagnosticsHostType['defineDiagnostics'] = defineDiagnostics
 
   constructor(

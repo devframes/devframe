@@ -1,4 +1,4 @@
-// DevframeHost — abstraction over the runtime that serves the Devframe
+// DevframeHost - abstraction over the runtime that serves the Devframe
 // UI and RPC endpoints (Vite dev server, standalone h3 CLI server, static
 // snapshot, embedded, etc.).
 //
@@ -12,12 +12,12 @@ import type { RemoteAssetsStore } from './remote-assets'
 
 export interface DevframeHost {
   /**
-   * Serve static assets at the given URL base — a local directory, or a
+   * Serve static assets at the given URL base - a local directory, or a
    * resolved {@link RemoteAssetsStore} back-proxy. Called by
    * `DevframeViewHost.hostStatic` (which normalizes `RemoteAssets`
    * declarations into stores first). Implementations map this to whatever
    * the underlying runtime expects (Vite middleware, h3 handler, no-op
-   * for build snapshots) — the shared engine in
+   * for build snapshots) - the shared engine in
    * `devframe/utils/serve-static` accepts either shape.
    */
   mountStatic: (base: string, source: string | RemoteAssetsStore) => void | Promise<void>
@@ -29,7 +29,7 @@ export interface DevframeHost {
    *
    * Called by `ctx.install` for each mounted devframe (alongside
    * `mountStatic`). Without it, an embedded SPA can only discover the
-   * endpoint by inheriting it from a same-origin parent window — which fails
+   * endpoint by inheriting it from a same-origin parent window - which fails
    * for cross-origin or sandboxed iframes. Implementations serve the same
    * meta they expose at the hub's own base.
    *
@@ -56,15 +56,15 @@ export interface DevframeHost {
    * collide between, say, the Vite host (`.vite/devframe`) and a
    * standalone CLI host (`.<appName>/devframe`).
    *
-   *   - `workspace` — state shared with the whole team through version
+   *   - `workspace` - state shared with the whole team through version
    *     control (saved queries, shared presets). Conventionally
    *     `${workspaceRoot}/.devframe/`; hosts must place it somewhere
    *     committable.
-   *   - `project`   — per-checkout private state (caches, personal
+   *   - `project`   - per-checkout private state (caches, personal
    *     settings). Typically under
    *     `${cwd}/node_modules/.<appName>/devframe/`, which version
    *     control ignores.
-   *   - `global`    — per-user state (auth tokens, machine-wide
+   *   - `global`    - per-user state (auth tokens, machine-wide
    *     preferences). Typically under
    *     `${homedir()}/.<appName>/devframe/`.
    *

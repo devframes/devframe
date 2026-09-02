@@ -72,11 +72,9 @@ export async function createDocksContext(
       }
       base = merged
     }
-    // Surface the viewer's own built-in Settings tab by default. hub-ui owns it
-    // rather than depending on a host to register `~settings` server-side, so
-    // Settings is always reachable (dock bar + `devframes:open-settings`). A host
-    // that registered its own `~settings` entry wins — we only add ours when the
-    // merged list has none.
+    // hub-ui owns the built-in Settings tab so it's always reachable without a
+    // host registering `~settings`; a host that registered its own wins, so add
+    // ours only when the merged list has none.
     if (base.some(entry => entry.id === BUILTIN_ENTRY_SETTINGS.id))
       return base
     return [...base, BUILTIN_ENTRY_SETTINGS]
@@ -90,7 +88,7 @@ export async function createDocksContext(
   // Snapshot the persisted intent up front, before the pre-handshake untrusted
   // window (Dock.vue's `open`-gate, a revocation `switchEntry(null)`) can clear
   // the live session state. Re-applied once the RPC becomes trusted so a reload
-  // lands back on the same dock — see the restore effect near the end.
+  // lands back on the same dock - see the restore effect near the end.
   const restoreIntent = {
     ...sessionStore.value,
   }
@@ -138,12 +136,12 @@ export async function createDocksContext(
 
   const registerClientDock = <T extends DevframeDockEntry>(entry: T, force = false): DockRegistration<T> => {
     if (clientDocks.has(entry.id) && !force)
-      throw new Error(`[@devframes/hub-ui] a client dock "${entry.id}" is already registered — pass force to overwrite`)
+      throw new Error(`[@devframes/hub-ui] a client dock "${entry.id}" is already registered - pass force to overwrite`)
     clientDocks.set(entry.id, entry)
     // Eagerly materialize the entry's DockEntryState. The reactive watchEffect
     // above only creates states on its next flush, but a caller such as the
     // shared-iframe frame-nav adapter subscribes to `entry:activated` (via
-    // `getStateById`) synchronously right after registering — so the state has
+    // `getStateById`) synchronously right after registering - so the state has
     // to exist immediately, mirroring hub's synchronous client-host reconcile.
     if (!dockEntryStateMap.has(entry.id))
       dockEntryStateMap.set(entry.id, createDockEntryState(entry, selected))
@@ -169,7 +167,7 @@ export async function createDocksContext(
   }
   const updateClientDock = (entry: DevframeDockUserEntry) => {
     if (!clientDocks.has(entry.id))
-      throw new Error(`[@devframes/hub-ui] no client dock "${entry.id}" to update — register it first`)
+      throw new Error(`[@devframes/hub-ui] no client dock "${entry.id}" to update - register it first`)
     clientDocks.set(entry.id, entry as DevframeDockEntry)
   }
 
@@ -188,7 +186,7 @@ export async function createDocksContext(
     return _settingsStorePromise
   }
 
-  // Get settings store ahead of `switchEntry` — its group→member resolution
+  // Get settings store ahead of `switchEntry` - its group→member resolution
   // needs `getWhenContext` to honor a `defaultChildId` target's `when` clause.
   const settingsStore = markRaw(await getSettingsStore())
   // Raw, not `useSettings`: the context this would key off doesn't exist yet,
@@ -196,7 +194,7 @@ export async function createDocksContext(
   // resolve hub-ui's own defaults themselves.
   const settings = sharedStateToRef(settingsStore)
 
-  // Shared when-context provider — used by both commands and docks
+  // Shared when-context provider - used by both commands and docks
   let commandsContext: CommandsContext
   const isDockPopupOpen = useIsDockPopupOpen()
   const getWhenContext = (): WhenContext => ({
@@ -207,17 +205,58 @@ export async function createDocksContext(
     popupOpen: isDockPopupOpen.value,
   })
 
-  // Tracks the shared frame's current member tab, keyed by `frameId`. A
-  // `subTabs` anchor boots a shared iframe but has no view distinct from its
-  // synthesized member tabs (they all render the same frame), and it is usually
-  // hidden from the bar via `visibility: 'false'`. Remembering which member is
-  // live lets `switchEntry` redirect a later re-selection of the anchor (e.g. a
-  // group `defaultChildId` reopening the group) onto that visible tab instead of
-  // lingering on the invisible anchor. Populated below whenever a member is
-  // selected; read when a `subTabs` anchor is selected.
+  // The shared frame's live member tab, keyed by `frameId`. Lets `switchEntry`
+  // redirect a re-selection of the (usually hidden) `subTabs` anchor onto the
+  // visible member tab instead of the invisible anchor.
   const frameNavCurrentMember = new Map<string, string>()
 
-  const switchEntry = async (id: string | null = null) => {
+  // An entry with no view of its own redirects to the id to select instead: a
+  // group to its preferred member, a `subTabs` anchor to its live member.
+  // `false` = popover-only group (caller fails); `null` = select as-is.
+  const resolveRedirectTarget = (entry: DevframeDockEntry): string | false | null => {
+    if (entry.type === 'group') {
+      return resolveGroupPreferredChild(entries.value, entry, sessionStore.value.groupLastChildIds?.[entry.id], getWhenContext())?.id
+        ?? getGroupMembers(entries.value, entry.id)[0]?.id
+        ?? false
+    }
+    if (entry.type === 'iframe' && entry.subTabs) {
+      const frameId = entry.frameId ?? entry.id
+      const currentMemberId = frameNavCurrentMember.get(frameId)
+      if (currentMemberId && currentMemberId !== entry.id && entries.value.some(e => e.id === currentMemberId))
+        return currentMemberId
+    }
+    return null
+  }
+
+  const runDockSetupScript = async (entry: DevframeDockEntry) => {
+    const hasScript = entry.type === 'action' || entry.type === 'custom-render' || (entry.type === 'iframe' && entry.clientScript)
+    if (!hasScript)
+      return
+    const messagesClient = createClientMessagesClient(rpc)
+    const scriptContext: DockClientScriptContext = reactive({
+      ...toRefs(docksContext) as any,
+      current: dockEntryStateMap.get(entry.id)!,
+      messages: messagesClient,
+      logs: messagesClient,
+    })
+    await executeSetupScript(entry, scriptContext)
+  }
+
+  // Remember this selection for later redirects: a member tab (carries its
+  // anchor's `frameId`) as the frame's live tab, a grouped member as its
+  // group's last-opened child. Only iframes own an address-bar route, so clear
+  // a stale route for anything else. Guarded: a store predating these fields
+  // has no map yet.
+  const rememberEntrySelection = (entry: DevframeDockEntry) => {
+    if (entry.type === 'iframe' && entry.frameId && !entry.subTabs)
+      frameNavCurrentMember.set(entry.frameId, entry.id)
+    if (entry.groupId)
+      (sessionStore.value.groupLastChildIds ??= {})[entry.groupId] = entry.id
+    if (entry.type !== 'iframe')
+      sessionStore.value.selectedDockRoute = null
+  }
+
+  const switchEntry = async (id: string | null = null): Promise<boolean> => {
     if (id == null) {
       initialRestorePending.value = false
       selectedDockId.value = null
@@ -235,35 +274,11 @@ export async function createDocksContext(
     if (!entry)
       return false
 
-    // A group has no view of its own — resolve to the member it represents.
-    // Prefer the member last opened in this group this tab, then the author's
-    // `defaultChildId` (each honoring its `when` clause but ignoring its
-    // render-only `visibility` — see `resolveGroupPreferredChild`), otherwise
-    // the first member. With none, the group is popover-only and selecting it
-    // is a no-op here (the dock-bar group button opens the member popover
-    // instead).
-    if (entry.type === 'group') {
-      const target = resolveGroupPreferredChild(entries.value, entry, sessionStore.value.groupLastChildIds?.[entry.id], getWhenContext())?.id
-        ?? getGroupMembers(entries.value, entry.id)[0]?.id
-      if (!target)
-        return false
-      return switchEntry(target)
-    }
-
-    // A `subTabs` anchor owns the shared frame but has no view of its own apart
-    // from its synthesized member tabs, and is usually hidden from the bar
-    // (`visibility: 'false'`). Once the frame has reported a current tab,
-    // selecting the anchor — via a group `defaultChildId` boot, the command
-    // palette, or an RPC activation — redirects to that live member so a visible
-    // dock is highlighted instead of the invisible anchor. Before any tab exists
-    // (first boot) there is no current member, so we fall through and select the
-    // anchor itself to mount its iframe and boot the frame.
-    if (entry.type === 'iframe' && entry.subTabs) {
-      const frameId = entry.frameId ?? entry.id
-      const currentMemberId = frameNavCurrentMember.get(frameId)
-      if (currentMemberId && currentMemberId !== id && entries.value.some(e => e.id === currentMemberId))
-        return switchEntry(currentMemberId)
-    }
+    const redirect = resolveRedirectTarget(entry)
+    if (redirect === false)
+      return false
+    if (redirect !== null)
+      return switchEntry(redirect)
 
     // If the action is in a popup, delegate to the main frame
     if (entry.type === 'action') {
@@ -276,41 +291,8 @@ export async function createDocksContext(
     selectedDockId.value = entry.id
     sessionStore.value.open = true
 
-    // If has import script, run it
-    if (
-      (entry.type === 'action')
-      || (entry.type === 'custom-render')
-      || (entry.type === 'iframe' && entry.clientScript)
-    ) {
-      const current = dockEntryStateMap.get(id)!
-      const messagesClient = createClientMessagesClient(rpc)
-      const scriptContext: DockClientScriptContext = reactive({
-        ...toRefs(docksContext) as any,
-        current,
-        messages: messagesClient,
-        logs: messagesClient,
-      })
-      await executeSetupScript(entry, scriptContext)
-    }
-
-    // Remember the shared frame's current member tab (a member carries its
-    // anchor's `frameId` but is not itself a `subTabs` anchor) so re-selecting
-    // the usually-hidden anchor later lands back on this visible tab.
-    if (entry.type === 'iframe' && entry.frameId && !entry.subTabs)
-      frameNavCurrentMember.set(entry.frameId, entry.id)
-
-    // Remember a grouped member as its group's last-opened child so the next
-    // activation of the group reopens it directly, ahead of `defaultChildId`
-    // (see `resolveGroupPreferredChild`). Guarded assignment: a session store
-    // persisted before this field existed has no map yet.
-    if (entry.groupId)
-      (sessionStore.value.groupLastChildIds ??= {})[entry.groupId] = entry.id
-
-    // Only an iframe dock owns an address-bar route; ViewIframe keeps
-    // `session.selectedDockRoute` current for it. Clear it for anything else so a stale
-    // route from a previous iframe isn't persisted against a non-iframe dock.
-    if (entry.type !== 'iframe')
-      sessionStore.value.selectedDockRoute = null
+    await runDockSetupScript(entry)
+    rememberEntrySelection(entry)
     return true
   }
 
@@ -320,25 +302,10 @@ export async function createDocksContext(
     return switchEntry(id)
   }
 
-  // Shared-iframe soft navigation (devframe 0.7.11). An iframe dock flagged
-  // `subTabs` is an *anchor* that owns one live iframe (its `frameId`); the
-  // embedded app ships a small `postMessage` nav shim. When the anchor's iframe
-  // mounts we attach the hub-shipped frame-nav adapter, which runs the ready
-  // handshake, turns the reported tab manifest into client-only member docks,
-  // and drives the bidirectional nav loop (selecting a member soft-navigates
-  // the shared frame; the app's `navigated` report moves the dock highlight).
-  //
-  // Our shell runs its own dock machinery instead of hub's `createDevframeClientRuntime`,
-  // so we replicate the host's `maybeAttachFrameNav`: one adapter per `frameId`,
-  // torn down when the anchor is removed.
-  //
-  // The adapter is bound to a *mounted iframe element*, not just to the `frameId`.
-  // Each dock shell (float, edge, popup) owns its own `IframePanes` manager and
-  // creates panes in its own document, so switching shells hands us a different
-  // iframe in a different realm — the old adapter is disposed and a fresh one
-  // attached. For the same reason the adapter must listen on the iframe's own
-  // window: in popup mode the frame lives in a Document-PiP document and posts
-  // its handshake to *that* window, not to the main one.
+  // Shared-iframe soft navigation: a `subTabs` anchor's frame-nav adapter turns
+  // reported tabs into member docks and drives the nav loop. We bind one adapter
+  // per mounted iframe element (not just `frameId`) since each shell owns its own
+  // realm - in popup mode the adapter must listen on the PiP window.
   const frameNavAdapters = new Map<string, { iframe: HTMLIFrameElement, dispose: () => void }>()
   const frameNavAnchors = new Map<string, string>()
 
@@ -399,13 +366,9 @@ export async function createDocksContext(
     { immediate: true },
   )
 
-  // Honor cross-iframe dock-activation requests (devframe 0.7.3). A mounted
-  // plugin — or our own launcher's "View in Terminal" action — calls the
-  // `hub:docks:activate` RPC; the hub broadcasts `devframe:docks:activate` to
-  // every client. Our shell runs its own dock machinery rather than hub's
-  // client host, so we handle the broadcast here and switch the active dock
-  // ourselves. The target dock (e.g. Terminals) reads `activation.params` to
-  // focus a specific session.
+  // Honor cross-iframe dock-activation broadcasts. Since our shell runs its own
+  // dock machinery rather than hub's client host, we handle the broadcast here
+  // and switch the active dock; the target reads `activation.params` to focus.
   rpc.client.register({
     name: HUB_EVENTS.broadcast.docksActivate satisfies keyof DevframeRpcClientFunctions,
     type: 'action',
@@ -416,7 +379,7 @@ export async function createDocksContext(
   })
 
   // Settings store, `settings`, and `getWhenContext` are established earlier
-  // (right before `switchEntry`) — its group→member resolution needs them.
+  // (right before `switchEntry`) - its group→member resolution needs them.
   // `categoryOrderOverride` folds in the reference UI's configured
   // `dockPreferences.categoryOrder` (`createUi({ dockPreferences })`),
   // delivered once via the connection handshake.
@@ -468,11 +431,13 @@ export async function createDocksContext(
       source: 'client',
       title: `Hide ${useBranding().value.productName}`,
       icon: 'ph:eye-slash-duotone',
-      // Only the embedded overlay can be dismissed; the standalone page is an
-      // explicit visit and stays mounted.
+      /**
+       * Only the embedded overlay can be dismissed; the standalone page is an
+       * explicit visit and stays mounted.
+       */
       when: 'clientType == embedded',
       action: () => {
-        // Conceal the embedded dock — the Shift+Alt+D reveal shortcut (or a
+        // Conceal the embedded dock - the Shift+Alt+D reveal shortcut (or a
         // reload) brings it back. In passive mode this is remembered.
         window.dispatchEvent(new CustomEvent(HUB_UI_HIDE_EVENT))
       },
@@ -482,9 +447,11 @@ export async function createDocksContext(
       source: 'client',
       title: 'Dock Mode',
       icon: 'ph:layout-duotone',
-      // While the popup is open the embedded shell is unmounted and the popup
-      // renders the standalone layout, so neither mode is observable — mirrors
-      // the Appearance settings hiding its own dock-mode control.
+      /**
+       * While the popup is open the embedded shell is unmounted and the popup
+       * renders the standalone layout, so neither mode is observable - mirrors
+       * the Appearance settings hiding its own dock-mode control.
+       */
       when: clientType === 'embedded' ? 'clientType == embedded && !popupOpen' : undefined,
       children: [
         {
@@ -492,8 +459,10 @@ export async function createDocksContext(
           source: 'client',
           title: 'Float Mode',
           icon: 'ph:cards-three-duotone',
-          // Repeated per child: shortcut dispatch reads the matched command's
-          // own `when` and does not inherit the parent's.
+          /**
+           * Repeated per child: shortcut dispatch reads the matched command's
+           * own `when` and does not inherit the parent's.
+           */
           when: '!popupOpen',
           action: () => {
             panelStore.value.mode = 'float'
@@ -513,7 +482,7 @@ export async function createDocksContext(
     },
   ])
 
-  // Dynamic dock navigation commands — grouped under "Docks" parent
+  // Dynamic dock navigation commands - grouped under "Docks" parent
   let cleanupDocksCommand: (() => void) | undefined
   watchEffect(() => {
     cleanupDocksCommand?.()

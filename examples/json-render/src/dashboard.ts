@@ -12,8 +12,10 @@ export default defineConfig({
 })
 `
 
-// Initial state model. Every value the spec reads via \`{ $state: '/…' }\`
-// resolves from here and updates live as the server patches it.
+/**
+ * Initial state model. Every value the spec reads via \`{ $state: '/…' }\`
+ * resolves from here and updates live as the server patches it.
+ */
 export const dashboardState = {
   project: { name: 'acme-app', version: '1.4.2', license: 'MIT', repository: 'github.com/acme/app' },
   metrics: { coverage: 82, bundle: 64 },
@@ -41,7 +43,7 @@ export const dashboardSpec: DevframeJsonRenderSpec = {
   elements: {
     root: { type: 'Stack', props: { gap: 16 }, children: ['header', 'overview', 'settings', 'modules', 'config', 'tree', 'footerDivider', 'footer'] },
 
-    // ── Header ────────────────────────────────────────────────────────────
+    /** ── Header ──────────────────────────────────────────────────────────── */
     header: { type: 'Stack', props: { direction: 'row', gap: 10, align: 'center', justify: 'between' }, children: ['headLeft', 'headRight'] },
     headLeft: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'center' }, children: ['logo', 'headTitle'] },
     logo: { type: 'Icon', props: { name: 'ph:cube-duotone', size: 26 }, children: [] },
@@ -61,14 +63,14 @@ export const dashboardSpec: DevframeJsonRenderSpec = {
       children: [],
     },
 
-    // ── Overview: KeyValueTable + Progress ────────────────────────────────
+    /** ── Overview: KeyValueTable + Progress ──────────────────────────────── */
     overview: { type: 'Card', props: { title: 'Overview' }, children: ['overviewBody'] },
     overviewBody: { type: 'Stack', props: { gap: 14 }, children: ['meta', 'coverage', 'bundle'] },
     meta: { type: 'KeyValueTable', props: { data: { $state: '/project' } }, children: [] },
     coverage: { type: 'Progress', props: { label: 'Test coverage', value: { $state: '/metrics/coverage' }, max: 100 }, children: [] },
     bundle: { type: 'Progress', props: { label: 'Bundle budget', value: { $state: '/metrics/bundle' }, max: 100 }, children: [] },
 
-    // ── Settings: TextInput + Switch + Divider + Button ───────────────────
+    /** ── Settings: TextInput + Switch + Divider + Button ─────────────────── */
     settings: { type: 'Card', props: { title: 'Settings', collapsible: true }, children: ['settingsBody'] },
     settingsBody: { type: 'Stack', props: { gap: 10 }, children: ['nameInput', 'greeting', 'prefsDivider', 'darkSwitch', 'notifSwitch', 'saveBtn'] },
     nameInput: { type: 'TextInput', props: { label: 'Display name', placeholder: 'Type your name…', value: { $bindState: '/form/name' } }, children: [] },
@@ -79,13 +81,15 @@ export const dashboardSpec: DevframeJsonRenderSpec = {
     saveBtn: {
       type: 'Button',
       props: { label: 'Save settings', variant: 'secondary', icon: 'ph:floppy-disk' },
-      // Bound values are resolved into the action params before dispatch, so the
-      // server receives whatever the user typed/toggled.
+      /**
+       * Bound values are resolved into the action params before dispatch, so the
+       * server receives whatever the user typed/toggled.
+       */
       on: { press: { action: SAVE_ACTION, params: { name: { $state: '/form/name' } } } },
       children: [],
     },
 
-    // ── Modules: DataTable (loading bound to /building) ───────────────────
+    /** ── Modules: DataTable (loading bound to /building) ─────────────────── */
     modules: { type: 'Card', props: { title: 'Modules' }, children: ['modulesTable'] },
     modulesTable: {
       type: 'DataTable',
@@ -102,15 +106,15 @@ export const dashboardSpec: DevframeJsonRenderSpec = {
       children: [],
     },
 
-    // ── Config: CodeBlock ─────────────────────────────────────────────────
+    /** ── Config: CodeBlock ───────────────────────────────────────────────── */
     config: { type: 'Card', props: { title: 'Config' }, children: ['code'] },
     code: { type: 'CodeBlock', props: { filename: 'vite.config.ts', language: 'ts', code: VITE_CONFIG }, children: [] },
 
-    // ── Dependency tree: Tree ─────────────────────────────────────────────
+    /** ── Dependency tree: Tree ───────────────────────────────────────────── */
     tree: { type: 'Card', props: { title: 'Dependency tree', collapsible: true, defaultCollapsed: true }, children: ['depTree'] },
     depTree: { type: 'Tree', props: { data: { $state: '/deps' }, defaultExpanded: true }, children: [] },
 
-    // ── Footer ────────────────────────────────────────────────────────────
+    /** ── Footer ──────────────────────────────────────────────────────────── */
     footerDivider: { type: 'Divider', props: {}, children: [] },
     footer: { type: 'Stack', props: { direction: 'row', gap: 6 }, children: ['footerLabel', 'footerValue', 'footerSuffix'] },
     footerLabel: { type: 'Text', props: { text: 'Rendered from a JSON-render spec · uptime', variant: 'caption', color: 'faint' }, children: [] },
@@ -146,7 +150,7 @@ export function createDashboardView(ctx: DevframeNodeContext): JsonRenderView {
     },
   }))
 
-  // `Deploy` flips the DataTable into a loading state, then appends a module —
+  // `Deploy` flips the DataTable into a loading state, then appends a module -
   // demonstrating the per-action loading + a live spec/state change.
   let deployed = 0
   ctx.rpc.register(defineRpcFunction({

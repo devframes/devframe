@@ -6,7 +6,7 @@ import { DEVFRAME_EVENTS } from '../events'
 import { InPageChannelError } from './internal'
 
 /**
- * The channel shared-state layer — `createSharedState` pumped over the
+ * The channel shared-state layer - `createSharedState` pumped over the
  * in-page channel, mirroring the RPC shared-state wire design with the page
  * script playing the server's role: it owns the canonical value, replays a
  * snapshot to every (re)subscribing panel, and fans syncId-deduplicated
@@ -53,7 +53,7 @@ export function createPageScriptStateHost<P extends InPageChannelProtocol>(
       if (options?.initialValue === undefined) {
         throw new InPageChannelError(
           'state-uninitialized',
-          `in-page shared state "${key}" was accessed before initialization — the page script is the authority, so its first \`sharedState.get("${key}")\` must provide \`initialValue\``,
+          `in-page shared state "${key}" was accessed before initialization - the page script is the authority, so its first \`sharedState.get("${key}")\` must provide \`initialValue\``,
         )
       }
       const state = createSharedState<T>({
@@ -103,7 +103,7 @@ export interface PanelStateHostOptions {
 export interface PanelStateHost<P extends InPageChannelProtocol> extends InPageSharedStateHost<P> {
   /** Handlers for the authority's update notifications. */
   readonly handlers: InternalHandlers
-  /** (Re)subscribe every known key — call on each `connected` transition. */
+  /** (Re)subscribe every known key - call on each `connected` transition. */
   resubscribe: () => void
 }
 
@@ -116,7 +116,7 @@ export function createPanelStateHost<P extends InPageChannelProtocol>(
   const seedWaiters = new Map<string, (() => void)[]>()
   /**
    * SyncIds of snapshot adoptions. Adopting the authority's replay must not
-   * echo straight back up as a `set` — the authority already has the value.
+   * echo straight back up as a `set` - the authority already has the value.
    */
   const adoptedSyncIds = new Set<string>()
 
@@ -171,8 +171,10 @@ export function createPanelStateHost<P extends InPageChannelProtocol>(
         return Promise.resolve(existing as SharedState<any>)
       }
       const state = createSharedState<T>({
-        // Without an initial value the state stays empty until the
-        // authority's first replay resolves the returned promise.
+        /**
+         * Without an initial value the state stays empty until the
+         * authority's first replay resolves the returned promise.
+         */
         initialValue: getOptions?.initialValue as T,
         enablePatches: true,
       })

@@ -144,11 +144,11 @@ declare module 'devframe' {
 }
 
 /**
- * The git wire service — read/write git operations shared over RPC by every
+ * The git wire service - read/write git operations shared over RPC by every
  * plugin on the host, generalizing the utilities that used to live inside the
  * git plugin. The exec wrapper and output parsers stay internal; consumers get
  * the typed {@link GitServiceApi} in-process (`ctx.services.get`) and the same
- * ops over `devframes:service:git:*` RPC. Write ops are always exposed —
+ * ops over `devframes:service:git:*` RPC. Write ops are always exposed -
  * authorization is the host's connection-trust boundary. The service defines
  * no `dump`/`snapshot`; a devframe bakes what it needs via `snapshotRpc`.
  */
@@ -158,7 +158,7 @@ export function createGitService(options?: GitServiceOptions): DevframeServiceDe
     version: pkg.version,
     scope: GIT_SERVICE_SCOPE,
     options,
-    // `cwd` deep-merges as a scalar (later installer wins) across declarers.
+    /** `cwd` deep-merges as a scalar (later installer wins) across declarers. */
     setup(ctx, { options }) {
       const ops = createGitOps(options?.cwd ?? ctx.cwd)
 
@@ -194,7 +194,7 @@ export function createGitService(options?: GitServiceOptions): DevframeServiceDe
         jsonSerializable: true,
         args: [s.object({ path: s.string(), ref: s.optional(s.string()) })],
         returns: gitFileSchema,
-        agent: { title: 'Git read file', description: 'Read the contents of a single file at a commit-ish (default HEAD) — the raw text of a versioned file without checking it out. found is false when no such file exists at the ref; binary blobs return with content omitted. Safe to call freely.' },
+        agent: { title: 'Git read file', description: 'Read the contents of a single file at a commit-ish (default HEAD) - the raw text of a versioned file without checking it out. found is false when no such file exists at the ref; binary blobs return with content omitted. Safe to call freely.' },
         handler: (args: ReadFileArgs): Promise<GitFile> => ops.readFile(args),
       }))
       ctx.rpc.register(defineRpcFunction({
@@ -203,7 +203,7 @@ export function createGitService(options?: GitServiceOptions): DevframeServiceDe
         jsonSerializable: true,
         args: [s.object({ path: s.optional(s.string()), staged: s.optional(s.boolean()) })],
         returns: gitDiffSchema,
-        agent: { title: 'Git diff', description: 'Unified diff of uncommitted changes — the working tree by default, the index with staged: true, one file with path. Safe to call freely.' },
+        agent: { title: 'Git diff', description: 'Unified diff of uncommitted changes - the working tree by default, the index with staged: true, one file with path. Safe to call freely.' },
         handler: (args: DiffArgs = {}): Promise<GitDiff> => ops.diff(args),
       }))
       ctx.rpc.register(defineRpcFunction({
@@ -221,7 +221,7 @@ export function createGitService(options?: GitServiceOptions): DevframeServiceDe
         handler: (): Promise<GitTags> => ops.tags(),
       }))
 
-      // Write ops (always registered — authorization is the host's concern).
+      // Write ops (always registered - authorization is the host's concern).
       ctx.rpc.register(defineRpcFunction({
         name: 'stage',
         type: 'action',

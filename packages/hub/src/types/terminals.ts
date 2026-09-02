@@ -28,7 +28,7 @@ export interface DevframeTerminalsHost {
    * {@link DevframePtyTerminalSession.resize}, TUI-capable. The session is
    * marked `interactive`, so a hub-aware terminal UI (e.g. the terminals
    * plugin) surfaces it as writable rather than read-only. Powered by
-   * `zigpty` — where its native bindings can't load, it degrades to
+   * `zigpty` - where its native bindings can't load, it degrades to
    * pipe-based terminal emulation.
    */
   startPtySession: (
@@ -55,7 +55,7 @@ export interface DevframeTerminalSessionBase {
   /**
    * Whether the session may be restarted in place (re-running its command).
    * Defaults to `true`. Set `false` for sessions whose lifecycle is owned
-   * elsewhere — e.g. a one-shot build, or a server (like code-server) that
+   * elsewhere - e.g. a one-shot build, or a server (like code-server) that
    * should be restarted through its own controls rather than by re-spawning
    * the raw process. A hub-aware terminal UI hides its restart affordance for
    * these, and `hub:terminals:restart` rejects them.
@@ -76,7 +76,7 @@ export interface DevframeChildProcessExecuteOptions {
 }
 
 /**
- * The settled outcome of a {@link DevframeChildProcessTerminalSession} run —
+ * The settled outcome of a {@link DevframeChildProcessTerminalSession} run -
  * stdout/stderr captured separately (unlike the session's merged display
  * `stream`), plus the process's exit code (`undefined` if it was killed by a
  * signal before exiting).
@@ -88,7 +88,7 @@ export interface DevframeChildProcessOutput {
 }
 
 /**
- * A live handle on a child process's outcome — mirrors the ergonomics of
+ * A live handle on a child process's outcome - mirrors the ergonomics of
  * `tinyexec`'s `Result` (a promise-like paired with synchronous accessors) so
  * callers migrating from a `tinyexec`/`execa`-based subprocess API (e.g.
  * Nuxt DevTools' `startSubprocess().getResult()`) can adopt
@@ -110,11 +110,11 @@ export interface DevframeChildProcessTerminalSession extends DevframeTerminalSes
   getChildProcess: () => ChildProcess | undefined
   /**
    * Get a live handle on the current run's outcome. Reflects the most recent
-   * `restart()` — call it again after restarting to track the new run.
+   * `restart()` - call it again after restarting to track the new run.
    */
   getResult: () => DevframeChildProcessResult
   terminate: () => Promise<void>
-  /** Throws `DF8206` once the session's output stream has closed (after a natural exit or `terminate()`) — drop it with `ctx.terminals.remove(session)` and start a fresh session instead. */
+  /** Throws `DF8206` once the session's output stream has closed (after a natural exit or `terminate()`) - drop it with `ctx.terminals.remove(session)` and start a fresh session instead. */
   restart: () => Promise<void>
 }
 
@@ -164,6 +164,6 @@ export interface DevframePtyTerminalSession extends DevframeTerminalSession {
    */
   getResult: () => DevframePtyResult
   terminate: () => Promise<void>
-  /** Throws `DF8206` once the session's output stream has closed (after a natural exit or `terminate()`) — drop it with `ctx.terminals.remove(session)` and start a fresh session instead. */
+  /** Throws `DF8206` once the session's output stream has closed (after a natural exit or `terminate()`) - drop it with `ctx.terminals.remove(session)` and start a fresh session instead. */
   restart: () => Promise<void>
 }

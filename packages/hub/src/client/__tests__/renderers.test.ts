@@ -5,6 +5,8 @@ import { createEventEmitter } from 'devframe/utils/events'
 import { describe, expect, it, vi } from 'vitest'
 import { createDevframeClientRuntime } from '../host'
 
+type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> }
+
 interface StubSharedState<T> extends SharedState<T> {
   push: (next: T) => void
 }
@@ -30,7 +32,7 @@ function createStubSharedState<T>(initial: T): StubSharedState<T> {
 
 function createStubRpc() {
   const states = new Map<string, StubSharedState<any>>()
-  const rpc = {
+  const partial: DeepPartial<DevframeRpcClient> = {
     sharedState: {
       async get(key: string, options?: { initialValue?: any }) {
         if (!states.has(key))
@@ -40,10 +42,12 @@ function createStubRpc() {
     },
     call: async () => undefined,
     client: { definitions: new Map(), register() {} },
-  } as unknown as DevframeRpcClient
+  }
+  const rpc = partial as DevframeRpcClient
   return { rpc, states }
 }
 
+// eslint-disable-next-line slop/no-chained-type-assertions -- `json-render` is a declaration-merged dock variant contributed by `@devframes/json-render/hub`, absent from the static registry this test compiles against
 const jsonRenderEntry = {
   id: 'metrics',
   title: 'Metrics',
@@ -129,7 +133,7 @@ describe('client host renderer registry', () => {
 
     const result = await host.context.renderers.mount(jsonRenderEntry, container)
     expect(result.status).toBe('load-error')
-    // The failed import is not cached — a retry re-imports the module.
+    // The failed import is not cached - a retry re-imports the module.
     const retry = await host.context.renderers.mount(jsonRenderEntry, container)
     expect(retry.status).toBe('load-error')
     expect(error).toHaveBeenCalledTimes(2)

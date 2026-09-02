@@ -4,13 +4,13 @@
 > This devframe is experimental and may change without a major version bump until
 > it stabilizes.
 
-A git devframe built on [devframe](https://github.com/devframes/devframe) — a
+A git devframe built on [devframe](https://github.com/devframes/devframe) - a
 repository dashboard with a **Next.js App Router + shadcn/ui** SPA over
 type-safe RPC. The node side shells out to `git` and exposes the repository;
 the same bundle runs as a live dev server or a fully static deployment.
 
 Status, a SourceTree-style **commit graph**, branches, and diffs, plus staging,
-unstaging, and committing — all through the shared
+unstaging, and committing - all through the shared
 [`@devframes/service-git`](../../services/git) wire service. The UI follows the
 system **light/dark** preference with a manual toggle.
 
@@ -59,21 +59,21 @@ repository; the definition opts them into the static build via `rpc.snapshot`
 (resolved live over WebSocket in dev, served from a build-time snapshot for
 static deploys).
 
-- `devframes:service:git:status` — branch, upstream tracking (ahead/behind), staged / unstaged /
+- `devframes:service:git:status` - branch, upstream tracking (ahead/behind), staged / unstaged /
   untracked files, parsed from `git status --porcelain=v2`.
-- `devframes:service:git:log` — paginated commit history (`limit` / `skip`) including parent
+- `devframes:service:git:log` - paginated commit history (`limit` / `skip`) including parent
   hashes, which drive the commit graph.
-- `devframes:service:git:branches` — local branches with SHA, upstream, ahead/behind, tip subject.
-- `devframes:service:git:diff` — per-file added/deleted counts for the working tree or index, plus
+- `devframes:service:git:branches` - local branches with SHA, upstream, ahead/behind, tip subject.
+- `devframes:service:git:diff` - per-file added/deleted counts for the working tree or index, plus
   a unified patch for a selected file.
 
-Write actions are `action` functions — always exposed by the service, with
+Write actions are `action` functions - always exposed by the service, with
 write authorization governed by the connection-trust boundary. Each
 returns fresh status (commit returns a result):
 
-- `devframes:service:git:stage` — `git add` the given paths.
-- `devframes:service:git:unstage` — `git restore --staged` the given paths.
-- `devframes:service:git:commit` — commit the staged changes with a message.
+- `devframes:service:git:stage` - `git add` the given paths.
+- `devframes:service:git:unstage` - `git restore --staged` the given paths.
+- `devframes:service:git:commit` - commit the staged changes with a message.
 
 ## Develop
 
@@ -83,7 +83,7 @@ pnpm -C plugins/git build   # tsdown (node) + next build (SPA) → dist/
 ```
 
 `pnpm dev` starts the Next.js dev server (with hot-reload) and the devframe
-RPC/WebSocket backend at the same time, then prints both URLs — open the UI one.
+RPC/WebSocket backend at the same time, then prints both URLs - open the UI one.
 The SPA connects to the backend over the WebSocket port carried in
 `NEXT_PUBLIC_DEVFRAME_WS`. Override ports with `PORT` (UI) and
 `DEVFRAME_GIT_PORT` (backend). Run a single side with `dev:client` or

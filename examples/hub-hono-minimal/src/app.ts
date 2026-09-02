@@ -12,21 +12,22 @@ import { createOgDevframe } from '@devframes/plugin-og'
 import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 import { Hono } from 'hono'
 
-// One runtime-agnostic app file: the hub instance and the Hono routes are
-// the same on Node and Bun. No transport option is passed, so the hub binds
-// nothing on its own — `src/server.ts` hands it the HTTP server's upgrade
-// events with `hub.attach(server)` once that server exists.
+// Runtime-agnostic: the hub and Hono routes are identical on Node and Bun.
+// No transport option, so the hub binds nothing itself - `src/server.ts`
+// hands it the HTTP server's upgrade events via `hub.attach`.
 //
-// Memoized on globalThis so a dev-time module reload returns the live hub
-// instead of leaking transports.
+// Memoized on globalThis so a dev-time reload reuses the hub instead of
+// leaking transports.
 const globalRef = globalThis as { __hubHonoMinimal?: HubInstance }
 
 export const hub: HubInstance = globalRef.__hubHonoMinimal ??= initHub({
   base: DEVFRAMES_HUB_BASE,
-  // Every built-in plugin, dogfooded end to end through the hub mount path.
-  // `data-inspector`'s default id carries `:` (a route-param marker), so it
-  // gets a colon-free id override to be a valid `<base><id>/` segment; the
-  // assets watcher is off since this host demonstrates mounting, not authoring.
+  /**
+   * Every built-in plugin, dogfooded end to end through the hub mount path.
+   * `data-inspector`'s default id carries `:` (a route-param marker), so it
+   * gets a colon-free id override to be a valid `<base><id>/` segment; the
+   * assets watcher is off since this host demonstrates mounting, not authoring.
+   */
   devframes: [
     createGitDevframe(),
     createTerminalsDevframe(),
@@ -38,14 +39,18 @@ export const hub: HubInstance = globalRef.__hubHonoMinimal ??= initHub({
     createOgDevframe(),
     createAssetsDevframe({ watch: false }),
   ],
-  // Rebrand the reference UI to Hono's own orange — one field, no CSS:
-  // `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
-  // which the dock reads at connect time and feeds into `--devframe-primary`
-  // (see `@devframes/hub-ui`'s `primary-ramp.css`).
+  /**
+   * Rebrand the reference UI to Hono's own orange - one field, no CSS:
+   * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
+   * which the dock reads at connect time and feeds into `--devframe-primary`
+   * (see `@devframes/hub-ui`'s `primary-ramp.css`).
+   */
   ui: createUi({ branding: { primaryColor: '#e36002', productName: 'Devframes on Hono' } }),
-  // Gate with devframe's interactive OTP (the default). The hub prints a
-  // 6-digit code + magic link on startup, and the reference UI's authorization
-  // view exchanges it for a bearer token. See docs/content/1.guide/13.security.md.
+  /**
+   * Gate with devframe's interactive OTP (the default). The hub prints a
+   * 6-digit code + magic link on startup, and the reference UI's authorization
+   * view exchanges it for a bearer token. See docs/content/1.guide/13.security.md.
+   */
   configure(ctx) {
     ctx.commands.register({
       id: 'example:hub-hono-minimal:ping',

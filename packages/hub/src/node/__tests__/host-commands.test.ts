@@ -5,6 +5,8 @@ import * as v from 'valibot'
 import { describe, expect, it } from 'vitest'
 import { DevframeCommandsHost } from '../host-commands'
 
+type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> }
+
 describe('devframeCommandsHost command id validation', () => {
   it('rejects duplicate ids inside one command tree', () => {
     const host = new DevframeCommandsHost({} as DevframeHubContext)
@@ -66,13 +68,15 @@ describe('devframeCommandsHost command id validation', () => {
 })
 
 function createAgentContext(): { context: DevframeHubContext, agent: DevframeAgentHost } {
-  // A real agent host over a minimal base context — the bridge is a lazy
+  // A real agent host over a minimal base context - the bridge is a lazy
   // provider, so the test exercises the actual list/getTool/invoke paths.
-  const base = {
+  const basePartial: DeepPartial<DevframeNodeContext> = {
     rpc: { onChanged: () => () => {}, definitions: new Map() },
-  } as unknown as DevframeNodeContext
+  }
+  const base = basePartial as DevframeNodeContext
   const agent = new DevframeAgentHost(base)
-  const context = { rpc: base.rpc, agent } as unknown as DevframeHubContext
+  const contextPartial: DeepPartial<DevframeHubContext> = { rpc: base.rpc, agent }
+  const context = contextPartial as DevframeHubContext
   return { context, agent }
 }
 
@@ -107,13 +111,13 @@ describe('devframeCommandsHost agent bridge', () => {
     expect(tool.description).toBe('Greet someone by name.')
     expect(tool.title).toBe('Greet')
     expect(tool.safety).toBe('action')
-    // The Standard Schema is carried raw — protocol adapters (e.g. the MCP
+    // The Standard Schema is carried raw - protocol adapters (e.g. the MCP
     // adapter) convert to JSON Schema on demand, mirroring RPC-backed tools.
     expect(tool.args).toHaveLength(1)
     expect(agent.list().tools.map(t => t.id)).toEqual(['demo:greet'])
 
     // Each declared arg schema is advertised (and read back) under its own
-    // `argN` key — the MCP args object's `arg0` becomes the handler's first
+    // `argN` key - the MCP args object's `arg0` becomes the handler's first
     // positional argument.
     await expect(agent.invoke('demo:greet', { arg0: { name: 'devframe' } })).resolves.toBe('done')
     expect(calls).toEqual([[{ name: 'devframe' }]])

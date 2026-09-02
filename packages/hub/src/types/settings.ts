@@ -15,7 +15,7 @@ import type { DevframeCommandShortcutOverrides } from './commands'
  * ```
  *
  * Augmented fields are optional so the hub's `DEFAULT_STATE_USER_SETTINGS()`
- * (which knows nothing about them) stays assignable — an absent value reads
+ * (which knows nothing about them) stays assignable - an absent value reads
  * as the viewer's documented default.
  */
 export interface DevframeDocksUserSettings {

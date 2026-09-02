@@ -29,7 +29,7 @@ export function App() {
   const [showBestPractice, setShowBestPractice] = createSignal(true)
   const [expandedRoutes, setExpandedRoutes] = createSignal<Set<string>>(new Set())
   const [expandedRules, setExpandedRules] = createSignal<Set<string>>(new Set())
-  // Selected violations (`route::ruleId`) — drives both the in-page highlight
+  // Selected violations (`route::ruleId`) - drives both the in-page highlight
   // and the "Generate fix prompts" dialog.
   const [selected, setSelected] = createSignal<Set<string>>(new Set())
   const [dialogOpen, setDialogOpen] = createSignal(false)
@@ -74,7 +74,7 @@ export function App() {
   const totalRules = createMemo(() =>
     routes().reduce((n, r) => n + r.violations.filter(includeViolation).length, 0))
 
-  // Grouped, filtered violations — active route first, empty groups dropped.
+  // Grouped, filtered violations - active route first, empty groups dropped.
   const groups = createMemo<RouteGroupModel[]>(() => {
     const models = routes().map(r => ({
       report: r,

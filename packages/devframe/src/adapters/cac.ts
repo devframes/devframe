@@ -65,12 +65,12 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
     .option('--open', 'Open the browser on start')
     .option('--no-open', 'Do not open the browser')
     // Standalone auth is on by default; `--no-auth` opts a one-off run out of
-    // the interactive OTP gate. The `true` default CAC injects is harmless —
+    // the interactive OTP gate. The `true` default CAC injects is harmless -
     // the dev server only acts on an explicit `auth: false`.
     .option('--no-auth', 'Disable the interactive authentication gate')
     // Only `--mcp` is declared: CAC's `--no-*` auto-negation would inject a
     // `true` default, silently enabling MCP. Declaring just `--mcp` yields the
-    // opt-in tri-state — absent → `undefined` (falls through to `cli.mcp`),
+    // opt-in tri-state - absent → `undefined` (falls through to `cli.mcp`),
     // `--mcp` → `true`, `--no-mcp` → `false` (handled by CAC's `--no-` prefix).
     .option('--mcp', 'Expose an MCP server over HTTP at /__mcp (use --no-mcp to disable)')
 
@@ -122,13 +122,13 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
   cli
     .command('mcp', 'Start an MCP server exposing agent-facing tools (stdio)')
     .action(async () => {
-      // MCP clients expect JSON-RPC on stdout — route welcome/logging
+      // MCP clients expect JSON-RPC on stdout - route welcome/logging
       // noise out of the way. Logs-SDK diagnostics land on stderr by
       // default, so nothing extra needed beyond not printing here.
       const { createMcpServer } = await importRuntimeModule<typeof import('./mcp')>('devframe/adapters/mcp')
       await createMcpServer(d, {
         transport: 'stdio',
-        // Deliberately go to stderr: stdout is the MCP transport.
+        /** Deliberately go to stderr: stdout is the MCP transport. */
         onReady: ({ transport }) => {
           console.error(`[devframe] "${d.id}" MCP server ready (${transport})`)
         },
@@ -164,7 +164,7 @@ function resolveTypedFlags(d: DevframeDefinition, raw: Record<string, unknown>):
   const { flags, issues } = parseCliFlags(d.cli.flags, raw)
   if (issues?.length) {
     for (const issue of issues)
-      console.error(c.red`[devframe] invalid flag — ${issue}`)
+      console.error(c.red`[devframe] invalid flag - ${issue}`)
     process.exit(1)
   }
   return flags

@@ -14,7 +14,7 @@ const emit = defineEmits<{ toggle: [type: AssetType] }>()
 
 <template>
   <!--
-    Inline row of type-filter chips — one per asset type present. Modeled on
+    Inline row of type-filter chips - one per asset type present. Modeled on
     vitejs/devtools' DataSearchPanel: a selected chip reads normally, an
     unselected one is greyed out. Always visible (no dropdown).
   -->

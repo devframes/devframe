@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { createUi } from './index'
 
 function createContext(): DevframeHubContext {
-  return { staticConfig: {} } as unknown as DevframeHubContext
+  return { staticConfig: {} } as DevframeHubContext
 }
 
 describe('createUi branding background', () => {

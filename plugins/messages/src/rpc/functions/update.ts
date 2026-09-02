@@ -2,7 +2,7 @@ import type { DevframeMessageEntry, DevframeMessageEntryInput } from '@devframes
 import { defineMessagesRpc, getMessagesHost } from './_define'
 
 /**
- * Partially update an existing message entry by id — e.g. the panel resets
+ * Partially update an existing message entry by id - e.g. the panel resets
  * `autoDelete` to keep an entry alive while its detail view is open. Returns
  * the updated entry, or `null` when the id is unknown or no messages host is
  * attached.

@@ -69,11 +69,11 @@ function createMarker(root: HTMLElement): Marker {
 /**
  * A pointer-transparent overlay drawn over the host page. It mirrors the
  * panel's "focus ring" motif: hovering a violation in the panel paints a
- * transient ring, and pinning violations paints persistent, numbered rings —
+ * transient ring, and pinning violations paints persistent, numbered rings -
  * so a row and its highlighted element read as one object.
  *
  * Everything is inline-styled and stamped with a unique attribute so it can't
- * inherit from — or be restyled by — the host application's CSS. Root-element
+ * inherit from - or be restyled by - the host application's CSS. Root-element
  * (`<html>`/`<body>`) targets get a non-positioned corner notice instead of a
  * viewport-filling ring.
  */
@@ -193,7 +193,7 @@ export function createOverlay(): Overlay {
       if (isRootElement(el)) {
         preview.el = null
         preview.box.style.display = 'none'
-        showNotice(IMPACT_COLOR[info.impact], `${info.impact} · ${info.ruleId} — whole page`)
+        showNotice(IMPACT_COLOR[info.impact], `${info.impact} · ${info.ruleId} - whole page`)
         return
       }
       preview.el = el
@@ -241,7 +241,7 @@ export function createOverlay(): Overlay {
       })
 
       if (rootPin)
-        showNotice(IMPACT_COLOR[(rootPin as PinInfo).impact], `${(rootPin as PinInfo).number} · ${(rootPin as PinInfo).ruleId} — whole page`)
+        showNotice(IMPACT_COLOR[(rootPin as PinInfo).impact], `${(rootPin as PinInfo).number} · ${(rootPin as PinInfo).ruleId} - whole page`)
       else if (!preview.el)
         hideNotice()
 

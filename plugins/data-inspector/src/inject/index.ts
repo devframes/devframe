@@ -1,11 +1,11 @@
 /**
- * Inject the data inspector into a running process — expose that process's
+ * Inject the data inspector into a running process - expose that process's
  * registered data sources to an external data-inspector UI.
  *
  * Two ways in:
  *
  * ```ts
- * // 1. explicit, from the target's code — pass sources inline …
+ * // 1. explicit, from the target's code - pass sources inline …
  * import { exposeDataInspector } from '@devframes/plugin-data-inspector/inject'
  *
  * await exposeDataInspector({
@@ -19,7 +19,7 @@
  * ```
  *
  * ```sh
- * # 2. zero code change — preload the inject entry into any Node process
+ * # 2. zero code change - preload the inject entry into any Node process
  * DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject server.js
  * ```
  *
@@ -33,7 +33,7 @@
  * and written (with the endpoint) to the discovery file
  * `<cwd>/node_modules/.data-inspector/discovery.json`, which
  * `devframe-data-inspector attach` consumes automatically. Connected
- * inspectors run eval-grade queries against live objects in this process —
+ * inspectors run eval-grade queries against live objects in this process -
  * treat the endpoint like a debugger port.
  */
 import type { DevframeHost, DevframeNodeContext } from 'devframe'
@@ -155,7 +155,7 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
     ? createInteractiveAuth(context, { clientAuthTokens: [token!], banner: () => {} })
     : false
 
-  // A bare WS RPC endpoint — no SPA, no discovery routes — so the inject endpoint
+  // A bare WS RPC endpoint - no SPA, no discovery routes - so the inject endpoint
   // binds the still-public transport primitives directly rather than the
   // full-instance factories. The socket claims every upgrade on the port, so
   // the advertised endpoint stays the bare `ws://127.0.0.1:<port>`.
@@ -220,19 +220,21 @@ if (process.env.DEVFRAME_DATA_INSPECTOR === '1' || process.env.DEVFRAME_DATA_INS
     auth: process.env.DEVFRAME_DATA_INSPECTOR_AUTH !== '0',
     token: process.env.DEVFRAME_DATA_INSPECTOR_TOKEN,
     exampleSource: process.env.DEVFRAME_DATA_INSPECTOR_EXAMPLE !== '0',
-    // Zero-code path: with no chance to call `registerDataSource`, expose
-    // `globalThis` so assigning to it is enough to inspect anything.
+    /**
+     * Zero-code path: with no chance to call `registerDataSource`, expose
+     * `globalThis` so assigning to it is enough to inspect anything.
+     */
     sources: process.env.DEVFRAME_DATA_INSPECTOR_GLOBAL !== '0' ? [createGlobalThisDataSource()] : undefined,
   }).catch((error) => {
     console.error('[data-inspector] inject endpoint failed to start:', error)
   })
 }
 
-/** @deprecated Renamed — use {@link DISCOVERY_FILE} (the file moved to `discovery.json`; `attach` still falls back to the old `agent.json`). */
+/** @deprecated Renamed - use {@link DISCOVERY_FILE} (the file moved to `discovery.json`; `attach` still falls back to the old `agent.json`). */
 export const AGENT_DISCOVERY_FILE: string = DISCOVERY_FILE
 
-/** @deprecated Renamed — use {@link InjectDiscovery}. */
+/** @deprecated Renamed - use {@link InjectDiscovery}. */
 export type AgentDiscovery = InjectDiscovery
 
-/** @deprecated Renamed — use {@link DataInspectorEndpoint}. */
+/** @deprecated Renamed - use {@link DataInspectorEndpoint}. */
 export type DataInspectorAgent = DataInspectorEndpoint

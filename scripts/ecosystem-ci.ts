@@ -87,7 +87,7 @@ function prepareClone(ref: string): void {
   if (existsSync(devtoolsDir))
     rmSync(devtoolsDir, { recursive: true, force: true })
 
-  // Use init + fetch instead of `clone --branch` so any ref works — tag,
+  // Use init + fetch instead of `clone --branch` so any ref works - tag,
   // branch, or commit SHA. GitHub allows fetching reachable SHAs by default.
   mkdirSync(devtoolsDir, { recursive: true })
   run('git', ['init', '--quiet'], devtoolsDir)

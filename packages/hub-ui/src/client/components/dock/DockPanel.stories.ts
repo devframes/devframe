@@ -9,7 +9,7 @@ const MARGINS = { left: 2, top: 2, right: 2, bottom: 2 }
 function body(entry: any) {
   return h('div', { class: 'w-full h-full p6 font-sans color-base of-auto' }, [
     h('div', { class: 'text-lg font-medium mb2' }, entry?.title ?? 'No selection'),
-    h('div', { class: 'op60 text-sm' }, `Panel content for "${entry?.id ?? '—'}"`),
+    h('div', { class: 'op60 text-sm' }, `Panel content for "${entry?.id ?? '-'}"`),
   ])
 }
 
@@ -45,7 +45,7 @@ export const Default: Story = {
   }),
 }
 
-/** A group member selected — the group rail appears down the left of the panel. */
+/** A group member selected - the group rail appears down the left of the panel. */
 export const WithGroupSidebar: Story = {
   render: () => ({
     setup: () => mountWithContext(

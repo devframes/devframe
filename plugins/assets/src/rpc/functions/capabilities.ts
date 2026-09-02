@@ -13,7 +13,7 @@ export interface AssetsCapabilities {
 /**
  * Lets the UI know upfront whether upload / rename / delete / mkdir are
  * available, so it can hide or disable those affordances proactively
- * instead of letting the user hit a "method not found" error — the same
+ * instead of letting the user hit a "method not found" error - the same
  * `canWrite`-gating idea the git plugin's `GitStatus.canWrite` follows.
  */
 export const capabilities = defineAssetsRpc({

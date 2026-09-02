@@ -33,7 +33,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** No sessions yet — the empty state with a "New terminal" affordance. */
+/** No sessions yet - the empty state with a "New terminal" affordance. */
 export const Empty: Story = {
   args: { rpc: mockRpc(), autostart: false },
 }

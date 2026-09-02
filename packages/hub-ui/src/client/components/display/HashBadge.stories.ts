@@ -22,7 +22,7 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
 
-/** The colour is stable per string — the same label always gets the same hue. */
+/** The colour is stable per string - the same label always gets the same hue. */
 export const Palette: Story = {
   render: () => ({
     setup: () => () => h('div', { class: 'flex flex-wrap gap-1.5 max-w-100 p6 font-sans' }, ['a11y', 'lint', 'runtime', 'test', 'network', 'build', 'hmr', 'plugin', 'vite', 'rolldown']

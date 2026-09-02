@@ -1,12 +1,10 @@
 import type { DevframeRpcClient } from './rpc'
 import { DEVFRAME_OTP_URL_PARAM } from 'devframe/constants'
 
-// Browser-only helpers for "magic link" authentication: a host prints a URL
-// carrying a one-time authentication code (OTP) in its fragment, and the client
-// reads it, exchanges it for a token, and removes it from the address bar. Only
-// the short-lived, single-use OTP ever rides the URL — never the resulting
-// token — and it rides the fragment (`#devframe_otp=…`), which the browser
-// never sends to the server, so it can't leak into an access log or `Referer`.
+// Browser-only "magic link" auth: the client reads a one-time code (OTP) from
+// the URL, exchanges it for a token, then strips it. The OTP rides the fragment
+// (`#devframe_otp=…`) - which browsers never send to the server - so the
+// single-use code can't leak into an access log or `Referer`.
 
 /**
  * Read a one-time authentication code (OTP) from the current page URL's
@@ -58,7 +56,7 @@ export function consumeOtpFromUrl(param: string = DEVFRAME_OTP_URL_PARAM): strin
  *
  * Higher-level integrations (e.g. Vite DevTools) that want to drive their own
  * authentication UI can disable `connectDevframe`'s built-in handling with
- * `otpParam: false` and call this — or {@link consumeOtpFromUrl} — themselves.
+ * `otpParam: false` and call this - or {@link consumeOtpFromUrl} - themselves.
  */
 export async function authenticateWithUrlOtp(
   rpc: Pick<DevframeRpcClient, 'isTrusted' | 'requestTrustWithCode'>,

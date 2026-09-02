@@ -1,7 +1,7 @@
 /**
  * "What data are available": walks a live object into a compact type
  * SKELETON (keys and type names, no values) so users can see the shape of a
- * source while composing queries — independent of any query.
+ * source while composing queries - independent of any query.
  *
  *   - primitives           -> their type name ('string', 'number', ...)
  *   - functions            -> 'function'
@@ -91,36 +91,45 @@ function walk(value: unknown, w: SkeletonWalker, depth: number): unknown {
 }
 
 function walkObject(obj: object, w: SkeletonWalker, depth: number): unknown {
-  if (Array.isArray(obj)) {
-    const items = w.opts.excludeFunctions ? obj.filter(item => typeof item !== 'function') : obj
-    if (items.length === 0)
-      return []
-    const first = walk(items[0], w, depth + 1)
-    return items.length > 1 ? [first, `+${items.length - 1} more`] : [first]
-  }
-
+  if (Array.isArray(obj))
+    return walkArraySkeleton(obj, w, depth)
   if (ArrayBuffer.isView(obj))
     return obj.constructor?.name ?? 'TypedArray'
+  if (isMapLike(obj))
+    return walkMapSkeleton(obj, w, depth)
+  if (isSetLike(obj))
+    return walkSetSkeleton(obj, w, depth)
+  return walkPlainObject(obj, w, depth)
+}
 
-  if (isMapLike(obj)) {
-    const first = obj.entries().next().value as [unknown, unknown] | undefined
-    if (!first)
-      return `Map(0)`
-    return {
-      [`Map(${obj.size})`]: {
-        key: walk(first[0], w, depth + 1),
-        value: walk(first[1], w, depth + 1),
-      },
-    }
+function walkArraySkeleton(arr: unknown[], w: SkeletonWalker, depth: number): unknown[] {
+  const items = w.opts.excludeFunctions ? arr.filter(item => typeof item !== 'function') : arr
+  if (items.length === 0)
+    return []
+  const first = walk(items[0], w, depth + 1)
+  return items.length > 1 ? [first, `+${items.length - 1} more`] : [first]
+}
+
+function walkMapSkeleton(map: Map<unknown, unknown>, w: SkeletonWalker, depth: number): unknown {
+  const first = map.entries().next().value as [unknown, unknown] | undefined
+  if (!first)
+    return `Map(0)`
+  return {
+    [`Map(${map.size})`]: {
+      key: walk(first[0], w, depth + 1),
+      value: walk(first[1], w, depth + 1),
+    },
   }
+}
 
-  if (isSetLike(obj)) {
-    const first = obj[Symbol.iterator]().next().value
-    return first === undefined
-      ? `Set(0)`
-      : { [`Set(${obj.size})`]: walk(first, w, depth + 1) }
-  }
+function walkSetSkeleton(set: Set<unknown>, w: SkeletonWalker, depth: number): unknown {
+  const first = set[Symbol.iterator]().next().value
+  return first === undefined
+    ? `Set(0)`
+    : { [`Set(${set.size})`]: walk(first, w, depth + 1) }
+}
 
+function walkPlainObject(obj: object, w: SkeletonWalker, depth: number): Record<string, unknown> {
   const proto = Object.getPrototypeOf(obj)
   const className = proto && proto !== Object.prototype ? (proto.constructor?.name as string | undefined) : undefined
 
@@ -130,21 +139,23 @@ function walkObject(obj: object, w: SkeletonWalker, depth: number): unknown {
 
   const keys = Object.keys(obj).filter(key => !isExcludedKey(key, w.opts))
   const cap = Math.min(keys.length, w.opts.maxProps)
-  for (let i = 0; i < cap; i++) {
-    const key = keys[i]
-    let v: unknown
-    try {
-      v = (obj as Record<string, unknown>)[key]
-    }
-    catch {
-      out[key] = 'getter-error'
-      continue
-    }
-    if (w.opts.excludeFunctions && typeof v === 'function')
-      continue
-    out[key] = walk(v, w, depth + 1)
-  }
+  for (let i = 0; i < cap; i++)
+    walkPlainObjectKey(obj, keys[i], w, depth, out)
   if (keys.length > cap)
     out['...'] = `+${keys.length - cap} more props`
   return out
+}
+
+function walkPlainObjectKey(obj: object, key: string, w: SkeletonWalker, depth: number, out: Record<string, unknown>): void {
+  let v: unknown
+  try {
+    v = (obj as Record<string, unknown>)[key]
+  }
+  catch {
+    out[key] = 'getter-error'
+    return
+  }
+  if (w.opts.excludeFunctions && typeof v === 'function')
+    return
+  out[key] = walk(v, w, depth + 1)
 }

@@ -3,7 +3,7 @@ import type { BrandingLogo, ColorSchemeValue, DevframeBranding, ViewerBackground
 import { computed, ref } from 'vue'
 import { isDark } from './color-mode'
 
-/** Branding with defaults resolved — what the UI actually renders. */
+/** Branding with defaults resolved - what the UI actually renders. */
 export interface ResolvedBranding {
   productName: string
   logo?: BrandingLogo
@@ -33,7 +33,7 @@ function resolveDefaults(branding: DevframeBranding): ResolvedBranding {
 
 const currentBranding = ref<ResolvedBranding>(resolveDefaults({}))
 
-/** The active resolved branding — read by every branded surface. */
+/** The active resolved branding - read by every branded surface. */
 export function useBranding(): Ref<ResolvedBranding> {
   return currentBranding
 }
@@ -107,7 +107,7 @@ function setFavicon(doc: Document, href: string): void {
 
 /**
  * Apply title/favicon/description to a document the UI owns (the standalone
- * page and the popped-out window). The embedded bootstrap never calls this —
+ * page and the popped-out window). The embedded bootstrap never calls this -
  * it must not rewrite the host page's head.
  */
 export function applyDocumentHead(doc: Document, branding: ResolvedBranding): void {

@@ -68,14 +68,18 @@ const terminalsList = defineHubRpcFunction({
 
 export default defineConfig({
   resolve: { alias },
-  // Dev tooling reached from arbitrary hostnames (LAN IPs, tunnels, tailnets):
-  // accept any Host header and fall back to the next free port when busy.
+  /**
+   * Dev tooling reached from arbitrary hostnames (LAN IPs, tunnels, tailnets):
+   * accept any Host header and fall back to the next free port when busy.
+   */
   server: { allowedHosts: true, strictPort: false },
   plugins: [
     UnoCSS(),
     {
-      // The host registers its own live objects as data-inspector sources -
-      // the registry is process-global, so this works from any plugin hook.
+      /**
+       * The host registers its own live objects as data-inspector sources -
+       * the registry is process-global, so this works from any plugin hook.
+       */
       name: 'vite-devframe-hub:data-sources',
       configureServer(server) {
         registerDataSource({
@@ -127,12 +131,10 @@ export default defineConfig({
         messagesDevframe,
         ogDevframe,
         assetsDevframe,
-        // Shared-iframe soft-navigation demo. The hub instance serves the SPA
-        // and registers its iframe dock; the `dock` override marks it a
-        // `subTabs` anchor (a shared `frameId` + the postmessage protocol) so
-        // the client host attaches the frame-nav adapter, materializing one
-        // client-only dock per tab the SPA's shim reports - all sharing this
-        // one iframe.
+        // Shared-iframe soft-navigation demo. The `dock` override marks this
+        // iframe a `subTabs` anchor, so the client host attaches the frame-nav
+        // adapter and materializes one client-only dock per tab the SPA
+        // reports - all sharing this one iframe.
         {
           devframe: tabbedToolDevframe,
           dock: {
@@ -142,11 +144,13 @@ export default defineConfig({
           },
         },
       ],
-      // Serve the reference json-render frontend as a prebuilt renderer
-      // module: the hub publishes it in the renderer manifest and the client
-      // (src/client/main.ts) imports it lazily the first time a
-      // `json-render` dock mounts — no Vue and no renderer code compiled
-      // into this host's own bundle.
+      /**
+       * Serve the reference json-render frontend as a prebuilt renderer
+       * module: the hub publishes it in the renderer manifest and the client
+       * (src/client/main.ts) imports it lazily the first time a
+       * `json-render` dock mounts - no Vue and no renderer code compiled
+       * into this host's own bundle.
+       */
       renderers: [jsonRenderUiRenderer()],
       configure: async (context) => {
         // Seed a sample command directly on the hub so the UI shows something
@@ -183,7 +187,7 @@ export default defineConfig({
           action: { importFrom: 'demo-dock-client' },
         })
 
-        // Witness the missing-renderer path: a dock type nothing covers —
+        // Witness the missing-renderer path: a dock type nothing covers -
         // the client shows its fallback view instead of a dead panel.
         context.docks.register(unrenderedDockEntry)
 

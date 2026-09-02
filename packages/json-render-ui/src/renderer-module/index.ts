@@ -29,7 +29,7 @@ const inner = createJsonRenderDockRenderer()
 /**
  * The self-styling `'json-render'` dock renderer. It attaches its own shadow
  * root inside the viewer's container and adopts the compiled stylesheet
- * there — fully styled in a light-DOM host page and inside a viewer's shadow
+ * there - fully styled in a light-DOM host page and inside a viewer's shadow
  * root alike, without leaking the reset or any global rule into the page.
  */
 const jsonRenderDockRenderer: JsonRenderDockRenderer = async ({ entry, container, context }) => {
@@ -38,7 +38,7 @@ const jsonRenderDockRenderer: JsonRenderDockRenderer = async ({ entry, container
     const style = document.createElement('style')
     style.setAttribute(STYLE_MARKER, '')
     // The bundled `.vue` components' own `<style>` blocks are extracted by
-    // Vite into a CSS asset a self-contained module can't load — the build
+    // Vite into a CSS asset a self-contained module can't load - the build
     // folds them back in through this namespaced global (see
     // `vite.config.ts`'s `inline-sfc-css` plugin).
     const sfcCss = (globalThis as { __DEVFRAMES_JSON_RENDER_SFC_CSS__?: string }).__DEVFRAMES_JSON_RENDER_SFC_CSS__ ?? ''

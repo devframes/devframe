@@ -1,8 +1,10 @@
 import { defineDiagnostics } from 'devframe/utils/nostics'
 
-// DF00xx codes are allocated across packages (e.g. @devframes/json-render
-// owns DF0037–DF0041), so this file alone doesn't show the next free
-// number — check `docs/content/6.errors/` for the full allocation before adding one.
+/**
+ * DF00xx codes are allocated across packages (e.g. @devframes/json-render
+ * owns DF0037–DF0041), so this file alone doesn't show the next free
+ * number - check `docs/content/6.errors/` for the full allocation before adding one.
+ */
 export const diagnostics = defineDiagnostics({
   docsBase: 'https://devfra.me/errors',
   codes: {
@@ -22,7 +24,7 @@ export const diagnostics = defineDiagnostics({
       why: (p: { key: string }) => `Shared state of "${p.key}" is not found, please provide an initial value for the first time`,
     },
     DF0014: {
-      why: (p: { name: string }) => `RPC function "${p.name}" has an invalid \`agent\` field — \`description\` must be a non-empty string.`,
+      why: (p: { name: string }) => `RPC function "${p.name}" has an invalid \`agent\` field - \`description\` must be a non-empty string.`,
       fix: 'Provide a short description (~1–3 sentences) explaining what the tool does and when agents should invoke it.',
     },
     DF0015: {
@@ -42,13 +44,13 @@ export const diagnostics = defineDiagnostics({
     },
     DF0030: {
       why: (p: { channel: string, id: string }) =>
-        `Stream "${p.channel}#${p.id}" is unknown — no producer has called \`channel.start({ id: "${p.id}" })\`.`,
+        `Stream "${p.channel}#${p.id}" is unknown - no producer has called \`channel.start({ id: "${p.id}" })\`.`,
       fix: 'Ensure the server-side producer is running before clients subscribe, or check for typos in the stream id.',
     },
     DF0031: {
       why: (p: { channel: string, id: string }) =>
         `Cannot write to closed stream "${p.channel}#${p.id}".`,
-      fix: 'Track the producer lifecycle — guard writes with the `stream.signal.aborted` flag.',
+      fix: 'Track the producer lifecycle - guard writes with the `stream.signal.aborted` flag.',
     },
     DF0032: {
       why: (p: { channel: string }) =>
@@ -71,14 +73,14 @@ export const diagnostics = defineDiagnostics({
     },
     DF0036: {
       why: (p: { name: string }) => `RPC call to "${p.name}" was rejected: the caller is not authorized.`,
-      fix: 'Complete the auth handshake (or connect with a static/pre-shared token) before calling a trusted method. Untrusted callers may only call `anonymous:`-prefixed methods — see `isAnonymousRpcMethod`.',
+      fix: 'Complete the auth handshake (or connect with a static/pre-shared token) before calling a trusted method. Untrusted callers may only call `anonymous:`-prefixed methods - see `isAnonymousRpcMethod`.',
     },
     DF0037: {
       why: (p: { id: string }) => `A service is already provided under "${p.id}".`,
       fix: 'Service ids are unique per context. Revoke the existing provider first (the `provide()` call returns a revoke function), or namespace the id with your plugin id to avoid collisions.',
     },
     DF0042: {
-      why: (p: { id: string }) => `"${p.id}" declares \`capabilities.build: false\` — its static export is not meaningful (writes are excluded and any live-served data won't be there).`,
+      why: (p: { id: string }) => `"${p.id}" declares \`capabilities.build: false\` - its static export is not meaningful (writes are excluded and any live-served data won't be there).`,
       fix: 'Pass `{ force: true }` to `createBuild()` if the degraded export is still useful to you, or drop `capabilities.build: false` on the definition.',
     },
     DF0045: {
@@ -104,7 +106,7 @@ export const diagnostics = defineDiagnostics({
     },
     DF0050: {
       why: (p: { port: number }) => `No running devframe instance on port ${p.port}.`,
-      fix: 'Call devframe_connect_list-instances for the current instance list — the instance may have stopped or changed port.',
+      fix: 'Call devframe_connect_list-instances for the current instance list - the instance may have stopped or changed port.',
     },
     DF0051: {
       why: (p: { port: number }) => `The devframe instance on port ${p.port} has no MCP endpoint.`,
@@ -116,7 +118,7 @@ export const diagnostics = defineDiagnostics({
     },
     DF0054: {
       why: (p: { id: string }) => `connectionMeta() was called before initDevframe("${p.id}") finished initializing.`,
-      fix: 'Await `instance.ready` (or any request through `instance.handler`) before reading `connectionMeta()` — the WebSocket binding it describes is only known once initialization completes.',
+      fix: 'Await `instance.ready` (or any request through `instance.handler`) before reading `connectionMeta()` - the WebSocket binding it describes is only known once initialization completes.',
     },
     DF0055: {
       why: (p: { tier: string }) => `This instance already owns its WebSocket transport (${p.tier}), so it cannot take over the host's upgrade events.`,
@@ -128,10 +130,10 @@ export const diagnostics = defineDiagnostics({
     },
     DF0057: {
       why: () => 'This instance disables its WebSocket transport (`ws: false`), so there is no socket to drive upgrades into.',
-      fix: 'Clients connect over the SSE endpoint instead — no upgrade wiring is needed. Remove `ws: false` if the instance should serve a WebSocket after all.',
+      fix: 'Clients connect over the SSE endpoint instead - no upgrade wiring is needed. Remove `ws: false` if the instance should serve a WebSocket after all.',
     },
     DF0058: {
-      why: (p: { id: string }) => `"${p.id}" declares \`capabilities.dev: false\` — it does not support a live dev server (its value is a static export only).`,
+      why: (p: { id: string }) => `"${p.id}" declares \`capabilities.dev: false\` - it does not support a live dev server (its value is a static export only).`,
       fix: 'Pass `{ force: true }` to `createDevServer()` to run it anyway, or drop `capabilities.dev: false` on the definition.',
     },
     DF0059: {
@@ -147,11 +149,11 @@ export const diagnostics = defineDiagnostics({
     DF0061: {
       why: (p: { package: string, required: string, installed: string }) =>
         `The locally installed "${p.package}@${p.installed}" is a different major version than the required "${p.required}".`,
-      fix: 'Align the installed assets package with the version its node package declares — they are published in lockstep.',
+      fix: 'Align the installed assets package with the version its node package declares - they are published in lockstep.',
     },
     DF0062: {
       why: (p: { package: string, required: string, installed: string }) =>
-        `The locally installed "${p.package}@${p.installed}" differs from the required "${p.required}" — serving the installed one.`,
+        `The locally installed "${p.package}@${p.installed}" differs from the required "${p.required}" - serving the installed one.`,
       fix: 'Install the exact declared version to serve byte-identical assets.',
     },
     DF0063: {
@@ -167,11 +169,11 @@ export const diagnostics = defineDiagnostics({
     DF0065: {
       why: (p: { field: 'package' | 'version', value: string }) =>
         `Invalid remote-assets ${p.field} "${p.value}".`,
-      fix: 'A remote-assets `package` must be a valid npm package name and `version` an exact semver version (e.g. `1.2.3`) — they are interpolated into CDN URLs and the cache path.',
+      fix: 'A remote-assets `package` must be a valid npm package name and `version` an exact semver version (e.g. `1.2.3`) - they are interpolated into CDN URLs and the cache path.',
     },
     DF0066: {
       why: (p: { package: string }) =>
-        `Service "${p.package}" is already installed — keeping the first installation and ignoring this one's options.`,
+        `Service "${p.package}" is already installed - keeping the first installation and ignoring this one's options.`,
       fix: 'Option sets only merge before `ctx.services.ready()` fires. Install the service (or declare it in `DevframeDefinition.services`) before the barrier so its options join the merge.',
     },
     DF0067: {
@@ -186,22 +188,22 @@ export const diagnostics = defineDiagnostics({
     },
     DF0069: {
       why: (p: { package: string, required: string, installed: string }) =>
-        `The installed service "${p.package}@${p.installed}" does not satisfy the declared range "${p.required}" — installing it anyway.`,
+        `The installed service "${p.package}@${p.installed}" does not satisfy the declared range "${p.required}" - installing it anyway.`,
       fix: 'The advertised meta carries the real version, so clients can gate on it. Align the installed service package with the declared range to silence this warning.',
     },
     DF0070: {
       why: (p: { package: string, reason: string }) =>
         `Invalid service "${p.package}": ${p.reason}`,
-      fix: 'A service package\'s default export must be a factory returning a `DevframeServiceDefinition` — an object with `package`, `version`, `scope`, and a `setup` function.',
+      fix: 'A service package\'s default export must be a factory returning a `DevframeServiceDefinition` - an object with `package`, `version`, `scope`, and a `setup` function.',
     },
     DF0072: {
       why: (p: { method: string }) =>
-        `\`rpc.snapshot\` names "${p.method}", but no RPC function is registered under that id — nothing to bake into the static build.`,
+        `\`rpc.snapshot\` names "${p.method}", but no RPC function is registered under that id - nothing to bake into the static build.`,
       fix: 'Check the method id, and ensure the service/plugin that registers it is installed (e.g. declared in `services`) before the build collects the dump.',
     },
     DF0075: {
       why: (p: { runtime: string }) =>
-        `On ${p.runtime} the shared server's WebSocket upgrade needs crossws's Node adapter, which refuses to run off Node — and SSE is disabled, so this instance advertises no RPC transport at all.`,
+        `On ${p.runtime} the shared server's WebSocket upgrade needs crossws's Node adapter, which refuses to run off Node - and SSE is disabled, so this instance advertises no RPC transport at all.`,
       fix: 'Keep the SSE endpoint enabled (drop `sse: false`) so clients connect over it on Bun/Deno, or move the socket to a side-car (`ws: { sidecar: true }`) which binds the native WebSocket adapter on its own port.',
     },
     DF0076: {

@@ -55,47 +55,46 @@ export function buildRemoteConnectionUrl(
   return `${beforeHash}${separator}${param}${hash}`
 }
 
+function stripParamList(value: string): [value: string, changed: boolean] {
+  const parts = value.split('&')
+  const filtered = parts.filter(part => part.split('=')[0] !== REMOTE_CONNECTION_KEY)
+  return [filtered.join('&'), filtered.length !== parts.length]
+}
+
+/** Strip the descriptor from a URL fragment, preserving its route/query split. */
+function stripHashParams(hash: string): [hash: string, changed: boolean] {
+  const routeQueryIdx = hash.indexOf('?')
+  if (routeQueryIdx === -1)
+    return stripParamList(hash)
+  const route = hash.slice(0, routeQueryIdx)
+  const [query, changed] = stripParamList(hash.slice(routeQueryIdx + 1))
+  if (!changed)
+    return [hash, false]
+  return [query ? `${route}?${query}` : route, true]
+}
+
+/** Strip the descriptor from a URL query string (the part before any fragment). */
+function stripQueryParams(beforeHash: string): [beforeHash: string, changed: boolean] {
+  const queryIdx = beforeHash.indexOf('?')
+  if (queryIdx === -1)
+    return [beforeHash, false]
+  const path = beforeHash.slice(0, queryIdx)
+  const [query, changed] = stripParamList(beforeHash.slice(queryIdx + 1))
+  if (!changed)
+    return [beforeHash, false]
+  return [query ? `${path}?${query}` : path, true]
+}
+
 /** Remove the remote connection descriptor from a URL before displaying or copying it. */
 export function stripRemoteConnectionFromUrl(input: string): string {
-  function stripParamList(value: string): [value: string, changed: boolean] {
-    const parts = value.split('&')
-    const filtered = parts.filter(part => part.split('=')[0] !== REMOTE_CONNECTION_KEY)
-    return [filtered.join('&'), filtered.length !== parts.length]
-  }
-
   const hashIdx = input.indexOf('#')
-  let beforeHash = hashIdx === -1 ? input : input.slice(0, hashIdx)
-  let hash = hashIdx === -1 ? undefined : input.slice(hashIdx + 1)
-  let changed = false
+  const rawHash = hashIdx === -1 ? undefined : input.slice(hashIdx + 1)
+  const rawBeforeHash = hashIdx === -1 ? input : input.slice(0, hashIdx)
 
-  if (hash !== undefined) {
-    const routeQueryIdx = hash.indexOf('?')
-    if (routeQueryIdx === -1) {
-      const [nextHash, didChange] = stripParamList(hash)
-      hash = nextHash
-      changed ||= didChange
-    }
-    else {
-      const route = hash.slice(0, routeQueryIdx)
-      const [query, didChange] = stripParamList(hash.slice(routeQueryIdx + 1))
-      if (didChange) {
-        hash = query ? `${route}?${query}` : route
-        changed = true
-      }
-    }
-  }
+  const [hash, hashChanged] = rawHash === undefined ? [undefined, false] as const : stripHashParams(rawHash)
+  const [beforeHash, queryChanged] = stripQueryParams(rawBeforeHash)
 
-  const queryIdx = beforeHash.indexOf('?')
-  if (queryIdx !== -1) {
-    const path = beforeHash.slice(0, queryIdx)
-    const [query, didChange] = stripParamList(beforeHash.slice(queryIdx + 1))
-    if (didChange) {
-      beforeHash = query ? `${path}?${query}` : path
-      changed = true
-    }
-  }
-
-  if (!changed)
+  if (!hashChanged && !queryChanged)
     return input
   return hash ? `${beforeHash}#${hash}` : beforeHash
 }

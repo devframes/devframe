@@ -82,7 +82,7 @@ export async function connect(): Promise<void> {
     // Reflect the live connection: a dropped socket or refused auth swaps the
     // panel to a clear state instead of leaving stale data on screen.
     client.events.on('connection:status', () => applyStatus(client))
-    // Best-effort trust handshake — data calls succeed regardless on the
+    // Best-effort trust handshake - data calls succeed regardless on the
     // single-user standalone server, but shared-state subscription needs
     // it, so kick it off and ignore failures/timeouts.
     if (client.connectionMeta.backend === 'websocket')

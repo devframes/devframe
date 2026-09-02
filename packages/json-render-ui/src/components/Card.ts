@@ -12,8 +12,10 @@ interface CardProps {
 
 const headerClass = 'flex items-center justify-between px4 py2.5 border-b border-base color-base font-medium text-sm'
 
-// Wraps `@antfu/design` LayoutCard for the bordered surface, composing the
-// title/collapsible header on top (LayoutCard is a plain surface).
+/**
+ * Wraps `@antfu/design` LayoutCard for the bordered surface, composing the
+ * title/collapsible header on top (LayoutCard is a plain surface).
+ */
 export const Card: JrComponent<CardProps> = ({ props, children, loading }) => {
   const isLoading = loading || props.loading
   const body = isLoading

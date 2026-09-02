@@ -75,7 +75,7 @@ describe('adapters/handler', () => {
         sse: { path: '__sse' },
       })
 
-      // Outside the base — and inside it on a miss — the fetch surface 404s.
+      // Outside the base - and inside it on a miss - the fetch surface 404s.
       const outside = await devtools.handler(new Request('http://localhost:3000/app'))
       expect(outside.status).toBe(404)
 
@@ -265,7 +265,7 @@ describe('adapters/handler', () => {
   it('default tier: binds nothing until the host attaches its own server', async () => {
     const host = '127.0.0.1'
     const port = await getPort({ port: 18150, host })
-    // No `server`, no `ws` — the instance owns no transport of its own.
+    // No `server`, no `ws` - the instance owns no transport of its own.
     const devtools = initDevframe(defineTestDef('handler-attach'), { base: '/__handler-attach/', auth: false })
     const server = createServer((req, res) => devtools.nodeMiddleware(req, res))
     let detach: (() => void) | undefined
@@ -353,7 +353,7 @@ describe('adapters/handler', () => {
   })
 
   // The auth-link origin is derived from the served request's URL (the fetch
-  // handler ignores the `Host` header — that path is `nodeMiddleware`'s), so
+  // handler ignores the `Host` header - that path is `nodeMiddleware`'s), so
   // each case just points a request at the origin under test and inspects the
   // one-time banner (`console.log`).
   async function withBannerSpy(
@@ -382,7 +382,7 @@ describe('adapters/handler', () => {
       await hit(devtools, 'http://evil.example.com/__h-poison')
       expect(spy).not.toHaveBeenCalled()
       // A later loopback origin is adopted and prints exactly one OTP link
-      // (the credential rides the fragment) — the reject never locked it out.
+      // (the credential rides the fragment) - the reject never locked it out.
       await hit(devtools, 'http://localhost:4321/__h-poison')
       expect(spy).toHaveBeenCalledTimes(1)
       expect(String(spy.mock.calls[0])).toContain('http://localhost:4321/#devframe_otp=')

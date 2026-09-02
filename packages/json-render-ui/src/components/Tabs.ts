@@ -15,7 +15,7 @@ interface TabDescriptor {
 }
 
 interface TabsProps {
-  /** `children[i]` renders under `tabs[i]` — the two arrays are positional. */
+  /** `children[i]` renders under `tabs[i]` - the two arrays are positional. */
   tabs?: TabDescriptor[]
   /** Two-way bindable via `{ $bindState: '...' }`; otherwise local, uncontrolled. */
   value?: string
@@ -25,10 +25,9 @@ interface TabsProps {
 }
 
 // `@antfu/design`'s LayoutTabs takes a static icon *class*, but tab icons here
-// are runtime-resolved *names* — so this is a thin custom component over the
-// shared semantic tokens (like Text/Stack), using the Icon component. Stateful
-// so the uncontrolled selection persists across renders (a JrComponent render
-// fn can't hold a ref); binds to the state store when `bindingPath` is set.
+// are runtime-resolved *names*, so this is a thin component over the shared
+// tokens using Icon. Stateful so uncontrolled selection persists across
+// renders; binds to the state store when `bindingPath` is set.
 const TabsImpl = defineComponent({
   name: 'JrTabsImpl',
   props: {

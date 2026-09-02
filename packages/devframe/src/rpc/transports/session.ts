@@ -10,7 +10,7 @@ export type DevframeRpcTransportKind = 'websocket' | 'sse'
 
 /**
  * Structural view of the connect-time HTTP request behind an RPC connection
- * — the WS upgrade request, or the request opening an SSE stream. Shaped to
+ * - the WS upgrade request, or the request opening an SSE stream. Shaped to
  * match both the web `Request` a crossws peer exposes and a plain
  * `node:http` request wrapper, so auth hooks can read the bearer-token
  * query param and the `Origin` header without caring which transport (or
@@ -30,7 +30,7 @@ export interface DevframeRpcConnectionRequest {
  * (`onPeerConnect` / `onPeerDisconnect`, {@link DevframeAuthHandler.onConnect}).
  */
 export interface DevframeRpcConnection {
-  /** Session id — the same value as the session meta's `id`. */
+  /** Session id - the same value as the session meta's `id`. */
   id: number
   /** The transport carrying this connection. */
   transport: DevframeRpcTransportKind
@@ -41,7 +41,7 @@ export interface DevframeRpcConnection {
   /** Terminate the connection from the server side. */
   close?: (code?: number, reason?: string) => void
   /**
-   * The crossws peer backing a `websocket` connection — the WS-specific
+   * The crossws peer backing a `websocket` connection - the WS-specific
    * escape hatch (pub/sub, raw socket access). Absent on other transports.
    */
   peer?: Peer
@@ -71,7 +71,7 @@ export interface DevframeNodeRpcSessionMeta {
 let sessionId = 0
 
 /**
- * Mint the per-connection session meta every transport binding shares —
+ * Mint the per-connection session meta every transport binding shares -
  * one id space across transports, so session bookkeeping (streaming
  * subscriptions, shared-state sync, auth trust) never collides between a
  * WS peer and an SSE session on the same server.

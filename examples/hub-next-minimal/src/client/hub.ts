@@ -7,7 +7,7 @@ import type { DevframeDefinition } from 'devframe'
 import { createNextDevframeHub } from '@devframes/next/hub'
 
 // A server-authored JSON-render dock: the whole view is this serializable
-// spec — no client build. It renders through whatever `'json-render'`
+// spec - no client build. It renders through whatever `'json-render'`
 // renderer the hub composes (below, the reference `@devframes/json-render-ui`
 // module); without one, the hub UI provider shows its missing-renderer fallback.
 const jsonRenderSpec: DevframeJsonRenderSpec = {
@@ -28,19 +28,11 @@ const jsonRenderDock: DevframeJsonRenderDockEntry = {
   view: { spec: jsonRenderSpec },
 }
 
-// The plugin packages and `@devframes/hub-ui` resolve their prebuilt `dist`
-// (SPA assets, the embedded/standalone bundles) via `new URL('../dist/...',
-// import.meta.url)`. Loaded with a runtime dynamic `import()` carrying
-// `webpackIgnore` / `turbopackIgnore` so Next's bundler leaves them alone and
-// Node resolves the published `dist` at request time - a static import would
-// be bundled from source and break those lookups.
-//
-// The default-export plugins load from a list of specifier *variables* (not
-// string literals), so Next's bundler and TypeScript alike treat them as
-// opaque — the plugins' node-side source (child processes, the native
-// `zigpty` PTY backend) never gets pulled into this app's build or type
-// program. `data-inspector` (a `:`-carrying default id) and `assets` (its
-// watcher) need constructor options, so they load through dedicated helpers.
+// The dynamic `import()` below carries `webpackIgnore`/`turbopackIgnore` so
+// Node resolves each package's prebuilt `dist` at request time; a static
+// import would bundle from source and break the `import.meta.url` asset
+// lookups. `data-inspector` (its `:`-carrying id) and `assets` (its watcher)
+// need options, so they load through dedicated helpers.
 const BUILTIN_PLUGIN_PACKAGES = [
   '@devframes/plugin-git',
   '@devframes/plugin-terminals',
@@ -71,18 +63,17 @@ async function loadHub(): Promise<HubInstance> {
     (assets.createAssetsDevframe as (options: { watch: boolean }) => DevframeDefinition)({ watch: false }),
   ]
   // `@devframes/next/hub` runs the socket on a side-car (Next routes can't
-  // accept WS upgrades). This host overrides the default UI slot to rebrand
-  // the reference hub UI to Next.js/Vercel's monochrome black — one field, no
-  // CSS: `createUi`'s `branding` option publishes
-  // `ConnectionMeta.configs.ui.branding`, which the dock reads at connect
-  // time and feeds into `--devframe-primary` (see `@devframes/hub-ui`'s
-  // `primary-ramp.css`).
+  // accept WS upgrades). `createUi`'s `branding` option rebrands the dock via
+  // `ConnectionMeta.configs.ui.branding`, read at connect time and fed into
+  // `--devframe-primary` (see `@devframes/hub-ui`'s `primary-ramp.css`).
   return createNextDevframeHub({
     devframes,
     ui: (hubUi.createUi as typeof CreateUi)({ branding: { primaryColor: '#3f8ba9', productName: 'Devframes on Next.js' } }),
-    // Serve the reference json-render frontend as a prebuilt renderer module
-    // — the one-liner that makes `'json-render'` docks render in the prebuilt
-    // hub UI provider. Swap it for any community implementation of the same contract.
+    /**
+     * Serve the reference json-render frontend as a prebuilt renderer module
+     * - the one-liner that makes `'json-render'` docks render in the prebuilt
+     * hub UI provider. Swap it for any community implementation of the same contract.
+     */
     renderers: [(jsonRenderUi.jsonRenderUiRenderer as typeof JsonRenderUiRenderer)()],
     configure(ctx) {
       ctx.docks.register(jsonRenderDock)

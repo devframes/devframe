@@ -27,7 +27,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
   private _clock = 0
   /**
    * The tick of the newest removal record dropped from the capped
-   * `removals` log — cursors older than this can't get a reliable delta
+   * `removals` log - cursors older than this can't get a reliable delta
    * and fall back to a full snapshot in {@link listSince}.
    */
   private _removalsTrimmedAt = 0

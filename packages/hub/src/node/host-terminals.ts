@@ -52,7 +52,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
   }
 
   /**
-   * Lazily acquire the streaming channel — `context.rpc` isn't assigned
+   * Lazily acquire the streaming channel - `context.rpc` isn't assigned
    * until after every host is constructed, so we can't grab it in the
    * constructor.
    */
@@ -66,6 +66,54 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       { replayWindow: TERMINAL_REPLAY_WINDOW },
     )
     return this._channel
+  }
+
+  /**
+   * Per-run stream lifecycle shared by the child-process and PTY paths: guards
+   * the single-close/error transition and keeps the session's `status` in step
+   * with the process lifecycle (a hub-aware client sees `running` →
+   * `stopped`/`error` instead of a value frozen at spawn time).
+   */
+  private createStreamLifecycle() {
+    const state: {
+      controller?: ReadableStreamDefaultController<string>
+      streamClosed: boolean
+      session?: DevframeTerminalSession
+    } = { streamClosed: false }
+
+    const markStatus = (next: DevframeTerminalSession['status']): void => {
+      const session = state.session!
+      if (session.status === next)
+        return
+      session.status = next
+      this.events.emit(HUB_EVENTS.bus.terminalsSessionUpdated, session)
+    }
+
+    const closeStream = (): void => {
+      if (state.streamClosed)
+        return
+      state.streamClosed = true
+      try {
+        state.controller?.close()
+      }
+      catch {
+        // The stream may already be closed by cancellation.
+      }
+    }
+
+    const errorStream = (error: unknown): void => {
+      if (state.streamClosed)
+        return
+      state.streamClosed = true
+      try {
+        state.controller?.error(error)
+      }
+      catch {
+        // The stream may already be closed by cancellation.
+      }
+    }
+
+    return { state, markStatus, closeStream, errorStream }
   }
 
   register(session: DevframeTerminalSession): DevframeTerminalSession {
@@ -96,6 +144,42 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     this._boundStreams.delete(session.id)
   }
 
+  /** Drain a session's output stream into its scrollback buffer and streaming sink. */
+  private async pumpStream(
+    reader: ReadableStreamDefaultReader<string>,
+    sessionBuffer: string[],
+    sink: ReturnType<RpcStreamingChannel<string>['start']> | undefined,
+    isDisposed: () => boolean,
+  ): Promise<void> {
+    try {
+      while (!isDisposed()) {
+        const result = await reader.read()
+        if (isDisposed() || result.done)
+          break
+        // Mirror to the legacy session.buffer used by `terminals:read` -
+        // bounded tail kept for the snapshot endpoint.
+        sessionBuffer.push(result.value)
+        if (sessionBuffer.length > TERMINAL_BUFFER_LIMIT)
+          sessionBuffer.splice(0, sessionBuffer.length - TERMINAL_BUFFER_LIMIT)
+        sink?.write(result.value)
+      }
+      if (!isDisposed() && sink && !sink.closed)
+        sink.close()
+    }
+    catch (error) {
+      if (!isDisposed() && sink && !sink.closed)
+        sink.error(error)
+    }
+    finally {
+      try {
+        reader.releaseLock()
+      }
+      catch {
+        // Already released by the stream implementation.
+      }
+    }
+  }
+
   private bindStream(session: DevframeTerminalSession) {
     // Skip when the same stream is already bound
     if (this._boundStreams.has(session.id) && this._boundStreams.get(session.id)?.stream === session.stream)
@@ -120,39 +204,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
 
     const reader = session.stream.getReader()
     let disposed = false
-    ;(async () => {
-      try {
-        while (true) {
-          if (disposed)
-            break
-          const result = await reader.read()
-          if (disposed)
-            break
-          if (result.done)
-            break
-          // Mirror to the legacy session.buffer used by `terminals:read` —
-          // bounded tail kept for the snapshot endpoint.
-          sessionBuffer.push(result.value)
-          if (sessionBuffer.length > TERMINAL_BUFFER_LIMIT)
-            sessionBuffer.splice(0, sessionBuffer.length - TERMINAL_BUFFER_LIMIT)
-          sink?.write(result.value)
-        }
-        if (!disposed && sink && !sink.closed)
-          sink.close()
-      }
-      catch (error) {
-        if (!disposed && sink && !sink.closed)
-          sink.error(error)
-      }
-      finally {
-        try {
-          reader.releaseLock()
-        }
-        catch {
-          // Already released by the stream implementation.
-        }
-      }
-    })()
+    void this.pumpStream(reader, sessionBuffer, sink, () => disposed)
     this._boundStreams.set(session.id, {
       dispose: () => {
         disposed = true
@@ -173,51 +225,14 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     }
     const { exec } = await import('tinyexec')
 
-    let controller: ReadableStreamDefaultController<string> | undefined
+    const { state, markStatus, closeStream, errorStream } = this.createStreamLifecycle()
     let cp: TinyExecResult | undefined
     let currentResult: DevframeChildProcessResult | undefined
     let runId = 0
-    let streamClosed = false
-    let session: DevframeChildProcessTerminalSession
-
-    // Keep the registered session's `status` in step with the process
-    // lifecycle so a hub-aware client (and any launcher tracking this session)
-    // sees `running` → `stopped`/`error` transitions instead of a value frozen
-    // at spawn time.
-    const markStatus = (next: DevframeTerminalSession['status']): void => {
-      if (session.status === next)
-        return
-      session.status = next
-      this.events.emit(HUB_EVENTS.bus.terminalsSessionUpdated, session)
-    }
-
-    const closeStream = () => {
-      if (streamClosed)
-        return
-      streamClosed = true
-      try {
-        controller?.close()
-      }
-      catch {
-        // The stream may already be closed by cancellation.
-      }
-    }
-
-    const errorStream = (error: unknown) => {
-      if (streamClosed)
-        return
-      streamClosed = true
-      try {
-        controller?.error(error)
-      }
-      catch {
-        // The stream may already be closed by cancellation.
-      }
-    }
 
     const stream = new ReadableStream<string>({
       start(_controller) {
-        controller = _controller
+        state.controller = _controller
       },
       cancel() {
         cp?.kill()
@@ -247,7 +262,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
 
       // Capture stdout/stderr separately (for `getResult()`) by listening on
       // the raw child process directly, rather than consuming `cp`'s own
-      // async iterator/promise — those merge stdout+stderr line-by-line and
+      // async iterator/promise - those merge stdout+stderr line-by-line and
       // would starve one another if both were read from.
       const stdoutChunks: string[] = []
       const stderrChunks: string[] = []
@@ -273,16 +288,16 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
           return
         const text = chunk.toString()
         stdoutChunks.push(text)
-        if (!streamClosed)
-          controller?.enqueue(text)
+        if (!state.streamClosed)
+          state.controller?.enqueue(text)
       })
       cp.process?.stderr?.on('data', (chunk: Buffer | string) => {
         if (currentRun !== runId)
           return
         const text = chunk.toString()
         stderrChunks.push(text)
-        if (!streamClosed)
-          controller?.enqueue(text)
+        if (!state.streamClosed)
+          state.controller?.enqueue(text)
       })
       cp.process?.once('error', (error) => {
         if (currentRun !== runId)
@@ -298,7 +313,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
           return
         closeStream()
         // A spawn/runtime error already settled the status; a non-zero exit
-        // code is a crash. A clean exit, or a signal kill (no numeric code —
+        // code is a crash. A clean exit, or a signal kill (no numeric code -
         // e.g. terminate()/restart()), is a deliberate/normal stop.
         if (!runErrored)
           markStatus(typeof code === 'number' && code !== 0 ? 'error' : 'stopped')
@@ -324,7 +339,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     cp = createChildProcess()
 
     const restart = async () => {
-      if (streamClosed)
+      if (state.streamClosed)
         throw diagnostics.DF8206({ id: terminal.id })
       cp?.kill()
       cp = createChildProcess()
@@ -337,7 +352,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       markStatus('stopped')
     }
 
-    session = {
+    const session: DevframeChildProcessTerminalSession = {
       ...terminal,
       status: 'running',
       stream,
@@ -348,6 +363,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       terminate,
       restart,
     }
+    state.session = session
     this.register(session)
 
     return Promise.resolve(session)
@@ -365,52 +381,15 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     const cols = executeOptions.cols ?? 80
     const rows = executeOptions.rows ?? 24
 
-    let controller: ReadableStreamDefaultController<string> | undefined
+    const { state, markStatus, closeStream, errorStream } = this.createStreamLifecycle()
     let pty: IPty | undefined
     let currentResult: DevframePtyResult | undefined
     let killCurrentRun: (() => void) | undefined
     let runId = 0
-    let streamClosed = false
-    let session: DevframePtyTerminalSession
-
-    // Keep the registered session's `status` in step with the process
-    // lifecycle so a hub-aware client (and any launcher tracking this session)
-    // sees `running` → `stopped`/`error` transitions instead of a value frozen
-    // at spawn time.
-    const markStatus = (next: DevframeTerminalSession['status']): void => {
-      if (session.status === next)
-        return
-      session.status = next
-      this.events.emit(HUB_EVENTS.bus.terminalsSessionUpdated, session)
-    }
-
-    const closeStream = () => {
-      if (streamClosed)
-        return
-      streamClosed = true
-      try {
-        controller?.close()
-      }
-      catch {
-        // The stream may already be closed by cancellation.
-      }
-    }
-
-    const errorStream = (error: unknown) => {
-      if (streamClosed)
-        return
-      streamClosed = true
-      try {
-        controller?.error(error)
-      }
-      catch {
-        // The stream may already be closed by cancellation.
-      }
-    }
 
     const stream = new ReadableStream<string>({
       start(_controller) {
-        controller = _controller
+        state.controller = _controller
       },
       cancel() {
         killCurrentRun?.()
@@ -459,8 +438,8 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       ptyProcess.onData((data) => {
         const text = typeof data === 'string' ? data : data.toString('utf8')
         outputChunks.push(text)
-        if (!streamClosed && currentRun === runId)
-          controller?.enqueue(text)
+        if (!state.streamClosed && currentRun === runId)
+          state.controller?.enqueue(text)
       })
       ptyProcess.onExit(({ exitCode, signal }) => {
         settle(exitCode, signal)
@@ -505,7 +484,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       })
     }
 
-    session = {
+    const session: DevframePtyTerminalSession = {
       ...terminal,
       status: 'running',
       interactive: true,
@@ -545,7 +524,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         markStatus('stopped')
       },
       restart: async () => {
-        if (streamClosed)
+        if (state.streamClosed)
           throw diagnostics.DF8206({ id: terminal.id })
         killCurrentRun?.()
         killCurrentRun = undefined
@@ -563,6 +542,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         markStatus('running')
       },
     }
+    state.session = session
     this.register(session)
 
     return session

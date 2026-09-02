@@ -25,10 +25,10 @@ export interface CreateBuildOptions {
   /** Output directory. Defaults to `dist-static`. */
   outDir?: string
   /**
-   * Override the SPA dist to copy into `outDir` — a local directory or a
+   * Override the SPA dist to copy into `outDir` - a local directory or a
    * remote-assets declaration (materialized in full at build time). When
    * omitted the adapter reads `devframe.clientAssets` (or the deprecated
-   * `devframe.cli?.distDir`) — authors typically set this once on the
+   * `devframe.cli?.distDir`) - authors typically set this once on the
    * definition itself.
    */
   distDir?: StaticAssetsSource
@@ -41,7 +41,7 @@ export interface CreateBuildOptions {
   /**
    * Proceed even when the definition declares `capabilities.build: false`.
    * `createCac` already skips registering the `build` subcommand for such
-   * a definition — this only matters for a caller invoking `createBuild`
+   * a definition - this only matters for a caller invoking `createBuild`
    * directly, bypassing the CLI.
    */
   force?: boolean
@@ -55,7 +55,7 @@ export interface CreateBuildOptions {
  *   - Write `<outDir>/__connection.json` (`{ backend: 'static' }`) and the
  *     sharded RPC dump under `<outDir>/__rpc-dump/` so the deployed SPA
  *     discovers both via relative paths from `document.baseURI`. The
- *     output is mount-path agnostic — the same bundle works at `/`,
+ *     output is mount-path agnostic - the same bundle works at `/`,
  *     `/devframe/`, or any base, no rewriting required.
  */
 export async function createBuild(d: DevframeDefinition, options: CreateBuildOptions = {}): Promise<void> {
@@ -76,15 +76,7 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
   // A static deploy must be self-contained: a local dir (or a remote source
   // backed by a locally installed package) is copied; an uninstalled remote
   // source materializes every listed file from the provider.
-  const resolved = resolveStaticAssetsSource(distSource, host.getStorageDir('project'), d.importMetaUrl)
-  if (typeof resolved === 'string') {
-    console.log(c.cyan`[devframe] copying SPA from ${resolved} -> ${outDir}`)
-    await fs.cp(resolved, outDir, { recursive: true })
-  }
-  else {
-    console.log(c.cyan`[devframe] materializing SPA from ${resolved.assets.package}@${resolved.assets.version} -> ${outDir}`)
-    await resolved.materialize(outDir)
-  }
+  await materializeSpa(resolveStaticAssetsSource(distSource, host.getStorageDir('project'), d.importMetaUrl), outDir)
 
   const ctx = await createHostContext({
     cwd: process.cwd(),
@@ -100,11 +92,38 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
 
   // Bake declared `rpc.snapshot` methods (typically a wire service's RPC the
   // devframe doesn't own) into the static dump by attaching a `dump` to their
-  // registered definitions — the service itself defines none.
+  // registered definitions - the service itself defines none.
   applySnapshotRpc(ctx, d.rpc?.snapshot)
 
   await fs.mkdir(resolve(outDir, DEVFRAME_RPC_DUMP_DIRNAME), { recursive: true })
 
+  await writeConnectionMeta(ctx, outDir)
+
+  console.log(c.cyan`[devframe] writing RPC dump to ${resolve(outDir, DEVFRAME_RPC_DUMP_MANIFEST_FILENAME)}`)
+  const dump = await collectStaticRpcDump(ctx.rpc.definitions.values(), ctx)
+  await writeDumpFiles(dump, outDir, options.pretty ? 2 : undefined)
+  await fs.writeFile(
+    resolve(outDir, DEVFRAME_RPC_DUMP_MANIFEST_FILENAME),
+    JSON.stringify(dump.manifest, null, 2),
+    'utf-8',
+  )
+
+  console.log(c.green`[devframe] built "${d.id}" -> ${outDir}`)
+}
+
+/** Copy a local SPA dist, or materialize a remote assets source, into `outDir`. */
+async function materializeSpa(resolved: ReturnType<typeof resolveStaticAssetsSource>, outDir: string): Promise<void> {
+  if (typeof resolved === 'string') {
+    console.log(c.cyan`[devframe] copying SPA from ${resolved} -> ${outDir}`)
+    await fs.cp(resolved, outDir, { recursive: true })
+    return
+  }
+  console.log(c.cyan`[devframe] materializing SPA from ${resolved.assets.package}@${resolved.assets.version} -> ${outDir}`)
+  await resolved.materialize(outDir)
+}
+
+/** Write `__connection.json` with the JSON-serializable method allow-list. */
+async function writeConnectionMeta(ctx: DevframeNodeContext, outDir: string): Promise<void> {
   const jsonSerializableMethods: string[] = []
   for (const def of ctx.rpc.definitions.values()) {
     if (def.jsonSerializable === true)
@@ -115,10 +134,14 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
     JSON.stringify({ backend: 'static', jsonSerializableMethods }, null, 2),
     'utf-8',
   )
+}
 
-  console.log(c.cyan`[devframe] writing RPC dump to ${resolve(outDir, DEVFRAME_RPC_DUMP_MANIFEST_FILENAME)}`)
-  const dump = await collectStaticRpcDump(ctx.rpc.definitions.values(), ctx)
-  const indent = options.pretty ? 2 : undefined
+/** Encode and write each sharded RPC dump file under `outDir`. */
+async function writeDumpFiles(
+  dump: Awaited<ReturnType<typeof collectStaticRpcDump>>,
+  outDir: string,
+  indent: number | undefined,
+): Promise<void> {
   for (const [filepath, file] of Object.entries(dump.files)) {
     const fullpath = resolve(outDir, filepath)
     await fs.mkdir(dirname(fullpath), { recursive: true })
@@ -134,13 +157,6 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
       'utf-8',
     )
   }
-  await fs.writeFile(
-    resolve(outDir, DEVFRAME_RPC_DUMP_MANIFEST_FILENAME),
-    JSON.stringify(dump.manifest, null, 2),
-    'utf-8',
-  )
-
-  console.log(c.green`[devframe] built "${d.id}" -> ${outDir}`)
 }
 
 /**

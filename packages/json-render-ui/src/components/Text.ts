@@ -26,8 +26,10 @@ const colorClass: Record<string, string> = {
   danger: 'color-red',
 }
 
-// Generic typography — `@antfu/design` has no single equivalent, so it stays a
-// thin custom component over the shared semantic tokens.
+/**
+ * Generic typography - `@antfu/design` has no single equivalent, so it stays a
+ * thin custom component over the shared semantic tokens.
+ */
 export const Text: JrComponent<TextProps> = ({ props, children }) => {
   const variant = textVariant[props.variant ?? 'body'] ?? textVariant.body
   const classes = [variant.class]

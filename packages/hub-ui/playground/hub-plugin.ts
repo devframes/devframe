@@ -7,7 +7,7 @@ import { PLAYGROUND_GROUP_ID } from './constants'
 import { seedPlayground } from './seed'
 
 /**
- * Mounts a bare, headless hub instance as Vite dev-server middleware — just
+ * Mounts a bare, headless hub instance as Vite dev-server middleware - just
  * enough backend for `main.ts`'s `DockStandalone`/`DockEmbedded` to connect
  * to (RPC, WebSocket, `__connection.json`), plus a real mounted devframe (the
  * Git dashboard, below) so the dock bar has real content to switch between,
@@ -16,14 +16,14 @@ import { seedPlayground } from './seed'
  * exercising the wider hub protocol (`examples/hub-vite` already does that).
  *
  * A hand-rolled slice of `@devframes/vite/hub` rather than that package
- * itself — pulling it in here would make `@devframes/hub-ui` and
+ * itself - pulling it in here would make `@devframes/hub-ui` and
  * `@devframes/vite` depend on each other (`@devframes/vite` already carries
  * an optional peer dependency on `@devframes/hub-ui` for its own default UI
  * slot), a cyclic workspace dependency for no real benefit.
  *
  * `@devframes/plugin-git` is the one built-in plugin that doesn't itself
  * depend on `@devframes/vite` (every other plugin does, for its own SPA
- * dev-serve/build tooling) — mounting any of those here would reintroduce the
+ * dev-serve/build tooling) - mounting any of those here would reintroduce the
  * same cyclic dependency `@devframes/vite/hub` avoids, just one hop further
  * out (hub-ui → that plugin → `@devframes/vite` → hub-ui again, via its peer
  * dependency).
@@ -48,24 +48,30 @@ export function hubUiPlaygroundHub(): Plugin {
       const httpServer = server.httpServer instanceof NodeHttpServer ? server.httpServer : undefined
       const hub = initHub({
         base: DEVFRAMES_HUB_BASE,
-        // Storage (if anything writes to it) lands under this package's own
-        // `node_modules`, not the playground folder.
+        /**
+         * Storage (if anything writes to it) lands under this package's own
+         * `node_modules`, not the playground folder.
+         */
         cwd: new URL('..', import.meta.url).pathname,
         origin: () => {
           const resolved = server.resolvedUrls?.local?.[0]
           return resolved ? new URL(resolved).origin : ''
         },
-        // Frictionless local loop — no interactive OTP gate.
+        /** Frictionless local loop - no interactive OTP gate. */
         auth: false,
-        // Share Vite's own HTTP server for the WS upgrade, like
-        // `@devframes/vite/hub` does.
+        /**
+         * Share Vite's own HTTP server for the WS upgrade, like
+         * `@devframes/vite/hub` does.
+         */
         server: httpServer,
         ...(httpServer ? {} : { ws: { sidecar: true } }),
-        // Collapsed under the "Playground Tools" group `seed.ts`'s
-        // `configure` registers below, alongside the "Ping" action. Read-only
-        // (`write` stays unset) — this is a throwaway dev loop, not somewhere
-        // to stage/commit from. Inspects this very checkout: `cwd` above is
-        // this package's own directory.
+        /**
+         * Collapsed under the "Playground Tools" group `seed.ts`'s
+         * `configure` registers below, alongside the "Ping" action. Read-only
+         * (`write` stays unset) - this is a throwaway dev loop, not somewhere
+         * to stage/commit from. Inspects this very checkout: `cwd` above is
+         * this package's own directory.
+         */
         devframes: [
           { devframe: createGitDevframe(), dock: { groupId: PLAYGROUND_GROUP_ID } },
         ],

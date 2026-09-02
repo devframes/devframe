@@ -38,7 +38,7 @@ describe('collectStaticRpcDump', () => {
     expect(result.manifest['test:get-version']).toEqual({
       type: 'static',
       path: expectedPath,
-      // Default `jsonSerializable: false` → structured-clone-encoded shard.
+      /** Default `jsonSerializable: false` → structured-clone-encoded shard. */
       serialization: 'structured-clone',
     })
     expect(result.files[expectedPath]).toEqual({
@@ -106,7 +106,7 @@ describe('collectStaticRpcDump', () => {
       const getGraph = defineRpcFunction({
         name: 'test:graph',
         type: 'static',
-        // jsonSerializable: false (default) — fancy types must survive
+        /** jsonSerializable: false (default) - fancy types must survive */
         handler: () => ({
           nodes: new Map([['a', 1], ['b', 2]]),
           tags: new Set(['x', 'y']),
@@ -151,7 +151,7 @@ describe('collectStaticRpcDump', () => {
       const getEntries = defineRpcFunction({
         name: 'test:entries',
         type: 'query',
-        // default jsonSerializable: false → sc shards.
+        /** default jsonSerializable: false → sc shards. */
         handler: (key: string) => new Map([[key, key.length]]),
         dump: {
           inputs: [['hello']],
@@ -202,7 +202,7 @@ describe('collectStaticRpcDump', () => {
         name: 'test:bad-json',
         type: 'static',
         jsonSerializable: true,
-        // Lying about the contract: handler returns a Map.
+        /** Lying about the contract: handler returns a Map. */
         handler: () => new Map([['k', 1]]) as any,
       })
 
@@ -260,7 +260,7 @@ describe('collectStaticRpcDump', () => {
       const flaky = defineRpcFunction({
         name: 'test:flaky-roundtrip',
         type: 'query',
-        // default jsonSerializable: false → structured-clone shards
+        /** default jsonSerializable: false → structured-clone shards */
         handler: (): void => {
           const err = new TypeError('boom', { cause: new Error('inner') }) as Error & { tags?: unknown }
           err.tags = tags

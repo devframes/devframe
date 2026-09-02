@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { initDevframe } from '../initiate'
 
 const HOST = '127.0.0.1'
-// Globals `setupDevframeConnection` publishes/reads for same-realm reuse —
+// Globals `setupDevframeConnection` publishes/reads for same-realm reuse -
 // cleared between tests so each one dials its own freshly-booted server.
 const CONNECTION_GLOBALS = [
   '__DEVFRAME_CONNECTION_META__',
@@ -98,7 +98,7 @@ describe('sse transport e2e', () => {
       expect(meta.websocket).toBeUndefined()
       expect(meta.sse).toEqual({ path: '__sse' })
 
-      // The upgrade surface is gone — driving it is a coded error.
+      // The upgrade surface is gone - driving it is a coded error.
       expect(() => devframe.handleUpgrade({} as any, {} as any, {} as any)).toThrow(/DF0057|ws: false/)
 
       const channel = createSseRpcChannel({ url: `${origin}${base}__sse` })
@@ -152,7 +152,7 @@ describe('sse transport e2e', () => {
   })
 })
 
-describe('sse transport e2e — full client', () => {
+describe('sse transport e2e - full client', () => {
   beforeEach(() => {
     vi.stubGlobal('navigator', { userAgent: 'vitest' })
     for (const key of CONNECTION_GLOBALS) delete (globalThis as any)[key]

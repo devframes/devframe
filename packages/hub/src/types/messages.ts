@@ -149,14 +149,14 @@ export interface DevframeMessageHandle {
 }
 
 /**
- * Extra fields accepted by the per-level message shortcuts —
+ * Extra fields accepted by the per-level message shortcuts -
  * everything on {@link DevframeMessageEntryInput} except the
  * `message` and `level` the shortcut itself provides.
  */
 export type DevframeMessageShortcutInput = Omit<DevframeMessageEntryInput, 'message' | 'level'>
 
 /**
- * Per-level shortcuts shared by the client and the node host —
+ * Per-level shortcuts shared by the client and the node host -
  * `messages.info('...')` is `messages.add({ message: '...', level: 'info' })`.
  */
 export interface DevframeMessagesLevelShortcuts {
@@ -195,7 +195,7 @@ export interface DevframeMessagesListDelta {
   entries: DevframeMessageEntry[]
   /** Ids removed since the cursor (empty when `full`) */
   removedIds: string[]
-  /** The version cursor — pass back as `since` on the next call */
+  /** The version cursor - pass back as `since` on the next call */
   version: number
   /**
    * When `true`, `entries` is the complete snapshot and any locally cached

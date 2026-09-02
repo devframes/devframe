@@ -44,12 +44,12 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** String content — the tooltip form. */
+/** String content - the tooltip form. */
 export const TextTooltip: Story = {
   render: () => harness('Open the inspector'),
 }
 
-/** VNode content — a small menu, as the group/overflow popovers render. */
+/** VNode content - a small menu, as the group/overflow popovers render. */
 export const MenuContent: Story = {
   render: () => harness(() => h('div', { class: 'flex flex-col gap-0.5 min-w-40' }, [
     h('div', { class: 'px2 pt1 pb1.5 op60 text-2.75 uppercase tracking-wide font-medium' }, 'Menu'),
@@ -60,8 +60,8 @@ export const MenuContent: Story = {
 
 /**
  * A real toggle button drives the popover (rather than the mount-time
- * harness the other stories use), to exercise `ignore` — clicking the
- * trigger again while open must close it once, not close-then-reopen — and
+ * harness the other stories use), to exercise `ignore` - clicking the
+ * trigger again while open must close it once, not close-then-reopen - and
  * `panelClass`, which replaces the default tooltip padding.
  */
 export const ToggleTrigger: Story = {
@@ -95,7 +95,7 @@ export const ToggleTrigger: Story = {
 
 /**
  * A `transform` on an ancestor turns it into a containing block for `position: fixed`
- * descendants — without the escape fix, the panel would be positioned relative to (and
+ * descendants - without the escape fix, the panel would be positioned relative to (and
  * clipped by) the transformed box below rather than the viewport. It still lands on the
  * trigger correctly here because `FloatingPopover` `<Teleport>`s the panel out to that
  * ancestor's parent.

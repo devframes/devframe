@@ -15,7 +15,7 @@ describe('streaming-channel sink', () => {
     expect(sink.lastSeq).toBe(3)
   })
 
-  it('emits end exactly once on close() — second close is a no-op', () => {
+  it('emits end exactly once on close() - second close is a no-op', () => {
     const sink = createStreamSink<string>()
     const end = vi.fn()
     sink.events.on('end', end)

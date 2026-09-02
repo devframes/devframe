@@ -56,7 +56,7 @@ export async function startDashboardServer(
   // The client SPA ships in the workspace-linked `--assets` package in dev.
   const distDir = resolveStaticAssetsSource(devframe.cli!.distDir!, resolve(tmpdir(), 'devframes_plugin_git-test'), devframe.importMetaUrl)
   if (typeof distDir !== 'string')
-    throw new TypeError('these tests serve the local client SPA — build the plugin first')
+    throw new TypeError('these tests serve the local client SPA - build the plugin first')
   // The factory leaves basePath adapter-resolved; standalone defaults to '/'.
   const basePath = devframe.basePath ?? '/'
   const host = '127.0.0.1'

@@ -24,8 +24,8 @@ function PatchViewer({ staged, path }: { staged: boolean, path: string }) {
 
 /**
  * The merged "Changes" view: the working tree's staged / unstaged / untracked
- * files (with stage / unstage / commit actions in write mode), and — when a
- * file is selected — its diff below, folding the old Status and Diff tabs into
+ * files (with stage / unstage / commit actions in write mode), and - when a
+ * file is selected - its diff below, folding the old Status and Diff tabs into
  * one surface.
  */
 export function StatusPanel() {

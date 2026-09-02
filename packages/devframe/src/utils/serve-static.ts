@@ -42,7 +42,7 @@ async function canonicalRoot(absDir: string): Promise<string> {
 
 /**
  * Stat a candidate file, confirming its canonical target stays inside the
- * canonical served root — a symlink inside the root can only resolve to a
+ * canonical served root - a symlink inside the root can only resolve to a
  * file still within it; one escaping the root reads as a miss, not a leak.
  */
 async function statFile(abs: string, realRoot: string): Promise<ResolvedFile | null> {
@@ -58,13 +58,7 @@ async function statFile(abs: string, realRoot: string): Promise<ResolvedFile | n
   }
 }
 
-async function resolveTarget(
-  absDir: string,
-  realRoot: string,
-  urlPath: string,
-  indexNames: string[],
-  single: boolean,
-): Promise<ResolvedFile | null> {
+function cleanUrlPath(urlPath: string): string | null {
   let cleaned: string
   try {
     cleaned = decodeURIComponent(urlPath || '/')
@@ -77,16 +71,10 @@ async function resolveTarget(
     cleaned = cleaned.slice(0, -1)
   if (cleaned.startsWith('/'))
     cleaned = cleaned.slice(1)
+  return cleaned
+}
 
-  const abs = normalize(join(absDir, cleaned))
-
-  if (abs !== absDir && !abs.startsWith(absDir + sep))
-    return null
-
-  const direct = await statFile(abs, realRoot)
-  if (direct)
-    return direct
-
+async function resolveDirectoryIndex(abs: string, realRoot: string, indexNames: string[]): Promise<ResolvedFile | null> {
   try {
     const s = await stat(abs)
     if (s.isDirectory()) {
@@ -98,19 +86,53 @@ async function resolveTarget(
     }
   }
   catch {
-    // not found / not a directory — continue
+    // not found / not a directory - continue
   }
+  return null
+}
 
-  // Mirror sirv's `extensions: ['html', 'htm']` default: when the request
-  // has no file extension, try `${path}.html` / `${path}.htm` before SPA
-  // fallback so pretty-URL deployments resolve to the right page.
-  if (!extname(cleaned)) {
-    for (const ext of HTML_EXTENSIONS) {
-      const candidate = await statFile(abs + ext, realRoot)
-      if (candidate)
-        return candidate
-    }
+/**
+ * Mirror sirv's `extensions: ['html', 'htm']` default: an extension-less
+ * request tries `${path}.html` / `${path}.htm` so pretty-URL deployments
+ * resolve to the right page before the SPA fallback.
+ */
+async function resolveHtmlExtension(abs: string, cleaned: string, realRoot: string): Promise<ResolvedFile | null> {
+  if (extname(cleaned))
+    return null
+  for (const ext of HTML_EXTENSIONS) {
+    const candidate = await statFile(abs + ext, realRoot)
+    if (candidate)
+      return candidate
   }
+  return null
+}
+
+async function resolveTarget(
+  absDir: string,
+  realRoot: string,
+  urlPath: string,
+  indexNames: string[],
+  single: boolean,
+): Promise<ResolvedFile | null> {
+  const cleaned = cleanUrlPath(urlPath)
+  if (cleaned === null)
+    return null
+
+  const abs = normalize(join(absDir, cleaned))
+  if (abs !== absDir && !abs.startsWith(absDir + sep))
+    return null
+
+  const direct = await statFile(abs, realRoot)
+  if (direct)
+    return direct
+
+  const indexed = await resolveDirectoryIndex(abs, realRoot, indexNames)
+  if (indexed)
+    return indexed
+
+  const htmlExt = await resolveHtmlExtension(abs, cleaned, realRoot)
+  if (htmlExt)
+    return htmlExt
 
   const fallbackIndex = indexNames[0]
   if (single && fallbackIndex && !/\.[a-z0-9]+$/i.test(cleaned)) {
@@ -160,7 +182,7 @@ function normalizeOptions(options: ServeStaticOptions | undefined): NormalizedOp
 /**
  * Drive one request through a {@link RemoteAssetsStore}: the store's
  * `Response` on a hit, a 404 on a miss, or a 502 (styled error page for HTML
- * navigations) on provider failure — shared between the h3 and connect flavors.
+ * navigations) on provider failure - shared between the h3 and connect flavors.
  */
 async function remoteResponse(store: RemoteAssetsStore, urlPath: string, accept: string | null | undefined): Promise<Response> {
   try {
@@ -197,12 +219,12 @@ function serveRemoteAssetsHandler(store: RemoteAssetsStore): EventHandler {
 }
 
 /**
- * h3 event handler that serves files from `source` with SPA fallback — a
+ * h3 event handler that serves files from `source` with SPA fallback - a
  * local directory, or a {@link RemoteAssetsStore} whose files stream through
  * the CDN back-proxy into the local cache.
  *
  * Drop-in replacement for `fromNodeMiddleware(sirv(dir, { dev: true, single: true }))`
- * when the surrounding server is an h3 app — no `Cache-Control` beyond
+ * when the surrounding server is an h3 app - no `Cache-Control` beyond
  * `no-store`, `Content-Type` resolved via `mrmime`, and a miss with no
  * file extension falls back to `<dir>/index.html` so client-side routing
  * works.
@@ -260,7 +282,7 @@ export function mountStaticHandler(
  * Connect/Express-style Node middleware variant of {@link serveStaticHandler}.
  *
  * Use when mounting onto `viteServer.middlewares.use(base, …)` or any other
- * Connect stack — avoids forcing the host package to depend on h3 just to
+ * Connect stack - avoids forcing the host package to depend on h3 just to
  * adapt an event handler back into Node middleware.
  */
 export function serveStaticNodeMiddleware(

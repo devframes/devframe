@@ -1,10 +1,6 @@
 import type { Decorator, Preview } from '@storybook/vue3-vite'
-// The same Tailwind preflight `scripts/build-css.ts` prepends to the shipped
-// shadow-root stylesheet — first, so `virtual:uno.css`'s utilities (and the
-// hand-written `style.css`) win over its resets, matching the production
-// build's `[reset, userStyle, unoCss, ...]` order. Without it, stories miss
-// the reset (unstyled default `<button>`/`<ul>`/heading margins, …) real
-// dock content never shows once mounted in its actual shadow root.
+// Reset first so uno utilities win over its resets, matching the production
+// `[reset, userStyle, unoCss, ...]` order; otherwise stories lose the reset.
 import '@unocss/reset/tailwind.css'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
@@ -14,7 +10,7 @@ import '../src/client/primary-ramp.css'
 
 // Drive the shared `@antfu/design` tokens off the toolbar theme toggle: dark mode
 // is the `.dark` class on `<html>`, and the canvas takes the semantic
-// `bg-base`/`color-base` surface — matching every other devframe surface.
+// `bg-base`/`color-base` surface - matching every other devframe surface.
 function applyTheme(theme: string): void {
   document.documentElement.classList.toggle('dark', theme !== 'light')
   document.body.classList.add('bg-base', 'color-base', 'font-sans')

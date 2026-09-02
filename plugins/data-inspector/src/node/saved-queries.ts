@@ -45,7 +45,7 @@ function slugify(text: string): string {
     .slice(0, 60)
 }
 
-/** djb2 — stable short id for untitled queries (same query, same id). */
+/** djb2 - stable short id for untitled queries (same query, same id). */
 function hashOf(text: string): string {
   let hash = 5381
   for (let i = 0; i < text.length; i++)
@@ -87,7 +87,7 @@ export function saveQuery(ctx: DevframeNodeContext, input: SaveQueryInput): Save
   byScope[input.scope].mutate((draft) => {
     draft.queries[id] = record
   })
-  // The id is the storage key across both scopes — saving into one scope
+  // The id is the storage key across both scopes - saving into one scope
   // moves the query there rather than leaving a stale twin behind.
   const other: SavedQueryScope = input.scope === 'project' ? 'workspace' : 'project'
   if (byScope[other].value().queries[id]) {

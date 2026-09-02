@@ -9,14 +9,14 @@ import type { DevframeNodeRpcSession } from 'devframe/types'
  * the handshake RPC functions, the resolver gate, the connect-time trust
  * hook, and the startup banner.
  *
- * `initDevframe` / `initHub` accept one of these directly via their `auth` option —
- * see {@link https://devfra.me | devframe}'s server docs — or a host can
+ * `initDevframe` / `initHub` accept one of these directly via their `auth` option -
+ * see {@link https://devfra.me | devframe}'s server docs - or a host can
  * wire the four pieces itself against a lower-level transport.
  */
 export interface DevframeAuthHandler {
   /**
    * `anonymous:devframe:auth` + `anonymous:devframe:auth:exchange` (the
-   * handshake) and `devframe:auth:revoke` (self-revoke) — register these on
+   * handshake) and `devframe:auth:revoke` (self-revoke) - register these on
    * the RPC host (e.g. `rpcHost.register(fn)` for each).
    */
   rpcFunctions: RpcFunctionDefinitionAny[]
@@ -31,18 +31,18 @@ export interface DevframeAuthHandler {
    * Connect-time trust: reads a bearer token off the connection's initial
    * request (a static/pre-shared token from `clientAuthTokens`, or a token
    * minted by the code exchange) and, when valid, marks the session
-   * trusted immediately — before the client's own handshake call.
+   * trusted immediately - before the client's own handshake call.
    */
   onConnect: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
   /**
    * Print the current one-time code and its magic-link URL. Devframe stays
-   * headless — call this yourself once the server is listening. Safe to
+   * headless - call this yourself once the server is listening. Safe to
    * call repeatedly; it only prints once per code.
    */
   printBanner: () => void
   /**
    * Rewrite a URL the CLI is about to open in the browser (`--open`) so the
-   * tab lands already authenticated — e.g. appending the current OTP as a
+   * tab lands already authenticated - e.g. appending the current OTP as a
    * query param. Called with the fully-resolved target URL; return it
    * unchanged to opt out. Optional: a handler that doesn't need this (e.g.
    * one gated by a pre-shared bearer token instead of an interactive code)

@@ -5,13 +5,13 @@ import { evaluateWhen as evaluateWhenImpl, resolveContextValue as resolveContext
  * Context object for evaluating `when` expressions.
  *
  * Built-in variables:
- * - `clientType` — `'embedded' | 'standalone'`
- * - `dockOpen` — whether the dock panel is open
- * - `paletteOpen` — whether the command palette is open
- * - `dockSelectedId` — ID of the selected dock entry (empty string if none)
+ * - `clientType` - `'embedded' | 'standalone'`
+ * - `dockOpen` - whether the dock panel is open
+ * - `paletteOpen` - whether the command palette is open
+ * - `dockSelectedId` - ID of the selected dock entry (empty string if none)
  *
  * Plugins can add namespaced variables using dot or colon separators:
- * - `vite.mode`, `vite:mode` — stored as `{ 'vite.mode': 'development' }` or nested `{ vite: { mode: 'development' } }`
+ * - `vite.mode`, `vite:mode` - stored as `{ 'vite.mode': 'development' }` or nested `{ vite: { mode: 'development' } }`
  *
  * Supported operators: `!`, `==`, `!=`, `===`, `!==`, `<`, `<=`, `>`, `>=`,
  * `&&`, `||`, `+`, `-`, `*`, `/`, `%`. Parentheses, number and string literals

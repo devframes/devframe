@@ -61,6 +61,52 @@ function mapCode(code: string): FileStatusCode {
   }
 }
 
+function applyBranchToken(status: GitStatus, token: string): void {
+  const [, key, ...rest] = token.split(' ')
+  const value = rest.join(' ')
+  switch (key) {
+    case 'branch.head':
+      status.detached = value === '(detached)'
+      status.branch = status.detached ? null : value
+      return
+    case 'branch.oid':
+      if (value !== '(initial)')
+        status.head = value.slice(0, 9)
+      return
+    case 'branch.upstream':
+      status.upstream = value
+      return
+    case 'branch.ab': {
+      const match = value.match(/\+(\d+)\s+-(\d+)/)
+      if (match) {
+        status.ahead = Number(match[1])
+        status.behind = Number(match[2])
+      }
+    }
+  }
+}
+
+/**
+ * Record a tracked change (`1 ` ordinary or `2 ` rename/copy) and return the
+ * token index consumed - a rename eats the following NUL token for its origin.
+ * Type 1 path begins at field 8; type 2 inserts the rename score at field 8,
+ * pushing the path to field 9 and the original to that extra token.
+ */
+function applyTrackedEntry(status: GitStatus, tokens: string[], index: number): number {
+  const fields = tokens[index].split(' ')
+  const [x, y] = fields[1]
+  const renamed = tokens[index].startsWith('2 ')
+  const path = fields.slice(renamed ? 9 : 8).join(' ')
+  const consumed = renamed ? index + 1 : index
+  const from = renamed ? tokens[consumed] : undefined
+
+  if (x !== '.')
+    status.staged.push(from ? { path, from, status: mapCode(x) } : { path, status: mapCode(x) })
+  if (y !== '.')
+    status.unstaged.push({ path, status: mapCode(y) })
+  return consumed
+}
+
 /**
  * Parse `git status --porcelain=v2 --branch -z` into a structured snapshot.
  * Records are NUL-separated; rename/copy (type `2`) entries consume an extra
@@ -74,60 +120,13 @@ function parseStatus(root: string, raw: string): GitStatus {
     const token = tokens[i]
     if (!token)
       continue
-
-    if (token.startsWith('# ')) {
-      const [, key, ...rest] = token.split(' ')
-      const value = rest.join(' ')
-      if (key === 'branch.head') {
-        if (value === '(detached)') {
-          status.detached = true
-          status.branch = null
-        }
-        else {
-          status.branch = value
-        }
-      }
-      else if (key === 'branch.oid' && value !== '(initial)') {
-        status.head = value.slice(0, 9)
-      }
-      else if (key === 'branch.upstream') {
-        status.upstream = value
-      }
-      else if (key === 'branch.ab') {
-        const match = value.match(/\+(\d+)\s+-(\d+)/)
-        if (match) {
-          status.ahead = Number(match[1])
-          status.behind = Number(match[2])
-        }
-      }
-      continue
-    }
-
-    if (token.startsWith('1 ') || token.startsWith('2 ')) {
-      const renamed = token.startsWith('2 ')
-      const fields = token.split(' ')
-      const xy = fields[1]
-      const x = xy[0]
-      const y = xy[1]
-      // Type 1 path begins at field 8; type 2 inserts the rename score at
-      // field 8, pushing the path to field 9 and the original to a NUL token.
-      const path = fields.slice(renamed ? 9 : 8).join(' ')
-      const from = renamed ? tokens[++i] : undefined
-
-      if (x !== '.')
-        status.staged.push(from ? { path, from, status: mapCode(x) } : { path, status: mapCode(x) })
-      if (y !== '.')
-        status.unstaged.push({ path, status: mapCode(y) })
-      continue
-    }
-
-    if (token.startsWith('u ')) {
-      const path = token.split(' ').slice(10).join(' ')
-      status.unstaged.push({ path, status: 'unmerged' } satisfies StatusFileEntry)
-      continue
-    }
-
-    if (token.startsWith('? '))
+    if (token.startsWith('# '))
+      applyBranchToken(status, token)
+    else if (token.startsWith('1 ') || token.startsWith('2 '))
+      i = applyTrackedEntry(status, tokens, i)
+    else if (token.startsWith('u '))
+      status.unstaged.push({ path: token.split(' ').slice(10).join(' '), status: 'unmerged' } satisfies StatusFileEntry)
+    else if (token.startsWith('? '))
       status.untracked.push(token.slice(2))
   }
 
@@ -374,7 +373,7 @@ export function createGitOps(cwd: string): GitServiceApi {
           return { isRepo: true, commits: [], limit, skip, hasMore: false }
         command.push('--end-of-options', ref)
       }
-      // Pathspec after `--` — everything past it is treated as a path, never
+      // Pathspec after `--` - everything past it is treated as a path, never
       // an option, so client paths need no dash guard here.
       const paths = (args.paths ?? []).map(p => p.trim()).filter(Boolean)
       if (paths.length > 0)
@@ -415,7 +414,7 @@ export function createGitOps(cwd: string): GitServiceApi {
       catch {
         return base
       }
-      // A NUL byte marks binary content — omit it rather than return garbage.
+      // A NUL byte marks binary content - omit it rather than return garbage.
       if (raw.includes('\0'))
         return { ...base, found: true, binary: true }
       const { text: content, truncated } = clipText(raw, FILE_CHAR_LIMIT)
@@ -489,8 +488,10 @@ export function createGitOps(cwd: string): GitServiceApi {
         const parsed = Date.parse(isoDate)
         return {
           name,
-          // Annotated tags dereference to their target commit; lightweight
-          // tags point straight at it.
+          /**
+           * Annotated tags dereference to their target commit; lightweight
+           * tags point straight at it.
+           */
           sha: targetSha || objectSha,
           date: Number.isNaN(parsed) ? 0 : parsed,
           subject: subject ?? '',

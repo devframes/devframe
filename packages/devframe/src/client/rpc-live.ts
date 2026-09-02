@@ -33,8 +33,8 @@ export interface CreateLiveRpcClientModeOptions {
 }
 
 /**
- * The transport-independent half of a live RPC client mode — connection
- * status, pending-call guarding, and the trust handshake — shared by the
+ * The transport-independent half of a live RPC client mode - connection
+ * status, pending-call guarding, and the trust handshake - shared by the
  * WebSocket and SSE modes. Each transport supplies only its channel.
  */
 export function createLiveRpcClientMode(
@@ -69,7 +69,7 @@ export function createLiveRpcClientMode(
     events.emit(DEVFRAME_EVENTS.client.connectionStatus, next, previous)
   }
 
-  // Pending calls we can settle proactively — a connection that drops (or a
+  // Pending calls we can settle proactively - a connection that drops (or a
   // server that never trusts us) would otherwise leave these promises hanging
   // forever, which is exactly the "spinner that never resolves" this guards
   // against.
@@ -89,7 +89,7 @@ export function createLiveRpcClientMode(
 
   /**
    * Wrap an in-flight call promise so it settles on server response, on an
-   * optional wall-clock timeout, or when the connection drops — never hangs.
+   * optional wall-clock timeout, or when the connection drops - never hangs.
    */
   function guardCall<T>(promise: Promise<T>, method: string): Promise<T> {
     return new Promise<T>((resolve, reject) => {
@@ -143,7 +143,7 @@ export function createLiveRpcClientMode(
   for (const name of connectionMeta.jsonSerializableMethods ?? [])
     definitions.set(name, { jsonSerializable: true })
 
-  // Hoisted out of the `createRpcClient` call so `close()` below can reach it — birpc's own
+  // Hoisted out of the `createRpcClient` call so `close()` below can reach it - birpc's own
   // `ChannelOptions` carries no reference back to what it was built from.
   const channel = options.createChannel({
     definitions,
@@ -154,7 +154,7 @@ export function createLiveRpcClientMode(
     },
     onDisconnected() {
       // A clean close after we were connected, or a connection that never
-      // opened — either way calls can no longer be served.
+      // opened - either way calls can no longer be served.
       if (status !== 'error')
         setStatus('disconnected')
       rejectAllPending(new DevframeConnectionError('connection', '[devframe] Disconnected from the devframe server', { cause: connectionError ?? undefined }))
@@ -189,9 +189,11 @@ export function createLiveRpcClientMode(
 
     const result = await serverRpc.$call('anonymous:devframe:auth', {
       authToken: token,
-      // Sent raw; the server parses it into a display label (see
-      // `describeUA` in `node/auth/state.ts`) so `ua-parser-modern` stays
-      // out of the browser bundle.
+      /**
+       * Sent raw; the server parses it into a display label (see
+       * `describeUA` in `node/auth/state.ts`) so `ua-parser-modern` stays
+       * out of the browser bundle.
+       */
       ua: navigator.userAgent,
       origin: location.origin,
     })
@@ -205,7 +207,7 @@ export function createLiveRpcClientMode(
     }
     else {
       // The server refused this token. On an auth-enforcing host, untrusted
-      // calls won't be served — surface it so the UI can prompt for auth
+      // calls won't be served - surface it so the UI can prompt for auth
       // rather than spin. The standalone (`auth: false`) server auto-trusts,
       // so it never lands here.
       const authError = new DevframeConnectionError('auth', '[devframe] The devframe server refused this client\'s credentials')

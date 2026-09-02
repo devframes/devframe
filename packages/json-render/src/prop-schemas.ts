@@ -7,7 +7,7 @@ import { z } from 'zod'
  * `Record<string, unknown>`, so it validates component *names* but not
  * per-component *props*. These schemas are the one validation Devframes
  * adds: element props are parsed against the matching schema at both trust
- * boundaries — spec ingress (server) and render time (client).
+ * boundaries - spec ingress (server) and render time (client).
  *
  * Each schema validates the types of the documented props and tolerates
  * extra keys (upstream directives like `$bindState` resolve to values at
@@ -125,7 +125,7 @@ export const TreePropsSchema = z.object({
 })
 
 export const TabsPropsSchema = z.object({
-  // `children[i]` renders under `tabs[i]` — the two arrays are positional.
+  /** `children[i]` renders under `tabs[i]` - the two arrays are positional. */
   tabs: scalar(z.array(z.looseObject({
     value: z.string(),
     label: z.string(),

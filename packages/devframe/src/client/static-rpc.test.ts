@@ -162,7 +162,7 @@ describe('createStaticRpcCaller', () => {
         'demo:legacy-static': {
           type: 'static',
           path: `${DEVFRAME_RPC_DUMP_DIRNAME}/demo~legacy.static.json`,
-          // no `serialization` field — must default to JSON parsing
+          // no `serialization` field - must default to JSON parsing
         },
       },
       async () => ({ output: { items: [1, 2, 3] } }),

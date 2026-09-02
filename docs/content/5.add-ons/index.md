@@ -7,12 +7,12 @@ description: 'Ready-to-run packages built on Devframe: built-in devframes you ca
 
 Ready-to-run packages built on Devframe, in two families:
 
-- **[Devframes](/add-ons/devframes)** — complete built-in devtools (`@devframes/plugin-*`). Run one standalone, compose several into your own DevTools, or read one as a reference for building your own.
-- **[Services](/add-ons/services)** — wire services (`@devframes/service-*`): one node-side capability installed once per host and consumed by every devframe and RPC client, without re-bundling it.
+- **[Devframes](/add-ons/devframes)** - complete built-in devtools (`@devframes/plugin-*`). Run one standalone, compose several into your own DevTools, or read one as a reference for building your own.
+- **[Services](/add-ons/services)** - wire services (`@devframes/service-*`): one node-side capability installed once per host and consumed by every devframe and RPC client, without re-bundling it.
 
 ## Devframes
 
-Complete tools, each picking its own UI framework yet sharing one node-side API — [RPC](/guide/rpc), [shared state](/guide/shared-state), and `connectDevframe`.
+Complete tools, each picking its own UI framework yet sharing one node-side API - [RPC](/guide/rpc), [shared state](/guide/shared-state), and `connectDevframe`.
 
 | Devframe | UI framework | What it does |
 |--------|--------------|--------------|
@@ -27,7 +27,7 @@ Complete tools, each picking its own UI framework yet sharing one node-side API 
 
 ## Services
 
-Shared node-side capabilities other devframes install and consume — see [Cross-Devframe Services](/guide/services) for the mechanism, and the [Node-Side API reference](/references/node-api#devframeserviceshost) for the host API.
+Shared node-side capabilities other devframes install and consume - see [Cross-Devframe Services](/guide/services) for the mechanism, and the [Node-Side API reference](/references/node-api#devframeserviceshost) for the host API.
 
 | Service | Scope | What it does |
 |---------|-------|--------------|

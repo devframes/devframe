@@ -8,7 +8,7 @@ const props = withDefaults(defineProps<{
   /** Number of digits. */
   length?: number
   disabled?: boolean
-  /** Error state — paints the boxes red and shakes them. */
+  /** Error state - paints the boxes red and shakes them. */
   invalid?: boolean
   /** Focus the first box on mount. */
   autofocus?: boolean
@@ -80,7 +80,7 @@ function onInput(i: number, event: Event): void {
     commit(arr.join(''))
     return
   }
-  // Multiple chars can arrive at once (autofill / fast typing) — spread them.
+  // Multiple chars can arrive at once (autofill / fast typing) - spread them.
   const next = fillFrom(i, raw)
   focusBox(next)
 }

@@ -1,5 +1,5 @@
 /**
- * Standalone CLI — `devframe-data-inspector`:
+ * Standalone CLI - `devframe-data-inspector`:
  *
  * ```sh
  * devframe-data-inspector stats.json trace.jsonl   # inspect local data files

@@ -5,7 +5,7 @@ import process from 'node:process'
  * Windows CI runners intermittently crash while spawning devframe's native
  * build toolchain (rolldown, via tsdown/vite) with
  * `STATUS_DLL_INIT_FAILED` (exit code -1073741502, surfaced by pnpm/turbo
- * as 3221225794) under `turbo run build`'s concurrency — an environment
+ * as 3221225794) under `turbo run build`'s concurrency - an environment
  * fault unrelated to the code under test. `unit-test / test
  * (windows-latest, *)` in the "CI" workflow has failed on this signature
  * across many unrelated commits and packages.
@@ -38,7 +38,7 @@ async function main(): Promise<void> {
 
     const code = result.status ?? result.signal ?? 'unknown'
     const isLastAttempt = attempt === attempts
-    console.error(`\n[ci-retry] \`${command}\` failed (exit ${code}), attempt ${attempt}/${attempts}${isLastAttempt ? '' : ` — retrying in ${delayMs}ms`}\n`)
+    console.error(`\n[ci-retry] \`${command}\` failed (exit ${code}), attempt ${attempt}/${attempts}${isLastAttempt ? '' : ` - retrying in ${delayMs}ms`}\n`)
 
     if (isLastAttempt)
       process.exit(typeof result.status === 'number' ? result.status : 1)

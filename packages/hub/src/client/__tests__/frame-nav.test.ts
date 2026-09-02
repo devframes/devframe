@@ -5,6 +5,8 @@ import { createEventEmitter } from 'devframe/utils/events'
 import { describe, expect, it, vi } from 'vitest'
 import { attachFrameNavClient, FRAME_NAV_CHANNEL, FRAME_NAV_VERSION } from '../frame-nav'
 
+type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> }
+
 const ORIGIN = 'https://app.example'
 
 function anchorEntry(extra?: Partial<DevframeViewIframe>): DevframeViewIframe {
@@ -100,12 +102,13 @@ function createWindowStub() {
 
 function createIframeStub() {
   const posted: Array<{ msg: any, origin: string }> = []
-  const iframe = {
+  const partial: DeepPartial<Pick<HTMLIFrameElement, 'contentWindow' | 'src'>> = {
     src: `${ORIGIN}/__nuxt/`,
     contentWindow: {
       postMessage: (msg: any, origin: string) => posted.push({ msg, origin }),
     },
-  } as unknown as Pick<HTMLIFrameElement, 'contentWindow' | 'src'>
+  }
+  const iframe = partial as Pick<HTMLIFrameElement, 'contentWindow' | 'src'>
   return { iframe, posted }
 }
 

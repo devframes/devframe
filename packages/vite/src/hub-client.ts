@@ -15,7 +15,7 @@ export interface MountDevframeHubClientOptions extends DevframeClientRuntimeOpti
 }
 
 /**
- * Boot the devframes-hub **client runtime** in the host page — the browser
+ * Boot the devframes-hub **client runtime** in the host page - the browser
  * half of {@link import('./hub').viteDevframeHub}. Connects RPC to the hub
  * (defaulting `base` to `/__devframes/`), assembles the shared
  * `DevframeClientContext`, and imports each dock's client script into the

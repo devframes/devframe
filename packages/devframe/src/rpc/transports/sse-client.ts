@@ -12,7 +12,7 @@ export interface SseRpcChannelOptions {
   authToken?: string
   /**
    * RPC function definitions (or just the `jsonSerializable` flag per
-   * method) used to dispatch the per-call wire serializer — same contract
+   * method) used to dispatch the per-call wire serializer - same contract
    * as the WS channel.
    */
   definitions?: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>>
@@ -22,9 +22,35 @@ export interface SseRpcChannelOptions {
 
 function NOOP(): void {}
 
+/** Split the next complete SSE frame (up to a blank line) off the buffer. */
+function takeFrame(buffer: string): { frame: string, rest: string } | undefined {
+  const boundary = buffer.search(/\n\n|\r\n\r\n/)
+  if (boundary < 0)
+    return undefined
+  return {
+    frame: buffer.slice(0, boundary),
+    rest: buffer.slice(boundary + (buffer[boundary] === '\r' ? 4 : 2)),
+  }
+}
+
+/** Parse one SSE frame's lines into its event name and data lines. */
+function parseFrame(frame: string): { event: string, data: string[] } {
+  let event = 'message'
+  const data: string[] = []
+  for (const rawLine of frame.split(/\r?\n/)) {
+    if (rawLine.startsWith(':'))
+      continue // comment frame (keep-alive ping)
+    if (rawLine.startsWith('event:'))
+      event = rawLine.slice(6).trimStart()
+    else if (rawLine.startsWith('data:'))
+      data.push(rawLine.slice(5).replace(/^ /, ''))
+  }
+  return { event, data }
+}
+
 /**
  * Build a birpc `ChannelOptions` object backed by an SSE stream (server →
- * client) and HTTP `POST` (client → server) — the WebSocket-free counterpart
+ * client) and HTTP `POST` (client → server) - the WebSocket-free counterpart
  * to `createWsRpcChannel`, wire-compatible with `attachSseRpcTransport`.
  *
  * The stream is consumed via `fetch` streaming (not `EventSource`), so it
@@ -32,7 +58,7 @@ function NOOP(): void {}
  * (`event: session`) carries the session id; every `POST` echoes it in the
  * `x-birpc-session` header. A response to a client-initiated request comes
  * back in the `POST`'s own body and is re-injected into the channel; a
- * dropped stream terminates the channel — there is no reconnect, matching
+ * dropped stream terminates the channel - there is no reconnect, matching
  * the WS channel's closed-is-done semantics.
  */
 export function createSseRpcChannel(options: SseRpcChannelOptions): ChannelOptions & { close: () => void } {
@@ -103,21 +129,11 @@ export function createSseRpcChannel(options: SseRpcChannelOptions): ChannelOptio
       buffer += decoder.decode(value, { stream: true })
       // Frames are separated by a blank line.
       for (;;) {
-        const boundary = buffer.search(/\n\n|\r\n\r\n/)
-        if (boundary < 0)
+        const taken = takeFrame(buffer)
+        if (!taken)
           break
-        const frame = buffer.slice(0, boundary)
-        buffer = buffer.slice(boundary + (buffer[boundary] === '\r' ? 4 : 2))
-        let event = 'message'
-        const data: string[] = []
-        for (const rawLine of frame.split(/\r?\n/)) {
-          if (rawLine.startsWith(':'))
-            continue // comment frame (keep-alive ping)
-          if (rawLine.startsWith('event:'))
-            event = rawLine.slice(6).trimStart()
-          else if (rawLine.startsWith('data:'))
-            data.push(rawLine.slice(5).replace(/^ /, ''))
-        }
+        buffer = taken.rest
+        const { event, data } = parseFrame(taken.frame)
         if (data.length > 0)
           dispatch(event, data.join('\n'))
       }
@@ -163,7 +179,7 @@ export function createSseRpcChannel(options: SseRpcChannelOptions): ChannelOptio
         sessionId = await sessionReady
       }
       catch {
-        // The stream never opened (or already closed) — the error surfaced
+        // The stream never opened (or already closed) - the error surfaced
         // through `onError`/`onDisconnected`; nothing to send.
         return
       }
@@ -182,7 +198,7 @@ export function createSseRpcChannel(options: SseRpcChannelOptions): ChannelOptio
         })
         if (response.status === 200) {
           // The parked response to a client-initiated request rides the
-          // POST body — re-inject it so birpc correlates it by id.
+          // POST body - re-inject it so birpc correlates it by id.
           const body = await response.text()
           if (body)
             onMessage?.(body)

@@ -28,7 +28,7 @@ export async function testFetch(_url: string): Promise<Response> {
 
 const testDevframe = createOgDevframe({ fetch: testFetch })
 
-/** Resolve the SPA to a local dir — the workspace-linked `--assets` package in dev. */
+/** Resolve the SPA to a local dir - the workspace-linked `--assets` package in dev. */
 function localSpaDir(): string {
   const resolved = resolveStaticAssetsSource(testDevframe.cli!.distDir!, path.join(os.tmpdir(), 'devframes_plugin_og-test'), testDevframe.importMetaUrl)
   if (typeof resolved !== 'string')

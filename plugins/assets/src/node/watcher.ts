@@ -8,7 +8,7 @@ import { CHANGED_EVENT } from '../constants'
  * Watch the managed directory and broadcast {@link CHANGED_EVENT} (debounced)
  * whenever a file is added, removed, or changed, so connected UIs refresh
  * their listing live. Returns a disposer; call it when the devframe shuts
- * down (tests in particular — a leaked watcher keeps the process alive).
+ * down (tests in particular - a leaked watcher keeps the process alive).
  */
 export function watchAssetsDir(ctx: DevframeNodeContext, dir: string): () => Promise<void> {
   const notify = debounce(async () => {
@@ -17,10 +17,12 @@ export function watchAssetsDir(ctx: DevframeNodeContext, dir: string): () => Pro
 
   const watcher = watch(dir, {
     ignoreInitial: true,
-    // Directories can nest arbitrarily deep (icon sets, generated builds
-    // dropped into the managed dir, …) — chokidar's default depth is
-    // unlimited, but pin a generous cap so a runaway symlink loop can't
-    // spin the watcher forever.
+    /**
+     * Directories can nest arbitrarily deep (icon sets, generated builds
+     * dropped into the managed dir, …) - chokidar's default depth is
+     * unlimited, but pin a generous cap so a runaway symlink loop can't
+     * spin the watcher forever.
+     */
     depth: 32,
   })
   watcher
@@ -32,15 +34,10 @@ export function watchAssetsDir(ctx: DevframeNodeContext, dir: string): () => Pro
 
   return async () => {
     await watcher.close()
-    // On Windows, closing a chokidar/fs.watch handle doesn't guarantee the
-    // OS has fully retired the outstanding ReadDirectoryChangesW request —
-    // close() returns before libuv's IOCP completion drains. If the watched
-    // directory is deleted right after (as a caller tearing down a
-    // short-lived context typically does), that stale completion can reach
-    // `uv__fs_event_process` after the fact and trip its directory-prefix
-    // sanity check, hard-crashing the process with
-    // `Assertion failed: !_wcsnicmp(filename, dir, dirlen)` in fs-event.c.
-    // A grace period gives the pending I/O time to actually settle first.
+    // Windows: chokidar's close() can return before libuv retires the
+    // outstanding ReadDirectoryChangesW request. If the watched dir is then
+    // deleted, the stale completion trips a libuv assertion and crashes the
+    // process. A short grace period lets the pending I/O settle first.
     if (process.platform === 'win32')
       await new Promise(resolve => setTimeout(resolve, 200))
   }

@@ -24,7 +24,7 @@ export function groupByFolder(assets: readonly AssetInfo[]): FolderGroup[] {
 
 export interface TreeNode {
   name: string
-  /** Full path from the managed root — a folder path for folders, `asset.path` for files. */
+  /** Full path from the managed root - a folder path for folders, `asset.path` for files. */
   path: string
   isFolder: boolean
   asset?: AssetInfo

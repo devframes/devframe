@@ -37,6 +37,95 @@ async function resolveGetter<T>(valueOrGetter: T | (() => Promise<T>)): Promise<
  * const store = await dumpFunctions([greet], context, { concurrency: 10 })
  * ```
  */
+interface TaskResolution {
+  handler: (...args: any[]) => any
+  dump: RpcDumpDefinition
+  definition: RpcFunctionDefinitionAny
+}
+
+/** Run tasks sequentially (`concurrency <= 1`) or through a `p-limit` pool. */
+async function runDumpTasks<R>(tasks: Array<() => Promise<R>>, concurrency: number): Promise<R[]> {
+  if (concurrency <= 1) {
+    const out: R[] = []
+    for (const task of tasks)
+      out.push(await task())
+    return out
+  }
+  const limit = pLimit(concurrency)
+  return Promise.all(tasks.map(task => limit(task)))
+}
+
+/**
+ * Resolve one definition's handler + dump config and register it in the store.
+ * Returns `undefined` for definitions that carry no dump.
+ */
+async function resolveDumpTask(
+  definition: RpcFunctionDefinitionAny,
+  context: any,
+  store: RpcDumpStore,
+): Promise<TaskResolution | undefined> {
+  if (definition.type === 'event' || definition.type === 'action')
+    return undefined
+
+  // Fresh setup results for each context to avoid caching issues.
+  const setupResult = definition.setup
+    ? await Promise.resolve(definition.setup(context))
+    : {}
+
+  const handler = setupResult.handler || definition.handler
+  if (!handler)
+    throw diagnostics.DF0024({ name: definition.name })
+
+  let dump = setupResult.dump ?? definition.dump
+  if (!dump && definition.type === 'static')
+    dump = { inputs: [[]] }
+  if (!dump && definition.snapshot) {
+    // Sugar: run the handler once with no args, store the result as both the
+    // no-args record and the fallback - matching NMI's "getPayload() always
+    // returns the baked dump" shape.
+    dump = async (_ctx, h) => {
+      const output = await Promise.resolve(h())
+      return { records: [{ inputs: [] as any, output }], fallback: output }
+    }
+  }
+  if (!dump)
+    return undefined
+
+  if (typeof dump === 'function')
+    dump = await Promise.resolve(dump(context, handler))
+
+  store.definitions[definition.name] = { name: definition.name, type: definition.type }
+  return { handler, dump, definition }
+}
+
+/**
+ * Write a resolved dump's pre-defined records and fallback into the store, and
+ * return the per-input execution tasks that fill in the rest.
+ */
+function collectDumpTasks(resolution: TaskResolution, store: RpcDumpStore): Array<() => Promise<void>> {
+  const { definition, handler, dump } = resolution
+  const { inputs, records, fallback } = dump
+
+  if (records) {
+    for (const record of records)
+      store.records[getDumpRecordKey(definition.name, record.inputs)] = record
+  }
+  if ('fallback' in dump)
+    store.records[getDumpFallbackKey(definition.name)] = { inputs: [], output: fallback }
+
+  if (!inputs)
+    return []
+  return inputs.map(input => async () => {
+    const recordKey = getDumpRecordKey(definition.name, input)
+    try {
+      store.records[recordKey] = { inputs: input, output: await Promise.resolve(handler(...input)) }
+    }
+    catch (error: unknown) {
+      store.records[recordKey] = { inputs: input, error: serializeDumpError(error) }
+    }
+  })
+}
+
 export async function dumpFunctions<
   T extends readonly RpcFunctionDefinitionAny[],
 >(
@@ -56,138 +145,14 @@ export async function dumpFunctions<
     records: {},
   }
 
-  // #region Definition resolution
-  interface TaskResolution {
-    handler: (...args: any[]) => any
-    dump: RpcDumpDefinition
-    definition: RpcFunctionDefinitionAny
-  }
+  const resolutions = await runDumpTasks(
+    definitions.map(definition => () => resolveDumpTask(definition, context, store)),
+    concurrency,
+  )
+  const functionsToDump = resolutions.filter((x): x is TaskResolution => !!x)
 
-  const tasksResolutions: (() => Promise<undefined | TaskResolution>)[] = definitions.map(definition => async () => {
-    if (definition.type === 'event' || definition.type === 'action') {
-      return undefined
-    }
-
-    // Fresh setup results for each context to avoid caching issues
-    const setupResult = definition.setup
-      ? await Promise.resolve(definition.setup(context))
-      : {}
-
-    const handler = setupResult.handler || definition.handler
-    if (!handler) {
-      throw diagnostics.DF0024({ name: definition.name })
-    }
-
-    let dump = setupResult.dump ?? definition.dump
-    if (!dump && definition.type === 'static') {
-      dump = { inputs: [[]] }
-    }
-    if (!dump && definition.snapshot) {
-      // Sugar: run the handler once with no args, store the result as
-      // both the no-args record and the fallback. Any client call then
-      // resolves to the same snapshot — matching NMI's "getPayload()
-      // always returns the baked dump" shape.
-      dump = async (_ctx, h) => {
-        const output = await Promise.resolve(h(...([] as unknown as any[])))
-        return {
-          records: [{ inputs: [] as any, output }],
-          fallback: output,
-        }
-      }
-    }
-
-    if (!dump) {
-      return undefined
-    }
-
-    if (typeof dump === 'function') {
-      dump = await Promise.resolve(dump(context, handler))
-    }
-
-    // Only add to definitions if it has a dump
-    store.definitions[definition.name] = {
-      name: definition.name,
-      type: definition.type,
-    }
-
-    return {
-      handler,
-      dump,
-      definition,
-    }
-  })
-
-  let functionsToDump: TaskResolution[] = []
-  if (concurrency <= 1) {
-    for (const task of tasksResolutions) {
-      const resolution = await task()
-      if (resolution) {
-        functionsToDump.push(resolution)
-      }
-    }
-  }
-  else {
-    const limit = pLimit(concurrency)
-    functionsToDump = (await Promise.all(tasksResolutions.map(task => limit(task)))).filter(x => !!x)
-  }
-  // #endregion
-
-  // #region Dump execution
-  const dumpTasks: Array<() => Promise<void>> = []
-  for (const { definition, handler, dump } of functionsToDump) {
-    const { inputs, records, fallback } = dump
-
-    // Add pre-defined records
-    if (records) {
-      for (const record of records) {
-        const recordKey = getDumpRecordKey(definition.name, record.inputs)
-        store.records[recordKey] = record
-      }
-    }
-
-    // Add fallback record
-    if ('fallback' in dump) {
-      const fallbackKey = getDumpFallbackKey(definition.name)
-      store.records[fallbackKey] = {
-        inputs: [],
-        output: fallback,
-      }
-    }
-
-    // Add input records execution tasks
-    if (inputs) {
-      for (const input of inputs) {
-        dumpTasks.push(async () => {
-          const recordKey = getDumpRecordKey(definition.name, input)
-
-          try {
-            const output = await Promise.resolve(handler(...input))
-            store.records[recordKey] = {
-              inputs: input,
-              output,
-            }
-          }
-          catch (error: unknown) {
-            store.records[recordKey] = {
-              inputs: input,
-              error: serializeDumpError(error),
-            }
-          }
-        })
-      }
-    }
-  }
-
-  if (concurrency <= 1) {
-    for (const task of dumpTasks) {
-      await task()
-    }
-  }
-  else {
-    const limit = pLimit(concurrency)
-    await Promise.all(dumpTasks.map(task => limit(task)))
-  }
-  // #endregion
+  const dumpTasks = functionsToDump.flatMap(resolution => collectDumpTasks(resolution, store))
+  await runDumpTasks(dumpTasks, concurrency)
 
   return store
 }
@@ -208,7 +173,7 @@ export function createClientFromDump<T extends Record<string, any>>(
 ): BirpcReturn<T> {
   const { onMiss } = options
 
-  const client = new Proxy({} as T, {
+  const client = new Proxy({} as BirpcReturn<T>, {
     get(_, functionName: string) {
       if (!(functionName in store.definitions)) {
         throw diagnostics.DF0025({ name: functionName })
@@ -264,7 +229,7 @@ export function createClientFromDump<T extends Record<string, any>>(
     },
   })
 
-  return client as any as BirpcReturn<T>
+  return client
 }
 
 /**

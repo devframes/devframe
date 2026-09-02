@@ -1,10 +1,10 @@
 /**
- * The data-source registry — how anything in the process hands the
+ * The data-source registry - how anything in the process hands the
  * data-inspector an object to query.
  *
  * The store is **process-global**, held under a `Symbol.for` key on
  * `globalThis`: registrations need no devframe context (register before any
- * context exists — CLI, inject endpoint, early setup code), duplicate copies of this
+ * context exists - CLI, inject endpoint, early setup code), duplicate copies of this
  * module converge on one store, and setup ordering can never drop a source.
  *
  * ```ts
@@ -30,7 +30,7 @@ import type { DataSourceMeta, Query } from '../engine/contract'
 import { diagnostics } from '../node/diagnostics'
 
 export interface DataSourceEntry {
-  /** Unique id — namespace it with your plugin id (`my-plugin:thing`). */
+  /** Unique id - namespace it with your plugin id (`my-plugin:thing`). */
   id: string
   title: string
   description?: string
@@ -38,7 +38,7 @@ export interface DataSourceEntry {
   icon?: string
   /**
    * The data to inspect: a plain value, or a factory returning it (sync or
-   * async). Live objects passed directly stay live — queries read their
+   * async). Live objects passed directly stay live - queries read their
    * current state. Wrap functions you want to inspect in a factory.
    */
   data: unknown | (() => unknown | Promise<unknown>)
@@ -50,7 +50,7 @@ export interface DataSourceEntry {
   /**
    * Opt this source into live edits (default `false`): connected inspectors
    * may mutate the resolved object in place through the `write` RPC.
-   * Contradicts `static: true` — a memoized snapshot is read-only, so the
+   * Contradicts `static: true` - a memoized snapshot is read-only, so the
    * combination reports a diagnostic and stays read-only.
    */
   writable?: boolean
@@ -65,7 +65,7 @@ export interface DataSourceEntry {
   queries?: Query[]
 }
 
-/** Handle returned by `registerDataSource` — notify clients or unregister. */
+/** Handle returned by `registerDataSource` - notify clients or unregister. */
 export interface DataSourceHandle {
   /** Broadcast that this source's data changed, so connected UIs re-run. */
   notifyChanged: () => void
@@ -229,7 +229,7 @@ export function onDataSourceDataChanged(listener: (sourceId: string) => void): (
   }
 }
 
-/** Drop every registration and cache — test isolation helper. */
+/** Drop every registration and cache - test isolation helper. */
 export function resetDataSources(): void {
   const registry = store()
   for (const id of [...registry.subscriptions.keys()])

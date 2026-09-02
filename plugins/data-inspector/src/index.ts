@@ -3,7 +3,7 @@ import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { setupDataInspector } from './node/index'
 
-/** Default devframe id — also the RPC namespace. */
+/** Default devframe id - also the RPC namespace. */
 const DEFAULT_ID = 'devframes:plugin:data-inspector'
 
 /** Preferred standalone CLI port. */
@@ -34,14 +34,14 @@ export interface DataInspectorDevframeOptions {
   port?: number
   /**
    * Require the trust handshake on the standalone server. Enabled by
-   * default — `--open` embeds the current OTP in the opened URL, so the
+   * default - `--open` embeds the current OTP in the opened URL, so the
    * tab authenticates automatically without extra prompts. The in-process
    * inject endpoint (`@devframes/plugin-data-inspector/inject`) uses its own
    * pre-shared-token scheme and is unaffected by this option.
    */
   auth?: boolean
   /**
-   * Register the built-in example source — a small live playground graph
+   * Register the built-in example source - a small live playground graph
    * with suggested queries (default `true`). Disable once your own sources
    * cover the first-run experience.
    */
@@ -53,7 +53,7 @@ export interface DataInspectorDevframeOptions {
  * jora query workbench over data sources registered by other plugins, hosts,
  * files, or attached processes.
  *
- * The plugin is fully headless about sources — register them via
+ * The plugin is fully headless about sources - register them via
  * `@devframes/plugin-data-inspector/registry` (process-global, no context
  * needed) or through the `devframes:plugin:data-inspector:sources` context
  * service.

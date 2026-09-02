@@ -11,7 +11,7 @@ import DockEdge from './DockEdge.vue'
 function body(entry: any) {
   return h('div', { class: 'w-full h-full p6 font-sans color-base of-auto' }, [
     h('div', { class: 'text-lg font-medium mb2' }, entry?.title ?? 'No selection'),
-    h('div', { class: 'op60 text-sm' }, `Panel content for "${entry?.id ?? '—'}"`),
+    h('div', { class: 'op60 text-sm' }, `Panel content for "${entry?.id ?? '-'}"`),
   ])
 }
 
@@ -42,8 +42,10 @@ function edgeStory(position: 'top' | 'right' | 'bottom' | 'left', open = true) {
           selectedId: open ? 'overview' : null,
           panel: { mode: 'edge', position, height: 40, width: 30 },
           session: { open },
-          // Pinned off so the toolbar stays expanded — `CollapsedIdle` below
-          // covers the on-by-default auto-collapse behavior.
+          /**
+           * Pinned off so the toolbar stays expanded - `CollapsedIdle` below
+           * covers the on-by-default auto-collapse behavior.
+           */
           settings: { autoCollapseEdgeToolbar: false },
         },
         ctx => [
@@ -61,13 +63,13 @@ export const Bottom: Story = edgeStory('bottom')
 /** Top edge. */
 export const Top: Story = edgeStory('top')
 
-/** Left edge — toolbar runs vertically. */
+/** Left edge - toolbar runs vertically. */
 export const Left: Story = edgeStory('left')
 
 /** Right edge. */
 export const Right: Story = edgeStory('right')
 
-/** Toolbar only — nothing selected, so the panel body is collapsed away. */
+/** Toolbar only - nothing selected, so the panel body is collapsed away. */
 export const ToolbarOnly: Story = edgeStory('bottom', false)
 
 /**
@@ -121,7 +123,7 @@ export const BottomWithSettings: Story = {
   }),
 }
 
-/** Edge dock hosting a group — the group rail shows inside the panel. */
+/** Edge dock hosting a group - the group rail shows inside the panel. */
 export const WithGroup: Story = {
   render: () => ({
     setup: () => mountWithContext(

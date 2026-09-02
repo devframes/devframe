@@ -4,7 +4,7 @@
  * @discoveryjs/discovery (which bundles CM5, registers the `jora` mode and
  * a show-hint fork with popup positioning + a per-item custom-apply hook).
  *
- * Integration choice — discovery's sync-hint plumbing over ad-hoc
+ * Integration choice - discovery's sync-hint plumbing over ad-hoc
  * `showHint(options)` calls: discovery's `Editor` re-invokes the
  * constructor-supplied hint callback on every `cursorActivity`/`focus`
  * while completion is enabled, so a one-shot completion source passed to a
@@ -12,7 +12,7 @@
  * constructor one. Instead the constructor `hint` reads the latest
  * `suggestions` prop synchronously (our completions arrive async over
  * RPC), and a watcher re-triggers `cm.showHint()` when fresh items land
- * while the editor is focused — the same "sync callback + re-trigger"
+ * while the editor is focused - the same "sync callback + re-trigger"
  * pattern discovery's own query page uses. Every hint item carries a
  * custom `hint()` apply hook (the fork then skips its own
  * `replaceRange`), so accepting only emits `accept` and the workbench
@@ -283,7 +283,7 @@ watch(() => props.suggestions, (items) => {
   --at-apply: 'bg-secondary border border-base rounded-lg';
   /* Absolute inside the relative host: the editor tracks the pane's size
      while CM's content height stays out of the layout's min-content chain
-     (a tall document must scroll internally, never inflate the pane —
+     (a tall document must scroll internally, never inflate the pane -
      the old <textarea>'s height was content-independent the same way). */
   position: absolute;
   inset: 0;

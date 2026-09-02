@@ -72,13 +72,13 @@ describe('mcp adapter (in-memory)', () => {
 
       const listed = await client.listTools()
       const tool = listed.tools.find(t => t.name === 'schema-tool')!
-      // Each positional arg is advertised under `arg0`/`arg1`/… — the
+      // Each positional arg is advertised under `arg0`/`arg1`/… - the
       // project-wide Standard Schema convention (no single-arg unwrapping).
       const schema = tool.inputSchema as { type: string, properties: Record<string, unknown> }
       expect(schema.type).toBe('object')
       expect(Object.keys(schema.properties)).toEqual(['arg0'])
 
-      // `args` is purely descriptive for a plain registered tool — the
+      // `args` is purely descriptive for a plain registered tool - the
       // handler receives the caller's payload as-is, unlike RPC-backed
       // tools (or hub commands) which coerce `arg0`/`arg1`/… into
       // positional parameters.
@@ -125,7 +125,7 @@ describe('mcp adapter (in-memory)', () => {
       })
       ctx.agent.registerTool({
         id: 'demo_greet',
-        description: 'Second — sanitizes to the same wire name.',
+        description: 'Second - sanitizes to the same wire name.',
         handler: () => 'second',
       })
 
@@ -261,7 +261,7 @@ describe('mcp adapter (in-memory)', () => {
       ctx.agent.registerTool({
         id: 'void-tool',
         description: 'Returns nothing.',
-        // What a valibot `v.void()` returns schema converts to.
+        /** What a valibot `v.void()` returns schema converts to. */
         outputSchema: { type: 'null' },
         handler: () => undefined,
       })

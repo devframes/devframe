@@ -34,7 +34,7 @@ const scopeOptions = [
   { value: 'workspace', label: 'Shared with team', icon: 'i-ph:users-three-duotone' },
 ]
 
-/** All filter options with their current state — the modal shows every one. */
+/** All filter options with their current state - the modal shows every one. */
 const filterStates = computed(() => [
   { label: 'Exclude functions', on: props.currentFilters.excludeFunctions },
   { label: 'Exclude _ props', on: props.currentFilters.excludeUnderscoreProps },
@@ -46,7 +46,7 @@ interface ListEntry {
   key: string
   recipe: Query
   icon: string
-  /** Set for saved entries only — drives the scope badge and delete button. */
+  /** Set for saved entries only - drives the scope badge and delete button. */
   saved?: SavedQuery
 }
 
@@ -171,7 +171,7 @@ function filterBadges(entry: Query): FilterBadge[] {
           <span class="text-xs color-muted">Save location</span>
           <ActionToggleGroup v-model="scope" :options="scopeOptions" />
           <span class="text-11px color-faint">
-            {{ scope === 'workspace' ? '.devframe/ — committed, shared with the team' : 'node_modules/ — this checkout only' }}
+            {{ scope === 'workspace' ? '.devframe/ - committed, shared with the team' : 'node_modules/ - this checkout only' }}
           </span>
         </div>
       </div>

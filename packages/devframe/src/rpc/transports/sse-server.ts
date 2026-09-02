@@ -19,7 +19,7 @@ export interface SseRpcTransportOptions {
    * RPC function definitions, used by the per-call wire serializer to
    * dispatch between strict-JSON and structured-clone encoding based on
    * each function's `jsonSerializable` flag. When omitted, all messages
-   * fall back to structured-clone — same contract as the WS transport.
+   * fall back to structured-clone - same contract as the WS transport.
    */
   definitions?: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>>
   onConnected?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
@@ -51,7 +51,7 @@ export interface SseRpcTransport {
 const SSE_STREAM_HEADERS = {
   'content-type': 'text/event-stream',
   'cache-control': 'no-cache, no-transform',
-  // Tell buffering reverse proxies (nginx) to pass frames through as-is.
+  /** Tell buffering reverse proxies (nginx) to pass frames through as-is. */
   'x-accel-buffering': 'no',
 } as const
 
@@ -60,8 +60,8 @@ function NOOP(): void {}
 interface SseSession {
   id: string
   meta: DevframeNodeRpcSessionMeta
-  connection: DevframeRpcConnection
-  channel: ChannelOptions
+  connection?: DevframeRpcConnection
+  channel?: ChannelOptions
   /** birpc's inbound-message handler, registered via the channel's `on`. */
   onMessage?: (data: string) => void
   /** Parked `POST` responses, keyed by the birpc request id they await. */
@@ -71,7 +71,7 @@ interface SseSession {
 }
 
 /**
- * Attach an SSE + HTTP POST transport to an existing RPC group — the
+ * Attach an SSE + HTTP POST transport to an existing RPC group - the
  * WebSocket-free counterpart to `attachWsRpcTransport`, for hosts and
  * proxies where the upgrade isn't available. Speaks the same birpc wire
  * protocol (one channel per session, per-method `jsonSerializable`
@@ -114,7 +114,7 @@ export function attachSseRpcTransport<
   }
 
   /**
-   * CORS headers for a browser on another (allowed) origin — the side-car /
+   * CORS headers for a browser on another (allowed) origin - the side-car /
    * registered-viewer case. Same-origin requests carry no `Origin` (or their
    * own), where these headers are inert.
    */
@@ -159,8 +159,6 @@ export function attachSseRpcTransport<
     const session: SseSession = {
       id,
       meta,
-      connection: undefined as unknown as DevframeRpcConnection,
-      channel: undefined as unknown as ChannelOptions,
       parked: new Map(),
       closed: false,
       close: () => {
@@ -170,7 +168,7 @@ export function attachSseRpcTransport<
         if (keepAlive)
           clearInterval(keepAlive)
         sessions.delete(id)
-        // A parked POST can no longer be answered — release it so the HTTP
+        // A parked POST can no longer be answered - release it so the HTTP
         // request settles instead of hanging.
         for (const resolve of session.parked.values()) resolve(null)
         session.parked.clear()
@@ -179,11 +177,11 @@ export function attachSseRpcTransport<
         }
         catch {}
         rpcGroup.updateChannels((channels) => {
-          const index = channels.indexOf(session.channel)
+          const index = session.channel ? channels.indexOf(session.channel) : -1
           if (index >= 0)
             channels.splice(index, 1)
         })
-        onDisconnected(session.connection, meta)
+        onDisconnected(session.connection!, meta)
       },
     }
     closeSession = session.close
@@ -278,7 +276,7 @@ export function attachSseRpcTransport<
         headers: { 'content-type': 'text/plain; charset=utf-8', ...corsHeaders(request) },
       })
     }
-    // A client event or a reply to a server-initiated call — nothing to
+    // A client event or a reply to a server-initiated call - nothing to
     // send back on this request.
     session.onMessage?.(frame)
     return new Response(null, { status: 202, headers: corsHeaders(request) })

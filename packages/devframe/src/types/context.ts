@@ -11,7 +11,7 @@ export interface DevframeCapabilities {
 }
 
 /**
- * Framework- and build-tool-agnostic node context — RPC + diagnostics +
+ * Framework- and build-tool-agnostic node context - RPC + diagnostics +
  * agent + the view-host (HTTP file-serving). Host adapters can wrap this
  * to add their own surfaces; for example, `@vitejs/devtools-kit`'s
  * `createKitContext` adds `docks`, `terminals`, `messages`, and
@@ -25,10 +25,10 @@ export interface DevframeNodeContext {
   /**
    * Lifecycle distinction surfaced to plugin authors:
    *
-   *   - `'dev'`   — long-running, interactive session. Connections come and
+   *   - `'dev'`   - long-running, interactive session. Connections come and
    *                 go; broadcasts and shared-state mutations are debounced
    *                 to keep the UI responsive.
-   *   - `'build'` — one-shot batch run. The context is set up, the devtool
+   *   - `'build'` - one-shot batch run. The context is set up, the devtool
    *                 collects what it needs, and a snapshot is written. No
    *                 live UI, no WS server.
    *
@@ -38,23 +38,23 @@ export interface DevframeNodeContext {
    */
   readonly mode: 'dev' | 'build'
   /**
-   * Host runtime abstraction — exposes `mountStatic` / `resolveOrigin` /
+   * Host runtime abstraction - exposes `mountStatic` / `resolveOrigin` /
    * `getStorageDir`.
    */
   host: DevframeHost
   rpc: import('./rpc').RpcFunctionsHost
   views: DevframeViewHost
   /**
-   * Structured diagnostics host — wraps `nostics` and lets integrations
+   * Structured diagnostics host - wraps `nostics` and lets integrations
    * register their own coded errors/warnings into the shared lookup.
    */
   diagnostics: DevframeDiagnosticsHost
   /**
-   * Agent host — aggregates the agent-exposed surface of this devtool.
+   * Agent host - aggregates the agent-exposed surface of this devtool.
    */
   agent: DevframeAgentHost
   /**
-   * Cross-plugin services — a typed, namespaced registry through which one
+   * Cross-plugin services - a typed, namespaced registry through which one
    * integration exposes a capability (e.g. a data-source registry) and
    * others consume it without a hard package dependency. Ids follow the RPC
    * namespacing rule (`<plugin-id>:<service>`); types come from augmenting
@@ -63,11 +63,11 @@ export interface DevframeNodeContext {
    */
   services: DevframeServicesHost
   /**
-   * This context's own {@link ConnectionMeta.configs} — static, boot-time
+   * This context's own {@link ConnectionMeta.configs} - static, boot-time
    * config a host publishes once through the connection handshake and every
    * client reads read-only. A plain, **non-reactive** object: mutate it
    * during `setup(ctx)` (a plugin sets its keys, a hub aggregates across
-   * every installed devframe), never during the session — it's serialized
+   * every installed devframe), never during the session - it's serialized
    * once, after setup, and changing it afterwards reaches no client.
    *
    * ```ts
@@ -99,7 +99,7 @@ export interface DevframeNodeContext {
  * where `__connection.json` was loaded, and the connection is made to the
  * page's own origin (only the `http`→`ws` / `https`→`wss` protocol swap is
  * applied). This survives reverse proxies that change the host/port, because
- * the client never trusts a server-baked hostname — it reuses its own.
+ * the client never trusts a server-baked hostname - it reuses its own.
  *
  * Set `port` (and/or `host`) only when the WS endpoint genuinely lives on a
  * different origin than the page, e.g. a side-car server on its own port.
@@ -118,7 +118,7 @@ export interface ConnectionMetaWebsocket {
 }
 
 /**
- * Object form of {@link ConnectionMeta.sse} — the same proxy-safe shape and
+ * Object form of {@link ConnectionMeta.sse} - the same proxy-safe shape and
  * resolution rules as {@link ConnectionMetaWebsocket}, producing an
  * `http(s)://` endpoint instead of a `ws(s)://` one. Set `port` (and/or
  * `host`) only when the SSE endpoint genuinely lives on a different origin
@@ -147,10 +147,10 @@ export interface ConnectionMeta {
   /**
    * WebSocket endpoint, resolved by the client into a `ws(s)://` URL:
    *
-   *   - {@link ConnectionMetaWebsocket} — the proxy-flexible default; a
+   *   - {@link ConnectionMetaWebsocket} - the proxy-flexible default; a
    *     same-origin path relative to `__connection.json`.
-   *   - `number` — a port on the page's hostname (`ws(s)://<host>:<port>`).
-   *   - `string` — a full `ws://`/`wss://` URL used verbatim, an `http(s)://`
+   *   - `number` - a port on the page's hostname (`ws(s)://<host>:<port>`).
+   *   - `string` - a full `ws://`/`wss://` URL used verbatim, an `http(s)://`
    *     URL with its protocol swapped, or a path resolved same-origin.
    */
   websocket?: number | string | ConnectionMetaWebsocket
@@ -159,9 +159,9 @@ export interface ConnectionMeta {
    * resolved by the client into an `http(s)://` URL with the same
    * proxy-safe rules as {@link ConnectionMeta.websocket}:
    *
-   *   - {@link ConnectionMetaSse} — the proxy-flexible default; a
+   *   - {@link ConnectionMetaSse} - the proxy-flexible default; a
    *     same-origin path relative to `__connection.json`.
-   *   - `string` — a full `http(s)://` URL used verbatim, or a path
+   *   - `string` - a full `http(s)://` URL used verbatim, or a path
    *     resolved same-origin.
    */
   sse?: string | ConnectionMetaSse
@@ -171,7 +171,7 @@ export interface ConnectionMeta {
    * tooling (e.g. an MCP inspector) can discover it without guessing the
    * path. `path` is relative to `__connection.json`'s location, like the
    * WebSocket `path`. `port` is set when the endpoint lives on a side-car
-   * server on its own port (bridge mode — `devframeViteBridge`,
+   * server on its own port (bridge mode - `devframeViteBridge`,
    * `@devframes/next`): the client combines the page hostname with `port`
    * and resolves `path` against that origin, mirroring
    * {@link ConnectionMetaWebsocket.port}.
@@ -198,7 +198,7 @@ export interface ConnectionMeta {
   /**
    * A pre-issued bearer token embedded in the meta so a client trusts the
    * server on connect without any prompt or `localStorage` lookup. Only a
-   * **hub** serving a **per-frame** connection meta populates this — it
+   * **hub** serving a **per-frame** connection meta populates this - it
    * authenticates once at the top level and bakes the resulting token into
    * the meta each plugin iframe fetches, so a cross-origin frame (which
    * cannot read the hub's `localStorage`) is still pre-authorized. The
@@ -206,7 +206,7 @@ export interface ConnectionMeta {
    *
    * > [!WARNING]
    * > A token in a fetchable JSON is only as protected as the URL serving
-   * > it. Emit it exclusively from hub-controlled, per-frame meta — never
+   * > it. Emit it exclusively from hub-controlled, per-frame meta - never
    * > from a publicly reachable static `__connection.json`.
    */
   authToken?: string
@@ -220,13 +220,13 @@ export interface ConnectionMeta {
    */
   viewerOriginToken?: string
   /**
-   * Static, host-declared configuration — baked in once at connect time and
+   * Static, host-declared configuration - baked in once at connect time and
    * fixed for the life of the server (e.g. a hub's UI rebrand, or its
    * aggregated dock-bar layout preferences). Read-only from the browser: a
    * client only ever reads `rpc.connectionMeta.configs`, never writes to it.
    *
    * Contrast this with {@link DevframeSettingsRegistry} (`ctx.scope(ns).settings`)
-   * and a hub's `devframe:user-settings` shared-state key — both are
+   * and a hub's `devframe:user-settings` shared-state key - both are
    * mutable, user-editable, and synced bidirectionally over RPC for the
    * life of the session. `configs` is the opposite: one-way, immutable,
    * decided by whoever assembled the server.
@@ -245,7 +245,7 @@ export interface ConnectionMeta {
 }
 
 /**
- * Augmentation point for {@link ConnectionMeta.configs}. Empty by default —
+ * Augmentation point for {@link ConnectionMeta.configs}. Empty by default -
  * a package that wants to publish static, boot-time config through the
  * connection handshake augments this interface with its own key (see
  * {@link ConnectionMeta.configs} for the pattern). `@devframes/hub`

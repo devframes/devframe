@@ -1,8 +1,8 @@
 /**
  * Layout tunables for the floating dock bar (`Dock.vue`).
  *
- * Every spatial magic number the float-mode shell relies on lives here — bar
- * dimensions, viewport spacing, item capacity and drag-snapping behaviour — so
+ * Every spatial magic number the float-mode shell relies on lives here - bar
+ * dimensions, viewport spacing, item capacity and drag-snapping behaviour - so
  * the bar's look and feel can be adjusted from a single place instead of being
  * scattered across the component's template, script and stylesheet.
  *

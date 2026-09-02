@@ -16,7 +16,7 @@ export const listFunctions = defineInspectRpc({
   jsonSerializable: true,
   snapshot: true,
   agent: {
-    description: 'List every RPC function registered on this devframe connection, with metadata (name, type, JSON-serializable/snapshot flags, args/return schema, agent exposure). Read-only — the canonical way to discover what the running devframe can do.',
+    description: 'List every RPC function registered on this devframe connection, with metadata (name, type, JSON-serializable/snapshot flags, args/return schema, agent exposure). Read-only - the canonical way to discover what the running devframe can do.',
     title: 'List RPC functions',
   },
   setup: ctx => ({

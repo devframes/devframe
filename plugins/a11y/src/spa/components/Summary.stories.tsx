@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from 'storybook-solidjs-vite'
 import { Summary } from './Summary.tsx'
 
-// The severity summary chips — the one expressive, domain-specific color in the
+// The severity summary chips - the one expressive, domain-specific color in the
 // inspector, and the impact filter. Presentational: driven by per-impact counts.
 const meta = {
   title: 'A11y/Summary',

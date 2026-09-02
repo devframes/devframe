@@ -111,8 +111,10 @@ export function createRpcSharedStateServerHost(
       const state = await host.get(key)
       return state.value()
     },
-    // Pre-compute snapshots for the build-mode static dump so the SPA
-    // can read them without a live server.
+    /**
+     * Pre-compute snapshots for the build-mode static dump so the SPA
+     * can read them without a live server.
+     */
     dump: () => ({
       inputs: host.keys().map(key => [key] as [string]),
     }),

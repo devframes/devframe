@@ -24,7 +24,7 @@ const MANIFEST_FILENAME = '.manifest.json'
  * list is dropped, because it describes the *provider's* transfer rather than
  * the file: hop-by-hop and encoding headers no longer match the body `fetch`
  * already decoded, and a CDN's policy headers (`set-cookie`, `cache-control`,
- * framing/CSP) belong to its origin — replaying them under the dev server's
+ * framing/CSP) belong to its origin - replaying them under the dev server's
  * origin could just as well break the iframe these assets render in.
  */
 const PROXIED_HEADERS = ['content-language', 'etag', 'last-modified'] as const
@@ -147,7 +147,7 @@ function proxyHeaders(filePath: string, upstream: Headers): Headers {
     'Cache-Control': CACHE_CONTROL_HEADER,
   })
   // `fetch` decodes the body, so an encoded response's `Content-Length`
-  // counts bytes the browser will never see — it only survives verbatim.
+  // counts bytes the browser will never see - it only survives verbatim.
   const encoding = upstream.get('content-encoding')
   const length = upstream.get('content-length')
   if (length && (!encoding || encoding === 'identity'))
@@ -194,7 +194,7 @@ function candidatePaths(prefix: string, cleaned: string): string[] {
  * `prefix`, materializing into the already-resolved `root`, or `null` when
  * the entry is unsafe or lies outside the selected `prefix`. A compromised
  * provider is an untrusted boundary even though the built-in jsDelivr/unpkg
- * listings never emit any of this — reject an absolute path, a backslash
+ * listings never emit any of this - reject an absolute path, a backslash
  * (never normalized into a separator; Windows-style traversal stays rejected
  * on every platform), and any suffix whose resolved destination would land
  * outside `root`. `target === root` is deliberately unsafe too: it names the
@@ -229,10 +229,10 @@ function createStore(assets: RemoteAssets, cacheDir: string): RemoteAssetsStore 
     if (assets.offline || !provider.listFiles)
       return null
     try {
-      // A listing failure is not fatal — requests degrade to probing the
+      // A listing failure is not fatal - requests degrade to probing the
       // provider per candidate. Only a file that can't be fetched at all
       // surfaces to the user (`DF0060`, and the fallback page that carries
-      // it into the viewer — see `remoteErrorPage` in `serve-static`).
+      // it into the viewer - see `remoteErrorPage` in `serve-static`).
       const files = await provider.listFiles(normalized.package, normalized.version, fetchImpl)
       await mkdir(cacheDir, { recursive: true })
       await writeFile(manifestFile, JSON.stringify(files), 'utf8').catch(() => {})
@@ -303,8 +303,8 @@ function createStore(assets: RemoteAssets, cacheDir: string): RemoteAssetsStore 
       await res.body?.cancel().catch(() => {})
       throw diagnostics.DF0060({ url, package: normalized.package, reason: `HTTP ${res.status}` })
     }
-    // The body is consumed twice — once by the client, once by the cache
-    // writer — so the client gets a fresh `Response` over its own branch of
+    // The body is consumed twice - once by the client, once by the cache
+    // writer - so the client gets a fresh `Response` over its own branch of
     // the tee; `res` itself is unusable from here on (the tee locked its body).
     const [toClient, toCache] = res.body.tee()
     void persist(filePath, toCache)
@@ -393,7 +393,7 @@ function errText(error: unknown): string {
 // ---------------------------------------------------------------------------
 
 // npm package name rules (github.com/npm/validate-npm-package-name), and an
-// exact semver version — both interpolated into CDN URLs and the cache path,
+// exact semver version - both interpolated into CDN URLs and the cache path,
 // so they must not carry separators, `@`, or traversal segments.
 const PACKAGE_NAME_RE = /^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/
 const VERSION_RE = /^\d+\.\d+\.\d+(?:-[a-z0-9-]+(?:\.[a-z0-9-]+)*)?(?:\+[a-z0-9-]+(?:\.[a-z0-9-]+)*)?$/i
@@ -417,7 +417,7 @@ function assertValidRemoteAssets(assets: RemoteAssets): void {
  * {@link RemoteAssetsStore} back-proxy. Remote caches live under
  * `<projectStorageDir>/.remote-assets/<package>@<version>/`.
  *
- * A remote source's `package`/`version` are validated first (`DF0065`) — both
+ * A remote source's `package`/`version` are validated first (`DF0065`) - both
  * are interpolated into CDN URLs and the cache path.
  *
  * `defaultResolveFrom` (typically the declaring devframe's `importMetaUrl`)

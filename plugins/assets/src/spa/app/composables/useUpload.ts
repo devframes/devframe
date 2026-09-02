@@ -12,7 +12,7 @@ export interface UseUploadResult {
   uploading: Ref<boolean>
   /** Per-file error messages from the most recent `uploadFiles` call. */
   errors: Ref<string[]>
-  /** Resolves with per-file error messages — empty when every file succeeded. */
+  /** Resolves with per-file error messages - empty when every file succeeded. */
   uploadFiles: (files: QueuedFile[]) => Promise<string[]>
 }
 

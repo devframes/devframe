@@ -120,11 +120,11 @@ describe('recipes/interactive-auth', () => {
       const codeAfterExchange = getTempAuthCode()
       expect(codeAfterExchange).not.toBe(code)
 
-      // Now trusted — the probe method succeeds on the same connection.
+      // Now trusted - the probe method succeeds on the same connection.
       await expect(untrusted.$call('test:trusted-only' as any)).resolves.toBe('ok')
       untrusted.$close()
 
-      // Reconnect with the returned bearer — trusted without a new code.
+      // Reconnect with the returned bearer - trusted without a new code.
       const returning = connectClient(host, port, authToken!)
       const reauth = await returning.$call('anonymous:devframe:auth', { authToken: authToken!, ua: 'test', origin: 'http://localhost' })
       expect(reauth).toEqual({ isTrusted: true })
@@ -181,7 +181,7 @@ describe('recipes/interactive-auth', () => {
   })
 
   describe('remote-dock tokens (onConnect)', () => {
-    // Minimal stand-in for the crossws `Peer` — `onConnect` only reads
+    // Minimal stand-in for the crossws `Peer` - `onConnect` only reads
     // `request.url` and `request.headers.get('origin')`.
     function fakePeer(token: string, origin?: string): any {
       return {

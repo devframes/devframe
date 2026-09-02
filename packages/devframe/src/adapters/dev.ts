@@ -34,7 +34,7 @@ export interface CreateDevServerOptions {
   /**
    * Override the definition's `clientAssets` (or deprecated `cli.distDir`).
    * When neither this option nor the definition's client assets are set, the
-   * dev server runs in **bridge mode** — only `__connection.json` and the WS
+   * dev server runs in **bridge mode** - only `__connection.json` and the WS
    * endpoint are mounted; the SPA is expected to be hosted elsewhere (e.g. by
    * a parent Vite/Nuxt dev server via `devframeViteBridge` from
    * `@devframes/vite`).
@@ -48,7 +48,7 @@ export interface CreateDevServerOptions {
   /**
    * Override how the browser reaches the RPC WebSocket (`def.cli?.ws`).
    * See {@link DevframeWsOptions}: same-server route (default), a dedicated
-   * port, or a remote origin. Pass `false` to serve no WebSocket at all —
+   * port, or a remote origin. Pass `false` to serve no WebSocket at all -
    * clients connect over the SSE endpoint instead (`backend: 'sse'`).
    */
   ws?: DevframeWsOptions | false
@@ -60,7 +60,7 @@ export interface CreateDevServerOptions {
    */
   allowedOrigins?: readonly string[] | WsOriginRegistry | false
   /**
-   * Override the SSE RPC endpoint control (`def.cli?.sse`) — enabled by
+   * Override the SSE RPC endpoint control (`def.cli?.sse`) - enabled by
    * default at `<base>__sse`. Pass `false` to disable, or a
    * {@link DevframeSseOptions} to rename the route.
    */
@@ -82,7 +82,7 @@ export interface CreateDevServerOptions {
   /**
    * Override how authentication resolves, taking precedence over
    * `def.cli?.auth`. Pass `false` to skip the gate entirely (the standard
-   * choice for a **hosted** deployment where the host manages auth — see
+   * choice for a **hosted** deployment where the host manages auth - see
    * {@link devframeViteBridge} from `@devframes/vite`); a {@link DevframeAuthHandler} to install a custom
    * scheme; or `true` to force devframe's interactive OTP gate on. When
    * omitted, auth resolves from `flags.auth` / `def.cli?.auth` (the standalone
@@ -110,26 +110,26 @@ export interface CreateDevServerOptions {
   onPeerDisconnect?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
   /**
    * Called once the WS server is bound. Devframe stays headless
-   * otherwise — wire this if you want a startup banner.
+   * otherwise - wire this if you want a startup banner.
    */
   onReady?: (info: { origin: string, port: number, app: H3 }) => void | Promise<void>
   /**
    * Proceed even when the definition declares `capabilities.dev: false`.
-   * `createDevServer` otherwise refuses such a definition (`DF0058`) — this
+   * `createDevServer` otherwise refuses such a definition (`DF0058`) - this
    * only matters for a caller invoking it directly, bypassing the CLI.
    */
   force?: boolean
 }
 
 /**
- * Start a devframe dev server for a {@link DevframeDefinition} —
+ * Start a devframe dev server for a {@link DevframeDefinition} -
  * h3 + WebSocket RPC + (optionally) the author's SPA mounted at the
  * resolved base path.
  *
  * When `distDir` is omitted (and the definition's client assets are unset) the
  * server runs in **bridge mode**: only `__connection.json` and the WS
  * endpoint are mounted, with no SPA mount. The SPA is expected to be
- * hosted elsewhere (e.g. by a parent Vite/Nuxt dev server) — see
+ * hosted elsewhere (e.g. by a parent Vite/Nuxt dev server) - see
  * `devframeViteBridge` from `@devframes/vite`.
  *
  * Returns the underlying {@link StartedServer} handle so callers can
@@ -153,16 +153,15 @@ export async function createDevServer(
   const app = options.app ?? new H3()
 
   // The dev server is `initDevframe` plus a node listener: the instance owns
-  // the whole surface (setup, MCP, meta, SPA, WS binding, auth), mounted on
-  // this server's app; listening starts first so the shared WS tier — and
-  // the advertised origin — reflect the real bound port (`port: 0` binds an
-  // ephemeral one).
+  // the whole surface (setup, MCP, meta, SPA, WS binding, auth). Listening
+  // starts first so the shared WS tier and advertised origin reflect the real
+  // bound port (`port: 0` binds an ephemeral one).
   const server = createServer(toNodeHandler(app))
   try {
     await new Promise<void>((resolveListen, rejectListen) => {
       const onError = (error: Error): void => rejectListen(error)
       // Without this listener a failed bind emits `error` with nobody
-      // attached — an uncaughtException — and the `listen` callback never
+      // attached - an uncaughtException - and the `listen` callback never
       // fires, so this promise never settles.
       server.once('error', onError)
       server.listen(requestedPort, host, () => {
@@ -195,19 +194,25 @@ export async function createDevServer(
     ws: options.ws,
     allowedOrigins: options.allowedOrigins,
     sse: options.sse,
-    // The `--no-auth` flag forces the gate off regardless of the `auth`
-    // option / definition default (which the instance resolves itself).
+    /**
+     * The `--no-auth` flag forces the gate off regardless of the `auth`
+     * option / definition default (which the instance resolves itself).
+     */
     auth: flags.auth === false ? false : options.auth,
     mcp: options.mcp,
     flags,
     onPeerConnect: options.onPeerConnect,
     onPeerDisconnect: options.onPeerDisconnect,
-    // Publish in the global registry so discovery tooling (`devframe connect`)
-    // finds the server without port guessing. The instance owns the record's
-    // lifecycle — written once its (pinned) origin resolves, removed on close.
+    /**
+     * Publish in the global registry so discovery tooling (`devframe connect`)
+     * finds the server without port guessing. The instance owns the record's
+     * lifecycle - written once its (pinned) origin resolves, removed on close.
+     */
     register: true,
-    // This server is devframe's own — nothing else handles its upgrades, so
-    // off-route upgrade attempts are rejected promptly.
+    /**
+     * This server is devframe's own - nothing else handles its upgrades, so
+     * off-route upgrade attempts are rejected promptly.
+     */
     destroyUnmatchedUpgrades: true,
   })
 

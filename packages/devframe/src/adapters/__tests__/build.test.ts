@@ -65,7 +65,7 @@ describe('adapters/build', () => {
   it('bakes rpc.snapshot methods a devframe does not own into the dump', async () => {
     const outDir = mkdtempSync(join(tmpdir(), 'devframe-build-test-out-'))
     // A dump-less query RPC (as a wire service would register) that the
-    // devframe opts into baking via `rpc.snapshot` — string (no-arg), static
+    // devframe opts into baking via `rpc.snapshot` - string (no-arg), static
     // inputs, and an async provider.
     const def = baseDevframe({
       setup: (ctx) => {
@@ -94,7 +94,7 @@ describe('adapters/build', () => {
       expect(manifest['demo:ping']?.type).toBe('query')
       expect(manifest['demo:ping'].fallback).toBeTruthy()
       // `demo:echo` baked a record per provided tuple (static + provider merged
-      // — the last rpc.snapshot entry for a method wins).
+      // - the last rpc.snapshot entry for a method wins).
       expect(manifest['demo:echo']?.type).toBe('query')
       expect(Object.keys(manifest['demo:echo'].records).length).toBeGreaterThanOrEqual(1)
     }
@@ -106,7 +106,7 @@ describe('adapters/build', () => {
   it('warns (DF0072) when rpc.snapshot names an unregistered method', async () => {
     const outDir = mkdtempSync(join(tmpdir(), 'devframe-build-test-out-'))
     try {
-      // Does not throw — a missing target is a warning, the build proceeds.
+      // Does not throw - a missing target is a warning, the build proceeds.
       await expect(
         createBuild(baseDevframe({ rpc: { snapshot: ['does:not:exist'] } }), { outDir }),
       ).resolves.toBeUndefined()

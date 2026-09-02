@@ -31,7 +31,7 @@ export const baseSchema = defineSchema(s => ({
 const componentDescriptions: Record<keyof typeof basePropSchemas, string> = {
   Stack: 'Flex row/column container with gap, padding, alignment and justification.',
   Card: 'Bordered container with an optional title and collapsible body.',
-  Text: 'Typographic text — heading, subheading, body, caption or inline code.',
+  Text: 'Typographic text - heading, subheading, body, caption or inline code.',
   Badge: 'Small status pill with a semantic variant.',
   Button: 'Clickable button with a variant, optional icon and loading state.',
   Icon: 'Renders an icon resolved by name at runtime.',

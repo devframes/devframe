@@ -21,8 +21,10 @@ export default defineConfig({
       fileName: () => 'index.mjs',
     },
     rollupOptions: {
-      // Don't externalize xterm/xterm-addon-fit so it works out of the box in custom-render,
-      // but do externalize devframe/client since the host provides it.
+      /**
+       * Don't externalize xterm/xterm-addon-fit so it works out of the box in custom-render,
+       * but do externalize devframe/client since the host provides it.
+       */
       external: ['devframe/client'],
     },
   },

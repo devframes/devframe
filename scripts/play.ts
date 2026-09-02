@@ -15,7 +15,7 @@ import prompts from 'prompts'
 const WORKSPACE_PATTERNS = ['examples/*', 'packages/*', 'plugins/*', 'storybook']
 
 /**
- * Script names that make a workspace package runnable as a "play" — the
+ * Script names that make a workspace package runnable as a "play" - the
  * first one present in a package's `scripts` wins.
  */
 const RUN_SCRIPTS = ['dev', 'storybook', 'start']
@@ -64,7 +64,7 @@ async function main(): Promise<void> {
     .filter((play): play is Play => play !== undefined)
 
   if (plays.length === 0) {
-    console.error(`No playgrounds found — none of ${WORKSPACE_PATTERNS.join(', ')} has a package.json with a ${RUN_SCRIPTS.join('/')} script.`)
+    console.error(`No playgrounds found - none of ${WORKSPACE_PATTERNS.join(', ')} has a package.json with a ${RUN_SCRIPTS.join('/')} script.`)
     process.exitCode = 1
     return
   }

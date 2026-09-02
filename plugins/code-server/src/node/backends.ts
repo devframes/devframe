@@ -5,8 +5,8 @@ import { createHash } from 'node:crypto'
  * The internal launch profile the supervisor drives. One of three "kinds":
  * the two local {@link CodeServerBackend}s plus the `code tunnel` profile
  * selected by `mode: 'tunnel'`. Each profile owns the backend-specific pieces
- * — binary, arguments, auth env, readiness detection, and how the client
- * ultimately reaches the editor — while the supervisor owns the shared
+ * - binary, arguments, auth env, readiness detection, and how the client
+ * ultimately reaches the editor - while the supervisor owns the shared
  * spawn / log / publish lifecycle.
  */
 export type CodeServerProfileKind = 'code-server' | 'serve-web' | 'tunnel'
@@ -101,7 +101,7 @@ const serveWebProfile: CodeServerProfile = {
     ...c.extraArgs,
   ],
   buildEnv: (_c, base) => ({ ...base }),
-  // serve-web has no health endpoint; the root responds (200/redirect) once up.
+  /** serve-web has no health endpoint; the root responds (200/redirect) once up. */
   healthPath: '/',
   matchPort: (line) => {
     const m = line.match(/available at https?:\/\/[^:]+:(\d+)/i)

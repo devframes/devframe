@@ -6,7 +6,7 @@ import { diagnostics } from './diagnostics'
 
 /**
  * One running devframe instance, as recorded in the instance registry.
- * Records are self-describing JSON — additive fields are safe.
+ * Records are self-describing JSON - additive fields are safe.
  */
 export interface DevframeInstanceRecord {
   /** Process id of the dev server. */
@@ -43,7 +43,7 @@ export interface DevframeInstanceRegistration {
 }
 
 // The env var names below are documented (READMEs, `docs/content/2.adapters/7.mcp.md`)
-// as plain strings a user sets — nothing needs to import the constant, so
+// as plain strings a user sets - nothing needs to import the constant, so
 // they (and the read/probe helpers) stay internal to this module rather
 // than joining the `devframe/node` public surface; see the barrel comment
 // in `./index.ts`.
@@ -54,9 +54,9 @@ const DEVFRAME_INSTANCES_DIR_ENV = 'DEVFRAME_INSTANCES_DIR'
 const DEVFRAME_DISABLE_INSTANCE_REGISTRY_ENV = 'DEVFRAME_DISABLE_INSTANCE_REGISTRY'
 
 /**
- * Resolve the registry directory: `~/.devframe/instances/` by default —
+ * Resolve the registry directory: `~/.devframe/instances/` by default -
  * the framework's own global dir, deliberately outside the per-app
- * `~/.<appName>/devframe/` storage convention since the registry spans apps —
+ * `~/.<appName>/devframe/` storage convention since the registry spans apps -
  * overridable via `DEVFRAME_INSTANCES_DIR`.
  */
 function resolveInstancesDir(override?: string): string {
@@ -82,7 +82,7 @@ function isRegistryDisabled(): boolean {
  * The record is written atomically to `<dir>/<pid>-<port>.json` and removed
  * by {@link DevframeInstanceRegistration.unregister}. Records surviving a
  * crash are pruned by readers whose liveness probe fails. Registration never
- * throws — a write failure degrades to a coded warning (`DF0045`), since a
+ * throws - a write failure degrades to a coded warning (`DF0045`), since a
  * dev server must not die over discovery metadata.
  */
 export function registerDevframeInstance(
@@ -96,7 +96,7 @@ export function registerDevframeInstance(
     try {
       mkdirSync(dir, { recursive: true })
       // Atomic publish: write a temp file *in the same directory* (a rename
-      // is only atomic — and only possible — within one filesystem), then
+      // is only atomic - and only possible - within one filesystem), then
       // rename into place.
       const tmp = join(dir, `.${record.pid}-${record.port}.${Date.now()}.tmp`)
       writeFileSync(tmp, `${JSON.stringify(record, null, 2)}\n`)
@@ -122,7 +122,7 @@ export function registerDevframeInstance(
 
 /**
  * Read every record in the registry directory, dropping unparseable files.
- * Liveness is the caller's concern — see {@link probeDevframeInstance}.
+ * Liveness is the caller's concern - see {@link probeDevframeInstance}.
  */
 export function readDevframeInstances(options: { instancesDir?: string } = {}): DevframeInstanceRecord[] {
   const dir = resolveInstancesDir(options.instancesDir)
@@ -141,7 +141,7 @@ export function readDevframeInstances(options: { instancesDir?: string } = {}): 
         records.push(parsed)
     }
     catch {
-      // Unparseable record (partial write from a crashed process) — skip;
+      // Unparseable record (partial write from a crashed process) - skip;
       // the prune pass below removes it once its liveness probe fails.
     }
   }
@@ -150,8 +150,8 @@ export function readDevframeInstances(options: { instancesDir?: string } = {}): 
 
 /**
  * Dialable-origin candidates for a recorded origin. A `localhost` bind is
- * ambiguous — the server may listen on `127.0.0.1`, `::1`, or both, and
- * HTTP clients differ in which family they try — so probe the explicit
+ * ambiguous - the server may listen on `127.0.0.1`, `::1`, or both, and
+ * HTTP clients differ in which family they try - so probe the explicit
  * addresses too and adopt whichever answers.
  */
 function originCandidates(origin: string): string[] {

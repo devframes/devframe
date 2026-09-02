@@ -14,8 +14,8 @@ import { cn } from '../../lib/utils'
  * class helpers, so they render identically to the Svelte/vanilla/Vue buttons in
  * the other built-in plugins:
  *
- * - `<Button>` — a text button (label, optionally with a leading icon).
- * - `<IconButton>` — a square icon-only button; bordered by default,
+ * - `<Button>` - a text button (label, optionally with a leading icon).
+ * - `<IconButton>` - a square icon-only button; bordered by default,
  *   borderless with `variant="ghost"`.
  */
 function Button({

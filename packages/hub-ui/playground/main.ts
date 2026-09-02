@@ -16,9 +16,9 @@ const HUB_BASE = '/__devframes/'
 
 /**
  * `?embedded` mounts the floating `DockEmbedded` bootstrap over the sample
- * host content in `index.html` — the same surface a host page gets from
+ * host content in `index.html` - the same surface a host page gets from
  * `<script src="<base>embedded.js">`. The default mounts `DockStandalone`
- * full-page — the primary surface most hub-ui changes touch.
+ * full-page - the primary surface most hub-ui changes touch.
  */
 const mode = new URLSearchParams(location.search).has('embedded') ? 'embedded' : 'standalone'
 document.body.classList.add(mode)
@@ -45,14 +45,14 @@ async function main(): Promise<void> {
     const context = await createDocksContext('embedded', rpc, state)
     setDevframeClientContext(context)
     const { DockEmbedded } = await import('../src/client/components/DockEmbedded')
-    document.body.appendChild(new DockEmbedded({ context }) as unknown as HTMLElement)
+    document.body.appendChild(new DockEmbedded({ context }))
     return
   }
 
   const context = await createDocksContext('standalone', rpc)
   setDevframeClientContext(context)
   const { DockStandalone } = await import('../src/client/components/DockStandalone')
-  document.getElementById('app')!.appendChild(new DockStandalone({ context }) as unknown as HTMLElement)
+  document.getElementById('app')!.appendChild(new DockStandalone({ context }))
 }
 
 void main()

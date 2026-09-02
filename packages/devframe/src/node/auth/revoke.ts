@@ -14,8 +14,8 @@ export async function revokeActiveConnectionsForToken(
   context: DevframeNodeContext,
   token: string,
 ): Promise<void> {
-  const rpcHost = context.rpc as unknown as RpcFunctionsHostImpl | undefined
-  if (!rpcHost?._rpcGroup)
+  const rpcHost = context.rpc as RpcFunctionsHostImpl
+  if (!rpcHost._rpcGroup)
     return
 
   const affectedSessionIds = new Set<string>()

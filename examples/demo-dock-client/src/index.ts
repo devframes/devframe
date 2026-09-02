@@ -9,7 +9,7 @@ interface DemoEvents {
 interface DemoStore {
   /** How many times the demo dock has been activated on this page. */
   activations: number
-  /** Shared emitter — every module instance converges on this one. */
+  /** Shared emitter - every module instance converges on this one. */
   events: Emitter<DemoEvents>
 }
 

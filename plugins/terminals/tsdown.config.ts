@@ -11,13 +11,13 @@ const deps = {
   ],
 }
 
-// Browser-loaded modules — the xterm-powered renderer. Kept in its own
+// Browser-loaded modules - the xterm-powered renderer. Kept in its own
 // rolldown graph so node-only imports never leak into the client bundle.
 const clientEntries = {
   'client/index': 'src/client/index.ts',
 }
 
-// Node + neutral modules — the devframe definition/factory, RPC functions,
+// Node + neutral modules - the devframe definition/factory, RPC functions,
 // the PTY/child-process manager, and the host adapters.
 const serverEntries = {
   'index': 'src/index.ts',
@@ -29,9 +29,11 @@ const serverEntries = {
   'types': 'src/types.ts',
 }
 
-// Three configs:
-//   1. node server build (clean: true, outputs dist/node, dist/rpc, etc.)
-//   2. combined dts so augmentations resolve
+/**
+ * Three configs:
+ * 1. node server build (clean: true, outputs dist/node, dist/rpc, etc.)
+ * 2. combined dts so augmentations resolve
+ */
 export default defineConfig([
   {
     clean: true,

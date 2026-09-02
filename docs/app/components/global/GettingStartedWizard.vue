@@ -3,7 +3,7 @@
  * Interactive "what should I read" wizard for the Getting Started guide.
  *
  * Every question is a grid of selectable cards (multiple answers allowed per
- * question, since a real devtool usually spans more than one answer — e.g.
+ * question, since a real devtool usually spans more than one answer - e.g.
  * it reads from both the node side and the user's web app). Selections
  * persist to `localStorage` so a reader can leave the page and pick up where
  * they left off; the recommended reading list at the bottom recomputes from
@@ -126,22 +126,22 @@ const DOC_CATALOG: Record<string, DocEntry> = {
   '/guide/rpc': { title: 'RPC', description: 'Type-safe, bidirectional calls between the node side and the browser side.', icon: 'i-lucide-cable' },
   '/guide/shared-state': { title: 'Shared State', description: 'Observable state synced between the node side and every RPC client.', icon: 'i-lucide-refresh-cw' },
   '/guide/streaming': { title: 'Streaming', description: 'Push chunk-style data from the node side to the browser side.', icon: 'i-lucide-radio' },
-  '/guide/client-assets': { title: 'Client Assets', description: 'Where a devframe\'s built SPA lives — a local directory or an npm package.', icon: 'i-lucide-folder-tree' },
+  '/guide/client-assets': { title: 'Client Assets', description: 'Where a devframe\'s built SPA lives - a local directory or an npm package.', icon: 'i-lucide-folder-tree' },
   '/guide/client': { title: 'Client', description: 'Connects any surface to a devframe\'s node side with RPC and shared state.', icon: 'i-lucide-plug' },
   '/guide/transports': { title: 'Transports', description: 'Live RPC over WebSocket or SSE, transparent to your RPC code.', icon: 'i-lucide-waypoints' },
   '/guide/security': { title: 'Security', description: 'Localhost binding and a trust handshake before a browser can call RPC.', icon: 'i-lucide-shield-check' },
   '/guide/agent-native': { title: 'Agent-Native Devframe', description: 'Expose RPC functions, resources, and shared state to coding agents over MCP.', icon: 'i-lucide-bot' },
-  '/guide/hub': { title: 'Hub', description: 'Orchestrate many devtools sharing one UI — docks, terminals, messages, commands.', icon: 'i-lucide-layout-dashboard' },
+  '/guide/hub': { title: 'Hub', description: 'Orchestrate many devtools sharing one UI - docks, terminals, messages, commands.', icon: 'i-lucide-layout-dashboard' },
   '/guide/client-context': { title: 'Client Scripts & Client Context', description: 'How a dock client script runs a devframe\'s code inside the host page.', icon: 'i-lucide-code' },
   '/guide/hub-initiate': { title: 'Serve a Hub Anywhere', description: 'initHub() serves a whole multi-devframe install from one handler.', icon: 'i-lucide-server-cog' },
   '/guide/services': { title: 'Cross-Devframe Services', description: 'Expose a typed, namespaced capability to every devframe in a hub.', icon: 'i-lucide-share-2' },
   '/guide/deep-linking': { title: 'Deep Linking', description: 'Send a user to a specific view inside a devframe from a URL or an agent.', icon: 'i-lucide-link' },
-  '/guide/json-render': { title: 'JSON-Render', description: 'Describe a UI as data — a serializable component spec any frontend renders.', icon: 'i-lucide-braces' },
+  '/guide/json-render': { title: 'JSON-Render', description: 'Describe a UI as data - a serializable component spec any frontend renders.', icon: 'i-lucide-braces' },
   '/guide/build-your-own-json-render-frontend': { title: 'Build Your Own JSON-Render Frontend', description: 'Implement the renderer contract in your own framework instead of the reference one.', icon: 'i-lucide-component' },
-  '/guide/build-your-own-hub-ui': { title: 'Build Your Own Hub UI', description: 'The two contracts a hub UI provider implements — node side and browser side.', icon: 'i-lucide-layout-panel-left' },
+  '/guide/build-your-own-hub-ui': { title: 'Build Your Own Hub UI', description: 'The two contracts a hub UI provider implements - node side and browser side.', icon: 'i-lucide-layout-panel-left' },
   '/guide/standalone-cli': { title: 'Standalone CLI with Devframe', description: 'npx my-tool starts a dev server serving your SPA over type-safe RPC.', icon: 'i-lucide-terminal' },
   '/references/interactive-auth': { title: 'Interactive Auth', description: 'An OTP auth layer over devframe\'s node-side primitives.', icon: 'i-lucide-key-round' },
-  '/references/utilities': { title: 'Utilities', description: 'Small, stable helpers bundled into devframe — no npm install.', icon: 'i-lucide-wrench' },
+  '/references/utilities': { title: 'Utilities', description: 'Small, stable helpers bundled into devframe - no npm install.', icon: 'i-lucide-wrench' },
   '/adapters': { title: 'Adapters', description: 'Every path from a DevframeDefinition to a running devframe.', icon: 'i-lucide-shuffle' },
   '/adapters/initiate': { title: 'The Standard Handler', description: 'initDevframe() turns a definition into a Web Standard Request → Response handler.', icon: 'i-lucide-server' },
   '/adapters/cac': { title: 'CLI (cac)', description: 'A cac CLI around a DevframeDefinition with dev, build, and mcp commands.', icon: 'i-lucide-square-terminal' },

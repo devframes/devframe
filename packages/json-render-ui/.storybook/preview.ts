@@ -1,5 +1,5 @@
 import type { Decorator, Preview } from '@storybook/vue3-vite'
-// Before `virtual:uno.css`, mirroring the SPA entry and the shadow-root build —
+// Before `virtual:uno.css`, mirroring the SPA entry and the shadow-root build -
 // see `src/spa/main.ts` for why the reset is load-bearing here.
 import '@unocss/reset/tailwind.css'
 import 'virtual:uno.css'
@@ -7,7 +7,7 @@ import '@antfu/design/styles.css'
 
 // Drive the shared `@antfu/design` tokens off the toolbar theme toggle: dark
 // mode is the `.dark` class on `<html>`, and the canvas takes the semantic
-// `bg-base`/`color-base` surface — matching every other devframe surface.
+// `bg-base`/`color-base` surface - matching every other devframe surface.
 function applyTheme(theme: string): void {
   document.documentElement.classList.toggle('dark', theme !== 'light')
   document.body.classList.add('bg-base', 'color-base', 'font-sans')

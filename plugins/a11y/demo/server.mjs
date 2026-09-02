@@ -11,8 +11,8 @@
  *
  * Two modes prove the plugin works either way:
  *
- *   node demo/server.mjs          dev    — live WebSocket RPC (`assets-pkg/dist`)
- *   node demo/server.mjs build    static — baked RPC dump,    (`dist/static`)
+ *   node demo/server.mjs          dev    - live WebSocket RPC (`assets-pkg/dist`)
+ *   node demo/server.mjs build    static - baked RPC dump,    (`dist/static`)
  *
  * The scan/highlight loop is identical in both: it rides the in-page channel,
  * not the devframe backend.
@@ -48,7 +48,7 @@ function requireBuilt(file, hint) {
 function banner(origin) {
   const label = mode === 'build' ? 'static build (baked RPC dump)' : 'dev (live WebSocket RPC)'
   process.stdout.write(
-    `\n  A11y Inspector demo — ${label}\n`
+    `\n  A11y Inspector demo - ${label}\n`
     + `  ▸ host app + docked panel:  ${origin}/\n`
     + `  ▸ panel only:               ${origin}${basePath}\n\n`
     + '  Hover a violation in the panel to highlight its element in the page.\n\n',

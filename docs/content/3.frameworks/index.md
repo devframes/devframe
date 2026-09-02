@@ -2,10 +2,10 @@
 title: 'Frameworks'
 navigation:
   icon: i-lucide-layers
-description: 'The framework kits — @devframes/vite, @devframes/nuxt, @devframes/next — integrate devframe with a meta-framework''s dev server. Two subpaths:'
+description: 'The framework kits - @devframes/vite, @devframes/nuxt, @devframes/next - integrate devframe with a meta-framework''s dev server. Two subpaths:'
 ---
 
-The framework kits — [`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), [`@devframes/next`](/frameworks/next) — integrate devframe with a meta-framework's dev server. Two **subpaths**:
+The framework kits - [`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), [`@devframes/next`](/frameworks/next) - integrate devframe with a meta-framework's dev server. Two **subpaths**:
 
 | Scope | Subpath | You are… |
 |-------|---------|----------|

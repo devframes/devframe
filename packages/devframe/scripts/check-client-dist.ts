@@ -75,7 +75,7 @@ export async function checkClientDist(options: CheckClientDistOptions): Promise<
       throw new Error(`[check-client-dist] Failed to read ${relative(cwd, file)}: ${(err as Error).message}`)
     }
 
-    // Static imports load eagerly when the file is evaluated — they're the leak
+    // Static imports load eagerly when the file is evaluated - they're the leak
     // vector this guard exists to catch. Flag any forbidden specifier.
     for (const id of scanned.static) {
       const hit = FORBIDDEN.find(r => r.match(id))
@@ -85,7 +85,7 @@ export async function checkClientDist(options: CheckClientDistOptions): Promise<
 
     // Follow both static and dynamic relative imports to discover every chunk
     // the browser can end up loading. Dynamic specifiers themselves aren't
-    // checked against FORBIDDEN — the chunk they target is, on visit.
+    // checked against FORBIDDEN - the chunk they target is, on visit.
     for (const id of [...scanned.static, ...scanned.dynamic]) {
       if (id.startsWith('./') || id.startsWith('../')) {
         const next = resolve(dirname(file), id)
@@ -105,9 +105,9 @@ export async function checkClientDist(options: CheckClientDistOptions): Promise<
     }
     lines.push('')
     lines.push(`Scanned ${visited.size} chunks reachable from ${entries.length} client entries.`)
-    lines.push('Client chunks must not statically import server-only modules — see packages/devframe/tsdown.config.ts.')
+    lines.push('Client chunks must not statically import server-only modules - see packages/devframe/tsdown.config.ts.')
     throw new Error(lines.join('\n'))
   }
 
-  console.log(`[check-client-dist] OK — scanned ${visited.size} chunks reachable from ${entries.length} client entries`)
+  console.log(`[check-client-dist] OK - scanned ${visited.size} chunks reachable from ${entries.length} client entries`)
 }

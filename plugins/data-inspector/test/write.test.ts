@@ -4,7 +4,7 @@ import { applyWrite } from '../src/engine/write'
 
 const json = (value: unknown) => ({ kind: 'json', value }) as const
 
-describe('applyWrite — set', () => {
+describe('applyWrite - set', () => {
   it('sets an object property (nested path)', () => {
     const root = { server: { port: 3000 } }
     const out = applyWrite(root, { op: 'set', path: [['k', 'server'], ['k', 'port']], value: json(8080) })
@@ -75,7 +75,7 @@ describe('applyWrite — set', () => {
   })
 })
 
-describe('applyWrite — delete', () => {
+describe('applyWrite - delete', () => {
   it('deletes an object property', () => {
     const root: Record<string, unknown> = { a: 1, b: 2 }
     applyWrite(root, { op: 'delete', path: [['k', 'a']] })
@@ -106,7 +106,7 @@ describe('applyWrite — delete', () => {
   })
 })
 
-describe('applyWrite — add', () => {
+describe('applyWrite - add', () => {
   it('adds an object property (path addresses the container)', () => {
     const root: Record<string, unknown> = { nested: {} }
     applyWrite(root, { op: 'add', path: [['k', 'nested']], key: json('fresh'), value: json(1) })
@@ -143,7 +143,7 @@ describe('applyWrite — add', () => {
   })
 })
 
-describe('applyWrite — rename', () => {
+describe('applyWrite - rename', () => {
   it('renames an object key atomically (renamed key lands last)', () => {
     const root: Record<string, unknown> = { a: 1, b: 2 }
     const out = applyWrite(root, { op: 'rename', path: [['k', 'a']], key: json('z') })
@@ -181,7 +181,7 @@ describe('applyWrite — rename', () => {
   })
 })
 
-describe('applyWrite — prototype-chain safety', () => {
+describe('applyWrite - prototype-chain safety', () => {
   const unsafeKeys = ['__proto__', 'prototype', 'constructor'] as const
 
   it('rejects set of prototype-sensitive destination keys', () => {
@@ -283,7 +283,7 @@ describe('applyWrite — prototype-chain safety', () => {
   })
 })
 
-describe('applyWrite — request typing', () => {
+describe('applyWrite - request typing', () => {
   it('round-trips through JSON (wire-safety of the request shape)', () => {
     const request: WriteRequest = { op: 'set', path: [['k', 'a'], ['i', 0]], value: { kind: 'undefined' } }
     const root = { a: [1] }

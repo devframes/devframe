@@ -9,7 +9,7 @@ export type GitRef
     | { kind: 'remote', remote: string, name: string }
     | { kind: 'tag', name: string }
 
-// Display priority — labels are laid out right-aligned against the graph node,
+// Display priority - labels are laid out right-aligned against the graph node,
 // so a higher rank floats closest to the node (rendered last). The current
 // branch always wins, then local branches, tags, remotes, and finally HEAD.
 const RANK: Record<GitRef['kind'], number> = {
@@ -25,6 +25,31 @@ function rank(ref: GitRef): number {
   return RANK[ref.kind]
 }
 
+/** Classify one trimmed ref string, or `null` for the noise `origin/HEAD`. */
+function classifyRef(ref: string, current?: string | null): GitRef | null {
+  if (ref.startsWith('tag: '))
+    return { kind: 'tag', name: ref.slice(5).trim() }
+
+  if (ref.includes('->')) {
+    // `HEAD -> main`
+    const name = ref.split('->')[1]?.trim()
+    return name ? { kind: 'branch', name, current: true } : null
+  }
+
+  if (ref === 'HEAD')
+    return { kind: 'head' }
+
+  const slash = ref.indexOf('/')
+  if (slash > 0) {
+    const name = ref.slice(slash + 1)
+    if (name === 'HEAD')
+      return null // skip the symbolic `origin/HEAD`
+    return { kind: 'remote', remote: ref.slice(0, slash), name }
+  }
+
+  return { kind: 'branch', name: ref, current: current === ref }
+}
+
 /**
  * Turn git's raw ref strings into ordered {@link GitRef} tokens. `current` is
  * the active branch name (from `git status`), used to flag the checked-out
@@ -32,42 +57,13 @@ function rank(ref: GitRef): number {
  */
 export function parseRefs(refs: string[], current?: string | null): GitRef[] {
   const out: GitRef[] = []
-
   for (const raw of refs) {
     const ref = raw.trim()
     if (!ref)
       continue
-
-    if (ref.startsWith('tag: ')) {
-      out.push({ kind: 'tag', name: ref.slice(5).trim() })
-      continue
-    }
-
-    if (ref.includes('->')) {
-      // `HEAD -> main`
-      const name = ref.split('->')[1]?.trim()
-      if (name)
-        out.push({ kind: 'branch', name, current: true })
-      continue
-    }
-
-    if (ref === 'HEAD') {
-      out.push({ kind: 'head' })
-      continue
-    }
-
-    const slash = ref.indexOf('/')
-    if (slash > 0) {
-      const remote = ref.slice(0, slash)
-      const name = ref.slice(slash + 1)
-      if (name === 'HEAD')
-        continue // skip the symbolic `origin/HEAD`
-      out.push({ kind: 'remote', remote, name })
-      continue
-    }
-
-    out.push({ kind: 'branch', name: ref, current: current === ref })
+    const parsed = classifyRef(ref, current)
+    if (parsed)
+      out.push(parsed)
   }
-
   return out.sort((a, b) => rank(a) - rank(b))
 }

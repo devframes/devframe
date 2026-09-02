@@ -11,14 +11,14 @@ const deps = {
   ],
 }
 
-// Browser-loaded module — the launcher/iframe shell. Kept in its own
+// Browser-loaded module - the launcher/iframe shell. Kept in its own
 // rolldown graph so the node-only supervisor never leaks into the client
 // bundle.
 const clientEntries = {
   'client/index': 'src/client/index.ts',
 }
 
-// Node + neutral modules — the devframe definition/factory, RPC functions,
+// Node + neutral modules - the devframe definition/factory, RPC functions,
 // the code-server supervisor, and the host adapters.
 const serverEntries = {
   'index': 'src/index.ts',
@@ -30,11 +30,13 @@ const serverEntries = {
   'types': 'src/types.ts',
 }
 
-// Three configs, mirroring `packages/devframe/tsdown.config.ts`:
-//   1. browser client build (independent graph, `.mjs`),
-//   2. node server build (appends to the same dist/),
-//   3. combined dts so `declare module 'devframe'` augmentations resolve
-//      across every entry.
+/**
+ * Three configs, mirroring `packages/devframe/tsdown.config.ts`:
+ * 1. browser client build (independent graph, `.mjs`),
+ * 2. node server build (appends to the same dist/),
+ * 3. combined dts so `declare module 'devframe'` augmentations resolve
+ * across every entry.
+ */
 export default defineConfig([
   {
     clean: true,

@@ -271,7 +271,7 @@ describe('devToolsAgentHost', () => {
   })
 
   describe('standard schema args on tool inputs', () => {
-    it('carries args raw on the projected tool — conversion is deferred to protocol adapters', async () => {
+    it('carries args raw on the projected tool - conversion is deferred to protocol adapters', async () => {
       const v = await import('valibot')
       const ctx = createContext()
       const schema = v.object({ name: v.optional(v.string()) })
@@ -283,7 +283,7 @@ describe('devToolsAgentHost', () => {
       })
 
       const tool = ctx.agent.getTool('schema:tool')!
-      // Mirrors how an RPC-backed tool defers to `ctx.rpc.definitions` — the
+      // Mirrors how an RPC-backed tool defers to `ctx.rpc.definitions` - the
       // agent host itself never converts Standard Schema → JSON Schema (that
       // stays a protocol-adapter concern, e.g. the MCP adapter), so no
       // eager `inputSchema` is computed here.

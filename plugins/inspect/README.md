@@ -7,8 +7,8 @@
 A built-in devframe that inspects *its own* connection (and, when mounted in a
 hub, the hub's): browse every registered RPC function with its metadata,
 invoke read-only `query`/`static` functions and inspect the results, watch
-shared-state keys update live, explore the agent-exposed API, and — while
-running against a live backend — list the other devframe dev servers running
+shared-state keys update live, explore the agent-exposed API, and - while
+running against a live backend - list the other devframe dev servers running
 alongside it.
 
 Ported in spirit from the RPC & State panels of
@@ -21,7 +21,7 @@ framework-neutral client (`connectDevframe`, `rpc.sharedState`) with a Vue + Vit
 pnpx @devframes/plugin-inspect
 ```
 
-Opens the inspector against a fresh standalone devframe connection — useful as a
+Opens the inspector against a fresh standalone devframe connection - useful as a
 reference and for poking at the introspection RPCs themselves.
 
 ## Mount into a Vite host
@@ -56,7 +56,7 @@ All functions are namespaced `devframes:plugin:inspect:*`:
 | `list-functions` | `query` (snapshot) | Every registered RPC function with metadata (type, JSON-serializable/snapshot flags, args/return JSON Schema, agent exposure). |
 | `invoke` | `action` | Invokes a read-only `query`/`static` function by name and returns a result envelope. Refuses `action`/`event` functions. |
 | `list-state-keys` | `query` (snapshot) | The keys of every shared-state entry on the connection. |
-| `describe-agent` | `query` (snapshot) | The agent manifest — tools and readable resources. |
+| `describe-agent` | `query` (snapshot) | The agent manifest - tools and readable resources. |
 | `list-instances` | `query` (live) | Every devframe dev server currently running on the machine, discovered through the shared instance registry. Powers the read-only Instances tab. |
 
 The three snapshot `query` functions are agent-exposed (read-only) and bake into

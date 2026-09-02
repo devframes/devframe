@@ -1,16 +1,16 @@
 /**
- * The a11y inspector **page script** — injected into the user app's page.
+ * The a11y inspector **page script** - injected into the user app's page.
  *
  * It runs axe-core against the live DOM, tracks violations per route, owns
  * the whole {@link A11yState} aggregate as the in-page channel's shared
  * state, and draws transient + pinned highlight rings around elements the
  * panel asks about. It talks to the panel purely over devframe's in-page
- * channel (`devframe/in-page-channel`), so it needs no server — the loop
+ * channel (`devframe/in-page-channel`), so it needs no server - the loop
  * works the same in dev and in a static build, and every connected panel
  * (dock iframe, popup, Document PiP) converges on the same state.
  *
  * Load it from the host page with a single module script, e.g.
- * `<script type="module" src="/__df-inject/inject.js"></script>` — or let a
+ * `<script type="module" src="/__df-inject/inject.js"></script>` - or let a
  * hub load it as the a11y dock's client script, in which case the default
  * export receives the hub's client-script context and additionally mirrors
  * each scan into the hub's messages feed.
@@ -32,7 +32,7 @@ import { resolveElement, scan } from './scanner.ts'
 const GLOBAL_FLAG = '__DF_A11Y_PAGE_SCRIPT__'
 
 async function start(context?: A11yPageScriptContext): Promise<void> {
-  const w = window as unknown as Record<string, unknown>
+  const w = window as typeof window & { [GLOBAL_FLAG]?: boolean }
   if (w[GLOBAL_FLAG])
     return
   w[GLOBAL_FLAG] = true
@@ -40,7 +40,7 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
   const overlay = createOverlay()
   document.documentElement.appendChild(overlay.root)
 
-  // Booted as a hub dock client script — mirror the active route's scan into
+  // Booted as a hub dock client script - mirror the active route's scan into
   // the hub's messages feed. Standalone boots have no context and skip it.
   const config: PageScriptConfig = { logIssues: true, autoScan: true }
 
@@ -90,7 +90,7 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
       sessionStorage.setItem(A11Y_STORAGE_KEY, JSON.stringify([...routes.values()]))
     }
     catch {
-      // Storage full/unavailable — history is best-effort, carry on.
+      // Storage full/unavailable - history is best-effort, carry on.
     }
   }
 
@@ -246,7 +246,7 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
     for (const v of fresh) {
       // eslint-disable-next-line no-console
       console.log(
-        `%c${v.impact}%c ${v.ruleId} — ${v.help} (${v.nodes.length})\n${v.helpUrl}`,
+        `%c${v.impact}%c ${v.ruleId} - ${v.help} (${v.nodes.length})\n${v.helpUrl}`,
         'font-weight:700',
         'font-weight:400',
       )
@@ -365,7 +365,7 @@ function findRule(report: ScanReport | null, nodeId: string) {
  * Client-script entry the hub runtime calls after importing this module,
  * passing its `DockClientScriptContext`. The live scan/highlight loop rides
  * the in-page channel either way; when the context carries a `messages`
- * client (duck-typed — see {@link A11yPageScriptContext}), the page script
+ * client (duck-typed - see {@link A11yPageScriptContext}), the page script
  * additionally mirrors each scan into the hub's messages feed. `start()` is
  * idempotent.
  */
@@ -374,7 +374,7 @@ export default function runA11yPageScript(context?: A11yPageScriptContext): void
 }
 
 // Also self-boot so a plain `<script type="module" src=".../inject.js">`
-// (the standalone demo, any non-hub host page) starts the page script on load — deferred
+// (the standalone demo, any non-hub host page) starts the page script on load - deferred
 // one macrotask so a hub host that imports this module calls the default
 // export (microtask-chained after the import) first, letting the context-ful
 // boot win the `__DF_A11Y_PAGE_SCRIPT__` guard.

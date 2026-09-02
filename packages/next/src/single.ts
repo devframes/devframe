@@ -1,4 +1,4 @@
-// `@devframes/next/single` — host a SINGLE devframe's SPA inside a Next.js
+// `@devframes/next/single` - host a SINGLE devframe's SPA inside a Next.js
 // App Router app: the config helper that lets mounted SPAs' relative assets
 // resolve, and the catch-all route handler that serves one devframe.
 //

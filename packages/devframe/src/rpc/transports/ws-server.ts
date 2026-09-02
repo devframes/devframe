@@ -29,7 +29,7 @@ export interface WsRpcTransportOptions {
    * Attach to an existing HTTP(S) server, sharing its port. Combine with
    * `path` to bind the WS endpoint to a single route so it coexists with
    * other upgrade handlers on the same server (e.g. a Vite dev server's HMR
-   * socket). The shared server's lifecycle is owned by the caller — closing
+   * socket). The shared server's lifecycle is owned by the caller - closing
    * this transport detaches the upgrade listener without closing the server.
    */
   server?: HttpServer | HttpsServer
@@ -78,7 +78,7 @@ export interface WsRpcTransportOptions {
    * dispatch between strict-JSON and structured-clone encoding based
    * on each function's `jsonSerializable` flag.
    *
-   * When omitted, all messages fall back to structured-clone — safe but
+   * When omitted, all messages fall back to structured-clone - safe but
    * loses dev-time validation for `jsonSerializable: true` declarations.
    */
   definitions?: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>>
@@ -164,7 +164,7 @@ export function createWsOriginRegistry(
 
 export interface WsRpcTransport {
   /**
-   * The crossws node adapter driving the socket — exposes the connected
+   * The crossws node adapter driving the socket - exposes the connected
    * `peers` and pub/sub. See https://crossws.h3.dev.
    */
   ws: NodeAdapter
@@ -175,15 +175,15 @@ export interface WsRpcTransport {
   /**
    * Complete a `node:http` `upgrade` event on this transport, applying the
    * same `path` filter and origin gate the transport's own listener uses.
-   * Wire it into a host server directly — `server.on('upgrade',
-   * transport.handleUpgrade)` — or call it from an existing listener.
+   * Wire it into a host server directly - `server.on('upgrade',
+   * transport.handleUpgrade)` - or call it from an existing listener.
    */
   handleUpgrade: (req: IncomingMessage, socket: Duplex, head: Buffer) => void
   /**
    * Route a server's `upgrade` events to this transport, returning a detach
    * function. Use it to bind an `unbound` transport once the host server
    * exists; {@link WsRpcTransport.close} detaches every server attached this
-   * way (without closing them — the caller owns their lifecycle).
+   * way (without closing them - the caller owns their lifecycle).
    */
   attach: (server: HttpServer | HttpsServer) => () => void
   /** Remove the upgrade listener from a shared `server` (a no-op otherwise). */
@@ -290,7 +290,7 @@ function createUpgradeListener(
  * any [crossws](https://crossws.h3.dev) adapter. {@link attachWsRpcTransport}
  * feeds them to the Node adapter; runtime-specific attachments (e.g. Bun's
  * fetch-upgrade adapter) reuse the same hooks so every transport speaks the
- * identical wire protocol — one birpc channel per peer, per-method
+ * identical wire protocol - one birpc channel per peer, per-method
  * `jsonSerializable` dispatch between strict JSON and structured-clone.
  */
 export function createWsRpcPeerHooks<
@@ -311,7 +311,7 @@ export function createWsRpcPeerHooks<
   interface PeerState {
     meta: DevframeNodeRpcSessionMeta
     connection: DevframeRpcConnection
-    channel: ChannelOptions
+    channel?: ChannelOptions
     /** birpc's inbound-message handler, registered via the channel's `on`. */
     onMessage?: (data: string) => void
   }
@@ -330,10 +330,10 @@ export function createWsRpcPeerHooks<
         peer,
       }
 
-      // Per-connection wire codec — one per session, so request-id spaces
+      // Per-connection wire codec - one per session, so request-id spaces
       // don't collide across sessions.
       const codec = createRpcWireCodec(definitions)
-      const state: PeerState = { meta, connection, channel: undefined as unknown as ChannelOptions }
+      const state: PeerState = { meta, connection }
       const channel: ChannelOptions = {
         post: (data) => {
           peer.send(data)
@@ -362,7 +362,7 @@ export function createWsRpcPeerHooks<
         return
       states.delete(peer)
       rpcGroup.updateChannels((channels) => {
-        const index = channels.indexOf(state.channel)
+        const index = state.channel ? channels.indexOf(state.channel) : -1
         if (index >= 0)
           channels.splice(index, 1)
       })
@@ -403,7 +403,7 @@ export function attachWsRpcTransport<
     hooks: createWsRpcPeerHooks(rpcGroup, options),
   })
 
-  // One listener shape for every binding — the transport's own server, a
+  // One listener shape for every binding - the transport's own server, a
   // shared host server, and the caller-driven `handleUpgrade` / `attach`.
   const sharedUpgradeListener = createUpgradeListener(ws, path, destroyUnmatched, allowedOrigins)
   const ownedUpgradeListener = createUpgradeListener(ws, path, true, allowedOrigins)
@@ -470,7 +470,7 @@ export function attachWsRpcTransport<
       // routing new connections to us (and other handlers keep working).
       detachAll()
       // Force-terminate every peer so callers can deterministically tear
-      // the server down (tests, hot reload, graceful shutdown) — a graceful
+      // the server down (tests, hot reload, graceful shutdown) - a graceful
       // close would wait for clients to disconnect on their own.
       ws.closeAll(undefined, undefined, true)
       if (ownedServer) {

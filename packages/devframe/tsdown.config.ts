@@ -8,11 +8,13 @@ const distDir = resolve(here, 'dist')
 const tsconfig = '../../tsconfig.base.json'
 
 const deps = {
-  // Keep transitive external type graphs out of dts bundling.
-  // `vite`/`esbuild`/`postcss` are pulled in via the kit client's
-  // `declare module 'vite'` augmentation and contain
-  // rolldown-incompatible re-exports that would otherwise fail dts
-  // generation with dozens of MISSING_EXPORT errors.
+  /**
+   * Keep transitive external type graphs out of dts bundling.
+   * `vite`/`esbuild`/`postcss` are pulled in via the kit client's
+   * `declare module 'vite'` augmentation and contain
+   * rolldown-incompatible re-exports that would otherwise fail dts
+   * generation with dozens of MISSING_EXPORT errors.
+   */
   neverBundle: [
     'vite',
     'esbuild',
@@ -23,14 +25,16 @@ const deps = {
     'terser',
     '@jridgewell/trace-mapping',
   ],
-  // `whenexpr` is runtime-only bundled (see `onlyBundle` below); its
-  // declaration file mixes type-only and value named exports
-  // (`export { type WhenExpression, evaluateWhen, ... }`) in a way that
-  // trips up rolldown's dts bundler when it tries to inline the type
-  // graph too (spuriously drops the `type` modifier off the merged
-  // re-export, then can't find `WhenExpression` as a value export). Leave
-  // `whenexpr`'s types external and let dts consumers resolve them
-  // straight from the published package.
+  /**
+   * `whenexpr` is runtime-only bundled (see `onlyBundle` below); its
+   * declaration file mixes type-only and value named exports
+   * (`export { type WhenExpression, evaluateWhen, ... }`) in a way that
+   * trips up rolldown's dts bundler when it tries to inline the type
+   * graph too (spuriously drops the `type` modifier off the merged
+   * re-export, then can't find `WhenExpression` as a value export). Leave
+   * `whenexpr`'s types external and let dts consumers resolve them
+   * straight from the published package.
+   */
   dts: {
     neverBundle: ['whenexpr'],
   },
@@ -54,15 +58,11 @@ const deps = {
   ],
 }
 
-// The node build reaches `devframe/utils/shared-state` (`node/storage.ts`,
-// `node/rpc-shared-state.ts`) through the same `devframe/utils/shared-state`
-// tsconfig path alias the browser build's own `utils/shared-state` entry
-// uses — two independent rolldown graphs, so left alone each would inline
-// its own copy of `immer`. Externalizing the specifier here (node build
-// only) keeps the tsconfig-paths resolver from ever inlining that source;
-// the emitted `import 'devframe/utils/shared-state'` instead resolves at
-// runtime to the already-built `dist/utils/shared-state.mjs` chunk via
-// Node's package self-reference, so immer's bytes exist exactly once.
+// The node build reaches `devframe/utils/shared-state` through the same
+// tsconfig path alias as the browser build - two independent rolldown graphs
+// that would each inline their own `immer`. Externalizing the specifier (node
+// build only) makes the emitted import resolve at runtime to the built chunk,
+// so immer's bytes exist once.
 const nodeDeps = {
   ...deps,
   neverBundle: [...deps.neverBundle, 'devframe/utils/shared-state'],
@@ -122,20 +122,22 @@ const serverEntries = {
   'recipes/interactive-auth': 'src/recipes/interactive-auth.ts',
 }
 
-// Three configs:
-//
-// 1. Runtime client/agnostic build (`dts: false`). Independent rolldown
-//    chunk graph so server-only imports like `devframe/rpc/transports/ws-server`
-//    or `node:crypto` can't leak into browser-loaded outputs
-//    (`client/index.mjs`, `utils/hash.mjs`, …). `clean: true` clears
-//    dist/ before the server build appends.
-// 2. Runtime server/node build (`dts: false`). `clean: false` appends to
-//    the client output.
-// 3. Combined dts build (`emitDtsOnly: true`). All entries live in a
-//    single rolldown graph so shared modules — notably
-//    `src/types/rpc-augments.ts` — produce exactly one declaration site.
-//    This is what lets consumer `declare module 'devframe'` augmentations
-//    propagate across every import chain.
+/**
+ * Three configs:
+ *
+ * 1. Runtime client/agnostic build (`dts: false`). Independent rolldown
+ * chunk graph so server-only imports like `devframe/rpc/transports/ws-server`
+ * or `node:crypto` can't leak into browser-loaded outputs
+ * (`client/index.mjs`, `utils/hash.mjs`, …). `clean: true` clears
+ * dist/ before the server build appends.
+ * 2. Runtime server/node build (`dts: false`). `clean: false` appends to
+ * the client output.
+ * 3. Combined dts build (`emitDtsOnly: true`). All entries live in a
+ * single rolldown graph so shared modules - notably
+ * `src/types/rpc-augments.ts` - produce exactly one declaration site.
+ * This is what lets consumer `declare module 'devframe'` augmentations
+ * propagate across every import chain.
+ */
 export default defineConfig([
   {
     clean: true,
@@ -143,8 +145,10 @@ export default defineConfig([
     tsconfig,
     deps,
     dts: false,
-    // `platform: 'browser'` defaults to `.js`; force `.mjs` to match the
-    // `packages/devframe/package.json` `exports` map.
+    /**
+     * `platform: 'browser'` defaults to `.js`; force `.mjs` to match the
+     * `packages/devframe/package.json` `exports` map.
+     */
     outExtensions: () => ({ js: '.mjs' }),
     entry: clientEntries,
     hooks: {

@@ -60,7 +60,7 @@ export function stringifyForMcp(value: unknown): string {
  * Format a thrown value for an MCP `isError` text payload.
  *
  * A nostics `Diagnostic` (every coded devframe error) becomes structured
- * JSON — `{ error: { code, message, fix?, docs? } }` — so an agent receives
+ * JSON - `{ error: { code, message, fix?, docs? } }` - so an agent receives
  * the actionable next step (`fix`) and the docs URL instead of a bare
  * message string. Other errors surface `Error.name`/`message`, plus one
  * level of `cause.message` so context isn't dropped silently.

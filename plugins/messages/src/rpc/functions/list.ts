@@ -16,7 +16,7 @@ export const messagesList = defineMessagesRpc({
   snapshot: true,
   agent: {
     title: 'List messages',
-    description: 'List the hub message feed — diagnostics, notifications, and tool output entries with level, category, labels, and positions.',
+    description: 'List the hub message feed - diagnostics, notifications, and tool output entries with level, category, labels, and positions.',
   },
   setup: ctx => ({
     handler: async (since?: number | null): Promise<DevframeMessagesListDelta> => {

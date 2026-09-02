@@ -13,10 +13,10 @@ describe('buildSegments', () => {
   })
 
   it('keeps token styles while marking changed segments', () => {
-    const tokens = [
+    const tokens: Token[] = [
       { content: 'foo', offset: 0, htmlStyle: { 'color': '#111', '--shiki-dark': '#eee' } },
       { content: 'bar', offset: 3, htmlStyle: { 'color': '#222', '--shiki-dark': '#ddd' } },
-    ] as unknown as Token[]
+    ]
     const segments = buildSegments(tokens, 'foobar', [[3, 6]])
     expect(segments).toEqual([
       { text: 'foo', style: { 'color': '#111', '--shiki-dark': '#eee' }, changed: false },
@@ -25,7 +25,7 @@ describe('buildSegments', () => {
   })
 
   it('falls back to one plain span when tokens do not cover the content', () => {
-    const tokens = [{ content: 'xy', offset: 0, htmlStyle: { color: '#111' } }] as unknown as Token[]
+    const tokens: Token[] = [{ content: 'xy', offset: 0, htmlStyle: { color: '#111' } }]
     const segments = buildSegments(tokens, 'mismatched', [])
     expect(segments).toEqual([{ text: 'mismatched', style: undefined, changed: false }])
   })

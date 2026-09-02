@@ -16,7 +16,7 @@ export interface RenameArgs {
   /** Root-relative path of the asset to rename. */
   path: string
   /**
-   * New base name, without an extension — the original extension is
+   * New base name, without an extension - the original extension is
    * always preserved (mirrors Nuxt DevTools' rename dialog exactly). Any
    * extension included here is treated as part of the base name, not
    * stripped.
@@ -39,7 +39,7 @@ export const rename = defineAssetsRpc({
   setup: (ctx) => {
     const assets = getAssetsContext(ctx)
     return {
-      // See `list.ts` for why the async handler is cast.
+      /** See `list.ts` for why the async handler is cast. */
       handler: (async ({ path, newName }: RenameArgs): Promise<AssetInfo> => {
         const trimmed = newName.trim()
         if (!trimmed || /[/\\]/.test(trimmed))

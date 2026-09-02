@@ -1,4 +1,4 @@
-/** Devframe id — drives the hosted mount path `/__<id>/`. */
+/** Devframe id - drives the hosted mount path `/__<id>/`. */
 export const PLUGIN_ID = 'devframes_plugin_messages'
 
 /** Preferred standalone CLI port (901x band shared by the core-ish plugins). */

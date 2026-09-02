@@ -17,29 +17,29 @@ export type DevframeDeploymentKind = 'standalone' | 'hosted'
  * How a hub deduplicates devframes that share an `id` when more than one
  * is mounted onto the same hub. See {@link DevframeDefinition.duplicationStrategy}.
  *
- * - `'warn'` (default) — keep the first registration, drop later
+ * - `'warn'` (default) - keep the first registration, drop later
  *   duplicates, and emit a warning diagnostic (`DF8105`).
- * - `'silent'` — drop later duplicates without warning.
- * - `'throw'` — throw when a duplicate is mounted.
- * - `'duplicate'` — let every instance coexist under a disambiguated
+ * - `'silent'` - drop later duplicates without warning.
+ * - `'throw'` - throw when a duplicate is mounted.
+ * - `'duplicate'` - let every instance coexist under a disambiguated
  *   dock id.
  */
 export type DevframeDuplicationStrategy = 'warn' | 'silent' | 'throw' | 'duplicate'
 
 /**
- * Controls where the browser opens the RPC WebSocket — advertised in
+ * Controls where the browser opens the RPC WebSocket - advertised in
  * `__connection.json` and used to bind the dev server. The three shapes map
  * to the three connection scenarios; precedence is `url` > `port` > `route`:
  *
- *   1. **Same server, different route** (default) — leave `port`/`url` unset.
+ *   1. **Same server, different route** (default) - leave `port`/`url` unset.
  *      The socket shares the HTTP server's port and binds to `route`
  *      (`__ws`). The client connects to its own origin, so the link
  *      survives a reverse proxy that rewrites the host/port/subpath.
  *
- *   2. **Different port** — set `port`. The socket binds on its own port on the
+ *   2. **Different port** - set `port`. The socket binds on its own port on the
  *      same host; the client targets `ws(s)://<page-host>:<port>/<route>`.
  *
- *   3. **Remote, different origin** — set `url` to a full `ws://`/`wss://`
+ *   3. **Remote, different origin** - set `url` to a full `ws://`/`wss://`
  *      endpoint (e.g. a public tunnel or relay). The client uses it verbatim.
  */
 export interface DevframeWsOptions {
@@ -69,7 +69,7 @@ export interface DevframeWsOptions {
 }
 
 /**
- * Controls the SSE RPC endpoint — the WebSocket-free transport for hosts
+ * Controls the SSE RPC endpoint - the WebSocket-free transport for hosts
  * and proxies where the upgrade isn't available. It rides whatever HTTP
  * surface serves the instance (the same one serving `__connection.json`),
  * so a relative `route` always resolves; there is no port plumbing of its
@@ -104,7 +104,7 @@ export interface McpRouteOptions {
    * host, mirroring the WS transport's origin gate. Pass `false` to disable
    * origin checking entirely (not recommended). Default: loopback-only.
    *
-   * This is the endpoint's DNS-rebinding protection — the shared
+   * This is the endpoint's DNS-rebinding protection - the shared
    * `isAllowedOrigin` gate the WS upgrade already uses, applied as external
    * middleware (the approach the MCP SDK now recommends over its own
    * deprecated `allowedHosts`/`allowedOrigins` transport flags).
@@ -132,16 +132,16 @@ export interface DevframeCliOptions {
   /**
    * Authentication for the standalone dev server.
    *
-   *   - `undefined` / `true` — the standalone adapters (`cli` /
+   *   - `undefined` / `true` - the standalone adapters (`cli` /
    *     served `build`) auto-wire devframe's interactive OTP auth
    *     (`createInteractiveAuth`): an untrusted client can only reach
    *     `anonymous:` methods until it exchanges the printed one-time code.
    *     The adapter prints the code + magic-link banner once the server is
    *     listening.
-   *   - `false` — no gate, for trusted single-user localhost tools where an
+   *   - `false` - no gate, for trusted single-user localhost tools where an
    *     auth round-trip only gets in the way (the built-in plugins set this).
    *     The `--no-auth` CLI flag maps here for one-off runs.
-   *   - A {@link DevframeAuthHandler} — a custom handler (e.g. a tuned
+   *   - A {@link DevframeAuthHandler} - a custom handler (e.g. a tuned
    *     `createInteractiveAuth`, or an entirely different scheme) passed
    *     straight through to the RPC transport binding.
    *
@@ -157,16 +157,16 @@ export interface DevframeCliOptions {
    * It surfaces the same `ctx.agent` tools + shared-state resources as the
    * stdio `mcp` command, but against the live, running server.
    *
-   * - `false` / omitted (default) — no MCP route is mounted.
-   * - `true` — mount at the default `__mcp` route with the loopback-only
+   * - `false` / omitted (default) - no MCP route is mounted.
+   * - `true` - mount at the default `__mcp` route with the loopback-only
    *   origin gate.
-   * - {@link McpRouteOptions} — customise the route path / allowed origins.
+   * - {@link McpRouteOptions} - customise the route path / allowed origins.
    *
    * The `--mcp` / `--no-mcp` CLI flags override this per run.
    */
   mcp?: boolean | McpRouteOptions
   /**
-   * Author's SPA dist — served as the devframe's UI.
+   * Author's SPA dist - served as the devframe's UI.
    *
    * @deprecated Moved to the top-level {@link DevframeDefinition.clientAssets}.
    * Set `clientAssets` on the definition instead. This field is still read as a
@@ -177,11 +177,11 @@ export interface DevframeCliOptions {
    * How the browser reaches the RPC WebSocket. Defaults to sharing the HTTP
    * port on the `__ws` route. See {@link DevframeWsOptions} for the
    * different-port and remote-origin variants. Pass `false` to serve no
-   * WebSocket at all — clients connect over SSE instead (`backend: 'sse'`).
+   * WebSocket at all - clients connect over SSE instead (`backend: 'sse'`).
    */
   ws?: DevframeWsOptions | false
   /**
-   * How the browser reaches the SSE RPC endpoint — enabled by default
+   * How the browser reaches the SSE RPC endpoint - enabled by default
    * alongside the WebSocket as the more portable transport. Pass `false`
    * to disable, or a {@link DevframeSseOptions} to change its route.
    */
@@ -224,7 +224,7 @@ export interface DevframeCliOptions {
 
 /**
  * Default dock attributes for the iframe entry a hub synthesizes when it
- * mounts this devframe. Framework-neutral metadata only — the hub layer
+ * mounts this devframe. Framework-neutral metadata only - the hub layer
  * (`ctx.install`) merges these beneath its per-mount `dock` overrides,
  * which in turn sit beneath the locked, derived `id` / `type` / `url`.
  *
@@ -255,7 +255,7 @@ export interface DevframeDockDefaults {
   /**
    * Render-only visibility expression, same syntax as {@link when}. Hides the
    * entry's own dock-bar button when it evaluates to `false` while leaving it
-   * registered and reachable (activation, RPC lookups, etc.) — unlike `when`,
+   * registered and reachable (activation, RPC lookups, etc.) - unlike `when`,
    * which is the general relevance switch for the entry as a whole.
    */
   visibility?: string
@@ -304,13 +304,13 @@ export interface DevframeDefinition {
    * everything against the plugin's own installed packages rather than the
    * consuming app's.
    *
-   * - **Remote assets** — becomes the default `resolveFrom` for any remote
+   * - **Remote assets** - becomes the default `resolveFrom` for any remote
    *   {@link StaticAssetsSource} the devframe hosts (its `clientAssets`, and
    *   every `ctx.views.hostStatic` call) that doesn't set one explicitly, so a
    *   locally installed copy of the assets package is served with zero
    *   network. A per-asset `resolveFrom` still wins, and an explicit
    *   `resolveFrom: null` still opts out.
-   * - **Service dependencies** — becomes the base the host resolves declared
+   * - **Service dependencies** - becomes the base the host resolves declared
    *   {@link DevframeServiceInput | services} from, so a plugin can ship a
    *   service package as its own dependency instead of asking users to install
    *   it.
@@ -353,12 +353,12 @@ export interface DevframeDefinition {
    * Declares which runtimes meaningfully support this devframe. Adapters
    * act on a `false` before doing any work:
    *
-   * - `build: false` — `createCac` skips registering the `build` subcommand,
+   * - `build: false` - `createCac` skips registering the `build` subcommand,
    *   and `createBuild` refuses (throws `DF0042`) unless `{ force: true }`.
    *   Useful for a devframe whose value is inherently live (e.g. it manages
    *   real files on disk), so a static export would only ever produce a
    *   broken, write-less shell of the tool.
-   * - `dev: false` — `createDevServer` refuses (throws `DF0058`) unless
+   * - `dev: false` - `createDevServer` refuses (throws `DF0058`) unless
    *   `{ force: true }`. Useful for a devframe that only makes sense as a
    *   static export (e.g. a report generator with nothing to serve live).
    */
@@ -369,18 +369,18 @@ export interface DevframeDefinition {
   /**
    * Wire services this devframe consumes (see `DevframeServiceDefinition`).
    * Each entry is either a declarative descriptor
-   * (`{ package, version?, required?, options? }` — the host imports the
+   * (`{ package, version?, required?, options? }` - the host imports the
    * package's default-export factory, resolving it against **this plugin's
    * own dependencies**) or a ready `DevframeServiceDefinition` (the factory
    * was already called). The adapter queues these before `setup(ctx)` runs
    * and constructs each service once at the `ctx.services.ready()` barrier,
    * merging option sets across every declarer. Missing services are skipped
-   * unless marked `required` — clients feature-detect via
+   * unless marked `required` - clients feature-detect via
    * `client.services.has(pkg)` and degrade.
    */
   services?: DevframeServiceInput[]
   /**
-   * Author's SPA dist — served as the devframe's UI. A local directory, or
+   * Author's SPA dist - served as the devframe's UI. A local directory, or
    * a {@link StaticAssetsSource} remote declaration (`{ package, version }`)
    * served through devframe's caching CDN back-proxy so the assets need not
    * ship inside the node package.
@@ -392,7 +392,7 @@ export interface DevframeDefinition {
   clientAssets?: StaticAssetsSource
   /** RPC-level configuration for this devframe (see {@link DevframeRpcOptions}). */
   rpc?: DevframeRpcOptions
-  /** Server-side setup — the primary entrypoint. Runs in every runtime. */
+  /** Server-side setup - the primary entrypoint. Runs in every runtime. */
   setup: (ctx: DevframeNodeContext, info?: DevframeSetupInfo) => void | Promise<void>
   cli?: DevframeCliOptions
 }
@@ -400,13 +400,13 @@ export interface DevframeDefinition {
 export interface DevframeRpcOptions {
   /**
    * Opt an RPC function into the static-build snapshot **without owning its
-   * definition** — the mechanism a devframe uses to bake a wire service's
+   * definition** - the mechanism a devframe uses to bake a wire service's
    * RPC (e.g. `@devframes/service-git`'s `status`/`log`/`show`) into its
    * `build` export, since the service itself defines no `dump`/`snapshot`.
    *
    * Each entry is either a bare method id (bakes the no-argument call, like
    * `snapshot: true`) or `{ method, inputs }` where `inputs` is the list of
-   * argument-tuples to bake — or an async provider given the node context
+   * argument-tuples to bake - or an async provider given the node context
    * (so it can enumerate at build time, e.g. read commit hashes via the
    * service's node API). `createBuild` resolves these after setup and
    * executes the target's own handler per tuple; the first tuple's result

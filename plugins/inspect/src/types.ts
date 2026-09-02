@@ -18,13 +18,13 @@ export interface RpcFunctionAgentInfo {
 /**
  * Serializable description of a single registered RPC function. Returned
  * by `devframes:plugin:inspect:list-functions`. JSON-safe by construction
- * — Standard Schema args/return schemas are projected to JSON Schema (best
+ * - Standard Schema args/return schemas are projected to JSON Schema (best
  * effort), never sent as live objects.
  */
 export interface RpcFunctionInfo {
   /** Full namespaced function name (e.g. `my-plugin:do-thing`). */
   name: string
-  /** Function type — `query`, `static`, `action`, or `event`. */
+  /** Function type - `query`, `static`, `action`, or `event`. */
   type: 'query' | 'static' | 'action' | 'event'
   /** Whether args/return are declared strictly JSON-serializable. */
   jsonSerializable: boolean
@@ -56,7 +56,7 @@ export interface RpcFunctionInfo {
  * Serializable projection of a single command registered on a hub's
  * commands host (`DevframeServerCommandEntry`/`DevframeCommandBase` in
  * `@devframes/hub`), returned by `devframes:plugin:inspect:list-commands`.
- * Populated only when this connection is mounted inside a hub — a plain
+ * Populated only when this connection is mounted inside a hub - a plain
  * devframe connection (no hub) returns an empty list.
  */
 export interface DevframeInspectCommandInfo {
@@ -76,7 +76,7 @@ export interface DevframeInspectCommandInfo {
 /**
  * Serializable projection of a single running devframe instance discovered
  * in the machine-wide instance registry (`~/.devframe/instances/`), returned
- * by `devframes:plugin:inspect:list-instances`. A live, node-only view — the
+ * by `devframes:plugin:inspect:list-instances`. A live, node-only view - the
  * inspector's Instances tab renders these as a read-only directory of the
  * other devframes running alongside this one.
  */
@@ -91,7 +91,7 @@ export interface DevframeInspectInstanceInfo {
   origin: string
   /** Base path the devframe is mounted at (trailing slash). */
   basePath: string
-  /** Full SPA URL (`origin` + `basePath`) — the link the tab opens. */
+  /** Full SPA URL (`origin` + `basePath`) - the link the tab opens. */
   url: string
   /** Process id of the instance's dev server. */
   pid: number

@@ -26,7 +26,7 @@ export interface AssetsDevframeOptions {
   name?: string
   icon?: string
   /**
-   * Directory this devframe manages. Defaults to `<cwd>/public` — the
+   * Directory this devframe manages. Defaults to `<cwd>/public` - the
    * conventional static-asset folder for Nuxt, Vite, and most static-site
    * frameworks. Pass an absolute path, or one relative to the devframe's
    * own `cwd`.
@@ -34,7 +34,7 @@ export interface AssetsDevframeOptions {
   dir?: string
   /**
    * URL base the **host** serves the managed directory at, used to build
-   * each asset's `publicPath`. Defaults to `/` — Vite, Nuxt, and most
+   * each asset's `publicPath`. Defaults to `/` - Vite, Nuxt, and most
    * frameworks serve their `public/` folder at the site root. Set this to
    * match a non-root deployment base (e.g. Nuxt's `app.baseURL`).
    */
@@ -54,7 +54,7 @@ export interface AssetsDevframeOptions {
   port?: number
   /**
    * Enable upload, rename, delete, and folder creation from the UI.
-   * Enabled by default — set `false` (or pass `--read-only` on the
+   * Enabled by default - set `false` (or pass `--read-only` on the
    * standalone CLI) for a browse-only deployment.
    */
   write?: boolean
@@ -65,7 +65,7 @@ export interface AssetsDevframeOptions {
   uploadExtensions?: readonly string[] | '*'
   /**
    * Watch the managed directory in dev mode and push live listing updates.
-   * Enabled by default. Set `false` to skip the file watcher — useful when a
+   * Enabled by default. Set `false` to skip the file watcher - useful when a
    * host mounts the devframe in a short-lived or repeatedly-recreated
    * context (tests, some SSR dev servers) where a background watcher isn't
    * wanted.
@@ -73,14 +73,14 @@ export interface AssetsDevframeOptions {
   watch?: boolean
   /**
    * Require the trust handshake on the standalone server. Enabled by
-   * default — this devframe can read, write, and delete real files.
+   * default - this devframe can read, write, and delete real files.
    */
   auth?: boolean
   /**
    * Register the `build` CLI subcommand. Disabled by default: a static
-   * export can only ever list file metadata from a baked snapshot — there
+   * export can only ever list file metadata from a baked snapshot - there
    * is no live host serving the files, and every write action is inherently
-   * excluded from a static dump — so the command would produce a broken,
+   * excluded from a static dump - so the command would produce a broken,
    * write-less shell of the tool. Opt back in if that degraded export is
    * still useful to you.
    */
@@ -88,7 +88,7 @@ export interface AssetsDevframeOptions {
 }
 
 /**
- * Create the assets manager devframe — a framework-neutral port of Nuxt
+ * Create the assets manager devframe - a framework-neutral port of Nuxt
  * DevTools' Assets tab. Mount it into any host via devframe's adapters, or
  * run it standalone with the bundled CLI (`devframe-assets`).
  *
@@ -98,7 +98,7 @@ export interface AssetsDevframeOptions {
 export function createAssetsDevframe(options: AssetsDevframeOptions = {}): DevframeDefinition {
   const id = options.id ?? DEFAULT_ID
   // Resolve the managed dir at factory time (process.cwd() here equals the
-  // adapter's ctx.cwd — same process) so it can be declared as a service-open
+  // adapter's ctx.cwd - same process) so it can be declared as a service-open
   // allowed root before any setup runs. Only matters when `dir` points
   // outside the workspace; an in-workspace `public/` is already allowed.
   const dir = options.dir ? resolve(process.cwd(), options.dir) : resolve(process.cwd(), 'public')
@@ -131,12 +131,14 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
       },
     },
     dock: { category: '~builtin' },
-    // Both wire services are declared, not imperatively installed: devframe
-    // constructs them (deep-merging options across every declarer) before
-    // setup runs. `service-open` gets the managed dir as an allowed root so
-    // out-of-workspace dirs open; the client hits it directly with the
-    // dev-only absolute `fsPath`. `service-shiki` backs server-highlighted
-    // text previews, with a plain `<pre>` fallback when it isn't advertised.
+    /**
+     * Both wire services are declared, not imperatively installed: devframe
+     * constructs them (deep-merging options across every declarer) before
+     * setup runs. `service-open` gets the managed dir as an allowed root so
+     * out-of-workspace dirs open; the client hits it directly with the
+     * dev-only absolute `fsPath`. `service-shiki` backs server-highlighted
+     * text previews, with a plain `<pre>` fallback when it isn't advertised.
+     */
     services: [
       { package: '@devframes/service-open', options: { roots: [dir] } },
       { package: '@devframes/service-shiki' },

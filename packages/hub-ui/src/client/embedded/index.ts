@@ -7,7 +7,7 @@ import { DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE } from '../state/d
 import { isEmbeddedDockInitiallyVisible, setupEmbeddedVisibility } from './visibility'
 
 /**
- * The floating-dock bootstrap the hub serves at `<base>embedded.js` — load
+ * The floating-dock bootstrap the hub serves at `<base>embedded.js` - load
  * it with one `<script type="module" src="<base>embedded.js">` tag and the
  * dock mounts itself. Its reveal policy is `ConnectionMeta.configs.ui.embeddedVisibility`
  * (`normal` / `passive` / `hidden`): `normal` shows immediately, the others
@@ -18,31 +18,29 @@ let dockEl: HTMLElement | undefined
 
 async function mountDock(): Promise<void> {
   // A mounted frame's SPA runs inside the hub UI provider's iframes on the same
-  // origin — never stack a second dock inside them.
+  // origin - never stack a second dock inside them.
   if (window.parent !== window)
     return
   if (dockEl)
     return
 
-  // The hub base is wherever this script was served from: the page origin's
-  // copy first (the common same-origin mount), the serving origin second
-  // (a host page on another backend loading the script cross-origin).
-  //
-  // Read import.meta.url through a variable: Vite's lib build rewrites the
-  // literal `new URL('...', import.meta.url)` asset pattern (inlining the
-  // module as a `data:` URL), which would make the base the data URL instead
-  // of the runtime script URL.
+  // The hub base is wherever this script was served from: page-origin copy
+  // first (same-origin mount), serving origin second (cross-origin load). Read
+  // `import.meta.url` via a variable so Vite's lib build doesn't rewrite the
+  // literal `new URL(..., import.meta.url)` asset pattern into a `data:` URL.
   const moduleUrl = import.meta.url
   const baseUrl = new URL('./', moduleUrl)
   const rpc = await getDevframeRpcClient({
     baseURL: [baseUrl.pathname, baseUrl.href],
-    // The dock ships its own authorization view; skip devframe's native
-    // browser-prompt fallback.
+    /**
+     * The dock ships its own authorization view; skip devframe's native
+     * browser-prompt fallback.
+     */
     simpleAuth: false,
   })
 
   // The reference UI's dock-bar preferences (`createUi({ dockPreferences })`),
-  // delivered once via the connection handshake we just performed — fixed for
+  // delivered once via the connection handshake we just performed - fixed for
   // the life of this server, never re-fetched.
   const dockPreferences = rpc.connectionMeta.configs?.ui?.dockPreferences
 
@@ -52,7 +50,7 @@ async function mountDock(): Promise<void> {
     {
       ...defaultStore,
       // Seed a first-run visitor's mode/position from the configured
-      // defaults — `useLocalStorage`'s own `mergeDefaults` already limits
+      // defaults - `useLocalStorage`'s own `mergeDefaults` already limits
       // this to a visitor with no stored preference yet.
       ...(dockPreferences?.defaultMode ? { mode: dockPreferences.defaultMode } : {}),
       ...(dockPreferences?.defaultPosition ? { position: dockPreferences.defaultPosition } : {}),
@@ -85,8 +83,8 @@ async function mountDock(): Promise<void> {
   dockEl = new DockEmbedded({
     context,
     ...(dockPreferences?.maxVisibleItems !== undefined ? { layout: { maxVisibleItems: dockPreferences.maxVisibleItems } } : {}),
-  }) as unknown as HTMLElement
-  // Inline on the host element — beats the generated `:host` ramp defaults and
+  })
+  // Inline on the host element - beats the generated `:host` ramp defaults and
   // inherits through the shadow tree. The embedded bootstrap never touches the
   // host page's <title>/favicon (it's a guest there).
   applyPrimaryColor(dockEl, branding.primaryColor)

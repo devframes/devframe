@@ -2,7 +2,7 @@ import { mountMessages } from '../client/index'
 
 // The shared design tokens flip on the `.dark` class; mirror the OS preference
 // onto <html> (the other devframe plugins follow the same approach). The
-// embeddable client mount leaves this to the host page — only the standalone
+// embeddable client mount leaves this to the host page - only the standalone
 // SPA owns the document.
 const mq = window.matchMedia('(prefers-color-scheme: dark)')
 function applyScheme(dark: boolean): void {

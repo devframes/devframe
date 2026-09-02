@@ -1,5 +1,5 @@
-import type { ConnectionMeta } from 'devframe/types'
-import type { DevframeClientRpcHost } from './rpc'
+import type { ConnectionMeta, DevframeRpcClientFunctions } from 'devframe/types'
+import type { DevframeClientRpcHost, DevframeRpcContext } from './rpc'
 import { RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createEventEmitter } from 'devframe/utils/events'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -8,7 +8,7 @@ import { createWsRpcClientMode } from './rpc-ws'
 
 // A minimal fake WebSocket that lets a test drive the open/close/error events
 // the client's status model reacts to. It never delivers a message, so a
-// `call()` stays pending until the connection is torn down or times out —
+// `call()` stays pending until the connection is torn down or times out -
 // exactly the "spinner that never resolves" scenario under test.
 class FakeWebSocket {
   static CONNECTING = 0
@@ -67,7 +67,7 @@ function setup(callTimeout?: number) {
   events.on('connection:error', (error: Error) => connectionErrors.push(error))
   const rpcErrors: Array<{ error: Error, method: string }> = []
   events.on('rpc:error', (error: Error, method: string) => rpcErrors.push({ error, method }))
-  const clientRpc = new RpcFunctionsCollectorBase<any, any>({}) as unknown as DevframeClientRpcHost
+  const clientRpc: DevframeClientRpcHost = new RpcFunctionsCollectorBase<DevframeRpcClientFunctions, DevframeRpcContext>({ rpc: undefined! })
   const mode = createWsRpcClientMode({
     connectionMeta,
     metaBaseUrl: 'http://localhost:5173/__connection.json',

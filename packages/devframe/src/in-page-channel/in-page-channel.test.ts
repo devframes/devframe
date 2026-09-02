@@ -123,7 +123,7 @@ describe('in-page channel over bring-your-own ports', () => {
   it('enforces jsonSerializable payloads with a coded error', async () => {
     const { panel, dispose } = createLinkedPair()
     try {
-      // A Map survives structured clone, so it reaches the receiving side —
+      // A Map survives structured clone, so it reaches the receiving side -
       // where the jsonSerializable contract rejects it, naming the path.
       const rejection = await panel.call('strict', { nested: new Map() }).catch(error => error) as Error
       expect(rejection.message).toContain('jsonSerializable')
@@ -260,7 +260,7 @@ describe('in-page channel over bring-your-own ports', () => {
       ...noHandshake,
       transport: port2,
       functions: defaultPanelFunctions,
-      // Unwrap a fake reactivity wrapper on the way out, tag on the way in.
+      /** Unwrap a fake reactivity wrapper on the way out, tag on the way in. */
       serialize: value => (value && typeof value === 'object' && '__wrapped' in (value as any))
         ? (value as any).__wrapped
         : value,
@@ -395,7 +395,7 @@ describe('in-page channel shared state', () => {
 interface FakeWindow {
   location: { origin: string }
   sessionStorage: { getItem: (key: string) => string | null, setItem: (key: string, value: string) => void }
-  parent: FakeWindow
+  parent?: FakeWindow
   opener: FakeWindow | null
   addEventListener: (type: string, fn: (event: MessageEvent) => void) => void
   removeEventListener: (type: string, fn: (event: MessageEvent) => void) => void
@@ -404,6 +404,12 @@ interface FakeWindow {
   __sender: { origin: string, source: FakeWindow | null }
   /** Deliver a synthetic message event directly. */
   __dispatch: (event: Partial<MessageEvent>) => void
+}
+
+/** The test fake structurally stands in for the real DOM `Window` at the channel seam. */
+function asWindow(win: FakeWindow): Window {
+  // eslint-disable-next-line slop/no-chained-type-assertions -- the test fake has no structural overlap with the DOM Window it substitutes for
+  return win as unknown as Window
 }
 
 function createFakeWindow(origin: string): FakeWindow {
@@ -415,7 +421,6 @@ function createFakeWindow(origin: string): FakeWindow {
       getItem: key => storage.get(key) ?? null,
       setItem: (key, value) => void storage.set(key, value),
     },
-    parent: undefined as unknown as FakeWindow,
     opener: null,
     addEventListener: (type, fn) => {
       if (type === 'message')
@@ -458,14 +463,14 @@ describe('in-page channel handshake', () => {
     const { hostWin, panelWin } = createWindowPair()
     const pageScript = createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
-      window: hostWin as unknown as Window,
+      window: asWindow(hostWin),
       heartbeat: false,
       functions: defaultPageScriptFunctions,
     })
     const panel = connectPanelChannel<TestProtocol>({
       name: 'devframes:test',
-      window: panelWin as unknown as Window,
-      targets: [hostWin as unknown as Window],
+      window: asWindow(panelWin),
+      targets: [asWindow(hostWin)],
       ...fastHello,
       functions: defaultPanelFunctions,
     })
@@ -481,7 +486,7 @@ describe('in-page channel handshake', () => {
       // … and a fresh one boots in the same window: the panel re-handshakes.
       const revived = createPageScriptChannel<TestProtocol>({
         name: 'devframes:test',
-        window: hostWin as unknown as Window,
+        window: asWindow(hostWin),
         heartbeat: false,
         functions: {
           ...defaultPageScriptFunctions,
@@ -507,8 +512,8 @@ describe('in-page channel handshake', () => {
     const noted: string[] = []
     const panel = connectPanelChannel<TestProtocol>({
       name: 'devframes:test',
-      window: panelWin as unknown as Window,
-      targets: [hostWin as unknown as Window],
+      window: asWindow(panelWin),
+      targets: [asWindow(hostWin)],
       ...fastHello,
       functions: defaultPanelFunctions,
     })
@@ -517,7 +522,7 @@ describe('in-page channel handshake', () => {
 
     const pageScript = createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
-      window: hostWin as unknown as Window,
+      window: asWindow(hostWin),
       heartbeat: false,
       functions: {
         ...defaultPageScriptFunctions,
@@ -542,7 +547,7 @@ describe('in-page channel handshake', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const pageScript = createPageScriptChannel<TestProtocol>({
       name: 'devframes:test-origin',
-      window: hostWin as unknown as Window,
+      window: asWindow(hostWin),
       heartbeat: false,
       functions: defaultPageScriptFunctions,
     })
@@ -573,7 +578,7 @@ describe('in-page channel handshake', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const pageScript = createPageScriptChannel<TestProtocol>({
       name: 'devframes:test-version',
-      window: hostWin as unknown as Window,
+      window: asWindow(hostWin),
       heartbeat: false,
       functions: defaultPageScriptFunctions,
     })
@@ -603,14 +608,14 @@ describe('in-page channel handshake', () => {
     const { hostWin, panelWin } = createWindowPair()
     const pageScript = createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
-      window: hostWin as unknown as Window,
+      window: asWindow(hostWin),
       heartbeat: false,
       functions: defaultPageScriptFunctions,
     })
     const pinnedElsewhere = connectPanelChannel<TestProtocol>({
       name: 'devframes:test',
-      window: panelWin as unknown as Window,
-      targets: [hostWin as unknown as Window],
+      window: asWindow(panelWin),
+      targets: [asWindow(hostWin)],
       instanceId: 'some-other-tab',
       ...fastHello,
       functions: defaultPanelFunctions,
@@ -620,8 +625,8 @@ describe('in-page channel handshake', () => {
 
       const pinnedHere = connectPanelChannel<TestProtocol>({
         name: 'devframes:test',
-        window: panelWin as unknown as Window,
-        targets: [hostWin as unknown as Window],
+        window: asWindow(panelWin),
+        targets: [asWindow(hostWin)],
         instanceId: pageScript.instanceId,
         ...fastHello,
         functions: defaultPanelFunctions,

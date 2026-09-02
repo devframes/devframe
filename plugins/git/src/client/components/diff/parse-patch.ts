@@ -21,7 +21,7 @@ interface DiffHunkChange {
 }
 
 export interface DiffFileChange {
-  /** Display name — the new path, or the old path for a deletion. */
+  /** Display name - the new path, or the old path for a deletion. */
   name: string
   /** The pre-rename path, when this file was renamed; otherwise `null`. */
   prevName: string | null
@@ -75,7 +75,7 @@ interface GitFileHeader {
 }
 
 /**
- * Read the git-specific metadata from a file block's extended headers — the
+ * Read the git-specific metadata from a file block's extended headers - the
  * thin layer `diff`'s hunk parser doesn't surface on its own. `rename`/`copy`
  * and `---`/`+++` lines give clean single paths; the `diff --git` line is the
  * fallback for pure renames and binary changes that carry no `---`/`+++`.
@@ -125,7 +125,7 @@ function sectionHeadings(block: string): string[] {
 }
 
 /**
- * A lenient hunk parser used when `diff`'s strict parser rejects a block — the
+ * A lenient hunk parser used when `diff`'s strict parser rejects a block - the
  * common case being a patch truncated mid-hunk (the server caps patch size), so
  * the final hunk's line count won't match its `@@` header. Reads each `@@`
  * header and consumes the diff lines that follow, ignoring the declared counts.
@@ -168,58 +168,70 @@ function parseHunks(block: string): StructuredPatchHunk[] {
  * block that `diff` rejects (e.g. a hunk clipped by the server's size cap)
  * falls back to a lenient hunk parse rather than being dropped.
  */
-export function parseUnifiedPatch(patch: string): DiffFileChange[] {
-  const files: DiffFileChange[] = []
+/** Classify a file's change from its git header, tie-breaking renames on hunks. */
+function resolveChangeType(meta: GitFileHeader, hasHunks: boolean): DiffChangeType {
+  if (meta.isCreate)
+    return 'new'
+  if (meta.isDelete)
+    return 'deleted'
+  if (meta.isRename)
+    return hasHunks ? 'rename-changed' : 'rename-pure'
+  return 'modified'
+}
 
-  for (const block of splitFileBlocks(patch)) {
-    const meta = parseGitHeader(block)
-    const rawHunks = parseHunks(block)
-    const headings = sectionHeadings(block)
-    const hasHunks = rawHunks.length > 0
-
-    const type: DiffChangeType = meta.isCreate
-      ? 'new'
-      : meta.isDelete
-        ? 'deleted'
-        : meta.isRename
-          ? (hasHunks ? 'rename-changed' : 'rename-pure')
-          : 'modified'
-
-    const name = (type === 'deleted' ? meta.oldName : meta.newName) ?? meta.oldName ?? meta.newName ?? '(unknown)'
-    const prevName = meta.isRename && meta.oldName && meta.oldName !== name ? meta.oldName : null
-
-    let additions = 0
-    let deletions = 0
-    const hunks: DiffHunkChange[] = rawHunks.map((hunk, i) => {
-      let oldNo = hunk.oldStart
-      let newNo = hunk.newStart
-      const lines: DiffLineChange[] = []
-      for (const raw of hunk.lines) {
-        const marker = raw[0]
-        const content = raw.slice(1)
-        if (marker === '+') {
-          additions++
-          lines.push({ type: 'add', content, oldNumber: null, newNumber: newNo++ })
-        }
-        else if (marker === '-') {
-          deletions++
-          lines.push({ type: 'del', content, oldNumber: oldNo++, newNumber: null })
-        }
-        else if (marker === '\\') {
-          // "\ No newline at end of file" — a marker, not a content line.
-          continue
-        }
-        else {
-          lines.push({ type: 'context', content, oldNumber: oldNo++, newNumber: newNo++ })
-        }
-      }
-      const range = `@@ -${hunk.oldStart},${hunk.oldLines} +${hunk.newStart},${hunk.newLines} @@`
-      const section = headings[i]
-      return { header: section ? `${range} ${section}` : range, lines }
-    })
-
-    files.push({ name, prevName, type, binary: meta.isBinary, additions, deletions, hunks, lang: inferLang(name) })
+/** Turn one hunk's raw lines into structured line changes, counting +/-. */
+function parseHunkLines(hunk: StructuredPatchHunk): { lines: DiffLineChange[], additions: number, deletions: number } {
+  let oldNo = hunk.oldStart
+  let newNo = hunk.newStart
+  let additions = 0
+  let deletions = 0
+  const lines: DiffLineChange[] = []
+  for (const raw of hunk.lines) {
+    const marker = raw[0]
+    const content = raw.slice(1)
+    if (marker === '+') {
+      additions++
+      lines.push({ type: 'add', content, oldNumber: null, newNumber: newNo++ })
+    }
+    else if (marker === '-') {
+      deletions++
+      lines.push({ type: 'del', content, oldNumber: oldNo++, newNumber: null })
+    }
+    else if (marker === '\\') {
+      // "\ No newline at end of file" - a marker, not a content line.
+      continue
+    }
+    else {
+      lines.push({ type: 'context', content, oldNumber: oldNo++, newNumber: newNo++ })
+    }
   }
+  return { lines, additions, deletions }
+}
 
-  return files
+/** Parse one `diff --git` block into a structured file change. */
+function parseFileBlock(block: string): DiffFileChange {
+  const meta = parseGitHeader(block)
+  const rawHunks = parseHunks(block)
+  const headings = sectionHeadings(block)
+  const type = resolveChangeType(meta, rawHunks.length > 0)
+
+  const name = (type === 'deleted' ? meta.oldName : meta.newName) ?? meta.oldName ?? meta.newName ?? '(unknown)'
+  const prevName = meta.isRename && meta.oldName && meta.oldName !== name ? meta.oldName : null
+
+  let additions = 0
+  let deletions = 0
+  const hunks: DiffHunkChange[] = rawHunks.map((hunk, i) => {
+    const parsed = parseHunkLines(hunk)
+    additions += parsed.additions
+    deletions += parsed.deletions
+    const range = `@@ -${hunk.oldStart},${hunk.oldLines} +${hunk.newStart},${hunk.newLines} @@`
+    const section = headings[i]
+    return { header: section ? `${range} ${section}` : range, lines: parsed.lines }
+  })
+
+  return { name, prevName, type, binary: meta.isBinary, additions, deletions, hunks, lang: inferLang(name) }
+}
+
+export function parseUnifiedPatch(patch: string): DiffFileChange[] {
+  return splitFileBlocks(patch).map(parseFileBlock)
 }

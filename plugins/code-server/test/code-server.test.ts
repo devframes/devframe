@@ -76,7 +76,7 @@ describe('@devframes/plugin-code-server', () => {
     expect(result.connect?.path).toBe('/')
 
     // The cookie value handed to the client must equal HASHED_PASSWORD the
-    // server was launched with — that is what makes the iframe auto-auth.
+    // server was launched with - that is what makes the iframe auto-auth.
     const hashed = readFileSync(dumpEnvTo, 'utf8')
     expect(hashed).toBe(result.connect?.cookie?.value)
 
@@ -206,7 +206,7 @@ describe('@devframes/plugin-code-server', () => {
       const bin = writeFakeCodeServer({ version: '4.99.0', dumpEnvTo })
       const ctx = await createTestContext()
       const terminals = createFakeHubTerminals()
-      ;(ctx as unknown as { terminals: typeof terminals }).terminals = terminals
+      ;(ctx as { terminals?: typeof terminals }).terminals = terminals
       const supervisor = await setupCodeServer(ctx, { bin })
       supervisors.push(supervisor)
 
@@ -236,7 +236,7 @@ describe('@devframes/plugin-code-server', () => {
       const bin = writeFakeCodeServer({ version: '4.99.0' })
       const ctx = await createTestContext()
       const terminals = createFakeHubTerminals()
-      ;(ctx as unknown as { terminals: typeof terminals }).terminals = terminals
+      ;(ctx as { terminals?: typeof terminals }).terminals = terminals
       const supervisor = await setupCodeServer(ctx, { bin })
       supervisors.push(supervisor)
 

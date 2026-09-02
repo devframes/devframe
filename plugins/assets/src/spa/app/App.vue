@@ -219,7 +219,7 @@ function startResize(e: PointerEvent): void {
       </aside>
     </div>
 
-    <!-- Direct file picker for the Upload button — no modal. -->
+    <!-- Direct file picker for the Upload button - no modal. -->
     <input ref="fileInput" type="file" multiple class="hidden" @change="onFilePick">
 
     <!-- Non-blocking hint while files are dragged over the frame. -->

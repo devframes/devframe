@@ -36,7 +36,7 @@ export interface WsUrlLocation {
  * The object / relative-path forms connect to the page's own origin (only the
  * `http`→`ws` protocol swap is applied), resolving the path against where
  * `__connection.json` was loaded. This is deliberately host-agnostic so the
- * connection survives a reverse proxy that changes the domain or port — the
+ * connection survives a reverse proxy that changes the domain or port - the
  * client trusts its own location, never a server-baked hostname. An explicit
  * `port`/`host` (or a full `ws(s)://` URL string) opts into a cross-origin
  * endpoint, e.g. a side-car server on its own port.
@@ -56,7 +56,7 @@ export function resolveWsUrl(
   })()
   const wsProtocol = base.protocol === 'https:' ? 'wss:' : 'ws:'
 
-  // Object form — the proxy-flexible default.
+  // Object form - the proxy-flexible default.
   if (websocket && typeof websocket === 'object') {
     // An explicit host/port marks a cross-origin endpoint (e.g. a side-car on
     // its own port): root the path at that origin, independent of where the
@@ -73,19 +73,19 @@ export function resolveWsUrl(
     return target.href
   }
 
-  // Legacy numeric port — metadata hostname, explicit port. External viewers
+  // Legacy numeric port - metadata hostname, explicit port. External viewers
   // (such as browser extensions) have their own unrelated location hostname.
   if (typeof websocket === 'number')
     return `${wsProtocol}//${base.hostname}:${websocket}`
 
   const str = websocket ?? ''
-  // Full WS URL — used verbatim.
+  // Full WS URL - used verbatim.
   if (/^wss?:\/\//i.test(str))
     return str
-  // HTTP(S) URL — swap to the matching WS protocol.
+  // HTTP(S) URL - swap to the matching WS protocol.
   if (/^https?:\/\//i.test(str))
     return withProtocol(str, /^https/i.test(str) ? 'wss://' : 'ws://')
-  // Path string — resolve same-origin against the meta base.
+  // Path string - resolve same-origin against the meta base.
   const target = new URL(str, base)
   target.protocol = wsProtocol
   return target.href
@@ -125,7 +125,7 @@ export function createWsRpcClientMode(
       definitions: handlers.definitions,
       ...wsOptions,
       onConnected(event) {
-        // Socket open — the trust handshake (already queued) settles the
+        // Socket open - the trust handshake (already queued) settles the
         // status to `connected`/`unauthorized`. Stay `connecting` until then.
         wsOptions.onConnected?.(event)
       },

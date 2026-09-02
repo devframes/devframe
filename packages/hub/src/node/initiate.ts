@@ -1,4 +1,4 @@
-import type { DevframeInstanceRecord } from 'devframe/internal'
+import type { DevframeInstanceRecord, InstanceShellApi } from 'devframe/internal'
 import type { DevframeAuthHandler } from 'devframe/node/auth'
 import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
 import type { ConnectionMeta, DevframeDefinition, DevframeServiceInput, DevframeSseOptions, DevframeStorageScope, DevframeWsOptions, McpRouteOptions } from 'devframe/types'
@@ -37,7 +37,7 @@ function normalizeDevframeEntry(entry: DevframeDefinition | HubDevframeEntry): H
   return 'devframe' in entry ? entry : { devframe: entry }
 }
 
-/** Default mount base for a hub instance — re-exported from `../constants` (the client-safe home) for existing importers of this node entry. */
+/** Default mount base for a hub instance - re-exported from `../constants` (the client-safe home) for existing importers of this node entry. */
 export { DEVFRAMES_HUB_BASE }
 
 /** Content-type for a UI asset key, inferred from its file extension. */
@@ -55,7 +55,7 @@ function assetContentType(key: string): string {
   return 'application/octet-stream'
 }
 
-/** Reserved filenames directly under the hub base — a frame id can't shadow them. */
+/** Reserved filenames directly under the hub base - a frame id can't shadow them. */
 const RESERVED_HUB_PATHS = [
   DEVFRAME_CONNECTION_META_FILENAME,
   DEVFRAME_DOCK_IMPORTS_FILENAME,
@@ -70,14 +70,14 @@ const RESERVED_HUB_PATHS = [
  * One dock-type → prebuilt renderer-module registration for
  * {@link InitHubOptions.renderers}. The hub serves the module at
  * `<base>__renderers/<type>.mjs` and publishes it in the renderer manifest
- * (the `devframe:dock-renderers` shared-state slot), so any viewer — the
- * reference UI, a community viewer, a hand-rolled host page — lazily imports
+ * (the `devframe:dock-renderers` shared-state slot), so any viewer - the
+ * reference UI, a community viewer, a hand-rolled host page - lazily imports
  * it the first time a dock of that `type` needs rendering.
  *
  * The module must be a **self-contained browser ES module** (its framework
  * and styles bundled in) whose {@link DockRendererRegistration.importName}
  * export is a ready `DockRenderer`. Renderer packages ship a node helper
- * returning this shape — e.g. `jsonRenderUiRenderer()` from
+ * returning this shape - e.g. `jsonRenderUiRenderer()` from
  * `@devframes/json-render-ui/hub`.
  */
 export interface DockRendererRegistration {
@@ -94,7 +94,7 @@ export interface DockRendererRegistration {
 }
 
 /**
- * The UI slot of a hub instance — pure data, zero policy. The hub itself is
+ * The UI slot of a hub instance - pure data, zero policy. The hub itself is
  * headless: whoever fills this slot decides what a viewer looks like.
  * `@devframes/hub-ui` ships the reference implementation (`createUi()`);
  * Vite DevTools or any community viewer supplies its own object to the same
@@ -103,14 +103,14 @@ export interface DockRendererRegistration {
 export interface DevframeHubUi {
   /**
    * A standalone viewer SPA (built with relative asset paths) served at the
-   * hub base itself — open `<base>` in a tab and the devtools are there.
+   * hub base itself - open `<base>` in a tab and the devtools are there.
    */
   viewer?: {
     /** Directory of the prebuilt viewer SPA. */
     distDir: string
   }
   /**
-   * A prebuilt, self-contained script served at `<base>embedded.js` — the
+   * A prebuilt, self-contained script served at `<base>embedded.js` - the
    * floating-devtools bootstrap a host page loads with one
    * `<script type="module" src="<base>embedded.js">` tag. Visibility policy
    * (always-on, keyboard-summoned, …) belongs entirely to this entry.
@@ -128,7 +128,7 @@ export interface DevframeHubUi {
    */
   assets?: Record<string, () => string | Uint8Array>
   /**
-   * A setup hook run once during hub init with the hub context — the UI
+   * A setup hook run once during hub init with the hub context - the UI
    * slot's chance to publish its own static, boot-time config through the
    * generic `ctx.staticConfig` (serialized into `ConnectionMeta.configs`).
    * The reference UI's `createUi()` uses it to set
@@ -156,7 +156,7 @@ export interface InitHubOptions {
    */
   version?: string
   /**
-   * Mount base the hub answers under — required so the mount path is
+   * Mount base the hub answers under - required so the mount path is
    * explicit at the call site (pass the exported {@link DEVFRAMES_HUB_BASE}
    * for the conventional `/__devframes/`). Every mounted devframe lives at
    * `<base><id>/`, so the host app needs exactly one catch-all route. The
@@ -176,19 +176,19 @@ export interface InitHubOptions {
    * Host-level wire services to install, on top of whatever the mounted
    * devframes declare. Constructed (option sets merged) at the pre-setup
    * barrier, so every devframe's `setup` sees them ready. Reach for this to
-   * configure a shared service centrally — e.g.
+   * configure a shared service centrally - e.g.
    * `services: [createShikiService({ themes })]`.
    */
   services?: DevframeServiceInput[]
   /**
    * Extra RPC declarations registered at context creation, alongside the
-   * hub built-ins — forwarded to `createHubContext`'s
+   * hub built-ins - forwarded to `createHubContext`'s
    * `builtinRpcDeclarations`. Declarative mode only (a pre-built `context`
    * already made this choice).
    */
   rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations']
   /**
-   * Bring your own hub context instead of `devframes` — for hosts that
+   * Bring your own hub context instead of `devframes` - for hosts that
    * assemble `createHubContext` + `ctx.install` themselves (with their own
    * `DevframeHost` serving the frames). The instance then serves only the
    * hub-level endpoints (`__connection.json`, `__index.json`,
@@ -197,14 +197,14 @@ export interface InitHubOptions {
    */
   context?: DevframeHubContext
   /**
-   * Runs once the context exists and every `devframes` entry is mounted —
+   * Runs once the context exists and every `devframes` entry is mounted -
    * register docks, commands, terminals, and messages surfaces here.
    */
   configure?: (ctx: DevframeHubContext) => void | Promise<void>
-  /** See {@link DevframeHubUi} — omitted, the hub stays fully headless. */
+  /** See {@link DevframeHubUi} - omitted, the hub stays fully headless. */
   ui?: DevframeHubUi
   /**
-   * Prebuilt dock-renderer modules to serve and advertise — the composition
+   * Prebuilt dock-renderer modules to serve and advertise - the composition
    * seam that hands a renderer package (e.g. `@devframes/json-render-ui`) to
    * a prebuilt viewer. Each {@link DockRendererRegistration} is served at
    * `<base>__renderers/<type>.mjs` and published in the renderer manifest;
@@ -233,11 +233,11 @@ export interface InitHubOptions {
    * > `ws.sidecar` (auto-port side-car) > the host driving upgrades itself,
    * while `url` overrides the advertisement (tunnel pattern) and `route`
    * renames the upgrade segment (default `__ws`). Pass `false` to serve no
-   * WebSocket at all — clients connect over SSE instead (`backend: 'sse'`).
+   * WebSocket at all - clients connect over SSE instead (`backend: 'sse'`).
    */
   ws?: DevframeWsOptions | false
   /**
-   * SSE RPC endpoint control, same contract as `initDevframe` — enabled by
+   * SSE RPC endpoint control, same contract as `initDevframe` - enabled by
    * default at `<base>__sse` as the more portable transport alongside the
    * WebSocket. Pass `false` to disable, or a {@link DevframeSseOptions} to
    * rename the route.
@@ -253,7 +253,7 @@ export interface InitHubOptions {
    */
   auth?: boolean | DevframeAuthHandler
   /**
-   * Expose the **aggregate** MCP endpoint at `<base>__mcp` — one
+   * Expose the **aggregate** MCP endpoint at `<base>__mcp` - one
    * Streamable-HTTP server over the shared context's whole tool registry
    * (ids are already namespaced per plugin). Disabled by default.
    */
@@ -275,14 +275,14 @@ export interface InitHubOptions {
   register?: boolean | Partial<DevframeInstanceRecord>
   /**
    * Advertise that this host runtime resolves **bare-specifier** client
-   * scripts (`ClientScriptEntry.importFrom` naming an npm module) — a URL
+   * scripts (`ClientScriptEntry.importFrom` naming an npm module) - a URL
    * template whose `{specifier}` token is replaced with the specifier,
    * published as `ConnectionMeta.configs.dock.clientModuleResolution` and
    * applied by every client-script loader. Declare it only when the host can
-   * actually serve npm modules to the browser — a Vite host passes
+   * actually serve npm modules to the browser - a Vite host passes
    * `'/@id/{specifier}'` to route imports through its own module graph
    * (`@devframes/vite/hub` does). Left undeclared, registering a
-   * bare-specifier client script warns `DF8111` — ship a self-contained
+   * bare-specifier client script warns `DF8111` - ship a self-contained
    * bundle and pass its URL instead.
    */
   clientModuleResolution?: string
@@ -299,12 +299,12 @@ export interface InitHubOptions {
 export interface HubInstance {
   /**
    * The normalized mount base this hub answers under (leading and trailing
-   * slash, e.g. `/__devframes/`). Reference it when wiring the mount — route
-   * guards, middleware path checks — instead of repeating the string literal.
+   * slash, e.g. `/__devframes/`). Reference it when wiring the mount - route
+   * guards, middleware path checks - instead of repeating the string literal.
    */
   base: string
   /**
-   * Web-standard request handler for the whole hub — mount it on one
+   * Web-standard request handler for the whole hub - mount it on one
    * catch-all route under {@link HubInstance.base}.
    */
   handler: (request: Request) => Promise<Response>
@@ -312,7 +312,7 @@ export interface HubInstance {
   nodeMiddleware: (req: IncomingMessage, res: ServerResponse, next?: (err?: unknown) => void) => void
   /**
    * Route a host server's `upgrade` events to the shared RPC socket,
-   * returning a detach function — the manual counterpart to the `server`
+   * returning a detach function - the manual counterpart to the `server`
    * option, for hosts that get their `node:http` server only after the hub
    * exists. Available on the default tier; a configured transport (`server`,
    * `ws.port`, `ws.sidecar`, `ws.url`) already owns the socket and reports
@@ -340,7 +340,7 @@ type ResolvedDevframeEntry = DevframeDefinition | HubDevframeEntry | null | unde
 
 /**
  * Flatten the `devframes` input: await every thenable, call every factory,
- * spread the arrays, and drop the empty slots — so a host can build the list
+ * spread the arrays, and drop the empty slots - so a host can build the list
  * conditionally (`isDev && loadInspect()`) without filtering it first.
  */
 function resolveDevframesInput(input: DevframesInput): Promise<HubDevframeEntry[]> {
@@ -379,7 +379,7 @@ function resolveRendererRegistrations(
 }
 
 /**
- * Render the dock client-script import map as an ES module — one dynamic
+ * Render the dock client-script import map as an ES module - one dynamic
  * import thunk per dock that carries a client script (`clientScript` on
  * iframe docks, `action`, `renderer`). External viewers import this module
  * from `<base>__client-imports.js` to load per-dock client code into the
@@ -404,18 +404,93 @@ function renderClientImportsModule(ctx: DevframeHubContext): string {
       `() => import(${JSON.stringify(resolveClientModuleSpecifier(script.importFrom, { template }))})`)
     entries.push(`  ${JSON.stringify(id)}: [${thunks.join(', ')}],`)
   }
-  return `// Generated by @devframes/hub — dock client-script import map.\nexport const clientImports = {\n${entries.join('\n')}\n}\nexport default clientImports\n`
+  return `// Generated by @devframes/hub - dock client-script import map.\nexport const clientImports = {\n${entries.join('\n')}\n}\nexport default clientImports\n`
 }
 
 /**
- * Initiate a hub instance — the whole multi-devframe devtools surface
+ * Resolve the shared hub context: reuse a caller-supplied one, or build an
+ * h3-backed context that serves the hub's connection meta under every frame.
+ */
+async function resolveHubContext(
+  options: InitHubOptions,
+  app: H3,
+  cwd: string,
+  api: InstanceShellApi,
+): Promise<DevframeHubContext> {
+  if (options.context && options.devframes?.length)
+    throw diagnostics.DF8002()
+  if (options.context)
+    return options.context
+
+  const h3Host = createH3DevframeHost({
+    origin: () => api.origin() ?? 'http://localhost',
+    appName: 'devframes',
+    workspaceRoot: cwd,
+    mount: (mountBase, dir) => {
+      mountStaticHandler(app, mountBase, dir)
+    },
+  })
+  const host = {
+    ...h3Host,
+    ...(options.getStorageDir ? { getStorageDir: options.getStorageDir } : {}),
+    /**
+     * Serve the hub's own connection meta under every mounted frame's
+     * base, so each SPA discovers the shared RPC endpoint via its
+     * relative `./__connection.json` fetch - the meta's WS path is
+     * hub-base-absolute, so it resolves to the one shared socket no
+     * matter how deep the frame base is.
+     */
+    mountConnectionMeta: (frameBase: string) => {
+      app.use(joinURL(frameBase, DEVFRAME_CONNECTION_META_FILENAME), () => api.connectionMeta())
+    },
+  }
+  return createHubContext({
+    cwd,
+    workspaceRoot: cwd,
+    mode: 'dev',
+    host,
+    ...(options.rpcDeclarations ? { builtinRpcDeclarations: options.rpcDeclarations } : {}),
+  })
+}
+
+/**
+ * Pass 1 - mount each devframe under `<base><id>/` (SPA, meta, iframe dock)
+ * and queue its declared services, guarding the id against reserved hub
+ * filenames and route-pattern characters. Returns the deferred setup thunks.
+ */
+async function mountDevframes(
+  ctx: DevframeHubContext,
+  devframes: HubDevframeEntry[],
+  base: string,
+  frames: { id: string, base: string, title: string }[],
+): Promise<(() => Promise<void>)[]> {
+  const setups: (() => Promise<void>)[] = []
+  for (const { devframe: def, dock } of devframes) {
+    if ((RESERVED_HUB_PATHS as readonly string[]).includes(def.id))
+      throw diagnostics.DF8000({ id: def.id })
+    // The id becomes a URL segment (`<base><id>/`) routed by h3 - `:` and
+    // `*` are route-pattern markers there, and separators would escape the
+    // segment entirely.
+    if (!/^[\w.-]+$/.test(def.id))
+      throw diagnostics.DF8004({ id: def.id })
+    const frameBase = withTrailingSlash(joinURL(base, def.id))
+    const run = await prepareDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
+    if (run)
+      setups.push(run)
+    frames.push({ id: def.id, base: frameBase, title: def.name })
+  }
+  return setups
+}
+
+/**
+ * Initiate a hub instance - the whole multi-devframe devtools surface
  * behind one framework-agnostic, web-standard handler. Every mounted
  * devframe shares one context (merged RPC registry, shared state, docks /
  * terminals / messages / commands), one WebSocket transport, and one Auth;
  * the instance serves each frame's SPA at `<base><id>/`, the discovery
  * endpoints (`__connection.json`, `__index.json`, `__client-imports.js`),
  * the aggregate MCP route, and whatever the {@link DevframeHubUi} slot
- * provides — the hub itself stays headless.
+ * provides - the hub itself stays headless.
  *
  * The factory is synchronous and initializes eagerly, and binds no port of
  * its own: the WebSocket follows `server` / `ws` (see
@@ -446,9 +521,11 @@ export function initHub(options: InitHubOptions): HubInstance {
       ...(options.name !== undefined ? { name: options.name } : {}),
       rootDir: cwd,
     }),
-    // One meta document is served from the hub base *and* from every frame
-    // base, so the advertised WS path has to be base-absolute to resolve to
-    // the same socket from any depth.
+    /**
+     * One meta document is served from the hub base *and* from every frame
+     * base, so the advertised WS path has to be base-absolute to resolve to
+     * the same socket from any depth.
+     */
     absoluteWsPath: true,
     resolveSidecarPort: async (sidecarHost) => {
       const { getPort } = await import('get-port-please')
@@ -459,46 +536,11 @@ export function initHub(options: InitHubOptions): HubInstance {
     },
 
     async init(api) {
-      if (options.context && options.devframes?.length)
-        throw diagnostics.DF8002()
-
-      let ctx: DevframeHubContext
-      if (options.context) {
-        ctx = options.context
-      }
-      else {
-        const h3Host = createH3DevframeHost({
-          origin: () => api.origin() ?? 'http://localhost',
-          appName: 'devframes',
-          workspaceRoot: cwd,
-          mount: (mountBase, dir) => {
-            mountStaticHandler(app, mountBase, dir)
-          },
-        })
-        const host = {
-          ...h3Host,
-          ...(options.getStorageDir ? { getStorageDir: options.getStorageDir } : {}),
-          // Serve the hub's own connection meta under every mounted frame's
-          // base, so each SPA discovers the shared RPC endpoint via its
-          // relative `./__connection.json` fetch — the meta's WS path is
-          // hub-base-absolute, so it resolves to the one shared socket no
-          // matter how deep the frame base is.
-          mountConnectionMeta: (frameBase: string) => {
-            app.use(joinURL(frameBase, DEVFRAME_CONNECTION_META_FILENAME), () => api.connectionMeta())
-          },
-        }
-        ctx = await createHubContext({
-          cwd,
-          workspaceRoot: cwd,
-          mode: 'dev',
-          host,
-          ...(options.rpcDeclarations ? { builtinRpcDeclarations: options.rpcDeclarations } : {}),
-        })
-      }
+      const ctx = await resolveHubContext(options, app, cwd, api)
 
       // Publish the host's bare-specifier resolution template before anything
       // registers a dock, so the docks host's bare-specifier capability check
-      // (`DF8111`) already sees it — the shell serializes `ctx.staticConfig`
+      // (`DF8111`) already sees it - the shell serializes `ctx.staticConfig`
       // into `ConnectionMeta.configs` after this `init` returns.
       if (options.clientModuleResolution) {
         ctx.staticConfig.dock = {
@@ -512,26 +554,9 @@ export function initHub(options: InitHubOptions): HubInstance {
       // collection alongside every devframe's own declared services.
       for (const input of options.services ?? [])
         void ctx.services.install(input)
-      // Pass 1 — mount each devframe under `<base><id>/` (SPA, meta, iframe
-      // dock) and queue its declared services, guarding the id against the
-      // reserved hub filenames. No setup yet.
-      const setups: (() => Promise<void>)[] = []
-      for (const { devframe: def, dock } of devframes) {
-        if ((RESERVED_HUB_PATHS as readonly string[]).includes(def.id))
-          throw diagnostics.DF8000({ id: def.id })
-        // The id becomes a URL segment (`<base><id>/`) routed by h3 — `:` and
-        // `*` are route-pattern markers there, and separators would escape the
-        // segment entirely.
-        if (!/^[\w.-]+$/.test(def.id))
-          throw diagnostics.DF8004({ id: def.id })
-        const frameBase = withTrailingSlash(joinURL(base, def.id))
-        const run = await prepareDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
-        if (run)
-          setups.push(run)
-        frames.push({ id: def.id, base: frameBase, title: def.name })
-      }
+      const setups = await mountDevframes(ctx, devframes, base, frames)
 
-      // Construct every collected service once, then run the setups — so a
+      // Construct every collected service once, then run the setups - so a
       // devframe's setup consumes services (its own or another devframe's)
       // synchronously via `ctx.services.get`.
       await ctx.services.ready()
@@ -541,7 +566,7 @@ export function initHub(options: InitHubOptions): HubInstance {
       await options.configure?.(ctx)
 
       // The UI slot publishes its own static config (branding, dock
-      // preferences, …) into `ctx.staticConfig` — run last so it can see the
+      // preferences, …) into `ctx.staticConfig` - run last so it can see the
       // installed devframes. The instance shell serializes `ctx.staticConfig`
       // into the connection meta right after this `init` returns.
       await options.ui?.setup?.(ctx)
@@ -563,7 +588,7 @@ export function initHub(options: InitHubOptions): HubInstance {
       )
       manifestState.mutate(() => manifest)
 
-      // Aggregate MCP — one Streamable-HTTP endpoint over the shared
+      // Aggregate MCP - one Streamable-HTTP endpoint over the shared
       // context's whole registry (tool ids are namespaced per plugin, and the
       // wire-name collision policy is `createMcpFetchHandler`'s own).
       const mcpConfig = options.mcp === true ? {} : options.mcp
@@ -583,7 +608,7 @@ export function initHub(options: InitHubOptions): HubInstance {
 
     mount(ctx, meta) {
       // `meta.configs` already carries whatever `ctx.staticConfig` collected
-      // during init — the UI slot's `setup(ctx)` (branding, dock preferences,
+      // during init - the UI slot's `setup(ctx)` (branding, dock preferences,
       // …) and any devframe's own contributions. Nothing to add here.
 
       // Hub-level discovery endpoints, registered before the viewer's static
@@ -624,7 +649,7 @@ export function initHub(options: InitHubOptions): HubInstance {
         })
       }
 
-      // Renderer modules — each registration's prebuilt bundle, buffered like
+      // Renderer modules - each registration's prebuilt bundle, buffered like
       // `embedded.js` (a single self-contained file read per request in dev;
       // a buffered body survives every host's request bridging).
       for (const registration of rendererRegistrations) {
@@ -647,7 +672,7 @@ export function initHub(options: InitHubOptions): HubInstance {
       }
 
       if (options.ui?.viewer) {
-        // The viewer SPA owns the hub base (mounted last — exact routes above
+        // The viewer SPA owns the hub base (mounted last - exact routes above
         // win; frame mounts are longer prefixes and route ahead of it).
         mountStaticHandler(app, base, resolve(options.ui.viewer.distDir))
       }

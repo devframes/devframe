@@ -33,7 +33,7 @@ export function fileNameOf(path: string): string {
   return path.split('/').pop() ?? path
 }
 
-/** Folder a path lives in, with a trailing slash — `''` for the root. */
+/** Folder a path lives in, with a trailing slash - `''` for the root. */
 export function folderOf(path: string): string {
   const parts = path.split('/')
   parts.pop()

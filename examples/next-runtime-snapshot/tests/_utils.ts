@@ -25,7 +25,7 @@ export interface SnapshotServer extends StartedServer {
 export async function startSnapshotServer(): Promise<SnapshotServer> {
   const distDir = devframe.clientAssets!
   if (typeof distDir !== 'string')
-    throw new TypeError('these tests serve the local dist directory — build the SPA first')
+    throw new TypeError('these tests serve the local dist directory - build the SPA first')
   const basePath = devframe.basePath!
   const host = '127.0.0.1'
   const port = await getPort({ host, random: true })
@@ -43,7 +43,7 @@ export async function startSnapshotServer(): Promise<SnapshotServer> {
 
   const metaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`
   app.use(metaPath, () => ({ backend: 'websocket', websocket: port }))
-  // Mount the static handler unconditionally — it only stat()s on
+  // Mount the static handler unconditionally - it only stat()s on
   // request, so a missing dist just produces 404s for HTML routes.
   // RPC-only tests don't fetch the SPA, so they're unaffected.
   mountStaticHandler(app, basePath, resolve(distDir))

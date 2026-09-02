@@ -31,7 +31,7 @@ interface DockRuntime {
   error?: string
 }
 
-// Every launched dock's iframe is parked here for its whole lifetime — switching
+// Every launched dock's iframe is parked here for its whole lifetime - switching
 // tabs only mounts/unmounts the pane over `#stage`, so background docks keep
 // their state (Storybook's own routing, scroll, etc.) intact.
 const panes = createIframePanes({ container: stageEl })
@@ -89,13 +89,42 @@ function launcherTile(entry: LauncherDock): string {
     </button>`
 }
 
-function updateStage() {
+function syncPanes() {
   for (const pane of panes.list()) {
     if (pane.id === selectedId)
       pane.mount(stageEl)
     else
       pane.unmount()
   }
+}
+
+function errorTile(entry: Dock | undefined, rt: DockRuntime, title: string): string {
+  const detail = rt.error ? `<div class="text-xs font-mono op-mute break-words">${rt.error}</div>` : ''
+  const retry = entry && isLauncherDock(entry)
+    ? `<button type="button" data-launch="${entry.id}" class="btn-action"><span class="i-ph-arrow-clockwise-duotone"></span>Retry</button>`
+    : ''
+  return `
+      <span class="i-ph-warning-duotone text-4xl text-error"></span>
+      <div class="text-sm font-medium">Failed to start ${title}</div>
+      ${detail}${retry}`
+}
+
+// Idle shows the launcher's start tile; starting mirrors the live `digest`
+// (the tail of the `storybook dev` output the host streams onto the tile).
+function launcherStageTile(entry: LauncherDock, rt: DockRuntime, title: string): string {
+  if (rt.status !== 'starting')
+    return launcherTile(entry)
+  const digest = entry.launcher.digest
+  const digestLine = digest ? `<div class="text-xs font-mono op-mute break-words">${digest}</div>` : ''
+  return `
+        <span class="i-ph-circle-notch animate-spin text-3xl color-active"></span>
+        <div class="text-sm font-medium">Starting ${title}…</div>
+        ${digestLine}
+        <button type="button" data-terminals class="btn-action text-xs"><span class="i-ph-terminal-window-duotone"></span>Watch output in Terminals</button>`
+}
+
+function updateStage() {
+  syncPanes()
 
   if (!selectedId) {
     overlay('<span class="i-ph-books-duotone text-3xl op-fade"></span><div class="text-sm font-medium">No dock selected</div>')
@@ -106,35 +135,19 @@ function updateStage() {
   const rt = runtimeFor(selectedId)
   const title = entry?.title ?? selectedId
 
-  // A launched pane is mounted — hide the overlay and show the live iframe.
+  // A launched pane is mounted - hide the overlay and show the live iframe.
   if (rt.status === 'ready' && panes.has(selectedId)) {
     overlayEl.style.display = 'none'
     return
   }
 
   if (rt.status === 'error') {
-    overlay(`
-      <span class="i-ph-warning-duotone text-4xl text-error"></span>
-      <div class="text-sm font-medium">Failed to start ${title}</div>
-      ${rt.error ? `<div class="text-xs font-mono op-mute break-words">${rt.error}</div>` : ''}
-      ${entry && isLauncherDock(entry) ? `<button type="button" data-launch="${entry.id}" class="btn-action"><span class="i-ph-arrow-clockwise-duotone"></span>Retry</button>` : ''}`)
+    overlay(errorTile(entry, rt, title))
     return
   }
 
-  // A launcher: idle shows its start tile; starting mirrors the live `digest`
-  // (the tail of the `storybook dev` output the host streams onto the tile).
   if (entry && isLauncherDock(entry)) {
-    if (rt.status === 'starting') {
-      const digest = entry.launcher.digest
-      overlay(`
-        <span class="i-ph-circle-notch animate-spin text-3xl color-active"></span>
-        <div class="text-sm font-medium">Starting ${title}…</div>
-        ${digest ? `<div class="text-xs font-mono op-mute break-words">${digest}</div>` : ''}
-        <button type="button" data-terminals class="btn-action text-xs"><span class="i-ph-terminal-window-duotone"></span>Watch output in Terminals</button>`)
-    }
-    else {
-      overlay(launcherTile(entry))
-    }
+    overlay(launcherStageTile(entry, rt, title))
     return
   }
 
@@ -211,7 +224,7 @@ async function main() {
     selectedId = id
     renderSidebar()
     // Plain iframe docks open on select; launcher docks wait for their Start
-    // button (the lazy trigger) — so opening a Storybook dock doesn't spawn it.
+    // button (the lazy trigger) - so opening a Storybook dock doesn't spawn it.
     if (isIframeDock(entry))
       openIframe(entry)
     updateStage()
@@ -237,7 +250,7 @@ async function main() {
     }).join('')
   }
 
-  // Docks — read from `devframe:docks` shared state, keeping launcher (Storybook)
+  // Docks - read from `devframe:docks` shared state, keeping launcher (Storybook)
   // and iframe (live plugin) entries.
   const docksState = await rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks', { initialValue: [] })
   const syncDocks = () => {

@@ -11,20 +11,20 @@ import { createMessagesDevframe } from '@devframes/plugin-messages'
 import { createOgDevframe } from '@devframes/plugin-og'
 import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 
-// One `initHub` call, memoized on globalThis so a dev-time reload returns the
-// live hub instead of leaking transports. No `ws` option is passed: on Deno,
-// WebSockets arrive as fetch upgrades rather than `node:http` `upgrade`
-// events, so `src/server.ts` binds Deno's own transport to the hub context
-// and answers the upgrade route itself — the socket rides the app's own
-// origin with no side-car port.
+// Memoized on globalThis so a dev-time reload reuses the hub instead of
+// leaking transports. No `ws` option: on Deno, WebSockets arrive as fetch
+// upgrades, so `src/server.ts` binds Deno's own transport and answers the
+// upgrade route itself, on the app's origin with no side-car port.
 const globalRef = globalThis as { __hubDenoMinimal?: HubInstance }
 
 export const hub: HubInstance = globalRef.__hubDenoMinimal ??= initHub({
   base: DEVFRAMES_HUB_BASE,
-  // Every built-in plugin, dogfooded end to end through the hub mount path.
-  // `data-inspector`'s default id carries `:` (a route-param marker), so it
-  // gets a colon-free id override to be a valid `<base><id>/` segment; the
-  // assets watcher is off since this host demonstrates mounting, not authoring.
+  /**
+   * Every built-in plugin, dogfooded end to end through the hub mount path.
+   * `data-inspector`'s default id carries `:` (a route-param marker), so it
+   * gets a colon-free id override to be a valid `<base><id>/` segment; the
+   * assets watcher is off since this host demonstrates mounting, not authoring.
+   */
   devframes: [
     createGitDevframe(),
     createTerminalsDevframe(),
@@ -36,14 +36,18 @@ export const hub: HubInstance = globalRef.__hubDenoMinimal ??= initHub({
     createOgDevframe(),
     createAssetsDevframe({ watch: false }),
   ],
-  // Rebrand the reference UI to Deno's own navy — one field, no CSS:
-  // `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
-  // which the dock reads at connect time and feeds into `--devframe-primary`
-  // (see `@devframes/hub-ui`'s `primary-ramp.css`).
+  /**
+   * Rebrand the reference UI to Deno's own navy - one field, no CSS:
+   * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
+   * which the dock reads at connect time and feeds into `--devframe-primary`
+   * (see `@devframes/hub-ui`'s `primary-ramp.css`).
+   */
   ui: createUi({ branding: { primaryColor: '#70ffaf', productName: 'Devframes on Deno' } }),
-  // Gate with devframe's interactive OTP (the default). The hub prints a
-  // 6-digit code + magic link on startup, and the reference UI's authorization
-  // view exchanges it for a bearer token. See docs/content/1.guide/13.security.md.
+  /**
+   * Gate with devframe's interactive OTP (the default). The hub prints a
+   * 6-digit code + magic link on startup, and the reference UI's authorization
+   * view exchanges it for a bearer token. See docs/content/1.guide/13.security.md.
+   */
   configure(ctx) {
     ctx.commands.register({
       id: 'example:hub-deno-minimal:ping',
@@ -61,7 +65,7 @@ export const hub: HubInstance = globalRef.__hubDenoMinimal ??= initHub({
   },
 })
 
-/** The host page — one script tag turns any page into a devtools host. */
+/** The host page - one script tag turns any page into a devtools host. */
 export const hostPage = `<!doctype html>
 <html lang="en">
   <head>

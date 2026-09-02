@@ -91,7 +91,7 @@ describe('createDevframeNextHandler', () => {
       websocket: { port: number, path: string }
       mcp?: { port: number, path: string }
     }
-    // The MCP route lives on the Next app's own origin now — a same-origin
+    // The MCP route lives on the Next app's own origin now - a same-origin
     // relative path next to __connection.json, served through the same
     // catch-all route as the SPA.
     expect(body.mcp).toEqual({ path: '__mcp' })
@@ -99,7 +99,7 @@ describe('createDevframeNextHandler', () => {
     // The advertised endpoint answers MCP initialize through the route
     // handler when a loopback Origin (required by the route's gate) is
     // presented. A 2025-era `initialize` is served statelessly through the
-    // SDK's default legacy path — answered per request with no
+    // SDK's default legacy path - answered per request with no
     // `Mcp-Session-Id`.
     const origin = 'http://localhost:3000'
     const initBody = JSON.stringify({

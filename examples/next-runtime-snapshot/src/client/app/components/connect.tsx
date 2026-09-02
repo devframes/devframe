@@ -17,7 +17,7 @@ interface ConnectionState {
 }
 
 /**
- * Connect to the RPC backend via `@devframes/next/single/client` — the connect +
+ * Connect to the RPC backend via `@devframes/next/single/client` - the connect +
  * status machinery lives in the package now; this file only scopes the client
  * to this tool's namespace and reshapes the status for the local UI.
  */

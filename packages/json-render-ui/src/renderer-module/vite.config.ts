@@ -4,11 +4,10 @@ import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vite'
 import { alias } from '../../../../alias'
 
-// The bundled `.vue` components carry a few scoped `<style>` blocks (e.g. the
-// progress bar's indeterminate animation) that Vite extracts into a CSS asset
-// — which a self-contained, natively-imported module can never load. Fold the
-// extracted CSS back into the entry chunk through a namespaced global the
-// module reads when it builds its shadow-root stylesheet.
+// Scoped `<style>` blocks in the `.vue` components get extracted into a CSS
+// asset a natively-imported module can't load. Fold that CSS back into the
+// entry chunk through a namespaced global the module reads when building its
+// shadow-root stylesheet.
 function inlineSfcCss(): Plugin {
   return {
     name: 'devframes:inline-sfc-css',
@@ -31,17 +30,19 @@ function inlineSfcCss(): Plugin {
   }
 }
 
-// The prebuilt dock-renderer module (`dist/renderer/json-render.mjs`) —
-// registered into a hub via `jsonRenderUiRenderer()` and served at
-// `<base>__renderers/json-render.mjs`, where any viewer imports it natively
-// at runtime. One self-contained file on purpose: Vue and every dependency
-// ride inside the bundle, and styles live in the module's own shadow root
-// (`src/.generated/css.ts`), so no CSS asset is emitted either.
+/**
+ * The prebuilt dock-renderer module (`dist/renderer/json-render.mjs`) -
+ * registered into a hub via `jsonRenderUiRenderer()` and served at
+ * `<base>__renderers/json-render.mjs`, where any viewer imports it natively
+ * at runtime. One self-contained file on purpose: Vue and every dependency
+ * ride inside the bundle, and styles live in the module's own shadow root
+ * (`src/.generated/css.ts`), so no CSS asset is emitted either.
+ */
 export default defineConfig({
   resolve: { alias },
   plugins: [vue(), inlineSfcCss()],
   define: {
-    // Bundled for a host page: strip Vue's dev-mode branches.
+    /** Bundled for a host page: strip Vue's dev-mode branches. */
     'process.env.NODE_ENV': JSON.stringify('production'),
     '__VUE_OPTIONS_API__': 'false',
     '__VUE_PROD_DEVTOOLS__': 'false',

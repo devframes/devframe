@@ -4,8 +4,8 @@ import { defineConfig } from 'tsdown'
 
 const require = createRequire(import.meta.url)
 
-// Keep transitive Nuxt/Vite/Vue type graphs — and the optional `@devframes/*`
-// peers — out of dts bundling. Consumers resolve these via their own
+// Keep transitive Nuxt/Vite/Vue type graphs - and the optional `@devframes/*`
+// peers - out of dts bundling. Consumers resolve these via their own
 // node_modules at install time.
 const neverBundle = [
   '@nuxt/kit',
@@ -19,8 +19,10 @@ const neverBundle = [
 ]
 
 export default defineConfig([{
-  // Node/neutral entries — the throwing root, the single-devframe Nuxt module,
-  // and the hub Nuxt module.
+  /**
+   * Node/neutral entries - the throwing root, the single-devframe Nuxt module,
+   * and the hub Nuxt module.
+   */
   entry: {
     index: 'src/index.ts',
     single: 'src/single.ts',
@@ -32,7 +34,7 @@ export default defineConfig([{
   outExtensions: () => ({ dts: '.d.mts' }),
   deps: { neverBundle },
 }, {
-  // Browser entry — the hub client composable (Vue).
+  /** Browser entry - the hub client composable (Vue). */
   entry: { 'hub-client': 'src/hub-client.ts' },
   platform: 'browser',
   clean: false,
@@ -41,7 +43,7 @@ export default defineConfig([{
   outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),
   deps: { neverBundle: ['vue', 'devframe/client', /^@devframes\//] },
 }, {
-  // just transpile the plugin to esm: we don't need the runtime at subpackage exports
+  /** just transpile the plugin to esm: we don't need the runtime at subpackage exports */
   entry: {
     'runtime/plugin.client': 'src/runtime/plugin.client.ts',
   },

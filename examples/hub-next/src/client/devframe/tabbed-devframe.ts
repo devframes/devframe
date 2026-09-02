@@ -26,7 +26,7 @@ export default defineDevframe({
   basePath: '/__next-tabbed-tool/',
   clientAssets: resolve(HERE, '../../../spa/next-tabbed-tool'),
   async setup(rawCtx) {
-    const ctx = rawCtx as unknown as DevframeHubContext
+    const ctx = rawCtx as DevframeHubContext
     await ctx.messages.add({
       level: 'info',
       message: 'Next Tabbed Tool mounted as a shared-iframe anchor',

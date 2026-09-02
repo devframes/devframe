@@ -1,5 +1,5 @@
 /**
- * Wire types shared by the server RPC functions and the SPA. Types only —
+ * Wire types shared by the server RPC functions and the SPA. Types only -
  * safe to import from browser code without dragging jora into the bundle.
  */
 
@@ -66,12 +66,12 @@ export type WriteValue
  * the server resolves the path and dispatches on what it finds there
  * (object / array / Map / Set).
  *
- *   - `set`    — replace the value at `path`.
- *   - `delete` — remove the node at `path` from its container.
- *   - `add`    — `path` addresses the CONTAINER; insert `key`/`value`
+ *   - `set`    - replace the value at `path`.
+ *   - `delete` - remove the node at `path` from its container.
+ *   - `add`    - `path` addresses the CONTAINER; insert `key`/`value`
  *                (objects and Maps need `key`; arrays take an optional index
  *                `key` to splice at, else append; Sets take just `value`).
- *   - `rename` — re-key the node at `path` under `key`, atomically
+ *   - `rename` - re-key the node at `path` under `key`, atomically
  *                (objects and Maps; the renamed key lands last).
  */
 export type WriteRequest
@@ -126,7 +126,7 @@ export type SkeletonOutcome
     | { ok: false, error: { name: string, message: string } }
 
 /**
- * Where a saved query persists — mirrors the host storage scopes:
+ * Where a saved query persists - mirrors the host storage scopes:
  * `workspace` is committable and shared with the team, `project` is
  * per-checkout private (node_modules).
  */

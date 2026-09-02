@@ -29,14 +29,14 @@ function recommendNuxtDevtools(): void {
   console.warn(
     '[@devframes/nuxt/hub] Serving a devframes-hub directly inside Nuxt works, '
     + 'but Nuxt DevTools (`@nuxt/devtools`) integrates the hub protocol natively '
-    + '— prefer it for a first-class, multi-integration experience. '
+    + '- prefer it for a first-class, multi-integration experience. '
     + 'Pass `{ quiet: true }` to silence this notice.',
   )
 }
 
 /**
- * Nuxt module that mounts a whole **devframes-hub** alongside `nuxt dev` —
- * many integrations under one namespace, one merged RPC registry — by wiring
+ * Nuxt module that mounts a whole **devframes-hub** alongside `nuxt dev` -
+ * many integrations under one namespace, one merged RPC registry - by wiring
  * `@devframes/vite`'s hub plugin into Nuxt's underlying Vite dev server and
  * injecting `@devframes/hub-ui`'s floating dock into the app. The UI defaults
  * to `@devframes/hub-ui`; pass `ui` to swap it or `ui: false` for a headless
@@ -74,7 +74,7 @@ export default defineNuxtModule<ModuleOptions>({
     const { injectEmbedded, quiet: _quiet, ...hubOptions } = options
 
     // Wire the hub into Nuxt's own Vite dev server. `quiet: true` suppresses
-    // the vite plugin's Vite-DevTools notice — this module already emits the
+    // the vite plugin's Vite-DevTools notice - this module already emits the
     // Nuxt-DevTools one above.
     addVitePlugin(viteDevframeHub({ ...hubOptions, base, quiet: true }))
 

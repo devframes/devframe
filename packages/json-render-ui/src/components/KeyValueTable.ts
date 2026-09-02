@@ -8,7 +8,7 @@ interface KeyValueTableProps {
   loading?: boolean
 }
 
-// Renders each entry as an `@antfu/design` DisplayKeyValue row.
+/** Renders each entry as an `@antfu/design` DisplayKeyValue row. */
 export const KeyValueTable: JrComponent<KeyValueTableProps> = ({ props, loading }) => {
   if (loading || props.loading)
     return h('div', { class: 'color-faint text-sm' }, 'Loading…')

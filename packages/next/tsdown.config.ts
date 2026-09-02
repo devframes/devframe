@@ -10,7 +10,7 @@ const nodeDeps = {
 }
 
 export default defineConfig([
-  // Node entries — the throwing root, the single-devframe surface, and the
+  // Node entries - the throwing root, the single-devframe surface, and the
   // hub host.
   {
     entry: {
@@ -25,7 +25,7 @@ export default defineConfig([
     deps: nodeDeps,
     outExtensions: () => ({ dts: '.d.mts' }),
   },
-  // Browser entries — the React client surfaces (single-devframe + hub). React
+  // Browser entries - the React client surfaces (single-devframe + hub). React
   // and devframe's/hub's client stay external so the consuming app provides them.
   {
     entry: {

@@ -99,7 +99,7 @@ export const KNOWN_EDITORS: KnownEditor[] = [
  * })
  * ```
  *
- * @deprecated Use the `@devframes/service-open` wire service instead — one
+ * @deprecated Use the `@devframes/service-open` wire service instead - one
  * host-level installation shared by every plugin and feature-detectable from
  * clients, with workspace-root path containment on top of the editor gating.
  */
@@ -126,7 +126,7 @@ export const openInEditor = defineRpcFunction({
  * ctx.rpc.register(openInFinder)
  * ```
  *
- * @deprecated Use the `@devframes/service-open` wire service instead — one
+ * @deprecated Use the `@devframes/service-open` wire service instead - one
  * host-level installation shared by every plugin and feature-detectable from
  * clients, with workspace-root path containment.
  */

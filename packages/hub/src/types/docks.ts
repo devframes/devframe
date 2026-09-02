@@ -18,7 +18,7 @@ export interface DevframeDocksHost {
    * carrying `params` for the target dock to interpret (e.g. a terminals
    * session id).
    *
-   * Any connected client may drive this via the `hub:docks:activate` RPC — a
+   * Any connected client may drive this via the `hub:docks:activate` RPC - a
    * mounted devframe running in its own iframe can steer the host shell's dock
    * selection, which is otherwise client-local. The request is delivered live
    * to connected clients (broadcast) and mirrored into the
@@ -37,7 +37,7 @@ export interface DevframeDockPanelState {
 
 /**
  * A request to switch the active dock. `params` is an opaque, serializable
- * bag the target dock interprets — the terminals dock reads `params.sessionId`
+ * bag the target dock interprets - the terminals dock reads `params.sessionId`
  * to focus a specific session.
  */
 export interface DevframeDockActivation {
@@ -46,7 +46,7 @@ export interface DevframeDockActivation {
 }
 
 /**
- * Shape of the `devframe:docks:active` shared-state slot — the most recent
+ * Shape of the `devframe:docks:active` shared-state slot - the most recent
  * {@link DevframeDockActivation}, or `null` before any activation. Mirrored
  * so a dock that mounts in response to an activation can still converge on the
  * request instead of missing the live broadcast.
@@ -55,11 +55,13 @@ export interface DevframeDocksActiveState {
   activation: DevframeDockActivation | null
 }
 
-// Known categories the hub orders by default (see
-// {@link import('../constants').DEFAULT_CATEGORIES_ORDER}). Kits may pass their
-// own category ids; `(string & {})` keeps autocomplete on the known set while
-// allowing arbitrary string values. `~builtin` is reserved for the viewer's
-// own built-in views (see {@link DevframeViewBuiltin}) and always sorts last.
+/**
+ * Known categories the hub orders by default (see
+ * {@link import('../constants').DEFAULT_CATEGORIES_ORDER}). Kits may pass their
+ * own category ids; `(string & {})` keeps autocomplete on the known set while
+ * allowing arbitrary string values. `~builtin` is reserved for the viewer's
+ * own built-in views (see {@link DevframeViewBuiltin}) and always sorts last.
+ */
 export type DevframeDockEntryCategory
   = | 'framework' // framework internals (Vue / Nuxt / Vite)
     | 'app' // the user's own app tools
@@ -75,7 +77,7 @@ export type DevframeDockEntryCategory
 
 export type DevframeDockEntryIcon = string | { light: string, dark: string }
 
-/** Color for a dock-bar entry's {@link DevframeDockEntryBase.badge} — mirrors json-render's `TabDescriptor.badgeVariant`. */
+/** Color for a dock-bar entry's {@link DevframeDockEntryBase.badge} - mirrors json-render's `TabDescriptor.badgeVariant`. */
 export type DevframeDockBadgeVariant = 'default' | 'info' | 'success' | 'warning' | 'danger'
 
 export interface DevframeDockEntryBase {
@@ -89,17 +91,17 @@ export interface DevframeDockEntryBase {
    */
   defaultOrder?: number
   /**
-   * The category of the entry — a field with a dual role that depends on
+   * The category of the entry - a field with a dual role that depends on
    * whether {@link groupId} resolves to a registered {@link DevframeViewGroup}:
    *
-   * - **Ungrouped (or orphan) entry** — `category` is the entry's OUTER bucket
+   * - **Ungrouped (or orphan) entry** - `category` is the entry's OUTER bucket
    *   on the dock bar, ordered by {@link import('../constants').DEFAULT_CATEGORIES_ORDER}.
-   * - **Grouped entry** (a `groupId` that resolves to a registered group) —
+   * - **Grouped entry** (a `groupId` that resolves to a registered group) -
    *   the OUTER bucket is instead the group's own `category`, and this field is
    *   reinterpreted as the entry's IN-GROUP sub-category, used to sub-divide and
    *   sort members inside the group's popover / sub-navigation.
    *
-   * Falls back to `'default'` when omitted — both as an outer bucket and, for a
+   * Falls back to `'default'` when omitted - both as an outer bucket and, for a
    * grouped member, as its in-group sub-bucket.
    *
    * @default 'default'
@@ -119,13 +121,13 @@ export interface DevframeDockEntryBase {
   /**
    * Render-only conditional visibility expression, same syntax as {@link when}.
    * When it evaluates to `false`, a viewer omits the entry from the rendered
-   * dock bar / list, but the entry stays registered and fully reachable —
+   * dock bar / list, but the entry stays registered and fully reachable -
    * `docks.activate()`/`switchEntry()` by id, RPC lookups, and anything else
    * that walks the raw entry list (e.g. the {@link DevframeViewIframe.subTabs}
    * frame-nav adapter) keep working exactly as if it were visible.
    *
    * Use this instead of {@link when} when an entry must remain part of the
-   * model without a dock-bar button of its own — the canonical case is a
+   * model without a dock-bar button of its own - the canonical case is a
    * shared-frame {@link DevframeViewIframe.subTabs anchor}: set
    * `visibility: 'false'` on the anchor so only its synthesized member tabs
    * render, while the anchor itself keeps driving the postMessage nav loop.
@@ -152,7 +154,7 @@ export interface DevframeDockEntryBase {
    * under the matching group's button instead of showing it directly on the
    * dock bar.
    *
-   * This is a flat pointer — membership, not containment. The entry stays an
+   * This is a flat pointer - membership, not containment. The entry stays an
    * independently-registered, top-level entry; only its rendering is grouped
    * downstream.
    *
@@ -170,7 +172,7 @@ export interface DevframeDockEntryBase {
 
 export interface ClientScriptEntry {
   /**
-   * What to import — either a **URL the host serves** (a self-contained ES
+   * What to import - either a **URL the host serves** (a self-contained ES
    * module, e.g. `/@fs/<abs path>` under Vite or a statically-mounted bundle
    * path), or a **bare npm specifier** (e.g.
    * `'vite-plugin-vue-tracer/client/vite-devtools'`), a host-runtime
@@ -194,7 +196,7 @@ declare module 'devframe/types' {
     dock: {
       /**
        * URL template resolving a **bare-specifier** client script to an
-       * importable URL on this host — `{specifier}` replaced with the bare
+       * importable URL on this host - `{specifier}` replaced with the bare
        * specifier (a token-less template is used as a prefix). Declaring it
        * advertises the host runtime can serve npm modules to the browser:
        * Vite hosts declare `'/@id/{specifier}'`, routing the import (and its
@@ -261,10 +263,10 @@ export interface DevframeViewIframe extends DevframeDockEntryBase {
    * Enable remote-UI mode: the hub injects a connection descriptor
    * (WS URL + pre-approved auth token) into the iframe URL so a hosted
    * page can connect back via `connectRemoteDevframe()` from
-   * `@devframes/hub/client` — without needing to ship a dist with the
+   * `@devframes/hub/client` - without needing to ship a dist with the
    * plugin.
    *
-   * Requires dev mode (no effect in build mode — no WS server exists).
+   * Requires dev mode (no effect in build mode - no WS server exists).
    * When enabled, the dock is automatically hidden in build mode unless
    * the author provides an explicit `when` clause.
    */
@@ -273,19 +275,21 @@ export interface DevframeViewIframe extends DevframeDockEntryBase {
 
 /**
  * A structured, soft-navigation target within a shared frame. `path` is opaque
- * to the hub — the embedded app maps it onto its own router.
+ * to the hub - the embedded app maps it onto its own router.
  *
  * Kept to `path` + `query` so the shape survives shared-state's `Immutable`
  * projection cleanly (a `DevframeViewIframe` must still narrow back from its
  * immutable form). An `unknown`/recursive history-`state` field breaks that
  * round-trip, so richer per-navigation state is intentionally out of scope for
- * now — carry it in `query` or the app's own store.
+ * now - carry it in `query` or the app's own store.
  */
 export interface NavTarget {
   path: string
-  // `readonly` arrays keep this shape stable under the shared-state `Immutable`
-  // projection, so a `Immutable<DevframeViewIframe>` still narrows back to
-  // `DevframeViewIframe` (a mutable `string[]` would not).
+  /**
+   * `readonly` arrays keep this shape stable under the shared-state `Immutable`
+   * projection, so a `Immutable<DevframeViewIframe>` still narrows back to
+   * `DevframeViewIframe` (a mutable `string[]` would not).
+   */
   query?: Record<string, string | readonly string[]>
 }
 
@@ -310,7 +314,7 @@ export interface RemoteDockOptions {
    * How to pass the connection descriptor to the hosted page.
    *
    * - `'fragment'` (default): appended as a URL fragment.
-   *   Not sent in HTTP requests or Referer headers — safest for auth tokens.
+   *   Not sent in HTTP requests or Referer headers - safest for auth tokens.
    * - `'query'`: appended as a URL query parameter. Use when your hosting
    *   platform rewrites fragments or your SPA router repurposes the fragment
    *   for navigation. The token will appear in server access logs and
@@ -352,7 +356,7 @@ export interface DevframeViewLauncher extends DevframeDockEntryBase {
     /**
      * Bound command id: the launch button, command palette entry, and any
      * keybinding all resolve to this one handler. A viewer running out of
-     * process dispatches it over the `hub:commands:execute` RPC — the
+     * process dispatches it over the `hub:commands:execute` RPC - the
      * serializable path {@link onLaunch} can't cross, since a function is
      * dropped when the entry is projected into the `devframe:docks` shared
      * state. Register the command (with its handler) via `ctx.commands`.
@@ -393,7 +397,7 @@ export interface DevframeViewCustomRender extends DevframeDockEntryBase {
 }
 
 /**
- * A view rendered natively by the viewer rather than by a plugin — the
+ * A view rendered natively by the viewer rather than by a plugin - the
  * settings panel, the terminals feed, the messages feed, etc. A high-level
  * integration registers the built-in views it wants; the viewer recognizes the
  * reserved `id` and renders its own UI for it.
@@ -413,12 +417,12 @@ export interface DevframeViewBuiltin extends DevframeDockEntryBase {
  *
  * A group carries its own `title`/`icon`/`category`/`defaultOrder`/`when`
  * (inherited from {@link DevframeDockEntryBase}) and has no view payload of its
- * own — hosts render its members in a popover / sub-navigation. It flows
+ * own - hosts render its members in a popover / sub-navigation. It flows
  * through the same `register`/`update`/`values` machinery as every other entry,
  * keyed by `id`.
  *
  * The group's `category` is the OUTER bucket for the group button itself AND
- * for every one of its members — a member's own `category` no longer decides
+ * for every one of its members - a member's own `category` no longer decides
  * its outer bucket, but is reinterpreted as an in-group sub-category that
  * sub-divides and sorts members inside this group. A group with no `category`
  * buckets itself and its members under `'default'`.
@@ -434,7 +438,7 @@ export interface DevframeViewGroup extends DevframeDockEntryBase {
    */
   defaultChildId?: string
   /**
-   * Per-group override of the in-group sub-category ordering — a map of
+   * Per-group override of the in-group sub-category ordering - a map of
    * sub-category id → ordering weight (lower sorts earlier), mirroring the
    * shape of {@link import('../constants').DEFAULT_CATEGORIES_ORDER}.
    *
@@ -467,7 +471,7 @@ export interface DevframeViewGroup extends DevframeDockEntryBase {
 /**
  * The **open** registry of dock entry variants, keyed by their `type`
  * discriminator. The hub ships the framework-neutral built-ins; opt-in
- * integrations contribute their own variants through declaration merging —
+ * integrations contribute their own variants through declaration merging -
  * e.g. `@devframes/json-render/hub` adds a `'json-render'` entry. The hub
  * itself stays agnostic: it hard-codes no integration-specific variant.
  *

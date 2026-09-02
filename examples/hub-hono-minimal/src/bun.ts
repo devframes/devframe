@@ -6,7 +6,7 @@ import { app, hub } from './app'
 
 // `Bun` is a global on the Bun runtime only; this is the Bun entry. Declare the
 // slice this file uses so `tsc` (Node types only, no `@types/bun`) can check it
-// — typing the `fetch` callback's params here is also what keeps them from
+// - typing the `fetch` callback's params here is also what keeps them from
 // being implicitly `any`.
 declare const Bun: {
   serve: (options: {
@@ -19,13 +19,13 @@ declare const Bun: {
 /**
  * The Bun entry. Bun serves HTTP through the same `app.fetch` as Node, but
  * WebSockets arrive as fetch upgrades rather than `node:http` `upgrade`
- * events — so instead of `hub.attach(server)` this host binds Bun's own
+ * events - so instead of `hub.attach(server)` this host binds Bun's own
  * transport to the hub's context with two public primitives:
  * `createContextRpcServer` (the session/auth wiring every devframe transport
  * shares) and `attachBunWsTransport` (crossws' Bun adapter).
  *
  * The hub advertises `/__devframes/__ws` on the app's own origin either way,
- * so the browser client needs no per-runtime knowledge — this file only has
+ * so the browser client needs no per-runtime knowledge - this file only has
  * to answer that route.
  */
 export async function startBunServer(port: number): Promise<{ port: number, close: () => Promise<void> }> {
@@ -63,6 +63,6 @@ export async function startBunServer(port: number): Promise<{ port: number, clos
 if (import.meta.main) {
   void startBunServer(Number(process.env.PORT ?? 5179)).then(({ port }) => {
     // eslint-disable-next-line no-console
-    console.log(`hono-devframe-hub (bun) on http://localhost:${port} — devtools at /__devframes/`)
+    console.log(`hono-devframe-hub (bun) on http://localhost:${port} - devtools at /__devframes/`)
   })
 }

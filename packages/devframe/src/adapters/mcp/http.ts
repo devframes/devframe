@@ -12,11 +12,11 @@ export interface MountedMcpHttp {
 }
 
 /**
- * Mount a stateless MCP endpoint on an h3 app at `path` — the h3 binding over
+ * Mount a stateless MCP endpoint on an h3 app at `path` - the h3 binding over
  * {@link createMcpFetchHandler}, which owns the per-request serving, the
  * origin gate, and the transport plumbing.
  *
- * The handler is web-standard — it takes the h3 event's web `Request` and
+ * The handler is web-standard - it takes the h3 event's web `Request` and
  * returns a web `Response` (an SSE `ReadableStream` body for a
  * `subscriptions/listen` stream). We copy that response onto `event.res` and
  * return its body rather than returning the `Response` object directly, so an

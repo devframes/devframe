@@ -43,7 +43,7 @@ export const Default: Story = {
   }),
 }
 
-/** With one member already active — it gets the tinted, highlighted row. */
+/** With one member already active - it gets the tinted, highlighted row. */
 export const WithSelection: Story = {
   render: () => ({
     setup: () => mountWithContext(
