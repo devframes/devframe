@@ -4,7 +4,7 @@ const BASE = 'http://127.0.0.1:9898/'
 
 // Static dumps only carry pre-computed `static` / `query{snapshot:true}`
 // RPC results. streaming-chat's `send` and `clear` are `action` functions
-// so they never run from a static build - these specs cover what *does*
+// so they never run from a static build; these specs cover what *does*
 // render: the demo-prompts list (static RPC) and the connection meta.
 
 test.describe('streaming-chat (static build)', () => {

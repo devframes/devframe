@@ -59,7 +59,7 @@ const deps = {
 }
 
 // The node build reaches `devframe/utils/shared-state` through the same
-// tsconfig path alias as the browser build - two independent rolldown graphs
+// tsconfig path alias as the browser build: two independent rolldown graphs
 // that would each inline their own `immer`. Externalizing the specifier (node
 // build only) makes the emitted import resolve at runtime to the built chunk,
 // so immer's bytes exist once.
@@ -133,8 +133,8 @@ const serverEntries = {
  * 2. Runtime server/node build (`dts: false`). `clean: false` appends to
  * the client output.
  * 3. Combined dts build (`emitDtsOnly: true`). All entries live in a
- * single rolldown graph so shared modules - notably
- * `src/types/rpc-augments.ts` - produce exactly one declaration site.
+ * single rolldown graph so shared modules, notably
+ * `src/types/rpc-augments.ts`, produce exactly one declaration site.
  * This is what lets consumer `declare module 'devframe'` augmentations
  * propagate across every import chain.
  */

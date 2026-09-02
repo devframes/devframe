@@ -37,7 +37,7 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
   async function updateMessages() {
     // The feed is served by `@devframes/plugin-messages` (the hub itself ships
     // no list RPC). Cast because the plugin's RPC augmentation is not imported
-    // here - hub-ui must not depend on the plugin package.
+    // here; hub-ui must not depend on the plugin package.
     const result = await context.rpc.call(
       'devframes:plugin:messages:list' as any,
       lastVersion,
@@ -69,7 +69,7 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
     isInitialFetch = false
   }
 
-  // A hub without `@devframes/plugin-messages` serves no list RPC - degrade
+  // A hub without `@devframes/plugin-messages` serves no list RPC, so degrade
   // to an empty feed instead of surfacing unhandled rejections.
   const refresh = () => updateMessages().catch(() => {})
 

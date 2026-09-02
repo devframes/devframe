@@ -96,8 +96,8 @@ const groupedEntries = computed(() => context.docks.groupedEntries)
 
 const settings = sharedStateToRef(context.docks.settings)
 
-// The recent dock: the entry last selected from beyond the bar - the overflow
-// popover or a group popover - raised into its own slot between the visible
+// The recent dock: the entry last selected from beyond the bar (the overflow
+// popover or a group popover), raised into its own slot between the visible
 // items and the overflow button so deselecting it keeps it one click away.
 // Persisted per-tab in the session store; resolved to `null` when the id no
 // longer maps to a raisable entry.
@@ -119,8 +119,8 @@ const selectedEntry = computed(() => {
 
 // Remember the recent dock whenever the selection lands on an entry that has
 // no slot on the bar as currently rendered (grouped members always; top-level
-// entries when picked from the overflow popover). Observing the selection -
-// rather than the bar's own click handlers - also covers selections made via
+// entries when picked from the overflow popover). Observing the selection
+// (rather than the bar's own click handlers) also covers selections made via
 // the command palette, an RPC activation, or the session restore.
 watch(selectedEntry, (entry) => {
   if (!entry)
@@ -209,7 +209,7 @@ function bringUp() {
 
 const isHidden = computed(() => false)
 
-// An open group menu popover anchors to a dock-bar button - collapsing the rail
+// An open group menu popover anchors to a dock-bar button, so collapsing the rail
 // out from under it would leave the menu floating, detached from its trigger.
 const docksGroupPanel = useDocksGroupPanel()
 

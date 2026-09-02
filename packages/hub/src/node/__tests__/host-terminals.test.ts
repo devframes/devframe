@@ -675,7 +675,7 @@ describe('devframeTerminalHost PTY status lifecycle', () => {
     await waitUntil(() => {
       expect(session.status).toBe('stopped')
     })
-    // The stream is closed for good, so `restart()` rejects - the session
+    // The stream is closed for good, so `restart()` rejects and the session
     // stays reported as stopped rather than flipping back to running.
     await expect(session.restart()).rejects.toThrow(expect.objectContaining({ code: 'DF8206' }))
     expect(session.status).toBe('stopped')

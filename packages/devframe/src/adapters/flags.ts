@@ -1,7 +1,7 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 
 /**
- * Schema map for typed CLI flags. Keys are flag names in camelCase -
+ * Schema map for typed CLI flags. Keys are flag names in camelCase, so
  * this matches CAC's parsed-flag output ( `--no-open` → `noOpen` ). Each
  * value is any [Standard Schema](https://standardschema.dev/) validator
  * (valibot, zod, arktype, devframe's built-in `s`, …) used to both (a)
@@ -11,7 +11,7 @@ import type { StandardSchemaV1 } from '@standard-schema/spec'
 export type CliFlagsSchema = Record<string, StandardSchemaV1>
 
 /**
- * Identity helper that preserves the literal schema-map type - use this
+ * Identity helper that preserves the literal schema-map type; use this
  * so `InferCliFlags<typeof myFlags>` resolves to the right object shape.
  *
  * ```ts

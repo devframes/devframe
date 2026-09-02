@@ -59,7 +59,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
 
   /**
    * Lazy agent projection: `ctx.agent` queries this provider at list/invoke
-   * time, deriving tools from {@link commands} on demand - the commands map
+   * time, deriving tools from {@link commands} on demand, so the commands map
    * stays the single source of truth, nothing is mirrored or kept in sync.
    */
   private readonly agentProvider: AgentToolProviderHandle | undefined
@@ -172,7 +172,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
    * agent-flagged, handler-bearing command (children included) becomes a
    * callable tool. Queried lazily by the provider registered in the
    * constructor. `when` clauses evaluate client-side only and are not
-   * enforced here - opting in a `when`-gated command is a deliberate author
+   * enforced here; opting in a `when`-gated command is a deliberate author
    * decision (documented on `DevframeCommandAgentOptions`).
    */
   private collectAgentTools(): AgentToolInput[] {
@@ -190,7 +190,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
           args: agent.args,
           /**
            * A command handler's positional parameters come solely from its
-           * declared `agent.args` schemas - undeclared payload is dropped.
+           * declared `agent.args` schemas; undeclared payload is dropped.
            */
           handler: async (args: unknown) =>
             this.execute(command.id, ...coerceAgentPositionalArgs(args, agent.args, 'drop')),

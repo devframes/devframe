@@ -9,7 +9,7 @@ export class DevframeDiagnosticsHost implements DevframeDiagnosticsHostType {
   })
 
   /**
-   * Already pre-wires devframe's ANSI console reporter - no extra merging
+   * Already pre-wires devframe's ANSI console reporter, so no extra merging
    * needed here, the host's `defineDiagnostics` just is the shared one.
    */
   readonly defineDiagnostics: DevframeDiagnosticsHostType['defineDiagnostics'] = defineDiagnostics

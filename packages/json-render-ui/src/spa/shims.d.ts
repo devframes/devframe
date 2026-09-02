@@ -2,7 +2,7 @@
 declare module '*.css' {}
 declare module 'virtual:uno.css' {}
 
-// `@antfu/design` ships raw `.vue` components - declare the module so `tsc`
+// `@antfu/design` ships raw `.vue` components, so declare the module so `tsc`
 // resolves them when the SPA renders through the shared components.
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'

@@ -373,7 +373,7 @@ export function createGitOps(cwd: string): GitServiceApi {
           return { isRepo: true, commits: [], limit, skip, hasMore: false }
         command.push('--end-of-options', ref)
       }
-      // Pathspec after `--` - everything past it is treated as a path, never
+      // Pathspec after `--`: everything past it is treated as a path, never
       // an option, so client paths need no dash guard here.
       const paths = (args.paths ?? []).map(p => p.trim()).filter(Boolean)
       if (paths.length > 0)
@@ -414,7 +414,7 @@ export function createGitOps(cwd: string): GitServiceApi {
       catch {
         return base
       }
-      // A NUL byte marks binary content - omit it rather than return garbage.
+      // A NUL byte marks binary content, so omit it rather than return garbage.
       if (raw.includes('\0'))
         return { ...base, found: true, binary: true }
       const { text: content, truncated } = clipText(raw, FILE_CHAR_LIMIT)

@@ -146,7 +146,7 @@ function validateConnectionDescriptor(payload: unknown): RemoteConnectionInfo {
  * the current URL and returns a connected {@link DevframeRpcClient}.
  *
  * Pairs with `remote: true` on a `DevframeViewIframe` registered on the node
- * side - the hub injects the descriptor into the iframe URL.
+ * side, where the hub injects the descriptor into the iframe URL.
  *
  * @throws if no descriptor is present in the URL.
  */

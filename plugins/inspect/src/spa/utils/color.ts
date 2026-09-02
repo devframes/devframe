@@ -24,7 +24,7 @@ export interface NamespaceSegment {
   text: string
   /** The separator that follows this segment (`:` or `/`), or `''` for the last one. */
   separator: string
-  /** Whether this is the trailing segment - the function's own name rather than a namespace. */
+  /** Whether this is the trailing segment: the function's own name rather than a namespace. */
   isLeaf: boolean
   /** Hash color for namespace segments; `undefined` for the leaf (rendered in the default foreground). */
   color?: string

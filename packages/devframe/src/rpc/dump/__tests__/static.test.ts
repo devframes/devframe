@@ -106,7 +106,7 @@ describe('collectStaticRpcDump', () => {
       const getGraph = defineRpcFunction({
         name: 'test:graph',
         type: 'static',
-        /** jsonSerializable: false (default) - fancy types must survive */
+        /** jsonSerializable: false (default), so fancy types must survive */
         handler: () => ({
           nodes: new Map([['a', 1], ['b', 2]]),
           tags: new Set(['x', 'y']),

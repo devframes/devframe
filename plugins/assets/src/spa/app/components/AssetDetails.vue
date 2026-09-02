@@ -48,7 +48,7 @@ watch(() => props.asset.path, (path) => {
     void rpc.call('devframes:plugin:assets:read-text', path, 5000).then(async (c) => {
       textContent.value = c
       // Server-highlighted preview via the shiki wire service; `null` when
-      // it isn't advertised - the preview keeps its plain `<pre>`.
+      // it isn't advertised, so the preview keeps its plain `<pre>`.
       const html = c == null ? null : await highlightAsset(rpc, path, c)
       if (props.asset.path === path)
         highlightedHtml.value = html

@@ -4,7 +4,7 @@ import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { setupA11y } from './node/index.ts'
 
-/** Default devframe id - drives the standalone CLI command and the hosted mount path `/__<id>/`. */
+/** Default devframe id, driving the standalone CLI command and the hosted mount path `/__<id>/`. */
 const DEFAULT_ID = 'devframes_plugin_a11y'
 const BASE_PATH = '/__devframes_plugin_a11y/'
 
@@ -19,8 +19,8 @@ const distDir: RemoteAssets = {
 }
 
 /**
- * Absolute path to the built **page script** module (`dist/inject/inject.js`)
- * - the dock **client script** the client runtime imports into the host page to
+ * Absolute path to the built **page script** module (`dist/inject/inject.js`),
+ * the dock **client script** the client runtime imports into the host page to
  * scan it (its default export boots the page script; importing it does too).
  *
  * The definition already declares this as its dock `clientScript`, so a hub
@@ -30,7 +30,7 @@ const distDir: RemoteAssets = {
  */
 export const a11yPageScriptBundlePath: string = fileURLToPath(new URL('../dist/inject/inject.js', import.meta.url))
 
-/** @deprecated Renamed - use {@link a11yPageScriptBundlePath}. */
+/** @deprecated Renamed; use {@link a11yPageScriptBundlePath}. */
 export const a11yAgentBundlePath: string = a11yPageScriptBundlePath
 
 export interface A11yDevframeOptions {

@@ -12,7 +12,7 @@ export interface SseRpcChannelOptions {
   authToken?: string
   /**
    * RPC function definitions (or just the `jsonSerializable` flag per
-   * method) used to dispatch the per-call wire serializer - same contract
+   * method) used to dispatch the per-call wire serializer, the same contract
    * as the WS channel.
    */
   definitions?: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>>
@@ -50,7 +50,7 @@ function parseFrame(frame: string): { event: string, data: string[] } {
 
 /**
  * Build a birpc `ChannelOptions` object backed by an SSE stream (server →
- * client) and HTTP `POST` (client → server) - the WebSocket-free counterpart
+ * client) and HTTP `POST` (client → server): the WebSocket-free counterpart
  * to `createWsRpcChannel`, wire-compatible with `attachSseRpcTransport`.
  *
  * The stream is consumed via `fetch` streaming (not `EventSource`), so it
@@ -58,7 +58,7 @@ function parseFrame(frame: string): { event: string, data: string[] } {
  * (`event: session`) carries the session id; every `POST` echoes it in the
  * `x-birpc-session` header. A response to a client-initiated request comes
  * back in the `POST`'s own body and is re-injected into the channel; a
- * dropped stream terminates the channel - there is no reconnect, matching
+ * dropped stream terminates the channel; there is no reconnect, matching
  * the WS channel's closed-is-done semantics.
  */
 export function createSseRpcChannel(options: SseRpcChannelOptions): ChannelOptions & { close: () => void } {
@@ -179,7 +179,7 @@ export function createSseRpcChannel(options: SseRpcChannelOptions): ChannelOptio
         sessionId = await sessionReady
       }
       catch {
-        // The stream never opened (or already closed) - the error surfaced
+        // The stream never opened (or already closed), so the error surfaced
         // through `onError`/`onDisconnected`; nothing to send.
         return
       }
@@ -198,7 +198,7 @@ export function createSseRpcChannel(options: SseRpcChannelOptions): ChannelOptio
         })
         if (response.status === 200) {
           // The parked response to a client-initiated request rides the
-          // POST body - re-inject it so birpc correlates it by id.
+          // POST body; re-inject it so birpc correlates it by id.
           const body = await response.text()
           if (body)
             onMessage?.(body)

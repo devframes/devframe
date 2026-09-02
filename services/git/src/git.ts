@@ -16,7 +16,7 @@ export interface GitRunResult {
 }
 
 /**
- * Run a git command in `cwd`. Rejects when git exits non-zero - callers that
+ * Run a git command in `cwd`. Rejects when git exits non-zero; callers that
  * tolerate failure (e.g. "no upstream configured") should use {@link tryGit}.
  */
 export async function runGit(cwd: string, args: string[]): Promise<GitRunResult> {

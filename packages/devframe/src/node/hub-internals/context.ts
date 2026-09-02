@@ -16,7 +16,7 @@ export interface InternalAnonymousAuthStorage {
 
 export interface RemoteTokenRecord {
   dockId: string
-  /** Dock URL origin - matched against WS handshake `Origin` header when `originLock` is on. */
+  /** Dock URL origin, matched against WS handshake `Origin` header when `originLock` is on. */
   origin: string
   originLock: boolean
 }
@@ -32,7 +32,7 @@ export interface DevframeInternalContext {
   revokeAuthToken: (token: string) => Promise<void>
 
   /**
-   * Session-only tokens issued to remote-UI iframe docks. Not persisted -
+   * Session-only tokens issued to remote-UI iframe docks. Not persisted;
    * regenerated on every dev-server restart.
    */
   remoteTokens: Map<string, RemoteTokenRecord>
@@ -55,8 +55,8 @@ export interface DevframeInternalContext {
   }
 
   /**
-   * Set {@link DevframeInternalContext.wsEndpoint} and notify subscribers -
-   * the WS-binding tiers (side-car, shared-server, and the `unbound` tier's
+   * Set {@link DevframeInternalContext.wsEndpoint} and notify subscribers.
+   * The WS-binding tiers (side-car, shared-server, and the `unbound` tier's
    * `attach()`) call this once the socket is bound (or `undefined` once torn
    * down) instead of assigning the field directly, so anything that already
    * projected the endpoint (a hub's remote-dock URLs, registered before an

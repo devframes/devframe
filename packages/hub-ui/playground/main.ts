@@ -16,9 +16,9 @@ const HUB_BASE = '/__devframes/'
 
 /**
  * `?embedded` mounts the floating `DockEmbedded` bootstrap over the sample
- * host content in `index.html` - the same surface a host page gets from
+ * host content in `index.html`, the same surface a host page gets from
  * `<script src="<base>embedded.js">`. The default mounts `DockStandalone`
- * full-page - the primary surface most hub-ui changes touch.
+ * full-page, the primary surface most hub-ui changes touch.
  */
 const mode = new URLSearchParams(location.search).has('embedded') ? 'embedded' : 'standalone'
 document.body.classList.add(mode)

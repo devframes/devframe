@@ -2,7 +2,7 @@ import type { RpcDefinitionsToFunctions } from 'devframe/rpc'
 import type { A11yRuntimeConfig } from './functions/get-config.ts'
 import { createGetConfig, getConfig } from './functions/get-config.ts'
 
-/** Default function set - drives the RPC type augmentation below. */
+/** Default function set, driving the RPC type augmentation below. */
 export const serverFunctions = [getConfig] as const
 
 /** Build the function set configured with author options. */

@@ -13,7 +13,7 @@ import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 import { Hono } from 'hono'
 
 // Runtime-agnostic: the hub and Hono routes are identical on Node and Bun.
-// No transport option, so the hub binds nothing itself - `src/server.ts`
+// No transport option, so the hub binds nothing itself; `src/server.ts`
 // hands it the HTTP server's upgrade events via `hub.attach`.
 //
 // Memoized on globalThis so a dev-time reload reuses the hub instead of
@@ -40,7 +40,7 @@ export const hub: HubInstance = globalRef.__hubHonoMinimal ??= initHub({
     createAssetsDevframe({ watch: false }),
   ],
   /**
-   * Rebrand the reference UI to Hono's own orange - one field, no CSS:
+   * Rebrand the reference UI to Hono's own orange in one field, no CSS:
    * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
    * which the dock reads at connect time and feeds into `--devframe-primary`
    * (see `@devframes/hub-ui`'s `primary-ramp.css`).

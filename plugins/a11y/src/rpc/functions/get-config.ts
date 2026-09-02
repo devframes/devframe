@@ -17,7 +17,7 @@ const IMPACT_COPY = {
   },
   minor: {
     label: 'Minor',
-    blurb: 'Small annoyances and polish - worth clearing once the rest is done.',
+    blurb: 'Small annoyances and polish, worth clearing once the rest is done.',
   },
 } as const
 
@@ -43,7 +43,7 @@ export interface A11yRuntimeConfig {
 /**
  * Build the `get-config` RPC function from author options. Declared `static`,
  * so the value resolves live over WebSocket in dev and is baked into the RPC
- * dump for static builds - the panel's legend + runtime config render the same
+ * dump for static builds; the panel's legend + runtime config render the same
  * in both modes. The panel forwards the `pageScript` slice to the page script over
  * the in-page channel, keeping the page script free of any RPC dependency.
  */
@@ -72,5 +72,5 @@ export function createGetConfig(options: A11yRuntimeConfig = {}) {
   })
 }
 
-/** Default `get-config` instance - used for the RPC type augmentation. */
+/** Default `get-config` instance, used for the RPC type augmentation. */
 export const getConfig = createGetConfig()

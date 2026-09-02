@@ -13,7 +13,7 @@ import { resolveStaticAssetsSource } from './remote-assets'
 import { serveStaticHandler } from './serve-static'
 
 // `realpathSync` because module resolution reports realpaths, while the system
-// temp dir is a symlink on macOS (`/var` → `/private/var`) - a path built from
+// temp dir is a symlink on macOS (`/var` → `/private/var`), so a path built from
 // the raw `mkdtempSync` result would never match a resolved one.
 function makeTmp(): string {
   return realpathSync(mkdtempSync(join(tmpdir(), 'devframe-remote-assets-')))
@@ -198,16 +198,16 @@ describe('resolveStaticAssetsSource (remote store)', () => {
     const provider: RemoteAssetsProviderCustom = {
       fileUrl: (pkg, version, filePath) => `https://mirror.example.com/${pkg}@${version}/${filePath}`,
       /**
-       * A compromised (or merely buggy) custom provider - every entry below is
+       * A compromised (or merely buggy) custom provider; every entry below is
        * unsafe or out of scope except the one normal nested asset.
        */
       listFiles: async () => [
-        'package.json', // ordinary file outside the selected prefix - stays ignored
-        'dist/assets/app.js', // a normal nested asset - still materializes
+        'package.json', // ordinary file outside the selected prefix, stays ignored
+        'dist/assets/app.js', // a normal nested asset, still materializes
         'dist/../evil-traversal.txt', // prefixed traversal entry
         '/outside/evil-absolute.txt', // absolute path entry
-        'dist/evil\\..\\..\\evil-backslash.txt', // backslash traversal entry - rejected on every platform
-        'dist-confusable/evil-prefix.txt', // prefix-confusion entry - outside the selected prefix
+        'dist/evil\\..\\..\\evil-backslash.txt', // backslash traversal entry, rejected on every platform
+        'dist-confusable/evil-prefix.txt', // prefix-confusion entry, outside the selected prefix
       ],
     }
     const store = storeFor({ fetch: fetchImpl }, makeTmp(), { provider })
@@ -289,7 +289,7 @@ describe('resolveStaticAssetsSource (installed package)', () => {
 
   it('defaults resolveFrom from the third argument when the source omits it', () => {
     const { resolveFrom, distDir } = install('1.2.3')
-    // No per-source `resolveFrom` - the definition-level default resolves it.
+    // No per-source `resolveFrom`; the definition-level default resolves it.
     expect(norm(resolveStaticAssetsSource({ package: '@scope/demo-client', version: '1.2.3' }, makeTmp(), resolveFrom) as string)).toBe(norm(distDir))
   })
 
@@ -301,7 +301,7 @@ describe('resolveStaticAssetsSource (installed package)', () => {
 
   it('honors an explicit resolveFrom: null (opts out of the installed lookup) despite a default', () => {
     const { resolveFrom } = install('1.2.3')
-    // `null` skips the installed-copy step entirely - falls back to a store.
+    // `null` skips the installed-copy step entirely, falling back to a store.
     expect(typeof resolveStaticAssetsSource({ package: '@scope/demo-client', version: '1.2.3', resolveFrom: null }, makeTmp(), resolveFrom)).not.toBe('string')
   })
 })

@@ -109,7 +109,7 @@ describe('next-runtime-snapshot (example)', () => {
 
   it('matches nothing on an invalid regex pattern', async () => {
     const rpc = bootRpc(server.port)
-    // '[' is unterminated - `new RegExp('[', 'i')` throws SyntaxError.
+    // '[' is unterminated, so `new RegExp('[', 'i')` throws SyntaxError.
     const snap = await rpc.$call('example:next-runtime-snapshot:env', { pattern: '[' }) as EnvSnapshot
     expect(snap.entries).toEqual([])
     expect(snap.total).toBe(0)

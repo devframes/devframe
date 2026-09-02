@@ -3,7 +3,7 @@ export const PLUGIN_ID = 'devframes_plugin_code-server'
 
 /**
  * Shared-state key holding the serializable, secret-free server status and
- * detection result. Authentication material is never published here - it is
+ * detection result. Authentication material is never published here; it is
  * returned only from the `start` / `status` RPCs to the already-authorized
  * client (see {@link import('./types').CodeServerConnect}).
  */

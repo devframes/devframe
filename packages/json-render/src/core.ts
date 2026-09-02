@@ -1,5 +1,5 @@
 /**
- * Curated, named re-exports of `@json-render/core` - the upstream wire
+ * Curated, named re-exports of `@json-render/core`, the upstream wire
  * contract Devframes builds on. This is an **explicit** allowlist (never
  * `export *`): every name here is a Devframes semver commitment, so the
  * surface stays small and reviewed. Streaming, prompt/generation, and

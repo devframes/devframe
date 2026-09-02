@@ -3,16 +3,16 @@ import { DEVFRAME_EVENTS } from '../events'
 
 /**
  * Wire protocol of the in-page channel handshake and its port-level control
- * frames. The envelope is transport-neutral by design - it identifies the
+ * frames. The envelope is transport-neutral by design: it identifies the
  * protocol (`channel` tag + `v`), the user channel (`name`), and the peers
- * (`panelId`, `instanceId`) - so a future cross-tab transport (e.g. a
+ * (`panelId`, `instanceId`), so a future cross-tab transport (e.g. a
  * `BroadcastChannel`) can reuse it unchanged.
  */
 
 /** `postMessage` tag every handshake message carries. */
 export const IN_PAGE_CHANNEL_TAG = DEVFRAME_EVENTS.postMessage.inPageChannel
 
-/** Envelope version - bump on breaking wire changes. */
+/** Envelope version; bump on breaking wire changes. */
 export const IN_PAGE_CHANNEL_VERSION = 1
 
 /**
@@ -61,7 +61,7 @@ let memoryInstanceId: string | undefined
 /**
  * The page context's instance id: one nanoid per browser tab, persisted in
  * `sessionStorage` so it survives page-script reloads. It scopes handshakes
- * when the same app is open in several tabs - a panel pinned to an instance
+ * when the same app is open in several tabs, since a panel pinned to an instance
  * id ignores grants from every other tab's page script.
  */
 export function resolveInstanceId(win: Window | undefined): string {
@@ -77,7 +77,7 @@ export function resolveInstanceId(win: Window | undefined): string {
     }
   }
   catch {
-    // Storage unavailable (sandboxed iframe, disabled cookies) - fall through.
+    // Storage unavailable (sandboxed iframe, disabled cookies); fall through.
   }
   memoryInstanceId ??= nanoid()
   return memoryInstanceId
@@ -93,7 +93,7 @@ export function resolveAllowedOrigins(allowedOrigins: string[] | undefined, win:
 
 /**
  * Default handshake targets of a panel: its ancestor chain plus its
- * `opener` - every same-tab window a page script can live in. `WindowProxy`
+ * `opener`, every same-tab window a page script can live in. `WindowProxy`
  * references stay valid across navigations, so hellos posted to these reach
  * a page script even after the host page reloads.
  */
@@ -109,7 +109,7 @@ export function defaultHandshakeTargets(win: Window): Window[] {
     }
   }
   catch {
-    // Walking stopped by the browser - keep what we have.
+    // Walking stopped by the browser; keep what we have.
   }
   try {
     const opener = win.opener as Window | null
@@ -117,7 +117,7 @@ export function defaultHandshakeTargets(win: Window): Window[] {
       targets.push(opener)
   }
   catch {
-    // Inaccessible opener - ignore.
+    // Inaccessible opener; ignore.
   }
   return targets
 }

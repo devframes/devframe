@@ -22,7 +22,7 @@ function createContext(): DevframeHubContext {
       hostStatic: () => {},
     },
     /**
-     * Minimal stub - these tests drive dock/setup wiring, not the services
+     * Minimal stub, since these tests drive dock/setup wiring, not the services
      * lifecycle (the demo devframe declares none).
      */
     services: {

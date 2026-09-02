@@ -9,7 +9,7 @@ import { getInternalContext } from 'devframe/node/hub-internals'
 import { attachWsRpcTransport } from 'devframe/rpc/transports/ws-server'
 import { H3 as H3App, toNodeHandler } from 'h3'
 
-/** Loopback / wildcard binds aren't dialable as-is - advertise `localhost`. */
+/** Loopback / wildcard binds aren't dialable as-is, so advertise `localhost`. */
 function formatHostForUrl(host: string): string {
   const dialable = ['0.0.0.0', '127.0.0.1', '::', ''].includes(host) ? 'localhost' : host
   return isIP(dialable) === 6 ? `[${dialable}]` : dialable
@@ -32,7 +32,7 @@ export interface ServeTestContextOptions {
 
 /**
  * Stand up a real HTTP + WebSocket RPC server for a hand-built devframe
- * context - the in-process test counterpart to the binding `initDevframe` /
+ * context, the in-process test counterpart to the binding `initDevframe` /
  * `initHub` perform internally. Test harnesses that need a live origin,
  * direct `ctx` access, an injected fake host, or a custom `cwd` build their
  * context by hand and serve it through this helper; production code reaches

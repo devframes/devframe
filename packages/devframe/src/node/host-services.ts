@@ -63,7 +63,7 @@ function mergeInstallerOptions(def: DevframeServiceDefinition, entries: PendingS
  *
  * On top of the in-process `provide`/`get` tier, this host implements the
  * **wire-service** lifecycle: `install()` queues definitions/descriptors,
- * `ready()` fires the collect-then-setup barrier - importing descriptor
+ * `ready()` fires the collect-then-setup barrier: importing descriptor
  * packages, merging option sets per service, constructing each service once,
  * providing its node API under the package name, and advertising it to
  * clients through the `devframe:services` shared state.
@@ -148,7 +148,7 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
       }
     })
     // Mark a rejection as handled on this branch so a fire-and-forget
-    // `install()` never crashes the process - awaiting callers (and the
+    // `install()` never crashes the process; awaiting callers (and the
     // adapter's awaited `ready()`) still observe it.
     promise.catch(() => {})
     return promise as Promise<API | undefined>

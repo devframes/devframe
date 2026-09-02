@@ -25,10 +25,10 @@ export interface CreateBuildOptions {
   /** Output directory. Defaults to `dist-static`. */
   outDir?: string
   /**
-   * Override the SPA dist to copy into `outDir` - a local directory or a
+   * Override the SPA dist to copy into `outDir`: a local directory or a
    * remote-assets declaration (materialized in full at build time). When
    * omitted the adapter reads `devframe.clientAssets` (or the deprecated
-   * `devframe.cli?.distDir`) - authors typically set this once on the
+   * `devframe.cli?.distDir`); authors typically set this once on the
    * definition itself.
    */
   distDir?: StaticAssetsSource
@@ -41,7 +41,7 @@ export interface CreateBuildOptions {
   /**
    * Proceed even when the definition declares `capabilities.build: false`.
    * `createCac` already skips registering the `build` subcommand for such
-   * a definition - this only matters for a caller invoking `createBuild`
+   * a definition; this only matters for a caller invoking `createBuild`
    * directly, bypassing the CLI.
    */
   force?: boolean
@@ -55,7 +55,7 @@ export interface CreateBuildOptions {
  *   - Write `<outDir>/__connection.json` (`{ backend: 'static' }`) and the
  *     sharded RPC dump under `<outDir>/__rpc-dump/` so the deployed SPA
  *     discovers both via relative paths from `document.baseURI`. The
- *     output is mount-path agnostic - the same bundle works at `/`,
+ *     output is mount-path agnostic, so the same bundle works at `/`,
  *     `/devframe/`, or any base, no rewriting required.
  */
 export async function createBuild(d: DevframeDefinition, options: CreateBuildOptions = {}): Promise<void> {
@@ -92,7 +92,7 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
 
   // Bake declared `rpc.snapshot` methods (typically a wire service's RPC the
   // devframe doesn't own) into the static dump by attaching a `dump` to their
-  // registered definitions - the service itself defines none.
+  // registered definitions, since the service itself defines none.
   applySnapshotRpc(ctx, d.rpc?.snapshot)
 
   await fs.mkdir(resolve(outDir, DEVFRAME_RPC_DUMP_DIRNAME), { recursive: true })

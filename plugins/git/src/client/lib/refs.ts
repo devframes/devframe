@@ -9,7 +9,7 @@ export type GitRef
     | { kind: 'remote', remote: string, name: string }
     | { kind: 'tag', name: string }
 
-// Display priority - labels are laid out right-aligned against the graph node,
+// Display priority: labels are laid out right-aligned against the graph node,
 // so a higher rank floats closest to the node (rendered last). The current
 // branch always wins, then local branches, tags, remotes, and finally HEAD.
 const RANK: Record<GitRef['kind'], number> = {

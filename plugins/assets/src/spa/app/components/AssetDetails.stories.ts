@@ -12,7 +12,7 @@ const meta = {
   component: AssetDetails,
   tags: ['autodocs'],
   /**
-   * No live RPC connection in Storybook - the panel renders every static
+   * No live RPC connection in Storybook, so the panel renders every static
    * section; write actions are visible but no-op without a connected client.
    */
   args: { rpc: null },

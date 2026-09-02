@@ -2,7 +2,7 @@ import { isIP } from 'node:net'
 
 // Wildcard bind addresses (`0.0.0.0` / `::`) mean "listen on every interface";
 // they are not themselves dialable from a browser. When advertising a URL for a
-// client to open (banner, browser-open, dock entries), fall back to loopback -
+// client to open (banner, browser-open, dock entries), fall back to loopback,
 // the same thing Vite and friends do when bound to `--host 0.0.0.0`.
 const NON_DIALABLE_HOSTS = new Set([
   '0.0.0.0',

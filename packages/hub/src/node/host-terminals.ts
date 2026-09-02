@@ -52,7 +52,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
   }
 
   /**
-   * Lazily acquire the streaming channel - `context.rpc` isn't assigned
+   * Lazily acquire the streaming channel, since `context.rpc` isn't assigned
    * until after every host is constructed, so we can't grab it in the
    * constructor.
    */
@@ -156,8 +156,8 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         const result = await reader.read()
         if (isDisposed() || result.done)
           break
-        // Mirror to the legacy session.buffer used by `terminals:read` -
-        // bounded tail kept for the snapshot endpoint.
+        // Mirror to the legacy session.buffer used by `terminals:read`:
+        // a bounded tail kept for the snapshot endpoint.
         sessionBuffer.push(result.value)
         if (sessionBuffer.length > TERMINAL_BUFFER_LIMIT)
           sessionBuffer.splice(0, sessionBuffer.length - TERMINAL_BUFFER_LIMIT)
@@ -262,7 +262,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
 
       // Capture stdout/stderr separately (for `getResult()`) by listening on
       // the raw child process directly, rather than consuming `cp`'s own
-      // async iterator/promise - those merge stdout+stderr line-by-line and
+      // async iterator/promise, which merge stdout+stderr line-by-line and
       // would starve one another if both were read from.
       const stdoutChunks: string[] = []
       const stderrChunks: string[] = []
@@ -313,7 +313,7 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
           return
         closeStream()
         // A spawn/runtime error already settled the status; a non-zero exit
-        // code is a crash. A clean exit, or a signal kill (no numeric code -
+        // code is a crash. A clean exit, or a signal kill (no numeric code,
         // e.g. terminate()/restart()), is a deliberate/normal stop.
         if (!runErrored)
           markStatus(typeof code === 'number' && code !== 0 ? 'error' : 'stopped')

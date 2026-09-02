@@ -4,7 +4,7 @@
  * Ops are container-generic on the wire (`set` / `delete` / `add` / `rename`);
  * this module resolves the path with the same descent semantics as the
  * normalizer's `navigate` (filter options shift array indices) and dispatches
- * on the container it finds - plain object, array, Map, or Set. Every failure
+ * on the container it finds, whether plain object, array, Map, or Set. Every failure
  * returns a named error outcome; nothing here throws.
  */
 import type { NodePath, PathSegment, WriteOutcome, WriteRequest, WriteValue } from './contract'

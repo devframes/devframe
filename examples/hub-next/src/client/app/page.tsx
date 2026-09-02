@@ -253,7 +253,7 @@ function DockIcon({ entry }: { entry: DevframeDockEntry }) {
 // ── authorization gate (interactive OTP) ────────────────────────────────────
 // The hub gates every connection; this host opts out of devframe's native
 // `prompt()` (`simpleAuth: false`) and renders its own view. It shows only
-// when the handshake is refused - a stored token or magic-link OTP authorizes
+// when the handshake is refused, since a stored token or magic-link OTP authorizes
 // silently and this never mounts.
 function AuthOverlay({ rpc }: { rpc: DevframeRpcClient }) {
   const CODE_LENGTH = 6

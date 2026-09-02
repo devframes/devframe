@@ -63,7 +63,7 @@ export function createTempRepo(): TempRepo {
   git(dir, ['branch', 'feature/x'])
 
   // Tags: a lightweight tag on the initial commit, and an annotated tag (with
-  // its own, later tagger date) on HEAD - exercises `creatordate`, which
+  // its own, later tagger date) on HEAD, exercising `creatordate`, which
   // populates for annotated tags where `committerdate` would be empty.
   git(dir, ['tag', 'v0.0.1', 'HEAD~1'])
   gitAt(dir, ['tag', '-a', 'v1.0.0', '-m', 'release one'], '2021-06-01T00:00:00Z')
@@ -82,9 +82,9 @@ export function createTempRepo(): TempRepo {
 
 /**
  * Create a repo whose commits touch distinct paths, for path-scoped log:
- *   1. `feat: src a`  - adds `src/a.ts`
- *   2. `docs: b`      - adds `docs/b.md`
- *   3. `fix: src a`   - modifies `src/a.ts`
+ *   1. `feat: src a` adds `src/a.ts`
+ *   2. `docs: b` adds `docs/b.md`
+ *   3. `fix: src a` modifies `src/a.ts`
  */
 export function createPathRepo(): TempRepo {
   const dir = mkdtempSync(join(tmpdir(), 'devframe-git-paths-'))

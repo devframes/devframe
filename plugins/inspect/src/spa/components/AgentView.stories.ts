@@ -20,7 +20,7 @@ export const Default: Story = {
       tools: [
         {
           /**
-           * Colon-namespaced - demonstrates the id vs. sanitized MCP wire
+           * Colon-namespaced, demonstrating the id vs. sanitized MCP wire
            * name distinction the card renders (`toAgentToolName`).
            */
           id: 'devframes:plugin:demo:tool1',

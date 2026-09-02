@@ -7,12 +7,12 @@ export function iframe(id: string, title: string, icon: string, extra: Extra = {
   return { id, type: 'iframe', url: '/', title, icon, ...extra } as DevframeDockEntry
 }
 
-/** An action dock entry - a one-shot command with no panel of its own. */
+/** An action dock entry: a one-shot command with no panel of its own. */
 function action(id: string, title: string, icon: string, extra: Extra = {}): DevframeDockEntry {
   return { id, type: 'action', title, icon, ...extra } as DevframeDockEntry
 }
 
-/** A group entry - a collapse button whose members declare `groupId: id`. */
+/** A group entry: a collapse button whose members declare `groupId: id`. */
 export function group(id: string, title: string, icon: string, extra: Partial<DevframeViewGroup> = {}): DevframeDockEntry {
   return { id, type: 'group', title, icon, ...extra } as DevframeDockEntry
 }

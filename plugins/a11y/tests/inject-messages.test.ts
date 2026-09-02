@@ -102,7 +102,7 @@ describe('createMessagesReporter', () => {
       level: 'warn',
       labels: ['moderate', 'wcag2a'],
     })
-    // No resolver hit - the box is simply absent, never a throw.
+    // No resolver hit: the box is simply absent, never a throw.
     expect(added.find(m => m.id === 'devframes:plugin:a11y:rule:label')?.elementPosition?.boundingBox)
       .toBeUndefined()
   })

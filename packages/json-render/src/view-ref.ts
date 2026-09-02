@@ -14,7 +14,7 @@ export interface JsonRenderViewStateRef {
 /**
  * A view whose spec is embedded **inline** in the reference. It carries no
  * shared-state key, so a client can synthesize a view entirely in the browser
- * and hand it straight to a renderer - no `sharedState` round-trip. The spec is
+ * and hand it straight to a renderer, with no `sharedState` round-trip. The spec is
  * rendered as-is (static: local state and bindings still work, but there is no
  * server-driven live update stream).
  */
@@ -25,7 +25,7 @@ export interface JsonRenderViewInlineRef<SpecType extends DevframeJsonRenderSpec
 
 /**
  * The serializable reference to a JSON-render view that crosses process /
- * static boundaries - e.g. projected onto a hub dock entry. It carries **no
+ * static boundaries, e.g. projected onto a hub dock entry. It carries **no
  * functions**: either a {@link JsonRenderViewStateRef.stateKey shared-state key}
  * the client subscribes through, or an {@link JsonRenderViewInlineRef.spec
  * inline spec} rendered directly.

@@ -10,7 +10,7 @@ import createAssetsDevframe from '../index'
 
 /**
  * The plugin manages `<cwd>/public` and (as a mounted plugin) does NOT serve
- * those bytes itself - it references the host's URLs. Here the host is Vite,
+ * those bytes itself; it references the host's URLs. Here the host is Vite,
  * so in dev point Vite's own `publicDir` at the managed directory and it
  * serves the fixtures at `/` (matching the default `baseURL`), exactly as a
  * real Vite app serves its `public/` folder. Disabled for `build` so the

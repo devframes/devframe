@@ -9,7 +9,7 @@ export interface AttachDenoWsTransportOptions {
 
 export interface DenoWsTier {
   /**
-   * Complete a WS upgrade request - `Deno.serve`'s handler info as the 2nd
+   * Complete a WS upgrade request; `Deno.serve`'s handler info as the 2nd
    * argument. Unlike Bun, Deno's adapter attaches the socket to the returned
    * `Response` itself, so there is no `websocket` handler object to register.
    */
@@ -18,7 +18,7 @@ export interface DenoWsTier {
 }
 
 /**
- * The Deno fetch-upgrade WebSocket tier for `initDevframe` / `initHub` - the
+ * The Deno fetch-upgrade WebSocket tier for `initDevframe` / `initHub`: the
  * same RPC peer wiring as `attachWsRpcTransport`, driven by crossws's Deno
  * adapter so upgrades complete through `handleUpgrade(request, info)` on the
  * app's own origin, with no side-car server. Load it dynamically so the Deno

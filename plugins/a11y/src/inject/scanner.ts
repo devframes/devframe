@@ -32,7 +32,7 @@ export function resolveElement(target: string[]): Element | null {
         return el
     }
     catch {
-      // Malformed selector - skip and try the next.
+      // Malformed selector: skip and try the next.
     }
   }
   return null
@@ -72,7 +72,7 @@ export async function scan(options: ScanOptions = {}): Promise<ScanReport> {
      */
     runOnly: { type: 'tag', values: tags },
     /**
-     * Stay in the host document - don't descend into the devtools panel's own
+     * Stay in the host document; don't descend into the devtools panel's own
      * iframe (or any other frame), which would mix unrelated nodes into the
      * report and risk scanning ourselves.
      */

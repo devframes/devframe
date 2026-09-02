@@ -7,7 +7,7 @@ import type { DevframeDefinition } from 'devframe'
 import { createNextDevframeHub } from '@devframes/next/hub'
 
 // A server-authored JSON-render dock: the whole view is this serializable
-// spec - no client build. It renders through whatever `'json-render'`
+// spec, with no client build. It renders through whatever `'json-render'`
 // renderer the hub composes (below, the reference `@devframes/json-render-ui`
 // module); without one, the hub UI provider shows its missing-renderer fallback.
 const jsonRenderSpec: DevframeJsonRenderSpec = {
@@ -70,8 +70,8 @@ async function loadHub(): Promise<HubInstance> {
     devframes,
     ui: (hubUi.createUi as typeof CreateUi)({ branding: { primaryColor: '#3f8ba9', productName: 'Devframes on Next.js' } }),
     /**
-     * Serve the reference json-render frontend as a prebuilt renderer module
-     * - the one-liner that makes `'json-render'` docks render in the prebuilt
+     * Serve the reference json-render frontend as a prebuilt renderer module,
+     * the one-liner that makes `'json-render'` docks render in the prebuilt
      * hub UI provider. Swap it for any community implementation of the same contract.
      */
     renderers: [(jsonRenderUi.jsonRenderUiRenderer as typeof JsonRenderUiRenderer)()],

@@ -6,7 +6,7 @@ import { alias } from '../../../../alias'
 
 /**
  * The out-of-box standalone SPA. `base: './'` keeps every asset URL relative so
- * the bundle is mount-path portable - it discovers its runtime base from
+ * the bundle is mount-path portable: it discovers its runtime base from
  * `document.baseURI` and connects via `connectDevframe()`. devframe's dev/build
  * adapters serve this directory verbatim (no HTML rewriting) when an app wires
  * `clientAssets = jsonRenderSpaDir`.

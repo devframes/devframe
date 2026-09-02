@@ -8,10 +8,10 @@ import type { StandardSchemaV1 } from '@standard-schema/spec'
  * best-effort validator that exists only so devframe's own first-party
  * packages (recipes, built-in plugins) can declare `args`/`returns`/flag
  * schemas without taking on a validator dependency. It implements a small
- * subset of primitives and approximates refinements - it is not a
+ * subset of primitives and approximates refinements; it is not a
  * general-purpose validator.
  *
- * For your own code, prefer a real Standard Schema validator - **valibot**,
+ * For your own code, prefer a real Standard Schema validator: **valibot**,
  * **zod**, or **arktype**. Devframe's RPC and CLI-flag layers accept any of
  * them; install the one you like and use it directly:
  *
@@ -94,7 +94,7 @@ export function boolean(): SimpleSchema<boolean> {
   return make('boolean', v => (typeof v === 'boolean' ? ok(v) : fail('Expected a boolean')))
 }
 
-/** `undefined` - mirrors valibot's `void`. */
+/** `undefined`, mirroring valibot's `void`. */
 export function voidType(): SimpleSchema<void> {
   return make('void', v => (v === undefined ? ok(undefined) : fail('Expected undefined')))
 }
@@ -182,7 +182,7 @@ type Prettify<T> = { [K in keyof T]: T[K] } & {}
 
 /**
  * Map a shape to its object type, turning fields whose type includes
- * `undefined` (i.e. `optional()`) into optional keys - mirroring how
+ * `undefined` (i.e. `optional()`) into optional keys, mirroring how
  * valibot/zod render `optional` object entries.
  */
 type InferField<T extends StandardSchemaV1, Mode extends 'input' | 'output'>
@@ -243,7 +243,7 @@ export function describe<T extends SimpleSchema<any, any>>(schema: T, descriptio
 }
 
 /**
- * Grouped access to every builder - `s.string()`, `s.object({ ... })`,
+ * Grouped access to every builder: `s.string()`, `s.object({ ... })`,
  * `s.void()`, etc. Handy for a valibot-like `import { s } from
  * 'devframe/utils/simple-schema'` call site.
  */

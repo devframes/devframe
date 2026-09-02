@@ -2,10 +2,10 @@
 title: 'Adapters'
 navigation:
   icon: i-lucide-plug
-description: 'The lowest-level path is the standard handler, initDevframe(def, { base }) - a Web Standard (request: Request) => Promise<Response> for any catch-all route. Every path below builds on it.'
+description: 'The lowest-level path is the standard handler, initDevframe(def, { base }): a Web Standard (request: Request) => Promise<Response> for any catch-all route. Every path below builds on it.'
 ---
 
-The lowest-level path is [the standard handler](/adapters/initiate), `initDevframe(def, { base })` - a Web Standard `(request: Request) => Promise<Response>` for any catch-all route. Every path below builds on it.
+The lowest-level path is [the standard handler](/adapters/initiate), `initDevframe(def, { base })`: a Web Standard `(request: Request) => Promise<Response>` for any catch-all route. Every path below builds on it.
 
 Adapters wrap it as `createXxx(def, options?)` at `devframe/adapters/<name>`. `cac` and `mcp` need an optional peer ([`cac`](https://github.com/cacjs/cac), [`@modelcontextprotocol/server`](https://github.com/modelcontextprotocol/typescript-sdk)).
 
@@ -40,4 +40,4 @@ defineDevframe({
 })
 ```
 
-The SPA discovers its base at runtime - see [Client](/guide/client#runtime-basepath-discovery).
+The SPA discovers its base at runtime; see [Client](/guide/client#runtime-basepath-discovery).

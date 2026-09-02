@@ -31,7 +31,7 @@ export async function startStreamingChatServer(): Promise<StartedServer & {
   // test fetches index.html).
   const distDir = devframe.clientAssets!
   if (typeof distDir !== 'string')
-    throw new TypeError('these tests serve the local dist directory - build the SPA first')
+    throw new TypeError('these tests serve the local dist directory; build the SPA first')
   const basePath = devframe.basePath!
   const host = '127.0.0.1'
   const port = await getPort({ host, random: true })

@@ -92,7 +92,7 @@ describe('optional MCP peers in consumer bundles', () => {
       }))
 
       // A 2025-era `initialize` is served statelessly through the SDK's
-      // default legacy path - answered per request with no `Mcp-Session-Id`.
+      // default legacy path, answered per request with no `Mcp-Session-Id`.
       expect(response.status).toBe(200)
       expect(response.headers.get('mcp-session-id')).toBeNull()
       await response.body?.cancel()

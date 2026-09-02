@@ -12,7 +12,7 @@ import { createOgDevframe } from '@devframes/plugin-og'
 import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 
 // Memoized on globalThis so a dev-time reload reuses the hub instead of
-// leaking transports. No `ws` option, so the hub binds nothing itself -
+// leaking transports. No `ws` option, so the hub binds nothing itself;
 // `src/server.ts` hands it Fastify's `node:http` server via `hub.attach`,
 // putting the RPC socket on the app's origin with no side-car port.
 const globalRef = globalThis as { __hubFastifyMinimal?: HubInstance }
@@ -37,7 +37,7 @@ export const hub: HubInstance = globalRef.__hubFastifyMinimal ??= initHub({
     createAssetsDevframe({ watch: false }),
   ],
   /**
-   * Rebrand the reference UI to Fastify's own black - one field, no CSS:
+   * Rebrand the reference UI to Fastify's own black in one field, no CSS:
    * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
    * which the dock reads at connect time and feeds into `--devframe-primary`
    * (see `@devframes/hub-ui`'s `primary-ramp.css`).
@@ -59,7 +59,7 @@ export const hub: HubInstance = globalRef.__hubFastifyMinimal ??= initHub({
   },
 })
 
-/** The host page - one script tag turns any page into a devtools host. */
+/** The host page: one script tag turns any page into a devtools host. */
 export const hostPage = `<!doctype html>
 <html lang="en">
   <head>

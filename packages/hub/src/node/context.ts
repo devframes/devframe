@@ -52,7 +52,7 @@ declare module 'devframe/types' {
      * Ask the active viewer to switch its focused dock to `dockId`, optionally
      * carrying `params` for the target dock to interpret (e.g.
      * `{ sessionId }` for the terminals dock). Any connected client may call
-     * it - a mounted devframe in its own iframe steers the host shell's dock
+     * it, so a mounted devframe in its own iframe steers the host shell's dock
      * selection. Handled by {@link import('./rpc-builtins').hubDocksActivate}.
      */
     'hub:docks:activate': (input: { dockId: string, params?: Record<string, unknown> }) => Promise<void>
@@ -86,7 +86,7 @@ declare module 'devframe/types' {
 }
 
 /**
- * Hub-augmented node context - extends devframe's framework-neutral
+ * Hub-augmented node context that extends devframe's framework-neutral
  * `DevframeNodeContext` with the hub-level subsystems (`docks`,
  * `terminals`, `messages`, `commands`).
  *
@@ -95,7 +95,7 @@ declare module 'devframe/types' {
  * filesystem reveal, etc.) ship as kit-registered RPC functions rather
  * than as part of this surface. JSON-render is an opt-in integration
  * (`@devframes/json-render`) that augments any devframe context and
- * contributes its own dock type - use `createJsonRenderView` from
+ * contributes its own dock type; use `createJsonRenderView` from
  * `@devframes/json-render/node`.
  */
 export interface DevframeHubContext extends DevframeNodeContext {
@@ -108,14 +108,14 @@ export interface DevframeHubContext extends DevframeNodeContext {
    * Install a {@link DevframeDefinition} into this hub: serve its SPA at the
    * resolved base, synthesize an iframe dock from its metadata, and run its
    * `setup(ctx)`. The imperative counterpart to `initHub`'s declarative
-   * `devframes` list - call it from a hub host's `configure(ctx)`, or wherever
+   * `devframes` list. Call it from a hub host's `configure(ctx)`, or wherever
    * you hold the context, to plug an extra devframe in.
    */
   install: (devframe: DevframeDefinition, options?: InstallDevframeOptions) => Promise<void>
 }
 
 /**
- * Options for {@link createHubContext} - devframe's
+ * Options for {@link createHubContext}: devframe's
  * {@link CreateHostContextOptions} plus any hub-level additions kits layer on
  * through declaration merging.
  */

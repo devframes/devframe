@@ -4,11 +4,11 @@ export type CodeServerStatus = 'stopped' | 'starting' | 'running' | 'error'
 /**
  * Which editor server binary the plugin launches in `mode: 'local'`:
  *
- * - `'code-server'` - Coder's open-source
+ * - `'code-server'`: Coder's open-source
  *   [code-server](https://github.com/coder/code-server) (`code-server …`). The
  *   plugin runs it with password auth and hands the client a session cookie, so
  *   the embedded editor opens already signed in.
- * - `'ms-code-serve-web'` - Microsoft's official
+ * - `'ms-code-serve-web'`: Microsoft's official
  *   [`code serve-web`](https://code.visualstudio.com/docs/remote/vscode-server)
  *   (ships with the `code` CLI). The plugin generates a connection token and
  *   hands it to the client as a `?tkn=` query parameter.
@@ -18,9 +18,9 @@ export type CodeServerBackend = 'code-server' | 'ms-code-serve-web'
 /**
  * How the editor is served:
  *
- * - `'local'` - a local server ({@link CodeServerBackend}) embedded from this
+ * - `'local'`: a local server ({@link CodeServerBackend}) embedded from this
  *   machine's origin.
- * - `'tunnel'` - Microsoft's `code tunnel`, which registers a remote tunnel and
+ * - `'tunnel'`: Microsoft's `code tunnel`, which registers a remote tunnel and
  *   embeds the hosted `vscode.dev` editor. First launch prints a device-login
  *   prompt (surfaced as {@link CodeServerLogin}); authentication is handled by
  *   `vscode.dev` itself, not this plugin.
@@ -75,7 +75,7 @@ export interface CodeServerServerInfo {
 
 /**
  * The full shared-state payload broadcast to subscribed clients. Deliberately
- * carries no authentication material - see {@link CodeServerConnect}.
+ * carries no authentication material; see {@link CodeServerConnect}.
  */
 export interface CodeServerSharedState {
   detection: CodeServerDetection
@@ -85,7 +85,7 @@ export interface CodeServerSharedState {
 /**
  * How the client reaches the running editor. May carry a secret (session
  * cookie or connection token), so it is returned only from the `start` /
- * `status` RPCs to the already-authorized client - never published to shared
+ * `status` RPCs to the already-authorized client, never published to shared
  * state.
  *
  * - `url` set → embed it verbatim (tunnel mode's `vscode.dev` URL).
@@ -102,12 +102,12 @@ export interface CodeServerConnect {
   cookie?: { name: string, value: string }
 }
 
-/** Result of the `status` query - shared state plus connect info when running. */
+/** Result of the `status` query: shared state plus connect info when running. */
 export interface CodeServerStatusResult extends CodeServerSharedState {
   connect?: CodeServerConnect
 }
 
-/** Result of the `start` action - identical shape to {@link CodeServerStatusResult}. */
+/** Result of the `start` action, identical shape to {@link CodeServerStatusResult}. */
 export type CodeServerStartResult = CodeServerStatusResult
 
 /** Wire payload for the `start` RPC. */
@@ -176,7 +176,7 @@ export interface CodeServerOptions {
   random?: boolean
   /**
    * Require the trust handshake on the standalone launcher server. Enabled
-   * by default - `--open` embeds the current OTP in the opened URL, so the
+   * by default; `--open` embeds the current OTP in the opened URL, so the
    * tab authenticates automatically without extra prompts. Hosted adapters
    * manage their own auth and ignore this.
    */

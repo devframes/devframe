@@ -17,7 +17,7 @@ export { CodeServerSupervisor } from './supervisor'
  * status into shared state, and register the control RPC functions. Returns
  * the supervisor so callers can launch/stop or dispose it on shutdown.
  *
- * Works in any devframe runtime (CLI, Vite, embedded, build) - it only relies
+ * Works in any devframe runtime (CLI, Vite, embedded, build), since it only relies
  * on the core `ctx.rpc` shared-state surface, not on the hub.
  */
 export async function setupCodeServer(

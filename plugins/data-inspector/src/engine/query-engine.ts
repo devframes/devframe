@@ -17,7 +17,7 @@
  * for parsing jora. jora is a `devDependency` (`catalog:inlined` in the
  * workspace catalog) rather than a regular `dependency`, so tsdown vendors
  * it straight into this package's own `dist` on both the node and browser
- * builds - the on-demand `import()` resolves a local chunk, and neither
+ * builds; the on-demand `import()` resolves a local chunk, and neither
  * side needs consumers to install jora themselves.
  */
 import type { Jora } from 'jora'
@@ -58,7 +58,7 @@ function isSetLike(v: unknown): v is Set<unknown> {
 type CreateQuery = ReturnType<Jora['setup']>
 
 /**
- * jora loads on first use and is cached for the process lifetime - a single
+ * jora loads on first use and is cached for the process lifetime: a single
  * `import('jora')` + `setup()`, however many queries follow.
  */
 let createQueryPromise: Promise<CreateQuery> | undefined
@@ -159,7 +159,7 @@ interface JoraStatEntry {
 /**
  * jora stat mode: evaluates the (tolerant) query against the target and
  * reports completions for the given cursor position. Each stat entry carries
- * its candidates in a nested `suggestions` array - flattened here into plain,
+ * its candidates in a nested `suggestions` array, flattened here into plain,
  * RPC-safe completion items.
  */
 export async function suggest(target: unknown, query: string, pos: number, limit = 30): Promise<SuggestOutcome> {

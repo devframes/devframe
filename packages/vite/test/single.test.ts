@@ -36,7 +36,7 @@ type ConnectMiddleware = (req: IncomingMessage, res: ServerResponse, next?: (err
 
 /**
  * A minimal stand-in for Vite's dev server: a real node http server whose
- * request handling walks the registered connect middlewares in order -
+ * request handling walks the registered connect middlewares in order,
  * enough to exercise both `use(fn)` and `use(path, fn)` registrations and
  * the shared-`httpServer` WS tier.
  */
@@ -106,7 +106,7 @@ describe('devframeVitePlugin (static mount)', () => {
     expect(await res.text()).toBe('<h1>hi</h1>')
   })
 
-  it('starts no RPC server - no closeBundle handle to close', () => {
+  it('starts no RPC server, so has no closeBundle handle to close', () => {
     const plugin = devframeVitePlugin(defineTestDef())
     expect(plugin.closeBundle).toBeUndefined()
   })

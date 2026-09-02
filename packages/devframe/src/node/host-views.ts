@@ -12,7 +12,7 @@ export class DevframeViewHost implements DevframeViewHostType {
   constructor(
     public readonly context: DevframeNodeContext,
     /**
-     * `import.meta.url` of the declaring devframe - the default `resolveFrom`
+     * `import.meta.url` of the declaring devframe, the default `resolveFrom`
      * for a remote source that doesn't set one. Internal; supplied by
      * `createHostContext` from `DevframeDefinition.importMetaUrl`.
      * @internal
@@ -24,7 +24,7 @@ export class DevframeViewHost implements DevframeViewHostType {
   hostStatic(baseUrl: string, source: StaticAssetsSource, defaultResolveFrom: string | null | undefined = this.importMetaUrl) {
     // Local directories must exist up front; remote declarations resolve to
     // a locally installed package when present, otherwise to a lazy CDN
-    // back-proxy store - nothing to check on disk yet.
+    // back-proxy store, with nothing to check on disk yet.
     const resolved = resolveStaticAssetsSource(source, this.context.host.getStorageDir('project'), defaultResolveFrom)
     if (typeof resolved === 'string' && !existsSync(resolved)) {
       throw diagnostics.DF0008({ distDir: resolved })

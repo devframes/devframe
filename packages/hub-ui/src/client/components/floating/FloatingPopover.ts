@@ -18,12 +18,12 @@ const FloatingPopoverComponent = defineComponent({
       type: Boolean,
       default: true,
     },
-    /** Appended to the panel's class list - lets a consumer replace the default tooltip padding (e.g. a listbox). */
+    /** Appended to the panel's class list, letting a consumer replace the default tooltip padding (e.g. a listbox). */
     panelClass: {
       type: [String, Array] as PropType<string | string[]>,
       required: false,
     },
-    /** Elements `dismissOnClickOutside` should not treat as "outside" - typically the trigger that toggles this popover. */
+    /** Elements `dismissOnClickOutside` should not treat as "outside", typically the trigger that toggles this popover. */
     ignore: {
       type: Array as PropType<MaybeElementRef[]>,
       required: false,

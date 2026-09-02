@@ -15,7 +15,7 @@ export const DEVFRAME_CONNECTION_KEY = '__DEVFRAME_CONNECTION__'
 /**
  * Route the WebSocket RPC endpoint is bound to, relative to a devframe's
  * base path. Sits next to `__connection.json` so the deployed SPA can reach
- * it on the same origin it loaded from - the dev server shares one port for
+ * it on the same origin it loaded from: the dev server shares one port for
  * both HTTP and WS, and a host server (Vite, etc.) can mount the WS upgrade
  * handler here without colliding with its own routes (HMR, asset serving).
  */
@@ -26,7 +26,7 @@ export const DEVFRAME_WS_ROUTE = '__ws'
  * path. A single method-dispatched route: `GET` opens the event stream
  * (server→client), `POST` carries RPC frames (client→server). Sits next to
  * `__connection.json` so the deployed SPA reaches it on the same origin it
- * loaded from - the transport for hosts and proxies where the WebSocket
+ * loaded from; the transport for hosts and proxies where the WebSocket
  * upgrade isn't available.
  */
 export const DEVFRAME_SSE_ROUTE = '__sse'
@@ -42,7 +42,7 @@ export const DEVFRAME_SSE_SESSION_HEADER = 'x-birpc-session'
 /**
  * Route the Streamable-HTTP MCP endpoint is bound to, relative to a
  * devframe's base path. Sits next to `__connection.json` and the WS route
- * so an MCP client reaches it on the same origin the SPA loaded from - the
+ * so an MCP client reaches it on the same origin the SPA loaded from; the
  * dev server shares one port for HTTP, WS, and MCP. Opt-in via `cli.mcp`.
  */
 export const DEVFRAME_MCP_ROUTE = '__mcp'
@@ -94,7 +94,7 @@ export const DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM = 'devframe_viewer_origin_
 /**
  * `postMessage` type the remote-assets fallback page posts to `window.parent`
  * on load. That page is what a devframe serves (with a 502) when its client
- * assets can be reached neither locally nor through their CDN provider - the
+ * assets can be reached neither locally nor through their CDN provider; the
  * message lets an embedding viewer replace the bare page with its own UI
  * (`@devframes/hub-ui` does, in its iframe view). Payload shape:
  * `RemoteAssetsErrorMessage` (`devframe/types`).
@@ -103,7 +103,7 @@ export const DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE: string = DEVFRAME_EVENTS
 
 /**
  * Prefix that marks an RPC method as callable before a connection is
- * trusted. This is the *only* rule the pre-trust gate applies - there is no
+ * trusted. This is the *only* rule the pre-trust gate applies; there is no
  * per-method allowlist. Any handshake method a host adapter needs to reach
  * before authentication must be named `anonymous:<rest>` (e.g.
  * `anonymous:devframe:auth`).

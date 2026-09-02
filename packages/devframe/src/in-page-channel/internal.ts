@@ -8,7 +8,7 @@ import { isControlFrame } from './protocol'
 
 /**
  * Shared internals of the two endpoints: the coded error surface (browser
- * code, so plain coded `Error`s - `nostics` diagnostics are node-side only),
+ * code, so plain coded `Error`s, since `nostics` diagnostics are node-side only),
  * the local function table with its receive pipeline, and the birpc wiring
  * of one `MessagePort`.
  */
@@ -53,7 +53,7 @@ export class InPageChannelError extends Error {
 const warned = new Set<string>()
 
 /**
- * `console.warn` once per distinct message - handshake noise (foreign
+ * `console.warn` once per distinct message, since handshake noise (foreign
  * origins, version mismatches, missing targets) repeats on every retry tick.
  */
 export function warnOnce(message: string): void {
@@ -102,7 +102,7 @@ function jsonViolation(value: unknown, path: string, seen: Set<object>): string 
 /**
  * Enforce a `jsonSerializable: true` contract: throws code
  * `not-serializable` naming the offending path when the value contains
- * anything strict JSON can't represent - surfacing the bug at the offending
+ * anything strict JSON can't represent, surfacing the bug at the offending
  * call instead of a silent coercion later.
  */
 function assertJsonSerializable(value: unknown, what: string, functionName: string): void {
@@ -201,12 +201,12 @@ export interface AttachChannelPortOptions {
 /**
  * One live `MessagePort` wired into birpc, with the channel's control frames
  * (ping/pong/bye) filtered off the stream before birpc sees it. Both
- * endpoints attach every port through this seam - a future transport only
+ * endpoints attach every port through this seam, so a future transport only
  * has to produce something port-shaped.
  */
 export interface AttachedChannelPort {
   rpc: BirpcReturn<RemoteFunctions, Record<string, never>, false>
-  /** Epoch ms of the last frame received - liveness input for heartbeats. */
+  /** Epoch ms of the last frame received; liveness input for heartbeats. */
   lastActivity: number
   postControl: (kind: InPageChannelControlFrame['__dfIpc']) => void
   /** Detach: optionally send `bye`, reject pending calls, close the port. */
@@ -218,7 +218,7 @@ function wrapPostError(error: unknown): unknown {
     return new InPageChannelError(
       'not-cloneable',
       `a payload could not be structured-cloned across the in-page channel: ${error.message}. `
-      + `Strip non-cloneable values (functions, DOM nodes, framework reactivity proxies) before sending - `
+      + `Strip non-cloneable values (functions, DOM nodes, framework reactivity proxies) before sending: `
       + `declare the function \`jsonSerializable: true\` for a precise error, or provide a \`serialize\` hook.`,
       { cause: error },
     )
@@ -262,7 +262,7 @@ export function attachChannelPort(port: MessagePort, options: AttachChannelPortO
         port.postMessage({ __dfIpc: kind } satisfies InPageChannelControlFrame)
       }
       catch {
-        // A dead or detached port - the close/heartbeat paths handle it.
+        // A dead or detached port; the close/heartbeat paths handle it.
       }
     },
     dispose(disposeOptions) {

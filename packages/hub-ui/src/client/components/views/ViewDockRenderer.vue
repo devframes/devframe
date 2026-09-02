@@ -6,7 +6,7 @@ import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { isDark } from '../../state/color-mode'
 
 // Renders any dock type hub-ui has no native view for through the hub's
-// dock-renderer registry - a renderer registered locally, or a prebuilt
+// dock-renderer registry: a renderer registered locally, or a prebuilt
 // module served by the hub's renderer manifest (`initHub({ renderers })`),
 // e.g. `@devframes/json-render-ui` for `'json-render'` docks. With no
 // renderer available for the type it shows the missing-renderer fallback; a
@@ -41,7 +41,7 @@ async function mount(): Promise<void> {
   errorMessage.value = null
   const result = await props.context.renderers.mount(props.entry, container.value!)
   if (token !== mountToken) {
-    // A newer mount superseded this one - drop it.
+    // A newer mount superseded this one, so drop it.
     if (result.status === 'mounted')
       result.dispose()
     return
@@ -76,7 +76,7 @@ onUnmounted(() => {
   <div class="devframes-view-dock-renderer relative h-full w-full">
     <!--
       The renderer's mount container. Kept in the tree across every state so
-      a retry can remount in place. Carries the live `dark` class - the theme
+      a retry can remount in place. Carries the live `dark` class, the theme
       contract a self-styling renderer resolves its dark-mode rules against.
     -->
     <div

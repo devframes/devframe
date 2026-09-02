@@ -25,7 +25,7 @@ function bootRpc(hub: HubInstance) {
 /**
  * The hub gates by default (interactive OTP), so a fresh connection is
  * untrusted. Exchange the current one-time code for a bearer token over the
- * anonymous handshake RPC, which marks this session trusted - mirroring what a
+ * anonymous handshake RPC, which marks this session trusted, mirroring what a
  * browser client does after the user enters the code from the terminal.
  */
 async function bootTrustedRpc(hub: HubInstance) {

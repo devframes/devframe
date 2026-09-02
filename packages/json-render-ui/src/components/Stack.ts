@@ -22,7 +22,7 @@ const justifyMap: Record<string, string> = {
 }
 
 /**
- * A flex layout primitive - `@antfu/design` has no generic Stack, so this stays
+ * A flex layout primitive. `@antfu/design` has no generic Stack, so this stays
  * a thin custom component built on the shared tokens.
  */
 export const Stack: JrComponent<StackProps> = ({ props, children }) => {

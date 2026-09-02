@@ -16,7 +16,7 @@ export interface RenameArgs {
   /** Root-relative path of the asset to rename. */
   path: string
   /**
-   * New base name, without an extension - the original extension is
+   * New base name, without an extension; the original extension is
    * always preserved (mirrors Nuxt DevTools' rename dialog exactly). Any
    * extension included here is treated as part of the base name, not
    * stripped.

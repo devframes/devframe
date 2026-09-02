@@ -37,7 +37,7 @@ const DEFAULT_EVENT_BUFFER_LIMIT = 64
  *
  * The panel initiates: it posts a versioned hello to every window a
  * same-tab page script can live in (its ancestor chain and its `opener`),
- * retrying with backoff until one answers with a dedicated port - so boot
+ * retrying with backoff until one answers with a dedicated port, so boot
  * order never matters, and a reload of either side is just a re-handshake
  * (`WindowProxy` references survive navigations). While `connecting`,
  * outgoing calls and events are buffered; when no page script exists at all
@@ -103,7 +103,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
       eventBuffer.shift()
       if (!droppedEventsWarned) {
         droppedEventsWarned = true
-        console.warn(`[devframe] in-page channel "${name}": event buffer overflowed while connecting - oldest events are being dropped (limit ${eventBufferLimit})`)
+        console.warn(`[devframe] in-page channel "${name}": event buffer overflowed while connecting, so the oldest events are being dropped (limit ${eventBufferLimit})`)
       }
     }
     eventBuffer.push({ method, args })
@@ -113,7 +113,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     if (status === 'closed') {
       return Promise.reject(new InPageChannelError(
         'closed',
-        `in-page channel "${name}": call "${method}" rejected - the channel is closed`,
+        `in-page channel "${name}": call "${method}" rejected because the channel is closed`,
       ))
     }
     const attempt = new Promise<unknown>((resolve, reject) => {
@@ -129,12 +129,12 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     return withCallDeadline(
       attempt,
       callTimeoutMs,
-      () => `in-page channel "${name}": call "${method}" timed out after ${callTimeoutMs}ms (status: ${status}${status === 'connecting' ? ' - is the page script loaded?' : ''})`,
+      () => `in-page channel "${name}": call "${method}" timed out after ${callTimeoutMs}ms (status: ${status}${status === 'connecting' ? '; is the page script loaded?' : ''})`,
     )
   }
 
   function adoptPort(port: MessagePort, info?: { instanceId: string }): void {
-    // Most recent grant wins - a fresh page script (after a host reload, or
+    // Most recent grant wins: a fresh page script (after a host reload, or
     // another instance the user pinned to) replaces the previous port.
     attached?.dispose({ bye: true, reason: 'the panel adopted a newer port' })
     attached = attachChannelPort(port, {
@@ -189,7 +189,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     if (canHandshake)
       startHelloLoop()
     else
-      warnOnce(`in-page channel "${name}": transport lost (${reason}) and the panel has no handshake targets - staying disconnected`)
+      warnOnce(`in-page channel "${name}": transport lost (${reason}) and the panel has no handshake targets, so it stays disconnected`)
   }
 
   function startHelloLoop(): void {
@@ -211,7 +211,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
             target.postMessage(hello, origin)
           }
           catch {
-            // Unreachable target/origin pair - the loop keeps retrying.
+            // Unreachable target/origin pair; the loop keeps retrying.
           }
         }
       }
@@ -228,7 +228,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     if (!isHandshakeMessage(data) || data.kind !== 'grant' || data.name !== name || data.panelId !== panelId)
       return
     if (data.v !== IN_PAGE_CHANNEL_VERSION) {
-      warnOnce(`in-page channel "${name}": ignoring a grant with protocol version ${data.v} (this side speaks ${IN_PAGE_CHANNEL_VERSION}) - align the devframe versions of the page script and the panel`)
+      warnOnce(`in-page channel "${name}": ignoring a grant with protocol version ${data.v} (this side speaks ${IN_PAGE_CHANNEL_VERSION}); align the devframe versions of the page script and the panel`)
       return
     }
     if (!allowedOrigins.includes('*') && !allowedOrigins.includes(event.origin)) {
@@ -249,7 +249,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
   else if (canHandshake)
     startHelloLoop()
   else
-    warnOnce(`in-page channel "${name}": the panel has no handshake targets (not embedded, no opener) and no transport - calls will buffer until a transport appears or the channel is closed`)
+    warnOnce(`in-page channel "${name}": the panel has no handshake targets (not embedded, no opener) and no transport, so calls will buffer until a transport appears or the channel is closed`)
 
   return {
     name,
@@ -275,7 +275,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
               connectedWaiters.splice(index, 1)
               reject(new InPageChannelError(
                 'timeout',
-                `in-page channel "${name}": no page script answered within ${timeoutMs}ms - `
+                `in-page channel "${name}": no page script answered within ${timeoutMs}ms; `
                 + `it may not be loaded in this context (render a fallback state)`,
               ))
             }

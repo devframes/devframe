@@ -8,7 +8,7 @@ const SHIKI_SERVICE = '@devframes/service-shiki'
 /**
  * Server-highlight a text asset through the `@devframes/service-shiki` wire
  * service, when the host advertises it. Resolves `null` when the service is
- * absent or highlighting fails - the preview then falls back to a plain
+ * absent or highlighting fails; the preview then falls back to a plain
  * `<pre>`. The language is inferred from the file extension; unknown ones
  * degrade to plain text server-side.
  */

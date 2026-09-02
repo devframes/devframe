@@ -6,7 +6,7 @@ import '@devframes/json-render/hub'
 
 /**
  * hub-ui's own reference-UI settings, merged onto the hub's generic
- * {@link DevframeDocksUserSettings} - the hub core stays unaware of them.
+ * {@link DevframeDocksUserSettings}; the hub core stays unaware of them.
  * Every field is optional so the hub's `DEFAULT_STATE_USER_SETTINGS()` (which
  * knows nothing about them) stays assignable; what an absent value means lives
  * in one place, `HUB_UI_SETTINGS_DEFAULTS` (`state/settings-defaults.ts`),

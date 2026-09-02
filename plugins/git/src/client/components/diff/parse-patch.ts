@@ -21,7 +21,7 @@ interface DiffHunkChange {
 }
 
 export interface DiffFileChange {
-  /** Display name - the new path, or the old path for a deletion. */
+  /** Display name: the new path, or the old path for a deletion. */
   name: string
   /** The pre-rename path, when this file was renamed; otherwise `null`. */
   prevName: string | null
@@ -75,7 +75,7 @@ interface GitFileHeader {
 }
 
 /**
- * Read the git-specific metadata from a file block's extended headers - the
+ * Read the git-specific metadata from a file block's extended headers, the
  * thin layer `diff`'s hunk parser doesn't surface on its own. `rename`/`copy`
  * and `---`/`+++` lines give clean single paths; the `diff --git` line is the
  * fallback for pure renames and binary changes that carry no `---`/`+++`.
@@ -125,7 +125,7 @@ function sectionHeadings(block: string): string[] {
 }
 
 /**
- * A lenient hunk parser used when `diff`'s strict parser rejects a block - the
+ * A lenient hunk parser used when `diff`'s strict parser rejects a block, the
  * common case being a patch truncated mid-hunk (the server caps patch size), so
  * the final hunk's line count won't match its `@@` header. Reads each `@@`
  * header and consumes the diff lines that follow, ignoring the declared counts.
@@ -198,7 +198,7 @@ function parseHunkLines(hunk: StructuredPatchHunk): { lines: DiffLineChange[], a
       lines.push({ type: 'del', content, oldNumber: oldNo++, newNumber: null })
     }
     else if (marker === '\\') {
-      // "\ No newline at end of file" - a marker, not a content line.
+      // "\ No newline at end of file" is a marker, not a content line.
       continue
     }
     else {

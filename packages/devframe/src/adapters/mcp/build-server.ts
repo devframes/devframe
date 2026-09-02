@@ -17,15 +17,15 @@ export interface CreateMcpServerOptions {
   /**
    * Transport to use. `createMcpServer` itself runs `'stdio'` (a standalone
    * process with its own host context); the Streamable-HTTP transport is
-   * served route-based by the dev server instead - see `mountMcpHttp` and
+   * served route-based by the dev server instead; see `mountMcpHttp` and
    * the `mcp` option on `createDevServer` / `createCac`'s `--mcp` flag.
    */
   transport?: 'stdio'
   /**
    * Expose shared-state keys as MCP resources.
-   * - `true` (default) - every key the host publishes
-   * - `false` - none
-   * - `(key) => boolean` - filter
+   * - `true` (default): every key the host publishes
+   * - `false`: none
+   * - `(key) => boolean`: filter
    */
   exposeSharedState?: boolean | ((key: string) => boolean)
   /** Override the name reported in the MCP handshake. */
@@ -48,7 +48,7 @@ export interface BuildMcpServerOptions {
 
 /**
  * Build a fresh MCP {@link Server} over a devframe context, registering its
- * tool and resource handlers. This is a pure factory - it sets up no
+ * tool and resource handlers. This is a pure factory: it sets up no
  * long-lived subscriptions and holds no per-connection state, so it is safe
  * to call once per request under `createMcpHandler` or once per connection
  * under `serveStdio`. Change notifications are published separately: over
@@ -154,8 +154,8 @@ export async function createMcpServer(
 
   // `serveStdio` pins ONE instance for the connection's lifetime. Each pinned
   // server sets up its own `list_changed` bridge over the connection's
-  // `send*ListChanged` calls - routed onto active `subscriptions/listen`
-  // streams on a modern connection, sent unsolicited on a 2025-era one - and
+  // `send*ListChanged` calls (routed onto active `subscriptions/listen`
+  // streams on a modern connection, sent unsolicited on a 2025-era one) and
   // tears it down when that server closes.
   let handle: import('@modelcontextprotocol/server/stdio').StdioServerHandle
   try {
@@ -189,9 +189,9 @@ export async function createMcpServer(
 }
 
 /**
- * Id of the built-in shared-state read tool - namespaced like every other
+ * Id of the built-in shared-state read tool, namespaced like every other
  * built-in (`devframe:<area>:<fn>`). Tool-shaped access matters because many
- * MCP clients only consume tools - the parallel `devframe://state/<key>`
+ * MCP clients only consume tools; the parallel `devframe://state/<key>`
  * resource projection stays for the clients that do read resources.
  */
 const READ_STATE_TOOL = 'devframe:state:read'
@@ -250,8 +250,8 @@ function registerToolHandlers(
 
   /**
    * Resolve a wire tool name back to the registered {@link AgentTool}.
-   * Wire-name matching runs first, in manifest order - the same tool the
-   * list projection advertises under that name - with a raw-id fallback so
+   * Wire-name matching runs first, in manifest order (the same tool the
+   * list projection advertises under that name), with a raw-id fallback so
    * a colon-namespaced id keeps working as a call name.
    */
   const resolveTool = (name: string): AgentTool | undefined => {
@@ -260,7 +260,7 @@ function registerToolHandlers(
   }
 
   server.setRequestHandler('tools/list', async () => {
-    // Two ids may sanitize to the same wire name - first registration wins
+    // Two ids may sanitize to the same wire name; first registration wins
     // and later ones are hidden with a coded warning (once per name).
     const byName = new Map<string, AgentTool>()
     for (const tool of ctx.agent.list().tools) {
@@ -288,7 +288,7 @@ function registerToolHandlers(
     try {
       const tool = resolveTool(name)
       // Built-in shared-state read. A registered agent tool resolving to
-      // the same wire name wins (mirroring the list projection above) -
+      // the same wire name wins (mirroring the list projection above);
       // ids are namespaced, so a collision is a deliberate override.
       if (stateFilter && !tool && (name === READ_STATE_NAME || name === READ_STATE_TOOL)) {
         const key = (args as { key?: string } | undefined)?.key
@@ -392,7 +392,7 @@ function registerResourceHandlers(
 
 /**
  * MCP constrains a tool's `outputSchema` to a JSON Schema of `type:
- * "object"` - clients (the SDK included) reject anything else. Non-object
+ * "object"`; clients (the SDK included) reject anything else. Non-object
  * return schemas (e.g. a schema for `void` / a bare string) simply project
  * no output schema; the text content still carries the result.
  */

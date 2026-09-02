@@ -20,7 +20,7 @@ export interface DiffTokensState {
   newTokens: TokenLines | null
   /** True while the highlight round-trip is in flight (drives the skeleton). */
   loading: boolean
-  /** True when the shiki service isn't advertised - render plain, no skeleton. */
+  /** True when the shiki service isn't advertised: render plain, no skeleton. */
   unavailable: boolean
 }
 

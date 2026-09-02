@@ -105,7 +105,7 @@ interface DemoDockClientMount {
  * Locate the shared demo dock-client script (examples/demo-dock-client) as a
  * prebuilt **self-contained bundle**: this host declares no
  * `clientModuleResolution` (Next's bundler exposes no browser-reachable
- * on-demand module URL), so client scripts ship by URL here - the Vite
+ * on-demand module URL), so client scripts ship by URL here, whereas the Vite
  * reference host consumes the same package as a bare specifier instead.
  * Loaded through the same bundler-ignored dynamic `import()` as the plugins.
  * Returns `null` if unbuilt.
@@ -227,7 +227,7 @@ export async function nextDevframeHub(
      */
     ui: false,
     /**
-     * Next route handlers can't accept WS upgrades - `createNextDevframeHub`
+     * Next route handlers can't accept WS upgrades, so `createNextDevframeHub`
      * runs the socket on a side-car (a free port near 9777, or the pinned one).
      */
     port: options.port,

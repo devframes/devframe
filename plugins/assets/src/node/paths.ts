@@ -47,7 +47,7 @@ export async function resolveAssetReadPath(root: string, relativePath: string): 
  * among the path components from the managed root down to the target
  * (including in-root symlinks) so a mutation can never follow a symlink out
  * of, or around, the root. Only existing components are inspected, so it is
- * safe for not-yet-created upload/mkdir targets - call it again after
+ * safe for not-yet-created upload/mkdir targets; call it again after
  * creating directories and right before the I/O. This closes deterministic,
  * pre-existing symlink escapes, not concurrent component-swap races.
  */

@@ -5,16 +5,16 @@
  *
  * Resolution order at serve time:
  *
- *   1. The package installed locally (resolved from {@link resolveFrom})
- *      - the zero-network / air-gap path. Version skew warns; a major
+ *   1. The package installed locally (resolved from {@link resolveFrom}),
+ *      the zero-network / air-gap path. Version skew warns; a major
  *      version mismatch throws.
  *   2. The per-file cache under
  *      `<storageDir project>/.remote-assets/<package>@<version>/`.
- *   3. The CDN {@link provider} - each requested file streams through to
+ *   3. The CDN {@link provider}: each requested file streams through to
  *      the browser while being written into the cache.
  *
  * Anywhere a static mount accepts a dist directory (`clientAssets`,
- * `hostStatic`, `mountStatic`) it also accepts this object - see
+ * `hostStatic`, `mountStatic`) it also accepts this object; see
  * {@link StaticAssetsSource}.
  */
 export interface RemoteAssets {
@@ -38,7 +38,7 @@ export interface RemoteAssets {
    * `import.meta.url` of the declaring module. When set, a locally
    * installed copy of {@link package} is resolved from this module's own
    * dependency graph first (works under pnpm's strict layout) and served
-   * with zero network. Omitting it skips the installed-package step -
+   * with zero network. Omitting it skips the installed-package step;
    * cache + CDN still work.
    */
   resolveFrom?: string | null
@@ -54,7 +54,7 @@ export interface RemoteAssets {
 }
 
 /**
- * Built-in CDN providers (`'jsdelivr'` - default, `'unpkg'`) or a custom
+ * Built-in CDN providers (`'jsdelivr'`, the default, or `'unpkg'`) or a custom
  * provider for corp mirrors.
  */
 export type RemoteAssetsProvider = 'jsdelivr' | 'unpkg' | RemoteAssetsProviderCustom
@@ -101,7 +101,7 @@ export interface RemoteAssetsErrorMessage {
 }
 
 /**
- * A resolved, servable handle over a {@link RemoteAssets} declaration -
+ * A resolved, servable handle over a {@link RemoteAssets} declaration,
  * produced by `resolveStaticAssetsSource()` (`devframe/utils/remote-assets`)
  * and consumed by the static-serving engine (`devframe/utils/serve-static`).
  */

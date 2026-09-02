@@ -88,7 +88,7 @@ export async function createDocksContext(
   // Snapshot the persisted intent up front, before the pre-handshake untrusted
   // window (Dock.vue's `open`-gate, a revocation `switchEntry(null)`) can clear
   // the live session state. Re-applied once the RPC becomes trusted so a reload
-  // lands back on the same dock - see the restore effect near the end.
+  // lands back on the same dock; see the restore effect near the end.
   const restoreIntent = {
     ...sessionStore.value,
   }
@@ -136,12 +136,12 @@ export async function createDocksContext(
 
   const registerClientDock = <T extends DevframeDockEntry>(entry: T, force = false): DockRegistration<T> => {
     if (clientDocks.has(entry.id) && !force)
-      throw new Error(`[@devframes/hub-ui] a client dock "${entry.id}" is already registered - pass force to overwrite`)
+      throw new Error(`[@devframes/hub-ui] a client dock "${entry.id}" is already registered; pass force to overwrite`)
     clientDocks.set(entry.id, entry)
     // Eagerly materialize the entry's DockEntryState. The reactive watchEffect
     // above only creates states on its next flush, but a caller such as the
     // shared-iframe frame-nav adapter subscribes to `entry:activated` (via
-    // `getStateById`) synchronously right after registering - so the state has
+    // `getStateById`) synchronously right after registering, so the state has
     // to exist immediately, mirroring hub's synchronous client-host reconcile.
     if (!dockEntryStateMap.has(entry.id))
       dockEntryStateMap.set(entry.id, createDockEntryState(entry, selected))
@@ -167,7 +167,7 @@ export async function createDocksContext(
   }
   const updateClientDock = (entry: DevframeDockUserEntry) => {
     if (!clientDocks.has(entry.id))
-      throw new Error(`[@devframes/hub-ui] no client dock "${entry.id}" to update - register it first`)
+      throw new Error(`[@devframes/hub-ui] no client dock "${entry.id}" to update; register it first`)
     clientDocks.set(entry.id, entry as DevframeDockEntry)
   }
 
@@ -186,7 +186,7 @@ export async function createDocksContext(
     return _settingsStorePromise
   }
 
-  // Get settings store ahead of `switchEntry` - its group→member resolution
+  // Get settings store ahead of `switchEntry`, whose group→member resolution
   // needs `getWhenContext` to honor a `defaultChildId` target's `when` clause.
   const settingsStore = markRaw(await getSettingsStore())
   // Raw, not `useSettings`: the context this would key off doesn't exist yet,
@@ -194,7 +194,7 @@ export async function createDocksContext(
   // resolve hub-ui's own defaults themselves.
   const settings = sharedStateToRef(settingsStore)
 
-  // Shared when-context provider - used by both commands and docks
+  // Shared when-context provider, used by both commands and docks
   let commandsContext: CommandsContext
   const isDockPopupOpen = useIsDockPopupOpen()
   const getWhenContext = (): WhenContext => ({
@@ -305,7 +305,7 @@ export async function createDocksContext(
   // Shared-iframe soft navigation: a `subTabs` anchor's frame-nav adapter turns
   // reported tabs into member docks and drives the nav loop. We bind one adapter
   // per mounted iframe element (not just `frameId`) since each shell owns its own
-  // realm - in popup mode the adapter must listen on the PiP window.
+  // realm: in popup mode the adapter must listen on the PiP window.
   const frameNavAdapters = new Map<string, { iframe: HTMLIFrameElement, dispose: () => void }>()
   const frameNavAnchors = new Map<string, string>()
 
@@ -379,7 +379,7 @@ export async function createDocksContext(
   })
 
   // Settings store, `settings`, and `getWhenContext` are established earlier
-  // (right before `switchEntry`) - its group→member resolution needs them.
+  // (right before `switchEntry`), whose group→member resolution needs them.
   // `categoryOrderOverride` folds in the reference UI's configured
   // `dockPreferences.categoryOrder` (`createUi({ dockPreferences })`),
   // delivered once via the connection handshake.
@@ -437,7 +437,7 @@ export async function createDocksContext(
        */
       when: 'clientType == embedded',
       action: () => {
-        // Conceal the embedded dock - the Shift+Alt+D reveal shortcut (or a
+        // Conceal the embedded dock; the Shift+Alt+D reveal shortcut (or a
         // reload) brings it back. In passive mode this is remembered.
         window.dispatchEvent(new CustomEvent(HUB_UI_HIDE_EVENT))
       },
@@ -449,7 +449,7 @@ export async function createDocksContext(
       icon: 'ph:layout-duotone',
       /**
        * While the popup is open the embedded shell is unmounted and the popup
-       * renders the standalone layout, so neither mode is observable - mirrors
+       * renders the standalone layout, so neither mode is observable, mirroring
        * the Appearance settings hiding its own dock-mode control.
        */
       when: clientType === 'embedded' ? 'clientType == embedded && !popupOpen' : undefined,
@@ -482,7 +482,7 @@ export async function createDocksContext(
     },
   ])
 
-  // Dynamic dock navigation commands - grouped under "Docks" parent
+  // Dynamic dock navigation commands, grouped under the "Docks" parent
   let cleanupDocksCommand: (() => void) | undefined
   watchEffect(() => {
     cleanupDocksCommand?.()

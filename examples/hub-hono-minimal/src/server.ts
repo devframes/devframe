@@ -3,7 +3,7 @@ import process from 'node:process'
 import { serve } from '@hono/node-server'
 import { app, hub } from './app'
 
-// One entry for both runtimes - `tsx` on Node, `bun` on Bun. `hub.attach()`
+// One entry for both runtimes: `tsx` on Node, `bun` on Bun. `hub.attach()`
 // routes the server's upgrade events to the shared RPC socket on the app's
 // own origin; a host that can't reach its server asks for a side-car with
 // `ws: { sidecar: true }`.
@@ -21,5 +21,5 @@ process.on('SIGINT', () => {
 
 void hub.ready.then(() => {
   // eslint-disable-next-line no-console
-  console.log(`hono-devframe-hub on http://localhost:${port} - devtools at /__devframes/`)
+  console.log(`hono-devframe-hub on http://localhost:${port} (devtools at /__devframes/)`)
 })

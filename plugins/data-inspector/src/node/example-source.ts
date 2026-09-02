@@ -90,7 +90,7 @@ function createExampleData(ctx?: DevframeNodeContext): Record<string, unknown> {
 }
 
 /**
- * The built-in example source - always registered unless opted out
+ * The built-in example source, always registered unless opted out
  * (`exampleSource: false`). Lets the viewer query simple environment info
  * (the devframe context: registered RPC functions, services, storage dirs;
  * OS and live process stats) plus a small playground branch exercising
@@ -106,7 +106,7 @@ export function createExampleDataSource(ctx?: DevframeNodeContext): DataSourceEn
     icon: 'i-ph:flask-duotone',
     data: () => data ??= createExampleData(ctx),
     /**
-     * The factory memoizes, so live edits stick between queries - the
+     * The factory memoizes, so live edits stick between queries; the
      * playground doubles as a demo of writable sources.
      */
     writable: true,

@@ -32,7 +32,7 @@ export type StaticRpcDumpManifest = Record<string, StaticRpcDumpManifestValue>
 export interface StaticRpcDumpFile {
   /** Whether this file was written via `JSON.stringify` or `structured-clone-es.stringify`. */
   serialization: StaticRpcDumpSerialization
-  /** Function name the file belongs to - used to scope `DF0019` errors during write. */
+  /** Function name the file belongs to, used to scope `DF0019` errors during write. */
   fnName: string
   /** Payload to encode. */
   data: unknown

@@ -9,7 +9,7 @@ import { defineRpcFunction } from '../rpc/define'
 
 export interface CreateInteractiveAuthOptions {
   /**
-   * Static, pre-shared bearer tokens that are always trusted - for CI runs
+   * Static, pre-shared bearer tokens that are always trusted, for CI runs
    * or shared machines where the interactive code prompt would only get in
    * the way. Checked in both the handshake handler and the connect-time
    * hook, alongside tokens minted by a real code exchange.
@@ -17,7 +17,7 @@ export interface CreateInteractiveAuthOptions {
   clientAuthTokens?: string[]
   /**
    * Print the current code + magic-link URL. Devframe stays headless, so
-   * there is no default banner printed automatically - call
+   * there is no default banner printed automatically; call
    * `auth.printBanner()` yourself once the server is listening. Override
    * this to customize the format; defaults to a small boxed message on
    * stdout.
@@ -47,10 +47,10 @@ function defaultBanner(info: { code: string, url: string }): void {
  * Package the interactive OTP auth protocol devframe's primitives
  * (`exchangeTempAuthCode`, `verifyAuthToken`, `revokeAuthToken`,
  * `getTempAuthCode`, `buildOtpAuthUrl`) implement into a ready-made
- * {@link DevframeAuthHandler} - the handshake RPC functions, the resolver
+ * {@link DevframeAuthHandler}: the handshake RPC functions, the resolver
  * gate, the connect-time trust hook, and the startup banner.
  *
- * The auth storage stays internal to this handler - callers never reach into
+ * The auth storage stays internal to this handler; callers never reach into
  * `devframe/node/hub-internals` themselves.
  *
  * ```ts
@@ -130,7 +130,7 @@ export function createInteractiveAuth(
       if (!session)
         return { authToken: null }
       const authToken = exchangeTempAuthCode(params.code, session, params, storage)
-      // The code was just consumed (success or a rotating failure) - the
+      // The code was just consumed (success or a rotating failure); the
       // next `printBanner()` call shows whatever code is current now.
       printBanner()
       if (authToken)
@@ -185,7 +185,7 @@ export function createInteractiveAuth(
     if (verifyAuthToken(token, session, storage))
       return
     // A session-only remote-UI dock token (see `allocateRemoteToken`). These
-    // never enter the persisted store, so `verifyAuthToken` can't see them -
+    // never enter the persisted store, so `verifyAuthToken` can't see them;
     // check them here so a remote dock's iframe actually authenticates, and so
     // `originLock` binds the token to the dock's recorded origin.
     if (internal.isRemoteTokenTrusted(token, requestOrigin)) {

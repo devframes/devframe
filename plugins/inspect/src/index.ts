@@ -3,7 +3,7 @@ import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { setupInspect } from './node/index'
 
-/** Default devframe id - drives the hosted mount path `/__<id>/`. */
+/** Default devframe id, driving the hosted mount path `/__<id>/`. */
 const DEFAULT_ID = 'devframes_plugin_inspect'
 
 // The Vue SPA ships in the lockstep-versioned `@devframes/plugin-inspect--assets`
@@ -31,7 +31,7 @@ export interface InspectDevframeOptions {
   port?: number
   /**
    * Require the trust handshake on the standalone server. Enabled by
-   * default - `--open` embeds the current OTP in the opened URL, so the
+   * default; `--open` embeds the current OTP in the opened URL, so the
    * tab authenticates automatically without extra prompts. Hosted adapters
    * manage their own auth and ignore this.
    */

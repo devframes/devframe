@@ -63,7 +63,7 @@ function createMockRpc(
     events,
     /**
      * Server-advertised connection metadata. Stories have no live server, so
-     * advertise the `static` backend with no `configs` - the context reads
+     * advertise the `static` backend with no `configs`; the context reads
      * `connectionMeta.configs?.ui?...` optionally, so an empty meta is enough.
      */
     connectionMeta: { backend: 'static' as const },
@@ -109,7 +109,7 @@ function createMockRpc(
  *
  * This is the same `createDocksContext` the client boots with, so grouping,
  * `switchEntry`, commands and when-clauses all behave exactly as they do at
- * runtime - only the transport is faked. Every call gets a fresh RPC instance,
+ * runtime; only the transport is faked. Every call gets a fresh RPC instance,
  * so the per-rpc context cache never bleeds between stories.
  */
 export async function createMockDocksContext(

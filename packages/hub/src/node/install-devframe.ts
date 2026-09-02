@@ -18,7 +18,7 @@ export interface InstallDevframeOptions {
    * this to customize the entry's `category`, override the icon, hide it
    * via `when` (or only its dock-bar button via `visibility`), etc. Takes
    * precedence over the definition's own {@link DevframeDefinition.dock}
-   * defaults. Cannot change `id`, `type`, or `url` - those are derived from
+   * defaults. Cannot change `id`, `type`, or `url`, which are derived from
    * the devframe definition.
    */
   dock?: Partial<Omit<DevframeViewIframe, 'id' | 'type' | 'url'>>
@@ -68,17 +68,17 @@ async function resolvePageScriptClientScript(
  * calling it directly.
  *
  * Framework kits wrap `ctx.install` with their own plugin/middleware
- * machinery - e.g. `@vitejs/devtools-kit`'s `createPluginFromDevframe`
+ * machinery, e.g. `@vitejs/devtools-kit`'s `createPluginFromDevframe`
  * returns a Vite `Plugin` whose `devtools.setup` ultimately delegates here.
  */
 /**
  * Phase one of an install: run the duplication guard, serve the SPA + meta,
  * register the iframe dock, and queue the definition's declarative wire
- * services - everything up to (but not including) `setup(ctx)`. Returns a
+ * services, everything up to (but not including) `setup(ctx)`. Returns a
  * deferred setup thunk, or `null` when the devframe was deduplicated.
  *
  * The hub's initial batch uses this to collect every devframe's services
- * across the whole hub, `ready()` them once, and only then run the setups -
+ * across the whole hub, `ready()` them once, and only then run the setups,
  * so services are ready before any setup, and a plugin can consume a service
  * another plugin declared regardless of mount order.
  */
@@ -165,7 +165,7 @@ export async function prepareDevframe(
 }
 
 /**
- * Install a {@link DevframeDefinition} into a hub in one call - serve its SPA,
+ * Install a {@link DevframeDefinition} into a hub in one call: serve its SPA,
  * register its dock, ready its services, and run `setup(ctx)`. The imperative
  * counterpart to the hub's declarative `devframes` list (which batches the
  * phases via {@link prepareDevframe}); use it from `configure(ctx)` or

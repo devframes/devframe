@@ -15,7 +15,7 @@ interface TabDescriptor {
 }
 
 interface TabsProps {
-  /** `children[i]` renders under `tabs[i]` - the two arrays are positional. */
+  /** `children[i]` renders under `tabs[i]`; the two arrays are positional. */
   tabs?: TabDescriptor[]
   /** Two-way bindable via `{ $bindState: '...' }`; otherwise local, uncontrolled. */
   value?: string

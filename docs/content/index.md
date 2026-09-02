@@ -63,7 +63,7 @@ A framework-neutral foundation for devtools. One definition becomes a Web Standa
   target: _blank
   class: 'max-w-3xl mx-auto mt-[-10]'
   ---
-  Read the announcement - **Pluggable, Extensible, and Playful DevTools** - for the vision behind devframe.
+  Read the announcement, **Pluggable, Extensible, and Playful DevTools**, for the vision behind devframe.
   :::
 ::
 -->
@@ -76,7 +76,7 @@ Foundation
 One definition, every entry point
 
 #description
-`defineDevframe()` describes a tool once. `initDevframe()` turns it into a Web Standard `Request → Response` handler - and adapters reshape that same definition into whatever your package ships.
+`defineDevframe()` describes a tool once. `initDevframe()` turns it into a Web Standard `Request → Response` handler, and adapters reshape that same definition into whatever your package ships.
 
 #default
   :::landing-feature-card{icon="i-lucide-puzzle" to="/adapters/initiate"}
@@ -108,7 +108,7 @@ One definition, every entry point
   Visual and Agentic
 
   #description
-  Expose the same internal state to a web UI and to coding agents over MCP - one source of truth, two interfaces.
+  Expose the same internal state to a web UI and to coding agents over MCP: one source of truth, two interfaces.
   :::
 
   :::landing-feature-card{icon="i-lucide-layout-dashboard" to="/guide/hub"}
@@ -124,7 +124,7 @@ One definition, every entry point
   Built-in Devframes, Any Framework
 
   #description
-  The built-in devframes span Vue, Svelte, Solid, and React - devframe owns the protocol and leaves the UI framework to the author.
+  The built-in devframes span Vue, Svelte, Solid, and React: devframe owns the protocol and leaves the UI framework to the author.
   :::
 ::
 
@@ -152,7 +152,7 @@ Portability
 The same handler, mounted natively
 
 #description
-A devframe's boundary is simply the Web Standard `Request` and `Response`. Any framework that speaks that - or connect-style middleware - mounts the same tool and inherits the whole ecosystem. Only the host-framework-facing glue changes. [See all adapters](/adapters/initiate).
+A devframe's boundary is simply the Web Standard `Request` and `Response`. Any framework that speaks that (or connect-style middleware) mounts the same tool and inherits the whole ecosystem. Only the host-framework-facing glue changes. [See all adapters](/adapters/initiate).
 
 #code-0
   ```ts [server.ts]
@@ -217,7 +217,7 @@ Adapters
 Package it the way your tool ships
 
 #description
-The handler is the smallest common denominator. Higher-level adapters package that same definition into familiar forms - pick the entry points your package needs. [Browse the adapters](/adapters).
+The handler is the smallest common denominator. Higher-level adapters package that same definition into familiar forms; pick the entry points your package needs. [Browse the adapters](/adapters).
 
 #code-0
   ```ts [cli.ts]
@@ -270,7 +270,7 @@ Interfaces
 One capability, two interfaces
 
 #description
-RPC functions stay private by default and opt into agent exposure explicitly. The [MCP adapter](/adapters/mcp) translates those functions, resources, and selected shared state into an agent-consumable interface - the presentation changes, the source of truth stays the same.
+RPC functions stay private by default and opt into agent exposure explicitly. The [MCP adapter](/adapters/mcp) translates those functions, resources, and selected shared state into an agent-consumable interface: the presentation changes, the source of truth stays the same.
 
 #code-0
   ```ts [rpc.ts]
@@ -364,6 +364,6 @@ links:
 Ship your devtool everywhere
 
 #description
-Start from one `DevframeDefinition` and pick the entry points your package ships - hosted, standalone, embedded, or agentic.
+Start from one `DevframeDefinition` and pick the entry points your package ships: hosted, standalone, embedded, or agentic.
 ::
 

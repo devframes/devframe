@@ -1,40 +1,40 @@
 // Internal cross-package surface: low-level primitives shared between
 // `devframe` and its first-party integrations (`@devframes/hub`, the inspect
 // plugin, `@vitejs/devtools`, custom hosts). These are NOT part of the stable
-// public API - they can change in any minor release. Application code should
+// public API; they can change in any minor release. Application code should
 // use `devframe/node` and the adapters instead.
 //
-// - `createContextRpcServer` - the transport-agnostic RPC core; a host that
+// - `createContextRpcServer`: the transport-agnostic RPC core; a host that
 //   binds its own transport (e.g. the hub's `initHub`) reuses the exact
 //   session/auth wiring the instance shell's own binding uses.
-// - `DevframeAgentHost` - the agent host implementation the hub composes into
+// - `DevframeAgentHost`: the agent host implementation the hub composes into
 //   its own commands host.
-// - `coerceAgentPositionalArgs` - positional-arg coercion the hub applies when
+// - `coerceAgentPositionalArgs`: positional-arg coercion the hub applies when
 //   invoking agent tools as commands.
-// - `registerDevframeInstance` / `listLiveDevframeInstances` - the instance
+// - `registerDevframeInstance` / `listLiveDevframeInstances`: the instance
 //   registry: a custom host advertises itself; a devtool (the inspect plugin's
 //   Instances tab, the connector) enumerates what's running.
-// - `createRpcWireCodec` / `peekRpcWireFrame` - the per-connection wire
+// - `createRpcWireCodec` / `peekRpcWireFrame`: the per-connection wire
 //   codec (strict-JSON ⇄ structured-clone dispatch) and envelope peeker the
 //   built-in WS/SSE transports share; a custom transport implementation
 //   reuses them to speak the identical wire protocol.
-// - `createH3DevframeHost` - the node/standalone `DevframeHost` implementation
+// - `createH3DevframeHost`: the node/standalone `DevframeHost` implementation
 //   (filesystem storage paths + origin resolution) passed to `createHostContext`.
-// - `createInstanceShell` - the shared machinery behind `initDevframe` and
+// - `createInstanceShell`: the shared machinery behind `initDevframe` and
 //   `initHub`: mount base, h3 app, lazy origin + auth banner, WebSocket
 //   binding resolution ("listen on a port / share one + attach the WS
 //   transport"), the fetch/connect handler pair, and teardown. `StartedServer`
 //   is the live handle its bound tiers produce and `createDevServer` re-exposes.
-// - `normalizeHttpServerUrl` - a small host-side URL helper.
-// - `resolveBasePath` / `normalizeBasePath` - the mount-base resolution
+// - `normalizeHttpServerUrl`: a small host-side URL helper.
+// - `resolveBasePath` / `normalizeBasePath`: the mount-base resolution
 //   `initDevframe` itself uses; a bridge (`@devframes/vite`) that mounts a
 //   devframe onto a host it doesn't own reuses the exact same defaulting.
-// - `resolveClientAssets` - the definition → static-assets-source
+// - `resolveClientAssets`: the definition → static-assets-source
 //   resolution every UI-serving adapter uses (`clientAssets`, falling back to
 //   the legacy `cli.distDir`), so a bridge that serves a devframe's SPA itself
 //   (`@devframes/vite`, `@devframes/next`, the hub's `ctx.install`) resolves it
 //   identically.
-// - `diagnostics` - devframe core's structured diagnostics instance
+// - `diagnostics`: devframe core's structured diagnostics instance
 //   (`DF00xx`), so a first-party integration built outside this package can
 //   report against the same registered codes instead of minting its own.
 export { normalizeBasePath, resolveBasePath } from '../adapters/_shared'

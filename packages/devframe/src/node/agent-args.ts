@@ -2,9 +2,9 @@
  * How {@link coerceAgentPositionalArgs} treats an args object that carries
  * neither declared schemas nor `arg0`/`arg1`/… keys:
  *
- * - `'wrap'` - pass the object itself as the single positional argument.
+ * - `'wrap'`: pass the object itself as the single positional argument.
  *   RPC-backed tools use this: an untyped RPC may take one raw object.
- * - `'drop'` - call with zero arguments. Command-backed tools use this:
+ * - `'drop'`: call with zero arguments. Command-backed tools use this:
  *   a handler's positional parameters come solely from its declared
  *   `agent.args` schemas, so undeclared payload is ignored.
  */

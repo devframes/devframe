@@ -29,7 +29,7 @@ vi.mock('./rpc-ws', () => ({
     call: fakeMode.call as DevframeRpcClientMode['call'],
     callOptional: fakeMode.callOptional as DevframeRpcClientMode['callOptional'],
     callEvent: fakeMode.callEvent as DevframeRpcClientMode['callEvent'],
-    // No `close` here on purpose - `close` is optional precisely so a mode written before it
+    // No `close` here on purpose; `close` is optional precisely so a mode written before it
     // existed (this one) still satisfies the interface.
   })),
 }))
@@ -42,7 +42,7 @@ class FakeBroadcastChannel {
 
 const connectionMeta: ConnectionMeta = { backend: 'websocket', websocket: { path: '__ws' } }
 
-describe('getDevframeRpcClient - auth bootstrap gates outbound calls', () => {
+describe('getDevframeRpcClient: auth bootstrap gates outbound calls', () => {
   beforeEach(() => {
     fakeMode.requestTrustGate.resolve = undefined
     fakeMode.call.mockClear()
@@ -71,12 +71,12 @@ describe('getDevframeRpcClient - auth bootstrap gates outbound calls', () => {
       simpleAuth: false,
     })
 
-    // Fired the instant the client is available - mirrors a component's
+    // Fired the instant the client is available, mirroring a component's
     // `onMount` calling a trusted method right after `connectDevframe()`.
     const pending = rpc.call('test:probe' as any)
     await Promise.resolve()
     await Promise.resolve()
-    // The bootstrap's `requestTrust()` hasn't resolved yet - the call must
+    // The bootstrap's `requestTrust()` hasn't resolved yet, so the call must
     // not have reached the (mocked) transport.
     expect(fakeMode.call).not.toHaveBeenCalled()
 
@@ -121,14 +121,14 @@ describe('getDevframeRpcClient - auth bootstrap gates outbound calls', () => {
 
     fakeMode.requestTrustGate.resolve?.(true)
     // Let the bootstrap's own promise chain fully settle before the next
-    // call - a few microtask ticks cover `await mode.requestTrust()`
+    // call; a few microtask ticks cover `await mode.requestTrust()`
     // resuming, `bootstrapAuth()` returning, and its `.then()` flipping
     // `bootstrapAuthSettled`.
     for (let i = 0; i < 5; i++)
       await Promise.resolve()
 
     await rpc.call('test:probe' as any)
-    // Sent straight through - no more waiting once bootstrap is over.
+    // Sent straight through; no more waiting once bootstrap is over.
     expect(fakeMode.call).toHaveBeenCalledTimes(1)
   })
 
@@ -140,7 +140,7 @@ describe('getDevframeRpcClient - auth bootstrap gates outbound calls', () => {
       simpleAuth: false,
     })
 
-    // The mocked mode above has no `close` at all - exactly the pre-existing-mode case
+    // The mocked mode above has no `close` at all, exactly the pre-existing-mode case
     // `close?:` exists to keep working.
     expect(() => rpc.close?.()).not.toThrow()
   })

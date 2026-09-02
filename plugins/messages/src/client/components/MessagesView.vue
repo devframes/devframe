@@ -11,7 +11,7 @@ import MessageList from './MessageList.vue'
 // mutations go out as emits (the wrapper maps them onto the
 // `devframes:plugin:messages:*` RPCs).
 //
-// TODO(toasts): the upstream view also participates in toast selection -
+// TODO(toasts): the upstream view also participates in toast selection.
 // `pendingSelectId` (set by clicking a toast) selects + scrolls an entry into
 // view, and `markMessagesAsRead()` resets the unread counter `onMounted`.
 // Reintroduce both alongside a ToastOverlay port when a viewer needs them.

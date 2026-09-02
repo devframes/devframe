@@ -150,7 +150,7 @@ export function createDashboardView(ctx: DevframeNodeContext): JsonRenderView {
     },
   }))
 
-  // `Deploy` flips the DataTable into a loading state, then appends a module -
+  // `Deploy` flips the DataTable into a loading state, then appends a module,
   // demonstrating the per-action loading + a live spec/state change.
   let deployed = 0
   ctx.rpc.register(defineRpcFunction({

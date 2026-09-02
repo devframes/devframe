@@ -20,16 +20,16 @@ export interface DevframeCommandBase {
   description?: string
   /**
    * Icon for the command. Either an Iconify icon string (e.g. "ph:pencil-duotone")
-   * or a theme-specific pair `{ light, dark }` - the same shape as dock icons.
+   * or a theme-specific pair `{ light, dark }`, the same shape as dock icons.
    */
   icon?: DevframeDockEntryIcon
   category?: string
   /**
    * Whether to show in command palette. Default: true
    *
-   * - `true` - show the command and flatten its children into search results
-   * - `false` - hide the command entirely from the palette
-   * - `'without-children'` - show the command but don't flatten children into top-level search (children are still accessible via drill-down)
+   * - `true`: show the command and flatten its children into search results
+   * - `false`: hide the command entirely from the palette
+   * - `'without-children'`: show the command but don't flatten children into top-level search (children are still accessible via drill-down)
    */
   showInPalette?: boolean | 'without-children'
   /**
@@ -45,13 +45,13 @@ export interface DevframeCommandBase {
 }
 
 /**
- * Opt-in agent exposure for a server command - mirrors the `agent` field on
+ * Opt-in agent exposure for a server command, mirroring the `agent` field on
  * `defineRpcFunction`. A command carrying this field (and a `handler`) is
  * projected into `ctx.agent` as a callable tool, reaching MCP clients through
  * the devframe MCP adapter.
  *
  * `when` clauses are evaluated client-side only and are **not** enforced for
- * agent calls - opt in a `when`-gated command only if running it outside its
+ * agent calls; opt in a `when`-gated command only if running it outside its
  * UI context is safe.
  */
 export interface DevframeCommandAgentOptions {
@@ -63,7 +63,7 @@ export interface DevframeCommandAgentOptions {
   /** Display title (falls back to the command's `title`). */
   title?: string
   /**
-   * Safety classification - drives MCP hint annotations.
+   * Safety classification that drives MCP hint annotations.
    * @default 'action'
    */
   safety?: 'read' | 'action' | 'destructive'
@@ -71,7 +71,7 @@ export interface DevframeCommandAgentOptions {
   tags?: readonly string[]
   /**
    * Positional [Standard Schema](https://standardschema.dev/) validators for
-   * the handler's arguments - the same shape RPC definitions carry (valibot,
+   * the handler's arguments, the same shape RPC definitions carry (valibot,
    * zod, arktype, devframe's built-in `s` builder, …). Each is advertised
    * under `arg0` / `arg1` / … on the tool's JSON-Schema input. Omitted: the
    * tool takes no arguments.
@@ -80,7 +80,7 @@ export interface DevframeCommandAgentOptions {
 }
 
 /**
- * Server command input - what plugins pass to `ctx.commands.register()`.
+ * Server command input: what plugins pass to `ctx.commands.register()`.
  */
 export interface DevframeServerCommandInput extends DevframeCommandBase {
   /**
@@ -100,7 +100,7 @@ export interface DevframeServerCommandInput extends DevframeCommandBase {
 }
 
 /**
- * Serializable server command entry - sent over RPC (no handler).
+ * Serializable server command entry, sent over RPC (no handler).
  */
 export interface DevframeServerCommandEntry extends DevframeCommandBase {
   source: 'server'
@@ -108,7 +108,7 @@ export interface DevframeServerCommandEntry extends DevframeCommandBase {
 }
 
 /**
- * Client command - registered in the webcomponent context.
+ * Client command, registered in the webcomponent context.
  */
 export interface DevframeClientCommand extends DevframeCommandBase {
   source: 'client'

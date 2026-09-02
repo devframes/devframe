@@ -29,7 +29,7 @@ const meta = {
     glowBlur: { control: { type: 'range', min: 0, max: 120, step: 1 }, description: 'Blur radius of the glow (px).' },
     maxVisibleItems: { control: { type: 'range', min: 1, max: 12, step: 1 }, description: 'Inline item capacity before overflow.' },
     viewportMargin: { control: { type: 'range', min: 0, max: 48, step: 1 }, description: 'Gap from the viewport edge (px).' },
-    panelOverlapFactor: { control: { type: 'range', min: 0, max: 1, step: 0.05 }, description: 'Dock↔panel overlap (fraction of bar thickness). Visible with the panel open - see the Embedded stories.' },
+    panelOverlapFactor: { control: { type: 'range', min: 0, max: 1, step: 0.05 }, description: 'Dock↔panel overlap (fraction of bar thickness). Visible with the panel open; see the Embedded stories.' },
     edgeSnapPercent: { control: { type: 'range', min: 0, max: 20, step: 1 }, description: 'Snap-to-edge zone (viewport %).' },
     centerSnapPercent: { control: { type: 'range', min: 0, max: 20, step: 1 }, description: 'Snap-to-center zone (viewport %).' },
     edgeZoneHeight: { control: { type: 'range', min: 0, max: 200, step: 1 }, description: 'Top/bottom edge-detection zone height (px).' },
@@ -38,12 +38,12 @@ const meta = {
     layout: 'fullscreen',
     /**
      * The shell is `position: fixed` to the viewport, so it escapes the small
-     * inline docs preview block - render it in an iframe of a fixed height.
+     * inline docs preview block; render it in an iframe of a fixed height.
      */
     docs: {
       story: { inline: false, height: '520px' },
       description: {
-        component: 'The floating dock bar (float mode). It anchors to an edge of the viewport and can be dragged around. Its padding, sizing, spacing, capacity and snapping are driven by the `DockLayout` constants (`dock-layout.ts`) - every field is exposed here as a live control. These stories pin `inactiveTimeout: -1` so the bar stays expanded.',
+        component: 'The floating dock bar (float mode). It anchors to an edge of the viewport and can be dragged around. Its padding, sizing, spacing, capacity and snapping are driven by the `DockLayout` constants (`dock-layout.ts`); every field is exposed here as a live control. These stories pin `inactiveTimeout: -1` so the bar stays expanded.',
       },
     },
   },
@@ -77,7 +77,7 @@ export const Top: Story = floatStory(
   { entries: categorizedEntries, panel: { position: 'top', left: 50, top: 0, inactiveTimeout: -1 } },
 )
 
-/** Docked to the left edge - the bar rotates to vertical. */
+/** Docked to the left edge, so the bar rotates to vertical. */
 export const Left: Story = floatStory(
   { entries: categorizedEntries, panel: { position: 'left', left: 0, top: 50, inactiveTimeout: -1 } },
 )
@@ -111,25 +111,25 @@ export const Unauthorized: Story = {
 // Each of the following overrides a single `DockLayout` field to demonstrate
 // how the bar responds. Adjust the Controls panel to combine them.
 
-/** `barHeight: 56` - a taller bar (also grows the panel-to-dock offset). */
+/** `barHeight: 56`: a taller bar (also grows the panel-to-dock offset). */
 export const TallBar: Story = {
   ...floatStory({ entries: categorizedEntries, panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 } }),
   args: { barHeight: 56 },
 }
 
-/** `barHeight: 30`, `minimizedSize: 18` - a compact bar. */
+/** `barHeight: 30`, `minimizedSize: 18`: a compact bar. */
 export const CompactBar: Story = {
   ...floatStory({ entries: categorizedEntries, panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 } }),
   args: { barHeight: 30, minimizedSize: 18 },
 }
 
-/** `viewportMargin: 28` - a roomy gap between the bar and the viewport edge. */
+/** `viewportMargin: 28`: a roomy gap between the bar and the viewport edge. */
 export const RoomyViewportMargin: Story = {
   ...floatStory({ entries: categorizedEntries, panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 } }),
   args: { viewportMargin: 28 },
 }
 
-/** `maxVisibleItems: 3` - a lower capacity forces more entries into overflow. */
+/** `maxVisibleItems: 3`: a lower capacity forces more entries into overflow. */
 export const LowerCapacity: Story = {
   ...floatStory({ entries: overflowEntries, panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 } }),
   args: { maxVisibleItems: 3 },
@@ -151,19 +151,19 @@ export const WithRecentDock: Story = {
   args: { maxVisibleItems: 3 },
 }
 
-/** `maxVisibleItems: 9` - a higher capacity absorbs the overflow set inline. */
+/** `maxVisibleItems: 9`: a higher capacity absorbs the overflow set inline. */
 export const HigherCapacity: Story = {
   ...floatStory({ entries: overflowEntries, panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 } }),
   args: { maxVisibleItems: 9 },
 }
 
-/** `maxVisibleItems: 8` - exactly one entry overflows, so it renders inline instead of behind the overflow button. */
+/** `maxVisibleItems: 8`: exactly one entry overflows, so it renders inline instead of behind the overflow button. */
 export const SingleOverflowItem: Story = {
   ...floatStory({ entries: overflowEntries, panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 } }),
   args: { maxVisibleItems: 8 },
 }
 
-/** `glowSize: 280`, `glowBlur: 90` - a larger, softer ambient glow. */
+/** `glowSize: 280`, `glowBlur: 90`: a larger, softer ambient glow. */
 export const LargeGlow: Story = {
   ...floatStory({ entries: categorizedEntries, panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 } }),
   args: { glowSize: 280, glowBlur: 90 },

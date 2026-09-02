@@ -25,10 +25,10 @@ export interface JsonRenderDockRendererOptions {
  *
  * For a shared-state view (`entry.view.stateKey`) it subscribes to the live
  * spec and re-renders on every update; for an inline view (`entry.view.spec`)
- * it renders the embedded spec directly, with no shared-state round-trip - the
+ * it renders the embedded spec directly, with no shared-state round-trip, the
  * path a client-synthesized view takes. Either way it mounts a Vue app
- * rendering {@link JsonRenderView} and disposes cleanly - unmounting the app and
- * unsubscribing any shared-state listener - when the dock deactivates (the
+ * rendering {@link JsonRenderView} and disposes cleanly, unmounting the app and
+ * unsubscribing any shared-state listener, when the dock deactivates (the
  * client host drives that).
  */
 export function createJsonRenderDockRenderer(

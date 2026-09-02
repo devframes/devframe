@@ -25,7 +25,7 @@ import { detectServerRuntime } from './runtime'
 import { formatHostForUrl, normalizeHttpServerUrl } from './utils'
 
 /**
- * The live handle for a bound HTTP + WebSocket RPC server - what the
+ * The live handle for a bound HTTP + WebSocket RPC server: what the
  * side-car / shared-server tiers produce and what {@link createDevServer}
  * re-exposes through its own return contract.
  */
@@ -41,7 +41,7 @@ export interface StartedServer {
   ws?: NodeAdapter
   rpcGroup: BirpcGroup<DevframeRpcClientFunctions, DevframeRpcServerFunctions, false>
   /**
-   * The {@link ConnectionMeta} descriptor for this server - the same shape a
+   * The {@link ConnectionMeta} descriptor for this server, the same shape a
    * `__connection.json` route should serve so a devframe client's
    * `resolveWsUrl` can dial back in.
    */
@@ -61,7 +61,7 @@ interface BindHttpAndWsOptions {
   server?: NodeHttpServer
   /** Bind the WS upgrade to a single route instead of every upgrade on the port. */
   path?: string
-  /** Set `false` to bind HTTP only - no WebSocket transport at all. */
+  /** Set `false` to bind HTTP only, with no WebSocket transport at all. */
   websocket?: boolean
   allowedOrigins?: readonly string[] | WsOriginRegistry | false
   destroyUnmatched?: boolean
@@ -82,7 +82,7 @@ function websocketConnectionMeta(rpcHost: RpcFunctionsHostImpl, path: string | u
 }
 
 /**
- * Compose an h3 + WebSocket RPC server for a devframe context - the low-level
+ * Compose an h3 + WebSocket RPC server for a devframe context: the low-level
  * "listen on a port (or share one) + attach the WS transport" binding the
  * side-car and shared-server tiers below are built on. Owns and listens on a
  * fresh `node:http` server unless `server` is supplied, in which case it only
@@ -119,7 +119,7 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
       await new Promise<void>((resolve, reject) => {
         const onError = (error: Error): void => reject(error)
         // Without this listener a failed bind emits `error` with nobody
-        // attached - an uncaughtException - and the `listen` callback never
+        // attached (an uncaughtException) and the `listen` callback never
         // fires, so this promise never settles.
         httpServer.once('error', onError)
         httpServer.listen(port, bindHost, () => {
@@ -167,7 +167,7 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
 }
 
 /**
- * Structural view of `Bun.serve` - typed loosely so devframe carries no
+ * Structural view of `Bun.serve`, typed loosely so devframe carries no
  * dependency on Bun's own types (`tsc` runs with Node lib only).
  */
 interface BunServerLike {
@@ -196,7 +196,7 @@ interface DenoGlobal {
 }
 
 /**
- * Whether a request is a WebSocket upgrade aimed at `path` - the `fetch`-side
+ * Whether a request is a WebSocket upgrade aimed at `path`: the `fetch`-side
  * equivalent of the Node transport's `upgrade`-event path filter, used by the
  * native ({@link bindNativeHttpAndWs}) tiers to route only the RPC route to
  * the socket and leave every other request to the h3 app.
@@ -219,7 +219,7 @@ function isWsUpgradeRequest(request: Request, path: string | undefined): boolean
  * native `fetch`-upgrade server (`Bun.serve` / `Deno.serve`) with crossws's
  * Bun/Deno adapter driving the RPC socket, since crossws's Node adapter (and
  * the `node:http` `upgrade` event it needs) refuses to run off Node. Only the
- * owns-a-server tiers reach here - a shared foreign `node:http` server can't be
+ * owns-a-server tiers reach here; a shared foreign `node:http` server can't be
  * re-hosted on a native runtime, so that path falls back to SSE instead.
  */
 async function bindNativeHttpAndWs(
@@ -325,15 +325,15 @@ async function bindNativeHttpAndWs(
 /**
  * How the instance's RPC socket is bound:
  *
- * - `sidecar` - its own HTTP+WS server on a dedicated port (`ws.port` /
+ * - `sidecar`: its own HTTP+WS server on a dedicated port (`ws.port` /
  *   `ws.sidecar`), advertised with that port.
- * - `server` - a shared upgrade route on the host's `node:http` server.
- * - `external` - no local transport: `ws.url` alone names a server that owns
+ * - `server`: a shared upgrade route on the host's `node:http` server.
+ * - `external`: no local transport; `ws.url` alone names a server that owns
  *   both the socket and its auth.
- * - `unbound` - the transport exists but nothing is bound to it yet; the host
+ * - `unbound`: the transport exists but nothing is bound to it yet; the host
  *   drives it through {@link InstanceShell.handleUpgrade} /
  *   {@link InstanceShell.attach}.
- * - `disabled` - `ws: false`: no WebSocket at all; clients connect over the
+ * - `disabled` (`ws: false`): no WebSocket at all; clients connect over the
  *   SSE endpoint instead (`backend: 'sse'`).
  */
 export type InstanceWsTier = 'sidecar' | 'server' | 'external' | 'unbound' | 'disabled'
@@ -371,9 +371,9 @@ export interface CreateInstanceShellOptions<TContext extends DevframeNodeContext
   auth?: boolean | DevframeAuthHandler
   /** Host `node:http` server to share the WS upgrade with. */
   server?: NodeHttpServer
-  /** Explicit WebSocket control - see {@link DevframeWsOptions}. `false` disables the socket (SSE-only). */
+  /** Explicit WebSocket control; see {@link DevframeWsOptions}. `false` disables the socket (SSE-only). */
   ws?: DevframeWsOptions | false
-  /** SSE endpoint control - enabled by default; `false` disables, an object renames the route. */
+  /** SSE endpoint control, enabled by default; `false` disables, an object renames the route. */
   sse?: boolean | DevframeSseOptions
   /** Bind host for a side-car WebSocket server. Default: `localhost`. */
   host?: string
@@ -394,7 +394,7 @@ export interface CreateInstanceShellOptions<TContext extends DevframeNodeContext
   resolveSidecarPort?: (host: string) => Promise<number>
   /**
    * Publish this instance in the global registry (`~/.devframe/instances/`)
-   * once its public origin is known - a dynamic import so the registry code
+   * once its public origin is known, via a dynamic import so the registry code
    * stays out of instances that opt out. Omit to skip registration.
    */
   register?: InstanceRegisterConfig
@@ -408,7 +408,7 @@ export interface CreateInstanceShellOptions<TContext extends DevframeNodeContext
 
 /**
  * The identity a shell needs to publish itself in the global instance
- * registry - the parts it can't derive on its own. The shell fills in
+ * registry: the parts it can't derive on its own. The shell fills in
  * `pid` / `origin` / `port` / `basePath` / `mcp` / `startedAt` once the
  * origin resolves, then merges {@link InstanceRegisterConfig.overrides} last.
  */
@@ -471,8 +471,8 @@ export function samePath(a: string, b: string): boolean {
 
 /**
  * Copy a web `Response` from a fetch-style transport handler onto the h3
- * event's response and return its body - mirroring the MCP route's bridge.
- * Returning the body (a `ReadableStream`, or `''` for an empty one - h3
+ * event's response and return its body, mirroring the MCP route's bridge.
+ * Returning the body (a `ReadableStream`, or `''` for an empty one, since h3
  * middleware only falls through on `undefined`) terminates the chain with
  * the status/headers set here instead of continuing to the SPA catch-all.
  */
@@ -489,8 +489,8 @@ function respondWith(event: H3Event, response: Response): ReadableStream | strin
  * The shared machinery behind `initDevframe` and `initHub`: one mount base,
  * one h3 app, one lazily-derived public origin (and the auth banner that waits
  * for it), one WebSocket binding, and the fetch / connect-middleware pair that
- * serves them. Each factory supplies only what makes it itself - its context,
- * its routes, its diagnostics - through `init` / `mount`.
+ * serves them. Each factory supplies only what makes it itself (its context,
+ * its routes, its diagnostics) through `init` / `mount`.
  *
  * Nothing here listens on a port unless a side-car was explicitly requested:
  * the default tier leaves the socket `unbound`, so a host chains it onto its
@@ -532,7 +532,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
           : 'unbound'
 
   // The SSE endpoint (on by default) rides the same h3 app that serves
-  // `__connection.json`, so a relative advertised path always resolves -
+  // `__connection.json`, so a relative advertised path always resolves;
   // whatever host surface reaches the app (owned server, shared server,
   // `handler` / `nodeMiddleware`) serves both. The `external` tier has no
   // local RPC server to ride.
@@ -544,7 +544,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   const advertisedSsePath = options.absoluteWsPath ? sseRoutePath : sseRoute
 
   // The public origin is often unknowable at creation (the host app owns the
-  // listener) - derive it from the first request and let the auth banner
+  // listener), so derive it from the first request and let the auth banner
   // wait for it, unless the caller pinned one (as a string or a getter).
   let derivedOrigin: string | undefined
   function explicitOrigin(): string | undefined {
@@ -567,7 +567,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   let registerPromise: Promise<void> | undefined
   /**
    * Publish the instance in the global registry the moment both its origin
-   * and connection meta are known - at init end for a pinned origin, or on
+   * and connection meta are known: at init end for a pinned origin, or on
    * the first request for a derived one. Registration never throws (the
    * registry writer degrades to a coded warning), so failures never surface.
    */
@@ -605,7 +605,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
    * adopts only a loopback host or an exact `allowedOrigins` match, so a raw
    * inbound `Host`/URL authority never redirects the credential-bearing link.
    * First-valid-origin wins: an invalid candidate leaves `derivedOrigin` unset
-   * - printing/registering nothing - so a later valid one can still be adopted.
+   * (printing/registering nothing) so a later valid one can still be adopted.
    */
   function noteOrigin(candidate: string): void {
     if (derivedOrigin === undefined && !explicitOrigin()) {
@@ -633,7 +633,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   /**
    * Auth resolution: gate by default, `false` opts out, a handler object
    * installs a custom scheme. The `external` tier has no local transport to
-   * gate - the server behind `ws.url` owns auth - so it resolves to nothing.
+   * gate (the server behind `ws.url` owns auth) so it resolves to nothing.
    */
   function resolveAuth(): boolean | DevframeAuthHandler {
     if (options.auth === false)
@@ -647,7 +647,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   }
 
   /**
-   * The context's RPC core (birpc group, session lifecycle, auth gate) -
+   * The context's RPC core (birpc group, session lifecycle, auth gate) is
    * one per instance, shared by every transport binding (WS and SSE), so a
    * WS peer and an SSE session live in the same session/broadcast space.
    * Built lazily: an `unbound` host that never wires a transport pays
@@ -728,8 +728,8 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     throw lastError
   }
 
-  // Shared-server tier: bind the WS upgrade on the host's own server, or -
-  // when a native runtime can't re-host that foreign `node:http` server - fall
+  // Shared-server tier: bind the WS upgrade on the host's own server, or
+  // (when a native runtime can't re-host that foreign `node:http` server) fall
   // back to a WS-less `StartedServer` and let SSE carry the transport.
   async function startServerTier(): Promise<TierBinding> {
     if (nativeRuntime && !ws.url) {
@@ -745,7 +745,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       }
       return { wsAvailable: false }
     }
-    // Shared upgrade on the host's own server at `<base><route>` - zero extra
+    // Shared upgrade on the host's own server at `<base><route>`: zero extra
     // ports, proxy/HTTPS friendly.
     started = await bindHttpAndWs({
       context: ctx,
@@ -781,7 +781,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     resolvedAuth = tier === 'external' ? false : resolveAuth()
 
     // The WebSocket binding. `ws.url`, when set alongside a local binding,
-    // overrides only the *advertisement* - the tunnel pattern, where a relay
+    // overrides only the *advertisement*: the tunnel pattern, where a relay
     // forwards to whatever this instance bound locally. `wsAvailable` drops to
     // `false` only when a native runtime can't re-host the shared server, so
     // the socket gives way to SSE below.
@@ -791,8 +791,8 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     if (!wsDisabled && ws.url)
       websocketMeta = ws.url
 
-    // The SSE endpoint rides the shell's own app - the same one serving
-    // `__connection.json` - so every HTTP-backed tier gets it through its
+    // The SSE endpoint rides the shell's own app (the same one serving
+    // `__connection.json`), so every HTTP-backed tier gets it through its
     // existing surface (owned server, shared server, `handler` /
     // `nodeMiddleware`), and the transport only loads on first use.
     if (sseEnabled) {
@@ -801,7 +801,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     }
 
     // A shared-server WS binding that fell back is only truly transportless
-    // when SSE is off too - surface that so a Bun/Deno host knows to keep SSE
+    // when SSE is off too; surface that so a Bun/Deno host knows to keep SSE
     // enabled (or move the socket to a side-car).
     if (!wsDisabled && !wsAvailable && !sseEnabled)
       diagnostics.DF0075({ runtime }, { method: 'warn' })
@@ -814,8 +814,8 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     }
 
     // Whatever `setup(ctx)` wrote to `ctx.staticConfig` during
-    // `options.init(api)` - e.g. a hub aggregating each installed devframe's
-    // own dock-bar preferences - is in by now; bake it into the meta
+    // `options.init(api)` (e.g. a hub aggregating each installed devframe's
+    // own dock-bar preferences) is in by now; bake it into the meta
     // `options.mount` (and every host that re-serves this same meta at
     // another base) publishes.
     if (Object.keys(ctx.staticConfig).length > 0)
@@ -838,7 +838,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
 
   /**
    * The `unbound` tier: the RPC core and its crossws adapter, bound to
-   * nothing. Built on the first `attach` / `handleUpgrade` - a host that
+   * nothing. Built on the first `attach` / `handleUpgrade`; a host that
    * never wires the socket (or whose runtime brings its own WS transport)
    * pays nothing for it, not even the adapter's imports.
    */

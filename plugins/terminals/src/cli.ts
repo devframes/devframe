@@ -4,8 +4,8 @@ import { createCac } from 'devframe/adapters/cac'
 import { createTerminalsDevframe } from './index'
 
 /**
- * Build a standalone CLI for the terminals panel - `dev` / `build` / `mcp`
- * subcommands, backed by {@link createTerminalsDevframe}. Used by the
+ * Build a standalone CLI for the terminals panel, exposing `dev` / `build` /
+ * `mcp` subcommands, backed by {@link createTerminalsDevframe}. Used by the
  * package `bin`.
  */
 export function createTerminalsCli(

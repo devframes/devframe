@@ -11,7 +11,7 @@ const config: StorybookConfig = {
     options: {},
   },
   /**
-   * `@storybook/svelte-vite` only wires Svelte docgen - it expects the Svelte
+   * `@storybook/svelte-vite` only wires Svelte docgen; it expects the Svelte
    * compiler plugin to come from a project `vite.config` (ours lives at a
    * non-default path), so add `svelte()` here. UnoCSS auto-loads the plugin-root
    * `uno.config.ts`; the shared aliases let `devframe/*` imports resolve without

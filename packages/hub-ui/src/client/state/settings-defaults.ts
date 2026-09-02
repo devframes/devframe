@@ -13,7 +13,7 @@ export type HubUiSettings = Pick<
 >
 
 /**
- * Settings with every hub-ui field filled in - what {@link useSettings} hands
+ * Settings with every hub-ui field filled in: what {@link useSettings} hands
  * readers. The hub-ui fields are non-optional here, so a reader gets a plain
  * `boolean` and never has to decide what `undefined` means.
  */
@@ -24,7 +24,7 @@ export type ResolvedDocksUserSettings = DevframeDocksUserSettings & Required<Hub
  *
  * The hub's `DEFAULT_STATE_USER_SETTINGS()` seeds the settings shared state and
  * knows nothing about hub-ui's own fields, so each one stays optional on the
- * wire - a settings object stored before a field existed simply omits it, and a
+ * wire: a settings object stored before a field existed simply omits it, and a
  * "reset all settings" drops every field back to absent. Resolution therefore
  * happens on read: {@link useSettings} merges this table under the stored value
  * for every component, and {@link hubUiSetting} reads a single field off the
@@ -44,7 +44,7 @@ const HUB_UI_SETTINGS_DEFAULTS: Required<HubUiSettings> = Object.freeze({
 /**
  * Read one hub-ui setting off a settings object that may not be resolved.
  *
- * Components take {@link useSettings} instead - this is for the pure helpers in
+ * Components take {@link useSettings} instead; this is for the pure helpers in
  * `dock-settings.ts`, whose `settings` argument is caller-supplied and may
  * legitimately be a bare `DEFAULT_STATE_USER_SETTINGS()` with no hub-ui fields
  * at all (stories, the "what would the default order be?" probe in
@@ -65,7 +65,7 @@ const settingsByContext = new WeakMap<DocksContext, ComputedRef<ResolvedDocksUse
  * is always the effective value.
  *
  * Writes keep going to the `SharedState` itself
- * (`context.docks.settings.mutate(…)`) - the resolved object is derived and
+ * (`context.docks.settings.mutate(…)`); the resolved object is derived and
  * read-only, so a materialised default is never persisted back and "absent"
  * stays the stored representation of "default".
  *

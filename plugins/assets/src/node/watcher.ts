@@ -8,7 +8,7 @@ import { CHANGED_EVENT } from '../constants'
  * Watch the managed directory and broadcast {@link CHANGED_EVENT} (debounced)
  * whenever a file is added, removed, or changed, so connected UIs refresh
  * their listing live. Returns a disposer; call it when the devframe shuts
- * down (tests in particular - a leaked watcher keeps the process alive).
+ * down (tests in particular, since a leaked watcher keeps the process alive).
  */
 export function watchAssetsDir(ctx: DevframeNodeContext, dir: string): () => Promise<void> {
   const notify = debounce(async () => {
@@ -19,7 +19,7 @@ export function watchAssetsDir(ctx: DevframeNodeContext, dir: string): () => Pro
     ignoreInitial: true,
     /**
      * Directories can nest arbitrarily deep (icon sets, generated builds
-     * dropped into the managed dir, …) - chokidar's default depth is
+     * dropped into the managed dir, …); chokidar's default depth is
      * unlimited, but pin a generous cap so a runaway symlink loop can't
      * spin the watcher forever.
      */

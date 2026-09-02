@@ -657,7 +657,7 @@ describe('dumps', () => {
       const store = await dumpFunctions([getPayload])
       const client = createClientFromDump(store)
 
-      // NMI calls `getPayload(force)` where force is truthy/falsy - the
+      // NMI calls `getPayload(force)` where force is truthy/falsy, and the
       // fallback ensures both variants land on the same snapshot.
       await expect(client.getPayload()).resolves.toEqual({ ts: 42 })
       await expect(client.getPayload(false)).resolves.toEqual({ ts: 42 })

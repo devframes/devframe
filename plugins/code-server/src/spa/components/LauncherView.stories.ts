@@ -36,7 +36,7 @@ export const Connecting: Story = {
   },
 }
 
-/** No editor binary found - install instructions and links. */
+/** No editor binary found, showing install instructions and links. */
 export const NotInstalled: Story = {
   args: {
     phase: 'not-installed',
@@ -46,7 +46,7 @@ export const NotInstalled: Story = {
   },
 }
 
-/** Installed and idle - the launch screen (code-server backend). */
+/** Installed and idle, showing the launch screen (code-server backend). */
 export const Launch: Story = {
   args: {
     phase: 'launch',
@@ -66,7 +66,7 @@ export const LaunchServeWeb: Story = {
   },
 }
 
-/** A previous launch failed - the error surfaces above the launch button. */
+/** A previous launch failed, so the error surfaces above the launch button. */
 export const LaunchError: Story = {
   args: {
     phase: 'launch',

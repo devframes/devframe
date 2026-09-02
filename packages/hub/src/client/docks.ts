@@ -23,7 +23,7 @@ export interface DockPanelStorage {
  * Per-tab UI state of the dock panel, distinct from the browser-shared geometry
  * in {@link DockPanelStorage}. A hub UI provider persists this to `sessionStorage` so a
  * reload (or the RPC auth handshake that follows one) restores the panel to
- * exactly where the developer left it - which dock was open, and the
+ * exactly where the developer left it: which dock was open, and the
  * address-bar route of that dock's iframe. Kept `sessionStorage`-scoped (not
  * `localStorage`) because it is per-tab navigation state: two tabs open against
  * the same dev server each keep their own selection rather than fighting over a
@@ -42,7 +42,7 @@ export interface DockSessionStorage {
   selectedDockRoute: string | null
   /**
    * The dock entry most recently selected from beyond the float bar's inline
-   * capacity - from the overflow popover or from inside a dock group. A hub UI
+   * capacity, whether from the overflow popover or from inside a dock group. A hub UI
    * provider raises this entry into a dedicated slot between the bar's visible
    * items and the overflow button, so deselecting it (or selecting a visible
    * neighbour) keeps it one click away instead of folding it straight back
@@ -109,7 +109,7 @@ export interface DocksConnectionContext {
   /** The most recent connection-level error, or `null` when healthy. */
   readonly error: Error | null
   /**
-   * The client's event emitter - subscribe to `connection:status`,
+   * The client's event emitter. Subscribe to `connection:status`,
    * `connection:error`, and `rpc:error` to react to changes.
    */
   readonly events: EventEmitter<RpcClientEvents>
@@ -136,7 +136,7 @@ export interface DocksPanelContext {
   readonly events: EventEmitter<DocksPanelEvents>
   store: DockPanelStorage
   /**
-   * Per-tab session UI state - whether the panel is open, which dock is
+   * Per-tab session UI state: whether the panel is open, which dock is
    * selected, and that dock's iframe route. Restored across reloads (and the
    * auth handshake that follows one) by a hub UI provider that persists it to
    * `sessionStorage`.
@@ -148,7 +148,7 @@ export interface DocksPanelContext {
   /**
    * Claim the persisted {@link DockSessionStorage.selectedDockRoute boot route} for a dock
    * id, once. Returns the saved address-bar URL only for the dock that was
-   * selected before the last reload - and only on the first call for it - so a
+   * selected before the last reload (and only on the first call for it), so a
    * restored iframe boots deep-linked while a later switch to a different dock
    * (whose live route isn't reflected in {@link DockSessionStorage.selectedDockRoute} yet)
    * doesn't reuse the stale value. Returns `null` otherwise.
@@ -164,11 +164,11 @@ export interface DocksEntriesContext {
   entryToStateMap: Map<string, DockEntryState>
   groupedEntries: DevframeDockEntriesGrouped
   /**
-   * The resolved top-level category ordering - `DEFAULT_CATEGORIES_ORDER`,
+   * The resolved top-level category ordering: `DEFAULT_CATEGORIES_ORDER`,
    * overridden by every installed devframe's own `dock.categoryOrder`
    * (`ConnectionMeta.configs.dock.categoryOrder`), overridden again by the
    * host page's own `createDevframeClientRuntime({ categoryOrder })`. Fixed
-   * for the life of the session - resolved once at boot.
+   * for the life of the session, resolved once at boot.
    */
   readonly categoryOrder: Record<string, number>
   settings: SharedState<DevframeDocksUserSettings>
@@ -194,7 +194,7 @@ export interface DocksEntriesContext {
    * {@link entries}. Unlike a dock registered on the node
    * {@link import('../types/docks').DevframeDocksHost}, it never flows into
    * shared state, so it stays local to this client instead of syncing to the
-   * hub or other hub UI providers - for a view the client runtime synthesizes itself.
+   * hub or other hub UI providers, suiting a view the client runtime synthesizes itself.
    *
    * Throws when `id` already names a client dock, unless `force` is set. A
    * client dock sharing an id with a server dock overrides it in the local
@@ -211,7 +211,7 @@ export interface DocksEntriesContext {
 
 export interface DockRegistration<T extends DevframeDockEntry = DevframeDockEntry> {
   /**
-   * Patch the registered client dock in place. The `id` is immutable - passing
+   * Patch the registered client dock in place. The `id` is immutable, so passing
    * a differing `id` throws.
    */
   update: (patch: Partial<T>) => void

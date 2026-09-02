@@ -76,7 +76,7 @@ describe('@devframes/plugin-code-server', () => {
     expect(result.connect?.path).toBe('/')
 
     // The cookie value handed to the client must equal HASHED_PASSWORD the
-    // server was launched with - that is what makes the iframe auto-auth.
+    // server was launched with; that is what makes the iframe auto-auth.
     const hashed = readFileSync(dumpEnvTo, 'utf8')
     expect(hashed).toBe(result.connect?.cookie?.value)
 

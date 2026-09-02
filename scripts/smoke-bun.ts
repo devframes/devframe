@@ -1,12 +1,12 @@
 /**
- * Bun smoke test for the Hono hub example - run locally with:
+ * Bun smoke test for the Hono hub example, run locally with:
  *
  *   bun scripts/smoke-bun.ts
  *
  * Boots `examples/hub-hono-minimal/src/bun.ts` (Bun's fetch-upgrade wiring
  * over the hub's context) and exercises four surfaces end to end: HTTP through
  * the catch-all handler, the discovery documents, the embedded bootstrap, and
- * an RPC round-trip over a same-origin WebSocket upgrade - no side-car port
+ * an RPC round-trip over a same-origin WebSocket upgrade, with no side-car port
  * anywhere.
  *
  * Prerequisites: `pnpm install && pnpm build` (the hub serves built dists).
@@ -23,7 +23,7 @@ const server = await startBunServer(0)
 const origin = `http://localhost:${server.port}`
 console.log(`serving on ${origin}`)
 
-// 1. Discovery through the fetch handler - the socket rides the app's own
+// 1. Discovery through the fetch handler: the socket rides the app's own
 // origin, so the meta advertises a base-absolute path and no port.
 const meta = await (await fetch(`${origin}/__devframes/__connection.json`)).json() as {
   backend: string

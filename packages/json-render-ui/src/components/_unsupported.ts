@@ -8,7 +8,7 @@ function formatPropKeys(keys: readonly string[]): string {
 
 /**
  * Internal placeholder rendered in place of an element whose `type` is not in
- * the active registry - i.e. a component this frontend does not support. The
+ * the active registry, that is, a component this frontend does not support. The
  * rest of the view still renders. Not part of the public catalog.
  *
  * Shows three lines using the design system's semantic tokens: a label, the

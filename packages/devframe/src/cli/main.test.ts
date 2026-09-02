@@ -29,7 +29,7 @@ describe('runDevframeCli', () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {})
     // `connect --help` matches the `connect` command and prints *its* help
     // (cac's built-in per-command path) rather than the bare-invocation
-    // fallback - still exactly once.
+    // fallback, still exactly once.
     await runDevframeCli(['node', 'devframe', 'connect', '--help'])
     expect(info).toHaveBeenCalledTimes(1)
     expect(info.mock.calls[0]![0]).toContain('--port')

@@ -30,7 +30,7 @@ export const Button: JrComponent<ButtonProps> = ({ props, on }) => {
       size: 'sm',
       disabled: props.disabled,
       loading: props.loading,
-      /** `danger` isn't an ActionButton variant - override the primary tint. */
+      /** `danger` isn't an ActionButton variant, so override the primary tint. */
       class: [
         'h-8 px-2.5!',
         variant === 'danger' ? 'bg-red! color-white! border-red! hover:bg-red/90!' : undefined,
@@ -39,7 +39,7 @@ export const Button: JrComponent<ButtonProps> = ({ props, on }) => {
     },
     // Render the dynamic Icon in the slot (ActionButton's own `icon` prop is a
     // static UnoCSS class, unsuited to spec-supplied names). Skip it while
-    // loading - ActionButton already shows its spinner.
+    // loading, since ActionButton already shows its spinner.
     () => [
       props.icon && !props.loading ? Icon({ props: { name: props.icon, size: 16 } } as Parameters<typeof Icon>[0]) : null,
       props.label ? h('span', props.label) : null,

@@ -27,7 +27,7 @@ function openMessages(toastId: string) {
 
 /**
  * Mirrors `@devframes/plugin-messages`'s own `onActivate` dispatch (its
- * `App.vue`) - the toast's own `entry.actions` buttons behave identically to
+ * `App.vue`): the toast's own `entry.actions` buttons behave identically to
  * the ones in the messages panel's detail view, without waiting for that
  * panel to be open. `context.docks`/`context.commands` reach the hub
  * directly here, whereas the plugin (an iframe) goes through RPC.

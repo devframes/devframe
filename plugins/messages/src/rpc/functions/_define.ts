@@ -12,7 +12,7 @@ export const defineMessagesRpc = createDefineWrapperWithContext<DevframeNodeCont
 /**
  * Read the hub-attached messages host off a node context, if present. The
  * plugin talks to `ctx.messages` structurally so its shipped code carries no
- * runtime dependency on `@devframes/hub` - hosts other than the hub can
+ * runtime dependency on `@devframes/hub`, so hosts other than the hub can
  * satisfy the same surface.
  */
 export function getMessagesHost(ctx: DevframeNodeContext): DevframeMessagesHost | undefined {

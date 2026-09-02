@@ -5,7 +5,7 @@ import { button, connectionBody, connectionDetail, connectionGlyph, connectionPa
 import { Icon } from './ui/icon'
 
 /**
- * Full-panel connection state - shown whenever the client isn't `connected`, so
+ * Full-panel connection state, shown whenever the client isn't `connected`, so
  * the UI never sits on an infinite spinner without saying why. Copy and layout
  * come from the shared `design/design.ts` so every surface looks identical;
  * reload is the recovery path (the client doesn't auto-reconnect).

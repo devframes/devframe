@@ -31,7 +31,7 @@ interface DockRuntime {
   error?: string
 }
 
-// Every launched dock's iframe is parked here for its whole lifetime - switching
+// Every launched dock's iframe is parked here for its whole lifetime, so switching
 // tabs only mounts/unmounts the pane over `#stage`, so background docks keep
 // their state (Storybook's own routing, scroll, etc.) intact.
 const panes = createIframePanes({ container: stageEl })
@@ -135,7 +135,7 @@ function updateStage() {
   const rt = runtimeFor(selectedId)
   const title = entry?.title ?? selectedId
 
-  // A launched pane is mounted - hide the overlay and show the live iframe.
+  // A launched pane is mounted, so hide the overlay and show the live iframe.
   if (rt.status === 'ready' && panes.has(selectedId)) {
     overlayEl.style.display = 'none'
     return
@@ -224,7 +224,7 @@ async function main() {
     selectedId = id
     renderSidebar()
     // Plain iframe docks open on select; launcher docks wait for their Start
-    // button (the lazy trigger) - so opening a Storybook dock doesn't spawn it.
+    // button (the lazy trigger), so opening a Storybook dock doesn't spawn it.
     if (isIframeDock(entry))
       openIframe(entry)
     updateStage()
@@ -250,7 +250,7 @@ async function main() {
     }).join('')
   }
 
-  // Docks - read from `devframe:docks` shared state, keeping launcher (Storybook)
+  // Docks, read from `devframe:docks` shared state, keeping launcher (Storybook)
   // and iframe (live plugin) entries.
   const docksState = await rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks', { initialValue: [] })
   const syncDocks = () => {

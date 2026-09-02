@@ -6,7 +6,7 @@ export interface DevframeNuxtModuleOptions {
   /**
    * Base URL, relative to the deployed page, where the devframe
    * connection meta (`__connection.json`) and dump shards live.
-   * Defaults to `'./'` - the SPA root - so a single build works at any
+   * Defaults to `'./'` (the SPA root) so a single build works at any
    * deployment base (the browser resolves relative fetches against
    * `document.baseURI`).
    */
@@ -14,7 +14,7 @@ export interface DevframeNuxtModuleOptions {
   /**
    * Disable the opinionated Nuxt app defaults (`app.baseURL: './'`,
    * `vite.base: './'`). Set to `true` if you need to own these yourself.
-   * Defaults to `false` - devframe sets sensible base-agnostic defaults.
+   * Defaults to `false`; devframe sets sensible base-agnostic defaults.
    */
   skipAppDefaults?: boolean
   /**
@@ -26,14 +26,14 @@ export interface DevframeNuxtModuleOptions {
    */
   devframe?: DevframeDefinition
   /**
-   * Dev-time middleware mode - whether to start `@devframes/vite`'s
+   * Dev-time middleware mode: whether to start `@devframes/vite`'s
    * RPC bridge (`devframeViteBridge`) alongside `nuxt dev`.
    *
-   *  - `true` (default) - when `devframe` is set and Nuxt is in dev
+   *  - `true` (default): when `devframe` is set and Nuxt is in dev
    *    mode, start the RPC bridge with all defaults.
-   *  - `false` - skip the bridge entirely. The module remains
+   *  - `false`: skip the bridge entirely. The module remains
    *    client-only.
-   *  - object - enable with explicit overrides.
+   *  - object: enable with explicit overrides.
    */
   devMiddleware?: boolean | {
     /** Override the bridge port. Default: resolved via `get-port-please`. */
@@ -98,7 +98,7 @@ export default defineNuxtModule<ModuleOptions>({
     if (!options.skipAppDefaults) {
       // Relative app baseURL so the production SSG output resolves
       // assets against `document.baseURI`. Leaves explicit overrides
-      // alone - authors who set these already are in charge.
+      // alone, since authors who set these already are in charge.
       nuxt.options.app ??= {} as any
       nuxt.options.app.baseURL ??= './'
       nuxt.options.vite ??= {}

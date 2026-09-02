@@ -42,7 +42,7 @@ function seedDemoMessages(messages: DevframeMessagesHostType): void {
   void messages.add({
     level: 'success',
     message: 'Messages dev harness started',
-    description: 'This feed is seeded demo data - a hub host feeds the real one.',
+    description: 'This feed is seeded demo data; a hub host feeds the real one.',
     category: 'demo',
   })
   void messages.add({
@@ -92,7 +92,7 @@ function seedDemoMessages(messages: DevframeMessagesHostType): void {
     category: 'runtime',
   })
 
-  // A loading entry that resolves - exercises the update path end to end.
+  // A loading entry that resolves, exercising the update path end to end.
   void messages.add({
     id: 'demo:typecheck',
     level: 'info',
@@ -110,7 +110,7 @@ function seedDemoMessages(messages: DevframeMessagesHostType): void {
     })
   }, 4000)
 
-  // A slow heartbeat with `autoDelete` - exercises removals + delta sync.
+  // A slow heartbeat with `autoDelete`, exercising removals + delta sync.
   let beat = 0
   setInterval(() => {
     beat += 1

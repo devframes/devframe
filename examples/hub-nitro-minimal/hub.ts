@@ -38,7 +38,7 @@ export const hub: HubInstance = globalRef.__hubNitroMinimal ??= initHub({
     createAssetsDevframe({ watch: false }),
   ],
   /**
-   * Rebrand the reference UI to Nitro's own pink/red - one field, no CSS:
+   * Rebrand the reference UI to Nitro's own pink/red in one field, no CSS:
    * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
    * which the dock reads at connect time and feeds into `--devframe-primary`
    * (see `@devframes/hub-ui`'s `primary-ramp.css`).

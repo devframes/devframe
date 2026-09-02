@@ -37,7 +37,7 @@ export const hub: HubInstance = globalRef.__hubDenoMinimal ??= initHub({
     createAssetsDevframe({ watch: false }),
   ],
   /**
-   * Rebrand the reference UI to Deno's own navy - one field, no CSS:
+   * Rebrand the reference UI to Deno's own navy in one field, no CSS:
    * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
    * which the dock reads at connect time and feeds into `--devframe-primary`
    * (see `@devframes/hub-ui`'s `primary-ramp.css`).
@@ -65,7 +65,7 @@ export const hub: HubInstance = globalRef.__hubDenoMinimal ??= initHub({
   },
 })
 
-/** The host page - one script tag turns any page into a devtools host. */
+/** The host page: one script tag turns any page into a devtools host. */
 export const hostPage = `<!doctype html>
 <html lang="en">
   <head>

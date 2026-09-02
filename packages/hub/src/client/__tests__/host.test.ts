@@ -146,7 +146,7 @@ describe('createDevframeClientRuntime', () => {
       iframeEntry('visible'),
     ])
 
-    // `visibility` is a render-only hint for the UI layer - the hub itself
+    // `visibility` is a render-only hint for the UI layer; the hub itself
     // never filters `entries`/`getStateById`/`switchEntry` by it, so the
     // anchor stays fully reachable.
     expect(host.context.docks.entries.map(e => e.id)).toEqual(['anchor', 'visible'])
@@ -156,7 +156,7 @@ describe('createDevframeClientRuntime', () => {
     host.dispose()
   })
 
-  it('groups entries by category - grouped members bucket under their group, orphans by their own', async () => {
+  it('groups entries by category: grouped members bucket under their group, orphans by their own', async () => {
     const { rpc, states } = createStubRpc()
     const host = await createDevframeClientRuntime({ rpc })
 
@@ -186,7 +186,7 @@ describe('createDevframeClientRuntime', () => {
     expect(grouped.web).toEqual(['orphan'])
     expect(grouped.app).toEqual(['plain'])
 
-    // Categories sort by DEFAULT_CATEGORIES_ORDER - framework first.
+    // Categories sort by DEFAULT_CATEGORIES_ORDER, framework first.
     expect(host.context.docks.groupedEntries.map(([cat]) => cat)).toEqual([
       'framework',
       'default',
@@ -373,7 +373,7 @@ describe('createDevframeClientRuntime', () => {
       expect(warn).toHaveBeenCalledOnce()
       expect(getDevframeClientContext()).toBe(second.context)
 
-      // The first host no longer owns the published context - leave it alone.
+      // The first host no longer owns the published context, so leave it alone.
       first.dispose()
       expect(getDevframeClientContext()).toBe(second.context)
       second.dispose()

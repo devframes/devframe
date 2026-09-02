@@ -3,7 +3,7 @@ import Vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vite'
 
 /**
- * The embedded floating-dock bootstrap - a single, self-contained ES module
+ * The embedded floating-dock bootstrap: a single, self-contained ES module
  * the hub serves at `<base>embedded.js` (see `DevframeHubUi.embedded`). One
  * file on purpose: the hub streams exactly one entry, so dynamic imports are
  * inlined and Vue rides inside the bundle. Styles live in the shadow root

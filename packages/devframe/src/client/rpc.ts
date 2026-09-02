@@ -44,7 +44,7 @@ export interface RpcClientEvents {
    */
   'connection:error': (error: Error) => void
   /**
-   * An RPC call rejected - either from the server, or because the connection
+   * An RPC call rejected, either from the server, or because the connection
    * was down / timed out. Useful for a global error feed or toast surface.
    */
   'rpc:error': (error: Error, method: string) => void
@@ -59,7 +59,7 @@ export interface DevframeRpcClientOptions extends SetupDevframeConnectionOptions
    * Query-param name on the page URL carrying a one-time authentication code
    * (OTP) for "magic link" auth (e.g. a link the dev server prints). When
    * present, the client exchanges the code for a token and removes the parameter
-   * from the URL. Set `false` to disable - e.g. integrations that drive their
+   * from the URL. Set `false` to disable, e.g. integrations that drive their
    * own authentication via `authenticateWithUrlOtp`.
    *
    * @default 'devframe_otp'
@@ -69,7 +69,7 @@ export interface DevframeRpcClientOptions extends SetupDevframeConnectionOptions
    * Fall back to a native browser `prompt()` for the one-time authentication
    * code when the server refuses trust and no other credential succeeds (a
    * stored token, an injected token, or a magic-link OTP). The prompt fires
-   * only on a **top-level, unframed** page - a framed plugin (e.g. mounted in
+   * only on a **top-level, unframed** page; a framed plugin (e.g. mounted in
    * a hub dock) never prompts, since a hub pre-authorizes it and browsers
    * block `prompt()` in cross-origin frames anyway.
    *
@@ -82,20 +82,20 @@ export interface DevframeRpcClientOptions extends SetupDevframeConnectionOptions
   /**
    * Which live transport to connect over:
    *
-   *  - `'auto'` (default) - trust the server's advertisement: its declared
+   *  - `'auto'` (default) trusts the server's advertisement: its declared
    *    primary (`backend`), preferring the WebSocket when both endpoints are
    *    present. A server that couldn't bind a socket advertises SSE as its
    *    primary, so no client-side fallback probing is needed.
-   *  - `'websocket'` / `'sse'` - pin one transport; connecting fails with a
+   *  - `'websocket'` / `'sse'` pins one transport; connecting fails with a
    *    clear error when the server doesn't advertise it. Reach for
-   *    `transport: 'sse'` when an intermediary silently strips WS upgrades -
+   *    `transport: 'sse'` when an intermediary silently strips WS upgrades,
    *    something the server cannot detect.
    *
    * A `static` backend ignores this option (there is no live transport).
    */
   transport?: 'auto' | 'websocket' | 'sse'
   wsOptions?: Partial<WsRpcChannelOptions>
-  /** Channel overrides for the SSE transport - the `wsOptions` counterpart. */
+  /** Channel overrides for the SSE transport, the `wsOptions` counterpart. */
   sseOptions?: Partial<SseRpcChannelOptions>
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>
   cacheOptions?: boolean | Partial<RpcCacheOptions>
@@ -103,8 +103,8 @@ export interface DevframeRpcClientOptions extends SetupDevframeConnectionOptions
    * Reject a pending `rpc.call(...)` if the server hasn't answered within this
    * many milliseconds, with a {@link DevframeConnectionError} of kind
    * `'timeout'`. Guards against a live-but-unresponsive server hanging the UI.
-   * Omit (or `0`) to wait indefinitely. Calls always fail fast - regardless of
-   * this option - once the socket closes or trust is refused.
+   * Omit (or `0`) to wait indefinitely. Calls always fail fast, regardless of
+   * this option, once the socket closes or trust is refused.
    */
   callTimeout?: number
 }
@@ -135,7 +135,7 @@ export interface DevframeRpcClient {
    */
   readonly connectionError: Error | null
   /**
-   * The transport this client is actually connected over - `'websocket'`,
+   * The transport this client is actually connected over: `'websocket'`,
    * `'sse'`, or `'static'`. Reflects the resolution of the `transport`
    * option against the server's advertisement.
    */
@@ -200,7 +200,7 @@ export interface DevframeRpcClient {
   sharedState: RpcSharedStateHost
   /**
    * The server's advertised wire services (mirrored `devframe:services`
-   * shared state) - feature-detect a capability with
+   * shared state); feature-detect a capability with
    * `rpc.services.has('@devframes/service-x')` and get a scoped, typed RPC
    * handle with `rpc.services.get(...)`. See {@link DevframeServicesClient}.
    */
@@ -235,11 +235,11 @@ export interface DevframeRpcClient {
    * a `websocket` backend closes the underlying `WebSocket`, which the server observes as a
    * normal disconnect. Mirrors {@link WsRpcTransport.close} on the server side.
    *
-   * There is no corresponding "reconnect" - a closed client is done. Discard it and call
+   * There is no corresponding "reconnect"; a closed client is done. Discard it and call
    * {@link getDevframeRpcClient} again to reconnect.
    *
-   * Optional so a `DevframeRpcClientMode` implemented before this method existed - a custom
-   * transport, a hand-typed mock - still satisfies the interface; an absent `close` is treated
+   * Optional so a `DevframeRpcClientMode` implemented before this method existed (a custom
+   * transport, a hand-typed mock) still satisfies the interface; an absent `close` is treated
    * as nothing to close.
    */
   close?: () => void
@@ -248,7 +248,7 @@ export interface DevframeRpcClient {
 export interface DevframeRpcClientMode {
   /**
    * The transport this mode speaks. Optional so a mode implemented before
-   * this field existed - a custom transport, a hand-typed mock - still
+   * this field existed (a custom transport, a hand-typed mock) still
    * satisfies the interface; an absent value reads as `'websocket'`.
    */
   readonly transport?: 'websocket' | 'sse' | 'static'
@@ -272,7 +272,7 @@ export interface DevframeRpcClientMode {
 
 /**
  * Resolve the requested `transport` option against what the server
- * advertises. `'auto'` trusts the advertisement - the server's declared
+ * advertises. `'auto'` trusts the advertisement: the server's declared
  * primary (`backend`), preferring the WebSocket when both endpoints are
  * present; an explicit `'websocket'` / `'sse'` pins that transport and
  * throws when the server doesn't advertise it.
@@ -295,14 +295,14 @@ export function resolveClientTransport(
       throw new Error('[devframe] transport: \'sse\' was requested, but this server does not advertise an SSE endpoint')
     return 'sse'
   }
-  // 'auto' - the server's declared primary first, then whatever is present.
+  // 'auto': the server's declared primary first, then whatever is present.
   if (meta.backend === 'sse' && hasSse)
     return 'sse'
   if (hasWebsocket)
     return 'websocket'
   if (hasSse)
     return 'sse'
-  throw new Error('[devframe] This server advertises no RPC transport (backend "none") - nothing to connect to. Enable the WebSocket or SSE endpoint on the server, or use its static/MCP surfaces instead.')
+  throw new Error('[devframe] This server advertises no RPC transport (backend "none"), so there is nothing to connect to. Enable the WebSocket or SSE endpoint on the server, or use its static/MCP surfaces instead.')
 }
 
 export async function getDevframeRpcClient(
@@ -495,7 +495,7 @@ export async function getDevframeRpcClient(
   context.rpc = rpc
 
   // Whether this document is the top-level, unframed page. Only there can a
-  // native `prompt()` actually be shown - a framed plugin (hub dock) instead
+  // native `prompt()` actually be shown; a framed plugin (hub dock) instead
   // waits for a hub-injected/broadcast token to arrive. Accessing
   // `window.top` cross-origin throws, which itself means we're framed.
   function isTopLevelUnframed(): boolean {
@@ -544,7 +544,7 @@ export async function getDevframeRpcClient(
       return
     await runSimpleAuthPrompt()
   }
-  // Always resolves (never rejects) regardless of `bootstrapAuth`'s outcome -
+  // Always resolves (never rejects) regardless of `bootstrapAuth`'s outcome;
   // the gate only cares that the first attempt is *over*, not whether it
   // succeeded; a rejection here must never leak into unrelated calls waiting
   // on `bootstrapAuthPromise`.

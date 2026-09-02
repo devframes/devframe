@@ -6,7 +6,7 @@ import { hub } from '../../../hub'
  * defaults to `trailingSlash: 'never'`, which would 308-redirect the hub's
  * trailing-slash URLs (the standalone hub UI at `/__devframes/` and each
  * frame SPA at `/__devframes/<id>/`) and break the SPAs' relative asset
- * resolution - the hub owns the exact paths, so opt its routes out.
+ * resolution; the hub owns the exact paths, so opt its routes out.
  */
 export const trailingSlash = 'ignore'
 
@@ -15,6 +15,6 @@ export const trailingSlash = 'ignore'
  * in, Response out. `fallback` answers every method, and the `[...path]` rest
  * param matches the namespace root (`/__devframes/`) as well as everything
  * beneath it. Frame SPAs, __connection.json, __index.json, embedded.js,
- * __client-imports.js - all flow through here.
+ * __client-imports.js: all flow through here.
  */
 export const fallback: RequestHandler = ({ request }) => hub.handler(request)

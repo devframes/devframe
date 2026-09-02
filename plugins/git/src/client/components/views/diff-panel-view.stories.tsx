@@ -21,7 +21,7 @@ index 1234567..89abcde 100644
    jsonSerializable: true,`
 
 // Storybook has no host, so stand up a mock `@devframes/service-shiki` handle
-// that highlights in-browser with the real Shiki - the diff stories then render
+// that highlights in-browser with the real Shiki, so the diff stories then render
 // true syntax colors through the same code path production uses.
 async function mockCodeToTokens({ code, lang, themes }: { code: string, lang?: string, themes?: { light: string, dark: string } }) {
   const pair = themes ?? { light: 'vitesse-light', dark: 'vitesse-dark' }

@@ -148,7 +148,7 @@ export function useWorkbench() {
   }
 
   /**
-   * Re-apply the full workbench state from the URL hash - the live reaction to
+   * Re-apply the full workbench state from the URL hash, the live reaction to
    * back/forward and manual address-bar edits (`hashchange`). Source is set
    * first so its draft-restore runs before the shared query overwrites it; an
    * unknown source id is left for `loadSources` to pick up. `replaceState`
@@ -172,7 +172,7 @@ export function useWorkbench() {
   const statsStale = ref(false)
   const result = shallowRef<unknown>()
   const hasResult = ref(false)
-  /** When the last successful query landed - drives the "ran … ago" label. */
+  /** When the last successful query landed, driving the "ran … ago" label. */
   const lastRunAt = ref<number | null>(null)
 
   const suggestions = ref<SuggestItem[]>([])
@@ -184,7 +184,7 @@ export function useWorkbench() {
   const activeSource = computed(() => sources.value.find(s => s.id === sourceId.value))
 
   /**
-   * The result maps 1:1 onto the live source only for the identity query -
+   * The result maps 1:1 onto the live source only for the identity query;
    * a derived jora result (map/group/...) has no address back into the
    * source, so edit paths are only provable on the root view.
    */
@@ -197,7 +197,7 @@ export function useWorkbench() {
   const canEdit = computed(() =>
     connection.mode === 'rpc' && !!activeSource.value?.writable && isIdentityQuery.value)
 
-  /** Why editing is absent right now - drives the viewer's lock hint. */
+  /** Why editing is absent right now, driving the viewer's lock hint. */
   const editHint = computed<'readonly-source' | 'derived-view' | null>(() => {
     if (connection.mode !== 'rpc' || !activeSource.value)
       return null
@@ -209,7 +209,7 @@ export function useWorkbench() {
   })
 
   // A dock-activation focus (`focusSource`) that names a source not yet
-  // registered waits here until `loadSources` sees it arrive - then fires once.
+  // registered waits here until `loadSources` sees it arrive, then fires once.
   let pendingFocusId: string | null = null
 
   async function loadSources(): Promise<void> {
@@ -227,7 +227,7 @@ export function useWorkbench() {
   }
 
   /**
-   * Select a source by id - the deep-link target of the hub's dock activation
+   * Select a source by id, the deep-link target of the hub's dock activation
    * (`params.sourceId`). If the source isn't registered yet, remember it and
    * converge the moment it appears (one-shot), mirroring the terminals dock.
    */
@@ -561,7 +561,7 @@ export function useWorkbench() {
 
 export type Workbench = ReturnType<typeof useWorkbench>
 
-/** Injection key for the shared workbench - provided by the root, consumed by panels. */
+/** Injection key for the shared workbench, provided by the root, consumed by panels. */
 export const workbenchKey: InjectionKey<Workbench> = Symbol('data-inspector:workbench')
 
 /** Inject the workbench provided by the app root. */

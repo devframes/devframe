@@ -1,8 +1,8 @@
 /**
  * Live location tracking for an iframe dock.
  *
- * An iframe dock's address bar - and the route persisted from it into
- * `DockSessionStorage.selectedDockRoute` - has to follow wherever the embedded
+ * An iframe dock's address bar (and the route persisted from it into
+ * `DockSessionStorage.selectedDockRoute`) has to follow wherever the embedded
  * app actually goes. The `load` event only covers whole-document navigations, so
  * an SPA router moving between routes with `history.pushState()` leaves both
  * showing the URL the frame booted with.
@@ -10,21 +10,21 @@
  * {@link watchFrameLocation} closes that gap for a same-origin frame, reporting
  * `location.href` on every navigation it can observe:
  *
- * - `popstate` / `hashchange` - back/forward and hash routing;
+ * - `popstate` / `hashchange`: back/forward and hash routing;
  * - `history.pushState`/`replaceState`, wrapped in place (and restored on
  *   dispose) because those two fire no event of their own;
  * - the [Navigation API](https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API)'s
  *   `currententrychange` where it exists, which reports post-commit and so also
- *   catches what a wrapper structurally cannot - a router holding a reference to
+ *   catches what a wrapper structurally cannot: a router holding a reference to
  *   `pushState` captured before this watch attached;
  * - `load`, which also re-subscribes: a document navigation swaps the frame's
  *   `history`/`navigation` objects, so the previous subscription dies with them.
  *
  * These sources overlap deliberately rather than being chosen between, since a
- * report is deduped against the last href - the cost of hearing the same
+ * report is deduped against the last href, so the cost of hearing the same
  * navigation twice is nothing, and the cost of missing one is a stale route.
  *
- * A cross-origin frame reports nothing - its location is unreadable by design,
+ * A cross-origin frame reports nothing, because its location is unreadable by design,
  * so the caller keeps the last URL it knew.
  */
 
@@ -79,7 +79,7 @@ export function watchFrameLocation(options: WatchFrameLocationOptions): () => vo
 
   /**
    * The frame's window, or `null` when its location can't be read. Touching
-   * `location.href` is the cross-origin probe - it throws for a foreign
+   * `location.href` is the cross-origin probe, since it throws for a foreign
    * document, where there is nothing to observe.
    */
   function readableWindow(): FrameLocationWindow | null {
@@ -95,7 +95,7 @@ export function watchFrameLocation(options: WatchFrameLocationOptions): () => vo
   function report(): void {
     const href = readableWindow()?.location.href
     // `about:blank` is the placeholder document a fresh iframe holds until its
-    // `src` commits - reporting it would overwrite the real route with a blank.
+    // `src` commits; reporting it would overwrite the real route with a blank.
     if (!href || href === 'about:blank' || href === lastReported)
       return
     lastReported = href

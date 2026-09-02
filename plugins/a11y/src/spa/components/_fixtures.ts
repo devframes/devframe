@@ -5,7 +5,7 @@ import { emptyCounts } from '../../shared/protocol.ts'
 
 function noop() {}
 
-/** A no-op channel stub - enough for the hover/clear calls the rows fire. */
+/** A no-op channel stub, enough for the hover/clear calls the rows fire. */
 export const stubChannel: A11yChannel = {
   state: () => null,
   pageScriptReady: () => false,

@@ -20,7 +20,7 @@ export interface CreateHostContextOptions {
    * serves (from `DevframeDefinition.importMetaUrl`). Supplies the default
    * `resolveFrom` base for remote {@link DevframeViewHost.hostStatic} sources
    * that don't set one, so a locally installed copy of an assets package is
-   * served with zero network. An internal plumbing detail - it isn't part of
+   * served with zero network. An internal plumbing detail; it isn't part of
    * the public {@link DevframeNodeContext} surface.
    */
   importMetaUrl?: string
@@ -36,7 +36,7 @@ export interface CreateHostContextOptions {
  * Framework- and build-tool-agnostic core of the Devframe node context.
  * Wires the RPC host, view (HTTP file-serving) host, diagnostics, and
  * agent subsystems. Host adapters can wrap this to augment `ctx` with
- * extra surfaces - for example, `@vitejs/devtools-kit`'s
+ * extra surfaces; for example, `@vitejs/devtools-kit`'s
  * `createKitContext` attaches `docks`, `terminals`, `messages`, and
  * `commands` when mounted into Vite DevTools.
  */
@@ -66,7 +66,7 @@ export async function createHostContext(options: CreateHostContextOptions): Prom
   context.services = new DevframeServicesHostImpl(context)
 
   // Agent host must be constructed after `rpcHost` so it can subscribe
-  // to `onChanged` - it auto-discovers RPC functions flagged with
+  // to `onChanged`; it auto-discovers RPC functions flagged with
   // the `agent` field.
   const agentHost = new DevframeAgentHost(context)
   context.agent = agentHost

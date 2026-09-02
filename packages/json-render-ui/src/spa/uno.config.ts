@@ -9,7 +9,7 @@ import {
 
 /**
  * The prebuilt SPA renders `@devframes/json-render-ui`, whose components author
- * class strings in `.ts` render functions - so `.ts` is opted into extraction.
+ * class strings in `.ts` render functions, so `.ts` is opted into extraction.
  * Same `@antfu/design` stack (sage-green preset, Phosphor, DM Sans/Mono) as
  * every other devframe surface, on the **Wind3** base the package's renderer
  * module uses (`../../uno.config.ts`) so the components render identically in

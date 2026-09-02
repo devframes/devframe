@@ -11,7 +11,7 @@ const HEX = '0123456789abcdef'
 
 /**
  * Generate a high-entropy, URL-safe (hex) random token suitable for use as a
- * bearer credential - e.g. the persistent client auth token or an ephemeral
+ * bearer credential, e.g. the persistent client auth token or an ephemeral
  * remote-dock token. Defaults to 16 bytes (128 bits) of entropy.
  */
 export function randomToken(byteLength = 16): string {

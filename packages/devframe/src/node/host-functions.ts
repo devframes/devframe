@@ -13,7 +13,7 @@ const debugBroadcast = createDebug('devframe:rpc:broadcast')
  * The public, structural shape of `ctx.rpc`. Re-exported from
  * `devframe/types` so `import { RpcFunctionsHost } from 'devframe/node'`
  * resolves to the exact same type as `DevframeNodeContext['rpc']` (and the
- * `devframe` main entry) - free of the `@internal` implementation members
+ * `devframe` main entry), free of the `@internal` implementation members
  * carried by {@link RpcFunctionsHostImpl}.
  */
 export type { RpcFunctionsHost } from 'devframe/types'

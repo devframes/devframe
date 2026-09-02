@@ -44,7 +44,7 @@ const DOCKS_ACTIVATE_EVENT = HUB_EVENTS.broadcast.docksActivate
 export interface DevframeClientRuntimeOptions {
   /**
    * An already-connected RPC client. When omitted, one is created via
-   * `connectDevframe(connect)` - pass `connect.baseURL` to point at the hub's
+   * `connectDevframe(connect)`, so pass `connect.baseURL` to point at the hub's
    * connection-meta mount (e.g. `/__hub/`).
    */
   rpc?: DevframeRpcClient
@@ -52,8 +52,8 @@ export interface DevframeClientRuntimeOptions {
   connect?: DevframeRpcClientOptions
   /**
    * Environment the host runs in.
-   * - `'standalone'` (default) - the runtime owns the whole page (a hub UI).
-   * - `'embedded'` - the runtime lives inside a user app alongside a panel.
+   * - `'standalone'` (default): the runtime owns the whole page (a hub UI).
+   * - `'embedded'`: the runtime lives inside a user app alongside a panel.
    */
   clientType?: DockClientType
   /**
@@ -63,7 +63,7 @@ export interface DevframeClientRuntimeOptions {
   loadClientScripts?: boolean
   /**
    * Resolve a **bare-specifier** client script (`importFrom` naming an npm
-   * module) to a URL this page can import - a hub UI provider's own policy, winning
+   * module) to a URL this page can import, a hub UI provider's own policy that wins
    * over the host-advertised `ConnectionMeta.configs.dock.clientModuleResolution`
    * template (return `undefined` to fall through to it). URL specifiers never
    * reach this hook. E.g. on a Vite-served page:
@@ -77,11 +77,11 @@ export interface DevframeClientRuntimeOptions {
    * `@devframes/json-render-ui`). The hub ships none by default.
    *
    * Local registrations take precedence over the hub's renderer manifest
-   * (`initHub({ renderers })`) - explicit local code beats wire config.
+   * (`initHub({ renderers })`), since explicit local code beats wire config.
    */
   renderers?: Record<string, DockRenderer<any>>
   /**
-   * Hub-wide override of the top-level dock-bar category ordering - a map of
+   * Hub-wide override of the top-level dock-bar category ordering: a map of
    * category id → ordering weight (lower sorts earlier), mirroring the shape
    * of {@link import('../constants').DEFAULT_CATEGORIES_ORDER}.
    *
@@ -115,7 +115,7 @@ export interface DevframeClientRuntime {
  * Boot the client runtime: connect RPC, assemble the full
  * {@link DevframeClientContext} (panel, docks, commands, when) from the hub's
  * shared state, publish it at `__DEVFRAME_HUB_CLIENT_CONTEXT__`, and load every
- * dock entry's client script into this page - the devframe equivalent of the
+ * dock entry's client script into this page, the devframe equivalent of the
  * runtime `@vitejs/devtools-kit` injects into a host app.
  *
  * A hub UI provider keeps rendering its own dock UI (reading the same shared state); this
@@ -142,7 +142,7 @@ export async function createDevframeClientRuntime(
   const entryToStateMap = new Map<string, DockEntryState>()
   // Docks registered live in this page via `docks.register()`. They never flow
   // into the `devframe:docks` shared state (client-only), and are merged with
-  // the server entries - a client dock overriding a server one of the same id.
+  // the server entries, letting a client dock override a server one of the same id.
   const clientDocks = new Map<string, DevframeDockEntry>()
   // Live frame-nav adapters for shared-frame anchors, keyed by frameId, so we
   // attach one adapter per shared iframe and tear them all down on dispose.
@@ -220,7 +220,7 @@ export async function createDevframeClientRuntime(
 
   if (getDevframeClientContext()) {
     console.warn(
-      '[@devframes/hub] A client context is already published on this page - replacing it. '
+      '[@devframes/hub] A client context is already published on this page; replacing it. '
       + 'Boot createDevframeClientRuntime() once per page (e.g. HTML injection combined with a manual import boots it twice).',
     )
   }
@@ -379,7 +379,7 @@ export async function createDevframeClientRuntime(
       toggleEntry: id => (selectedId === id ? switchEntry(null) : switchEntry(id)),
       register(entry, force) {
         if (clientDocks.has(entry.id) && !force)
-          throw new Error(`[@devframes/hub] a client dock "${entry.id}" is already registered - pass force to overwrite`)
+          throw new Error(`[@devframes/hub] a client dock "${entry.id}" is already registered; pass force to overwrite`)
         clientDocks.set(entry.id, entry)
         refreshEntries()
         return {
@@ -388,7 +388,7 @@ export async function createDevframeClientRuntime(
               throw new Error(`[@devframes/hub] cannot change a dock id ("${entry.id}" → "${patch.id}")`)
             const existing = clientDocks.get(entry.id)
             if (!existing)
-              throw new Error(`[@devframes/hub] client dock "${entry.id}" was removed - register it again to update`)
+              throw new Error(`[@devframes/hub] client dock "${entry.id}" was removed; register it again to update`)
             clientDocks.set(entry.id, { ...existing, ...patch } as DevframeDockEntry)
             refreshEntries()
           },
@@ -400,7 +400,7 @@ export async function createDevframeClientRuntime(
       },
       update(entry) {
         if (!clientDocks.has(entry.id))
-          throw new Error(`[@devframes/hub] no client dock "${entry.id}" to update - register it first`)
+          throw new Error(`[@devframes/hub] no client dock "${entry.id}" to update; register it first`)
         clientDocks.set(entry.id, entry)
         refreshEntries()
       },
@@ -458,7 +458,7 @@ export async function createDevframeClientRuntime(
         const client = clientCommands.get(id)
         if (client?.action)
           return client.action(...args)
-        // Server command - dispatch through the hub built-in.
+        // Server command, dispatched through the hub built-in.
         return rpc.call('hub:commands:execute', id, ...args)
       },
       getKeybindings(id): DevframeCommandKeybinding[] {
@@ -486,7 +486,7 @@ export async function createDevframeClientRuntime(
       manifest: () => renderersManifestState.value() as DockRendererManifest,
       onMounted(dispose, entry) {
         mountedDisposers.add(dispose)
-        // Dispose when the dock deactivates - the Vite hub UI provider leaked here by
+        // Dispose when the dock deactivates; the Vite hub UI provider leaked here by
         // never unsubscribing the renderer's shared-state listeners.
         const offDeactivate = entryToStateMap.get(entry.id)?.events.on('entry:deactivated', dispose)
         return () => {
@@ -516,15 +516,15 @@ export async function createDevframeClientRuntime(
   async function runClientScript(entryId: string, script: ClientScriptEntry): Promise<void> {
     // A bare specifier resolves through the explicit option, then the
     // host-advertised template; URL specifiers pass through untouched. (The
-    // rpc reads are optional-chained for partial stubs - tests, bespoke
-    // hub UI providers - where the template then resolves page-relative.)
+    // rpc reads are optional-chained for partial stubs (tests, bespoke
+    // hub UI providers) where the template then resolves page-relative.)
     const specifier = resolveClientModuleSpecifier(script.importFrom, {
       resolveClientModule: options.resolveClientModule,
       template: rpc.connectionMeta?.configs?.dock?.clientModuleResolution,
       metaBaseUrl: rpc.connection?.metaBaseUrl,
     })
     try {
-      // Keep this a *native* dynamic import in every bundler - the specifier
+      // Keep this a *native* dynamic import in every bundler, since the specifier
       // is a runtime URL served by the host, not a build-time module.
       const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ /* turbopackIgnore: true */ specifier)
       const fn = mod[script.importName ?? 'default']
@@ -635,8 +635,8 @@ function createPanelContext(clientType: DockClientType): DocksPanelContext {
 function groupByCategory(entries: DevframeDockEntry[], categoryOrder: Record<string, number>): DevframeDockEntriesGrouped {
   // Index registered groups so a member whose `groupId` resolves takes its
   // OUTER bucket from the group's category, not its own (which becomes the
-  // member's in-group sub-category). Orphan members - a `groupId` with no
-  // registered group - fall back to their own category.
+  // member's in-group sub-category). Orphan members (a `groupId` with no
+  // registered group) fall back to their own category.
   const groupsById = new Map<string, DevframeDockEntry>()
   for (const entry of entries) {
     if (entry.type === 'group')
@@ -661,11 +661,11 @@ function groupByCategory(entries: DevframeDockEntry[], categoryOrder: Record<str
   )
 }
 
-/** @deprecated Renamed - use {@link DevframeClientRuntimeOptions}. */
+/** @deprecated Renamed; use {@link DevframeClientRuntimeOptions}. */
 export type DevframeClientHostOptions = DevframeClientRuntimeOptions
 
-/** @deprecated Renamed - use {@link DevframeClientRuntime}. */
+/** @deprecated Renamed; use {@link DevframeClientRuntime}. */
 export type DevframeClientHost = DevframeClientRuntime
 
-/** @deprecated Renamed - use {@link createDevframeClientRuntime}. */
+/** @deprecated Renamed; use {@link createDevframeClientRuntime}. */
 export const createDevframeClientHost: typeof createDevframeClientRuntime = createDevframeClientRuntime

@@ -6,7 +6,7 @@ import type { InferArgsType, InferReturnType } from '../rpc/utils'
 /**
  * The shared contract of one in-page channel, declared once (usually in a
  * `shared/protocol.ts` both sides import) and passed to both endpoints as a
- * type parameter. Purely a type - the only runtime companion is the
+ * type parameter. Purely a type; the only runtime companion is the
  * channel-name constant declared next to it.
  */
 export interface InPageChannelProtocol {
@@ -41,14 +41,14 @@ type ProtocolHandler<F> = F extends (...args: any[]) => any
   : never
 
 /**
- * Types of an in-page channel function - `RpcFunctionType` minus the
+ * Types of an in-page channel function: `RpcFunctionType` minus the
  * server-only `static`: `event` is fire-and-forget (the only type valid for
  * fan-out), `action` performs, `query` requests data (the default).
  */
 export type InPageFunctionType = 'action' | 'event' | 'query'
 
 /**
- * An in-page channel function definition - the `defineRpcFunction` authoring
+ * An in-page channel function definition: the `defineRpcFunction` authoring
  * shape (`name`, `type`, Standard-Schema `args`/`returns`,
  * `jsonSerializable`, `handler`) narrowed to the browser: there is no
  * `dump`/`snapshot`/`cacheable`/`agent`. When `jsonSerializable` is `true`,
@@ -157,12 +157,12 @@ interface InPageChannelCommonOptions {
   callTimeoutMs?: number
   /**
    * Liveness heartbeat guarding against silently dead ports. Defaults to a
-   * 5s ping / 12s silence window; pass `false` to disable - on both
+   * 5s ping / 12s silence window; pass `false` to disable, on both
    * endpoints together.
    */
   heartbeat?: { intervalMs?: number, timeoutMs?: number } | false
   /**
-   * Applied to each outgoing argument and handler result before posting -
+   * Applied to each outgoing argument and handler result before posting;
    * the place to unwrap framework reactivity (Vue `toRaw`, Solid `unwrap`)
    * into plain structured-cloneable values.
    */
@@ -194,7 +194,7 @@ export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtoc
   window?: Window | false
   /**
    * Windows the hello is posted to. Defaults to the panel's ancestor chain
-   * plus its `opener` - the places a same-tab page script can live. When
+   * plus its `opener`, the places a same-tab page script can live. When
    * empty and no `transport` is given, the endpoint stays `connecting` and
    * warns once.
    */
@@ -203,7 +203,7 @@ export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtoc
   transport?: MessagePort
   /**
    * Pin this panel to one page-script instance id. By default the panel
-   * auto-pairs with the most recent page script that answers - almost
+   * auto-pairs with the most recent page script that answers, almost
    * always "my own tab's page script".
    */
   instanceId?: string
@@ -223,7 +223,7 @@ export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtoc
 }
 
 /**
- * The channel shared-state accessor - mirrors `rpc.sharedState`, with the
+ * The channel shared-state accessor, mirroring `rpc.sharedState`, with the
  * page script playing the server's role as rendezvous and authority. The
  * page script's first `get` of a key must provide `initialValue`; a panel's
  * `get` without one resolves once the authority's first replay arrives.
@@ -305,7 +305,7 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
   /**
    * Resolves once connected. With `timeoutMs`, rejects with an
    * `InPageChannelError` (code `timeout`) when no page script answered in
-   * time - the hook for a "no page script found" fallback UI.
+   * time; the hook for a "no page script found" fallback UI.
    */
   whenConnected: (timeoutMs?: number) => Promise<void>
   /**

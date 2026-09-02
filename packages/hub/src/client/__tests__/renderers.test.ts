@@ -133,7 +133,7 @@ describe('client host renderer registry', () => {
 
     const result = await host.context.renderers.mount(jsonRenderEntry, container)
     expect(result.status).toBe('load-error')
-    // The failed import is not cached - a retry re-imports the module.
+    // The failed import is not cached, so a retry re-imports the module.
     const retry = await host.context.renderers.mount(jsonRenderEntry, container)
     expect(retry.status).toBe('load-error')
     expect(error).toHaveBeenCalledTimes(2)

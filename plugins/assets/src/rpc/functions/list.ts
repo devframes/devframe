@@ -36,7 +36,7 @@ export const list = defineAssetsRpc({
        * The RPC runtime awaits handlers before validating `returns`; its
        * public setup type currently models schema-backed returns as
        * synchronous.
-       * `fsPath` is dev-only - never baked into a static build's dump.
+       * `fsPath` is dev-only, never baked into a static build's dump.
        */
       handler: (async (): Promise<AssetInfo[]> => scanAssets(assets.dir, assets.baseURL, ctx.mode === 'dev')) as any,
     }

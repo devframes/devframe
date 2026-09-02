@@ -22,7 +22,7 @@ export const diagnostics = defineDiagnostics({
     },
     DP_ASSETS_0004: {
       why: (p: { path: string }) => `No asset found at "${p.path}".`,
-      fix: 'Refresh the asset list - it may have been moved or deleted already.',
+      fix: 'Refresh the asset list; it may have been moved or deleted already.',
     },
     DP_ASSETS_0005: {
       why: (p: { path: string }) => `Cannot create folder "${p.path}" because a file already exists there.`,
@@ -34,7 +34,7 @@ export const diagnostics = defineDiagnostics({
     },
     DP_ASSETS_0007: {
       why: 'The upload streaming channel is unavailable because this devframe was set up with `write: false`.',
-      fix: 'This indicates an internal registration bug - `upload` should never be reachable without `write: true`. Please report it.',
+      fix: 'This indicates an internal registration bug, since `upload` should never be reachable without `write: true`. Please report it.',
     },
   },
 })

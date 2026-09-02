@@ -1,7 +1,7 @@
 /**
  * "What data are available": walks a live object into a compact type
  * SKELETON (keys and type names, no values) so users can see the shape of a
- * source while composing queries - independent of any query.
+ * source while composing queries, independent of any query.
  *
  *   - primitives           -> their type name ('string', 'number', ...)
  *   - functions            -> 'function'

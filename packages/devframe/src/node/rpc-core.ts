@@ -42,7 +42,7 @@ export interface ContextRpcServer {
 
 /**
  * Bind a devframe context's registered RPC functions to a birpc group,
- * transport-agnostically - the shared core under the instance shell's own
+ * transport-agnostically: the shared core under the instance shell's own
  * HTTP+WS binding (Node http + WS) and the Bun fetch-upgrade tier of
  * `createHandler`.
  *
@@ -86,7 +86,7 @@ export function createContextRpcServer(options: CreateContextRpcServerOptions): 
          * Wrap each RPC handler in an AsyncLocalStorage context so
          * `ctx.rpc.getCurrentRpcSession()` works inside handlers (used
          * by streaming subscribe/unsubscribe/cancel and shared-state
-         * sync), and - when an `authorize` gate is configured - reject
+         * sync), and (when an `authorize` gate is configured) reject
          * the call before it ever reaches the handler. Mirrors
          * `packages/core/src/node/ws.ts`'s resolver.
          */

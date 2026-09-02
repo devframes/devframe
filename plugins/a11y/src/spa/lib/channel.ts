@@ -40,7 +40,7 @@ export interface A11yChannel {
  * page script answers (it may load after the panel), actions fired while
  * `connecting` are buffered, and a page-script reload re-handshakes and
  * re-seeds the state automatically. Until then `pageScriptReady` stays
- * `false` and `state` stays `null` - the UI renders its fallback from those.
+ * `false` and `state` stays `null`, so the UI renders its fallback from those.
  */
 export function createA11yChannel(): A11yChannel {
   const [state, setState] = createSignal<A11yState | null>(null)

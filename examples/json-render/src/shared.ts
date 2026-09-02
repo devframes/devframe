@@ -5,7 +5,7 @@
 export const VIEW_ID = 'dashboard'
 
 /**
- * Spec action names dispatched by the bridge - each is an RPC method the server
+ * Spec action names dispatched by the bridge; each is an RPC method the server
  * registers.
  */
 export const REFRESH_ACTION = 'example:json-render:refresh'

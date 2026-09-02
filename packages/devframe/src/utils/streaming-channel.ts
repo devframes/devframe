@@ -26,7 +26,7 @@ export interface BufferedChunk<T> {
 export interface StreamSinkEvents<T> {
   /** Fired for each `write()`. The RPC layer subscribes and broadcasts. */
   chunk: (seq: number, chunk: T) => void
-  /** Terminal - fired exactly once per sink lifetime. */
+  /** Terminal; fired exactly once per sink lifetime. */
   end: (error?: StreamErrorPayload) => void
 }
 
@@ -64,11 +64,11 @@ export interface StreamSink<T> {
   /** External-cancel path. Aborts the signal so handlers can short-circuit. */
   abort: (reason?: unknown) => void
 
-  /** `WritableStream<T>` adapter - same in-memory state as the imperative API. */
+  /** `WritableStream<T>` adapter; same in-memory state as the imperative API. */
   readonly writable: WritableStream<T>
 
   /**
-   * Internal - RPC layer subscribes to receive chunk/end notifications.
+   * Internal: RPC layer subscribes to receive chunk/end notifications.
    * Not part of the public contract; do not call directly.
    *
    * @internal
@@ -76,7 +76,7 @@ export interface StreamSink<T> {
   readonly events: EventEmitter<StreamSinkEvents<T>>
 
   /**
-   * Internal - replay buffer. RPC layer reads on (re)subscribe to feed
+   * Internal replay buffer. RPC layer reads on (re)subscribe to feed
    * missed chunks before going live.
    *
    * @internal
@@ -97,13 +97,13 @@ export interface CreateStreamReaderOptions {
    * RPC-agnostic.
    */
   onOverflow?: (dropped: number) => void
-  /** Called when the consumer cancels - the RPC layer sends `:cancel` upstream. */
+  /** Called when the consumer cancels; the RPC layer sends `:cancel` upstream. */
   onCancel?: () => void
 }
 
 /**
  * Client-side consumer handle. Both an `AsyncIterable<T>` (for `for await`)
- * and exposes `readable: ReadableStream<T>` (for `pipeTo`). Pick one - they
+ * and exposes `readable: ReadableStream<T>` (for `pipeTo`). Pick one; they
  * share a single internal queue, so concurrent draining will race.
  */
 export interface StreamReader<T> extends AsyncIterable<T> {
@@ -130,7 +130,7 @@ class StreamClosedError extends Error {
 }
 
 /**
- * Build a server-side stream sink. RPC-agnostic - the RPC host wires
+ * Build a server-side stream sink. RPC-agnostic; the RPC host wires
  * `events.on('chunk' | 'end')` to broadcast, and reads `buffer` to replay
  * for late or reconnecting subscribers.
  */
@@ -210,7 +210,7 @@ export function createStreamSink<T>(options: CreateStreamSinkOptions = {}): Stre
 }
 
 /**
- * Build a client-side stream reader. RPC-agnostic - the RPC host calls
+ * Build a client-side stream reader. RPC-agnostic; the RPC host calls
  * `_push(seq, chunk)` on each incoming chunk and `_end(error?)` on the
  * terminal frame. Consumers iterate with `for await` or pipe `readable`.
  */
@@ -224,7 +224,7 @@ export function createStreamReader<T>(options: CreateStreamReaderOptions = {}): 
   let cancelled = false
   let endError: StreamErrorPayload | undefined
   let pending: { resolve: (r: IteratorResult<T>) => void, reject: (err: unknown) => void } | undefined
-  // Lazily created - accessing `reader.readable` claims the queue for
+  // Lazily created: accessing `reader.readable` claims the queue for
   // `pipeTo` consumption. While inactive, `_push` only feeds the
   // AsyncIterator path. Mixing the two surfaces is undefined behavior.
   let pullController: ReadableStreamDefaultController<T> | undefined
@@ -263,7 +263,7 @@ export function createStreamReader<T>(options: CreateStreamReaderOptions = {}): 
         pullController.enqueue(v)
       }
       catch {
-        // controller closed/errored under us - drop silently; the
+        // controller closed/errored under us; drop silently, since the
         // ReadableStream consumer is gone and we can't push further.
         break
       }

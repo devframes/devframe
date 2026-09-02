@@ -38,8 +38,8 @@ export interface FakeHubTerminals {
 }
 
 /**
- * Minimal stand-in for the hub's `ctx.terminals` aggregation host - a sessions
- * map plus a `terminals:session:updated` emitter - so tests can exercise how the
+ * Minimal stand-in for the hub's `ctx.terminals` aggregation host (a sessions
+ * map plus a `terminals:session:updated` emitter), so tests can exercise how the
  * terminals plugin surfaces sessions contributed by *other* devframes.
  */
 export function createFakeHubTerminals(): FakeHubTerminals {
@@ -117,7 +117,7 @@ export interface TestClient {
 }
 
 /**
- * Minimal RPC + streaming client over the WS transport - mirrors the
+ * Minimal RPC + streaming client over the WS transport, mirroring the
  * streaming-chat example harness. `connectDevframe` is skipped because it
  * needs a browser-like environment for connection-meta lookup.
  */

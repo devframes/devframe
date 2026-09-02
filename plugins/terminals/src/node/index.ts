@@ -15,7 +15,7 @@ export { TerminalManager } from './manager'
  * state, and register the control RPC functions. Returns the manager so
  * callers can spawn sessions or dispose it on shutdown.
  *
- * Works in any devframe runtime (CLI, Vite, build) - it only depends on the
+ * Works in any devframe runtime (CLI, Vite, build), since it only depends on the
  * core `ctx.rpc` streaming + shared-state surface, not on the hub.
  */
 export async function setupTerminals(

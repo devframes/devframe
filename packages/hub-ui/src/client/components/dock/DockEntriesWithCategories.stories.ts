@@ -43,7 +43,7 @@ export const Categories: Story = {
 }
 
 /**
- * A bar with collapsed groups - the group members fold behind their group
+ * A bar with collapsed groups: the group members fold behind their group
  * button and only the group icon shows on the bar.
  */
 export const WithGroups: Story = {

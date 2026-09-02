@@ -65,7 +65,7 @@ function toggle(): void {
 
       <template v-if="fn.invokable">
         <div class="label">
-          Invoke - positional args as a JSON array
+          Invoke with positional args as a JSON array
         </div>
         <textarea :value="argsInput[fn.name]" class="args" spellcheck="false" placeholder="[]" @input="emit('updateArgs', fn.name, ($event.target as HTMLTextAreaElement).value)" />
         <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
@@ -79,7 +79,7 @@ function toggle(): void {
           >
             {{ pending[fn.name] ? 'Invoking…' : 'Invoke' }}
           </ActionButton>
-          <span v-if="isStatic" class="note">read-only static backend - invocation disabled</span>
+          <span v-if="isStatic" class="note">read-only static backend, invocation disabled</span>
         </div>
         <div v-if="results[fn.name]" class="result">
           <div class="result-head">
@@ -96,7 +96,7 @@ function toggle(): void {
         </div>
       </template>
       <p v-else class="note">
-        {{ fn.type }} functions may carry side effects - the inspector does not invoke them.
+        {{ fn.type }} functions may carry side effects, so the inspector does not invoke them.
       </p>
     </div>
   </div>

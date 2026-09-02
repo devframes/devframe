@@ -4,7 +4,7 @@ import { isAbsolute, join } from 'pathe'
 
 /**
  * Turn a `resolveFrom` value (a file path, a file URL like `import.meta.url`,
- * or a directory) into something `createRequire` accepts - a directory gets a
+ * or a directory) into something `createRequire` accepts; a directory gets a
  * synthetic filename appended so resolution starts inside it.
  */
 function toRequireBase(resolveFrom: string): string {
@@ -64,7 +64,7 @@ export async function importServicePackage(
     }
     // `resolved` is a runtime-resolved absolute path, so this is a fully
     // dynamic import. Mark it bundler-ignored (webpack / turbopack) so hosts
-    // that bundle devframe's node code - e.g. a Next.js hub - leave it as a
+    // that bundle devframe's node code (e.g. a Next.js hub) leave it as a
     // real runtime import instead of failing with "expression too dynamic".
     return await import(/* webpackIgnore: true */ /* @vite-ignore */ /* turbopackIgnore: true */ pathToFileURL(resolved).href)
   }
@@ -131,7 +131,7 @@ function satisfiesTilde(version: ParsedVersion, base: ParsedVersion, segments: s
 }
 
 function satisfiesExactOrPrefix(version: ParsedVersion, base: ParsedVersion, segments: string[]): boolean {
-  // Bare / `=` - exact for full versions, prefix match for partials.
+  // Bare / `=`: exact for full versions, prefix match for partials.
   for (let i = 0; i < Math.max(segments.length, 3); i++) {
     if (i < segments.length && (version.parts[i] ?? 0) !== (base.parts[i] ?? 0))
       return false
@@ -150,7 +150,7 @@ function satisfiesComparator(version: ParsedVersion, comparator: string): boolea
   const operator = operatorMatch[1]
   const rest = operatorMatch[2]!.trim()
 
-  // Partial versions (`1`, `1.2`, `1.2.x`) - prefix (x-range) semantics for
+  // Partial versions (`1`, `1.2`, `1.2.x`): prefix (x-range) semantics for
   // the bare / `=` forms; padded with zeros for the ordered comparators.
   const segments = rest.replace(/\.[x*]/gi, '').split('.').filter(Boolean)
   const base = parseVersion(rest.replace(/[x*]/gi, '0'))
@@ -176,7 +176,7 @@ function satisfiesComparator(version: ParsedVersion, comparator: string): boolea
 }
 
 /**
- * Pragmatic semver range check for service version declarations - supports
+ * Pragmatic semver range check for service version declarations; supports
  * the common forms (`1.2.3`, `^1.2.3`, `~1.2`, `>=1 <3`, `1.x`, `*`, and
  * `||`-joined alternatives) without pulling in a semver dependency. An
  * unparseable version or range reads as **not satisfied**.
@@ -214,7 +214,7 @@ function deepMergeTwo(a: unknown, b: unknown): unknown {
 
 /**
  * Default option-set merge when a service declares no `mergeOptions`:
- * deep-merge in declaration order - objects recurse, arrays union-dedupe,
+ * deep-merge in declaration order: objects recurse, arrays union-dedupe,
  * scalars take the later value. Covers the built-in services (`roots` /
  * `langs` union, `themes` per-key last-wins) without a custom hook.
  */

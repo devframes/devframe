@@ -11,13 +11,13 @@ auto-authenticated `<iframe>`. The launcher is a **Vue** SPA built on the shared
 
 ## How it works
 
-- **Detection** - on startup it probes the resolved binary with `--version`.
+- **Detection**: on startup it probes the resolved binary with `--version`.
   When none is found, the launcher renders install instructions instead of a
   launch button.
-- **Launch** - the launcher's button starts the editor as a managed child
+- **Launch**: the launcher's button starts the editor as a managed child
   process bound to a free port, scoped to the workspace. Readiness is probed
   before the iframe loads.
-- **Auto-auth** - the devframe generates fresh auth material per launch and hands
+- **Auto-auth**: the devframe generates fresh auth material per launch and hands
   it to the already-authorized devframe client, so the editor opens already
   signed in. `code-server` uses a session cookie (`HASHED_PASSWORD`);
   `code serve-web` uses a connection token on the URL (`?tkn=`).
@@ -84,7 +84,7 @@ Status (minus the connect descriptor) is mirrored into the
 ## UI
 
 The launcher is a Vue SPA (`src/spa`). `LauncherView.vue` is a pure,
-state-driven view decoupled from RPC - every phase renders in isolation and has
+state-driven view decoupled from RPC, so every phase renders in isolation and has
 a Storybook story; `App.vue` wires the live connection to it and mounts the
 editor in a full-bleed, auto-authenticated iframe (`EditorFrame.vue`).
 

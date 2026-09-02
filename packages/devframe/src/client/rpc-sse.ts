@@ -44,7 +44,7 @@ export function resolveSseUrl(
     }
   })()
 
-  // Object form - the proxy-flexible default.
+  // Object form: the proxy-flexible default.
   if (sse && typeof sse === 'object') {
     if (sse.host != null || sse.port != null) {
       const host = sse.host ?? `${base.hostname}:${sse.port}`
@@ -54,15 +54,15 @@ export function resolveSseUrl(
   }
 
   const str = sse ?? ''
-  // Full HTTP(S) URL - used verbatim.
+  // Full HTTP(S) URL, used verbatim.
   if (/^https?:\/\//i.test(str))
     return str
-  // Path string - resolve same-origin against the meta base.
+  // Path string: resolve same-origin against the meta base.
   return new URL(str, base).href
 }
 
 /**
- * The SSE-backed live client mode - picked by `connectDevframe` when the
+ * The SSE-backed live client mode, picked by `connectDevframe` when the
  * server advertises SSE as its primary transport (`backend: 'sse'`) or when
  * the caller pins `transport: 'sse'`. Same status machine, call guarding,
  * and trust handshake as the WebSocket mode, over `createSseRpcChannel`.
@@ -101,7 +101,7 @@ export function createSseRpcClientMode(
       definitions: handlers.definitions,
       ...sseOptions,
       onConnected() {
-        // Stream open - the trust handshake (already queued) settles the
+        // Stream open; the trust handshake (already queued) settles the
         // status to `connected`/`unauthorized`. Stay `connecting` until then.
         sseOptions.onConnected?.()
       },

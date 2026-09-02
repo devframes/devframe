@@ -10,7 +10,7 @@ import { createDesignConfig, shadowSurfaceSafelist } from '../../design/uno.conf
  *
  * Composed on a **Wind3** base rather than the shared default's Wind4:
  * `@antfu/design`'s semantic utilities compile to concrete `rgb()` + `.dark`
- * variants under Wind3, which are self-contained inside a shadow tree - Wind4
+ * variants under Wind3, which are self-contained inside a shadow tree; Wind4
  * keeps its theme/`--un-*` behind a document `:root {}` block and
  * `@property { inherits: false }`, neither of which reaches the shadow root.
  * The `safelist` guarantees the surface/text tokens ship even if a shortcut
@@ -31,7 +31,7 @@ export default mergeConfigs([
       /** Match dock glass at rest, then strengthen each theme slightly on hover. */
       'bg-toast-glass': 'bg-dock-glass hover:bg-white/78 dark:hover:bg-[#111]/90',
       /**
-       * Dock-shell z-layers (named - the design preset blocks plain
+       * Dock-shell z-layers (named, since the design preset blocks plain
        * `z-<number>`). The floating shell layers sit at the very top of the
        * host page's stacking order, mirroring the upstream dock.
        */

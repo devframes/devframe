@@ -9,7 +9,7 @@ const meta = {
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
-    /** Fixed, full-screen modal - render in an iframe for the docs canvas. */
+    /** Fixed, full-screen modal; render in an iframe for the docs canvas. */
     docs: {
       story: { inline: false, height: '360px' },
       description: {

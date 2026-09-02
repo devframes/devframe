@@ -272,7 +272,7 @@ const CommitRow = memo(({ commit, row, gutter, currentBranch, isHead, topStub, s
 }) => {
   const refs = useMemo(() => parseRefs(commit.refs, currentBranch), [commit.refs, currentBranch])
   // Commits off the mainline (lane 0) recede, so the checked-out line reads as
-  // the spine of the history - matching the emphasized/faded rows in the design.
+  // the spine of the history, matching the emphasized/faded rows in the design.
   const [open, setOpen] = useState(false)
   const [detail, setDetail] = useState<DetailState | undefined>()
   const dim = row.col !== 0 && !selected && !open

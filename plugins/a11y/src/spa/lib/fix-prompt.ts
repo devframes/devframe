@@ -10,7 +10,7 @@ export interface SelectedItem {
 /**
  * Build a single, paste-ready AI prompt that gathers the full context needed to
  * fix the selected violations: rule metadata, WCAG tags, docs, and every
- * offending element's selector, markup, and axe failure summary - grouped by
+ * offending element's selector, markup, and axe failure summary, grouped by
  * the route they were found on.
  */
 export function buildFixPrompt(items: SelectedItem[]): string {
@@ -44,7 +44,7 @@ function groupByRoute(items: SelectedItem[]): Map<string, SelectedItem[]> {
 function renderViolation(v: Violation): string[] {
   const lines = [
     '',
-    `### ${v.ruleId} - ${v.help}`,
+    `### ${v.ruleId}: ${v.help}`,
     `- Impact: ${v.impact}${v.bestPractice ? ' (best practice)' : ''}`,
   ]
   if (v.tags?.length)

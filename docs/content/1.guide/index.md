@@ -9,13 +9,13 @@ description: 'Devframe is a framework-neutral foundation for building a devtool 
 
 ## Why it exists
 
-Most devtools rebuild the same plumbing - node–browser communication, state synchronization, serialization, static-asset hosting, a web interface - and wire it to one framework's dev server. The same idea then gets rebuilt, slightly differently, for the next framework, so effort fragments across the ecosystem instead of compounding.
+Most devtools rebuild the same plumbing (node–browser communication, state synchronization, serialization, static-asset hosting, a web interface) and wire it to one framework's dev server. The same idea then gets rebuilt, slightly differently, for the next framework, so effort fragments across the ecosystem instead of compounding.
 
 Devframe moves that boundary. A capability is defined once against a stable interface and runs on every supported host framework, so a good tool can be built once, travel further, and improve through the work of more communities.
 
 ## Who it's for
 
-- **Devtool authors** who want one tool to run standalone, embed in a host framework, ship as a CLI or static report, and answer to a coding agent - without maintaining a separate version per environment.
+- **Devtool authors** who want one tool to run standalone, embed in a host framework, ship as a CLI or static report, and answer to a coding agent, without maintaining a separate version per environment.
 - **Framework and build-tool teams** who want to offer devtools without rebuilding shared infrastructure, and to inherit capabilities other communities already built.
 - **Anyone** who wants a tool's state and actions available to both a human UI and a coding agent from one source of truth.
 
@@ -53,7 +53,7 @@ devtools.handler
 // (request: Request) => Promise<Response>
 
 devtools.nodeMiddleware
-// (req, res, next) => void - for Connect-style servers (Vite, Rsbuild)
+// (req, res, next) => void, for Connect-style servers (Vite, Rsbuild)
 ```
 
 The handler serves the web interface, connection metadata, live RPC, authentication, and optional MCP endpoint under one namespace. Hono and Nitro take Web Standard requests directly; Next.js and SvelteKit expose route handlers; Vite and Rsbuild accept its `nodeMiddleware`. The live RPC connection attaches via a shared HTTP server, upgrade events, or a side-car server, advertised through `__connection.json`. See [The Standard Handler](/adapters/initiate).
@@ -84,7 +84,7 @@ One source of truth feeds a visual panel and programmatic consumers. RPC functio
 
 ## From one devframe to a hub
 
-[`@devframes/hub`](/guide/hub) is the composition layer, providing shared concepts - docks, commands, messages, terminals - against a shared context. [`initHub()`](/guide/hub-initiate) puts many devframes behind one Web Standard handler:
+[`@devframes/hub`](/guide/hub) is the composition layer, providing shared concepts (docks, commands, messages, terminals) against a shared context. [`initHub()`](/guide/hub-initiate) puts many devframes behind one Web Standard handler:
 
 ```ts
 import { createUi } from '@devframes/hub-ui'
@@ -106,7 +106,7 @@ The mounted devframes share one RPC registry, state store, connection, auth gate
 
 ## Inheriting the ecosystem
 
-[Vite DevTools](https://devtools.vite.dev/) is the first flagship hub UI provider, using `initHub()` alongside its own Vite, Rolldown, Vitest, and Oxc tooling. The [framework kits](/frameworks) - [`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), [`@devframes/next`](/frameworks/next) - add conventions over the same handler. See [Built with Devframe](/guide/built-with).
+[Vite DevTools](https://devtools.vite.dev/) is the first flagship hub UI provider, using `initHub()` alongside its own Vite, Rolldown, Vitest, and Oxc tooling. The [framework kits](/frameworks) ([`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), [`@devframes/next`](/frameworks/next)) add conventions over the same handler. See [Built with Devframe](/guide/built-with).
 
 ## Install
 
@@ -163,18 +163,18 @@ The CLI adapter serves the SPA at `/`; embedded in a host framework (`vite`, `em
 | **[Devframe Definition](/guide/devframe-definition)** | One `defineDevframe` call describes your tool; adapters deploy it anywhere. |
 | **[RPC](/guide/rpc)** | Type-safe bidirectional calls on birpc, validated against any Standard Schema validator. `query`, `static`, `action`, `event` types. |
 | **[Shared State](/guide/shared-state)** | Observable, patch-synced state surviving reconnects, node side ↔ browser side. |
-| **[JSON-Render](/guide/json-render)** | Opt-in data-driven UI - a serializable view spec, rendered standalone or in a hub dock. |
+| **[JSON-Render](/guide/json-render)** | Opt-in data-driven UI: a serializable view spec, rendered standalone or in a hub dock. |
 | **[Diagnostics](/guide/diagnostics)** | Coded warnings/errors via `nostics`, in the host framework's shared lookup. |
 | **[Streaming](/guide/streaming)** | One-way (RPC streaming) and two-way (uploads) channel primitives. |
 | **[When Clauses](/references/when-clauses)** | VS Code-style conditional expressions for docks, commands, and custom UI. |
-| **[The Standard Handler](/adapters/initiate)** | `initDevframe()` - the Web Standard `Request → Response` boundary. |
+| **[The Standard Handler](/adapters/initiate)** | `initDevframe()`: the Web Standard `Request → Response` boundary. |
 | **[Client](/guide/client)** | Browser RPC client (`connectDevframe`), auto-auth, WebSocket / static modes. |
 | **[Agent-Native](/guide/agent-native)** | Opt-in exposure of your tool's capabilities to coding agents over MCP. |
 
 ## What's next
 
-- [Tutorial: Build a Server Data Inspector](/guide/tutorial-server-data-inspector) - go from an empty folder to a shippable devtool, one capability at a time
-- [Devframe Definition](/guide/devframe-definition) - `defineDevframe` and `DevframeNodeContext`
-- [The Standard Handler](/adapters/initiate) - mount into any host framework
-- [Adapters](/adapters) - convenience entry points
-- [Hub](/guide/hub) - compose many devframes
+- [Tutorial: Build a Server Data Inspector](/guide/tutorial-server-data-inspector): go from an empty folder to a shippable devtool, one capability at a time
+- [Devframe Definition](/guide/devframe-definition): `defineDevframe` and `DevframeNodeContext`
+- [The Standard Handler](/adapters/initiate): mount into any host framework
+- [Adapters](/adapters): convenience entry points
+- [Hub](/guide/hub): compose many devframes

@@ -5,7 +5,7 @@ import type { DevframeScopedClientRpc } from './scope'
 import { DEVFRAME_SERVICES_STATE_KEY } from 'devframe/constants'
 
 /**
- * A typed handle on one advertised wire service - the service's
+ * A typed handle on one advertised wire service: the service's
  * advertisement meta plus an RPC surface scoped to its namespace, so
  * `handle.rpc.call('fn-name', …)` targets `<scope>:fn-name`. Service
  * packages type the calls by augmenting `DevframeRpcServerFunctions` with
@@ -21,7 +21,7 @@ export interface DevframeServiceClientHandle<NS extends string = string> extends
 /**
  * Client-side view of the server's wire-service registry, mirrored through
  * the reactive `devframe:services` shared state. The accessors are
- * synchronous snapshots - before the first sync lands (or on a server with
+ * synchronous snapshots; before the first sync lands (or on a server with
  * no services) they read as empty. For reactive UI (e.g. hiding an
  * "open in editor" button until the service appears), subscribe to the
  * shared state itself via {@link DevframeServicesClient.state}.
@@ -30,14 +30,14 @@ export interface DevframeServicesClient {
   /** Whether the service package is advertised as installed. */
   has: (pkg: string) => boolean
   /**
-   * A typed handle on an advertised service - its meta plus a scoped RPC
-   * surface - or `undefined` while it isn't available (never throws).
+   * A typed handle on an advertised service (its meta plus a scoped RPC
+   * surface), or `undefined` while it isn't available (never throws).
    */
   get: <PKG extends string>(pkg: PKG) => DevframeServiceClientHandle<DevframeServiceScopeOf<PKG>> | undefined
   /** Package names of every advertised service. */
   keys: () => string[]
   /**
-   * The mirrored `devframe:services` shared state - subscribe to its
+   * The mirrored `devframe:services` shared state; subscribe to its
    * `updated` event for reactivity.
    */
   state: () => Promise<SharedState<DevframeServicesState>>

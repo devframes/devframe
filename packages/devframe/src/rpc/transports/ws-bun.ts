@@ -9,7 +9,7 @@ export interface AttachBunWsTransportOptions {
 
 /**
  * Structural view of the Bun `Bun.serve({ websocket })` handler object the
- * crossws Bun adapter produces - typed loosely so devframe carries no
+ * crossws Bun adapter produces, typed loosely so devframe carries no
  * dependency on Bun's own types.
  */
 export interface BunWsTierWebSocket {
@@ -20,7 +20,7 @@ export interface BunWsTierWebSocket {
 }
 
 export interface BunWsTier {
-  /** Complete a WS upgrade request - `Bun.serve`'s server as 2nd argument. */
+  /** Complete a WS upgrade request; `Bun.serve`'s server as 2nd argument. */
   handleUpgrade: (request: Request, server: unknown) => Promise<Response | undefined>
   /** The handlers to spread into `Bun.serve({ websocket })`. */
   websocket: BunWsTierWebSocket
@@ -28,7 +28,7 @@ export interface BunWsTier {
 }
 
 /**
- * The Bun fetch-upgrade WebSocket tier for `initDevframe` / `initHub` - the
+ * The Bun fetch-upgrade WebSocket tier for `initDevframe` / `initHub`: the
  * same RPC peer wiring as `attachWsRpcTransport`, driven by crossws's Bun
  * adapter so upgrades complete through `handler(request, server)` on the
  * app's own origin, with no side-car server. Load it dynamically so the Bun

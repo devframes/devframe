@@ -11,7 +11,7 @@
  * subdomain), the IPv6 loopback `::1`, or an IPv4 literal inside the
  * `127.0.0.0/8` loopback block.
  *
- * The IPv4 case is matched **structurally** - the whole hostname must be a
+ * The IPv4 case is matched **structurally**: the whole hostname must be a
  * canonical dotted-decimal IPv4 literal whose first octet is `127`. A bare
  * `startsWith('127.')` prefix check would also accept an attacker-controlled
  * DNS name that merely *begins* with `127.` (`127.attacker.example`,
@@ -47,8 +47,8 @@ function isDecimalOctet(part: string): boolean {
  * Default origin policy for a localhost dev tool: allow requests with no
  * `Origin` header (native, non-browser clients), allow any loopback origin
  * (so cross-port localhost dev setups keep working), and allow explicitly
- * configured origins. Everything else - a real remote page in the dev's
- * browser - is rejected.
+ * configured origins. Everything else, such as a real remote page in the dev's
+ * browser, is rejected.
  */
 export function isAllowedOrigin(origin: string | undefined, allowedOrigins: readonly string[]): boolean {
   if (!origin)
@@ -65,7 +65,7 @@ export function isAllowedOrigin(origin: string | undefined, allowedOrigins: read
 
 /**
  * Decide whether a request-derived origin candidate may back a devframe's
- * advertised public origin - the destination of the OTP magic link. Stricter
+ * advertised public origin, the destination of the OTP magic link. Stricter
  * than {@link isAllowedOrigin}: it rejects credentials, a path, a query, a
  * fragment, a malformed port, and non-HTTP(S) schemes, and adopts a candidate
  * only when its hostname is loopback or its canonical origin exactly matches

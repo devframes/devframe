@@ -31,7 +31,7 @@ function inlineSfcCss(): Plugin {
 }
 
 /**
- * The prebuilt dock-renderer module (`dist/renderer/json-render.mjs`) -
+ * The prebuilt dock-renderer module (`dist/renderer/json-render.mjs`),
  * registered into a hub via `jsonRenderUiRenderer()` and served at
  * `<base>__renderers/json-render.mjs`, where any viewer imports it natively
  * at runtime. One self-contained file on purpose: Vue and every dependency

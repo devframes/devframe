@@ -129,12 +129,12 @@ const FIXED_CONTAINING_BLOCK_PROPERTIES = ['transform', 'translate', 'rotate', '
 
 /**
  * The element a fixed-position panel anchored to `anchor` must be `<Teleport>`ed into to
- * avoid being positioned relative to - and clipped by - a transformed ancestor, or
+ * avoid being positioned relative to (and clipped by) a transformed ancestor, or
  * `undefined` when there is no such ancestor and the panel can stay in place.
  *
  * Returns the *outermost* offending ancestor's parent: escaping only the nearest one can
  * land inside another, leaving the panel just as mispositioned. Walking `parentElement`
- * (rather than `parentNode`) naturally stops at a shadow root's boundary - a dock's popover
+ * (rather than `parentNode`) naturally stops at a shadow root's boundary, so a dock's popover
  * never escapes the shadow root that its stylesheet is scoped to.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/CSS/position#fixed

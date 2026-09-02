@@ -29,7 +29,7 @@ interface ServerStreamRecord<T = any> {
 
 interface ServerInboundRecord<T = any> {
   reader: StreamReader<T>
-  /** First session that wrote to this inbound - locks ownership for cleanup. */
+  /** First session that wrote to this inbound; locks ownership for cleanup. */
   uploaderMeta?: DevframeNodeRpcSessionMeta
 }
 
@@ -42,7 +42,7 @@ interface ChannelState<T = any> {
 
 /**
  * Build the server-side streaming host. Mirrors the layout of
- * `createRpcSharedStateServerHost` - registers a fixed set of internal
+ * `createRpcSharedStateServerHost`: registers a fixed set of internal
  * RPC methods (`subscribe` / `unsubscribe` / `cancel`) once, then per-channel
  * state lives in a `Map<channelName, ChannelState>`.
  */
@@ -73,7 +73,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
     if (!record.sink.closed || record.subscribers.size > 0)
       return
 
-    // Closed and no subscribers - either free now or hold for replay.
+    // Closed and no subscribers: either free now or hold for replay.
     const retention = state.options.closedStreamRetention
     if (retention <= 0) {
       freeStreamNow(state, id)
@@ -163,7 +163,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
       const record = findStream(channelName, id)
       if (!record)
         return
-      // Cooperative cancel - only abort if the cancelling session was the
+      // Cooperative cancel: only abort if the cancelling session was the
       // last subscriber. Otherwise other clients still want the stream.
       const session = rpc.getCurrentRpcSession()
       if (!session)
@@ -301,7 +301,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
       const reader = createStreamReader<T>({
         id: inboundOpts.id,
         onCancel() {
-          // Server-initiated cancel - tell the uploading client to stop.
+          // Server-initiated cancel: tell the uploading client to stop.
           // The cancel is targeted at the session that owns this inbound.
           const targetMeta = inboundRecord?.uploaderMeta
           if (!targetMeta)

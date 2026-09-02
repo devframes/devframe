@@ -1,4 +1,4 @@
-// @unocss-include - the `i-catppuccin:*` classes below are assembled by path at
+// @unocss-include, since the `i-catppuccin:*` classes below are assembled by path at
 // runtime, so this marker forces UnoCSS to emit every one of them.
 //
 // A local port of `@antfu/design`'s `FileIcon` (its `utils/icon`), mapping a

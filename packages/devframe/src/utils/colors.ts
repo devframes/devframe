@@ -1,5 +1,5 @@
 /**
- * A colorizer - callable as a function (`colors.red('foo')`) or as a
+ * A colorizer, callable as a function (`colors.red('foo')`) or as a
  * tagged template (``colors.red`foo ${bar}` ``).
  */
 export interface ColorFn {

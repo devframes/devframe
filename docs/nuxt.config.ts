@@ -23,11 +23,11 @@ export default defineNuxtConfig({
     domain: 'https://devfra.me',
     title: 'Devframe',
     description:
-      'Framework-neutral foundation for building devtools - one definition becomes a Web Standard handler, a CLI, a static report, an MCP server, or a hub dock.',
+      'Framework-neutral foundation for building devtools: one definition becomes a Web Standard handler, a CLI, a static report, an MCP server, or a hub dock.',
     full: {
       title: 'Devframe Documentation',
       description:
-        'Complete Devframe documentation as plain markdown - guide, adapters, frameworks, add-ons, references, and the error reference.',
+        'Complete Devframe documentation as plain markdown: guide, adapters, frameworks, add-ons, references, and the error reference.',
     },
   },
 

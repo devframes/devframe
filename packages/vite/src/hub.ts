@@ -10,7 +10,7 @@ import { initHub } from '@devframes/hub/initiate'
 
 export interface ViteDevframeHubOptions {
   /**
-   * Mount base the hub answers under - every frame lives at `<base><id>/`.
+   * Mount base the hub answers under; every frame lives at `<base><id>/`.
    * Default: `/__devframes/`.
    */
   base?: string
@@ -33,7 +33,7 @@ export interface ViteDevframeHubOptions {
    */
   clientScripts?: Record<string, ClientScriptEntry>
   /**
-   * Prebuilt dock-renderer modules forwarded to `initHub({ renderers })` -
+   * Prebuilt dock-renderer modules forwarded to `initHub({ renderers })`,
    * each served at `<base>__renderers/<type>.mjs` and published in the
    * renderer manifest (e.g. `jsonRenderUiRenderer()` from
    * `@devframes/json-render-ui/hub`).
@@ -45,13 +45,13 @@ export interface ViteDevframeHubOptions {
    */
   rpcDeclarations?: InitHubOptions['rpcDeclarations']
   /**
-   * Runs once the context exists and every `devframes` entry is mounted -
+   * Runs once the context exists and every `devframes` entry is mounted;
    * register docks, commands, terminals, and messages surfaces here.
    */
   configure?: (ctx: DevframeHubContext) => void | Promise<void>
   /**
    * The hub's UI slot. Defaults to `@devframes/hub-ui`'s `createUi()` (the
-   * reference floating dock + standalone viewer) when omitted - install
+   * reference floating dock + standalone viewer) when omitted, so install
    * `@devframes/hub-ui` for that default. Pass your own {@link DevframeHubUi}
    * to swap the hub UI provider, or `false` for a headless hub (serve your own UI
    * against `@devframes/hub/client`).
@@ -95,14 +95,14 @@ function recommendViteDevtools(): void {
   console.warn(
     '[@devframes/vite/hub] Serving a devframes-hub directly inside Vite works, '
     + 'but Vite DevTools (`@vitejs/devtools-kit`) integrates the hub protocol '
-    + 'natively - prefer it for a first-class, multi-integration experience. '
+    + 'natively, so prefer it for a first-class, multi-integration experience. '
     + 'Pass `{ quiet: true }` to silence this notice.',
   )
 }
 
 /**
- * Mount a whole **devframes-hub** - many integrations under one namespace,
- * one merged RPC registry, one WebSocket - inside an existing Vite dev
+ * Mount a whole **devframes-hub** (many integrations under one namespace,
+ * one merged RPC registry, one WebSocket) inside an existing Vite dev
  * server. One `initHub()` call, mounted as connect middleware; the WebSocket
  * shares Vite's own HTTP server (upgrading at `<base>__ws`) unless a `port`
  * pins a side-car. The UI defaults to `@devframes/hub-ui` (its `embedded.js`
@@ -119,7 +119,7 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
   const base = normalizeHubBase(options.base ?? DEVFRAMES_HUB_BASE)
   let viteConfig: ResolvedConfig | undefined
   let instance: HubInstance | undefined
-  // Set once the hub is up if its UI ships an `embedded.js` bootstrap - the
+  // Set once the hub is up if its UI ships an `embedded.js` bootstrap: the
   // host-page script tag `transformIndexHtml` injects.
   let embeddedSrc: string | undefined
 
@@ -141,7 +141,7 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       if (!options.quiet)
         recommendViteDevtools()
 
-      // Vite re-invokes `configureServer` on each restart - tear down the
+      // Vite re-invokes `configureServer` on each restart, so tear down the
       // previous instance so we don't leak the WS binding or a registry record.
       await teardown()
 
@@ -175,7 +175,7 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
         }),
         auth: options.auth,
         /**
-         * Share Vite's own HTTP server for the WS upgrade at `<base>__ws` - no
+         * Share Vite's own HTTP server for the WS upgrade at `<base>__ws`, with no
          * side-car port to discover. A pinned `port` uses a side-car instead;
          * an https/http2 dev server (non-`node:http`) asks for an auto-port
          * side-car. Clients discover either via `__connection.json`.
@@ -253,7 +253,7 @@ function attachClientScripts(
   if (!devframes || !clientScripts)
     return devframes
   return devframes.map((entry) => {
-    // Leave thenables / factories untouched - they resolve to their own entries.
+    // Leave thenables / factories untouched; they resolve to their own entries.
     if (typeof entry === 'function' || entry instanceof Promise)
       return entry
     const def = (entry && typeof entry === 'object' && 'devframe' in entry

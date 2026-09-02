@@ -6,7 +6,7 @@ const meta = {
   component: DockIcon,
   tags: ['autodocs'],
   /**
-   * Render at a legible size - DockIcon fills its box. Use the template-based
+   * Render at a legible size, since DockIcon fills its box. Use the template-based
    * `<story/>` decorator (the stable Storybook Vue API).
    */
   decorators: [() => ({ template: '<div class="w-8 h-8"><story /></div>' })],
@@ -29,7 +29,7 @@ export const Logo: Story = {
 }
 
 /**
- * An object icon with distinct light/dark variants - only the one matching the
+ * An object icon with distinct light/dark variants: only the one matching the
  * active theme is shown (toggle the theme toolbar to compare).
  */
 export const LightDark: Story = {

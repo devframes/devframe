@@ -5,7 +5,7 @@ const BASE = 'http://127.0.0.1:9889/'
 // Static dumps only carry pre-computed `static` (and `query{snapshot:true}`)
 // RPC results. The example's `system` function is `static` so it bakes
 // into the dump; `memory` and `env` are live `query`s with no `snapshot`,
-// so they don't render anything in static mode - the cards stay in their
+// so they don't render anything in static mode; the cards stay in their
 // "Loading…" placeholder.
 
 test.describe('next-runtime-snapshot (static build)', () => {

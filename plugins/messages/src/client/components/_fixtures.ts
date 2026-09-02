@@ -1,6 +1,6 @@
 import type { DevframeMessageEntry } from '@devframes/hub/types'
 
-/** Shared story fixtures - a feed that exercises every entry facet. */
+/** Shared story fixtures: a feed that exercises every entry facet. */
 export function makeSampleEntries(now: number = Date.now()): DevframeMessageEntry[] {
   return [
     {

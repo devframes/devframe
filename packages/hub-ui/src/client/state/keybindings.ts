@@ -60,7 +60,7 @@ export function isKeybindingOverrideDifferentFromDefault(
 
 /**
  * Drop the commands whose `when` clause does not hold in the current context,
- * children included - `when` is documented to control palette visibility, but
+ * children included; `when` is documented to control palette visibility, but
  * nothing evaluated it for nested entries.
  *
  * A parent that survives is shallow-cloned so its `children` can be narrowed
@@ -82,7 +82,7 @@ export function filterCommandsByWhen(
       continue
     }
     // `children` is typed `Server[] | Client[]` rather than `(Server | Client)[]`,
-    // so filtering it in place widens the element type - same cast the other
+    // so filtering it in place widens the element type, the same cast the other
     // child-walking call sites use.
     const children = (cmd.children as DevframeCommandEntry[]).filter(isAvailable)
     result.push({ ...cmd, children } as DevframeCommandEntry)

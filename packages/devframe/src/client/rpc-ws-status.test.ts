@@ -8,7 +8,7 @@ import { createWsRpcClientMode } from './rpc-ws'
 
 // A minimal fake WebSocket that lets a test drive the open/close/error events
 // the client's status model reacts to. It never delivers a message, so a
-// `call()` stays pending until the connection is torn down or times out -
+// `call()` stays pending until the connection is torn down or times out,
 // exactly the "spinner that never resolves" scenario under test.
 class FakeWebSocket {
   static CONNECTING = 0

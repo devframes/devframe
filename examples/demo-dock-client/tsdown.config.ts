@@ -8,10 +8,10 @@ const tsconfig = '../../tsconfig.base.json'
  * like any linked workspace source (hub-vite imports `'demo-dock-client'`
  * via the `/@id/{specifier}` template). What gets built here is only the
  * **URL-shape** consumption path:
- * 1. `dist/bundle.mjs` - self-contained (nanoevents inlined), for hosts
+ * 1. `dist/bundle.mjs`, self-contained (nanoevents inlined), for hosts
  * without bare-specifier resolution (hub-next mounts it statically and
  * passes the served URL as `importFrom`);
- * 2. `dist/node.mjs` - the node-side path helper the Next host uses to
+ * 2. `dist/node.mjs`, the node-side path helper the Next host uses to
  * locate the bundle.
  */
 export default defineConfig([

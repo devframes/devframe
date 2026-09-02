@@ -112,7 +112,7 @@ describe('@devframes/service-git', () => {
     expect(readme.ref).toBe('HEAD')
     expect(readme.content).toBe('# Demo\n')
 
-    // `a.txt` only exists from the second commit - absent at the initial one.
+    // `a.txt` only exists from the second commit, absent at the initial one.
     const log = await git.log({})
     const initHash = log.commits[1].hash
     const atInit = await git.readFile({ path: 'a.txt', ref: initHash })
@@ -261,7 +261,7 @@ describe('@devframes/service-git', () => {
     void ctx.services.install(createGitService())
     await ctx.services.ready()
 
-    // Auto-discovered from the RPC `agent` field - the hub's MCP surfaces this
+    // Auto-discovered from the RPC `agent` field; the hub's MCP surfaces this
     // as `devframes_service_git_status` (the e2e asserts that name).
     const tool = ctx.agent.getTool('devframes:service:git:status')
     expect(tool?.title).toBe('Git status')

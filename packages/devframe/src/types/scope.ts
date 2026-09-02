@@ -82,9 +82,9 @@ export interface DevframeSettingsStore<T extends Record<string, any> = Record<st
 /**
  * The two settings scopes available on a scoped context.
  *
- *   - `project` - per-workspace state, persisted under the host's
+ *   - `project`: per-workspace state, persisted under the host's
  *     `workspace` storage dir. Project-local settings.
- *   - `global`  - per-user state, persisted under the host's `global`
+ *   - `global`:  per-user state, persisted under the host's `global`
  *     storage dir. Machine-wide preferences.
  */
 export interface DevframeSettings<T extends Record<string, any> = Record<string, any>> {

@@ -12,7 +12,7 @@ export interface WsRpcChannelOptions {
   /**
    * RPC function definitions (or just the `jsonSerializable` flag per
    * method) used to dispatch the per-call wire serializer. Pass an
-   * empty / partial map on clients that don't have the full registry -
+   * empty / partial map on clients that don't have the full registry;
    * encoding falls back to structured-clone (the safer superset) and
    * decoding still routes correctly via the wire prefix.
    */
@@ -27,7 +27,7 @@ const EMPTY_DEFS: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerial
  * Build a birpc `ChannelOptions` object backed by a browser `WebSocket`.
  * Pass the result straight to `createRpcClient`'s `channel` option.
  *
- * Also returns `close()`, closing the underlying socket - mirroring the server transport's
+ * Also returns `close()`, closing the underlying socket, mirroring the server transport's
  * existing `WsRpcTransport.close()`. `birpc`'s own `ChannelOptions` has no teardown of its own.
  */
 export function createWsRpcChannel(options: WsRpcChannelOptions): ChannelOptions & { close: () => void } {
@@ -56,7 +56,7 @@ export function createWsRpcChannel(options: WsRpcChannelOptions): ChannelOptions
     onDisconnected(e)
   })
 
-  // Per-channel wire codec - request-id → method bookkeeping included.
+  // Per-channel wire codec: request-id → method bookkeeping included.
   const codec = createRpcWireCodec(definitions)
   return {
     close: () => {

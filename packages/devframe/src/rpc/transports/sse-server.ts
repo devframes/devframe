@@ -19,7 +19,7 @@ export interface SseRpcTransportOptions {
    * RPC function definitions, used by the per-call wire serializer to
    * dispatch between strict-JSON and structured-clone encoding based on
    * each function's `jsonSerializable` flag. When omitted, all messages
-   * fall back to structured-clone - same contract as the WS transport.
+   * fall back to structured-clone, the same contract as the WS transport.
    */
   definitions?: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>>
   onConnected?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
@@ -71,7 +71,7 @@ interface SseSession {
 }
 
 /**
- * Attach an SSE + HTTP POST transport to an existing RPC group - the
+ * Attach an SSE + HTTP POST transport to an existing RPC group: the
  * WebSocket-free counterpart to `attachWsRpcTransport`, for hosts and
  * proxies where the upgrade isn't available. Speaks the same birpc wire
  * protocol (one channel per session, per-method `jsonSerializable`
@@ -114,7 +114,7 @@ export function attachSseRpcTransport<
   }
 
   /**
-   * CORS headers for a browser on another (allowed) origin - the side-car /
+   * CORS headers for a browser on another (allowed) origin: the side-car /
    * registered-viewer case. Same-origin requests carry no `Origin` (or their
    * own), where these headers are inert.
    */
@@ -168,7 +168,7 @@ export function attachSseRpcTransport<
         if (keepAlive)
           clearInterval(keepAlive)
         sessions.delete(id)
-        // A parked POST can no longer be answered - release it so the HTTP
+        // A parked POST can no longer be answered, so release it so the HTTP
         // request settles instead of hanging.
         for (const resolve of session.parked.values()) resolve(null)
         session.parked.clear()
@@ -276,7 +276,7 @@ export function attachSseRpcTransport<
         headers: { 'content-type': 'text/plain; charset=utf-8', ...corsHeaders(request) },
       })
     }
-    // A client event or a reply to a server-initiated call - nothing to
+    // A client event or a reply to a server-initiated call: nothing to
     // send back on this request.
     session.onMessage?.(frame)
     return new Response(null, { status: 202, headers: corsHeaders(request) })

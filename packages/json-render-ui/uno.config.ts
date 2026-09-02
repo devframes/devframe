@@ -36,7 +36,7 @@ export default defineConfig({
   ],
   /**
    * `Badge` picks a `badge-color-<name>` at runtime from a fixed set, so those
-   * classes can't be found by static extraction - safelist them, alongside the
+   * classes can't be found by static extraction, so safelist them, alongside the
    * shadow-root surface/text tokens.
    */
   safelist: [...shadowSurfaceSafelist, 'badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],

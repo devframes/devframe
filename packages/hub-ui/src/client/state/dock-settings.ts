@@ -32,7 +32,7 @@ const PINNED_CATEGORY_ORDER = -100000
  * Resolve a category's sort weight, layering the local {@link PINNED_CATEGORY}
  * override, then a caller-supplied `overrides` map (a group's own
  * {@link DevframeViewGroup.categoryOrder}), on top of the upstream
- * {@link DEFAULT_CATEGORIES_ORDER} table. `overrides` is per-call - passing a
+ * {@link DEFAULT_CATEGORIES_ORDER} table. `overrides` is per-call; passing a
  * group's map only reweights that group's in-group sub-categories, never the
  * outer bar or any other group.
  */
@@ -48,7 +48,7 @@ export interface SplitGroupsResult {
   /**
    * The recent dock raised out of the overflow into its own slot, rendered
    * between the visible items and the overflow button. `null` when no slot is
-   * reserved - no recent dock, no overflow at all, or a recent dock that
+   * reserved: no recent dock, no overflow at all, or a recent dock that
    * already sits inside the natural visible slice (it renders in place there
    * instead of occupying a redundant slot).
    */
@@ -61,7 +61,7 @@ export interface SplitGroupsResult {
  * A dock icon may be a string or a `{ light, dark }` pair, but a command's icon
  * is string-only. When projecting dock entries into commands (palette + Shortcuts
  * settings) we collapse the object form to a single string rather than dropping
- * it - otherwise object-icon docks (e.g. a branded dock group) lose their
+ * it, because otherwise object-icon docks (e.g. a branded dock group) lose their
  * icon entirely. Returns `undefined` only when no icon is available.
  */
 export function resolveCommandIcon(icon: DevframeDockEntry['icon']): string | undefined {
@@ -104,7 +104,7 @@ export function getCategoryLabel(category: string): string {
  *
  * Grouping is one level deep, so a group entry never points at another group;
  * this set is the authority for deciding whether an entry's `groupId` resolves
- * to a real group (membership) or dangles (orphan - rendered as a normal
+ * to a real group (membership) or dangles (orphan, rendered as a normal
  * top-level entry).
  */
 export function getRegisteredGroupIds(entries: DevframeDockEntry[]): Set<string> {
@@ -137,11 +137,11 @@ export function getEntryGroup(
  * `includeHidden`.
  *
  * A member's own `category` field is its in-group sub-category (defaulting to
- * `'default'`) - the group's `category` is the *outer* bucket the whole group
+ * `'default'`); the group's `category` is the *outer* bucket the whole group
  * lives in, so it never bleeds into the sub-category split here. A pinned member
  * moves to a `~pinned` sub-category (leading the group, via
  * {@link PINNED_CATEGORY_ORDER}). Sub-categories are ordered by the same
- * {@link DEFAULT_CATEGORIES_ORDER} table as top-level categories - unless the
+ * {@link DEFAULT_CATEGORIES_ORDER} table as top-level categories, unless the
  * group entry itself sets {@link DevframeViewGroup.categoryOrder}, whose
  * weights take precedence for this group's sub-categories only, leaving every
  * other group and the outer bar on the shared table. Sub-categories are not
@@ -186,14 +186,14 @@ export function getGroupMembers(
  * the group button jumps straight to this member" behavior (the dock-bar
  * button and `switchEntry`'s own group→member resolution both need this).
  *
- * Respects the member's own `when` clause - a conditionally-unavailable
+ * Respects the member's own `when` clause: a conditionally-unavailable
  * target (e.g. `when: 'clientType == embedded'` evaluating false) is not a
  * valid default and this returns `undefined` so the caller falls back to its
  * own behavior (open the popover, or pick another member). Deliberately
  * ignores the render-only `visibility` clause: `visibility` never affects
  * reachability (see {@link docksGroupByCategories}'s `visibility` check), and
  * jumping straight to a `defaultChildId` target is exactly the kind of
- * id-based activation the render-only contract says stays unaffected - only
+ * id-based activation the render-only contract says stays unaffected; only
  * the target's own dock-bar button (if it has one) should disappear.
  */
 export function resolveGroupDefaultChild(
@@ -223,11 +223,11 @@ export function resolveGroupDefaultChild(
  * Resolve the member a group activation opens, layering the per-tab "last
  * opened member" memory (`DockSessionStorage.groupLastChildIds`) over the
  * author's `defaultChildId`. The remembered member wins while it still
- * resolves - it exists in the group and its `when` clause holds - so reopening
+ * resolves (it exists in the group and its `when` clause holds), so reopening
  * a group lands back on the member the developer last used; otherwise the
  * `defaultChildId` target is tried under the same rules (both via
  * {@link resolveGroupDefaultChild}, so the render-only `visibility` clause is
- * ignored for either candidate). Returns `undefined` when neither resolves -
+ * ignored for either candidate). Returns `undefined` when neither resolves:
  * the caller falls back to its own behavior (the dock-bar group button opens
  * the member popover; `switchEntry` picks the first member).
  */
@@ -340,7 +340,7 @@ function bucketEntriesByCategory(
  * default order within each category.
  *
  * Both `when` and its render-only counterpart `visibility` only ever drop an
- * entry out of the grouped result *this call* produces - the entry always
+ * entry out of the grouped result *this call* produces; the entry always
  * remains in the caller's raw `entries` array, so activation, RPC, and the
  * `subTabs` frame-nav adapter (which read `entries` directly rather than a
  * grouped result) are unaffected by either clause.
@@ -349,13 +349,13 @@ function bucketEntriesByCategory(
  * `groupId` resolves to a registered group takes that **group's** `category` as
  * its outer bucket (its own `category` is the in-group sub-category instead).
  * When `collapseGroups` is set those members are folded away entirely and only
- * the group entry - carrying the group's own `category` - represents them on the
+ * the group entry (carrying the group's own `category`) represents them on the
  * bar, so the outer bucket is always the group's category. Orphan members
  * (whose `groupId` references no registered group) fall back to their own
  * `category`.
  *
  * Pinning re-buckets an entry into {@link PINNED_CATEGORY} in place of the
- * category slot it would otherwise occupy - the outer bucket for a top-level
+ * category slot it would otherwise occupy: the outer bucket for a top-level
  * entry or group button, or the in-group sub-category for a member (the
  * members-only in-group split has no group entries, so `resolvedGroupCategory`
  * is undefined there and the member's own category slot is the one replaced).
@@ -368,7 +368,7 @@ function bucketEntriesByCategory(
  * `categoryOrderOverride` reweights the categories produced by *this call*
  * (used by {@link getGroupMembersGrouped} to apply a group's own
  * {@link DevframeViewGroup.categoryOrder} to its in-group sub-category split)
- * - it never touches the shared {@link DEFAULT_CATEGORIES_ORDER} table, so it
+ * and it never touches the shared {@link DEFAULT_CATEGORIES_ORDER} table, so it
  * has no effect on any other call, group, or the outer bar.
  */
 export function docksGroupByCategories(
@@ -422,7 +422,7 @@ export interface SidebarCapacityOptions {
  * button only ever costs a slot when it is actually shown.
  *
  * The sub-category divider budget is subtracted up front for every divider that
- * might render, keeping the estimate conservative - the rail may fold one
+ * might render, keeping the estimate conservative, so the rail may fold one
  * member early into the popover, but it never clips.
  */
 export function deriveSidebarCapacity(options: SidebarCapacityOptions): number {
@@ -479,19 +479,19 @@ function groupsHaveEntry(groups: DevframeDockEntriesGrouped, id: string): boolea
  * Split grouped entries into visible and overflow based on capacity.
  *
  * A lone overflowing entry folds back into `visible` instead of staying in
- * `overflow` - a whole overflow affordance (button + badge + popover) just to
+ * `overflow`: a whole overflow affordance (button + badge + popover) just to
  * reveal one icon costs more chrome than it saves, so that one entry renders
  * inline in the slot the affordance would have occupied. Folding only
  * triggers for exactly one overflowing entry; two or more still overflow
  * normally.
  *
- * With a `recentEntry` (see {@link DockSessionStorage.recentDockId} - resolve
+ * With a `recentEntry` (see {@link DockSessionStorage.recentDockId}; resolve
  * it via {@link resolveRecentDockEntry} first), one slot is reserved for the
  * recent dock: the natural items split at `capacity - 1`, the recent entry is
  * lifted out of the overflow buckets, and it is returned as `recent` for the
  * bar to render between the visible items and the overflow button. Total slot
- * count stays at `capacity`. The reservation is skipped - natural split, no
- * `recent` - when there is no overflow to raise out of, or when the recent
+ * count stays at `capacity`. The reservation is skipped (natural split, no
+ * `recent`) when there is no overflow to raise out of, or when the recent
  * entry already sits inside the natural visible slice (it renders in place
  * there). A recent entry that is a grouped member never appears as a rail item
  * of its own, so it is always raised (its group button, if any, stays put).
@@ -524,7 +524,7 @@ export function docksSplitGroupsWithCapacity(
 /**
  * Resolve a persisted recent-dock id (`DockSessionStorage.recentDockId`) to
  * the entry the float bar can raise, or `null` when the id no longer maps to a
- * raisable entry - it was unregistered, it is a group button (only concrete
+ * raisable entry: it was unregistered, it is a group button (only concrete
  * docks occupy the recent slot), it is a grouped member hidden from its group,
  * or it is a top-level entry no longer present on the rail (hidden via user
  * settings, `when`, or `visibility`).
@@ -556,14 +556,14 @@ export function resolveRecentDockEntry(options: {
  * Decide which dock id the recent slot should remember after a selection.
  *
  * The recent slot keeps the last dock selected from somewhere *not* on the
- * bar - the overflow popover or a group popover - one click away, so
+ * bar (the overflow popover or a group popover) one click away, so
  * deselecting it doesn't fold it straight back out of reach:
  *
  * - A grouped member always becomes the recent dock: its own entry never has
  *   a rail slot (only its group button does), so raising it is the only way
  *   the concrete selection stays directly toggleable.
  * - A top-level entry becomes the recent dock only when it was selected from
- *   the overflow popover (it is absent from the bar as currently rendered -
+ *   the overflow popover (it is absent from the bar as currently rendered,
  *   including the recent slot itself). Selecting an entry already visible on
  *   the bar leaves the current recent dock in place.
  * - Anything off the rail entirely (e.g. a built-in notice) leaves the recent

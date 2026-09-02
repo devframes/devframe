@@ -123,7 +123,7 @@ describe('in-page channel over bring-your-own ports', () => {
   it('enforces jsonSerializable payloads with a coded error', async () => {
     const { panel, dispose } = createLinkedPair()
     try {
-      // A Map survives structured clone, so it reaches the receiving side -
+      // A Map survives structured clone, so it reaches the receiving side,
       // where the jsonSerializable contract rejects it, naming the path.
       const rejection = await panel.call('strict', { nested: new Map() }).catch(error => error) as Error
       expect(rejection.message).toContain('jsonSerializable')

@@ -27,14 +27,14 @@ export interface DockRendererInstance {
 }
 
 /**
- * A renderer for a dock `type`. The headless hub is renderer-agnostic - a
+ * A renderer for a dock `type`. The headless hub is renderer-agnostic: a
  * host registers renderers at boot (e.g. injecting `@devframes/json-render-ui`
  * for the `'json-render'` type) or serves them as prebuilt modules through the
  * hub's renderer manifest (`initHub({ renderers })`). The renderer owns its
  * framework (Vue, React, …); the hub only routes a dock type to it and
  * disposes it on deactivation.
  *
- * Integration packages narrow `Entry` to export a precisely-typed contract -
+ * Integration packages narrow `Entry` to export a precisely-typed contract,
  * e.g. `@devframes/json-render/hub` exports
  * `JsonRenderDockRenderer = DockRenderer<DevframeJsonRenderDockEntry>`.
  */
@@ -44,7 +44,7 @@ export type DockRenderer<Entry extends DevframeDockEntry = DevframeDockEntry> = 
 
 /**
  * The outcome of {@link DockRenderersContext.mount}. A missing renderer is an
- * expected, non-exceptional state - a viewer renders its "no renderer for this
+ * expected, non-exceptional state: a viewer renders its "no renderer for this
  * dock type" fallback from `missing-renderer`, and its error variant (with a
  * retry affordance) from `load-error`.
  */
@@ -56,8 +56,8 @@ export type DockRendererMountResult
 /**
  * The dock-renderer registry surfaced on the client host context. A viewer
  * calls {@link DockRenderersContext.mount} to render a dock whose `type` has a
- * renderer - registered locally at boot, or served as a prebuilt module by the
- * hub's renderer manifest - into a container it owns; the host tracks the
+ * renderer (registered locally at boot, or served as a prebuilt module by the
+ * hub's renderer manifest) into a container it owns; the host tracks the
  * instance and disposes it when the entry deactivates.
  */
 export interface DockRenderersContext {
@@ -65,13 +65,13 @@ export interface DockRenderersContext {
    * Register a renderer for a dock `type`. Returns an unregister function.
    * Accepts a renderer narrowed to any specific entry variant (e.g. a
    * {@link DockRenderer}<DevframeJsonRenderDockEntry> from an integration
-   * package) - the type routes only its own entries to it.
+   * package); the type routes only its own entries to it.
    */
   register: (type: string, renderer: DockRenderer<any>) => () => void
   /** Look up the locally-registered renderer for a dock `type`, if any. */
   get: (type: string) => DockRenderer | undefined
   /**
-   * Whether a renderer is available for a dock `type` - registered locally
+   * Whether a renderer is available for a dock `type`, registered locally
    * **or** provided by the hub's renderer manifest. A viewer checks this
    * before mounting to render its missing-renderer fallback declaratively.
    */
@@ -83,7 +83,7 @@ export interface DockRenderersContext {
    * registered. The mounted instance is also disposed automatically when the
    * entry deactivates. Resolves `missing-renderer` (with a `console.warn`)
    * when neither source has the type, and `load-error` when the module import
-   * or the renderer itself fails - a failed import is not cached, so a retry
+   * or the renderer itself fails. A failed import is not cached, so a retry
    * re-imports.
    */
   mount: (entry: DevframeDockEntry, container: HTMLElement) => Promise<DockRendererMountResult>
@@ -91,7 +91,7 @@ export interface DockRenderersContext {
 
 /**
  * The renderer manifest published by the hub at the
- * `devframe:dock-renderers` shared-state slot - one {@link ClientScriptEntry}
+ * `devframe:dock-renderers` shared-state slot: one {@link ClientScriptEntry}
  * per dock `type`, whose `importFrom` is a URL path the hub serves
  * (`<base>__renderers/<type>.mjs`). Mirrors the dock client-script
  * convention: the module's `importName` export (default `'default'`) is a
@@ -103,21 +103,21 @@ export type DockRendererManifest = Record<string, ClientScriptEntry>
 export interface CreateDockRenderersContextOptions {
   /** The assembled client context handed to renderers at mount. */
   context: () => DevframeClientContext
-  /** Renderers registered locally at boot - these win over manifest modules. */
+  /** Renderers registered locally at boot; these win over manifest modules. */
   local?: Record<string, DockRenderer<any>>
   /** The current {@link DockRendererManifest} (live getter). */
   manifest?: () => DockRendererManifest
   /**
    * Called with each successful mount's disposer so the caller can tie
    * disposal to its own lifecycle (entry deactivation, host teardown). An
-   * optional returned cleanup runs exactly once when the mount is disposed -
+   * optional returned cleanup runs exactly once when the mount is disposed,
    * whichever side (caller or viewer) triggers it first.
    */
   onMounted?: (dispose: () => void, entry: DevframeDockEntry) => (() => void) | void
 }
 
 /**
- * Build the {@link DockRenderersContext} shared by every hub-aware client -
+ * Build the {@link DockRenderersContext} shared by every hub-aware client.
  * `createDevframeClientRuntime` and hub UI providers that assemble their own context
  * (`@devframes/hub-ui`) both delegate here so local-first resolution, lazy
  * manifest imports, and the typed mount result behave identically everywhere.
@@ -137,7 +137,7 @@ export function createDockRenderersContext(
     options.manifest?.()[type]
 
   async function importManifestRenderer(type: string, script: ClientScriptEntry): Promise<DockRenderer | undefined> {
-    // Keep this a *native* dynamic import in every bundler - the specifier is
+    // Keep this a *native* dynamic import in every bundler, since the specifier is
     // a runtime URL served by the hub, not a build-time module.
     const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ /* turbopackIgnore: true */ script.importFrom)
     const renderer = mod[script.importName ?? 'default']
@@ -159,7 +159,7 @@ export function createDockRenderersContext(
     }
     const renderer = await pending
     // Register the loaded module so `get()` sees it and later mounts skip the
-    // resolution dance - unless a local registration landed meanwhile (wins).
+    // resolution dance, unless a local registration landed meanwhile (wins).
     if (renderer && !rendererMap.has(type))
       rendererMap.set(type, renderer)
     return renderer

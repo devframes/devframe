@@ -69,7 +69,7 @@ function execute(cmd: DevframeInspectCommandInfo): void {
       Loading commands…
     </div>
     <div v-else-if="commands.length === 0" class="empty">
-      No commands registered - commands are a `@devframes/hub` feature; this connection isn't mounted inside a hub.
+      No commands registered. Commands are a `@devframes/hub` feature; this connection isn't mounted inside a hub.
     </div>
     <div v-else-if="filtered.length === 0" class="empty">
       No commands match "{{ search }}".

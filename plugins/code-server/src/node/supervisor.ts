@@ -148,7 +148,7 @@ export class CodeServerSupervisor {
     this.tunnelName = options.tunnel?.name || hostname().split('.').join('') || 'devframe'
     this.sessionId = options.cookieSuffix ? `${PLUGIN_ID}:${options.cookieSuffix}` : PLUGIN_ID
 
-    // Provisional resolution - refined by the first `detect()` (auto-detection).
+    // Provisional resolution, refined by the first `detect()` (auto-detection).
     this.backend = this.explicitBackend ?? 'code-server'
     this.profile = resolveProfile(this.mode, this.backend)
     this.bin = this.explicitBin ?? this.profile.defaultBin
@@ -214,7 +214,7 @@ export class CodeServerSupervisor {
 
   /**
    * Launch the editor (if not already up) and resolve once it is reachable.
-   * Idempotent while starting/running - returns the live status instead of
+   * Idempotent while starting/running; returns the live status instead of
    * spawning a second process. In tunnel mode it resolves as soon as either
    * the `vscode.dev` URL or a device-login prompt is seen, so the action never
    * blocks on interactive authentication.
@@ -525,7 +525,7 @@ export class CodeServerSupervisor {
   }
 
   private terminate(child: ChildProcess): void {
-    // Hub-launched processes are owned by the hub's terminals subsystem - let
+    // Hub-launched processes are owned by the hub's terminals subsystem, so let
     // it kill the child and close the mirrored output stream.
     if (this.session) {
       void this.session.terminate().catch(() => {})
@@ -547,7 +547,7 @@ export class CodeServerSupervisor {
   /**
    * Resolve the hub's terminals subsystem when this devframe is mounted in a
    * hub. `ctx.terminals` only exists on a `DevframeHubContext`, so it is
-   * duck-typed - standalone runtimes (CLI / Vite / build) have no such property
+   * duck-typed: standalone runtimes (CLI / Vite / build) have no such property
    * and fall back to a direct child process.
    */
   private resolveHubTerminals(): HubTerminalsBridge | undefined {
@@ -693,7 +693,7 @@ export class CodeServerSupervisor {
     if (this.exitHandler)
       return
     // Synchronously reap the child when the host process exits. Signals
-    // (SIGINT/SIGTERM) are left to the host's own shutdown - the child shares
+    // (SIGINT/SIGTERM) are left to the host's own shutdown; the child shares
     // our process group, so a terminal interrupt reaches it directly. The
     // handler is removed in `dispose()` so it doesn't accumulate.
     this.exitHandler = () => this.dispose()

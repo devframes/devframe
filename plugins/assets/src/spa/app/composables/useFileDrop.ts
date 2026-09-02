@@ -9,7 +9,7 @@ function dragHasFiles(e: DragEvent): boolean {
 /**
  * Whole-frame file drag-and-drop. While `isEnabled()` returns true, dragging
  * files anywhere over the window flips `dragging` (for a hint overlay) and
- * dropping them hands the `FileList` to `onDrop` - no modal, no confirm step.
+ * dropping them hands the `FileList` to `onDrop`, with no modal and no confirm step.
  */
 export function useFileDrop(isEnabled: () => boolean, onDrop: (files: FileList) => void): { dragging: Ref<boolean> } {
   const dragging = ref(false)

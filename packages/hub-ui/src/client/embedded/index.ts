@@ -7,7 +7,7 @@ import { DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE } from '../state/d
 import { isEmbeddedDockInitiallyVisible, setupEmbeddedVisibility } from './visibility'
 
 /**
- * The floating-dock bootstrap the hub serves at `<base>embedded.js` - load
+ * The floating-dock bootstrap the hub serves at `<base>embedded.js`: load
  * it with one `<script type="module" src="<base>embedded.js">` tag and the
  * dock mounts itself. Its reveal policy is `ConnectionMeta.configs.ui.embeddedVisibility`
  * (`normal` / `passive` / `hidden`): `normal` shows immediately, the others
@@ -18,7 +18,7 @@ let dockEl: HTMLElement | undefined
 
 async function mountDock(): Promise<void> {
   // A mounted frame's SPA runs inside the hub UI provider's iframes on the same
-  // origin - never stack a second dock inside them.
+  // origin, so never stack a second dock inside them.
   if (window.parent !== window)
     return
   if (dockEl)
@@ -40,7 +40,7 @@ async function mountDock(): Promise<void> {
   })
 
   // The reference UI's dock-bar preferences (`createUi({ dockPreferences })`),
-  // delivered once via the connection handshake we just performed - fixed for
+  // delivered once via the connection handshake we just performed, fixed for
   // the life of this server, never re-fetched.
   const dockPreferences = rpc.connectionMeta.configs?.ui?.dockPreferences
 
@@ -50,7 +50,7 @@ async function mountDock(): Promise<void> {
     {
       ...defaultStore,
       // Seed a first-run visitor's mode/position from the configured
-      // defaults - `useLocalStorage`'s own `mergeDefaults` already limits
+      // defaults; `useLocalStorage`'s own `mergeDefaults` already limits
       // this to a visitor with no stored preference yet.
       ...(dockPreferences?.defaultMode ? { mode: dockPreferences.defaultMode } : {}),
       ...(dockPreferences?.defaultPosition ? { position: dockPreferences.defaultPosition } : {}),
@@ -84,7 +84,7 @@ async function mountDock(): Promise<void> {
     context,
     ...(dockPreferences?.maxVisibleItems !== undefined ? { layout: { maxVisibleItems: dockPreferences.maxVisibleItems } } : {}),
   })
-  // Inline on the host element - beats the generated `:host` ramp defaults and
+  // Inline on the host element: beats the generated `:host` ramp defaults and
   // inherits through the shadow tree. The embedded bootstrap never touches the
   // host page's <title>/favicon (it's a guest there).
   applyPrimaryColor(dockEl, branding.primaryColor)

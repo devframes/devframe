@@ -29,7 +29,7 @@ async function upload(client: TestClient, path: string, bytes: Uint8Array): Prom
   const sink = client.streaming.upload<Uint8Array>('devframes:plugin:assets:upload', uploadId)
   sink.write(bytes)
   sink.close()
-  // The server-side write is async (fire-and-forget inside the handler) -
+  // The server-side write is async (fire-and-forget inside the handler), so
   // give the write stream a tick to flush before the caller asserts on disk.
   await new Promise(resolve => setTimeout(resolve, 50))
 }
@@ -237,7 +237,7 @@ describe('assets plugin', () => {
   it('installs the open wire service (regardless of write) for the client to call directly', async () => {
     server = await startAssetsServer(dir, { write: false, watch: false })
 
-    // Assets no longer wraps open-in-editor/reveal-in-folder - it declares
+    // Assets no longer wraps open-in-editor/reveal-in-folder; it declares
     // `@devframes/service-open` (with the managed dir as an allowed root),
     // which the client calls directly with the asset's absolute `fsPath`.
     // The service is constructed before setup and its scoped RPC registered,
@@ -272,7 +272,7 @@ describe('assets plugin', () => {
       changed = true
     })
 
-    // `broadcast()` only reaches clients the server already knows about - a
+    // `broadcast()` only reaches clients the server already knows about, so a
     // round trip first guarantees the WS handshake has completed before the
     // watcher fires, otherwise the (unqueued, unreplayed) event is dropped.
     await call(client, 'devframes:plugin:assets:list')

@@ -58,7 +58,7 @@ export interface DevframeRpcServerFunctions {
    * an auto-trust noop when `auth: false`.
    *
    * Named with the `anonymous:` prefix (see `isAnonymousRpcMethod`) so it is
-   * reachable before the connection is trusted - this is the *only* rule the
+   * reachable before the connection is trusted; this is the *only* rule the
    * pre-trust gate applies, no per-method allowlist.
    *
    * @internal
@@ -154,7 +154,7 @@ export interface DevframeRpcServerFunctions {
  */
 export interface DevframeRpcSharedStates {
   /**
-   * Wire-service advertisements - package name → `{ package, version,
+   * Wire-service advertisements: package name → `{ package, version,
    * scope, meta }` for every installed {@link import('./services').DevframeServiceDefinition}.
    * Written by the node services host at the `ready()` barrier; clients read
    * it through `client.services` (or subscribe to it directly for

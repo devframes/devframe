@@ -3,8 +3,8 @@ import { defineConfig } from 'tsdown'
 /**
  * Node-safe entries only. The browser renderer (Vue components, the upstream
  * renderer, the `@antfu/design` ports) ships exclusively as self-contained
- * Vite bundles - the standalone SPA (`src/spa/vite.config.ts`) and the hub
- * renderer module (`src/renderer-module/vite.config.ts`) - both of which
+ * Vite bundles: the standalone SPA (`src/spa/vite.config.ts`) and the hub
+ * renderer module (`src/renderer-module/vite.config.ts`), both of which
  * inline vue, `@json-render/vue`, and `@antfu/design` at build time, so no
  * frontend package leaks out as a runtime dependency.
  *
@@ -34,7 +34,7 @@ export default defineConfig({
   platform: 'node',
   deps: {
     /**
-     * Type-only references in these node entries - keep them external so the
+     * Type-only references in these node entries, kept external so the
      * `.d.mts` references each package rather than inlining its type graph.
      */
     neverBundle: [

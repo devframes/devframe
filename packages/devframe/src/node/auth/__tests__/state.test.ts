@@ -42,7 +42,7 @@ describe('exchangeTempAuthCode', () => {
     const wrong = code === '000000' ? '111111' : '000000'
     for (let i = 0; i < 5; i++)
       expect(exchangeTempAuthCode(wrong, makeSession(), INFO, storage)).toBeNull()
-    // Code rotated by the lockout - the original valid code is now dead.
+    // Code rotated by the lockout, so the original valid code is now dead.
     expect(getTempAuthCode()).not.toBe(code)
     expect(exchangeTempAuthCode(code, makeSession(), INFO, storage)).toBeNull()
   })

@@ -20,7 +20,7 @@ Ready-to-run built-in example devframes (`@devframes/plugin-*`). Compose your ow
 
 ## One RPC client, any framework
 
-Each devframe picks its own UI framework yet shares one node-side API - [RPC](/guide/rpc), [shared state](/guide/shared-state), and `connectDevframe`.
+Each devframe picks its own UI framework yet shares one node-side API: [RPC](/guide/rpc), [shared state](/guide/shared-state), and `connectDevframe`.
 
 ## Running a built-in devframe
 

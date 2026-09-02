@@ -103,7 +103,7 @@ export function navigate(value: unknown, path: NodePath, options: Pick<Normalize
       return undefined
     switch (kind) {
       case 'k':
-        // Own properties only - mirrors the walker, which never descends into
+        // Own properties only, mirroring the walker, which never descends into
         // inherited properties, and keeps live re-navigation off the prototype chain.
         cur = cur instanceof Map
           ? cur.get(at)

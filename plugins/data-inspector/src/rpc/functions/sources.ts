@@ -1,7 +1,7 @@
 import { listDataSources } from '../../registry/index'
 import { defineDataInspectorRpc, NS } from './_define'
 
-/** Every registered data source (meta only - no data). */
+/** Every registered data source (meta only, no data). */
 export const sources = defineDataInspectorRpc({
   name: `${NS}:sources`,
   type: 'query',

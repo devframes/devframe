@@ -14,7 +14,7 @@ import { diagnostics } from './diagnostics'
  *
  * birpc envelopes always start with `{`, so a leading byte that is not
  * `s` is unambiguously JSON. Each direction independently chooses its
- * encoding from local definitions - request and response are not
+ * encoding from local definitions; request and response are not
  * coupled by a mirror rule.
  */
 export const STRUCTURED_CLONE_PREFIX = 's:'
@@ -27,16 +27,16 @@ export const STRUCTURED_CLONE_PREFIX = 's:'
  * instances, or `undefined` inside an array (silently becomes `null`).
  *
  * Native pass-throughs (no extra work needed):
- *   - circular references - `JSON.stringify` raises `TypeError`.
- *   - `BigInt` at top level - caught here for a friendlier error path.
+ *   - circular references: `JSON.stringify` raises `TypeError`.
+ *   - `BigInt` at top level: caught here for a friendlier error path.
  *
  * Lenient cases (allowed without throwing):
- *   - `undefined` as an object property - legitimate optional field;
+ *   - `undefined` as an object property: legitimate optional field;
  *     JSON.stringify just omits it.
- *   - `undefined` at the root - legitimate "action returned nothing".
- *   - `Symbol` / `Function` values - semantically "drop me" in JSON.
+ *   - `undefined` at the root: legitimate "action returned nothing".
+ *   - `Symbol` / `Function` values: semantically "drop me" in JSON.
  *
- * `fnName` is used only for the diagnostic message - pass the RPC
+ * `fnName` is used only for the diagnostic message; pass the RPC
  * function name when calling from a wire serializer / dump writer so
  * the error points at the offending function.
  */

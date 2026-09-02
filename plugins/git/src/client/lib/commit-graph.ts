@@ -34,7 +34,7 @@ export interface CommitGraph {
 }
 
 // Lane palette tuned to read clearly in both themes: a blue leads (the mainline
-// / current branch tends to land in lane 0), then warm tones - orange, red -
+// / current branch tends to land in lane 0), then warm tones (orange, red)
 // pick up branches as they fan out, so adjacent lanes stay distinct.
 const GRAPH_COLORS = [
   '#3b82f6', // blue

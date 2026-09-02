@@ -23,7 +23,7 @@ interface SelectProps {
   searchable?: boolean
   /**
    * Renders a real `<select>` instead of `FormSelect`/`FormCombobox`. The browser draws its
-   * option list outside the page's layout, so no ancestor can clip or reposition it - the
+   * option list outside the page's layout, so no ancestor can clip or reposition it, making it the
    * dependable choice for a `Select` embedded in a host layout this component doesn't
    * control. Takes priority over `searchable`, which has no native equivalent.
    */

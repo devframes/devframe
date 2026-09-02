@@ -12,7 +12,7 @@ const props = defineProps<{
   results: Record<string, any>
   pending: Record<string, boolean>
   isStatic: boolean
-  /** Nesting depth - 0 for top-level commands, 1 for their children. */
+  /** Nesting depth: 0 for top-level commands, 1 for their children. */
   depth?: number
 }>()
 
@@ -41,7 +41,7 @@ function toggle(): void {
       <span class="cmd-id mono">{{ cmd.id }}</span>
       <span class="fn-flags">
         <span v-if="cmd.category" class="badge flag">{{ cmd.category }}</span>
-        <span v-if="!cmd.hasHandler" class="badge flag" title="No handler - a group for its children">group</span>
+        <span v-if="!cmd.hasHandler" class="badge flag" title="No handler, a group for its children">group</span>
         <span v-if="cmd.children?.length" class="badge flag">{{ cmd.children.length }} children</span>
       </span>
     </div>
@@ -53,7 +53,7 @@ function toggle(): void {
 
       <template v-if="cmd.hasHandler">
         <div class="label">
-          Execute - positional args as a JSON array
+          Execute with positional args as a JSON array
         </div>
         <textarea :value="argsInput[cmd.id]" class="args" spellcheck="false" placeholder="[]" @input="emit('updateArgs', cmd.id, ($event.target as HTMLTextAreaElement).value)" />
         <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
@@ -67,7 +67,7 @@ function toggle(): void {
           >
             {{ pending[cmd.id] ? 'Running…' : 'Run' }}
           </ActionButton>
-          <span v-if="isStatic" class="note">read-only static backend - execution disabled</span>
+          <span v-if="isStatic" class="note">read-only static backend, execution disabled</span>
         </div>
         <div v-if="results[cmd.id]" class="result">
           <div class="result-head">
@@ -84,7 +84,7 @@ function toggle(): void {
         </div>
       </template>
       <p v-else-if="!cmd.children?.length" class="note">
-        Group-only command - no handler to run.
+        Group-only command, no handler to run.
       </p>
 
       <template v-if="cmd.children?.length">

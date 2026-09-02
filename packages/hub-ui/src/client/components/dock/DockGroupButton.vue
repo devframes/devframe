@@ -85,7 +85,7 @@ function togglePanel() {
 // Delay syncing internal visibility from the store so it doesn't race the
 // "click outside" dismissal (same pattern as the overflow button). Compare by
 // element because `docksGroupPanel` is a single shared ref across every group
-// button - a sibling group's popover must not light up this one.
+// button, so a sibling group's popover must not light up this one.
 watchDebounced(
   () => docksGroupPanel.value,
   (value) => {
@@ -101,8 +101,8 @@ function onClick() {
     emit('select', undefined!)
     return
   }
-  // The member last opened in this group this tab - then the author's
-  // `defaultChildId` - opens directly; otherwise reveal the popover. Resolved
+  // The member last opened in this group this tab, then the author's
+  // `defaultChildId`, opens directly; otherwise reveal the popover. Resolved
   // regardless of the target's render-only `visibility` (a hidden button must
   // still fire), but honoring its `when` clause.
   const fallback = resolveGroupPreferredChild(

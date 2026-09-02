@@ -69,7 +69,7 @@ export function decodeExpandHref(href: string): NodePath | null {
 }
 
 /**
- * Node path this render is rooted at - empty for the top-level result, and the
+ * Node path this render is rooted at, empty for the top-level result, and the
  * expanded node's path for a lazily fetched subtree, so its own truncation
  * markers carry absolute paths back to the root. Set for the duration of each
  * synchronous `prepareForDisplay` call.
@@ -83,7 +83,7 @@ export const keyBadges = new WeakMap<object, Record<string | number, DisplayBadg
 
 /**
  * Source `NodePath`s for display nodes, recorded only when path TRACKING is
- * on (a writable source rendered through the identity query - the one case
+ * on (a writable source rendered through the identity query, the one case
  * where display nodes provably address the live object). Object/array nodes
  * by identity; primitive-valued entries keyed by (parent object, key).
  */
@@ -115,7 +115,7 @@ function badgeFor(type: string, extra?: string): DisplayBadge {
 
 /**
  * True for normalizer markers whose display shape no longer mirrors the live
- * structure - their children must not carry source paths.
+ * structure, so their children must not carry source paths.
  */
 function isUntrackable(value: unknown): boolean {
   return !!value && typeof value === 'object'

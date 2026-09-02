@@ -16,19 +16,19 @@ import createA11yDevframe from '../src/index'
 
 const devframe = createA11yDevframe()
 
-/** Resolve the Solid panel SPA to a local dir - the workspace-linked `--assets` package in dev. */
+/** Resolve the Solid panel SPA to a local dir, the workspace-linked `--assets` package in dev. */
 function localSpaDir(): string {
   const resolved = resolveStaticAssetsSource(devframe.cli!.distDir!, resolve(os.tmpdir(), 'devframes_plugin_a11y-test'), devframe.importMetaUrl)
   if (typeof resolved !== 'string')
-    throw new TypeError('[devframes_plugin_a11y] client SPA missing - run `pnpm -C plugins/a11y run build` first.')
+    throw new TypeError('[devframes_plugin_a11y] client SPA missing; run `pnpm -C plugins/a11y run build` first.')
   return resolved
 }
 
-/** Loud failure if the Solid panel hasn't been built - tests serve the client SPA. */
+/** Loud failure if the Solid panel hasn't been built, since tests serve the client SPA. */
 export function assertClientBuilt(): void {
   if (!existsSync(path.join(localSpaDir(), 'index.html'))) {
     throw new Error(
-      '[devframes_plugin_a11y] client SPA missing - run `pnpm -C plugins/a11y run build` first.',
+      '[devframes_plugin_a11y] client SPA missing; run `pnpm -C plugins/a11y run build` first.',
     )
   }
 }

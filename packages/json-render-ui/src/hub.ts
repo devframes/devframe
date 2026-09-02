@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
  * The prebuilt renderer module lives next to the built entry (`dist/hub.mjs`
  * → `dist/renderer/json-render.mjs`). When this module runs from source
  * instead (tests and playgrounds resolving the workspace alias), fall back to
- * the package's `dist/renderer/` - the module is a build artifact either way.
+ * the package's `dist/renderer/`, since the module is a build artifact either way.
  */
 function rendererFile(): string {
   const here = fileURLToPath(new URL('.', import.meta.url))
@@ -18,7 +18,7 @@ function rendererFile(): string {
 }
 
 /**
- * Register the reference json-render frontend on a hub - the one-liner that
+ * Register the reference json-render frontend on a hub: the one-liner that
  * composes `@devframes/json-render-ui` into any prebuilt viewer:
  *
  * ```ts
@@ -33,7 +33,7 @@ function rendererFile(): string {
  * `<base>__renderers/json-render.mjs` and publishes it in the renderer
  * manifest; viewers import it lazily the first time a `'json-render'` dock
  * mounts. Without any registration for that type, a viewer shows its
- * missing-renderer fallback instead - swap this helper for any community
+ * missing-renderer fallback instead; swap this helper for any community
  * implementation of the `JsonRenderDockRenderer` contract.
  *
  * This entry is node-safe: it imports no Vue and no `@antfu/design`, so a

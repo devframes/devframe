@@ -35,7 +35,7 @@ async function main(): Promise<void> {
 
   // Discover every live view from the single view-index shared state, then
   // subscribe to each view's own state. The author never wires a view id into
-  // the client - publishing a view is enough for it to appear here.
+  // the client; publishing a view is enough for it to appear here.
   const indexState = await rpc.sharedState.get<JsonRenderIndex>(JSON_RENDER_INDEX_KEY, { initialValue: {} })
   // Seed the current server value before mounting so an empty tree isn't
   // mistaken for "no views" during the first round-trip.
@@ -110,7 +110,7 @@ async function main(): Promise<void> {
         const activeEntry = list.find(e => e.stateKey === active.value) ?? list[0]
         const spec = specs[activeEntry.stateKey]
 
-        // A single view renders on its own - no nav. The top bar (brand +
+        // A single view renders on its own, with no nav. The top bar (brand +
         // segmented view switcher) only appears once there's more than one.
         const multiple = list.length > 1
 

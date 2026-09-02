@@ -35,7 +35,7 @@ describe('resolveWsUrl', () => {
   })
 
   it('follows the page origin through a proxy (host + subpath + tls)', () => {
-    // The server has no idea about the proxy's host - the client reuses its own.
+    // The server has no idea about the proxy's host, so the client reuses its own.
     const url = resolveWsUrl(
       { path: '__ws' },
       'https://devtools.example.com/app/__foo/__connection.json',

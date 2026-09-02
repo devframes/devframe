@@ -200,7 +200,7 @@ describe('createDocksContext', () => {
     expect.assertions(4)
 
     const { rpc, sharedStates, trust } = createStubRpc()
-    // No `groupLastChildIds` seed - mirrors a session store persisted before
+    // No `groupLastChildIds` seed, mirroring a session store persisted before
     // the field existed.
     const session = ref<DockSessionStorage>({
       open: false,

@@ -148,7 +148,7 @@ export default defineConfig({
        * Serve the reference json-render frontend as a prebuilt renderer
        * module: the hub publishes it in the renderer manifest and the client
        * (src/client/main.ts) imports it lazily the first time a
-       * `json-render` dock mounts - no Vue and no renderer code compiled
+       * `json-render` dock mounts, with no Vue and no renderer code compiled
        * into this host's own bundle.
        */
       renderers: [jsonRenderUiRenderer()],
@@ -187,7 +187,7 @@ export default defineConfig({
           action: { importFrom: 'demo-dock-client' },
         })
 
-        // Witness the missing-renderer path: a dock type nothing covers -
+        // Witness the missing-renderer path: a dock type nothing covers, so
         // the client shows its fallback view instead of a dead panel.
         context.docks.register(unrenderedDockEntry)
 

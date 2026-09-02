@@ -9,7 +9,7 @@ import { defineRegistry, JSONUIProvider, Renderer, useBoundProp } from '@json-re
 import { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-// A small **React** implementation of the base catalog - the "registry
+// A small **React** implementation of the base catalog, the "registry
 // replacement" seam: this Next host renders a server-authored json-render spec
 // with its own React components instead of the reference Vue frontend, styled
 // with the same @antfu/design tokens. `createReactJsonRenderDockRenderer()`
@@ -325,7 +325,7 @@ function JsonRenderView({ spec, rpc, viewId }: { spec: Spec | null, rpc: ViewRpc
 
 /**
  * A dock renderer implementing the `JsonRenderDockRenderer` contract from
- * `@devframes/json-render/hub` - this example's React frontend replacing the
+ * `@devframes/json-render/hub`, this example's React frontend replacing the
  * reference Vue one. For a shared-state view it subscribes to the live spec;
  * for an inline view (`entry.view.spec`) it renders the embedded spec
  * directly. Disposes cleanly either way.

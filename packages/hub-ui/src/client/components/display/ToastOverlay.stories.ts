@@ -11,7 +11,7 @@ const meta = {
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
-    /** Fixed bottom-right overlay - render in an iframe for the docs canvas. */
+    /** Fixed bottom-right overlay; render in an iframe for the docs canvas. */
     docs: {
       story: { inline: false, height: '360px' },
       description: {

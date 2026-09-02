@@ -29,14 +29,14 @@ export const OPEN_SERVICE_SCOPE = 'devframes:service:open'
 
 export interface OpenServiceOptions {
   /**
-   * Preferred editor command - one of the `KNOWN_EDITORS` `launch-editor`
+   * Preferred editor command, one of the `KNOWN_EDITORS` `launch-editor`
    * recognizes. Auto-detected (via `LAUNCH_EDITOR` and common defaults)
    * when omitted. On merge, the later installer's choice wins.
    */
   editor?: KnownEditor
   /**
    * Additional directories files may be opened from, on top of the
-   * context's `workspaceRoot` - e.g. a plugin's managed storage dir that
+   * context's `workspaceRoot`, e.g. a plugin's managed storage dir that
    * lives outside the workspace. Merged as a union across installers.
    */
   roots?: string[]
@@ -44,7 +44,7 @@ export interface OpenServiceOptions {
 
 export interface OpenInEditorInput {
   /**
-   * File to open - absolute, or relative to the service's `workspaceRoot`
+   * File to open, absolute or relative to the service's `workspaceRoot`
    * (so a client with only a workspace-relative path, e.g. a message's file
    * position, can call this directly without a server-side bridge).
    */
@@ -76,7 +76,7 @@ declare module 'devframe' {
 }
 
 /**
- * The open wire service - `open-in-editor` / `open-in-finder` RPC shared by
+ * The open wire service: `open-in-editor` / `open-in-finder` RPC shared by
  * every plugin on the host, replacing per-plugin registrations of the
  * (deprecated) `devframe/recipes/common-rpc-functions` recipes. Paths may be
  * absolute or relative to the `workspaceRoot`; the service refuses paths

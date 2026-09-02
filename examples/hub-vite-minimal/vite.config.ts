@@ -31,7 +31,7 @@ const builtinDevframes = [
 ]
 
 // A server-authored JSON-render dock: the whole view is this serializable
-// spec - no client build. It renders through whatever `'json-render'`
+// spec, with no client build. It renders through whatever `'json-render'`
 // renderer the hub composes (below, the reference `@devframes/json-render-ui`
 // module); without one, the hub UI provider shows its missing-renderer fallback.
 const jsonRenderSpec: DevframeJsonRenderSpec = {
@@ -57,7 +57,7 @@ const jsonRenderDock: DevframeJsonRenderDockEntry = {
  * `@devframes/vite/hub`. It wraps `initHub` (mounted as connect middleware on
  * Vite's dev server, sharing its HTTP server for the WS upgrade at
  * `/__devframes/__ws`) and injects the UI's `embedded.js` bootstrap into the
- * host page - the whole embedded integration in one call. `quiet` silences the
+ * host page, the whole embedded integration in one call. `quiet` silences the
  * Vite-DevTools recommendation for this reference example.
  */
 export default defineConfig({
@@ -71,7 +71,7 @@ export default defineConfig({
       quiet: true,
       devframes: builtinDevframes,
       /**
-       * Rebrand the reference UI to Vite's own purple - one field, no CSS:
+       * Rebrand the reference UI to Vite's own purple in one field, no CSS:
        * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
        * which the dock reads at connect time and feeds into `--devframe-primary`
        * (see `@devframes/hub-ui`'s `primary-ramp.css`). Passing `ui` overrides
@@ -80,7 +80,7 @@ export default defineConfig({
       ui: createUi({ branding: { primaryColor: '#646cff', productName: 'Devframes on Vite' } }),
       /**
        * Serve the reference json-render frontend as a prebuilt renderer
-       * module - the one-liner that makes `'json-render'` docks render in
+       * module, the one-liner that makes `'json-render'` docks render in
        * the prebuilt hub UI provider. Swap it for any community implementation of
        * the same contract.
        */

@@ -25,7 +25,7 @@ const remoteAssets: RemoteAssets = {
 /**
  * Build a {@link DevframeDefinition} for the code-server panel. The same
  * definition runs standalone (`createCac`), mounts into a Vite host
- * (`/vite`), or docks inside a hub - its `setup` only relies on the core
+ * (`/vite`), or docks inside a hub, since its `setup` only relies on the core
  * devframe RPC + shared-state surface.
  *
  * @experimental This plugin is experimental and may change without a major

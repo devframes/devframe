@@ -8,8 +8,8 @@ import { createCodeServerDevframe } from '../index'
 
 /**
  * The launcher SPA. `base: './'` keeps every asset URL relative so the bundle
- * is mount-path portable - it discovers its runtime base from
- * `document.baseURI` and connects via `connectDevframe()`. The build is copied
+ * is mount-path portable, discovering its runtime base from
+ * `document.baseURI` and connecting via `connectDevframe()`. The build is copied
  * verbatim by `createBuild`; no HTML rewriting.
  *
  * `devframeViteBridge()` runs a side-car devframe RPC + WS server during

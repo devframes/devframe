@@ -31,7 +31,7 @@ async function copyInstallCommand() {
     copiedTimer = setTimeout(() => (copied.value = false), 1500)
   }
   catch {
-    // Clipboard permission denied - the command is on screen to copy by hand.
+    // Clipboard permission denied; the command is on screen to copy by hand.
   }
 }
 </script>

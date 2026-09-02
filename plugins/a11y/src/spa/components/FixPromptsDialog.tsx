@@ -56,7 +56,7 @@ export function FixPromptsDialog(props: FixPromptsDialogProps) {
               {' '}
               {ruleCount() === 1 ? 'violation' : 'violations'}
               {' '}
-              selected - copy the prompt into your AI assistant.
+              selected. Copy the prompt into your AI assistant.
             </p>
           </div>
           <button type="button" ref={closeBtn} class="ml-auto inline-flex p-1.5 rounded color-muted cursor-pointer transition hover:bg-active hover:color-base outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40" aria-label="Close" onClick={() => props.onClose()}>

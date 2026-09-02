@@ -5,7 +5,7 @@ import type { JsonRenderViewRef } from './view-ref'
 
 /**
  * A `json-render` dock entry. Contributed to the hub's **open** dock union
- * (`DevframeDockEntryRegistry`) by this opt-in integration - the hub itself
+ * (`DevframeDockEntryRegistry`) by this opt-in integration, since the hub itself
  * hard-codes no json-render variant. Carries only the serializable
  * {@link JsonRenderViewRef}; no functions cross the wire.
  */
@@ -25,10 +25,10 @@ declare module '@devframes/hub/types' {
 }
 
 /**
- * The mount options a hub viewer hands a json-render dock renderer - the
+ * The mount options a hub viewer hands a json-render dock renderer: the
  * hub's `DockRendererMountOptions` narrowed to the `'json-render'` entry.
- * This protocol package owns the renderer contract so every frontend -
- * `@devframes/json-render-ui`, a community renderer, a host page's own -
+ * This protocol package owns the renderer contract so every frontend
+ * (`@devframes/json-render-ui`, a community renderer, a host page's own)
  * implements one shared shape instead of re-declaring it.
  */
 export type JsonRenderDockMountOptions = DockRendererMountOptions<DevframeJsonRenderDockEntry>
@@ -36,7 +36,7 @@ export type JsonRenderDockMountOptions = DockRendererMountOptions<DevframeJsonRe
 /**
  * The renderer contract for `'json-render'` docks: a hub `DockRenderer`
  * narrowed to {@link DevframeJsonRenderDockEntry}. Implement it to replace
- * the reference frontend - register the implementation locally
+ * the reference frontend: register the implementation locally
  * (`createDevframeClientRuntime({ renderers })`) or ship it as a prebuilt
  * module registered through the hub's renderer manifest
  * (`initHub({ renderers })`).

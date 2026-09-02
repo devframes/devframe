@@ -27,7 +27,7 @@ const colorClass: Record<string, string> = {
 }
 
 /**
- * Generic typography - `@antfu/design` has no single equivalent, so it stays a
+ * Generic typography. `@antfu/design` has no single equivalent, so it stays a
  * thin custom component over the shared semantic tokens.
  */
 export const Text: JrComponent<TextProps> = ({ props, children }) => {

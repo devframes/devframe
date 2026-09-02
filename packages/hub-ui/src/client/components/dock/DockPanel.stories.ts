@@ -45,7 +45,7 @@ export const Default: Story = {
   }),
 }
 
-/** A group member selected - the group rail appears down the left of the panel. */
+/** A group member selected: the group rail appears down the left of the panel. */
 export const WithGroupSidebar: Story = {
   render: () => ({
     setup: () => mountWithContext(

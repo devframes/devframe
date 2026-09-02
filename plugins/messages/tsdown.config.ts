@@ -2,14 +2,14 @@ import { defineConfig } from 'tsdown'
 
 const tsconfig = '../../tsconfig.base.json'
 
-// Browser-loaded entry - the embeddable Vue panel. Its runtime bundle is
+// Browser-loaded entry: the embeddable Vue panel. Its runtime bundle is
 // produced by the Vite lib build (`src/client/vite.config.ts`, CSS injected
 // via JS); tsdown only emits its declarations below.
 const clientEntries = {
   'client/index': 'src/client/index.ts',
 }
 
-// Node + neutral modules - the devframe definition/factory, the RPC
+// Node + neutral modules: the devframe definition/factory, the RPC
 // functions, and the host adapters.
 const serverEntries = {
   'index': 'src/index.ts',
@@ -22,7 +22,7 @@ const serverEntries = {
 /**
  * Two configs mirror `plugins/terminals`:
  * 1. node runtime build (`dts: false`, `clean: true`);
- * 2. combined dts (`emitDtsOnly`) - one rolldown graph so the
+ * 2. combined dts (`emitDtsOnly`): one rolldown graph so the
  * `declare module 'devframe'` RPC augmentation resolves once.
  */
 export default defineConfig([
@@ -38,7 +38,7 @@ export default defineConfig([
     platform: 'neutral',
     tsconfig,
     /**
-     * `client/index.ts` re-exports `useMessages(): Reactive<MessagesState>` -
+     * `client/index.ts` re-exports `useMessages(): Reactive<MessagesState>`,
      * a genuine Vue reactivity type, not just a documentation import. Without
      * this, the dts bundler inlines Vue's entire runtime-core/reactivity type
      * surface to describe `Reactive<T>` (≈935 KB); `neverBundle` keeps the

@@ -8,7 +8,7 @@ import createInspectDevframe from '../index'
 
 /**
  * The inspector SPA. `base: './'` keeps every asset URL relative so the
- * bundle is mount-path portable - it discovers its runtime base from
+ * bundle is mount-path portable; it discovers its runtime base from
  * `document.baseURI` and connects via `connectDevframe()`. The build is
  * copied verbatim by `createBuild`; no HTML rewriting.
  */

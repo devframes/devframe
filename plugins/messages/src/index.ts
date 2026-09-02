@@ -29,7 +29,7 @@ export interface MessagesDevframeOptions {
   port?: number
   /**
    * Require the trust handshake on the standalone server. Enabled by
-   * default - `--open` embeds the current OTP in the opened URL, so the
+   * default; `--open` embeds the current OTP in the opened URL, so the
    * tab authenticates automatically without extra prompts. Hosted adapters
    * manage their own auth and ignore this.
    */
@@ -37,7 +37,7 @@ export interface MessagesDevframeOptions {
 }
 
 /**
- * Build a {@link DevframeDefinition} for the hub message feed panel -
+ * Build a {@link DevframeDefinition} for the hub message feed panel,
  * a portable view over `ctx.messages`, ported from vitejs/devtools'
  * built-in Messages view. The same definition runs standalone
  * (`/cli`, `/build`) and mounts into a host (`/vite`, hub);
@@ -85,7 +85,7 @@ export function createMessagesDevframe(options: MessagesDevframeOptions = {}): D
 
 export default createMessagesDevframe
 export { DEFAULT_PORT, MESSAGES_UPDATED_EVENT, PLUGIN_ID } from './constants'
-// The plugin's data vocabulary is the hub's - re-exported so the SPA, the
+// The plugin's data vocabulary is the hub's, re-exported so the SPA, the
 // embeddable client, and consumers can type against the plugin package alone.
 export type {
   DevframeMessageEntry,

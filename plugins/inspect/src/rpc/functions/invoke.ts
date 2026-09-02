@@ -7,7 +7,7 @@ const INVOKABLE_TYPES = new Set(['query', 'static'])
 /**
  * Invoke a read-only RPC function by name and return a result envelope.
  *
- * Deliberately gated to `query` / `static` functions - `action` and
+ * Deliberately gated to `query` / `static` functions, because `action` and
  * `event` functions may carry side effects, so the inspector refuses to
  * fire them (`DP_INSPECT_0002`). Uses structured-clone serialization
  * (default) so arbitrary return values round-trip without the strict-JSON

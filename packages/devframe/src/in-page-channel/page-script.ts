@@ -40,7 +40,7 @@ interface PeerInternal<P extends InPageChannelProtocol> {
  *
  * It listens for panel hellos on the host page's window and answers each
  * with a dedicated `MessageChannel` port (same-origin enforced both ways),
- * keeping one live peer per panel - dock iframe, popup, and Document-PiP
+ * keeping one live peer per panel: dock iframe, popup, and Document-PiP
  * panels all handshake the same way, and a panel reload is simply a new
  * handshake. No server is involved at any point.
  */
@@ -140,7 +140,7 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     if (!isHandshakeMessage(data) || data.kind !== 'hello' || data.name !== name)
       return
     if (data.v !== IN_PAGE_CHANNEL_VERSION) {
-      warnOnce(`in-page channel "${name}": ignoring a hello with protocol version ${data.v} (this side speaks ${IN_PAGE_CHANNEL_VERSION}) - align the devframe versions of the page script and the panel`)
+      warnOnce(`in-page channel "${name}": ignoring a hello with protocol version ${data.v} (this side speaks ${IN_PAGE_CHANNEL_VERSION}); align the devframe versions of the page script and the panel`)
       return
     }
     if (!allowedOrigins.includes('*') && !allowedOrigins.includes(event.origin)) {

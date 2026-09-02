@@ -11,7 +11,7 @@ const MOCK_EDITOR = `data:text/html;charset=utf-8,${encodeURIComponent(`
   .main{flex:1;padding:16px;font-size:13px;line-height:1.6}
   .c{color:#569cd6}.s{color:#ce9178}.f{color:#dcdcaa}
 </style></head><body>
-  <div class="bar">code-server - mock editor (Storybook)</div>
+  <div class="bar">code-server mock editor (Storybook)</div>
   <div class="body"><div class="side"></div><div class="main">
     <div><span class="c">export function</span> <span class="f">createCodeServerDevframe</span>(<span class="c">options</span>) {</div>
     <div>&nbsp;&nbsp;<span class="c">return</span> <span class="f">defineDevframe</span>({ <span class="s">id</span>, <span class="s">name</span> })</div>
@@ -33,7 +33,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Ready - the editor fills the panel, with no chrome over it. */
+/** Ready: the editor fills the panel, with no chrome over it. */
 export const Running: Story = {
   args: {
     connect: { url: MOCK_EDITOR },

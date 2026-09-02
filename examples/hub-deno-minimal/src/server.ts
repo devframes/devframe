@@ -5,7 +5,7 @@ import { hostPage, hub } from './hub'
 
 // `Deno` is a global on the Deno runtime only; this is the Deno entry. Declare
 // the slice this file uses so `tsc` (Node types only, no Deno lib) can check
-// it - typing the handler's params here also keeps them from being `any`.
+// it; typing the handler's params here also keeps them from being `any`.
 declare const Deno: {
   serve: (
     options: { port: number, hostname?: string },
@@ -17,7 +17,7 @@ declare const Deno: {
 /**
  * The Deno entry. Deno serves HTTP through `Deno.serve(options, handler)` (web
  * Request → Response), but WebSockets arrive as fetch upgrades rather than
- * `node:http` `upgrade` events - so this host binds Deno's own transport to
+ * `node:http` `upgrade` events, so this host binds Deno's own transport to
  * the hub context with two public primitives: `createContextRpcServer` (the
  * session/auth wiring every devframe transport shares) and
  * `attachDenoWsTransport` (crossws' Deno adapter). crossws attaches the socket
@@ -25,7 +25,7 @@ declare const Deno: {
  * websocket handler object to register.
  *
  * The hub advertises `/__devframes/__ws` on the app's own origin, so the
- * browser client needs no per-runtime knowledge - this file only has to
+ * browser client needs no per-runtime knowledge, so this file only has to
  * answer that route.
  */
 export async function startDenoServer(port: number): Promise<{ port: number, close: () => Promise<void> }> {
@@ -43,7 +43,7 @@ export async function startDenoServer(port: number): Promise<{ port: number, clo
     const { pathname } = new URL(request.url)
     if (pathname === upgradePath && request.headers.get('upgrade')?.toLowerCase() === 'websocket')
       return tier.handleUpgrade(request, info)
-    // The whole hub namespace behind one delegation - frame SPAs,
+    // The whole hub namespace behind one delegation: frame SPAs,
     // __connection.json, __index.json, embedded.js, __client-imports.js.
     if (pathname === baseNoSlash || pathname.startsWith(hub.base))
       return hub.handler(request)
@@ -65,6 +65,6 @@ export async function startDenoServer(port: number): Promise<{ port: number, clo
 if (import.meta.main) {
   void startDenoServer(Number(Deno.env.get('PORT') ?? 5182)).then(({ port }) => {
     // eslint-disable-next-line no-console
-    console.log(`deno-devframe-hub on http://localhost:${port} - devtools at /__devframes/`)
+    console.log(`deno-devframe-hub on http://localhost:${port} (devtools at /__devframes/)`)
   })
 }

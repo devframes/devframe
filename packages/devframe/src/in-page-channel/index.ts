@@ -2,7 +2,7 @@ import type { RpcArgsSchema, RpcReturnSchema } from '../rpc/types'
 import type { InPageFunctionDefinition, InPageFunctionType } from './types'
 
 /**
- * `devframe/in-page-channel` - the browser-only communication path between
+ * `devframe/in-page-channel`: the browser-only communication path between
  * a devframe's page script and its panels: a same-origin, server-free,
  * typed channel of fire-and-forget events, request/response calls, and
  * page-script-authoritative shared state, over one handshaken
@@ -23,7 +23,7 @@ export type {
 } from './types'
 
 /**
- * Define one in-page channel function - the `defineRpcFunction` authoring
+ * Define one in-page channel function, the `defineRpcFunction` authoring
  * shape narrowed to the browser (see {@link InPageFunctionDefinition}).
  * Pure identity: it only types the definition. Functions live in
  * side-specific files and are passed to their endpoint via `functions`; the

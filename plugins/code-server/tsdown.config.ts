@@ -11,14 +11,14 @@ const deps = {
   ],
 }
 
-// Browser-loaded module - the launcher/iframe shell. Kept in its own
+// Browser-loaded module: the launcher/iframe shell. Kept in its own
 // rolldown graph so the node-only supervisor never leaks into the client
 // bundle.
 const clientEntries = {
   'client/index': 'src/client/index.ts',
 }
 
-// Node + neutral modules - the devframe definition/factory, RPC functions,
+// Node + neutral modules: the devframe definition/factory, RPC functions,
 // the code-server supervisor, and the host adapters.
 const serverEntries = {
   'index': 'src/index.ts',

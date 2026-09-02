@@ -1,5 +1,5 @@
 /**
- * Cross-plugin services - a typed, namespaced registry on the shared node
+ * Cross-plugin services: a typed, namespaced registry on the shared node
  * context through which one integration exposes a capability and others
  * consume it without a hard package dependency.
  *
@@ -16,7 +16,7 @@
  * }
  * ctx.services.provide('devframes:plugin:data-inspector:sources', host)
  *
- * // consumer (another plugin) - no runtime dependency on the provider
+ * // consumer (another plugin), no runtime dependency on the provider
  * ctx.services.whenAvailable('devframes:plugin:data-inspector:sources', (sources) => {
  *   sources.register({ id: 'my-plugin:state', title: 'My state', data: () => state })
  * })
@@ -26,7 +26,7 @@
  * the providing plugin's id.
  *
  * On top of this in-process tier sit **wire services**
- * ({@link DevframeServiceDefinition}) - npm-packaged capabilities installed
+ * ({@link DevframeServiceDefinition}): npm-packaged capabilities installed
  * via {@link DevframeServicesHost.install} (or declaratively through
  * `DevframeDefinition.services`), keyed by their npm package name, that also
  * register RPC functions and are advertised to browser clients through the
@@ -75,7 +75,7 @@ export type DevframeServiceScopeOf<PKG> = PKG extends keyof DevframeServicesScop
   : string
 
 /**
- * A **wire service** - a shared server-side capability (e.g. open-in-editor,
+ * A **wire service**: a shared server-side capability (e.g. open-in-editor,
  * syntax highlighting) packaged so any devframe host can install it once and
  * every plugin/client can consume it without re-implementing or re-bundling
  * it. Contrast with plain {@link DevframeServicesHost.provide}, which shares
@@ -86,16 +86,16 @@ export type DevframeServiceScopeOf<PKG> = PKG extends keyof DevframeServicesScop
  * feature-detect it (`ctx.services.has(pkg)`) and degrade gracefully.
  *
  * Ship one per npm package (`@devframes/service-<slug>` for first-party),
- * with the package's default export being the `create<X>Service` factory -
+ * with the package's default export being the `create<X>Service` factory,
  * never a pre-built instance.
  */
 export interface DevframeServiceDefinition<API = unknown, Options = any> {
   /**
-   * The npm package name this service ships in - also its registry key
+   * The npm package name this service ships in, also its registry key
    * (`ctx.services.has('@devframes/service-x')` on both node and client).
    */
   package: string
-  /** Semver of the service - advertised to clients, checked against descriptor ranges. */
+  /** Semver of the service, advertised to clients and checked against descriptor ranges. */
   version: string
   /**
    * RPC namespace the service's functions register under, following the
@@ -105,7 +105,7 @@ export interface DevframeServiceDefinition<API = unknown, Options = any> {
   scope: string
   /**
    * Extra advertised metadata (feature flags, defaults, …). Must be
-   * JSON-serializable - it is mirrored to every client.
+   * JSON-serializable, since it is mirrored to every client.
    */
   meta?: Record<string, unknown>
   /**
@@ -122,17 +122,17 @@ export interface DevframeServiceDefinition<API = unknown, Options = any> {
   mergeOptions?: (sets: Options[]) => Options
   /**
    * Construct the service: register its RPC functions on the pre-scoped
-   * context and return its **node API** - the in-process surface other
+   * context and return its **node API**: the in-process surface other
    * plugins get from `ctx.services.get(package)` (no RPC hop server-side).
    * `info.options` carries every installer's option sets merged at the
    * `ready()` barrier (via {@link mergeOptions} when present, otherwise a
-   * shallow merge in declaration order - later sets win).
+   * shallow merge in declaration order, later sets win).
    */
   setup: (ctx: DevframeScopedNodeContext, info: { options?: Options }) => API | Promise<API>
 }
 
 /**
- * Declarative reference to a service package - the form a
+ * Declarative reference to a service package: the form a
  * {@link DevframeServiceInput} takes when the installer doesn't hold the
  * factory itself (e.g. `DevframeDefinition.services`). The host imports the
  * package's default-export factory and installs the resulting definition at
@@ -143,13 +143,13 @@ export interface DevframeServiceDescriptor<Options = any> {
   package: string
   /**
    * Accepted semver range for the installed service. An unsatisfied range
-   * warns (`DF0069`) - or throws (`DF0068`) when {@link required} - while the
+   * warns (`DF0069`), or throws (`DF0068`) when {@link required}, while the
    * service still installs; the advertised meta carries the real version.
    */
   version?: string
   /**
    * Fail hard when the service can't be imported or its version range isn't
-   * satisfied. By default a missing service is skipped silently - clients see
+   * satisfied. By default a missing service is skipped silently; clients see
    * `has() === false` and degrade.
    *
    * @default false
@@ -163,7 +163,7 @@ export interface DevframeServiceDescriptor<Options = any> {
  * What can be passed to `ctx.services.install()` (and listed in
  * `DevframeDefinition.services`): a declarative {@link DevframeServiceDescriptor}
  * (the host imports the factory) or a ready {@link DevframeServiceDefinition}
- * (the installer already called the factory - its `options` join the merge).
+ * (the installer already called the factory, so its `options` join the merge).
  */
 export type DevframeServiceInput<API = unknown, Options = any>
   = DevframeServiceDescriptor<Options> | DevframeServiceDefinition<API, Options>
@@ -173,7 +173,7 @@ export type DevframeServiceInput<API = unknown, Options = any>
  * `devframe:services` shared state.
  */
 export interface DevframeServiceMeta {
-  /** npm package name - the registry key. */
+  /** npm package name, the registry key. */
   package: string
   /** Installed version of the service. */
   version: string
@@ -198,7 +198,7 @@ export interface DevframeServicesHost {
   get: <ID extends DevframeServiceId>(id: ID) => DevframeServiceOf<ID> | undefined
   has: (id: DevframeServiceId) => boolean
   /**
-   * Run `callback` with the service as soon as it is available - immediately
+   * Run `callback` with the service as soon as it is available: immediately
    * when already provided, otherwise on `provide`. Survives provider/consumer
    * setup-order differences. The callback also re-fires if the service is
    * revoked and provided again. Returns an unsubscribe function.
@@ -211,7 +211,7 @@ export interface DevframeServicesHost {
   keys: () => string[]
   /**
    * Install a **wire service** (see {@link DevframeServiceDefinition}). The
-   * common path is declarative - list services on `DevframeDefinition.services`
+   * common path is declarative: list services on `DevframeDefinition.services`
    * (or `initHub({ services })`) and the adapter installs them for you before
    * `setup` runs. Call `install()` directly only for the dynamic escape hatch:
    * a service configured at runtime from data unknown until then.
@@ -219,7 +219,7 @@ export interface DevframeServicesHost {
    * Before the pre-setup ready fires, installs are queued and their option
    * sets deep-merged, constructing each service **once**. After it, an install
    * constructs immediately; installing an already-installed package returns
-   * the existing API (a warning - `DF0066` - when the late install carried
+   * the existing API (a warning, `DF0066`, when the late install carried
    * options, since they're ignored). The returned promise resolves with the
    * node API (or `undefined` when an optional descriptor's package can't be
    * imported).
@@ -234,7 +234,7 @@ export interface DevframeServicesHost {
     options?: { resolveFrom?: string | null },
   ) => Promise<API | undefined>
   /**
-   * Construct every queued service - importing descriptor packages, merging
+   * Construct every queued service, importing descriptor packages, merging
    * option sets, `provide()`-ing each node API under its package name, and
    * advertising it to clients via the `devframe:services` shared state.
    * Idempotent. **Internal**: the adapters call it once, before running any

@@ -42,7 +42,7 @@ async function canonicalRoot(absDir: string): Promise<string> {
 
 /**
  * Stat a candidate file, confirming its canonical target stays inside the
- * canonical served root - a symlink inside the root can only resolve to a
+ * canonical served root; a symlink inside the root can only resolve to a
  * file still within it; one escaping the root reads as a miss, not a leak.
  */
 async function statFile(abs: string, realRoot: string): Promise<ResolvedFile | null> {
@@ -86,7 +86,7 @@ async function resolveDirectoryIndex(abs: string, realRoot: string, indexNames: 
     }
   }
   catch {
-    // not found / not a directory - continue
+    // not found / not a directory; continue
   }
   return null
 }
@@ -182,7 +182,7 @@ function normalizeOptions(options: ServeStaticOptions | undefined): NormalizedOp
 /**
  * Drive one request through a {@link RemoteAssetsStore}: the store's
  * `Response` on a hit, a 404 on a miss, or a 502 (styled error page for HTML
- * navigations) on provider failure - shared between the h3 and connect flavors.
+ * navigations) on provider failure, shared between the h3 and connect flavors.
  */
 async function remoteResponse(store: RemoteAssetsStore, urlPath: string, accept: string | null | undefined): Promise<Response> {
   try {
@@ -219,12 +219,12 @@ function serveRemoteAssetsHandler(store: RemoteAssetsStore): EventHandler {
 }
 
 /**
- * h3 event handler that serves files from `source` with SPA fallback - a
+ * h3 event handler that serves files from `source` with SPA fallback: a
  * local directory, or a {@link RemoteAssetsStore} whose files stream through
  * the CDN back-proxy into the local cache.
  *
  * Drop-in replacement for `fromNodeMiddleware(sirv(dir, { dev: true, single: true }))`
- * when the surrounding server is an h3 app - no `Cache-Control` beyond
+ * when the surrounding server is an h3 app: no `Cache-Control` beyond
  * `no-store`, `Content-Type` resolved via `mrmime`, and a miss with no
  * file extension falls back to `<dir>/index.html` so client-side routing
  * works.
@@ -282,7 +282,7 @@ export function mountStaticHandler(
  * Connect/Express-style Node middleware variant of {@link serveStaticHandler}.
  *
  * Use when mounting onto `viteServer.middlewares.use(base, …)` or any other
- * Connect stack - avoids forcing the host package to depend on h3 just to
+ * Connect stack; avoids forcing the host package to depend on h3 just to
  * adapt an event handler back into Node middleware.
  */
 export function serveStaticNodeMiddleware(

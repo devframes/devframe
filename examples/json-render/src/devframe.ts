@@ -20,7 +20,7 @@ export default createJsonRenderDevframe({
     command: 'json-render',
     port: 9877,
     /**
-     * Single-user localhost demo - skip the trust handshake so the served SPA
+     * Single-user localhost demo: skip the trust handshake so the served SPA
      * can call the action RPCs without an OTP round-trip.
      */
     auth: false,

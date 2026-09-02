@@ -26,7 +26,7 @@ export const diagnostics = defineDiagnostics({
     DF0041: {
       why: (p: { id: string, reason: string }) =>
         `JSON-render view "${p.id}" spec is not JSON-serializable: ${p.reason}`,
-      fix: 'Specs and state travel as strict JSON - remove functions, symbols, class instances, Map/Set, or circular references.',
+      fix: 'Specs and state travel as strict JSON, so remove functions, symbols, class instances, Map/Set, or circular references.',
     },
     DF0073: {
       why: (p: { id: string, issues: string }) =>
