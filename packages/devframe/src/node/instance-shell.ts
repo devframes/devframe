@@ -607,18 +607,11 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
 
   /**
    * Consider a request-derived origin candidate for the advertised public
-   * origin (which backs the OTP magic link). Delegates the trust decision to
-   * {@link validateOriginCandidate}: only a loopback host or an exact
-   * `allowedOrigins` match is adopted, so a raw inbound `Host`/URL authority
-   * never redirects the credential-bearing link. A dynamic `WsOriginRegistry`
-   * or a disabled gate offers no static list, so it passes none and only
-   * loopback candidates qualify.
-   *
-   * Keeps the first-valid-origin behavior: an invalid candidate is ignored
-   * without setting `derivedOrigin`, so it neither prints a banner nor
-   * registers a poisoned origin, and a later valid candidate can still be
-   * adopted. Silent by design — a diagnostic here would let an unauthenticated
-   * request amplify log noise.
+   * origin (which backs the OTP magic link). {@link validateOriginCandidate}
+   * adopts only a loopback host or an exact `allowedOrigins` match, so a raw
+   * inbound `Host`/URL authority never redirects the credential-bearing link.
+   * First-valid-origin wins: an invalid candidate leaves `derivedOrigin` unset
+   * — printing/registering nothing — so a later valid one can still be adopted.
    */
   function noteOrigin(candidate: string): void {
     if (derivedOrigin === undefined && !explicitOrigin()) {

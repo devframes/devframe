@@ -64,23 +64,14 @@ export function isAllowedOrigin(origin: string | undefined, allowedOrigins: read
 }
 
 /**
- * Canonicalize a request-derived origin candidate and decide whether it may
- * back a devframe's advertised public origin. That origin becomes the
- * destination of the OTP magic link, so a raw inbound authority is never
- * trusted: a candidate is adopted only when its parsed hostname is loopback,
- * or when its canonical origin exactly matches an `allowedOrigins` entry. A
- * caller with no static allow-list (a dynamic registry or a disabled gate)
- * passes none, so non-loopback adoption stays off — those deployments supply
- * an explicit origin instead.
- *
- * Unlike {@link isAllowedOrigin} — which accepts any origin-shaped string —
- * this rejects a candidate carrying credentials, a path, a query, a fragment,
- * a malformed port, or a non-HTTP(S) scheme, and returns the **canonical**
- * origin (default ports and casing normalized) rather than a boolean, so the
- * value that ends up in the magic link is always canonical. Forwarded headers
- * are never consulted.
- *
- * @returns the canonical origin to adopt, or `undefined` to reject.
+ * Decide whether a request-derived origin candidate may back a devframe's
+ * advertised public origin — the destination of the OTP magic link. Stricter
+ * than {@link isAllowedOrigin}: it rejects credentials, a path, a query, a
+ * fragment, a malformed port, and non-HTTP(S) schemes, and adopts a candidate
+ * only when its hostname is loopback or its canonical origin exactly matches
+ * an `allowedOrigins` entry (a caller with no static list passes none, so only
+ * loopback qualifies). Returns the canonical origin to adopt, or `undefined`
+ * to reject. Forwarded headers are never consulted.
  */
 export function validateOriginCandidate(
   candidate: string,
@@ -95,19 +86,14 @@ export function validateOriginCandidate(
   }
   if (url.protocol !== 'http:' && url.protocol !== 'https:')
     return undefined
-  // A canonical origin carries no credentials, path, query, or fragment; any
-  // of these means the candidate was a full or poisoned URL, not a bare
-  // authority safe to advertise.
-  if (url.username || url.password || url.search || url.hash)
-    return undefined
-  if (url.pathname !== '/' && url.pathname !== '')
+  // A canonical origin has no credentials, path, query, or fragment; any of
+  // these means a full or poisoned URL, not a bare authority safe to advertise.
+  if (url.username || url.password || url.search || url.hash || (url.pathname !== '/' && url.pathname !== ''))
     return undefined
   const canonical = url.origin
   if (canonical === 'null')
     return undefined
-  if (isLoopbackHostname(url.hostname))
-    return canonical
-  if (allowedOrigins?.includes(canonical))
+  if (isLoopbackHostname(url.hostname) || allowedOrigins?.includes(canonical))
     return canonical
   return undefined
 }
