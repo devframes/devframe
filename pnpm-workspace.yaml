@@ -9,17 +9,9 @@ blockExoticSubdeps: false
 
 minimumReleaseAgeExcludePrune: true
 minimumReleaseAgeExclude:
-  - nostics@1.1.4
-  - '@antfu/design@0.3.0 || 0.3.2'
-  - crossws@0.4.8
   - iframe-pane@1.1.0
   - tsdown@0.22.14
-  - verkit@0.3.0
   - structured-clone-es@2.0.1
-  - '@devframes/hub-ui@0.9.4'
-  - '@devframes/hub@0.9.4'
-  - '@devframes/json-render@0.9.4'
-  - '@devframes/vite@0.9.4'
   - '@antfu/eslint-config@9.5.1'
   - eslint-plugin-pnpm@1.9.1
   - eslint-plugin-slop@0.1.1
@@ -80,11 +72,13 @@ overrides:
   '@devframes/service-open': 'workspace:*'
   '@devframes/service-shiki': 'workspace:*'
   '@devframes/vite': 'workspace:*'
+  '@unhead/vue': ^3.4.0
   chokidar: ^5.0.0
   crossws: ^0.4.12
   devframe: 'workspace:*'
   semver: ^7.8.5
   shell-quote: ^1.10.0
+  unhead: ^3.4.0
 
 patchedDependencies:
   comark-docs@0.0.1: patches/comark-docs@0.0.1.patch

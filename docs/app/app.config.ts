@@ -128,12 +128,6 @@ export default defineAppConfig({
           items: ['/guide/built-with'],
         },
       ],
-      posts: [
-        {
-          title: 'Blog',
-          items: ['/posts/pluggable-extensible-playful-devtools'],
-        },
-      ],
     },
     ogImage: {
       tagline: 'Build a devtool once. Mount it anywhere.',
