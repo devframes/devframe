@@ -209,6 +209,15 @@ declare module 'devframe/types' {
 export interface DevframeViewIframe extends DevframeDockEntryBase {
   type: 'iframe'
   url: string
+  /** Request the address bar for this iframe dock. Pass an object to configure its controls. The user's global always-show setting forces it on for every iframe. */
+  addressBar?: boolean | {
+    /** Override Back visibility. Cross-origin history access may still be blocked by the browser. */
+    back?: boolean
+    /** Override Reload visibility. */
+    reload?: boolean
+    /** Override Open externally visibility. */
+    openExternal?: boolean
+  }
   /**
    * The id of the iframe, if multiple tabs is assigned with the same id, the iframe will be shared.
    *

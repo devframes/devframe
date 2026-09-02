@@ -103,7 +103,11 @@ export function navigate(value: unknown, path: NodePath, options: Pick<Normalize
       return undefined
     switch (kind) {
       case 'k':
-        cur = cur instanceof Map ? cur.get(at) : (cur as Record<string, unknown>)[at]
+        // Own properties only — mirrors the walker, which never descends into
+        // inherited properties, and keeps live re-navigation off the prototype chain.
+        cur = cur instanceof Map
+          ? cur.get(at)
+          : Object.hasOwn(cur, at) ? (cur as Record<string, unknown>)[at] : undefined
         break
       case 'i': {
         const arr = cur as unknown[]

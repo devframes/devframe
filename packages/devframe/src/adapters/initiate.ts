@@ -95,10 +95,12 @@ export interface InitDevframeOptions {
   mcp?: boolean | McpRouteOptions
   /**
    * Public origin the host app is reachable at (e.g. `http://localhost:3000`),
-   * or a getter for hosts that resolve it late. When omitted (or the getter
-   * returns a falsy value), it is derived lazily from the first request the
-   * handler serves — used for the auth banner's magic link and absolute dock
-   * URLs.
+   * or a getter for hosts that resolve it late. Backs the auth banner's magic
+   * link and absolute dock URLs. When omitted (or the getter returns a falsy
+   * value), it is derived from a served request — but only when that request's
+   * own origin is loopback or exactly matches an `allowedOrigins` entry; a raw
+   * inbound `Host`/URL authority and forwarded headers are never adopted. Set
+   * this explicitly for a non-loopback deployment (proxy, LAN, public host).
    */
   origin?: string | (() => string)
   /**

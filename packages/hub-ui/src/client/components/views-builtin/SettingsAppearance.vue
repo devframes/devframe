@@ -105,8 +105,8 @@ function setDockMode(mode: string) {
         />
       </button>
       <div class="flex flex-col">
-        <span class="text-sm">Show iframe address bar</span>
-        <span class="text-xs op50">Display navigation controls and URL bar for iframe views</span>
+        <span class="text-sm">Always show iframe address bars</span>
+        <span class="text-xs op50">Show the address bar for every iframe dock.</span>
       </div>
     </label>
 

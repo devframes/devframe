@@ -1,9 +1,10 @@
 import type { AddressInfo } from 'node:net'
 import type { ServeStaticOptions } from './serve-static'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import process from 'node:process'
 import { H3, toNodeHandler } from 'h3'
 import { afterEach, describe, expect, it } from 'vitest'
 import { mountStaticHandler, serveStaticHandler, serveStaticNodeMiddleware } from './serve-static'
@@ -213,6 +214,66 @@ describe('mountStaticHandler', () => {
     expect(vitestResponse.status).toBe(200)
     expect(await vitestResponse.text()).toBe('vitest')
     expect(adjacentResponse.status).toBe(404)
+  })
+})
+
+// Symlinks require privileges on Windows that hosted CI runners lack, so
+// gate the symlink-containment suite off that platform.
+describe.skipIf(process.platform === 'win32')('serveStaticHandler symlink containment', () => {
+  let fx: Fixture | undefined
+
+  afterEach(async () => {
+    await fx?.close()
+    fx = undefined
+  })
+
+  it('returns 404 for a file symlink escaping the served root', async () => {
+    const dir = makeTmp('devframe-serve-link-')
+    const outside = makeTmp('devframe-serve-outside-')
+    writeFileSync(join(outside, 'secret.txt'), 'top secret', 'utf-8')
+    symlinkSync(join(outside, 'secret.txt'), join(dir, 'leak.txt'))
+    writeFileSync(join(dir, 'ok.txt'), 'in root', 'utf-8')
+    fx = await startH3(dir, { single: false })
+
+    const leak = await fetch(`${fx.baseUrl}/leak.txt`)
+    expect(leak.status).toBe(404)
+    // Ordinary in-root files still serve.
+    const ok = await fetch(`${fx.baseUrl}/ok.txt`)
+    expect(ok.status).toBe(200)
+    expect(await ok.text()).toBe('in root')
+  })
+
+  it('returns 404 for a file reached through an escaping directory symlink', async () => {
+    const dir = makeTmp('devframe-serve-link-')
+    const outside = makeTmp('devframe-serve-outside-')
+    writeFileSync(join(outside, 'secret.txt'), 'top secret', 'utf-8')
+    symlinkSync(outside, join(dir, 'escape'))
+    fx = await startH3(dir, { single: false })
+
+    const res = await fetch(`${fx.baseUrl}/escape/secret.txt`)
+    expect(res.status).toBe(404)
+  })
+
+  it('serves a symlink whose canonical target stays inside the served root', async () => {
+    const dir = makeTmp('devframe-serve-link-')
+    writeFileSync(join(dir, 'real.txt'), 'contained', 'utf-8')
+    symlinkSync(join(dir, 'real.txt'), join(dir, 'alias.txt'))
+    fx = await startH3(dir, { single: false })
+
+    const res = await fetch(`${fx.baseUrl}/alias.txt`)
+    expect(res.status).toBe(200)
+    expect(await res.text()).toBe('contained')
+  })
+
+  it('returns 404 through the Node middleware for an escaping symlink', async () => {
+    const dir = makeTmp('devframe-serve-link-')
+    const outside = makeTmp('devframe-serve-outside-')
+    writeFileSync(join(outside, 'secret.txt'), 'top secret', 'utf-8')
+    symlinkSync(join(outside, 'secret.txt'), join(dir, 'leak.txt'))
+    fx = await startMw(dir, { single: false })
+
+    const res = await fetch(`${fx.baseUrl}/leak.txt`)
+    expect(res.status).toBe(404)
   })
 })
 

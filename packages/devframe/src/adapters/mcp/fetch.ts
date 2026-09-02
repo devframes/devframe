@@ -1,7 +1,7 @@
 import type { DevframeNodeContext, McpAuthorization } from 'devframe/types'
 import { createMcpHandler } from '@modelcontextprotocol/server'
-import { isAllowedOrigin } from 'devframe/rpc/transports/ws-server'
 import { timingSafeEqual } from 'devframe/utils/crypto-token'
+import { isAllowedOrigin } from 'devframe/utils/origin'
 import { bridgeListChanged, buildMcpServerFromContext } from './build-server'
 
 export interface CreateMcpFetchHandlerOptions {

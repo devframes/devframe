@@ -34,6 +34,7 @@ export const alias = {
   'devframe/utils/nanoid': r('devframe/src/utils/nanoid.ts'),
   'devframe/utils/nostics': r('devframe/src/utils/nostics.ts'),
   'devframe/utils/open': r('devframe/src/utils/open.ts'),
+  'devframe/utils/origin': r('devframe/src/utils/origin.ts'),
   'devframe/utils/remote-assets': r('devframe/src/utils/remote-assets.ts'),
   'devframe/utils/simple-schema': r('devframe/src/utils/simple-schema.ts'),
   'devframe/utils/serve-static': r('devframe/src/utils/serve-static.ts'),

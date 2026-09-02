@@ -9,8 +9,7 @@ export default defineAppConfig({
     title: 'Devframe',
     logo: {
       alt: 'Devframe',
-      light: '/logo.svg',
-      dark: '/logo.svg',
+      mark: 'devframe',
     },
     nav: [
       {
@@ -125,12 +124,6 @@ export default defineAppConfig({
         {
           title: 'Ecosystem',
           items: ['/guide/built-with'],
-        },
-      ],
-      posts: [
-        {
-          title: 'Blog',
-          items: ['/posts/pluggable-extensible-playful-devtools'],
         },
       ],
     },

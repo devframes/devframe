@@ -32,8 +32,11 @@ trustPolicy: no-downgrade
 trustPolicyExclude:
   - tinyexec@1.2.2
   - '@vercel/functions@3.9.3'
+  - '@vercel/functions@3.9.5'
   - '@vercel/oidc@3.8.4'
+  - '@vercel/oidc@3.8.5'
   - '@vercel/cli-config@0.2.3'
+  - '@vercel/cli-config@0.2.4'
   - '@vercel/cli-exec@1.0.1'
 packages:
   - packages/*
@@ -71,11 +74,13 @@ overrides:
   '@devframes/service-open': 'workspace:*'
   '@devframes/service-shiki': 'workspace:*'
   '@devframes/vite': 'workspace:*'
+  '@unhead/vue': ^3.4.0
   chokidar: ^5.0.0
   crossws: ^0.4.12
   devframe: 'workspace:*'
   semver: ^7.8.5
   shell-quote: ^1.10.0
+  unhead: ^3.4.0
 
 update:
   ignoreDeps:

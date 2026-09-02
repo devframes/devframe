@@ -14,6 +14,7 @@ import type { DevframeInstanceRecord, DevframeInstanceRegistration } from './ins
 import type { ContextRpcServer } from './rpc-core'
 import { createServer } from 'node:http'
 import process from 'node:process'
+import { validateOriginCandidate } from 'devframe/utils/origin'
 import { defineHandler, H3 as H3App, toNodeHandler } from 'h3'
 import { joinURL, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { DEVFRAME_SSE_ROUTE, DEVFRAME_WS_ROUTE } from '../constants'
@@ -552,9 +553,11 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   // listener) — derive it from the first request and let the auth banner
   // wait for it, unless the caller pinned one (as a string or a getter).
   let derivedOrigin: string | undefined
+  function explicitOrigin(): string | undefined {
+    return typeof options.origin === 'function' ? options.origin() : options.origin
+  }
   function currentOrigin(): string | undefined {
-    const explicit = typeof options.origin === 'function' ? options.origin() : options.origin
-    return explicit || derivedOrigin
+    return explicitOrigin() || derivedOrigin
   }
   let authHandler: DevframeAuthHandler | undefined
   let bannerPrinted = false
@@ -602,8 +605,21 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     }).catch(() => {})
   }
 
-  function noteOrigin(origin: string): void {
-    derivedOrigin ??= origin
+  /**
+   * Consider a request-derived origin candidate for the advertised public
+   * origin (which backs the OTP magic link). {@link validateOriginCandidate}
+   * adopts only a loopback host or an exact `allowedOrigins` match, so a raw
+   * inbound `Host`/URL authority never redirects the credential-bearing link.
+   * First-valid-origin wins: an invalid candidate leaves `derivedOrigin` unset
+   * — printing/registering nothing — so a later valid one can still be adopted.
+   */
+  function noteOrigin(candidate: string): void {
+    if (derivedOrigin === undefined && !explicitOrigin()) {
+      const allowed = options.allowedOrigins
+      const accepted = validateOriginCandidate(candidate, Array.isArray(allowed) ? allowed : undefined)
+      if (accepted !== undefined)
+        derivedOrigin = accepted
+    }
     maybePrintBanner()
     maybeRegister()
   }

@@ -6,6 +6,8 @@ import process from 'node:process'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { bootClient, call, cleanupTempDir, createTempDir, startAssetsServer } from './_utils'
 
+const describeSymlinks = process.platform === 'win32' ? describe.skip : describe
+
 // A minimal, valid 1x1 PNG.
 const ONE_PIXEL_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQAAAAA3bvkkAAAACklEQVR4nGNgAAIAAAUAAen63NgAAAAASUVORK5CYII=',
@@ -144,6 +146,78 @@ describe('assets plugin', () => {
     await expect(
       call(client, 'devframes:plugin:assets:rename', { path: '../../etc/passwd', newName: 'x' }),
     ).rejects.toThrow(/outside the managed directory/)
+  })
+
+  describeSymlinks('symlink containment', () => {
+    let outside: string
+
+    beforeEach(async () => {
+      outside = await createTempDir()
+      tempDirs.push(outside)
+      await fsp.writeFile(join(outside, 'secret.txt'), 'top secret', 'utf-8')
+    })
+
+    it('does not read through an escaping ancestor-directory symlink', async () => {
+      await fsp.symlink(outside, join(dir, 'escape'))
+      server = await startAssetsServer(dir, { watch: false })
+      client = bootClient(server.port)
+
+      await expect(
+        call(client, 'devframes:plugin:assets:read-text', 'escape/secret.txt'),
+      ).resolves.toBeNull()
+    })
+
+    it('reads a symlink whose canonical target stays inside the managed root', async () => {
+      await fsp.writeFile(join(dir, 'real.txt'), 'contained', 'utf-8')
+      await fsp.symlink(join(dir, 'real.txt'), join(dir, 'alias.txt'))
+      server = await startAssetsServer(dir, { watch: false })
+      client = bootClient(server.port)
+
+      await expect(
+        call(client, 'devframes:plugin:assets:read-text', 'alias.txt'),
+      ).resolves.toBe('contained')
+    })
+
+    it('omits symlink entries from the listing', async () => {
+      await fsp.writeFile(join(dir, 'real.txt'), 'x', 'utf-8')
+      await fsp.symlink(join(dir, 'real.txt'), join(dir, 'alias.txt'))
+      await fsp.symlink(outside, join(dir, 'escape'))
+      server = await startAssetsServer(dir, { watch: false })
+      client = bootClient(server.port)
+
+      const list = await call(client, 'devframes:plugin:assets:list')
+      expect(list.map((a: { path: string }) => a.path)).toEqual(['real.txt'])
+    })
+
+    it('rejects a mutation through an escaping ancestor-directory symlink', async () => {
+      await fsp.symlink(outside, join(dir, 'escape'))
+      server = await startAssetsServer(dir, { watch: false })
+      client = bootClient(server.port)
+
+      await expect(
+        call(client, 'devframes:plugin:assets:upload', { path: 'escape/evil.txt' }),
+      ).rejects.toThrow(/outside the managed directory/)
+      await expect(
+        call(client, 'devframes:plugin:assets:mkdir', { path: 'escape/sub' }),
+      ).rejects.toThrow(/outside the managed directory/)
+      await expect(
+        call(client, 'devframes:plugin:assets:delete', { paths: ['escape/secret.txt'] }),
+      ).rejects.toThrow(/outside the managed directory/)
+    })
+
+    it('rejects a mutation onto a symlink even when its target stays in-root', async () => {
+      await fsp.writeFile(join(dir, 'real.txt'), 'x', 'utf-8')
+      await fsp.symlink(join(dir, 'real.txt'), join(dir, 'alias.txt'))
+      server = await startAssetsServer(dir, { watch: false })
+      client = bootClient(server.port)
+
+      await expect(
+        call(client, 'devframes:plugin:assets:delete', { paths: ['alias.txt'] }),
+      ).rejects.toThrow(/outside the managed directory/)
+      await expect(
+        call(client, 'devframes:plugin:assets:rename', { path: 'alias.txt', newName: 'renamed' }),
+      ).rejects.toThrow(/outside the managed directory/)
+    })
   })
 
   it('rejects uploads with a disallowed extension', async () => {
