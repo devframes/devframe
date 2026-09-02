@@ -340,8 +340,22 @@ describe('ws origin check', () => {
     expect(isLoopbackHostname('foo.localhost')).toBe(true)
     expect(isLoopbackHostname('evil.example')).toBe(false)
 
+    // DNS-rebinding bypass: a hostname that merely *starts* with `127.` is an
+    // attacker-controlled DNS name, not a loopback IPv4 literal, and must be
+    // rejected so it can't defeat the loopback origin gate.
+    expect(isLoopbackHostname('127.attacker.example')).toBe(false)
+    expect(isLoopbackHostname('127.0.0.1.attacker.example')).toBe(false)
+    expect(isLoopbackHostname('127.0.0.evil')).toBe(false)
+    expect(isLoopbackHostname('127.0.0')).toBe(false)
+    expect(isLoopbackHostname('127.0.0.256')).toBe(false)
+    expect(isLoopbackHostname('1270.0.0.1')).toBe(false)
+    expect(isLoopbackHostname('127x0x0x1')).toBe(false)
+
     expect(isAllowedOrigin(undefined, [])).toBe(true)
     expect(isAllowedOrigin('http://localhost:5173', [])).toBe(true)
+    expect(isAllowedOrigin('http://127.0.0.1:5173', [])).toBe(true)
+    expect(isAllowedOrigin('http://127.attacker.example', [])).toBe(false)
+    expect(isAllowedOrigin('http://127.0.0.1.attacker.example', [])).toBe(false)
     expect(isAllowedOrigin('http://evil.example', [])).toBe(false)
     expect(isAllowedOrigin('http://evil.example', ['http://evil.example'])).toBe(true)
   })

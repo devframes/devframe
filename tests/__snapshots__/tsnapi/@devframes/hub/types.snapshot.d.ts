@@ -29,6 +29,7 @@ export { DevframeDockEntryBase }
 export { DevframeDockEntryCategory }
 export { DevframeDockEntryIcon }
 export { DevframeDockEntryRegistry }
+export { DevframeDockPanelState }
 export { DevframeDocksActiveState }
 export { DevframeDocksHost }
 export { DevframeDocksUserSettings }
@@ -52,6 +53,8 @@ export { DevframeMessagesLevelShortcuts }
 export { DevframeMessagesListDelta }
 export { DevframeNodeRpcSession }
 export { DevframePtyExecuteOptions }
+export { DevframePtyOutput }
+export { DevframePtyResult }
 export { DevframePtyTerminalSession }
 export { DevframeRpcClientFunctions }
 export { DevframeRpcServerFunctions }

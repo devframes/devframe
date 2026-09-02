@@ -81,6 +81,17 @@ export type SkeletonOutcome = {
 export declare function connectDataInspector(_?: DevframeRpcClientOptions): Promise<DevframeRpcClient>;
 // #endregion
 
+// #region Referenced (internal)
+interface NormalizeStatsWire {
+  nodes: number;
+  refs: number;
+  truncatedDepth: number;
+  truncatedEntries: number;
+  truncatedProps: number;
+  ms: number;
+}
+// #endregion
+
 // #region Other
 export { DevframeConnectionStatus }
 export { DevframeRpcClient }

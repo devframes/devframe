@@ -14,6 +14,7 @@ const AGNOSTIC_ENTRIES = [
   'utils/events.mjs',
   'utils/hash.mjs',
   'utils/nanoid.mjs',
+  'utils/origin.mjs',
   'utils/shared-state.mjs',
   'utils/streaming-channel.mjs',
   'utils/structured-clone.mjs',

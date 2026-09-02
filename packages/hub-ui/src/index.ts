@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export type { DevframeBranding, DevframeDockPreferences, EmbeddedVisibility } from './types'
+export type { ColorSchemeValue, DevframeBranding, DevframeDockPreferences, EmbeddedVisibility, ViewerBackground } from './types'
 
 declare module 'devframe/types' {
   interface DevframeConnectionConfigsRegistry {

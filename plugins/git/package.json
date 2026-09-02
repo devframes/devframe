@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-git",
   "type": "module",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "description": "Devframe plugin that shows a Git dashboard for status, log, branches, and diffs.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

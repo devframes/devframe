@@ -49,3 +49,20 @@ export declare const DATA_SOURCES_SERVICE_ID: string;
 declare function _default(_?: DataInspectorDevframeOptions): DevframeDefinition;
 export default _default
 // #endregion
+
+// #region Referenced (internal)
+interface DataSourceMeta {
+  id: string;
+  title: string;
+  description?: string;
+  icon?: string;
+  static: boolean;
+  writable: boolean;
+  queries?: Query[];
+}
+interface Query extends FilterOptions {
+  query: string;
+  title?: string;
+  description?: string;
+}
+// #endregion

@@ -199,5 +199,15 @@ export const diagnostics = defineDiagnostics({
         `\`rpc.snapshot\` names "${p.method}", but no RPC function is registered under that id — nothing to bake into the static build.`,
       fix: 'Check the method id, and ensure the service/plugin that registers it is installed (e.g. declared in `services`) before the build collects the dump.',
     },
+    DF0075: {
+      why: (p: { runtime: string }) =>
+        `On ${p.runtime} the shared server's WebSocket upgrade needs crossws's Node adapter, which refuses to run off Node — and SSE is disabled, so this instance advertises no RPC transport at all.`,
+      fix: 'Keep the SSE endpoint enabled (drop `sse: false`) so clients connect over it on Bun/Deno, or move the socket to a side-car (`ws: { sidecar: true }`) which binds the native WebSocket adapter on its own port.',
+    },
+    DF0076: {
+      why: (p: { runtime: string }) =>
+        `\`attach\` / \`handleUpgrade\` drive a raw \`node:http\` upgrade into crossws's Node adapter, which refuses to run on ${p.runtime}.`,
+      fix: 'On Bun/Deno, serve the advertised `__ws` route from `Bun.serve` / `Deno.serve` with `attachBunWsTransport` / `attachDenoWsTransport` (see the hub-deno-minimal example), or connect over the SSE endpoint instead.',
+    },
   },
 })

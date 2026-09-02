@@ -35,6 +35,9 @@ export declare const HUB_EVENTS: {
     readonly terminalsRestart: "hub:terminals:restart";
     readonly terminalsRemove: "hub:terminals:remove";
   };
+  readonly client: {
+    readonly docksPanelStateChanged: "panel:state:changed";
+  };
   readonly broadcast: {
     readonly docksActivate: "devframe:docks:activate";
     readonly terminalsUpdated: "devframe:terminals:updated";

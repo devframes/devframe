@@ -13,6 +13,7 @@ import { createServer as createHttpsServer } from 'node:https'
 import crossws from 'crossws/adapters/node'
 import { DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM, DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM } from 'devframe/constants'
 import { randomToken, timingSafeEqual } from 'devframe/utils/crypto-token'
+import { isAllowedOrigin } from 'devframe/utils/origin'
 import { createRpcWireCodec } from '../wire-codec'
 import { createRpcSessionMeta } from './session'
 
@@ -226,31 +227,13 @@ function pathMatches(a: string, b: string): boolean {
   return strip(a) === strip(b)
 }
 
-export function isLoopbackHostname(hostname: string): boolean {
-  const h = hostname.replace(/^\[|\]$/g, '') // strip IPv6 brackets
-  return h === 'localhost' || h === '127.0.0.1' || h === '::1'
-    || h.endsWith('.localhost') || h.startsWith('127.')
-}
-
-/**
- * Default origin policy for a localhost dev tool: allow requests with no
- * `Origin` header (native, non-browser clients), allow any loopback origin
- * (so cross-port localhost dev setups keep working), and allow explicitly
- * configured origins. Everything else — a real remote page in the dev's
- * browser — is rejected.
- */
-export function isAllowedOrigin(origin: string | undefined, allowedOrigins: readonly string[]): boolean {
-  if (!origin)
-    return true
-  if (allowedOrigins.includes(origin))
-    return true
-  try {
-    return isLoopbackHostname(new URL(origin).hostname)
-  }
-  catch {
-    return false
-  }
-}
+// The loopback / origin predicates live in the dependency-free
+// `devframe/utils/origin` module so consumers that only need one check (e.g.
+// the instance shell's auth-link origin validation) don't import this whole
+// `crossws`-carrying transport. Re-exported here to keep the historical
+// `devframe/rpc/transports/ws-server` import path for `isAllowedOrigin` /
+// `isLoopbackHostname` intact.
+export { isAllowedOrigin, isLoopbackHostname } from 'devframe/utils/origin'
 
 function isWsOriginRegistry(
   value: readonly string[] | WsOriginRegistry | false | undefined,

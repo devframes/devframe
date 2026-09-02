@@ -1,7 +1,7 @@
 {
   "name": "hub-rsbuild-minimal",
   "type": "module",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "private": true,
   "description": "Minimal Rsbuild host for the devframe hub.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-rsbuild-minimal",

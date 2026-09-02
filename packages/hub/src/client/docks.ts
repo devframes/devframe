@@ -3,7 +3,7 @@ import type { EventEmitter } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
 import type { DevframeClientCommand, DevframeCommandEntry, DevframeCommandKeybinding } from '../types/commands'
-import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeDockUserEntry } from '../types/docks'
+import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeDockPanelState, DevframeDockUserEntry } from '../types/docks'
 import type { DevframeDocksUserSettings } from '../types/settings'
 import type { DockRenderersContext } from './renderers'
 
@@ -125,7 +125,15 @@ export interface WhenClauseContext {
 
 export type DevframeClientContext = DocksContext
 
+export interface DocksPanelEvents {
+  'panel:state:changed': (panelState: DevframeDockPanelState) => void
+}
+
 export interface DocksPanelContext {
+  /** The current panel state snapshot. */
+  readonly state: DevframeDockPanelState
+  /** Subscribe to panel state changes after the current snapshot. */
+  readonly events: EventEmitter<DocksPanelEvents>
   store: DockPanelStorage
   /**
    * Per-tab session UI state — whether the panel is open, which dock is

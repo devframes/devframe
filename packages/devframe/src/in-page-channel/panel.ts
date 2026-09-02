@@ -45,7 +45,7 @@ const DEFAULT_EVENT_BUFFER_LIMIT = 64
  * the UI can key a fallback state off `status` / `whenConnected()`.
  */
 export function connectPanelChannel<P extends InPageChannelProtocol>(
-  options: ConnectPanelChannelOptions,
+  options: ConnectPanelChannelOptions<P>,
 ): PanelChannel<P> {
   const { name } = options
   const callTimeoutMs = options.callTimeoutMs ?? DEFAULT_CALL_TIMEOUT_MS
@@ -62,8 +62,8 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
 
   const events = createEventEmitter<PanelChannelEvents>()
   const registry = createLocalFunctionRegistry(codec)
-  for (const definition of options.functions ?? [])
-    registry.register(definition)
+  for (const [fnName, definition] of Object.entries(options.functions ?? {}))
+    registry.register({ ...definition, name: fnName })
 
   let status: InPageChannelStatus = 'connecting'
   let attached: AttachedChannelPort | undefined

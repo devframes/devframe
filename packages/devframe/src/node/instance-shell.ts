@@ -14,12 +14,14 @@ import type { DevframeInstanceRecord, DevframeInstanceRegistration } from './ins
 import type { ContextRpcServer } from './rpc-core'
 import { createServer } from 'node:http'
 import process from 'node:process'
+import { validateOriginCandidate } from 'devframe/utils/origin'
 import { defineHandler, H3 as H3App, toNodeHandler } from 'h3'
 import { joinURL, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { DEVFRAME_SSE_ROUTE, DEVFRAME_WS_ROUTE } from '../constants'
 import { createInteractiveAuth } from '../recipes/interactive-auth'
 import { diagnostics } from './diagnostics'
 import { getInternalContext } from './hub-internals/context'
+import { detectServerRuntime } from './runtime'
 import { formatHostForUrl, normalizeHttpServerUrl } from './utils'
 
 /**
@@ -154,6 +156,171 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
       if (ownsHttpServer)
         await new Promise<void>(r => httpServer.close(() => r()))
       if (websocket && getInternalContext(context).wsEndpoint?.url === wsUrl)
+        getInternalContext(context).setWsEndpoint(undefined)
+    },
+  }
+}
+
+/**
+ * Structural view of `Bun.serve` — typed loosely so devframe carries no
+ * dependency on Bun's own types (`tsc` runs with Node lib only).
+ */
+interface BunServerLike {
+  port: number
+  stop: (closeActiveConnections?: boolean) => void | Promise<void>
+}
+interface BunGlobal {
+  serve: (options: {
+    port?: number
+    hostname?: string
+    fetch: (request: Request, server: BunServerLike) => Response | undefined | Promise<Response | undefined>
+    websocket?: unknown
+  }) => BunServerLike
+}
+
+/** Structural view of `Deno.serve`, for the same reason. */
+interface DenoServerLike {
+  addr: { port: number, hostname: string }
+  shutdown: () => Promise<void>
+}
+interface DenoGlobal {
+  serve: (
+    options: { port?: number, hostname?: string, onListen?: (addr: { port: number }) => void },
+    handler: (request: Request, info: unknown) => Response | Promise<Response>,
+  ) => DenoServerLike
+}
+
+/**
+ * Whether a request is a WebSocket upgrade aimed at `path` — the `fetch`-side
+ * equivalent of the Node transport's `upgrade`-event path filter, used by the
+ * native ({@link bindNativeHttpAndWs}) tiers to route only the RPC route to
+ * the socket and leave every other request to the h3 app.
+ */
+function isWsUpgradeRequest(request: Request, path: string | undefined): boolean {
+  if ((request.headers.get('upgrade') ?? '').toLowerCase() !== 'websocket')
+    return false
+  if (!path)
+    return true
+  try {
+    return samePath(new URL(request.url).pathname, path)
+  }
+  catch {
+    return false
+  }
+}
+
+/**
+ * The Bun/Deno counterpart to {@link bindHttpAndWs}: own and listen on a
+ * native `fetch`-upgrade server (`Bun.serve` / `Deno.serve`) with crossws's
+ * Bun/Deno adapter driving the RPC socket, since crossws's Node adapter (and
+ * the `node:http` `upgrade` event it needs) refuses to run off Node. Only the
+ * owns-a-server tiers reach here — a shared foreign `node:http` server can't be
+ * re-hosted on a native runtime, so that path falls back to SSE instead.
+ */
+async function bindNativeHttpAndWs(
+  runtime: 'bun' | 'deno',
+  options: BindHttpAndWsOptions,
+): Promise<StartedServer> {
+  const { context, port, core } = options
+  const bindHost = options.host
+  const app = new H3App()
+  const rpcHost = context.rpc as unknown as RpcFunctionsHostImpl
+  const wsPath = options.path
+
+  const fail = async (closeWs: () => Promise<void>, error: unknown): Promise<never> => {
+    await closeWs().catch(() => {})
+    throw diagnostics.DF0052({
+      host: bindHost,
+      port,
+      reason: error instanceof Error ? error.message : String(error),
+      cause: error,
+    })
+  }
+
+  let resolvedPort: number
+  let closeWs: () => Promise<void>
+  let closeServer: () => Promise<void>
+
+  if (runtime === 'bun') {
+    const { attachBunWsTransport } = await import('devframe/rpc/transports/ws-bun')
+    const tier = await attachBunWsTransport(core, { allowedOrigins: options.allowedOrigins })
+    closeWs = tier.close
+    const Bun = (globalThis as unknown as { Bun: BunGlobal }).Bun
+    let server: BunServerLike
+    try {
+      server = Bun.serve({
+        port,
+        hostname: bindHost,
+        fetch: async (request, srv) =>
+          isWsUpgradeRequest(request, wsPath)
+            ? await tier.handleUpgrade(request, srv)
+            : await app.fetch(request),
+        websocket: tier.websocket,
+      })
+    }
+    catch (error) {
+      return await fail(closeWs, error)
+    }
+    resolvedPort = server.port
+    closeServer = async () => {
+      await server.stop(true)
+    }
+  }
+  else {
+    const { attachDenoWsTransport } = await import('devframe/rpc/transports/ws-deno')
+    const tier = await attachDenoWsTransport(core, { allowedOrigins: options.allowedOrigins })
+    closeWs = tier.close
+    const Deno = (globalThis as unknown as { Deno: DenoGlobal }).Deno
+    let server: DenoServerLike
+    try {
+      server = Deno.serve(
+        // A no-op `onListen` suppresses Deno's default "Listening on…" banner,
+        // keeping the transport headless like every other tier.
+        { port, hostname: bindHost, onListen: () => {} },
+        async (request, info) =>
+          isWsUpgradeRequest(request, wsPath)
+            ? await tier.handleUpgrade(request, info)
+            : await app.fetch(request),
+      )
+    }
+    catch (error) {
+      return await fail(closeWs, error)
+    }
+    resolvedPort = server.addr.port
+    closeServer = async () => {
+      await server.shutdown()
+    }
+  }
+
+  const origin = normalizeHttpServerUrl(bindHost, resolvedPort)
+  const internal = getInternalContext(context)
+  const wsUrl = `ws://${formatHostForUrl(bindHost)}:${resolvedPort}${options.path ?? ''}`
+  internal.setWsEndpoint({ url: wsUrl })
+
+  function connectionMeta(): ConnectionMeta {
+    const jsonSerializableMethods: string[] = []
+    for (const def of rpcHost.definitions.values()) {
+      if (def.jsonSerializable === true)
+        jsonSerializableMethods.push(def.name)
+    }
+    return { backend: 'websocket', websocket: { path: options.path }, jsonSerializableMethods }
+  }
+
+  return {
+    origin,
+    port: resolvedPort,
+    app,
+    ws: undefined,
+    rpcGroup: core.rpcGroup,
+    connectionMeta,
+    async close() {
+      // Stop the native server before the WS tier: closing the socket while a
+      // peer is mid-disconnect (a client that just sent its close frame)
+      // deadlocks `Bun.serve().stop()` and crossws's peer close on Bun.
+      // Dropping the server's connections first makes the tier close a no-op.
+      await closeServer()
+      await closeWs()
+      if (getInternalContext(context).wsEndpoint?.url === wsUrl)
         getInternalContext(context).setWsEndpoint(undefined)
     },
   }
@@ -343,6 +510,15 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   const baseNoSlash = withoutTrailingSlash(base)
   const app = options.app ?? new H3App()
 
+  // Bun and Deno drive WebSockets through a native `fetch`-upgrade server
+  // (`Bun.serve` / `Deno.serve`) rather than the `node:http` `upgrade` event
+  // crossws's Node adapter needs — that adapter throws on sight anywhere off
+  // Node. The tiers where devframe owns its server use the matching native
+  // adapter; a shared foreign `node:http` server (the `server` tier) can't be
+  // re-hosted, so it falls back to the runtime-agnostic SSE transport.
+  const runtime = detectServerRuntime()
+  const nativeRuntime = runtime !== 'node'
+
   const wsDisabled = options.ws === false
   const ws: DevframeWsOptions = options.ws === false ? {} : options.ws ?? {}
   const route = withoutLeadingSlash(ws.route ?? DEVFRAME_WS_ROUTE)
@@ -377,9 +553,11 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   // listener) — derive it from the first request and let the auth banner
   // wait for it, unless the caller pinned one (as a string or a getter).
   let derivedOrigin: string | undefined
+  function explicitOrigin(): string | undefined {
+    return typeof options.origin === 'function' ? options.origin() : options.origin
+  }
   function currentOrigin(): string | undefined {
-    const explicit = typeof options.origin === 'function' ? options.origin() : options.origin
-    return explicit || derivedOrigin
+    return explicitOrigin() || derivedOrigin
   }
   let authHandler: DevframeAuthHandler | undefined
   let bannerPrinted = false
@@ -427,8 +605,21 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     }).catch(() => {})
   }
 
-  function noteOrigin(origin: string): void {
-    derivedOrigin ??= origin
+  /**
+   * Consider a request-derived origin candidate for the advertised public
+   * origin (which backs the OTP magic link). {@link validateOriginCandidate}
+   * adopts only a loopback host or an exact `allowedOrigins` match, so a raw
+   * inbound `Host`/URL authority never redirects the credential-bearing link.
+   * First-valid-origin wins: an invalid candidate leaves `derivedOrigin` unset
+   * — printing/registering nothing — so a later valid one can still be adopted.
+   */
+  function noteOrigin(candidate: string): void {
+    if (derivedOrigin === undefined && !explicitOrigin()) {
+      const allowed = options.allowedOrigins
+      const accepted = validateOriginCandidate(candidate, Array.isArray(allowed) ? allowed : undefined)
+      if (accepted !== undefined)
+        derivedOrigin = accepted
+    }
     maybePrintBanner()
     maybeRegister()
   }
@@ -509,14 +700,22 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
    */
   async function startSidecar(core: ContextRpcServer): Promise<StartedServer> {
     const sidecarHost = options.host ?? 'localhost'
-    const start = (port: number): Promise<StartedServer> => bindHttpAndWs({
-      context: ctx,
-      core,
-      host: sidecarHost,
-      port,
-      path: withLeadingSlash(route),
-      allowedOrigins: options.allowedOrigins,
-    })
+    const start = (port: number): Promise<StartedServer> => {
+      const bindOptions: BindHttpAndWsOptions = {
+        context: ctx,
+        core,
+        host: sidecarHost,
+        port,
+        path: withLeadingSlash(route),
+        allowedOrigins: options.allowedOrigins,
+      }
+      // A side-car is devframe's own dedicated server, so on Bun/Deno it binds
+      // the native adapter for a real WebSocket; on Node it takes crossws's
+      // Node adapter over a `node:http` server.
+      return nativeRuntime
+        ? bindNativeHttpAndWs(runtime as 'bun' | 'deno', bindOptions)
+        : bindHttpAndWs(bindOptions)
+    }
     if (ws.port != null)
       return await start(ws.port)
     const { getPort } = await import('get-port-please')
@@ -545,24 +744,50 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     // forwards to whatever this instance bound locally.
     resolvedAuth = tier === 'external' ? false : resolveAuth()
     let websocketMeta: ConnectionMeta['websocket'] | undefined
+    // Whether a WebSocket transport is actually reachable for this tier on
+    // this runtime. It drops to `false` only when a shared foreign `node:http`
+    // server would need crossws's Node adapter on Bun/Deno — there the socket
+    // gives way to SSE below.
+    let wsAvailable = !wsDisabled
     if (tier === 'sidecar') {
       started = await startSidecar(await ensureCore())
       websocketMeta = { port: started.port, path: route }
     }
     else if (tier === 'server') {
-      // Shared upgrade on the host's own server at `<base><route>` — zero
-      // extra ports, proxy/HTTPS friendly.
-      started = await bindHttpAndWs({
-        context: ctx,
-        core: await ensureCore(),
-        host: options.host ?? 'localhost',
-        port: 0,
-        server: options.server,
-        path: routePath,
-        allowedOrigins: options.allowedOrigins,
-        destroyUnmatched: options.destroyUnmatchedUpgrades,
-      })
-      websocketMeta = { path: advertisedPath }
+      if (nativeRuntime && !ws.url) {
+        // crossws's Node adapter can't attach to the host's foreign
+        // `node:http` server on Bun/Deno, and that server isn't ours to
+        // re-host natively — fall back to SSE (mounted below on the shell's
+        // own app). Build the RPC core now so the SSE transport shares it,
+        // and expose a WS-less `StartedServer` so adapters that read
+        // `internals.started` (e.g. `createDevServer`) keep working.
+        const core = await ensureCore()
+        wsAvailable = false
+        started = {
+          origin: currentOrigin() ?? '',
+          port: 0,
+          app,
+          ws: undefined,
+          rpcGroup: core.rpcGroup,
+          connectionMeta: () => meta ?? options.onMetaUnavailable(),
+          close: async () => {},
+        }
+      }
+      else {
+        // Shared upgrade on the host's own server at `<base><route>` — zero
+        // extra ports, proxy/HTTPS friendly.
+        started = await bindHttpAndWs({
+          context: ctx,
+          core: await ensureCore(),
+          host: options.host ?? 'localhost',
+          port: 0,
+          server: options.server,
+          path: routePath,
+          allowedOrigins: options.allowedOrigins,
+          destroyUnmatched: options.destroyUnmatchedUpgrades,
+        })
+        websocketMeta = { path: advertisedPath }
+      }
     }
     else if (tier === 'external') {
       websocketMeta = ws.url!
@@ -582,9 +807,15 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
         respondWith(event, await (await ensureSse()).handler(event.req))))
     }
 
+    // A shared-server WS binding that fell back is only truly transportless
+    // when SSE is off too — surface that so a Bun/Deno host knows to keep SSE
+    // enabled (or move the socket to a side-car).
+    if (!wsDisabled && !wsAvailable && !sseEnabled)
+      diagnostics.DF0075({ runtime }, { method: 'warn' })
+
     meta = {
-      backend: wsDisabled ? (sseEnabled ? 'sse' : 'none') : 'websocket',
-      ...(websocketMeta !== undefined ? { websocket: websocketMeta } : {}),
+      backend: (!wsDisabled && wsAvailable) ? 'websocket' : (sseEnabled ? 'sse' : 'none'),
+      ...(wsAvailable && websocketMeta !== undefined ? { websocket: websocketMeta } : {}),
       ...(sseEnabled ? { sse: { path: advertisedSsePath } } : {}),
       ...(result.mcp ? { mcp: result.mcp } : {}),
     }
@@ -696,6 +927,13 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       throw diagnostics.DF0056({ url: ws.url! })
     if (tier !== 'unbound')
       throw diagnostics.DF0055({ tier })
+    // `attach` / `handleUpgrade` hand a raw `node:http` socket to crossws's
+    // Node adapter, which refuses to run on Bun/Deno. Those runtimes serve WS
+    // through a native `fetch`-upgrade server instead: answer the advertised
+    // `__ws` route with `attach{Bun,Deno}WsTransport` from `Bun.serve` /
+    // `Deno.serve`, or connect over SSE.
+    if (nativeRuntime)
+      throw diagnostics.DF0076({ runtime })
   }
 
   /**

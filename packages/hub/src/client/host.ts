@@ -10,6 +10,7 @@ import type {
   ClientScriptEntry,
   DevframeDockEntriesGrouped,
   DevframeDockEntry,
+  DevframeDockPanelState,
   DevframeViewIframe,
 } from '../types/docks'
 import type { DevframeDocksUserSettings } from '../types/settings'
@@ -21,6 +22,7 @@ import type {
   DockEntryState,
   DocksEntriesContext,
   DocksPanelContext,
+  DocksPanelEvents,
   WhenClauseContext,
 } from './docks'
 import type { DockRenderer, DockRendererManifest, DockRenderersContext } from './renderers'
@@ -575,13 +577,67 @@ function createPanelContext(clientType: DockClientType): DocksPanelContext {
     position: 'right',
     inactiveTimeout: 0,
   }
+  let open = clientType === 'standalone'
+  let selectedDockId: string | null = null
+  const events = createEventEmitter<DocksPanelEvents>()
+  let panelStateChangePending = false
+
+  function createDockPanelState(): DevframeDockPanelState {
+    const panelState: DevframeDockPanelState = {
+      state: open ? 'open' : 'closed',
+    }
+    if (selectedDockId !== null)
+      panelState.selectedDockId = selectedDockId
+    return panelState
+  }
+
+  let previousPanelState = createDockPanelState()
+
+  function schedulePanelStateChange(): void {
+    if (panelStateChangePending)
+      return
+    panelStateChangePending = true
+    queueMicrotask(() => {
+      panelStateChangePending = false
+      const panelState = createDockPanelState()
+      if (
+        panelState.state === previousPanelState.state
+        && panelState.selectedDockId === previousPanelState.selectedDockId
+      ) {
+        return
+      }
+
+      previousPanelState = panelState
+      events.emit(HUB_EVENTS.client.docksPanelStateChanged, panelState)
+    })
+  }
+
   const session: DocksPanelContext['session'] = {
-    // A standalone runtime owns the page, so its "panel" is always open.
-    open: clientType === 'standalone',
-    selectedDockId: null,
+    get open() {
+      return open
+    },
+    set open(nextOpen) {
+      if (nextOpen === open)
+        return
+      open = nextOpen
+      schedulePanelStateChange()
+    },
+    get selectedDockId() {
+      return selectedDockId
+    },
+    set selectedDockId(nextSelectedDockId) {
+      if (nextSelectedDockId === selectedDockId)
+        return
+      selectedDockId = nextSelectedDockId
+      schedulePanelStateChange()
+    },
     selectedDockRoute: null,
   }
   return {
+    get state() {
+      return createDockPanelState()
+    },
+    events,
     store,
     session,
     isDragging: false,

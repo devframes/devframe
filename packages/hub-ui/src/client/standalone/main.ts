@@ -5,6 +5,7 @@ import { watchEffect } from 'vue'
 import { applyDocumentHead, applyPrimaryColor, setBranding, useBrandingBackground } from '../state/branding'
 import { isDark } from '../state/color-mode'
 import { DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
+import { applyViewerBackground } from './viewer-background'
 
 // The standalone viewer — a vanilla shell served at the hub base itself
 // (`DevframeHubUi.viewer`): resolve the shared connection, build the docks
@@ -13,21 +14,9 @@ import { DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
 // custom element's shadow root.
 
 // The standalone viewer runs in the light DOM, so mirror the color mode onto the
-// document element — its background follows the Auto/Light/Dark choice. The
-// component tree carries `color-scheme` for its native controls; keeping that
-// off the document lets custom backgrounds composite with the host page.
-const brandingBackground = useBrandingBackground()
-
-function applyViewerBackground(documentElement: HTMLElement, background: string | undefined): void {
-  if (background === undefined || !CSS.supports('background', background)) {
-    documentElement.classList.remove('viewer-background-custom')
-    documentElement.style.removeProperty('--devframes-viewer-background')
-    return
-  }
-
-  documentElement.classList.add('viewer-background-custom')
-  documentElement.style.setProperty('--devframes-viewer-background', background)
-}
+// document element — its background and foreground controls follow the
+// Auto/Light/Dark choice, including when branding supplies a custom background.
+const brandingBackground = useBrandingBackground(window.self !== window.top ? 'iframe' : 'standalone')
 
 watchEffect(() => {
   const el = document.documentElement

@@ -129,3 +129,31 @@ export declare const diagnostics: Diagnostics<{
   method?: "log" | "warn" | "error";
 }) => void]>;
 // #endregion
+
+// #region Referenced (internal)
+interface DetectCodeServerResult {
+  installed: boolean;
+  version?: string;
+  bin: string;
+}
+declare class Diagnostic extends Error {
+  name: string;
+  code: string;
+  docs?: string;
+  fix?: string;
+  sources?: string[];
+  get why(): string;
+  constructor(_: DiagnosticInit, _?: Function);
+  toJSON(): object;
+}
+type Diagnostics<Codes extends Record<string, DiagnosticDefinition>, Reporters extends readonly AnyDiagnosticReporter[]> = { [Code in keyof Codes]: DiagnosticHandle<InferCodeParams<Codes[Code]>, Prettify<ExtractReportersOptions<Reporters>>>; };
+interface ProfileContext {
+  host: string;
+  port: number;
+  folder: string;
+  secret: string;
+  cookieName: string;
+  extraArgs: string[];
+  tunnelName: string;
+}
+// #endregion

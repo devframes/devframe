@@ -1,9 +1,7 @@
 import type { Ref } from 'vue'
-import type { BrandingLogo, DevframeBranding } from '../../types'
+import type { BrandingLogo, ColorSchemeValue, DevframeBranding, ViewerBackground } from '../../types'
 import { computed, ref } from 'vue'
 import { isDark } from './color-mode'
-
-type ColorSchemeValue = string | { light: string, dark: string }
 
 /** Branding with defaults resolved — what the UI actually renders. */
 export interface ResolvedBranding {
@@ -51,9 +49,24 @@ export function useBrandingLogo(pick: (b: ResolvedBranding) => BrandingLogo | un
   return computed(() => resolveColorSchemeValue(pick(currentBranding.value), isDark.value))
 }
 
-/** The standalone viewer background for the current color scheme. */
-export function useBrandingBackground(): Ref<string | undefined> {
-  return computed(() => resolveColorSchemeValue(currentBranding.value.background, isDark.value))
+/** The standalone viewer background for its frame context and current color scheme. */
+export function useBrandingBackground(viewerContext: 'standalone' | 'iframe'): Ref<string | undefined> {
+  return computed(() => {
+    const configuredBackground = currentBranding.value.background
+
+    if (!isContextualViewerBackground(configuredBackground))
+      return resolveColorSchemeValue(configuredBackground, isDark.value)
+
+    let contextualBackground = configuredBackground.standalone
+    if (viewerContext === 'iframe')
+      contextualBackground = configuredBackground.iframe ?? contextualBackground
+
+    return resolveColorSchemeValue(contextualBackground, isDark.value)
+  })
+}
+
+function isContextualViewerBackground(value: unknown): value is Extract<ViewerBackground, { standalone: ColorSchemeValue }> {
+  return typeof value === 'object' && value !== null && 'standalone' in value
 }
 
 function resolveColorSchemeValue(value: ColorSchemeValue | undefined, dark: boolean): string | undefined {

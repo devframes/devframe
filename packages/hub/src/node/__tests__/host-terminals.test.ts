@@ -5,6 +5,19 @@ import { describe, expect, it, vi } from 'vitest'
 import { hasNative } from 'zigpty'
 import { DevframeTerminalsHost } from '../host-terminals'
 
+const zigptyModuleMock = vi.hoisted(() => ({
+  spawn: vi.fn(),
+}))
+
+vi.mock('zigpty', async (importOriginal) => {
+  const originalModule = await importOriginal<typeof import('zigpty')>()
+  zigptyModuleMock.spawn.mockImplementation(originalModule.spawn)
+  return {
+    ...originalModule,
+    spawn: zigptyModuleMock.spawn,
+  }
+})
+
 const NODE = process.execPath
 // A real PTY works wherever zigpty's native bindings load (incl. Windows
 // ConPTY); skip when they're unavailable.
@@ -416,6 +429,156 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
     await waitUntil(() => {
       expect(sinks.get('pty-exit')?.closed).toBe(true)
     })
+  })
+
+  itPty('getResult() resolves merged PTY output after natural exit', async () => {
+    expect.assertions(9)
+
+    const { host } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("out"); process.stderr.write("err")'],
+    }, { id: 'pty-result', title: 'PTY result' })
+    const result = session.getResult()
+
+    expect(result.pid).toBeTypeOf('number')
+    expect(result.exitCode).toBeUndefined()
+    expect(result.killed).toBe(false)
+
+    const output = await result
+    expect(output.output).toContain('out')
+    expect(output.output).toContain('err')
+    expect(output.exitCode).toBe(0)
+    expect(output.signal).toBeUndefined()
+    expect(result.exitCode).toBe(0)
+    expect(result.killed).toBe(false)
+  })
+
+  itPty('getResult() preserves a non-zero PTY exit code', async () => {
+    expect.assertions(3)
+
+    const { host } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("failed"); process.exit(3)'],
+    }, { id: 'pty-result-error', title: 'PTY result error' })
+    const result = session.getResult()
+
+    await expect(result).resolves.toMatchObject({
+      output: expect.stringContaining('failed'),
+      exitCode: 3,
+      signal: undefined,
+    })
+    expect(result.exitCode).toBe(3)
+    expect(result.killed).toBe(false)
+  })
+
+  itPty('getResult() marks a terminated PTY run as killed', async () => {
+    expect.assertions(6)
+
+    const { host } = createTerminalHost()
+    const updates: string[] = []
+    host.events.on('terminals:session:updated', session => updates.push(session.status))
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("started"); setInterval(() => {}, 4000)'],
+    }, { id: 'pty-result-terminate', title: 'PTY result terminate' })
+    const result = session.getResult()
+    await waitUntil(() => {
+      if (!session.buffer?.join('').includes('started'))
+        throw new Error('PTY output has not started')
+    })
+
+    await session.terminate()
+
+    expect(result.killed).toBe(true)
+    expect(result.exitCode).toBeUndefined()
+    await expect(result).resolves.toMatchObject({
+      output: expect.stringContaining('started'),
+      exitCode: undefined,
+    })
+    if (process.platform === 'win32')
+      await expect(result).resolves.toHaveProperty('signal', undefined)
+    else
+      await expect(result).resolves.toHaveProperty('signal', expect.any(Number))
+    expect(session.status).toBe('stopped')
+    expect(updates).not.toContain('error')
+  })
+
+  itPty('getResult() isolates the previous PTY run after restart()', async () => {
+    expect.assertions(8)
+
+    const { host } = createTerminalHost()
+
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("run:" + process.pid); setInterval(() => {}, 4000)'],
+    }, { id: 'pty-result-restart', title: 'PTY result restart' })
+    const firstResult = session.getResult()
+    await waitUntil(() => {
+      if (!session.buffer?.join('').includes(`run:${firstResult.pid}`))
+        throw new Error('First PTY run has not started')
+    })
+
+    await session.restart()
+    const secondResult = session.getResult()
+    expect(secondResult).not.toBe(firstResult)
+    expect(secondResult.pid).not.toBe(firstResult.pid)
+    await waitUntil(() => {
+      if (!session.buffer?.join('').includes(`run:${secondResult.pid}`))
+        throw new Error('Second PTY run has not started')
+    })
+
+    await session.terminate()
+    const [firstOutput, secondOutput] = await Promise.all([firstResult, secondResult])
+    expect(firstResult.killed).toBe(true)
+    expect(secondResult.killed).toBe(true)
+    expect(firstOutput.output).toContain(`run:${firstResult.pid}`)
+    expect(firstOutput.output).not.toContain(`run:${secondResult.pid}`)
+    expect(secondOutput.output).toContain(`run:${secondResult.pid}`)
+    expect(secondOutput.output).not.toContain(`run:${firstResult.pid}`)
+  })
+
+  itPty('allows retry after a structured PTY restart spawn error', async () => {
+    expect.assertions(9)
+
+    const { host } = createTerminalHost()
+    const session = await host.startPtySession({
+      command: NODE,
+      args: ['-e', 'process.stdout.write("started:" + process.pid); setInterval(() => {}, 4000)'],
+    }, { id: 'pty-result-restart-error', title: 'PTY result restart error' })
+    const result = session.getResult()
+    await waitUntil(() => {
+      if (!session.buffer?.join('').includes(`started:${result.pid}`))
+        throw new Error('PTY output has not started')
+    })
+    zigptyModuleMock.spawn.mockImplementationOnce(() => {
+      throw new Error('restart spawn failed')
+    })
+
+    await expect(session.restart()).rejects.toThrow(expect.objectContaining({ code: 'DF8203' }))
+    expect(session.status).toBe('error')
+    expect(session.getProcessName()).toBeUndefined()
+    expect(session.getResult()).toBe(result)
+
+    await expect(session.restart()).resolves.toBeUndefined()
+    expect(session.status).toBe('running')
+    const retryResult = session.getResult()
+    expect(retryResult).not.toBe(result)
+    await waitUntil(() => {
+      if (!session.buffer?.join('').includes(`started:${retryResult.pid}`))
+        throw new Error('Retried PTY output has not started')
+    })
+    expect(session.buffer?.join('')).toContain(`started:${retryResult.pid}`)
+    await session.terminate()
+    await expect(result).resolves.toMatchObject({
+      output: expect.stringContaining(`started:${result.pid}`),
+      exitCode: undefined,
+    })
+    await retryResult
   })
 
   itPty('does not accept resize after termination without throwing', async () => {

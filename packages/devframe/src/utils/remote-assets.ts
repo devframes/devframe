@@ -11,7 +11,7 @@ import { createRequire } from 'node:module'
 import { Readable } from 'node:stream'
 import { lookup } from 'mrmime'
 import { createDebug } from 'obug'
-import { dirname, extname, join, normalize, sep } from 'pathe'
+import { dirname, extname, isAbsolute, join, normalize, resolve, sep } from 'pathe'
 import { diagnostics } from '../node/diagnostics'
 
 const debugFetch = createDebug('devframe:remote-assets:fetch')
@@ -189,6 +189,27 @@ function candidatePaths(prefix: string, cleaned: string): string[] {
   return candidates
 }
 
+/**
+ * Resolve the safe destination for a provider-listed `filePath` beneath
+ * `prefix`, materializing into the already-resolved `root`, or `null` when
+ * the entry is unsafe or lies outside the selected `prefix`. A compromised
+ * provider is an untrusted boundary even though the built-in jsDelivr/unpkg
+ * listings never emit any of this — reject an absolute path, a backslash
+ * (never normalized into a separator; Windows-style traversal stays rejected
+ * on every platform), and any suffix whose resolved destination would land
+ * outside `root`. `target === root` is deliberately unsafe too: it names the
+ * directory itself, never a writable file.
+ */
+function materializeTarget(filePath: string, prefix: string, root: string): string | null {
+  if (filePath.includes('\\') || isAbsolute(filePath) || !filePath.startsWith(prefix))
+    return null
+  const suffix = filePath.slice(prefix.length)
+  if (!suffix || isAbsolute(suffix))
+    return null
+  const target = resolve(root, suffix)
+  return target === root || !target.startsWith(root + sep) ? null : target
+}
+
 function createStore(assets: RemoteAssets, cacheDir: string): RemoteAssetsStore {
   const normalized = { ...assets, path: assets.path ?? 'dist' }
   const { provider, name: providerName } = resolveProvider(assets)
@@ -340,8 +361,11 @@ function createStore(assets: RemoteAssets, cacheDir: string): RemoteAssetsStore 
     catch (error) {
       return fail(errText(error), error)
     }
-    for (const filePath of files.filter(f => f.startsWith(prefix))) {
-      const target = join(targetDir, filePath.slice(prefix.length))
+    const root = resolve(targetDir)
+    for (const filePath of files) {
+      const target = materializeTarget(filePath, prefix, root)
+      if (target == null)
+        continue
       const url = provider.fileUrl(normalized.package, normalized.version, filePath)
       let res: Response
       try {

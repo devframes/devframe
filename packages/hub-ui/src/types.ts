@@ -13,6 +13,18 @@
  */
 export type BrandingLogo = string | { light: string, dark: string }
 
+/** A value that can vary with the viewer color scheme. */
+export type ColorSchemeValue = string | { light: string, dark: string }
+
+/**
+ * The standalone viewer background. The flat form applies in every context;
+ * the structured form may provide an iframe-specific value.
+ */
+export type ViewerBackground = ColorSchemeValue | {
+  standalone: ColorSchemeValue
+  iframe?: ColorSchemeValue
+}
+
 /**
  * Consumer-facing branding for the reference hub-ui. Every field is optional
  * and falls back to devframe's own identity. Published as
@@ -31,8 +43,8 @@ export interface DevframeBranding {
   wordmark?: BrandingLogo
   /** Brand color; feeds `--devframe-primary` and the whole primary ramp. */
   primaryColor?: string
-  /** Standalone viewer CSS `background`; a string applies to both color schemes. */
-  background?: string | { light: string, dark: string }
+  /** Standalone viewer CSS `background`, optionally specialized for iframe use. */
+  background?: ViewerBackground
   /** Short line for the auth screen and the standalone meta description. */
   tagline?: string
   /** Favicon URL — applied on the standalone viewer and the popped-out window only. */

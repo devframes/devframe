@@ -6,6 +6,7 @@ import { s } from 'devframe/utils/simple-schema'
 import { dirname, extname } from 'pathe'
 import { diagnostics } from '../../diagnostics'
 import { getAssetsContext } from '../../node/context'
+import { assertAssetMutationPath } from '../../node/paths'
 import { statToAssetInfo } from '../../node/scanner'
 import { assetInfoSchema } from './list'
 
@@ -47,8 +48,10 @@ export const rename = defineAssetsRpc({
         const folder = dirname(path)
         const nextName = `${trimmed}${extname(path)}`
         const nextRelPath = folder === '.' ? nextName : `${folder}/${nextName}`
-        const from = assets.resolvePath(path)
-        const to = assets.resolvePath(nextRelPath)
+        // Reject a pre-existing symlink component on either side before we
+        // touch the filesystem.
+        const from = await assertAssetMutationPath(assets.dir, path)
+        const to = await assertAssetMutationPath(assets.dir, nextRelPath)
 
         if (from === to) {
           const stat = await fsp.lstat(from)
@@ -60,6 +63,10 @@ export const rename = defineAssetsRpc({
           throw diagnostics.DP_ASSETS_0003({ path: nextRelPath })
 
         await fsp.mkdir(dirname(to), { recursive: true })
+        // Re-check both sides after creating the destination's parents and
+        // immediately before the rename.
+        await assertAssetMutationPath(assets.dir, path)
+        await assertAssetMutationPath(assets.dir, nextRelPath)
         try {
           await fsp.rename(from, to)
         }

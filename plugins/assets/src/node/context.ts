@@ -19,7 +19,12 @@ export interface AssetsConfig {
 }
 
 export interface AssetsContext extends AssetsConfig {
-  /** Resolve a root-relative path to an absolute one, rejecting escapes. */
+  /**
+   * Resolve a root-relative path to an absolute one, rejecting lexical
+   * escapes. Symlink-aware containment for reads and mutations lives in
+   * `node/paths` (`resolveAssetReadPath` / `assertAssetMutationPath`), which
+   * the RPC handlers call directly with {@link AssetsContext.dir}.
+   */
   resolvePath: (relativePath: string) => string
 }
 

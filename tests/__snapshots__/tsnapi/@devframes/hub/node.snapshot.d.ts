@@ -269,6 +269,14 @@ export declare const hubTerminalsWrite: {
 };
 // #endregion
 
+// #region Referenced (internal)
+type PartialWithoutId<T extends {
+  id: string;
+}> = Partial<T> & {
+  id: string;
+};
+// #endregion
+
 // #region Other
 export { createHubContext }
 export { CreateHubContextOptions }

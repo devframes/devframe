@@ -21,3 +21,16 @@ export declare function resolveAssetPath(_: string, _: string): string;
 export declare function scanAssets(_: string, _: string, _?: boolean): Promise<AssetInfo[]>;
 export declare function setupAssets(_: DevframeNodeContext, _: SetupAssetsOptions): Promise<void>;
 // #endregion
+
+// #region Referenced (internal)
+interface AssetsConfig {
+  dir: string;
+  write: boolean;
+  uploadExtensions: readonly string[] | '*';
+  baseURL: string;
+  uploadChannel?: RpcStreamingChannel<Uint8Array>;
+}
+interface AssetsContext extends AssetsConfig {
+  resolvePath: (_: string) => string;
+}
+// #endregion

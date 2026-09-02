@@ -1,9 +1,10 @@
 import type { DockPanelStorage, DockSessionStorage } from '@devframes/hub/client'
 import { getDevframeRpcClient, setDevframeClientContext } from '@devframes/hub/client'
 import { useLocalStorage, useSessionStorage } from '@vueuse/core'
+import { ref } from 'vue'
 import { applyPrimaryColor, setBranding } from '../state/branding'
 import { DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
-import { setupEmbeddedVisibility } from './visibility'
+import { isEmbeddedDockInitiallyVisible, setupEmbeddedVisibility } from './visibility'
 
 /**
  * The floating-dock bootstrap the hub serves at `<base>embedded.js` — load
@@ -74,8 +75,10 @@ async function mountDock(): Promise<void> {
   // carried by the connection we just established above.
   const branding = setBranding(rpc.connectionMeta.configs?.ui?.branding || {})
 
+  const embeddedVisibility = rpc.connectionMeta.configs?.ui?.embeddedVisibility ?? 'normal'
+  const panelVisible = ref(isEmbeddedDockInitiallyVisible(embeddedVisibility))
   const { createDocksContext } = await import('../state/context')
-  const context = await createDocksContext('embedded', rpc, state, session)
+  const context = await createDocksContext('embedded', rpc, state, session, panelVisible)
   setDevframeClientContext(context)
 
   const { DockEmbedded } = await import('../components/DockEmbedded')
@@ -91,14 +94,18 @@ async function mountDock(): Promise<void> {
   // Reveal policy: `normal` appends now; `passive`/`hidden` wait for the
   // Shift+Alt+D reveal (the element is built and ready, just detached).
   setupEmbeddedVisibility(
-    rpc.connectionMeta.configs?.ui?.embeddedVisibility ?? 'normal',
+    embeddedVisibility,
     branding.productName,
     {
       show: () => {
         if (dockEl && !dockEl.isConnected)
           document.body.appendChild(dockEl)
+        panelVisible.value = true
       },
-      hide: () => dockEl?.remove(),
+      hide: () => {
+        dockEl?.remove()
+        panelVisible.value = false
+      },
     },
   )
 }

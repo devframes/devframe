@@ -1,7 +1,7 @@
 {
   "name": "hub-nitro-minimal",
   "type": "module",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "private": true,
   "description": "Minimal Nitro host that mounts the devframe hub on a single route.",
   "scripts": {

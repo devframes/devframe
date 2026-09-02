@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-a11y",
   "type": "module",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "description": "Built-in devframe that audits the user app with axe and highlights accessibility issues in the page.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

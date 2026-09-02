@@ -92,3 +92,17 @@ export declare const diagnostics: Diagnostics<{
   method?: "log" | "warn" | "error";
 }) => void]>;
 // #endregion
+
+// #region Referenced (internal)
+declare class Diagnostic extends Error {
+  name: string;
+  code: string;
+  docs?: string;
+  fix?: string;
+  sources?: string[];
+  get why(): string;
+  constructor(_: DiagnosticInit, _?: Function);
+  toJSON(): object;
+}
+type Diagnostics<Codes extends Record<string, DiagnosticDefinition>, Reporters extends readonly AnyDiagnosticReporter[]> = { [Code in keyof Codes]: DiagnosticHandle<InferCodeParams<Codes[Code]>, Prettify<ExtractReportersOptions<Reporters>>>; };
+// #endregion

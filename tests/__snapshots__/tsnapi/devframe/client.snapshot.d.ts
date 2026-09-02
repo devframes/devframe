@@ -174,3 +174,7 @@ export declare function setupDevframeConnection(_?: SetupDevframeConnectionOptio
 // #region Variables
 export declare const connectDevframe: typeof getDevframeRpcClient;
 // #endregion
+
+// #region Referenced (internal)
+type AnyRpcFn = (..._: any[]) => any;
+// #endregion

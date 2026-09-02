@@ -116,12 +116,17 @@ export interface DockSessionStorage {
   groupLastChildIds?: Record<string, string>;
 }
 export interface DocksPanelContext {
+  readonly state: DevframeDockPanelState;
+  readonly events: EventEmitter<DocksPanelEvents>;
   store: DockPanelStorage;
   session: DockSessionStorage;
   isDragging: boolean;
   isResizing: boolean;
   readonly isVertical: boolean;
   consumeBootRoute?: (_: string) => string | null;
+}
+export interface DocksPanelEvents {
+  'panel:state:changed': (_: DevframeDockPanelState) => void;
 }
 export interface FrameLocationHistory {
   pushState: (..._: any[]) => void;

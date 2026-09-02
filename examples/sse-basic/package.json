@@ -1,7 +1,7 @@
 {
   "name": "sse-basic",
   "type": "module",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "private": true,
   "description": "Minimal devframe that carries every RPC frame over plain HTTP with SSE.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/sse-basic",

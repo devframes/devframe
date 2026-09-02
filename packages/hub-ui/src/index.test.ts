@@ -15,11 +15,11 @@ describe('createUi branding background', () => {
     const html = readFileSync(fileURLToPath(new URL('../dist/client/standalone/index.html', import.meta.url)), 'utf8')
 
     expect(html).not.toContain('__hub-ui.css')
-    expect(html).toContain('html.viewer-background-custom')
+    expect(html).toContain('color-scheme: light')
     expect(html).toContain('--devframes-viewer-background: #fff')
     expect(html).toContain('--devframes-viewer-background: #111')
     expect(html).toContain('background: var(--devframes-viewer-background)')
-    expect(html).toMatch(/html\.viewer-background-custom\s*\{[^}]*color-scheme:\s*normal/)
+    expect(html).not.toMatch(/html\.viewer-background-custom\s*\{[^}]*color-scheme:\s*normal/)
   })
 
   it('preserves the default viewer background', () => {
@@ -57,6 +57,19 @@ describe('createUi branding background', () => {
     const ui = createUi({ branding: { background } })
     ui.setup?.(context)
 
+    expect(context.staticConfig.ui).toEqual({ branding: { background } })
+  })
+
+  it('publishes standalone and iframe viewer backgrounds with the branding', () => {
+    expect.assertions(1)
+
+    const background = {
+      standalone: { light: '#fff', dark: '#282828' },
+      iframe: 'transparent',
+    }
+    const ui = createUi({ branding: { background } })
+    const context = createContext()
+    ui.setup?.(context)
     expect(context.staticConfig.ui).toEqual({ branding: { background } })
   })
 

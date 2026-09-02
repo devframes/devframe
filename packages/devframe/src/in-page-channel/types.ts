@@ -32,6 +32,15 @@ type FnArgs<F> = F extends (...args: infer A) => any ? A : never
 type FnReturn<F> = F extends (...args: any[]) => infer R ? Awaited<R> : never
 
 /**
+ * Converts a protocol function to its accepted endpoint handler.
+ *
+ * @internal
+ */
+type ProtocolHandler<F> = F extends (...args: any[]) => any
+  ? (...args: FnArgs<F>) => Thenable<FnReturn<F>>
+  : never
+
+/**
  * Types of an in-page channel function — `RpcFunctionType` minus the
  * server-only `static`: `event` is fire-and-forget (the only type valid for
  * fan-out), `action` performs, `query` requests data (the default).
@@ -75,8 +84,45 @@ export type InPageFunctionDefinition<
         handler: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>
       }
 
-/** Loosely-typed definition — the registration unit both endpoints accept. */
+/**
+ * Loosely-typed definition used by the internal function registry.
+ *
+ * @internal
+ */
 export type InPageFunctionDefinitionAny = InPageFunctionDefinition<string, any, any, any, any, any>
+
+/**
+ * Function metadata with its handler constrained by a protocol function.
+ *
+ * @internal
+ */
+interface InPageFunctionOption<F> {
+  type?: InPageFunctionType
+  /** Optional Standard Schema array validating the arguments. */
+  args?: RpcArgsSchema
+  /** Optional Standard Schema validating the resolved return value. */
+  returns?: RpcReturnSchema
+  jsonSerializable?: boolean
+  handler: ProtocolHandler<F>
+}
+
+/**
+ * Functions implemented by {@link createPageScriptChannel}.
+ *
+ * @internal
+ */
+type CreatePageScriptChannelOptionsFunctions<P extends InPageChannelProtocol> = {
+  [NAME in keyof PageScriptFunctions<P> & string]: InPageFunctionOption<PageScriptFunctions<P>[NAME]>
+}
+
+/**
+ * Functions implemented by {@link connectPanelChannel}.
+ *
+ * @internal
+ */
+type ConnectPanelChannelOptionsFunctions<P extends InPageChannelProtocol> = {
+  [NAME in keyof PanelFunctions<P> & string]: InPageFunctionOption<PanelFunctions<P>[NAME]>
+}
 
 /**
  * Connection lifecycle of a panel endpoint: `connecting` (handshake retry
@@ -85,14 +131,17 @@ export type InPageFunctionDefinitionAny = InPageFunctionDefinition<string, any, 
  */
 export type InPageChannelStatus = 'connecting' | 'connected' | 'closed'
 
+/**
+ * Options shared by both in-page channel endpoints.
+ *
+ * @internal
+ */
 interface InPageChannelCommonOptions {
   /**
    * Channel name, namespaced with the devframe id by convention
    * (e.g. `devframes:plugin:a11y`). Both endpoints must use the same name.
    */
   name: string
-  /** Implementations of this endpoint's side of the protocol. */
-  functions?: readonly InPageFunctionDefinitionAny[]
   /**
    * Origins accepted during the handshake (and used as `targetOrigin` when
    * posting handshake messages). The in-page channel is same-origin by
@@ -123,7 +172,9 @@ interface InPageChannelCommonOptions {
 }
 
 /** Options for {@link createPageScriptChannel}. */
-export interface CreatePageScriptChannelOptions extends InPageChannelCommonOptions {
+export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
+  /** Implementations of the protocol's page-script functions. */
+  functions: CreatePageScriptChannelOptionsFunctions<Protocol>
   /**
    * Window whose `message` events carry panel hellos. Defaults to the
    * global `window`; pass `false` to skip the handshake listener entirely
@@ -133,7 +184,9 @@ export interface CreatePageScriptChannelOptions extends InPageChannelCommonOptio
 }
 
 /** Options for {@link connectPanelChannel}. */
-export interface ConnectPanelChannelOptions extends InPageChannelCommonOptions {
+export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
+  /** Implementations of the protocol's panel functions. */
+  functions: ConnectPanelChannelOptionsFunctions<Protocol>
   /**
    * The panel's own window (listens for the handshake grant). Defaults to
    * the global `window`; pass `false` with `transport` to skip the handshake.

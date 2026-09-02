@@ -45,7 +45,7 @@ interface PeerInternal<P extends InPageChannelProtocol> {
  * handshake. No server is involved at any point.
  */
 export function createPageScriptChannel<P extends InPageChannelProtocol>(
-  options: CreatePageScriptChannelOptions,
+  options: CreatePageScriptChannelOptions<P>,
 ): PageScriptChannel<P> {
   const { name } = options
   const callTimeoutMs = options.callTimeoutMs ?? DEFAULT_CALL_TIMEOUT_MS
@@ -63,8 +63,8 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
   let heartbeatTimer: ReturnType<typeof setInterval> | undefined
 
   const registry = createLocalFunctionRegistry(codec)
-  for (const definition of options.functions ?? [])
-    registry.register(definition)
+  for (const [fnName, definition] of Object.entries(options.functions ?? {}))
+    registry.register({ ...definition, name: fnName })
 
   const stateHost = createPageScriptStateHost<P>(function* () {
     for (const peer of peers.values()) {

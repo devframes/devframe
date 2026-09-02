@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-code-server--assets",
   "type": "module",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "description": "Prebuilt browser assets (SPA) for @devframes/plugin-code-server, served on demand through devframe's remote-assets back-proxy.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

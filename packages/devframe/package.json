@@ -1,7 +1,7 @@
 {
   "name": "devframe",
   "type": "module",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "description": "Framework for building one portable devtool integration that runs in any viewer.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
@@ -56,6 +56,7 @@
     "./utils/nanoid": "./dist/utils/nanoid.mjs",
     "./utils/nostics": "./dist/utils/nostics.mjs",
     "./utils/open": "./dist/utils/open.mjs",
+    "./utils/origin": "./dist/utils/origin.mjs",
     "./utils/remote-assets": "./dist/utils/remote-assets.mjs",
     "./utils/simple-schema": "./dist/utils/simple-schema.mjs",
     "./utils/serve-static": "./dist/utils/serve-static.mjs",

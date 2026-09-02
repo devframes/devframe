@@ -9,8 +9,7 @@ export default defineAppConfig({
     title: 'Devframe',
     logo: {
       alt: 'Devframe',
-      light: '/logo.svg',
-      dark: '/logo.svg',
+      mark: 'devframe',
     },
     nav: [
       {

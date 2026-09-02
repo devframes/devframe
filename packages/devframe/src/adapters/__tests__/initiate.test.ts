@@ -352,6 +352,77 @@ describe('adapters/handler', () => {
     }
   })
 
+  // The auth-link origin is derived from the served request's URL (the fetch
+  // handler ignores the `Host` header — that path is `nodeMiddleware`'s), so
+  // each case just points a request at the origin under test and inspects the
+  // one-time banner (`console.log`).
+  async function withBannerSpy(
+    id: string,
+    extra: Partial<Parameters<typeof initDevframe>[1]>,
+    run: (devtools: ReturnType<typeof initDevframe>, spy: ReturnType<typeof vi.spyOn>) => Promise<void>,
+  ): Promise<void> {
+    const wsPort = await getPort({ host: '127.0.0.1' })
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const devtools = initDevframe(defineTestDef(id), { base: `/__${id}/`, host: '127.0.0.1', ws: { port: wsPort }, ...extra })
+    try {
+      await devtools.ready
+      await run(devtools, spy)
+    }
+    finally {
+      spy.mockRestore()
+      await devtools.close()
+    }
+  }
+  const hit = (devtools: ReturnType<typeof initDevframe>, origin: string): Promise<Response> =>
+    devtools.handler(new Request(`${origin}/__connection.json`))
+
+  it('a hostile first request never becomes the OTP-link origin; a later loopback one does', () =>
+    withBannerSpy('h-poison', {}, async (devtools, spy) => {
+      // A forged non-loopback origin is not adopted and prints nothing.
+      await hit(devtools, 'http://evil.example.com/__h-poison')
+      expect(spy).not.toHaveBeenCalled()
+      // A later loopback origin is adopted and prints exactly one OTP link
+      // (the credential rides the fragment) — the reject never locked it out.
+      await hit(devtools, 'http://localhost:4321/__h-poison')
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(String(spy.mock.calls[0])).toContain('http://localhost:4321/#devframe_otp=')
+      expect(String(spy.mock.calls[0])).not.toContain('evil.example.com')
+      // First-valid origin is pinned: a second loopback request doesn't move it.
+      await hit(devtools, 'http://127.0.0.1:9999/__h-poison')
+      expect(spy).toHaveBeenCalledTimes(1)
+    }))
+
+  it('adopts an exactly allow-listed non-loopback origin, but rejects a near-match', () =>
+    withBannerSpy('h-allow', { allowedOrigins: ['https://tools.example.com'] }, async (devtools, spy) => {
+      // Prefix/suffix near-matches of the allow-list entry are never adopted.
+      await hit(devtools, 'https://tools.example.com.evil.com/__h-allow')
+      await hit(devtools, 'https://evil.tools.example.com/__h-allow')
+      expect(spy).not.toHaveBeenCalled()
+      // The exact allow-listed origin is.
+      await hit(devtools, 'https://tools.example.com/__h-allow')
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(String(spy.mock.calls[0])).toContain('https://tools.example.com/#')
+    }))
+
+  it('an explicit origin wins over any request', () =>
+    withBannerSpy('h-pinned', { origin: 'https://pinned.example.com' }, async (devtools, spy) => {
+      // Pinned: the banner points at it before any request, and a forged
+      // request can't move it.
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(String(spy.mock.calls[0])).toContain('https://pinned.example.com/#')
+      await hit(devtools, 'http://evil.example.com/__h-pinned')
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(String(spy.mock.calls[0])).not.toContain('evil.example.com')
+    }))
+
+  it('canonicalizes an adopted origin, dropping the default port', () =>
+    withBannerSpy('h-canon', {}, async (devtools, spy) => {
+      await hit(devtools, 'http://localhost:80/__h-canon')
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(String(spy.mock.calls[0])).toContain('http://localhost/#')
+      expect(String(spy.mock.calls[0])).not.toContain('localhost:80')
+    }))
+
   it('bridge mode: without a distDir only meta + WS are served', async () => {
     const wsPort = await getPort({ port: 18160, host: '127.0.0.1' })
     const devtools = initDevframe(defineTestDef('handler-bridge'), { base: '/__handler-bridge/', auth: false, ws: { port: wsPort } })

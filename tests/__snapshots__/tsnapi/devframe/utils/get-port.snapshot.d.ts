@@ -22,3 +22,7 @@ export type GetPortInput = Partial<GetPortOptions> | number | string;
 // #region Functions
 export declare function getPort(_?: GetPortInput): Promise<PortNumber>;
 // #endregion
+
+// #region Referenced (internal)
+type PortNumber = number;
+// #endregion

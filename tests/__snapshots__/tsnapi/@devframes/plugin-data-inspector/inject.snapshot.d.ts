@@ -41,3 +41,17 @@ export declare function exposeDataInspector(_?: ExposeDataInspectorOptions): Pro
 export declare const AGENT_DISCOVERY_FILE: string;
 export declare const DISCOVERY_FILE: string;
 // #endregion
+
+// #region Referenced (internal)
+interface DataSourceEntry {
+  id: string;
+  title: string;
+  description?: string;
+  icon?: string;
+  data: unknown | (() => unknown | Promise<unknown>);
+  static?: boolean;
+  writable?: boolean;
+  subscribe?: (_: () => void) => (() => void) | void;
+  queries?: Query[];
+}
+// #endregion

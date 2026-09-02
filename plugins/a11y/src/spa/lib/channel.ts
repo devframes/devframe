@@ -49,7 +49,10 @@ export function createA11yChannel(): A11yChannel {
   // authoritative flag inside `A11yState` takes over on the next update.
   const [localScanning, setLocalScanning] = createSignal(false)
 
-  const channel = connectPanelChannel<A11yChannelProtocol>({ name: A11Y_CHANNEL })
+  const channel = connectPanelChannel<A11yChannelProtocol>({
+    name: A11Y_CHANNEL,
+    functions: {},
+  })
   channel.events.on('status:updated', status => setPageScriptReady(status === 'connected'))
 
   void channel.sharedState.get('state').then((shared) => {

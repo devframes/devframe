@@ -67,6 +67,11 @@ export type DevframesInput = Array<DevframeDefinition | HubDevframeEntry | Thena
 export declare function initHub(_: InitHubOptions): HubInstance;
 // #endregion
 
+// #region Referenced (internal)
+type Arrayable<T> = T | readonly T[];
+type Thenable<T> = T | Promise<T>;
+// #endregion
+
 // #region Other
 export { DEVFRAMES_HUB_BASE }
 // #endregion

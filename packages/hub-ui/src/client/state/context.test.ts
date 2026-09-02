@@ -1,6 +1,7 @@
-import type { DevframeDockEntry } from '@devframes/hub'
+import type { DevframeDockEntry, DevframeDockPanelState } from '@devframes/hub'
 import type { DevframeRpcClient, DockSessionStorage } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
+import { HUB_EVENTS } from '@devframes/hub/constants'
 import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { createSharedState } from 'devframe/utils/shared-state'
@@ -74,12 +75,74 @@ async function flushRestore(): Promise<void> {
 }
 
 describe('createDocksContext', () => {
+  it('exposes restored panel state and emits selected, hidden, and closed changes', async () => {
+    expect.assertions(9)
+
+    const { rpc, sharedStates, trust } = createStubRpc()
+    const panelVisible = ref(false)
+    const session = ref<DockSessionStorage>({
+      open: true,
+      selectedDockId: 'git',
+      selectedDockRoute: null,
+    })
+    const context = await createDocksContext('embedded', rpc, undefined, session, panelVisible)
+    const panelStates: DevframeDockPanelState[] = []
+    context.panel.events.on(
+      HUB_EVENTS.client.docksPanelStateChanged,
+      panelState => panelStates.push(panelState),
+    )
+
+    panelVisible.value = true
+    await nextTick()
+    expect(panelStates).toEqual([{ state: 'open', selectedDockId: 'git' }])
+    panelVisible.value = false
+    await nextTick()
+    panelStates.length = 0
+
+    trust()
+    sharedStates.get('devframe:docks')!.push([gitEntry])
+    sharedStates.get('devframe:dock-renderers')!.push({})
+    await flushRestore()
+    expect(context.panel.state).toEqual({ state: 'hidden', selectedDockId: 'git' })
+    expect(panelStates).toEqual([])
+
+    panelVisible.value = true
+    await nextTick()
+    expect(panelStates.at(-1)).toEqual({ state: 'open', selectedDockId: 'git' })
+
+    session.value.selectedDockId = '~settings'
+    await nextTick()
+    expect(panelStates.at(-1)).toEqual({ state: 'open', selectedDockId: '~settings' })
+
+    panelVisible.value = false
+    await nextTick()
+    expect(panelStates.at(-1)).toEqual({ state: 'hidden', selectedDockId: '~settings' })
+
+    session.value.open = false
+    session.value.selectedDockId = null
+    await nextTick()
+    expect(panelStates.at(-1)).toEqual({ state: 'hidden' })
+
+    panelVisible.value = true
+    await nextTick()
+    expect(panelStates.at(-1)).toEqual({ state: 'closed' })
+
+    panelVisible.value = true
+    session.value.open = false
+    await nextTick()
+    expect(panelStates).toHaveLength(5)
+  })
+
   it('mounts a restored dock once after all initial server state arrives', async () => {
-    expect.assertions(7)
+    expect.assertions(8)
 
     const { rpc, sharedStates, trust } = createStubRpc()
     const executeSetupScriptMock = vi.mocked(executeSetupScript)
     executeSetupScriptMock.mockClear()
+    let setupPanelState: DevframeDockPanelState | undefined
+    executeSetupScriptMock.mockImplementationOnce(async (_dockEntry, scriptContext) => {
+      setupPanelState = scriptContext.panel.state
+    })
     const session = ref<DockSessionStorage>({
       open: true,
       selectedDockId: 'git',
@@ -105,6 +168,7 @@ describe('createDocksContext', () => {
 
     expect(context.docks.selected?.id).toBe('git')
     expect(session.value.open).toBe(true)
+    expect(setupPanelState).toEqual({ state: 'open', selectedDockId: 'git' })
     expect(executeSetupScriptMock).toHaveBeenCalledOnce()
   })
 

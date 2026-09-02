@@ -174,3 +174,100 @@ export declare const serverFunctions: readonly [{
 }];
 export declare const SOURCES_CHANGED_EVENT: string;
 // #endregion
+
+// #region Referenced (internal)
+interface DataSourceEntry {
+  id: string;
+  title: string;
+  description?: string;
+  icon?: string;
+  data: unknown | (() => unknown | Promise<unknown>);
+  static?: boolean;
+  writable?: boolean;
+  subscribe?: (_: () => void) => (() => void) | void;
+  queries?: Query[];
+}
+interface DataSourceMeta {
+  id: string;
+  title: string;
+  description?: string;
+  icon?: string;
+  static: boolean;
+  writable: boolean;
+  queries?: Query[];
+}
+interface FilterOptions {
+  excludeFunctions?: boolean;
+  excludeUnderscoreProps?: boolean;
+  excludeDollarProps?: boolean;
+}
+type NodePath = PathSegment[];
+type QueryOutcome = {
+  ok: true;
+  result: unknown;
+  stats: QueryStats;
+} | {
+  ok: false;
+  error: {
+    name: string;
+    message: string;
+  };
+};
+interface SavedQuery extends Query {
+  id: string;
+  scope: SavedQueryScope;
+  updatedAt: number;
+}
+type SavedQueryScope = 'workspace' | 'project';
+interface SaveQueryInput extends Query {
+  id?: string;
+  scope: SavedQueryScope;
+}
+type SkeletonOutcome = {
+  ok: true;
+  skeleton: unknown;
+  nodes: number;
+  ms: number;
+} | {
+  ok: false;
+  error: {
+    name: string;
+    message: string;
+  };
+};
+interface SuggestOutcome {
+  ok: boolean;
+  suggestions: SuggestItem[];
+  statMs: number;
+  error?: string;
+}
+interface WriteApplyOptions {
+  excludeFunctions?: boolean;
+}
+type WriteOutcome = {
+  ok: true;
+} | {
+  ok: false;
+  error: {
+    name: string;
+    message: string;
+  };
+};
+type WriteRequest = {
+  op: 'set';
+  path: NodePath;
+  value: WriteValue;
+} | {
+  op: 'delete';
+  path: NodePath;
+} | {
+  op: 'add';
+  path: NodePath;
+  key?: WriteValue;
+  value: WriteValue;
+} | {
+  op: 'rename';
+  path: NodePath;
+  key: WriteValue;
+};
+// #endregion

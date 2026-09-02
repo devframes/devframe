@@ -101,6 +101,10 @@ export interface DevframeDockEntryRegistry {
   'group': DevframeViewGroup;
   '~builtin': DevframeViewBuiltin;
 }
+export interface DevframeDockPanelState {
+  state: 'open' | 'closed' | 'hidden';
+  selectedDockId?: string;
+}
 export interface DevframeDocksActiveState {
   activation: DevframeDockActivation | null;
 }
@@ -229,6 +233,16 @@ export interface DevframePtyExecuteOptions {
   cols?: number;
   rows?: number;
 }
+export interface DevframePtyOutput {
+  output: string;
+  exitCode: number | undefined;
+  signal: number | undefined;
+}
+export interface DevframePtyResult extends PromiseLike<DevframePtyOutput> {
+  readonly pid: number | undefined;
+  readonly exitCode: number | undefined;
+  readonly killed: boolean;
+}
 export interface DevframePtyTerminalSession extends DevframeTerminalSession {
   type: 'pty';
   interactive: true;
@@ -236,6 +250,7 @@ export interface DevframePtyTerminalSession extends DevframeTerminalSession {
   write: (_: string) => void;
   resize: (_: number, _: number) => void;
   getProcessName: () => string | undefined;
+  getResult: () => DevframePtyResult;
   terminate: () => Promise<void>;
   restart: () => Promise<void>;
 }
@@ -293,6 +308,11 @@ export interface DevframeViewGroup extends DevframeDockEntryBase {
 export interface DevframeViewIframe extends DevframeDockEntryBase {
   type: 'iframe';
   url: string;
+  addressBar?: boolean | {
+    back?: boolean;
+    reload?: boolean;
+    openExternal?: boolean;
+  };
   frameId?: string;
   clientScript?: ClientScriptEntry;
   navTarget?: NavTarget;

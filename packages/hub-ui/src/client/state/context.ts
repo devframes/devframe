@@ -1,5 +1,5 @@
-import type { DevframeClientCommand, DevframeDockEntry, DevframeDockUserEntry, DevframeRpcClientFunctions, DevframeViewIframe } from '@devframes/hub'
-import type { CommandsContext, DevframeClientContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockPanelStorage, DockRegistration, DockRendererManifest, DocksContext, DockSessionStorage } from '@devframes/hub/client'
+import type { DevframeClientCommand, DevframeDockEntry, DevframeDockPanelState, DevframeDockUserEntry, DevframeRpcClientFunctions, DevframeViewIframe } from '@devframes/hub'
+import type { CommandsContext, DevframeClientContext, DevframeRpcClient, DockClientScriptContext, DockEntryState, DockPanelStorage, DockRegistration, DockRendererManifest, DocksContext, DockSessionStorage, DocksPanelEvents } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
 import type { Ref } from 'vue'
@@ -7,6 +7,7 @@ import type { DevframeDocksUserSettings } from './dock-settings'
 import { attachFrameNavClient, createDockRenderersContext } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY, HUB_EVENTS } from '@devframes/hub/constants'
 import { DEVFRAME_EVENTS } from 'devframe/constants'
+import { createEventEmitter } from 'devframe/utils/events'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
 import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_UI_HIDE_EVENT } from '../constants'
 import { useBranding } from './branding'
@@ -24,6 +25,7 @@ export async function createDocksContext(
   rpc: DevframeRpcClient,
   panelStore?: Ref<DockPanelStorage>,
   sessionStore?: Ref<DockSessionStorage>,
+  panelVisible: Ref<boolean> = ref(true),
 ): Promise<DocksContext> {
   if (docksContextByRpc.has(rpc)) {
     return docksContextByRpc.get(rpc)!
@@ -173,6 +175,7 @@ export async function createDocksContext(
   }
 
   panelStore ||= ref(DEFAULT_DOCK_PANEL_STORE())
+  const panelEvents = createEventEmitter<DocksPanelEvents>()
   let docksContext: DocksContext
 
   let _settingsStorePromise: Promise<SharedState<DevframeDocksUserSettings>> | undefined
@@ -270,6 +273,10 @@ export async function createDocksContext(
         return false
     }
 
+    initialRestorePending.value = false
+    selectedDockId.value = entry.id
+    sessionStore.value.open = true
+
     // If has import script, run it
     if (
       (entry.type === 'action')
@@ -300,9 +307,6 @@ export async function createDocksContext(
     if (entry.groupId)
       (sessionStore.value.groupLastChildIds ??= {})[entry.groupId] = entry.id
 
-    initialRestorePending.value = false
-    selectedDockId.value = entry.id
-    sessionStore.value.open = true
     // Only an iframe dock owns an address-bar route; ViewIframe keeps
     // `session.selectedDockRoute` current for it. Clear it for anything else so a stale
     // route from a previous iframe isn't persisted against a non-iframe dock.
@@ -614,6 +618,21 @@ export async function createDocksContext(
 
   docksContext = reactive({
     panel: {
+      get state() {
+        let state: DevframeDockPanelState['state']
+        if (!panelVisible.value)
+          state = 'hidden'
+        else if (sessionStore.value.open)
+          state = 'open'
+        else
+          state = 'closed'
+
+        const panelState: DevframeDockPanelState = { state }
+        if (selectedDockId.value !== null)
+          panelState.selectedDockId = selectedDockId.value
+        return panelState
+      },
+      events: markRaw(panelEvents),
       store: panelStore,
       session: sessionStore,
       isDragging: false,
@@ -706,6 +725,23 @@ export async function createDocksContext(
     initialRestorePending.value = false
     await switchEntry(restoreDockId)
   }
+  let previousPanelState = docksContext.panel.state
+  watch(
+    [panelVisible, () => sessionStore.value.open, selectedDockId],
+    () => {
+      const panelState = docksContext.panel.state
+      if (
+        panelState.state === previousPanelState.state
+        && panelState.selectedDockId === previousPanelState.selectedDockId
+      ) {
+        return
+      }
+
+      previousPanelState = panelState
+      panelEvents.emit(HUB_EVENTS.client.docksPanelStateChanged, panelState)
+    },
+    { flush: 'post' },
+  )
   void restoreAfterInitialization()
 
   docksContextByRpc.set(rpc, docksContext)
