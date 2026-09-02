@@ -79,6 +79,15 @@ function runSync<T extends StandardSchemaV1>(
   return result
 }
 
+/** Validate a single field, appending any issues to `issues` prefixed by `key`. */
+function pushFieldIssues(issues: Issue[], key: PropertyKey, schema: StandardSchemaV1, value: unknown): void {
+  const result = runSync(schema, value)
+  if (result.issues) {
+    for (const issue of result.issues)
+      issues.push({ message: issue.message, path: [key, ...(issue.path ?? [])] })
+  }
+}
+
 /** Any string. */
 export function string(): SimpleSchema<string> {
   return make('string', v => (typeof v === 'string' ? ok(v) : fail('Expected a string')))
@@ -147,13 +156,8 @@ export function record<V extends StandardSchemaV1>(
       return fail('Expected an object')
     const obj = v as Record<string, unknown>
     const issues: Issue[] = []
-    for (const key of Object.keys(obj)) {
-      const result = runSync(value, obj[key])
-      if (result.issues) {
-        for (const issue of result.issues)
-          issues.push({ message: issue.message, path: [key, ...(issue.path ?? [])] })
-      }
-    }
+    for (const key of Object.keys(obj))
+      pushFieldIssues(issues, key, value, obj[key])
     return issues.length ? { issues } : ok(v as any)
   })
 }
@@ -166,13 +170,8 @@ export function array<T extends StandardSchemaV1>(
     if (!Array.isArray(v))
       return fail('Expected an array')
     const issues: Issue[] = []
-    for (let i = 0; i < v.length; i++) {
-      const result = runSync(item, v[i])
-      if (result.issues) {
-        for (const issue of result.issues)
-          issues.push({ message: issue.message, path: [i, ...(issue.path ?? [])] })
-      }
-    }
+    for (let i = 0; i < v.length; i++)
+      pushFieldIssues(issues, i, item, v[i])
     return issues.length ? { issues } : ok(v as any)
   })
 }
@@ -203,13 +202,8 @@ export function object<T extends Record<string, StandardSchemaV1>>(
       return fail('Expected an object')
     const obj = v as Record<string, unknown>
     const issues: Issue[] = []
-    for (const [key, schema] of entries) {
-      const result = runSync(schema, obj[key])
-      if (result.issues) {
-        for (const issue of result.issues)
-          issues.push({ message: issue.message, path: [key, ...(issue.path ?? [])] })
-      }
-    }
+    for (const [key, schema] of entries)
+      pushFieldIssues(issues, key, schema, obj[key])
     // Guard-only: return the original object so extra keys survive.
     return issues.length ? { issues } : ok(v as any)
   })

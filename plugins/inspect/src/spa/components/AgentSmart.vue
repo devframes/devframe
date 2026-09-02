@@ -19,12 +19,13 @@ async function fetchData(): Promise<void> {
 useRefreshProvider(fetchData)
 onMounted(fetchData)
 
-async function onInvoke(id: string, parsedArgs: unknown) {
-  if (!rpc.value)
+async function runAction(id: string, call: (rpc: NonNullable<typeof rpc.value>) => Promise<InvokeResult>) {
+  const client = rpc.value
+  if (!client)
     return
   pending[id] = true
   try {
-    results[id] = await rpc.value.call('devframes:plugin:inspect:invoke-agent-tool', id, parsedArgs)
+    results[id] = await call(client)
   }
   catch (e) {
     const err = e as Error
@@ -35,20 +36,12 @@ async function onInvoke(id: string, parsedArgs: unknown) {
   }
 }
 
-async function onRead(id: string) {
-  if (!rpc.value)
-    return
-  pending[id] = true
-  try {
-    results[id] = await rpc.value.call('devframes:plugin:inspect:read-agent-resource', id)
-  }
-  catch (e) {
-    const err = e as Error
-    results[id] = { ok: false, error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) } }
-  }
-  finally {
-    pending[id] = false
-  }
+function onInvoke(id: string, parsedArgs: unknown) {
+  return runAction(id, client => client.call('devframes:plugin:inspect:invoke-agent-tool', id, parsedArgs))
+}
+
+function onRead(id: string) {
+  return runAction(id, client => client.call('devframes:plugin:inspect:read-agent-resource', id))
 }
 </script>
 

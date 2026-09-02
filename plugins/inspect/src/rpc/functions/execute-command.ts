@@ -2,6 +2,7 @@ import type { InvokeResult } from '../../types'
 import { diagnostics } from '../../diagnostics'
 import { defineInspectRpc } from './_define'
 import { resolveHubCommands } from './_hub-commands'
+import { toInvokeResult } from './_invoke-result'
 
 /**
  * Execute a hub command by id and return a result envelope, mirroring
@@ -24,23 +25,7 @@ export const executeCommand = defineInspectRpc({
       if (!host)
         throw diagnostics.DP_INSPECT_0003({ id })
 
-      const start = Date.now()
-      try {
-        const result = await host.execute(id, ...args)
-        return { ok: true, result, durationMs: Date.now() - start }
-      }
-      catch (error) {
-        const e = error as Error
-        return {
-          ok: false,
-          error: {
-            name: e?.name ?? 'Error',
-            message: e?.message ?? String(error),
-            stack: e?.stack,
-          },
-          durationMs: Date.now() - start,
-        }
-      }
+      return toInvokeResult(() => host.execute(id, ...args))
     },
   }),
 })

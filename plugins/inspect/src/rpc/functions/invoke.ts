@@ -1,6 +1,7 @@
 import type { InvokeResult } from '../../types'
 import { diagnostics } from '../../diagnostics'
 import { defineInspectRpc } from './_define'
+import { toInvokeResult } from './_invoke-result'
 
 const INVOKABLE_TYPES = new Set(['query', 'static'])
 
@@ -26,23 +27,7 @@ export const invoke = defineInspectRpc({
       if (!INVOKABLE_TYPES.has(type))
         throw diagnostics.DP_INSPECT_0002({ name, type })
 
-      const start = Date.now()
-      try {
-        const result = await ctx.rpc.invokeLocal(name as any, ...(args as any))
-        return { ok: true, result, durationMs: Date.now() - start }
-      }
-      catch (error) {
-        const e = error as Error
-        return {
-          ok: false,
-          error: {
-            name: e?.name ?? 'Error',
-            message: e?.message ?? String(error),
-            stack: e?.stack,
-          },
-          durationMs: Date.now() - start,
-        }
-      }
+      return toInvokeResult(() => ctx.rpc.invokeLocal(name as any, ...(args as any)))
     },
   }),
 })

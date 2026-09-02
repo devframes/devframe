@@ -107,13 +107,25 @@ function getCreateQuery(): Promise<CreateQuery> {
   }))
 }
 
-export async function runQuery(target: unknown, query: string, options?: NormalizeOptions): Promise<QueryOutcome> {
+/**
+ * Run the query against the target, select the node to return from its raw
+ * result, and normalize that node into a wire-safe {@link QueryOutcome}.
+ * The `select` step runs inside the timed section so re-descent costs (used
+ * by {@link runQueryAtPath}) are reflected in `queryMs`.
+ */
+async function executeQuery(
+  target: unknown,
+  query: string,
+  options: NormalizeOptions | undefined,
+  select: (raw: unknown) => unknown,
+): Promise<QueryOutcome> {
   try {
     const started = performance.now()
     const createQuery = await getCreateQuery()
     const raw = createQuery(query)(target)
+    const node = select(raw)
     const queryMs = Math.round((performance.now() - started) * 100) / 100
-    const { data, stats } = normalize(raw, options)
+    const { data, stats } = normalize(node, options)
     // The normalizer guarantees plain JSON, so this measures the actual wire payload.
     const payloadBytes = new TextEncoder().encode(JSON.stringify(data) ?? '').length
     return { ok: true, result: data, stats: { queryMs, normalize: stats, payloadBytes } }
@@ -124,6 +136,10 @@ export async function runQuery(target: unknown, query: string, options?: Normali
   }
 }
 
+export function runQuery(target: unknown, query: string, options?: NormalizeOptions): Promise<QueryOutcome> {
+  return executeQuery(target, query, options, raw => raw)
+}
+
 /**
  * Lazy-expand a depth-truncated node: re-run the base query against the live
  * object, re-descend to the node the `NodePath` addresses, and normalize just
@@ -131,21 +147,8 @@ export async function runQuery(target: unknown, query: string, options?: Normali
  * 'depth'` marker the client is expanding, so the same filter options must be
  * threaded through (they shift array indices and drop keys).
  */
-export async function runQueryAtPath(target: unknown, query: string, path: NodePath, options?: NormalizeOptions): Promise<QueryOutcome> {
-  try {
-    const started = performance.now()
-    const createQuery = await getCreateQuery()
-    const raw = createQuery(query)(target)
-    const node = navigate(raw, path, options)
-    const queryMs = Math.round((performance.now() - started) * 100) / 100
-    const { data, stats } = normalize(node, options)
-    const payloadBytes = new TextEncoder().encode(JSON.stringify(data) ?? '').length
-    return { ok: true, result: data, stats: { queryMs, normalize: stats, payloadBytes } }
-  }
-  catch (error) {
-    const e = error instanceof Error ? error : new Error(String(error))
-    return { ok: false, error: { message: e.message, name: e.name } }
-  }
+export function runQueryAtPath(target: unknown, query: string, path: NodePath, options?: NormalizeOptions): Promise<QueryOutcome> {
+  return executeQuery(target, query, options, raw => navigate(raw, path, options))
 }
 
 interface JoraStatEntry {
