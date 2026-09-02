@@ -162,7 +162,7 @@ catalogs:
       version: 4.5.4
   docs:
     comark-docs:
-      specifier: github:comarkdown/comark-docs
+      specifier: github:comarkdown/comark-docs#f97dc864b0aa702d54c600f868589b7a2c185b3a
       version: 0.0.1
   frontend:
     '@antfu/design':
@@ -556,7 +556,7 @@ importers:
         version: 4.4.3(react@19.2.8)(shiki@4.4.3)(solid-js@1.9.15)(svelte@5.57.0(@typescript-eslint/types@8.67.0))(vue@3.5.42(typescript@6.0.3))
       comark-docs:
         specifier: catalog:docs
-        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/a0e89e1b97ad7e552331bcb4fea71b4b19fa7acf(patch_hash=5f1078be206123f957de74141ae02eaae510555cc7444404bffbfaae8d407e33)(16cf1b447d22766aa84945436e8d9e61)
+        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/f97dc864b0aa702d54c600f868589b7a2c185b3a(patch_hash=5f1078be206123f957de74141ae02eaae510555cc7444404bffbfaae8d407e33)(16cf1b447d22766aa84945436e8d9e61)
       d3-shape:
         specifier: catalog:frontend
         version: 3.2.0
@@ -7690,8 +7690,8 @@ packages:
     version: 0.3.0
     hasBin: true
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/a0e89e1b97ad7e552331bcb4fea71b4b19fa7acf:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/a0e89e1b97ad7e552331bcb4fea71b4b19fa7acf}
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/f97dc864b0aa702d54c600f868589b7a2c185b3a:
+    resolution: {gitHosted: true, integrity: sha512-+dJxp50HJ0k8SH9XFYcIJkYtlTJoRH2Z3iDcPS3mVj0ZDpGgxKQMBlpHq1swuTNxFwoGqXkBix2Sz9fyMG8Tdw==, tarball: https://codeload.github.com/comarkdown/comark-docs/tar.gz/f97dc864b0aa702d54c600f868589b7a2c185b3a}
     version: 0.0.1
     peerDependencies:
       nuxt: ^4.5.0
@@ -17730,7 +17730,7 @@ snapshots:
       - srvx
       - uploadthing
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/a0e89e1b97ad7e552331bcb4fea71b4b19fa7acf(patch_hash=5f1078be206123f957de74141ae02eaae510555cc7444404bffbfaae8d407e33)(16cf1b447d22766aa84945436e8d9e61):
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/f97dc864b0aa702d54c600f868589b7a2c185b3a(patch_hash=5f1078be206123f957de74141ae02eaae510555cc7444404bffbfaae8d407e33)(16cf1b447d22766aa84945436e8d9e61):
     dependencies:
       '@ai-sdk/gateway': 4.0.69(zod@4.5.4)
       '@ai-sdk/vue': 4.0.85(vue@3.5.42(typescript@6.0.3))(zod@4.5.4)
