@@ -24,22 +24,29 @@ export declare class DevframeAgentHost implements DevframeAgentHost$1 {
   readonly events: EventEmitter<DevframeAgentHostEvents>;
   private readonly tools;
   private readonly resources;
-  private readonly providers;
+  private readonly toolProviders;
+  private readonly resourceProviders;
   private _rpcUnsubscribe;
   constructor(_: DevframeNodeContext);
   registerTool(_: AgentToolInput): AgentHandle;
   unregisterTool(_: string): boolean;
   registerToolProvider(_: AgentToolProvider): AgentToolProviderHandle;
-  registerResource(_: AgentResourceInput): AgentHandle;
+  registerResource(_: AgentResourceInput): AgentResourceHandle;
+  registerResource(_: AgentResourceTemplateInput): AgentResourceTemplateHandle;
+  registerResourceProvider(_: AgentResourceProvider): AgentResourceProviderHandle;
   unregisterResource(_: string): boolean;
   list(): AgentManifest;
   getTool(_: string): AgentTool | undefined;
   getResource(_: string): AgentResource | undefined;
-  invoke(_: string, _: unknown): Promise<unknown>;
-  read(_: string): Promise<AgentResourceContent>;
+  invoke(_: string, _: unknown, _?: AgentToolInvocationContext): Promise<unknown>;
+  read(_: string, _?: string | URL, _?: AgentResourceVariables): Promise<AgentResourceContent>;
+  listResourceInstances(_: string): Promise<AgentResourceList>;
   _dispose(): void;
   private _validateToolId;
   private _projectTool;
+  private _projectResource;
+  private _collectResourceDefinitions;
+  private _findResourceDefinition;
   private _collectProviderTools;
   private _collectRpcTools;
   private _findRpcDefinition;
@@ -342,6 +349,12 @@ export declare const diagnostics: import("nostics").Diagnostics<{
       reason: string;
     }) => string;
     readonly fix: "A service package's default export must be a factory returning a `DevframeServiceDefinition` — an object with `package`, `version`, `scope`, and a `setup` function.";
+  };
+  readonly DF0071: {
+    readonly why: (p: {
+      reason: string;
+    }) => string;
+    readonly fix: "Report finite numbers and increase `progress` on every call within one tool invocation.";
   };
   readonly DF0072: {
     readonly why: (p: {

@@ -1,7 +1,9 @@
 import type { DevframeHost } from '../../../types/host'
+import { fileURLToPath } from 'node:url'
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client'
+import { StdioClientTransport } from '@modelcontextprotocol/client/stdio'
 import { createHostContext } from 'devframe/node'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { buildMcpServerFromContext } from '../build-server'
 
 function nullHost(): DevframeHost {
@@ -19,6 +21,7 @@ async function bootPair() {
     serverName: 'test',
     serverVersion: '0.0.0-test',
     exposeSharedState: true,
+    era: 'legacy',
   })
 
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
@@ -206,6 +209,52 @@ describe('mcp adapter (in-memory)', () => {
     }
   })
 
+  it('uses a no-op progress reporter when the caller provides no token', async () => {
+    expect.assertions(1)
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.agent.registerTool({
+        id: 'quiet-progress',
+        description: 'Report progress without a listening caller.',
+        handler: async (_args, invocation) => {
+          await invocation?.reportProgress({ progress: 1, message: 'Running' })
+          return 'complete'
+        },
+      })
+
+      const result = await client.callTool({ name: 'quiet-progress', arguments: {} })
+      expect((result.content[0] as { text: string }).text).toBe('complete')
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('returns DF0071 when tool progress does not increase', async () => {
+    expect.assertions(2)
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.agent.registerTool({
+        id: 'invalid-progress',
+        description: 'Report invalid progress.',
+        handler: async (_args, invocation) => {
+          await invocation?.reportProgress({ progress: 1 })
+          await invocation?.reportProgress({ progress: 1 })
+        },
+      })
+
+      const result = await client.callTool(
+        { name: 'invalid-progress', arguments: {} },
+        { onprogress: () => {} },
+      )
+      expect(result.isError).toBe(true)
+      expect((result.content[0] as { text: string }).text).toContain('DF0071')
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
   it('lists and reads registered resources', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {
@@ -217,6 +266,7 @@ describe('mcp adapter (in-memory)', () => {
       })
 
       const listed = await client.listResources()
+      expect(client.getServerCapabilities()?.resources).toEqual({})
       const resource = listed.resources.find(r => r.uri === 'devframe://resource/build-status')
       expect(resource).toBeDefined()
       expect(resource!.name).toBe('Build status')
@@ -225,6 +275,99 @@ describe('mcp adapter (in-memory)', () => {
       const c = read.contents[0] as { text: string, mimeType?: string }
       expect(c.mimeType).toBe('application/json')
       expect(JSON.parse(c.text)).toEqual({ status: 'ok' })
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('reads resources from their explicit URI', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      const read = vi.fn((uri: URL) => ({ json: { uri: uri.toString() } }))
+      ctx.agent.registerResource({
+        id: 'current-build',
+        uri: 'https://example.com/build/current',
+        name: 'Current build',
+        read,
+      })
+
+      const listed = await client.listResources()
+      expect(listed.resources.map(resource => resource.uri)).toContain('https://example.com/build/current')
+      const result = await client.readResource({ uri: 'https://example.com/build/current' })
+      const content = result.contents[0] as { text: string }
+      expect(JSON.parse(content.text)).toEqual({ uri: 'https://example.com/build/current' })
+      expect(read).toHaveBeenCalledWith(new URL('https://example.com/build/current'))
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('lists templates and their concrete resources, then parses variables on read', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      const read = vi.fn((uri: URL, variables: Readonly<Record<string, string | string[]>>) => ({
+        json: { uri: uri.toString(), variables },
+      }))
+      ctx.agent.registerResource({
+        id: 'logs',
+        uriTemplate: 'devframe://logs/{name}',
+        name: 'Logs',
+        description: 'Logs by process name.',
+        mimeType: 'application/json',
+        list: () => ({
+          resources: [{ uri: 'devframe://logs/app', name: 'App logs', mimeType: 'application/json' }],
+        }),
+        read,
+      })
+
+      const templates = await client.listResourceTemplates()
+      expect(templates.resourceTemplates).toContainEqual({
+        uriTemplate: 'devframe://logs/{name}',
+        name: 'Logs',
+        description: 'Logs by process name.',
+        mimeType: 'application/json',
+      })
+      const resources = await client.listResources()
+      expect(resources.resources).toContainEqual({
+        uri: 'devframe://logs/app',
+        name: 'App logs',
+        mimeType: 'application/json',
+      })
+
+      const result = await client.readResource({ uri: 'devframe://logs/worker' })
+      const content = result.contents[0] as { text: string }
+      expect(JSON.parse(content.text)).toEqual({
+        uri: 'devframe://logs/worker',
+        variables: { name: 'worker' },
+      })
+      expect(read).toHaveBeenCalledWith(new URL('devframe://logs/worker'), { name: 'worker' })
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('resolves an exact resource URI before a matching template', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.agent.registerResource({
+        id: 'logs-template',
+        uriTemplate: 'devframe://logs/{name}',
+        name: 'Logs',
+        read: () => ({ text: 'template' }),
+      })
+      ctx.agent.registerResource({
+        id: 'fixed-log',
+        uri: 'devframe://logs/app',
+        name: 'App log',
+        read: () => ({ text: 'fixed' }),
+      })
+
+      const result = await client.readResource({ uri: 'devframe://logs/app' })
+      const content = result.contents[0] as { text: string }
+      expect(content.text).toBe('fixed')
     }
     finally {
       await cleanup()
@@ -317,6 +460,7 @@ describe('mcp adapter (in-memory)', () => {
       serverName: 'test',
       serverVersion: '0.0.0-test',
       exposeSharedState: false,
+      era: 'legacy',
     })
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
     await server.connect(serverTransport)
@@ -340,6 +484,7 @@ describe('mcp adapter (in-memory)', () => {
       serverName: 'test',
       serverVersion: '0.0.0-test',
       exposeSharedState: key => key.startsWith('visible:'),
+      era: 'legacy',
     })
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
     await server.connect(serverTransport)
@@ -355,6 +500,102 @@ describe('mcp adapter (in-memory)', () => {
     finally {
       await client.close()
       await server.close()
+    }
+  })
+})
+
+describe('mcp adapter (stdio)', () => {
+  it('delivers request-bound tool progress before the stdio result', async () => {
+    expect.assertions(1)
+    const fixture = fileURLToPath(new URL('./fixtures/progress-stdio-server.ts', import.meta.url))
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', 'tsx', fixture],
+      cwd: process.cwd(),
+      stderr: 'pipe',
+    })
+    const client = new Client(
+      { name: 'stdio-progress-test-client', version: '0.0.0' },
+      { versionNegotiation: { mode: 'auto' } },
+    )
+    const events: unknown[] = []
+
+    try {
+      await client.connect(transport)
+      const result = await client.callTool(
+        { name: 'build', arguments: {} },
+        { onprogress: progress => events.push({ type: 'progress', ...progress }) },
+      )
+      events.push({ type: 'result', text: (result.content[0] as { text: string }).text })
+
+      expect(events).toEqual([
+        { type: 'progress', progress: 1, total: 2, message: 'Compiling' },
+        { type: 'progress', progress: 2, total: 2, message: 'Testing' },
+        { type: 'result', text: '{\n  "status": "complete"\n}' },
+      ])
+    }
+    finally {
+      await client.close()
+    }
+  })
+
+  it('lists, reads, and receives modern updates for registered, template, and shared-state resources', async () => {
+    const fixture = fileURLToPath(new URL('./fixtures/resource-stdio-server.ts', import.meta.url))
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', 'tsx', fixture],
+      cwd: process.cwd(),
+      stderr: 'pipe',
+    })
+    const client = new Client(
+      { name: 'stdio-test-client', version: '0.0.0' },
+      { versionNegotiation: { mode: 'auto' } },
+    )
+    let subscription: Awaited<ReturnType<typeof client.listen>> | undefined
+    const updates: string[] = []
+    client.setNotificationHandler('notifications/resources/updated', (notification) => {
+      updates.push(notification.params.uri)
+    })
+
+    try {
+      await client.connect(transport)
+      expect(client.getProtocolEra()).toBe('modern')
+      const resources = await client.listResources()
+      expect(resources.resources.map(resource => resource.uri)).toEqual(expect.arrayContaining([
+        'https://example.com/status',
+        'devframe://logs/app',
+        'devframe://state/stdio%3Acounter',
+      ]))
+      const templates = await client.listResourceTemplates()
+      expect(templates.resourceTemplates.map(template => template.uriTemplate)).toEqual(['devframe://logs/{name}'])
+
+      const fixed = await client.readResource({ uri: 'https://example.com/status' })
+      expect(JSON.parse((fixed.contents[0] as { text: string }).text)).toEqual({
+        uri: 'https://example.com/status',
+        status: 'ok',
+      })
+      const template = await client.readResource({ uri: 'devframe://logs/worker' })
+      expect(JSON.parse((template.contents[0] as { text: string }).text)).toEqual({ process: 'worker' })
+
+      subscription = await client.listen({
+        resourceSubscriptions: [
+          'https://example.com/status',
+          'devframe://state/stdio%3Acounter',
+        ],
+      })
+      const increment = await client.callTool({ name: 'increment-state', arguments: {} })
+      expect(increment.isError).toBeFalsy()
+      const updatedState = await client.readResource({ uri: 'devframe://state/stdio%3Acounter' })
+      expect(JSON.parse((updatedState.contents[0] as { text: string }).text)).toEqual({ count: 1 })
+      await vi.waitFor(() => expect(updates).toEqual(expect.arrayContaining([
+        'https://example.com/status',
+        'devframe://state/stdio%3Acounter',
+      ])))
+      expect(updates).not.toContain('devframe://resource/ignored')
+    }
+    finally {
+      await subscription?.close()
+      await client.close()
     }
   })
 })

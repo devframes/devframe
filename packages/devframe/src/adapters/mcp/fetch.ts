@@ -1,7 +1,7 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import { createMcpHandler } from '@modelcontextprotocol/server'
 import { isAllowedOrigin } from 'devframe/rpc/transports/ws-server'
-import { bridgeListChanged, buildMcpServerFromContext } from './build-server'
+import { bridgeMcpUpdates, buildMcpServerFromContext } from './build-server'
 
 export interface CreateMcpFetchHandlerOptions {
   /** Name reported in the MCP handshake. */
@@ -58,18 +58,19 @@ export function createMcpFetchHandler(
 ): McpFetchHandler {
   const allowedOrigins = options.allowedOrigins
 
-  const handler = createMcpHandler(() => buildMcpServerFromContext(ctx, {
+  const handler = createMcpHandler(requestContext => buildMcpServerFromContext(ctx, {
     serverName: options.serverName,
     serverVersion: options.serverVersion,
     exposeSharedState: options.exposeSharedState,
+    era: requestContext.era,
   }))
 
-  // A single, long-lived bridge from devframe's change events onto the
-  // handler's `subscriptions/listen` bus — published once for the endpoint,
-  // not per (ephemeral, per-request) server instance.
-  const unbridge = bridgeListChanged(ctx, {
-    tools: () => { handler.notify.toolsChanged() },
-    resources: () => { handler.notify.resourcesChanged() },
+  // One bridge publishes changes for every modern listen stream. The SDK
+  // filters resource updates by each stream's `resourceSubscriptions`.
+  const unbridge = bridgeMcpUpdates(ctx, options.exposeSharedState, {
+    toolsChanged: () => { handler.notify.toolsChanged() },
+    resourcesChanged: () => { handler.notify.resourcesChanged() },
+    resourceUpdated: (uri) => { handler.notify.resourceUpdated(uri) },
   })
 
   async function handle(req: Request): Promise<Response> {

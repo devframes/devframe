@@ -8,6 +8,7 @@ export interface AgentHandle {
 export interface AgentManifest {
   tools: readonly AgentTool[];
   resources: readonly AgentResource[];
+  resourceTemplates: readonly AgentResourceTemplate[];
 }
 export interface AgentResource {
   id: string;
@@ -21,13 +22,42 @@ export interface AgentResourceContent {
   json?: unknown;
   mimeType?: string;
 }
+export interface AgentResourceHandle extends AgentHandle {
+  notifyUpdated: () => void;
+}
 export interface AgentResourceInput {
   id: string;
+  uri?: string;
   name: string;
   description?: string;
   mimeType?: string;
-  uri?: string;
-  read: () => Promise<AgentResourceContent> | AgentResourceContent;
+  read: (_: URL) => Promise<AgentResourceContent> | AgentResourceContent;
+}
+export interface AgentResourceList {
+  resources: readonly AgentResourceListItem[];
+}
+export interface AgentResourceProviderHandle extends AgentHandle {
+  notifyChanged: () => void;
+  notifyUpdated: (_: string) => void;
+}
+export interface AgentResourceTemplate {
+  id: string;
+  uriTemplate: string;
+  name: string;
+  description?: string;
+  mimeType?: string;
+}
+export interface AgentResourceTemplateHandle extends AgentHandle {
+  notifyUpdated: (_: string) => void;
+}
+export interface AgentResourceTemplateInput {
+  id: string;
+  uriTemplate: string;
+  name: string;
+  description?: string;
+  mimeType?: string;
+  list?: () => AgentResourceList | Promise<AgentResourceList>;
+  read: (_: URL, _: AgentResourceVariables) => Promise<AgentResourceContent> | AgentResourceContent;
 }
 export interface AgentTool {
   id: string;
@@ -58,7 +88,15 @@ export interface AgentToolInput {
     args: unknown[];
     description?: string;
   }[];
-  handler: (_: any) => unknown | Promise<unknown>;
+  handler: (_: any, _?: AgentToolInvocationContext) => unknown | Promise<unknown>;
+}
+export interface AgentToolInvocationContext {
+  reportProgress: (_: AgentToolProgress) => Promise<void>;
+}
+export interface AgentToolProgress {
+  progress: number;
+  total?: number;
+  message?: string;
 }
 export interface AgentToolProviderHandle extends AgentHandle {
   notifyChanged: () => void;
@@ -92,19 +130,25 @@ export interface DevframeAgentHost {
   registerTool: (_: AgentToolInput) => AgentHandle;
   unregisterTool: (_: string) => boolean;
   registerToolProvider: (_: AgentToolProvider) => AgentToolProviderHandle;
-  registerResource: (_: AgentResourceInput) => AgentHandle;
+  registerResource: {
+    (_: AgentResourceInput): AgentResourceHandle;
+    (_: AgentResourceTemplateInput): AgentResourceTemplateHandle;
+  };
+  registerResourceProvider: (_: AgentResourceProvider) => AgentResourceProviderHandle;
   unregisterResource: (_: string) => boolean;
   list: () => AgentManifest;
-  invoke: (_: string, _: unknown) => Promise<unknown>;
-  read: (_: string) => Promise<AgentResourceContent>;
+  invoke: (_: string, _: unknown, _?: AgentToolInvocationContext) => Promise<unknown>;
+  read: (_: string, _?: string | URL, _?: AgentResourceVariables) => Promise<AgentResourceContent>;
+  listResourceInstances: (_: string) => Promise<AgentResourceList>;
   getTool: (_: string) => AgentTool | undefined;
   getResource: (_: string) => AgentResource | undefined;
 }
 export interface DevframeAgentHostEvents {
   'agent:tool:registered': (_: AgentTool) => void;
   'agent:tool:unregistered': (_: string) => void;
-  'agent:resource:registered': (_: AgentResource) => void;
+  'agent:resource:registered': (_: AgentResource | AgentResourceTemplate) => void;
   'agent:resource:unregistered': (_: string) => void;
+  'agent:resource:updated': (_: string) => void;
   'agent:manifest:changed': () => void;
 }
 export interface DevframeCapabilities {
@@ -391,6 +435,7 @@ export interface EventUnsubscribe {
 export interface McpRouteOptions {
   path?: string;
   allowedOrigins?: readonly string[] | false;
+  exposeSharedState?: boolean | ((_: string) => boolean);
 }
 export interface RemoteAssets {
   package: string;
@@ -443,6 +488,7 @@ export interface RpcSharedStateHost {
   get: <T extends object = any>(_: string, _?: RpcSharedStateGetOptions<T>) => Promise<SharedState<T>>;
   keys: () => string[];
   onKeyAdded: (_: (_: string) => void) => () => void;
+  onUpdated: (_: (_: string) => void) => () => void;
   delete: (_: string) => boolean;
 }
 export interface RpcStreamingChannel<T = unknown> {
@@ -476,6 +522,10 @@ export interface ScopedBroadcastOptions<METHOD, Args extends any[]> {
 // #endregion
 
 // #region Types
+export type AgentResourceDefinition = AgentResourceInput | AgentResourceTemplateInput;
+export type AgentResourceListItem = Omit<AgentResource, 'id'>;
+export type AgentResourceProvider = () => readonly AgentResourceDefinition[];
+export type AgentResourceVariables = Readonly<Record<string, string | string[]>>;
 export type AgentToolProvider = () => readonly AgentToolInput[];
 export type DevframeDefineDiagnosticsOptions<Codes extends Record<string, DiagnosticDefinition>, Reporters extends readonly AnyDiagnosticReporter[] = []> = Parameters<typeof defineDiagnostics<Codes, Reporters>>[0];
 export type DevframeDeploymentKind = 'standalone' | 'hosted';

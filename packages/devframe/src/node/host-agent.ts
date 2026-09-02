@@ -4,9 +4,20 @@ import type {
   AgentManifest,
   AgentResource,
   AgentResourceContent,
+  AgentResourceDefinition,
+  AgentResourceHandle,
   AgentResourceInput,
+  AgentResourceList,
+  AgentResourceProvider,
+  AgentResourceProviderHandle,
+  AgentResourceTemplate,
+  AgentResourceTemplateHandle,
+  AgentResourceTemplateInput,
+  AgentResourceVariables,
   AgentTool,
   AgentToolInput,
+  AgentToolInvocationContext,
+  AgentToolProgress,
   AgentToolProvider,
   AgentToolProviderHandle,
   DevframeAgentHostEvents,
@@ -22,12 +33,58 @@ import { diagnostics } from './diagnostics'
 
 interface RegisteredTool {
   readonly tool: AgentTool
-  readonly handler?: (args: any) => unknown | Promise<unknown>
+  readonly handler?: AgentToolInput['handler']
 }
 
-interface RegisteredResource {
-  readonly resource: AgentResource
-  readonly read: () => Promise<AgentResourceContent> | AgentResourceContent
+function validateToolProgress(update: AgentToolProgress, previousProgress: number | undefined): void {
+  if (!Number.isFinite(update.progress))
+    throw diagnostics.DF0071({ reason: `\`progress\` must be finite, received ${String(update.progress)}` })
+  if (update.total !== undefined && !Number.isFinite(update.total))
+    throw diagnostics.DF0071({ reason: `\`total\` must be finite, received ${String(update.total)}` })
+  if (previousProgress !== undefined && update.progress <= previousProgress) {
+    throw diagnostics.DF0071({
+      reason: `\`progress\` must increase beyond ${previousProgress}, received ${update.progress}`,
+    })
+  }
+}
+
+async function invokeToolHandler(
+  handler: AgentToolInput['handler'],
+  args: unknown,
+  invocationContext?: AgentToolInvocationContext,
+): Promise<unknown> {
+  if (!invocationContext)
+    return await handler(args)
+
+  let active = true
+  let previousProgress: number | undefined
+  let pendingReports = Promise.resolve()
+  const context: AgentToolInvocationContext = {
+    reportProgress(update) {
+      if (!active)
+        return Promise.resolve()
+      validateToolProgress(update, previousProgress)
+      previousProgress = update.progress
+      pendingReports = pendingReports.then(() => invocationContext.reportProgress(update))
+      return pendingReports
+    },
+  }
+
+  try {
+    return await handler(args, context)
+  }
+  finally {
+    active = false
+    await pendingReports
+  }
+}
+
+function isResourceTemplate(input: AgentResourceDefinition): input is AgentResourceTemplateInput {
+  return 'uriTemplate' in input
+}
+
+function resourceUri(input: AgentResourceInput): string {
+  return input.uri ?? `devframe://resource/${encodeURIComponent(input.id)}`
 }
 
 /**
@@ -40,8 +97,9 @@ export class DevframeAgentHost implements DevframeAgentHostType {
   public readonly events: EventEmitter<DevframeAgentHostEvents> = createEventEmitter()
 
   private readonly tools = new Map<string, RegisteredTool>()
-  private readonly resources = new Map<string, RegisteredResource>()
-  private readonly providers = new Set<AgentToolProvider>()
+  private readonly resources = new Map<string, AgentResourceDefinition>()
+  private readonly toolProviders = new Set<AgentToolProvider>()
+  private readonly resourceProviders = new Set<AgentResourceProvider>()
   private _rpcUnsubscribe: (() => void) | undefined
 
   constructor(
@@ -76,39 +134,72 @@ export class DevframeAgentHost implements DevframeAgentHostType {
   }
 
   registerToolProvider(provider: AgentToolProvider): AgentToolProviderHandle {
-    this.providers.add(provider)
+    this.toolProviders.add(provider)
     this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
 
     const notifyChanged = (): void => {
-      if (this.providers.has(provider))
+      if (this.toolProviders.has(provider))
         this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
     }
     return {
       notifyChanged,
       unregister: () => {
-        if (this.providers.delete(provider))
+        if (this.toolProviders.delete(provider))
           this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
       },
     }
   }
 
-  registerResource(input: AgentResourceInput): AgentHandle {
+  registerResource(input: AgentResourceInput): AgentResourceHandle
+  registerResource(input: AgentResourceTemplateInput): AgentResourceTemplateHandle
+  registerResource(input: AgentResourceDefinition): AgentResourceHandle | AgentResourceTemplateHandle {
     if (this.resources.has(input.id))
       throw diagnostics.DF0016({ id: input.id })
 
-    const resource: AgentResource = {
-      id: input.id,
-      name: input.name,
-      description: input.description,
-      mimeType: input.mimeType ?? 'application/json',
-      uri: input.uri ?? `devframe://resource/${encodeURIComponent(input.id)}`,
+    this.resources.set(input.id, input)
+    this.events.emit(DEVFRAME_EVENTS.bus.agentResourceRegistered, this._projectResource(input))
+    this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
+
+    const isRegistered = (): boolean => this.resources.get(input.id) === input
+    const unregister = (): void => {
+      if (isRegistered())
+        this.unregisterResource(input.id)
     }
-    this.resources.set(resource.id, { resource, read: input.read })
-    this.events.emit(DEVFRAME_EVENTS.bus.agentResourceRegistered, resource)
+    if (!isResourceTemplate(input)) {
+      return {
+        notifyUpdated: () => {
+          if (isRegistered())
+            this.events.emit(DEVFRAME_EVENTS.bus.agentResourceUpdated, resourceUri(input))
+        },
+        unregister,
+      }
+    }
+    return {
+      notifyUpdated: (uri) => {
+        if (isRegistered())
+          this.events.emit(DEVFRAME_EVENTS.bus.agentResourceUpdated, uri)
+      },
+      unregister,
+    }
+  }
+
+  registerResourceProvider(provider: AgentResourceProvider): AgentResourceProviderHandle {
+    this.resourceProviders.add(provider)
     this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
 
     return {
-      unregister: () => this.unregisterResource(resource.id),
+      notifyChanged: () => {
+        if (this.resourceProviders.has(provider))
+          this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
+      },
+      notifyUpdated: (uri) => {
+        if (this.resourceProviders.has(provider))
+          this.events.emit(DEVFRAME_EVENTS.bus.agentResourceUpdated, uri)
+      },
+      unregister: () => {
+        if (this.resourceProviders.delete(provider))
+          this.events.emit(DEVFRAME_EVENTS.bus.agentManifestChanged)
+      },
     }
   }
 
@@ -124,7 +215,16 @@ export class DevframeAgentHost implements DevframeAgentHostType {
   list(): AgentManifest {
     const rpcTools = this._collectRpcTools()
     const plainTools = Array.from(this.tools.values()).map(t => t.tool)
-    const resources = Array.from(this.resources.values()).map(r => r.resource)
+    const resourceDefinitions = this._collectResourceDefinitions()
+    const resources: AgentResource[] = []
+    const resourceTemplates: AgentResourceTemplate[] = []
+    for (const input of resourceDefinitions) {
+      const resource = this._projectResource(input)
+      if (isResourceTemplate(input))
+        resourceTemplates.push(resource as AgentResourceTemplate)
+      else
+        resources.push(resource as AgentResource)
+    }
 
     // Provider tools are queried lazily; earlier sources win on id collision.
     const seen = new Set([...rpcTools, ...plainTools].map(t => t.id))
@@ -139,6 +239,7 @@ export class DevframeAgentHost implements DevframeAgentHostType {
     return {
       tools: [...rpcTools, ...plainTools, ...providerTools],
       resources,
+      resourceTemplates,
     }
   }
 
@@ -153,13 +254,18 @@ export class DevframeAgentHost implements DevframeAgentHostType {
   }
 
   getResource(id: string): AgentResource | undefined {
-    return this.resources.get(id)?.resource
+    const input = this._collectResourceDefinitions().find(candidate =>
+      !isResourceTemplate(candidate) && (candidate.id === id || resourceUri(candidate) === id),
+    )
+    if (!input || isResourceTemplate(input))
+      return undefined
+    return this._projectResource(input) as AgentResource
   }
 
-  async invoke(id: string, args: unknown): Promise<unknown> {
+  async invoke(id: string, args: unknown, invocationContext?: AgentToolInvocationContext): Promise<unknown> {
     const plain = this.tools.get(id)
     if (plain?.handler) {
-      return await plain.handler(args)
+      return await invokeToolHandler(plain.handler, args, invocationContext)
     }
 
     const rpcDef = this._findRpcDefinition(id)
@@ -174,17 +280,34 @@ export class DevframeAgentHost implements DevframeAgentHostType {
 
     const provided = this._collectProviderTools().find(t => t.tool.id === id)
     if (provided) {
-      return await provided.input.handler(args)
+      return await invokeToolHandler(provided.input.handler, args, invocationContext)
     }
 
     throw new Error(`[devframe/agent] tool "${id}" not found`)
   }
 
-  async read(id: string): Promise<AgentResourceContent> {
-    const entry = this.resources.get(id)
+  async read(
+    id: string,
+    uri?: string | URL,
+    variables: AgentResourceVariables = {},
+  ): Promise<AgentResourceContent> {
+    const entry = this._findResourceDefinition(id)
     if (!entry)
       throw new Error(`[devframe/agent] resource "${id}" not found`)
-    return await entry.read()
+
+    if (!isResourceTemplate(entry))
+      return await entry.read(uri instanceof URL ? uri : new URL(uri ?? resourceUri(entry)))
+
+    if (!uri)
+      throw new Error(`[devframe/agent] resource template "${id}" requires a URI`)
+    return await entry.read(uri instanceof URL ? uri : new URL(uri), variables)
+  }
+
+  async listResourceInstances(id: string): Promise<AgentResourceList> {
+    const entry = this._findResourceDefinition(id)
+    if (!entry || !isResourceTemplate(entry))
+      throw new Error(`[devframe/agent] resource template "${id}" not found`)
+    return await entry.list?.() ?? { resources: [] }
   }
 
   /** @internal */
@@ -224,10 +347,50 @@ export class DevframeAgentHost implements DevframeAgentHostType {
     }
   }
 
+  private _projectResource(input: AgentResourceDefinition): AgentResource | AgentResourceTemplate {
+    if (isResourceTemplate(input)) {
+      return {
+        id: input.id,
+        uriTemplate: input.uriTemplate,
+        name: input.name,
+        description: input.description,
+        mimeType: input.mimeType,
+      }
+    }
+
+    return {
+      id: input.id,
+      uri: resourceUri(input),
+      name: input.name,
+      description: input.description,
+      mimeType: input.mimeType ?? 'application/json',
+    }
+  }
+
+  private _collectResourceDefinitions(): AgentResourceDefinition[] {
+    const resources = Array.from(this.resources.values())
+    const seen = new Set(resources.map(resource => resource.id))
+
+    for (const provider of this.resourceProviders) {
+      for (const input of provider()) {
+        if (seen.has(input.id))
+          continue
+        seen.add(input.id)
+        resources.push(input)
+      }
+    }
+
+    return resources
+  }
+
+  private _findResourceDefinition(id: string): AgentResourceDefinition | undefined {
+    return this._collectResourceDefinitions().find(resource => resource.id === id)
+  }
+
   /** Query every registered provider, projecting inputs to serializable tools. */
   private _collectProviderTools(): { input: AgentToolInput, tool: AgentTool }[] {
     const out: { input: AgentToolInput, tool: AgentTool }[] = []
-    for (const provider of this.providers) {
+    for (const provider of this.toolProviders) {
       for (const input of provider())
         out.push({ input, tool: this._projectTool(input) })
     }

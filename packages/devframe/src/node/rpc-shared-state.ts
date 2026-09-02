@@ -14,12 +14,15 @@ export function createRpcSharedStateServerHost(
   const sharedState = new Map<string, SharedState<any>>()
   const stateDisposers = new Map<string, () => void>()
   const keyAddedListeners = new Set<(key: string) => void>()
+  const updatedListeners = new Set<(key: string) => void>()
 
   function registerSharedState<T extends object>(key: string, state: SharedState<T>) {
     const offs: (() => void)[] = []
 
     offs.push(
       state.on('updated', (fullState, patches, syncId) => {
+        for (const listener of updatedListeners)
+          listener(key)
         if (patches) {
           debug('patch', { key, syncId })
           rpc.broadcast({
@@ -72,6 +75,12 @@ export function createRpcSharedStateServerHost(
       keyAddedListeners.add(fn)
       return () => {
         keyAddedListeners.delete(fn)
+      }
+    },
+    onUpdated(fn) {
+      updatedListeners.add(fn)
+      return () => {
+        updatedListeners.delete(fn)
       }
     },
     delete(key) {

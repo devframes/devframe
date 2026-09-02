@@ -1,4 +1,5 @@
 import type { RpcFunctionDefinitionAnyWithContext } from '../../rpc/types'
+import type { AgentToolInvocationContext } from '../../types/agent'
 import type { DevframeNodeContext } from '../../types/context'
 import { describe, expect, it, vi } from 'vitest'
 import { DevframeAgentHost } from '../host-agent'
@@ -211,6 +212,94 @@ describe('devToolsAgentHost', () => {
       expect(result).toEqual({ echoed: { ping: true } })
     })
 
+    it('passes a request-bound invocation context to registered tool handlers', async () => {
+      expect.assertions(4)
+      const ctx = createContext()
+      const handler = vi.fn(async (_args: unknown, context?: AgentToolInvocationContext) => {
+        await context?.reportProgress({ progress: 1, total: 2, message: 'Starting' })
+        await context?.reportProgress({ progress: 2, total: 2, message: 'Done' })
+        return 'complete'
+      })
+      const reportProgress = vi.fn(async () => {})
+      ctx.agent.registerTool({
+        id: 'build',
+        description: 'Builds the project.',
+        handler,
+      })
+
+      const result = await ctx.agent.invoke('build', {}, { reportProgress })
+
+      expect(handler).toHaveBeenCalledWith({}, expect.objectContaining({ reportProgress: expect.any(Function) }))
+      expect(reportProgress).toHaveBeenNthCalledWith(1, { progress: 1, total: 2, message: 'Starting' })
+      expect(reportProgress).toHaveBeenNthCalledWith(2, { progress: 2, total: 2, message: 'Done' })
+      expect(result).toBe('complete')
+    })
+
+    it('serializes unawaited reports and suppresses reports after the handler settles', async () => {
+      expect.assertions(2)
+      const ctx = createContext()
+      const delivered: number[] = []
+      let capturedContext: AgentToolInvocationContext | undefined
+      ctx.agent.registerTool({
+        id: 'build',
+        description: 'Builds the project.',
+        handler: (_args, context) => {
+          capturedContext = context
+          void context?.reportProgress({ progress: 1 })
+          void context?.reportProgress({ progress: 2 })
+          return 'complete'
+        },
+      })
+
+      await ctx.agent.invoke('build', {}, {
+        reportProgress: async update => void delivered.push(update.progress),
+      })
+      await capturedContext!.reportProgress({ progress: 3 })
+
+      expect(delivered).toEqual([1, 2])
+      expect(capturedContext).toBeDefined()
+    })
+
+    it.each([
+      { progress: Number.NaN },
+      { progress: 1, total: Number.POSITIVE_INFINITY },
+    ])('rejects non-finite progress values with DF0071', async (update) => {
+      expect.assertions(1)
+      const ctx = createContext()
+      ctx.agent.registerTool({
+        id: 'build',
+        description: 'Builds the project.',
+        handler: async (_args, context) => {
+          await context?.reportProgress(update)
+        },
+      })
+
+      await expect(
+        ctx.agent.invoke('build', {}, { reportProgress: async () => {} }),
+      )
+        .rejects
+        .toMatchObject({ code: 'DF0071' })
+    })
+
+    it('rejects non-increasing progress with DF0071', async () => {
+      expect.assertions(1)
+      const ctx = createContext()
+      ctx.agent.registerTool({
+        id: 'build',
+        description: 'Builds the project.',
+        handler: async (_args, context) => {
+          await context?.reportProgress({ progress: 2 })
+          await context?.reportProgress({ progress: 2 })
+        },
+      })
+
+      await expect(
+        ctx.agent.invoke('build', {}, { reportProgress: async () => {} }),
+      )
+        .rejects
+        .toMatchObject({ code: 'DF0071' })
+    })
+
     it('dispatches to an RPC function via invokeLocal', async () => {
       const ctx = createContext()
       ctx.rpc.register(rpcDef({
@@ -225,6 +314,26 @@ describe('devToolsAgentHost', () => {
 
       const result = await ctx.agent.invoke('my-rpc', { arg0: 2, arg1: 3 })
       expect(result).toBe(5)
+    })
+
+    it('keeps agent-enabled RPC handler signatures unchanged', async () => {
+      expect.assertions(3)
+      const ctx = createContext()
+      const rpcHandler = vi.fn(async (value: number) => value * 2)
+      const reportProgress = vi.fn(async () => {})
+      ctx.rpc.register(rpcDef({
+        name: 'my-rpc',
+        type: 'query',
+        jsonSerializable: true,
+        agent: { description: 'rpc' },
+        setup: () => ({ handler: rpcHandler }),
+      }))
+
+      const result = await ctx.agent.invoke('my-rpc', { arg0: 3 }, { reportProgress })
+
+      expect(result).toBe(6)
+      expect(rpcHandler).toHaveBeenCalledWith(3)
+      expect(reportProgress).not.toHaveBeenCalled()
     })
 
     it('throws for unknown tool id', async () => {
@@ -250,6 +359,85 @@ describe('devToolsAgentHost', () => {
       expect(content).toEqual({ json: { hello: 'world' } })
     })
 
+    it('keeps an explicit URI and passes the requested URI to the reader', async () => {
+      const ctx = createContext()
+      const read = vi.fn((uri: URL) => ({ text: uri.toString() }))
+      ctx.agent.registerResource({
+        id: 'custom-resource',
+        uri: 'https://example.com/resources/current',
+        name: 'Custom resource',
+        read,
+      })
+
+      expect(ctx.agent.list().resources[0]!.uri).toBe('https://example.com/resources/current')
+      expect(ctx.agent.getResource('https://example.com/resources/current')?.id).toBe('custom-resource')
+      await expect(ctx.agent.read('custom-resource', 'https://example.com/resources/requested')).resolves.toEqual({
+        text: 'https://example.com/resources/requested',
+      })
+      expect(read).toHaveBeenCalledWith(new URL('https://example.com/resources/requested'))
+    })
+
+    it('registers templates, enumerates instances, and forwards variables', async () => {
+      const ctx = createContext()
+      const read = vi.fn((uri: URL, variables: Readonly<Record<string, string | string[]>>) => ({
+        json: { uri: uri.toString(), variables },
+      }))
+      ctx.agent.registerResource({
+        id: 'logs',
+        uriTemplate: 'devframe://logs/{name}',
+        name: 'Logs',
+        list: () => ({
+          resources: [{ uri: 'devframe://logs/app', name: 'App logs', mimeType: 'text/plain' }],
+        }),
+        read,
+      })
+
+      expect(ctx.agent.list().resources).toEqual([])
+      expect(ctx.agent.list().resourceTemplates).toEqual([{
+        id: 'logs',
+        uriTemplate: 'devframe://logs/{name}',
+        name: 'Logs',
+        description: undefined,
+        mimeType: undefined,
+      }])
+      await expect(ctx.agent.listResourceInstances('logs')).resolves.toEqual({
+        resources: [{ uri: 'devframe://logs/app', name: 'App logs', mimeType: 'text/plain' }],
+      })
+      await ctx.agent.read('logs', 'devframe://logs/app', { name: 'app' })
+      expect(read).toHaveBeenCalledWith(new URL('devframe://logs/app'), { name: 'app' })
+    })
+
+    it('emits updates through resource and template handles', () => {
+      const ctx = createContext()
+      const updated = vi.fn()
+      ctx.agent.events.on('agent:resource:updated', updated)
+      const fixed = ctx.agent.registerResource({
+        id: 'fixed',
+        uri: 'https://example.com/fixed',
+        name: 'Fixed',
+        read: () => ({ text: 'fixed' }),
+      })
+      const template = ctx.agent.registerResource({
+        id: 'template',
+        uriTemplate: 'https://example.com/{name}',
+        name: 'Template',
+        read: () => ({ text: 'template' }),
+      })
+
+      fixed.notifyUpdated()
+      template.notifyUpdated('https://example.com/one')
+      expect(updated).toHaveBeenNthCalledWith(1, 'https://example.com/fixed')
+      expect(updated).toHaveBeenNthCalledWith(2, 'https://example.com/one')
+
+      fixed.unregister()
+      template.unregister()
+      expect(ctx.agent.list().resources).toEqual([])
+      expect(ctx.agent.list().resourceTemplates).toEqual([])
+      fixed.notifyUpdated()
+      template.notifyUpdated('https://example.com/two')
+      expect(updated).toHaveBeenCalledTimes(2)
+    })
+
     it('throws DF0016 on duplicate id', () => {
       const ctx = createContext()
       ctx.agent.registerResource({
@@ -267,6 +455,59 @@ describe('devToolsAgentHost', () => {
     it('throws when reading unknown resource', async () => {
       const ctx = createContext()
       await expect(ctx.agent.read('ghost')).rejects.toThrow(/ghost/)
+    })
+  })
+
+  describe('registerResourceProvider()', () => {
+    it('queries providers lazily for listing and reads', async () => {
+      const ctx = createContext()
+      let value: string | undefined
+      const provider = vi.fn(() => value
+        ? [{ id: 'provided', name: 'Provided', read: () => ({ text: value }) }]
+        : [])
+      ctx.agent.registerResourceProvider(provider)
+
+      expect(ctx.agent.getResource('provided')).toBeUndefined()
+      value = 'current'
+      expect(ctx.agent.list().resources.map(resource => resource.id)).toEqual(['provided'])
+      await expect(ctx.agent.read('provided')).resolves.toEqual({ text: 'current' })
+      expect(provider).toHaveBeenCalledTimes(3)
+    })
+
+    it('keeps direct registrations and earlier providers on id collisions', async () => {
+      const ctx = createContext()
+      ctx.agent.registerResource({ id: 'direct', name: 'Direct', read: () => ({ text: 'direct' }) })
+      ctx.agent.registerResourceProvider(() => [
+        { id: 'direct', name: 'Hidden', read: () => ({ text: 'hidden' }) },
+        { id: 'provided', name: 'First', read: () => ({ text: 'first' }) },
+      ])
+      ctx.agent.registerResourceProvider(() => [
+        { id: 'provided', name: 'Second', read: () => ({ text: 'second' }) },
+      ])
+
+      expect(ctx.agent.list().resources.map(resource => resource.name)).toEqual(['Direct', 'First'])
+      await expect(ctx.agent.read('direct')).resolves.toEqual({ text: 'direct' })
+      await expect(ctx.agent.read('provided')).resolves.toEqual({ text: 'first' })
+    })
+
+    it('notifies membership and content changes only while registered', () => {
+      const ctx = createContext()
+      const manifestChanged = vi.fn()
+      const resourceUpdated = vi.fn()
+      const handle = ctx.agent.registerResourceProvider(() => [])
+      ctx.agent.events.on('agent:manifest:changed', manifestChanged)
+      ctx.agent.events.on('agent:resource:updated', resourceUpdated)
+
+      handle.notifyChanged()
+      handle.notifyUpdated('devframe://resource/provided')
+      expect(manifestChanged).toHaveBeenCalledOnce()
+      expect(resourceUpdated).toHaveBeenCalledWith('devframe://resource/provided')
+
+      handle.unregister()
+      handle.notifyChanged()
+      handle.notifyUpdated('devframe://resource/provided')
+      expect(manifestChanged).toHaveBeenCalledTimes(2)
+      expect(resourceUpdated).toHaveBeenCalledOnce()
     })
   })
 
@@ -328,6 +569,25 @@ describe('devToolsAgentHost', () => {
 
       await expect(ctx.agent.invoke('derived:tool', { a: 1 })).resolves.toEqual({ a: 1 })
       expect(handler).toHaveBeenCalledWith({ a: 1 })
+    })
+
+    it('passes the invocation context to provider tool handlers', async () => {
+      expect.assertions(2)
+      const ctx = createContext()
+      const handler = vi.fn(async (_args: unknown, context?: AgentToolInvocationContext) => {
+        await context?.reportProgress({ progress: 1, message: 'Provided' })
+      })
+      const reportProgress = vi.fn(async () => {})
+      ctx.agent.registerToolProvider(() => [{
+        id: 'derived:tool',
+        description: 'Derived.',
+        handler,
+      }])
+
+      await ctx.agent.invoke('derived:tool', {}, { reportProgress })
+
+      expect(handler).toHaveBeenCalledWith({}, expect.objectContaining({ reportProgress: expect.any(Function) }))
+      expect(reportProgress).toHaveBeenCalledWith({ progress: 1, message: 'Provided' })
     })
 
     it('earlier sources win on id collision', () => {

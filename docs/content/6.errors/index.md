@@ -78,6 +78,7 @@ Emitted by `devframe` — the framework-neutral host, RPC, streaming, assets, se
 | [DF0068](/errors/DF0068) | error | Required Service Version Range Not Satisfied |
 | [DF0069](/errors/DF0069) | warn | Service Version Range Not Satisfied |
 | [DF0070](/errors/DF0070) | error | Invalid Service |
+| [DF0071](/errors/DF0071) | error | Invalid Agent Tool Progress |
 | [DF0072](/errors/DF0072) | warn | Snapshot Names Unknown RPC Method |
 | [DF0073](/errors/DF0073) | error | JSON-Render Spec Does Not Match Its Schema |
 | [DF0074](/errors/DF0074) | error | JSON-Render Schema Is Asynchronous |
