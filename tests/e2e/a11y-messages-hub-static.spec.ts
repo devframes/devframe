@@ -34,6 +34,32 @@ test.describe('a11y-messages playground (static hub build)', () => {
     await expect(page.locator('[data-df-a11y-overlay]')).toContainText('image-alt')
   })
 
+  test('keeps the a11y summary controls above scrolled violations', async ({ page }) => {
+    await page.setViewportSize({ width: 1_000, height: 360 })
+    const panel = page.frameLocator('iframe[title="A11y Inspector"]')
+
+    await expect(panel.getByRole('checkbox', { name: /image-alt/ })).toBeVisible()
+    const scrollArea = panel.locator('#a11y-scroll')
+    const summary = scrollArea.locator(':scope > div').first()
+    await scrollArea.evaluate(element => element.scrollTo({ top: element.scrollHeight }))
+
+    expect(await scrollArea.evaluate(element => element.scrollTop)).toBeGreaterThan(0)
+    expect(await summary.locator('button').evaluateAll(buttons => buttons.flatMap((button) => {
+      const bounds = button.getBoundingClientRect()
+      const hitTarget = document.elementFromPoint(
+        bounds.left + bounds.width / 2,
+        bounds.top + bounds.height / 2,
+      )
+      return hitTarget != null && button.contains(hitTarget)
+        ? []
+        : [button.getAttribute('aria-label') ?? button.title ?? button.textContent?.trim()]
+    }))).toEqual([])
+
+    const critical = panel.getByRole('button', { name: /Critical issues/ })
+    await critical.click()
+    await expect(critical).toHaveAttribute('aria-pressed', 'true')
+  })
+
   test('messages panel renders the baked feed; its activate action switches docks over the BroadcastChannel', async ({ page }) => {
     await page.click('button[data-dock-id="devframes_plugin_messages"]')
     const panel = page.frameLocator('iframe[title="Messages"]')
