@@ -25,6 +25,8 @@ export declare function createA11yDevframe(_?: A11yDevframeOptions): DevframeDef
 // #region Variables
 /** @deprecated */
 export declare const a11yAgentBundlePath: string;
+export declare const a11yClientScriptBundlePath: string;
+/** @deprecated */
 export declare const a11yPageScriptBundlePath: string;
 // #endregion
 

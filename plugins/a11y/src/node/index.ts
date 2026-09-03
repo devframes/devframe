@@ -12,26 +12,29 @@ const BASE_PATH = '/__devframes_plugin_a11y/'
 // package, served on demand through devframe's remote-assets back-proxy. The
 // definition's `importMetaUrl` (below) supplies the default `resolveFrom`, so a
 // locally installed copy (a workspace link here) is served with zero network.
-// The page-script bundle (`dist/client-script/page-script`, below) stays here.
+// The client-script bundle (`dist/client-script`, below) stays here.
 const distDir: RemoteAssets = {
   package: `${pkg.name}--assets`,
   version: pkg.version,
 }
 
 /**
- * Absolute path to the built **page script** module (`dist/client-script/page-script/index.mjs`),
- * the dock **client script** the client runtime imports into the host page to
- * scan it (its default export boots the page script; importing it does too).
+ * Absolute path to the built **client script** module (`dist/client-script/index.mjs`),
+ * the dock client script the client runtime imports into the host page to scan
+ * it (its default export boots the script; importing it does too).
  *
  * The definition already declares this as its dock `clientScript`, so a hub
  * serves it with no host wiring. Exported for hosts that mount the module
  * themselves (e.g. via `/@fs/` under Vite). Requires the built bundle
  * (`pnpm -C plugins/a11y build`).
  */
-export const a11yPageScriptBundlePath: string = fileURLToPath(new URL('../../dist/client-script/page-script/index.mjs', import.meta.url))
+export const a11yClientScriptBundlePath: string = fileURLToPath(new URL('../../dist/client-script/index.mjs', import.meta.url))
 
-/** @deprecated Renamed; use {@link a11yPageScriptBundlePath}. */
-export const a11yAgentBundlePath: string = a11yPageScriptBundlePath
+/** @deprecated Renamed; use {@link a11yClientScriptBundlePath}. */
+export const a11yPageScriptBundlePath: string = a11yClientScriptBundlePath
+
+/** @deprecated Renamed; use {@link a11yClientScriptBundlePath}. */
+export const a11yAgentBundlePath: string = a11yClientScriptBundlePath
 
 export interface A11yDevframeOptions {
   /** Override the devframe id (and the default CLI command / mount path). */
@@ -93,7 +96,7 @@ export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeD
     /** Declare the page script by path; the hub serves it with no host wiring. */
     dock: {
       category: '~builtin',
-      clientScript: { importFrom: a11yPageScriptBundlePath },
+      clientScript: { importFrom: a11yClientScriptBundlePath },
     },
     cli: {
       command: id,

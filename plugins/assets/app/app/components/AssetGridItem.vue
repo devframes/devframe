@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AssetInfo } from '@devframes/plugin-assets/client-script'
+import type { AssetInfo } from '../connect'
 import FormCheckbox from '@antfu/design/components/Form/FormCheckbox.vue'
 import AssetPreview from './AssetPreview.vue'
 

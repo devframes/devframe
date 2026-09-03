@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RpcFunctionInfo } from '@devframes/plugin-inspect/client-script'
+import type { RpcFunctionInfo } from '../connect'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { computed, ref } from 'vue'
 import FunctionName from './FunctionName.vue'

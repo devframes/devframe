@@ -1,7 +1,7 @@
-import type { OgSnapshot } from '@devframes/plugin-og/client-script'
 import type { DevframeRpcClient } from 'devframe/client'
-import { connectOg } from '@devframes/plugin-og/client-script'
+import type { OgSnapshot } from '../connect'
 import { computed, readonly, shallowRef } from 'vue'
+import { connectOg } from '../connect'
 
 export function useOgViewer() {
   const rpc = shallowRef<DevframeRpcClient | null>(null)

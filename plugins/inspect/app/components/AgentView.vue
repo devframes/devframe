@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AgentManifest, InvokeResult } from '@devframes/plugin-inspect/client-script'
+import type { AgentManifest, InvokeResult } from '../connect'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { reactive, ref } from 'vue'

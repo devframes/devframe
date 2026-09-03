@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AssetInfo, AssetType } from '@devframes/plugin-assets/client-script'
+import type { AssetInfo, AssetType } from './connect'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import FormTextInput from '@antfu/design/components/Form/FormTextInput.vue'
 import OverlayModal from '@antfu/design/components/Overlay/OverlayModal.vue'

@@ -2,20 +2,15 @@ import type { DevframeConnectionStatus, DevframeRpcClient, DevframeRpcClientOpti
 import type { ConnectionMeta } from 'devframe/types'
 import { connectDevframe } from 'devframe/client'
 
-export { STATE_KEY } from '../../node/constants'
+export { STATE_KEY } from '../src/node/constants'
 export type { ConnectionMeta, DevframeConnectionStatus, DevframeRpcClient }
 export type {
-  CodeServerBackend,
   CodeServerConnect,
   CodeServerDetection,
-  CodeServerLogin,
-  CodeServerMode,
   CodeServerServerInfo,
   CodeServerSharedState,
-  CodeServerStartResult,
-  CodeServerStatus,
   CodeServerStatusResult,
-} from '../../node/types'
+} from '../src/node/types'
 
 /**
  * Connect to the code-server plugin's devframe backend. A thin, typed wrapper

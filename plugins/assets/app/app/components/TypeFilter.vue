@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AssetType } from '@devframes/plugin-assets/client-script'
+import type { AssetType } from '../connect'
 import { TYPE_META } from '../utils/assetType'
 
 interface TypeFilterItem {

@@ -6,7 +6,7 @@
  *
  * ```ts
  * // 1. explicit, from the target's code: pass sources inline …
- * import { exposeDataInspector } from '@devframes/plugin-data-inspector/client-script/page-script'
+ * import { exposeDataInspector } from '@devframes/plugin-data-inspector/inject'
  *
  * await exposeDataInspector({
  *   sources: [{ id: 'app:store', title: 'App store', data: () => store }],
@@ -20,7 +20,7 @@
  *
  * ```sh
  * # 2. zero code change: preload the inject entry into any Node process
- * DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/client-script/page-script server.js
+ * DEVFRAME_DATA_INSPECTOR=1 node --import @devframes/plugin-data-inspector/inject server.js
  * ```
  *
  * On that zero-code path there's nowhere to call `registerDataSource`, so the
@@ -37,7 +37,7 @@
  * treat the endpoint like a debugger port.
  */
 import type { DevframeHost, DevframeNodeContext } from 'devframe'
-import type { DataSourceEntry } from '../../node/registry/index'
+import type { DataSourceEntry } from '../node/registry/index'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { homedir } from 'node:os'
@@ -121,10 +121,10 @@ export function createGlobalThisDataSource(): DataSourceEntry {
 export async function exposeDataInspector(options: ExposeDataInspectorOptions = {}): Promise<DataInspectorEndpoint> {
   // Deferred so `--import`ing the inject entry never pulls the whole node module graph
   // into processes that don't enable it.
-  const { setupDataInspector } = await import('../../node/setup')
+  const { setupDataInspector } = await import('../node/setup')
 
   if (options.sources?.length) {
-    const { registerDataSource } = await import('../../node/registry/index')
+    const { registerDataSource } = await import('../node/registry/index')
     for (const source of options.sources)
       registerDataSource(source)
   }
@@ -212,7 +212,7 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
   }
 }
 
-// `node --import @devframes/plugin-data-inspector/client-script/page-script` path: opt in via env
+// `node --import @devframes/plugin-data-inspector/inject` path: opt in via env
 // so merely importing the module never opens a port.
 if (process.env.DEVFRAME_DATA_INSPECTOR === '1' || process.env.DEVFRAME_DATA_INSPECTOR === 'true') {
   void exposeDataInspector({

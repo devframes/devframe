@@ -36,7 +36,7 @@ export interface DataInspectorDevframeOptions {
    * Require the trust handshake on the standalone server. Enabled by
    * default; `--open` embeds the current OTP in the opened URL, so the
    * tab authenticates automatically without extra prompts. The in-process
-   * inject endpoint (`@devframes/plugin-data-inspector/client-script/page-script`) uses its own
+   * inject endpoint (`@devframes/plugin-data-inspector/inject`) uses its own
    * pre-shared-token scheme and is unaffected by this option.
    */
   auth?: boolean

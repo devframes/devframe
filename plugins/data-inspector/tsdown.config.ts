@@ -2,17 +2,11 @@ import { defineConfig } from 'tsdown'
 
 const tsconfig = '../../tsconfig.base.json'
 
-// Browser client-runtime script: imported by the hub client runtime, which
-// already has `devframe` on hand, so `devframe/client` stays external.
-const clientEntries = {
-  'client-script/client/index': 'src/client-script/client/index.ts',
-}
-
-// Page script (the inject endpoint): loaded via `node --import`. It runs in
-// the user's Node process (node:http, node:fs, devframe/node), so it builds on
-// the node platform with `devframe` external, resolved as a peer at runtime.
-const pageScriptEntries = {
-  'client-script/page-script/index': 'src/client-script/page-script/index.ts',
+// Inject endpoint: loaded via `node --import`. It runs in the user's Node
+// process (node:http, node:fs, devframe/node), so it builds on the node
+// platform with `devframe` external, resolved as a peer at runtime.
+const injectEntries = {
+  'inject/index': 'src/inject/index.ts',
 }
 
 // Node-side entries: the devframe definition (root), the setup module, the
@@ -30,19 +24,11 @@ const nodeEntries = {
 export default defineConfig([
   {
     clean: true,
-    platform: 'browser',
-    tsconfig,
-    dts: false,
-    outExtensions: () => ({ js: '.mjs' }),
-    entry: clientEntries,
-  },
-  {
-    clean: false,
     platform: 'node',
     tsconfig,
     dts: false,
     outExtensions: () => ({ js: '.mjs' }),
-    entry: pageScriptEntries,
+    entry: injectEntries,
   },
   {
     clean: false,
@@ -55,7 +41,7 @@ export default defineConfig([
   // chunks, so declarations always inline and the emitted .d.mts files are
   // byte-deterministic (a combined graph let rolldown hoist entry contents
   // into shared chunks nondeterministically, flaking the tsnapi snapshots).
-  ...Object.entries({ ...clientEntries, ...pageScriptEntries, ...nodeEntries }).map(([name, source]) => ({
+  ...Object.entries({ ...injectEntries, ...nodeEntries }).map(([name, source]) => ({
     clean: false,
     platform: 'neutral' as const,
     tsconfig,

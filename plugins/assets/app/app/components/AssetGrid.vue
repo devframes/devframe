@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AssetInfo } from '@devframes/plugin-assets/client-script'
+import type { AssetInfo } from '../connect'
 import { computed } from 'vue'
 import { groupByFolder } from '../utils/tree'
 import AssetGridItem from './AssetGridItem.vue'

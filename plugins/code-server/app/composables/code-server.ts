@@ -4,9 +4,9 @@ import type {
   CodeServerServerInfo,
   CodeServerSharedState,
   CodeServerStatusResult,
-} from '@devframes/plugin-code-server/client-script'
-import { STATE_KEY } from '@devframes/plugin-code-server/client-script'
+} from '../connect'
 import { computed, onScopeDispose, reactive, ref, shallowRef } from 'vue'
+import { STATE_KEY } from '../connect'
 import { useRpc } from './rpc'
 
 /** Discrete UI phases, one per launcher story. */

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { InvokeResult, RpcFunctionInfo } from '@devframes/plugin-inspect/client-script'
+import type { InvokeResult, RpcFunctionInfo } from '../connect'
 import { computed, reactive, ref } from 'vue'
 import FunctionRow from './FunctionRow.vue'
 

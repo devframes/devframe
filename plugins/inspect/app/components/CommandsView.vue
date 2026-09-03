@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DevframeInspectCommandInfo, InvokeResult } from '@devframes/plugin-inspect/client-script'
+import type { DevframeInspectCommandInfo, InvokeResult } from '../connect'
 import { computed, reactive, ref } from 'vue'
 import CommandRow from './CommandRow.vue'
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { CodeServerDetection, CodeServerServerInfo } from '@devframes/plugin-code-server/client-script'
 import type { CodeServerPhase } from '../composables/code-server'
+import type { CodeServerDetection, CodeServerServerInfo } from '../connect'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import FeedbackSpinner from '@antfu/design/components/Feedback/FeedbackSpinner.vue'
 import { computed, ref } from 'vue'

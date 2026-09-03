@@ -1,6 +1,6 @@
-import type { ScanReport, Violation, ViolationNode } from '../../shared/protocol.ts'
+import type { ScanReport, Violation, ViolationNode } from '../shared/protocol.ts'
 import axe from 'axe-core'
-import { A11Y_NODE_ATTR, DEFAULT_AXE_TAGS, emptyCounts, IMPACT_ORDER } from '../../shared/protocol.ts'
+import { A11Y_NODE_ATTR, DEFAULT_AXE_TAGS, emptyCounts, IMPACT_ORDER } from '../shared/protocol.ts'
 
 const IMPACTS = new Set<string>(IMPACT_ORDER)
 let counter = 0

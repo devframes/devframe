@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DevframeInspectInstanceInfo } from '@devframes/plugin-inspect/client-script'
+import type { DevframeInspectInstanceInfo } from '../connect'
 import { onMounted, shallowRef } from 'vue'
 import { useRefreshProvider } from '../composables/refresh'
 import { useRpc } from '../composables/rpc'

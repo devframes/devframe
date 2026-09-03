@@ -1,5 +1,5 @@
-import type { CodeServerDetection } from '@devframes/plugin-code-server/client-script'
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import type { CodeServerDetection } from '../connect'
 import LauncherView from './LauncherView.vue'
 
 const localCodeServer: CodeServerDetection = {

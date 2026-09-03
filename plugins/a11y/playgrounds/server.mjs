@@ -35,7 +35,7 @@ const ROOT = resolve(HERE, '..')
 const devframe = createA11yDevframe()
 const mode = process.argv[2] === 'build' ? 'build' : 'dev'
 const basePath = devframe.basePath
-const injectDir = resolve(ROOT, 'dist/client-script/page-script')
+const injectDir = resolve(ROOT, 'dist/client-script')
 const panelDir = mode === 'build' ? resolve(ROOT, 'dist/static') : resolve(ROOT, 'assets-pkg/dist')
 
 function requireBuilt(file, hint) {

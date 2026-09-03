@@ -1,6 +1,6 @@
-import type { DevframeConnectionStatus, DevframeRpcClient } from '@devframes/plugin-inspect/client-script'
-import { connectInspect } from '@devframes/plugin-inspect/client-script'
+import type { DevframeConnectionStatus, DevframeRpcClient } from '../connect'
 import { reactive, shallowRef } from 'vue'
+import { connectInspect } from '../connect'
 import { addHistoryRecord } from './history'
 
 export const connection = reactive<{

@@ -1,6 +1,6 @@
-import type { ConnectionMeta, DevframeConnectionStatus, DevframeRpcClient } from '@devframes/plugin-code-server/client-script'
-import { connectCodeServer } from '@devframes/plugin-code-server/client-script'
+import type { ConnectionMeta, DevframeConnectionStatus, DevframeRpcClient } from '../connect'
 import { reactive, shallowRef } from 'vue'
+import { connectCodeServer } from '../connect'
 
 export const connection = reactive<{
   connected: boolean

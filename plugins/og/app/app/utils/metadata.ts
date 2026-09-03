@@ -1,4 +1,4 @@
-import type { OgHeadTag, OgSnapshot } from '@devframes/plugin-og/client-script'
+import type { OgHeadTag, OgSnapshot } from '../connect'
 
 type Suggestion = 'optional' | 'recommended' | 'required'
 

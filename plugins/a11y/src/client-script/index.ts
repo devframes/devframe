@@ -15,7 +15,7 @@
  * export receives the hub's client-script context and additionally mirrors
  * each scan into the hub's messages feed.
  */
-import type { A11yChannelProtocol, PageScriptConfig, PinTarget, ScanReport } from '../../shared/protocol.ts'
+import type { A11yChannelProtocol, PageScriptConfig, PinTarget, ScanReport } from '../shared/protocol.ts'
 import type { A11yPageScriptContext } from './messages.ts'
 import type { PinInfo } from './overlay.ts'
 import { createPageScriptChannel } from 'devframe/in-page-channel'
@@ -24,7 +24,7 @@ import {
   A11Y_DEFAULT_DOCK_ID,
   A11Y_NODE_ATTR,
   A11Y_STORAGE_KEY,
-} from '../../shared/protocol.ts'
+} from '../shared/protocol.ts'
 import { createMessagesReporter } from './messages.ts'
 import { createOverlay } from './overlay.ts'
 import { resolveElement, scan } from './scanner.ts'

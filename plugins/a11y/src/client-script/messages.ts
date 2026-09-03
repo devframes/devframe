@@ -9,8 +9,8 @@
  * simply has no messages client and skips the feed. Mirrors the pattern used
  * by the terminals and code-server plugins for `ctx.terminals`.
  */
-import type { Impact, ScanReport } from '../../shared/protocol.ts'
-import { A11Y_DEFAULT_DOCK_ID } from '../../shared/protocol.ts'
+import type { Impact, ScanReport } from '../shared/protocol.ts'
+import { A11Y_DEFAULT_DOCK_ID } from '../shared/protocol.ts'
 
 /**
  * Structural slice of the hub's `DevframeMessageAction` the page script emits: a

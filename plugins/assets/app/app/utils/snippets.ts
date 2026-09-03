@@ -1,4 +1,4 @@
-import type { AssetImageMeta, AssetInfo, CodeSnippet } from '@devframes/plugin-assets/client-script'
+import type { AssetImageMeta, AssetInfo, CodeSnippet } from '../connect'
 import { fileNameOf } from './format'
 
 /**

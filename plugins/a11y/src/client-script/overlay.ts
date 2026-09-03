@@ -1,5 +1,5 @@
-import type { Impact } from '../../shared/protocol.ts'
-import { IMPACT_COLOR } from '../../shared/protocol.ts'
+import type { Impact } from '../shared/protocol.ts'
+import { IMPACT_COLOR } from '../shared/protocol.ts'
 
 const PREFERS_REDUCED_MOTION
   = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DevframeInspectCommandInfo } from '@devframes/plugin-inspect/client-script'
+import type { DevframeInspectCommandInfo } from '../connect'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { computed, ref } from 'vue'
 import JsonView from './JsonView.vue'

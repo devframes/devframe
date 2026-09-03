@@ -8,7 +8,7 @@
  * devframe-data-inspector build stats.json         # self-contained static export
  * ```
  */
-import type { InjectDiscovery } from '../client-script/page-script/index'
+import type { InjectDiscovery } from '../inject/index'
 import { existsSync, readFileSync } from 'node:fs'
 import { cp, mkdir, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
@@ -21,7 +21,7 @@ import { DEVFRAME_AUTH_TOKEN_QUERY_PARAM, DEVFRAME_CONNECTION_META_FILENAME } fr
 import { getPort } from 'devframe/utils/get-port'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import pkg from '../../package.json' with { type: 'json' }
-import { DISCOVERY_FILE } from '../client-script/page-script/index'
+import { DISCOVERY_FILE } from '../inject/index'
 import { createFileDataSource, loadDataFile } from './files'
 import { createDataInspectorDevframe } from './index'
 import { listDataSources, registerDataSource } from './registry/index'
@@ -83,7 +83,7 @@ export function createDataInspectorCli() {
         const foundPath = existsSync(discoveryPath) ? discoveryPath : existsSync(legacyPath) ? legacyPath : undefined
         if (!foundPath) {
           console.error(`No endpoint given and no discovery file at ${discoveryPath}.`)
-          console.error('Start the target with the inject endpoint (see @devframes/plugin-data-inspector/client-script/page-script) or pass a ws:// endpoint.')
+          console.error('Start the target with the inject endpoint (see @devframes/plugin-data-inspector/inject) or pass a ws:// endpoint.')
           process.exitCode = 1
           return
         }

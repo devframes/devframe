@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { OgSnapshot } from '@devframes/plugin-og/client-script'
+import type { OgSnapshot } from '../connect'
 import LayoutTabs from '@antfu/design/components/Layout/LayoutTabs.vue'
 import { computed, shallowRef } from 'vue'
 import { toSocialCard } from '../utils/metadata'

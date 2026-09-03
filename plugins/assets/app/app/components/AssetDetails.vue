@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { AssetImageMeta, AssetInfo } from '@devframes/plugin-assets/client-script'
 // Types-only: loads service-open's RPC/scope augmentations so the scoped
 // `open.rpc.call('open-in-editor', …)` below is fully typed.
 import type {} from '@devframes/service-open'
 import type { DevframeRpcClient } from 'devframe/client'
+import type { AssetImageMeta, AssetInfo } from '../connect'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
 import FormTextInput from '@antfu/design/components/Form/FormTextInput.vue'

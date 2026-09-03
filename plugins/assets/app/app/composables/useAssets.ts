@@ -1,9 +1,9 @@
-import type { AssetInfo } from '@devframes/plugin-assets/client-script'
 import type { AssetsCapabilities } from '@devframes/plugin-assets/rpc'
 import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/client'
 import type { Ref } from 'vue'
-import { connectAssets } from '@devframes/plugin-assets/client-script'
+import type { AssetInfo } from '../connect'
 import { shallowRef } from 'vue'
+import { connectAssets } from '../connect'
 
 const CHANGED_EVENT = 'devframes:plugin:assets:changed'
 

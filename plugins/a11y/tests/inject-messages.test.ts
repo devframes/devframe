@@ -1,7 +1,7 @@
-import type { HubMessageInput } from '../src/client-script/page-script/messages.ts'
+import type { HubMessageInput } from '../src/client-script/messages.ts'
 import type { ScanReport, Violation } from '../src/shared/protocol.ts'
 import { describe, expect, it } from 'vitest'
-import { createMessagesReporter } from '../src/client-script/page-script/messages.ts'
+import { createMessagesReporter } from '../src/client-script/messages.ts'
 import { emptyCounts } from '../src/shared/protocol.ts'
 
 function createStubMessages() {

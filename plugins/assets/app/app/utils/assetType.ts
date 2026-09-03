@@ -1,4 +1,4 @@
-import type { AssetType } from '@devframes/plugin-assets/client-script'
+import type { AssetType } from '../connect'
 
 /** Canonical display order for the type filter. */
 export const ASSET_TYPES: readonly AssetType[] = ['image', 'video', 'audio', 'font', 'text', 'other']

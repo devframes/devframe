@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CodeServerConnect } from '@devframes/plugin-code-server/client-script'
+import type { CodeServerConnect } from '../connect'
 import { onMounted, ref, watch } from 'vue'
 
 const props = defineProps<{

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AgentManifest, InvokeResult } from '@devframes/plugin-inspect/client-script'
+import type { AgentManifest, InvokeResult } from '../connect'
 import { onMounted, reactive, shallowRef } from 'vue'
 import { useRefreshProvider } from '../composables/refresh'
 import { isStatic, useRpc } from '../composables/rpc'

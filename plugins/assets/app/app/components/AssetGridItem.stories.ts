@@ -1,5 +1,5 @@
-import type { AssetInfo } from '@devframes/plugin-assets/client-script'
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import type { AssetInfo } from '../connect'
 import AssetGridItem from './AssetGridItem.vue'
 
 const SAMPLE_SVG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#3a6a45"/></svg>')}`

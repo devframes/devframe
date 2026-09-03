@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CodeSnippet } from '@devframes/plugin-assets/client-script'
+import type { CodeSnippet } from '../connect'
 import { computed, ref } from 'vue'
 
 const props = defineProps<{ snippets: CodeSnippet[] }>()

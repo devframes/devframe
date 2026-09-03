@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DevframeInspectInstanceInfo } from '@devframes/plugin-inspect/client-script'
+import type { DevframeInspectInstanceInfo } from '../connect'
 import { computed } from 'vue'
 
 const props = defineProps<{

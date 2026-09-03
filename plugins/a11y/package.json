@@ -23,8 +23,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./dist/node/index.mjs",
-    "./client-script": "./dist/client-script/client/index.mjs",
-    "./client-script/page-script": "./dist/client-script/page-script/index.mjs",
+    "./client-script": "./dist/client-script/index.mjs",
     "./cli": "./dist/node/cli.mjs",
     "./node": "./dist/node/setup.mjs",
     "./package.json": "./package.json"

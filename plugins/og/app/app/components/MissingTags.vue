@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { OgHeadTag } from '@devframes/plugin-og/client-script'
+import type { OgHeadTag } from '../connect'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import LayoutTabs from '@antfu/design/components/Layout/LayoutTabs.vue'
 import { computed, shallowRef } from 'vue'

@@ -217,9 +217,6 @@
       "json-render/dashboard": [
         "./examples/json-render/src/dashboard.ts"
       ],
-      "@devframes/plugin-code-server/client-script": [
-        "./plugins/code-server/src/client-script/client/index.ts"
-      ],
       "@devframes/plugin-code-server/node": [
         "./plugins/code-server/src/node/setup.ts"
       ],
@@ -277,11 +274,8 @@
       "devframe": [
         "./packages/devframe/src"
       ],
-      "@devframes/plugin-data-inspector/client-script/page-script": [
-        "./plugins/data-inspector/src/client-script/page-script/index.ts"
-      ],
-      "@devframes/plugin-data-inspector/client-script": [
-        "./plugins/data-inspector/src/client-script/client/index.ts"
+      "@devframes/plugin-data-inspector/inject": [
+        "./plugins/data-inspector/src/inject/index.ts"
       ],
       "@devframes/plugin-data-inspector/node": [
         "./plugins/data-inspector/src/node/setup.ts"
@@ -298,9 +292,6 @@
       "@devframes/plugin-data-inspector": [
         "./plugins/data-inspector/src/node/index.ts"
       ],
-      "@devframes/plugin-inspect/client-script": [
-        "./plugins/inspect/src/client-script/client/index.ts"
-      ],
       "@devframes/plugin-inspect/node": [
         "./plugins/inspect/src/node/setup.ts"
       ],
@@ -309,9 +300,6 @@
       ],
       "@devframes/plugin-inspect": [
         "./plugins/inspect/src/node/index.ts"
-      ],
-      "@devframes/plugin-og/client-script": [
-        "./plugins/og/src/client-script/client/index.ts"
       ],
       "@devframes/plugin-og/node": [
         "./plugins/og/src/node/setup.ts"
@@ -325,11 +313,8 @@
       "@devframes/plugin-og": [
         "./plugins/og/src/node/index.ts"
       ],
-      "@devframes/plugin-a11y/client-script/page-script": [
-        "./plugins/a11y/src/client-script/page-script/index.ts"
-      ],
       "@devframes/plugin-a11y/client-script": [
-        "./plugins/a11y/src/client-script/client/index.ts"
+        "./plugins/a11y/src/client-script/index.ts"
       ],
       "@devframes/plugin-a11y/node": [
         "./plugins/a11y/src/node/setup.ts"
@@ -357,9 +342,6 @@
       ],
       "@devframes/plugin-messages": [
         "./plugins/messages/src/node/index.ts"
-      ],
-      "@devframes/plugin-assets/client-script": [
-        "./plugins/assets/src/client-script/client/index.ts"
       ],
       "@devframes/plugin-assets/node": [
         "./plugins/assets/src/node/setup.ts"

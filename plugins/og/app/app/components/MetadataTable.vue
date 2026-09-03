@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { OgHeadTag } from '@devframes/plugin-og/client-script'
+import type { OgHeadTag } from '../connect'
 import { tagDefinitions } from '../utils/metadata'
 
 defineProps<{

@@ -1,4 +1,4 @@
-import type { AssetInfo } from '@devframes/plugin-assets/client-script'
+import type { AssetInfo } from '../connect'
 import { folderOf } from './format'
 
 export interface FolderGroup {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AssetInfo } from '@devframes/plugin-assets/client-script'
+import type { AssetInfo } from '../connect'
 import { onBeforeUnmount, onMounted, watch } from 'vue'
 
 const props = defineProps<{ asset: AssetInfo }>()

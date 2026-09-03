@@ -27,7 +27,7 @@
     // renames left `createDevframeClientHost` → `createDevframeClientRuntime`
     // and `AGENT_DISCOVERY_FILE` → `DISCOVERY_FILE` aliases behind.
     "packages/hub/src/client/host.ts": ["duplicates"],
-    "plugins/data-inspector/src/client-script/page-script/index.ts": ["duplicates"]
+    "plugins/data-inspector/src/inject/index.ts": ["duplicates"]
   },
   "workspaces": {
     ".": {
@@ -212,7 +212,6 @@
       "entry": [
         "src/node/{index,setup,cli}.ts",
         "src/node/rpc/index.ts",
-        "src/client-script/client/index.ts",
         "app/**/*.stories.@(ts|tsx)"
       ],
       "ignoreDependencies": ["@devframes/plugin-inspect--assets", "@devframes/vite"]
@@ -231,7 +230,6 @@
       "entry": [
         "src/node/{index,setup,cli}.ts",
         "src/node/rpc/index.ts",
-        "src/client-script/client/index.ts",
         "app/**/*.stories.@(ts|tsx)"
       ],
       "ignoreDependencies": ["@devframes/plugin-og--assets", "@devframes/vite"]
@@ -242,8 +240,7 @@
         "src/node/{index,setup,cli}.ts",
         "src/node/rpc/index.ts",
         "src/node/{engine,registry}/index.ts",
-        "src/client-script/client/index.ts",
-        "src/client-script/page-script/index.ts",
+        "src/inject/index.ts",
         "app/**/*.stories.@(ts|tsx)"
       ],
       "ignoreDependencies": ["@devframes/plugin-data-inspector--assets", "@devframes/vite"]
@@ -253,7 +250,6 @@
       "entry": [
         "src/node/{index,setup,cli,constants,types,vite}.ts",
         "src/node/rpc/index.ts",
-        "src/client-script/client/index.ts",
         "app/**/*.stories.@(ts|tsx)"
       ],
       "ignoreDependencies": ["@devframes/plugin-code-server--assets"]
@@ -263,7 +259,6 @@
       "entry": [
         "src/node/{index,setup,cli,constants,types}.ts",
         "src/node/rpc/index.ts",
-        "src/client-script/client/index.ts",
         "app/**/*.stories.@(ts|tsx)"
       ],
       "ignoreDependencies": ["@devframes/plugin-assets--assets", "@devframes/vite"]
@@ -306,7 +301,7 @@
       "entry": [
         "src/node/{index,setup,cli}.ts",
         "src/node/rpc/index.ts",
-        "src/client-script/{client,page-script}/index.ts",
+        "src/client-script/index.ts",
         "app/**/*.stories.tsx"
       ],
       "ignoreDependencies": ["@devframes/plugin-a11y--assets", "@devframes/vite"]

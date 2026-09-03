@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DevframeConnectionStatus } from '@devframes/plugin-code-server/client-script'
+import type { DevframeConnectionStatus } from '../connect'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { computed } from 'vue'
 
