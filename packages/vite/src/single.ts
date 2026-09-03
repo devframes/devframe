@@ -114,8 +114,9 @@ export interface DevframeViteBridgeOptions {
   /**
    * Expose the bridge's route-based MCP server (Streamable-HTTP) at
    * `<base>__mcp` — on the Vite app's own origin — and advertise it in the
-   * bridge's `__connection.json`. Overrides `def.cli?.mcp`, `undefined`
-   * falls through to it, `false` disables the route regardless.
+   * bridge's `__connection.json`. Overrides the definition's `mcp` (top-level,
+   * then the deprecated `cli.mcp`); `undefined` falls through to it, `false`
+   * disables the route regardless.
    */
   mcp?: boolean | McpRouteOptions
 }

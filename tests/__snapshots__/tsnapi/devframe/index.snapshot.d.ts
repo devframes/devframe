@@ -148,6 +148,7 @@ export interface DevframeDefinition {
   };
   services?: DevframeServiceInput[];
   clientAssets?: StaticAssetsSource;
+  mcp?: boolean | McpRouteOptions;
   rpc?: DevframeRpcOptions;
   setup: (_: DevframeNodeContext, _?: DevframeSetupInfo) => void | Promise<void>;
   cli?: DevframeCliOptions;
@@ -390,7 +391,7 @@ export interface EventUnsubscribe {
 }
 export interface McpRouteOptions {
   path?: string;
-  authorization: McpAuthorization;
+  authorization?: McpAuthorization;
   allowedOrigins?: readonly string[] | false;
 }
 export interface RemoteAssets {

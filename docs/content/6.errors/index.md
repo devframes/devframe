@@ -92,6 +92,7 @@ Emitted by `@devframes/hub` while assembling and mounting the unified surface.
 | [DF8002](/errors/DF8002) | error | Both devframes and context Passed to initHub |
 | [DF8003](/errors/DF8003) | error | connectionMeta() Before Hub Instance Ready |
 | [DF8004](/errors/DF8004) | error | Devframe Id Is Not a Mountable URL Segment |
+| [DF8005](/errors/DF8005) | warning | Devframe MCP Ignored While Hub MCP Is Off |
 
 ## Hub — docks & mounting (DF81xx)
 

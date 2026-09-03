@@ -12,13 +12,14 @@ export interface CreateMcpFetchHandlerOptions {
   /** Expose shared-state keys as MCP resources — see `buildMcpServerFromContext`. */
   exposeSharedState: boolean | ((key: string) => boolean)
   /**
-   * The endpoint's identity policy, checked **after** the origin gate: a
-   * bearer token string (matched in constant time against
+   * Optional identity check, layered on top of the origin gate and checked
+   * **after** it: a bearer token string (matched in constant time against
    * `Authorization: Bearer <token>`), a `(request) => boolean` callback, or
-   * `false` for an origin-only opt-out. A callback governs identity only and
-   * cannot relax the origin gate. See {@link McpAuthorization}.
+   * `false` (the default) for origin-only, trusting same-machine callers. A
+   * callback governs identity only and cannot relax the origin gate. See
+   * {@link McpAuthorization}.
    */
-  authorization: McpAuthorization
+  authorization?: McpAuthorization
   /**
    * Origin allow-list beyond the loopback default. `false` disables the
    * origin gate entirely. Default: loopback-only.
@@ -86,13 +87,14 @@ export interface McpFetchHandler {
  * SDK's default stateless legacy path. `list_changed` events reach modern
  * `subscriptions/listen` streams through the handler's `notify` bus.
  *
- * Two independent gates guard every request. First the origin gate:
- * loopback-default DNS-rebinding protection that — unlike the WS upgrade's
- * `isAllowedOrigin` — also rejects `Origin`-less requests, so a route-based
- * endpoint isn't reachable by an arbitrary local process (a disallowed origin
- * gets `403`). Then the identity gate ({@link CreateMcpFetchHandlerOptions.authorization}):
- * a bearer/callback check that proves *who* is calling, since a native client
- * can spoof any `Origin` (a missing/invalid credential gets `401` with a
+ * The origin gate guards every request: loopback-default DNS-rebinding
+ * protection that — unlike the WS upgrade's `isAllowedOrigin` — also rejects
+ * `Origin`-less requests, so a route-based endpoint isn't reachable by a
+ * browser or a remote host (a disallowed origin gets `403`). It trusts
+ * same-machine callers by default. When that isn't your trust boundary, add
+ * an optional identity gate ({@link CreateMcpFetchHandlerOptions.authorization}),
+ * checked after the origin gate: a bearer/callback check that proves *who* is
+ * calling (a missing/invalid credential gets `401` with a
  * `WWW-Authenticate: Bearer` challenge).
  */
 export function createMcpFetchHandler(
@@ -100,7 +102,9 @@ export function createMcpFetchHandler(
   options: CreateMcpFetchHandlerOptions,
 ): McpFetchHandler {
   const allowedOrigins = options.allowedOrigins
-  const authorization = options.authorization
+  // Origin-only by default: trust same-machine callers unless a bearer/callback
+  // identity check is configured.
+  const authorization = options.authorization ?? false
 
   const handler = createMcpHandler(() => buildMcpServerFromContext(ctx, {
     serverName: options.serverName,

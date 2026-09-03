@@ -50,11 +50,9 @@ export interface NextDevframeHubOptions {
   /** The hub's single auth gate. Gates by default; `false` opts out. */
   auth?: InitHubOptions['auth']
   /**
-   * Expose the aggregate MCP endpoint at `<base>__mcp`. Disabled by default —
-   * the endpoint exposes privileged agent tools, so opt in with an explicit
-   * authorization policy: `mcp: true` reads the bearer from
-   * `DEVFRAME_MCP_AUTH_TOKEN`, or pass an object with an explicit
-   * `authorization`.
+   * Expose the aggregate MCP endpoint at `<base>__mcp`. Disabled by default;
+   * `true` mounts it with the loopback origin gate (trusting same-machine
+   * callers), or pass an object to opt into an `authorization` identity check.
    */
   mcp?: InitHubOptions['mcp']
   /** Public origin the Next app is reachable at. Default: derived from `PORT`. */
@@ -73,8 +71,8 @@ export interface NextDevframeHubOptions {
  * Build a devframes-hub for a Next.js App Router app: one `initHub()` call
  * mounting every devframe under `<base><id>/` behind one web-standard
  * `handler`, with the RPC socket on a side-car (Next routes can't accept WS
- * upgrades) and the aggregate MCP route opt-in (pass `mcp` with an explicit
- * authorization policy to enable it). The UI defaults to
+ * upgrades) and the aggregate MCP route opt-in (pass `mcp` to enable it). The
+ * UI defaults to
  * `@devframes/hub-ui`'s `createUi()`, loaded lazily via a bundler-ignored
  * dynamic `import()` so its asset lookups resolve at request time; pass `ui`
  * to swap it or `ui: false` for a headless hub.

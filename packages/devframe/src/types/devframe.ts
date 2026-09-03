@@ -85,18 +85,19 @@ export interface DevframeSseOptions {
 }
 
 /**
- * The identity policy the route-based MCP endpoint enforces once a request
- * clears the origin gate. `Origin` proves nothing about *who* is calling — any
- * native client can send any `Origin` — so this is the endpoint's actual
- * authentication, kept independent of the origin/DNS-rebinding check:
+ * An **optional** identity check layered on top of the origin gate. The
+ * route-based MCP endpoint trusts same-machine callers by default (the
+ * loopback origin gate is enough), so this is opt-in hardening for the cases
+ * where a same-machine process is not a trust boundary — a LAN/tunnel origin,
+ * a shared/CI box, or a destructive tool surface:
  *
  * - a non-empty **bearer token string** — the request must carry
- *   `Authorization: Bearer <token>`, compared in constant time;
+ *   `Authorization: Bearer <token>`, compared in constant time. Back it with
+ *   an environment variable rather than a literal;
  * - a **callback** `(request) => boolean | Promise<boolean>` — a custom
  *   identity check (validate a signed header, an mTLS-derived claim, …). It
  *   only governs identity and cannot relax the origin gate;
- * - `false` — an explicit **origin-only opt-out** for a loopback-bound local
- *   tool that owns its trust boundary another way. Use it sparingly.
+ * - `false` — the default: **origin-only**, trusting same-machine callers.
  */
 export type McpAuthorization
   = | string
@@ -105,7 +106,7 @@ export type McpAuthorization
 
 /**
  * Configuration for the route-based MCP server mounted alongside the dev
- * server (opt-in via {@link DevframeCliOptions.mcp}). The endpoint speaks
+ * server (opt-in via {@link DevframeDefinition.mcp}). The endpoint speaks
  * the MCP Streamable-HTTP transport over the same origin as the SPA,
  * exposing the definition's `ctx.agent` tools + shared-state resources to
  * external MCP clients connected to the *running* server.
@@ -117,17 +118,15 @@ export interface McpRouteOptions {
    */
   path?: string
   /**
-   * The endpoint's identity policy — **required** for an object config, since
-   * the route grants access to privileged agent tools. See
-   * {@link McpAuthorization} for the accepted forms (bearer token, callback,
-   * or explicit `false` for an origin-only local opt-out). The `mcp: true`
-   * shorthand reads its bearer from the `DEVFRAME_MCP_AUTH_TOKEN` environment
-   * variable instead of this field.
-   *
-   * This is checked **after** the origin gate below — identity and
-   * origin/DNS-rebinding protection are separate defenses.
+   * Optional identity check, layered on top of the origin gate and checked
+   * **after** it. Defaults to origin-only (`false`) — the route trusts
+   * same-machine callers, since the loopback origin gate already keeps
+   * arbitrary remote/browser callers out. Set a bearer token or a callback to
+   * harden the route when a same-machine process is not your trust boundary
+   * (LAN/tunnel origin, shared/CI host, destructive tools). See
+   * {@link McpAuthorization}.
    */
-  authorization: McpAuthorization
+  authorization?: McpAuthorization
   /**
    * Extra `Origin` header values to accept beyond the loopback default
    * (`localhost`/`127.0.0.1`/`::1` and any `Origin`-less native client).
@@ -138,8 +137,9 @@ export interface McpRouteOptions {
    * This is the endpoint's DNS-rebinding protection — the shared
    * `isAllowedOrigin` gate the WS upgrade already uses, applied as external
    * middleware (the approach the MCP SDK now recommends over its own
-   * deprecated `allowedHosts`/`allowedOrigins` transport flags). It hardens
-   * the request; {@link McpRouteOptions.authorization} proves identity.
+   * deprecated `allowedHosts`/`allowedOrigins` transport flags). When you
+   * widen it past loopback, layer on {@link McpRouteOptions.authorization} to
+   * prove identity too.
    */
   allowedOrigins?: readonly string[] | false
 }
@@ -184,20 +184,11 @@ export interface DevframeCliOptions {
    */
   auth?: boolean | DevframeAuthHandler
   /**
-   * Expose a route-based MCP server alongside the dev server, speaking the
-   * MCP Streamable-HTTP transport at `/__mcp` (relative to the base path).
-   * It surfaces the same `ctx.agent` tools + shared-state resources as the
-   * stdio `mcp` command, but against the live, running server.
+   * Expose a route-based MCP server alongside the dev server.
    *
-   * - `false` / omitted (default) — no MCP route is mounted.
-   * - `true` — mount at the default `__mcp` route, requiring the bearer token
-   *   read from the `DEVFRAME_MCP_AUTH_TOKEN` environment variable (startup
-   *   fails with `DF0077` when it is missing/empty, so the route is never
-   *   mounted unauthenticated).
-   * - {@link McpRouteOptions} — customise the route path / allowed origins,
-   *   with an explicit {@link McpAuthorization} policy (required).
-   *
-   * The `--mcp` / `--no-mcp` CLI flags override this per run.
+   * @deprecated Moved to the top-level {@link DevframeDefinition.mcp}. Set
+   * `mcp` on the definition instead. This field is still read as a fallback
+   * when the top-level `mcp` is unset, so existing definitions keep working.
    */
   mcp?: boolean | McpRouteOptions
   /**
@@ -425,6 +416,22 @@ export interface DevframeDefinition {
    * {@link DevframeCliOptions.distDir} is read as a fallback.
    */
   clientAssets?: StaticAssetsSource
+  /**
+   * Expose a route-based MCP server alongside the running dev server, speaking
+   * the MCP Streamable-HTTP transport at `/__mcp` (relative to the base path).
+   * It surfaces the same `ctx.agent` tools + shared-state resources as the
+   * stdio `mcp` command, but against the live server.
+   *
+   * - `false` / omitted (default) — no MCP route is mounted.
+   * - `true` — mount at the default `__mcp` route with the loopback origin
+   *   gate (trusting same-machine callers).
+   * - {@link McpRouteOptions} — customise the route path, origin allow-list,
+   *   and opt into an {@link McpAuthorization} identity check.
+   *
+   * The `--mcp` / `--no-mcp` CLI flags override this per run. When unset, the
+   * deprecated {@link DevframeCliOptions.mcp} is read as a fallback.
+   */
+  mcp?: boolean | McpRouteOptions
   /** RPC-level configuration for this devframe (see {@link DevframeRpcOptions}). */
   rpc?: DevframeRpcOptions
   /** Server-side setup — the primary entrypoint. Runs in every runtime. */

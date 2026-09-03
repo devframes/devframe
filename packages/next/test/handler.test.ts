@@ -83,10 +83,7 @@ describe('createDevframeNextHandler', () => {
     const dist = mkdtempSync(join(tmpdir(), 'df-next-mcp-'))
     writeFileSync(join(dist, 'index.html'), '<!doctype html><title>ok</title>')
 
-    // Origin-only opt-out keeps this loopback-bound handler test free of
-    // bearer plumbing; the identity gate is covered in devframe's
-    // mcp-http.test.ts.
-    handler = createDevframeNextHandler(makeDef(dist), { host: '127.0.0.1', mcp: { authorization: false } })
+    handler = createDevframeNextHandler(makeDef(dist), { host: '127.0.0.1', mcp: true })
     await handler.ready
 
     const meta = await handler.fetch(new Request('http://localhost:3000/__test-next/__connection.json'))

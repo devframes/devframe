@@ -17,20 +17,18 @@ export default defineDevframe({
   icon: 'ph:folder-open-duotone',
   basePath: BASE_PATH,
   clientAssets: distDir,
+  // Serve the agent surface over the dev server's `/__mcp` route and register
+  // the instance for `devframe connect` discovery. This demo binds to loopback
+  // (`localhost:9876`), so `mcp: true` (the loopback origin gate, trusting
+  // same-machine callers) is enough - no bearer plumbing. A network-reachable
+  // tool would harden it with `mcp: { authorization: process.env.MY_TOKEN }`.
+  mcp: true,
   cli: {
     command: 'devframe-files-inspector',
     port: 9876,
     // Single-user localhost demo - skip the trust handshake so the served
     // SPA can call RPC without an OTP round-trip.
     auth: false,
-    // Serve the agent surface over the dev server's `/__mcp` route and
-    // register the instance for `devframe connect` discovery. This demo binds
-    // to loopback (`localhost:9876`), so it takes the origin-only opt-out
-    // (`authorization: false`) rather than requiring a bearer - the MCP route
-    // stays reachable to `devframe connect` on the same machine without token
-    // plumbing. A network-reachable tool would set a real bearer instead
-    // (e.g. `authorization: process.env.DEVFRAME_MCP_AUTH_TOKEN`).
-    mcp: { authorization: false },
   },
   setup(ctx) {
     // A scoped context auto-namespaces every registered id with `NAMESPACE:`.

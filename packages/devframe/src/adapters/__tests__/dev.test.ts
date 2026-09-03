@@ -782,9 +782,7 @@ describe('adapters/dev', () => {
         host: '127.0.0.1',
         port: 0,
         auth: false,
-        // Origin-only opt-out keeps this loopback-bound registry test free of
-        // bearer plumbing; the identity gate is covered in mcp-http.test.ts.
-        mcp: { authorization: false },
+        mcp: true,
       })
 
       const { readDevframeInstances } = await import('../../node/instance-registry')

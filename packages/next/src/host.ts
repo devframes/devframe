@@ -27,14 +27,14 @@ export interface CreateDevframeNextHostOptions {
 
 export interface DevframeNextHostMcpOptions {
   /**
-   * The endpoint's identity policy — **required**, since the route grants
-   * access to privileged agent tools. A bearer token string (matched in
-   * constant time), a `(request) => boolean` callback, or `false` for an
-   * origin-only local opt-out. Checked after the origin gate; see
-   * {@link McpAuthorization}. Back a bearer with an environment variable
-   * (e.g. `process.env.DEVFRAME_MCP_AUTH_TOKEN`) — never a literal.
+   * Optional identity check layered on the origin gate. Defaults to
+   * origin-only (`false`), trusting same-machine callers. A bearer token
+   * string (matched in constant time) or a `(request) => boolean` callback
+   * hardens the route when a same-machine process is not your trust boundary;
+   * see {@link McpAuthorization}. Back a bearer with an environment variable —
+   * never a literal.
    */
-  authorization: McpAuthorization
+  authorization?: McpAuthorization
   /** Name reported in the MCP handshake. Default: `'devframe (next)'`. */
   serverName?: string
   /** Version reported in the MCP handshake. Default: `'0.0.0'`. */
@@ -89,7 +89,7 @@ export interface DevframeNextHost {
   mountMcp: (
     ctx: DevframeNodeContext,
     path: string,
-    options: DevframeNextHostMcpOptions,
+    options?: DevframeNextHostMcpOptions,
   ) => Promise<{ dispose: () => Promise<void> }>
 }
 
@@ -173,7 +173,7 @@ export function createDevframeNextHost(
     setConnectionMeta(meta) {
       connectionMeta = meta
     },
-    async mountMcp(ctx, path, mcpOptions) {
+    async mountMcp(ctx, path, mcpOptions = {}) {
       const { createMcpFetchHandler } = await importRuntimeModule<typeof import('devframe/adapters/mcp')>('devframe/adapters/mcp')
       const handler = createMcpFetchHandler(ctx, {
         serverName: mcpOptions.serverName ?? 'devframe (next)',

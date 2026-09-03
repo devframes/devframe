@@ -63,9 +63,7 @@ describe('optional MCP peers in consumer bundles', () => {
     const hub = bundled.initHub({
       auth: false,
       base: bundled.DEVFRAMES_HUB_BASE,
-      // Origin-only opt-out: this loopback-bound bundle-load smoke test only
-      // needs the route mounted; the identity gate is covered elsewhere.
-      mcp: { authorization: false },
+      mcp: true,
       ws: false,
     })
 

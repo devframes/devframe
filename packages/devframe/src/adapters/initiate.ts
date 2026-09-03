@@ -89,8 +89,9 @@ export interface InitDevframeOptions {
   auth?: boolean | DevframeAuthHandler
   /**
    * Expose a route-based MCP server (Streamable-HTTP) at `<base>__mcp` and
-   * advertise it in `__connection.json`. Overrides `def.cli?.mcp`;
-   * `undefined` falls through to it. See {@link McpRouteOptions}.
+   * advertise it in `__connection.json`. Overrides the definition's `mcp`
+   * (top-level, then the deprecated `cli.mcp`); `undefined` falls through to
+   * it. See {@link McpRouteOptions}.
    */
   mcp?: boolean | McpRouteOptions
   /**
@@ -305,11 +306,10 @@ export function initDevframe(
       // Route-based MCP server (opt-in). Mounted before the SPA static
       // catch-all so the exact `<base>__mcp` route wins, and advertised in
       // `__connection.json`. The MCP SDK stays an optional peer — its code is
-      // only pulled in (dynamically) when the route is enabled. Resolving the
-      // config validates the authorization policy up front: a `mcp: true`
-      // shorthand with no `DEVFRAME_MCP_AUTH_TOKEN`, or an object with no
-      // `authorization`, throws `DF0077` here rather than mounting the route.
-      const mcpConfig = resolveMcpConfig(options.mcp ?? def.cli?.mcp)
+      // only pulled in (dynamically) when the route is enabled. The resolved
+      // config trusts same-machine callers by default (origin-only); an object
+      // config can opt into a bearer/callback identity check.
+      const mcpConfig = resolveMcpConfig(options.mcp ?? def.mcp ?? def.cli?.mcp)
       let mcpMeta: ConnectionMeta['mcp']
       let mcpDispose: (() => Promise<void>) | undefined
       if (mcpConfig) {

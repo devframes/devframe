@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { DOCK_RENDERERS_STATE_KEY } from '../../constants'
 import { DEVFRAMES_HUB_BASE, initHub } from '../initiate'
 
@@ -291,9 +291,7 @@ describe('initHub', () => {
 
   it('aggregate MCP: one endpoint lists tools from every mounted frame', async () => {
     const wsPort = await getPort({ port: 18230, host: '127.0.0.1' })
-    // An origin-only opt-out keeps this loopback-bound fixture free of bearer
-    // plumbing; the identity gate itself is covered in mcp-http.test.ts.
-    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, mcp: { authorization: false }, devframes: [makeFrame('alpha'), makeFrame('beta')] })
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, mcp: true, devframes: [makeFrame('alpha'), makeFrame('beta')] })
 
     try {
       await hub.ready
@@ -323,11 +321,32 @@ describe('initHub', () => {
     }
   })
 
-  it('aggregate MCP: mcp: true without DEVFRAME_MCP_AUTH_TOKEN fails startup (DF0077)', async () => {
+  it('warns (DF8005) when a mounted devframe asks for MCP but the hub MCP is off', async () => {
     const wsPort = await getPort({ port: 18235, host: '127.0.0.1' })
-    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, mcp: true, devframes: [makeFrame('alpha')] })
-    await expect(hub.ready).rejects.toThrow(/DF0077|authorization policy/)
-    await hub.close()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    // The hub has no `mcp`, but `beta` declares `mcp: true` — the hub's single
+    // aggregate route governs MCP, so beta's request is a no-op and warns.
+    const hub = initHub({
+      base: DEVFRAMES_HUB_BASE,
+      auth: false,
+      host: '127.0.0.1',
+      ws: { port: wsPort },
+      devframes: [makeFrame('alpha'), { ...makeFrame('beta'), mcp: true }],
+    })
+
+    try {
+      await hub.ready
+      expect(hub.connectionMeta().mcp).toBeUndefined()
+      const warned = warn.mock.calls.map((args: unknown[]) => String(args[0])).join('\n')
+      expect(warned).toMatch(/DF8005/)
+      expect(warned).toContain('beta')
+      // `alpha` didn't ask for MCP, so it isn't named.
+      expect(warned).not.toContain('"alpha"')
+    }
+    finally {
+      warn.mockRestore()
+      await hub.close()
+    }
   })
 
   it('single hub Auth: one gate covers every frame on the shared socket', async () => {

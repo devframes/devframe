@@ -217,11 +217,9 @@ export async function nextDevframeHub(
     // for a bearer token. See `docs/content/1.guide/13.security.md`.
     // The aggregate MCP endpoint at `/__devframes/__mcp` - the hub's agent
     // surface (agent-flagged commands, plugin tools, `devframe:state:read`)
-    // over the same catch-all route as the SPAs. `mcp: true` is the
-    // environment-backed policy: it reads the required bearer from
-    // `DEVFRAME_MCP_AUTH_TOKEN`, so startup fails (DF0077) unless that is set -
-    // the route is never mounted unauthenticated. An MCP client presents that
-    // token as `Authorization: Bearer <token>` alongside a loopback Origin.
+    // over the same catch-all route as the SPAs. `mcp: true` mounts it with
+    // the loopback origin gate (trusting same-machine callers); harden it with
+    // `mcp: { authorization }` when the app is reachable beyond localhost.
     mcp: true,
     // This host renders its own React UI in `app/page.tsx`, so skip the
     // default `@devframes/hub-ui` standalone/embedded slot.

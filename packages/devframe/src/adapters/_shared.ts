@@ -1,10 +1,8 @@
 import type { ConnectionMeta } from '../types/context'
 import type { DevframeDefinition, DevframeDeploymentKind, McpAuthorization, McpRouteOptions } from '../types/devframe'
-import process from 'node:process'
 import { getPort } from 'get-port-please'
 import { cleanDoubleSlashes, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import { DEVFRAME_MCP_ROUTE } from '../constants'
-import { diagnostics } from '../node/diagnostics'
 
 const DEFAULT_PORT = 9999
 
@@ -72,28 +70,22 @@ export interface ResolvedMcpConfig {
 }
 
 /**
- * Normalize the `cli.mcp` / `mcp` option (`boolean | McpRouteOptions`) into a
+ * Normalize the `mcp` option (`boolean | McpRouteOptions`) into a
  * fully-resolved config, or `undefined` when the MCP route is disabled.
  *
- * The route grants access to privileged agent tools, so an enabled route
- * always resolves to a concrete authorization policy. `mcp: true` is shorthand
- * for the bearer read from `DEVFRAME_MCP_AUTH_TOKEN`; an object config must
- * carry an explicit `authorization`. A missing/empty token or absent
- * `authorization` throws {@link diagnostics.DF0077} so the route is never
- * mounted unauthenticated.
+ * An enabled route trusts same-machine callers by default: the authorization
+ * resolves to origin-only (`false`) unless the object config opts into a
+ * bearer/callback identity check. An empty-string bearer is treated as no
+ * bearer (origin-only) rather than a usable credential.
  */
 export function resolveMcpConfig(mcp: boolean | McpRouteOptions | undefined): ResolvedMcpConfig | undefined {
   if (!mcp)
     return undefined
-  if (mcp === true) {
-    const token = process.env.DEVFRAME_MCP_AUTH_TOKEN
-    if (!token)
-      throw diagnostics.DF0077()
-    return { authorization: token }
-  }
-  const { authorization } = mcp
-  if (authorization === undefined || (typeof authorization === 'string' && authorization.length === 0))
-    throw diagnostics.DF0077()
+  if (mcp === true)
+    return { authorization: false }
+  const authorization = typeof mcp.authorization === 'string' && mcp.authorization.length === 0
+    ? false
+    : mcp.authorization ?? false
   return {
     ...(mcp.path !== undefined ? { path: mcp.path } : {}),
     ...(mcp.allowedOrigins !== undefined ? { allowedOrigins: mcp.allowedOrigins } : {}),
@@ -103,9 +95,9 @@ export function resolveMcpConfig(mcp: boolean | McpRouteOptions | undefined): Re
 
 /**
  * Resolve the `mcp` entry a `__connection.json` should advertise for a dev
- * server started with the given `mcp` option (falling back to `def.cli?.mcp`,
- * exactly like `createDevServer`), or `undefined` when the route is
- * disabled.
+ * server started with the given `mcp` option (falling back to `def.mcp`, then
+ * the deprecated `def.cli?.mcp`, exactly like `createDevServer`), or
+ * `undefined` when the route is disabled.
  *
  * Hosted bridges that hand-roll their connection meta pass the side-car
  * `port`: the advertised path becomes absolute (the side-car mounts at `/`)
@@ -118,7 +110,7 @@ export function resolveMcpConnectionMeta(
   mcp: boolean | McpRouteOptions | undefined,
   port?: number,
 ): ConnectionMeta['mcp'] {
-  const config = resolveMcpConfig(mcp ?? def.cli?.mcp)
+  const config = resolveMcpConfig(mcp ?? def.mcp ?? def.cli?.mcp)
   if (!config)
     return undefined
   const route = withoutLeadingSlash(config.path ?? DEVFRAME_MCP_ROUTE)

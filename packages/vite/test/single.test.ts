@@ -130,10 +130,7 @@ describe('devframeViteBridge (bridge mode mcp)', () => {
     bridge = devframeViteBridge(defineTestDef(), {
       port: wsPort,
       host,
-      // Origin-only opt-out: this loopback-bound test dials the MCP route
-      // directly with a loopback Origin; the identity gate is covered in
-      // devframe's own mcp-http.test.ts.
-      mcp: { authorization: false },
+      mcp: true,
       // The bridge gates by default; opt out here so this test can dial
       // the WS side-car and MCP route directly.
       auth: false,

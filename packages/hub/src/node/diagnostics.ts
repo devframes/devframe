@@ -28,6 +28,10 @@ export const diagnostics = defineDiagnostics({
       why: (p: { id: string }) => `Devframe id "${p.id}" is not a mountable URL segment — the hub mounts each frame at \`<base><id>/\`.`,
       fix: 'Ids become route segments, so they may only contain letters, digits, `_`, `-`, and `.` — `:` and `*` are route-pattern markers to the underlying router, and `/` would escape the segment. Set a route-safe `id` on the definition (e.g. `my_plugin` instead of `my:plugin`).',
     },
+    DF8005: {
+      why: (p: { id: string }) => `Devframe "${p.id}" requests an MCP route, but the hub's aggregate MCP is off — its tools are not exposed over MCP.`,
+      fix: 'A hub exposes one aggregate MCP endpoint over every mounted devframe, so per-devframe `mcp` settings are ignored. Enable the hub\'s own MCP (pass `mcp` to `initHub`) to surface this devframe\'s tools, or drop `mcp` from the devframe to silence this warning.',
+    },
     DF8100: {
       why: (p: { id: string }) => `Dock with id "${p.id}" is already registered`,
       fix: 'Use the `force` parameter to overwrite an existing registration.',

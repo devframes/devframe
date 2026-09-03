@@ -245,9 +245,7 @@ describe('adapters/handler', () => {
 
   it('mcp: mounts <base>__mcp and advertises it in the meta', async () => {
     const wsPort = await getPort({ port: 18140, host: '127.0.0.1' })
-    // An explicit origin-only opt-out keeps this loopback-bound fixture free of
-    // bearer plumbing; the identity gate itself is covered in mcp-http.test.ts.
-    const devtools = initDevframe(defineTestDef('handler-mcp'), { base: '/__handler-mcp/', auth: false, mcp: { authorization: false }, ws: { port: wsPort } })
+    const devtools = initDevframe(defineTestDef('handler-mcp'), { base: '/__handler-mcp/', auth: false, mcp: true, ws: { port: wsPort } })
 
     try {
       await devtools.ready
@@ -262,13 +260,6 @@ describe('adapters/handler', () => {
     finally {
       await devtools.close()
     }
-  })
-
-  it('mcp: true without DEVFRAME_MCP_AUTH_TOKEN fails startup (DF0077), route absent', async () => {
-    const wsPort = await getPort({ port: 18145, host: '127.0.0.1' })
-    const devtools = initDevframe(defineTestDef('handler-mcp-noauth'), { base: '/__handler-mcp-noauth/', auth: false, mcp: true, ws: { port: wsPort } })
-    await expect(devtools.ready).rejects.toThrow(/DF0077|authorization policy/)
-    await devtools.close()
   })
 
   it('default tier: binds nothing until the host attaches its own server', async () => {

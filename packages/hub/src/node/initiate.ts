@@ -255,10 +255,12 @@ export interface InitHubOptions {
   /**
    * Expose the **aggregate** MCP endpoint at `<base>__mcp` — one
    * Streamable-HTTP server over the shared context's whole tool registry
-   * (ids are already namespaced per plugin). Disabled by default. When
-   * enabled it requires an authorization policy: `true` reads the bearer from
-   * `DEVFRAME_MCP_AUTH_TOKEN` (startup fails with `DF0077` when it is
-   * missing/empty), an object carries an explicit {@link McpRouteOptions.authorization}.
+   * (ids are already namespaced per plugin). Disabled by default; `true`
+   * mounts it with the loopback origin gate (trusting same-machine callers),
+   * an object opts into an {@link McpRouteOptions.authorization} identity
+   * check. A mounted devframe's own `mcp` setting is ignored — the hub's
+   * aggregate route covers them all (`DF8005` warns when one asks for MCP
+   * while this is off).
    */
   mcp?: boolean | McpRouteOptions
   /**
@@ -527,6 +529,12 @@ export function initHub(options: InitHubOptions): HubInstance {
         // segment entirely.
         if (!/^[\w.-]+$/.test(def.id))
           throw diagnostics.DF8004({ id: def.id })
+        // A hub exposes one aggregate MCP route over every mounted devframe,
+        // so a devframe's own `mcp` request is only meaningful when the hub's
+        // own MCP is enabled. Warn when it isn't, rather than silently
+        // dropping the devframe's intended agent surface.
+        if (!options.mcp && (def.mcp ?? def.cli?.mcp))
+          diagnostics.DF8005({ id: def.id })
         const frameBase = withTrailingSlash(joinURL(base, def.id))
         const run = await prepareDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
         if (run)
@@ -568,10 +576,9 @@ export function initHub(options: InitHubOptions): HubInstance {
 
       // Aggregate MCP — one Streamable-HTTP endpoint over the shared
       // context's whole registry (tool ids are namespaced per plugin, and the
-      // wire-name collision policy is `createMcpFetchHandler`'s own). Resolving
-      // the config validates the authorization policy up front: `mcp: true`
-      // with no `DEVFRAME_MCP_AUTH_TOKEN`, or an object with no
-      // `authorization`, throws `DF0077` here rather than mounting the route.
+      // wire-name collision policy is `createMcpFetchHandler`'s own). The
+      // resolved config trusts same-machine callers by default (origin-only);
+      // an object config opts into a bearer/callback identity check.
       const mcpConfig = resolveMcpConfig(options.mcp)
       if (!mcpConfig)
         return { context: ctx }
