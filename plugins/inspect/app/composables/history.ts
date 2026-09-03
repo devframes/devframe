@@ -9,7 +9,9 @@ export const isRecording = ref(true)
 
 let nextId = 1
 
-export function addHistoryRecord(record: Omit<HistoryRecord, 'id'>) {
+type DistributiveOmit<T, K extends keyof any> = T extends unknown ? Omit<T, K> : never
+
+export function addHistoryRecord(record: DistributiveOmit<HistoryRecord, 'id'>) {
   if (!isRecording.value)
     return
   historyRecords.value.push({ ...record, id: nextId++ })

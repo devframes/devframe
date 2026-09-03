@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react-oxc'
 import UnoCSS from 'unocss/vite'
 
 const config: StorybookConfig = {
-  stories: ['../src/client/**/*.stories.@(ts|tsx)'],
+  stories: ['../app/**/*.stories.@(ts|tsx)'],
   addons: ['@storybook/addon-docs', '@storybook/addon-a11y'],
   framework: {
     name: '@storybook/react-vite',

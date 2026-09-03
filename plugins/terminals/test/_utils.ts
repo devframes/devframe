@@ -1,6 +1,6 @@
 import type { DevframeNodeContext } from 'devframe'
 import type { StartedServer } from 'devframe/internal'
-import type { TerminalsOptions } from '../src/types'
+import type { TerminalsOptions } from '../src/node/types'
 import process from 'node:process'
 import { createRpcStreamingClientHost } from 'devframe/client'
 import { createH3DevframeHost } from 'devframe/internal'
@@ -11,8 +11,8 @@ import { createEventEmitter } from 'devframe/utils/events'
 import { getPort } from 'devframe/utils/get-port'
 import { H3 } from 'h3'
 import { serveTestContext } from '../../../tests/helpers/serve-test-context'
-import { createTerminalsDevframe } from '../src/index'
-import { getTerminalManager } from '../src/node/index'
+import { createTerminalsDevframe } from '../src/node/index'
+import { getTerminalManager } from '../src/node/setup'
 
 export type TerminalsServer = StartedServer & {
   ctx: DevframeNodeContext

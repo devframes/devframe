@@ -21,15 +21,15 @@
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./dist/index.mjs",
+    ".": "./dist/node/index.mjs",
     "./client": "./dist/client/index.mjs",
-    "./cli": "./dist/cli.mjs",
-    "./constants": "./dist/constants.mjs",
-    "./node": "./dist/node/index.mjs",
-    "./rpc": "./dist/rpc/index.mjs",
+    "./cli": "./dist/node/cli.mjs",
+    "./constants": "./dist/node/constants.mjs",
+    "./node": "./dist/node/setup.mjs",
+    "./rpc": "./dist/node/rpc/index.mjs",
     "./package.json": "./package.json"
   },
-  "types": "./dist/index.d.mts",
+  "types": "./dist/node/index.d.mts",
   "bin": {
     "devframe-messages": "./bin.mjs"
   },
@@ -38,9 +38,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown && vite build --config src/client/vite.config.ts && vite build --config src/spa/vite.config.ts",
-    "dev": "vite --config src/spa/vite.config.ts",
+    "build": "tsdown && vite build --config app/client/vite.config.ts && vite build --config app/vite.config.ts",
+    "build:client": "vite build --config app/client/vite.config.ts",
+    "build:app": "vite build --config app/vite.config.ts",
+    "dev": "vite --config app/vite.config.ts --host",
     "watch": "tsdown --watch",
+    "play": "pnpm run build && node playgrounds/server.mjs",
     "cli:build": "node bin.mjs build --out-dir dist/static",
     "prepack": "turbo run build --filter=@devframes/plugin-messages",
     "storybook": "storybook dev -p 6006",

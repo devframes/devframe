@@ -1,6 +1,6 @@
 import type { DevframeNodeContext } from 'devframe'
 import type { StartedServer } from 'devframe/internal'
-import type { GitDevframeOptions } from '../src/index'
+import type { GitDevframeOptions } from '../src/node/index'
 import { tmpdir } from 'node:os'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { createH3DevframeHost } from 'devframe/internal'
@@ -11,7 +11,7 @@ import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import { serveTestContext } from '../../../tests/helpers/serve-test-context'
-import { createGitDevframe } from '../src/index'
+import { createGitDevframe } from '../src/node/index'
 
 export interface DashboardServer extends StartedServer {
   basePath: string

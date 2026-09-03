@@ -79,4 +79,4 @@ export function createInspectDevframe(options: InspectDevframeOptions = {}): Dev
 }
 
 export default createInspectDevframe
-export type { InvokeResult, RpcFunctionInfo } from './types'
+export type { DevframeInspectCommandInfo, InvokeResult, RpcFunctionInfo } from './types'

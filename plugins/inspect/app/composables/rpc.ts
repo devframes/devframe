@@ -7,7 +7,7 @@ export const connection = reactive<{
   connected: boolean
   status: DevframeConnectionStatus
   error: string | null
-  backend: 'websocket' | 'static' | null
+  backend: 'websocket' | 'static' | 'sse' | 'none' | null
 }>({
   connected: false,
   status: 'connecting',
@@ -18,8 +18,9 @@ export const connection = reactive<{
 const rpcRef = shallowRef<DevframeRpcClient | null>(null)
 
 function setupHistoryHooks(client: DevframeRpcClient) {
-  // Wrap outgoing calls
-  const origCall = client.call.bind(client)
+  // Wrap outgoing calls. The panel inspects arbitrary method ids as strings,
+  // so widen the bound signatures past the typed `keyof` server-function map.
+  const origCall = client.call.bind(client) as (method: string, ...args: any[]) => Promise<any>
   client.call = async (method: string, ...args: any[]) => {
     const start = Date.now()
     try {
@@ -37,7 +38,7 @@ function setupHistoryHooks(client: DevframeRpcClient) {
     }
   }
 
-  const origCallEvent = client.callEvent.bind(client)
+  const origCallEvent = client.callEvent.bind(client) as (method: string, ...args: any[]) => any
   client.callEvent = (method: string, ...args: any[]) => {
     if (!method.includes('list-functions') && !method.includes('list-state-keys') && method !== 'devframe:rpc:server-state:subscribe') {
       addHistoryRecord({ type: 'call', method, args, duration: 0, time: Date.now() })
@@ -45,9 +46,8 @@ function setupHistoryHooks(client: DevframeRpcClient) {
     return origCallEvent(method, ...args)
   }
 
-  // Hook into state updates
-  // We can patch the client definition for state updates to catch all broadcasts
-  const updatedDef = client.client.get('devframe:rpc:client-state:updated')
+  // Hook into state updates: patch the client definition to catch all broadcasts.
+  const updatedDef = client.client.definitions.get('devframe:rpc:client-state:updated')
   if (updatedDef && updatedDef.handler) {
     const origUpdated = updatedDef.handler
     updatedDef.handler = (key: string, fullState: any, syncId: string) => {
@@ -56,7 +56,7 @@ function setupHistoryHooks(client: DevframeRpcClient) {
     }
   }
 
-  const patchDef = client.client.get('devframe:rpc:client-state:patch')
+  const patchDef = client.client.definitions.get('devframe:rpc:client-state:patch')
   if (patchDef && patchDef.handler) {
     const origPatch = patchDef.handler
     patchDef.handler = (key: string, patches: any, syncId: string) => {

@@ -242,28 +242,28 @@
         "./plugins/code-server/src/node/index.ts"
       ],
       "@devframes/plugin-terminals/client": [
-        "./plugins/terminals/src/client/index.ts"
+        "./plugins/terminals/app/client/index.ts"
       ],
       "@devframes/plugin-terminals/node": [
-        "./plugins/terminals/src/node/index.ts"
+        "./plugins/terminals/src/node/setup.ts"
       ],
       "@devframes/plugin-terminals/constants": [
-        "./plugins/terminals/src/constants.ts"
+        "./plugins/terminals/src/node/constants.ts"
       ],
       "@devframes/plugin-terminals/types": [
-        "./plugins/terminals/src/types.ts"
+        "./plugins/terminals/src/node/types.ts"
       ],
       "@devframes/plugin-terminals/cli": [
-        "./plugins/terminals/src/cli.ts"
+        "./plugins/terminals/src/node/cli.ts"
       ],
       "@devframes/plugin-terminals/vite": [
-        "./plugins/terminals/src/vite.ts"
+        "./plugins/terminals/src/node/vite.ts"
       ],
       "@devframes/plugin-terminals": [
-        "./plugins/terminals/src/index.ts"
+        "./plugins/terminals/src/node/index.ts"
       ],
       "@devframes/plugin-git": [
-        "./plugins/git/src/index.ts"
+        "./plugins/git/src/node/index.ts"
       ],
       "devframe/recipes/interactive-auth": [
         "./packages/devframe/src/recipes/interactive-auth.ts"
@@ -341,25 +341,22 @@
         "./plugins/a11y/src/node/index.ts"
       ],
       "@devframes/plugin-messages/client": [
-        "./plugins/messages/src/client/index.ts"
+        "./plugins/messages/app/client/index.ts"
       ],
       "@devframes/plugin-messages/node": [
-        "./plugins/messages/src/node/index.ts"
+        "./plugins/messages/src/node/setup.ts"
       ],
       "@devframes/plugin-messages/constants": [
-        "./plugins/messages/src/constants.ts"
+        "./plugins/messages/src/node/constants.ts"
       ],
       "@devframes/plugin-messages/rpc": [
-        "./plugins/messages/src/rpc/index.ts"
+        "./plugins/messages/src/node/rpc/index.ts"
       ],
       "@devframes/plugin-messages/cli": [
-        "./plugins/messages/src/cli.ts"
-      ],
-      "@devframes/plugin-messages/vite": [
-        "./plugins/messages/src/vite.ts"
+        "./plugins/messages/src/node/cli.ts"
       ],
       "@devframes/plugin-messages": [
-        "./plugins/messages/src/index.ts"
+        "./plugins/messages/src/node/index.ts"
       ],
       "@devframes/plugin-assets/client-script": [
         "./plugins/assets/src/client-script/client/index.ts"

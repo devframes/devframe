@@ -7,6 +7,7 @@ export default createInspectDevframe
 
 // #region Other
 export { createInspectDevframe }
+export { DevframeInspectCommandInfo }
 export { InspectDevframeOptions }
 export { InvokeResult }
 export { RpcFunctionInfo }

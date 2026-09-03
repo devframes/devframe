@@ -270,12 +270,22 @@
     },
     "plugins/assets/assets-pkg": { "entry": [], "project": [] },
     "plugins/messages": {
-      "entry": ["src/{index,cli,vite,constants,types}.ts", "src/{client,node,rpc,inject,engine,registry}/index.ts"],
-      "ignoreDependencies": ["@devframes/plugin-messages--assets"]
+      "entry": [
+        "src/node/{index,setup,cli,constants}.ts",
+        "src/node/rpc/index.ts",
+        "app/client/index.ts",
+        "app/**/*.stories.@(ts|tsx)"
+      ],
+      "ignoreDependencies": ["@devframes/plugin-messages--assets", "@devframes/vite"]
     },
     "plugins/messages/assets-pkg": { "entry": [], "project": [] },
     "plugins/terminals": {
-      "entry": ["src/{index,cli,vite,constants,types}.ts", "src/{client,node,rpc,inject,engine,registry}/index.ts"],
+      "entry": [
+        "src/node/{index,setup,cli,constants,types,vite}.ts",
+        "src/node/rpc/index.ts",
+        "app/client/index.ts",
+        "app/**/*.stories.@(ts|tsx)"
+      ],
       "ignoreDependencies": ["@devframes/plugin-terminals--assets"]
     },
     "plugins/terminals/assets-pkg": { "entry": [], "project": [] },
@@ -302,12 +312,16 @@
       "ignoreDependencies": ["@devframes/plugin-a11y--assets", "@devframes/vite"]
     },
     "plugins/git": {
-      // The React client build's root sits at `src/client` (`next dev
-      // src/client`), not the workspace root, so knip's default PostCSS
-      // config glob (workspace-root `postcss.config.*`) misses it.
+      // The React client build's root sits at `app/` (`next dev app`), not the
+      // workspace root, so knip's default PostCSS config glob (workspace-root
+      // `postcss.config.*`) misses it.
       "postcss": {
-        "config": ["src/client/postcss.config.mjs"]
+        "config": ["app/postcss.config.mjs"]
       },
+      "entry": [
+        "src/node/{index,cli}.ts",
+        "app/**/*.stories.@(ts|tsx)"
+      ],
       "ignoreDependencies": ["@devframes/plugin-git--assets"]
     }
   }

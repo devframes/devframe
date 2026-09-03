@@ -4,5 +4,5 @@
     "lib": ["esnext", "dom"]
   },
   "include": ["src", "test", "tsdown.config.ts"],
-  "exclude": ["dist", "src/client", ".next", "out", "node_modules"]
+  "exclude": ["dist", "app", ".next", "out", "node_modules"]
 }

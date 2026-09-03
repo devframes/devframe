@@ -1,6 +1,7 @@
 import type { DevframeNodeContext, RpcStreamingChannel } from 'devframe'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { StreamSink } from 'devframe/utils/streaming-channel'
+import type { TerminalProcess } from './backend'
 import type {
   SpawnRequest,
   TerminalMode,
@@ -9,11 +10,11 @@ import type {
   TerminalsOptions,
   TerminalsSharedState,
   TerminalStatus,
-} from '../types'
-import type { TerminalProcess } from './backend'
+} from './types'
 import process from 'node:process'
 import { nanoid } from 'devframe/utils/nanoid'
 import { OSCInspector } from 'zigpty/osc'
+import { isPtyAvailable, spawnBackend } from './backend'
 import {
   DEFAULT_COLS,
   DEFAULT_ROWS,
@@ -22,8 +23,7 @@ import {
   PRESETS_STATE_KEY,
   SESSIONS_STATE_KEY,
   TERMINAL_STREAM_CHANNEL,
-} from '../constants'
-import { isPtyAvailable, spawnBackend } from './backend'
+} from './constants'
 import { diagnostics } from './diagnostics'
 
 interface ResolvedSpawn {
