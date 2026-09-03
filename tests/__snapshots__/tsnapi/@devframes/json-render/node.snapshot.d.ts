@@ -43,7 +43,7 @@ export declare const jsonRenderDiagnostics: Diagnostics<{
       id: string;
       reason: string;
     }) => string;
-    readonly fix: "Specs and state travel as strict JSON — remove functions, symbols, class instances, Map/Set, or circular references.";
+    readonly fix: "Specs and state travel as strict JSON, so remove functions, symbols, class instances, Map/Set, or circular references.";
   };
   readonly DF0073: {
     readonly why: (p: {
