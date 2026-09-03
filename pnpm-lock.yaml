@@ -1759,6 +1759,9 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 26.4.0
+      '@types/ws':
+        specifier: catalog:types
+        version: 8.18.1
       devframe:
         specifier: workspace:*
         version: link:../devframe
@@ -1774,6 +1777,9 @@ importers:
       vitest:
         specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+      ws:
+        specifier: catalog:deps
+        version: 8.21.3
 
   plugins/a11y:
     dependencies:

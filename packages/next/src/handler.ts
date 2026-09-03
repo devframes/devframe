@@ -27,6 +27,15 @@ export interface CreateDevframeNextHandlerOptions {
    * or a handler for a custom scheme.
    */
   auth?: InitDevframeOptions['auth']
+  /**
+   * Widen the side-car WebSocket origin check beyond devframe's
+   * loopback-only default. Reaching a remotely-accessed Next dev server
+   * (containers, Codespaces, tunnels) needs the app's own origin allowed.
+   * Pass extra origins, a `WsOriginRegistry`, or `false` to disable the
+   * check (safe when the auth gate owns the trust boundary). Forwarded
+   * verbatim to `initDevframe`.
+   */
+  allowedOrigins?: InitDevframeOptions['allowedOrigins']
   /** Origin the Next app is reachable at, for docks needing an absolute URL. */
   resolveOrigin?: () => string
   /** Override where persisted devframe state lives (defaults under the cwd / home). */
@@ -139,6 +148,7 @@ export function createDevframeNextHandler(
      */
     auth: options.auth,
     mcp: options.mcp,
+    allowedOrigins: options.allowedOrigins,
     /**
      * Next's route handlers never see WebSocket upgrades, so the RPC socket
      * lives on a side-car server (on `options.port` when pinned, otherwise

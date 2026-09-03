@@ -10,6 +10,7 @@ import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
 import { afterEach, describe, expect, it } from 'vitest'
+import { WebSocket } from 'ws'
 import { devframeVite, devframeViteBridge, devframeVitePlugin } from '../src/single'
 
 function defineTestDef(overrides: Partial<DevframeDefinition> = {}): DevframeDefinition {
@@ -240,6 +241,55 @@ describe('devframeViteBridge (auth default)', () => {
     await bridge.configureServer(vite)
 
     expect(await handshakeIsTrusted(port)).toBe(true)
+  })
+})
+
+describe('devframeViteBridge (allowedOrigins)', () => {
+  let bridge: ReturnType<typeof devframeViteBridge> | undefined
+  let vite: FakeViteServer | undefined
+
+  afterEach(async () => {
+    await bridge?.closeBundle?.()
+    bridge = undefined
+    vite?.close()
+    vite = undefined
+  })
+
+  /** Attempt a raw WS upgrade carrying a spoofed browser Origin header. */
+  async function upgradeWithOrigin(port: number, origin: string): Promise<'open' | 'closed'> {
+    return await new Promise((resolve) => {
+      const ws = new WebSocket(`ws://127.0.0.1:${port}/__ws`, { headers: { origin } })
+      ws.on('open', () => {
+        ws.close()
+        resolve('open')
+      })
+      ws.on('error', () => resolve('closed'))
+      ws.on('unexpected-response', () => resolve('closed'))
+      ws.on('close', () => resolve('closed'))
+    })
+  }
+
+  it('rejects a non-loopback origin by default (loopback-only)', async () => {
+    const port = await getPort({ port: 19760, host: '127.0.0.1' })
+    bridge = devframeViteBridge(defineTestDef(), { port, host: '127.0.0.1', auth: false })
+    vite = fakeViteServer()
+    await bridge.configureServer(vite)
+
+    expect(await upgradeWithOrigin(port, 'https://tunnel.example.dev')).toBe('closed')
+  })
+
+  it('accepts a non-loopback origin when forwarded through allowedOrigins', async () => {
+    const port = await getPort({ port: 19770, host: '127.0.0.1' })
+    bridge = devframeViteBridge(defineTestDef(), {
+      port,
+      host: '127.0.0.1',
+      auth: false,
+      allowedOrigins: ['https://tunnel.example.dev'],
+    })
+    vite = fakeViteServer()
+    await bridge.configureServer(vite)
+
+    expect(await upgradeWithOrigin(port, 'https://tunnel.example.dev')).toBe('open')
   })
 })
 

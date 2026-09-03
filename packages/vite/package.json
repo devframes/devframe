@@ -61,10 +61,12 @@
     "@devframes/hub-ui": "workspace:*",
     "@modelcontextprotocol/client": "catalog:deps",
     "@types/node": "catalog:types",
+    "@types/ws": "catalog:types",
     "devframe": "workspace:*",
     "get-port-please": "catalog:deps",
     "tsdown": "catalog:build",
     "vite": "catalog:build",
-    "vitest": "catalog:testing"
+    "vitest": "catalog:testing",
+    "ws": "catalog:deps"
   }
 }
