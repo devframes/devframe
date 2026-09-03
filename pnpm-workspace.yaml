@@ -148,7 +148,7 @@ catalogs:
     zigpty: ^0.2.1
     zod: ^4.5.4
   docs:
-    comark-docs: github:comarkdown/comark-docs
+    comark-docs: github:comarkdown/comark-docs#f97dc864b0aa702d54c600f868589b7a2c185b3a
   frontend:
     '@antfu/design': ^0.4.0
     '@discoveryjs/discovery': 1.0.0-beta.99
