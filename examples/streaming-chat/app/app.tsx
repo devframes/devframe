@@ -1,9 +1,9 @@
 import type { DevframeScopedClientContext } from 'devframe/client'
 import type { StreamReader } from 'devframe/utils/streaming-channel'
-import type { ChatHistory, ChatMessage } from '../types'
+import type { ChatHistory, ChatMessage } from '../src/node/types'
 import { connectDevframe } from 'devframe/client'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
-import { CHANNEL, HISTORY, NAMESPACE } from '../constants'
+import { CHANNEL, HISTORY, NAMESPACE } from '../src/node/constants'
 import { button, cx, input, nav, navBrand, spinner } from './design'
 
 type ChatCtx = DevframeScopedClientContext<typeof NAMESPACE>

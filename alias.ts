@@ -77,7 +77,7 @@ export const alias = {
   '@devframes/json-render-ui/hub': r('json-render-ui/src/hub.ts'),
   '@devframes/json-render-ui/spa': r('json-render-ui/src/spa.ts'),
   '@devframes/json-render-ui': r('json-render-ui/src/index.ts'),
-  'json-render/dashboard': fileURLToPath(new URL('./examples/json-render/src/dashboard.ts', import.meta.url)),
+  'json-render/dashboard': fileURLToPath(new URL('./examples/json-render/src/node/dashboard.ts', import.meta.url)),
   '@devframes/plugin-code-server/node': p('code-server/src/node/setup.ts'),
   '@devframes/plugin-code-server/constants': p('code-server/src/node/constants.ts'),
   '@devframes/plugin-code-server/types': p('code-server/src/node/types.ts'),

@@ -215,7 +215,7 @@
         "./packages/json-render-ui/src/index.ts"
       ],
       "json-render/dashboard": [
-        "./examples/json-render/src/dashboard.ts"
+        "./examples/json-render/src/node/dashboard.ts"
       ],
       "@devframes/plugin-code-server/node": [
         "./plugins/code-server/src/node/setup.ts"

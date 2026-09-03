@@ -1,5 +1,5 @@
 import { createJsonRenderDevframe } from '@devframes/json-render-ui/spa'
-import pkg from '../package.json' with { type: 'json' }
+import pkg from '../../package.json' with { type: 'json' }
 import { createDashboardView } from './dashboard.ts'
 
 /**

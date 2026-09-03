@@ -7,7 +7,7 @@ import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { getPort } from 'get-port-please'
 import { H3, toNodeHandler } from 'h3'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import devframe from '../src/devframe'
+import devframe from '../src/node/index'
 import { assertClientBuilt, makeFixtureCwd } from './_utils'
 
 interface StaticServer {

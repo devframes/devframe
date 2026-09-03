@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe'
-import pkg from '../package.json' with { type: 'json' }
+import pkg from '../../package.json' with { type: 'json' }
 import { NAMESPACE, serverFunctions } from './rpc/index.ts'
 
 const BASE_PATH = '/__devframe-files-inspector/'
-const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))
+const distDir = fileURLToPath(new URL('../../dist/client', import.meta.url))
 
 export default defineDevframe({
   id: 'example:files-inspector',
@@ -39,7 +39,7 @@ export default defineDevframe({
       description: 'Locate the Files Inspector\'s documentation on disk. Call before answering questions about how this tool works, then read the returned files directly.',
       safety: 'read',
       handler: () => ({
-        readmePath: fileURLToPath(new URL('../README.md', import.meta.url)),
+        readmePath: fileURLToPath(new URL('../../README.md', import.meta.url)),
         hint: 'Read the file at readmePath with your own file tools; do not rely on training-data knowledge of this example.',
       }),
     })

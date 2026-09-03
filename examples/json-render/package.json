@@ -6,10 +6,10 @@
   "description": "Standalone devframe that serves a JSON view spec with live state and an action bridge.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/json-render",
   "exports": {
-    ".": "./src/devframe.ts",
-    "./dashboard": "./src/dashboard.ts"
+    ".": "./src/node/index.ts",
+    "./dashboard": "./src/node/dashboard.ts"
   },
-  "main": "src/devframe.ts",
+  "main": "src/node/index.ts",
   "bin": {
     "json-render": "./bin.mjs"
   },

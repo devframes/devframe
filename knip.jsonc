@@ -113,9 +113,10 @@
       "entry": ["src/{index,node}.ts"]
     },
     "examples/next-runtime-snapshot": {
-      // Same nested Next.js client root as `hub-next` above.
+      // The Next.js app root sits at `app/` (`next build app`), not the
+      // workspace root, so knip's default PostCSS config glob misses it.
       "postcss": {
-        "config": ["src/client/postcss.config.mjs"]
+        "config": ["app/postcss.config.mjs"]
       }
     },
     // The Deno entry runs via `deno run src/server.ts`, a command string knip

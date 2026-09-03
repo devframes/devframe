@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { defineDevframe } from 'devframe'
-import pkg from '../package.json' with { type: 'json' }
+import pkg from '../../package.json' with { type: 'json' }
 import { NAMESPACE, serverFunctions } from './rpc/index.ts'
 
 export type { EnvEntry, EnvSnapshot } from './rpc/functions/env.ts'
@@ -8,7 +8,7 @@ export type { MemorySnapshot } from './rpc/functions/memory.ts'
 export type { SystemInfo } from './rpc/functions/system.ts'
 
 const BASE_PATH = '/__next-runtime-snapshot/'
-const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))
+const distDir = fileURLToPath(new URL('../../dist/client', import.meta.url))
 
 export default defineDevframe({
   id: 'example:next-runtime-snapshot',

@@ -1,6 +1,6 @@
 'use client'
 
-import type { EnvSnapshot } from '../../../devframe'
+import type { EnvSnapshot } from '../../../src/node/index'
 import { useCallback, useEffect, useState } from 'react'
 import { card, input as inputClass } from '../design'
 import { useRpc } from './connect'

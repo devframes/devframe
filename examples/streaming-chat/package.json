@@ -5,14 +5,16 @@
   "private": true,
   "description": "Devframe demo that streams synthetic chat tokens from server to client over streaming RPC.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/streaming-chat",
-  "main": "src/devframe.ts",
+  "main": "src/node/index.ts",
   "bin": {
     "streaming-chat": "./bin.mjs"
   },
   "scripts": {
-    "build": "vite build --config src/client/vite.config.ts",
+    "build": "vite build --config app/vite.config.ts",
+    "build:app": "vite build --config app/vite.config.ts",
     "cli:build": "node bin.mjs build --out-dir dist/static",
-    "dev": "node bin.mjs",
+    "dev": "vite --config app/vite.config.ts --host",
+    "play": "pnpm run build && node playgrounds/server.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

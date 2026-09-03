@@ -1,6 +1,6 @@
 'use client'
 
-import type { MemorySnapshot } from '../../../devframe'
+import type { MemorySnapshot } from '../../../src/node/index'
 import { useCallback, useEffect, useState } from 'react'
 import { button, card } from '../design'
 import { useRpc } from './connect'

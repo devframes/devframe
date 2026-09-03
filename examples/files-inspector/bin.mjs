@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import process from 'node:process'
 import { createCac } from 'devframe/adapters/cac'
-import devframe from './src/devframe.ts'
+import devframe from './src/node/index.ts'
 
 async function main() {
   // Serve the agent surface at `/__mcp` and register for `devframe connect`

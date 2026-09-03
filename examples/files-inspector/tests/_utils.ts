@@ -14,7 +14,7 @@ import { getPort } from 'get-port-please'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import { serveTestContext } from '../../../tests/helpers/serve-test-context'
-import devframe from '../src/devframe'
+import devframe from '../src/node/index'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
 const CLIENT_DIST = resolve(HERE, '../dist/client')

@@ -1,4 +1,4 @@
-import type { EnvSnapshot, MemorySnapshot, SystemInfo } from '../src/devframe'
+import type { EnvSnapshot, MemorySnapshot, SystemInfo } from '../src/node/index'
 import process from 'node:process'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'

@@ -6,7 +6,9 @@
   "description": "Minimal devframe that carries every RPC frame over plain HTTP with SSE.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/sse-basic",
   "scripts": {
-    "dev": "vite",
+    "build": "vite build --config app/vite.config.ts",
+    "dev": "vite --config app/vite.config.ts --host",
+    "play": "pnpm run build && node playgrounds/server.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -16,6 +18,7 @@
   "devDependencies": {
     "@iconify-json/ph": "catalog:frontend",
     "@types/node": "catalog:types",
+    "h3": "catalog:deps",
     "unocss": "catalog:frontend",
     "vite": "catalog:build"
   }

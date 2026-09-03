@@ -13,7 +13,8 @@
   },
   "include": [
     "src",
-    "vite.config.ts",
+    "app",
+    "playgrounds",
     "uno.config.ts"
   ],
   "exclude": [

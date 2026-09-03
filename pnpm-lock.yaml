@@ -1353,6 +1353,9 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 26.4.0
+      h3:
+        specifier: catalog:deps
+        version: 2.0.1-rc.29(crossws@0.4.12(srvx@0.12.7))
       unocss:
         specifier: catalog:frontend
         version: 66.8.1(@unocss/postcss@66.8.1(postcss@8.5.26))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))

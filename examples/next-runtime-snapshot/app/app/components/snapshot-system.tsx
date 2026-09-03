@@ -1,6 +1,6 @@
 'use client'
 
-import type { SystemInfo } from '../../../devframe'
+import type { SystemInfo } from '../../../src/node/index'
 import { useEffect, useState } from 'react'
 import { card } from '../design'
 import { useRpc } from './connect'
