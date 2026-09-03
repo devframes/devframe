@@ -332,6 +332,8 @@ function registerResourceHandlers(
   ctx: DevframeNodeContext,
   exposeSharedState: boolean | ((key: string) => boolean),
 ): void {
+  const stateFilter = sharedStateFilter(exposeSharedState)
+
   server.setRequestHandler('resources/list', async () => {
     const resources = ctx.agent.list().resources.map(resource => ({
       uri: resource.uri,
@@ -340,10 +342,9 @@ function registerResourceHandlers(
       mimeType: resource.mimeType,
     }))
 
-    if (exposeSharedState !== false) {
-      const filter = typeof exposeSharedState === 'function' ? exposeSharedState : () => true
+    if (stateFilter) {
       for (const key of ctx.rpc.sharedState.keys()) {
-        if (!filter(key))
+        if (!stateFilter(key))
           continue
         resources.push({
           uri: `devframe://state/${encodeURIComponent(key)}`,
@@ -375,6 +376,12 @@ function registerResourceHandlers(
     }
 
     if (parsed.kind === 'state') {
+      // Apply the exposure policy at the read, not only during discovery:
+      // a caller that knows a filtered key must not bypass it. Deny with the
+      // same DF0048 the built-in read tool uses, so a denied key is
+      // indistinguishable from a missing one.
+      if (!stateFilter || !stateFilter(parsed.key))
+        throw diagnostics.DF0048({ key: parsed.key })
       const state = await ctx.rpc.sharedState.get(parsed.key)
       return {
         contents: [
