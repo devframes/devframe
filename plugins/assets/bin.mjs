@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import process from 'node:process'
-import { createAssetsCli } from './dist/cli.mjs'
+import { createAssetsCli } from './dist/node/cli.mjs'
 
 async function main() {
   await createAssetsCli().parse()

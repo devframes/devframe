@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import process from 'node:process'
-import { createOgCli } from './dist/cli.mjs'
+import { createOgCli } from './dist/node/cli.mjs'
 
 async function main() {
   await createOgCli().parse()

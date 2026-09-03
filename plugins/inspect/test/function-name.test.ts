@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseNamespacedName } from '../src/spa/utils/color'
+import { parseNamespacedName } from '../app/utils/color'
 
 describe('parseNamespacedName', () => {
   it('splits a single `:` namespace into a colored prefix and an uncolored leaf', () => {

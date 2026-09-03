@@ -1,6 +1,6 @@
-import type { OgSnapshot } from '../src/types'
+import type { OgSnapshot } from '../src/node/types'
 import { describe, expect, it } from 'vitest'
-import { toSocialCard } from '../src/spa/app/utils/metadata'
+import { toSocialCard } from '../app/app/utils/metadata'
 
 const snapshot: OgSnapshot = {
   requestedUrl: 'https://example.com/article',

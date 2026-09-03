@@ -1,5 +1,5 @@
 import type { DevframeNodeContext } from 'devframe'
-import type { DataSourceEntry } from '../registry/index'
+import type { DataSourceEntry } from './registry/index'
 import os from 'node:os'
 import process from 'node:process'
 

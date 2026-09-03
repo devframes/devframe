@@ -21,16 +21,16 @@
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./dist/index.mjs",
-    "./client": "./dist/client/index.mjs",
-    "./inject": "./dist/inject/index.mjs",
-    "./cli": "./dist/cli.mjs",
-    "./engine": "./dist/engine/index.mjs",
-    "./node": "./dist/node/index.mjs",
-    "./registry": "./dist/registry/index.mjs",
+    ".": "./dist/node/index.mjs",
+    "./client-script": "./dist/client-script/client/index.mjs",
+    "./client-script/page-script": "./dist/client-script/page-script/index.mjs",
+    "./cli": "./dist/node/cli.mjs",
+    "./engine": "./dist/node/engine/index.mjs",
+    "./node": "./dist/node/setup.mjs",
+    "./registry": "./dist/node/registry/index.mjs",
     "./package.json": "./package.json"
   },
-  "types": "./dist/index.d.mts",
+  "types": "./dist/node/index.d.mts",
   "bin": {
     "devframe-data-inspector": "./bin.mjs"
   },
@@ -39,11 +39,14 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown && vite build --config src/spa/vite.config.ts",
-    "dev": "vite --config src/spa/vite.config.ts",
+    "build": "tsdown && vite build --config app/vite.config.ts",
+    "build:app": "vite build --config app/vite.config.ts",
     "watch": "tsdown --watch",
+    "dev": "vite --config app/vite.config.ts --host",
+    "play": "pnpm run build && node playgrounds/server.mjs",
     "storybook": "storybook dev -p 6016",
     "build-storybook": "storybook build",
+    "cli:build": "node bin.mjs build --out-dir dist/static",
     "prepack": "turbo run build --filter=@devframes/plugin-data-inspector",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
@@ -78,6 +81,7 @@
     "devframe": "workspace:*",
     "dompurify": "catalog:frontend",
     "floating-vue": "catalog:frontend",
+    "h3": "catalog:deps",
     "jora": "catalog:inlined",
     "reka-ui": "catalog:frontend",
     "splitpanes": "catalog:frontend",

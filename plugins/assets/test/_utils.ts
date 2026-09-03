@@ -1,6 +1,6 @@
 import type { DevframeNodeContext } from 'devframe'
 import type { StartedServer } from 'devframe/internal'
-import type { AssetsDevframeOptions } from '../src/index'
+import type { AssetsDevframeOptions } from '../src/node/index'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -14,8 +14,8 @@ import { getPort } from 'devframe/utils/get-port'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { serveTestContext } from '../../../tests/helpers/serve-test-context'
-import { createAssetsDevframe } from '../src/index'
-import { disposeAssetsWatcher } from '../src/node/index'
+import { createAssetsDevframe } from '../src/node/index'
+import { disposeAssetsWatcher } from '../src/node/setup'
 
 export interface AssetsServer extends StartedServer {
   ctx: DevframeNodeContext

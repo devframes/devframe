@@ -21,14 +21,14 @@
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./dist/index.mjs",
-    "./client": "./dist/client/index.mjs",
-    "./cli": "./dist/cli.mjs",
-    "./node": "./dist/node/index.mjs",
-    "./rpc": "./dist/rpc/index.mjs",
+    ".": "./dist/node/index.mjs",
+    "./client-script": "./dist/client-script/client/index.mjs",
+    "./cli": "./dist/node/cli.mjs",
+    "./node": "./dist/node/setup.mjs",
+    "./rpc": "./dist/node/rpc/index.mjs",
     "./package.json": "./package.json"
   },
-  "types": "./dist/index.d.mts",
+  "types": "./dist/node/index.d.mts",
   "bin": {
     "devframe-assets": "./bin.mjs"
   },
@@ -37,9 +37,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown && vite build --config src/spa/vite.config.ts",
-    "dev": "vite --config src/spa/vite.config.ts --host 0.0.0.0",
+    "build": "tsdown && vite build --config app/vite.config.ts",
+    "build:app": "vite build --config app/vite.config.ts",
     "watch": "tsdown --watch",
+    "dev": "vite --config app/vite.config.ts --host",
+    "play": "pnpm run build && node playgrounds/server.mjs",
     "storybook": "storybook dev -p 6013 --host 0.0.0.0",
     "storybook:build": "storybook build",
     "prepack": "turbo run build --filter=@devframes/plugin-assets",

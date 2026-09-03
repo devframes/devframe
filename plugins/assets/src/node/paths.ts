@@ -1,6 +1,6 @@
 import fsp from 'node:fs/promises'
 import { normalize, resolve } from 'pathe'
-import { diagnostics } from '../diagnostics'
+import { diagnostics } from './diagnostics'
 
 /** realpath, pathe-normalized, or `null` when the path doesn't exist. */
 async function realpath(path: string): Promise<string | null> {

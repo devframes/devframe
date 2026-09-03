@@ -19,6 +19,7 @@
   // the default export is the conventional single-devframe import. Service
   // packages (`create<X>Service`) follow the same rule.
   "ignoreIssues": {
+    "plugins/*/src/node/index.ts": ["duplicates"],
     "plugins/*/src/index.ts": ["duplicates"],
     "services/*/src/index.ts": ["duplicates"],
     // Deprecated rename aliases (old name re-exported next to its canonical
@@ -26,7 +27,7 @@
     // renames left `createDevframeClientHost` → `createDevframeClientRuntime`
     // and `AGENT_DISCOVERY_FILE` → `DISCOVERY_FILE` aliases behind.
     "packages/hub/src/client/host.ts": ["duplicates"],
-    "plugins/data-inspector/src/inject/index.ts": ["duplicates"]
+    "plugins/data-inspector/src/client-script/page-script/index.ts": ["duplicates"]
   },
   "workspaces": {
     ".": {
@@ -209,10 +210,12 @@
       // the monorepo. Repeat the `plugins/*` entry glob (a workspace config
       // replaces, not merges, it).
       "entry": [
-        "src/{index,cli,vite,constants,types}.ts",
-        "src/{client,node,rpc,inject,engine,registry}/index.ts"
+        "src/node/{index,setup,cli}.ts",
+        "src/node/rpc/index.ts",
+        "src/client-script/client/index.ts",
+        "app/**/*.stories.@(ts|tsx)"
       ],
-      "ignoreDependencies": ["@devframes/plugin-inspect--assets"]
+      "ignoreDependencies": ["@devframes/plugin-inspect--assets", "@devframes/vite"]
     },
     "plugins/inspect/assets-pkg": {
       // Assets-only package: no source, just a prebuilt `dist` produced by
@@ -225,23 +228,45 @@
     // so knip can't see the dev-only workspace link. A workspace config
     // replaces (not merges) the `plugins/*` glob's `entry`, so repeat it.
     "plugins/og": {
-      "entry": ["src/{index,cli,vite,constants,types}.ts", "src/{client,node,rpc,inject,engine,registry}/index.ts"],
-      "ignoreDependencies": ["@devframes/plugin-og--assets"]
+      "entry": [
+        "src/node/{index,setup,cli}.ts",
+        "src/node/rpc/index.ts",
+        "src/client-script/client/index.ts",
+        "app/**/*.stories.@(ts|tsx)"
+      ],
+      "ignoreDependencies": ["@devframes/plugin-og--assets", "@devframes/vite"]
     },
     "plugins/og/assets-pkg": { "entry": [], "project": [] },
     "plugins/data-inspector": {
-      "entry": ["src/{index,cli,vite,constants,types}.ts", "src/{client,node,rpc,inject,engine,registry}/index.ts"],
-      "ignoreDependencies": ["@devframes/plugin-data-inspector--assets"]
+      "entry": [
+        "src/node/{index,setup,cli}.ts",
+        "src/node/rpc/index.ts",
+        "src/node/{engine,registry}/index.ts",
+        "src/client-script/client/index.ts",
+        "src/client-script/page-script/index.ts",
+        "app/**/*.stories.@(ts|tsx)"
+      ],
+      "ignoreDependencies": ["@devframes/plugin-data-inspector--assets", "@devframes/vite"]
     },
     "plugins/data-inspector/assets-pkg": { "entry": [], "project": [] },
     "plugins/code-server": {
-      "entry": ["src/{index,cli,vite,constants,types}.ts", "src/{client,node,rpc,inject,engine,registry}/index.ts"],
+      "entry": [
+        "src/node/{index,setup,cli,constants,types,vite}.ts",
+        "src/node/rpc/index.ts",
+        "src/client-script/client/index.ts",
+        "app/**/*.stories.@(ts|tsx)"
+      ],
       "ignoreDependencies": ["@devframes/plugin-code-server--assets"]
     },
     "plugins/code-server/assets-pkg": { "entry": [], "project": [] },
     "plugins/assets": {
-      "entry": ["src/{index,cli,vite,constants,types}.ts", "src/{client,node,rpc,inject,engine,registry}/index.ts"],
-      "ignoreDependencies": ["@devframes/plugin-assets--assets"]
+      "entry": [
+        "src/node/{index,setup,cli,constants,types}.ts",
+        "src/node/rpc/index.ts",
+        "src/client-script/client/index.ts",
+        "app/**/*.stories.@(ts|tsx)"
+      ],
+      "ignoreDependencies": ["@devframes/plugin-assets--assets", "@devframes/vite"]
     },
     "plugins/assets/assets-pkg": { "entry": [], "project": [] },
     "plugins/messages": {

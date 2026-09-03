@@ -1,5 +1,5 @@
 import type { Stats } from 'node:fs'
-import type { AssetInfo, AssetType } from '../types'
+import type { AssetInfo, AssetType } from './types'
 import fsp from 'node:fs/promises'
 import { join } from 'pathe'
 import { glob } from 'tinyglobby'

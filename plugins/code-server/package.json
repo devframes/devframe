@@ -21,17 +21,17 @@
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./dist/index.mjs",
-    "./client": "./dist/client/index.mjs",
-    "./cli": "./dist/cli.mjs",
-    "./constants": "./dist/constants.mjs",
-    "./node": "./dist/node/index.mjs",
-    "./rpc": "./dist/rpc/index.mjs",
-    "./types": "./dist/types.mjs",
-    "./vite": "./dist/vite.mjs",
+    ".": "./dist/node/index.mjs",
+    "./client-script": "./dist/client-script/client/index.mjs",
+    "./cli": "./dist/node/cli.mjs",
+    "./constants": "./dist/node/constants.mjs",
+    "./node": "./dist/node/setup.mjs",
+    "./rpc": "./dist/node/rpc/index.mjs",
+    "./types": "./dist/node/types.mjs",
+    "./vite": "./dist/node/vite.mjs",
     "./package.json": "./package.json"
   },
-  "types": "./dist/index.d.mts",
+  "types": "./dist/node/index.d.mts",
   "bin": {
     "devframe-code-server": "./bin.mjs"
   },
@@ -40,14 +40,17 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown && vite build --config src/spa/vite.config.ts",
+    "build": "tsdown && vite build --config app/vite.config.ts",
+    "build:app": "vite build --config app/vite.config.ts",
     "watch": "tsdown --watch",
-    "typecheck": "tsc --noEmit",
-    "dev": "vite --config src/spa/vite.config.ts",
+    "dev": "vite --config app/vite.config.ts --host",
+    "play": "pnpm run build && node playgrounds/server.mjs",
     "storybook": "storybook dev -p 6013",
     "build-storybook": "storybook build",
-    "test": "vitest run",
-    "prepack": "turbo run build --filter=@devframes/plugin-code-server"
+    "cli:build": "node bin.mjs build --out-dir dist/static",
+    "typecheck": "tsc --noEmit",
+    "prepack": "turbo run build --filter=@devframes/plugin-code-server",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "@devframes/plugin-code-server--assets": "workspace:*",
@@ -76,6 +79,8 @@
     "@vitejs/plugin-vue": "catalog:build",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
+    "h3": "catalog:deps",
+    "pathe": "catalog:deps",
     "storybook": "catalog:storybook",
     "tsdown": "catalog:build",
     "unocss": "catalog:frontend",

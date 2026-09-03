@@ -3,6 +3,7 @@ import type { Plugin } from 'vite'
 import { fileURLToPath } from 'node:url'
 import createA11yDevframe from '@devframes/plugin-a11y'
 import { initDevframe } from 'devframe/initiate'
+import { resolveBasePath } from 'devframe/internal'
 import UnoCSS from 'unocss/vite'
 import { defineConfig } from 'vite'
 import solid from 'vite-plugin-solid'
@@ -21,7 +22,7 @@ function a11yDevBridge(): Plugin {
     apply: 'serve',
     configureServer(server) {
       const instance = initDevframe(devframe, {
-        base: devframe.basePath,
+        base: resolveBasePath(devframe, 'hosted'),
         distDir: false,
         server: server.httpServer as Server,
         auth: false,
@@ -42,7 +43,7 @@ function a11yDevBridge(): Plugin {
  * node side there with HMR.
  */
 export default defineConfig(({ command }) => ({
-  base: command === 'serve' ? createA11yDevframe().basePath : './',
+  base: command === 'serve' ? resolveBasePath(createA11yDevframe(), 'hosted') : './',
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
   plugins: [solid(), UnoCSS(), a11yDevBridge()],

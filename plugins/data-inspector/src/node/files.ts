@@ -3,7 +3,7 @@
  * `.ndjson` parse as an array of records. Each file becomes one static
  * source in the registry.
  */
-import type { DataSourceEntry } from '../registry/index'
+import type { DataSourceEntry } from './registry/index'
 import { readFile } from 'node:fs/promises'
 import { basename, extname, resolve } from 'node:path'
 import process from 'node:process'

@@ -12,7 +12,7 @@
  * devframe's `createStorage` (debounced atomic JSON writes).
  */
 import type { DevframeNodeContext } from 'devframe'
-import type { SavedQuery, SavedQueryScope, SaveQueryInput } from '../engine/contract'
+import type { SavedQuery, SavedQueryScope, SaveQueryInput } from './engine/contract'
 import { join } from 'node:path'
 import { createStorage } from 'devframe/node'
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import process from 'node:process'
-import { createDataInspectorCli } from './dist/cli.mjs'
+import { createDataInspectorCli } from './dist/node/cli.mjs'
 
 async function main() {
   const cli = createDataInspectorCli()

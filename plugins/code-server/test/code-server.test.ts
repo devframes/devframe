@@ -1,10 +1,10 @@
-import type { CodeServerSharedState } from '../src/types'
+import type { CodeServerSharedState } from '../src/node/types'
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { PLUGIN_ID, STATE_KEY, TERMINAL_SESSION_ICON, TERMINAL_SESSION_TITLE } from '../src/constants'
-import { setupCodeServer } from '../src/node/index'
+import { PLUGIN_ID, STATE_KEY, TERMINAL_SESSION_ICON, TERMINAL_SESSION_TITLE } from '../src/node/constants'
+import { setupCodeServer } from '../src/node/setup'
 import {
   createFakeHubTerminals,
   createTestContext,

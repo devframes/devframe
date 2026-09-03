@@ -2,17 +2,31 @@ import { defineConfig } from 'tsdown'
 
 const tsconfig = '../../tsconfig.base.json'
 
+// Client runtime script: imported by the hub client runtime, which already has
+// `devframe` on hand, so `devframe/client` stays external.
 const clientEntries = {
-  'client/index': 'src/client/index.ts',
+  'client-script/client/index': 'src/client-script/client/index.ts',
 }
 
-const serverEntries = {
-  'index': 'src/index.ts',
-  'cli': 'src/cli.ts',
+// Node-side entries: the devframe definition (root), the setup module, the
+// CLI adapter, and the RPC registry.
+const nodeEntries = {
   'node/index': 'src/node/index.ts',
-  'rpc/index': 'src/rpc/index.ts',
+  'node/setup': 'src/node/setup.ts',
+  'node/cli': 'src/node/cli.ts',
+  'node/rpc/index': 'src/node/rpc/index.ts',
 }
 
+/**
+ * Three configs keep the graphs isolated:
+ * 1. browser client runtime (`clean: true`): clears dist/, `devframe` external;
+ * 2. node runtime (appends);
+ * 3. combined dts in one graph so the `declare module 'devframe'` RPC
+ *    augmentation resolves once.
+ *
+ * The Vue panel SPA (`app/`) builds separately with Vite into the lockstep
+ * `@devframes/plugin-assets--assets` package.
+ */
 export default defineConfig([
   {
     clean: true,
@@ -27,7 +41,7 @@ export default defineConfig([
     platform: 'node',
     tsconfig,
     dts: false,
-    entry: serverEntries,
+    entry: nodeEntries,
   },
   {
     clean: false,
@@ -35,6 +49,6 @@ export default defineConfig([
     tsconfig,
     dts: { emitDtsOnly: true },
     outExtensions: () => ({ dts: '.d.mts' }),
-    entry: { ...clientEntries, ...serverEntries },
+    entry: { ...clientEntries, ...nodeEntries },
   },
 ])

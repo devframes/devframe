@@ -21,14 +21,14 @@
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./dist/index.mjs",
-    "./client": "./dist/client/index.mjs",
-    "./cli": "./dist/cli.mjs",
-    "./node": "./dist/node/index.mjs",
-    "./rpc": "./dist/rpc/index.mjs",
+    ".": "./dist/node/index.mjs",
+    "./client-script": "./dist/client-script/client/index.mjs",
+    "./cli": "./dist/node/cli.mjs",
+    "./node": "./dist/node/setup.mjs",
+    "./rpc": "./dist/node/rpc/index.mjs",
     "./package.json": "./package.json"
   },
-  "types": "./dist/index.d.mts",
+  "types": "./dist/node/index.d.mts",
   "bin": {
     "devframe-og": "./bin.mjs"
   },
@@ -37,15 +37,17 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown && vite build --config src/spa/vite.config.ts",
-    "dev": "vite --config src/spa/vite.config.ts",
+    "build": "tsdown && vite build --config app/vite.config.ts",
+    "build:app": "vite build --config app/vite.config.ts",
     "watch": "tsdown --watch",
+    "dev": "vite --config app/vite.config.ts --host",
+    "play": "pnpm run build && node playgrounds/server.mjs",
     "storybook": "storybook dev -p 6017",
     "build-storybook": "storybook build",
     "cli:build": "node bin.mjs build --out-dir dist/static",
+    "typecheck": "tsc --noEmit",
     "prepack": "turbo run build --filter=@devframes/plugin-og",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "vitest run"
   },
   "peerDependencies": {
     "@devframes/plugin-og--assets": "workspace:*",

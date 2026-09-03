@@ -1,4 +1,4 @@
-import type { CodeServerBackend, CodeServerConnect, CodeServerLogin, CodeServerMode } from '../types'
+import type { CodeServerBackend, CodeServerConnect, CodeServerLogin, CodeServerMode } from './types'
 import { createHash } from 'node:crypto'
 
 /**

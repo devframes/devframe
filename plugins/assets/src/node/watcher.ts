@@ -2,7 +2,7 @@ import type { DevframeNodeContext } from 'devframe'
 import process from 'node:process'
 import { watch } from 'chokidar'
 import { debounce } from 'perfect-debounce'
-import { CHANGED_EVENT } from '../constants'
+import { CHANGED_EVENT } from './constants'
 
 /**
  * Watch the managed directory and broadcast {@link CHANGED_EVENT} (debounced)
