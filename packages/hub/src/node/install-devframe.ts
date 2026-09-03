@@ -123,10 +123,8 @@ export async function prepareDevframe(
   d: DevframeDefinition,
   options: InstallDevframeOptions = {},
 ): Promise<(() => Promise<void>) | null> {
-  if (skippedInStaticBuild(ctx, d)) {
-    diagnostics.DF8007({ id: d.id, name: d.name }, { method: 'log' })
+  if (skippedInStaticBuild(ctx, d))
     return null
-  }
 
   const strategy = d.duplicationStrategy ?? 'warn'
   const isDuplicate = ctx.docks.views.has(d.id)
