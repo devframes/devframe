@@ -27,5 +27,5 @@ pnpm -C examples/files-inspector run test        # E2E tests
 |------|---------|
 | `src/devframe.ts` | The single `DevframeDefinition` consumed by every adapter. |
 | `src/client/` | Preact SPA: `index.html`, `main.tsx`, `app.tsx`, `routes/*`, `vite.config.ts`. |
-| `bin.mjs` | `createCac(devframe).parse()` - exposes `dev`, `build`, `mcp`. |
+| `bin.mjs` | `createCac(devframe, { mcp: true }).parse()` - exposes `dev`, `build`, `mcp`. |
 | `tests/` | E2E tests for CLI dev server and static build. |

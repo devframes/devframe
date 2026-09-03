@@ -198,6 +198,11 @@ export interface DevframeCliOptions {
    * The `--mcp` / `--no-mcp` CLI flags override this per run. Whether to expose
    * MCP is a hosting decision, so programmatic hosts pass it to
    * `initDevframe` / `initHub` / `createDevServer` instead.
+   *
+   * @deprecated Whether to expose MCP is a hosting decision, not a capability
+   * of the tool. Pass `mcp` to `createCac` (or the programmatic host) instead.
+   * This field is still read as a fallback, and will be removed in a future
+   * release.
    */
   mcp?: boolean | McpRouteOptions
   /**

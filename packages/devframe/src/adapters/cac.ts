@@ -8,7 +8,7 @@
 // re-exported below so they live alongside the CLI adapter.
 import type { CAC } from 'cac'
 import type { H3 } from 'h3'
-import type { DevframeDefinition } from '../types/devframe'
+import type { DevframeDefinition, McpRouteOptions } from '../types/devframe'
 import process from 'node:process'
 import cac from 'cac'
 import { colors as c } from 'devframe/utils/colors'
@@ -23,6 +23,21 @@ export type { CliFlagsSchema, InferCliFlags } from './flags'
 export interface CreateCacOptions {
   /** Default port for `dev` (default: 9999). */
   defaultPort?: number
+  /**
+   * Expose a route-based MCP server alongside the dev server, speaking the
+   * MCP Streamable-HTTP transport at `<base>__mcp`. Whether to expose MCP is
+   * a hosting decision made at the CLI assembly stage, so it lives here rather
+   * than on the definition.
+   *
+   * - `false` / omitted (default): no MCP route is mounted.
+   * - `true`: mount at the default `__mcp` route with the loopback origin gate.
+   * - {@link McpRouteOptions}: customise the route path, origin allow-list, and
+   *   opt into an identity check.
+   *
+   * The `--mcp` / `--no-mcp` flags override this per run. Falls back to the
+   * definition's deprecated `cli.mcp` when unset.
+   */
+  mcp?: boolean | McpRouteOptions
   /**
    * Final CAC hook invoked after devframe's built-in subcommands and
    * after the definition's `cli.configure`. Use this to add app-level
@@ -70,7 +85,8 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
     .option('--no-auth', 'Disable the interactive authentication gate')
     // Only `--mcp` is declared: CAC's `--no-*` auto-negation would inject a
     // `true` default, silently enabling MCP. Declaring just `--mcp` yields the
-    // opt-in tri-state: absent → `undefined` (falls through to `cli.mcp`),
+    // opt-in tri-state: absent → `undefined` (falls through to `options.mcp`,
+    // then `cli.mcp`),
     // `--mcp` → `true`, `--no-mcp` → `false` (handled by CAC's `--no-` prefix).
     .option('--mcp', 'Expose an MCP server over HTTP at /__mcp (use --no-mcp to disable)')
 
@@ -93,10 +109,10 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
     const flags = resolveTypedFlags(d, rawFlags) as CliFlags
     const host = (flags.host as string | undefined) ?? defaultHost
     const port = (flags.port as number | undefined) ?? await resolveDevServerPort(d, { host, defaultPort })
-    // `--mcp` / `--no-mcp` map to a boolean override; when neither is
-    // passed CAC leaves `mcp` undefined so `createDevServer` falls through
-    // to `def.cli?.mcp`.
-    const mcp = flags.mcp as boolean | undefined
+    // `--mcp` / `--no-mcp` map to a boolean override; when neither is passed
+    // CAC leaves `mcp` undefined so we fall back to the assembly-stage
+    // `options.mcp`, and `createDevServer` falls through to `def.cli?.mcp`.
+    const mcp = (flags.mcp as boolean | undefined) ?? options.mcp
     await createDevServer(d, {
       host,
       port,
