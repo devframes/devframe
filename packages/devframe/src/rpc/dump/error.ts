@@ -27,10 +27,10 @@ function serializeWithSeen(error: unknown, seen: WeakSet<object>): RpcDumpRecord
       ? serializeWithSeen(cause, seen)
       : cause
   }
-  for (const key of Object.keys(error)) {
+  for (const [key, value] of Object.entries(error)) {
     if (key === 'name' || key === 'message' || key === 'cause')
       continue
-    out[key] = (error as unknown as Record<string, unknown>)[key]
+    out[key] = value
   }
   return out
 }
@@ -41,21 +41,17 @@ function serializeWithSeen(error: unknown, seen: WeakSet<object>): RpcDumpRecord
  * the original `name`, and re-attaches any custom own properties.
  */
 export function reviveDumpError(stored: RpcDumpRecordError): Error {
-  const cause = stored.cause instanceof Error
-    ? stored.cause
-    : isPlainErrorShape(stored.cause)
-      ? reviveDumpError(stored.cause)
-      : stored.cause
+  const { name, message, cause: rawCause, ...extras } = stored
+  const cause = rawCause instanceof Error
+    ? rawCause
+    : isPlainErrorShape(rawCause)
+      ? reviveDumpError(rawCause)
+      : rawCause
   const error = cause !== undefined
-    ? new Error(stored.message, { cause })
-    : new Error(stored.message)
-  error.name = stored.name
-  for (const key of Object.keys(stored)) {
-    if (key === 'name' || key === 'message' || key === 'cause') {
-      continue
-    }
-    ;(error as unknown as Record<string, unknown>)[key] = stored[key]
-  }
+    ? new Error(message, { cause })
+    : new Error(message)
+  error.name = name
+  Object.assign(error, extras)
   return error
 }
 

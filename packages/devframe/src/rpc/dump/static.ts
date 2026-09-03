@@ -32,7 +32,7 @@ export type StaticRpcDumpManifest = Record<string, StaticRpcDumpManifestValue>
 export interface StaticRpcDumpFile {
   /** Whether this file was written via `JSON.stringify` or `structured-clone-es.stringify`. */
   serialization: StaticRpcDumpSerialization
-  /** Function name the file belongs to — used to scope `DF0019` errors during write. */
+  /** Function name the file belongs to, used to scope `DF0019` errors during write. */
   fnName: string
   /** Payload to encode. */
   data: unknown
@@ -65,6 +65,64 @@ async function resolveRecord(record: RpcDumpRecord | (() => Promise<RpcDumpRecor
     : record
 }
 
+async function collectStaticDefinition(
+  definition: RpcFunctionDefinitionAny,
+  context: any,
+  serialization: StaticRpcDumpSerialization,
+  files: Record<string, StaticRpcDumpFile>,
+): Promise<StaticRpcDumpManifestStaticEntry> {
+  const handler = await getRpcHandler(definition, context)
+  const path = makeStaticPath(definition.name)
+  files[path] = {
+    serialization,
+    fnName: definition.name,
+    data: { output: await Promise.resolve(handler()) },
+  }
+  return { type: 'static', path, serialization }
+}
+
+async function collectQueryDefinition(
+  definition: RpcFunctionDefinitionAny,
+  context: any,
+  serialization: StaticRpcDumpSerialization,
+  files: Record<string, StaticRpcDumpFile>,
+): Promise<StaticRpcDumpManifestQueryEntry | undefined> {
+  // Reuse dump execution semantics from devframe/rpc.
+  const store = await dumpFunctions([definition], context)
+  if (!(definition.name in store.definitions))
+    return undefined
+
+  const queryEntry: StaticRpcDumpManifestQueryEntry = {
+    type: 'query',
+    records: {},
+    serialization,
+  }
+  const prefix = `${definition.name}---`
+
+  for (const [recordKey, recordOrGetter] of Object.entries(store.records)) {
+    if (!recordKey.startsWith(prefix))
+      continue
+
+    const key = recordKey.slice(prefix.length)
+    const record = await resolveRecord(recordOrGetter)
+
+    if (key === 'fallback') {
+      const path = makeQueryFallbackPath(definition.name)
+      files[path] = { serialization, fnName: definition.name, data: record }
+      queryEntry.fallback = path
+    }
+    else {
+      const path = makeQueryRecordPath(definition.name, key)
+      files[path] = { serialization, fnName: definition.name, data: record }
+      queryEntry.records[key] = path
+    }
+  }
+
+  if (!Object.keys(queryEntry.records).length && !queryEntry.fallback)
+    return undefined
+  return queryEntry
+}
+
 export async function collectStaticRpcDump(
   definitions: Iterable<RpcFunctionDefinitionAny>,
   context: any,
@@ -78,60 +136,15 @@ export async function collectStaticRpcDump(
       = definition.jsonSerializable === true ? 'json' : 'structured-clone'
 
     if (type === 'static') {
-      const handler = await getRpcHandler(definition, context)
-      const path = makeStaticPath(definition.name)
-      files[path] = {
-        serialization,
-        fnName: definition.name,
-        data: { output: await Promise.resolve(handler()) },
-      }
-      manifest[definition.name] = {
-        type: 'static',
-        path,
-        serialization,
-      }
+      manifest[definition.name] = await collectStaticDefinition(definition, context, serialization, files)
       continue
     }
-
     if (type !== 'query')
       continue
 
-    // Reuse dump execution semantics from devframe/rpc.
-    const store = await dumpFunctions([definition], context)
-    if (!(definition.name in store.definitions))
-      continue
-
-    const queryEntry: StaticRpcDumpManifestQueryEntry = {
-      type: 'query',
-      records: {},
-      serialization,
-    }
-
-    const prefix = `${definition.name}---`
-
-    for (const [recordKey, recordOrGetter] of Object.entries(store.records)) {
-      if (!recordKey.startsWith(prefix))
-        continue
-
-      const key = recordKey.slice(prefix.length)
-      const record = await resolveRecord(recordOrGetter)
-
-      if (key === 'fallback') {
-        const path = makeQueryFallbackPath(definition.name)
-        files[path] = { serialization, fnName: definition.name, data: record }
-        queryEntry.fallback = path
-      }
-      else {
-        const path = makeQueryRecordPath(definition.name, key)
-        files[path] = { serialization, fnName: definition.name, data: record }
-        queryEntry.records[key] = path
-      }
-    }
-
-    if (!Object.keys(queryEntry.records).length && !queryEntry.fallback)
-      continue
-
-    manifest[definition.name] = queryEntry
+    const queryEntry = await collectQueryDefinition(definition, context, serialization, files)
+    if (queryEntry)
+      manifest[definition.name] = queryEntry
   }
 
   return {

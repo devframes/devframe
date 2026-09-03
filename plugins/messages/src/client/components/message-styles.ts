@@ -1,7 +1,6 @@
 import type { DevframeMessageEntryFrom, DevframeMessageLevel } from '@devframes/hub/types'
 
-// @unocss-include
-
+/** @unocss-include */
 export interface LevelStyle {
   icon: string
   color: string

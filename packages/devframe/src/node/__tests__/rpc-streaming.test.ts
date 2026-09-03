@@ -166,7 +166,7 @@ describe('rpc-streaming integration', () => {
     const client = bootClient(harness.port)
     await new Promise(r => setTimeout(r, 50))
 
-    // Producer runs first — subscriber comes later.
+    // Producer runs first; subscriber comes later.
     const stream = channel.start({ id: 'replay-1' })
     stream.write('one')
     stream.write('two')

@@ -13,8 +13,10 @@ import pkg from '../package.json' with { type: 'json' }
  * threads a hub-augmented context through `d.setup`.
  */
 export default defineDevframe({
-  // Colon-free: the hub instance derives the mount path (`/__devframes/<id>/`)
-  // from the id, and `:` is a route-param marker to the router underneath.
+  /**
+   * Colon-free: the hub instance derives the mount path (`/__devframes/<id>/`)
+   * from the id, and `:` is a route-param marker to the router underneath.
+   */
   id: 'demo-tool',
   name: 'Demo Tool',
   version: pkg.version,
@@ -26,7 +28,7 @@ export default defineDevframe({
   basePath: '/__demo-tool/',
   clientAssets: fileURLToPath(new URL('../spa/demo-tool/', import.meta.url)),
   async setup(rawCtx) {
-    const ctx = rawCtx as unknown as DevframeHubContext
+    const ctx = rawCtx as DevframeHubContext
 
     ctx.commands.register({
       id: 'example:demo-tool:say-hello',

@@ -66,7 +66,7 @@ export function createClientMessagesClient(rpc: DevframeRpcClient): DevframeMess
     clear(): Promise<void> {
       return enqueue(() => rpc.call('hub:messages:clear'))
     },
-    // Level shortcuts — `messages.info('...')` is `add({ message, level: 'info', ...extra })`.
+    /** Level shortcuts: `messages.info('...')` is `add({ message, level: 'info', ...extra })`. */
     info: (message, extra) => client.add({ ...extra, message, level: 'info' }),
     warn: (message, extra) => client.add({ ...extra, message, level: 'warn' }),
     error: (message, extra) => client.add({ ...extra, message, level: 'error' }),

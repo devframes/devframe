@@ -37,7 +37,7 @@ export function sanitizeSpec(spec: Spec, registry: ComponentRegistry = baseRegis
     if (!(element.type in registry)) {
       changed = true
       const keys = Object.keys(element.props ?? {})
-      // Browser-only render failure — keep console.* per the plan.
+      // Browser-only render failure; keep console.* per the plan.
       console.warn(`[@devframes/json-render-ui] unsupported component "${element.type}" on element "${key}": not in the active registry. Rendering a placeholder.`)
       elements[key] = { ...element, type: UNSUPPORTED_COMPONENT_TYPE, props: { type: element.type, keys } }
       continue
@@ -48,7 +48,7 @@ export function sanitizeSpec(spec: Spec, registry: ComponentRegistry = baseRegis
       if (!result.success) {
         changed = true
         const issues = result.error.issues.map(i => `${i.path.join('.') || '(root)'}: ${i.message}`).join('; ')
-        // Browser-only render failure — keep console.* per the plan.
+        // Browser-only render failure; keep console.* per the plan.
         console.warn(`[@devframes/json-render-ui] invalid props on element "${key}" (${element.type}): ${issues}`)
         elements[key] = { ...element, type: ERROR_COMPONENT_TYPE, props: { message: `${element.type}: ${issues}` } }
         continue
@@ -145,7 +145,7 @@ export function createRenderer(options: CreateRendererOptions = {}) {
     inheritAttrs: false,
     setup(_props, { attrs }) {
       // Default the registry; every other prop flows through via attrs.
-      return () => h(JsonRenderView as unknown as Component, { registry, ...attrs })
+      return () => h(JsonRenderView as Component, { registry, ...attrs })
     },
   })
 }

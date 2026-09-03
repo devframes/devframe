@@ -1,20 +1,20 @@
 ---
 title: 'Error Reference'
-description: 'Devframe surfaces warnings and errors as structured diagnostics — each with a unique code, a human-readable message, and a link to this documentation.'
+description: 'Devframe surfaces warnings and errors as structured diagnostics: each with a unique code, a human-readable message, and a link to this documentation.'
 ---
 
-Devframe surfaces warnings and errors as structured diagnostics — each with a unique code, a human-readable message, and a link to this documentation.
+Devframe surfaces warnings and errors as structured diagnostics: each with a unique code, a human-readable message, and a link to this documentation.
 
 ## How error codes work
 
 - Codes follow the pattern **`DF` + a 4-digit number**. Core `devframe` uses `DF00xx`–`DF07xx`; the hub reserves `DF8xxx`.
 - Every page carries the message, cause, recommended fix, and the source file that emits it.
 - **Level** is the diagnostic's severity: **error** or **warn**.
-- Diagnostics are powered by [`nostics`](https://www.npmjs.com/package/nostics) — structured codes with docs URLs, ANSI console output, and pluggable reporters.
+- Diagnostics are powered by [`nostics`](https://www.npmjs.com/package/nostics): structured codes with docs URLs, ANSI console output, and pluggable reporters.
 
 ## Devframe (DF)
 
-Emitted by `devframe` — the framework-neutral host, RPC, streaming, assets, services, and JSON-render surfaces.
+Emitted by `devframe`: the framework-neutral host, RPC, streaming, assets, services, and JSON-render surfaces.
 
 | Code | Level | Title |
 |------|-------|-------|
@@ -44,7 +44,7 @@ Emitted by `devframe` — the framework-neutral host, RPC, streaming, assets, se
 | [DF0033](/errors/DF0033) | warn | Dev RPC Bridge Failed to Start |
 | [DF0034](/errors/DF0034) | error | Already-Namespaced Scoped Registration |
 | [DF0035](/errors/DF0035) | error | Storage File Persist Failed |
-| [DF0036](/errors/DF0036) | error | RPC Call Rejected — Not Authorized |
+| [DF0036](/errors/DF0036) | error | RPC Call Rejected, Not Authorized |
 | [DF0037](/errors/DF0037) | error | Duplicate Service Provider |
 | [DF0038](/errors/DF0038) | error | Invalid JSON-Render Element Props |
 | [DF0039](/errors/DF0039) | error | Duplicate JSON-Render View |
@@ -82,7 +82,7 @@ Emitted by `devframe` — the framework-neutral host, RPC, streaming, assets, se
 | [DF0073](/errors/DF0073) | error | JSON-Render Spec Does Not Match Its Schema |
 | [DF0074](/errors/DF0074) | error | JSON-Render Schema Is Asynchronous |
 
-## Hub — context & lifecycle (DF80xx)
+## Hub: context & lifecycle (DF80xx)
 
 Emitted by `@devframes/hub` while assembling and mounting the unified surface.
 
@@ -94,7 +94,7 @@ Emitted by `@devframes/hub` while assembling and mounting the unified surface.
 | [DF8004](/errors/DF8004) | error | Devframe Id Is Not a Mountable URL Segment |
 | [DF8005](/errors/DF8005) | warning | Devframe MCP Ignored While Hub MCP Is Off |
 
-## Hub — docks & mounting (DF81xx)
+## Hub: docks & mounting (DF81xx)
 
 | Code | Level | Title |
 |------|-------|-------|
@@ -111,7 +111,7 @@ Emitted by `@devframes/hub` while assembling and mounting the unified surface.
 | [DF8110](/errors/DF8110) | error | Renderer Type Is Not URL-Safe |
 | [DF8111](/errors/DF8111) | warn | Bare-Specifier Client Script Without Host Resolution |
 
-## Hub — terminals (DF82xx)
+## Hub: terminals (DF82xx)
 
 | Code | Level | Title |
 |------|-------|-------|
@@ -123,7 +123,7 @@ Emitted by `@devframes/hub` while assembling and mounting the unified surface.
 | [DF8205](/errors/DF8205) | error | Terminal Session Is Not Restartable |
 | [DF8206](/errors/DF8206) | error | Terminal Session Restart on Closed Stream |
 
-## Hub — commands (DF84xx)
+## Hub: commands (DF84xx)
 
 | Code | Level | Title |
 |------|-------|-------|

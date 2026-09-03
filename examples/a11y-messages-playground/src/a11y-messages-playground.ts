@@ -63,8 +63,10 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
           return join(homedir(), '.a11y-messages-playground')
         },
         devframes: options.devframes ?? [],
-        // List the playground alongside standalone devframes in discovery
-        // tooling (`devframe connect`, the inspector's Instances tab).
+        /**
+         * List the playground alongside standalone devframes in discovery
+         * tooling (`devframe connect`, the inspector's Instances tab).
+         */
         register: {
           id: 'example:a11y-messages-playground',
           name: 'A11y + Messages Playground',

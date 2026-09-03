@@ -10,8 +10,8 @@ interface FakeFrame {
   pushState: (href: string) => void
   replaceState: (href: string) => void
   /**
-   * Navigate without going through the frame's current `pushState` — a router
-   * that captured the method before the watch attached, which no wrapper sees.
+   * Navigate without going through the frame's current `pushState`, as a router
+   * that captured the method before the watch attached does, which no wrapper sees.
    */
   pushStateBypassingWrapper: (href: string) => void
   /** Emit the Navigation API's post-commit notification. */

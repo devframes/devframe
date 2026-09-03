@@ -20,7 +20,7 @@ const EMPTY_WIRE_DEFS: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonS
  * JSON (methods declared `jsonSerializable: true`) and `s:`-prefixed
  * structured-clone (everything else, including all error envelopes), with a
  * request-id → method map so a response independently picks the same
- * encoder as its request. One codec per connection — request-id spaces
+ * encoder as its request. One codec per connection; request-id spaces
  * don't collide across connections.
  *
  * @internal
@@ -43,7 +43,7 @@ export function createRpcWireCodec(
         pendingRequestMethods.delete(msg.i)
       }
       // `jsonSerializable` constrains the return-value path (args + return).
-      // Error envelopes (`{ t: 's', i, e }`) carry a thrown value — fall back
+      // Error envelopes (`{ t: 's', i, e }`) carry a thrown value, so fall back
       // to structured-clone so they round-trip instead of crashing the serializer.
       // Detect via `'e' in msg` so `throw undefined` still routes through SC.
       const isErrorResponse = msg.t === 's' && 'e' in msg
@@ -65,7 +65,7 @@ export function createRpcWireCodec(
 
 /**
  * Peek at a wire frame's birpc envelope without engaging a codec's
- * request-id bookkeeping — used by the SSE transport to route a frame
+ * request-id bookkeeping; used by the SSE transport to route a frame
  * (park a POST for its response / answer with a bare 202) before it is
  * handed to birpc proper.
  *

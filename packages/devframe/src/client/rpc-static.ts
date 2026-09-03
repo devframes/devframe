@@ -15,13 +15,15 @@ export async function createStaticRpcClientMode(
   return {
     transport: 'static',
     isTrusted: true,
-    // A static backend has no live socket; every call is a local fetch, so it
-    // is "connected" for its whole life.
+    /**
+     * A static backend has no live socket; every call is a local fetch, so it
+     * is "connected" for its whole life.
+     */
     status: 'connected',
     connectionError: null,
     requestTrust: async () => true,
     requestTrustWithToken: async () => true,
-    // Static backends are always trusted, so there's nothing to exchange.
+    /** Static backends are always trusted, so there's nothing to exchange. */
     requestTrustWithCode: async () => null,
     ensureTrusted: async () => true,
     call: (...args: any): any => staticCaller.call(
@@ -36,7 +38,7 @@ export async function createStaticRpcClientMode(
       args[0] as string,
       args.slice(1),
     ),
-    // No live socket to close — every call is a local fetch.
+    /** No live socket to close; every call is a local fetch. */
     close: () => {},
   }
 }

@@ -12,7 +12,7 @@ export { createDevframeNextHost } from './host'
 
 export interface NextDevframeHubOptions {
   /**
-   * Mount base the hub answers under — every frame lives at `<base><id>/`,
+   * Mount base the hub answers under; every frame lives at `<base><id>/`,
    * so the App Router needs one catch-all route under it. Default:
    * `/__devframes/`.
    */
@@ -30,7 +30,7 @@ export interface NextDevframeHubOptions {
   /**
    * Devframes to mount. Load built-in plugin packages through a
    * bundler-ignored dynamic `import()` (their node code + `import.meta.url`
-   * dist lookups don't survive static Next bundling) and pass them here —
+   * dist lookups don't survive static Next bundling) and pass them here, where
    * `initHub` resolves async/factory entries.
    */
   devframes?: InitHubOptions['devframes']
@@ -77,7 +77,7 @@ export interface NextDevframeHubOptions {
  * dynamic `import()` so its asset lookups resolve at request time; pass `ui`
  * to swap it or `ui: false` for a headless hub.
  *
- * Prefer {@link nextDevframeHub} at a route module — it memoizes this on
+ * Prefer {@link nextDevframeHub} at a route module: it memoizes this on
  * `globalThis` so Next's dev-time route re-evaluation reuses one instance
  * instead of leaking a side-car per reload.
  */
@@ -94,11 +94,11 @@ export async function createNextDevframeHub(options: NextDevframeHubOptions = {}
     ...(options.host != null ? { host: options.host } : {}),
     ...(options.origin != null ? { origin: options.origin } : {}),
     auth: options.auth,
-    // Next route handlers can't accept WS upgrades — always a side-car socket.
+    /** Next route handlers can't accept WS upgrades, so always a side-car socket. */
     ws: options.port != null ? { port: options.port } : { sidecar: true },
-    // MCP is opt-in: the aggregate endpoint exposes privileged agent tools, so
-    // the caller supplies an explicit authorization policy (undefined leaves
-    // the route unmounted).
+    // MCP is opt-in: `mcp: true` is origin-only (trusting same-machine
+    // callers), `mcp: { authorization }` adds an identity check. Undefined
+    // leaves the aggregate route unmounted.
     ...(options.mcp !== undefined ? { mcp: options.mcp } : {}),
     ...(ui ? { ui } : {}),
     ...(options.renderers ? { renderers: options.renderers } : {}),
@@ -186,7 +186,7 @@ export function nextDevframeHub(options: NextDevframeHubOptions = {}): NextDevfr
  * Load `@devframes/hub-ui`'s default UI through a bundler-ignored dynamic
  * `import()`: `createUi()` resolves its prebuilt assets via `import.meta.url`,
  * which only points at the published `dist` when Node loads the package at
- * request time — a static import would be rewritten into a Next server chunk.
+ * request time, since a static import would be rewritten into a Next server chunk.
  */
 async function loadDefaultUi(): Promise<DevframeHubUi> {
   const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ '@devframes/hub-ui')

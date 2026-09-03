@@ -76,7 +76,7 @@ export function createRpcStreamingClientHost(rpc: DevframeRpcClient): RpcStreami
       const sink = uploads.get(key)
       if (!sink)
         return
-      // Server told us to stop — flip the sink's signal so producers
+      // Server told us to stop, so flip the sink's signal so producers
       // observing it can short-circuit. We don't error() here so the
       // local closer-of-record decides terminal state.
       sink.abort('server cancelled upload')
@@ -84,7 +84,7 @@ export function createRpcStreamingClientHost(rpc: DevframeRpcClient): RpcStreami
     },
   })
 
-  // Re-subscribe on reconnect — the server may have rebooted (lost state)
+  // Re-subscribe on reconnect, since the server may have rebooted (lost state)
   // OR the WS dropped briefly (state intact). Either way, sending `subscribe`
   // with `afterSeq: lastSeenSeq` is the right thing: the server replays
   // missed chunks if it has them, otherwise starts fresh.

@@ -110,7 +110,7 @@ export function LogPanel({ branch, selectedHash, onSelectCommit }: LogPanelProps
   }, [rpc, skip, loadPage])
 
   // Feeds the row hover card: metadata + changed-file stats for one commit.
-  // The patch is skipped here — the card only needs totals, and the full diff
+  // The patch is skipped here since the card only needs totals, and the full diff
   // lives in the details panel.
   const loadDetail = useCallback(
     (hash: string) => {

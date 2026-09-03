@@ -99,7 +99,7 @@ describe('messages dev-server (hub context)', () => {
   })
 })
 
-describe('messages dev-server (plain context — warn + noop)', () => {
+describe('messages dev-server (plain context: warn + noop)', () => {
   let server: MessagesServer
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 

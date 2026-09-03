@@ -21,7 +21,7 @@ test.describe('devframe connect (next-devframe-hub)', () => {
       }
     }, { timeout: 150_000, intervals: [1000] }).toBe(200)
 
-    // The meta advertises the in-process MCP endpoint — same origin as the
+    // The meta advertises the in-process MCP endpoint: same origin as the
     // Next app, no side-car port (the `/_next/mcp` shape).
     const meta = await (await fetch(`${ORIGIN}/__devframes/__connection.json`)).json() as {
       mcp?: { path: string, port?: number }
@@ -29,13 +29,13 @@ test.describe('devframe connect (next-devframe-hub)', () => {
     expect(meta.mcp).toEqual({ path: '__mcp' })
 
     await withConnectClient(REGISTRY, async (client) => {
-      // Index: the hub registered itself (explicitly — it runs in-process,
+      // Index: the hub registered itself (explicitly, since it runs in-process,
       // not via createDevServer) with the Next server's own origin.
       const index = parseToolText(await client.callTool({ name: 'devframe_connect_list-instances', arguments: {} }))
       const hub = index.instances.find((entry: any) => entry.id === 'example:next-devframe-hub')
       expect(hub).toBeDefined()
       // The probe may adopt an explicit address family for the recorded
-      // `localhost` origin — accept either spelling.
+      // `localhost` origin, so accept either spelling.
       expect(hub.mcp.url).toMatch(/^http:\/\/(?:localhost|127\.0\.0\.1):9878\/__devframes\/__mcp$/)
 
       // The hub's agent surface flows through: the agent-flagged hub command,

@@ -17,7 +17,7 @@ export interface CreateDesignConfigOptions {
    * json-render renderer module) pass `presetWind3()` instead: Wind4 registers
    * its theme + `--un-*` custom properties via `@property { inherits: false }`
    * and keeps them in a document `:root {}` block, neither of which reaches a
-   * shadow tree — so its `color-mix(var(--colors-*))` utilities resolve to
+   * shadow tree, so its `color-mix(var(--colors-*))` utilities resolve to
    * nothing there. Wind3 bakes the same `@antfu/design` semantic utilities to
    * concrete `rgb()` + `.dark` variants, which are self-contained inside a
    * shadow root.
@@ -25,17 +25,19 @@ export interface CreateDesignConfigOptions {
   base?: Preset<any> | Preset<any>[]
 }
 
-// Shared devframe UnoCSS base. Every plugin and example composes `@antfu/design`
-// the same way — its preset (tuned to devframe's sage green) over a Wind base,
-// Phosphor icons, DM Sans/Mono web fonts, and the directive/variant-group
-// transformers — so the surfaces look and feel like one product across
-// frameworks. Each app extends this via `mergeConfigs([designConfig, { … }])`
-// and contributes only its own extraction globs (and any safelist).
-//
-// The shared web fonts (`sans`/`mono`), the named `z-*` layers and the `h-nav`
-// navbar height live here so every surface shares one font stack, one z-index
-// scale and one fixed navbar height. The `@antfu/design` preset blocks plain
-// `z-<number>`, so the layers are named on purpose.
+/**
+ * Shared devframe UnoCSS base. Every plugin and example composes `@antfu/design`
+ * the same way: its preset (tuned to devframe's sage green) over a Wind base,
+ * Phosphor icons, DM Sans/Mono web fonts, and the directive/variant-group
+ * transformers, so the surfaces look and feel like one product across
+ * frameworks. Each app extends this via `mergeConfigs([designConfig, { … }])`
+ * and contributes only its own extraction globs (and any safelist).
+ *
+ * The shared web fonts (`sans`/`mono`), the named `z-*` layers and the `h-nav`
+ * navbar height live here so every surface shares one font stack, one z-index
+ * scale and one fixed navbar height. The `@antfu/design` preset blocks plain
+ * `z-<number>`, so the layers are named on purpose.
+ */
 export function createDesignConfig(options: CreateDesignConfigOptions = {}) {
   const base = options.base ?? presetWind4()
   return defineConfig({
@@ -45,19 +47,23 @@ export function createDesignConfig(options: CreateDesignConfigOptions = {}) {
       presetIcons({ scale: 1.1 }),
     ],
     transformers: [transformerDirectives(), transformerVariantGroup()],
-    // The shared class-helper builders (`design/design.ts`) assemble their class
-    // chains at runtime, so every app scans that one file (it carries
-    // `@unocss-include`) for extraction regardless of its own framework globs.
+    /**
+     * The shared class-helper builders (`design/design.ts`) assemble their class
+     * chains at runtime, so every app scans that one file (it carries
+     * `@unocss-include`) for extraction regardless of its own framework globs.
+     */
     content: {
       filesystem: [fileURLToPath(new URL('./design.ts', import.meta.url))],
     },
-    // Wind leaves bare `border`/`border-b` at currentColor; restore the subtle
-    // shared border color (matching `border-base`) for unqualified borders.
+    /**
+     * Wind leaves bare `border`/`border-b` at currentColor; restore the subtle
+     * shared border color (matching `border-base`) for unqualified borders.
+     */
     preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
     shortcuts: {
-      // Fixed navbar height, shared by every surface's top nav.
+      /** Fixed navbar height, shared by every surface's top nav. */
       'h-nav': 'h-10',
-      // Named z-index layers, shared across every surface.
+      /** Named z-index layers, shared across every surface. */
       'z-nav': 'z-[30]',
       'z-dropdown': 'z-[40]',
       'z-tooltip': 'z-[45]',
@@ -70,7 +76,7 @@ export function createDesignConfig(options: CreateDesignConfigOptions = {}) {
   })
 }
 
-// The default shared base (Wind4), consumed by every plugin and example.
+/** The default shared base (Wind4), consumed by every plugin and example. */
 export const designConfig = createDesignConfig()
 
 /**
@@ -91,7 +97,7 @@ export const designConfig = createDesignConfig()
  * declared, so a host page built with Wind4 registers `--un-bg-opacity` /
  * `--un-border-opacity` / `--un-text-opacity` (et al.) as
  * `@property { syntax: '<percentage>'; inherits: false }` for the whole
- * document — including inside our shadow tree. Our shadow CSS is Wind3, which
+ * document, including inside our shadow tree. Our shadow CSS is Wind3, which
  * sets those same vars **unitless** (`--un-border-opacity: 0.13`), so the
  * global `<percentage>` registration makes every such declaration invalid and
  * the dependent `color-mix()` / `rgb(… / var(--un-*))` value collapses (a
@@ -100,9 +106,9 @@ export const designConfig = createDesignConfig()
  * The shadow stylesheet sets and reads these vars entirely within itself, so
  * renaming every `--un-` to a per-surface prefix (`--un-jr-`, `--un-hub-`)
  * keeps it self-consistent while making it immune to whatever the host page
- * registered — the renamed names are distinct properties the host's
+ * registered, since the renamed names are distinct properties the host's
  * `@property --un-*` rules never match. Apply only to shadow-injected CSS
- * (`hub-ui` dock, `json-render-ui` renderer module) — the Vite-served SPAs own
+ * (`hub-ui` dock, `json-render-ui` renderer module); the Vite-served SPAs own
  * their whole document and need no rename.
  *
  * @param css - The compiled shadow-root stylesheet.
@@ -145,15 +151,15 @@ function hexToRgbTriplet(hex: string): string | undefined {
  * variables `primary-ramp.css` derives from `--devframe-primary`.
  *
  * Wind3 (unlike Wind4) resolves each theme color to a literal `rgb(r g b /
- * <alpha>)` at compile time — the `<alpha>` slot is already dynamic (a slash
+ * <alpha>)` at compile time, and the `<alpha>` slot is already dynamic (a slash
  * literal, or the utility's own `--un-*-opacity` variable), but the base `r g
  * b` triplet is baked in, so every `primary`-based utility (`text-primary`,
  * `bg-primary`, `btn-primary`, `ring-primary-500`, …) ignores
- * `--devframe-primary` entirely — only hand-written rules that already
+ * `--devframe-primary` entirely; only hand-written rules that already
  * reference `--colors-primary-*` directly (the dock's glow gradient,
  * `primary-ramp.css` itself) retint. Swapping the baked triplet for `from
  * var(--colors-primary-<stop>, <hex>) r g b` keeps that exact alpha
- * mechanism intact while sourcing the base color from the variable — a
+ * mechanism intact while sourcing the base color from the variable, so a
  * rebrand's `--devframe-primary` now reaches every baked utility too.
  *
  * Call once per generated pass, after `generator.generate(...)`, passing the

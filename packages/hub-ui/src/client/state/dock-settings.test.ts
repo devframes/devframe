@@ -75,16 +75,16 @@ describe('resolveNextRecentDockId', () => {
   }
 
   it('follows the a–e walkthrough on a 3-slot bar', () => {
-    // [a] [b] [c] | [O] — selecting d from the overflow raises it
+    // [a] [b] [c] | [O]: selecting d from the overflow raises it
     expect(next(null, d)).toBe('d')
-    // [a] [b] | {d} [O] — selecting visible a/b (or d itself) keeps d raised
+    // [a] [b] | {d} [O]: selecting visible a/b (or d itself) keeps d raised
     expect(next(d, a)).toBe('d')
     expect(next(d, b)).toBe('d')
     expect(next(d, d)).toBe('d')
-    // [a] [b] | [d] [O] — selecting e from the overflow replaces d
+    // [a] [b] | [d] [O]: selecting e from the overflow replaces d
     expect(next(d, e)).toBe('e')
     // selecting c (folded out by the reserved slot) becomes recent, and the
-    // split renders it in its natural place — back to [a] [b] {c} | [O]
+    // split renders it in its natural place, back to [a] [b] {c} | [O]
     expect(next(d, c)).toBe('c')
     expect(docksSplitGroupsWithCapacity(rail, 3, c).recent).toBeNull()
   })

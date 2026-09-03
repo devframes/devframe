@@ -24,7 +24,7 @@ export const readText = defineAssetsRpc({
   setup: (ctx) => {
     const assets = getAssetsContext(ctx)
     return {
-      // See `list.ts` for why the async handler is cast.
+      /** See `list.ts` for why the async handler is cast. */
       handler: (async (path: string, limit: number = DEFAULT_LIMIT): Promise<string | null> => {
         try {
           const content = await fsp.readFile(await resolveAssetReadPath(assets.dir, path), 'utf-8')

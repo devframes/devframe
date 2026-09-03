@@ -20,15 +20,16 @@ export default defineDevframe({
   cli: {
     command: 'devframe-files-inspector',
     port: 9876,
-    // Single-user localhost demo - skip the trust handshake so the served
-    // SPA can call RPC without an OTP round-trip.
+    /**
+     * Single-user localhost demo - skip the trust handshake so the served
+     * SPA can call RPC without an OTP round-trip.
+     */
     auth: false,
-    // Serve the agent surface over the dev server's `/__mcp` route and
-    // register the instance for `devframe connect` discovery. This demo binds
-    // to loopback (`localhost:9876`), so `mcp: true` (the loopback origin
-    // gate, trusting same-machine callers) is enough - no bearer plumbing. A
-    // network-reachable tool would harden it with
-    // `mcp: { authorization: process.env.MY_TOKEN }`.
+    /**
+     * Serve the agent surface at `/__mcp` and register for `devframe connect`
+     * discovery. This loopback demo trusts same-machine callers (`mcp: true`);
+     * a network-reachable tool would harden it with `mcp: { authorization }`.
+     */
     mcp: true,
   },
   setup(ctx) {

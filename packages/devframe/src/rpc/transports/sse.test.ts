@@ -17,7 +17,7 @@ interface ClientFunctions {
 
 /**
  * Wire the client channel straight into the server transport's fetch
- * handler — the full SSE wire protocol (stream frames, session header,
+ * handler: the full SSE wire protocol (stream frames, session header,
  * parked POSTs) without a real HTTP server.
  */
 function connectPair(options: {

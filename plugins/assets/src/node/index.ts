@@ -14,7 +14,7 @@ export interface SetupAssetsOptions {
   /** Extensions `upload` accepts, or `'*'` to accept any. */
   uploadExtensions: readonly string[] | '*'
   /**
-   * URL base the managed directory is served at — the base every asset's
+   * URL base the managed directory is served at, the base every asset's
    * `publicPath` is resolved against.
    */
   baseURL: string
@@ -37,7 +37,7 @@ const watchers = new WeakMap<DevframeNodeContext, () => Promise<void>>()
  * RPCs (when enabled), and starts a live file watcher in dev mode.
  *
  * Raw asset bytes (for `<img>`/`<video>`/download previews) are served by
- * the **host** the plugin is attached to — Vite, Nuxt, or any framework
+ * the **host** the plugin is attached to: Vite, Nuxt, or any framework
  * already serves its `public/` dir at {@link SetupAssetsOptions.baseURL}.
  * The plugin only serves them itself when `serveStatic` is set (the
  * standalone CLI, which is its own host).
@@ -75,7 +75,7 @@ export async function setupAssets(ctx: DevframeNodeContext, options: SetupAssets
 
 /**
  * Stop the live file watcher started by {@link setupAssets}. Test harnesses
- * wrap their dev-server `close()` with this — see `test/_utils.ts` — so a
+ * wrap their dev-server `close()` with this (see `test/_utils.ts`), so a
  * leaked chokidar watcher doesn't keep the process alive.
  */
 export async function disposeAssetsWatcher(ctx: DevframeNodeContext): Promise<void> {

@@ -104,7 +104,7 @@ export interface RpcStreamingChannelOptions {
    * replay-on-resubscribe. `0` (default) disables replay; on reconnect
    * the consumer only sees chunks that arrive after subscribing.
    *
-   * The buffer is per stream id, not per channel — each `channel.start()`
+   * The buffer is per stream id, not per channel; each `channel.start()`
    * gets its own.
    */
   replayWindow?: number
@@ -151,7 +151,7 @@ export interface RpcStreamingChannel<T = unknown> {
   /** All active outbound stream ids on this channel. */
   ids: () => string[]
   /**
-   * Open an inbound stream — the server side of a client-to-server
+   * Open an inbound stream: the server side of a client-to-server
    * upload. Allocates an id, returns a `StreamReader<T>` that fills as
    * the client writes chunks. Typical pattern is to call this from an
    * action handler, kick off background processing, and return the id

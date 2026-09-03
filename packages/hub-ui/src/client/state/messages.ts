@@ -10,6 +10,14 @@ export interface MessagesState {
   pendingSelectId: string | null
 }
 
+function shouldToast(entry: DevframeMessageEntry, prev: DevframeMessageEntry | undefined, isInitialFetch: boolean): boolean {
+  if (!entry.notify)
+    return false
+  if (!prev)
+    return isInitialFetch ? entry.status === 'loading' : true
+  return JSON.stringify(entry) !== JSON.stringify(prev)
+}
+
 let _messagesState: Reactive<MessagesState> | undefined
 
 export function useMessages(context: DocksContext): Reactive<MessagesState> {
@@ -29,7 +37,7 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
   async function updateMessages() {
     // The feed is served by `@devframes/plugin-messages` (the hub itself ships
     // no list RPC). Cast because the plugin's RPC augmentation is not imported
-    // here — hub-ui must not depend on the plugin package.
+    // here; hub-ui must not depend on the plugin package.
     const result = await context.rpc.call(
       'devframes:plugin:messages:list' as any,
       lastVersion,
@@ -44,24 +52,14 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
     for (const id of result.removedIds)
       entryMap.delete(id)
 
-    // Apply new/updated entries
+    // Apply new/updated entries. On initial fetch (page refresh) only entries
+    // still loading toast; afterwards any notifying new or changed entry does.
     for (const entry of result.entries) {
       const prev = entryMap.get(entry.id)
-      if (!prev) {
+      if (!prev)
         newCount++
-        if (isInitialFetch) {
-          // On initial fetch (page refresh), only toast entries still loading
-          if (entry.notify && entry.status === 'loading')
-            addToast(entry)
-        }
-        else {
-          if (entry.notify)
-            addToast(entry)
-        }
-      }
-      else if (entry.notify && JSON.stringify(entry) !== JSON.stringify(prev)) {
+      if (shouldToast(entry, prev, isInitialFetch))
         addToast(entry)
-      }
       entryMap.set(entry.id, entry)
     }
 
@@ -71,7 +69,7 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
     isInitialFetch = false
   }
 
-  // A hub without `@devframes/plugin-messages` serves no list RPC — degrade
+  // A hub without `@devframes/plugin-messages` serves no list RPC, so degrade
   // to an empty feed instead of surfacing unhandled rejections.
   const refresh = () => updateMessages().catch(() => {})
 

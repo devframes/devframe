@@ -39,7 +39,7 @@ const STORYBOOKS: StorybookMeta[] = [
 // regardless of the process cwd.
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url))
 const require = createRequire(import.meta.url)
-// Storybook's CLI entry — run with `node` so we don't depend on PATH/.bin.
+// Storybook's CLI entry, run with `node` so we don't depend on PATH/.bin.
 const storybookBin = join(dirname(require.resolve('storybook/package.json')), 'dist/bin/dispatcher.js')
 
 const pluginDir = (id: string): string => join(repoRoot, 'plugins', id)
@@ -52,7 +52,7 @@ const launchCommandFor = (id: string): string => `storybook:launch:${id}`
 // eslint-disable-next-line no-control-regex
 const ANSI = /\u001B\[[0-9;]*[A-Z]/gi
 
-/** Last non-empty, ANSI-stripped line of a chunk — the launcher's `digest`. */
+/** Last non-empty, ANSI-stripped line of a chunk, the launcher's `digest`. */
 function lastLine(chunk: string): string | undefined {
   const lines = chunk.replace(ANSI, '').split(/\r?\n/).map(l => l.trim()).filter(Boolean)
   return lines.at(-1)
@@ -73,7 +73,7 @@ export interface StorybookHubOptions {
 
 /**
  * A Vite plugin that turns this package's Vite dev/preview server into a
- * devframe hub whose docks are the built-in plugins' Storybooks — plus the live
+ * devframe hub whose docks are the built-in plugins' Storybooks, plus the live
  * terminals plugin. It's the unified Storybook host, built as a devframe hub
  * rather than via Storybook Composition.
  *
@@ -111,7 +111,7 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
    * Spawn (once) the `storybook dev` server for a plugin and resolve when it
    * answers on its port. Concurrent callers await the same boot. The process
    * is owned by the hub's terminals subsystem (`ctx.terminals`), so it shows
-   * up as a read-only session — proper title + icon, output streamed live —
+   * up as a read-only session (proper title + icon, output streamed live)
    * in the Terminals dock. `reportDigest` receives the tail of that output so
    * the caller can surface boot progress on the launcher.
    */
@@ -133,7 +133,7 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
     // terminals host; the public interface doesn't surface it yet.)
     const stale = ctx.terminals.sessions.get(sessionId)
     if (stale)
-      (ctx.terminals as unknown as { remove?: (s: typeof stale) => void }).remove?.(stale)
+      (ctx.terminals as { remove?: (s: typeof stale) => void }).remove?.(stale)
 
     const session = await ctx.terminals.startChildProcess(
       {
@@ -189,8 +189,8 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
 
     const cwd = viteConfig?.root ?? process.cwd()
 
-    // In build mode, serve each pre-built Storybook on the Vite server itself
-    // — outside the hub base, so a launcher iframe resolves it on this origin.
+    // In build mode, serve each pre-built Storybook on the Vite server itself,
+    // outside the hub base, so a launcher iframe resolves it on this origin.
     if (mode === 'build') {
       for (const meta of STORYBOOKS) {
         if (existsSync(storybookStaticDir(meta.id)))
@@ -201,14 +201,18 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
     hub = initHub({
       base,
       cwd,
-      // Bind dual-stack (`::` accepts IPv6 + IPv4-mapped) so the side-car is
-      // dialable via `::1`, `127.0.0.1`, and from outside the machine — the
-      // default `localhost` bind resolves to `::1` only on some hosts, which
-      // strands IPv4 clients and remote browsers.
+      /**
+       * Bind dual-stack (`::` accepts IPv6 + IPv4-mapped) so the side-car is
+       * dialable via `::1`, `127.0.0.1`, and from outside the machine; the
+       * default `localhost` bind resolves to `::1` only on some hosts, which
+       * strands IPv4 clients and remote browsers.
+       */
       host: '::',
       auth: false,
-      // Prefer 9787 but fall back to a free port when taken; the client
-      // discovers whatever was chosen via `__connection.json`.
+      /**
+       * Prefer 9787 but fall back to a free port when taken; the client
+       * discovers whatever was chosen via `__connection.json`.
+       */
       ws: options.port != null ? { port: options.port } : { sidecar: true },
       getStorageDir(scope) {
         if (scope === 'workspace')
@@ -217,17 +221,19 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
           return join(cwd, 'node_modules/.devframe-storybook')
         return join(homedir(), '.devframe-storybook')
       },
-      // The live terminals plugin — a real integration docked alongside the
-      // Storybooks, grouped separately so its "Terminals" reads apart from the
-      // "Terminals" Storybook. It also mirrors the hub's `ctx.terminals`
-      // sessions, so the spawned `storybook dev` processes appear inside it.
+      /**
+       * The live terminals plugin, a real integration docked alongside the
+       * Storybooks, grouped separately so its "Terminals" reads apart from the
+       * "Terminals" Storybook. It also mirrors the hub's `ctx.terminals`
+       * sessions, so the spawned `storybook dev` processes appear inside it.
+       */
       devframes: [{ devframe: createTerminalsDevframe(), dock: { category: 'Plugins' } }],
       configure(context) {
         // Live launcher handles, so the launch command can patch each tile's
         // status/digest/terminalSessionId as the process boots.
         const launchers = new Map<string, { update: (patch: Partial<DevframeViewLauncher>) => void }>()
 
-        /** The full launcher payload for a tile (patched wholesale — `update` shallow-merges). */
+        /** The full launcher payload for a tile (patched wholesale, since `update` shallow-merges). */
         const launcherState = (
           meta: StorybookMeta,
           patch: Partial<DevframeViewLauncher['launcher']>,
@@ -280,7 +286,7 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
 
         // One launcher dock per plugin Storybook, each bound to a command. A
         // viewer dispatches the command over `hub:commands:execute` (the
-        // serializable path — the handler is stripped when the entry crosses
+        // serializable path, since the handler is stripped when the entry crosses
         // into shared state), and reads back the {@link EnsureStorybookResult}
         // to iframe the result.
         for (const meta of STORYBOOKS) {
@@ -318,12 +324,12 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
       viteConfig = config
     },
 
-    // `vite` (dev): Storybooks are spawned on demand.
+    /** `vite` (dev): Storybooks are spawned on demand. */
     async configureServer(server) {
       await startHub(server, 'dev')
     },
 
-    // `vite preview` (after `vite build`): Storybooks are served static.
+    /** `vite preview` (after `vite build`): Storybooks are served static. */
     async configurePreviewServer(server) {
       await startHub(server, 'build')
     },

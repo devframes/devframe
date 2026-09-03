@@ -20,7 +20,7 @@ const verifying = ref(false)
 const otp = useTemplateRef<InstanceType<typeof OtpInput>>('otp')
 
 // When a failed attempt clears the boxes we don't want that programmatic reset
-// to also wipe the error message it just set — skip the next change once.
+// to also wipe the error message it just set, so skip the next change once.
 let skipErrorClear = false
 
 // Clear the error as soon as the user edits the code again.

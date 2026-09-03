@@ -56,6 +56,35 @@ function wordDiffRanges(oldStr: string, newStr: string): { old: WordRange[], new
  * hunk (first removed with first added, and so on) and compute their word-level
  * ranges. Returns a map from the line's index in `lines` to its changed ranges.
  */
+interface ChangeBlock {
+  delStart: number
+  addStart: number
+  addEnd: number
+}
+
+/** Scan the contiguous del-run then add-run starting at `delStart`. */
+function scanChangeBlock(lines: DiffLineChange[], delStart: number): ChangeBlock {
+  let i = delStart
+  while (i < lines.length && lines[i].type === 'del') i++
+  const addStart = i
+  while (i < lines.length && lines[i].type === 'add') i++
+  return { delStart, addStart, addEnd: i }
+}
+
+/** Pair removed with added lines in a block and record their word ranges. */
+function pairBlockRanges(lines: DiffLineChange[], block: ChangeBlock, ranges: Map<number, WordRange[]>): void {
+  const pairs = Math.min(block.addStart - block.delStart, block.addEnd - block.addStart)
+  for (let k = 0; k < pairs; k++) {
+    const delLine = lines[block.delStart + k]
+    const addLine = lines[block.addStart + k]
+    const { old, new: next } = wordDiffRanges(delLine.content, addLine.content)
+    if (old.length > 0)
+      ranges.set(block.delStart + k, old)
+    if (next.length > 0)
+      ranges.set(block.addStart + k, next)
+  }
+}
+
 function computeWordRanges(lines: DiffLineChange[]): Map<number, WordRange[]> {
   const ranges = new Map<number, WordRange[]>()
   let i = 0
@@ -64,20 +93,9 @@ function computeWordRanges(lines: DiffLineChange[]): Map<number, WordRange[]> {
       i++
       continue
     }
-    const delStart = i
-    while (i < lines.length && lines[i].type === 'del') i++
-    const addStart = i
-    while (i < lines.length && lines[i].type === 'add') i++
-    const pairs = Math.min(addStart - delStart, i - addStart)
-    for (let k = 0; k < pairs; k++) {
-      const delLine = lines[delStart + k]
-      const addLine = lines[addStart + k]
-      const { old, new: next } = wordDiffRanges(delLine.content, addLine.content)
-      if (old.length > 0)
-        ranges.set(delStart + k, old)
-      if (next.length > 0)
-        ranges.set(addStart + k, next)
-    }
+    const block = scanChangeBlock(lines, i)
+    pairBlockRanges(lines, block, ranges)
+    i = block.addEnd
   }
   return ranges
 }

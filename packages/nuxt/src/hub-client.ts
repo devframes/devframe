@@ -18,7 +18,7 @@ export interface UseDevframeHubClientOptions extends DevframeClientRuntimeOption
 
 /**
  * Boot the devframes-hub **client runtime** inside a Nuxt (Vue) client
- * component — the browser half of `@devframes/nuxt/hub`. Connects RPC to the
+ * component: the browser half of `@devframes/nuxt/hub`. Connects RPC to the
  * hub (defaulting `base` to `/__devframes/`), assembles the shared
  * `DevframeClientContext`, imports each dock's client script into the page,
  * and disposes when the current effect scope is torn down. Returns a ref that

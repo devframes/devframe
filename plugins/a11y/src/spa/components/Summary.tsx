@@ -13,7 +13,7 @@ interface SummaryProps {
 const IMPACTS: Impact[] = ['critical', 'serious', 'moderate', 'minor']
 
 /**
- * The severity summary chips — also the impact filter. The one expressive,
+ * The severity summary chips, which double as the impact filter. The one expressive,
  * domain-specific color (WCAG severity) rides an inline `--impact` CSS var so
  * the utility classes can reference it.
  */
@@ -35,7 +35,7 @@ export function Summary(props: SummaryProps) {
               }}
               style={{ '--impact': IMPACT_COLOR[impact] }}
               aria-pressed={pressed()}
-              aria-label={`${count()} ${IMPACT_LABEL[impact]} issues — filter and highlight`}
+              aria-label={`${count()} ${IMPACT_LABEL[impact]} issues: filter and highlight`}
               onClick={() => props.onToggle(impact)}
               onMouseEnter={() => props.onHover?.(impact)}
               onMouseLeave={() => props.onHover?.(null)}

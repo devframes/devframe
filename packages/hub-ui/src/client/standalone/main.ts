@@ -7,14 +7,14 @@ import { isDark } from '../state/color-mode'
 import { DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
 import { applyViewerBackground } from './viewer-background'
 
-// The standalone viewer — a vanilla shell served at the hub base itself
+// The standalone viewer: a vanilla shell served at the hub base itself
 // (`DevframeHubUi.viewer`): resolve the shared connection, build the docks
 // context, and hand the whole viewport to the DockStandalone element. The
 // shell stays frameworkless on purpose; everything visual lives inside the
 // custom element's shadow root.
 
 // The standalone viewer runs in the light DOM, so mirror the color mode onto the
-// document element — its background and foreground controls follow the
+// document element; its background and foreground controls follow the
 // Auto/Light/Dark choice, including when branding supplies a custom background.
 const brandingBackground = useBrandingBackground(window.self !== window.top ? 'iframe' : 'standalone')
 
@@ -56,7 +56,7 @@ async function main(): Promise<void> {
   setDevframeClientContext(context)
 
   const { DockStandalone } = await import('../components/DockStandalone')
-  const el = new DockStandalone({ context }) as unknown as HTMLElement
+  const el = new DockStandalone({ context })
   applyPrimaryColor(el, branding.primaryColor)
   document.getElementById('app')!.appendChild(el)
 }

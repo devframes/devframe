@@ -17,7 +17,7 @@ const GIT_ENV = {
   GIT_COMMITTER_EMAIL: 'test@example.com',
   GIT_AUTHOR_DATE: '2020-01-01T00:00:00Z',
   GIT_COMMITTER_DATE: '2020-01-01T00:00:00Z',
-  // Ignore the developer's global/system config so commits are deterministic.
+  /** Ignore the developer's global/system config so commits are deterministic. */
   GIT_CONFIG_GLOBAL: '/dev/null',
   GIT_CONFIG_SYSTEM: '/dev/null',
 }

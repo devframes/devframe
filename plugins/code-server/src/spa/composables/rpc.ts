@@ -32,7 +32,7 @@ export async function connect(): Promise<void> {
     // Reflect the live connection: a dropped socket or refused auth swaps the
     // panel to a clear state instead of leaving a stale/blank editor.
     client.events.on('connection:status', () => applyStatus(client))
-    // Best-effort trust handshake — shared-state subscription needs it, so kick
+    // Best-effort trust handshake, which shared-state subscription needs, so kick
     // it off and ignore failures/timeouts on the single-user standalone server.
     if (client.connectionMeta.backend === 'websocket')
       client.ensureTrusted(5000).catch(() => {})

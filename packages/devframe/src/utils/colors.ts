@@ -1,5 +1,5 @@
 /**
- * A colorizer — callable as a function (`colors.red('foo')`) or as a
+ * A colorizer, callable as a function (`colors.red('foo')`) or as a
  * tagged template (``colors.red`foo ${bar}` ``).
  */
 export interface ColorFn {
@@ -29,7 +29,7 @@ function makeColor(open: number, close: number): ColorFn {
   const c = `\x1B[${close}m`
   return ((arg: unknown, ...values: unknown[]): string => {
     if (Array.isArray(arg) && 'raw' in arg) {
-      const strings = arg as unknown as TemplateStringsArray
+      const strings = arg as TemplateStringsArray
       let out = ''
       for (let i = 0; i < strings.length; i++) {
         out += strings[i]

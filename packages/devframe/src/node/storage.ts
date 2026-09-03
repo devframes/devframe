@@ -13,11 +13,9 @@ export interface CreateStorageOptions<T extends object> {
 }
 
 // `JSON.parse` with a reviver that drops `__proto__`/`constructor.prototype`
-// keys, mirroring destr's core prototype-pollution guard. Storage only ever
-// reads back JSON it wrote itself via `JSON.stringify`, so destr's lenient
-// (non-strict) parsing of bare keywords/quoted strings never applies here -
-// this file is always a JSON object literal, and invalid JSON should throw
-// (caught below) rather than fall back to the raw string.
+// keys, guarding against prototype pollution. Storage only reads back JSON it
+// wrote via `JSON.stringify`, so invalid JSON should throw (caught below)
+// rather than fall back to a raw string.
 function safeJsonParse<T>(text: string): T {
   return JSON.parse(text, (key, value) => {
     if (key === '__proto__' || (key === 'constructor' && value && typeof value === 'object' && 'prototype' in value))

@@ -9,15 +9,19 @@ const config: StorybookConfig = {
     name: 'storybook-solidjs-vite',
     options: {},
   },
-  // `storybook-solidjs-vite` wires `vite-plugin-solid` itself; we only add UnoCSS
-  // (auto-loading the plugin-root `uno.config.ts`) and the shared source aliases
-  // so `devframe/*` imports resolve without a prior build.
+  /**
+   * `storybook-solidjs-vite` wires `vite-plugin-solid` itself; we only add UnoCSS
+   * (auto-loading the plugin-root `uno.config.ts`) and the shared source aliases
+   * so `devframe/*` imports resolve without a prior build.
+   */
   async viteFinal(config) {
     return mergeConfig(config, {
       resolve: { alias },
       plugins: [UnoCSS()],
-      // Dev tool reached from arbitrary hostnames (LAN IPs, tunnels,
-      // tailnets), e.g. when iframed by the storybook-hub example.
+      /**
+       * Dev tool reached from arbitrary hostnames (LAN IPs, tunnels,
+       * tailnets), e.g. when iframed by the storybook-hub example.
+       */
       server: { allowedHosts: true },
     })
   },

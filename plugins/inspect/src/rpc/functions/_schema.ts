@@ -11,7 +11,7 @@ type MaybeJsonSchema = StandardSchemaV1['~standard'] & Partial<StandardJSONSchem
  * Uses the schema's own [Standard JSON Schema](https://standardschema.dev/)
  * converter (`~standard.jsonSchema`, implemented by e.g. zod 4) when the
  * validator provides one, and degrades to a permissive object schema
- * otherwise (e.g. valibot, which has no native converter) — so introspection
+ * otherwise (e.g. valibot, which has no native converter), so introspection
  * never throws and never pulls in a converter library for a validator devframe
  * doesn't otherwise depend on.
  */

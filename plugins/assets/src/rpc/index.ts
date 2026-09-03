@@ -8,10 +8,10 @@ import { readText } from './functions/read-text'
 import { rename } from './functions/rename'
 import { upload } from './functions/upload'
 
-/** Read-only RPC — always registered. */
+/** Read-only RPC, always registered. */
 export const readFunctions = [list, readImageMeta, readText, capabilities] as const
 
-/** Mutating RPC — registered only when write actions are enabled. */
+/** Mutating RPC, registered only when write actions are enabled. */
 export const writeFunctions = [upload, rename, deleteAssets, mkdir] as const
 
 export const serverFunctions = [...readFunctions, ...writeFunctions] as const

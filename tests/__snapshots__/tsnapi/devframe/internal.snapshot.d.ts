@@ -127,7 +127,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
       channel: string;
       id: string;
     }) => string;
-    readonly fix: "Track the producer lifecycle — guard writes with the `stream.signal.aborted` flag.";
+    readonly fix: "Track the producer lifecycle by guarding writes with the `stream.signal.aborted` flag.";
   };
   readonly DF0032: {
     readonly why: (p: {
@@ -159,7 +159,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     readonly why: (p: {
       name: string;
     }) => string;
-    readonly fix: "Complete the auth handshake (or connect with a static/pre-shared token) before calling a trusted method. Untrusted callers may only call `anonymous:`-prefixed methods — see `isAnonymousRpcMethod`.";
+    readonly fix: "Complete the auth handshake (or connect with a static/pre-shared token) before calling a trusted method. Untrusted callers may only call `anonymous:`-prefixed methods; see `isAnonymousRpcMethod`.";
   };
   readonly DF0037: {
     readonly why: (p: {
@@ -208,7 +208,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     readonly why: (p: {
       port: number;
     }) => string;
-    readonly fix: "Call devframe_connect_list-instances for the current instance list — the instance may have stopped or changed port.";
+    readonly fix: "Call devframe_connect_list-instances for the current instance list; the instance may have stopped or changed port.";
   };
   readonly DF0051: {
     readonly why: (p: {
@@ -228,7 +228,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     readonly why: (p: {
       id: string;
     }) => string;
-    readonly fix: "Await `instance.ready` (or any request through `instance.handler`) before reading `connectionMeta()` — the WebSocket binding it describes is only known once initialization completes.";
+    readonly fix: "Await `instance.ready` (or any request through `instance.handler`) before reading `connectionMeta()`; the WebSocket binding it describes is only known once initialization completes.";
   };
   readonly DF0055: {
     readonly why: (p: {
@@ -244,7 +244,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
   };
   readonly DF0057: {
     readonly why: () => string;
-    readonly fix: "Clients connect over the SSE endpoint instead — no upgrade wiring is needed. Remove `ws: false` if the instance should serve a WebSocket after all.";
+    readonly fix: "Clients connect over the SSE endpoint instead, so no upgrade wiring is needed. Remove `ws: false` if the instance should serve a WebSocket after all.";
   };
   readonly DF0058: {
     readonly why: (p: {
@@ -275,7 +275,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
       required: string;
       installed: string;
     }) => string;
-    readonly fix: "Align the installed assets package with the version its node package declares — they are published in lockstep.";
+    readonly fix: "Align the installed assets package with the version its node package declares; they are published in lockstep.";
   };
   readonly DF0062: {
     readonly why: (p: {
@@ -305,7 +305,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
       field: "package" | "version";
       value: string;
     }) => string;
-    readonly fix: "A remote-assets `package` must be a valid npm package name and `version` an exact semver version (e.g. `1.2.3`) — they are interpolated into CDN URLs and the cache path.";
+    readonly fix: "A remote-assets `package` must be a valid npm package name and `version` an exact semver version (e.g. `1.2.3`); they are interpolated into CDN URLs and the cache path.";
   };
   readonly DF0066: {
     readonly why: (p: {
@@ -341,7 +341,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
       package: string;
       reason: string;
     }) => string;
-    readonly fix: "A service package's default export must be a factory returning a `DevframeServiceDefinition` — an object with `package`, `version`, `scope`, and a `setup` function.";
+    readonly fix: "A service package's default export must be a factory returning a `DevframeServiceDefinition`, an object with `package`, `version`, `scope`, and a `setup` function.";
   };
   readonly DF0072: {
     readonly why: (p: {

@@ -42,7 +42,7 @@ export interface ContextRpcServer {
 
 /**
  * Bind a devframe context's registered RPC functions to a birpc group,
- * transport-agnostically — the shared core under the instance shell's own
+ * transport-agnostically: the shared core under the instance shell's own
  * HTTP+WS binding (Node http + WS) and the Bun fetch-upgrade tier of
  * `createHandler`.
  *
@@ -54,7 +54,7 @@ export interface ContextRpcServer {
  */
 export function createContextRpcServer(options: CreateContextRpcServerOptions): ContextRpcServer {
   const { context } = options
-  const rpcHost = context.rpc as unknown as RpcFunctionsHostImpl
+  const rpcHost = context.rpc as RpcFunctionsHostImpl
 
   const asyncStorage = new AsyncLocalStorage<DevframeNodeRpcSession>()
 
@@ -76,16 +76,20 @@ export function createContextRpcServer(options: CreateContextRpcServerOptions): 
     rpcHost.functions,
     {
       rpcOptions: {
-        // Forwarded as-is so a host with its own structured diagnostics
-        // keeps seeing RPC failures.
+        /**
+         * Forwarded as-is so a host with its own structured diagnostics
+         * keeps seeing RPC failures.
+         */
         onFunctionError: options.rpcOptions?.onFunctionError,
         onGeneralError: options.rpcOptions?.onGeneralError,
-        // Wrap each RPC handler in an AsyncLocalStorage context so
-        // `ctx.rpc.getCurrentRpcSession()` works inside handlers (used
-        // by streaming subscribe/unsubscribe/cancel and shared-state
-        // sync), and — when an `authorize` gate is configured — reject
-        // the call before it ever reaches the handler. Mirrors
-        // `packages/core/src/node/ws.ts`'s resolver.
+        /**
+         * Wrap each RPC handler in an AsyncLocalStorage context so
+         * `ctx.rpc.getCurrentRpcSession()` works inside handlers (used
+         * by streaming subscribe/unsubscribe/cancel and shared-state
+         * sync), and (when an `authorize` gate is configured) reject
+         * the call before it ever reaches the handler. Mirrors
+         * `packages/core/src/node/ws.ts`'s resolver.
+         */
         resolver(name, fn) {
           // eslint-disable-next-line ts/no-this-alias
           const rpc = this
@@ -111,12 +115,11 @@ export function createContextRpcServer(options: CreateContextRpcServerOptions): 
   ;(rpcHost as any)._asyncStorage = asyncStorage
   ;(rpcHost as any)._authDisabled = options.auth === false
 
-  // The browser client unconditionally calls `anonymous:devframe:auth` on
-  // connect (see `client/rpc-ws.ts`). When `auth: false` is set on the
-  // standalone server, register a noop handler that auto-trusts so the
-  // client's hardcoded handshake succeeds. A host passing a full
-  // `DevframeAuthHandler` already registered the real handler above, and
-  // never opts into `auth: false`, so the two paths never overlap.
+  // The browser client always calls `anonymous:devframe:auth` on connect.
+  // With `auth: false`, register a noop auto-trust handler so that hardcoded
+  // handshake succeeds. A host passing a full `DevframeAuthHandler` registered
+  // the real one above and never sets `auth: false`, so the paths never
+  // overlap.
   if (options.auth === false && !rpcHost.definitions.has('anonymous:devframe:auth')) {
     rpcHost.register({
       name: 'anonymous:devframe:auth',

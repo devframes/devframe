@@ -49,7 +49,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
   async init() {
     this.userSettings = await this.context.rpc.sharedState.get(HUB_EVENTS.sharedState.userSettings, {
       sharedState: createStorage({
-        // Personal dock layout/preferences: per-checkout private state.
+        /** Personal dock layout/preferences: per-checkout private state. */
         filepath: join(this.context.host.getStorageDir('project'), 'settings.json'),
         initialValue: DEFAULT_STATE_USER_SETTINGS(),
       }),
@@ -102,11 +102,10 @@ export class DevframeDocksHost implements DevframeDocksHostType {
         if (patch.id && patch.id !== view.id) {
           throw diagnostics.DF8101({ id: view.id, attempted: patch.id })
         }
-        // Merge into a fresh object rather than mutating the stored entry in
-        // place: once projected into the `devframe:docks` shared state, the
-        // stored entry is deep-frozen by Immer, so an in-place `Object.assign`
-        // would throw "Cannot assign to read only property". A new object is
-        // always writable, and `update()` swaps it into the registry.
+        // Merge into a fresh object rather than mutating in place: once
+        // projected into `devframe:docks` shared state, the stored entry is
+        // deep-frozen by Immer, so an in-place `Object.assign` would throw.
+        // A new object is writable and `update()` swaps it in.
         this.update({ ...this.views.get(view.id)!, ...patch } as DevframeDockUserEntry)
       },
     }
@@ -124,7 +123,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
 
   activate(dockId: string, params?: Record<string, unknown>): void {
     // Best-effort: warn (don't throw) when the target isn't a registered dock
-    // so a typo is observable, but still emit — the client host and each dock
+    // so a typo is observable, but still emit, since the client host and each dock
     // ignore ids they don't recognize, so a mis-addressed activation is inert
     // rather than fatal.
     if (!this.views.has(dockId))
@@ -133,7 +132,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
   }
 
   /**
-   * Warn (don't throw — a client-runtime `resolveClientModule` override may still cover
+   * Warn (don't throw, since a client-runtime `resolveClientModule` override may still cover
    * it) when a dock declares a **bare-specifier** client script on a host
    * that advertises no `staticConfig.dock.clientModuleResolution`: the
    * browser cannot resolve a bare npm specifier natively, so the script is
@@ -160,7 +159,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
 
   private prepareRemoteRegistration(view: DevframeDockUserEntry): void {
     const internal = getInternalContext(this.context as DevframeNodeContext)
-    // Always revoke any previously allocated token for this dock id — covers
+    // Always revoke any previously allocated token for this dock id, covering
     // force re-registration and update() paths.
     internal.revokeRemoteTokensForDock(view.id)
     this.remoteDocks.delete(view.id)
@@ -174,7 +173,7 @@ export class DevframeDocksHost implements DevframeDocksHostType {
       dockOrigin = new URL(view.url).origin
     }
     catch {
-      // Relative/invalid URL — origin-lock can't be enforced. Fall back to the
+      // Relative/invalid URL, so origin-lock can't be enforced. Fall back to the
       // dev-server origin; this still works because the iframe loads in the
       // same browser anyway.
       dockOrigin = this.resolveDevServerOrigin()

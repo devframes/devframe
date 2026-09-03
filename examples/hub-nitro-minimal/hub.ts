@@ -11,25 +11,21 @@ import { createMessagesDevframe } from '@devframes/plugin-messages'
 import { createOgDevframe } from '@devframes/plugin-og'
 import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 
-// The whole devtools installation in one call: two plugins mounted under
-// /__devframes/, the reference UI filling the hub's ui slot (the standalone
-// hub UI at the namespace root + the floating dock at embedded.js), and the
-// RPC socket on a side-car port advertised via __connection.json - Nitro's
-// route handlers never deal with WebSocket upgrades, so `ws.sidecar` asks
-// for a socket of its own.
-//
-// Memoized on globalThis: Nitro re-evaluates this module on a dev-time
-// reload, and without the memo each reload would start another side-car and
-// leak the previous one. Any host with module reloading wants this shape.
+// Plugins mounted under /__devframes/, the reference UI in the hub's ui slot,
+// and the RPC socket on a side-car port (Nitro routes can't accept WS
+// upgrades, so `ws.sidecar` requests one). Memoized on globalThis so a
+// dev-time reload reuses the hub instead of leaking another side-car.
 const globalRef = globalThis as { __hubNitroMinimal?: HubInstance }
 
 export const hub: HubInstance = globalRef.__hubNitroMinimal ??= initHub({
   base: DEVFRAMES_HUB_BASE,
   ws: { sidecar: true },
-  // Every built-in plugin, dogfooded end to end through the hub mount path.
-  // `data-inspector`'s default id carries `:` (a route-param marker), so it
-  // gets a colon-free id override to be a valid `<base><id>/` segment; the
-  // assets watcher is off since this host demonstrates mounting, not authoring.
+  /**
+   * Every built-in plugin, dogfooded end to end through the hub mount path.
+   * `data-inspector`'s default id carries `:` (a route-param marker), so it
+   * gets a colon-free id override to be a valid `<base><id>/` segment; the
+   * assets watcher is off since this host demonstrates mounting, not authoring.
+   */
   devframes: [
     createGitDevframe(),
     createTerminalsDevframe(),
@@ -41,14 +37,18 @@ export const hub: HubInstance = globalRef.__hubNitroMinimal ??= initHub({
     createOgDevframe(),
     createAssetsDevframe({ watch: false }),
   ],
-  // Rebrand the reference UI to Nitro's own pink/red — one field, no CSS:
-  // `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
-  // which the dock reads at connect time and feeds into `--devframe-primary`
-  // (see `@devframes/hub-ui`'s `primary-ramp.css`).
+  /**
+   * Rebrand the reference UI to Nitro's own pink/red in one field, no CSS:
+   * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
+   * which the dock reads at connect time and feeds into `--devframe-primary`
+   * (see `@devframes/hub-ui`'s `primary-ramp.css`).
+   */
   ui: createUi({ branding: { primaryColor: '#ff2056', productName: 'Devframes on Nitro' } }),
-  // Gate with devframe's interactive OTP (the default). The hub prints a
-  // 6-digit code + magic link on startup, and the reference UI's authorization
-  // view exchanges it for a bearer token. See docs/content/1.guide/13.security.md.
+  /**
+   * Gate with devframe's interactive OTP (the default). The hub prints a
+   * 6-digit code + magic link on startup, and the reference UI's authorization
+   * view exchanges it for a bearer token. See docs/content/1.guide/13.security.md.
+   */
   configure(ctx) {
     ctx.commands.register({
       id: 'example:hub-nitro-minimal:ping',

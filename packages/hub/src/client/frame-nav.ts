@@ -3,7 +3,7 @@ import type { DockRegistration, DocksEntriesContext } from './docks'
 import { HUB_EVENTS } from '../events'
 
 /**
- * Shared-iframe soft navigation — the hub-UI-provider-side half of a host-page↔iframe
+ * Shared-iframe soft navigation: the hub-UI-provider-side half of a host-page↔iframe
  * `postMessage` protocol.
  *
  * An {@link DevframeViewIframe.subTabs anchor} iframe dock owns one live iframe
@@ -19,7 +19,7 @@ import { HUB_EVENTS } from '../events'
  *   highlight to match.
  *
  * The protocol is server-free (works cross-origin and in static builds) and
- * decoupled — the embedded app takes no hub/RPC dependency, only the shim.
+ * decoupled, so the embedded app takes no hub/RPC dependency, only the shim.
  */
 
 /** `postMessage` channel tag shared by both halves of the protocol. */
@@ -84,11 +84,11 @@ export interface FrameNavListenTarget {
 export interface FrameNavClientOptions {
   /** The shared frame id (defaults to the anchor's, else the anchor id). */
   frameId: string
-  /** The anchor iframe dock entry — supplies url/icon/groupId defaults. */
+  /** The anchor iframe dock entry, supplying url/icon/groupId defaults. */
   anchor: DevframeViewIframe
   /** The live iframe element hosting the embedded app. */
   iframe: Pick<HTMLIFrameElement, 'contentWindow' | 'src'>
-  /** Client docks context — to register members and drive selection. */
+  /** Client docks context, used to register members and drive selection. */
   docks: Pick<DocksEntriesContext, 'register' | 'switchEntry' | 'getStateById'>
   /**
    * Window to receive the frame's `message` events on (the host page window).
@@ -122,7 +122,7 @@ interface MemberRecord {
  */
 export function attachFrameNavClient(options: FrameNavClientOptions): FrameNavClient {
   const { frameId, anchor, iframe, docks } = options
-  const listenTarget: FrameNavListenTarget = options.window ?? (globalThis as unknown as FrameNavListenTarget)
+  const listenTarget: FrameNavListenTarget = options.window ?? globalThis
   const expectedOrigin = options.origin ?? resolveOrigin(anchor.url)
   const timeoutMs = options.handshakeTimeoutMs ?? anchor.subTabs?.handshakeTimeoutMs ?? 3000
 
@@ -142,7 +142,7 @@ export function attachFrameNavClient(options: FrameNavClientOptions): FrameNavCl
   function onMessage(ev: MessageEvent): void {
     if (disposed)
       return
-    // Origin-lock (skipped only when we could not resolve one — dev fallback).
+    // Origin-lock (skipped only when we could not resolve one, a dev fallback).
     if (expectedOrigin !== '*' && ev.origin !== expectedOrigin)
       return
     const data = ev.data as Partial<FrameNavFrameMessage> | undefined
@@ -331,23 +331,25 @@ function deriveFallbackUrl(base: string, navTarget: NavTarget): string {
   }
   const path = navTarget.path.startsWith('#') ? navTarget.path.slice(1) : navTarget.path
   let hash = `#${path}`
-  const query = navTarget.query
-  if (query) {
-    const params = new URLSearchParams()
-    for (const [key, value] of Object.entries(query)) {
-      // `typeof` (not `Array.isArray`) so the string branch narrows cleanly —
-      // `Array.isArray` leaves a `readonly string[]` in the negative branch.
-      if (typeof value === 'string') {
-        params.set(key, value)
-      }
-      else {
-        for (const v of value) params.append(key, v)
-      }
-    }
-    const qs = params.toString()
-    if (qs)
-      hash += (path.includes('?') ? '&' : '?') + qs
-  }
+  const qs = navTarget.query ? serializeNavQuery(navTarget.query) : ''
+  if (qs)
+    hash += (path.includes('?') ? '&' : '?') + qs
   url.hash = hash
   return url.toString()
+}
+
+/** Serialize a {@link NavTarget.query} into a URL query string. */
+function serializeNavQuery(query: Record<string, string | readonly string[]>): string {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(query)) {
+    // `typeof` (not `Array.isArray`) so the string branch narrows cleanly;
+    // `Array.isArray` leaves a `readonly string[]` in the negative branch.
+    if (typeof value === 'string') {
+      params.set(key, value)
+    }
+    else {
+      for (const v of value) params.append(key, v)
+    }
+  }
+  return params.toString()
 }

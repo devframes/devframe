@@ -10,13 +10,13 @@ export interface RpcResource<T> {
   loading: boolean
   error: string | null
   refresh: () => Promise<void>
-  /** Replace the data directly — e.g. with the result of a mutation. */
+  /** Replace the data directly, e.g. with the result of a mutation. */
   setData: Dispatch<SetStateAction<T | null>>
 }
 
 /**
  * Load a value from an RPC call, exposing `{ data, loading, error, refresh }`.
- * `loader` must be stable — wrap it in `useCallback` at the call site so the
+ * `loader` must be stable; wrap it in `useCallback` at the call site so the
  * effect re-runs only when its real inputs change.
  */
 export function useRpcResource<T>(loader: (rpc: DevframeRpcClient) => Promise<T>): RpcResource<T> {

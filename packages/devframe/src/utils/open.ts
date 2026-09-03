@@ -4,7 +4,7 @@ import process from 'node:process'
 
 /**
  * Launches `command` detached from the current process and resolves once
- * the OS has accepted the spawn (not once the launched app exits) — the
+ * the OS has accepted the spawn (not once the launched app exits), the
  * same "fire and forget" behavior `open`'s default (`wait: false`) gave us.
  */
 function spawnDetached(command: string, args: string[]): Promise<void> {

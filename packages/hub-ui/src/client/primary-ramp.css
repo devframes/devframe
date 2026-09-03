@@ -9,7 +9,7 @@
  * `color-mix`. When `--devframe-primary` is unset, the intermediate
  * `--devframe-primary-<stop>` vars become guaranteed-invalid (their `color-mix`
  * references an unset var with no fallback), so each `--colors-primary-<stop>`
- * falls back to the exact devframe default hex - the default look is preserved,
+ * falls back to the exact devframe default hex; the default look is preserved,
  * and only an explicit override derives a new ramp. The vars inherit through
  * the tree, so setting `--devframe-primary` on the dock host retints
  * everything, and setting it on a group's chrome container retints just that
@@ -17,7 +17,7 @@
  *
  * The dock's shadow root is built on Wind3, which bakes `primary`-based
  * utilities (`text-primary`, `bg-primary`, `btn-primary`, `ring-primary-500`,
- * …) to literal `rgb()` triplets rather than referencing these variables —
+ * …) to literal `rgb()` triplets rather than referencing these variables, so
  * `scripts/build-css.ts` rewires those baked colors into CSS relative-color
  * syntax reading `--colors-primary-<stop>` (see `rewireBakedPrimaryColors` in
  * `design/uno.config.ts`) so this block actually retints them, not just the
@@ -31,7 +31,7 @@
  * `.devframes-accent-scope` re-declares the whole block on a group's chrome
  * container: because custom properties inherit as computed values, a descendant
  * that only overrides `--devframe-primary` would keep the `:host`-computed
- * stops - re-running the derivation here recomputes them from the container's
+ * stops; re-running the derivation here recomputes them from the container's
  * own `--devframe-primary` (a group's `accentColor`), retinting just that group.
  */
 :root,

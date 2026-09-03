@@ -30,7 +30,7 @@ function lastWsUrl(): string {
   return FakeWebSocket.instances.at(-1)!.url
 }
 
-describe('getDevframeRpcClient — connection meta base', () => {
+describe('getDevframeRpcClient: connection meta base', () => {
   beforeEach(() => {
     FakeWebSocket.instances = []
     vi.stubGlobal('WebSocket', FakeWebSocket)
@@ -40,7 +40,7 @@ describe('getDevframeRpcClient — connection meta base', () => {
       protocol: 'http:',
       host: 'localhost:5173',
       hostname: 'localhost',
-      // The SPA under test is mounted at /__foo/.
+      /** The SPA under test is mounted at /__foo/. */
       href: 'http://localhost:5173/__foo/index.html',
       origin: 'http://localhost:5173',
     })
@@ -111,7 +111,7 @@ describe('getDevframeRpcClient — connection meta base', () => {
 
     const rpc = await getDevframeRpcClient({ baseURL: '/__foo/', otpParam: false })
 
-    // No fetch — the meta came off the window.
+    // No fetch; the meta came off the window.
     expect(fetchSpy).not.toHaveBeenCalled()
     // Resolved against the inherited base, not the child's own `/__foo/`.
     expect(lastWsUrl()).toBe('ws://localhost:5173/__devtools/__ws')
@@ -119,8 +119,8 @@ describe('getDevframeRpcClient — connection meta base', () => {
   })
 
   it('uses a token embedded in the (hub-served) connection meta as the bearer token', async () => {
-    // A hub bakes the token into the per-frame meta so a cross-origin frame —
-    // which can't read the hub's localStorage — is pre-authorized on connect.
+    // A hub bakes the token into the per-frame meta so a cross-origin frame,
+    // which can't read the hub's localStorage, is pre-authorized on connect.
     await getDevframeRpcClient({
       baseURL: '/__foo/',
       otpParam: false,

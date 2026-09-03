@@ -5,7 +5,7 @@
 // `ph:git-branch-duotone`) to its live, sanitized SVG markup, fetched from the
 // public `api.iconify.design` CDN. Unlike a UnoCSS `preset-icons` class, this
 // needs no `@iconify-json/*` collection installed and no hand-maintained
-// id -> class table — any Iconify id just works, at the cost of a network
+// id -> class table, since any Iconify id just works, at the cost of a network
 // round-trip on first render. We reuse @antfu/design's own fetcher, cache and
 // sanitizer (`utils/iconify.ts`) rather than reimplementing them; only the id
 // parsing and light/dark selection below are devframe-specific, mirroring the
@@ -19,7 +19,7 @@ const ICONIFY_ID = /^(?:i-)?([\w-]+):([\w-]+)$/
 
 /**
  * Resolve a dock icon (a `collection:icon` string, or a `{ light, dark }`
- * pair — the `light` variant is fetched) to its sanitized SVG markup.
+ * pair whose `light` variant is fetched) to its sanitized SVG markup.
  *
  * Returns `undefined` when the id doesn't parse or the fetch fails, so the
  * caller can fall back to a text initial.

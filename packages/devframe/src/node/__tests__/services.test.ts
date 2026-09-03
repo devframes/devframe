@@ -136,7 +136,7 @@ describe('wire services (install / ready)', () => {
     await ctx.services.ready()
 
     expect(setup).toHaveBeenCalledTimes(1)
-    // Deep merge in declaration order — later scalars win.
+    // Deep merge in declaration order; later scalars win.
     await expect(first).resolves.toEqual({ options: { a: 1, b: 2, c: 3 } })
     await expect(second).resolves.toEqual({ options: { a: 1, b: 2, c: 3 } })
     // The node API is provided under the package name.
@@ -221,7 +221,7 @@ describe('wire services (install / ready)', () => {
 
   it('resolves a package-name resolveFrom through that package\'s own dependencies', async () => {
     const { ctx, dir } = await createCtx()
-    // A "plugin" package whose own node_modules carries the service — the
+    // A "plugin" package whose own node_modules carries the service: the
     // declarative flow passes the plugin's packageName as resolveFrom.
     const pluginDir = join(dir, 'node_modules', '@test', 'plugin')
     mkdirSync(pluginDir, { recursive: true })

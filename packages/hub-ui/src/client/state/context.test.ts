@@ -36,6 +36,7 @@ function createStubRpc() {
   let isTrusted = false
   const events = createEventEmitter<any>()
   const sharedStates = new Map<string, StubSharedState<any>>()
+  // eslint-disable-next-line slop/no-chained-type-assertions -- test double implements only the RPC surface createDocksContext exercises; the full client has many more members.
   const rpc = {
     get isTrusted() {
       return isTrusted
@@ -199,7 +200,7 @@ describe('createDocksContext', () => {
     expect.assertions(4)
 
     const { rpc, sharedStates, trust } = createStubRpc()
-    // No `groupLastChildIds` seed — mirrors a session store persisted before
+    // No `groupLastChildIds` seed, mirroring a session store persisted before
     // the field existed.
     const session = ref<DockSessionStorage>({
       open: false,

@@ -52,7 +52,7 @@ function send(res, status, body, headers = {}) {
 
 const server = createServer((req, res) => {
   const found = resolveAsset(req.url ?? '/')
-  // SPA fallback — unknown routes (no file extension match) serve index.html
+  // SPA fallback: unknown routes (no file extension match) serve index.html
   // so client-side routing works under the static dump.
   const file = found ?? resolveAsset('/index.html')
   if (!file) {

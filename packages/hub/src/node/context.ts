@@ -52,7 +52,7 @@ declare module 'devframe/types' {
      * Ask the active viewer to switch its focused dock to `dockId`, optionally
      * carrying `params` for the target dock to interpret (e.g.
      * `{ sessionId }` for the terminals dock). Any connected client may call
-     * it — a mounted devframe in its own iframe steers the host shell's dock
+     * it, so a mounted devframe in its own iframe steers the host shell's dock
      * selection. Handled by {@link import('./rpc-builtins').hubDocksActivate}.
      */
     'hub:docks:activate': (input: { dockId: string, params?: Record<string, unknown> }) => Promise<void>
@@ -86,7 +86,7 @@ declare module 'devframe/types' {
 }
 
 /**
- * Hub-augmented node context — extends devframe's framework-neutral
+ * Hub-augmented node context that extends devframe's framework-neutral
  * `DevframeNodeContext` with the hub-level subsystems (`docks`,
  * `terminals`, `messages`, `commands`).
  *
@@ -95,7 +95,7 @@ declare module 'devframe/types' {
  * filesystem reveal, etc.) ship as kit-registered RPC functions rather
  * than as part of this surface. JSON-render is an opt-in integration
  * (`@devframes/json-render`) that augments any devframe context and
- * contributes its own dock type — use `createJsonRenderView` from
+ * contributes its own dock type; use `createJsonRenderView` from
  * `@devframes/json-render/node`.
  */
 export interface DevframeHubContext extends DevframeNodeContext {
@@ -108,14 +108,14 @@ export interface DevframeHubContext extends DevframeNodeContext {
    * Install a {@link DevframeDefinition} into this hub: serve its SPA at the
    * resolved base, synthesize an iframe dock from its metadata, and run its
    * `setup(ctx)`. The imperative counterpart to `initHub`'s declarative
-   * `devframes` list — call it from a hub host's `configure(ctx)`, or wherever
+   * `devframes` list. Call it from a hub host's `configure(ctx)`, or wherever
    * you hold the context, to plug an extra devframe in.
    */
   install: (devframe: DevframeDefinition, options?: InstallDevframeOptions) => Promise<void>
 }
 
 /**
- * Options for {@link createHubContext} — devframe's
+ * Options for {@link createHubContext}: devframe's
  * {@link CreateHostContextOptions} plus any hub-level additions kits layer on
  * through declaration merging.
  */
@@ -157,20 +157,17 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
     docksSharedState.mutate(() => docks.values())
   }, debounceMs)
   docks.events.on(HUB_EVENTS.bus.docksEntryUpdated, refreshDocks)
-  // A remote iframe dock registered before the WS transport finishes binding
-  // (the common case: `initHub` installs devframes — and their docks — before
-  // resolving an async side-car/shared-server port) gets projected without a
-  // connection URL, since `wsEndpoint` isn't set yet. Nothing re-registers
-  // that dock once the port resolves, so re-project every dock once the
-  // endpoint becomes known (or is torn down) instead of leaving it stale.
+  // A remote iframe dock registered before the WS transport binds gets
+  // projected without a connection URL (`wsEndpoint` isn't set yet), and
+  // nothing re-registers it. Re-project every dock when the endpoint
+  // resolves or tears down so it isn't left stale.
   getInternalContext(context).onWsEndpointChange(refreshDocks)
   docksSharedState.mutate(() => docks.values())
 
-  // Cross-iframe dock activation. A dock activation is a discrete user intent
-  // ("go to Terminals now"), so it fires immediately (no debounce, which could
-  // coalesce two distinct requests) both as a live broadcast — the host shell
-  // switches its active dock — and into a shared-state slot, so a dock that
-  // only mounts *because* of the switch still converges on the request.
+  // Cross-iframe dock activation is a discrete user intent, so it fires
+  // immediately (no debounce, which could coalesce two requests): as a live
+  // broadcast for the host shell, and into a shared-state slot so a dock that
+  // only mounts *because* of the switch still converges on it.
   const activeDockSharedState = await context.rpc.sharedState.get<DevframeDocksActiveState>(
     HUB_EVENTS.sharedState.docksActive,
     { initialValue: { activation: null } },

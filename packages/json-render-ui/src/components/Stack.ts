@@ -21,8 +21,10 @@ const justifyMap: Record<string, string> = {
   around: 'space-around',
 }
 
-// A flex layout primitive — `@antfu/design` has no generic Stack, so this stays
-// a thin custom component built on the shared tokens.
+/**
+ * A flex layout primitive. `@antfu/design` has no generic Stack, so this stays
+ * a thin custom component built on the shared tokens.
+ */
 export const Stack: JrComponent<StackProps> = ({ props, children }) => {
   const style: Record<string, string> = {
     display: 'flex',

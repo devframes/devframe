@@ -189,7 +189,7 @@ describe('@devframes/plugin-terminals', () => {
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))
 
-    // OSC parsing rides the output stream, so it works for every backend —
+    // OSC parsing rides the output stream, so it works for every backend;
     // a readonly piped session keeps this test deterministic cross-platform.
     const info = await call<TerminalSessionInfo>(client, 'devframes:plugin:terminals:spawn', {
       command: NODE,

@@ -8,7 +8,7 @@ import { createMockDocksContext } from './mock-context'
  *
  * `createMockDocksContext` is async (it boots the real dock context over a mock
  * transport), so we resolve it inside an async `setup` wrapped in `<Suspense>`.
- * The returned value is a render function — drop it straight into a story's
+ * The returned value is a render function; drop it straight into a story's
  * `setup`:
  *
  * ```ts

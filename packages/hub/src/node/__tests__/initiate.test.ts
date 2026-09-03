@@ -250,7 +250,7 @@ describe('initHub', () => {
       clientModuleResolution: '/@id/{specifier}',
       devframes: [makeFrame('alpha')],
       configure(ctx) {
-        // A bare-specifier client script (the vite-plugin-vue-tracer shape) —
+        // A bare-specifier client script (the vite-plugin-vue-tracer shape),
         // registered on a host that declared the resolution, so no DF8111.
         ctx.docks.register({
           type: 'action',
@@ -324,7 +324,7 @@ describe('initHub', () => {
   it('warns (DF8005) when a mounted devframe asks for MCP but the hub MCP is off', async () => {
     const wsPort = await getPort({ port: 18235, host: '127.0.0.1' })
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    // The hub has no `mcp`, but `beta` declares `cli.mcp: true` — the hub's
+    // The hub has no `mcp`, but `beta` declares `cli.mcp: true`, so the hub's
     // single aggregate route governs MCP, so beta's request is a no-op and warns.
     const hub = initHub({
       base: DEVFRAMES_HUB_BASE,
@@ -370,7 +370,7 @@ describe('initHub', () => {
   it('default tier: binds nothing until the host attaches its own server', async () => {
     const host = '127.0.0.1'
     const port = await getPort({ port: 18250, host })
-    // No `server`, no `ws` — the hub serves its namespace and waits for the
+    // No `server`, no `ws`, so the hub serves its namespace and waits for the
     // host to hand the upgrade route over.
     const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, devframes: [makeFrame('alpha')] })
     const server = createServer((req, res) => hub.nodeMiddleware(req, res))

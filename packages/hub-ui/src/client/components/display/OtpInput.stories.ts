@@ -31,7 +31,7 @@ const meta = {
 export default meta
 type Story = StoryObj
 
-/** Empty — type digits, they auto-advance; paste a full code to fill at once. */
+/** Empty. Type digits, they auto-advance; paste a full code to fill at once. */
 export const Default: Story = {
   render: () => ({ setup: () => () => h(harness()) }),
 }
@@ -41,7 +41,7 @@ export const Filled: Story = {
   render: () => ({ setup: () => () => h(harness({}, '1234')) }),
 }
 
-/** Error state — red boxes and a shake (see the AuthNotice for the full flow). */
+/** Error state: red boxes and a shake (see the AuthNotice for the full flow). */
 export const Invalid: Story = {
   render: () => ({ setup: () => () => h(harness({ invalid: true }, '0042')) }),
 }

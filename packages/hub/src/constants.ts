@@ -5,7 +5,7 @@ import { HUB_EVENTS } from './events'
 export { HUB_EVENTS } from './events'
 export * from 'devframe/constants'
 
-/** Default mount base for a hub instance — one namespace, one catch-all. */
+/** Default mount base for a hub instance: one namespace, one catch-all. */
 export const DEVFRAMES_HUB_BASE = '/__devframes/'
 
 /**
@@ -20,7 +20,7 @@ export function normalizeHubBase(base: string): string {
 }
 
 /**
- * The default ordering weight for each known dock category — lower sorts
+ * The default ordering weight for each known dock category, where lower sorts
  * earlier. Downstream viewers (e.g. `@vitejs/devtools-kit`) import this as the
  * single source of truth so the hub and its viewers agree on category order.
  * `framework` sorts first; `~builtin` (the viewer's own built-in views) last.
@@ -43,7 +43,7 @@ export const DEFAULT_CATEGORIES_ORDER: Record<string, number> = {
 }
 
 /**
- * Shared-state slot carrying the hub's renderer manifest — one
+ * Shared-state slot carrying the hub's renderer manifest: one
  * {@link import('./client/renderers').DockRendererManifest} entry per dock
  * `type`, published by `initHub({ renderers })` and consumed by every
  * hub-aware client (the headless client host and viewers alike).

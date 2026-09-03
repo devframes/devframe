@@ -23,7 +23,7 @@ interface SelectProps {
   searchable?: boolean
   /**
    * Renders a real `<select>` instead of `FormSelect`/`FormCombobox`. The browser draws its
-   * option list outside the page's layout, so no ancestor can clip or reposition it — the
+   * option list outside the page's layout, so no ancestor can clip or reposition it, making it the
    * dependable choice for a `Select` embedded in a host layout this component doesn't
    * control. Takes priority over `searchable`, which has no native equivalent.
    */
@@ -88,7 +88,7 @@ const SelectImpl = defineComponent({
           ...options.value.map(option => h('option', { value: option.value }, option.label ?? option.value)),
         ]))
       }
-      const Comp = (props.searchable ? FormCombobox : FormSelect) as unknown as Parameters<typeof h>[0]
+      const Comp = (props.searchable ? FormCombobox : FormSelect) as Parameters<typeof h>[0]
       const control = h(Comp, {
         'options': options.value,
         'placeholder': props.placeholder,

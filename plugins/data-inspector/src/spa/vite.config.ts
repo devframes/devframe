@@ -6,29 +6,35 @@ import { defineConfig } from 'vite'
 import { alias } from '../../../../alias'
 import createDataInspectorDevframe from '../index'
 
-// The data-inspector SPA. `base: './'` keeps every asset URL relative so the
-// bundle is mount-path portable — it discovers its runtime base from
-// `document.baseURI` and connects via `connectDevframe()`. The build is
-// copied verbatim by `createBuild`; no HTML rewriting.
-//
-// `devframeVite(createDataInspectorDevframe(), { bridge: true })` dogfoods
-// the plugin: it runs a side-car RPC + WS backend (with the built-in example
-// source) next to this HMR frontend, so `pnpm dev` is a full devframe dev
-// server, not a backend-less SPA.
+/**
+ * The data-inspector SPA. `base: './'` keeps every asset URL relative so the
+ * bundle is mount-path portable; it discovers its runtime base from
+ * `document.baseURI` and connects via `connectDevframe()`. The build is
+ * copied verbatim by `createBuild`; no HTML rewriting.
+ *
+ * `devframeVite(createDataInspectorDevframe(), { bridge: true })` dogfoods
+ * the plugin: it runs a side-car RPC + WS backend (with the built-in example
+ * source) next to this HMR frontend, so `pnpm dev` is a full devframe dev
+ * server, not a backend-less SPA.
+ */
 export default defineConfig({
   base: './',
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
-  // discovery (or a dep) references the Node-style `global`; webpack shims it
-  // by default, Vite needs the classic define.
+  /**
+   * discovery (or a dep) references the Node-style `global`; webpack shims it
+   * by default, Vite needs the classic define.
+   */
   define: { global: 'globalThis' },
   plugins: [
     vue(),
     UnoCSS(),
     devframeVite(createDataInspectorDevframe(), { bridge: true, base: '/' }),
   ],
-  // `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile its
-  // SFCs instead of esbuild pre-bundling them.
+  /**
+   * `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile its
+   * SFCs instead of esbuild pre-bundling them.
+   */
   optimizeDeps: { exclude: ['@antfu/design'] },
   build: {
     outDir: fileURLToPath(new URL('../../assets-pkg/dist', import.meta.url)),

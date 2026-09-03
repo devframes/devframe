@@ -38,7 +38,7 @@ export interface BuildShadowCssOptions {
   userStylePath?: string | readonly string[]
   /**
    * Prefix Wind's `--un-*` custom properties are renamed to (see
-   * `namespaceShadowCssVars`) — unique per shadow-root surface so two
+   * `namespaceShadowCssVars`), unique per shadow-root surface so two
    * shadow trees on the same host page never collide.
    */
   varPrefix: string
@@ -51,15 +51,17 @@ export interface BuildShadowCssResult {
   css: string
 }
 
-// Compile a shadow-root surface's UnoCSS output ahead of time into a plain
-// string module (`<srcDir>/.generated/css.ts`) that the surface adopts into
-// its shadow root — fully styled inside any host page without a global
-// stylesheet, and immune to the host page's own styles leaking in. Shared by
-// `@devframes/hub-ui`'s dock and `@devframes/json-render-ui`'s renderer
-// module: same pipeline, same two shadow-root gotchas (see the root
-// AGENTS.md "Design system" section), different source globs. Writes the
-// generated file itself; returns stats so each caller (a `scripts/` entry,
-// exempt from the `no-console` lint rule) prints its own summary line.
+/**
+ * Compile a shadow-root surface's UnoCSS output ahead of time into a plain
+ * string module (`<srcDir>/.generated/css.ts`) that the surface adopts into
+ * its shadow root, fully styled inside any host page without a global
+ * stylesheet, and immune to the host page's own styles leaking in. Shared by
+ * `@devframes/hub-ui`'s dock and `@devframes/json-render-ui`'s renderer
+ * module: same pipeline, same two shadow-root gotchas (see the root
+ * AGENTS.md "Design system" section), different source globs. Writes the
+ * generated file itself; returns stats so each caller (a `scripts/` entry,
+ * exempt from the `no-console` lint rule) prints its own summary line.
+ */
 export async function buildShadowCss(options: BuildShadowCssOptions): Promise<BuildShadowCssResult> {
   const { srcDir, globs, config, primaryRampPath, userStylePath, varPrefix } = options
   const generatedCss = join(srcDir, '.generated/css.ts')
@@ -75,7 +77,7 @@ export async function buildShadowCss(options: BuildShadowCssOptions): Promise<Bu
   // Shadow-root surfaces reuse `@antfu/design`'s Vue components (buttons,
   // badges, …) directly. UnoCSS ignores `node_modules` by default, so their
   // semantic shortcut classes (`btn-primary`, `btn-action`, `badge-*`, …)
-  // would be absent from the shadow-root stylesheet — scan the design
+  // would be absent from the shadow-root stylesheet, so scan the design
   // package's component sources too so those classes ship in the injected
   // CSS.
   const designComponentsDir = join(require.resolve('@antfu/design/package.json'), '..', 'components')
@@ -109,12 +111,12 @@ export async function buildShadowCss(options: BuildShadowCssOptions): Promise<Bu
   const unoResult = await generator.generate(tokens)
   // Wind3 drops a *plain* semantic shortcut (`.bg-base` / `.color-base`) from
   // the main pass when the same shortcut also appears variant-prefixed in the
-  // sources (e.g. `@antfu/design`'s Tabs emits `data-[state=active]:bg-base`) —
+  // sources (e.g. `@antfu/design`'s Tabs emits `data-[state=active]:bg-base`),
   // a shortcut+variant interaction. Generate the shadow-surface tokens in a
   // dedicated pass so their plain (and `.dark`) rules are always present.
   const surfaces = await generator.generate(shadowSurfaceSafelist.join(' '))
   // Wind3 bakes the `primary` theme color to literal `rgb()` triplets at
-  // generate-time — rewire them to read the live `--colors-primary-*`
+  // generate-time, so rewire them to read the live `--colors-primary-*`
   // variables `primary-ramp.css` derives from `--devframe-primary`, so a
   // rebrand actually retints `text-primary`/`bg-primary`/`btn-primary`/…
   // (see `rewireBakedPrimaryColors`'s own comment).

@@ -21,9 +21,11 @@ export default defineConfig({
       fileName: () => 'index.mjs',
     },
     rollupOptions: {
-      // Don't externalize vue so the panel works out of the box in
-      // custom-render docks, but do externalize devframe/client since the
-      // host provides it.
+      /**
+       * Don't externalize vue so the panel works out of the box in
+       * custom-render docks, but do externalize devframe/client since the
+       * host provides it.
+       */
       external: ['devframe/client'],
     },
   },

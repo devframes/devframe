@@ -11,8 +11,10 @@ const meta = {
   title: 'Assets/AssetDetails',
   component: AssetDetails,
   tags: ['autodocs'],
-  // No live RPC connection in Storybook — the panel renders every static
-  // section; write actions are visible but no-op without a connected client.
+  /**
+   * No live RPC connection in Storybook, so the panel renders every static
+   * section; write actions are visible but no-op without a connected client.
+   */
   args: { rpc: null },
   argTypes: { onClose: { action: 'close' }, onChanged: { action: 'changed' } },
 } satisfies Meta<typeof AssetDetails>

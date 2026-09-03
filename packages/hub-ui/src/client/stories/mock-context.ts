@@ -61,9 +61,11 @@ function createMockRpc(
 
   const rpc = {
     events,
-    // Server-advertised connection metadata. Stories have no live server, so
-    // advertise the `static` backend with no `configs` — the context reads
-    // `connectionMeta.configs?.ui?...` optionally, so an empty meta is enough.
+    /**
+     * Server-advertised connection metadata. Stories have no live server, so
+     * advertise the `static` backend with no `configs`; the context reads
+     * `connectionMeta.configs?.ui?...` optionally, so an empty meta is enough.
+     */
     connectionMeta: { backend: 'static' as const },
     get isTrusted() {
       return trusted
@@ -76,7 +78,7 @@ function createMockRpc(
     callEvent: async () => undefined,
     callOptional: async () => undefined,
     client: {
-      // Register a client-side RPC handler; returns an unsubscribe.
+      /** Register a client-side RPC handler; returns an unsubscribe. */
       register: () => () => {},
     },
     sharedState: {
@@ -98,6 +100,7 @@ function createMockRpc(
     },
   }
 
+  // eslint-disable-next-line slop/no-chained-type-assertions -- story-only RPC double implements just the surface the dock context uses; the full DevframeRpcClient has many more members.
   return rpc as unknown as MockRpcClient
 }
 
@@ -106,7 +109,7 @@ function createMockRpc(
  *
  * This is the same `createDocksContext` the client boots with, so grouping,
  * `switchEntry`, commands and when-clauses all behave exactly as they do at
- * runtime — only the transport is faked. Every call gets a fresh RPC instance,
+ * runtime; only the transport is faked. Every call gets a fresh RPC instance,
  * so the per-rpc context cache never bleeds between stories.
  */
 export async function createMockDocksContext(

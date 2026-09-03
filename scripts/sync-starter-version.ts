@@ -8,7 +8,7 @@ const starterPkgPath = path.resolve(rootDir, 'starter/package.json')
 
 /**
  * Rewrites `starter/package.json`'s `devframe`/`@devframes/*` dependency
- * ranges to `^<version>` — the starter is a self-contained, copy-paste-ready
+ * ranges to `^<version>`, since the starter is a self-contained, copy-paste-ready
  * template that pins real versions rather than `catalog:`/`workspace:*`, so
  * a repo-wide bump has to touch it explicitly. Called from `bump.config.ts`'s
  * `execute` hook so `bumpp -r` keeps it in lockstep automatically.

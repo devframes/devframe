@@ -1,14 +1,14 @@
 /**
  * Contract shared by the two browser-side halves of the a11y inspector:
  *
- *  - the **page script** — injected into the user app's page, runs axe-core,
+ *  - the **page script**, injected into the user app's page, runs axe-core,
  *    tracks issues per route, and owns the highlight overlay (`src/inject`);
- *  - the **panel** — the Solid SPA that lists violations (`src/client`).
+ *  - the **panel**, the Solid SPA that lists violations (`src/client`).
  *
  * They talk over devframe's in-page channel (`devframe/in-page-channel`)
  * rather than the devframe RPC backend. That keeps the live scan/highlight
  * loop working identically whether the plugin is running as a dev server
- * (WebSocket RPC) or as a baked static build — neither half needs a server
+ * (WebSocket RPC) or as a baked static build; neither half needs a server
  * to find the other, only a same-origin handshake in the same tab.
  *
  * The page script owns the authoritative {@link A11yState} aggregate as the
@@ -22,7 +22,7 @@
 /** In-page channel name. Namespaced with the devframe id, per convention. */
 export const A11Y_CHANNEL = 'devframes:plugin:a11y'
 
-/** Default dock id — the devframe id a hub registers the panel under. */
+/** Default dock id, the devframe id a hub registers the panel under. */
 export const A11Y_DEFAULT_DOCK_ID = 'devframes_plugin_a11y'
 
 /** sessionStorage key the page script persists its route → report map under. */
@@ -39,7 +39,7 @@ export const A11Y_NODE_ATTR = 'data-df-a11y-node'
 
 /**
  * Default axe rule tags the scanner runs. Broadened past the strict WCAG A/AA
- * set to include WCAG 2.2 and best-practice rules — the best-practice ones are
+ * set to include WCAG 2.2 and best-practice rules; the best-practice ones are
  * flagged ({@link Violation.bestPractice}) so the panel can filter them out.
  */
 export const DEFAULT_AXE_TAGS = [
@@ -57,7 +57,7 @@ export const IMPACT_ORDER = ['critical', 'serious', 'moderate', 'minor'] as cons
 export type Impact = (typeof IMPACT_ORDER)[number]
 
 /**
- * Severity palette — the one expressive, domain-specific color in the tool.
+ * Severity palette: the one expressive, domain-specific color in the tool.
  * Shared by both halves so the panel chips/spines and the in-page highlight
  * ring (drawn by the page script via inline styles) stay in lockstep.
  */
@@ -97,7 +97,7 @@ export interface Violation {
 }
 
 export interface ScanReport {
-  /** Route bucket key — `location.pathname` of the scanned document. */
+  /** Route bucket key: `location.pathname` of the scanned document. */
   route: string
   /** Full location of the scanned document. */
   url: string
@@ -159,7 +159,7 @@ export interface PageScriptConfig {
 /**
  * The a11y inspector's in-page channel contract: every function the page
  * script implements for its panels, and the shared {@link A11yState}
- * aggregate the page script owns. All functions are fire-and-forget events —
+ * aggregate the page script owns. All functions are fire-and-forget events;
  * results flow back through the shared state.
  */
 export interface A11yChannelProtocol {
@@ -192,7 +192,7 @@ export interface A11yChannelProtocol {
   }
 }
 
-/** Empty per-impact counter — handy initial value. */
+/** Empty per-impact counter, a handy initial value. */
 export function emptyCounts(): Record<Impact, number> {
   return { critical: 0, serious: 0, moderate: 0, minor: 0 }
 }

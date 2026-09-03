@@ -37,7 +37,7 @@ export async function getRpcResolvedSetupResult<
     return await promise
   }
 
-  // Primitive / undefined context — fall back to a single-slot cache.
+  // Primitive / undefined context: fall back to a single-slot cache.
   if (!definition.__promise) {
     const promise = Promise.resolve(definition.setup(context))
     promise.catch(() => {
@@ -69,9 +69,9 @@ export async function getRpcHandler<
   }
 
   // When `args`/`returns` Standard Schemas are declared, validate inputs
-  // before the handler runs and the output after it returns (guard-only —
+  // before the handler runs and the output after it returns (guard-only;
   // payloads are never rewritten). Wrapping here means every invocation
-  // path — local, over-the-wire, and the agent/MCP bridge — funnels
+  // path (local, over-the-wire, and the agent/MCP bridge) funnels
   // through the same validation.
   const argsSchema = definition.args
   const returnSchema = definition.returns

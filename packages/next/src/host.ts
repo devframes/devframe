@@ -19,7 +19,7 @@ export interface CreateDevframeNextHostOptions {
   /**
    * Initial connection meta served at every base registered via
    * {@link DevframeHost.mountConnectionMeta}. Usually unknown until the
-   * side-car RPC/WS server has started — publish it later with
+   * side-car RPC/WS server has started, so publish it later with
    * {@link DevframeNextHost.setConnectionMeta}.
    */
   connectionMeta?: ConnectionMeta
@@ -31,7 +31,7 @@ export interface DevframeNextHostMcpOptions {
    * origin-only (`false`), trusting same-machine callers. A bearer token
    * string (matched in constant time) or a `(request) => boolean` callback
    * hardens the route when a same-machine process is not your trust boundary;
-   * see {@link McpAuthorization}. Back a bearer with an environment variable —
+   * see {@link McpAuthorization}. Back a bearer with an environment variable,
    * never a literal.
    */
   authorization?: McpAuthorization
@@ -59,7 +59,7 @@ export interface DevframeNextHost {
   host: DevframeHost
   /**
    * A WHATWG-`fetch` handler that serves every mounted SPA (with SPA
-   * fallback, correct content types, and path-traversal guarding — all from
+   * fallback, correct content types, and path-traversal guarding, all from
    * devframe's own `serveStaticHandler`) and answers `<base>/__connection.json`
    * for each base registered via `mountConnectionMeta`. Delegate a Next App
    * Router route handler straight to it:
@@ -78,12 +78,12 @@ export interface DevframeNextHost {
    */
   setConnectionMeta: (meta: ConnectionMeta) => void
   /**
-   * Serve an MCP Streamable-HTTP endpoint at `path` **in-process** — on the
+   * Serve an MCP Streamable-HTTP endpoint at `path` **in-process**, on the
    * Next app's own origin, through the same catch-all route as the SPAs (the
    * `/_next/mcp` shape). Built on `createMcpFetchHandler` from
    * `devframe/adapters/mcp` (imported lazily: `@modelcontextprotocol/server`
    * stays an optional peer). Advertise the path in the connection meta
-   * (`mcp: { path }` — same origin, no port) and register the instance via
+   * (`mcp: { path }`, same origin, no port) and register the instance via
    * `registerDevframeInstance` so `devframe connect` can discover it.
    */
   mountMcp: (
@@ -106,7 +106,7 @@ function stripTrailingSlash(base: string): string {
  * route delegates to.
  *
  * This is the hosted-adapter counterpart to `devframeViteBridge` for the Next
- * runtime, which — being webpack/Turbopack rather than Vite — can't reuse the
+ * runtime, which (being webpack/Turbopack rather than Vite) can't reuse the
  * Vite middleware path. Instead of hand-rolling static serving in a route
  * handler, static mounts are registered on an internal h3 app and served
  * through devframe's shared `serveStaticHandler` (`app.fetch` makes h3 a
@@ -126,8 +126,8 @@ export function createDevframeNextHost(
   const host: DevframeHost = {
     mountStatic(base, distDir) {
       // h3's sub-app mount matches on segment boundaries and strips `base`
-      // from the path, so the static handler sees paths relative to `distDir`
-      // — the same longest-prefix behavior the hand-rolled registry did.
+      // from the path, so the static handler sees paths relative to `distDir`,
+      // the same longest-prefix behavior the hand-rolled registry did.
       const staticApp = new H3()
       staticApp.use(serveStaticHandler(distDir))
       app.mount(stripTrailingSlash(base), staticApp)
@@ -148,7 +148,7 @@ export function createDevframeNextHost(
     if (mcp)
       return mcp.fetch(request)
 
-    // Answer `<base>/__connection.json` before the static handler runs — a
+    // Answer `<base>/__connection.json` before the static handler runs, since a
     // mounted SPA's SPA-fallback would otherwise resolve the miss to
     // `index.html` and swallow the discovery request.
     if (pathname.endsWith(META_SUFFIX)

@@ -54,7 +54,7 @@ export const PopoverOnly: Story = {
 
 /**
  * A group with a `defaultChildId`: clicking opens that member straight away
- * instead of showing the popover — until another member becomes the group's
+ * instead of showing the popover, until another member becomes the group's
  * last-opened child, which then takes precedence.
  */
 export const WithDefaultChild: Story = {
@@ -75,7 +75,7 @@ export const WithDefaultChild: Story = {
   }),
 }
 
-/** Active state — a member of the group currently owns the panel. */
+/** Active state: a member of the group currently owns the panel. */
 export const Active: Story = {
   render: () => ({
     setup: () => mountWithContext(

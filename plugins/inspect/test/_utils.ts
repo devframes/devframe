@@ -30,7 +30,7 @@ function localSpaDir(): string {
   const resolved = resolveStaticAssetsSource(inspectDevframe.cli!.distDir!, path.join(os.tmpdir(), 'devframes_plugin_inspect-test'), inspectDevframe.importMetaUrl)
   if (typeof resolved !== 'string') {
     throw new TypeError(
-      '[devframes_plugin_inspect] client SPA missing — run `pnpm -C plugins/inspect run build` first.',
+      '[devframes_plugin_inspect] client SPA missing; run `pnpm -C plugins/inspect run build` first.',
     )
   }
   return resolved
@@ -44,7 +44,7 @@ function localSpaDir(): string {
 export function assertSpaBuilt(): void {
   if (!existsSync(path.join(localSpaDir(), 'index.html'))) {
     throw new Error(
-      '[devframes_plugin_inspect] client SPA missing — run `pnpm -C plugins/inspect run build` first.',
+      '[devframes_plugin_inspect] client SPA missing; run `pnpm -C plugins/inspect run build` first.',
     )
   }
 }
@@ -65,7 +65,7 @@ interface BootOptions {
  * controllable lifecycle. Bound to 127.0.0.1 to avoid the IPv4/IPv6 race.
  *
  * With `hub: true` the context comes from `@devframes/hub`'s
- * `createHubContext`, so `ctx.commands` is a live host — the surface the
+ * `createHubContext`, so `ctx.commands` is a live host, the surface the
  * Commands tab reads from when mounted inside a hub. Without it, the plain
  * context exercises the no-hub path (empty list, thrown diagnostic).
  */
@@ -105,12 +105,12 @@ async function boot(options: BootOptions): Promise<InspectorServer> {
   return Object.assign(server, { basePath, ctx })
 }
 
-/** Standalone boot — plain devframe context, no hub commands host. */
+/** Standalone boot: plain devframe context, no hub commands host. */
 export function startInspectorServer(): Promise<InspectorServer> {
   return boot({})
 }
 
-/** Hub boot — `createHubContext` attaches a live `ctx.commands` host. */
+/** Hub boot: `createHubContext` attaches a live `ctx.commands` host. */
 export async function startInspectorHubServer(): Promise<InspectorServer<DevframeHubContext>> {
   return await boot({ hub: true }) as InspectorServer<DevframeHubContext>
 }

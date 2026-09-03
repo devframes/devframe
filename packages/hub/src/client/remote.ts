@@ -83,32 +83,11 @@ function extractKeyFromQuery(search: string): string | null {
  * Throws if the descriptor is malformed or its schema version is unsupported.
  */
 export function parseRemoteConnection(input?: string): RemoteConnectionInfo | null {
-  let hash = ''
-  let search = ''
-  if (input === undefined) {
-    if (typeof location === 'undefined')
-      return null
-    hash = location.hash
-    search = location.search
-  }
-  else {
-    try {
-      const parsed = new URL(input, 'http://_')
-      hash = parsed.hash
-      search = parsed.search
-    }
-    catch {
-      // Treat as a raw fragment or query string.
-      if (input.startsWith('#'))
-        hash = input
-      else if (input.startsWith('?'))
-        search = input
-      else
-        return null
-    }
-  }
+  const parts = resolveUrlParts(input)
+  if (!parts)
+    return null
 
-  const encoded = extractKeyFromFragment(hash) ?? extractKeyFromQuery(search)
+  const encoded = extractKeyFromFragment(parts.hash) ?? extractKeyFromQuery(parts.search)
   if (!encoded)
     return null
 
@@ -120,6 +99,32 @@ export function parseRemoteConnection(input?: string): RemoteConnectionInfo | nu
     throw new Error('[@devframes/hub] Failed to decode remote connection descriptor.', { cause })
   }
 
+  return validateConnectionDescriptor(payload)
+}
+
+/** Resolve the URL fragment/query to inspect, from an explicit input or `location`. */
+function resolveUrlParts(input?: string): { hash: string, search: string } | null {
+  if (input === undefined) {
+    if (typeof location === 'undefined')
+      return null
+    return { hash: location.hash, search: location.search }
+  }
+  try {
+    const parsed = new URL(input, 'http://_')
+    return { hash: parsed.hash, search: parsed.search }
+  }
+  catch {
+    // Treat as a raw fragment or query string.
+    if (input.startsWith('#'))
+      return { hash: input, search: '' }
+    if (input.startsWith('?'))
+      return { hash: '', search: input }
+    return null
+  }
+}
+
+/** Validate a decoded payload as a {@link RemoteConnectionInfo}, throwing on any mismatch. */
+function validateConnectionDescriptor(payload: unknown): RemoteConnectionInfo {
   if (!payload || typeof payload !== 'object')
     throw new Error('[@devframes/hub] Remote connection descriptor must be an object.')
 
@@ -141,7 +146,7 @@ export function parseRemoteConnection(input?: string): RemoteConnectionInfo | nu
  * the current URL and returns a connected {@link DevframeRpcClient}.
  *
  * Pairs with `remote: true` on a `DevframeViewIframe` registered on the node
- * side — the hub injects the descriptor into the iframe URL.
+ * side, where the hub injects the descriptor into the iframe URL.
  *
  * @throws if no descriptor is present in the URL.
  */

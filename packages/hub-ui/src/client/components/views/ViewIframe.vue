@@ -27,19 +27,19 @@ const ADDRESS_BAR_HEIGHT = 40
 
 const isLoading = ref(true)
 const isIframeLoading = ref(false)
-// Flips true once the pane is mounted so the hide/show effect can run — a plain
+// Flips true once the pane is mounted so the hide/show effect can run; a plain
 // `pane.isMounted` read isn't reactive.
 const paneReady = ref(false)
 
 // A devframe whose client assets are published as their own npm package
 // answers with a fallback page when it can reach neither a local install nor
 // the CDN they live on. That page reports itself over `postMessage`, so the
-// failure renders as a hub panel — with the install command and a retry —
+// failure renders as a hub panel (with the install command and a retry)
 // rather than as a bare page inside the frame.
 const assetsError = ref<RemoteAssetsErrorMessage | null>(null)
 
 // The blank iframe paints white while its content loads, so a placeholder is
-// only useful when the pane steps aside (`pane.hide()`) to reveal it — the same
+// only useful when the pane steps aside (`pane.hide()`) to reveal it, the same
 // layering trick `ViewAssetsError` relies on. Show it during the initial load
 // and any hard navigation/refresh, but never on top of the assets-error panel.
 const showLoadingPlaceholder = computed(
@@ -56,8 +56,8 @@ const isEditing = ref(false)
 // Shared-iframe soft navigation: an anchor iframe dock and each of its member
 // docks share one `frameId`, so they must render into the *same* live pane.
 // Keying on `frameId` (when present) keeps that single iframe alive across
-// switches — its navigation/scroll/JS state is preserved and the hub's
-// frame-nav adapter soft-navigates it — falling back to the entry id for plain
+// switches, so its navigation/scroll/JS state is preserved and the hub's
+// frame-nav adapter soft-navigates it, falling back to the entry id for plain
 // iframe docks that own their frame exclusively.
 const paneKey = computed(() => props.entry.frameId ?? props.entry.id)
 
@@ -111,7 +111,7 @@ function onWindowMessage(event: MessageEvent) {
   const data = event.data as Partial<RemoteAssetsErrorMessage> | null
   if (typeof data !== 'object' || data === null || data.type !== DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE)
     return
-  // Only this view's own frame — a page nested inside it reporting the same
+  // Only this view's own frame: a page nested inside it reporting the same
   // failure is that page's business, not this dock's.
   if (event.source !== iframeElement.value?.contentWindow)
     return
@@ -232,7 +232,7 @@ onMounted(() => {
   })
   const iframe = pane.iframe
 
-  // Follow the frame wherever it goes — a document load, but also an SPA
+  // Follow the frame wherever it goes: a document load, but also an SPA
   // router's `pushState`/`replaceState` and back/forward, none of which fire
   // `load`. `currentUrl` is the single source the address bar renders and the
   // session route persists, so tracking it here keeps both live. Reattaching
@@ -247,7 +247,7 @@ onMounted(() => {
   })
 
   if (!existed)
-    // A freshly created pane is loading its initial content — reflect it so the
+    // A freshly created pane is loading its initial content; reflect it so the
     // placeholder covers the first paint, not just later navigations.
     isIframeLoading.value = true
 
@@ -271,7 +271,7 @@ onMounted(() => {
     entryState.domElements.iframe = iframe
 
   // iframe-pane positions the iframe exactly over the mount target (the view
-  // frame below the address bar), so no manual offset is needed — only the
+  // frame below the address bar), so no manual offset is needed; only the
   // cosmetic borders differ between edge/float and address-bar states.
   watchEffect(() => {
     Object.assign(iframe.style, props.iframeStyle)
@@ -314,7 +314,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('message', onWindowMessage)
-  // A shared frame outlives this view, so its page is left exactly as found —
+  // A shared frame outlives this view, so its page is left exactly as found;
   // the incoming view starts its own watch.
   stopLocationWatch?.()
   stopLocationWatch = undefined
@@ -323,7 +323,7 @@ onUnmounted(() => {
     pane.iframe?.removeEventListener('load', onIframeLoad)
   // Only unmount if this view still owns the pane. When switching between two
   // docks sharing a `frameId`, the incoming view may re-mount the shared pane
-  // onto its own container before this outgoing view tears down — unmounting
+  // onto its own container before this outgoing view tears down; unmounting
   // then would wrongly hide the just-revealed iframe. Guarding on the current
   // target makes the handoff order-independent.
   if (pane && pane.target === viewFrame.value)

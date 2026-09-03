@@ -11,7 +11,7 @@ import { parseUA } from 'ua-parser-modern'
  *
  * The client used to parse+format this itself, but that pulled
  * `ua-parser-modern` into the browser bundle for a label nothing else on
- * the client needs — the client now sends the raw string and parsing
+ * the client needs; the client now sends the raw string and parsing
  * happens here, at the server ingress, keeping the persisted label format
  * identical.
  */
@@ -69,13 +69,13 @@ export function refreshTempAuthCode(): string {
 
 /**
  * Build a "magic link" authentication URL that embeds a one-time code (OTP) in
- * the URL **fragment**. Opening it authenticates the client without typing —
+ * the URL **fragment**. Opening it authenticates the client without typing;
  * print it on startup (devframe stays headless, so the host prints its own
  * banner). Defaults to the current code; the link is subject to the same TTL.
  *
  * The code rides the fragment (`#devframe_otp=…`), not the query string, so it
  * is never sent to the server, written to an access log, or leaked in a
- * `Referer` header — the browser client reads it locally (see
+ * `Referer` header; the browser client reads it locally (see
  * `consumeOtpFromUrl`). Any existing fragment parameters are preserved.
  */
 export function buildOtpAuthUrl(baseUrl: string, code: string = tempAuthCode): string {
@@ -133,13 +133,13 @@ export function exchangeTempAuthCode(
 
   if (!timingSafeEqual(code, tempAuthCode)) {
     tempAuthFailedAttempts += 1
-    // Too many wrong guesses — invalidate this code entirely.
+    // Too many wrong guesses, so invalidate this code entirely.
     if (tempAuthFailedAttempts >= TEMP_AUTH_MAX_ATTEMPTS)
       refreshTempAuthCode()
     return null
   }
 
-  // Code is valid — mint a fresh, node-issued bearer token for this client.
+  // Code is valid, so mint a fresh, node-issued bearer token for this client.
   const authToken = randomToken()
   storage.mutate((state) => {
     state.trusted[authToken] = {

@@ -17,7 +17,7 @@ import DockPanelResizer from './DockPanelResizer.vue'
 
 const props = defineProps<{
   context: DocksContext
-  /** Override dock layout tunables — shared with the float-mode bar's `layout` prop. */
+  /** Override dock layout tunables, shared with the float-mode bar's `layout` prop. */
   layout?: Partial<DockLayout>
 }>()
 
@@ -44,7 +44,7 @@ const hasPanelContent = computed(() => {
 // Auto-collapse (on by default, opt out via `settings.autoCollapseEdgeToolbar:
 // false`): idle-timeout + hover tracking, mirroring Dock.vue's own float-bar
 // minimize mechanism (`isHovering`/`bringUp`/`isMinimized`). Kept entirely
-// local/ephemeral — it's not part of the hub-defined `DockPanelStorage`, same
+// local/ephemeral, not part of the hub-defined `DockPanelStorage`, same
 // as Dock.vue's own `isHovering` isn't either.
 const isHovering = ref(false)
 let _idleTimer: ReturnType<typeof setTimeout> | null = null
@@ -59,7 +59,7 @@ function bringUp() {
   }, +store.inactiveTimeout || 0)
 }
 
-// An open group menu popover anchors to a toolbar button — collapsing the
+// An open group menu popover anchors to a toolbar button, so collapsing the
 // toolbar out from under it would leave the menu floating, detached from it.
 const docksGroupPanel = useDocksGroupPanel()
 
@@ -121,11 +121,11 @@ function hideTooltip() {
 // Edge-position drag-to-snap: dragging the "Edge position" button snaps the
 // whole panel among the four edges via `resolveDockEdge` (the same primitive
 // Dock.vue's float-bar drag uses). Unlike Dock.vue, the commit is deferred to
-// `pointerup` rather than live-updated on every `pointermove` — the edge panel
+// `pointerup` rather than live-updated on every `pointermove`, because the edge panel
 // can be full-viewport with open content, so live-reflowing it on every pointer
 // move would jank the iframe underneath. A lightweight preview strip
 // (`dragPreviewStyle`) tracks the candidate edge instead. Confined to snapping
-// among the four edges only — never transitions `store.mode` to `'float'`.
+// among the four edges only; it never transitions `store.mode` to `'float'`.
 const DRAG_THRESHOLD = 4
 const positionDragStart = ref<{ x: number, y: number } | null>(null)
 const hasDraggedPosition = ref(false)
@@ -133,14 +133,14 @@ const dragPreviewPosition = ref<DockEdgePosition | null>(null)
 
 function onPositionPointerDown(e: PointerEvent) {
   hideTooltip()
-  // Reset at the start of the *next* gesture, not in `pointerup` — the
+  // Reset at the start of the *next* gesture, not in `pointerup`, because the
   // synthetic `click` fires after `pointerup` and needs to still see this.
   hasDraggedPosition.value = false
   positionDragStart.value = { x: e.clientX, y: e.clientY }
 }
 
 function togglePositionDropdown() {
-  // A drag just ended — the click that follows a real drag shouldn't also pop
+  // A drag just ended, so the click that follows a real drag shouldn't also pop
   // the dropdown. `hasDraggedPosition` is deliberately left set here; it's
   // only cleared at the *next* pointerdown (see `onPositionPointerDown`),
   // since the browser dispatches this `click` after `pointerup`.
@@ -233,7 +233,7 @@ onMounted(() => {
   useEventListener(window, 'pointerleave', () => {
     if (!positionDragStart.value)
       return
-    // The pointer left the window mid-drag — cancel rather than commit.
+    // The pointer left the window mid-drag, so cancel rather than commit.
     positionDragStart.value = null
     dragPreviewPosition.value = null
     context.panel.isDragging = false
@@ -241,7 +241,7 @@ onMounted(() => {
 })
 
 // Collapsed sizing shrinks the panel itself down to a small pill anchored at
-// the corner nearest the entries (the start of the toolbar) — deliberately
+// the corner nearest the entries (the start of the toolbar), deliberately
 // away from the "Edge position"/"Float mode" buttons at the other end, so
 // hovering to reveal the toolbar doesn't leave the mouse sitting on a button
 // that drags or floats the panel. Mirrors `Dock.vue`'s own minimize (a real
@@ -497,7 +497,7 @@ const dragPreviewStyle = computed<CSSProperties | undefined>(() => {
     </div>
 
     <!-- Collapsed-state icon: always mounted, opacity-toggled (mirrors
-         Dock.vue's own minimized nub) — the panel itself has already
+         Dock.vue's own minimized nub); the panel itself has already
          shrunk to a small pill via `panelStyle`'s collapsed branch above, so
          this only needs to center inside whatever box that currently is. -->
     <div

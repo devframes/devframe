@@ -119,12 +119,10 @@ export function useWorkbench() {
   const autoRun = ref(initial.autoRun)
   const autoRunSeconds = ref(initial.autoRunSeconds)
 
-  // ── URL persistence: source, query, and filters stay shareable ──────
-  // State lives in the hash (`#source=…&query=…`) so a copied link carries the
-  // whole workbench without touching the query string the server handshake
-  // (`?devframe_auth_token=`) rides on. `replaceState` keeps every keystroke
-  // out of the history stack; the write is guarded so a no-op change (e.g. the
-  // debounced write after a `hashchange` re-apply) never rewrites the URL.
+  // URL persistence: source, query, and filters live in the hash
+  // (`#source=…&query=…`) so a copied link is self-contained and leaves the
+  // server-handshake query string alone. `replaceState` keeps keystrokes out
+  // of history; the guarded write skips no-op re-applies after a `hashchange`.
   let urlTimer: ReturnType<typeof setTimeout> | undefined
   function syncUrl(): void {
     clearTimeout(urlTimer)
@@ -150,7 +148,7 @@ export function useWorkbench() {
   }
 
   /**
-   * Re-apply the full workbench state from the URL hash — the live reaction to
+   * Re-apply the full workbench state from the URL hash, the live reaction to
    * back/forward and manual address-bar edits (`hashchange`). Source is set
    * first so its draft-restore runs before the shared query overwrites it; an
    * unknown source id is left for `loadSources` to pick up. `replaceState`
@@ -174,7 +172,7 @@ export function useWorkbench() {
   const statsStale = ref(false)
   const result = shallowRef<unknown>()
   const hasResult = ref(false)
-  /** When the last successful query landed — drives the "ran … ago" label. */
+  /** When the last successful query landed, driving the "ran … ago" label. */
   const lastRunAt = ref<number | null>(null)
 
   const suggestions = ref<SuggestItem[]>([])
@@ -186,7 +184,7 @@ export function useWorkbench() {
   const activeSource = computed(() => sources.value.find(s => s.id === sourceId.value))
 
   /**
-   * The result maps 1:1 onto the live source only for the identity query —
+   * The result maps 1:1 onto the live source only for the identity query;
    * a derived jora result (map/group/...) has no address back into the
    * source, so edit paths are only provable on the root view.
    */
@@ -199,7 +197,7 @@ export function useWorkbench() {
   const canEdit = computed(() =>
     connection.mode === 'rpc' && !!activeSource.value?.writable && isIdentityQuery.value)
 
-  /** Why editing is absent right now — drives the viewer's lock hint. */
+  /** Why editing is absent right now, driving the viewer's lock hint. */
   const editHint = computed<'readonly-source' | 'derived-view' | null>(() => {
     if (connection.mode !== 'rpc' || !activeSource.value)
       return null
@@ -211,7 +209,7 @@ export function useWorkbench() {
   })
 
   // A dock-activation focus (`focusSource`) that names a source not yet
-  // registered waits here until `loadSources` sees it arrive — then fires once.
+  // registered waits here until `loadSources` sees it arrive, then fires once.
   let pendingFocusId: string | null = null
 
   async function loadSources(): Promise<void> {
@@ -229,7 +227,7 @@ export function useWorkbench() {
   }
 
   /**
-   * Select a source by id — the deep-link target of the hub's dock activation
+   * Select a source by id, the deep-link target of the hub's dock activation
    * (`params.sourceId`). If the source isn't registered yet, remember it and
    * converge the moment it appears (one-shot), mirroring the terminals dock.
    */
@@ -303,13 +301,10 @@ export function useWorkbench() {
     runTimer = setTimeout(() => void runNow(), AUTO_RUN_DEBOUNCE)
   }
 
-  // ── auto-rerun poller: re-run the current query on a fixed period ────
-  // Re-runs read the live object afresh (the whole point — watch a value
-  // change over time). A tick is skipped while a run is in flight or the
-  // query is syntactically broken, so the poller never piles up requests
-  // or spams the wire with queries that can't parse. The poller also pauses
-  // while the tab is backgrounded (no point polling an unseen page) and
-  // resumes — with an immediate catch-up run — when it returns to the front.
+  // Auto-rerun poller: re-runs read the live object afresh (watch a value
+  // change). A tick is skipped while a run is in flight or the query can't
+  // parse, so the poller never piles up requests. It pauses while the tab is
+  // backgrounded and resumes with a catch-up run.
   let autoRunTimer: ReturnType<typeof setInterval> | undefined
   function pageHidden(): boolean {
     return typeof document !== 'undefined' && document.hidden
@@ -566,7 +561,7 @@ export function useWorkbench() {
 
 export type Workbench = ReturnType<typeof useWorkbench>
 
-/** Injection key for the shared workbench — provided by the root, consumed by panels. */
+/** Injection key for the shared workbench, provided by the root, consumed by panels. */
 export const workbenchKey: InjectionKey<Workbench> = Symbol('data-inspector:workbench')
 
 /** Inject the workbench provided by the app root. */

@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { createHostContext } from 'devframe/node'
 
-/** Minimal in-memory host — enough to drive RPC + shared state in tests. */
+/** Minimal in-memory host, enough to drive RPC + shared state in tests. */
 function createTestHost(): DevframeHost {
   return {
     mountStatic: () => {},

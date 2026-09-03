@@ -4,7 +4,7 @@ import * as React from 'react'
 import { badge as badgeClass } from '../../lib/design'
 import { cn } from '../../lib/utils'
 
-/** Badge — a React shell over the co-located `@antfu/design` `badge()` helper. */
+/** Badge: a React shell over the co-located `@antfu/design` `badge()` helper. */
 function Badge({
   className,
   variant = 'secondary',

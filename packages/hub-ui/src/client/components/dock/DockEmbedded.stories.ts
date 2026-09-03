@@ -22,7 +22,7 @@ const meta = {
     docs: {
       story: { inline: false, height: '540px' },
       description: {
-        component: 'The full embedded shell as injected into a host app: the dock bar plus panel (float or edge), floating overlays, command palette, toasts and confirm dialog — switched by `panel.store.mode`.',
+        component: 'The full embedded shell as injected into a host app: the dock bar plus panel (float or edge), floating overlays, command palette, toasts and confirm dialog, switched by `panel.store.mode`.',
       },
     },
   },
@@ -31,7 +31,7 @@ const meta = {
 export default meta
 type Story = StoryObj
 
-/** Float mode, panel closed — just the resting dock bar. */
+/** Float mode, panel closed: just the resting dock bar. */
 export const FloatClosed: Story = {
   render: () => ({
     setup: () => mountWithContext(
@@ -52,7 +52,7 @@ export const FloatOpen: Story = {
 }
 
 /**
- * `panelOverlapFactor: 0.2` — the panel slides clear of the dock bar, leaving
+ * `panelOverlapFactor: 0.2`: the panel slides clear of the dock bar, leaving
  * most of the bar hanging past the panel edge so the iframe underneath stays
  * readable (compare with `FloatOpen`, which uses the default `0.5`).
  */
@@ -75,7 +75,7 @@ export const Edge: Story = {
   }),
 }
 
-/** Unauthorized — the shell forces float mode and shows the warning. */
+/** Unauthorized: the shell forces float mode and shows the warning. */
 export const Unauthorized: Story = {
   render: () => ({
     setup: () => mountWithContext(

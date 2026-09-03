@@ -10,7 +10,7 @@ type MaybeJsonSchema = StandardSchemaV1['~standard'] & Partial<StandardJSONSchem
  *
  * Devframe stays validator-neutral, so conversion uses the schema's own
  * [Standard JSON Schema](https://standardschema.dev/) converter
- * (`~standard.jsonSchema`) when the validator provides one — zod 4 does,
+ * (`~standard.jsonSchema`) when the validator provides one; zod 4 does,
  * for example. Validators without a native converter (e.g. valibot) degrade
  * to a permissive object schema rather than pulling in a converter library.
  */
@@ -39,7 +39,7 @@ export function returnToJsonSchema(schema: StandardSchemaV1 | undefined): unknow
 
 /**
  * JSON Schema for an RPC function's positional args on the agent/MCP
- * surface. Each positional arg is advertised under `arg0` / `arg1` / … —
+ * surface. Each positional arg is advertised under `arg0` / `arg1` / …,
  * matching how the agent bridge coerces the incoming object payload back
  * into positional arguments.
  *

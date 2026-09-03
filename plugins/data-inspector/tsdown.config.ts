@@ -10,7 +10,7 @@ const clientEntries = {
   'engine/index': 'src/engine/index.ts',
 }
 
-// Node-side entries — the devframe definition, the CLI/Vite host adapters,
+// Node-side entries: the devframe definition, the CLI/Vite host adapters,
 // the setup module, the source registry, and the in-process inject entry.
 const serverEntries = {
   'index': 'src/index.ts',

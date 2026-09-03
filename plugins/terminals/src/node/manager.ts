@@ -97,8 +97,8 @@ const HUB_STATUS: Record<TerminalStatus, HubTerminalEntry['status']> = {
 /**
  * Normalize a hub dock icon (`ph:code-duotone`, or a light/dark pair) to the
  * UnoCSS `preset-icons` class the client renders (`i-ph-code-duotone`). The
- * client can only render icons the SPA's UnoCSS build statically emitted — see
- * the safelist in `uno.config.ts` — so unknown icons resolve to `undefined`.
+ * client can only render icons the SPA's UnoCSS build statically emitted (see
+ * the safelist in `uno.config.ts`), so unknown icons resolve to `undefined`.
  */
 function toIconClass(icon?: HubTerminalEntry['icon']): string | undefined {
   const raw = typeof icon === 'string' ? icon : icon?.light
@@ -509,8 +509,8 @@ export class TerminalManager {
   }
 
   /**
-   * Tear a single session down — kill its process, stop polling, dispose the
-   * OSC inspector, close the sink, and drop it from the store — without
+   * Tear a single session down: kill its process, stop polling, dispose the
+   * OSC inspector, close the sink, and drop it from the store, all without
    * publishing. Callers publish once they've finished mutating the store.
    */
   private disposeSession(id: string, session: ManagedSession): void {
@@ -525,7 +525,7 @@ export class TerminalManager {
     this.sessions.delete(id)
   }
 
-  /** Tear everything down — used on server shutdown and in tests. */
+  /** Tear everything down; used on server shutdown and in tests. */
   dispose(): void {
     for (const session of this.sessions.values()) {
       this.stopProcessPoll(session)
@@ -559,7 +559,7 @@ export class TerminalManager {
   /**
    * Reflect the live session list into the hub's terminals subsystem when this
    * devframe is mounted in a hub. `ctx.terminals` only exists on a
-   * `DevframeHubContext`, so it's accessed by duck-typing — standalone runtimes
+   * `DevframeHubContext`, so it's accessed by duck-typing: standalone runtimes
    * (CLI / Vite / build) have no such property and skip silently. This is what
    * surfaces the plugin's sessions in the hub's own terminals panel.
    */

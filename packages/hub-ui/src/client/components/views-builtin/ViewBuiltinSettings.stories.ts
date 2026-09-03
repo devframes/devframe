@@ -32,7 +32,7 @@ const meta = {
 export default meta
 type Story = StoryObj
 
-/** Embedded client — the Appearance tab shows dock-mode options. */
+/** Embedded client: the Appearance tab shows dock-mode options. */
 export const Embedded: Story = {
   render: () => ({
     setup: () => mountWithContext(
@@ -42,7 +42,7 @@ export const Embedded: Story = {
   }),
 }
 
-/** Standalone client — dock-mode options are hidden. */
+/** Standalone client: dock-mode options are hidden. */
 export const Standalone: Story = {
   render: () => ({
     setup: () => mountWithContext(

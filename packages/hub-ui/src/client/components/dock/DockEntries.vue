@@ -27,7 +27,7 @@ const { selected, isVertical, entries } = toRefs(props)
 const settings = useSettings(props.context)
 
 function isDockVisible(dock: DevframeDockEntry): boolean {
-  // Hide empty groups — a group button with no members has nothing to reveal.
+  // Hide empty groups: a group button with no members has nothing to reveal.
   // A `defaultChildId` still counts as "something to reveal" even when its
   // target is render-only hidden via `visibility`: clicking the group button
   // jumps straight to that member instead of opening the (visibly empty)

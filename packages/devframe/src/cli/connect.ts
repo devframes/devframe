@@ -9,7 +9,7 @@ import { listLiveDevframeInstances, probeDevframeOrigin } from '../node/instance
 
 export interface ConnectServerOptions {
   /**
-   * Explicit ports to probe besides the registry — for instances started
+   * Explicit ports to probe besides the registry, for instances started
    * before the registry existed, or reachable only by convention. Each port
    * is probed at `/` (`http://localhost:<port>/__connection.json`).
    */
@@ -22,14 +22,14 @@ export interface ConnectServerOptions {
    * The bearer credential the connector presents to each instance's
    * authenticated MCP route, sent as `Authorization: Bearer <token>`.
    *
-   * - a **string** — one shared token for every instance;
-   * - a **resolver** `(record) => string | undefined` — a per-instance token,
+   * - a **string**: one shared token for every instance;
+   * - a **resolver** `(record) => string | undefined`: a per-instance token,
    *   for connecting to a fleet with distinct credentials (return `undefined`
    *   to send none for that instance).
    *
    * The token is only ever placed in a request header: it never enters the
    * instance registry records, the indexed results, connection URLs, or
-   * formatted errors. Left unset, no `Authorization` header is sent — only an
+   * formatted errors. Left unset, no `Authorization` header is sent, so only an
    * instance whose route opted out of identity (`authorization: false`) will
    * answer.
    */
@@ -51,7 +51,7 @@ export function resolveAuthToken(
  * Build the request headers the connector sends to one instance's MCP route:
  * the instance's own (loopback) `origin` so the route's origin gate accepts
  * this native client, plus `Authorization: Bearer <token>` when a bearer is
- * configured. The bearer appears **only** here — never in the connection URL,
+ * configured. The bearer appears **only** here, never in the connection URL,
  * the registry records, or the indexed results. Exported for focused tests.
  */
 export function buildInstanceRequestHeaders(url: string, token: string | undefined): Record<string, string> {
@@ -95,7 +95,7 @@ const GATEWAY_TOOLS: Tool[] = [
   {
     name: INDEX_TOOL,
     title: 'Discover running devframes',
-    description: 'Discover every running devframe dev server on this machine and list each one\'s MCP tools. Call this FIRST, before assuming which devtools are available — the result names the instance (id, project root, origin) and the port to pass to the call tool. Safe to call freely.',
+    description: 'Discover every running devframe dev server on this machine and list each one\'s MCP tools. Call this FIRST, before assuming which devtools are available; the result names the instance (id, project root, origin) and the port to pass to the call tool. Safe to call freely.',
     inputSchema: { type: 'object', properties: {} },
     annotations: { readOnlyHint: true, destructiveHint: false },
   },
@@ -119,12 +119,12 @@ const GATEWAY_TOOLS: Tool[] = [
 /**
  * Start the devframe MCP connector on stdio: a thin discovery + proxy server
  * in the shape Vercel's next-devtools-mcp (https://github.com/vercel/next-devtools-mcp)
- * validated — credit due there for the architecture this connector follows.
- * It exposes two gateway tools —
+ * validated; credit is due there for the architecture this connector follows.
+ * It exposes two gateway tools:
  * `devframe_connect_list-instances` (discover running devframe instances via
  * the instance registry and list each one's MCP tools) and
  * `devframe_connect_call-tool` (invoke one tool on one instance over its
- * Streamable-HTTP endpoint) — and holds no domain knowledge of its own.
+ * Streamable-HTTP endpoint), and holds no domain knowledge of its own.
  */
 export async function startConnectServer(options: ConnectServerOptions = {}): Promise<ConnectServerHandle> {
   const sdk = await importSdk()
@@ -292,7 +292,7 @@ async function withInstanceClient<T>(
 ): Promise<T> {
   // The instance's own (loopback) origin (so the route's origin gate, which
   // rejects `Origin`-less requests, accepts this native client) plus the
-  // bearer (when configured) — the `Authorization` header being the only place
+  // bearer (when configured), the `Authorization` header being the only place
   // the credential ever appears.
   const transport = new sdk.StreamableHTTPClientTransport(
     new URL(url),

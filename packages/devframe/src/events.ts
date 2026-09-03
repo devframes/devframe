@@ -1,7 +1,7 @@
 /**
- * Centralized registry of the core devframe event names — the node-side host
+ * Centralized registry of the core devframe event names: the node-side host
  * bus events, the client RPC connection events, and the server→client
- * broadcast notifications — so these names live in one place instead of
+ * broadcast notifications, so these names live in one place instead of
  * scattered string literals.
  *
  * **Keep this in sync with [`docs/content/8.references/3.events.md`](../../../docs/content/8.references/3.events.md)**

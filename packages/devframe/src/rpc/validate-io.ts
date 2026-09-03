@@ -65,7 +65,7 @@ export async function validateRpcArgs(
 /**
  * Validate a handler's resolved return value against its declared schema.
  * Throws `DF0039` when the value fails the schema, otherwise returns the
- * original value unchanged (guard-only, never rewriting the payload — see
+ * original value unchanged (guard-only, never rewriting the payload; see
  * {@link validateRpcArgs}). Passes through when no return schema is set.
  *
  * @internal

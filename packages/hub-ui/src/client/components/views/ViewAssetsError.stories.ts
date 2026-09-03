@@ -38,8 +38,10 @@ export const Offline: Story = {
   }),
 }
 
-// A long provider message stays inside its own scroll area rather than
-// pushing the install command and the retry out of the panel.
+/**
+ * A long provider message stays inside its own scroll area rather than
+ * pushing the install command and the retry out of the panel.
+ */
 export const LongReason: Story = {
   render: () => ({
     setup: () => () => stage(h(ViewAssetsError, {

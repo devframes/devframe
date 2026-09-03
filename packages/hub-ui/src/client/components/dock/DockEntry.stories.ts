@@ -54,7 +54,7 @@ const meta = {
 export default meta
 type Story = StoryObj<EntryArgs>
 
-/** Idle button — the resting state on the dock bar. */
+/** Idle button: the resting state on the dock bar. */
 export const Default: Story = {}
 
 /** The active entry: scaled up and tinted while its panel owns the screen. */

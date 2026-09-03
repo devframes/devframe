@@ -45,7 +45,7 @@ describe('sanitizeSpec (render-time validation)', () => {
     warn.mockRestore()
   })
 
-  it('respects a subset registry — a base component absent from it is unsupported', () => {
+  it('respects a subset registry, marking a base component absent from it as unsupported', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const spec = {
       root: 'a',

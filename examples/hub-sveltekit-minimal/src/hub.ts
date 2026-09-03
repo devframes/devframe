@@ -11,21 +11,21 @@ import { createMessagesDevframe } from '@devframes/plugin-messages'
 import { createOgDevframe } from '@devframes/plugin-og'
 import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 
-// One `initHub` call, memoized on globalThis so SvelteKit's dev-time module
-// reload returns the live hub instead of leaking transports. The RPC socket
-// runs on a side-car port advertised via __connection.json: SvelteKit's
-// `+server.ts` handlers hand over `Request`s and never see WebSocket
-// upgrades, so `ws.sidecar` asks for a socket of its own — the browser client
-// discovers it automatically.
+// Memoized on globalThis so a SvelteKit dev-time reload reuses the hub
+// instead of leaking transports. SvelteKit's `+server.ts` handlers never see
+// WebSocket upgrades, so `ws.sidecar` requests a side-car socket that the
+// browser client discovers via __connection.json.
 const globalRef = globalThis as { __hubSvelteKitMinimal?: HubInstance }
 
 export const hub: HubInstance = globalRef.__hubSvelteKitMinimal ??= initHub({
   base: DEVFRAMES_HUB_BASE,
   ws: { sidecar: true },
-  // Every built-in plugin, dogfooded end to end through the hub mount path.
-  // `data-inspector`'s default id carries `:` (a route-param marker), so it
-  // gets a colon-free id override to be a valid `<base><id>/` segment; the
-  // assets watcher is off since this host demonstrates mounting, not authoring.
+  /**
+   * Every built-in plugin, dogfooded end to end through the hub mount path.
+   * `data-inspector`'s default id carries `:` (a route-param marker), so it
+   * gets a colon-free id override to be a valid `<base><id>/` segment; the
+   * assets watcher is off since this host demonstrates mounting, not authoring.
+   */
   devframes: [
     createGitDevframe(),
     createTerminalsDevframe(),
@@ -37,14 +37,18 @@ export const hub: HubInstance = globalRef.__hubSvelteKitMinimal ??= initHub({
     createOgDevframe(),
     createAssetsDevframe({ watch: false }),
   ],
-  // Rebrand the reference UI to Svelte's own orange — one field, no CSS:
-  // `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
-  // which the dock reads at connect time and feeds into `--devframe-primary`
-  // (see `@devframes/hub-ui`'s `primary-ramp.css`).
+  /**
+   * Rebrand the reference UI to Svelte's own orange in one field, no CSS:
+   * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
+   * which the dock reads at connect time and feeds into `--devframe-primary`
+   * (see `@devframes/hub-ui`'s `primary-ramp.css`).
+   */
   ui: createUi({ branding: { primaryColor: '#ff3e00', productName: 'Devframes on SvelteKit' } }),
-  // Gate with devframe's interactive OTP (the default). The hub prints a
-  // 6-digit code + magic link on startup, and the reference UI's authorization
-  // view exchanges it for a bearer token. See docs/content/1.guide/13.security.md.
+  /**
+   * Gate with devframe's interactive OTP (the default). The hub prints a
+   * 6-digit code + magic link on startup, and the reference UI's authorization
+   * view exchanges it for a bearer token. See docs/content/1.guide/13.security.md.
+   */
   configure(ctx) {
     ctx.commands.register({
       id: 'example:hub-sveltekit-minimal:ping',

@@ -10,7 +10,7 @@ import type {
 
 export interface MessagesClientOptions {
   /**
-   * Default fields merged beneath every `add()` input — the client host passes
+   * Default fields merged beneath every `add()` input. The client host passes
    * `{ category: entry.id }` to scope a dock client script's messages to its
    * entry. Fields set on the input itself win.
    */

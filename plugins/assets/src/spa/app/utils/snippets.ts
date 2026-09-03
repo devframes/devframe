@@ -2,7 +2,7 @@ import type { AssetImageMeta, AssetInfo, CodeSnippet } from '../../../types'
 import { fileNameOf } from './format'
 
 /**
- * Ready-to-copy usage snippets for the details panel. Generic by design —
+ * Ready-to-copy usage snippets for the details panel. Generic by design:
  * unlike Nuxt DevTools' Nuxt-specific `<NuxtImg>`/`<NuxtPicture>` snippets,
  * these apply to any framework devframe might be embedded in.
  */

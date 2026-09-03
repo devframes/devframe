@@ -42,7 +42,7 @@ export const Default: Story = {
   }),
 }
 
-/** A group member selected — the group rail appears beside the view. */
+/** A group member selected: the group rail appears beside the view. */
 export const WithGroup: Story = {
   render: () => ({
     setup: () => mountWithContext(
@@ -52,7 +52,7 @@ export const WithGroup: Story = {
   }),
 }
 
-/** Unauthorized — the standalone window shows the auth notice. */
+/** Unauthorized: the standalone window shows the auth notice. */
 export const Unauthorized: Story = {
   render: () => ({
     setup: () => mountWithContext(

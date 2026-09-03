@@ -35,7 +35,7 @@ export interface DevframeState {
   backend: Accessor<string | null>
   /**
    * Connection status of the (optional) devframe backend. The panel's core
-   * scan loop runs over the in-page channel, so this is informational only —
+   * scan loop runs over the in-page channel, so this is informational only,
    * surfaced as a tag rather than blocking the UI.
    */
   status: Accessor<DevframeConnectionStatus | null>
@@ -49,7 +49,7 @@ export interface DevframeState {
  * Connect to the devframe backend for supplementary data: the impact legend,
  * the runtime config the panel forwards to the page script, and the dock-activation
  * shared state that powers deep-linking (e.g. a messages-feed entry navigating
- * here). Intentionally non-blocking and failure-tolerant — the panel's core
+ * here). Intentionally non-blocking and failure-tolerant; the panel's core
  * scan loop runs over the in-page channel, so the UI stays useful even if the
  * backend is unreachable.
  */
@@ -68,7 +68,7 @@ export function connectDevframeState(): DevframeState {
         await rpc.ensureTrusted(2000)
       }
       catch {
-        // WS handshake refused/timed out — config is optional, carry on.
+        // WS handshake refused or timed out; config is optional, carry on.
       }
       // The server-fn augmentation lives in `src/rpc` (node side); the client
       // bundle doesn't import it, so call by name with a local return type.
@@ -91,7 +91,7 @@ export function connectDevframeState(): DevframeState {
         shared.on('updated', apply)
       }
       catch {
-        // No hub / no shared state — deep-linking simply stays inert.
+        // No hub or shared state; deep-linking simply stays inert.
       }
     })
     .catch(() => {

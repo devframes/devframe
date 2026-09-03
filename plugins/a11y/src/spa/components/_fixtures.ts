@@ -5,8 +5,21 @@ import { emptyCounts } from '../../shared/protocol.ts'
 
 function noop() {}
 
-/** A no-op channel stub — enough for the hover/clear calls the rows fire. */
-export const stubChannel = { preview: noop, clearPreview: noop, clearRoute: noop } as unknown as A11yChannel
+/** A no-op channel stub, enough for the hover/clear calls the rows fire. */
+export const stubChannel: A11yChannel = {
+  state: () => null,
+  pageScriptReady: () => false,
+  scanning: () => false,
+  activeRoute: () => null,
+  preview: noop,
+  clearPreview: noop,
+  setPins: noop,
+  rescan: noop,
+  sendConfig: noop,
+  setAutoScan: noop,
+  clearRoute: noop,
+  clearAll: noop,
+}
 
 /** A selection stub that marks `image-alt` selected and numbers its nodes. */
 export const stubSelection: SelectionApi = {

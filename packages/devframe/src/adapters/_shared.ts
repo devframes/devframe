@@ -44,7 +44,7 @@ export async function resolveDevServerPort(
 ): Promise<number> {
   const host = options.host ?? def.cli?.host ?? 'localhost'
   const port = options.defaultPort ?? def.cli?.port ?? DEFAULT_PORT
-  // Only include optional fields when set — `get-port-please` spreads
+  // Only include optional fields when set, because `get-port-please` spreads
   // user options over its defaults, so `portRange: undefined` would
   // wipe out the internal `[]` and crash on iteration.
   const portOptions: Parameters<typeof getPort>[0] = { port, host }
@@ -65,7 +65,7 @@ export interface ResolvedMcpConfig {
   path?: string
   /** Origin allow-list, or `false` to disable the origin gate. */
   allowedOrigins?: readonly string[] | false
-  /** The resolved identity policy — a bearer token, callback, or `false`. */
+  /** The resolved identity policy: a bearer token, callback, or `false`. */
   authorization: McpAuthorization
 }
 

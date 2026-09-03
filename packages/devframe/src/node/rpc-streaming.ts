@@ -29,7 +29,7 @@ interface ServerStreamRecord<T = any> {
 
 interface ServerInboundRecord<T = any> {
   reader: StreamReader<T>
-  /** First session that wrote to this inbound — locks ownership for cleanup. */
+  /** First session that wrote to this inbound; locks ownership for cleanup. */
   uploaderMeta?: DevframeNodeRpcSessionMeta
 }
 
@@ -42,7 +42,7 @@ interface ChannelState<T = any> {
 
 /**
  * Build the server-side streaming host. Mirrors the layout of
- * `createRpcSharedStateServerHost` — registers a fixed set of internal
+ * `createRpcSharedStateServerHost`: registers a fixed set of internal
  * RPC methods (`subscribe` / `unsubscribe` / `cancel`) once, then per-channel
  * state lives in a `Map<channelName, ChannelState>`.
  */
@@ -73,7 +73,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
     if (!record.sink.closed || record.subscribers.size > 0)
       return
 
-    // Closed and no subscribers — either free now or hold for replay.
+    // Closed and no subscribers: either free now or hold for replay.
     const retention = state.options.closedStreamRetention
     if (retention <= 0) {
       freeStreamNow(state, id)
@@ -163,7 +163,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
       const record = findStream(channelName, id)
       if (!record)
         return
-      // Cooperative cancel — only abort if the cancelling session was the
+      // Cooperative cancel: only abort if the cancelling session was the
       // last subscriber. Otherwise other clients still want the stream.
       const session = rpc.getCurrentRpcSession()
       if (!session)
@@ -226,8 +226,10 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
       name,
       options: {
         replayWindow,
-        // Default to a 30-second hold when replay is enabled so late
-        // subscribers can join after the producer finishes.
+        /**
+         * Default to a 30-second hold when replay is enabled so late
+         * subscribers can join after the producer finishes.
+         */
         closedStreamRetention: opts.closedStreamRetention ?? (replayWindow > 0 ? 30_000 : 0),
       },
       streams: new Map(),
@@ -299,7 +301,7 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
       const reader = createStreamReader<T>({
         id: inboundOpts.id,
         onCancel() {
-          // Server-initiated cancel — tell the uploading client to stop.
+          // Server-initiated cancel: tell the uploading client to stop.
           // The cancel is targeted at the session that owns this inbound.
           const targetMeta = inboundRecord?.uploaderMeta
           if (!targetMeta)
@@ -331,49 +333,50 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
     return { channelName: key.slice(0, sepIdx), id: key.slice(sepIdx + 1) }
   }
 
+  // Outbound: drop this session as a subscriber, aborting the producer once
+  // the last subscriber leaves.
+  function dropOutboundSubscriptions(meta: DevframeNodeRpcSessionMeta): void {
+    if (!meta.subscribedStreams)
+      return
+    for (const key of meta.subscribedStreams) {
+      const parsed = parseKey(key)
+      const state = parsed && channels.get(parsed.channelName)
+      const record = state && parsed && state.streams.get(parsed.id)
+      if (!parsed || !state || !record)
+        continue
+      record.subscribers.delete(meta)
+      if (record.subscribers.size === 0 && !record.sink.closed)
+        record.sink.abort('all subscribers disconnected')
+      maybeFreeStream(state, parsed.id)
+    }
+    meta.subscribedStreams.clear()
+  }
+
+  // Inbound: end each reader with an error so the consuming handler exits
+  // cleanly. Each inbound is owned by one session, so free it outright.
+  function endInboundUploads(meta: DevframeNodeRpcSessionMeta): void {
+    if (!meta.uploadingStreams)
+      return
+    for (const key of meta.uploadingStreams) {
+      const parsed = parseKey(key)
+      const state = parsed && channels.get(parsed.channelName)
+      const record = state && parsed && state.inbound.get(parsed.id)
+      if (!parsed || !state || !record)
+        continue
+      record.reader._end({
+        name: 'UploadDisconnected',
+        message: 'Uploader disconnected before completing the stream',
+      })
+      state.inbound.delete(parsed.id)
+    }
+    meta.uploadingStreams.clear()
+  }
+
   return {
     create: createChannel,
     _onSessionDisconnected(meta: DevframeNodeRpcSessionMeta) {
-      // Outbound: drop subscriber, abort if last one drops.
-      if (meta.subscribedStreams) {
-        for (const key of meta.subscribedStreams) {
-          const parsed = parseKey(key)
-          if (!parsed)
-            continue
-          const state = channels.get(parsed.channelName)
-          const record = state?.streams.get(parsed.id)
-          if (!state || !record)
-            continue
-          record.subscribers.delete(meta)
-          if (record.subscribers.size === 0 && !record.sink.closed) {
-            // Last subscriber gone — abort so the producer can short-circuit.
-            record.sink.abort('all subscribers disconnected')
-          }
-          maybeFreeStream(state, parsed.id)
-        }
-        meta.subscribedStreams.clear()
-      }
-
-      // Inbound: end the reader with an error so the consuming handler
-      // exits cleanly. Each inbound is owned by one session so we just
-      // free it.
-      if (meta.uploadingStreams) {
-        for (const key of meta.uploadingStreams) {
-          const parsed = parseKey(key)
-          if (!parsed)
-            continue
-          const state = channels.get(parsed.channelName)
-          const record = state?.inbound.get(parsed.id)
-          if (!state || !record)
-            continue
-          record.reader._end({
-            name: 'UploadDisconnected',
-            message: 'Uploader disconnected before completing the stream',
-          })
-          state.inbound.delete(parsed.id)
-        }
-        meta.uploadingStreams.clear()
-      }
+      dropOutboundSubscriptions(meta)
+      endInboundUploads(meta)
     },
   }
 }

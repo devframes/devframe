@@ -11,14 +11,14 @@ export interface DetectCodeServerResult {
 /**
  * Probe the host for a usable code-server binary by running
  * `<bin> --version`. Resolves to `installed: false` when the binary is
- * missing (ENOENT), errors, or exits non-zero — never throws — so the
+ * missing (ENOENT), errors, or exits non-zero (never throws), so the
  * launcher can fall back to install instructions.
  *
  * `code-server --version` prints e.g. `4.96.4 abc123 with Code 1.96.4`; the
  * first semver-looking token is taken as the version. Matching a semver
  * pattern (rather than the leading whitespace token) keeps cold-start i18n
- * noise — e.g. an `i18next: …` initialization line printed before the version
- * — from leaking into the reported version.
+ * noise (e.g. an `i18next: …` initialization line printed before the version)
+ * from leaking into the reported version.
  */
 export function detectCodeServer(bin = 'code-server', timeoutMs = 5000): Promise<DetectCodeServerResult> {
   return new Promise((resolve) => {

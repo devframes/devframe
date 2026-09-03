@@ -19,7 +19,7 @@ test.describe('devframe connect (files-inspector)', () => {
       )
       expect(instance).toBeDefined()
       // The probe may adopt an explicit address family for a `localhost`
-      // origin — accept either spelling.
+      // origin, so accept either spelling.
       expect(instance.mcp.url).toMatch(/^http:\/\/(?:localhost|127\.0\.0\.1):9876\/__devframe-files-inspector\/__mcp$/)
       const toolNames = instance.mcp.tools.map((t: any) => t.name)
       expect(toolNames).toContain('devframe_state_read')

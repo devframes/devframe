@@ -24,7 +24,7 @@ function resolveInteractiveSession(
   return session
 }
 
-/** A session exposing lifecycle handles — spawned via startChildProcess/startPtySession. */
+/** A session exposing lifecycle handles, spawned via startChildProcess/startPtySession. */
 type ControllableTerminalSession = DevframeChildProcessTerminalSession | DevframePtyTerminalSession
 
 /**
@@ -45,7 +45,7 @@ function resolveControllableSession(
 }
 
 /**
- * `hub:commands:execute` — Invoke a registered server command by id. The
+ * `hub:commands:execute`: Invoke a registered server command by id. The
  * arguments after `id` are forwarded to the command's `handler(...)`.
  * Returns whatever the handler returns.
  *
@@ -63,7 +63,7 @@ export const hubCommandsExecute = defineHubRpcFunction({
 })
 
 /**
- * `hub:messages:add` — Add a message from a browser client into the hub's
+ * `hub:messages:add`: Add a message from a browser client into the hub's
  * messages subsystem. Marked `from: 'browser'`. Returns the serializable
  * entry (the mutation handle stays server-side).
  *
@@ -83,7 +83,7 @@ export const hubMessagesAdd = defineHubRpcFunction({
   }),
 })
 
-/** `hub:messages:update` — Patch a message by id; returns the updated entry (or `undefined`). */
+/** `hub:messages:update`: Patch a message by id; returns the updated entry (or `undefined`). */
 export const hubMessagesUpdate = defineHubRpcFunction({
   name: HUB_EVENTS.rpc.messagesUpdate,
   type: 'action',
@@ -95,7 +95,7 @@ export const hubMessagesUpdate = defineHubRpcFunction({
   }),
 })
 
-/** `hub:messages:remove` — Remove a message by id. */
+/** `hub:messages:remove`: Remove a message by id. */
 export const hubMessagesRemove = defineHubRpcFunction({
   name: HUB_EVENTS.rpc.messagesRemove,
   type: 'action',
@@ -106,7 +106,7 @@ export const hubMessagesRemove = defineHubRpcFunction({
   }),
 })
 
-/** `hub:messages:clear` — Remove every message. */
+/** `hub:messages:clear`: Remove every message. */
 export const hubMessagesClear = defineHubRpcFunction({
   name: HUB_EVENTS.rpc.messagesClear,
   type: 'action',
@@ -118,7 +118,7 @@ export const hubMessagesClear = defineHubRpcFunction({
 })
 
 /**
- * `hub:terminals:write` — Send input to an interactive PTY session spawned
+ * `hub:terminals:write`: Send input to an interactive PTY session spawned
  * via `ctx.terminals.startPtySession`. Lets a hub-aware terminal UI (e.g. the
  * terminals plugin) drive a session owned by another plugin.
  */
@@ -132,7 +132,7 @@ export const hubTerminalsWrite = defineHubRpcFunction({
   }),
 })
 
-/** `hub:terminals:resize` — Resize an interactive PTY session by id. */
+/** `hub:terminals:resize`: Resize an interactive PTY session by id. */
 export const hubTerminalsResize = defineHubRpcFunction({
   name: HUB_EVENTS.rpc.terminalsResize,
   type: 'action',
@@ -144,7 +144,7 @@ export const hubTerminalsResize = defineHubRpcFunction({
 })
 
 /**
- * `hub:terminals:terminate` — Kill a session's process while keeping the
+ * `hub:terminals:terminate`: Kill a session's process while keeping the
  * session registered (its output/scrollback stays). Works for both read-only
  * child-process and interactive PTY sessions, letting a hub-aware terminal UI
  * force-kill a session owned by another plugin.
@@ -160,7 +160,7 @@ export const hubTerminalsTerminate = defineHubRpcFunction({
 })
 
 /**
- * `hub:terminals:restart` — Re-run a session's command in place. Rejected for
+ * `hub:terminals:restart`: Re-run a session's command in place. Rejected for
  * sessions registered with `restartable: false`, whose lifecycle is owned
  * elsewhere.
  */
@@ -178,7 +178,7 @@ export const hubTerminalsRestart = defineHubRpcFunction({
 })
 
 /**
- * `hub:terminals:remove` — Kill a session's process (when it still owns one)
+ * `hub:terminals:remove`: Kill a session's process (when it still owns one)
  * and drop it from the registry, disposing its output stream. Lets a hub-aware
  * terminal UI discard a stopped aggregated session.
  */
@@ -199,13 +199,13 @@ export const hubTerminalsRemove = defineHubRpcFunction({
 })
 
 /**
- * `hub:docks:activate` — Ask the active viewer to switch its focused dock to
+ * `hub:docks:activate`: Ask the active viewer to switch its focused dock to
  * `dockId`, optionally carrying `params` for the target dock to interpret
  * (e.g. `{ sessionId }` for the terminals dock to focus a session).
  *
  * Any connected client may call it, which is the point: a mounted devframe
  * running in its own iframe (on its own RPC client) can steer the host shell's
- * dock selection — client-local state it otherwise can't reach. The hub
+ * dock selection, client-local state it otherwise can't reach. The hub
  * broadcasts the request live to connected clients (the host shell switches)
  * and mirrors it into the `devframe:docks:active` shared state (a dock that
  * mounts in response still converges on it).

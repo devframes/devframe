@@ -42,7 +42,7 @@ const conn = computed(() => connectionIndicator(connection.status))
         as="a"
         href="https://devfra.me/plugins/data-inspector"
         target="_blank"
-        title="Data Inspector docs — using the plugin and providing data sources"
+        title="Data Inspector docs: using the plugin and providing data sources"
       />
       <ActionIconButton
         icon="i-ph:sun-duotone dark:i-ph:moon-duotone"

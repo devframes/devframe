@@ -1,17 +1,18 @@
-import type { DevframeDockEntry } from '@devframes/hub'
+import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { h } from 'vue'
 import { mountWithContext } from '../../stories/story-helpers'
 import ViewDockRenderer from './ViewDockRenderer.vue'
 
-// A dock type hub-ui has no native view for — it routes through the
+// A dock type hub-ui has no native view for, so it routes through the
 // dock-renderer registry (e.g. a `json-render` dock).
-const entry = {
+const entry: DevframeJsonRenderDockEntry = {
   id: 'metrics',
   type: 'json-render',
   title: 'Metrics',
   icon: 'ph:cube-duotone',
-} as unknown as DevframeDockEntry
+  view: { stateKey: 'metrics' },
+}
 
 function stage(children: any) {
   return h('div', { class: 'h-100 bg-base color-base border border-base rounded-lg overflow-hidden font-sans' }, children)
@@ -33,7 +34,7 @@ const meta = {
 export default meta
 type Story = StoryObj
 
-// No renderer registered for the type — the generic fallback view.
+/** No renderer registered for the type: the generic fallback view. */
 export const MissingRenderer: Story = {
   render: () => ({
     setup: () => mountWithContext({}, ctx =>
@@ -41,7 +42,7 @@ export const MissingRenderer: Story = {
   }),
 }
 
-// The registered renderer throws at mount — the error variant with a retry.
+/** The registered renderer throws at mount: the error variant with a retry. */
 export const LoadError: Story = {
   render: () => ({
     setup: () => mountWithContext({}, (ctx) => {
@@ -53,7 +54,7 @@ export const LoadError: Story = {
   }),
 }
 
-// A renderer is available — it owns the container (here a minimal stand-in).
+/** A renderer is available: it owns the container (here a minimal stand-in). */
 export const Mounted: Story = {
   render: () => ({
     setup: () => mountWithContext({}, (ctx) => {

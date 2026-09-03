@@ -1,4 +1,3 @@
-import type { DevframeBranding } from '../../types'
 import { afterEach, describe, expect, it } from 'vitest'
 import { setBranding, useBrandingBackground } from './branding'
 import { setColorSchemePreference } from './color-mode'
@@ -56,7 +55,7 @@ describe('useBrandingBackground', () => {
   it('ignores a null background from an invalid runtime configuration', () => {
     expect.assertions(1)
 
-    setBranding({ background: null } as unknown as DevframeBranding)
+    setBranding({ background: null as never })
 
     expect(useBrandingBackground('iframe').value).toBeUndefined()
   })

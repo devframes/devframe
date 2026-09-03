@@ -53,7 +53,7 @@ async function loadZigpty(): Promise<typeof import('zigpty') | undefined> {
 }
 
 /**
- * Whether real pseudo-terminals are available in this runtime — i.e. zigpty's
+ * Whether real pseudo-terminals are available in this runtime, i.e. zigpty's
  * native bindings loaded. Without them interactive sessions still run through
  * zigpty's pipe-based emulation, with degraded TUI fidelity.
  */
@@ -64,7 +64,7 @@ export async function isPtyAvailable(): Promise<boolean> {
 /**
  * Spawn an interactive terminal via zigpty. Uses a real PTY when the native
  * bindings are available, and zigpty's pipe-based emulation (line discipline,
- * signal translation, best-effort resize) otherwise — the reported `backend`
+ * signal translation, best-effort resize) otherwise; the reported `backend`
  * reflects which one the session got. Returns `undefined` when the module
  * itself is unavailable or spawning throws.
  */
@@ -127,7 +127,7 @@ async function spawnPty(options: SpawnBackendOptions): Promise<TerminalProcess |
     getProcessName: () => {
       try {
         // On Windows the backend may fall back to the TERM name rather than
-        // the foreground process — don't surface that as a session label.
+        // the foreground process, so don't surface that as a session label.
         const name = proc.process
         return name && name !== PTY_TERM_NAME ? name : undefined
       }
@@ -148,11 +148,10 @@ function spawnPipe(options: SpawnBackendOptions): TerminalProcess {
   const exitCbs: ((code: number) => void)[] = []
   let exited = false
 
-  // A piped child has no controlling TTY, so its stdout/stderr carry bare `\n`
-  // line endings — a real PTY would apply the kernel's ONLCR translation. xterm
-  // only returns the cursor to column 0 on `\r`, so forwarding bare `\n` renders
-  // a staircase. Translate lone `\n` to `\r\n`, tracking a `\r` left dangling at
-  // a chunk boundary so an existing `\r\n` split across chunks isn't doubled.
+  // A piped child has no TTY, so its output carries bare `\n` (a PTY would apply
+  // ONLCR). xterm only returns to column 0 on `\r`, so bare `\n` renders a
+  // staircase. Translate lone `\n` to `\r\n`, tracking a dangling `\r` so a
+  // `\r\n` split across chunks isn't doubled.
   let pendingCr = false
   const normalizeNewlines = (data: string): string => {
     const out = data.replace(/\r?\n/g, (match, offset: number) =>

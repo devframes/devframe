@@ -45,7 +45,7 @@ const allTabs: { value: Tab, label: string, icon: string }[] = [
 ]
 
 // The Instances tab lists running devframe dev servers via a live node-side
-// RPC — meaningless in a static `build`/`spa` dump (no backend to query), so
+// RPC, meaningless in a static `build`/`spa` dump (no backend to query), so
 // it only appears when connected to a live backend.
 const tabs = computed(() => isStatic() ? allTabs.filter(t => t.value !== 'instances') : allTabs)
 

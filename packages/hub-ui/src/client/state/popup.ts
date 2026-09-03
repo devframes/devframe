@@ -112,7 +112,7 @@ async function mountStandaloneApp(context: DocksContext, popup: Window) {
     '}',
   ].join('\n')
 
-  // The popped-out window is a surface the UI owns — brand its head (the
+  // The popped-out window is a surface the UI owns, so brand its head (the
   // embedded host page's head is never touched).
   applyDocumentHead(popup.document, useBranding().value)
   popup.document.head?.appendChild(baseStyle)
@@ -131,7 +131,7 @@ async function mountStandaloneApp(context: DocksContext, popup: Window) {
 
   const dockElement = new DockStandaloneElement({ context })
   // The popup is its own document, so the inline `--devframe-primary` on the
-  // embedded host can't inherit across — apply it here too, or the `:host` ramp
+  // embedded host can't inherit across, so apply it here too, or the `:host` ramp
   // falls back to the default palette.
   applyPrimaryColor(dockElement, useBranding().value.primaryColor)
   popupDockElement = dockElement

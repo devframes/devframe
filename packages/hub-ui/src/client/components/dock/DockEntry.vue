@@ -28,7 +28,7 @@ const props = withDefaults(
 // `@devframes/json-render-ui`'s `Badge.ts`), applied as an inline fill since
 // the dock bar doesn't pull in json-render-ui's `DisplayBadge` component.
 // `undefined` at `'default'`/unset keeps the existing `bg-primary text-white`
-// classes below — every existing badge consumer keeps its current look.
+// classes below, so every existing badge consumer keeps its current look.
 const badgeColors: Record<Exclude<DevframeDockBadgeVariant, 'default'>, { bg: string, fg: string }> = {
   info: { bg: '#3b82f6', fg: '#eff6ff' },
   success: { bg: '#22c55e', fg: '#f0fdf4' },

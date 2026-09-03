@@ -23,7 +23,7 @@ export const deleteAssets = defineAssetsRpc({
   setup: (ctx) => {
     const assets = getAssetsContext(ctx)
     return {
-      // See `list.ts` for why the async handler is cast.
+      /** See `list.ts` for why the async handler is cast. */
       handler: (async ({ paths }: { paths: string[] }): Promise<{ deleted: string[] }> => {
         const deleted: string[] = []
         for (const path of paths) {
@@ -35,7 +35,7 @@ export const deleteAssets = defineAssetsRpc({
           }
           catch (error) {
             // A stale listing pointing at an already-removed file is not
-            // exceptional for a bulk delete — skip it and keep going.
+            // exceptional for a bulk delete, so skip it and keep going.
             if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
               throw error
           }

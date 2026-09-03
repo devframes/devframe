@@ -1,8 +1,9 @@
 import type { DataSourceMeta, FilterOptions, Query, SavedQuery } from '../../engine'
 
-// Shared, static sample data so the presentational components render in
-// isolation without a live RPC connection to a server-side data source.
-
+/**
+ * Shared, static sample data so the presentational components render in
+ * isolation without a live RPC connection to a server-side data source.
+ */
 export const sampleSources: DataSourceMeta[] = [
   {
     id: 'devframe',

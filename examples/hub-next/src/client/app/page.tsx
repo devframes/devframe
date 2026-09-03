@@ -20,9 +20,8 @@ const HUB_BASE = '/__devframes/'
 
 // ── transport preference (`?transport=` param) ──────────────────────────────
 // The hub serves both live transports (WS at `__ws`, SSE at `__sse`); the
-// client's `transport` option picks one, `auto` trusting the server's
-// advertisement. A connected client has no live switch, so the toggle writes
-// the `?transport=` param and reloads to reconnect on the pinned transport.
+// client's `transport` option picks one, `auto` trusting the server. A
+// connected client can't switch live, so the toggle reloads with `?transport=`.
 const TRANSPORT_PREFS = ['auto', 'websocket', 'sse'] as const
 type TransportPref = (typeof TRANSPORT_PREFS)[number]
 
@@ -93,12 +92,10 @@ function createClientNotesUrl(): string {
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 }
 
-// An *interactive* json-render spec synthesized entirely in the browser - the
-// client-only counterpart to a server-authored view. Interactivity needs no
-// server and no shared state: `{ $bindState }` inputs write straight into the
-// view's own `state`, `{ $state }` reads mirror it live, and the buttons use the
-// framework's built-in state actions (`pushState` / `setState`) to mutate that
-// state - every change re-renders through the mini React registry.
+// An *interactive* json-render spec synthesized entirely in the browser, with
+// no server and no shared state: `{ $bindState }` inputs write into the view's
+// own `state`, `{ $state }` reads mirror it, and the buttons use built-in
+// state actions - every change re-renders through the mini React registry.
 function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec {
   return {
     root: 'root',
@@ -110,7 +107,7 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
       title: { type: 'Text', props: { text: 'Client Playground', variant: 'heading' }, children: [] },
       badge: { type: 'Badge', props: { text: 'client-only', variant: 'info' }, children: [] },
 
-      // ── Two-way binding: type a name, see it echoed live; toggle a switch ──
+      /** ── Two-way binding: type a name, see it echoed live; toggle a switch ── */
       hello: { type: 'Card', props: { title: 'Say hello' }, children: ['helloBody'] },
       helloBody: { type: 'Stack', props: { gap: 10 }, children: ['nameInput', 'greetRow', 'compact'] },
       nameInput: { type: 'TextInput', props: { label: 'Your name', placeholder: 'Type your name…', value: { $bindState: '/form/name' } }, children: [] },
@@ -119,7 +116,7 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
       greetName: { type: 'Text', props: { text: { $state: '/form/name' }, variant: 'body', color: 'primary' }, children: [] },
       compact: { type: 'Switch', props: { label: 'Compact mode', value: { $bindState: '/prefs/compact' } }, children: [] },
 
-      // ── Actions mutate state → the DataTable re-renders ──
+      /** ── Actions mutate state → the DataTable re-renders ── */
       notes: { type: 'Card', props: { title: 'Notes' }, children: ['notesBody'] },
       notesBody: { type: 'Stack', props: { gap: 10 }, children: ['draftRow', 'notesTable', 'clearBtn'] },
       draftRow: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'end' }, children: ['draftInput', 'addBtn'] },
@@ -127,7 +124,7 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
       addBtn: {
         type: 'Button',
         props: { label: 'Add', variant: 'primary', icon: 'ph:plus' },
-        // Built-in `pushState`: append the typed draft to /notes, then clear the input.
+        /** Built-in `pushState`: append the typed draft to /notes, then clear the input. */
         on: { press: { action: 'pushState', params: { statePath: '/notes', value: { text: { $state: '/draft' } }, clearStatePath: '/draft' } } },
         children: [],
       },
@@ -139,7 +136,7 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
       clearBtn: {
         type: 'Button',
         props: { label: 'Clear all', variant: 'ghost', icon: 'ph:trash' },
-        // Built-in `setState`: replace /notes with an empty array.
+        /** Built-in `setState`: replace /notes with an empty array. */
         on: { press: { action: 'setState', params: { statePath: '/notes', value: [] } } },
         children: [],
       },
@@ -168,11 +165,10 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
 
 type ClientContext = ClientHost['context']
 
-// Register the two *client-only* docks (an iframe from a Blob URL + an inline
-// interactive json-render view) on the client host context, so they stay local
-// to this page and never enter `devframe:docks` shared state. `force` lets
-// React StrictMode re-run the boot effect without tripping the duplicate-id
-// guard. Returns a disposer that removes them again.
+// Register two client-only docks (a Blob-URL iframe + an inline interactive
+// json-render view) on the client host context, so they stay local to this
+// page and never enter `devframe:docks` shared state. `force` lets React
+// StrictMode re-run the effect without tripping the duplicate-id guard.
 function registerClientDocks(ctx: ClientContext): () => void {
   const notes = ctx.docks.register<DevframeViewIframe>({
     id: 'client-notes',
@@ -255,11 +251,10 @@ function DockIcon({ entry }: { entry: DevframeDockEntry }) {
 }
 
 // ── authorization gate (interactive OTP) ────────────────────────────────────
-// The hub gates every connection; this shell opts out of devframe's native
-// `prompt()` (`simpleAuth: false`) and renders its own authorization view,
-// mirroring the reference UI's `ViewBuiltinClientAuthNotice`. It shows only
-// once the handshake is refused — a stored token or the magic-link OTP
-// authorizes silently and this never mounts.
+// The hub gates every connection; this host opts out of devframe's native
+// `prompt()` (`simpleAuth: false`) and renders its own view. It shows only
+// when the handshake is refused, since a stored token or magic-link OTP authorizes
+// silently and this never mounts.
 function AuthOverlay({ rpc }: { rpc: DevframeRpcClient }) {
   const CODE_LENGTH = 6
   const [code, setCode] = useState('')
@@ -407,17 +402,10 @@ export default function Page() {
 
         setStatus({ text: `Connected: transport=${rpc.transport}`, kind: 'ready' })
 
-        // Boot the framework-level client host: it builds the shared client
-        // context and imports each dock's client script into this page - e.g.
-        // the a11y inspector's in-page agent, which then scans this hub live.
-        //
-        // Register a mini React json-render renderer. The hub also publishes
-        // the reference Vue frontend through its renderer manifest
-        // (`initHub({ renderers: [jsonRenderUiRenderer()] })`), but a locally
-        // registered renderer takes precedence - witnessing that any frontend
-        // implementing the `JsonRenderDockRenderer` contract can replace the
-        // reference one. Delete this `renderers` option and the same dock
-        // renders through the manifest-served Vue module instead.
+        // Boot the client runtime: it builds the client context and imports
+        // each dock's client script into this page. The local React renderer
+        // registered here takes precedence over the hub's manifest-served Vue
+        // frontend - delete it and the dock renders through the Vue module.
         const clientHost = await createDevframeClientRuntime({
           rpc,
           renderers: { 'json-render': createReactJsonRenderDockRenderer() },
@@ -565,11 +553,9 @@ export default function Page() {
   }, [selectedDockId, docks, selectedDock])
 
   // Mount a renderer dock (e.g. json-render) into the panel via the client
-  // host's renderer registry - the local React renderer, or a prebuilt module
-  // lazy-imported from the hub's renderer manifest - disposing when the
-  // selection changes. Each mount gets a fresh container element (a
-  // self-styling renderer may attach a shadow root to it); the typed mount
-  // result drives the missing-renderer / load-error fallback below.
+  // host's renderer registry, disposing when the selection changes. Each
+  // mount gets a fresh container (a self-styling renderer may attach a shadow
+  // root); the typed mount result drives the fallback below.
   useEffect(() => {
     const host = hostRef.current
     const dock = selectedDock
