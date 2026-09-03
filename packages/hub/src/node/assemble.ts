@@ -8,7 +8,7 @@ import { resolve } from 'pathe'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { resolveClientModuleSpecifier } from '../client-modules'
 import { diagnostics } from './diagnostics'
-import { prepareDevframe, skippedInStaticBuild } from './install-devframe'
+import { prepareDevframe } from './install-devframe'
 
 /** Reserved filenames directly under the hub base; a frame id can't shadow them. */
 const RESERVED_HUB_PATHS = [
@@ -100,13 +100,13 @@ export function renderClientImportsModule(ctx: DevframeHubContext): string {
 /**
  * Pass 1: mount each devframe under `<base><id>/` (SPA, meta, iframe dock)
  * and queue its declared services, guarding the id against reserved hub
- * filenames and route-pattern characters. Returns the deferred setup thunks.
+ * filenames and route-pattern characters. Returns the deferred setup thunks;
+ * each mounted frame is recorded on `ctx.frames`.
  */
 export async function mountDevframes(
   ctx: DevframeHubContext,
   devframes: HubDevframeEntry[],
   base: string,
-  frames: { id: string, base: string, title: string }[],
   hubMcpEnabled: boolean,
 ): Promise<(() => Promise<void>)[]> {
   const setups: (() => Promise<void>)[] = []
@@ -129,10 +129,6 @@ export async function mountDevframes(
     const run = await prepareDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
     if (run)
       setups.push(run)
-    // A devframe skipped by the static build serves nothing, so it never
-    // joins the `__index.json` frame list either.
-    if (!skippedInStaticBuild(ctx, def))
-      frames.push({ id: def.id, base: frameBase, title: def.name })
   }
   return setups
 }

@@ -86,6 +86,28 @@ declare module 'devframe/types' {
 }
 
 /**
+ * A devframe mounted into a hub context, recorded as it is installed
+ * (whether through `initHub({ devframes })`, `buildHub`, or `ctx.install`).
+ * Enumerable via {@link DevframeHubContext.frames} so a host that mounted the
+ * context itself can still discover what to advertise in `__index.json` and
+ * where to write each frame's connection meta.
+ */
+export interface HubMountedFrame {
+  /** Dock id the devframe mounted under (disambiguated for duplicates). */
+  id: string
+  /** Hub-base-relative mount base of the frame's SPA (trailing slash). */
+  base: string
+  /** Human title (the definition's `name`). */
+  title: string
+  /**
+   * Whether the devframe served client assets at {@link HubMountedFrame.base}.
+   * A frame with its own SPA gets a per-frame `__connection.json` in a static
+   * build (pointing back at the hub's shared meta); one without does not.
+   */
+  hasClientAssets: boolean
+}
+
+/**
  * Hub-augmented node context that extends devframe's framework-neutral
  * `DevframeNodeContext` with the hub-level subsystems (`docks`,
  * `terminals`, `messages`, `commands`).
@@ -104,6 +126,13 @@ export interface DevframeHubContext extends DevframeNodeContext {
   terminals: DevframeTerminalsHost
   messages: DevframeMessagesHost
   commands: DevframeCommandsHost
+  /**
+   * Every devframe mounted into this context, in mount order. Populated by
+   * `ctx.install` (and the batch mount `initHub`/`buildHub` run through it),
+   * so a host that assembled and mounted the context itself can hand it to
+   * {@link import('./bake').bakeHubStatic} to emit the discovery documents.
+   */
+  readonly frames: readonly HubMountedFrame[]
   /**
    * Install a {@link DevframeDefinition} into this hub: serve its SPA at the
    * resolved base, synthesize an iframe dock from its metadata, and run its
@@ -146,6 +175,7 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
   context.terminals = terminals
   context.messages = messages
   context.commands = commands
+  ;(context as { frames: readonly HubMountedFrame[] }).frames = []
   context.install = (devframe, options) => installDevframe(context, devframe, options)
 
   await docks.init()

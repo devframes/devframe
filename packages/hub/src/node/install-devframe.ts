@@ -1,6 +1,6 @@
 import type { DevframeDefinition } from 'devframe/types'
 import type { ClientScriptEntry, DevframeViewIframe } from '../types/docks'
-import type { DevframeHubContext } from './context'
+import type { DevframeHubContext, HubMountedFrame } from './context'
 import { existsSync } from 'node:fs'
 import { resolveClientAssets } from 'devframe/internal'
 import { resolveBasePath } from 'devframe/node/hub-internals'
@@ -55,7 +55,10 @@ async function resolvePageScriptClientScript(
   if (!isAbsolute(importFrom) || !existsSync(importFrom))
     return clientScript
   const scriptBase = withTrailingSlash(joinURL(base, '__page-script'))
-  await ctx.host.mountStatic(scriptBase, dirname(importFrom))
+  // Route through `views.hostStatic` (not the bare `host.mountStatic`) so the
+  // directory lands in `ctx.views.buildStaticDirs`, and a static build bakes
+  // it whether it copies statics live during mount or from that list.
+  ctx.views.hostStatic(scriptBase, dirname(importFrom))
   return { ...clientScript, importFrom: joinURL(scriptBase, basename(importFrom)) }
 }
 
@@ -91,10 +94,10 @@ async function serveDevframeAssets(
   d: DevframeDefinition,
   id: string,
   base: string,
-): Promise<void> {
+): Promise<boolean> {
   const clientAssets = resolveClientAssets(d)
   if (!clientAssets)
-    return
+    return false
   // Serve the hub's connection meta under the devframe's base so its SPA
   // discovers the RPC/WS endpoint via `connectDevframe()`'s relative
   // `./__connection.json` fetch (rather than inheriting cross-origin from a
@@ -107,6 +110,7 @@ async function serveDevframeAssets(
   // Resolve the plugin's assets against *its* dependency graph: pass the
   // devframe's own `importMetaUrl` as the default `resolveFrom`.
   ctx.views.hostStatic(base, typeof clientAssets === 'string' ? resolve(clientAssets) : clientAssets, d.importMetaUrl)
+  return true
 }
 
 /**
@@ -114,7 +118,7 @@ async function serveDevframeAssets(
  * false` declares its value inherently live (a terminal, a process proxy),
  * so `buildHub` never mounts it, registers its dock, or bakes its RPCs.
  */
-export function skippedInStaticBuild(ctx: DevframeHubContext, d: DevframeDefinition): boolean {
+function skippedInStaticBuild(ctx: DevframeHubContext, d: DevframeDefinition): boolean {
   return ctx.mode === 'build' && d.capabilities?.build === false
 }
 
@@ -155,7 +159,9 @@ export async function prepareDevframe(
   if (clientScript)
     dockDefaults.clientScript = clientScript
 
-  await serveDevframeAssets(ctx, d, id, base)
+  const hasClientAssets = await serveDevframeAssets(ctx, d, id, base)
+
+  ;(ctx.frames as HubMountedFrame[]).push({ id, base, title: d.name, hasClientAssets })
 
   ctx.docks.register({
     id,

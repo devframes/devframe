@@ -391,7 +391,6 @@ export function initHub(options: InitHubOptions): HubInstance {
   const baseNoSlash = base.slice(0, -1)
   const app = new H3()
   const cwd = options.cwd ?? process.cwd()
-  const frames: { id: string, base: string, title: string }[] = []
   const rendererRegistrations = resolveRendererRegistrations(options.renderers ?? [])
 
   const shell = createInstanceShell<DevframeHubContext>({
@@ -443,7 +442,7 @@ export function initHub(options: InitHubOptions): HubInstance {
       // collection alongside every devframe's own declared services.
       for (const input of options.services ?? [])
         void ctx.services.install(input)
-      const setups = await mountDevframes(ctx, devframes, base, frames, options.mcp !== false)
+      const setups = await mountDevframes(ctx, devframes, base, options.mcp !== false)
 
       // Construct every collected service once, then run the setups, so a
       // devframe's setup consumes services (its own or another devframe's)
@@ -521,7 +520,7 @@ export function initHub(options: InitHubOptions): HubInstance {
         name: options.name,
         version: options.version,
         base,
-        frames,
+        frames: ctx.frames.map(({ id, base, title }) => ({ id, base, title })),
         endpoints: {
           connection: DEVFRAME_CONNECTION_META_FILENAME,
           clientImports: DEVFRAME_DOCK_IMPORTS_FILENAME,

@@ -2,9 +2,15 @@ import type { StaticAssetsSource } from './remote-assets'
 
 export interface DevframeViewHost {
   /**
+   * Static mounts registered through {@link DevframeViewHost.hostStatic}, in
+   * registration order, each carrying the `resolveFrom` base it was mounted
+   * with so a build step can re-resolve a remote source identically. A static
+   * build that assembles the context itself (rather than serving it live)
+   * copies these into its output.
+   *
    * @internal
    */
-  buildStaticDirs: { baseUrl: string, source: StaticAssetsSource }[]
+  buildStaticDirs: { baseUrl: string, source: StaticAssetsSource, resolveFrom?: string | null }[]
   /**
    * Helper to host static files
    * - In `dev` mode, it will register middleware to `viteServer.middlewares` to host the static files

@@ -12,15 +12,25 @@ type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> }
 
 function createContext(): DevframeHubContext {
   const storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-install-'))
+  const mountStatic = vi.fn()
   const partial: DeepPartial<DevframeHubContext> = {
     host: {
-      mountStatic: vi.fn(),
+      mountStatic,
       resolveOrigin: () => 'http://localhost:5173',
       getStorageDir: () => storageDir,
     },
     views: {
-      hostStatic: () => {},
+      /**
+       * Mirror the real view host: forward to `host.mountStatic` so the tests
+       * assert the static mount the same way they did before page scripts and
+       * SPAs routed through `views.hostStatic`.
+       */
+      hostStatic: vi.fn((baseUrl: string, source: unknown) => {
+        mountStatic(baseUrl, source as string)
+      }),
+      buildStaticDirs: [],
     },
+    frames: [],
     /**
      * Minimal stub, since these tests drive dock/setup wiring, not the services
      * lifecycle (the demo devframe declares none).

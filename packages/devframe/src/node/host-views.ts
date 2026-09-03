@@ -7,7 +7,7 @@ export class DevframeViewHost implements DevframeViewHostType {
   /**
    * @internal
    */
-  public buildStaticDirs: { baseUrl: string, source: StaticAssetsSource }[] = []
+  public buildStaticDirs: { baseUrl: string, source: StaticAssetsSource, resolveFrom?: string | null }[] = []
 
   constructor(
     public readonly context: DevframeNodeContext,
@@ -30,7 +30,7 @@ export class DevframeViewHost implements DevframeViewHostType {
       throw diagnostics.DF0008({ distDir: resolved })
     }
 
-    this.buildStaticDirs.push({ baseUrl, source })
+    this.buildStaticDirs.push({ baseUrl, source, resolveFrom: defaultResolveFrom })
     this.context.host.mountStatic(baseUrl, resolved)
   }
 }
