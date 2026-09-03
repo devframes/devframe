@@ -1,7 +1,7 @@
+import type { SelectedItem } from '../app/lib/fix-prompt.ts'
 import type { Violation } from '../src/shared/protocol.ts'
-import type { SelectedItem } from '../src/spa/lib/fix-prompt.ts'
 import { describe, expect, it } from 'vitest'
-import { buildFixPrompt } from '../src/spa/lib/fix-prompt.ts'
+import { buildFixPrompt } from '../app/lib/fix-prompt.ts'
 
 function violation(ruleId: string, over: Partial<Violation> = {}): Violation {
   return {

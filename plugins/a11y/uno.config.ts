@@ -4,7 +4,7 @@ import { designConfig } from '../../design/uno.config'
 /**
  * The a11y inspector's Solid SPA composes the shared devframe base (see
  * `design/uno.config.ts`) and adds only its own extraction globs. The in-page
- * agent bundle (src/inject) is deliberately excluded, since it inlines its own styles
+ * page script (src/client-script/page-script) is deliberately excluded, since it inlines its own styles
  * into the host document. `.tsx` is scanned by default; `.ts` (the co-located
  * `design.ts` helpers) is opted in.
  */

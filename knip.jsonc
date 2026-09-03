@@ -269,11 +269,12 @@
       // `plugins/*` glob's `entry` above, so repeat that pattern here
       // alongside the stories.
       "entry": [
-        "src/{index,cli,vite,constants,types}.ts",
-        "src/{client,node,rpc,inject,engine,registry}/index.ts",
-        "src/**/*.stories.tsx"
+        "src/node/{index,setup,cli}.ts",
+        "src/node/rpc/index.ts",
+        "src/client-script/{client,page-script}/index.ts",
+        "app/**/*.stories.tsx"
       ],
-      "ignoreDependencies": ["@devframes/plugin-a11y--assets"]
+      "ignoreDependencies": ["@devframes/plugin-a11y--assets", "@devframes/vite"]
     },
     "plugins/git": {
       // The React client build's root sits at `src/client` (`next dev

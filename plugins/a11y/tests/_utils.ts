@@ -12,7 +12,7 @@ import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import { serveTestContext } from '../../../tests/helpers/serve-test-context'
-import createA11yDevframe from '../src/index'
+import createA11yDevframe from '../src/node/index'
 
 const devframe = createA11yDevframe()
 

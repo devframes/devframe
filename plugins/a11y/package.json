@@ -22,13 +22,14 @@
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./dist/index.mjs",
-    "./client": "./dist/client/index.mjs",
-    "./cli": "./dist/cli.mjs",
-    "./node": "./dist/node/index.mjs",
+    ".": "./dist/node/index.mjs",
+    "./client-script": "./dist/client-script/client/index.mjs",
+    "./client-script/page-script": "./dist/client-script/page-script/index.mjs",
+    "./cli": "./dist/node/cli.mjs",
+    "./node": "./dist/node/setup.mjs",
     "./package.json": "./package.json"
   },
-  "types": "./dist/index.d.mts",
+  "types": "./dist/node/index.d.mts",
   "bin": {
     "devframes_plugin_a11y": "./bin.mjs"
   },
@@ -37,16 +38,15 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown && vite build --config src/spa/vite.config.ts && vite build --config src/inject/vite.config.ts",
-    "build:spa": "vite build --config src/spa/vite.config.ts",
-    "build:inject": "vite build --config src/inject/vite.config.ts",
+    "build": "tsdown && vite build --config app/vite.config.ts",
+    "build:app": "vite build --config app/vite.config.ts",
     "watch": "tsdown --watch",
-    "dev": "node bin.mjs",
+    "dev": "vite --config app/vite.config.ts --host",
+    "play": "pnpm run build && node playgrounds/server.mjs",
+    "play:build": "pnpm run build && pnpm run cli:build && node playgrounds/server.mjs build",
     "storybook": "storybook dev -p 6015",
     "build-storybook": "storybook build",
     "cli:build": "node bin.mjs build --out-dir dist/static",
-    "demo": "node demo/server.mjs",
-    "demo:build": "node demo/server.mjs build",
     "typecheck": "tsc --noEmit",
     "prepack": "turbo run build --filter=@devframes/plugin-a11y",
     "test": "vitest run"
@@ -70,6 +70,7 @@
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
     "@devframes/plugin-a11y--assets": "workspace:*",
+    "@devframes/vite": "workspace:*",
     "axe-core": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
