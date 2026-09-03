@@ -372,7 +372,7 @@ describe('mcp adapter (in-memory)', () => {
       const c = allowed.contents[0] as { text: string }
       expect(JSON.parse(c.text)).toEqual({ n: 1 })
 
-      // Known key, denied by predicate — rejected before storage access.
+      // Known key, denied by predicate: rejected before storage access.
       await expect(
         client.readResource({ uri: `devframe://state/${encodeURIComponent('hidden:key')}` }),
       ).rejects.toThrow()
