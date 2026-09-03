@@ -70,9 +70,8 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
     .option('--no-auth', 'Disable the interactive authentication gate')
     // Only `--mcp` is declared: CAC's `--no-*` auto-negation would inject a
     // `true` default, silently enabling MCP. Declaring just `--mcp` yields the
-    // opt-in tri-state — absent → `undefined` (falls through to the
-    // definition's `mcp`), `--mcp` → `true`, `--no-mcp` → `false` (handled by
-    // CAC's `--no-` prefix).
+    // opt-in tri-state — absent → `undefined` (falls through to `cli.mcp`),
+    // `--mcp` → `true`, `--no-mcp` → `false` (handled by CAC's `--no-` prefix).
     .option('--mcp', 'Expose an MCP server over HTTP at /__mcp (use --no-mcp to disable)')
 
   // Register typed flags from the definition ahead of `cli.configure`
@@ -96,7 +95,7 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
     const port = (flags.port as number | undefined) ?? await resolveDevServerPort(d, { host, defaultPort })
     // `--mcp` / `--no-mcp` map to a boolean override; when neither is
     // passed CAC leaves `mcp` undefined so `createDevServer` falls through
-    // to the definition's `mcp` (top-level, then the deprecated `cli.mcp`).
+    // to `def.cli?.mcp`.
     const mcp = flags.mcp as boolean | undefined
     await createDevServer(d, {
       host,

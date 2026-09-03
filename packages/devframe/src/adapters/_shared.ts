@@ -95,9 +95,9 @@ export function resolveMcpConfig(mcp: boolean | McpRouteOptions | undefined): Re
 
 /**
  * Resolve the `mcp` entry a `__connection.json` should advertise for a dev
- * server started with the given `mcp` option (falling back to `def.mcp`, then
- * the deprecated `def.cli?.mcp`, exactly like `createDevServer`), or
- * `undefined` when the route is disabled.
+ * server started with the given `mcp` option (falling back to `def.cli?.mcp`,
+ * exactly like `createDevServer`), or `undefined` when the route is
+ * disabled.
  *
  * Hosted bridges that hand-roll their connection meta pass the side-car
  * `port`: the advertised path becomes absolute (the side-car mounts at `/`)
@@ -110,7 +110,7 @@ export function resolveMcpConnectionMeta(
   mcp: boolean | McpRouteOptions | undefined,
   port?: number,
 ): ConnectionMeta['mcp'] {
-  const config = resolveMcpConfig(mcp ?? def.mcp ?? def.cli?.mcp)
+  const config = resolveMcpConfig(mcp ?? def.cli?.mcp)
   if (!config)
     return undefined
   const route = withoutLeadingSlash(config.path ?? DEVFRAME_MCP_ROUTE)

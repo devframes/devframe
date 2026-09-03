@@ -324,14 +324,14 @@ describe('initHub', () => {
   it('warns (DF8005) when a mounted devframe asks for MCP but the hub MCP is off', async () => {
     const wsPort = await getPort({ port: 18235, host: '127.0.0.1' })
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    // The hub has no `mcp`, but `beta` declares `mcp: true` — the hub's single
-    // aggregate route governs MCP, so beta's request is a no-op and warns.
+    // The hub has no `mcp`, but `beta` declares `cli.mcp: true` — the hub's
+    // single aggregate route governs MCP, so beta's request is a no-op and warns.
     const hub = initHub({
       base: DEVFRAMES_HUB_BASE,
       auth: false,
       host: '127.0.0.1',
       ws: { port: wsPort },
-      devframes: [makeFrame('alpha'), { ...makeFrame('beta'), mcp: true }],
+      devframes: [makeFrame('alpha'), { ...makeFrame('beta'), cli: { mcp: true } }],
     })
 
     try {

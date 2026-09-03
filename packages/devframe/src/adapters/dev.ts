@@ -92,9 +92,9 @@ export interface CreateDevServerOptions {
   auth?: boolean | DevframeAuthHandler
   /**
    * Expose a route-based MCP server on the dev server (Streamable-HTTP).
-   * Overrides the definition's `mcp` (top-level, then the deprecated
-   * `cli.mcp`); `undefined` falls through to it. `false` disables the route
-   * regardless of the definition default. See {@link McpRouteOptions}.
+   * Overrides `def.cli?.mcp`; `undefined` falls through to it. `false`
+   * disables the route regardless of the definition default. See
+   * {@link McpRouteOptions}.
    */
   mcp?: boolean | McpRouteOptions
   /**

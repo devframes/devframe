@@ -89,9 +89,8 @@ export interface InitDevframeOptions {
   auth?: boolean | DevframeAuthHandler
   /**
    * Expose a route-based MCP server (Streamable-HTTP) at `<base>__mcp` and
-   * advertise it in `__connection.json`. Overrides the definition's `mcp`
-   * (top-level, then the deprecated `cli.mcp`); `undefined` falls through to
-   * it. See {@link McpRouteOptions}.
+   * advertise it in `__connection.json`. Overrides `def.cli?.mcp`;
+   * `undefined` falls through to it. See {@link McpRouteOptions}.
    */
   mcp?: boolean | McpRouteOptions
   /**
@@ -309,7 +308,7 @@ export function initDevframe(
       // only pulled in (dynamically) when the route is enabled. The resolved
       // config trusts same-machine callers by default (origin-only); an object
       // config can opt into a bearer/callback identity check.
-      const mcpConfig = resolveMcpConfig(options.mcp ?? def.mcp ?? def.cli?.mcp)
+      const mcpConfig = resolveMcpConfig(options.mcp ?? def.cli?.mcp)
       let mcpMeta: ConnectionMeta['mcp']
       let mcpDispose: (() => Promise<void>) | undefined
       if (mcpConfig) {

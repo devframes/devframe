@@ -148,7 +148,6 @@ export interface DevframeDefinition {
   };
   services?: DevframeServiceInput[];
   clientAssets?: StaticAssetsSource;
-  mcp?: boolean | McpRouteOptions;
   rpc?: DevframeRpcOptions;
   setup: (_: DevframeNodeContext, _?: DevframeSetupInfo) => void | Promise<void>;
   cli?: DevframeCliOptions;

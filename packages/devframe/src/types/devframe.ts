@@ -106,7 +106,7 @@ export type McpAuthorization
 
 /**
  * Configuration for the route-based MCP server mounted alongside the dev
- * server (opt-in via {@link DevframeDefinition.mcp}). The endpoint speaks
+ * server (opt-in via {@link DevframeCliOptions.mcp}). The endpoint speaks
  * the MCP Streamable-HTTP transport over the same origin as the SPA,
  * exposing the definition's `ctx.agent` tools + shared-state resources to
  * external MCP clients connected to the *running* server.
@@ -184,11 +184,20 @@ export interface DevframeCliOptions {
    */
   auth?: boolean | DevframeAuthHandler
   /**
-   * Expose a route-based MCP server alongside the dev server.
+   * Expose a route-based MCP server alongside the standalone dev server,
+   * speaking the MCP Streamable-HTTP transport at `/__mcp` (relative to the
+   * base path). It surfaces the same `ctx.agent` tools + shared-state
+   * resources as the stdio `mcp` command, but against the live server.
    *
-   * @deprecated Moved to the top-level {@link DevframeDefinition.mcp}. Set
-   * `mcp` on the definition instead. This field is still read as a fallback
-   * when the top-level `mcp` is unset, so existing definitions keep working.
+   * - `false` / omitted (default) — no MCP route is mounted.
+   * - `true` — mount at the default `__mcp` route with the loopback origin
+   *   gate (trusting same-machine callers).
+   * - {@link McpRouteOptions} — customise the route path, origin allow-list,
+   *   and opt into an {@link McpAuthorization} identity check.
+   *
+   * The `--mcp` / `--no-mcp` CLI flags override this per run. Whether to expose
+   * MCP is a hosting decision, so programmatic hosts pass it to
+   * `initDevframe` / `initHub` / `createDevServer` instead.
    */
   mcp?: boolean | McpRouteOptions
   /**
@@ -416,22 +425,6 @@ export interface DevframeDefinition {
    * {@link DevframeCliOptions.distDir} is read as a fallback.
    */
   clientAssets?: StaticAssetsSource
-  /**
-   * Expose a route-based MCP server alongside the running dev server, speaking
-   * the MCP Streamable-HTTP transport at `/__mcp` (relative to the base path).
-   * It surfaces the same `ctx.agent` tools + shared-state resources as the
-   * stdio `mcp` command, but against the live server.
-   *
-   * - `false` / omitted (default) — no MCP route is mounted.
-   * - `true` — mount at the default `__mcp` route with the loopback origin
-   *   gate (trusting same-machine callers).
-   * - {@link McpRouteOptions} — customise the route path, origin allow-list,
-   *   and opt into an {@link McpAuthorization} identity check.
-   *
-   * The `--mcp` / `--no-mcp` CLI flags override this per run. When unset, the
-   * deprecated {@link DevframeCliOptions.mcp} is read as a fallback.
-   */
-  mcp?: boolean | McpRouteOptions
   /** RPC-level configuration for this devframe (see {@link DevframeRpcOptions}). */
   rpc?: DevframeRpcOptions
   /** Server-side setup — the primary entrypoint. Runs in every runtime. */

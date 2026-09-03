@@ -533,7 +533,7 @@ export function initHub(options: InitHubOptions): HubInstance {
         // so a devframe's own `mcp` request is only meaningful when the hub's
         // own MCP is enabled. Warn when it isn't, rather than silently
         // dropping the devframe's intended agent surface.
-        if (!options.mcp && (def.mcp ?? def.cli?.mcp))
+        if (!options.mcp && def.cli?.mcp)
           diagnostics.DF8005({ id: def.id })
         const frameBase = withTrailingSlash(joinURL(base, def.id))
         const run = await prepareDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
