@@ -36,6 +36,17 @@ export class CodeServerSupervisor {
   async detect() {}
   status() {}
   async start(_) {}
+  async tryAdopt(_) {}
+  async resolveInitialPort(_) {}
+  buildLaunchEnv(_) {}
+  consumeOutput(_, _, _) {}
+  latchPort(_, _) {}
+  latchLogin(_, _, _) {}
+  latchReadyUrl(_, _, _) {}
+  handleChildError(_, _, _) {}
+  handleChildExit(_, _, _) {}
+  async finalizeLocalStart(_, _) {}
+  handleStartFailure(_, _, _, _) {}
   stop() {}
   dispose() {}
   get resolvedBackend() {}
@@ -48,6 +59,8 @@ export class CodeServerSupervisor {
   resolveHubTerminals() {}
   reflectHub(_) {}
   async launchProcess(_, _, _) {}
+  async launchViaHub(_, _, _, _) {}
+  launchDirect(_, _, _) {}
   appendLog(_) {}
   lastLog() {}
   publish() {}

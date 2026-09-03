@@ -60,6 +60,17 @@ export declare class CodeServerSupervisor {
   detect(): Promise<CodeServerDetection>;
   status(): CodeServerStatusResult;
   start(_?: CodeServerStartRequest): Promise<CodeServerStartResult>;
+  private tryAdopt;
+  private resolveInitialPort;
+  private buildLaunchEnv;
+  private consumeOutput;
+  private latchPort;
+  private latchLogin;
+  private latchReadyUrl;
+  private handleChildError;
+  private handleChildExit;
+  private finalizeLocalStart;
+  private handleStartFailure;
   stop(): CodeServerStatusResult;
   dispose(): void;
   get resolvedBackend(): CodeServerBackend;
@@ -72,6 +83,8 @@ export declare class CodeServerSupervisor {
   private resolveHubTerminals;
   private reflectHub;
   private launchProcess;
+  private launchViaHub;
+  private launchDirect;
   private appendLog;
   private lastLog;
   private publish;

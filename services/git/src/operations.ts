@@ -488,10 +488,6 @@ export function createGitOps(cwd: string): GitServiceApi {
         const parsed = Date.parse(isoDate)
         return {
           name,
-          /**
-           * Annotated tags dereference to their target commit; lightweight
-           * tags point straight at it.
-           */
           sha: targetSha || objectSha,
           date: Number.isNaN(parsed) ? 0 : parsed,
           subject: subject ?? '',
