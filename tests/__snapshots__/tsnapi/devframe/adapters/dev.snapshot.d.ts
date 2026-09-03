@@ -14,7 +14,7 @@ export interface CreateDevServerOptions {
   app?: H3;
   openBrowser?: boolean | string;
   auth?: boolean | DevframeAuthHandler;
-  mcp?: boolean | McpRouteOptions;
+  mcp?: McpSetting;
   onPeerConnect?: (_: DevframeRpcConnection, _: DevframeNodeRpcSession) => void;
   onPeerDisconnect?: (_: DevframeRpcConnection, _: DevframeNodeRpcSessionMeta) => void;
   onReady?: (_: {

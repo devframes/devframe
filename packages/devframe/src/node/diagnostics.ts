@@ -211,5 +211,10 @@ export const diagnostics = defineDiagnostics({
         `\`attach\` / \`handleUpgrade\` drive a raw \`node:http\` upgrade into crossws's Node adapter, which refuses to run on ${p.runtime}.`,
       fix: 'On Bun/Deno, serve the advertised `__ws` route from `Bun.serve` / `Deno.serve` with `attachBunWsTransport` / `attachDenoWsTransport` (see the hub-deno-minimal example), or connect over the SSE endpoint instead.',
     },
+    DF0077: {
+      why: (p: { id: string, reason: string }) =>
+        `"${p.id}" exposes agent tools and MCP defaults to \`'auto'\`, but the optional peer @modelcontextprotocol/server could not be imported, so no MCP route was mounted: ${p.reason}`,
+      fix: 'Install @modelcontextprotocol/server next to devframe to serve the agent surface over MCP, or set `mcp: false` to keep the route off and silence this.',
+    },
   },
 })

@@ -6,8 +6,9 @@ import type { Duplex } from 'node:stream'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeInstanceRecord } from '../node/instance-registry'
 import type { InstanceShellInternals, StartedServer } from '../node/instance-shell'
-import type { DevframeDefinition, DevframeSetupInfo, DevframeSseOptions, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
+import type { DevframeDefinition, DevframeSetupInfo, DevframeSseOptions, DevframeWsOptions, McpSetting } from '../types/devframe'
 import type { StaticAssetsSource } from '../types/remote-assets'
+import type { ResolvedMcpConfig } from './_shared'
 import process from 'node:process'
 import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
@@ -21,7 +22,7 @@ import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { importRuntimeModule } from '../node/import-runtime-module'
 import { createInstanceShell, resolveInstanceRegister } from '../node/instance-shell'
-import { normalizeBasePath, resolveMcpConfig } from './_shared'
+import { loadAutoMcpAdapter, normalizeBasePath, resolveMcpConfig } from './_shared'
 import { resolveDevServerPort } from './dev'
 
 export interface InitDevframeOptions {
@@ -90,9 +91,11 @@ export interface InitDevframeOptions {
   /**
    * Expose a route-based MCP server (Streamable-HTTP) at `<base>__mcp` and
    * advertise it in `__connection.json`. Overrides `def.cli?.mcp`;
-   * `undefined` falls through to it. See {@link McpRouteOptions}.
+   * `undefined` falls through to it, then to the `'auto'` default (mount
+   * once the agent surface is non-empty and the optional peer resolves).
+   * See {@link McpSetting}.
    */
-  mcp?: boolean | McpRouteOptions
+  mcp?: McpSetting
   /**
    * Public origin the host app is reachable at (e.g. `http://localhost:3000`),
    * or a getter for hosts that resolve it late. Backs the auth banner's magic
@@ -304,39 +307,12 @@ export function initDevframe(
       await context.services.ready()
       await def.setup(context, setupInfo)
 
-      // Route-based MCP server (opt-in), mounted before the SPA static
-      // catch-all so the exact `<base>__mcp` route wins. The MCP SDK stays an
-      // optional peer, pulled in dynamically only when the route is enabled.
-      // The resolved config is origin-only unless it opts into a bearer/callback.
-      const mcpConfig = resolveMcpConfig(options.mcp ?? def.cli?.mcp)
-      let mcpMeta: ConnectionMeta['mcp']
-      let mcpDispose: (() => Promise<void>) | undefined
-      if (mcpConfig) {
-        const mcpRoute = withoutLeadingSlash(mcpConfig.path ?? DEVFRAME_MCP_ROUTE)
-        mcpMeta = { path: mcpRoute }
-        const mcpPath = joinURL(base, mcpRoute)
-        let mountMcpHttp: typeof import('./mcp/http').mountMcpHttp
-        try {
-          ;({ mountMcpHttp } = await importRuntimeModule<typeof import('./mcp')>('devframe/adapters/mcp'))
-        }
-        catch (error) {
-          const reason = error instanceof Error ? error.message : String(error)
-          throw diagnostics.DF0017({ transport: 'http', reason, cause: error })
-        }
-        const mounted = mountMcpHttp(app, context, mcpPath, {
-          serverName: `${def.id} (devframe)`,
-          serverVersion: def.version ?? '0.0.0',
-          exposeSharedState: true,
-          authorization: mcpConfig.authorization,
-          allowedOrigins: mcpConfig.allowedOrigins,
-        })
-        mcpDispose = mounted.dispose
-      }
+      const mcp = await mountMcpRoute(app, context, def, base, options.mcp ?? def.cli?.mcp ?? 'auto')
 
       return {
         context,
-        ...(mcpMeta ? { mcp: mcpMeta } : {}),
-        ...(mcpDispose ? { dispose: mcpDispose } : {}),
+        ...(mcp?.meta ? { mcp: mcp.meta } : {}),
+        ...(mcp?.dispose ? { dispose: mcp.dispose } : {}),
       }
     },
 
@@ -366,4 +342,53 @@ export function initDevframe(
   }
   INSTANCE_INTERNALS.set(instance, shell.internals)
   return instance
+}
+
+/**
+ * Mount the route-based MCP server at `<base>__mcp`, before the SPA static
+ * catch-all so the exact route wins. The MCP SDK stays an optional peer,
+ * pulled in dynamically only when the route mounts: `'auto'` mounts once
+ * `setup()` left a non-empty agent surface and the peer resolves (an empty
+ * surface loads no MCP code); an explicit setting mounts unconditionally,
+ * with a missing peer as a startup failure (`DF0017`). The resolved config
+ * is origin-only unless it opts into a bearer/callback.
+ */
+async function mountMcpRoute(
+  app: H3,
+  context: DevframeNodeContext,
+  def: DevframeDefinition,
+  base: string,
+  setting: McpSetting,
+): Promise<{ meta: ConnectionMeta['mcp'], dispose: () => Promise<void> } | undefined> {
+  let module: typeof import('./mcp') | undefined
+  let config: ResolvedMcpConfig | undefined
+  if (setting === 'auto') {
+    module = await loadAutoMcpAdapter<typeof import('./mcp')>(context.agent, def.id)
+    if (module)
+      config = { authorization: false }
+  }
+  else {
+    config = resolveMcpConfig(setting)
+  }
+  if (!config)
+    return undefined
+
+  const route = withoutLeadingSlash(config.path ?? DEVFRAME_MCP_ROUTE)
+  if (!module) {
+    try {
+      module = await importRuntimeModule<typeof import('./mcp')>('devframe/adapters/mcp')
+    }
+    catch (error) {
+      const reason = error instanceof Error ? error.message : String(error)
+      throw diagnostics.DF0017({ transport: 'http', reason, cause: error })
+    }
+  }
+  const mounted = module.mountMcpHttp(app, context, joinURL(base, route), {
+    serverName: `${def.id} (devframe)`,
+    serverVersion: def.version ?? '0.0.0',
+    exposeSharedState: true,
+    authorization: config.authorization,
+    allowedOrigins: config.allowedOrigins,
+  })
+  return { meta: { path: route }, dispose: mounted.dispose }
 }

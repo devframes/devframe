@@ -22,36 +22,36 @@ Devframe's positioning is "one tool, two views — for the human and for the cod
 
 - **Validator neutrality**: `@modelcontextprotocol/server@2` depends on `zod@4` via `@modelcontextprotocol/core`. The SDK must stay an **optional peer** of `devframe`; it never enters runtime `dependencies`.
 - **Zero cost when off**: the `importRuntimeModule('devframe/adapters/mcp')` lazy load and the `tests/optional-mcp-bundles.test.ts` guard stay authoritative — `mcp: false` (and an empty agent surface) must load no MCP code and add no bundle weight.
-- **Plan 002's authorization contract**: no route mounts without an explicit authorization policy or the `DEVFRAME_MCP_AUTH_TOKEN` bearer. Default-on never means unauthenticated-on.
+- **Plan 002's authorization contract as landed**: a mounted route is guarded by the loopback origin gate (same-machine trust, the documented default for `mcp: true`), with `authorization` available as opt-in hardening. `'auto'` mounts with exactly the same posture as `mcp: true` — the default never grants *more* reach than the explicit setting.
 - **Per-function default-deny**: the `agent` field on `defineRpcFunction` remains the only way a function reaches an agent.
+
+> **Reconciled 2026-09-03**: this plan originally required `DEVFRAME_MCP_AUTH_TOKEN` as a third `'auto'` condition, written against plan 002's *draft* contract (mandatory bearer for `mcp: true`). Plan 002 landed with origin-only as the blessed same-machine default and `authorization` as opt-in hardening, so `'auto'` follows the same landed contract.
 
 ## Current state
 
-- `packages/devframe/src/types/devframe.ts` — `cli.mcp?: boolean | McpRouteOptions`, omitted means off.
+- `packages/devframe/src/types/devframe.ts` — `cli.mcp?: boolean | McpRouteOptions`, omitted means off; `McpRouteOptions.authorization` is the opt-in identity check from plan 002.
 - `packages/devframe/src/adapters/initiate.ts` — mounts the route only when `mcp` is truthy, via `importRuntimeModule`.
 - `packages/devframe/src/adapters/cac.ts` — tri-state `--mcp` flag (`undefined`/`true`/`false`).
-- `packages/devframe/src/node/host-agent.ts` — `DevframeAgentHost` already knows whether the agent surface is non-empty (agent-flagged RPCs, `registerTool()` entries, tool providers).
+- `packages/devframe/src/node/host-agent.ts` — `DevframeAgentHost` already knows whether the agent surface is non-empty (agent-flagged RPCs, `registerTool()` entries, tool providers — the hub's commands host always registers a provider, so an empty provider yield counts as no surface).
 - `packages/hub/src/node/initiate.ts` — `initHub({ mcp })`, aggregate endpoint, off by default.
-- After plan 002: `mcp: true` requires `DEVFRAME_MCP_AUTH_TOKEN` (or an explicit `authorization` policy) and the Next hub kit defaults to disabled.
 - `examples/hub-vite` has no MCP wiring; `examples/hub-next` does (a parity violation of the "Hub example parity" rule in `AGENTS.md`).
 
 ## Target behavior: `mcp: 'auto'` as the new default
 
-Add `'auto'` to the `mcp` option and make it the default where `mcp` is omitted, for both `initDevframe` and `initHub`. Under `'auto'`, the route mounts if and only if **all three** hold:
+Add `'auto'` to the `mcp` option (`McpSetting`) and make it the default where `mcp` is omitted, for both `initDevframe` and `initHub`. Under `'auto'`, the route mounts if and only if **both** hold:
 
-1. **The agent surface is non-empty** — at least one agent-flagged RPC, `ctx.agent.registerTool()` entry, or registered tool provider.
+1. **The agent surface is non-empty** — at least one agent-flagged RPC, `ctx.agent.registerTool()` entry, registered resource, or a provider currently yielding a tool (`DevframeAgentHost.hasSurface()`).
 2. **`@modelcontextprotocol/server` resolves** as an installed peer.
-3. **An authorization policy is available** — `DEVFRAME_MCP_AUTH_TOKEN` is set (plan 002's shorthand path). `'auto'` never mounts with `authorization: false`.
 
-When condition 1 holds but 2 or 3 fails, emit **one** structured diagnostic (new sequential `DF00xx`, `method: 'warn'`, deduplicated per process) naming the single missing piece — "install `@modelcontextprotocol/server`" or "set `DEVFRAME_MCP_AUTH_TOKEN`" — so the author discovers the agent view exists. When condition 1 fails, `'auto'` is silent and loads nothing: indistinguishable from today's off.
+The mounted route carries the same origin-only posture as `mcp: true`; `mcp: { authorization }` remains the hardening path. When condition 1 holds but 2 fails, emit **one** structured diagnostic (`DF0077`, `method: 'warn'`, deduplicated per instance id) naming the missing peer so the author discovers the agent view exists. When condition 1 fails, `'auto'` is silent and loads nothing: indistinguishable from today's off.
 
-Explicit values keep today's meaning: `false` never mounts and never diagnoses; `true`/object follow plan 002's contract exactly (missing token on explicit `true` stays a coded startup failure — the author asked for it). The `--mcp`/`--no-mcp` tri-state flag overrides the definition as it does now, with `--no-mcp` forcing off over `'auto'`.
+Explicit values keep today's meaning: `false` never mounts and never diagnoses; `true`/object mount unconditionally (a missing peer stays the `DF0017` startup failure — the author asked for it). The `--mcp`/`--no-mcp` tri-state flag overrides the definition as it does now, with `--no-mcp` forcing off over `'auto'`.
 
 The product layer makes the default tangible:
 
-- `starter/` ships `@modelcontextprotocol/server` in its `package.json` (real version, per starter conventions), an `agent`-flagged example RPC, and a README line about `DEVFRAME_MCP_AUTH_TOKEN`.
-- `examples/hub-vite` gains aggregate-MCP wiring matching `examples/hub-next` (explicit env-backed authorization in both), closing the parity gap in the same PR.
-- Framework kits inherit `'auto'` by forwarding an omitted `mcp` instead of coercing it to off; `@devframes/next/hub` keeps plan 002's explicit-opt-in stance only if 002 landed it that way — otherwise it adopts `'auto'` like the rest.
+- `starter/` ships `@modelcontextprotocol/server` in its `package.json` (real version, per starter conventions), an `agent`-flagged example RPC, and a README note on the two views.
+- `examples/hub-next` drops its explicit `mcp: true` and `examples/hub-vite`'s README documents the aggregate endpoint — both hubs mount MCP through the `'auto'` default (their built-in plugins expose agent tools), closing the parity gap in the same PR.
+- Framework kits inherit `'auto'` by forwarding an omitted `mcp` instead of coercing it to off.
 
 ## Commands you will need
 
@@ -71,7 +71,7 @@ The product layer makes the default tangible:
 - `packages/devframe/src/adapters/initiate.ts`, `_shared.ts`, `cac.ts`
 - `packages/devframe/src/adapters/__tests__/initiate.test.ts`
 - `packages/devframe/src/node/host-agent.ts` (surface-emptiness query, if not already exposed)
-- `packages/devframe/src/node/diagnostics.ts` + one new `docs/content/6.errors/DF00xx.md`
+- `packages/devframe/src/node/diagnostics.ts` + `docs/content/6.errors/DF0077.md`
 - `packages/hub/src/node/initiate.ts` + `__tests__/initiate.test.ts`
 - `packages/vite/src/single.ts`, `packages/vite/src/hub.ts`, `packages/next/src/handler.ts`, `packages/next/src/hub.ts` (forward omitted `mcp` as `'auto'`)
 - `starter/` (SDK dependency, flagged example RPC, README)
@@ -102,11 +102,11 @@ Extend the `mcp` union with `'auto'` in `types/devframe.ts` and normalize the om
 
 **Verify**: `pnpm --filter devframe typecheck` → exit 0.
 
-### Step 2: Implement the three-condition mount
+### Step 2: Implement the two-condition mount
 
-In `initiate.ts` (and the hub aggregate), resolve `'auto'`: check surface non-emptiness first (free, no import), then attempt the runtime SDK import, then the plan 002 authorization resolution. Mount only when all three pass; emit the new deduplicated diagnostic when only the surface condition passes. `false` and `--no-mcp` short-circuit before any check.
+In `initiate.ts` (and the hub aggregate), resolve `'auto'`: check surface non-emptiness first (free, no import), then attempt the runtime SDK import (`loadAutoMcpAdapter` in `_shared.ts`). Mount only when both pass; emit the deduplicated `DF0077` when only the surface condition passes. `false` and `--no-mcp` short-circuit before any check.
 
-**Verify**: `pnpm exec vitest run packages/devframe/src/adapters/__tests__/initiate.test.ts` → all tests pass, including new cases for each cell of the matrix (empty surface / missing SDK / missing token / all present).
+**Verify**: `pnpm exec vitest run packages/devframe/src/adapters/__tests__/initiate.test.ts` → all tests pass, including new cases for the matrix (empty surface / surface present / explicit `false`).
 
 ### Step 3: Keep the zero-cost guarantee provable
 
@@ -116,7 +116,7 @@ Extend `tests/optional-mcp-bundles.test.ts`: a bundle of an `'auto'`-defaulted d
 
 ### Step 4: Product layer and example parity
 
-Update `starter/` (SDK dep — synced by `scripts/sync-starter-version.ts` conventions — flagged RPC, README token note) and bring `examples/hub-vite` to MCP parity with `examples/hub-next`, both using explicit env-backed authorization per plan 002. Update both example READMEs in the same change.
+Update `starter/` (SDK dep, flagged RPC, README note) and bring `examples/hub-vite` to MCP parity with `examples/hub-next`: both hubs mount the aggregate route through the `'auto'` default, and both READMEs document it. Update `examples/files-inspector` to rely on the default too.
 
 **Verify**: `pnpm exec vitest run packages/vite/test/single.test.ts examples/hub-next/tests` → all tests pass.
 
@@ -129,32 +129,31 @@ Rewrite the scoped docs pages with positive framing per the documentation style 
 ## Test plan
 
 - Omitted `mcp` + empty surface → no route, no import, no diagnostic.
-- Omitted `mcp` + flagged RPC + SDK + token → route mounts, bearer required.
-- Omitted `mcp` + flagged RPC, SDK missing → no route, one warn diagnostic naming the SDK.
-- Omitted `mcp` + flagged RPC + SDK, token missing → no route, one warn diagnostic naming the env var.
+- Omitted `mcp` + flagged RPC → route mounts (origin-only, same as `mcp: true`).
+- Omitted `mcp` + flagged RPC, SDK missing → no route, one warn diagnostic (`DF0077`) naming the peer.
 - `mcp: false` / `--no-mcp` + flagged RPC → no route, no diagnostic.
-- Explicit `mcp: true`, token missing → plan 002's coded startup failure (unchanged).
-- Hub aggregate under `'auto'` → mounts only when at least one mounted devframe has a non-empty surface and conditions 2–3 hold.
-- Bundle guard: `'auto'` + empty surface bundles clean.
+- Explicit `mcp: true`, SDK missing → the `DF0017` startup failure (unchanged).
+- Hub aggregate under `'auto'` → mounts only when at least one mounted devframe has a non-empty surface and the peer resolves; `DF8005` fires only under explicit `mcp: false`.
+- Bundle guard: `'auto'` + empty surface bundles clean and mounts nothing at runtime.
 
 ## Done criteria
 
-- [ ] Omitting `mcp` serves the agent view exactly when a surface exists, the SDK resolves, and authorization is configured.
-- [ ] `mcp: false` and empty-surface `'auto'` load zero MCP code, proven by the bundle guard.
-- [ ] `@modelcontextprotocol/*` remain optional peers of `devframe`; no workspace package gains them as runtime dependencies.
-- [ ] `'auto'` never mounts an unauthenticated route.
-- [ ] Starter demonstrates the flag-a-function flow out of the box; hub examples are at MCP parity.
-- [ ] Docs contain no "opt-in"/"optional peer" framing for the default flow; the condition matrix lives on a reference page.
-- [ ] Full verification passes; only in-scope files and `plans/README.md` changed.
+- [x] Omitting `mcp` serves the agent view exactly when a surface exists and the SDK resolves.
+- [x] `mcp: false` and empty-surface `'auto'` load zero MCP code, proven by the bundle guard.
+- [x] `@modelcontextprotocol/*` remain optional peers of `devframe`; no workspace package gains them as runtime dependencies.
+- [x] `'auto'` mounts with exactly `mcp: true`'s posture (origin gate; `authorization` opt-in) — the default grants no extra reach.
+- [x] Starter demonstrates the flag-a-function flow out of the box; hub examples are at MCP parity.
+- [x] Docs describe the default flow positively; lookup details live on the reference pages.
+- [x] Full verification passes; only in-scope files and `plans/README.md` changed.
 
 ## STOP conditions
 
 - Plan 002 or 003 has not landed (`plans/README.md` rows not DONE).
 - The `'auto'` check cannot determine surface non-emptiness without importing the MCP adapter or SDK.
 - Satisfying `'auto'` would require moving `@modelcontextprotocol/*` into runtime `dependencies` or otherwise introducing `zod` as a devframe dependency.
-- The authorization contract from plan 002 would need loosening (e.g. `'auto'` mounting with `authorization: false`) to make the default useful.
+- `'auto'` would need to mount with a *weaker* posture than `mcp: true` (e.g. a disabled origin gate) to be useful.
 - API snapshot changes include unrelated exports.
 
 ## Maintenance notes
 
-Every future transport or kit that gains an `mcp` option must route the omitted case through the same `'auto'` resolution rather than re-inventing a default. Reviewers should check that new built-in devframes flag functions deliberately — under `'auto'`, an `agent` field is what turns the endpoint on for users with a token configured.
+Every future transport or kit that gains an `mcp` option must route the omitted case through the same `'auto'` resolution (`loadAutoMcpAdapter`) rather than re-inventing a default. Reviewers should check that new built-in devframes flag functions deliberately — under `'auto'`, an `agent` field is what turns the endpoint on.

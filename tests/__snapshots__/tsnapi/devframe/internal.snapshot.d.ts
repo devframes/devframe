@@ -33,6 +33,7 @@ export declare class DevframeAgentHost implements DevframeAgentHost$1 {
   registerResource(_: AgentResourceInput): AgentHandle;
   unregisterResource(_: string): boolean;
   list(): AgentManifest;
+  hasSurface(): boolean;
   getTool(_: string): AgentTool | undefined;
   getResource(_: string): AgentResource | undefined;
   invoke(_: string, _: unknown): Promise<unknown>;
@@ -361,6 +362,13 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "On Bun/Deno, serve the advertised `__ws` route from `Bun.serve` / `Deno.serve` with `attachBunWsTransport` / `attachDenoWsTransport` (see the hub-deno-minimal example), or connect over the SSE endpoint instead.";
   };
+  readonly DF0077: {
+    readonly why: (p: {
+      id: string;
+      reason: string;
+    }) => string;
+    readonly fix: "Install @modelcontextprotocol/server next to devframe to serve the agent surface over MCP, or set `mcp: false` to keep the route off and silence this.";
+  };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
 }) => void]>;
@@ -381,6 +389,7 @@ export { InstanceShellInit }
 export { InstanceShellInternals }
 export { InstanceWsTier }
 export { listLiveDevframeInstances }
+export { loadAutoMcpAdapter }
 export { normalizeBasePath }
 export { registerDevframeInstance }
 export { resolveBasePath }

@@ -1,7 +1,7 @@
 import type { DevframeRpcConnection, WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/instance-shell'
-import type { DevframeDefinition, DevframeSseOptions, DevframeWsOptions, McpRouteOptions } from '../types/devframe'
+import type { DevframeDefinition, DevframeSseOptions, DevframeWsOptions, McpSetting } from '../types/devframe'
 import type { StaticAssetsSource } from '../types/remote-assets'
 import type { DevframeNodeRpcSession, DevframeNodeRpcSessionMeta } from '../types/rpc'
 import { createServer } from 'node:http'
@@ -92,11 +92,12 @@ export interface CreateDevServerOptions {
   auth?: boolean | DevframeAuthHandler
   /**
    * Expose a route-based MCP server on the dev server (Streamable-HTTP).
-   * Overrides `def.cli?.mcp`; `undefined` falls through to it. `false`
-   * disables the route regardless of the definition default. See
-   * {@link McpRouteOptions}.
+   * Overrides `def.cli?.mcp`; `undefined` falls through to it, then to the
+   * `'auto'` default (mount once the agent surface is non-empty and the
+   * optional peer resolves). `false` disables the route regardless. See
+   * {@link McpSetting}.
    */
-  mcp?: boolean | McpRouteOptions
+  mcp?: McpSetting
   /**
    * Called once per new RPC connection, right after its session is created.
    * Forwarded verbatim to the underlying transport binding.

@@ -1,4 +1,4 @@
-import type { DevframeDefinition, McpRouteOptions } from 'devframe'
+import type { DevframeDefinition, McpSetting } from 'devframe'
 import type { DevframeInstance } from 'devframe/initiate'
 import type { DevframeAuthHandler } from 'devframe/node/auth'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
@@ -115,9 +115,11 @@ export interface DevframeViteBridgeOptions {
    * Expose the bridge's route-based MCP server (Streamable-HTTP) at
    * `<base>__mcp` (on the Vite app's own origin) and advertise it in the
    * bridge's `__connection.json`. Overrides `def.cli?.mcp`, `undefined`
-   * falls through to it, `false` disables the route regardless.
+   * falls through to it, then to the `'auto'` default (mount once the agent
+   * surface is non-empty and the optional peer resolves); `false` disables
+   * the route regardless.
    */
-  mcp?: boolean | McpRouteOptions
+  mcp?: McpSetting
 }
 
 /**

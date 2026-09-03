@@ -22,7 +22,7 @@ Planned outside the security audit; same executor rules apply.
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |---|---|---|---|---|---|
-| 008 | Serve MCP by default when a devframe exposes an agent surface | P2 | M | 002, 003 | TODO |
+| 008 | Serve MCP by default when a devframe exposes an agent surface | P2 | M | 002, 003 | DONE |
 
 ## Dependency Notes
 

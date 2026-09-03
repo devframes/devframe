@@ -8,7 +8,7 @@ export interface DevframeViteBridgeOptions {
   host?: string;
   flags?: Record<string, unknown>;
   auth?: boolean | DevframeAuthHandler;
-  mcp?: boolean | McpRouteOptions;
+  mcp?: McpSetting;
 }
 export interface DevframeViteDevServerLike {
   middlewares: {

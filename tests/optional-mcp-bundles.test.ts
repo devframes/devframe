@@ -102,6 +102,42 @@ describe('optional MCP peers in consumer bundles', () => {
     }
   })
 
+  it('mounts nothing under the `auto` default when the agent surface is empty', async () => {
+    const hubDist = join(root, 'packages/hub/dist')
+    const outputDirectory = mkdtempSync(join(hubDist, '.mcp-bundle-test-'))
+    temporaryDirectories.push(outputDirectory)
+    const outfile = join(outputDirectory, 'hub-auto.mjs')
+
+    await build({
+      entryPoints: [join(hubDist, 'node/initiate.mjs')],
+      bundle: true,
+      format: 'esm',
+      outfile,
+      platform: 'node',
+    })
+
+    // No `mcp` option and no devframes: the `'auto'` default finds an empty
+    // agent surface, so no route mounts and no MCP code loads.
+    const bundled = await import(pathToFileURL(outfile).href) as typeof import('../packages/hub/src/node/initiate')
+    const hub = bundled.initHub({
+      auth: false,
+      base: bundled.DEVFRAMES_HUB_BASE,
+      ws: false,
+    })
+
+    try {
+      await hub.ready
+      expect(hub.connectionMeta().mcp).toBeUndefined()
+      const response = await hub.handler(new Request('http://localhost:3000/__devframes/__mcp', {
+        headers: { origin: 'http://localhost:3000' },
+      }))
+      expect(response.status).toBe(404)
+    }
+    finally {
+      await hub.close()
+    }
+  })
+
   it('preserves the runtime importer in Next production bundles', () => {
     const runtimeImportChunks = readdirSync(nextServerChunks)
       .filter(file => file.endsWith('.js'))

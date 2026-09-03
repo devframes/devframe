@@ -105,8 +105,30 @@ export type McpAuthorization
     | false
 
 /**
+ * The route-based MCP setting accepted everywhere a host mounts a devframe
+ * (`cli.mcp`, `initDevframe` / `initHub` / `createDevServer` options, the
+ * framework kits):
+ *
+ * - `'auto'`, the default: mount the route when the devframe exposes an
+ *   agent surface (an `agent`-flagged RPC function, or a tool / resource /
+ *   provider registered on `ctx.agent`) **and** the optional peer
+ *   `@modelcontextprotocol/server` is installed. An empty agent surface
+ *   mounts nothing and loads no MCP code; a non-empty surface with the peer
+ *   missing warns once (`DF0077`) instead of mounting.
+ * - `true`: always mount at the default `__mcp` route (the peer missing is
+ *   a startup failure, `DF0017`).
+ * - `false`: never mount.
+ * - {@link McpRouteOptions}: always mount, with a custom route path, origin
+ *   allow-list, or {@link McpAuthorization} identity check.
+ *
+ * A mounted route trusts same-machine callers by default (the loopback
+ * origin gate), exactly like `mcp: true`.
+ */
+export type McpSetting = boolean | 'auto' | McpRouteOptions
+
+/**
  * Configuration for the route-based MCP server mounted alongside the dev
- * server (opt-in via {@link DevframeCliOptions.mcp}). The endpoint speaks
+ * server (via {@link DevframeCliOptions.mcp}). The endpoint speaks
  * the MCP Streamable-HTTP transport over the same origin as the SPA,
  * exposing the definition's `ctx.agent` tools + shared-state resources to
  * external MCP clients connected to the *running* server.
@@ -189,11 +211,12 @@ export interface DevframeCliOptions {
    * base path). It surfaces the same `ctx.agent` tools + shared-state
    * resources as the stdio `mcp` command, but against the live server.
    *
-   * - `false` / omitted (default): no MCP route is mounted.
-   * - `true`: mount at the default `__mcp` route with the loopback origin
-   *   gate (trusting same-machine callers).
-   * - {@link McpRouteOptions}: customise the route path, origin allow-list,
-   *   and opt into an {@link McpAuthorization} identity check.
+   * Defaults to `'auto'`: the route mounts once the devframe exposes an
+   * agent surface (an `agent`-flagged RPC, a registered tool / resource)
+   * and the optional peer `@modelcontextprotocol/server` is installed. See
+   * {@link McpSetting} for the full contract, and {@link McpRouteOptions}
+   * for the route path, origin allow-list, and
+   * {@link McpAuthorization} identity check.
    *
    * The `--mcp` / `--no-mcp` CLI flags override this per run. Whether to expose
    * MCP is a hosting decision, so programmatic hosts pass it to
@@ -204,7 +227,7 @@ export interface DevframeCliOptions {
    * This field is still read as a fallback, and will be removed in a future
    * release.
    */
-  mcp?: boolean | McpRouteOptions
+  mcp?: McpSetting
   /**
    * Author's SPA dist, served as the devframe's UI.
    *

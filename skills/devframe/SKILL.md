@@ -405,7 +405,9 @@ defineRpcFunction({
 })
 ```
 
-Or register tools / resources directly on `ctx.agent.registerTool({ id, description, safety, handler })` and `ctx.agent.registerResource({ id, name, mimeType, read })`. Expose the API over MCP:
+Or register tools / resources directly on `ctx.agent.registerTool({ id, description, safety, handler })` and `ctx.agent.registerResource({ id, name, mimeType, read })`.
+
+The dev server serves this surface over HTTP automatically: the `mcp: 'auto'` default mounts the Streamable-HTTP route at `<base>__mcp` once the agent surface is non-empty and the optional peer `@modelcontextprotocol/server` is installed (`mcp: true` forces on, `mcp: false` off; a flagged surface with the peer missing warns `DF0077`). For stdio:
 
 ```ts
 import { createMcpServer } from 'devframe/adapters/mcp'

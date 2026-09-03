@@ -1,8 +1,11 @@
+import type { DevframeAgentHost } from '../types/agent'
 import type { ConnectionMeta } from '../types/context'
-import type { DevframeDefinition, DevframeDeploymentKind, McpAuthorization, McpRouteOptions } from '../types/devframe'
+import type { DevframeDefinition, DevframeDeploymentKind, McpAuthorization, McpSetting } from '../types/devframe'
 import { getPort } from 'get-port-please'
 import { cleanDoubleSlashes, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import { DEVFRAME_MCP_ROUTE } from '../constants'
+import { diagnostics } from '../node/diagnostics'
+import { importRuntimeModule } from '../node/import-runtime-module'
 
 const DEFAULT_PORT = 9999
 
@@ -70,16 +73,20 @@ export interface ResolvedMcpConfig {
 }
 
 /**
- * Normalize the `mcp` option (`boolean | McpRouteOptions`) into a
- * fully-resolved config, or `undefined` when the MCP route is disabled.
+ * Normalize an *explicit* `mcp` setting into a fully-resolved config, or
+ * `undefined` when the MCP route is disabled. `'auto'` also resolves to
+ * `undefined` here: whether it mounts depends on the live agent surface,
+ * which only the mounting adapter can consult (through
+ * {@link loadAutoMcpAdapter}) - static resolvers like
+ * `resolveMcpConnectionMeta` treat it as unadvertisable.
  *
  * An enabled route trusts same-machine callers by default: the authorization
  * resolves to origin-only (`false`) unless the object config opts into a
  * bearer/callback identity check. An empty-string bearer is treated as no
  * bearer (origin-only) rather than a usable credential.
  */
-export function resolveMcpConfig(mcp: boolean | McpRouteOptions | undefined): ResolvedMcpConfig | undefined {
-  if (!mcp)
+export function resolveMcpConfig(mcp: McpSetting | undefined): ResolvedMcpConfig | undefined {
+  if (!mcp || mcp === 'auto')
     return undefined
   if (mcp === true)
     return { authorization: false }
@@ -93,11 +100,48 @@ export function resolveMcpConfig(mcp: boolean | McpRouteOptions | undefined): Re
   }
 }
 
+const autoMcpHinted = new Set<string>()
+
+/**
+ * Resolve the `mcp: 'auto'` default at mount time: import the MCP adapter
+ * when the devframe's agent surface is non-empty, or return `undefined`
+ * (mount nothing) when the surface is empty - the zero-cost path, loading
+ * no MCP code at all. A non-empty surface whose optional peer
+ * (`@modelcontextprotocol/server`) fails to import also returns `undefined`,
+ * warning `DF0077` once per instance id so the author discovers the agent
+ * view exists.
+ *
+ * Generic like `importRuntimeModule`: the caller names the module type
+ * (`typeof import('devframe/adapters/mcp')`) so this shared helper carries
+ * no type-level dependency on the MCP adapter.
+ */
+export async function loadAutoMcpAdapter<T>(
+  agent: Pick<DevframeAgentHost, 'hasSurface'>,
+  id: string,
+): Promise<T | undefined> {
+  if (!agent.hasSurface())
+    return undefined
+  try {
+    return await importRuntimeModule<T>('devframe/adapters/mcp')
+  }
+  catch (error) {
+    if (!autoMcpHinted.has(id)) {
+      autoMcpHinted.add(id)
+      const reason = error instanceof Error ? error.message : String(error)
+      diagnostics.DF0077({ id, reason, cause: error })
+    }
+    return undefined
+  }
+}
+
 /**
  * Resolve the `mcp` entry a `__connection.json` should advertise for a dev
  * server started with the given `mcp` option (falling back to `def.cli?.mcp`,
  * exactly like `createDevServer`), or `undefined` when the route is
- * disabled.
+ * disabled. `'auto'` (the omitted default) resolves at mount time against
+ * the live agent surface, so hand-rolled meta advertises it only for an
+ * explicit setting; the adapters advertise the actually-mounted route
+ * themselves.
  *
  * Hosted bridges that hand-roll their connection meta pass the side-car
  * `port`: the advertised path becomes absolute (the side-car mounts at `/`)
@@ -107,7 +151,7 @@ export function resolveMcpConfig(mcp: boolean | McpRouteOptions | undefined): Re
  */
 export function resolveMcpConnectionMeta(
   def: DevframeDefinition,
-  mcp: boolean | McpRouteOptions | undefined,
+  mcp: McpSetting | undefined,
   port?: number,
 ): ConnectionMeta['mcp'] {
   const config = resolveMcpConfig(mcp ?? def.cli?.mcp)

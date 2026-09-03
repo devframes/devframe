@@ -25,7 +25,7 @@ export interface InitDevframeOptions {
   sse?: boolean | DevframeSseOptions;
   host?: string;
   auth?: boolean | DevframeAuthHandler;
-  mcp?: boolean | McpRouteOptions;
+  mcp?: McpSetting;
   origin?: string | (() => string);
   register?: boolean | Partial<DevframeInstanceRecord>;
   flags?: Record<string, unknown>;

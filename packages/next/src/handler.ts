@@ -35,8 +35,9 @@ export interface CreateDevframeNextHandlerOptions {
    * Expose the route-based MCP server (Streamable-HTTP) at `<base>__mcp`,
    * on the Next app's own origin, through the same catch-all route as the
    * SPA, and advertise it in the handler's `__connection.json`. Overrides
-   * `def.cli?.mcp`, `undefined` falls through to it, `false` disables the
-   * route regardless.
+   * `def.cli?.mcp`, `undefined` falls through to it, then to the `'auto'`
+   * default (mount once the agent surface is non-empty and the optional
+   * peer resolves); `false` disables the route regardless.
    */
   mcp?: InitDevframeOptions['mcp']
   /**
