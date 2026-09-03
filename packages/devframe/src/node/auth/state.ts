@@ -38,12 +38,21 @@ const TEMP_AUTH_CODE_TTL = 5 * 60_000
 /** Failed attempts allowed against a single code before it is rotated. */
 const TEMP_AUTH_MAX_ATTEMPTS = 5
 
-let tempAuthCode: string = generateTempCode()
-let tempAuthCodeExpiresAt: number = Date.now() + TEMP_AUTH_CODE_TTL
+let tempAuthCode: string | undefined
+let tempAuthCodeExpiresAt = 0
 let tempAuthFailedAttempts = 0
 
 function generateTempCode(): string {
   return randomDigits(TEMP_AUTH_CODE_LENGTH)
+}
+
+function ensureTempAuthCode(): string {
+  if (tempAuthCode === undefined) {
+    tempAuthCode = generateTempCode()
+    tempAuthCodeExpiresAt = Date.now() + TEMP_AUTH_CODE_TTL
+  }
+
+  return tempAuthCode
 }
 
 /**
@@ -51,7 +60,7 @@ function generateTempCode(): string {
  * the dev-server terminal) so they can type it into the browser to authenticate.
  */
 export function getTempAuthCode(): string {
-  return tempAuthCode
+  return ensureTempAuthCode()
 }
 
 /**
@@ -78,7 +87,7 @@ export function refreshTempAuthCode(): string {
  * `Referer` header; the browser client reads it locally (see
  * `consumeOtpFromUrl`). Any existing fragment parameters are preserved.
  */
-export function buildOtpAuthUrl(baseUrl: string, code: string = tempAuthCode): string {
+export function buildOtpAuthUrl(baseUrl: string, code: string = getTempAuthCode()): string {
   const url = new URL(baseUrl)
   const fragment = new URLSearchParams(url.hash.replace(/^#/, ''))
   fragment.set(DEVFRAME_OTP_URL_PARAM, code)
@@ -125,13 +134,15 @@ export function exchangeTempAuthCode(
   info: { ua: string, origin: string },
   storage: SharedState<InternalAnonymousAuthStorage>,
 ): string | null {
+  const currentTempAuthCode = ensureTempAuthCode()
+
   // Expired code: rotate so a stale code can never be redeemed.
   if (Date.now() > tempAuthCodeExpiresAt) {
     refreshTempAuthCode()
     return null
   }
 
-  if (!timingSafeEqual(code, tempAuthCode)) {
+  if (!timingSafeEqual(code, currentTempAuthCode)) {
     tempAuthFailedAttempts += 1
     // Too many wrong guesses, so invalidate this code entirely.
     if (tempAuthFailedAttempts >= TEMP_AUTH_MAX_ATTEMPTS)
