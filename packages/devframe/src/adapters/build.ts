@@ -7,19 +7,17 @@ import fs from 'node:fs/promises'
 import process from 'node:process'
 import { colors as c } from 'devframe/utils/colors'
 import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
-import { structuredCloneStringify } from 'devframe/utils/structured-clone'
-import { dirname, resolve } from 'pathe'
+import { resolve } from 'pathe'
 import { resolveClientAssets } from '../client-assets'
 import {
   DEVFRAME_CONNECTION_META_FILENAME,
-  DEVFRAME_RPC_DUMP_DIRNAME,
   DEVFRAME_RPC_DUMP_MANIFEST_FILENAME,
 } from '../constants'
 import { createHostContext } from '../node/context'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { collectStaticRpcDump } from '../rpc/dump/static'
-import { strictJsonStringify } from '../rpc/serialization'
+import { writeStaticRpcDump } from '../rpc/dump/write'
 
 export interface CreateBuildOptions {
   /** Output directory. Defaults to `dist-static`. */
@@ -95,18 +93,11 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
   // registered definitions, since the service itself defines none.
   applySnapshotRpc(ctx, d.rpc?.snapshot)
 
-  await fs.mkdir(resolve(outDir, DEVFRAME_RPC_DUMP_DIRNAME), { recursive: true })
-
   await writeConnectionMeta(ctx, outDir)
 
   console.log(c.cyan`[devframe] writing RPC dump to ${resolve(outDir, DEVFRAME_RPC_DUMP_MANIFEST_FILENAME)}`)
   const dump = await collectStaticRpcDump(ctx.rpc.definitions.values(), ctx)
-  await writeDumpFiles(dump, outDir, options.pretty ? 2 : undefined)
-  await fs.writeFile(
-    resolve(outDir, DEVFRAME_RPC_DUMP_MANIFEST_FILENAME),
-    JSON.stringify(dump.manifest, null, 2),
-    'utf-8',
-  )
+  await writeStaticRpcDump(dump, outDir, { pretty: options.pretty })
 
   console.log(c.green`[devframe] built "${d.id}" -> ${outDir}`)
 }
@@ -134,29 +125,6 @@ async function writeConnectionMeta(ctx: DevframeNodeContext, outDir: string): Pr
     JSON.stringify({ backend: 'static', jsonSerializableMethods }, null, 2),
     'utf-8',
   )
-}
-
-/** Encode and write each sharded RPC dump file under `outDir`. */
-async function writeDumpFiles(
-  dump: Awaited<ReturnType<typeof collectStaticRpcDump>>,
-  outDir: string,
-  indent: number | undefined,
-): Promise<void> {
-  for (const [filepath, file] of Object.entries(dump.files)) {
-    const fullpath = resolve(outDir, filepath)
-    await fs.mkdir(dirname(fullpath), { recursive: true })
-    const text = file.serialization === 'structured-clone'
-      ? structuredCloneStringify(file.data)
-      : strictJsonStringify(file.data, file.fnName)
-    await fs.writeFile(
-      fullpath,
-      // structured-clone-es output is single-line; only JSON honors `indent`.
-      file.serialization === 'json' && indent != null
-        ? JSON.stringify(JSON.parse(text), null, indent)
-        : text,
-      'utf-8',
-    )
-  }
 }
 
 /**

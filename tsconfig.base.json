@@ -127,6 +127,9 @@
       "devframe/adapters/mcp": [
         "./packages/devframe/src/adapters/mcp/index.ts"
       ],
+      "@devframes/hub/build": [
+        "./packages/hub/src/node/build.ts"
+      ],
       "@devframes/hub/client": [
         "./packages/hub/src/client/index.ts"
       ],

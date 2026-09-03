@@ -113,10 +113,13 @@ export function createRpcSharedStateServerHost(
     },
     /**
      * Pre-compute snapshots for the build-mode static dump so the SPA
-     * can read them without a live server.
+     * can read them without a live server. The `undefined` fallback makes
+     * a key the build never created resolve like the live handler does
+     * (returning `undefined`) instead of failing the dump lookup.
      */
     dump: () => ({
       inputs: host.keys().map(key => [key] as [string]),
+      fallback: undefined,
     }),
   })
 

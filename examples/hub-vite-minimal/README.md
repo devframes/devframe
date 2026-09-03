@@ -18,3 +18,12 @@ Open the printed URL - the host page carries the floating dock via one injected 
 - `transformIndexHtml` injects `<script type="module" src="/__devframes/embedded.js">` into the host page, so the floating dock mounts itself.
 
 The same `initHub` instance mounts identically on Nitro, Hono, Next.js, and Rsbuild - see the sibling `hub-*-minimal` examples.
+
+## Production build
+
+```sh
+pnpm --filter hub-vite-minimal build    # vite build + the baked hub -> dist/
+pnpm --filter hub-vite-minimal preview  # serve dist/ statically
+```
+
+`build: true` on `viteDevframeHub` bakes the hub into `dist/__devframes/` and injects the `embedded.js` tag into the built HTML, so the production bundle ships the same docks against a `static` backend: the floating dock and standalone viewer boot from the baked RPC dump (each panel's snapshot reads, e.g. the Open Graph report of `defaultUrl`), while live-server tools (terminals, code-server) render their panels without a backing process.

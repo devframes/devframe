@@ -187,12 +187,19 @@ export interface ConnectionMeta {
    */
   jsonSerializableMethods?: string[]
   /**
-   * Absolute URL of the `__connection.json` this meta was loaded from.
-   * Annotated by the client (not served) when it publishes the meta on a
-   * shared window for same-origin inheritance: a relative `websocket.path`
-   * resolves against this, so a child SPA mounted at another base (e.g. a hub
-   * mounting several devframes at `/__foo/`, `/__bar/`, …) inherits a dialable
-   * endpoint rather than resolving the path against its own mount.
+   * URL of the `__connection.json` that owns this meta's relative paths.
+   * Two producers write it:
+   *
+   *   - The client annotates it (absolute) when it publishes the meta on a
+   *     shared window for same-origin inheritance: a relative
+   *     `websocket.path` resolves against this, so a child SPA mounted at
+   *     another base (e.g. a hub mounting several devframes at `/__foo/`,
+   *     `/__bar/`, …) inherits a dialable endpoint rather than resolving the
+   *     path against its own mount.
+   *   - A static hub build serves it (base-absolute, e.g.
+   *     `/__devframes/__connection.json`) in each **per-frame** meta, so a
+   *     frame SPA that fetched its own copy still resolves the shared RPC
+   *     dump from the hub base. Resolved against the fetched URL.
    */
   baseUrl?: string
   /**

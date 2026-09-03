@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "pnpm -C ../.. run build && vite --host",
     "build": "vite build",
+    "preview": "vite preview --host",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

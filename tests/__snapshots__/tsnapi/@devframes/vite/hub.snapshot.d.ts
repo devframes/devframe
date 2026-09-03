@@ -21,6 +21,7 @@ export interface ViteDevframeHubOptions {
   name?: string;
   version?: string;
   quiet?: boolean;
+  build?: boolean;
 }
 // #endregion
 

@@ -22,6 +22,9 @@ export interface StaticRpcDumpManifestStaticEntry {
   path: string;
   serialization?: StaticRpcDumpSerialization;
 }
+export interface WriteStaticRpcDumpOptions {
+  pretty?: boolean;
+}
 // #endregion
 
 // #region Types
@@ -37,4 +40,5 @@ export declare function dumpFunctions<T extends readonly RpcFunctionDefinitionAn
 export declare function getDefinitionsWithDumps<T extends readonly RpcFunctionDefinitionAny[]>(_: T): RpcFunctionDefinitionAny[];
 export declare function reviveDumpError(_: RpcDumpRecordError): Error;
 export declare function serializeDumpError(_: unknown): RpcDumpRecordError;
+export declare function writeStaticRpcDump(_: StaticRpcDumpCollection, _: string, _?: WriteStaticRpcDumpOptions): Promise<void>;
 // #endregion

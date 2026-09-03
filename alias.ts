@@ -48,6 +48,7 @@ export const alias = {
   'devframe/adapters/embedded': r('devframe/src/adapters/embedded.ts'),
   'devframe/initiate': r('devframe/src/adapters/initiate.ts'),
   'devframe/adapters/mcp': r('devframe/src/adapters/mcp/index.ts'),
+  '@devframes/hub/build': r('hub/src/node/build.ts'),
   '@devframes/hub/client': r('hub/src/client/index.ts'),
   '@devframes/hub/constants': r('hub/src/constants.ts'),
   '@devframes/hub/initiate': r('hub/src/node/initiate.ts'),

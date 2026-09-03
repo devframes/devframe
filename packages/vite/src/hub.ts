@@ -7,6 +7,7 @@ import { Server as NodeHttpServer } from 'node:http'
 import process from 'node:process'
 import { DEVFRAMES_HUB_BASE, normalizeHubBase } from '@devframes/hub/constants'
 import { initHub } from '@devframes/hub/initiate'
+import { resolve } from 'pathe'
 
 export interface ViteDevframeHubOptions {
   /**
@@ -84,6 +85,17 @@ export interface ViteDevframeHubOptions {
    * @default false
    */
   quiet?: boolean
+  /**
+   * Also bake the hub into `vite build` output: `buildHub` writes the whole
+   * static hub subtree (each devframe's SPA, the RPC dump, `embedded.js`, …)
+   * into `<outDir><base>`, and the UI's `embedded.js` script tag is injected
+   * into the built HTML, so the deployed app ships working devtools against
+   * a `static` backend (baked reads, no live server). Off by default: a
+   * production bundle only carries devtools when the host opts in.
+   *
+   * @default false
+   */
+  build?: boolean
 }
 
 let recommendedViteDevtools = false
@@ -122,6 +134,9 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
   // Set once the hub is up if its UI ships an `embedded.js` bootstrap: the
   // host-page script tag `transformIndexHtml` injects.
   let embeddedSrc: string | undefined
+  // Resolved once for a static build, shared by `buildStart` (embedded.js
+  // injection) and `closeBundle` (the buildHub emit).
+  let buildUi: DevframeHubUi | undefined
 
   const teardown = async (): Promise<void> => {
     const previous = instance
@@ -129,9 +144,16 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
     await previous?.close().catch(() => {})
   }
 
+  const resolveUi = async (): Promise<DevframeHubUi | undefined> =>
+    options.ui === false ? undefined : options.ui ?? await loadDefaultUi()
+
   return {
     name: 'devframes:hub',
-    apply: 'serve',
+    /**
+     * Dev middleware by default; a production bundle only carries the hub
+     * when the host opts into the static build.
+     */
+    apply: (_, env) => env.command === 'serve' || options.build === true,
 
     configResolved(config) {
       viteConfig = config
@@ -150,9 +172,7 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       // Resolve the UI slot: default to `@devframes/hub-ui`'s `createUi()`
       // (lazy import so `@devframes/hub-ui` stays an optional dependency),
       // honor an explicit object, or stay headless on `false`.
-      const ui = options.ui === false
-        ? undefined
-        : options.ui ?? await loadDefaultUi()
+      const ui = await resolveUi()
 
       // Attach each configured client script to its devframe's mount entry so
       // the hub client runtime imports it into the host page.
@@ -200,6 +220,16 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       })
     },
 
+    async buildStart() {
+      // Static build: resolve the UI slot up front so `transformIndexHtml`
+      // (which runs before the bundle closes) knows whether to inject the
+      // `embedded.js` bootstrap into the built HTML.
+      if (viteConfig?.command !== 'build' || !options.build)
+        return
+      buildUi = await resolveUi()
+      embeddedSrc = buildUi?.embedded ? `${base}embedded.js` : undefined
+    },
+
     transformIndexHtml() {
       // Inject the floating-dock bootstrap when the resolved UI ships one.
       if (!embeddedSrc)
@@ -213,6 +243,22 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
 
     async closeBundle() {
       await teardown()
+
+      // Static build: bake the whole hub into the app's build output at
+      // `<outDir><base>`, so the deployed bundle serves working devtools
+      // (baked reads over the `static` backend) from any static file server.
+      if (viteConfig?.command !== 'build' || !options.build)
+        return
+      const cwd = options.cwd ?? viteConfig.root
+      const { buildHub } = await import('@devframes/hub/build')
+      await buildHub({
+        base,
+        cwd,
+        outDir: resolve(viteConfig.root, viteConfig.build.outDir, base.slice(1)),
+        devframes: attachClientScripts(options.devframes, options.clientScripts) ?? [],
+        ...(buildUi ? { ui: buildUi } : {}),
+        ...pickDefined(options, ['renderers', 'rpcDeclarations', 'getStorageDir', 'name', 'version', 'configure']),
+      })
     },
   }
 }

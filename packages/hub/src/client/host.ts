@@ -218,6 +218,15 @@ export async function createDevframeClientRuntime(
     })
   }
 
+  // On a static backend no server can relay `hub:docks:activate`, so a panel
+  // iframe posts its activation on a same-origin BroadcastChannel instead and
+  // this runtime switches the dock locally.
+  if (rpc.connectionMeta?.backend === 'static' && typeof BroadcastChannel !== 'undefined') {
+    const activateChannel = new BroadcastChannel(HUB_EVENTS.broadcastChannel.docksActivate)
+    activateChannel.onmessage = event => activateHandler(event.data as { dockId?: string })
+    disposers.push(() => activateChannel.close())
+  }
+
   if (getDevframeClientContext()) {
     console.warn(
       '[@devframes/hub] A client context is already published on this page; replacing it. '

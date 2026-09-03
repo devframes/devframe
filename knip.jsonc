@@ -150,7 +150,7 @@
       ]
     },
     "packages/hub": {
-      "entry": ["src/{index,constants}.ts", "src/{client,node,types}/index.ts", "src/node/{index,initiate}.ts"]
+      "entry": ["src/{index,constants}.ts", "src/{client,node,types}/index.ts", "src/node/{index,initiate,build}.ts"]
     },
     "packages/hub-ui": {
       // `playground/client-scripts/*.ts` are dock `action` entries the

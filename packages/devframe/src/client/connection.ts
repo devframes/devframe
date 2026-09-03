@@ -168,9 +168,17 @@ export async function setupDevframeConnection(
         throw new Error(`Failed to fetch connection meta from ${metaUrl}: ${response.status}`)
 
       const connectionMeta = await response.json() as ConnectionMeta
+      const loadedFrom = response.url || metaUrl
       const connection: DevframeConnection = {
         connectionMeta,
-        metaBaseUrl: response.url || metaUrl,
+        /**
+         * A served `baseUrl` re-points relative resolution (RPC dump shards,
+         * transport paths) at the meta that owns them: a static hub build's
+         * per-frame meta directs each frame SPA at the hub's own dump.
+         */
+        metaBaseUrl: connectionMeta.baseUrl
+          ? new URL(connectionMeta.baseUrl, loadedFrom).href
+          : loadedFrom,
         authToken: readStoredAuthToken(
           options.authToken ?? connectionMeta.authToken,
         ),

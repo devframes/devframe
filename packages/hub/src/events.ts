@@ -70,4 +70,13 @@ export const HUB_EVENTS = {
   postMessage: {
     frameNav: 'devframe:frame-nav',
   },
+  /**
+   * Same-origin `BroadcastChannel` names, `devframe:` prefix. Used on a
+   * `static` backend, where no live server can relay a client's request to
+   * its sibling browsing contexts (e.g. a panel iframe steering the host
+   * page's dock selection).
+   */
+  broadcastChannel: {
+    docksActivate: 'devframe:docks:activate',
+  },
 } as const

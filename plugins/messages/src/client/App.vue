@@ -7,7 +7,7 @@ import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/clien
 import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import FormSearchField from '@antfu/design/components/Form/FormSearchField.vue'
 import LayoutToolbar from '@antfu/design/components/Layout/LayoutToolbar.vue'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, toRaw } from 'vue'
 import {
   button,
   connectionBody,
@@ -83,6 +83,17 @@ onMounted(() => {
 async function onActivate(action: DevframeMessageAction): Promise<void> {
   const callOptional = props.rpc.callOptional as (name: string, ...args: unknown[]) => Promise<unknown>
   if (action.kind === 'activate') {
+    // A static backend has no server to relay the activation, so post it on
+    // the hub's same-origin BroadcastChannel (`HUB_EVENTS.broadcastChannel
+    // .docksActivate`; a local literal since this plugin keeps no runtime hub
+    // dependency) - the host page's client runtime switches the dock locally.
+    if (props.rpc.connectionMeta.backend === 'static' && typeof BroadcastChannel !== 'undefined') {
+      const channel = new BroadcastChannel('devframe:docks:activate')
+      // The raw object: a Vue reactive proxy is not structured-clonable.
+      channel.postMessage(toRaw(action.activate))
+      channel.close()
+      return
+    }
     await callOptional('hub:docks:activate', action.activate)
     return
   }

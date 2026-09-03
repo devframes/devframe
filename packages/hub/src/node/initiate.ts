@@ -8,20 +8,18 @@ import type { Duplex } from 'node:stream'
 import type { ClientScriptEntry } from '../types/docks'
 import type { CreateHubContextOptions, DevframeHubContext } from './context'
 import type { InstallDevframeOptions } from './install-devframe'
-import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import process from 'node:process'
-import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_DOCK_IMPORTS_FILENAME, DEVFRAME_MCP_ROUTE, DEVFRAME_WS_ROUTE } from 'devframe/constants'
+import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_DOCK_IMPORTS_FILENAME, DEVFRAME_MCP_ROUTE } from 'devframe/constants'
 import { createH3DevframeHost, createInstanceShell, importRuntimeModule, resolveInstanceRegister, resolveMcpConfig } from 'devframe/internal'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
-import { joinURL, withoutLeadingSlash, withTrailingSlash } from 'ufo'
-import { resolveClientModuleSpecifier } from '../client-modules'
+import { joinURL, withoutLeadingSlash } from 'ufo'
 import { DEVFRAMES_HUB_BASE, DOCK_RENDERERS_STATE_KEY, normalizeHubBase } from '../constants'
+import { mountDevframes, renderClientImportsModule, resolveDevframesInput, resolveRendererRegistrations } from './assemble'
 import { createHubContext } from './context'
 import { diagnostics } from './diagnostics'
-import { prepareDevframe } from './install-devframe'
 
 /** A `devframes` entry with per-mount dock customization. */
 export interface HubDevframeEntry {
@@ -32,10 +30,6 @@ export interface HubDevframeEntry {
 
 type Thenable<T> = T | Promise<T>
 type Arrayable<T> = T | readonly T[]
-
-function normalizeDevframeEntry(entry: DevframeDefinition | HubDevframeEntry): HubDevframeEntry {
-  return 'devframe' in entry ? entry : { devframe: entry }
-}
 
 /** Default mount base for a hub instance, re-exported from `../constants` (the client-safe home) for existing importers of this node entry. */
 export { DEVFRAMES_HUB_BASE }
@@ -54,17 +48,6 @@ function assetContentType(key: string): string {
     return 'text/html; charset=utf-8'
   return 'application/octet-stream'
 }
-
-/** Reserved filenames directly under the hub base; a frame id can't shadow them. */
-const RESERVED_HUB_PATHS = [
-  DEVFRAME_CONNECTION_META_FILENAME,
-  DEVFRAME_DOCK_IMPORTS_FILENAME,
-  DEVFRAME_WS_ROUTE,
-  DEVFRAME_MCP_ROUTE,
-  '__index.json',
-  '__renderers',
-  'embedded.js',
-] as const
 
 /**
  * One dock-type → prebuilt renderer-module registration for
@@ -340,78 +323,6 @@ export interface HubInstance {
   close: () => Promise<void>
 }
 
-/** One resolved `devframes` slot: an entry, or nothing when it opted out. */
-type ResolvedDevframeEntry = DevframeDefinition | HubDevframeEntry | null | undefined
-
-/**
- * Flatten the `devframes` input: await every thenable, call every factory,
- * spread the arrays, and drop the empty slots, so a host can build the list
- * conditionally (`isDev && loadInspect()`) without filtering it first.
- */
-function resolveDevframesInput(input: DevframesInput): Promise<HubDevframeEntry[]> {
-  return Promise.all(input.map(async (entry) => {
-    const resolved = await (typeof entry === 'function' ? entry() : entry)
-    const slots: readonly ResolvedDevframeEntry[] = Array.isArray(resolved)
-      ? resolved
-      : [resolved as ResolvedDevframeEntry]
-    return slots
-      .filter((slot): slot is DevframeDefinition | HubDevframeEntry => slot != null)
-      .map(normalizeDevframeEntry)
-  }))
-    .then(arrays => arrays.flat())
-}
-
-/**
- * Validate the renderer-module registrations fail-fast: route-safe types
- * (each becomes the `<base>__renderers/<type>.mjs` URL segment), one module
- * per type, and an existing bundle file (renderer packages are prebuilt).
- */
-function resolveRendererRegistrations(
-  registrations: readonly DockRendererRegistration[],
-): DockRendererRegistration[] {
-  const seen = new Set<string>()
-  return registrations.map((registration) => {
-    if (!/^[\w.-]+$/.test(registration.type))
-      throw diagnostics.DF8110({ type: registration.type })
-    if (seen.has(registration.type))
-      throw diagnostics.DF8108({ type: registration.type })
-    seen.add(registration.type)
-    const file = resolve(registration.file)
-    if (!existsSync(file))
-      throw diagnostics.DF8109({ type: registration.type, file })
-    return { ...registration, file }
-  })
-}
-
-/**
- * Render the dock client-script import map as an ES module: one dynamic
- * import thunk per dock that carries a client script (`clientScript` on
- * iframe docks, `action`, `renderer`). External viewers import this module
- * from `<base>__client-imports.js` to load per-dock client code into the
- * host page; `importFrom` values are URL paths the host serves, or bare npm
- * specifiers resolved through the host's `clientModuleResolution` template.
- */
-function renderClientImportsModule(ctx: DevframeHubContext): string {
-  const template = ctx.staticConfig.dock?.clientModuleResolution
-  const entries: string[] = []
-  for (const [id, view] of ctx.docks.views) {
-    const scripts: ClientScriptEntry[] = []
-    const anyView = view as { clientScript?: ClientScriptEntry, action?: ClientScriptEntry, renderer?: ClientScriptEntry }
-    if (anyView.clientScript)
-      scripts.push(anyView.clientScript)
-    if (anyView.action)
-      scripts.push(anyView.action)
-    if (anyView.renderer)
-      scripts.push(anyView.renderer)
-    if (scripts.length === 0)
-      continue
-    const thunks = scripts.map(script =>
-      `() => import(${JSON.stringify(resolveClientModuleSpecifier(script.importFrom, { template }))})`)
-    entries.push(`  ${JSON.stringify(id)}: [${thunks.join(', ')}],`)
-  }
-  return `// Generated by @devframes/hub: dock client-script import map.\nexport const clientImports = {\n${entries.join('\n')}\n}\nexport default clientImports\n`
-}
-
 /**
  * Resolve the shared hub context: reuse a caller-supplied one, or build an
  * h3-backed context that serves the hub's connection meta under every frame.
@@ -456,42 +367,6 @@ async function resolveHubContext(
     host,
     ...(options.rpcDeclarations ? { builtinRpcDeclarations: options.rpcDeclarations } : {}),
   })
-}
-
-/**
- * Pass 1: mount each devframe under `<base><id>/` (SPA, meta, iframe dock)
- * and queue its declared services, guarding the id against reserved hub
- * filenames and route-pattern characters. Returns the deferred setup thunks.
- */
-async function mountDevframes(
-  ctx: DevframeHubContext,
-  devframes: HubDevframeEntry[],
-  base: string,
-  frames: { id: string, base: string, title: string }[],
-  hubMcpEnabled: boolean,
-): Promise<(() => Promise<void>)[]> {
-  const setups: (() => Promise<void>)[] = []
-  for (const { devframe: def, dock } of devframes) {
-    if ((RESERVED_HUB_PATHS as readonly string[]).includes(def.id))
-      throw diagnostics.DF8000({ id: def.id })
-    // The id becomes a URL segment (`<base><id>/`) routed by h3, where `:` and
-    // `*` are route-pattern markers, and separators would escape the
-    // segment entirely.
-    if (!/^[\w.-]+$/.test(def.id))
-      throw diagnostics.DF8004({ id: def.id })
-    // A hub exposes one aggregate MCP route over every mounted devframe, so a
-    // devframe's own `mcp` request is only meaningful when the hub's own MCP is
-    // enabled. Warn when it isn't, rather than silently dropping the devframe's
-    // intended agent surface.
-    if (!hubMcpEnabled && def.cli?.mcp)
-      diagnostics.DF8005({ id: def.id })
-    const frameBase = withTrailingSlash(joinURL(base, def.id))
-    const run = await prepareDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
-    if (run)
-      setups.push(run)
-    frames.push({ id: def.id, base: frameBase, title: def.name })
-  }
-  return setups
 }
 
 /**

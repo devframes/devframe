@@ -83,6 +83,15 @@ export default defineConfig({
       stderr: 'pipe',
     },
     {
+      command: `pnpm exec vite build && node ${JSON.stringify(serveStatic)} dist 9885`,
+      cwd: 'examples/a11y-messages-playground',
+      url: 'http://127.0.0.1:9885/',
+      timeout: 120_000,
+      reuseExistingServer: !process.env.CI,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    },
+    {
       command: 'pnpm exec next dev src/client -p 9878',
       cwd: 'examples/hub-next',
       env: { PORT: '9878', DEVFRAME_INSTANCES_DIR: nextHubRegistry },

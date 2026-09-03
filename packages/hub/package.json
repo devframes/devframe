@@ -22,6 +22,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.mjs",
+    "./build": "./dist/node/build.mjs",
     "./client": "./dist/client/index.mjs",
     "./constants": "./dist/constants.mjs",
     "./initiate": "./dist/node/initiate.mjs",

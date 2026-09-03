@@ -21,6 +21,22 @@ The `dev` script builds the workspace first (the a11y page-script bundle and bot
 devframe SPAs must exist), then starts Vite bound to `0.0.0.0`. Open the printed
 URL.
 
+## Production build
+
+```sh
+pnpm --filter a11y-messages-playground build    # vite build + buildHub -> dist/
+pnpm --filter a11y-messages-playground preview  # serve dist/ statically
+```
+
+`vite build` bakes the whole hub into `dist/__hub/` via `buildHub()` from
+`@devframes/hub/build`: both devframe SPAs, the a11y page-script bundle, a
+`backend: 'static'` connection meta, and the RPC dump (shared-state snapshots,
+the a11y config, the baked messages feed). Served from any static file server,
+the production page boots the client runtime against the static backend - the
+a11y inspector scans the built app over the in-page channel exactly as in dev,
+and the baked message's **Open a11y inspector** action still switches docks
+(riding a same-origin `BroadcastChannel` instead of the RPC relay).
+
 ## What you'll see
 
 The window is split in two:

@@ -1,10 +1,11 @@
 import type { HubInstance } from '@devframes/hub/initiate'
-import type { DevframeDefinition } from 'devframe'
+import type { DevframeDefinition, DevframeStorageScope } from 'devframe'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { Server as NodeHttpServer } from 'node:http'
 import { homedir } from 'node:os'
+import { buildHub } from '@devframes/hub/build'
 import { initHub } from '@devframes/hub/initiate'
-import { join } from 'pathe'
+import { join, resolve } from 'pathe'
 
 export interface A11yMessagesPlaygroundOptions {
   /** Mount base the hub answers under. Default: `/__hub/`. */
@@ -28,9 +29,16 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
   let viteConfig: ResolvedConfig | undefined
   let hub: HubInstance | undefined
 
+  const storageDirs = (cwd: string) => (scope: DevframeStorageScope): string => {
+    if (scope === 'workspace')
+      return join(cwd, '.devframe')
+    if (scope === 'project')
+      return join(cwd, 'node_modules/.a11y-messages-playground')
+    return join(homedir(), '.a11y-messages-playground')
+  }
+
   return {
     name: 'a11y-messages-playground',
-    apply: 'serve',
 
     configResolved(config) {
       viteConfig = config
@@ -55,13 +63,7 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
         auth: false,
         ...(options.port == null && httpServer ? { server: httpServer } : {}),
         ...(ws ? { ws } : {}),
-        getStorageDir(scope) {
-          if (scope === 'workspace')
-            return join(cwd, '.devframe')
-          if (scope === 'project')
-            return join(cwd, 'node_modules/.a11y-messages-playground')
-          return join(homedir(), '.a11y-messages-playground')
-        },
+        getStorageDir: storageDirs(cwd),
         devframes: options.devframes ?? [],
         /**
          * List the playground alongside standalone devframes in discovery
@@ -84,6 +86,38 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
     async closeBundle() {
       await hub?.close().catch(() => {})
       hub = undefined
+
+      // Production build: bake the whole hub statically into the app's dist
+      // (`<outDir><base>`), so the built page works from any static file
+      // server - the a11y page script still loads, its in-page channel still
+      // scans, and the panels boot from the baked RPC dump.
+      if (viteConfig?.command !== 'build')
+        return
+      const cwd = viteConfig.root
+      await buildHub({
+        base,
+        cwd,
+        outDir: join(resolve(cwd, viteConfig.build.outDir), base.slice(1)),
+        getStorageDir: storageDirs(cwd),
+        devframes: options.devframes ?? [],
+        async configure(ctx) {
+          // Bake one demo entry into the static feed snapshot; its activate
+          // action exercises the message → dock navigation, which rides a
+          // same-origin BroadcastChannel on the static backend.
+          await ctx.messages.add({
+            message: 'Static hub build',
+            description: 'This feed is a build-time snapshot; live entries need the dev server.',
+            level: 'info',
+            category: 'hub',
+            actions: [{
+              id: 'open-a11y',
+              label: 'Open a11y inspector',
+              kind: 'activate',
+              activate: { dockId: 'devframes_plugin_a11y' },
+            }],
+          })
+        },
+      })
     },
   }
 }

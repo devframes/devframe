@@ -5,6 +5,7 @@ export default defineConfig({
     'index': 'src/index.ts',
     'constants': 'src/constants.ts',
     'client/index': 'src/client/index.ts',
+    'node/build': 'src/node/build.ts',
     'node/index': 'src/node/index.ts',
     'node/initiate': 'src/node/initiate.ts',
     'types/index': 'src/types/index.ts',

@@ -26,7 +26,9 @@ const builtinDevframes = [
   createDataInspectorDevframe({ id: 'devframes_plugin_data-inspector' }),
   createA11yDevframe(),
   createMessagesDevframe(),
-  createOgDevframe(),
+  // `defaultUrl` doubles as the snapshot the static build bakes for the OG
+  // panel (its dump fetches the page at build time).
+  createOgDevframe({ defaultUrl: 'https://vite.dev' }),
   createAssetsDevframe({ watch: false }),
 ]
 
@@ -69,6 +71,13 @@ export default defineConfig({
   plugins: [
     viteDevframeHub({
       quiet: true,
+      /**
+       * Bake the hub into `vite build` output too (`dist/__devframes/`), so
+       * the production bundle ships the same docks against a `static`
+       * backend: baked reads (each panel's snapshot RPCs), no live server.
+       * Preview with `pnpm build && pnpm preview`.
+       */
+      build: true,
       devframes: builtinDevframes,
       /**
        * Rebrand the reference UI to Vite's own purple in one field, no CSS:

@@ -8,4 +8,5 @@ export { dumpFunctions }
 export { getDefinitionsWithDumps }
 export { reviveDumpError }
 export { serializeDumpError }
+export { writeStaticRpcDump }
 // #endregion
