@@ -8,7 +8,7 @@ export interface CacHandle {
 }
 export interface CreateCacOptions {
   defaultPort?: number;
-  mcp?: boolean | McpRouteOptions;
+  mcp?: McpSetting;
   configureCli?: (_: CAC) => void;
   onReady?: (_: {
     origin: string;
