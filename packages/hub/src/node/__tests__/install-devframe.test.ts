@@ -28,7 +28,6 @@ function createContext(): DevframeHubContext {
       hostStatic: vi.fn((baseUrl: string, source: unknown) => {
         mountStatic(baseUrl, source as string)
       }),
-      buildStaticDirs: [],
     },
     frames: [],
     /**

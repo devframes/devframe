@@ -94,10 +94,10 @@ async function serveDevframeAssets(
   d: DevframeDefinition,
   id: string,
   base: string,
-): Promise<boolean> {
+): Promise<void> {
   const clientAssets = resolveClientAssets(d)
   if (!clientAssets)
-    return false
+    return
   // Serve the hub's connection meta under the devframe's base so its SPA
   // discovers the RPC/WS endpoint via `connectDevframe()`'s relative
   // `./__connection.json` fetch (rather than inheriting cross-origin from a
@@ -110,7 +110,6 @@ async function serveDevframeAssets(
   // Resolve the plugin's assets against *its* dependency graph: pass the
   // devframe's own `importMetaUrl` as the default `resolveFrom`.
   ctx.views.hostStatic(base, typeof clientAssets === 'string' ? resolve(clientAssets) : clientAssets, d.importMetaUrl)
-  return true
 }
 
 /**
@@ -159,9 +158,9 @@ export async function prepareDevframe(
   if (clientScript)
     dockDefaults.clientScript = clientScript
 
-  const hasClientAssets = await serveDevframeAssets(ctx, d, id, base)
+  await serveDevframeAssets(ctx, d, id, base)
 
-  ;(ctx.frames as HubMountedFrame[]).push({ id, base, title: d.name, hasClientAssets })
+  ;(ctx.frames as HubMountedFrame[]).push({ id, base, title: d.name })
 
   ctx.docks.register({
     id,

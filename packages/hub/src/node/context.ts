@@ -89,8 +89,7 @@ declare module 'devframe/types' {
  * A devframe mounted into a hub context, recorded as it is installed
  * (whether through `initHub({ devframes })`, `buildHub`, or `ctx.install`).
  * Enumerable via {@link DevframeHubContext.frames} so a host that mounted the
- * context itself can still discover what to advertise in `__index.json` and
- * where to write each frame's connection meta.
+ * context itself can still discover what to advertise in `__index.json`.
  */
 export interface HubMountedFrame {
   /** Dock id the devframe mounted under (disambiguated for duplicates). */
@@ -99,12 +98,6 @@ export interface HubMountedFrame {
   base: string
   /** Human title (the definition's `name`). */
   title: string
-  /**
-   * Whether the devframe served client assets at {@link HubMountedFrame.base}.
-   * A frame with its own SPA gets a per-frame `__connection.json` in a static
-   * build (pointing back at the hub's shared meta); one without does not.
-   */
-  hasClientAssets: boolean
 }
 
 /**

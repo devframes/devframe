@@ -110,9 +110,9 @@ export async function bakeHubStatic(ctx: DevframeHubContext, options: BakeHubSta
  */
 async function copyBuildStatics(ctx: DevframeHubContext, resolveOutPath: (urlBase: string) => string): Promise<void> {
   const storageDir = ctx.host.getStorageDir('project')
-  for (const { baseUrl, source, resolveFrom } of ctx.views.buildStaticDirs) {
+  for (const { baseUrl, source } of ctx.views.buildStaticDirs) {
     const target = resolveOutPath(baseUrl)
-    const resolved = resolveStaticAssetsSource(source, storageDir, resolveFrom)
+    const resolved = resolveStaticAssetsSource(source, storageDir)
     await fs.mkdir(dirname(target), { recursive: true })
     if (typeof resolved === 'string')
       await fs.cp(resolved, target, { recursive: true })
@@ -188,10 +188,10 @@ async function writeHubIndex(
 
 /**
  * Write the `backend: 'static'` connection meta at the hub base, and a copy at
- * every frame base that served its own SPA whose `baseUrl` points relative
- * resolution (the RPC dump) back at the hub's own meta, so a frame SPA that
- * fetched its per-frame copy (instead of inheriting the host page's connection)
- * still finds the shared dump.
+ * every frame base that served its own SPA (i.e. registered a static mount at
+ * that base) whose `baseUrl` points relative resolution (the RPC dump) back at
+ * the hub's own meta, so a frame SPA that fetched its per-frame copy (instead
+ * of inheriting the host page's connection) still finds the shared dump.
  */
 async function writeConnectionMetas(
   ctx: DevframeHubContext,
@@ -211,8 +211,11 @@ async function writeConnectionMetas(
   }
   await fs.writeFile(resolve(outDir, DEVFRAME_CONNECTION_META_FILENAME), JSON.stringify(meta, null, 2), 'utf-8')
   const frameMeta: ConnectionMeta = { ...meta, baseUrl: joinURL(base, DEVFRAME_CONNECTION_META_FILENAME) }
+  // A frame served its own SPA exactly when it registered a static mount at its
+  // base; only those need a per-frame meta beside the copied SPA.
+  const servedBases = new Set(ctx.views.buildStaticDirs.map(dir => dir.baseUrl))
   for (const frame of ctx.frames) {
-    if (!frame.hasClientAssets)
+    if (!servedBases.has(frame.base))
       continue
     const target = resolve(resolveOutPath(frame.base), DEVFRAME_CONNECTION_META_FILENAME)
     await fs.mkdir(dirname(target), { recursive: true })
