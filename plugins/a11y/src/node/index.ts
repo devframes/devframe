@@ -1,16 +1,135 @@
-import type { DevframeNodeContext } from 'devframe'
-import type { A11yRuntimeConfig } from '../rpc/functions/get-config.ts'
-import { buildServerFunctions, serverFunctions } from '../rpc/index.ts'
+import type { DevframeDefinition, RemoteAssets } from 'devframe'
+import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
+import { defineDevframe } from 'devframe'
+import pkg from '../../package.json' with { type: 'json' }
+import { setupA11y } from './setup.ts'
 
-/**
- * Register the a11y inspector's RPC functions on a devframe node context.
- * Called from the definition's `setup(ctx)` and reusable by host adapters
- * that wire their own context. Author options (auto-scan, logging, axe tags,
- * default-highlight) are surfaced through the `get-config` function.
- */
-export function setupA11y(ctx: DevframeNodeContext, options: A11yRuntimeConfig = {}): void {
-  for (const fn of buildServerFunctions(options))
-    ctx.rpc.register(fn)
+/** Default devframe id, driving the standalone CLI command and the hosted mount path `/__<id>/`. */
+const DEFAULT_ID = 'devframes_plugin_a11y'
+const BASE_PATH = '/__devframes_plugin_a11y/'
+
+// The Solid panel SPA ships in the lockstep `@devframes/plugin-a11y--assets`
+// package, served on demand through devframe's remote-assets back-proxy. The
+// definition's `importMetaUrl` (below) supplies the default `resolveFrom`, so a
+// locally installed copy (a workspace link here) is served with zero network.
+// The client-script bundle (`dist/client-script`, below) stays here.
+const distDir: RemoteAssets = {
+  package: `${pkg.name}--assets`,
+  version: pkg.version,
 }
 
-export { serverFunctions }
+/**
+ * Absolute path to the built **client script** module (`dist/client-script/index.mjs`),
+ * the dock client script the client runtime imports into the host page to scan
+ * it (its default export boots the script; importing it does too).
+ *
+ * The definition already declares this as its dock `clientScript`, so a hub
+ * serves it with no host wiring. Exported for hosts that mount the module
+ * themselves (e.g. via `/@fs/` under Vite). Requires the built bundle
+ * (`pnpm -C plugins/a11y build`).
+ *
+ * Resolved through the package's own `./client-script` export, since a
+ * bundler may hoist this module into a shared chunk whose on-disk depth
+ * differs from the entry's, breaking an `import.meta.url`-relative path.
+ * The relative fallback covers an unbuilt bundle (resolution then fails),
+ * where downstream `existsSync` checks degrade gracefully.
+ */
+export const a11yClientScriptBundlePath: string = resolveClientScriptBundle()
+
+function resolveClientScriptBundle(): string {
+  try {
+    return createRequire(import.meta.url).resolve(`${pkg.name}/client-script`)
+  }
+  catch {
+    return fileURLToPath(new URL('../../dist/client-script/index.mjs', import.meta.url))
+  }
+}
+
+/** @deprecated Renamed; use {@link a11yClientScriptBundlePath}. */
+export const a11yPageScriptBundlePath: string = a11yClientScriptBundlePath
+
+/** @deprecated Renamed; use {@link a11yClientScriptBundlePath}. */
+export const a11yAgentBundlePath: string = a11yClientScriptBundlePath
+
+export interface A11yDevframeOptions {
+  /** Override the devframe id (and the default CLI command / mount path). */
+  id?: string
+  /** Override the display name shown in a host dock. */
+  name?: string
+  /** Override the dock icon. */
+  icon?: string
+  /**
+   * Override the mount path. Defaults to `/__devframes_plugin_a11y/` so the
+   * panel iframe shares an origin with the host page it scans.
+   */
+  basePath?: string
+  /** Preferred standalone CLI port. */
+  port?: number
+  /**
+   * Rescan on debounced user interaction (mouse/keyboard/touch), on top of the
+   * DOM MutationObserver. Default `true`.
+   */
+  autoScan?: boolean
+  /** Log newly-appeared violations to the browser console. Default `true`. */
+  logIssues?: boolean
+  /**
+   * Auto-pin all of a route's violations the first time it's scanned.
+   * Default `false`.
+   */
+  defaultHighlight?: boolean
+  /** axe-core configuration. */
+  axe?: {
+    /** Rule tags to run (defaults to the broadened WCAG 2.0–2.2 + best-practice set). */
+    tags?: string[]
+    /** Extra axe `run` options merged over the defaults. */
+    runOptions?: Record<string, unknown>
+  }
+}
+
+/**
+ * Build a {@link DevframeDefinition} for the a11y inspector. The same
+ * definition runs standalone (`/cli`, `/build`) and mounts into a host
+ * (`/vite`, hub). The panel talks to the page script over the in-page channel
+ * (`devframe/in-page-channel`), so the scan/highlight loop works identically in dev
+ * (live WebSocket RPC) and in a baked static build.
+ *
+ * @experimental This plugin is experimental and may change without a major
+ * version bump until it stabilizes.
+ */
+export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeDefinition {
+  const id = options.id ?? DEFAULT_ID
+  return defineDevframe({
+    id,
+    name: options.name ?? 'A11y Inspector',
+    version: pkg.version,
+    packageName: pkg.name,
+    importMetaUrl: import.meta.url,
+    homepage: pkg.homepage,
+    description: pkg.description,
+    icon: options.icon ?? 'ph:person-simple-circle-duotone',
+    basePath: options.basePath ?? BASE_PATH,
+    /** Declare the page script by path; the hub serves it with no host wiring. */
+    dock: {
+      category: '~builtin',
+      clientScript: { importFrom: a11yClientScriptBundlePath },
+    },
+    cli: {
+      command: id,
+      port: options.port ?? 9899,
+      distDir,
+    },
+    setup(ctx) {
+      setupA11y(ctx, {
+        dockId: id,
+        autoScan: options.autoScan,
+        logIssues: options.logIssues,
+        defaultHighlight: options.defaultHighlight,
+        axe: options.axe,
+      })
+    },
+  })
+}
+
+export default createA11yDevframe
+export type { Impact, ScanReport, Violation, ViolationNode } from '../shared/protocol.ts'
