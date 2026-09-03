@@ -38,6 +38,10 @@ export const diagnostics = defineDiagnostics({
       why: (p: { urlBase: string, base: string }) => `A static hub build can only write mounts under its own base: "${p.urlBase}" escapes "${p.base}".`,
       fix: 'buildHub maps each mount base to a directory under its `outDir`, so every mount must live under the hub base. Drop the `basePath` override (or the `ctx.install` base) that points outside it, or move the hub `base` up so it contains the mount.',
     },
+    DF8007: {
+      why: (p: { id: string, name: string }) => `Devframe "${p.name}" (${p.id}) declares \`capabilities.build: false\`, so the static hub build skips it.`,
+      fix: 'This is the declared behavior for a tool whose value is inherently live (a terminal, a process proxy): its dock, SPA, and RPCs stay out of the static output. Drop `capabilities.build: false` from the definition if the tool does have a meaningful baked form.',
+    },
     DF8100: {
       why: (p: { id: string }) => `Dock with id "${p.id}" is already registered`,
       fix: 'Use the `force` parameter to overwrite an existing registration.',

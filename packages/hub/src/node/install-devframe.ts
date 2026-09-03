@@ -109,11 +109,25 @@ async function serveDevframeAssets(
   ctx.views.hostStatic(base, typeof clientAssets === 'string' ? resolve(clientAssets) : clientAssets, d.importMetaUrl)
 }
 
+/**
+ * Whether a devframe stays out of a static hub build: `capabilities.build:
+ * false` declares its value inherently live (a terminal, a process proxy),
+ * so `buildHub` never mounts it, registers its dock, or bakes its RPCs.
+ */
+export function skippedInStaticBuild(ctx: DevframeHubContext, d: DevframeDefinition): boolean {
+  return ctx.mode === 'build' && d.capabilities?.build === false
+}
+
 export async function prepareDevframe(
   ctx: DevframeHubContext,
   d: DevframeDefinition,
   options: InstallDevframeOptions = {},
 ): Promise<(() => Promise<void>) | null> {
+  if (skippedInStaticBuild(ctx, d)) {
+    diagnostics.DF8007({ id: d.id, name: d.name }, { method: 'log' })
+    return null
+  }
+
   const strategy = d.duplicationStrategy ?? 'warn'
   const isDuplicate = ctx.docks.views.has(d.id)
 

@@ -60,6 +60,12 @@ export function createTerminalsDevframe(options: TerminalsOptions = {}): Devfram
     description: pkg.description,
     icon: 'ph:terminal-window-duotone',
     /**
+     * Terminals are inherently live (PTY sessions over the streaming
+     * channel), so a static build would only produce a dead shell of the
+     * tool: `createBuild` refuses and a hub static build skips this dock.
+     */
+    capabilities: { build: false },
+    /**
      * Leave undefined so `resolveBasePath` picks `/` standalone and
      * `/__<id>/` when hosted. Authors override via `options.basePath`.
      */

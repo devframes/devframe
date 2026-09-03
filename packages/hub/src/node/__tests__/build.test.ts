@@ -82,6 +82,35 @@ describe('buildHub', () => {
     expect(readFileSync(join(outDir, '__client-imports.js'), 'utf-8')).toContain('/__hub/alpha/__page-script/inject.js')
   })
 
+  it('skips a devframe declaring capabilities.build: false', async () => {
+    const outDir = join(mkdtempSync(join(tmpdir(), 'hub-build-out-')), 'hub')
+    const live: DevframeDefinition = {
+      ...makeFrame('live', { distDir: makeDist('<h1>live</h1>') }),
+      capabilities: { build: false },
+    }
+
+    await buildHub({
+      outDir,
+      base: '/__hub/',
+      cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
+      devframes: [makeFrame('alpha', { distDir: makeDist('<h1>alpha</h1>') }), live],
+    })
+
+    // Nothing of the skipped devframe lands in the output: no SPA, no frame
+    // entry, no RPCs in the dump, no dock in the baked shared state.
+    expect(existsSync(join(outDir, 'live'))).toBe(false)
+    const index = JSON.parse(readFileSync(join(outDir, '__index.json'), 'utf-8'))
+    expect(index.frames.map((frame: { id: string }) => frame.id)).toEqual(['alpha'])
+    const manifest = JSON.parse(readFileSync(join(outDir, '__rpc-dump/index.json'), 'utf-8'))
+    expect(manifest['live:probe']).toBeUndefined()
+    const stateEntry = manifest['devframe:rpc:server-state:get']
+    const records = (Object.values(stateEntry.records) as string[])
+      .map(path => readFileSync(join(outDir, path), 'utf-8'))
+    const docksRecord = records.find(text => text.includes(HUB_EVENTS.sharedState.docks))
+    expect(docksRecord).toContain('alpha')
+    expect(docksRecord).not.toContain('Frame live')
+  })
+
   it('rejects a mount base outside the hub base', async () => {
     const outDir = join(mkdtempSync(join(tmpdir(), 'hub-build-out-')), 'hub')
     await expect(buildHub({

@@ -8,7 +8,7 @@ import { resolve } from 'pathe'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { resolveClientModuleSpecifier } from '../client-modules'
 import { diagnostics } from './diagnostics'
-import { prepareDevframe } from './install-devframe'
+import { prepareDevframe, skippedInStaticBuild } from './install-devframe'
 
 /** Reserved filenames directly under the hub base; a frame id can't shadow them. */
 const RESERVED_HUB_PATHS = [
@@ -128,7 +128,10 @@ export async function mountDevframes(
     const run = await prepareDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
     if (run)
       setups.push(run)
-    frames.push({ id: def.id, base: frameBase, title: def.name })
+    // A devframe skipped by the static build serves nothing, so it never
+    // joins the `__index.json` frame list either.
+    if (!skippedInStaticBuild(ctx, def))
+      frames.push({ id: def.id, base: frameBase, title: def.name })
   }
   return setups
 }

@@ -26,4 +26,4 @@ pnpm --filter hub-vite-minimal build    # vite build + the baked hub -> dist/
 pnpm --filter hub-vite-minimal preview  # serve dist/ statically
 ```
 
-`build: true` on `viteDevframeHub` bakes the hub into `dist/__devframes/` and injects the `embedded.js` tag into the built HTML, so the production bundle ships the same docks against a `static` backend: the floating dock and standalone viewer boot from the baked RPC dump (each panel's snapshot reads, e.g. the Open Graph report of `defaultUrl`), while live-server tools (terminals, code-server) render their panels without a backing process.
+`build: true` on `viteDevframeHub` bakes the hub into `dist/__devframes/` and injects the `embedded.js` tag into the built HTML, so the production bundle ships the docks against a `static` backend: the floating dock and standalone viewer boot from the baked RPC dump (each panel's snapshot reads, e.g. the Open Graph report of `defaultUrl`). Inherently-live tools (terminals, code-server, assets) declare `capabilities.build: false` and stay out of the static output entirely.

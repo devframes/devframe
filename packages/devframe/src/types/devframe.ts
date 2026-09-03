@@ -389,10 +389,12 @@ export interface DevframeDefinition {
    * act on a `false` before doing any work:
    *
    * - `build: false`: `createCac` skips registering the `build` subcommand,
-   *   and `createBuild` refuses (throws `DF0042`) unless `{ force: true }`.
-   *   Useful for a devframe whose value is inherently live (e.g. it manages
-   *   real files on disk), so a static export would only ever produce a
-   *   broken, write-less shell of the tool.
+   *   `createBuild` refuses (throws `DF0042`) unless `{ force: true }`, and
+   *   a hub static build (`buildHub`) skips the devframe entirely - no dock,
+   *   no SPA copy, no RPCs in the dump (`DF8007` logs the skip). Useful for
+   *   a devframe whose value is inherently live (e.g. it manages real files
+   *   on disk), so a static export would only ever produce a broken,
+   *   write-less shell of the tool.
    * - `dev: false`: `createDevServer` refuses (throws `DF0058`) unless
    *   `{ force: true }`. Useful for a devframe that only makes sense as a
    *   static export (e.g. a report generator with nothing to serve live).
