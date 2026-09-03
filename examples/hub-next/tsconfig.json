@@ -12,14 +12,6 @@
     "isolatedDeclarations": false,
     "plugins": [{ "name": "next" }]
   },
-  "include": [
-    "src",
-    "tests",
-    "vitest.config.ts"
-  ],
-  "exclude": [
-    "dist",
-    ".next",
-    "out"
-  ]
+  "include": ["src"],
+  "exclude": ["dist", ".next", "out"]
 }

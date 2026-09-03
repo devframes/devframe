@@ -1,0 +1,33 @@
+{
+  "name": "hub-sveltekit",
+  "type": "module",
+  "version": "0.9.9",
+  "private": true,
+  "description": "Minimal SvelteKit host that mounts the devframe hub on a catch-all endpoint.",
+  "scripts": {
+    "dev": "vite dev",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-assets": "workspace:*",
+    "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-data-inspector": "workspace:*",
+    "@devframes/plugin-git": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "@devframes/plugin-og": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
+    "devframe": "workspace:*"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-node": "catalog:build",
+    "@sveltejs/kit": "catalog:build",
+    "@sveltejs/vite-plugin-svelte": "catalog:frontend",
+    "@types/node": "catalog:types",
+    "svelte": "catalog:frontend",
+    "vite": "catalog:build"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "hub-rsbuild",
+  "type": "module",
+  "version": "0.9.9",
+  "private": true,
+  "description": "Minimal Rsbuild host for the devframe hub.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-rsbuild",
+  "scripts": {
+    "dev": "rsbuild dev",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
+    "@devframes/json-render": "workspace:*",
+    "@devframes/json-render-ui": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-assets": "workspace:*",
+    "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-data-inspector": "workspace:*",
+    "@devframes/plugin-git": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "@devframes/plugin-og": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
+    "devframe": "workspace:*"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "catalog:build",
+    "@types/node": "catalog:types"
+  }
+}

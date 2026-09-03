@@ -59,7 +59,7 @@
       // to the package, so it mis-reports the (genuinely-listed) dep as unlisted.
       "ignoreDependencies": ["ai", "@ai-sdk/vue", "@comark/nuxt.*", "@nuxt/ui.*", "@shikijs/magic-move"]
     },
-    "examples/hub-next": {
+    "examples/custom-hub-next": {
       // The React client build's root sits at `src/client` (`next dev
       // src/client`), not the workspace root, so knip's default PostCSS
       // config glob (workspace-root `postcss.config.*`) misses it.
@@ -81,7 +81,7 @@
         "@devframes/plugin-terminals"
       ]
     },
-    "examples/hub-next-minimal": {
+    "examples/hub-next": {
       // `BUILTIN_PLUGIN_PACKAGES` (`src/client/hub.ts`) lists these as string
       // literals loaded through a runtime `import()` carrying
       // `webpackIgnore`/`turbopackIgnore`, deliberately invisible to bundlers
@@ -98,7 +98,7 @@
         "@devframes/plugin-terminals"
       ]
     },
-    "examples/hub-vite": {
+    "examples/custom-hub-vite": {
       // `demo-dock-client` is consumed only as a runtime string: the demo
       // dock's `action.importFrom` bare specifier, resolved by Vite through
       // the hub's `clientModuleResolution` template (`/@id/{specifier}`),
@@ -122,7 +122,7 @@
     // The Deno entry runs via `deno run src/server.ts`, a command string knip
     // doesn't parse (unlike `tsx`/`bun`), so name the entry explicitly; it
     // pulls in `src/hub.ts` and every plugin dependency from there.
-    "examples/hub-deno-minimal": {
+    "examples/hub-deno": {
       "entry": ["src/server.ts"]
     },
     "packages/devframe": {

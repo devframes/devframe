@@ -1,12 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "noEmit": true,
-    "esModuleInterop": true,
-    "isolatedDeclarations": false
+    "lib": ["esnext", "dom"],
+    "types": ["node"]
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["vite.config.ts"],
+  "exclude": ["dist", "node_modules"]
 }

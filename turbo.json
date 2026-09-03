@@ -102,7 +102,7 @@
       "dependsOn": ["devframe#build", "@devframes/vite#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
-    "hub-vite#build": {
+    "custom-hub-vite#build": {
       "outputLogs": "new-only",
       "dependsOn": [
         "@devframes/hub#build",
@@ -120,7 +120,7 @@
       ],
       "outputs": ["dist/**"]
     },
-    "hub-next#build": {
+    "custom-hub-next#build": {
       "outputLogs": "new-only",
       "dependsOn": [
         "@devframes/hub#build",

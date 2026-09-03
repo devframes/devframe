@@ -360,7 +360,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     readonly why: (p: {
       runtime: string;
     }) => string;
-    readonly fix: "On Bun/Deno, serve the advertised `__ws` route from `Bun.serve` / `Deno.serve` with `attachBunWsTransport` / `attachDenoWsTransport` (see the hub-deno-minimal example), or connect over the SSE endpoint instead.";
+    readonly fix: "On Bun/Deno, serve the advertised `__ws` route from `Bun.serve` / `Deno.serve` with `attachBunWsTransport` / `attachDenoWsTransport` (see the hub-deno example), or connect over the SSE endpoint instead.";
   };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";

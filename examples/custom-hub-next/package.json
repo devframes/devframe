@@ -1,0 +1,49 @@
+{
+  "name": "custom-hub-next",
+  "type": "module",
+  "version": "0.9.9",
+  "private": true,
+  "description": "Next.js reference hub that exercises every devframe hub subsystem end to end.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/custom-hub-next",
+  "scripts": {
+    "dev": "pnpm -C ../.. run build && next dev src/client",
+    "build": "next build src/client",
+    "test": "vitest run --config vitest.config.ts"
+  },
+  "dependencies": {
+    "@antfu/design": "catalog:frontend",
+    "@devframes/hub": "workspace:*",
+    "@devframes/json-render": "workspace:*",
+    "@devframes/json-render-ui": "workspace:*",
+    "@devframes/next": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-assets": "workspace:*",
+    "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-data-inspector": "workspace:*",
+    "@devframes/plugin-git": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "@devframes/plugin-og": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
+    "@json-render/react": "catalog:frontend",
+    "colorjs.io": "catalog:frontend",
+    "demo-dock-client": "workspace:*",
+    "devframe": "workspace:*",
+    "dompurify": "catalog:frontend",
+    "json-render": "workspace:*",
+    "next": "catalog:frontend",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@iconify-json/ph": "catalog:frontend",
+    "@types/react": "catalog:types",
+    "@types/react-dom": "catalog:types",
+    "@unocss/postcss": "catalog:frontend",
+    "get-port-please": "catalog:deps",
+    "pathe": "catalog:deps",
+    "unocss": "catalog:frontend",
+    "vitest": "catalog:testing",
+    "ws": "catalog:deps"
+  }
+}

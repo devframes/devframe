@@ -93,7 +93,7 @@ export default defineConfig({
     },
     {
       command: 'pnpm exec next dev src/client -p 9878',
-      cwd: 'examples/hub-next',
+      cwd: 'examples/custom-hub-next',
       env: { PORT: '9878', DEVFRAME_INSTANCES_DIR: nextHubRegistry },
       url: 'http://localhost:9878/',
       timeout: 120_000,

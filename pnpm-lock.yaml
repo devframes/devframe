@@ -617,213 +617,7 @@ importers:
         specifier: catalog:build
         version: 8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
 
-  examples/demo-dock-client:
-    dependencies:
-      nanoevents:
-        specifier: catalog:frontend
-        version: 10.0.0
-    devDependencies:
-      '@devframes/hub':
-        specifier: workspace:*
-        version: link:../../packages/hub
-      '@types/node':
-        specifier: catalog:types
-        version: 26.4.0
-      tsdown:
-        specifier: catalog:build
-        version: 0.22.14(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(tsx@4.23.13)(typescript@6.0.3)
-
-  examples/files-inspector:
-    dependencies:
-      '@antfu/design':
-        specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.8.1(@unocss/postcss@66.8.1(postcss@8.5.26))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
-      cac:
-        specifier: catalog:deps
-        version: 7.0.0
-      colorjs.io:
-        specifier: catalog:frontend
-        version: 0.7.1
-      devframe:
-        specifier: workspace:*
-        version: link:../../packages/devframe
-      preact:
-        specifier: catalog:frontend
-        version: 10.29.8
-      tinyglobby:
-        specifier: catalog:deps
-        version: 0.2.17
-    devDependencies:
-      '@preact/preset-vite':
-        specifier: catalog:build
-        version: 2.10.6(@babel/core@7.29.0(supports-color@10.2.2))(preact@10.29.8)(rollup@4.60.3)(supports-color@10.2.2)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
-      get-port-please:
-        specifier: catalog:deps
-        version: 3.2.0
-      h3:
-        specifier: catalog:deps
-        version: 2.0.1-rc.29(crossws@0.4.12(srvx@0.12.7))
-      unocss:
-        specifier: catalog:frontend
-        version: 66.8.1(@unocss/postcss@66.8.1(postcss@8.5.26))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
-      vite:
-        specifier: catalog:build
-        version: 8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
-      vitest:
-        specifier: catalog:testing
-        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
-      ws:
-        specifier: catalog:deps
-        version: 8.21.3
-
-  examples/hub-deno-minimal:
-    dependencies:
-      '@devframes/hub':
-        specifier: workspace:*
-        version: link:../../packages/hub
-      '@devframes/hub-ui':
-        specifier: workspace:*
-        version: link:../../packages/hub-ui
-      '@devframes/plugin-a11y':
-        specifier: workspace:*
-        version: link:../../plugins/a11y
-      '@devframes/plugin-assets':
-        specifier: workspace:*
-        version: link:../../plugins/assets
-      '@devframes/plugin-code-server':
-        specifier: workspace:*
-        version: link:../../plugins/code-server
-      '@devframes/plugin-data-inspector':
-        specifier: workspace:*
-        version: link:../../plugins/data-inspector
-      '@devframes/plugin-git':
-        specifier: workspace:*
-        version: link:../../plugins/git
-      '@devframes/plugin-inspect':
-        specifier: workspace:*
-        version: link:../../plugins/inspect
-      '@devframes/plugin-messages':
-        specifier: workspace:*
-        version: link:../../plugins/messages
-      '@devframes/plugin-og':
-        specifier: workspace:*
-        version: link:../../plugins/og
-      '@devframes/plugin-terminals':
-        specifier: workspace:*
-        version: link:../../plugins/terminals
-      devframe:
-        specifier: workspace:*
-        version: link:../../packages/devframe
-    devDependencies:
-      '@types/node':
-        specifier: catalog:types
-        version: 26.4.0
-
-  examples/hub-fastify-minimal:
-    dependencies:
-      '@devframes/hub':
-        specifier: workspace:*
-        version: link:../../packages/hub
-      '@devframes/hub-ui':
-        specifier: workspace:*
-        version: link:../../packages/hub-ui
-      '@devframes/plugin-a11y':
-        specifier: workspace:*
-        version: link:../../plugins/a11y
-      '@devframes/plugin-assets':
-        specifier: workspace:*
-        version: link:../../plugins/assets
-      '@devframes/plugin-code-server':
-        specifier: workspace:*
-        version: link:../../plugins/code-server
-      '@devframes/plugin-data-inspector':
-        specifier: workspace:*
-        version: link:../../plugins/data-inspector
-      '@devframes/plugin-git':
-        specifier: workspace:*
-        version: link:../../plugins/git
-      '@devframes/plugin-inspect':
-        specifier: workspace:*
-        version: link:../../plugins/inspect
-      '@devframes/plugin-messages':
-        specifier: workspace:*
-        version: link:../../plugins/messages
-      '@devframes/plugin-og':
-        specifier: workspace:*
-        version: link:../../plugins/og
-      '@devframes/plugin-terminals':
-        specifier: workspace:*
-        version: link:../../plugins/terminals
-      '@fastify/middie':
-        specifier: catalog:deps
-        version: 9.3.3
-      devframe:
-        specifier: workspace:*
-        version: link:../../packages/devframe
-      fastify:
-        specifier: catalog:deps
-        version: 5.12.1
-    devDependencies:
-      '@types/node':
-        specifier: catalog:types
-        version: 26.4.0
-      tsx:
-        specifier: catalog:build
-        version: 4.23.13
-
-  examples/hub-hono-minimal:
-    dependencies:
-      '@devframes/hub':
-        specifier: workspace:*
-        version: link:../../packages/hub
-      '@devframes/hub-ui':
-        specifier: workspace:*
-        version: link:../../packages/hub-ui
-      '@devframes/plugin-a11y':
-        specifier: workspace:*
-        version: link:../../plugins/a11y
-      '@devframes/plugin-assets':
-        specifier: workspace:*
-        version: link:../../plugins/assets
-      '@devframes/plugin-code-server':
-        specifier: workspace:*
-        version: link:../../plugins/code-server
-      '@devframes/plugin-data-inspector':
-        specifier: workspace:*
-        version: link:../../plugins/data-inspector
-      '@devframes/plugin-git':
-        specifier: workspace:*
-        version: link:../../plugins/git
-      '@devframes/plugin-inspect':
-        specifier: workspace:*
-        version: link:../../plugins/inspect
-      '@devframes/plugin-messages':
-        specifier: workspace:*
-        version: link:../../plugins/messages
-      '@devframes/plugin-og':
-        specifier: workspace:*
-        version: link:../../plugins/og
-      '@devframes/plugin-terminals':
-        specifier: workspace:*
-        version: link:../../plugins/terminals
-      '@hono/node-server':
-        specifier: catalog:deps
-        version: 2.1.1(hono@4.13.5)
-      devframe:
-        specifier: workspace:*
-        version: link:../../packages/devframe
-      hono:
-        specifier: catalog:deps
-        version: 4.13.5
-    devDependencies:
-      '@types/node':
-        specifier: catalog:types
-        version: 26.4.0
-      tsx:
-        specifier: catalog:build
-        version: 4.23.13
-
-  examples/hub-next:
+  examples/custom-hub-next:
     dependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -923,227 +717,7 @@ importers:
         specifier: catalog:deps
         version: 8.21.3
 
-  examples/hub-next-minimal:
-    dependencies:
-      '@devframes/hub':
-        specifier: workspace:*
-        version: link:../../packages/hub
-      '@devframes/hub-ui':
-        specifier: workspace:*
-        version: link:../../packages/hub-ui
-      '@devframes/json-render':
-        specifier: workspace:*
-        version: link:../../packages/json-render
-      '@devframes/json-render-ui':
-        specifier: workspace:*
-        version: link:../../packages/json-render-ui
-      '@devframes/next':
-        specifier: workspace:*
-        version: link:../../packages/next
-      '@devframes/plugin-a11y':
-        specifier: workspace:*
-        version: link:../../plugins/a11y
-      '@devframes/plugin-assets':
-        specifier: workspace:*
-        version: link:../../plugins/assets
-      '@devframes/plugin-code-server':
-        specifier: workspace:*
-        version: link:../../plugins/code-server
-      '@devframes/plugin-data-inspector':
-        specifier: workspace:*
-        version: link:../../plugins/data-inspector
-      '@devframes/plugin-git':
-        specifier: workspace:*
-        version: link:../../plugins/git
-      '@devframes/plugin-inspect':
-        specifier: workspace:*
-        version: link:../../plugins/inspect
-      '@devframes/plugin-messages':
-        specifier: workspace:*
-        version: link:../../plugins/messages
-      '@devframes/plugin-og':
-        specifier: workspace:*
-        version: link:../../plugins/og
-      '@devframes/plugin-terminals':
-        specifier: workspace:*
-        version: link:../../plugins/terminals
-      devframe:
-        specifier: workspace:*
-        version: link:../../packages/devframe
-      next:
-        specifier: catalog:frontend
-        version: 16.3.3(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.4.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      react:
-        specifier: catalog:frontend
-        version: 19.2.8
-      react-dom:
-        specifier: catalog:frontend
-        version: 19.2.8(react@19.2.8)
-    devDependencies:
-      '@types/react':
-        specifier: catalog:types
-        version: 19.2.18
-      '@types/react-dom':
-        specifier: catalog:types
-        version: 19.2.5(@types/react@19.2.18)
-
-  examples/hub-nitro-minimal:
-    dependencies:
-      '@devframes/hub':
-        specifier: workspace:*
-        version: link:../../packages/hub
-      '@devframes/hub-ui':
-        specifier: workspace:*
-        version: link:../../packages/hub-ui
-      '@devframes/plugin-a11y':
-        specifier: workspace:*
-        version: link:../../plugins/a11y
-      '@devframes/plugin-assets':
-        specifier: workspace:*
-        version: link:../../plugins/assets
-      '@devframes/plugin-code-server':
-        specifier: workspace:*
-        version: link:../../plugins/code-server
-      '@devframes/plugin-data-inspector':
-        specifier: workspace:*
-        version: link:../../plugins/data-inspector
-      '@devframes/plugin-git':
-        specifier: workspace:*
-        version: link:../../plugins/git
-      '@devframes/plugin-inspect':
-        specifier: workspace:*
-        version: link:../../plugins/inspect
-      '@devframes/plugin-messages':
-        specifier: workspace:*
-        version: link:../../plugins/messages
-      '@devframes/plugin-og':
-        specifier: workspace:*
-        version: link:../../plugins/og
-      '@devframes/plugin-terminals':
-        specifier: workspace:*
-        version: link:../../plugins/terminals
-      devframe:
-        specifier: workspace:*
-        version: link:../../packages/devframe
-      nitro:
-        specifier: catalog:deps
-        version: 3.0.260610-beta(@vercel/functions@3.9.5(ws@8.21.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.3.6)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
-    devDependencies:
-      '@types/node':
-        specifier: catalog:types
-        version: 26.4.0
-
-  examples/hub-rsbuild-minimal:
-    dependencies:
-      '@devframes/hub':
-        specifier: workspace:*
-        version: link:../../packages/hub
-      '@devframes/hub-ui':
-        specifier: workspace:*
-        version: link:../../packages/hub-ui
-      '@devframes/json-render':
-        specifier: workspace:*
-        version: link:../../packages/json-render
-      '@devframes/json-render-ui':
-        specifier: workspace:*
-        version: link:../../packages/json-render-ui
-      '@devframes/plugin-a11y':
-        specifier: workspace:*
-        version: link:../../plugins/a11y
-      '@devframes/plugin-assets':
-        specifier: workspace:*
-        version: link:../../plugins/assets
-      '@devframes/plugin-code-server':
-        specifier: workspace:*
-        version: link:../../plugins/code-server
-      '@devframes/plugin-data-inspector':
-        specifier: workspace:*
-        version: link:../../plugins/data-inspector
-      '@devframes/plugin-git':
-        specifier: workspace:*
-        version: link:../../plugins/git
-      '@devframes/plugin-inspect':
-        specifier: workspace:*
-        version: link:../../plugins/inspect
-      '@devframes/plugin-messages':
-        specifier: workspace:*
-        version: link:../../plugins/messages
-      '@devframes/plugin-og':
-        specifier: workspace:*
-        version: link:../../plugins/og
-      '@devframes/plugin-terminals':
-        specifier: workspace:*
-        version: link:../../plugins/terminals
-      devframe:
-        specifier: workspace:*
-        version: link:../../packages/devframe
-    devDependencies:
-      '@rsbuild/core':
-        specifier: catalog:build
-        version: 2.2.1
-      '@types/node':
-        specifier: catalog:types
-        version: 26.4.0
-
-  examples/hub-sveltekit-minimal:
-    dependencies:
-      '@devframes/hub':
-        specifier: workspace:*
-        version: link:../../packages/hub
-      '@devframes/hub-ui':
-        specifier: workspace:*
-        version: link:../../packages/hub-ui
-      '@devframes/plugin-a11y':
-        specifier: workspace:*
-        version: link:../../plugins/a11y
-      '@devframes/plugin-assets':
-        specifier: workspace:*
-        version: link:../../plugins/assets
-      '@devframes/plugin-code-server':
-        specifier: workspace:*
-        version: link:../../plugins/code-server
-      '@devframes/plugin-data-inspector':
-        specifier: workspace:*
-        version: link:../../plugins/data-inspector
-      '@devframes/plugin-git':
-        specifier: workspace:*
-        version: link:../../plugins/git
-      '@devframes/plugin-inspect':
-        specifier: workspace:*
-        version: link:../../plugins/inspect
-      '@devframes/plugin-messages':
-        specifier: workspace:*
-        version: link:../../plugins/messages
-      '@devframes/plugin-og':
-        specifier: workspace:*
-        version: link:../../plugins/og
-      '@devframes/plugin-terminals':
-        specifier: workspace:*
-        version: link:../../plugins/terminals
-      devframe:
-        specifier: workspace:*
-        version: link:../../packages/devframe
-    devDependencies:
-      '@sveltejs/adapter-node':
-        specifier: catalog:build
-        version: 5.5.7(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0(@typescript-eslint/types@8.69.0))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(svelte@5.57.0(@typescript-eslint/types@8.69.0))(typescript@6.0.3)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))
-      '@sveltejs/kit':
-        specifier: catalog:build
-        version: 2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0(@typescript-eslint/types@8.69.0))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(svelte@5.57.0(@typescript-eslint/types@8.69.0))(typescript@6.0.3)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
-      '@sveltejs/vite-plugin-svelte':
-        specifier: catalog:frontend
-        version: 7.3.0(svelte@5.57.0(@typescript-eslint/types@8.69.0))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
-      '@types/node':
-        specifier: catalog:types
-        version: 26.4.0
-      svelte:
-        specifier: catalog:frontend
-        version: 5.57.0(@typescript-eslint/types@8.69.0)
-      vite:
-        specifier: catalog:build
-        version: 8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
-
-  examples/hub-vite:
+  examples/custom-hub-vite:
     dependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -1213,7 +787,433 @@ importers:
         specifier: catalog:build
         version: 8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
 
-  examples/hub-vite-minimal:
+  examples/demo-dock-client:
+    dependencies:
+      nanoevents:
+        specifier: catalog:frontend
+        version: 10.0.0
+    devDependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@types/node':
+        specifier: catalog:types
+        version: 26.4.0
+      tsdown:
+        specifier: catalog:build
+        version: 0.22.14(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(tsx@4.23.13)(typescript@6.0.3)
+
+  examples/files-inspector:
+    dependencies:
+      '@antfu/design':
+        specifier: catalog:frontend
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.8.1(@unocss/postcss@66.8.1(postcss@8.5.26))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+      cac:
+        specifier: catalog:deps
+        version: 7.0.0
+      colorjs.io:
+        specifier: catalog:frontend
+        version: 0.7.1
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      preact:
+        specifier: catalog:frontend
+        version: 10.29.8
+      tinyglobby:
+        specifier: catalog:deps
+        version: 0.2.17
+    devDependencies:
+      '@preact/preset-vite':
+        specifier: catalog:build
+        version: 2.10.6(@babel/core@7.29.0(supports-color@10.2.2))(preact@10.29.8)(rollup@4.60.3)(supports-color@10.2.2)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+      get-port-please:
+        specifier: catalog:deps
+        version: 3.2.0
+      h3:
+        specifier: catalog:deps
+        version: 2.0.1-rc.29(crossws@0.4.12(srvx@0.12.7))
+      unocss:
+        specifier: catalog:frontend
+        version: 66.8.1(@unocss/postcss@66.8.1(postcss@8.5.26))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+      vite:
+        specifier: catalog:build
+        version: 8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
+      vitest:
+        specifier: catalog:testing
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+      ws:
+        specifier: catalog:deps
+        version: 8.21.3
+
+  examples/hub-deno:
+    dependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@devframes/hub-ui':
+        specifier: workspace:*
+        version: link:../../packages/hub-ui
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
+      '@devframes/plugin-inspect':
+        specifier: workspace:*
+        version: link:../../plugins/inspect
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+    devDependencies:
+      '@types/node':
+        specifier: catalog:types
+        version: 26.4.0
+
+  examples/hub-fastify:
+    dependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@devframes/hub-ui':
+        specifier: workspace:*
+        version: link:../../packages/hub-ui
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
+      '@devframes/plugin-inspect':
+        specifier: workspace:*
+        version: link:../../plugins/inspect
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
+      '@fastify/middie':
+        specifier: catalog:deps
+        version: 9.3.3
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      fastify:
+        specifier: catalog:deps
+        version: 5.12.1
+    devDependencies:
+      '@types/node':
+        specifier: catalog:types
+        version: 26.4.0
+      tsx:
+        specifier: catalog:build
+        version: 4.23.13
+
+  examples/hub-hono:
+    dependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@devframes/hub-ui':
+        specifier: workspace:*
+        version: link:../../packages/hub-ui
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
+      '@devframes/plugin-inspect':
+        specifier: workspace:*
+        version: link:../../plugins/inspect
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
+      '@hono/node-server':
+        specifier: catalog:deps
+        version: 2.1.1(hono@4.13.5)
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      hono:
+        specifier: catalog:deps
+        version: 4.13.5
+    devDependencies:
+      '@types/node':
+        specifier: catalog:types
+        version: 26.4.0
+      tsx:
+        specifier: catalog:build
+        version: 4.23.13
+
+  examples/hub-next:
+    dependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@devframes/hub-ui':
+        specifier: workspace:*
+        version: link:../../packages/hub-ui
+      '@devframes/json-render':
+        specifier: workspace:*
+        version: link:../../packages/json-render
+      '@devframes/json-render-ui':
+        specifier: workspace:*
+        version: link:../../packages/json-render-ui
+      '@devframes/next':
+        specifier: workspace:*
+        version: link:../../packages/next
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
+      '@devframes/plugin-inspect':
+        specifier: workspace:*
+        version: link:../../plugins/inspect
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      next:
+        specifier: catalog:frontend
+        version: 16.3.3(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.4.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      react:
+        specifier: catalog:frontend
+        version: 19.2.8
+      react-dom:
+        specifier: catalog:frontend
+        version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@types/react':
+        specifier: catalog:types
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: catalog:types
+        version: 19.2.5(@types/react@19.2.18)
+
+  examples/hub-nitro:
+    dependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@devframes/hub-ui':
+        specifier: workspace:*
+        version: link:../../packages/hub-ui
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
+      '@devframes/plugin-inspect':
+        specifier: workspace:*
+        version: link:../../plugins/inspect
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+      nitro:
+        specifier: catalog:deps
+        version: 3.0.260610-beta(@vercel/functions@3.9.5(ws@8.21.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.3.6)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+    devDependencies:
+      '@types/node':
+        specifier: catalog:types
+        version: 26.4.0
+
+  examples/hub-rsbuild:
+    dependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@devframes/hub-ui':
+        specifier: workspace:*
+        version: link:../../packages/hub-ui
+      '@devframes/json-render':
+        specifier: workspace:*
+        version: link:../../packages/json-render
+      '@devframes/json-render-ui':
+        specifier: workspace:*
+        version: link:../../packages/json-render-ui
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
+      '@devframes/plugin-inspect':
+        specifier: workspace:*
+        version: link:../../plugins/inspect
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+    devDependencies:
+      '@rsbuild/core':
+        specifier: catalog:build
+        version: 2.2.1
+      '@types/node':
+        specifier: catalog:types
+        version: 26.4.0
+
+  examples/hub-sveltekit:
+    dependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../../packages/hub
+      '@devframes/hub-ui':
+        specifier: workspace:*
+        version: link:../../packages/hub-ui
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../../plugins/a11y
+      '@devframes/plugin-assets':
+        specifier: workspace:*
+        version: link:../../plugins/assets
+      '@devframes/plugin-code-server':
+        specifier: workspace:*
+        version: link:../../plugins/code-server
+      '@devframes/plugin-data-inspector':
+        specifier: workspace:*
+        version: link:../../plugins/data-inspector
+      '@devframes/plugin-git':
+        specifier: workspace:*
+        version: link:../../plugins/git
+      '@devframes/plugin-inspect':
+        specifier: workspace:*
+        version: link:../../plugins/inspect
+      '@devframes/plugin-messages':
+        specifier: workspace:*
+        version: link:../../plugins/messages
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../../plugins/og
+      '@devframes/plugin-terminals':
+        specifier: workspace:*
+        version: link:../../plugins/terminals
+      devframe:
+        specifier: workspace:*
+        version: link:../../packages/devframe
+    devDependencies:
+      '@sveltejs/adapter-node':
+        specifier: catalog:build
+        version: 5.5.7(@sveltejs/kit@2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0(@typescript-eslint/types@8.69.0))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(svelte@5.57.0(@typescript-eslint/types@8.69.0))(typescript@6.0.3)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))
+      '@sveltejs/kit':
+        specifier: catalog:build
+        version: 2.70.3(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0(@typescript-eslint/types@8.69.0))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(svelte@5.57.0(@typescript-eslint/types@8.69.0))(typescript@6.0.3)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+      '@sveltejs/vite-plugin-svelte':
+        specifier: catalog:frontend
+        version: 7.3.0(svelte@5.57.0(@typescript-eslint/types@8.69.0))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+      '@types/node':
+        specifier: catalog:types
+        version: 26.4.0
+      svelte:
+        specifier: catalog:frontend
+        version: 5.57.0(@typescript-eslint/types@8.69.0)
+      vite:
+        specifier: catalog:build
+        version: 8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
+
+  examples/hub-vite:
     dependencies:
       '@devframes/hub':
         specifier: workspace:*
@@ -7675,11 +7675,6 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  baseline-browser-mapping@2.10.43:
-    resolution: {integrity: sha512-AjYpR78kDWAY3Efj+cDTFH9t9SCoL7OoTp1BOb0mQV7S+6CiLwnWM3FyxhJtdPufDFKzmCSFoUncKjWgJEZTCQ==}
-    engines: {node: '>=6.0.0'}
-    hasBin: true
-
   baseline-browser-mapping@2.11.20:
     resolution: {integrity: sha512-H0ulySigv6icDJ1F7SjtdCD6PrhTpdYCmP0CactWy1+ekh0AFd0o1Wn5T8b+hnTmdBx19u9yhL6wvCylXMY7zw==}
     engines: {node: '>=6.0.0'}
@@ -7781,9 +7776,6 @@ packages:
 
   caniuse-api@4.0.0:
     resolution: {integrity: sha512-B0hQ1OLyJuHTQSOWXvwibWqM6DCoqJdvBA6X1S/53bd4XU7LJ1yurIPlrsouol3mw1jh9pGI4ivubSpmJeIqCA==}
-
-  caniuse-lite@1.0.30001806:
-    resolution: {integrity: sha512-72Cuvd95zbSYPKq6Fhg8eDJRlzgWDf7/mtoZv6Qe/DYNCEBdNxoA3+rZAU2ZhGCpZlns3EssFavaZomckT5Uuw==}
 
   caniuse-lite@1.0.30001810:
     resolution: {integrity: sha512-TITQPUkaz+aVk5GL6NhOdwk1aEaNTSDPsGFWrTuhKGtjTF70jL/Oht2W4c6rXUe5fu7Ie19VIahAXHIIiWWNeg==}
@@ -17902,7 +17894,7 @@ snapshots:
   autoprefixer@10.5.4(postcss@8.5.26):
     dependencies:
       browserslist: 4.28.6
-      caniuse-lite: 1.0.30001806
+      caniuse-lite: 1.0.30001810
       fraction.js: 5.3.4
       picocolors: 1.1.1
       postcss: 8.5.26
@@ -17983,8 +17975,6 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  baseline-browser-mapping@2.10.43: {}
-
   baseline-browser-mapping@2.11.20: {}
 
   beautiful-mermaid@1.1.3:
@@ -18030,8 +18020,8 @@ snapshots:
 
   browserslist@4.28.6:
     dependencies:
-      baseline-browser-mapping: 2.10.43
-      caniuse-lite: 1.0.30001806
+      baseline-browser-mapping: 2.11.20
+      caniuse-lite: 1.0.30001810
       electron-to-chromium: 1.5.393
       node-releases: 2.0.51
       update-browserslist-db: 1.2.3(browserslist@4.28.6)
@@ -18109,9 +18099,7 @@ snapshots:
   caniuse-api@4.0.0:
     dependencies:
       browserslist: 4.28.6
-      caniuse-lite: 1.0.30001806
-
-  caniuse-lite@1.0.30001806: {}
+      caniuse-lite: 1.0.30001810
 
   caniuse-lite@1.0.30001810: {}
 

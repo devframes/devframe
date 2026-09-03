@@ -12,7 +12,7 @@ const entries = [
   'packages/hub/dist/node/initiate.mjs',
   'packages/next/dist/hub.mjs',
 ]
-const nextServerChunks = join(root, 'examples/hub-next/src/client/.next/server/chunks')
+const nextServerChunks = join(root, 'examples/custom-hub-next/src/client/.next/server/chunks')
 const temporaryDirectories: string[] = []
 
 afterEach(() => {

@@ -13,7 +13,7 @@ import { seedPlayground } from './seed'
  * Git dashboard, below) so the dock bar has real content to switch between,
  * not just the client-only entries `seed.ts` registers. No `ui` slot, no
  * renderer manifest: this playground is developing hub-ui itself, not
- * exercising the wider hub protocol (`examples/hub-vite` already does that).
+ * exercising the wider hub protocol (`examples/custom-hub-vite` already does that).
  *
  * A hand-rolled slice of `@devframes/vite/hub` rather than that package
  * itself, because pulling it in here would make `@devframes/hub-ui` and

@@ -7,7 +7,7 @@ import { PLAYGROUND_GROUP_ID } from './constants'
  * A dock type no renderer covers; registering it exercises the viewer's
  * fallback view (`No renderer for "playground-unrendered" in the current
  * environment`) instead of leaving the dock bar empty. Mirrors
- * `examples/hub-vite/src/unrendered-dock.ts`.
+ * `examples/custom-hub-vite/src/unrendered-dock.ts`.
  */
 interface PlaygroundUnrenderedDockEntry extends DevframeDockEntryBase {
   type: 'playground-unrendered'

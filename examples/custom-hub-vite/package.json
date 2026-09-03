@@ -1,0 +1,39 @@
+{
+  "name": "custom-hub-vite",
+  "type": "module",
+  "version": "0.9.9",
+  "private": true,
+  "description": "Vite reference hub that exercises every devframe hub subsystem end to end.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/custom-hub-vite",
+  "scripts": {
+    "dev": "pnpm -C ../.. run build && vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@antfu/design": "catalog:frontend",
+    "@devframes/hub": "workspace:*",
+    "@devframes/json-render": "workspace:*",
+    "@devframes/json-render-ui": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-assets": "workspace:*",
+    "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-data-inspector": "workspace:*",
+    "@devframes/plugin-git": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "@devframes/plugin-og": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
+    "@devframes/vite": "workspace:*",
+    "colorjs.io": "catalog:frontend",
+    "demo-dock-client": "workspace:*",
+    "devframe": "workspace:*",
+    "dompurify": "catalog:frontend",
+    "json-render": "workspace:*"
+  },
+  "devDependencies": {
+    "@iconify-json/ph": "catalog:frontend",
+    "unocss": "catalog:frontend",
+    "vite": "catalog:build"
+  }
+}

@@ -18,7 +18,7 @@ export interface A11yMessagesPlaygroundOptions {
 
 /**
  * A tiny Vite plugin that runs `@devframes/hub` inside the Vite dev server -
- * the same shape as `examples/hub-vite`, trimmed to the two plugins this
+ * the same shape as `examples/custom-hub-vite`, trimmed to the two plugins this
  * playground pairs (a11y + messages). One `initHub()` call assembles the whole
  * hub: it mounts each devframe as a dock, shares the WebSocket with Vite's own
  * server, serves the discovery endpoints, and registers the playground in the

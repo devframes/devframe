@@ -3,7 +3,7 @@
  *
  *   bun scripts/smoke-bun.ts
  *
- * Boots `examples/hub-hono-minimal/src/bun.ts` (Bun's fetch-upgrade wiring
+ * Boots `examples/hub-hono/src/bun.ts` (Bun's fetch-upgrade wiring
  * over the hub's context) and exercises four surfaces end to end: HTTP through
  * the catch-all handler, the discovery documents, the embedded bootstrap, and
  * an RPC round-trip over a same-origin WebSocket upgrade, with no side-car port
@@ -12,7 +12,7 @@
  * Prerequisites: `pnpm install && pnpm build` (the hub serves built dists).
  */
 import process from 'node:process'
-import { startBunServer } from '../examples/hub-hono-minimal/src/bun'
+import { startBunServer } from '../examples/hub-hono/src/bun'
 
 function fail(step: string, detail: unknown): never {
   console.error(`✗ ${step}:`, detail)
@@ -59,7 +59,7 @@ const rpc = createRpcClient<any, any>({}, {
 const handshake = await rpc.$call('anonymous:devframe:auth', { authToken: '', ua: 'smoke', origin }) as { isTrusted: boolean }
 if (!handshake.isTrusted)
   fail('handshake', handshake)
-const pong = await rpc.$call('example:hub-hono-minimal:probe')
+const pong = await rpc.$call('example:hub-hono:probe')
 if (pong !== 'pong')
   fail('rpc probe', pong)
 console.log('✓ WS RPC round-trip over the fetch-upgrade tier: probe →', pong)

@@ -1,0 +1,32 @@
+{
+  "name": "hub-hono",
+  "type": "module",
+  "version": "0.9.9",
+  "private": true,
+  "description": "Minimal Hono host that serves the devframe hub namespace on both Node and Bun.",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "dev:bun": "bun src/bun.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-assets": "workspace:*",
+    "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-data-inspector": "workspace:*",
+    "@devframes/plugin-git": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "@devframes/plugin-og": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
+    "@hono/node-server": "catalog:deps",
+    "devframe": "workspace:*",
+    "hono": "catalog:deps"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:types",
+    "tsx": "catalog:build"
+  }
+}

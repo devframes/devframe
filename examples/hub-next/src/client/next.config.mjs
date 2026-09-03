@@ -6,16 +6,13 @@ import { withDevframe } from '@devframes/next/single'
 // redirect).
 /** @type {import('next').NextConfig} */
 const nextConfig = withDevframe({
-  images: { unoptimized: true },
   /**
-   * @antfu/design ships raw, uncompiled `.ts`/`.vue` source (see its README -
-   * "no bundling, your build compiles it"). `dockIconSvg` (design/dock-icon.ts)
-   * imports its `utils/iconify.ts` directly, so Next/Turbopack - which
-   * otherwise treats node_modules as pre-built and has no loader for a bare
-   * `.ts` file there - needs to run this package through its own transform.
+   * The plugin packages and @devframes/hub-ui are loaded through a
+   * bundler-ignored dynamic `import()` in `hub.ts`, so Next resolves their
+   * published `dist` at runtime (their `import.meta.url` asset lookups don't
+   * survive static bundling). Nothing extra to externalize here.
+   * The workspace typecheck owns source-level project references.
    */
-  transpilePackages: ['@antfu/design'],
-  /** The workspace typecheck owns source-level project references. */
   typescript: { ignoreBuildErrors: true },
 })
 

@@ -209,7 +209,7 @@ export const diagnostics = defineDiagnostics({
     DF0076: {
       why: (p: { runtime: string }) =>
         `\`attach\` / \`handleUpgrade\` drive a raw \`node:http\` upgrade into crossws's Node adapter, which refuses to run on ${p.runtime}.`,
-      fix: 'On Bun/Deno, serve the advertised `__ws` route from `Bun.serve` / `Deno.serve` with `attachBunWsTransport` / `attachDenoWsTransport` (see the hub-deno-minimal example), or connect over the SSE endpoint instead.',
+      fix: 'On Bun/Deno, serve the advertised `__ws` route from `Bun.serve` / `Deno.serve` with `attachBunWsTransport` / `attachDenoWsTransport` (see the hub-deno example), or connect over the SSE endpoint instead.',
     },
   },
 })

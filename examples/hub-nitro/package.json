@@ -1,0 +1,29 @@
+{
+  "name": "hub-nitro",
+  "type": "module",
+  "version": "0.9.9",
+  "private": true,
+  "description": "Minimal Nitro host that mounts the devframe hub on a single route.",
+  "scripts": {
+    "dev": "nitro dev",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-assets": "workspace:*",
+    "@devframes/plugin-code-server": "workspace:*",
+    "@devframes/plugin-data-inspector": "workspace:*",
+    "@devframes/plugin-git": "workspace:*",
+    "@devframes/plugin-inspect": "workspace:*",
+    "@devframes/plugin-messages": "workspace:*",
+    "@devframes/plugin-og": "workspace:*",
+    "@devframes/plugin-terminals": "workspace:*",
+    "devframe": "workspace:*",
+    "nitro": "catalog:deps"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:types"
+  }
+}

@@ -1,23 +1,18 @@
-import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import './globals.css'
-import '@antfu/design/styles.css'
 
-export const metadata: Metadata = {
-  title: 'Next Devframe Hub',
-  description: 'A Next.js host for the @devframes/hub protocol.',
+export const metadata = {
+  title: 'Hub Next (minimal)',
 }
-
-// Follow the OS theme before paint (@antfu/design dark: is class-based).
-const themeScript = `(function(){try{if(window.matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark')}catch(e){}})();`
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="h-full" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
-      <body className="h-full m0 of-hidden bg-base color-base">{children}</body>
+    <html lang="en">
+      <body style={{ fontFamily: 'system-ui', padding: '2rem' }}>
+        {children}
+        {/* The floating-dock bootstrap - one dev-only module script, the
+            whole embedded integration. */}
+        <script type="module" src="/__devframes/embedded.js" />
+      </body>
     </html>
   )
 }

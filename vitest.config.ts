@@ -33,7 +33,7 @@ export default defineConfig({
       'services/git',
       'services/open',
       'services/shiki',
-      'examples/hub-next',
+      'examples/custom-hub-next',
       'packages/next',
       'packages/vite',
       'starter',
