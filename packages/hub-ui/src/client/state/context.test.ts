@@ -233,6 +233,31 @@ describe('createDocksContext', () => {
     expect(context.docks.selected?.id).toBe('nuxt:modules')
   })
 
+  it('does not remember a grouped action as the group\'s last-opened member', async () => {
+    expect.assertions(1)
+
+    const { rpc, sharedStates, trust } = createStubRpc()
+    const session = ref<DockSessionStorage>({
+      open: false,
+      selectedDockId: null,
+      selectedDockRoute: null,
+      groupLastChildIds: {},
+    })
+    const context = await createDocksContext('embedded', rpc, undefined, session)
+
+    trust()
+    sharedStates.get('devframe:docks')!.push([
+      { id: 'tools', type: 'group', title: 'Tools', icon: 'ph:wrench-duotone' },
+      { id: 'tools:run', type: 'action', action: { importFrom: '/action.js' }, title: 'Run', icon: 'ph:play-duotone', groupId: 'tools' },
+    ] satisfies DevframeDockEntry[])
+    sharedStates.get('devframe:dock-renderers')!.push({})
+    await flushRestore()
+
+    await context.docks.switchEntry('tools:run')
+
+    expect(session.value.groupLastChildIds).toEqual({})
+  })
+
   it('keeps a dock closed when the user closes it before initialization finishes', async () => {
     expect.assertions(2)
 

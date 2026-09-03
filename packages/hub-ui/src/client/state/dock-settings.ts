@@ -222,9 +222,10 @@ export function resolveGroupDefaultChild(
 /**
  * Resolve the member a group activation opens, layering the per-tab "last
  * opened member" memory (`DockSessionStorage.groupLastChildIds`) over the
- * author's `defaultChildId`. The remembered member wins while it still
+ * author's `defaultChildId`. A remembered non-action member wins while it still
  * resolves (it exists in the group and its `when` clause holds), so reopening
- * a group lands back on the member the developer last used; otherwise the
+ * a group lands back on the panel the developer last used. One-shot actions are
+ * skipped, including values persisted by an older client. Otherwise the
  * `defaultChildId` target is tried under the same rules (both via
  * {@link resolveGroupDefaultChild}, so the render-only `visibility` clause is
  * ignored for either candidate). Returns `undefined` when neither resolves:
@@ -237,7 +238,8 @@ export function resolveGroupPreferredChild(
   lastChildId: string | undefined,
   whenContext?: WhenContext,
 ): DevframeDockEntry | undefined {
-  return resolveGroupDefaultChild(entries, group.id, lastChildId, whenContext)
+  const remembered = resolveGroupDefaultChild(entries, group.id, lastChildId, whenContext)
+  return (remembered?.type === 'action' ? undefined : remembered)
     ?? resolveGroupDefaultChild(entries, group.id, group.defaultChildId, whenContext)
 }
 

@@ -243,15 +243,14 @@ export async function createDocksContext(
     await executeSetupScript(entry, scriptContext)
   }
 
-  // Remember this selection for later redirects: a member tab (carries its
-  // anchor's `frameId`) as the frame's live tab, a grouped member as its
-  // group's last-opened child. Only iframes own an address-bar route, so clear
-  // a stale route for anything else. Guarded: a store predating these fields
-  // has no map yet.
+  // Remember selection redirects: a member tab as its frame's live tab, and a
+  // grouped non-action member as its group's last-opened child. One-shot actions
+  // leave the preferred panel unchanged. Only iframes own an address-bar route,
+  // so clear a stale route for anything else.
   const rememberEntrySelection = (entry: DevframeDockEntry) => {
     if (entry.type === 'iframe' && entry.frameId && !entry.subTabs)
       frameNavCurrentMember.set(entry.frameId, entry.id)
-    if (entry.groupId)
+    if (entry.type !== 'action' && entry.groupId)
       (sessionStore.value.groupLastChildIds ??= {})[entry.groupId] = entry.id
     if (entry.type !== 'iframe')
       sessionStore.value.selectedDockRoute = null

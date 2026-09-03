@@ -11,6 +11,10 @@ function group(id: string, extra: Partial<DevframeViewGroup> = {}): DevframeDock
   return { id, type: 'group', title: id.toUpperCase(), icon: 'ph:folder-duotone', ...extra } as DevframeDockEntry
 }
 
+function action(id: string, extra: Partial<DevframeDockEntry> = {}): DevframeDockEntry {
+  return { id, type: 'action', action: { importFrom: '/action.js' }, title: id.toUpperCase(), icon: 'ph:play-duotone', ...extra } as DevframeDockEntry
+}
+
 function ids(groups: DevframeDockEntriesGrouped): string[] {
   return groups.flatMap(([, items]) => items.map(item => item.id))
 }
@@ -129,9 +133,20 @@ describe('resolveGroupPreferredChild', () => {
     expect(resolveGroupPreferredChild([g, defaultMember, gated], g, 'g:gated', whenContext)).toBe(defaultMember)
   })
 
+  it('falls back to defaultChildId when the remembered member is an action', () => {
+    const rememberedAction = action('g:run', { groupId: 'g' })
+    expect(resolveGroupPreferredChild([...entries, rememberedAction], g, 'g:run')).toBe(defaultMember)
+  })
+
   it('resolves nothing for a popover-only group without memory', () => {
     const bare = group('bare') as DevframeViewGroup
     expect(resolveGroupPreferredChild([bare, iframe('bare:x', { groupId: 'bare' })], bare, undefined)).toBeUndefined()
+  })
+
+  it('ignores a remembered action for a popover-only group', () => {
+    const bare = group('bare') as DevframeViewGroup
+    const rememberedAction = action('bare:run', { groupId: 'bare' })
+    expect(resolveGroupPreferredChild([bare, rememberedAction], bare, 'bare:run')).toBeUndefined()
   })
 })
 
