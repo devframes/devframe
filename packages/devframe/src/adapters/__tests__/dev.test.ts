@@ -136,7 +136,7 @@ describe('adapters/dev', () => {
     })
 
     // Binding to `0.0.0.0` listens on every interface, but that address isn't
-    // dialable from a browser — the advertised origin must fall back to a
+    // dialable from a browser, so the advertised origin must fall back to a
     // loopback host so the page (and its same-origin WS) actually connect.
     const host = '0.0.0.0'
     const port = await getPort({ port: 19795, host })
@@ -420,14 +420,14 @@ describe('adapters/dev', () => {
     })
 
     try {
-      // Connection meta is still served — the bridge endpoint that lets
+      // Connection meta is still served: the bridge endpoint that lets
       // a host-served SPA discover the WS backend.
       const res = await fetch(`http://${host}:${port}/__connection.json`)
       expect(res.ok).toBe(true)
       const meta = await res.json()
       expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' }, sse: { path: '__sse' } })
 
-      // The SPA mount is absent — without a distDir, no static handler
+      // The SPA mount is absent: without a distDir, no static handler
       // is wired, so the basePath returns a 404 from h3 instead of an
       // index.html.
       const spa = await fetch(`http://${host}:${port}/`)
@@ -464,7 +464,7 @@ describe('adapters/dev', () => {
       expect(handshake).toEqual({ isTrusted: false })
       await expect(client.$call('test:probe' as any)).rejects.toThrow()
 
-      // The interactive exchange method is wired — the printed code trusts.
+      // The interactive exchange method is wired, so the printed code trusts.
       const code = getTempAuthCode()
       const exchange = await client.$call('anonymous:devframe:auth:exchange' as any, { code, ua: 'test', origin: 'http://localhost' }) as { authToken: string | null }
       expect(exchange.authToken).toBeTruthy()
@@ -599,7 +599,7 @@ describe('adapters/dev', () => {
       packageName: 'devframe-test',
       homepage: 'https://example.test',
       description: 'Test devframe.',
-      // Standalone would gate; a hosted caller passes `auth: false` to defer.
+      /** Standalone would gate; a hosted caller passes `auth: false` to defer. */
       cli: { auth: true },
       setup: (ctx: DevframeNodeContext) => {
         ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })

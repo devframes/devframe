@@ -8,9 +8,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DevframeDocksHost } from '../host-docks'
 import { installDevframe } from '../install-devframe'
 
+type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> }
+
 function createContext(): DevframeHubContext {
   const storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-install-'))
-  const context = {
+  const partial: DeepPartial<DevframeHubContext> = {
     host: {
       mountStatic: vi.fn(),
       resolveOrigin: () => 'http://localhost:5173',
@@ -19,13 +21,16 @@ function createContext(): DevframeHubContext {
     views: {
       hostStatic: () => {},
     },
-    // Minimal stub — these tests drive dock/setup wiring, not the services
-    // lifecycle (the demo devframe declares none).
+    /**
+     * Minimal stub, since these tests drive dock/setup wiring, not the services
+     * lifecycle (the demo devframe declares none).
+     */
     services: {
       install: () => Promise.resolve(undefined),
       ready: () => Promise.resolve(),
     },
-  } as unknown as DevframeHubContext
+  }
+  const context = partial as DevframeHubContext
   context.docks = new DevframeDocksHost(context)
   // `createHubContext` wires this; the hand-built fake context here does the
   // same so the tests drive the public `ctx.install` surface.

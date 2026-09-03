@@ -3,15 +3,13 @@ import { defineDevframe } from 'devframe'
 import pkg from '../package.json' with { type: 'json' }
 import { setupInspect } from './node/index'
 
-/** Default devframe id — drives the hosted mount path `/__<id>/`. */
+/** Default devframe id, driving the hosted mount path `/__<id>/`. */
 const DEFAULT_ID = 'devframes_plugin_inspect'
 
 // The Vue SPA ships in the lockstep-versioned `@devframes/plugin-inspect--assets`
-// package rather than inside this (slim) node package. The definition's
-// `importMetaUrl` (below) supplies the default `resolveFrom`, letting a locally
-// installed copy (a workspace link in this monorepo, or an explicit
-// `npm install` for air-gapped setups) be served with zero network; otherwise
-// the assets stream on demand through devframe's caching CDN back-proxy.
+// package, not this slim node one. A locally installed copy (workspace link, or
+// an explicit install for air-gapped setups) is served with zero network via the
+// definition's `importMetaUrl`; otherwise assets stream through devframe's CDN.
 const distDir: RemoteAssets = {
   package: `${pkg.name}--assets`,
   version: pkg.version,
@@ -33,7 +31,7 @@ export interface InspectDevframeOptions {
   port?: number
   /**
    * Require the trust handshake on the standalone server. Enabled by
-   * default — `--open` embeds the current OTP in the opened URL, so the
+   * default; `--open` embeds the current OTP in the opened URL, so the
    * tab authenticates automatically without extra prompts. Hosted adapters
    * manage their own auth and ignore this.
    */
@@ -64,9 +62,11 @@ export function createInspectDevframe(options: InspectDevframeOptions = {}): Dev
       command: id,
       port: options.port ?? 9012,
       distDir,
-      // Gate the standalone server by default; `maybeOpenBrowser` folds the
-      // current OTP into the `--open` URL so the tab lands already trusted.
-      // Hosted adapters (Vite/hub) supply their own auth layer and ignore this.
+      /**
+       * Gate the standalone server by default; `maybeOpenBrowser` folds the
+       * current OTP into the `--open` URL so the tab lands already trusted.
+       * Hosted adapters (Vite/hub) supply their own auth layer and ignore this.
+       */
       auth: options.auth ?? true,
     },
     dock: {

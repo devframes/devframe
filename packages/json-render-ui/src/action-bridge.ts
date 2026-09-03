@@ -19,14 +19,14 @@ export interface JsonRenderActionBridge {
   error: { value: JsonRenderActionError | null }
 }
 
-// Built-ins handled inside upstream's ActionProvider — never bridged to RPC.
+// Built-ins handled inside upstream's ActionProvider, never bridged to RPC.
 const RESERVED = new Set(['setState', 'pushState', 'removeState', 'validateForm'])
 // Promise-probe / symbol keys must not resolve to a phantom action.
 const PROBES = new Set(['then', 'catch', 'finally'])
 
 /**
  * The unrestricted action bridge: any spec action name is dispatched as an RPC
- * call of the same name (the current `vitejs/devtools` behavior — no
+ * call of the same name (the current `vitejs/devtools` behavior, with no
  * allowlist, no param schema). Unlike that proxy, this bridge tracks per-action
  * loading state and surfaces failures to the view instead of swallowing them to
  * the console.

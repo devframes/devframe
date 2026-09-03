@@ -4,7 +4,7 @@ import type { DevframeDockEntryBase } from '@devframes/hub/types'
 import { PLAYGROUND_GROUP_ID } from './constants'
 
 /**
- * A dock type no renderer covers — registering it exercises the viewer's
+ * A dock type no renderer covers; registering it exercises the viewer's
  * fallback view (`No renderer for "playground-unrendered" in the current
  * environment`) instead of leaving the dock bar empty. Mirrors
  * `examples/hub-vite/src/unrendered-dock.ts`.
@@ -29,7 +29,7 @@ const unrenderedDockEntry: PlaygroundUnrenderedDockEntry = {
 
 /**
  * The dock-bar button collapsing the Git devframe (grouped by
- * `hub-plugin.ts`'s `devframes` entry) and the "Ping" action below —
+ * `hub-plugin.ts`'s `devframes` entry) and the "Ping" action below
  * exercises the grouped-dock UI (`DockGroupButton`/`DockGroupPopover`) the
  * playground otherwise never touches.
  */
@@ -39,12 +39,12 @@ const playgroundGroup: DevframeViewGroup = {
   title: 'Playground Tools',
   icon: 'ph:flask-duotone',
   category: 'app',
-  // No `defaultChildId` — clicking reveals the member popover instead of
+  // No `defaultChildId`, so clicking reveals the member popover instead of
   // jumping straight to one, exercising that UI too (`DockGroupPopover`).
 }
 
 /**
- * A one-shot action dock — no panel of its own, just a client script
+ * A one-shot action dock with no panel of its own, just a client script
  * (`client-scripts/ping-action.ts`) the viewer imports and runs on click.
  * Grouped alongside the Git devframe above.
  */
@@ -60,7 +60,7 @@ const pingAction: DevframeViewAction = {
 
 /**
  * Seeds the playground's hub context with just enough content to exercise
- * hub-ui's own surfaces — the dock bar, message center, and command palette —
+ * hub-ui's own surfaces (the dock bar, message center, and command palette)
  * without needing a real mounted devframe SPA. Called from `hub-plugin.ts`'s
  * `configure` hook once the context exists.
  */
@@ -82,7 +82,7 @@ export async function seedPlayground(ctx: DevframeHubContext): Promise<void> {
     icon: 'ph:bomb-duotone',
     category: 'playground',
     handler: () => {
-      throw new Error('Deliberate playground error — exercises the command palette\'s failure toast.')
+      throw new Error('Deliberate playground error that exercises the command palette\'s failure toast.')
     },
   })
 

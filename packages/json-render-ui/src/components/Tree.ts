@@ -30,7 +30,9 @@ function renderNode(value: unknown, keyLabel: string | null, expanded: boolean):
   ])
 }
 
-// `@antfu/design` DisplayTree nests a flat path list (file/folder style), not an
-// arbitrary JSON value, so the catalog's value-tree viewer stays custom.
+/**
+ * `@antfu/design` DisplayTree nests a flat path list (file/folder style), not an
+ * arbitrary JSON value, so the catalog's value-tree viewer stays custom.
+ */
 export const Tree: JrComponent<TreeProps> = ({ props }) =>
   h('div', { class: 'color-base' }, [renderNode(props.data, null, props.defaultExpanded !== false)])

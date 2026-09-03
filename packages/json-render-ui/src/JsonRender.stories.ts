@@ -5,7 +5,7 @@ import { baseRegistry } from './registry'
 import { JsonRenderView } from './renderer'
 import jsonRenderDockRenderer from './renderer-module'
 
-// A no-op RPC — stories don't dispatch real actions.
+// A no-op RPC, since stories don't dispatch real actions.
 const rpc = { call: async () => undefined }
 
 function story(spec: Spec, extra: Record<string, unknown> = {}): StoryObj {
@@ -95,8 +95,10 @@ export const InvalidElement: StoryObj = story({
   },
 })
 
-// An element whose `type` is absent from the registry renders behind the
-// unsupported placeholder (type + prop-keys gist), while its siblings render.
+/**
+ * An element whose `type` is absent from the registry renders behind the
+ * unsupported placeholder (type + prop-keys gist), while its siblings render.
+ */
 export const UnsupportedComponent: StoryObj = story({
   root: 'root',
   elements: {
@@ -123,6 +125,9 @@ export const SubsetRegistry: StoryObj = story(
   { registry: subsetRegistry },
 )
 
+// The story only renders an inline spec, so the renderer touches `context.rpc`
+// alone; a full client context can't be built in a story.
+// eslint-disable-next-line slop/no-chained-type-assertions -- storybook mock of the client context boundary
 const dockRendererContext = {
   rpc: { call: rpc.call, connectionMeta: undefined },
 } as unknown as Parameters<typeof jsonRenderDockRenderer>[0]['context']
@@ -131,7 +136,7 @@ const dockRendererContext = {
  * Mounts the shipped dock renderer so the story exercises its shadow root and
  * adopted stylesheet.
  *
- * It renders `gallerySpec`, so it should look **the same** as `Gallery` — the
+ * It renders `gallerySpec`, so it should look **the same** as `Gallery`; the
  * two differ only in how the stylesheet reaches the components (Storybook's
  * `virtual:uno.css` in the light DOM vs. the prebuilt `.generated/css` adopted
  * into a shadow root). A visible divergence between them means one of the two

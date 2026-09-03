@@ -89,8 +89,10 @@ export function navBrand(extra?: string): string {
   return cx('flex items-center gap-1.5 shrink-0 font-semibold text-sm select-none', extra)
 }
 
-// Mirrors devframe's `DevframeConnectionStatus` (kept local so this class-helper
-// module stays free of package imports); the two share the same string members.
+/**
+ * Mirrors devframe's `DevframeConnectionStatus` (kept local so this class-helper
+ * module stays free of package imports); the two share the same string members.
+ */
 export type ConnectionStatus = 'connecting' | 'connected' | 'unauthorized' | 'disconnected' | 'error'
 
 export interface ConnectionIndicator {
@@ -109,9 +111,11 @@ const CONNECTION_TONE: Record<Exclude<ConnectionStatus, 'connected'>, { label: s
   error: { label: 'error', dot: 'bg-error' },
 }
 
-// The shared top-nav connection indicator: a small status dot + label. Returns
-// `null` when the client is `connected`, so every surface renders the indicator
-// only while the connection is not live.
+/**
+ * The shared top-nav connection indicator: a small status dot + label. Returns
+ * `null` when the client is `connected`, so every surface renders the indicator
+ * only while the connection is not live.
+ */
 export function connectionIndicator(status: ConnectionStatus, extra?: string): ConnectionIndicator | null {
   if (status === 'connected')
     return null
@@ -167,18 +171,22 @@ const CONNECTION_STATE: Record<Exclude<ConnectionStatus, 'connected'>, Connectio
   },
 }
 
-// The shared full-panel connection state copy: shown whenever the client isn't
-// `connected`, so a surface never sits on an infinite spinner without saying
-// why. Returns `null` when connected. Pair with the `connection*` class builders
-// below so every surface renders the identical centered glyph + title + body.
+/**
+ * The shared full-panel connection state copy: shown whenever the client isn't
+ * `connected`, so a surface never sits on an infinite spinner without saying
+ * why. Returns `null` when connected. Pair with the `connection*` class builders
+ * below so every surface renders the identical centered glyph + title + body.
+ */
 export function connectionState(status: ConnectionStatus): ConnectionStateCopy | null {
   if (status === 'connected')
     return null
   return CONNECTION_STATE[status]
 }
 
-// Centered fill for the full-panel state; each surface adds its own fill
-// strategy (`h-full`, `h-svh w-full`, `absolute inset-0`, …) via `extra`.
+/**
+ * Centered fill for the full-panel state; each surface adds its own fill
+ * strategy (`h-full`, `h-svh w-full`, `absolute inset-0`, …) via `extra`.
+ */
 export function connectionPanel(extra?: string): string {
   return cx('flex flex-col items-center justify-center gap-4 bg-base p-8 text-center', extra)
 }

@@ -7,6 +7,8 @@ import { HUB_EVENTS } from '../../events'
 import { getDevframeClientContext } from '../context'
 import { createDevframeClientRuntime } from '../host'
 
+type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> }
+
 interface StubSharedState<T> extends SharedState<T> {
   /** Replace the state wholesale and emit `updated` (simulates a server patch). */
   push: (next: T) => void
@@ -35,7 +37,7 @@ function createStubRpc() {
   const calls: any[][] = []
   const states = new Map<string, StubSharedState<any>>()
   const definitions = new Map<string, { name: string, type: string, handler?: (...args: any[]) => any }>()
-  const rpc = {
+  const partial: DeepPartial<DevframeRpcClient> = {
     sharedState: {
       async get(key: string, options?: { initialValue?: any }) {
         if (!states.has(key))
@@ -55,7 +57,8 @@ function createStubRpc() {
         definitions.set(fn.name, fn)
       },
     },
-  } as unknown as DevframeRpcClient
+  }
+  const rpc = partial as DevframeRpcClient
   return { rpc, calls, states, definitions }
 }
 
@@ -143,7 +146,7 @@ describe('createDevframeClientRuntime', () => {
       iframeEntry('visible'),
     ])
 
-    // `visibility` is a render-only hint for the UI layer — the hub itself
+    // `visibility` is a render-only hint for the UI layer; the hub itself
     // never filters `entries`/`getStateById`/`switchEntry` by it, so the
     // anchor stays fully reachable.
     expect(host.context.docks.entries.map(e => e.id)).toEqual(['anchor', 'visible'])
@@ -153,7 +156,7 @@ describe('createDevframeClientRuntime', () => {
     host.dispose()
   })
 
-  it('groups entries by category — grouped members bucket under their group, orphans by their own', async () => {
+  it('groups entries by category: grouped members bucket under their group, orphans by their own', async () => {
     const { rpc, states } = createStubRpc()
     const host = await createDevframeClientRuntime({ rpc })
 
@@ -183,7 +186,7 @@ describe('createDevframeClientRuntime', () => {
     expect(grouped.web).toEqual(['orphan'])
     expect(grouped.app).toEqual(['plain'])
 
-    // Categories sort by DEFAULT_CATEGORIES_ORDER — framework first.
+    // Categories sort by DEFAULT_CATEGORIES_ORDER, framework first.
     expect(host.context.docks.groupedEntries.map(([cat]) => cat)).toEqual([
       'framework',
       'default',
@@ -407,7 +410,7 @@ describe('createDevframeClientRuntime', () => {
       expect(warn).toHaveBeenCalledOnce()
       expect(getDevframeClientContext()).toBe(second.context)
 
-      // The first host no longer owns the published context — leave it alone.
+      // The first host no longer owns the published context, so leave it alone.
       first.dispose()
       expect(getDevframeClientContext()).toBe(second.context)
       second.dispose()

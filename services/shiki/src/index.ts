@@ -64,7 +64,7 @@ declare module 'devframe' {
   }
 }
 
-/** Tiny insertion-order LRU — enough to absorb re-renders of the same code. */
+/** Tiny insertion-order LRU, enough to absorb re-renders of the same code. */
 class Lru<V> {
   private map = new Map<string, V>()
   constructor(private max: number) {}
@@ -91,7 +91,7 @@ const inputSchema = s.object({
 })
 
 /**
- * The Shiki wire service — server-side syntax highlighting shared by every
+ * The Shiki wire service: server-side syntax highlighting shared by every
  * plugin on the host, so client bundles stop shipping their own grammars and
  * themes. Shiki itself loads lazily on first use; results are LRU-cached per
  * `(code, lang, themes)` and every RPC function is `cacheable` on the client
@@ -103,8 +103,10 @@ export function createShikiService(options?: ShikiServiceOptions): DevframeServi
     version: pkg.version,
     scope: SHIKI_SERVICE_SCOPE,
     options,
-    // Option sets from multiple installers merge via devframe's default
-    // deep-merge: `langs` union, `themes` deep-merged (per-key last-wins).
+    /**
+     * Option sets from multiple installers merge via devframe's default
+     * deep-merge: `langs` union, `themes` deep-merged (per-key last-wins).
+     */
     setup(ctx, { options }) {
       const defaultThemes = options?.themes ?? SHIKI_DEFAULT_THEMES
 
@@ -154,7 +156,7 @@ export function createShikiService(options?: ShikiServiceOptions): DevframeServi
           (await shiki()).codeToTokens(input.code, { lang, themes: { ...themes } })),
       }
 
-      // `s.object({})` is guard-only (extra keys survive) — a permissive
+      // `s.object({})` is guard-only (extra keys survive), a permissive
       // envelope for the structured HAST / tokens payloads.
       ctx.rpc.register(defineRpcFunction({
         name: 'highlight',

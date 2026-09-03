@@ -5,13 +5,10 @@ import { colors as c } from 'devframe/utils/colors'
 import { buildShadowCss } from '../../../design/build-shadow-css'
 import config from '../uno.config'
 
-// Compiles the renderer's UnoCSS output ahead of time into a plain string
-// module (`src/.generated/css.ts`) that the prebuilt renderer module adopts
-// into the shadow root it attaches inside its mount container — the dock view
-// stays fully styled inside any host page (light DOM or a viewer's shadow
-// root) without a global stylesheet, and without leaking the reset into the
-// host page. See `design/build-shadow-css.ts` for the shared pipeline
-// (mirrored by `@devframes/hub-ui`'s `scripts/build-css.ts`).
+// Compiles the renderer's UnoCSS output ahead of time into a string module
+// (`src/.generated/css.ts`) that the renderer adopts into its shadow root, so
+// the dock view stays styled in any host page without a global stylesheet and
+// without leaking the reset. See `design/build-shadow-css.ts` for the pipeline.
 const SRC_DIR = join(fileURLToPath(new URL('..', import.meta.url)), 'src')
 const moduleRequire = createRequire(import.meta.url)
 

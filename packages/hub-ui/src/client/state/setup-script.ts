@@ -3,7 +3,7 @@ import type { DockClientScriptContext } from '@devframes/hub/client'
 import { clientScriptFailureHint, resolveClientModuleSpecifier } from '@devframes/hub/client'
 
 /**
- * Resolve the {@link ClientScriptEntry} a dock entry carries — an `action`'s
+ * Resolve the {@link ClientScriptEntry} a dock entry carries: an `action`'s
  * `action`, a `custom-render`'s `renderer`, or an iframe's `clientScript`.
  */
 function clientScriptOf(entry: DevframeDockUserEntry): ClientScriptEntry | undefined {
@@ -34,7 +34,7 @@ async function _executeSetupScript(
     metaBaseUrl: context.rpc.connection?.metaBaseUrl,
   })
   try {
-    // Keep this a *native* dynamic import in every bundler — the specifier is
+    // Keep this a *native* dynamic import in every bundler, because the specifier is
     // a runtime URL served by the hub, not a build-time module. Mirrors the
     // client-script loading of `@devframes/hub`'s `createDevframeClientRuntime`.
     const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ specifier)

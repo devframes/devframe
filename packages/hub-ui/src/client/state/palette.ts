@@ -66,8 +66,8 @@ export function paletteActionKeepsOpen(
 }
 
 /**
- * Every command at every depth, so root search finds a nested entry — a dock
- * group's members, and anything a devframe nests below them — without drilling.
+ * Every command at every depth, so root search finds a nested entry: a dock
+ * group's members, and anything a devframe nests below them, without drilling.
  *
  * `searchTitle` carries the full path, so typing "docks ping" and typing "ping"
  * both match, while the row itself shows only the immediate parent: a deep entry
@@ -99,7 +99,7 @@ export function flattenPaletteCommands(commands: DevframeCommandEntry[]): Palett
 }
 
 /**
- * The drill-down stack that lands on `scopeId`'s children — one crumb per
+ * The drill-down stack that lands on `scopeId`'s children: one crumb per
  * ancestor that has children, plus the command itself, so `openPalette(id)`
  * looks exactly like the user clicked their way down to that command.
  *

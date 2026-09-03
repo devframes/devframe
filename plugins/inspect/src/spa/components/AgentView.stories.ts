@@ -19,8 +19,10 @@ export const Default: Story = {
     manifest: {
       tools: [
         {
-          // Colon-namespaced — demonstrates the id vs. sanitized MCP wire
-          // name distinction the card renders (`toAgentToolName`).
+          /**
+           * Colon-namespaced, demonstrating the id vs. sanitized MCP wire
+           * name distinction the card renders (`toAgentToolName`).
+           */
           id: 'devframes:plugin:demo:tool1',
           kind: 'rpc',
           title: 'Tool 1',

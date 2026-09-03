@@ -5,7 +5,7 @@ import { resolveClientAssets as resolveClientAssetsInternal } from './client-ass
 export const defineRpcFunction = createDefineWrapperWithContext<DevframeNodeContext>()
 
 /**
- * Identity helper that types a devframe definition — the primary authoring
+ * Identity helper that types a devframe definition, the primary authoring
  * entry point. Import it from the package root: `import { defineDevframe } from 'devframe'`.
  */
 export function defineDevframe(d: DevframeDefinition): DevframeDefinition {

@@ -21,7 +21,7 @@ export async function mountTerminals(
   container: HTMLElement,
   options: MountTerminalsOptions = {},
 ): Promise<TerminalsHandle> {
-  const rpc = options.rpc ?? (await connectDevframe()) as unknown as DevframeRpcClient
+  const rpc = options.rpc ?? await connectDevframe()
 
   const app = mount(App, {
     target: container,

@@ -7,12 +7,14 @@ import {
   transformerVariantGroup,
 } from 'unocss'
 
-// The prebuilt SPA renders `@devframes/json-render-ui`, whose components author
-// class strings in `.ts` render functions — so `.ts` is opted into extraction.
-// Same `@antfu/design` stack (sage-green preset, Phosphor, DM Sans/Mono) as
-// every other devframe surface, on the **Wind3** base the package's renderer
-// module uses (`../../uno.config.ts`) so the components render identically in
-// the standalone SPA and inside the shadow-root renderer module.
+/**
+ * The prebuilt SPA renders `@devframes/json-render-ui`, whose components author
+ * class strings in `.ts` render functions, so `.ts` is opted into extraction.
+ * Same `@antfu/design` stack (sage-green preset, Phosphor, DM Sans/Mono) as
+ * every other devframe surface, on the **Wind3** base the package's renderer
+ * module uses (`../../uno.config.ts`) so the components render identically in
+ * the standalone SPA and inside the shadow-root renderer module.
+ */
 export default defineConfig({
   presets: [
     presetAnthonyDesign({ primary: '#3a6a45' }),
@@ -21,8 +23,10 @@ export default defineConfig({
   ],
   transformers: [transformerDirectives(), transformerVariantGroup()],
   preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
-  // `Badge` picks a `badge-color-<name>` at runtime from a fixed set, so those
-  // classes need safelisting.
+  /**
+   * `Badge` picks a `badge-color-<name>` at runtime from a fixed set, so those
+   * classes need safelisting.
+   */
   safelist: ['badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],
   shortcuts: {
     'bg-panel-raised': 'bg-hover',

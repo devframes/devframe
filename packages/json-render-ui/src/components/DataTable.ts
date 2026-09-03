@@ -18,9 +18,11 @@ function normalizeColumns(columns: DataTableProps['columns'], rows: DataTablePro
   return first ? Object.keys(first).map(key => ({ key })) : []
 }
 
-// `@antfu/design` LayoutDataTable has no per-row click or loading state, both of
-// which the catalog requires (`rowClick`, `loading`), so this stays custom on
-// the shared tokens. (A candidate to contribute back upstream.)
+/**
+ * `@antfu/design` LayoutDataTable has no per-row click or loading state, both of
+ * which the catalog requires (`rowClick`, `loading`), so this stays custom on
+ * the shared tokens. (A candidate to contribute back upstream.)
+ */
 export const DataTable: JrComponent<DataTableProps> = ({ props, on, bindings, loading }) => {
   if (loading || props.loading)
     return h('div', { class: 'color-faint text-sm' }, 'Loading…')

@@ -22,7 +22,7 @@ export {
 /**
  * Build a {@link DevframeDefinition} for the terminals panel. The same
  * definition runs standalone (`createCac`), mounts into a Vite host
- * (`/vite`), or docks inside a hub — its `setup` only relies on the core
+ * (`/vite`), or docks inside a hub, since its `setup` only relies on the core
  * devframe RPC surface.
  *
  * @experimental This plugin is experimental and may change without a major
@@ -59,16 +59,20 @@ export function createTerminalsDevframe(options: TerminalsOptions = {}): Devfram
     homepage: pkg.homepage,
     description: pkg.description,
     icon: 'ph:terminal-window-duotone',
-    // Leave undefined so `resolveBasePath` picks `/` standalone and
-    // `/__<id>/` when hosted. Authors override via `options.basePath`.
+    /**
+     * Leave undefined so `resolveBasePath` picks `/` standalone and
+     * `/__<id>/` when hosted. Authors override via `options.basePath`.
+     */
     basePath: options.basePath,
     cli: {
       command: options.command ?? 'devframe-terminals',
       port: options.port ?? DEFAULT_PORT,
       distDir,
-      // Gate the standalone server by default — shell access is sensitive.
-      // `maybeOpenBrowser` folds the current OTP into the `--open` URL so
-      // the tab lands already trusted.
+      /**
+       * Gate the standalone server by default, since shell access is sensitive.
+       * `maybeOpenBrowser` folds the current OTP into the `--open` URL so
+       * the tab lands already trusted.
+       */
       auth: options.auth ?? true,
     },
     dock: {

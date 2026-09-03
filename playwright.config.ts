@@ -29,9 +29,11 @@ export default defineConfig({
   ],
   webServer: [
     {
-      // Explicit IPv4 bind: the connect spec's registry probe and MCP client
-      // dial the recorded origin directly, and a bare `localhost` bind is
-      // family-ambiguous across environments.
+      /**
+       * Explicit IPv4 bind: the connect spec's registry probe and MCP client
+       * dial the recorded origin directly, and a bare `localhost` bind is
+       * family-ambiguous across environments.
+       */
       command: 'node bin.mjs --host 127.0.0.1',
       cwd: 'examples/files-inspector',
       env: { DEVFRAME_E2E_CWD: fixtureCwd, DEVFRAME_INSTANCES_DIR: filesInspectorRegistry },

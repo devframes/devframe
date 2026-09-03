@@ -1,8 +1,10 @@
 import { defineDiagnostics } from 'devframe/utils/nostics'
 
-// Uses the service's own `DS_OPEN_` prefix per the built-in convention,
-// keeping it collision-free with devframe core (`DF00xx`), the hub
-// (`DF8xxx`), and the plugins (`DP_<SLUG>_`).
+/**
+ * Uses the service's own `DS_OPEN_` prefix per the built-in convention,
+ * keeping it collision-free with devframe core (`DF00xx`), the hub
+ * (`DF8xxx`), and the plugins (`DP_<SLUG>_`).
+ */
 export const diagnostics = defineDiagnostics({
   docsBase: 'https://devfra.me/errors',
   codes: {

@@ -8,14 +8,14 @@
  *
  * Appended AFTER the UnoCSS output (see `scripts/build-css.ts`) so this block
  * wins over Wind3's own `:root, :host` primary declarations. `:host` is the
- * effective selector inside the renderer module's shadow root — its host is
+ * effective selector inside the renderer module's shadow root, whose host is
  * the viewer-owned mount container, and `--devframe-primary` (set by a
  * viewer's branding on any ancestor) inherits across the shadow boundary onto
  * it, so a rebranded hub retints the rendered views too.
  *
  * The renderer module's shadow root is built on Wind3, which bakes
  * `primary`-based utilities to literal `rgb()` triplets rather than
- * referencing these variables — `scripts/build-css.ts` rewires those baked
+ * referencing these variables, so `scripts/build-css.ts` rewires those baked
  * colors into CSS relative-color syntax reading `--colors-primary-<stop>`
  * (see `rewireBakedPrimaryColors` in `design/uno.config.ts`) so this block
  * actually retints them. The stops declared here (`DEFAULT`/`600`/`500`/

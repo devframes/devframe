@@ -6,14 +6,16 @@ import { defineConfig } from 'vite'
 import { alias } from '../../../../alias'
 import { createCodeServerDevframe } from '../index'
 
-// The launcher SPA. `base: './'` keeps every asset URL relative so the bundle
-// is mount-path portable — it discovers its runtime base from
-// `document.baseURI` and connects via `connectDevframe()`. The build is copied
-// verbatim by `createBuild`; no HTML rewriting.
-//
-// `devframeViteBridge()` runs a side-car devframe RPC + WS server during
-// `vite dev` so the launcher can detect/start/stop the editor while Vite
-// serves the UI source with HMR.
+/**
+ * The launcher SPA. `base: './'` keeps every asset URL relative so the bundle
+ * is mount-path portable, discovering its runtime base from
+ * `document.baseURI` and connecting via `connectDevframe()`. The build is copied
+ * verbatim by `createBuild`; no HTML rewriting.
+ *
+ * `devframeViteBridge()` runs a side-car devframe RPC + WS server during
+ * `vite dev` so the launcher can detect/start/stop the editor while Vite
+ * serves the UI source with HMR.
+ */
 export default defineConfig({
   base: './',
   root: fileURLToPath(new URL('.', import.meta.url)),
@@ -23,8 +25,10 @@ export default defineConfig({
     UnoCSS(),
     devframeViteBridge(createCodeServerDevframe(), { base: '/' }),
   ],
-  // `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile its
-  // SFCs instead of esbuild pre-bundling them.
+  /**
+   * `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile its
+   * SFCs instead of esbuild pre-bundling them.
+   */
   optimizeDeps: { exclude: ['@antfu/design'] },
   build: {
     outDir: fileURLToPath(new URL('../../assets-pkg/dist', import.meta.url)),

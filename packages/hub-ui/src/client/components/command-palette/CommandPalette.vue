@@ -87,15 +87,15 @@ watch(show, (v) => {
   }
   else {
     visible.value = false
-    // Every close path funnels through `show` — Escape, the backdrop, running a
-    // command, and a bare `paletteOpen` toggle — so the scope is dropped here
+    // Every close path funnels through `show`: Escape, the backdrop, running a
+    // command, and a bare `paletteOpen` toggle, so the scope is dropped here
     // once rather than in each of them. A later Mod+K then opens at the root
     // instead of resurrecting the group it was last scoped to.
     commandsCtx.value.paletteScopeId = null
   }
 })
 
-// A scope also arrives while the palette is already open — activating a dock
+// A scope also arrives while the palette is already open, activating a dock
 // group picked from the root list, say. `show` stays `true` throughout, so the
 // drill-down follows the scope itself rather than the open transition.
 watch(() => commandsCtx.value.paletteScopeId, (scopeId) => {

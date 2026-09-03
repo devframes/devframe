@@ -16,15 +16,15 @@ export interface AgentTool {
   title: string
   /** Human-readable description shown to the agent. */
   description: string
-  /** Safety classification — drives MCP hint annotations downstream. */
+  /** Safety classification; drives MCP hint annotations downstream. */
   safety: 'read' | 'action' | 'destructive'
   /** Free-form tags for grouping/filtering. */
   tags?: readonly string[]
-  /** Present for `kind === 'rpc'` — points to the RPC function name. */
+  /** Present for `kind === 'rpc'`; points to the RPC function name. */
   rpcName?: string
   /**
    * Positional Standard Schemas describing a `kind: 'tool'` entry's
-   * arguments — carried on the tool itself (mirroring how `rpcName` defers
+   * arguments, carried on the tool itself (mirroring how `rpcName` defers
    * an RPC-backed tool's schemas to `ctx.rpc.definitions`) so consumers
    * (e.g. the MCP adapter) convert Standard Schema → JSON Schema on demand,
    * same as RPC `args`.
@@ -49,7 +49,7 @@ export interface AgentToolInput {
   safety?: 'read' | 'action' | 'destructive'
   tags?: readonly string[]
   /**
-   * Positional Standard Schemas describing the tool's arguments — the same
+   * Positional Standard Schemas describing the tool's arguments, the same
    * shape RPC definitions carry (any [Standard Schema](https://standardschema.dev/)
    * validator: valibot, zod, arktype, devframe's built-in `s` builder, …).
    * Each is advertised under `arg0` / `arg1` / … on the tool's JSON-Schema
@@ -88,7 +88,7 @@ export interface AgentResourceInput {
   name: string
   description?: string
   mimeType?: string
-  /** Optional URI override — if omitted, a `devframe://resource/<id>` URI is generated. */
+  /** Optional URI override; if omitted, a `devframe://resource/<id>` URI is generated. */
   uri?: string
   /** Snapshot reader. Called on each read. */
   read: () => Promise<AgentResourceContent> | AgentResourceContent
@@ -121,7 +121,7 @@ export interface AgentHandle {
 
 /**
  * A lazy source of agent tools, queried at `list()` / `getTool()` /
- * `invoke()` time — the same on-demand projection the host applies to
+ * `invoke()` time, the same on-demand projection the host applies to
  * `agent`-flagged RPC definitions. Use a provider when tools *derive from*
  * other state (a command registry, a plugin catalog): the underlying state
  * stays the single source of truth and nothing needs to be kept in sync.
@@ -153,7 +153,7 @@ export interface DevframeAgentHostEvents {
   'agent:resource:registered': (resource: AgentResource) => void
   'agent:resource:unregistered': (id: string) => void
   /**
-   * Fires when the unified manifest changes — including when a new
+   * Fires when the unified manifest changes, including when a new
    * RPC function with an `agent` field is registered on `ctx.rpc`.
    */
   'agent:manifest:changed': () => void
@@ -178,7 +178,7 @@ export interface DevframeAgentHost {
   unregisterTool: (id: string) => boolean
 
   /**
-   * Register a lazy tool source, queried on demand — see
+   * Register a lazy tool source, queried on demand; see
    * {@link AgentToolProvider}.
    */
   registerToolProvider: (provider: AgentToolProvider) => AgentToolProviderHandle

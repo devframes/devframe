@@ -15,7 +15,7 @@ function createHost(): DevframeHost {
     mountStatic: () => {},
     resolveOrigin: () => 'http://localhost:5173',
     getStorageDir: () => storageDir,
-  } as unknown as DevframeHost
+  } satisfies DevframeHost
 }
 
 async function createContext(): Promise<DevframeNodeContext> {

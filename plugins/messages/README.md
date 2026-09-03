@@ -22,7 +22,7 @@ import createMessagesDevframe from '@devframes/plugin-messages'
 await hubContext.install(createMessagesDevframe())
 ```
 
-The hub's `ctx.messages` feeds the panel live — every
+The hub's `ctx.messages` feeds the panel live: every
 `ctx.messages.add(...)` from any mounted tool shows up, updates stream over
 the `devframe:messages:updated` broadcast, and dismissals write back through
 the devframe's namespaced RPCs. On a plain (non-hub) context the devframe warns
@@ -34,7 +34,7 @@ the devframe's namespaced RPCs. On a plain (non-hub) context the devframe warns
 import { mountMessages } from '@devframes/plugin-messages/client'
 
 const handle = await mountMessages(document.querySelector('#panel')!, {
-  rpc, // optional — reuse the host page's client
+  rpc, // optional; reuse the host page's client
 })
 ```
 

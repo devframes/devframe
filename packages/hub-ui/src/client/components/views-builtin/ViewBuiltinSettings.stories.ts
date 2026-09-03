@@ -32,7 +32,7 @@ const meta = {
 export default meta
 type Story = StoryObj
 
-/** Embedded client — the Appearance tab shows dock-mode options. */
+/** Embedded client: the Appearance tab shows dock-mode options. */
 export const Embedded: Story = {
   render: () => ({
     setup: () => mountWithContext(
@@ -42,7 +42,7 @@ export const Embedded: Story = {
   }),
 }
 
-/** Standalone client — dock-mode options are hidden. */
+/** Standalone client: dock-mode options are hidden. */
 export const Standalone: Story = {
   render: () => ({
     setup: () => mountWithContext(
@@ -53,7 +53,7 @@ export const Standalone: Story = {
 }
 
 /**
- * A group whose members split into in-group sub-categories — open the
+ * A group whose members split into in-group sub-categories; open the
  * **Shortcuts** tab to see them listed directly under their group (`Docks` ›
  * Tools › a member), each indented by nesting level and bindable like any other
  * command. The rail's sub-category dividers stay in the rail; every row here is

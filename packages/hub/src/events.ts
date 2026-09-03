@@ -1,6 +1,6 @@
 /**
  * Centralized registry of every event, broadcast, RPC method, shared-state
- * key, and channel name the hub uses — the single source of truth that keeps
+ * key, and channel name the hub uses: the single source of truth that keeps
  * these names out of scattered string literals.
  *
  * **Keep this in sync with [`docs/content/8.references/3.events.md`](../../../docs/content/8.references/3.events.md)**

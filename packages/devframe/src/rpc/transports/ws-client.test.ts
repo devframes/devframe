@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createWsRpcChannel } from './ws-client'
 
-// A minimal fake WebSocket — only what `createWsRpcChannel` touches.
+// A minimal fake WebSocket: only what `createWsRpcChannel` touches.
 class FakeWebSocket {
   static OPEN = 1
   static instances: FakeWebSocket[] = []

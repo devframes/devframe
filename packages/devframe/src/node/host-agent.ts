@@ -213,10 +213,12 @@ export class DevframeAgentHost implements DevframeAgentHostType {
       description: input.description,
       safety: input.safety ?? 'action',
       tags: input.tags,
-      // Standard Schema `args` are carried raw (mirroring how an RPC-backed
-      // tool defers to `ctx.rpc.definitions`) — consumers (the MCP adapter)
-      // convert to JSON Schema on demand. An explicit `inputSchema` override
-      // wins when given.
+      /**
+       * Standard Schema `args` are carried raw (mirroring how an RPC-backed
+       * tool defers to `ctx.rpc.definitions`); consumers (the MCP adapter)
+       * convert to JSON Schema on demand. An explicit `inputSchema` override
+       * wins when given.
+       */
       args: input.args,
       inputSchema: input.inputSchema,
       outputSchema: input.outputSchema,
@@ -254,7 +256,7 @@ export class DevframeAgentHost implements DevframeAgentHostType {
         tags: agent.tags,
         rpcName: name,
         examples: agent.examples,
-        // Schemas are carried by the definition itself — consumers
+        // Schemas are carried by the definition itself; consumers
         // (e.g. the MCP adapter) convert the Standard Schema → JSON Schema
         // on demand.
       })

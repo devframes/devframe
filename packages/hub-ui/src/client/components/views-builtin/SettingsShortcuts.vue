@@ -19,14 +19,14 @@ const shortcutSearch = ref('')
 interface ShortcutRow {
   command: DevframeCommandEntry
   parentTitle?: string
-  /** Nesting level — 0 for a top-level command, +1 per ancestor. */
+  /** Nesting level: 0 for a top-level command, +1 per ancestor. */
   depth: number
 }
 
 // This page is only reachable with the dock open and the palette closed, so `when`
 // is evaluated against that context rather than the live one. `dockOpen`/`paletteOpen`
-// are transient dispatch state — `close-panel`'s `!paletteOpen` exists to hand Escape
-// to the palette, not to say the command is unbindable — so filtering by them would
+// are transient dispatch state: `close-panel`'s `!paletteOpen` exists to hand Escape
+// to the palette, not to say the command is unbindable, so filtering by them would
 // drop permanently bindable rows the moment Ctrl+K is pressed. `popupOpen` and
 // `clientType` stay live: those describe whether a command can exist at all, which is
 // why the dock-mode commands still vanish while the dock is detached into a popup.
@@ -73,8 +73,8 @@ function getEffectiveKeybindings(id: string): DevframeCommandKeybinding[] {
 
 /**
  * Indent one step per nesting level. An inline style rather than a class, since
- * the depth is only known at runtime and UnoCSS generates utilities from source
- * — a computed `ml-${depth * 6}` would never be emitted. One step is `ml-6`
+ * the depth is only known at runtime and UnoCSS generates utilities from source:
+ * a computed `ml-${depth * 6}` would never be emitted. One step is `ml-6`
  * worth of space.
  */
 function rowIndentStyle(row: ShortcutRow): Record<string, string> {
@@ -175,7 +175,7 @@ const editorWarnings = computed<string[]>(() => {
     warnings.push('Shift + letter may interfere with typing')
   }
 
-  // Browser / OS conflict — show the description
+  // Browser / OS conflict: show the description
   const browserDescription = KNOWN_BROWSER_SHORTCUTS[key]
   if (browserDescription) {
     const formatted = formatKeybinding(key).join('+')

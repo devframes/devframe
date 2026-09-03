@@ -83,7 +83,7 @@
     "examples/hub-next-minimal": {
       // `BUILTIN_PLUGIN_PACKAGES` (`src/client/hub.ts`) lists these as string
       // literals loaded through a runtime `import()` carrying
-      // `webpackIgnore`/`turbopackIgnore` — deliberately invisible to bundlers
+      // `webpackIgnore`/`turbopackIgnore`, deliberately invisible to bundlers
       // (and knip) so Next never inlines their node-only code. They're
       // genuinely used at runtime. (`data-inspector` and `assets` load via
       // their own string-literal helpers, so knip sees those directly.)
@@ -98,9 +98,9 @@
       ]
     },
     "examples/hub-vite": {
-      // `demo-dock-client` is consumed only as a runtime string — the demo
+      // `demo-dock-client` is consumed only as a runtime string: the demo
       // dock's `action.importFrom` bare specifier, resolved by Vite through
-      // the hub's `clientModuleResolution` template (`/@id/{specifier}`) —
+      // the hub's `clientModuleResolution` template (`/@id/{specifier}`),
       // never a static import knip's graph can see.
       "ignoreDependencies": ["demo-dock-client"]
     },
@@ -118,7 +118,7 @@
       }
     },
     // The Deno entry runs via `deno run src/server.ts`, a command string knip
-    // doesn't parse (unlike `tsx`/`bun`), so name the entry explicitly — it
+    // doesn't parse (unlike `tsx`/`bun`), so name the entry explicitly; it
     // pulls in `src/hub.ts` and every plugin dependency from there.
     "examples/hub-deno-minimal": {
       "entry": ["src/server.ts"]
@@ -155,7 +155,7 @@
     "packages/hub-ui": {
       // `playground/client-scripts/*.ts` are dock `action` entries the
       // playground's `seed.ts` points at by their runtime URL string
-      // (`action.importFrom`), not a static import knip's graph can see —
+      // (`action.importFrom`), not a static import knip's graph can see,
       // the same shape as a devframe's `clientScript`/`clientScripts` entry.
       "entry": ["playground/client-scripts/*.ts"]
     },

@@ -9,7 +9,7 @@ export interface AttachBunWsTransportOptions {
 
 /**
  * Structural view of the Bun `Bun.serve({ websocket })` handler object the
- * crossws Bun adapter produces — typed loosely so devframe carries no
+ * crossws Bun adapter produces, typed loosely so devframe carries no
  * dependency on Bun's own types.
  */
 export interface BunWsTierWebSocket {
@@ -20,7 +20,7 @@ export interface BunWsTierWebSocket {
 }
 
 export interface BunWsTier {
-  /** Complete a WS upgrade request — `Bun.serve`'s server as 2nd argument. */
+  /** Complete a WS upgrade request; `Bun.serve`'s server as 2nd argument. */
   handleUpgrade: (request: Request, server: unknown) => Promise<Response | undefined>
   /** The handlers to spread into `Bun.serve({ websocket })`. */
   websocket: BunWsTierWebSocket
@@ -28,7 +28,7 @@ export interface BunWsTier {
 }
 
 /**
- * The Bun fetch-upgrade WebSocket tier for `initDevframe` / `initHub` — the
+ * The Bun fetch-upgrade WebSocket tier for `initDevframe` / `initHub`: the
  * same RPC peer wiring as `attachWsRpcTransport`, driven by crossws's Bun
  * adapter so upgrades complete through `handler(request, server)` on the
  * app's own origin, with no side-car server. Load it dynamically so the Bun
@@ -47,9 +47,11 @@ export async function attachBunWsTransport(
         onConnected: core.onConnected,
         onDisconnected: core.onDisconnected,
       }),
-      // The same origin policy `routeUpgrades` applies for the Node
-      // transport, enforced at the upgrade hook since Bun upgrades arrive
-      // as fetch requests rather than `upgrade` socket events.
+      /**
+       * The same origin policy `routeUpgrades` applies for the Node
+       * transport, enforced at the upgrade hook since Bun upgrades arrive
+       * as fetch requests rather than `upgrade` socket events.
+       */
       upgrade(request) {
         const origin = request.headers.get('origin') ?? undefined
         const allowed = allowedOrigins && !Array.isArray(allowedOrigins)
@@ -64,7 +66,7 @@ export async function attachBunWsTransport(
   return {
     handleUpgrade: (request, server) =>
       ws.handleUpgrade(request, server as Parameters<typeof ws.handleUpgrade>[1]),
-    websocket: ws.websocket as unknown as BunWsTierWebSocket,
+    websocket: ws.websocket as BunWsTierWebSocket,
     close: () => ws.close(),
   }
 }

@@ -105,7 +105,7 @@ interface DemoDockClientMount {
  * Locate the shared demo dock-client script (examples/demo-dock-client) as a
  * prebuilt **self-contained bundle**: this host declares no
  * `clientModuleResolution` (Next's bundler exposes no browser-reachable
- * on-demand module URL), so client scripts ship by URL here — the Vite
+ * on-demand module URL), so client scripts ship by URL here, whereas the Vite
  * reference host consumes the same package as a bare specifier instead.
  * Loaded through the same bundler-ignored dynamic `import()` as the plugins.
  * Returns `null` if unbuilt.
@@ -211,19 +211,25 @@ export async function nextDevframeHub(
     cwd,
     origin,
     host: hostName,
-    // Gate access with devframe's interactive OTP (the default): the hub
-    // prints a 6-digit code + magic link on startup, and the client shell
-    // (`app/page.tsx`) drives its own authorization view to exchange the code
-    // for a bearer token. See `docs/content/1.guide/13.security.md`.
-    // The aggregate MCP endpoint at `/__devframes/__mcp` - the hub's agent
-    // surface (agent-flagged commands, plugin tools, `devframe:state:read`)
-    // over the same catch-all route as the SPAs.
+    /**
+     * Gate access with devframe's interactive OTP (the default): the hub
+     * prints a 6-digit code + magic link on startup, and the client shell
+     * (`app/page.tsx`) drives its own authorization view to exchange the code
+     * for a bearer token. See `docs/content/1.guide/13.security.md`.
+     * The aggregate MCP endpoint at `/__devframes/__mcp` - the hub's agent
+     * surface (agent-flagged commands, plugin tools, `devframe:state:read`)
+     * over the same catch-all route as the SPAs.
+     */
     mcp: true,
-    // This host renders its own React UI in `app/page.tsx`, so skip the
-    // default `@devframes/hub-ui` standalone/embedded slot.
+    /**
+     * This host renders its own React UI in `app/page.tsx`, so skip the
+     * default `@devframes/hub-ui` standalone/embedded slot.
+     */
     ui: false,
-    // Next route handlers can't accept WS upgrades — `createNextDevframeHub`
-    // runs the socket on a side-car (a free port near 9777, or the pinned one).
+    /**
+     * Next route handlers can't accept WS upgrades, so `createNextDevframeHub`
+     * runs the socket on a side-car (a free port near 9777, or the pinned one).
+     */
     port: options.port,
     getStorageDir(scope) {
       if (scope === 'workspace')
@@ -237,16 +243,20 @@ export async function nextDevframeHub(
       nextHubTerminalsList,
     ],
     devframes,
-    // Serve the reference json-render frontend as a prebuilt renderer module
-    // (published in the renderer manifest). This host's own page registers a
-    // local React renderer for the same type (app/page.tsx), which takes
-    // precedence - witnessing both sides of the swap seam: the manifest
-    // composition AND a local frontend replacing it.
+    /**
+     * Serve the reference json-render frontend as a prebuilt renderer module
+     * (published in the renderer manifest). This host's own page registers a
+     * local React renderer for the same type (app/page.tsx), which takes
+     * precedence - witnessing both sides of the swap seam: the manifest
+     * composition AND a local frontend replacing it.
+     */
     renderers: [jsonRenderRenderer],
-    // Record this hub in the global registry so `devframe connect` discovers
-    // it - running inside the Next dev server - like any standalone devframe.
-    // The instance owns the record (written once its pinned origin resolves,
-    // removed on close); the aggregate MCP path is derived from `mcp: true`.
+    /**
+     * Record this hub in the global registry so `devframe connect` discovers
+     * it - running inside the Next dev server - like any standalone devframe.
+     * The instance owns the record (written once its pinned origin resolves,
+     * removed on close); the aggregate MCP path is derived from `mcp: true`.
+     */
     register: {
       id: 'example:next-devframe-hub',
       name: 'Next Devframe Hub',
@@ -258,8 +268,10 @@ export async function nextDevframeHub(
         title: 'Next Hub: Ping',
         icon: 'ph:bell-duotone',
         category: 'hub',
-        // Opt this command into the agent surface: it shows up as an MCP tool
-        // on the aggregate endpoint at `<base>__mcp`.
+        /**
+         * Opt this command into the agent surface: it shows up as an MCP tool
+         * on the aggregate endpoint at `<base>__mcp`.
+         */
         agent: {
           description: 'Ping the hub to confirm it is alive. Returns "pong". Safe to call freely.',
           safety: 'read',

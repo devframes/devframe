@@ -18,7 +18,7 @@ export interface InstallDevframeOptions {
    * this to customize the entry's `category`, override the icon, hide it
    * via `when` (or only its dock-bar button via `visibility`), etc. Takes
    * precedence over the definition's own {@link DevframeDefinition.dock}
-   * defaults. Cannot change `id`, `type`, or `url` — those are derived from
+   * defaults. Cannot change `id`, `type`, or `url`, which are derived from
    * the devframe definition.
    */
   dock?: Partial<Omit<DevframeViewIframe, 'id' | 'type' | 'url'>>
@@ -60,7 +60,7 @@ async function resolvePageScriptClientScript(
 }
 
 /**
- * Framework-neutral primitive backing {@link DevframeHubContext.install} —
+ * Framework-neutral primitive backing {@link DevframeHubContext.install} -
  * installs a {@link DevframeDefinition} as a dock inside a hub-aware context:
  * serves the devframe's SPA at the resolved base path, synthesizes an iframe
  * dock entry from the definition's metadata, and runs the definition's
@@ -68,20 +68,47 @@ async function resolvePageScriptClientScript(
  * calling it directly.
  *
  * Framework kits wrap `ctx.install` with their own plugin/middleware
- * machinery — e.g. `@vitejs/devtools-kit`'s `createPluginFromDevframe`
+ * machinery, e.g. `@vitejs/devtools-kit`'s `createPluginFromDevframe`
  * returns a Vite `Plugin` whose `devtools.setup` ultimately delegates here.
  */
 /**
  * Phase one of an install: run the duplication guard, serve the SPA + meta,
  * register the iframe dock, and queue the definition's declarative wire
- * services — everything up to (but not including) `setup(ctx)`. Returns a
+ * services, everything up to (but not including) `setup(ctx)`. Returns a
  * deferred setup thunk, or `null` when the devframe was deduplicated.
  *
  * The hub's initial batch uses this to collect every devframe's services
- * across the whole hub, `ready()` them once, and only then run the setups —
+ * across the whole hub, `ready()` them once, and only then run the setups,
  * so services are ready before any setup, and a plugin can consume a service
  * another plugin declared regardless of mount order.
  */
+/**
+ * Serve a devframe's SPA (and the hub's connection meta) under `base`, if the
+ * definition ships client assets.
+ */
+async function serveDevframeAssets(
+  ctx: DevframeHubContext,
+  d: DevframeDefinition,
+  id: string,
+  base: string,
+): Promise<void> {
+  const clientAssets = resolveClientAssets(d)
+  if (!clientAssets)
+    return
+  // Serve the hub's connection meta under the devframe's base so its SPA
+  // discovers the RPC/WS endpoint via `connectDevframe()`'s relative
+  // `./__connection.json` fetch (rather than inheriting cross-origin from a
+  // parent window). Mounted before the SPA statics so route-ordered hosts
+  // resolve it ahead of the static catch-all; surface a missing hook.
+  if (ctx.host.mountConnectionMeta)
+    await ctx.host.mountConnectionMeta(base)
+  else
+    diagnostics.DF8106({ id, name: d.name, base })
+  // Resolve the plugin's assets against *its* dependency graph: pass the
+  // devframe's own `importMetaUrl` as the default `resolveFrom`.
+  ctx.views.hostStatic(base, typeof clientAssets === 'string' ? resolve(clientAssets) : clientAssets, d.importMetaUrl)
+}
+
 export async function prepareDevframe(
   ctx: DevframeHubContext,
   d: DevframeDefinition,
@@ -116,28 +143,7 @@ export async function prepareDevframe(
   if (clientScript)
     dockDefaults.clientScript = clientScript
 
-  const clientAssets = resolveClientAssets(d)
-  if (clientAssets) {
-    // Serve the hub's connection meta under the devframe's base so its SPA
-    // discovers the RPC/WS endpoint via `connectDevframe()`'s relative
-    // `./__connection.json` fetch — instead of relying on inheriting it from a
-    // same-origin parent window (which breaks for cross-origin / sandboxed
-    // iframes). A host that omits the hook turns this into silent breakage
-    // (empty panels / stuck-loading SPAs), so surface it rather than no-op away.
-    //
-    // Mounted *before* the SPA statics: route-ordered hosts (h3) resolve the
-    // exact meta route ahead of the static catch-all, and connect-style hosts
-    // are order-agnostic (their static middleware `next()`s on a miss).
-    if (ctx.host.mountConnectionMeta)
-      await ctx.host.mountConnectionMeta(base)
-    else
-      diagnostics.DF8106({ id, name: d.name, base })
-    const distSource = clientAssets
-    // Resolve the plugin's assets against *its* dependency graph, not the
-    // hub's: pass the devframe's own `importMetaUrl` as the default
-    // `resolveFrom`.
-    ctx.views.hostStatic(base, typeof distSource === 'string' ? resolve(distSource) : distSource, d.importMetaUrl)
-  }
+  await serveDevframeAssets(ctx, d, id, base)
 
   ctx.docks.register({
     id,
@@ -159,7 +165,7 @@ export async function prepareDevframe(
 }
 
 /**
- * Install a {@link DevframeDefinition} into a hub in one call — serve its SPA,
+ * Install a {@link DevframeDefinition} into a hub in one call: serve its SPA,
  * register its dock, ready its services, and run `setup(ctx)`. The imperative
  * counterpart to the hub's declarative `devframes` list (which batches the
  * phases via {@link prepareDevframe}); use it from `configure(ctx)` or

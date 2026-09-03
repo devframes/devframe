@@ -34,9 +34,8 @@ const el = {
 
 // ── transport preference (`?transport=` param) ──────────────────────────────
 // The hub serves both live transports (WS at `__ws`, SSE at `__sse`); the
-// client's `transport` option picks one, `auto` trusting the server's
-// advertisement. A connected client has no live switch, so the toggle writes
-// the `?transport=` param and reloads to reconnect on the pinned transport.
+// client's `transport` option picks one, `auto` trusting the server. A
+// connected client can't switch live, so the toggle reloads with `?transport=`.
 
 const TRANSPORT_PREFS = ['auto', 'websocket', 'sse'] as const
 type TransportPref = (typeof TRANSPORT_PREFS)[number]
@@ -153,11 +152,10 @@ function createClientNotesUrl(): string {
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 }
 
-// An *interactive* json-render spec synthesized entirely in the browser - the
-// client-only counterpart to a server-authored view. `{ $bindState }` inputs
-// write into the view's own `state`, `{ $state }` reads mirror it live, and the
-// buttons use the built-in `pushState` / `setState` actions - no server, no
-// shared state, rendered by the same manifest-served `json-render` module.
+// An *interactive* json-render spec synthesized in the browser, with no server
+// and no shared state: `{ $bindState }` inputs write into the view's own
+// `state`, `{ $state }` reads mirror it, and buttons use the built-in
+// `pushState`/`setState` actions - rendered by the manifest `json-render` module.
 function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec {
   return {
     root: 'root',
@@ -169,7 +167,7 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
       title: { type: 'Text', props: { text: 'Client Playground', variant: 'heading' }, children: [] },
       badge: { type: 'Badge', props: { text: 'client-only', variant: 'info' }, children: [] },
 
-      // Two-way binding: type a name, see it echoed live; toggle a switch.
+      /** Two-way binding: type a name, see it echoed live; toggle a switch. */
       hello: { type: 'Card', props: { title: 'Say hello' }, children: ['helloBody'] },
       helloBody: { type: 'Stack', props: { gap: 10 }, children: ['nameInput', 'greetRow', 'compact'] },
       nameInput: { type: 'TextInput', props: { label: 'Your name', placeholder: 'Type your name…', value: { $bindState: '/form/name' } }, children: [] },
@@ -178,7 +176,7 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
       greetName: { type: 'Text', props: { text: { $state: '/form/name' }, variant: 'body', color: 'primary' }, children: [] },
       compact: { type: 'Switch', props: { label: 'Compact mode', value: { $bindState: '/prefs/compact' } }, children: [] },
 
-      // Actions mutate state → the DataTable re-renders.
+      /** Actions mutate state → the DataTable re-renders. */
       notes: { type: 'Card', props: { title: 'Notes' }, children: ['notesBody'] },
       notesBody: { type: 'Stack', props: { gap: 10 }, children: ['draftRow', 'notesTable', 'clearBtn'] },
       draftRow: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'end' }, children: ['draftInput', 'addBtn'] },
@@ -213,13 +211,11 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
   }
 }
 
-// ── authorization gate (interactive OTP) ────────────────────────────────────
-// The hub gates every connection; this shell opts out of devframe's native
-// `prompt()` (`simpleAuth: false`) and renders its own authorization view,
-// mirroring the reference UI's `ViewBuiltinClientAuthNotice`. Trust can arrive
-// three ways: a stored bearer token or the magic-link OTP resolves the
-// handshake silently (the overlay never shows), otherwise the connection
-// settles `unauthorized` and the user types the 6-digit code from the terminal.
+// ── authorization gate ──────────────────────────────────────────────────────
+// The hub gates every connection; this host opts out of devframe's native
+// `prompt()` (`simpleAuth: false`) and renders its own view. A stored token or
+// magic-link OTP resolves the handshake silently; otherwise the user types the
+// 6-digit code from the terminal.
 
 function authorize(rpc: Awaited<ReturnType<typeof connectDevframe>>): Promise<void> {
   if (rpc.isTrusted)
@@ -323,12 +319,10 @@ async function main(): Promise<void> {
   setStatus('Connecting…')
   const transportPref = readTransportPref()
   renderTransportToggle(transportPref)
-  // The hub gates by default (interactive OTP). `simpleAuth: false` opts out of
-  // devframe's native `prompt()` fallback so this shell can drive its own
-  // authorization view; the magic-link OTP (`?devframe_otp=` on the URL) is
-  // still consumed automatically. `connectDevframe` returns before the trust
-  // handshake settles, so `authorize()` holds the UI until this client is
-  // trusted (via a stored token, the magic link, or the code the user enters).
+  // `simpleAuth: false` opts out of devframe's native `prompt()` so this host
+  // drives its own view; the magic-link OTP is still consumed automatically.
+  // `connectDevframe` returns before the trust handshake settles, so
+  // `authorize()` holds the UI until this client is trusted.
   const rpc = await connectDevframe({ baseURL: HUB_BASE, transport: transportPref, simpleAuth: false })
   await authorize(rpc)
   setStatus(`Connected · transport=${rpc.transport}`, 'ready')

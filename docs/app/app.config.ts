@@ -66,8 +66,10 @@ export default defineAppConfig({
   },
 
   docs: {
-    // Labeled sidebar groups per content section, consumed by the shadowed
-    // `useFilteredNavigation` composable (mirrors the old VitePress sidebar).
+    /**
+     * Labeled sidebar groups per content section, consumed by the shadowed
+     * `useFilteredNavigation` composable (mirrors the old VitePress sidebar).
+     */
     sidebarGroups: {
       guide: [
         {
@@ -126,23 +128,17 @@ export default defineAppConfig({
           items: ['/guide/built-with'],
         },
       ],
-      posts: [
-        {
-          title: 'Blog',
-          items: ['/posts/pluggable-extensible-playful-devtools'],
-        },
-      ],
     },
     ogImage: {
       tagline: 'Build a devtool once. Mount it anywhere.',
     },
     llms: {
       description:
-        'Framework-neutral foundation for building devtools — one definition becomes a Web Standard handler, a CLI, a static report, an MCP server, or a hub dock.',
+        'Framework-neutral foundation for building devtools: one definition becomes a Web Standard handler, a CLI, a static report, an MCP server, or a hub dock.',
     },
     schemaOrg: {
       description:
-        'Framework-neutral foundation for building devtools — RPC layer, hosts, and adapters.',
+        'Framework-neutral foundation for building devtools: RPC layer, hosts, and adapters.',
       applicationCategory: 'DeveloperApplication',
       operatingSystem: 'Any',
       license: 'https://github.com/devframes/devframe/blob/main/LICENSE.md',

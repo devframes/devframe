@@ -55,8 +55,10 @@ export function createResolveMetadataRpc(options: ResolveMetadataOptions = {}) {
       return { records: [{ inputs: [input], output: snapshot }], fallback: snapshot }
     },
     setup: () => ({
-      // The RPC runtime awaits handlers before validating `returns`; its public
-      // setup type currently models schema-backed returns as synchronous.
+      /**
+       * The RPC runtime awaits handlers before validating `returns`; its public
+       * setup type currently models schema-backed returns as synchronous.
+       */
       handler: (async ({ url = '' }): Promise<OgSnapshot> => {
         const target = url.trim() || options.defaultUrl?.trim()
         if (!target)

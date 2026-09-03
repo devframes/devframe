@@ -45,7 +45,7 @@ function onLaunch() {
 }
 
 const status = computed(() => props.entry.launcher.status || 'idle')
-// Hub's author-set `digest` — a short line of progress/status.
+// Hub's author-set `digest`: a short line of progress/status.
 const progress = computed(() => props.entry.launcher.digest)
 const terminalSessionId = computed(() => props.entry.launcher.terminalSessionId)
 

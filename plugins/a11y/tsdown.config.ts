@@ -8,7 +8,7 @@ const clientEntries = {
   'client/index': 'src/client/index.ts',
 }
 
-// Node-side entries — the devframe definition, the CLI/Vite host
+// Node-side entries: the devframe definition, the CLI/Vite host
 // adapters, the setup module, and the RPC registry.
 const serverEntries = {
   'index': 'src/index.ts',
@@ -17,15 +17,17 @@ const serverEntries = {
   'rpc/index': 'src/rpc/index.ts',
 }
 
-// Three configs mirror `packages/devframe`:
-//   1. browser runtime build (`dts: false`, `clean: true`) — clears dist/
-//      and emits the client bundle in an isolated graph;
-//   2. node runtime build (`dts: false`, `clean: false`) — appends;
-//   3. combined dts (`emitDtsOnly`) — one rolldown graph so the
-//      `declare module 'devframe'` RPC augmentation resolves once.
-//
-// The Solid panel SPA (`src/spa`) and the in-page agent (`src/inject`)
-// build separately with Vite into `dist/spa` and `dist/inject`.
+/**
+ * Three configs mirror `packages/devframe`:
+ * 1. browser runtime build (`dts: false`, `clean: true`): clears dist/
+ * and emits the client bundle in an isolated graph;
+ * 2. node runtime build (`dts: false`, `clean: false`): appends;
+ * 3. combined dts (`emitDtsOnly`): one rolldown graph so the
+ * `declare module 'devframe'` RPC augmentation resolves once.
+ *
+ * The Solid panel SPA (`src/spa`) and the in-page agent (`src/inject`)
+ * build separately with Vite into `dist/spa` and `dist/inject`.
+ */
 export default defineConfig([
   {
     clean: true,

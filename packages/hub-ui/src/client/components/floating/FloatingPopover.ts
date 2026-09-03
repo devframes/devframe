@@ -18,12 +18,12 @@ const FloatingPopoverComponent = defineComponent({
       type: Boolean,
       default: true,
     },
-    /** Appended to the panel's class list — lets a consumer replace the default tooltip padding (e.g. a listbox). */
+    /** Appended to the panel's class list, letting a consumer replace the default tooltip padding (e.g. a listbox). */
     panelClass: {
       type: [String, Array] as PropType<string | string[]>,
       required: false,
     },
-    /** Elements `dismissOnClickOutside` should not treat as "outside" — typically the trigger that toggles this popover. */
+    /** Elements `dismissOnClickOutside` should not treat as "outside", typically the trigger that toggles this popover. */
     ignore: {
       type: Array as PropType<MaybeElementRef[]>,
       required: false,
@@ -42,14 +42,9 @@ const FloatingPopoverComponent = defineComponent({
     }
 
     const panelSize = reactive({ width: 0, height: 0 })
-    // Before the first measurement, `resolveFloatingPosition` centers the panel
-    // under the anchor via `transform: translateX(-50%)` (it doesn't know the
-    // panel's real width yet); once measured, it switches to an absolute `left`
-    // with no transform. Both resolve to the same visual position, but
-    // transitioning `left` and `transform` independently between them produces
-    // a visible sideways wobble — so `measured` only flips (re-enabling the
-    // transition) a tick after `panelSize` updates, letting that one
-    // size-correcting render apply instantly rather than animate.
+    // Pre-measurement the panel is centered via `transform`, then switches to
+    // absolute `left`; flipping `measured` a tick after `panelSize` updates lets
+    // that size-correcting render apply instantly, avoiding a sideways wobble.
     const measured = ref(false)
 
     function measurePanel() {

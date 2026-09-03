@@ -81,7 +81,7 @@ export interface TestClient {
 }
 
 /**
- * Minimal RPC + streaming client over the WS transport — mirrors the
+ * Minimal RPC + streaming client over the WS transport, mirroring the
  * terminals plugin's test harness. `connectDevframe` is skipped because it
  * needs a browser-like environment for connection-meta lookup.
  */

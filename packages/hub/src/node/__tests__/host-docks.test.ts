@@ -9,15 +9,18 @@ import { describe, expect, it, vi } from 'vitest'
 import { parseRemoteConnection } from '../../client/remote'
 import { DevframeDocksHost } from '../host-docks'
 
+type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> }
+
 function createContext(): DevframeHubContext {
   const storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-docks-'))
-  return {
+  const partial: DeepPartial<DevframeHubContext> = {
     host: {
       mountStatic: () => {},
       resolveOrigin: () => 'http://localhost:5173',
       getStorageDir: () => storageDir,
     },
-  } as unknown as DevframeHubContext
+  }
+  return partial as DevframeHubContext
 }
 
 describe('devframeDockHost remote URL enrichment', () => {

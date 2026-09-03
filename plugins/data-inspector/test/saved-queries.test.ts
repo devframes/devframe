@@ -7,6 +7,9 @@ import { deleteSavedQuery, listSavedQueries, saveQuery } from '../src/node/saved
 
 function contextStub(): DevframeNodeContext {
   const root = mkdtempSync(join(tmpdir(), 'di-saved-'))
+  // saved-queries only reads ctx.host.getStorageDir; the rest of the wide
+  // DevframeNodeContext surface is irrelevant to these fs-level tests.
+  // eslint-disable-next-line slop/no-chained-type-assertions -- minimal stub for an unused-surface boundary
   return {
     host: {
       getStorageDir: (scope: string) => join(root, scope),

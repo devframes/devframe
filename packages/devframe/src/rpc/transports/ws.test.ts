@@ -95,7 +95,7 @@ describe('ws client post on a non-open socket', () => {
     vi.stubGlobal('WebSocket', fakeWsCtor(FakeWS.CLOSED, instances))
     try {
       // Baseline: `createWsRpcChannel` itself registers one 'open' listener
-      // (for `onConnected`) regardless of readyState — that one is expected
+      // (for `onConnected`) regardless of readyState; that one is expected
       // to stick around; `post` must not add another on top of it.
       const channel = createWsRpcChannel({ url: 'ws://127.0.0.1:1', onError: e => errors.push(e) })
       const ws = instances[0]!
@@ -209,7 +209,7 @@ describe('devframe rpc', () => {
 
   it('should work w/ ws transport', async () => {
     // Use 127.0.0.1 on both client and server so they agree on the
-    // address family — `localhost` resolution is ambiguous (IPv4 vs IPv6)
+    // address family, since `localhost` resolution is ambiguous (IPv4 vs IPv6)
     // and differs between Windows/macOS/Linux, which causes the client
     // to hang when the two sides pick opposite families.
     const HOST = '127.0.0.1'

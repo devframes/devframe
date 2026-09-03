@@ -12,13 +12,13 @@ function nullHost(): DevframeHost {
   }
 }
 
-async function bootPair() {
+async function bootPair(exposeSharedState: boolean | ((key: string) => boolean) = true) {
   const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
 
   const server = buildMcpServerFromContext(ctx, {
     serverName: 'test',
     serverVersion: '0.0.0-test',
-    exposeSharedState: true,
+    exposeSharedState,
   })
 
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
@@ -72,13 +72,13 @@ describe('mcp adapter (in-memory)', () => {
 
       const listed = await client.listTools()
       const tool = listed.tools.find(t => t.name === 'schema-tool')!
-      // Each positional arg is advertised under `arg0`/`arg1`/… — the
+      // Each positional arg is advertised under `arg0`/`arg1`/…, the
       // project-wide Standard Schema convention (no single-arg unwrapping).
       const schema = tool.inputSchema as { type: string, properties: Record<string, unknown> }
       expect(schema.type).toBe('object')
       expect(Object.keys(schema.properties)).toEqual(['arg0'])
 
-      // `args` is purely descriptive for a plain registered tool — the
+      // `args` is purely descriptive for a plain registered tool: the
       // handler receives the caller's payload as-is, unlike RPC-backed
       // tools (or hub commands) which coerce `arg0`/`arg1`/… into
       // positional parameters.
@@ -125,7 +125,7 @@ describe('mcp adapter (in-memory)', () => {
       })
       ctx.agent.registerTool({
         id: 'demo_greet',
-        description: 'Second — sanitizes to the same wire name.',
+        description: 'Second, sanitizes to the same wire name.',
         handler: () => 'second',
       })
 
@@ -261,7 +261,7 @@ describe('mcp adapter (in-memory)', () => {
       ctx.agent.registerTool({
         id: 'void-tool',
         description: 'Returns nothing.',
-        // What a valibot `v.void()` returns schema converts to.
+        /** What a valibot `v.void()` returns schema converts to. */
         outputSchema: { type: 'null' },
         handler: () => undefined,
       })
@@ -312,40 +312,22 @@ describe('mcp adapter (in-memory)', () => {
   })
 
   it('hides devframe:state:read when shared-state exposure is disabled', async () => {
-    const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
-    const server = buildMcpServerFromContext(ctx, {
-      serverName: 'test',
-      serverVersion: '0.0.0-test',
-      exposeSharedState: false,
-    })
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
-    await server.connect(serverTransport)
-    const client = new Client({ name: 'test-client', version: '0.0.0' })
-    await client.connect(clientTransport)
+    const { client, cleanup } = await bootPair(false)
     try {
       const listed = await client.listTools()
       expect(listed.tools.map(t => t.name)).not.toContain('devframe_state_read')
     }
     finally {
-      await client.close()
-      await server.close()
+      await cleanup()
     }
   })
 
   it('respects the shared-state filter in devframe:state:read', async () => {
-    const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
-    await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
-    await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
-    const server = buildMcpServerFromContext(ctx, {
-      serverName: 'test',
-      serverVersion: '0.0.0-test',
-      exposeSharedState: key => key.startsWith('visible:'),
-    })
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
-    await server.connect(serverTransport)
-    const client = new Client({ name: 'test-client', version: '0.0.0' })
-    await client.connect(clientTransport)
+    const { ctx, client, cleanup } = await bootPair(key => key.startsWith('visible:'))
     try {
+      await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
+      await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
+
       const keys = await client.callTool({ name: 'devframe_state_read', arguments: {} })
       expect(keys.structuredContent).toEqual({ keys: ['visible:key'] })
 
@@ -353,8 +335,75 @@ describe('mcp adapter (in-memory)', () => {
       expect(hidden.isError).toBe(true)
     }
     finally {
-      await client.close()
-      await server.close()
+      await cleanup()
+    }
+  })
+
+  it('omits state resources and rejects a direct URI read when exposure is disabled', async () => {
+    const { ctx, client, cleanup } = await bootPair(false)
+    try {
+      await ctx.rpc.sharedState.get('alpha:key', { initialValue: { n: 1 } })
+
+      const listed = await client.listResources()
+      expect(listed.resources.some(r => r.uri.startsWith('devframe://state/'))).toBe(false)
+
+      // A caller that knows the key must not bypass the policy by reading the
+      // URI directly.
+      await expect(
+        client.readResource({ uri: `devframe://state/${encodeURIComponent('alpha:key')}` }),
+      ).rejects.toThrow()
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('applies the filter to direct URI reads, not only discovery', async () => {
+    const { ctx, client, cleanup } = await bootPair(key => key.startsWith('visible:'))
+    try {
+      await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
+      await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
+
+      const listed = await client.listResources()
+      const stateUris = listed.resources.filter(r => r.uri.startsWith('devframe://state/')).map(r => r.uri)
+      expect(stateUris).toEqual([`devframe://state/${encodeURIComponent('visible:key')}`])
+
+      const allowed = await client.readResource({ uri: `devframe://state/${encodeURIComponent('visible:key')}` })
+      const c = allowed.contents[0] as { text: string }
+      expect(JSON.parse(c.text)).toEqual({ n: 1 })
+
+      // Known key, denied by predicate: rejected before storage access.
+      await expect(
+        client.readResource({ uri: `devframe://state/${encodeURIComponent('hidden:key')}` }),
+      ).rejects.toThrow()
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('agrees between the state-read tool and the resource path for the same policy', async () => {
+    const { ctx, client, cleanup } = await bootPair(key => key.startsWith('visible:'))
+    try {
+      await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
+      await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
+
+      // Allowed key: both paths return the same value.
+      const toolValue = await client.callTool({ name: 'devframe_state_read', arguments: { key: 'visible:key' } })
+      expect(toolValue.structuredContent).toEqual({ key: 'visible:key', value: { n: 1 } })
+      const resourceValue = await client.readResource({ uri: `devframe://state/${encodeURIComponent('visible:key')}` })
+      const c = resourceValue.contents[0] as { text: string }
+      expect(JSON.parse(c.text)).toEqual({ n: 1 })
+
+      // Denied key: both paths reject.
+      const toolHidden = await client.callTool({ name: 'devframe_state_read', arguments: { key: 'hidden:key' } })
+      expect(toolHidden.isError).toBe(true)
+      await expect(
+        client.readResource({ uri: `devframe://state/${encodeURIComponent('hidden:key')}` }),
+      ).rejects.toThrow()
+    }
+    finally {
+      await cleanup()
     }
   })
 })

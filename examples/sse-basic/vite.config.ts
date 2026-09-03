@@ -57,8 +57,10 @@ export default defineConfig({
         const instance = initDevframe(devframe, {
           base: '/__sse-basic/',
           ws: false,
-          // Single-user localhost demo; a server reachable beyond localhost
-          // should gate (see docs/content/1.guide/13.security.md).
+          /**
+           * Single-user localhost demo; a server reachable beyond localhost
+           * should gate (see docs/content/1.guide/13.security.md).
+           */
           auth: false,
         })
         server.middlewares.use(instance.nodeMiddleware)

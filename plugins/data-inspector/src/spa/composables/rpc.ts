@@ -2,8 +2,8 @@
  * Devframe connection state + the data BACKEND the workbench talks through.
  *
  * The backend is chosen once at boot (`connect()`):
- *   - **rpc** — a live devframe server; every method is a namespaced RPC call.
- *   - **static** — a pre-exported dataset (`./data-inspector-static.json`,
+ *   - **rpc**: a live devframe server; every method is a namespaced RPC call.
+ *   - **static**: a pre-exported dataset (`./data-inspector-static.json`,
  *     advertised by a `backend: 'static'` `./__connection.json`); queries,
  *     suggestions and skeletons run entirely client-side via the isomorphic
  *     engine, and saved-query persistence is unavailable.
@@ -68,7 +68,7 @@ export interface DataBackend {
 
 const backendRef = shallowRef<DataBackend | null>(null)
 
-/** The active backend — `connect()` must have completed. */
+/** The active backend; `connect()` must have completed. */
 export function backend(): DataBackend {
   if (!backendRef.value)
     throw new Error('not connected')
@@ -85,11 +85,11 @@ let rpcClient: DevframeRpcClient | null = null
 
 /**
  * Subscribe to the hub's dock-activation slot. When an activation targets this
- * dock (`dockId`) and carries a `sourceId`, invoke `apply` with it — the
+ * dock (`dockId`) and carries a `sourceId`, invoke `apply` with it, taking the
  * deep-link path that lets another dock (e.g. a messages feed) jump the user
  * straight to a data source. Reads the slot once on subscribe (so a dock that
  * mounts *because* of the activation still converges) and on every update.
- * Inert outside a hub — static mode or no shared state simply never fires.
+ * Inert outside a hub: static mode or no shared state simply never fires.
  */
 export async function onDockActivation(dockId: string, apply: (sourceId: string) => void): Promise<void> {
   const client = rpcClient
@@ -113,16 +113,16 @@ export async function onDockActivation(dockId: string, apply: (sourceId: string)
     slot.on('updated', handle)
   }
   catch {
-    // No hub / no shared state — deep-linking simply stays inert.
+    // No hub or shared state; deep-linking simply stays inert.
   }
 }
 
 // ── rpc backend ──────────────────────────────────────────────────────
 
 function createRpcBackend(client: DevframeRpcClient): DataBackend {
-  /** Untyped call escape hatch — the functions aren't module-augmented here. */
+  /** Untyped call escape hatch, since the functions aren't module-augmented here. */
   const call = <T>(name: string, ...args: unknown[]): Promise<T> =>
-    (client.call as unknown as (name: string, ...args: unknown[]) => Promise<T>)(name, ...args)
+    (client.call as (name: string, ...args: unknown[]) => Promise<T>)(name, ...args)
 
   return {
     static: false,

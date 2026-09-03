@@ -1,8 +1,10 @@
 import { defineDiagnostics } from 'devframe/utils/nostics'
 
-// Uses the plugin's own `DP_ASSETS_` prefix per the built-in plugin
-// convention, keeping it collision-free with devframe core (`DF`) and the
-// hub (`DF8xxx`).
+/**
+ * Uses the plugin's own `DP_ASSETS_` prefix per the built-in plugin
+ * convention, keeping it collision-free with devframe core (`DF`) and the
+ * hub (`DF8xxx`).
+ */
 export const diagnostics = defineDiagnostics({
   docsBase: 'https://devfra.me/errors',
   codes: {
@@ -20,7 +22,7 @@ export const diagnostics = defineDiagnostics({
     },
     DP_ASSETS_0004: {
       why: (p: { path: string }) => `No asset found at "${p.path}".`,
-      fix: 'Refresh the asset list — it may have been moved or deleted already.',
+      fix: 'Refresh the asset list; it may have been moved or deleted already.',
     },
     DP_ASSETS_0005: {
       why: (p: { path: string }) => `Cannot create folder "${p.path}" because a file already exists there.`,
@@ -32,7 +34,7 @@ export const diagnostics = defineDiagnostics({
     },
     DP_ASSETS_0007: {
       why: 'The upload streaming channel is unavailable because this devframe was set up with `write: false`.',
-      fix: 'This indicates an internal registration bug — `upload` should never be reachable without `write: true`. Please report it.',
+      fix: 'This indicates an internal registration bug, since `upload` should never be reachable without `write: true`. Please report it.',
     },
   },
 })

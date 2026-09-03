@@ -1,33 +1,22 @@
+ignoreWorkspaceRootCheck: true
+catalogMode: prefer
+cleanupUnusedCatalogs: true
 # The `comark-docs` layer (docs site theme, installed from GitHub) pins its
 # `comark`/`comark-content`/`@comark/nuxt` deps to pkg.pr.new snapshot URLs,
 # which pnpm 11 classifies as exotic subdependencies and blocks by default.
 # There is no per-package allowlist for this setting.
 blockExoticSubdeps: false
-allowBuilds:
-  '@parcel/watcher': false
-  esbuild: true
-  sharp: false
-  simple-git-hooks: true
-  unrs-resolver: true
-  vue-demi: true
-catalogMode: prefer
-cleanupUnusedCatalogs: true
-ignoreWorkspaceRootCheck: true
+
+minimumReleaseAgeExcludePrune: true
 minimumReleaseAgeExclude:
-  - nostics@1.1.4
-  - '@antfu/design@0.3.0 || 0.3.2'
-  - crossws@0.4.8
   - iframe-pane@1.1.0
   - tsdown@0.22.14
-  - verkit@0.3.0
   - structured-clone-es@2.0.1
-  - '@devframes/hub-ui@0.9.4'
-  - '@devframes/hub@0.9.4'
-  - '@devframes/json-render@0.9.4'
-  - '@devframes/vite@0.9.4'
-shamefullyHoist: true
-shellEmulator: true
-strictPeerDependencies: false
+  - '@antfu/eslint-config@9.5.1'
+  - eslint-plugin-pnpm@1.9.1
+  - eslint-plugin-slop@0.1.1
+  - pnpm-workspace-yaml@1.9.1
+
 trustPolicy: no-downgrade
 trustPolicyExclude:
   - tinyexec@1.2.2
@@ -38,6 +27,15 @@ trustPolicyExclude:
   - '@vercel/cli-config@0.2.3'
   - '@vercel/cli-config@0.2.4'
   - '@vercel/cli-exec@1.0.1'
+
+update:
+  ignoreDeps:
+    - typescript@7
+
+strictPeerDependencies: false
+shamefullyHoist: true
+shellEmulator: true
+
 packages:
   - packages/*
   - plugins/*
@@ -74,17 +72,25 @@ overrides:
   '@devframes/service-open': 'workspace:*'
   '@devframes/service-shiki': 'workspace:*'
   '@devframes/vite': 'workspace:*'
+  '@unhead/vue': ^3.4.0
   chokidar: ^5.0.0
   crossws: ^0.4.12
   devframe: 'workspace:*'
   semver: ^7.8.5
   shell-quote: ^1.10.0
+  unhead: ^3.4.0
 
-update:
-  ignoreDeps:
-    - typescript@7
 patchedDependencies:
   comark-docs@0.0.1: patches/comark-docs@0.0.1.patch
+
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: true
+  sharp: false
+  simple-git-hooks: true
+  unrs-resolver: true
+  vue-demi: true
+
 catalogs:
   build:
     '@nuxt/kit': ^4.5.2
@@ -142,7 +148,7 @@ catalogs:
     zigpty: ^0.2.1
     zod: ^4.5.4
   docs:
-    comark-docs: github:comarkdown/comark-docs
+    comark-docs: github:comarkdown/comark-docs#f97dc864b0aa702d54c600f868589b7a2c185b3a
   frontend:
     '@antfu/design': ^0.4.0
     '@discoveryjs/discovery': 1.0.0-beta.99
@@ -208,9 +214,11 @@ catalogs:
     tsnapi: ^1.4.0
     vitest: ^4.1.11
   tooling:
-    '@antfu/eslint-config': ^9.3.0
+    '@antfu/eslint-config': ^9.5.1
     bumpp: ^12.2.2
     eslint: ^10.9.1
+    eslint-plugin-slop: ^0.1.1
+    eslint-plugin-sonarjs: ^4.2.0
     knip: ^6.33.0
     nano-staged: ^1.0.2
     prompts: ^2.4.2

@@ -5,8 +5,10 @@ import { storybookHub } from './src/hub'
 
 export default defineConfig({
   resolve: { alias },
-  // Dev tooling reached from arbitrary hostnames (LAN IPs, tunnels, tailnets):
-  // accept any Host header and fall back to the next free port when busy.
+  /**
+   * Dev tooling reached from arbitrary hostnames (LAN IPs, tunnels, tailnets):
+   * accept any Host header and fall back to the next free port when busy.
+   */
   server: { allowedHosts: true, strictPort: false },
   preview: { allowedHosts: true, strictPort: false },
   plugins: [

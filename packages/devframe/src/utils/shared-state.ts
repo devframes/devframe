@@ -111,7 +111,7 @@ export function createSharedState<T extends object>(
       if (syncIds.has(syncId))
         return
       enableImmerPatches()
-      state = applyPatches(state as unknown as Objectish, patches as unknown as Patch[]) as T
+      state = applyPatches(state as Objectish, patches as Patch[]) as T
       rememberSyncId(syncIds, syncId)
       events.emit('updated', state, undefined, syncId)
     },
@@ -122,15 +122,15 @@ export function createSharedState<T extends object>(
 
       rememberSyncId(syncIds, syncId)
       if (enablePatches) {
-        const [newState, patches] = produceWithPatches(
-          state as unknown as Objectish,
+        const [nextState, patches] = produceWithPatches(
+          state as Objectish,
           fn as (draft: any) => void,
-        ) as unknown as [T, Patch[]]
-        state = newState
-        events.emit('updated', state, patches as unknown as SharedStatePatch[], syncId)
+        )
+        state = nextState as T
+        events.emit('updated', state, patches as SharedStatePatch[], syncId)
       }
       else {
-        state = produce(state as unknown as Objectish, fn as (draft: any) => void) as T
+        state = produce(state as Objectish, fn as (draft: any) => void) as T
         events.emit('updated', state, undefined, syncId)
       }
     },

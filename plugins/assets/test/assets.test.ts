@@ -29,7 +29,7 @@ async function upload(client: TestClient, path: string, bytes: Uint8Array): Prom
   const sink = client.streaming.upload<Uint8Array>('devframes:plugin:assets:upload', uploadId)
   sink.write(bytes)
   sink.close()
-  // The server-side write is async (fire-and-forget inside the handler) —
+  // The server-side write is async (fire-and-forget inside the handler), so
   // give the write stream a tick to flush before the caller asserts on disk.
   await new Promise(resolve => setTimeout(resolve, 50))
 }
@@ -39,13 +39,9 @@ describe('assets plugin', () => {
   let server: AssetsServer
   let client: TestClient
 
-  // Every managed temp dir this file creates, deleted once at the very end
-  // rather than per-test. On Windows, closing a live chokidar watcher
-  // doesn't guarantee libuv has retired the outstanding
-  // ReadDirectoryChangesW request — deleting the directory it watched right
-  // after close() can trip a native assertion and hard-crash the process
-  // (see `watchAssetsDir`'s disposer). Deferring every directory's removal
-  // well past its server's shutdown keeps that race out of this suite.
+  // Deleted once at the very end, not per-test: deleting a directory right
+  // after closing its chokidar watcher can trip a native libuv assertion on
+  // Windows (see `watchAssetsDir`'s disposer). Deferring keeps that race out.
   const tempDirs: string[] = []
 
   beforeEach(async () => {
@@ -241,7 +237,7 @@ describe('assets plugin', () => {
   it('installs the open wire service (regardless of write) for the client to call directly', async () => {
     server = await startAssetsServer(dir, { write: false, watch: false })
 
-    // Assets no longer wraps open-in-editor/reveal-in-folder — it declares
+    // Assets no longer wraps open-in-editor/reveal-in-folder; it declares
     // `@devframes/service-open` (with the managed dir as an allowed root),
     // which the client calls directly with the asset's absolute `fsPath`.
     // The service is constructed before setup and its scoped RPC registered,
@@ -263,21 +259,10 @@ describe('assets plugin', () => {
       expect(asset.fsPath && isAbsolute(asset.fsPath)).toBeTruthy()
   })
 
-  // The one test that needs the live watcher — every other test above opts
-  // out of it (`watch: false`) so this is the only native fs watch handle
-  // this file ever opens, close()s, and deletes the directory of.
-  //
-  // Skipped on Windows: opening a real `ReadDirectoryChangesW` watch and
-  // then closing + deleting its directory shortly after is a known
-  // trigger for a native libuv assertion on Windows CI runners —
-  // `Assertion failed: !_wcsnicmp(filename, dir, dirlen), file
-  // src\win\fs-event.c, line 72` — that hard-aborts the process outright
-  // (no JS-catchable error). It isn't reliably avoidable with a delay: it
-  // reproduces intermittently regardless of how long the teardown waits,
-  // consistent with Windows Defender's real-time scanning racing the
-  // directory watch/delete (a widely reported Node/libuv interaction on
-  // hosted Windows runners). The live-watcher behavior is still fully
-  // covered on Linux/macOS.
+  // The only test that opens a live fs watch handle (others use `watch: false`).
+  // Skipped on Windows: closing then deleting a `ReadDirectoryChangesW` watch's
+  // directory intermittently trips a native libuv assertion that hard-aborts the
+  // process, consistent with Defender racing the watch/delete. Covered on Linux/macOS.
   it.skipIf(process.platform === 'win32')('broadcasts a change event when a file is added on disk', async () => {
     server = await startAssetsServer(dir)
     client = bootClient(server.port)
@@ -287,7 +272,7 @@ describe('assets plugin', () => {
       changed = true
     })
 
-    // `broadcast()` only reaches clients the server already knows about — a
+    // `broadcast()` only reaches clients the server already knows about, so a
     // round trip first guarantees the WS handshake has completed before the
     // watcher fires, otherwise the (unqueued, unreplayed) event is dropped.
     await call(client, 'devframes:plugin:assets:list')

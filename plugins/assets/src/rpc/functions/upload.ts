@@ -22,7 +22,7 @@ function isExtensionAllowed(path: string, allowed: readonly string[] | '*'): boo
 
 /**
  * Allocates an upload and returns a streaming id. Actual bytes flow over
- * the `upload` channel opened in `setupAssets` — see the client-side
+ * the `upload` channel opened in `setupAssets`; see the client-side
  * `useUpload` hook for the matching `rpc.streaming.upload()` call.
  */
 export const upload = defineAssetsRpc({
@@ -40,7 +40,7 @@ export const upload = defineAssetsRpc({
   setup: (ctx) => {
     const assets = getAssetsContext(ctx)
     return {
-      // See `list.ts` for why the async handler is cast.
+      /** See `list.ts` for why the async handler is cast. */
       handler: (async ({ path }: { path: string }): Promise<{ uploadId: string }> => {
         if (!isExtensionAllowed(path, assets.uploadExtensions)) {
           throw diagnostics.DP_ASSETS_0002({
@@ -68,7 +68,7 @@ export const upload = defineAssetsRpc({
               file.write(chunk)
           }
           catch {
-            // Client disconnected or cancelled mid-upload — drop the
+            // Client disconnected or cancelled mid-upload; drop the
             // partial file rather than leave a corrupt asset behind.
             file.close()
             await fsp.unlink(absolute).catch(() => {})

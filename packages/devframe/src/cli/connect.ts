@@ -9,7 +9,7 @@ import { listLiveDevframeInstances, probeDevframeOrigin } from '../node/instance
 
 export interface ConnectServerOptions {
   /**
-   * Explicit ports to probe besides the registry — for instances started
+   * Explicit ports to probe besides the registry, for instances started
    * before the registry existed, or reachable only by convention. Each port
    * is probed at `/` (`http://localhost:<port>/__connection.json`).
    */
@@ -54,7 +54,7 @@ const GATEWAY_TOOLS: Tool[] = [
   {
     name: INDEX_TOOL,
     title: 'Discover running devframes',
-    description: 'Discover every running devframe dev server on this machine and list each one\'s MCP tools. Call this FIRST, before assuming which devtools are available — the result names the instance (id, project root, origin) and the port to pass to the call tool. Safe to call freely.',
+    description: 'Discover every running devframe dev server on this machine and list each one\'s MCP tools. Call this FIRST, before assuming which devtools are available; the result names the instance (id, project root, origin) and the port to pass to the call tool. Safe to call freely.',
     inputSchema: { type: 'object', properties: {} },
     annotations: { readOnlyHint: true, destructiveHint: false },
   },
@@ -78,12 +78,12 @@ const GATEWAY_TOOLS: Tool[] = [
 /**
  * Start the devframe MCP connector on stdio: a thin discovery + proxy server
  * in the shape Vercel's next-devtools-mcp (https://github.com/vercel/next-devtools-mcp)
- * validated — credit due there for the architecture this connector follows.
- * It exposes two gateway tools —
+ * validated; credit is due there for the architecture this connector follows.
+ * It exposes two gateway tools:
  * `devframe_connect_list-instances` (discover running devframe instances via
  * the instance registry and list each one's MCP tools) and
  * `devframe_connect_call-tool` (invoke one tool on one instance over its
- * Streamable-HTTP endpoint) — and holds no domain knowledge of its own.
+ * Streamable-HTTP endpoint), and holds no domain knowledge of its own.
  */
 export async function startConnectServer(options: ConnectServerOptions = {}): Promise<ConnectServerHandle> {
   const sdk = await importSdk()

@@ -6,11 +6,13 @@ import { withDevframe } from '@devframes/next/single'
 // redirect).
 /** @type {import('next').NextConfig} */
 const nextConfig = withDevframe({
-  // The plugin packages and @devframes/hub-ui are loaded through a
-  // bundler-ignored dynamic `import()` in `hub.ts`, so Next resolves their
-  // published `dist` at runtime (their `import.meta.url` asset lookups don't
-  // survive static bundling). Nothing extra to externalize here.
-  // The workspace typecheck owns source-level project references.
+  /**
+   * The plugin packages and @devframes/hub-ui are loaded through a
+   * bundler-ignored dynamic `import()` in `hub.ts`, so Next resolves their
+   * published `dist` at runtime (their `import.meta.url` asset lookups don't
+   * survive static bundling). Nothing extra to externalize here.
+   * The workspace typecheck owns source-level project references.
+   */
   typescript: { ignoreBuildErrors: true },
 })
 

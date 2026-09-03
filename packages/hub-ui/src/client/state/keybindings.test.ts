@@ -5,7 +5,7 @@ import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, walkComma
 
 /**
  * Dock-navigation commands nest two deep (`Docks` › a group › its members), and
- * a devframe is free to register its own `children` deeper still — this tree carries
+ * a devframe is free to register its own `children` deeper still; this tree carries
  * a third level so the traversal is exercised past any fixed depth.
  */
 const commands = [
@@ -41,7 +41,7 @@ const commands = [
       },
     ],
   },
-] as unknown as DevframeCommandEntry[]
+] as DevframeCommandEntry[]
 
 const whenContext: WhenContext = {
   clientType: 'embedded',
@@ -167,7 +167,7 @@ describe('filterCommandsByWhen', () => {
           },
         ],
       },
-    ] as unknown as DevframeCommandEntry[]
+    ] as DevframeCommandEntry[]
 
     const [root] = filterCommandsByWhen(withWhen, whenContext)
     const branch = root?.children?.[0] as DevframeCommandEntry | undefined
@@ -184,7 +184,7 @@ describe('filterCommandsByWhen', () => {
         when: 'clientType == standalone',
         children: [{ id: 'child', source: 'client', title: 'Child' }],
       },
-    ] as unknown as DevframeCommandEntry[]
+    ] as DevframeCommandEntry[]
 
     expect(filterCommandsByWhen(withWhen, whenContext)).toEqual([])
   })

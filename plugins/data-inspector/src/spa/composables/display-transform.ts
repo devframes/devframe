@@ -69,7 +69,7 @@ export function decodeExpandHref(href: string): NodePath | null {
 }
 
 /**
- * Node path this render is rooted at — empty for the top-level result, and the
+ * Node path this render is rooted at, empty for the top-level result, and the
  * expanded node's path for a lazily fetched subtree, so its own truncation
  * markers carry absolute paths back to the root. Set for the duration of each
  * synchronous `prepareForDisplay` call.
@@ -83,7 +83,7 @@ export const keyBadges = new WeakMap<object, Record<string | number, DisplayBadg
 
 /**
  * Source `NodePath`s for display nodes, recorded only when path TRACKING is
- * on (a writable source rendered through the identity query — the one case
+ * on (a writable source rendered through the identity query, the one case
  * where display nodes provably address the live object). Object/array nodes
  * by identity; primitive-valued entries keyed by (parent object, key).
  */
@@ -115,7 +115,7 @@ function badgeFor(type: string, extra?: string): DisplayBadge {
 
 /**
  * True for normalizer markers whose display shape no longer mirrors the live
- * structure — their children must not carry source paths.
+ * structure, so their children must not carry source paths.
  */
 function isUntrackable(value: unknown): boolean {
   return !!value && typeof value === 'object'
@@ -142,98 +142,116 @@ function walk(value: unknown, track: NodePath | null, segKind: 'i' | 's' = 'i'):
   if (!value || typeof value !== 'object')
     return { value }
 
-  if (Array.isArray(value)) {
-    const out: unknown[] = Array.from({ length: value.length })
-    const childKeyBadges: Record<number, DisplayBadge> = {}
-    const childPaths: Record<string | number, NodePath> = {}
-    let hasKeyBadges = false
-    let hasChildPaths = false
-    value.forEach((item, i) => {
-      const childTrack = track && !isUntrackable(item) ? [...track, [segKind, i] as PathSegment] : null
-      const walked = walk(item, childTrack)
-      out[i] = walked.value
-      if (childTrack && recordChildPath(walked.value, childTrack, out, i, childPaths))
-        hasChildPaths = true
-      if (walked.badge) {
-        if (walked.value && typeof walked.value === 'object') {
-          objectBadges.set(walked.value as object, walked.badge)
-        }
-        else {
-          childKeyBadges[i] = walked.badge
-          hasKeyBadges = true
-        }
-      }
-    })
-    if (hasKeyBadges)
-      keyBadges.set(out, childKeyBadges)
-    if (hasChildPaths)
-      childNodePaths.set(out, childPaths)
-    return { value: out }
-  }
+  if (Array.isArray(value))
+    return walkArray(value, track, segKind)
 
   const obj = value as Record<string, unknown>
 
-  // ── depth-truncation marker: render the preview as a lazy-expand link ─
-  if (obj.$truncated === 'depth' && Array.isArray(obj.$path)) {
-    const preview = typeof obj.$preview === 'string' ? obj.$preview : 'load deeper'
-    const absolute = [...currentBasePath, ...(obj.$path as NodePath)]
-    return {
-      value: preview,
-      badge: {
-        text: 'load deeper',
-        className: 'di-type-badge di-type-lazy',
-        href: encodeExpandHref(absolute),
-      },
-    }
-  }
+  // Depth-truncation marker: render the preview as a lazy-expand link.
+  if (obj.$truncated === 'depth' && Array.isArray(obj.$path))
+    return walkTruncatedDepth(obj)
 
-  // ── normalizer stubs ────────────────────────────────────────────────
-  if (typeof obj.$type === 'string') {
-    const type = obj.$type
-    switch (type) {
-      case 'function': {
-        const name = typeof obj.name === 'string' && obj.name !== '(anonymous)' ? obj.name : ''
-        return { value: name ? `<function ${name}>` : '<function>', badge: badgeFor('function', 'Function') }
-      }
-      case 'Map': {
-        // String-keyed Maps (`value` form) descend with `['k', key]` steps,
-        // matching `navigate`; the `entries` form's display shape (an array
-        // of `{ key, value }` pairs) no longer mirrors the live Map, so its
-        // children carry no source paths.
-        const inner = obj.value !== undefined
-          ? walk(obj.value, track)
-          : walk(obj.entries ?? {}, null)
-        return { value: inner.value, badge: badgeFor('Map', `Map(${obj.size ?? '?'})`) }
-      }
-      case 'Set': {
-        const inner = walk(obj.values ?? [], track, 's')
-        return { value: inner.value, badge: badgeFor('Set', `Set(${obj.size ?? '?'})`) }
-      }
-      case 'Date':
-      case 'RegExp':
-      case 'URL':
-      case 'bigint':
-      case 'symbol':
-        return { value: obj.value, badge: badgeFor(type, type === 'bigint' ? 'BigInt' : type === 'symbol' ? 'Symbol' : type) }
-      case 'Error':{
-        const clone = { ...obj }
-        delete clone.$type
-        return { value: clone, badge: badgeFor('Error') }
-      }
-      case 'getter-error':
-        return { value: String(obj.message ?? ''), badge: badgeFor('getter-error', 'getter threw') }
-      default:
-        // Promise, WeakMap, TypedArray tags, ... - opaque stubs
-        return {
-          value: `<${type}>`,
-          badge: badgeFor(type, typeof obj.length === 'number' ? `${type}(${obj.length})` : type),
-        }
-    }
-  }
+  if (typeof obj.$type === 'string')
+    return walkTypeStub(obj, obj.$type, track)
 
-  // ── plain object / class instance ───────────────────────────────────
+  return walkPlainObject(obj, track)
+}
+
+/** Route a walked child's badge into the object table or the key table. */
+function assignChildBadge(key: string | number, walked: Walked, childKeyBadges: Record<string | number, DisplayBadge>): boolean {
+  if (!walked.badge)
+    return false
+  if (walked.value && typeof walked.value === 'object') {
+    objectBadges.set(walked.value as object, walked.badge)
+    return false
+  }
+  childKeyBadges[key] = walked.badge
+  return true
+}
+
+function walkArray(value: unknown[], track: NodePath | null, segKind: 'i' | 's'): Walked {
+  const out: unknown[] = Array.from({ length: value.length })
+  const childKeyBadges: Record<string | number, DisplayBadge> = {}
+  const childPaths: Record<string | number, NodePath> = {}
+  let hasKeyBadges = false
+  let hasChildPaths = false
+  value.forEach((item, i) => {
+    const childTrack = track && !isUntrackable(item) ? [...track, [segKind, i] as PathSegment] : null
+    const walked = walk(item, childTrack)
+    out[i] = walked.value
+    if (childTrack && recordChildPath(walked.value, childTrack, out, i, childPaths))
+      hasChildPaths = true
+    if (assignChildBadge(i, walked, childKeyBadges))
+      hasKeyBadges = true
+  })
+  if (hasKeyBadges)
+    keyBadges.set(out, childKeyBadges)
+  if (hasChildPaths)
+    childNodePaths.set(out, childPaths)
+  return { value: out }
+}
+
+function walkTruncatedDepth(obj: Record<string, unknown>): Walked {
+  const preview = typeof obj.$preview === 'string' ? obj.$preview : 'load deeper'
+  const absolute = [...currentBasePath, ...(obj.$path as NodePath)]
+  return {
+    value: preview,
+    badge: { text: 'load deeper', className: 'di-type-badge di-type-lazy', href: encodeExpandHref(absolute) },
+  }
+}
+
+function walkTypeStub(obj: Record<string, unknown>, type: string, track: NodePath | null): Walked {
+  switch (type) {
+    case 'function': {
+      const name = typeof obj.name === 'string' && obj.name !== '(anonymous)' ? obj.name : ''
+      return { value: name ? `<function ${name}>` : '<function>', badge: badgeFor('function', 'Function') }
+    }
+    case 'Map': {
+      // String-keyed Maps (`value` form) descend with `['k', key]` steps,
+      // matching `navigate`; the `entries` form's display shape (an array
+      // of `{ key, value }` pairs) no longer mirrors the live Map, so its
+      // children carry no source paths.
+      const inner = obj.value !== undefined
+        ? walk(obj.value, track)
+        : walk(obj.entries ?? {}, null)
+      return { value: inner.value, badge: badgeFor('Map', `Map(${obj.size ?? '?'})`) }
+    }
+    case 'Set': {
+      const inner = walk(obj.values ?? [], track, 's')
+      return { value: inner.value, badge: badgeFor('Set', `Set(${obj.size ?? '?'})`) }
+    }
+    case 'Date':
+    case 'RegExp':
+    case 'URL':
+    case 'bigint':
+    case 'symbol':
+      return { value: obj.value, badge: badgeFor(type, type === 'bigint' ? 'BigInt' : type === 'symbol' ? 'Symbol' : type) }
+    case 'Error': {
+      const clone = { ...obj }
+      delete clone.$type
+      return { value: clone, badge: badgeFor('Error') }
+    }
+    case 'getter-error':
+      return { value: String(obj.message ?? ''), badge: badgeFor('getter-error', 'getter threw') }
+    default:
+      // Promise, WeakMap, TypedArray tags, ... - opaque stubs
+      return {
+        value: `<${type}>`,
+        badge: badgeFor(type, typeof obj.length === 'number' ? `${type}(${obj.length})` : type),
+      }
+  }
+}
+
+/** The source path for an object property, unless the child is untrackable. */
+function childTrackFor(trackChildren: NodePath | null, key: string, child: unknown): NodePath | null {
+  return trackChildren && key !== '$truncated' && !isUntrackable(child)
+    ? [...trackChildren, ['k', key] as PathSegment]
+    : null
+}
+
+function walkPlainObject(obj: Record<string, unknown>, track: NodePath | null): Walked {
   const out: Record<string, unknown> = {}
-  const childKeyBadges: Record<string, DisplayBadge> = {}
+  const childKeyBadges: Record<string | number, DisplayBadge> = {}
   const childPaths: Record<string | number, NodePath> = {}
   let hasKeyBadges = false
   let hasChildPaths = false
@@ -247,22 +265,13 @@ function walk(value: unknown, track: NodePath | null, segKind: 'i' | 's' = 'i'):
       classBadge = { text: `class ${child}`, className: 'di-type-badge di-type-class' }
       continue
     }
-    const childTrack = trackChildren && key !== '$truncated' && !isUntrackable(child)
-      ? [...trackChildren, ['k', key] as PathSegment]
-      : null
+    const childTrack = childTrackFor(trackChildren, key, child)
     const walked = walk(child, childTrack)
     out[key] = walked.value
     if (childTrack && recordChildPath(walked.value, childTrack, out, key, childPaths))
       hasChildPaths = true
-    if (walked.badge) {
-      if (walked.value && typeof walked.value === 'object') {
-        objectBadges.set(walked.value as object, walked.badge)
-      }
-      else {
-        childKeyBadges[key] = walked.badge
-        hasKeyBadges = true
-      }
-    }
+    if (assignChildBadge(key, walked, childKeyBadges))
+      hasKeyBadges = true
   }
   if (hasKeyBadges)
     keyBadges.set(out, childKeyBadges)

@@ -54,8 +54,8 @@ function formatUptime(startedAt: number): string {
         Nothing shows up when only static/build servers are running, when
         discovery is turned off (<code>DEVFRAME_DISABLE_INSTANCE_REGISTRY=1</code>),
         or when an in-process host hasn't opted in. Start another
-        <code>devframe</code> dev server — or a hub host that calls
-        <code>registerDevframeInstance()</code> — then hit refresh.
+        <code>devframe</code> dev server (or a hub host that calls
+        <code>registerDevframeInstance()</code>), then hit refresh.
       </p>
     </div>
 

@@ -55,11 +55,11 @@ export function useIframePanes(
 
   if (panel) {
     // A panel move changes its box position without resizing the target, so the
-    // shared ResizeObserver/scroll listeners never fire — re-sync explicitly.
+    // shared ResizeObserver/scroll listeners never fire; re-sync explicitly.
     watch(() => panel, () => panes.value?.updateAll(), { deep: true })
 
     // Iframes capture pointer events, which breaks dragging/resizing happening
-    // above them — lock them for the duration of the interaction.
+    // above them, so lock them for the duration of the interaction.
     let release: (() => void) | undefined
     watch(
       () => panel.isDragging || panel.isResizing,

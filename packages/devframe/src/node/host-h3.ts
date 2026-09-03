@@ -13,7 +13,7 @@ export interface CreateH3DevframeHostOptions {
    */
   origin: string | (() => string)
   /**
-   * Register a static-file handler at `base` serving files from `source` —
+   * Register a static-file handler at `base` serving files from `source`:
    * a local directory or a resolved remote-assets back-proxy store (both
    * accepted by `devframe/utils/serve-static`). `mountStatic` forwards to
    * it; when omitted the host serves no SPA (bridge mode, where the SPA is
@@ -37,7 +37,7 @@ export interface CreateH3DevframeHostOptions {
 }
 
 /**
- * h3-backed {@link DevframeHost} — used by the standalone CLI adapter.
+ * h3-backed {@link DevframeHost}, used by the standalone CLI adapter.
  */
 export function createH3DevframeHost(options: CreateH3DevframeHostOptions): DevframeHost {
   const workspaceRoot = options.workspaceRoot ?? process.cwd()

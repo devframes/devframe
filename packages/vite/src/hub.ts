@@ -10,7 +10,7 @@ import { initHub } from '@devframes/hub/initiate'
 
 export interface ViteDevframeHubOptions {
   /**
-   * Mount base the hub answers under — every frame lives at `<base><id>/`.
+   * Mount base the hub answers under; every frame lives at `<base><id>/`.
    * Default: `/__devframes/`.
    */
   base?: string
@@ -33,7 +33,7 @@ export interface ViteDevframeHubOptions {
    */
   clientScripts?: Record<string, ClientScriptEntry>
   /**
-   * Prebuilt dock-renderer modules forwarded to `initHub({ renderers })` —
+   * Prebuilt dock-renderer modules forwarded to `initHub({ renderers })`,
    * each served at `<base>__renderers/<type>.mjs` and published in the
    * renderer manifest (e.g. `jsonRenderUiRenderer()` from
    * `@devframes/json-render-ui/hub`).
@@ -45,13 +45,13 @@ export interface ViteDevframeHubOptions {
    */
   rpcDeclarations?: InitHubOptions['rpcDeclarations']
   /**
-   * Runs once the context exists and every `devframes` entry is mounted —
+   * Runs once the context exists and every `devframes` entry is mounted;
    * register docks, commands, terminals, and messages surfaces here.
    */
   configure?: (ctx: DevframeHubContext) => void | Promise<void>
   /**
    * The hub's UI slot. Defaults to `@devframes/hub-ui`'s `createUi()` (the
-   * reference floating dock + standalone viewer) when omitted — install
+   * reference floating dock + standalone viewer) when omitted, so install
    * `@devframes/hub-ui` for that default. Pass your own {@link DevframeHubUi}
    * to swap the hub UI provider, or `false` for a headless hub (serve your own UI
    * against `@devframes/hub/client`).
@@ -95,14 +95,14 @@ function recommendViteDevtools(): void {
   console.warn(
     '[@devframes/vite/hub] Serving a devframes-hub directly inside Vite works, '
     + 'but Vite DevTools (`@vitejs/devtools-kit`) integrates the hub protocol '
-    + 'natively — prefer it for a first-class, multi-integration experience. '
+    + 'natively, so prefer it for a first-class, multi-integration experience. '
     + 'Pass `{ quiet: true }` to silence this notice.',
   )
 }
 
 /**
- * Mount a whole **devframes-hub** — many integrations under one namespace,
- * one merged RPC registry, one WebSocket — inside an existing Vite dev
+ * Mount a whole **devframes-hub** (many integrations under one namespace,
+ * one merged RPC registry, one WebSocket) inside an existing Vite dev
  * server. One `initHub()` call, mounted as connect middleware; the WebSocket
  * shares Vite's own HTTP server (upgrading at `<base>__ws`) unless a `port`
  * pins a side-car. The UI defaults to `@devframes/hub-ui` (its `embedded.js`
@@ -119,7 +119,7 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
   const base = normalizeHubBase(options.base ?? DEVFRAMES_HUB_BASE)
   let viteConfig: ResolvedConfig | undefined
   let instance: HubInstance | undefined
-  // Set once the hub is up if its UI ships an `embedded.js` bootstrap — the
+  // Set once the hub is up if its UI ships an `embedded.js` bootstrap: the
   // host-page script tag `transformIndexHtml` injects.
   let embeddedSrc: string | undefined
 
@@ -141,7 +141,7 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       if (!options.quiet)
         recommendViteDevtools()
 
-      // Vite re-invokes `configureServer` on each restart — tear down the
+      // Vite re-invokes `configureServer` on each restart, so tear down the
       // previous instance so we don't leak the WS binding or a registry record.
       await teardown()
 
@@ -163,36 +163,28 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       const hub = initHub({
         base,
         cwd,
-        // Bare-specifier client scripts resolve through Vite's own module
-        // graph: `/@id/<specifier>` routes the import (and its transitive
-        // bare imports) through Vite's resolution and import-analysis.
+        /**
+         * Bare-specifier client scripts resolve through Vite's own module
+         * graph: `/@id/<specifier>` routes the import (and its transitive
+         * bare imports) through Vite's resolution and import-analysis.
+         */
         clientModuleResolution: '/@id/{specifier}',
         origin: options.origin ?? (() => {
           const resolved = server.resolvedUrls?.local?.[0]
           return resolved ? new URL(resolved).origin : ''
         }),
         auth: options.auth,
-        // Share Vite's own HTTP server for the WS upgrade at `<base>__ws` — no
-        // side-car port to discover. A pinned `port` uses a side-car instead;
-        // an https/http2 dev server (non-`node:http`) asks for an auto-port
-        // side-car. Clients discover either via `__connection.json`.
+        /**
+         * Share Vite's own HTTP server for the WS upgrade at `<base>__ws`, with no
+         * side-car port to discover. A pinned `port` uses a side-car instead;
+         * an https/http2 dev server (non-`node:http`) asks for an auto-port
+         * side-car. Clients discover either via `__connection.json`.
+         */
         server: httpServer,
-        ...(options.port != null
-          ? { ws: { port: options.port } }
-          : httpServer
-            ? {}
-            : { ws: { sidecar: true } }),
-        ...(options.host != null ? { host: options.host } : {}),
+        ...resolveWsBinding(options.port, httpServer),
         ...(ui ? { ui } : {}),
-        ...(options.renderers ? { renderers: options.renderers } : {}),
-        ...(options.rpcDeclarations ? { rpcDeclarations: options.rpcDeclarations } : {}),
-        ...(options.mcp != null ? { mcp: options.mcp } : {}),
-        ...(options.register != null ? { register: options.register } : {}),
-        ...(options.getStorageDir ? { getStorageDir: options.getStorageDir } : {}),
-        ...(options.name != null ? { name: options.name } : {}),
-        ...(options.version != null ? { version: options.version } : {}),
         devframes,
-        ...(options.configure ? { configure: options.configure } : {}),
+        ...pickDefined(options, ['host', 'renderers', 'rpcDeclarations', 'mcp', 'register', 'getStorageDir', 'name', 'version', 'configure']),
       })
       instance = hub
       embeddedSrc = ui?.embedded ? `${base}embedded.js` : undefined
@@ -225,6 +217,28 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
   }
 }
 
+/**
+ * Share Vite's own HTTP server for the WS upgrade unless a `port` pins a
+ * side-car, or the dev server isn't a plain `node:http` server (https/http2),
+ * which needs an auto-port side-car.
+ */
+function resolveWsBinding(port: number | undefined, httpServer: NodeHttpServer | undefined): { ws?: { port: number } | { sidecar: true } } {
+  if (port != null)
+    return { ws: { port } }
+  return httpServer ? {} : { ws: { sidecar: true } }
+}
+
+/** Forward only the options a caller actually set. */
+function pickDefined<T, K extends keyof T>(source: T, keys: readonly K[]): Partial<Pick<T, K>> {
+  const out: Partial<Pick<T, K>> = {}
+  for (const key of keys) {
+    const value = source[key]
+    if (value != null)
+      out[key] = value
+  }
+  return out
+}
+
 /** Lazy-load `@devframes/hub-ui`'s default UI so it stays an optional dep. */
 async function loadDefaultUi(): Promise<DevframeHubUi> {
   const { createUi } = await import('@devframes/hub-ui')
@@ -239,7 +253,7 @@ function attachClientScripts(
   if (!devframes || !clientScripts)
     return devframes
   return devframes.map((entry) => {
-    // Leave thenables / factories untouched — they resolve to their own entries.
+    // Leave thenables / factories untouched; they resolve to their own entries.
     if (typeof entry === 'function' || entry instanceof Promise)
       return entry
     const def = (entry && typeof entry === 'object' && 'devframe' in entry

@@ -147,7 +147,7 @@ const errorText = computed(() => (props.server.status === 'error' ? props.server
         <p class="mb-5 text-sm leading-relaxed color-muted">
           {{ detection.mode === 'tunnel'
             ? 'Open a code tunnel and edit this workspace from the hosted vscode.dev editor, right here.'
-            : 'Start an editor scoped to this workspace and open VS Code right here — signed in automatically.' }}
+            : 'Start an editor scoped to this workspace and open VS Code right here, signed in automatically.' }}
         </p>
 
         <div

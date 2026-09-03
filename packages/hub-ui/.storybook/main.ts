@@ -16,8 +16,10 @@ const config: StorybookConfig = {
     return mergeConfig(config, {
       resolve: { alias },
       plugins: [vue(), UnoCSS()],
-      // Dev tool reached from arbitrary hostnames (LAN IPs, tunnels,
-      // tailnets), e.g. when iframed by the storybook-hub example.
+      /**
+       * Dev tool reached from arbitrary hostnames (LAN IPs, tunnels,
+       * tailnets), e.g. when iframed by the storybook-hub example.
+       */
       server: { allowedHosts: true },
     })
   },

@@ -17,7 +17,7 @@ function createHost(storageDir = mkdtempSync(join(tmpdir(), 'devframe-hub-contex
 }
 
 describe('createHubContext shared state', () => {
-  it('seeds an empty dock list — the hub synthesizes no built-in docks', async () => {
+  it('seeds an empty dock list, since the hub synthesizes no built-in docks', async () => {
     const context = await createHubContext({
       cwd: process.cwd(),
       mode: 'build',
@@ -82,7 +82,7 @@ describe('createHubContext remote dock republishing', () => {
       remote: true,
     })
 
-    // The registration's own refresh is debounced too — let it settle before
+    // The registration's own refresh is debounced too, so let it settle before
     // asserting the pre-bind projection.
     await new Promise(resolve => setTimeout(resolve, 20))
 

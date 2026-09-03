@@ -1,7 +1,7 @@
 import type { FileStatusCode } from '@devframes/service-git'
 import { cn } from '../../lib/utils'
 
-// A single-letter git status mark (A / M / D / R …), tinted by change kind —
+// A single-letter git status mark (A / M / D / R …), tinted by change kind,
 // the compact status indicator shown beside a file in the changes and
 // commit-detail file lists.
 

@@ -62,7 +62,7 @@ defineProps<{
     <!--
       Any other dock type routes through the hub's dock-renderer registry
       (locally-registered renderers, or prebuilt modules from the hub's
-      renderer manifest — e.g. `json-render`). With no renderer available it
+      renderer manifest, e.g. `json-render`). With no renderer available it
       renders the missing-renderer fallback.
     -->
     <ViewDockRenderer

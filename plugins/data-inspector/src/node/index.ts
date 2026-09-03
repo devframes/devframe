@@ -7,7 +7,7 @@ import { createExampleDataSource, EXAMPLE_SOURCE_ID } from './example-source'
 export const SOURCES_CHANGED_EVENT = 'devframes:plugin:data-inspector:sources:changed'
 
 /**
- * Broadcast whenever a source's DATA changes — a successful `write`, a
+ * Broadcast whenever a source's DATA changes: a successful `write`, a
  * `notifyChanged()` handle call, or a source's own `subscribe` bridge.
  * Carries the source id so clients refresh only the affected view.
  */

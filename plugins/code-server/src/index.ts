@@ -25,7 +25,7 @@ const remoteAssets: RemoteAssets = {
 /**
  * Build a {@link DevframeDefinition} for the code-server panel. The same
  * definition runs standalone (`createCac`), mounts into a Vite host
- * (`/vite`), or docks inside a hub — its `setup` only relies on the core
+ * (`/vite`), or docks inside a hub, since its `setup` only relies on the core
  * devframe RPC + shared-state surface.
  *
  * @experimental This plugin is experimental and may change without a major
@@ -49,8 +49,10 @@ export function createCodeServerDevframe(options: CodeServerOptions = {}): Devfr
     homepage: pkg.homepage,
     description: pkg.description,
     icon: 'ph:code-duotone',
-    // Leave undefined so `resolveBasePath` picks `/` standalone and
-    // `/__<id>/` when hosted. Authors override via `options.basePath`.
+    /**
+     * Leave undefined so `resolveBasePath` picks `/` standalone and
+     * `/__<id>/` when hosted. Authors override via `options.basePath`.
+     */
     basePath: options.basePath,
     cli: {
       command: options.command ?? 'devframe-code-server',
@@ -58,9 +60,11 @@ export function createCodeServerDevframe(options: CodeServerOptions = {}): Devfr
       portRange: options.portRange,
       random: options.random,
       distDir: resolvedDist,
-      // Gate the standalone launcher by default; `maybeOpenBrowser` folds the
-      // current OTP into the `--open` URL so the tab lands already trusted.
-      // Hosted adapters supply their own auth layer and ignore this.
+      /**
+       * Gate the standalone launcher by default; `maybeOpenBrowser` folds the
+       * current OTP into the `--open` URL so the tab lands already trusted.
+       * Hosted adapters supply their own auth layer and ignore this.
+       */
       auth: options.auth ?? true,
     },
     async setup(ctx) {

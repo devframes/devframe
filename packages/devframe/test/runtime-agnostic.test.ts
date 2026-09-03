@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 // Entries that must run in any JS runtime (browser, edge, Node).
-// Keep in sync with `packages/devframe/package.json` exports — explicit list
+// Keep in sync with `packages/devframe/package.json` exports; explicit list
 // so additions are a conscious choice.
 const AGNOSTIC_ENTRIES = [
   'client/index.mjs',
@@ -82,7 +82,7 @@ function scanTransitiveBuiltins(entryAbs: string): Offender[] {
         })
         continue
       }
-      // Relative import — follow it.
+      // Relative import; follow it.
       if (id.startsWith('./') || id.startsWith('../')) {
         const resolved = resolve(dirname(file), id)
         queue.push(resolved)
@@ -99,7 +99,7 @@ describe('runtime-agnostic dist entries', () => {
   for (const entry of AGNOSTIC_ENTRIES) {
     it(entry, () => {
       const filePath = resolve(distRoot, entry)
-      expect(existsSync(filePath), `Missing ${entry} — run \`pnpm build\` first`).toBe(true)
+      expect(existsSync(filePath), `Missing ${entry}; run \`pnpm build\` first`).toBe(true)
 
       const offenders = scanTransitiveBuiltins(filePath)
       const formatted = offenders.map(o => `  ${o.importer}: ${o.statement}`)

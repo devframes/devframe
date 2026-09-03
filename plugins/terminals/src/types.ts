@@ -1,10 +1,10 @@
 /**
  * How a session is driven.
  *
- * - `interactive` — a PTY-backed session that accepts keystrokes, resize,
+ * - `interactive`: a PTY-backed session that accepts keystrokes, resize,
  *   and renders full-screen TUIs (vim, htop, Claude Code, …). Falls back to
  *   a piped child process when no PTY backend is available.
- * - `readonly` — a piped child process whose combined output is streamed to
+ * - `readonly`: a piped child process whose combined output is streamed to
  *   viewers; stdin is rejected. Ideal for long-running logs / dev servers.
  */
 export type TerminalMode = 'interactive' | 'readonly'
@@ -57,7 +57,7 @@ export interface TerminalSessionInfo {
   channel?: string
   /**
    * Whether the session may be restarted in place. `false` hides the restart
-   * control and makes the restart RPC reject it — used for sessions whose
+   * control and makes the restart RPC reject it, used for sessions whose
    * lifecycle is owned elsewhere (surfaced from the hub's `restartable` flag).
    * Own sessions leave this unset (always restartable).
    */
@@ -139,7 +139,7 @@ export interface TerminalsOptions {
   port?: number
   /**
    * Require the trust handshake on the standalone server. Enabled by
-   * default — `--open` embeds the current OTP in the opened URL, so the
+   * default; `--open` embeds the current OTP in the opened URL, so the
    * tab authenticates automatically without extra prompts. Hosted adapters
    * manage their own auth and ignore this.
    */

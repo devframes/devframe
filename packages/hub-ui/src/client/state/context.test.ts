@@ -36,6 +36,7 @@ function createStubRpc() {
   let isTrusted = false
   const events = createEventEmitter<any>()
   const sharedStates = new Map<string, StubSharedState<any>>()
+  // eslint-disable-next-line slop/no-chained-type-assertions -- test double implements only the RPC surface createDocksContext exercises; the full client has many more members.
   const rpc = {
     get isTrusted() {
       return isTrusted
@@ -199,7 +200,7 @@ describe('createDocksContext', () => {
     expect.assertions(4)
 
     const { rpc, sharedStates, trust } = createStubRpc()
-    // No `groupLastChildIds` seed — mirrors a session store persisted before
+    // No `groupLastChildIds` seed, mirroring a session store persisted before
     // the field existed.
     const session = ref<DockSessionStorage>({
       open: false,
@@ -283,8 +284,8 @@ async function createGroupedContext() {
 }
 
 /**
- * Activating a group by id — what a keyboard shortcut and a palette pick both
- * do — must never invent a member for the user.
+ * Activating a group by id, what a keyboard shortcut and a palette pick both
+ * do, must never invent a member for the user.
  */
 describe('dock group command activation', () => {
   it('opens the palette scoped to the group when no member is an obvious target', async () => {

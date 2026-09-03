@@ -50,7 +50,7 @@ function changeTypeStatus(type: DiffChangeType): FileStatusCode {
 /**
  * A single file's diff behind a clickable disclosure header (filename, change
  * icon and +/- counts). The diff body mounts only while expanded, so a
- * many-file commit stays a scannable list — and does no highlight work — until
+ * many-file commit stays a scannable list (and does no highlight work) until
  * you open a file.
  */
 function DiffFileSection({ file, defaultOpen }: { file: DiffFileChange, defaultOpen: boolean }) {

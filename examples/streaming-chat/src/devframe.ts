@@ -24,8 +24,10 @@ export default defineDevframe({
   cli: {
     command: 'devframe-streaming-chat',
     port: 9897,
-    // Single-user localhost demo - skip the trust handshake that the
-    // Vite-side surface requires.
+    /**
+     * Single-user localhost demo - skip the trust handshake that the
+     * Vite-side surface requires.
+     */
     auth: false,
   },
   async setup(ctx) {

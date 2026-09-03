@@ -45,7 +45,7 @@ const commands = [
     showInPalette: false,
     children: [{ id: 'host:hidden:child', source: 'client', title: 'Hidden child' }],
   },
-] as unknown as DevframeCommandEntry[]
+] as DevframeCommandEntry[]
 
 const docks = [
   { id: 'tools', type: 'group' },

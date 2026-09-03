@@ -21,11 +21,11 @@ import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 const messagesDevframe = createMessagesDevframe()
 const SPA_DIST = localDistDir()
 
-/** Resolve the SPA to a local dir — the workspace-linked `--assets` package in dev. */
+/** Resolve the SPA to a local dir: the workspace-linked `--assets` package in dev. */
 function localDistDir(): string {
   const resolved = resolveStaticAssetsSource(messagesDevframe.cli!.distDir!, path.join(os.tmpdir(), 'devframes_plugin_messages-test'), messagesDevframe.importMetaUrl)
   if (typeof resolved !== 'string')
-    throw new TypeError('these tests serve the local client SPA — build the plugin first')
+    throw new TypeError('these tests serve the local client SPA; build the plugin first')
   return resolved
 }
 
@@ -37,7 +37,7 @@ function localDistDir(): string {
 export function assertSpaBuilt(): void {
   if (!existsSync(path.join(SPA_DIST, 'index.html'))) {
     throw new Error(
-      '[devframes_plugin_messages] dist/spa missing — run `pnpm -C plugins/messages run build` first.',
+      '[devframes_plugin_messages] dist/spa missing; run `pnpm -C plugins/messages run build` first.',
     )
   }
 }
@@ -58,7 +58,7 @@ interface BootOptions {
  * controllable lifecycle. Bound to 127.0.0.1 to avoid the IPv4/IPv6 race.
  *
  * With `hub: true` the context comes from `@devframes/hub`'s
- * `createHubContext`, so `ctx.messages` is a live host — the shape the
+ * `createHubContext`, so `ctx.messages` is a live host, the shape the
  * plugin is designed for. Without it, the plain context exercises the
  * warn-and-noop path.
  */
@@ -104,12 +104,12 @@ async function boot(options: BootOptions): Promise<MessagesServer> {
   return Object.assign(server, { basePath, ctx })
 }
 
-/** Standalone boot — plain devframe context, no messages host (noop path). */
+/** Standalone boot: plain devframe context, no messages host (noop path). */
 export function startMessagesServer(): Promise<MessagesServer> {
   return boot({})
 }
 
-/** Hub boot — `createHubContext` attaches a live `ctx.messages` host. */
+/** Hub boot: `createHubContext` attaches a live `ctx.messages` host. */
 export async function startMessagesHubServer(): Promise<MessagesServer<DevframeHubContext>> {
   return await boot({ hub: true }) as MessagesServer<DevframeHubContext>
 }

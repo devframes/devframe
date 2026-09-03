@@ -10,17 +10,21 @@ const config: StorybookConfig = {
     name: '@storybook/svelte-vite',
     options: {},
   },
-  // `@storybook/svelte-vite` only wires Svelte docgen — it expects the Svelte
-  // compiler plugin to come from a project `vite.config` (ours lives at a
-  // non-default path), so add `svelte()` here. UnoCSS auto-loads the plugin-root
-  // `uno.config.ts`; the shared aliases let `devframe/*` imports resolve without
-  // a prior build.
+  /**
+   * `@storybook/svelte-vite` only wires Svelte docgen; it expects the Svelte
+   * compiler plugin to come from a project `vite.config` (ours lives at a
+   * non-default path), so add `svelte()` here. UnoCSS auto-loads the plugin-root
+   * `uno.config.ts`; the shared aliases let `devframe/*` imports resolve without
+   * a prior build.
+   */
   async viteFinal(config) {
     return mergeConfig(config, {
       resolve: { alias },
       plugins: [svelte(), UnoCSS()],
-      // Dev tool reached from arbitrary hostnames (LAN IPs, tunnels,
-      // tailnets), e.g. when iframed by the storybook-hub example.
+      /**
+       * Dev tool reached from arbitrary hostnames (LAN IPs, tunnels,
+       * tailnets), e.g. when iframed by the storybook-hub example.
+       */
       server: { allowedHosts: true },
     })
   },

@@ -23,7 +23,7 @@ test.describe('next-runtime-snapshot (dev)', () => {
     expect(initialRss).toMatch(/\d+(?:\.\d+)?\s*MB/)
 
     await memCard.locator('button:has-text("Refresh")').click()
-    // After refresh the uptime row should still render — the call resolved.
+    // After refresh the uptime row should still render, since the call resolved.
     await expect(memCard.locator('span.color-muted').first()).toHaveText('uptime')
   })
 

@@ -5,6 +5,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { hasNative } from 'zigpty'
 import { DevframeTerminalsHost } from '../host-terminals'
 
+type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> }
+
 const zigptyModuleMock = vi.hoisted(() => ({
   spawn: vi.fn(),
 }))
@@ -36,7 +38,7 @@ interface FakeSink {
 
 function createTerminalHost() {
   const sinks = new Map<string, FakeSink>()
-  const context = {
+  const partial: DeepPartial<DevframeHubContext> = {
     rpc: {
       streaming: {
         create: () => ({
@@ -60,7 +62,8 @@ function createTerminalHost() {
         }),
       },
     },
-  } as unknown as DevframeHubContext
+  }
+  const context = partial as DevframeHubContext
 
   return {
     host: new DevframeTerminalsHost(context),
@@ -672,7 +675,7 @@ describe('devframeTerminalHost PTY status lifecycle', () => {
     await waitUntil(() => {
       expect(session.status).toBe('stopped')
     })
-    // The stream is closed for good, so `restart()` rejects — the session
+    // The stream is closed for good, so `restart()` rejects and the session
     // stays reported as stopped rather than flipping back to running.
     await expect(session.restart()).rejects.toThrow(expect.objectContaining({ code: 'DF8206' }))
     expect(session.status).toBe('stopped')

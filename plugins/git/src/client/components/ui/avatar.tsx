@@ -4,11 +4,9 @@ import type * as React from 'react'
 import { useEffect, useState } from 'react'
 import { cn } from '../../lib/utils'
 
-// A commit author avatar. We try to resolve a real portrait from the author's
-// identity — a GitHub avatar for `noreply` commit emails, otherwise Gravatar —
-// and fall back to a deterministic initials chip when there's no image (or no
-// network). The chip is always rendered underneath, so the image simply paints
-// over it once it loads and reappears on error.
+// A commit author avatar: a GitHub avatar for `noreply` emails, else Gravatar,
+// falling back to a deterministic initials chip when no image loads. The chip
+// renders underneath, so the image paints over it and reappears on error.
 
 // Saturated-but-legible hues that sit well behind white text in both themes.
 const AVATAR_COLORS = [

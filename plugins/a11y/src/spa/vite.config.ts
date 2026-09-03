@@ -4,10 +4,12 @@ import { defineConfig } from 'vite'
 import solid from 'vite-plugin-solid'
 import { alias } from '../../../../alias'
 
-// `base: './'` + `<base href="./" />` keeps the bundle mount-path portable:
-// the same `dist/spa` works whether devframe serves it at `/` (standalone)
-// or `/__devframes_plugin_a11y/` (mounted in a hub). `connectDevframe`
-// resolves its connection meta relative to `document.baseURI` to match.
+/**
+ * `base: './'` + `<base href="./" />` keeps the bundle mount-path portable:
+ * the same `dist/spa` works whether devframe serves it at `/` (standalone)
+ * or `/__devframes_plugin_a11y/` (mounted in a hub). `connectDevframe`
+ * resolves its connection meta relative to `document.baseURI` to match.
+ */
 export default defineConfig({
   base: './',
   root: fileURLToPath(new URL('.', import.meta.url)),

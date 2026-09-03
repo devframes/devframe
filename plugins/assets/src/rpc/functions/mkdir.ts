@@ -23,7 +23,7 @@ export const mkdir = defineAssetsRpc({
   setup: (ctx) => {
     const assets = getAssetsContext(ctx)
     return {
-      // See `list.ts` for why the async handler is cast.
+      /** See `list.ts` for why the async handler is cast. */
       handler: (async ({ path }: { path: string }): Promise<void> => {
         const absolute = await assertAssetMutationPath(assets.dir, path)
         const stat = await fsp.stat(absolute).catch(() => undefined)

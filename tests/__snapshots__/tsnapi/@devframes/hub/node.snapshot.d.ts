@@ -72,9 +72,11 @@ export declare class DevframeTerminalsHost implements DevframeTerminalsHost$1 {
   private _channel?;
   constructor(_: DevframeHubContext);
   private getStreamingChannel;
+  private createStreamLifecycle;
   register(_: DevframeTerminalSession): DevframeTerminalSession;
   update(_: PartialWithoutId<DevframeTerminalSession>): void;
   remove(_: DevframeTerminalSession): void;
+  private pumpStream;
   private bindStream;
   startChildProcess(_: DevframeChildProcessExecuteOptions, _: Omit<DevframeTerminalSessionBase, 'status'>): Promise<DevframeChildProcessTerminalSession>;
   startPtySession(_: DevframePtyExecuteOptions, _: Omit<DevframeTerminalSessionBase, 'status'>): Promise<DevframePtyTerminalSession>;

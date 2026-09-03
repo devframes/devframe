@@ -13,8 +13,10 @@ export interface ConnectionState {
   error: string | null
 }
 
-// Exported so tests and Storybook can supply a mock connection (e.g. a stubbed
-// shiki service) through the same context the components read.
+/**
+ * Exported so tests and Storybook can supply a mock connection (e.g. a stubbed
+ * shiki service) through the same context the components read.
+ */
 export const RpcContext = createContext<ConnectionState>({ rpc: null, status: 'connecting', error: null })
 
 export function useRpc(): ConnectionState {
@@ -27,11 +29,10 @@ export function RpcProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false
     let off: (() => void) | undefined
-    // In combined dev (`pnpm dev`) the SPA is served by Next for HMR while
-    // the RPC backend runs as a separate devframe server. This env var points
-    // the client straight at that WebSocket; unset in production, where the
-    // client discovers `./__connection.json` next to index.html.
-    // Next.js statically inlines `process.env.NEXT_PUBLIC_*` at build time.
+    // In combined dev (`pnpm dev`) Next serves the SPA for HMR while the RPC
+    // backend runs separately; this env var points the client straight at that
+    // WebSocket. Unset in production, where the client discovers
+    // `./__connection.json`. Next inlines `NEXT_PUBLIC_*` at build time.
     // eslint-disable-next-line node/prefer-global/process
     const devWs = process.env.NEXT_PUBLIC_DEVFRAME_WS
     // A bare port (what `scripts/dev.mjs` sets) becomes a same-host socket on

@@ -131,8 +131,10 @@ export async function setupDevframeConnection(
   if (options.connectionMeta) {
     const connection: DevframeConnection = {
       connectionMeta: options.connectionMeta,
-      // Preserve the established connectionMeta behavior: an explicitly
-      // supplied descriptor resolves from the caller's explicit base.
+      /**
+       * Preserve the established connectionMeta behavior: an explicitly
+       * supplied descriptor resolves from the caller's explicit base.
+       */
       metaBaseUrl: resolveMetaBaseUrl(bases[0] ?? './'),
       authToken: readStoredAuthToken(
         options.authToken ?? options.connectionMeta.authToken,
@@ -192,15 +194,15 @@ export async function setupDevframeConnection(
  * trust handshake, so a viewer never has to reason about the two dimensions
  * separately.
  *
- * - `connecting` — establishing the WebSocket / running the initial trust
+ * - `connecting`: establishing the WebSocket / running the initial trust
  *   handshake. Calls issued here queue until the socket opens.
- * - `connected` — socket open and trusted; RPC calls will be served.
- * - `unauthorized` — socket open but the server rejected trust (no valid token,
+ * - `connected`: socket open and trusted; RPC calls will be served.
+ * - `unauthorized`: socket open but the server rejected trust (no valid token,
  *   or an auth-enforcing host refused it). Calls fail fast with an auth error;
  *   the UI should prompt for re-authentication or a reload.
- * - `disconnected` — the socket closed (dropped mid-session, or never opened).
+ * - `disconnected`: the socket closed (dropped mid-session, or never opened).
  *   Pending and new calls fail fast until the page reconnects.
- * - `error` — a fatal connection error (e.g. the WebSocket errored, or the
+ * - `error`: a fatal connection error (e.g. the WebSocket errored, or the
  *   connection meta could not be loaded).
  *
  * A `static` backend has no live socket, so it reports `connected` for its
@@ -215,9 +217,9 @@ export type DevframeConnectionStatus
 
 /**
  * What kind of failure a {@link DevframeConnectionError} describes:
- * - `connection` — the transport dropped, errored, or never opened.
- * - `auth` — the server rejected trust for this client.
- * - `timeout` — a call exceeded its {@link DevframeRpcClientOptions.callTimeout}.
+ * - `connection`: the transport dropped, errored, or never opened.
+ * - `auth`: the server rejected trust for this client.
+ * - `timeout`: a call exceeded its {@link DevframeRpcClientOptions.callTimeout}.
  */
 export type DevframeConnectionErrorKind
   = | 'connection'

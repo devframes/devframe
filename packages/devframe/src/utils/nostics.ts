@@ -16,7 +16,7 @@ function devframeReporter(d: Diagnostic, { method = 'warn' }: { method?: 'log' |
 }
 
 /**
- * Options accepted by {@link defineDiagnostics} — identical to `nostics`'s
+ * Options accepted by {@link defineDiagnostics}, identical to `nostics`'s
  * own `DefineDiagnosticsOptions`, minus the reporter devframe already
  * prepends.
  */
@@ -30,7 +30,7 @@ export type DevframeDefineDiagnosticsOptions<
  * ANSI console reporter pre-wired ahead of any `reporters` passed in. Every
  * `diagnostics.ts` in devframe core, `@devframes/hub`, `@devframes/json-render`,
  * and the built-in plugins defines its codes through this instead of
- * `nostics`'s own `defineDiagnostics` — the reporter registration lives
+ * `nostics`'s own `defineDiagnostics`; the reporter registration lives
  * here, once, so none of them need to build their own reporter (`colors`,
  * `ansiFormatter`) or take a direct dependency on `nostics` themselves.
  */

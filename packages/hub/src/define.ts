@@ -22,5 +22,5 @@ export function defineDockEntry<
     visibility?: WhenExpression<WhenContext, V>
   },
 ): T {
-  return entry as unknown as T
+  return entry as T
 }

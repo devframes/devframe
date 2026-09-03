@@ -31,7 +31,7 @@ export interface MessagesHandle {
 }
 
 /**
- * Mount the messages panel into a DOM container — the embeddable form a
+ * Mount the messages panel into a DOM container, the embeddable form a
  * hub `custom-render` dock uses. Styles are injected by the bundle; the
  * host page owns the `.dark` class on `<html>`.
  */

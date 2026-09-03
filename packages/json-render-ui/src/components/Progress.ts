@@ -9,8 +9,10 @@ interface ProgressProps {
   label?: string
 }
 
-// Wraps `@antfu/design` DisplayProgressBar (which takes a 0–1 ratio), adding the
-// catalog's visible label + percentage row.
+/**
+ * Wraps `@antfu/design` DisplayProgressBar (which takes a 0–1 ratio), adding the
+ * catalog's visible label + percentage row.
+ */
 export const Progress: JrComponent<ProgressProps> = ({ props }) => {
   const max = toNumber(props.max, 100)
   const value = toNumber(props.value, 0)

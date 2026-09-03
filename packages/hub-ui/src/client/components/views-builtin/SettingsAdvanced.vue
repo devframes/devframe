@@ -80,7 +80,7 @@ async function deauthorize() {
       </button>
       <div class="flex flex-col">
         <span class="text-sm">Show Devframe Inspector</span>
-        <span class="text-xs op50">Reveal the experimental Devframe Inspector dock — the devtools for the devtools</span>
+        <span class="text-xs op50">Reveal the experimental Devframe Inspector dock, the devtools for the devtools</span>
       </div>
     </label>
 

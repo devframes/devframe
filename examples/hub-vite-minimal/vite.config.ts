@@ -31,7 +31,7 @@ const builtinDevframes = [
 ]
 
 // A server-authored JSON-render dock: the whole view is this serializable
-// spec — no client build. It renders through whatever `'json-render'`
+// spec, with no client build. It renders through whatever `'json-render'`
 // renderer the hub composes (below, the reference `@devframes/json-render-ui`
 // module); without one, the hub UI provider shows its missing-renderer fallback.
 const jsonRenderSpec: DevframeJsonRenderSpec = {
@@ -52,30 +52,38 @@ const jsonRenderDock: DevframeJsonRenderDockEntry = {
   view: { spec: jsonRenderSpec },
 }
 
-// The minimal Vite host: one `viteDevframeHub()` plugin from
-// `@devframes/vite/hub`. It wraps `initHub` (mounted as connect middleware on
-// Vite's dev server, sharing its HTTP server for the WS upgrade at
-// `/__devframes/__ws`) and injects the UI's `embedded.js` bootstrap into the
-// host page — the whole embedded integration in one call. `quiet` silences the
-// Vite-DevTools recommendation for this reference example.
+/**
+ * The minimal Vite host: one `viteDevframeHub()` plugin from
+ * `@devframes/vite/hub`. It wraps `initHub` (mounted as connect middleware on
+ * Vite's dev server, sharing its HTTP server for the WS upgrade at
+ * `/__devframes/__ws`) and injects the UI's `embedded.js` bootstrap into the
+ * host page, the whole embedded integration in one call. `quiet` silences the
+ * Vite-DevTools recommendation for this reference example.
+ */
 export default defineConfig({
-  // Dev tooling reached from arbitrary hostnames (LAN IPs, tunnels): accept
-  // any Host header and fall back to the next free port when busy.
+  /**
+   * Dev tooling reached from arbitrary hostnames (LAN IPs, tunnels): accept
+   * any Host header and fall back to the next free port when busy.
+   */
   server: { allowedHosts: true, strictPort: false },
   plugins: [
     viteDevframeHub({
       quiet: true,
       devframes: builtinDevframes,
-      // Rebrand the reference UI to Vite's own purple — one field, no CSS:
-      // `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
-      // which the dock reads at connect time and feeds into `--devframe-primary`
-      // (see `@devframes/hub-ui`'s `primary-ramp.css`). Passing `ui` overrides
-      // the default `createUi()` the plugin would otherwise use.
+      /**
+       * Rebrand the reference UI to Vite's own purple in one field, no CSS:
+       * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
+       * which the dock reads at connect time and feeds into `--devframe-primary`
+       * (see `@devframes/hub-ui`'s `primary-ramp.css`). Passing `ui` overrides
+       * the default `createUi()` the plugin would otherwise use.
+       */
       ui: createUi({ branding: { primaryColor: '#646cff', productName: 'Devframes on Vite' } }),
-      // Serve the reference json-render frontend as a prebuilt renderer
-      // module — the one-liner that makes `'json-render'` docks render in
-      // the prebuilt hub UI provider. Swap it for any community implementation of
-      // the same contract.
+      /**
+       * Serve the reference json-render frontend as a prebuilt renderer
+       * module, the one-liner that makes `'json-render'` docks render in
+       * the prebuilt hub UI provider. Swap it for any community implementation of
+       * the same contract.
+       */
       renderers: [jsonRenderUiRenderer()],
       configure(ctx) {
         ctx.docks.register(jsonRenderDock)

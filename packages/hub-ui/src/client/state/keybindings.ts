@@ -68,8 +68,8 @@ export type WalkCommandsSignal = 'skip' | 'stop'
  * Walk the command tree depth-first, parents before their children, and hand
  * each command its chain of ancestors (outermost first, empty at the top level).
  *
- * Commands nest arbitrarily deep — dock-navigation commands reach `Docks` ›
- * group › member, and a devframe's own `children` go deeper still — so read-only
+ * Commands nest arbitrarily deep: dock-navigation commands reach `Docks` ›
+ * group › member, and a devframe's own `children` go deeper still, so read-only
  * consumers share this walk rather than recursing themselves. Transforms that
  * rebuild the tree (see {@link filterCommandsByWhen}) still recurse on their
  * own, since they need to return a new node per level.
@@ -86,7 +86,7 @@ export function walkCommands(
     if (signal === 'skip' || !cmd.children?.length)
       continue
     // `children` is typed `Server[] | Client[]` rather than `(Server | Client)[]`,
-    // so walking it widens the element type — same cast the other child-walking
+    // so walking it widens the element type, the same cast the other child-walking
     // call sites use.
     if (walkCommands(cmd.children as DevframeCommandEntry[], visit, [...ancestors, cmd]) === 'stop')
       return 'stop'
@@ -95,7 +95,7 @@ export function walkCommands(
 
 /**
  * Find a command by id at any depth. Returns the first match in depth-first
- * order — ids are expected to be unique across the tree.
+ * order; ids are expected to be unique across the tree.
  */
 export function findCommandDeep(
   commands: DevframeCommandEntry[],
@@ -113,7 +113,7 @@ export function findCommandDeep(
 
 /**
  * Drop the commands whose `when` clause does not hold in the current context,
- * descendants included at every depth — `when` controls palette visibility at
+ * descendants included at every depth; `when` controls palette visibility at
  * any nesting level.
  *
  * A parent that survives is shallow-cloned so its `children` can be narrowed

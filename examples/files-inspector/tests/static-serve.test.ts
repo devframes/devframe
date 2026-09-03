@@ -56,12 +56,9 @@ describe('static serve (deployed SPA contract)', () => {
       await rm(outDir, { recursive: true, force: true })
   })
 
-  // The SPA discovers its connection meta + dump shards via paths
-  // *relative* to `document.baseURI`. For the "deployed at root" case
-  // those resolve to absolute URLs at the server root; for the "deployed
-  // at a sub-path" case the same relative paths resolve under the
-  // sub-path. Both must work without rebuilding the SPA - that's the
-  // whole point of `vite.base: './'` plus the runtime base discovery.
+  // The SPA resolves its connection meta + dump shards relative to
+  // `document.baseURI`, so one build serves from root or a sub-path
+  // unchanged - the point of `vite.base: './'` plus runtime base discovery.
   describe.each([
     { name: 'at server root', mountBase: '/' },
     { name: 'at a sub-path', mountBase: '/myapp/' },

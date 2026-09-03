@@ -8,7 +8,7 @@ import { resolveClientAssets } from 'devframe/internal'
 
 export interface CreateDevframeNextHandlerOptions {
   /**
-   * Mount base for the SPA. Defaults to `def.basePath ?? '/__<id>/'` — the
+   * Mount base for the SPA. Defaults to `def.basePath ?? '/__<id>/'`, the
    * hosted-adapter default, so the devframe shares the Next app's origin
    * without colliding with its routes.
    */
@@ -32,9 +32,9 @@ export interface CreateDevframeNextHandlerOptions {
   /** Override where persisted devframe state lives (defaults under the cwd / home). */
   getStorageDir?: (scope: DevframeStorageScope) => string
   /**
-   * Expose the route-based MCP server (Streamable-HTTP) at `<base>__mcp` —
+   * Expose the route-based MCP server (Streamable-HTTP) at `<base>__mcp`,
    * on the Next app's own origin, through the same catch-all route as the
-   * SPA — and advertise it in the handler's `__connection.json`. Overrides
+   * SPA, and advertise it in the handler's `__connection.json`. Overrides
    * `def.cli?.mcp`, `undefined` falls through to it, `false` disables the
    * route regardless.
    */
@@ -89,7 +89,7 @@ function defaultGetStorageDir(scope: DevframeStorageScope): string {
 }
 
 /**
- * Host a **single** devframe from a Next.js App Router app — the Next
+ * Host a **single** devframe from a Next.js App Router app: the Next
  * counterpart to `devframeViteBridge`, reduced to memoization + defaults over
  * `initDevframe` (Next's route handlers can't accept WS upgrades, so the
  * RPC socket lives on the instance's side-car port, advertised at
@@ -132,13 +132,17 @@ export function createDevframeNextHandler(
     distDir,
     host: options.host,
     flags: options.flags,
-    // Gate by default: an unset `auth` defers to the instance (devframe's
-    // interactive OTP unless `cli.auth` opts out). `false` opts out.
+    /**
+     * Gate by default: an unset `auth` defers to the instance (devframe's
+     * interactive OTP unless `cli.auth` opts out). `false` opts out.
+     */
     auth: options.auth,
     mcp: options.mcp,
-    // Next's route handlers never see WebSocket upgrades, so the RPC socket
-    // lives on a side-car server — on `options.port` when pinned, otherwise
-    // a free port — advertised via `<base>__connection.json`.
+    /**
+     * Next's route handlers never see WebSocket upgrades, so the RPC socket
+     * lives on a side-car server (on `options.port` when pinned, otherwise
+     * a free port), advertised via `<base>__connection.json`.
+     */
     ws: options.port != null ? { port: options.port } : { sidecar: true },
     ...(options.resolveOrigin ? { origin: options.resolveOrigin } : {}),
     getStorageDir: options.getStorageDir ?? defaultGetStorageDir,

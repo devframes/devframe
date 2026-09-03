@@ -9,7 +9,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 export interface DevframeRpcState {
   /** The connected client, or `null` while the initial connect is in flight. */
   rpc: DevframeRpcClient | null
-  /** Live connection status — `'connecting'` until the client resolves. */
+  /** Live connection status, `'connecting'` until the client resolves. */
   status: DevframeConnectionStatus
   /** The latest connection error, or `null`. */
   error: Error | null
@@ -35,8 +35,8 @@ export interface RpcProviderProps {
 }
 
 /**
- * Connect to the devframe RPC backend once and provide the client — plus live
- * connection status — to the tree. The React counterpart to `@devframes/nuxt`'s
+ * Connect to the devframe RPC backend once and provide the client, plus live
+ * connection status, to the tree. The React counterpart to `@devframes/nuxt`'s
  * client plugin.
  *
  * Children render immediately (before the connection resolves), so your shell

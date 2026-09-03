@@ -2,7 +2,7 @@
 import { useBranding, useBrandingLogo } from '../../state/branding'
 import DevframeLogo from './DevframeLogo.vue'
 
-// The wordmark — a consumer-supplied wordmark image, or the mark composed with
+// The wordmark: a consumer-supplied wordmark image, or the mark composed with
 // the product name. A decorative flourish (e.g. peeking above the palette).
 const branding = useBranding()
 const wordmark = useBrandingLogo(b => b.wordmark)

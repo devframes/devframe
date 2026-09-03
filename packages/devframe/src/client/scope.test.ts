@@ -9,6 +9,7 @@ function createMockClient() {
   const subscribes: [string, string][] = []
   const uploads: [string, string][] = []
 
+  // eslint-disable-next-line slop/no-chained-type-assertions -- partial test mock exercises only the members client.scope() touches
   const rpc = {
     call: vi.fn((..._args: any[]) => Promise.resolve('ok')),
     callEvent: vi.fn((..._args: any[]) => {}),

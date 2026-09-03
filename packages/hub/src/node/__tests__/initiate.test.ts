@@ -250,7 +250,7 @@ describe('initHub', () => {
       clientModuleResolution: '/@id/{specifier}',
       devframes: [makeFrame('alpha')],
       configure(ctx) {
-        // A bare-specifier client script (the vite-plugin-vue-tracer shape) —
+        // A bare-specifier client script (the vite-plugin-vue-tracer shape),
         // registered on a host that declared the resolution, so no DF8111.
         ctx.docks.register({
           type: 'action',
@@ -342,7 +342,7 @@ describe('initHub', () => {
   it('default tier: binds nothing until the host attaches its own server', async () => {
     const host = '127.0.0.1'
     const port = await getPort({ port: 18250, host })
-    // No `server`, no `ws` — the hub serves its namespace and waits for the
+    // No `server`, no `ws`, so the hub serves its namespace and waits for the
     // host to hand the upgrade route over.
     const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, devframes: [makeFrame('alpha')] })
     const server = createServer((req, res) => hub.nodeMiddleware(req, res))

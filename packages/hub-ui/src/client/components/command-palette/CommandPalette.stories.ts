@@ -10,7 +10,7 @@ const meta = {
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
-    // Fixed, full-screen overlay — render in an iframe for the docs canvas.
+    /** Fixed, full-screen overlay; render in an iframe for the docs canvas. */
     docs: {
       story: { inline: false, height: '480px' },
       description: {
@@ -48,7 +48,7 @@ export const Open: Story = {
 
 /**
  * The palette opened *scoped* to a dock group, listing only that group's
- * members — what activating a group with no `defaultChildId` does, so a group
+ * members, what activating a group with no `defaultChildId` does, so a group
  * stays reachable by keyboard with the choice of member left to the user.
  * Backspace or Escape steps back out to the root list.
  */

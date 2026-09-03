@@ -4,7 +4,7 @@ import { createGitDevframe } from './index.ts'
 
 const cli = createCac(createGitDevframe(), {
   onReady({ origin }) {
-    // devframe is headless by default — print our own ready banner so the
+    // devframe is headless by default, so print our own ready banner and the
     // dev server doesn't look like it silently did nothing.
     console.error(`\n  @devframes/plugin-git ready at ${origin}\n`)
   },

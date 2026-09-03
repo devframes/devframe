@@ -20,11 +20,15 @@ export default defineDevframe({
   cli: {
     command: 'devframe-files-inspector',
     port: 9876,
-    // Single-user localhost demo - skip the trust handshake so the served
-    // SPA can call RPC without an OTP round-trip.
+    /**
+     * Single-user localhost demo - skip the trust handshake so the served
+     * SPA can call RPC without an OTP round-trip.
+     */
     auth: false,
-    // Serve the agent surface over the dev server's `/__mcp` route and
-    // register the instance for `devframe connect` discovery.
+    /**
+     * Serve the agent surface over the dev server's `/__mcp` route and
+     * register the instance for `devframe connect` discovery.
+     */
     mcp: true,
   },
   setup(ctx) {

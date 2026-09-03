@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 const BASE = 'http://localhost:9897/__devframe-streaming-chat/'
 
 // Shared server-side history means parallel browsers see each other's
-// messages — pin the suite to serial so each test starts from a clean
+// messages, so pin the suite to serial so each test starts from a clean
 // `clear()` and exits with its stream settled.
 test.describe.configure({ mode: 'serial' })
 

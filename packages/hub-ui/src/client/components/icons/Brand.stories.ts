@@ -38,10 +38,10 @@ export const Wordmark: Story = {
 }
 
 /**
- * A rebrand via `createUi({ branding })` / the host page — a custom product
+ * A rebrand via `createUi({ branding })` / the host page: a custom product
  * name, logo, and primary color. The wrapper sets `--devframe-primary` (what
- * the bootstrap applies from `branding.primaryColor`), so the ramp — and the
- * mark/wordmark — retint together.
+ * the bootstrap applies from `branding.primaryColor`), so the ramp (and the
+ * mark/wordmark) retint together.
  */
 export const Branded: Story = {
   name: 'Branded (custom)',

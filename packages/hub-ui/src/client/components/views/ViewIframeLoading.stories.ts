@@ -15,7 +15,7 @@ const meta = {
   parameters: {
     docs: {
       description: {
-        component: 'Shown over an iframe view while it loads its content. A blank iframe paints white during load, so `ViewIframe` reveals this placeholder by hiding the pane — the same layering trick as the assets-error panel. It covers the initial load and any hard navigation or refresh.',
+        component: 'Shown over an iframe view while it loads its content. A blank iframe paints white during load, so `ViewIframe` reveals this placeholder by hiding the pane, the same layering trick as the assets-error panel. It covers the initial load and any hard navigation or refresh.',
       },
     },
   },

@@ -18,7 +18,7 @@ export interface UseDevframeHubClientOptions extends DevframeClientRuntimeOption
 }
 
 /**
- * Boot the devframes-hub **client runtime** inside a React (Next.js) page —
+ * Boot the devframes-hub **client runtime** inside a React (Next.js) page:
  * the browser half of {@link import('./hub').nextDevframeHub}. Connects RPC to
  * the hub (defaulting `base` to `/__devframes/`), assembles the shared
  * `DevframeClientContext`, imports each dock's client script into the page,
