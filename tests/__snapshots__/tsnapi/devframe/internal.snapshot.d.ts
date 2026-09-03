@@ -33,6 +33,7 @@ export declare class DevframeAgentHost implements DevframeAgentHost$1 {
   registerResource(_: AgentResourceInput): AgentHandle;
   unregisterResource(_: string): boolean;
   list(): AgentManifest;
+  hasSurface(): boolean;
   getTool(_: string): AgentTool | undefined;
   getResource(_: string): AgentResource | undefined;
   invoke(_: string, _: unknown): Promise<unknown>;
@@ -184,7 +185,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     readonly why: (p: {
       reason: string;
     }) => string;
-    readonly fix: "Install it next to devframe (e.g. `npm install @modelcontextprotocol/server`) and run `devframe connect` again.";
+    readonly fix: "Install it next to devframe (e.g. `npm install @modelcontextprotocol/client`) and run `devframe connect` again.";
   };
   readonly DF0047: {
     readonly why: (p: {
@@ -381,6 +382,7 @@ export { InstanceShellInit }
 export { InstanceShellInternals }
 export { InstanceWsTier }
 export { listLiveDevframeInstances }
+export { loadAutoMcpAdapter }
 export { normalizeBasePath }
 export { registerDevframeInstance }
 export { resolveBasePath }

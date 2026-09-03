@@ -81,6 +81,8 @@ Emitted by `devframe`: the framework-neutral host, RPC, streaming, assets, servi
 | [DF0072](/errors/DF0072) | warn | Snapshot Names Unknown RPC Method |
 | [DF0073](/errors/DF0073) | error | JSON-Render Spec Does Not Match Its Schema |
 | [DF0074](/errors/DF0074) | error | JSON-Render Schema Is Asynchronous |
+| [DF0075](/errors/DF0075) | warn | No RPC Transport On This Runtime |
+| [DF0076](/errors/DF0076) | error | WebSocket Upgrade Unsupported On This Runtime |
 
 ## Hub: context & lifecycle (DF80xx)
 

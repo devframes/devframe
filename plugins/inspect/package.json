@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-inspect",
   "type": "module",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "description": "Devframe plugin that inspects the RPC registry, shared state, and agent surface of a connection.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
@@ -21,13 +21,12 @@
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./dist/index.mjs",
-    "./client": "./dist/client/index.mjs",
-    "./cli": "./dist/cli.mjs",
-    "./node": "./dist/node/index.mjs",
+    ".": "./dist/node/index.mjs",
+    "./cli": "./dist/node/cli.mjs",
+    "./node": "./dist/node/setup.mjs",
     "./package.json": "./package.json"
   },
-  "types": "./dist/index.d.mts",
+  "types": "./dist/node/index.d.mts",
   "bin": {
     "devframe-inspect": "./bin.mjs"
   },
@@ -36,13 +35,16 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown && vite build --config src/spa/vite.config.ts",
-    "dev": "vite --config src/spa/vite.config.ts",
+    "build": "tsdown && vite build --config app/vite.config.ts",
+    "build:app": "vite build --config app/vite.config.ts",
     "watch": "tsdown --watch",
+    "dev": "vite --config app/vite.config.ts --host",
+    "play": "pnpm run build && node playgrounds/server.mjs",
     "cli:build": "node bin.mjs build --out-dir dist/static",
     "prepack": "turbo run build --filter=@devframes/plugin-inspect",
     "storybook": "storybook dev -p 6012",
     "build-storybook": "storybook build",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "peerDependencies": {

@@ -1,7 +1,7 @@
 {
   "name": "hub-sveltekit-minimal",
   "type": "module",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "private": true,
   "description": "Minimal SvelteKit host that mounts the devframe hub on a catch-all endpoint.",
   "scripts": {

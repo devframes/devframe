@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import type { DevframeClientCommand, DevframeCommandEntry } from '@devframes/hub'
+import type { DevframeClientCommand } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
+import type { PaletteCrumb, PaletteFlatItem } from '../../state/palette'
 import Fuse from 'fuse.js'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
+import { flattenPaletteCommands, paletteActionKeepsOpen, paletteScopeTrail, paletteTrailScopeId, reconcilePaletteTrail, resolvePaletteSelection } from '../../state/palette'
 import BrandWordmark from '../icons/BrandWordmark.vue'
 import CommandPaletteItem from './CommandPaletteItem.vue'
 
@@ -23,36 +25,14 @@ const listContainer = useTemplateRef<HTMLElement>('listContainer')
 const visible = ref(false)
 
 // Breadcrumb stack for sub-command drill-down
-const breadcrumb = ref<Array<{ title: string, items: DevframeCommandEntry[] }>>([])
+const breadcrumb = ref<PaletteCrumb[]>([])
 
-// Flattened items for top-level search (includes children with parent prefix)
-interface FlatItem {
-  entry: DevframeCommandEntry
-  parentTitle?: string
-  searchTitle: string
-}
-
-const flattenedItems = computed<FlatItem[]>(() => {
-  const result: FlatItem[] = []
-  for (const cmd of commandsCtx.value.paletteCommands) {
-    result.push({ entry: cmd, searchTitle: cmd.title })
-    if (cmd.children && cmd.showInPalette !== 'without-children') {
-      for (const child of cmd.children) {
-        if (child.showInPalette === false)
-          continue
-        result.push({
-          entry: child as DevframeCommandEntry,
-          parentTitle: cmd.title,
-          searchTitle: `${cmd.title} > ${child.title}`,
-        })
-      }
-    }
-  }
-  return result
-})
+const flattenedItems = computed<PaletteFlatItem[]>(
+  () => flattenPaletteCommands(commandsCtx.value.paletteCommands),
+)
 
 // Current items: either drilled-down sub-items or root items
-const currentFlatItems = computed<FlatItem[]>(() => {
+const currentFlatItems = computed<PaletteFlatItem[]>(() => {
   if (breadcrumb.value.length > 0) {
     const current = breadcrumb.value.at(-1)!
     return current.items.map(entry => ({ entry, searchTitle: entry.title }))
@@ -62,7 +42,7 @@ const currentFlatItems = computed<FlatItem[]>(() => {
 
 // Dynamic sub-items from action() return
 const dynamicItems = ref<DevframeClientCommand[] | undefined>()
-const activeItems = computed<FlatItem[]>(() => {
+const activeItems = computed<PaletteFlatItem[]>(() => {
   if (dynamicItems.value) {
     return dynamicItems.value.map(entry => ({ entry, searchTitle: entry.title }))
   }
@@ -85,12 +65,20 @@ watch(search, () => {
   selectedIndex.value = 0
 })
 
+/** Show the rows at `scopeId`'s level, from a fresh search. */
+function showScope(scopeId: string | null) {
+  search.value = ''
+  selectedIndex.value = 0
+  dynamicItems.value = undefined
+  const next = paletteScopeTrail(commandsCtx.value.paletteCommands, scopeId)
+  breadcrumb.value = next
+  if (scopeId != null && !next.some(crumb => crumb.id === scopeId))
+    commandsCtx.value.paletteScopeId = null
+}
+
 watch(show, (v) => {
   if (v) {
-    search.value = ''
-    selectedIndex.value = 0
-    breadcrumb.value = []
-    dynamicItems.value = undefined
+    showScope(commandsCtx.value.paletteScopeId)
     // Trigger enter animation
     requestAnimationFrame(() => {
       visible.value = true
@@ -99,7 +87,35 @@ watch(show, (v) => {
   }
   else {
     visible.value = false
+    // Every close path funnels through `show`: Escape, the backdrop, running a
+    // command, and a bare `paletteOpen` toggle, so the scope is dropped here
+    // once rather than in each of them. A later Mod+K then opens at the root
+    // instead of resurrecting the group it was last scoped to.
+    commandsCtx.value.paletteScopeId = null
   }
+})
+
+// A scope also arrives while the palette is already open, activating a dock
+// group picked from the root list, say. `show` stays `true` throughout, so the
+// drill-down follows the scope itself rather than the open transition.
+watch(() => commandsCtx.value.paletteScopeId, (scopeId) => {
+  if (show.value)
+    showScope(scopeId)
+})
+
+// A command tree can change while the palette is open (dock registration,
+// `when` context, or a client command update). Rebuild each crumb by id so the
+// rendered rows and their actions always come from the live tree.
+watch(() => commandsCtx.value.paletteCommands, (commands) => {
+  if (!show.value || breadcrumb.value.length === 0)
+    return
+  const scopeId = commandsCtx.value.paletteScopeId
+  const scopeWasActive = scopeId != null && breadcrumb.value.some(crumb => crumb.id === scopeId)
+  const next = reconcilePaletteTrail(commands, breadcrumb.value, scopeId)
+  breadcrumb.value = next
+  selectedIndex.value = Math.min(selectedIndex.value, Math.max(filtered.value.length - 1, 0))
+  if (scopeWasActive && scopeId != null && !next.some(crumb => crumb.id === scopeId))
+    commandsCtx.value.paletteScopeId = null
 })
 
 function moveSelected(delta: number) {
@@ -121,18 +137,17 @@ function scrollToItem() {
 
 const loadingId = ref<string | null>(null)
 
-async function enterItem(flatItem: FlatItem) {
-  const entry = flatItem.entry
+async function enterItem(flatItem: PaletteFlatItem) {
+  // The row may have been rendered just before the command tree changed. Look
+  // it up again so a removed entry no-ops and a replacement runs its new action.
+  const entry = activeItems.value.find(item => item.entry.id === flatItem.entry.id)?.entry
+  if (!entry)
+    return
 
-  // If has static children, drill down
-  if (entry.children && entry.children.length > 0) {
-    breadcrumb.value.push({
-      title: entry.title,
-      items: entry.children as DevframeCommandEntry[],
-    })
-    search.value = ''
-    selectedIndex.value = 0
-    dynamicItems.value = undefined
+  // Ordinary command parents drill down. Dock groups are actionable parents:
+  // their action opens a preferred member or scopes the palette for a choice.
+  if (resolvePaletteSelection(entry, props.context.docks.entries) === 'drill') {
+    commandsCtx.value.paletteScopeId = entry.id
     return
   }
 
@@ -151,6 +166,8 @@ async function enterItem(flatItem: FlatItem) {
     catch (err) {
       console.error(`[@devframes/hub-ui] Command "${entry.id}" failed:`, err)
     }
+    if (paletteActionKeepsOpen(entry, props.context.docks.entries, commandsCtx.value.paletteOpen, commandsCtx.value.paletteScopeId))
+      return
     close()
     return
   }
@@ -195,11 +212,20 @@ function goBack() {
   }
   if (breadcrumb.value.length > 0) {
     breadcrumb.value.pop()
+    commandsCtx.value.paletteScopeId = paletteTrailScopeId(breadcrumb.value)
     search.value = ''
     selectedIndex.value = 0
     return
   }
   close()
+}
+
+/** Jump to the level the crumb at `index` sits above. */
+function goToCrumb(index: number) {
+  breadcrumb.value.splice(index)
+  commandsCtx.value.paletteScopeId = paletteTrailScopeId(breadcrumb.value)
+  search.value = ''
+  selectedIndex.value = 0
 }
 
 function onKeyDown(e: KeyboardEvent) {
@@ -275,7 +301,7 @@ function getKeybindings(id: string) {
                 v-for="(crumb, i) in breadcrumb"
                 :key="i"
                 class="text-xs op60 hover:op80 mr-1 flex items-center gap-0.5"
-                @click="breadcrumb.splice(i); search = ''; selectedIndex = 0"
+                @click="goToCrumb(i)"
               >
                 {{ crumb.title }}
                 <span class="op40">&rsaquo;</span>

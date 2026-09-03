@@ -1353,6 +1353,9 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 26.4.0
+      h3:
+        specifier: catalog:deps
+        version: 2.0.1-rc.29(crossws@0.4.12(srvx@0.12.7))
       unocss:
         specifier: catalog:frontend
         version: 66.8.1(@unocss/postcss@66.8.1(postcss@8.5.26))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
@@ -1405,6 +1408,9 @@ importers:
 
   packages/devframe:
     dependencies:
+      '@modelcontextprotocol/server':
+        specifier: catalog:deps
+        version: 2.0.0
       '@standard-schema/spec':
         specifier: catalog:deps
         version: 1.1.0
@@ -1431,9 +1437,6 @@ importers:
         version: 1.6.4
     devDependencies:
       '@modelcontextprotocol/client':
-        specifier: catalog:deps
-        version: 2.0.0
-      '@modelcontextprotocol/server':
         specifier: catalog:deps
         version: 2.0.0
       cac:
@@ -1784,6 +1787,9 @@ importers:
       '@devframes/plugin-a11y--assets':
         specifier: workspace:*
         version: link:assets-pkg
+      '@devframes/vite':
+        specifier: workspace:*
+        version: link:../../packages/vite
       axe-core:
         specifier: catalog:frontend
         version: 4.13.0
@@ -1955,6 +1961,12 @@ importers:
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
+      h3:
+        specifier: catalog:deps
+        version: 2.0.1-rc.29(crossws@0.4.12(srvx@0.12.7))
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
       storybook:
         specifier: catalog:storybook
         version: 10.5.10(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -2021,6 +2033,9 @@ importers:
       floating-vue:
         specifier: catalog:frontend
         version: 5.2.2(vue@3.5.42(typescript@6.0.3))
+      h3:
+        specifier: catalog:deps
+        version: 2.0.1-rc.29(crossws@0.4.12(srvx@0.12.7))
       jora:
         specifier: catalog:inlined
         version: 1.0.0-beta.16
@@ -12924,7 +12939,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.29.3
       '@babel/helper-validator-option': 7.27.1
-      browserslist: 4.28.6
+      browserslist: 4.28.8
       lru-cache: 5.1.1
       semver: 7.8.5
 
@@ -16999,7 +17014,7 @@ snapshots:
 
   '@typescript-eslint/utils@8.69.0(eslint@10.9.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)':
     dependencies:
-      '@eslint-community/eslint-utils': 4.9.1(eslint@10.9.1(jiti@2.7.0)(supports-color@10.2.2))
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.9.1(jiti@2.7.0)(supports-color@10.2.2))
       '@typescript-eslint/scope-manager': 8.69.0
       '@typescript-eslint/types': 8.69.0
       '@typescript-eslint/typescript-estree': 8.69.0(supports-color@10.2.2)(typescript@6.0.3)
@@ -20940,8 +20955,8 @@ snapshots:
     dependencies:
       '@next/env': 16.3.3
       '@swc/helpers': 0.5.23
-      baseline-browser-mapping: 2.10.43
-      caniuse-lite: 1.0.30001806
+      baseline-browser-mapping: 2.11.20
+      caniuse-lite: 1.0.30001810
       postcss: 8.5.23
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)

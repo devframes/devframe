@@ -9,7 +9,7 @@ import {
   resetDataSources,
   resolveSourceData,
   unregisterDataSource,
-} from '../src/registry/index'
+} from '../src/node/registry/index'
 
 afterEach(() => resetDataSources())
 
@@ -156,7 +156,7 @@ describe('example source', () => {
     const entry = createExampleDataSource()
     registerDataSource(entry)
     const data = await resolveSourceData(getDataSource(entry.id)!)
-    const { runQuery } = await import('../src/engine/query-engine')
+    const { runQuery } = await import('../src/node/engine/query-engine')
     for (const recipe of entry.queries ?? []) {
       const out = await runQuery(data, recipe.query.trim() || '$', recipe)
       expect(out.ok, `suggested query "${recipe.title}" must run`).toBe(true)

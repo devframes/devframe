@@ -218,55 +218,52 @@
         "./packages/json-render-ui/src/index.ts"
       ],
       "json-render/dashboard": [
-        "./examples/json-render/src/dashboard.ts"
-      ],
-      "@devframes/plugin-code-server/client": [
-        "./plugins/code-server/src/client/index.ts"
+        "./examples/json-render/src/node/dashboard.ts"
       ],
       "@devframes/plugin-code-server/node": [
-        "./plugins/code-server/src/node/index.ts"
+        "./plugins/code-server/src/node/setup.ts"
       ],
       "@devframes/plugin-code-server/constants": [
-        "./plugins/code-server/src/constants.ts"
+        "./plugins/code-server/src/node/constants.ts"
       ],
       "@devframes/plugin-code-server/types": [
-        "./plugins/code-server/src/types.ts"
+        "./plugins/code-server/src/node/types.ts"
       ],
       "@devframes/plugin-code-server/rpc": [
-        "./plugins/code-server/src/rpc/index.ts"
+        "./plugins/code-server/src/node/rpc/index.ts"
       ],
       "@devframes/plugin-code-server/cli": [
-        "./plugins/code-server/src/cli.ts"
+        "./plugins/code-server/src/node/cli.ts"
       ],
       "@devframes/plugin-code-server/vite": [
-        "./plugins/code-server/src/vite.ts"
+        "./plugins/code-server/src/node/vite.ts"
       ],
       "@devframes/plugin-code-server": [
-        "./plugins/code-server/src/index.ts"
+        "./plugins/code-server/src/node/index.ts"
       ],
       "@devframes/plugin-terminals/client": [
-        "./plugins/terminals/src/client/index.ts"
+        "./plugins/terminals/app/client/index.ts"
       ],
       "@devframes/plugin-terminals/node": [
-        "./plugins/terminals/src/node/index.ts"
+        "./plugins/terminals/src/node/setup.ts"
       ],
       "@devframes/plugin-terminals/constants": [
-        "./plugins/terminals/src/constants.ts"
+        "./plugins/terminals/src/node/constants.ts"
       ],
       "@devframes/plugin-terminals/types": [
-        "./plugins/terminals/src/types.ts"
+        "./plugins/terminals/src/node/types.ts"
       ],
       "@devframes/plugin-terminals/cli": [
-        "./plugins/terminals/src/cli.ts"
+        "./plugins/terminals/src/node/cli.ts"
       ],
       "@devframes/plugin-terminals/vite": [
-        "./plugins/terminals/src/vite.ts"
+        "./plugins/terminals/src/node/vite.ts"
       ],
       "@devframes/plugin-terminals": [
-        "./plugins/terminals/src/index.ts"
+        "./plugins/terminals/src/node/index.ts"
       ],
       "@devframes/plugin-git": [
-        "./plugins/git/src/index.ts"
+        "./plugins/git/src/node/index.ts"
       ],
       "devframe/recipes/interactive-auth": [
         "./packages/devframe/src/recipes/interactive-auth.ts"
@@ -280,116 +277,86 @@
       "devframe": [
         "./packages/devframe/src"
       ],
-      "@devframes/plugin-data-inspector/client": [
-        "./plugins/data-inspector/src/client/index.ts"
-      ],
-      "@devframes/plugin-data-inspector/node": [
-        "./plugins/data-inspector/src/node/index.ts"
-      ],
-      "@devframes/plugin-data-inspector/registry": [
-        "./plugins/data-inspector/src/registry/index.ts"
-      ],
-      "@devframes/plugin-data-inspector/engine": [
-        "./plugins/data-inspector/src/engine/index.ts"
-      ],
       "@devframes/plugin-data-inspector/inject": [
         "./plugins/data-inspector/src/inject/index.ts"
       ],
-      "@devframes/plugin-data-inspector/cli": [
-        "./plugins/data-inspector/src/cli.ts"
+      "@devframes/plugin-data-inspector/node": [
+        "./plugins/data-inspector/src/node/setup.ts"
       ],
-      "@devframes/plugin-data-inspector/vite": [
-        "./plugins/data-inspector/src/vite.ts"
+      "@devframes/plugin-data-inspector/registry": [
+        "./plugins/data-inspector/src/node/registry/index.ts"
+      ],
+      "@devframes/plugin-data-inspector/engine": [
+        "./plugins/data-inspector/src/node/engine/index.ts"
+      ],
+      "@devframes/plugin-data-inspector/cli": [
+        "./plugins/data-inspector/src/node/cli.ts"
       ],
       "@devframes/plugin-data-inspector": [
-        "./plugins/data-inspector/src/index.ts"
-      ],
-      "@devframes/plugin-inspect/client": [
-        "./plugins/inspect/src/client/index.ts"
+        "./plugins/data-inspector/src/node/index.ts"
       ],
       "@devframes/plugin-inspect/node": [
-        "./plugins/inspect/src/node/index.ts"
+        "./plugins/inspect/src/node/setup.ts"
       ],
       "@devframes/plugin-inspect/cli": [
-        "./plugins/inspect/src/cli.ts"
-      ],
-      "@devframes/plugin-inspect/vite": [
-        "./plugins/inspect/src/vite.ts"
+        "./plugins/inspect/src/node/cli.ts"
       ],
       "@devframes/plugin-inspect": [
-        "./plugins/inspect/src/index.ts"
-      ],
-      "@devframes/plugin-og/client": [
-        "./plugins/og/src/client/index.ts"
+        "./plugins/inspect/src/node/index.ts"
       ],
       "@devframes/plugin-og/node": [
-        "./plugins/og/src/node/index.ts"
+        "./plugins/og/src/node/setup.ts"
       ],
       "@devframes/plugin-og/rpc": [
-        "./plugins/og/src/rpc/index.ts"
+        "./plugins/og/src/node/rpc/index.ts"
       ],
       "@devframes/plugin-og/cli": [
-        "./plugins/og/src/cli.ts"
-      ],
-      "@devframes/plugin-og/vite": [
-        "./plugins/og/src/vite.ts"
+        "./plugins/og/src/node/cli.ts"
       ],
       "@devframes/plugin-og": [
-        "./plugins/og/src/index.ts"
+        "./plugins/og/src/node/index.ts"
       ],
-      "@devframes/plugin-a11y/client": [
-        "./plugins/a11y/src/client/index.ts"
+      "@devframes/plugin-a11y/client-script": [
+        "./plugins/a11y/src/client-script/index.ts"
       ],
       "@devframes/plugin-a11y/node": [
-        "./plugins/a11y/src/node/index.ts"
+        "./plugins/a11y/src/node/setup.ts"
       ],
       "@devframes/plugin-a11y/cli": [
-        "./plugins/a11y/src/cli.ts"
-      ],
-      "@devframes/plugin-a11y/vite": [
-        "./plugins/a11y/src/vite.ts"
+        "./plugins/a11y/src/node/cli.ts"
       ],
       "@devframes/plugin-a11y": [
-        "./plugins/a11y/src/index.ts"
+        "./plugins/a11y/src/node/index.ts"
       ],
       "@devframes/plugin-messages/client": [
-        "./plugins/messages/src/client/index.ts"
+        "./plugins/messages/app/client/index.ts"
       ],
       "@devframes/plugin-messages/node": [
-        "./plugins/messages/src/node/index.ts"
+        "./plugins/messages/src/node/setup.ts"
       ],
       "@devframes/plugin-messages/constants": [
-        "./plugins/messages/src/constants.ts"
+        "./plugins/messages/src/node/constants.ts"
       ],
       "@devframes/plugin-messages/rpc": [
-        "./plugins/messages/src/rpc/index.ts"
+        "./plugins/messages/src/node/rpc/index.ts"
       ],
       "@devframes/plugin-messages/cli": [
-        "./plugins/messages/src/cli.ts"
-      ],
-      "@devframes/plugin-messages/vite": [
-        "./plugins/messages/src/vite.ts"
+        "./plugins/messages/src/node/cli.ts"
       ],
       "@devframes/plugin-messages": [
-        "./plugins/messages/src/index.ts"
-      ],
-      "@devframes/plugin-assets/client": [
-        "./plugins/assets/src/client/index.ts"
+        "./plugins/messages/src/node/index.ts"
       ],
       "@devframes/plugin-assets/node": [
-        "./plugins/assets/src/node/index.ts"
+        "./plugins/assets/src/node/setup.ts"
       ],
       "@devframes/plugin-assets/rpc": [
-        "./plugins/assets/src/rpc/index.ts"
+        "./plugins/assets/src/node/rpc/index.ts"
       ],
       "@devframes/plugin-assets/cli": [
-        "./plugins/assets/src/cli.ts"
-      ],
-      "@devframes/plugin-assets/vite": [
-        "./plugins/assets/src/vite.ts"
+        "./plugins/assets/src/node/cli.ts"
       ],
       "@devframes/plugin-assets": [
-        "./plugins/assets/src/index.ts"
+        "./plugins/assets/src/node/index.ts"
       ],
       "@devframes/service-git": [
         "./services/git/src/index.ts"

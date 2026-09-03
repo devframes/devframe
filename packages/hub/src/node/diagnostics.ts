@@ -31,8 +31,8 @@ export const diagnostics = defineDiagnostics({
       fix: 'Ids become route segments, so they may only contain letters, digits, `_`, `-`, and `.`; `:` and `*` are route-pattern markers to the underlying router, and `/` would escape the segment. Set a route-safe `id` on the definition (e.g. `my_plugin` instead of `my:plugin`).',
     },
     DF8005: {
-      why: (p: { id: string }) => `Devframe "${p.id}" requests an MCP route, but the hub's aggregate MCP is off, so its tools are not exposed over MCP.`,
-      fix: 'A hub exposes one aggregate MCP endpoint over every mounted devframe, so per-devframe `mcp` settings are ignored. Enable the hub\'s own MCP (pass `mcp` to `initHub`) to surface this devframe\'s tools, or drop `mcp` from the devframe to silence this warning.',
+      why: (p: { id: string }) => `Devframe "${p.id}" requests an MCP route, but the hub's aggregate MCP is off (\`mcp: false\`), so its tools are not exposed over MCP.`,
+      fix: 'A hub exposes one aggregate MCP endpoint over every mounted devframe, so per-devframe `mcp` settings are ignored. Drop `mcp: false` from `initHub` (the `\'auto\'` default mounts the aggregate route once agent tools exist) to surface this devframe\'s tools, or drop `mcp` from the devframe to silence this warning.',
     },
     DF8006: {
       why: (p: { urlBase: string, base: string }) => `A static hub build can only write mounts under its own base: "${p.urlBase}" escapes "${p.base}".`,

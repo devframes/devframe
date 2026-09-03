@@ -1,24 +1,23 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "incremental": true,
-    "jsx": "preserve",
-    "lib": ["ESNext", "DOM"],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "lib": ["esnext", "dom"],
     "allowJs": true,
     "noEmit": true,
-    "esModuleInterop": true,
-    "isolatedDeclarations": false,
-    "plugins": [{ "name": "next" }]
+    "esModuleInterop": true
   },
   "include": [
     "src",
-    "bin.mjs"
+    "tests",
+    "playgrounds",
+    "bin.mjs",
+    "uno.config.ts"
   ],
   "exclude": [
     "dist",
+    "app",
     ".next",
-    "out"
+    "out",
+    "node_modules"
   ]
 }

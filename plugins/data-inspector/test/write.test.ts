@@ -1,6 +1,6 @@
-import type { WriteRequest } from '../src/engine/contract'
+import type { WriteRequest } from '../src/node/engine/contract'
 import { describe, expect, it } from 'vitest'
-import { applyWrite } from '../src/engine/write'
+import { applyWrite } from '../src/node/engine/write'
 
 const json = (value: unknown) => ({ kind: 'json', value }) as const
 

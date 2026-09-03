@@ -103,11 +103,14 @@ describe('initHub', () => {
     try {
       await hubRef.ready
       // One shared socket, advertised hub-base-absolute so the same meta
-      // resolves correctly from the hub base and from every frame base.
+      // resolves correctly from the hub base and from every frame base. The
+      // frames register agent tools, so the `'auto'` default also mounts
+      // the aggregate MCP route.
       expect(hubRef.connectionMeta()).toEqual({
         backend: 'websocket',
         websocket: { path: '/__devframes/__ws' },
         sse: { path: '/__devframes/__sse' },
+        mcp: { path: '__mcp' },
       })
 
       // Frame SPAs under <base><id>/.
@@ -321,16 +324,44 @@ describe('initHub', () => {
     }
   })
 
+  it('aggregate MCP omitted: mounts once a mounted frame exposes agent tools', async () => {
+    const wsPort = await getPort({ port: 18233, host: '127.0.0.1' })
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, devframes: [makeFrame('alpha')] })
+
+    try {
+      await hub.ready
+      expect(hub.connectionMeta().mcp).toEqual({ path: '__mcp' })
+    }
+    finally {
+      await hub.close()
+    }
+  })
+
+  it('aggregate MCP omitted: an empty agent surface mounts nothing', async () => {
+    const wsPort = await getPort({ port: 18234, host: '127.0.0.1' })
+    // No devframes, no agent-flagged hub commands: nothing to serve an agent.
+    const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort } })
+
+    try {
+      await hub.ready
+      expect(hub.connectionMeta().mcp).toBeUndefined()
+    }
+    finally {
+      await hub.close()
+    }
+  })
+
   it('warns (DF8005) when a mounted devframe asks for MCP but the hub MCP is off', async () => {
     const wsPort = await getPort({ port: 18235, host: '127.0.0.1' })
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    // The hub has no `mcp`, but `beta` declares `cli.mcp: true`, so the hub's
+    // The hub turned MCP off, but `beta` declares `cli.mcp: true`; the hub's
     // single aggregate route governs MCP, so beta's request is a no-op and warns.
     const hub = initHub({
       base: DEVFRAMES_HUB_BASE,
       auth: false,
       host: '127.0.0.1',
       ws: { port: wsPort },
+      mcp: false,
       devframes: [makeFrame('alpha'), { ...makeFrame('beta'), cli: { mcp: true } }],
     })
 
@@ -382,6 +413,7 @@ describe('initHub', () => {
         backend: 'websocket',
         websocket: { path: '/__devframes/__ws' },
         sse: { path: '/__devframes/__sse' },
+        mcp: { path: '__mcp' },
       })
 
       await new Promise<void>(resolve => server.listen(port, host, resolve))

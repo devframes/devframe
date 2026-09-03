@@ -50,9 +50,11 @@ export interface NextDevframeHubOptions {
   /** The hub's single auth gate. Gates by default; `false` opts out. */
   auth?: InitHubOptions['auth']
   /**
-   * Expose the aggregate MCP endpoint at `<base>__mcp`. Disabled by default;
-   * `true` mounts it with the loopback origin gate (trusting same-machine
-   * callers), or pass an object to opt into an `authorization` identity check.
+   * Expose the aggregate MCP endpoint at `<base>__mcp`. Defaults to `'auto'`
+   * (mount once any mounted devframe exposes an agent surface); `true`
+   * mounts it unconditionally with the
+   * loopback origin gate (trusting same-machine callers), an object opts
+   * into an `authorization` identity check, `false` keeps it off.
    */
   mcp?: InitHubOptions['mcp']
   /** Public origin the Next app is reachable at. Default: derived from `PORT`. */
@@ -71,8 +73,8 @@ export interface NextDevframeHubOptions {
  * Build a devframes-hub for a Next.js App Router app: one `initHub()` call
  * mounting every devframe under `<base><id>/` behind one web-standard
  * `handler`, with the RPC socket on a side-car (Next routes can't accept WS
- * upgrades) and the aggregate MCP route opt-in (pass `mcp` to enable it). The
- * UI defaults to
+ * upgrades) and the aggregate MCP route mounted on demand (the `'auto'`
+ * default; pass `mcp` to force or disable it). The UI defaults to
  * `@devframes/hub-ui`'s `createUi()`, loaded lazily via a bundler-ignored
  * dynamic `import()` so its asset lookups resolve at request time; pass `ui`
  * to swap it or `ui: false` for a headless hub.
@@ -96,9 +98,10 @@ export async function createNextDevframeHub(options: NextDevframeHubOptions = {}
     auth: options.auth,
     /** Next route handlers can't accept WS upgrades, so always a side-car socket. */
     ws: options.port != null ? { port: options.port } : { sidecar: true },
-    // MCP is opt-in: `mcp: true` is origin-only (trusting same-machine
-    // callers), `mcp: { authorization }` adds an identity check. Undefined
-    // leaves the aggregate route unmounted.
+    // `mcp: true` is origin-only (trusting same-machine callers),
+    // `mcp: { authorization }` adds an identity check. Undefined falls
+    // through to `initHub`'s `'auto'` default: the aggregate route mounts
+    // once the mounted devframes expose agent tools.
     ...(options.mcp !== undefined ? { mcp: options.mcp } : {}),
     ...(ui ? { ui } : {}),
     ...(options.renderers ? { renderers: options.renderers } : {}),

@@ -4,7 +4,7 @@ import { mergeConfig } from 'vite'
 import { alias } from '../../../alias'
 
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(ts|tsx)'],
+  stories: ['../{src,app}/**/*.stories.@(ts|tsx)'],
   framework: {
     name: 'storybook-solidjs-vite',
     options: {},

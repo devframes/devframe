@@ -119,8 +119,9 @@ export async function mountDevframes(
     if (!/^[\w.-]+$/.test(def.id))
       throw diagnostics.DF8004({ id: def.id })
     // A hub exposes one aggregate MCP route over every mounted devframe, so a
-    // devframe's own `mcp` request is only meaningful when the hub's own MCP is
-    // enabled. Warn when it isn't, rather than silently dropping the devframe's
+    // devframe's own `mcp` request is only meaningful when the hub's own MCP
+    // can mount (an explicit setting or the `'auto'` default). Warn when the
+    // hub turned it off, rather than silently dropping the devframe's
     // intended agent surface.
     if (!hubMcpEnabled && def.cli?.mcp)
       diagnostics.DF8005({ id: def.id })

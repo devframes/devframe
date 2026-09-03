@@ -1,10 +1,10 @@
-import type { TerminalSessionInfo, TerminalsSharedState } from '../src/types'
+import type { TerminalSessionInfo, TerminalsSharedState } from '../src/node/types'
 import type { TerminalsServer, TestClient } from './_utils'
 import process from 'node:process'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
-import { SESSIONS_STATE_KEY, TERMINAL_STREAM_CHANNEL } from '../src/constants'
-import { isPtyAvailable } from '../src/node/index'
+import { SESSIONS_STATE_KEY, TERMINAL_STREAM_CHANNEL } from '../src/node/constants'
+import { isPtyAvailable } from '../src/node/setup'
 import { bootClient, call, collectUntil, createFakeHubTerminals, startTerminalsServer } from './_utils'
 
 vi.stubGlobal('WebSocket', WebSocket)

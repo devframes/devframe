@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { navigate, normalize } from '../src/engine/normalize'
-import { runQuery, runQueryAtPath, suggest } from '../src/engine/query-engine'
-import { skeletonOf } from '../src/engine/skeleton'
+import { navigate, normalize } from '../src/node/engine/normalize'
+import { runQuery, runQueryAtPath, suggest } from '../src/node/engine/query-engine'
+import { skeletonOf } from '../src/node/engine/skeleton'
 
 class Store {
   name = 'sessions'

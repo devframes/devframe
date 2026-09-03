@@ -2,6 +2,7 @@ import type { DevframeNodeContext } from 'devframe'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { Buffer } from 'node:buffer'
 import type { ChildProcess } from 'node:child_process'
+import type { CodeServerProfile, ProfileContext } from './backends'
 import type {
   CodeServerBackend,
   CodeServerConnect,
@@ -14,14 +15,14 @@ import type {
   CodeServerStartRequest,
   CodeServerStartResult,
   CodeServerStatusResult,
-} from '../types'
-import type { CodeServerProfile, ProfileContext } from './backends'
+} from './types'
 import { execSync, spawn } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
 import { request as httpRequest } from 'node:http'
 import { hostname } from 'node:os'
 import process from 'node:process'
 import { getPort } from 'devframe/utils/get-port'
+import { AUTO_DETECT_ORDER, resolveProfile } from './backends'
 import {
   DEFAULT_CODE_SERVER_PORT,
   DEFAULT_START_TIMEOUT,
@@ -30,8 +31,7 @@ import {
   STATE_KEY,
   TERMINAL_SESSION_ICON,
   TERMINAL_SESSION_TITLE,
-} from '../constants'
-import { AUTO_DETECT_ORDER, resolveProfile } from './backends'
+} from './constants'
 import { detectCodeServer } from './detect'
 import { diagnostics } from './diagnostics'
 

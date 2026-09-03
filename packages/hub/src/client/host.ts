@@ -449,6 +449,17 @@ export async function createDevframeClientRuntime(
       return [...(commandsState.value() as DevframeServerCommandEntry[]), ...clientCommands.values()]
     }
 
+    function findCommand(commands: Iterable<DevframeCommandEntry>, id: string): DevframeCommandEntry | undefined {
+      for (const command of commands) {
+        if (command.id === id)
+          return command
+        const child = findCommand(command.children ?? [], id)
+        if (child)
+          return child
+      }
+      return undefined
+    }
+
     const ctx: CommandsContext = {
       get commands() {
         return allCommands()
@@ -464,8 +475,8 @@ export async function createDevframeClientRuntime(
         }
       },
       async execute(id, ...args) {
-        const client = clientCommands.get(id)
-        if (client?.action)
+        const client = findCommand(clientCommands.values(), id)
+        if (client?.source === 'client' && client.action)
           return client.action(...args)
         // Server command, dispatched through the hub built-in.
         return rpc.call('hub:commands:execute', id, ...args)
@@ -474,10 +485,15 @@ export async function createDevframeClientRuntime(
         const override = settings.value().commandShortcuts?.[id]
         if (override)
           return override as DevframeCommandKeybinding[]
-        return allCommands().find(c => c.id === id)?.keybindings ?? []
+        return findCommand(allCommands(), id)?.keybindings ?? []
       },
       settings,
       paletteOpen: false,
+      paletteScopeId: null,
+      openPalette(atCommandId?: string) {
+        ctx.paletteScopeId = atCommandId ?? null
+        ctx.paletteOpen = true
+      },
     }
     return ctx
   }

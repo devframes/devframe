@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import process from 'node:process'
 import { createCac } from 'devframe/adapters/cac'
-import devframe from './src/devframe.ts'
+import devframe from './src/node/index.ts'
 
 async function main() {
-  const cli = createCac(devframe)
+  // Serve the agent surface at `/__mcp` and register for `devframe connect`
+  // discovery. This loopback demo trusts same-machine callers (`mcp: true`);
+  // a network-reachable tool would harden it with `mcp: { authorization }`.
+  const cli = createCac(devframe, { mcp: true })
   await cli.parse()
 }
 

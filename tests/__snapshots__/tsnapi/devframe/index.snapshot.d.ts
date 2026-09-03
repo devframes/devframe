@@ -95,6 +95,7 @@ export interface DevframeAgentHost {
   registerResource: (_: AgentResourceInput) => AgentHandle;
   unregisterResource: (_: string) => boolean;
   list: () => AgentManifest;
+  hasSurface: () => boolean;
   invoke: (_: string, _: unknown) => Promise<unknown>;
   read: (_: string) => Promise<AgentResourceContent>;
   getTool: (_: string) => AgentTool | undefined;
@@ -119,7 +120,7 @@ export interface DevframeCliOptions {
   host?: string;
   open?: boolean | string;
   auth?: boolean | DevframeAuthHandler;
-  mcp?: boolean | McpRouteOptions;
+  mcp?: McpSetting;
   distDir?: StaticAssetsSource;
   ws?: DevframeWsOptions | false;
   sse?: boolean | DevframeSseOptions;
@@ -495,6 +496,7 @@ export type DevframeSnapshotRpcEntry = string | {
 export type DevframeSnapshotRpcInputs = readonly (readonly unknown[])[] | ((_: DevframeNodeContext) => readonly (readonly unknown[])[] | Promise<readonly (readonly unknown[])[]>);
 export type DevframeStorageScope = 'workspace' | 'project' | 'global';
 export type McpAuthorization = string | ((_: Request) => boolean | Promise<boolean>) | false;
+export type McpSetting = boolean | 'auto' | McpRouteOptions;
 export type RemoteAssetsProvider = 'jsdelivr' | 'unpkg' | RemoteAssetsProviderCustom;
 export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> & {
   invokeLocal: <T extends keyof DevframeRpcServerFunctions, Args extends Parameters<DevframeRpcServerFunctions[T]>>(_: T, ..._: Args) => Promise<Awaited<ReturnType<DevframeRpcServerFunctions[T]>>>;

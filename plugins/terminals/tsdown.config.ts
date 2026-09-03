@@ -11,28 +11,25 @@ const deps = {
   ],
 }
 
-// Browser-loaded modules: the xterm-powered renderer. Kept in its own
-// rolldown graph so node-only imports never leak into the client bundle.
-const clientEntries = {
-  'client/index': 'src/client/index.ts',
-}
-
-// Node + neutral modules: the devframe definition/factory, RPC functions,
-// the PTY/child-process manager, and the host adapters.
-const serverEntries = {
-  'index': 'src/index.ts',
+// Node + neutral modules: the devframe definition/factory (root), the setup
+// module, the CLI adapter, the host adapters, constants, types, and the RPC
+// registry. The Svelte component library (`app/client`) and the SPA host
+// (`app`) build separately with Vite.
+const nodeEntries = {
   'node/index': 'src/node/index.ts',
-  'rpc/index': 'src/rpc/index.ts',
-  'cli': 'src/cli.ts',
-  'vite': 'src/vite.ts',
-  'constants': 'src/constants.ts',
-  'types': 'src/types.ts',
+  'node/setup': 'src/node/setup.ts',
+  'node/cli': 'src/node/cli.ts',
+  'node/vite': 'src/node/vite.ts',
+  'node/constants': 'src/node/constants.ts',
+  'node/types': 'src/node/types.ts',
+  'node/rpc/index': 'src/node/rpc/index.ts',
 }
 
 /**
- * Three configs:
- * 1. node server build (clean: true, outputs dist/node, dist/rpc, etc.)
- * 2. combined dts so augmentations resolve
+ * Two configs keep the graphs isolated:
+ * 1. node runtime (`clean: true`): clears dist/, builds the node entries;
+ * 2. combined dts in one neutral graph so the `declare module 'devframe'` RPC
+ *    augmentation resolves once.
  */
 export default defineConfig([
   {
@@ -41,7 +38,7 @@ export default defineConfig([
     tsconfig,
     deps,
     dts: false,
-    entry: serverEntries,
+    entry: nodeEntries,
   },
   {
     clean: false,
@@ -50,6 +47,6 @@ export default defineConfig([
     deps,
     dts: { emitDtsOnly: true },
     outExtensions: () => ({ dts: '.d.mts' }),
-    entry: { ...clientEntries, ...serverEntries },
+    entry: nodeEntries,
   },
 ])

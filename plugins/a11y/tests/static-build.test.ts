@@ -8,7 +8,7 @@ import {
   DEVFRAME_RPC_DUMP_MANIFEST_FILENAME,
 } from 'devframe/constants'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import createA11yDevframe from '../src/index'
+import createA11yDevframe from '../src/node/index'
 import { assertClientBuilt } from './_utils'
 
 interface DumpManifest {

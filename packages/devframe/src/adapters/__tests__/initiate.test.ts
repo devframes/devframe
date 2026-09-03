@@ -262,6 +262,79 @@ describe('adapters/handler', () => {
     }
   })
 
+  // The `'auto'` default: an omitted `mcp` mounts the route exactly when
+  // `setup()` left a non-empty agent surface.
+  function defineAgentTestDef(id: string) {
+    return defineDevframe({
+      id,
+      name: 'Agent Handler Test',
+      version: '0.0.0',
+      packageName: 'devframe-handler-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe with an agent surface.',
+      setup: (ctx: DevframeNodeContext) => {
+        ctx.rpc.register({
+          name: 'test:agent-probe',
+          type: 'query',
+          jsonSerializable: true,
+          agent: { description: 'Answers ok.' },
+          handler: () => 'ok',
+        })
+      },
+    })
+  }
+
+  it('mcp omitted: mounts once the agent surface is non-empty', async () => {
+    const wsPort = await getPort({ port: 18142, host: '127.0.0.1' })
+    const devtools = initDevframe(defineAgentTestDef('handler-mcp-auto'), { base: '/__handler-mcp-auto/', auth: false, ws: { port: wsPort } })
+
+    try {
+      await devtools.ready
+      expect(devtools.connectionMeta().mcp).toEqual({ path: '__mcp' })
+      const res = await devtools.handler(new Request('http://localhost:3000/__handler-mcp-auto/__mcp', {
+        headers: { origin: 'http://localhost:3000' },
+      }))
+      expect(res.status).not.toBe(404)
+    }
+    finally {
+      await devtools.close()
+    }
+  })
+
+  it('mcp omitted: an empty agent surface mounts nothing', async () => {
+    const wsPort = await getPort({ port: 18144, host: '127.0.0.1' })
+    const devtools = initDevframe(defineTestDef('handler-mcp-auto-empty'), { base: '/__handler-mcp-auto-empty/', auth: false, ws: { port: wsPort } })
+
+    try {
+      await devtools.ready
+      expect(devtools.connectionMeta().mcp).toBeUndefined()
+      const res = await devtools.handler(new Request('http://localhost:3000/__handler-mcp-auto-empty/__mcp', {
+        headers: { origin: 'http://localhost:3000' },
+      }))
+      expect(res.status).toBe(404)
+    }
+    finally {
+      await devtools.close()
+    }
+  })
+
+  it('mcp: false keeps the route off despite an agent surface', async () => {
+    const wsPort = await getPort({ port: 18146, host: '127.0.0.1' })
+    const devtools = initDevframe(defineAgentTestDef('handler-mcp-off'), { base: '/__handler-mcp-off/', auth: false, mcp: false, ws: { port: wsPort } })
+
+    try {
+      await devtools.ready
+      expect(devtools.connectionMeta().mcp).toBeUndefined()
+      const res = await devtools.handler(new Request('http://localhost:3000/__handler-mcp-off/__mcp', {
+        headers: { origin: 'http://localhost:3000' },
+      }))
+      expect(res.status).toBe(404)
+    }
+    finally {
+      await devtools.close()
+    }
+  })
+
   it('default tier: binds nothing until the host attaches its own server', async () => {
     const host = '127.0.0.1'
     const port = await getPort({ port: 18150, host })

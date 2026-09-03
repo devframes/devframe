@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import process from 'node:process'
-import { createTerminalsCli } from './dist/cli.mjs'
+import { createTerminalsCli } from './dist/node/cli.mjs'
 
 async function main() {
   const cli = createTerminalsCli()

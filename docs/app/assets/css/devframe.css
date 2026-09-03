@@ -113,3 +113,8 @@
 .dark .terminal-window {
   box-shadow: 0 10px 30px rgb(0 0 0 / 27%);
 }
+
+.\[\&\>code\]\:border-current > code {
+  border-color: color-mix(in oklab, var(--ui-primary) 50%, transparent);
+  outline: none;
+}

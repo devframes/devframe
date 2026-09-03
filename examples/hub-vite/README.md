@@ -2,7 +2,7 @@
 
 A tiny, copyable **vite-devtools-style hub**. [vite-devtools](https://github.com/vitejs/devtools) is the full hub UI provider that docks many Vite tools behind one icon rail on top of `@devframes/hub`; this example is the smallest thing shaped like it - an icon dock, an iframe stage, and a drawer of hub subsystems - so you can see the whole protocol and build your own hub UI provider from it.
 
-`src/vite-devframe-hub.ts` is the entire host-framework integration: a small Vite plugin around one `initHub()` call (from `@devframes/hub/initiate`). The instance mounts every devframe under one namespace - `/__devframes/<id>/` - merges their RPC registries onto one WebSocket that upgrades on Vite's own dev server at `/__devframes/__ws`, and serves the discovery endpoints (`/__devframes/__connection.json`, `__index.json`, `__client-imports.js`) - all behind one connect-style middleware that self-filters by the base and hands everything else back to Vite. Mounting a hub in any host framework follows the same shape.
+`src/vite-devframe-hub.ts` is the entire host-framework integration: a small Vite plugin around one `initHub()` call (from `@devframes/hub/initiate`). The instance mounts every devframe under one namespace - `/__devframes/<id>/` - merges their RPC registries onto one WebSocket that upgrades on Vite's own dev server at `/__devframes/__ws`, and serves the discovery endpoints (`/__devframes/__connection.json`, `__index.json`, `__client-imports.js`) plus the aggregate MCP endpoint at `/__devframes/__mcp` (Streamable-HTTP over the whole hub tool registry, mounted by the `'auto'` default because the built-in plugins expose agent tools) - all behind one connect-style middleware that self-filters by the base and hands everything else back to Vite. Mounting a hub in any host framework follows the same shape.
 
 ## Run it
 
@@ -26,7 +26,7 @@ The **RPC & State Inspector** carries an **Instances** tab that lists every devf
 
 ## What the example proves
 
-- `initHub()` boots a hub with no Vite-specific code path: `server.middlewares.use(instance.nodeMiddleware)` plus Vite's `httpServer` for the shared WebSocket upgrade is the entire host-framework integration
+- `initHub()` boots a hub with no Vite-specific code path: `server.middlewares.use(instance.nodeMiddleware)` plus Vite's `httpServer` for the shared WebSocket upgrade is the entire host-framework integration - devframes, shared RPC registry, WS transport, MCP, and discovery behind one framework-agnostic handler
 - Every `devframes` entry is served at `/__devframes/<id>/` with its own `__connection.json`, so each embedded SPA connects straight back to the hub; `/__devframes/__index.json` lists the mounted devframes and endpoints for any external viewer
 - One authorization covers the whole hub: `initHub()` gates the shared transport by default, so a single OTP handshake trusts every mounted devframe, the discovery endpoints, and the built-ins. The hub UI provider drives its own authorization view (`simpleAuth: false`) and each embedded SPA inherits the stored token
 - Real devframes work end to end through the mount path - the inspector lists every mounted devframe's RPC functions live, terminals stream over the hub, and code-server launches an authenticated editor

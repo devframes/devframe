@@ -7,7 +7,7 @@ description: 'The lowest-level path is the standard handler, initDevframe(def, {
 
 The lowest-level path is [the standard handler](/adapters/initiate), `initDevframe(def, { base })`: a Web Standard `(request: Request) => Promise<Response>` for any catch-all route. Every path below builds on it.
 
-Adapters wrap it as `createXxx(def, options?)` at `devframe/adapters/<name>`. `cac` and `mcp` need an optional peer ([`cac`](https://github.com/cacjs/cac), [`@modelcontextprotocol/server`](https://github.com/modelcontextprotocol/typescript-sdk)).
+Adapters wrap it as `createXxx(def, options?)` at `devframe/adapters/<name>`. `cac` needs an optional peer ([`cac`](https://github.com/cacjs/cac)).
 
 ## Comparison
 

@@ -205,6 +205,38 @@ describe('wire services (install / ready)', () => {
     expect(warn.mock.calls.flat().join('\n')).toContain('DF0066')
   })
 
+  it('installs a service once across two contexts that share one RPC host (no DF0021)', async () => {
+    const { ctx } = await createCtx()
+    const { ctx: ctx2 } = await createCtx()
+    // A kit/hub can mount a definition into two contexts backed by a single
+    // RPC host; both then iterate `def.services` and install the same service.
+    ;(ctx2 as { rpc: unknown }).rpc = ctx.rpc
+
+    let setupRuns = 0
+    const declare = () => defineTestService({
+      setup: (scoped) => {
+        setupRuns++
+        scoped.rpc.register({ name: 'ping', handler: () => 'pong' })
+        return { ok: true }
+      },
+    })
+
+    void ctx.services.install(declare())
+    await ctx.services.ready()
+
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    void ctx2.services.install(declare())
+    await expect(ctx2.services.ready()).resolves.toBeUndefined()
+
+    // The factory ran once; the RPC is registered once and stays callable.
+    expect(setupRuns).toBe(1)
+    expect(warn.mock.calls.flat().join('\n')).not.toContain('DF0021')
+    await expect((ctx.rpc.invokeLocal as (m: string) => Promise<unknown>)('test:svc:ping')).resolves.toBe('pong')
+    // Both contexts expose the service API for in-process `get`.
+    expect(ctx.services.get('@test/svc')).toEqual({ ok: true })
+    expect(ctx2.services.get('@test/svc')).toEqual({ ok: true })
+  })
+
   it('skips an optional descriptor whose package cannot be imported', async () => {
     const { ctx } = await createCtx()
     const install = ctx.services.install({ package: '@test/does-not-exist' })

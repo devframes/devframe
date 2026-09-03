@@ -18,12 +18,19 @@ export interface StarterState {
  * dump is baked into a static build so the SPA keeps working with no server.
  * The one round trip the client makes - runtime info plus the top-level
  * entries of the working directory.
+ *
+ * The `agent` field is the same function's second view: it becomes an MCP
+ * tool for coding agents, served automatically (`mcp: 'auto'`) at
+ * `<base>__mcp` in dev and over stdio via `pnpm run dev -- mcp`.
  */
 export const getState = defineRpcFunction({
   name: 'get-state',
   type: 'query',
   jsonSerializable: true,
   snapshot: true,
+  agent: {
+    description: 'Read the devframe-starter state: the Node version and the top-level entries of the working directory.',
+  },
   setup: ctx => ({
     handler: async (): Promise<StarterState> => {
       const cwd = process.env.DEVFRAME_E2E_CWD || ctx.cwd

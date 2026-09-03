@@ -1,7 +1,7 @@
 import type { Preview } from 'storybook-solidjs-vite'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
-import '../src/spa/styles.css'
+import '../app/styles.css'
 
 // Drive the shared `@antfu/design` tokens off the toolbar theme toggle: dark mode
 // is the `.dark` class on `<html>`, and the canvas takes the semantic

@@ -180,7 +180,9 @@ describe('devframeViteBridge (bridge mode mcp)', () => {
     const meta = await (await fetch(`http://${host}:${vitePort}/__vite-bridge-test/__connection.json`)).json()
     // Zero extra ports: a same-origin relative route on Vite's own server.
     expect(meta.websocket).toEqual({ path: '__ws' })
-    expect(meta.mcp).toBeUndefined()
+    // The definition registers an agent tool, so the omitted `mcp` defaults
+    // to `'auto'` and mounts the route on Vite's own origin too.
+    expect(meta.mcp).toEqual({ path: '__mcp' })
 
     const rpc = createRpcClient<any, any>({}, {
       channel: createWsRpcChannel({ url: `ws://${host}:${vitePort}/__vite-bridge-test/__ws` }),

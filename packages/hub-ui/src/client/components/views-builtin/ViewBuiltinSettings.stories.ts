@@ -1,7 +1,7 @@
 import type { DevframeViewBuiltin } from '@devframes/hub'
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { h } from 'vue'
-import { groupedEntries } from '../../stories/fixtures'
+import { groupedEntries, subcategorizedGroupEntries } from '../../stories/fixtures'
 import { mountWithContext } from '../../stories/story-helpers'
 import ViewBuiltinSettings from './ViewBuiltinSettings.vue'
 
@@ -47,6 +47,22 @@ export const Standalone: Story = {
   render: () => ({
     setup: () => mountWithContext(
       { entries: groupedEntries, clientType: 'standalone' },
+      ctx => stage(h(ViewBuiltinSettings, { context: ctx, entry })),
+    ),
+  }),
+}
+
+/**
+ * A group whose members split into in-group sub-categories; open the
+ * **Shortcuts** tab to see them listed directly under their group (`Docks` ›
+ * Tools › a member), each indented by nesting level and bindable like any other
+ * command. The rail's sub-category dividers stay in the rail; every row here is
+ * something you can actually run.
+ */
+export const DeeplyNestedShortcuts: Story = {
+  render: () => ({
+    setup: () => mountWithContext(
+      { entries: subcategorizedGroupEntries, clientType: 'embedded' },
       ctx => stage(h(ViewBuiltinSettings, { context: ctx, entry })),
     ),
   }),

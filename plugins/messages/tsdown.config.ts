@@ -2,25 +2,20 @@ import { defineConfig } from 'tsdown'
 
 const tsconfig = '../../tsconfig.base.json'
 
-// Browser-loaded entry: the embeddable Vue panel. Its runtime bundle is
-// produced by the Vite lib build (`src/client/vite.config.ts`, CSS injected
-// via JS); tsdown only emits its declarations below.
-const clientEntries = {
-  'client/index': 'src/client/index.ts',
-}
-
-// Node + neutral modules: the devframe definition/factory, the RPC
-// functions, and the host adapters.
-const serverEntries = {
-  'index': 'src/index.ts',
-  'cli': 'src/cli.ts',
-  'constants': 'src/constants.ts',
+// Node + neutral modules only: the devframe definition/factory, the setup
+// module, the RPC functions, the CLI adapter, and the shared constants. The
+// Vue component library (`./client`) and the SPA host build separately with
+// Vite (`app/client/vite.config.ts`, `app/vite.config.ts`).
+const nodeEntries = {
   'node/index': 'src/node/index.ts',
-  'rpc/index': 'src/rpc/index.ts',
+  'node/setup': 'src/node/setup.ts',
+  'node/cli': 'src/node/cli.ts',
+  'node/constants': 'src/node/constants.ts',
+  'node/rpc/index': 'src/node/rpc/index.ts',
 }
 
 /**
- * Two configs mirror `plugins/terminals`:
+ * Two configs mirror the other plugins:
  * 1. node runtime build (`dts: false`, `clean: true`);
  * 2. combined dts (`emitDtsOnly`): one rolldown graph so the
  * `declare module 'devframe'` RPC augmentation resolves once.
@@ -31,24 +26,21 @@ export default defineConfig([
     platform: 'node',
     tsconfig,
     dts: false,
-    entry: serverEntries,
+    entry: nodeEntries,
   },
   {
     clean: false,
     platform: 'neutral',
     tsconfig,
     /**
-     * `client/index.ts` re-exports `useMessages(): Reactive<MessagesState>`,
-     * a genuine Vue reactivity type, not just a documentation import. Without
-     * this, the dts bundler inlines Vue's entire runtime-core/reactivity type
-     * surface to describe `Reactive<T>` (≈935 KB); `neverBundle` keeps the
-     * reference as `import('vue').Reactive<...>` instead. This build is
-     * `emitDtsOnly`, so it has no effect on the JS output (built separately
-     * by the Vite lib build for the client, and by the node build above).
+     * The RPC list types reference `@devframes/hub` message types; keep Vue
+     * external so the dts bundler references `import('vue').Reactive<...>`
+     * rather than inlining Vue's reactivity type surface. This build is
+     * `emitDtsOnly`, so it has no effect on the JS output.
      */
     deps: { neverBundle: ['vue'] },
     dts: { emitDtsOnly: true },
     outExtensions: () => ({ dts: '.d.mts' }),
-    entry: { ...clientEntries, ...serverEntries },
+    entry: nodeEntries,
   },
 ])

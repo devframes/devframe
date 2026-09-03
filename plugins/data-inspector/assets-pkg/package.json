@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-data-inspector--assets",
   "type": "module",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "description": "Prebuilt browser assets (SPA) for @devframes/plugin-data-inspector, served on demand through devframe's remote-assets back-proxy.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

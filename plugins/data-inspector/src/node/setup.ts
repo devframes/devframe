@@ -1,0 +1,53 @@
+import type { DevframeNodeContext } from 'devframe'
+import { createExampleDataSource, EXAMPLE_SOURCE_ID } from './example-source'
+import { createDataSourcesService, DATA_SOURCES_SERVICE_ID, getDataSource, onDataSourceDataChanged, onDataSourcesChanged, registerDataSource } from './registry/index'
+import { serverFunctions } from './rpc/index'
+
+/** Broadcast whenever the source registry changes (register/unregister). */
+export const SOURCES_CHANGED_EVENT = 'devframes:plugin:data-inspector:sources:changed'
+
+/**
+ * Broadcast whenever a source's DATA changes: a successful `write`, a
+ * `notifyChanged()` handle call, or a source's own `subscribe` bridge.
+ * Carries the source id so clients refresh only the affected view.
+ */
+export const DATA_CHANGED_EVENT = 'devframes:plugin:data-inspector:data:changed'
+
+export interface SetupDataInspectorOptions {
+  /** Register the built-in example source (default `true`). */
+  exampleSource?: boolean
+}
+
+/**
+ * Register the data-inspector's RPC functions on a devframe node context,
+ * provide the source registry as a typed context service, and broadcast
+ * registry changes so connected UIs refresh their source list live.
+ *
+ * Called from the definition's `setup(ctx)` and reusable by host adapters
+ * (the CLI and the inject endpoint wire their own contexts through this).
+ */
+export function setupDataInspector(ctx: DevframeNodeContext, options: SetupDataInspectorOptions = {}): void {
+  for (const fn of serverFunctions)
+    ctx.rpc.register(fn)
+
+  // The registry itself is process-global; the service is the typed,
+  // zero-dependency access path for other integrations on this context.
+  if (!ctx.services.has(DATA_SOURCES_SERVICE_ID))
+    ctx.services.provide(DATA_SOURCES_SERVICE_ID, createDataSourcesService())
+
+  // Always on unless opted out: the example source doubles as an
+  // environment inspector (this context, OS, live process stats).
+  if ((options.exampleSource ?? true) && !getDataSource(EXAMPLE_SOURCE_ID))
+    registerDataSource(createExampleDataSource(ctx))
+
+  onDataSourcesChanged(() => {
+    void ctx.rpc.broadcast({ method: SOURCES_CHANGED_EVENT, args: [] } as never)
+  })
+
+  onDataSourceDataChanged((sourceId) => {
+    void ctx.rpc.broadcast({ method: DATA_CHANGED_EVENT, args: [sourceId] } as never)
+  })
+}
+
+export { createExampleDataSource, EXAMPLE_SOURCE_ID }
+export { serverFunctions }

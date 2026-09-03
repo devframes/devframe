@@ -1,6 +1,6 @@
 import type { DevframeNodeContext } from 'devframe'
 import type { StartedServer } from 'devframe/internal'
-import type { ChatHistory } from '../src/devframe'
+import type { ChatHistory } from '../src/node/index'
 import { createRpcStreamingClientHost } from 'devframe/client'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'

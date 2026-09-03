@@ -10,5 +10,5 @@
     "esModuleInterop": true,
     "isolatedDeclarations": false
   },
-  "include": ["src", "tests", "bin.mjs"]
+  "include": ["src", "app", "tests", "playgrounds", "bin.mjs"]
 }

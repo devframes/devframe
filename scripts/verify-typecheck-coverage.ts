@@ -32,7 +32,6 @@ const WORKSPACE_PATTERNS = ['packages/*', 'plugins/*', 'examples/*', 'starter', 
  * already has one).
  */
 const EXCEPTIONS: Record<string, string> = {
-  'plugins/inspect': 'tsconfig.json is the only one with composite:true, which makes tsc reject valid cross-package imports (TS6307); also has a couple of unrelated spa/composables type bugs. See plans/README.md "Execution notes" for plan 001.',
   'examples/hub-next': 'packages/hub/src/node/host-terminals.ts types a child-process env as NodeJS.ProcessEnv, and Next.js\'s ambient types require a literal NODE_ENV on that interface once this app pulls hub into its program. See plans/README.md "Execution notes" for plan 001.',
   'examples/hub-next-minimal': 'Same Next.js + hub NODE_ENV ambient conflict as examples/hub-next; the minimal Next host pulls hub into its program too.',
   'docs': 'Nuxt app extending the comark-docs layer: tsconfig.json only holds project references into generated `.nuxt/tsconfig.*.json`, which exist only after `nuxt prepare` resolves the layer, so type-checking it would drag a full Nuxt prepare into the Turbo graph.',

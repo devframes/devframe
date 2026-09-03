@@ -266,4 +266,18 @@ export interface CommandsContext {
    * Whether the command palette is open
    */
   paletteOpen: boolean
+  /**
+   * The command whose children the palette should open drilled into, or `null`
+   * for the root list. Set by {@link CommandsContext.openPalette}; the palette
+   * reads it when it opens and clears it when it closes.
+   */
+  paletteScopeId: string | null
+  /**
+   * Open the command palette, optionally scoped to one command's children:
+   * e.g. a dock group with no `defaultChildId` opens the palette listing just
+   * that group's members instead of guessing one for the user.
+   *
+   * Passing no id opens the root list, the same as setting `paletteOpen` true.
+   */
+  openPalette: (atCommandId?: string) => void
 }

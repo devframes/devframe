@@ -3,6 +3,6 @@
   "compilerOptions": {
     "lib": ["esnext", "dom", "dom.iterable"]
   },
-  "include": ["src", "test", "tsdown.config.ts", "uno.config.ts"],
+  "include": ["src", "app", "test", "playgrounds", "bin.mjs", "tsdown.config.ts", "uno.config.ts"],
   "exclude": ["dist", "node_modules"]
 }

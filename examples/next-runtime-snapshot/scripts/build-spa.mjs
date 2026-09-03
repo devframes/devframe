@@ -1,29 +1,23 @@
-import { chmodSync, mkdirSync, readdirSync, rmSync } from 'node:fs'
-import { cp } from 'node:fs/promises'
+import { copyFileSync, mkdirSync, readdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 
-rmSync('dist/client', { recursive: true, force: true })
-mkdirSync('dist', { recursive: true })
-// `fs.promises.cp` rather than `cpSync`: the sync variant's native directory
-// copy fails (EACCES) on shared-mount filesystems (e.g. virtiofs, Docker
-// Desktop mounts).
-await cp('src/client/out', 'dist/client', { recursive: true })
+// The Next.js static export is this example's iframe SPA; it is served from
+// `dist/client` by the standalone CLI, the playground host, and the tests.
 
-// A built SPA must be readable to be served. Some filesystems (e.g. Docker
-// Desktop's shared mounts) drop the read bits when copying, which yields
-// unservable assets and trips downstream `createBuild` copies. Normalize the
-// tree so directories are traversable and files are world-readable.
-function normalizePermissions(dir) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const path = join(dir, entry.name)
-    if (entry.isDirectory()) {
-      chmodSync(path, 0o755)
-      normalizePermissions(path)
-    }
-    else if (entry.isFile()) {
-      chmodSync(path, 0o644)
-    }
+// A manual walk with explicit modes: Next's export emits entries with
+// restrictive modes that node's `cpSync` inherits and then trips over, so
+// recreate the tree with normal directory/file permissions instead.
+function copyTree(src, dest) {
+  mkdirSync(dest, { recursive: true, mode: 0o755 })
+  for (const entry of readdirSync(src, { withFileTypes: true })) {
+    const from = join(src, entry.name)
+    const to = join(dest, entry.name)
+    if (entry.isDirectory())
+      copyTree(from, to)
+    else if (entry.isFile())
+      copyFileSync(from, to)
   }
 }
 
-normalizePermissions('dist/client')
+rmSync('dist/client', { recursive: true, force: true })
+copyTree('app/out', 'dist/client')

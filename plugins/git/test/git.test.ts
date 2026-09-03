@@ -7,7 +7,7 @@ import { collectStaticRpcDump } from 'devframe/rpc/dump'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
-import createGitDevframe from '../src/index'
+import createGitDevframe from '../src/node/index'
 import { createTempRepo } from './_repo'
 import { createDashboardContext, startDashboardServer } from './_utils'
 

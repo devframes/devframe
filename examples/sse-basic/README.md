@@ -3,7 +3,8 @@
 The smallest SSE-only devframe: `ws: false` binds no WebSocket, so every RPC frame - calls, shared state, the auth handshake - rides plain HTTP at `/__sse-basic/__sse`. This is the transport for host frameworks and proxies where the WebSocket upgrade isn't available.
 
 ```sh
-pnpm --filter sse-basic dev
+pnpm --filter sse-basic dev    # Vite app + the SSE node bridge, with HMR
+pnpm --filter sse-basic play   # build the SPA, then serve it over SSE from a standalone host
 ```
 
 Open the printed URL. The page shows:
@@ -14,12 +15,8 @@ Open the printed URL. The page shows:
 
 ## How it works
 
-`vite.config.ts` holds the whole thing: a `defineDevframe` definition (two RPC functions and a shared-state clock) served by `initDevframe(def, { base: '/__sse-basic/', ws: false, auth: false })`, mounted with one line -
+`src/node/index.ts` is the whole tool: a `defineDevframe` definition with two RPC functions and a shared-state clock. `app/` is the vanilla SPA (`app/main.ts` calls `connectDevframe({ baseURL: '/__sse-basic/' })`), and `app/vite.config.ts` bridges the node side onto the dev server with `initDevframe(def, { base: '/__sse-basic/', ws: false, auth: false })` for HMR. `playgrounds/server.mjs` boots the built SPA over the same SSE host.
 
-```ts
-server.middlewares.use(instance.nodeMiddleware)
-```
-
-There is no upgrade wiring anywhere; ordinary request middleware serves discovery (`__connection.json`), the SSE stream (`GET __sse`), and RPC frames (`POST __sse`). `src/main.ts` is the vanilla client: `connectDevframe({ baseURL: '/__sse-basic/' })` and everything else works exactly as it would over a WebSocket.
+There is no upgrade wiring anywhere; ordinary request middleware serves discovery (`__connection.json`), the SSE stream (`GET __sse`), and RPC frames (`POST __sse`). Everything works exactly as it would over a WebSocket.
 
 See the [Transports guide](https://devfra.me/guide/transports) for the full transport model, including running both transports side by side and pinning one from the client.

@@ -2,31 +2,32 @@ import { defineConfig } from 'tsdown'
 
 const tsconfig = '../../tsconfig.base.json'
 
-// Browser-loaded entry. Kept in its own rolldown graph so node-only
-// imports can never leak into the client bundle.
-const clientEntries = {
-  'client/index': 'src/client/index.ts',
+// Injected client script: loaded into the user app's page via a bare
+// `<script type="module">`, so it must be one self-contained ES module with no
+// chunk graph. axe-core and `devframe/in-page-channel` are bundled in.
+const clientScriptEntries = {
+  'client-script/index': 'src/client-script/index.ts',
 }
 
-// Node-side entries: the devframe definition, the CLI/Vite host
-// adapters, the setup module, and the RPC registry.
-const serverEntries = {
-  'index': 'src/index.ts',
-  'cli': 'src/cli.ts',
+// Node-side entries: the devframe definition (root), the setup module, the
+// CLI adapter, and the RPC registry.
+const nodeEntries = {
   'node/index': 'src/node/index.ts',
-  'rpc/index': 'src/rpc/index.ts',
+  'node/setup': 'src/node/setup.ts',
+  'node/cli': 'src/node/cli.ts',
+  'node/rpc/index': 'src/node/rpc/index.ts',
 }
 
 /**
- * Three configs mirror `packages/devframe`:
- * 1. browser runtime build (`dts: false`, `clean: true`): clears dist/
- * and emits the client bundle in an isolated graph;
- * 2. node runtime build (`dts: false`, `clean: false`): appends;
- * 3. combined dts (`emitDtsOnly`): one rolldown graph so the
- * `declare module 'devframe'` RPC augmentation resolves once.
+ * Three configs keep the graphs isolated:
+ * 1. browser client script (`clean: true`): clears dist/, self-contained
+ *    (`alwaysBundle` inlines devframe + axe);
+ * 2. node runtime (appends);
+ * 3. combined dts in one graph so the `declare module 'devframe'` RPC
+ *    augmentation resolves once.
  *
- * The Solid panel SPA (`src/spa`) and the in-page agent (`src/inject`)
- * build separately with Vite into `dist/spa` and `dist/inject`.
+ * The Solid panel SPA (`app/`) builds separately with Vite into the lockstep
+ * `@devframes/plugin-a11y--assets` package.
  */
 export default defineConfig([
   {
@@ -35,14 +36,15 @@ export default defineConfig([
     tsconfig,
     dts: false,
     outExtensions: () => ({ js: '.mjs' }),
-    entry: clientEntries,
+    deps: { alwaysBundle: [/^devframe(\/|$)/, 'axe-core'] },
+    entry: clientScriptEntries,
   },
   {
     clean: false,
     platform: 'node',
     tsconfig,
     dts: false,
-    entry: serverEntries,
+    entry: nodeEntries,
   },
   {
     clean: false,
@@ -50,6 +52,6 @@ export default defineConfig([
     tsconfig,
     dts: { emitDtsOnly: true },
     outExtensions: () => ({ dts: '.d.mts' }),
-    entry: { ...clientEntries, ...serverEntries },
+    entry: { ...clientScriptEntries, ...nodeEntries },
   },
 ])

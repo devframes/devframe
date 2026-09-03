@@ -1,7 +1,7 @@
-import type { DevframeInstanceRecord, InstanceShellApi } from 'devframe/internal'
+import type { DevframeInstanceRecord, InstanceShellApi, ResolvedMcpConfig } from 'devframe/internal'
 import type { DevframeAuthHandler } from 'devframe/node/auth'
 import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
-import type { ConnectionMeta, DevframeDefinition, DevframeServiceInput, DevframeSseOptions, DevframeStorageScope, DevframeWsOptions, McpRouteOptions } from 'devframe/types'
+import type { ConnectionMeta, DevframeDefinition, DevframeServiceInput, DevframeSseOptions, DevframeStorageScope, DevframeWsOptions, McpRouteOptions, McpSetting } from 'devframe/types'
 import type { Buffer } from 'node:buffer'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { Duplex } from 'node:stream'
@@ -11,7 +11,7 @@ import type { InstallDevframeOptions } from './install-devframe'
 import { readFile } from 'node:fs/promises'
 import process from 'node:process'
 import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_DOCK_IMPORTS_FILENAME, DEVFRAME_MCP_ROUTE } from 'devframe/constants'
-import { createH3DevframeHost, createInstanceShell, importRuntimeModule, resolveInstanceRegister, resolveMcpConfig } from 'devframe/internal'
+import { createH3DevframeHost, createInstanceShell, importRuntimeModule, loadAutoMcpAdapter, resolveInstanceRegister, resolveMcpConfig } from 'devframe/internal'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
@@ -238,14 +238,16 @@ export interface InitHubOptions {
   /**
    * Expose the **aggregate** MCP endpoint at `<base>__mcp`: one
    * Streamable-HTTP server over the shared context's whole tool registry
-   * (ids are already namespaced per plugin). Disabled by default; `true`
-   * mounts it with the loopback origin gate (trusting same-machine callers),
-   * an object opts into an {@link McpRouteOptions.authorization} identity
-   * check. A mounted devframe's own `mcp` setting is ignored: the hub's
-   * aggregate route covers them all (`DF8005` warns when one asks for MCP
-   * while this is off).
+   * (ids are already namespaced per plugin). Defaults to `'auto'`: the route
+   * mounts once any mounted devframe (or an agent-flagged hub command)
+   * exposes an agent surface. `true` mounts it
+   * unconditionally with the loopback origin gate (trusting same-machine
+   * callers), an object opts into an {@link McpRouteOptions.authorization}
+   * identity check, `false` keeps it off. A mounted devframe's own `mcp`
+   * setting is ignored: the hub's aggregate route covers them all (`DF8005`
+   * warns when one asks for MCP while this is `false`).
    */
-  mcp?: boolean | McpRouteOptions
+  mcp?: McpSetting
   /**
    * Public origin the host app is reachable at, or a getter. Derived lazily
    * from the first request when omitted.
@@ -441,7 +443,7 @@ export function initHub(options: InitHubOptions): HubInstance {
       // collection alongside every devframe's own declared services.
       for (const input of options.services ?? [])
         void ctx.services.install(input)
-      const setups = await mountDevframes(ctx, devframes, base, frames, !!options.mcp)
+      const setups = await mountDevframes(ctx, devframes, base, frames, options.mcp !== false)
 
       // Construct every collected service once, then run the setups, so a
       // devframe's setup consumes services (its own or another devframe's)
@@ -476,17 +478,27 @@ export function initHub(options: InitHubOptions): HubInstance {
       manifestState.mutate(() => manifest)
 
       // Aggregate MCP: one Streamable-HTTP endpoint over the shared
-      // context's whole registry (tool ids are namespaced per plugin, and the
-      // wire-name collision policy is `createMcpFetchHandler`'s own). The
-      // resolved config trusts same-machine callers by default (origin-only);
-      // an object config opts into a bearer/callback identity check.
-      const mcpConfig = resolveMcpConfig(options.mcp)
+      // context's whole registry. The omitted `'auto'` default mounts when
+      // the devframes (or an agent-flagged hub command) left a non-empty
+      // agent surface; an empty surface loads no MCP code. Origin-only
+      // unless the config opts into a bearer/callback.
+      const mcpSetting = options.mcp ?? 'auto'
+      let mcpModule: typeof import('devframe/adapters/mcp') | undefined
+      let mcpConfig: ResolvedMcpConfig | undefined
+      if (mcpSetting === 'auto') {
+        mcpModule = await loadAutoMcpAdapter<typeof import('devframe/adapters/mcp')>(ctx.agent)
+        if (mcpModule)
+          mcpConfig = { authorization: false }
+      }
+      else {
+        mcpConfig = resolveMcpConfig(mcpSetting)
+      }
       if (!mcpConfig)
         return { context: ctx }
 
       const mcpRoute = withoutLeadingSlash(mcpConfig.path ?? DEVFRAME_MCP_ROUTE)
-      const { mountMcpHttp } = await importRuntimeModule<typeof import('devframe/adapters/mcp')>('devframe/adapters/mcp')
-      const mounted = mountMcpHttp(app, ctx, joinURL(base, mcpRoute), {
+      mcpModule ??= await importRuntimeModule<typeof import('devframe/adapters/mcp')>('devframe/adapters/mcp')
+      const mounted = mcpModule.mountMcpHttp(app, ctx, joinURL(base, mcpRoute), {
         serverName: options.name ?? 'devframes-hub',
         serverVersion: options.version ?? '0.0.0',
         exposeSharedState: true,

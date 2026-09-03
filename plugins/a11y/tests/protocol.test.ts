@@ -1,6 +1,6 @@
 import type { ScanReport } from '../src/shared/protocol.ts'
 import { describe, expect, it } from 'vitest'
-import { createGetConfig } from '../src/rpc/functions/get-config.ts'
+import { createGetConfig } from '../src/node/rpc/functions/get-config.ts'
 import { DEFAULT_AXE_TAGS, emptyCounts, sumCounts } from '../src/shared/protocol.ts'
 
 function report(counts: Partial<ReturnType<typeof emptyCounts>>, route = '/'): ScanReport {

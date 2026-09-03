@@ -114,7 +114,7 @@ The mounted devframes share one RPC registry, state store, connection, auth gate
 pnpm add devframe
 ```
 
-`devframe` ships ESM-only, no Vite dependency. Adapters with optional peers (the MCP adapter needs `@modelcontextprotocol/server`) surface the requirement at import time.
+`devframe` ships ESM-only, no Vite dependency. The CLI adapter's optional peer (`cac`) surfaces its requirement at import time.
 
 ## Hello, Devframe
 

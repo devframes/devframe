@@ -5,7 +5,7 @@ import { mergeConfig } from 'vite'
 import { alias } from '../../../alias'
 
 const config: StorybookConfig = {
-  stories: ['../src/spa/app/**/*.stories.@(ts|tsx)'],
+  stories: ['../{src,app}/**/*.stories.@(ts)'],
   addons: ['@storybook/addon-docs', '@storybook/addon-a11y'],
   framework: {
     name: '@storybook/vue3-vite',

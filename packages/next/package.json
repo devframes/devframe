@@ -1,7 +1,7 @@
 {
   "name": "@devframes/next",
   "type": "module",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "description": "Next.js host integration that serves mounted devframes from an App Router route.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

@@ -37,7 +37,7 @@
  * treat the endpoint like a debugger port.
  */
 import type { DevframeHost, DevframeNodeContext } from 'devframe'
-import type { DataSourceEntry } from '../registry/index'
+import type { DataSourceEntry } from '../node/registry/index'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { homedir } from 'node:os'
@@ -121,10 +121,10 @@ export function createGlobalThisDataSource(): DataSourceEntry {
 export async function exposeDataInspector(options: ExposeDataInspectorOptions = {}): Promise<DataInspectorEndpoint> {
   // Deferred so `--import`ing the inject entry never pulls the whole node module graph
   // into processes that don't enable it.
-  const { setupDataInspector } = await import('../node/index')
+  const { setupDataInspector } = await import('../node/setup')
 
   if (options.sources?.length) {
-    const { registerDataSource } = await import('../registry/index')
+    const { registerDataSource } = await import('../node/registry/index')
     for (const source of options.sources)
       registerDataSource(source)
   }

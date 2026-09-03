@@ -16,6 +16,18 @@ import { deepMergeOptionSets, expandResolveFrom, importServicePackage, satisfies
 
 const debug = createDebug('devframe:services')
 
+/**
+ * Per-RPC-host registry of the services already installed against it, keyed
+ * by the RPC host object. A single wire service can be declared from more
+ * than one devframe context that shares one RPC host (e.g. a kit that mounts
+ * a definition alongside another context, so both iterate `def.services`).
+ * The per-instance `installed` guard can't see across those sibling hosts, so
+ * the second context would re-run the service factory and re-register its RPC,
+ * hitting DF0021. Sharing the registry by RPC host makes the first install win
+ * across every context on that host.
+ */
+const installedByRpcHost = new WeakMap<object, Map<string, unknown>>()
+
 interface PendingServiceEntry {
   input: DevframeServiceInput
   resolveFrom?: string | null
@@ -72,10 +84,28 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
   private services = new Map<string, unknown>()
   private listeners = new Map<string, Set<(service: unknown) => void>>()
   private pending = new Map<string, PendingServiceEntry[]>()
-  private installed = new Map<string, unknown>()
+  private localInstalled = new Map<string, unknown>()
   private readyPromise: Promise<void> | undefined
 
   constructor(private context?: DevframeNodeContext) {}
+
+  /**
+   * The install-dedup registry, shared across every services host that shares
+   * this host's RPC host so the first install of a package wins across sibling
+   * contexts. Falls back to a per-instance map when there is no RPC host (a
+   * context-less host only exercises the in-process `provide`/`get` tier).
+   */
+  private get installed(): Map<string, unknown> {
+    const rpc = this.context?.rpc as object | undefined
+    if (!rpc)
+      return this.localInstalled
+    let registry = installedByRpcHost.get(rpc)
+    if (!registry) {
+      registry = new Map()
+      installedByRpcHost.set(rpc, registry)
+    }
+    return registry
+  }
 
   provide<ID extends DevframeServiceId>(id: ID, service: DevframeServiceOf<ID>): () => void {
     const key = id as string
@@ -190,8 +220,17 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
   private async installPackage(pkg: string, entries: PendingServiceEntry[]): Promise<unknown> {
     // Dedup: first installation wins; a later install's options are ignored.
     if (this.installed.has(pkg)) {
-      diagnostics.DF0066({ package: pkg })
-      return this.installed.get(pkg)
+      const api = this.installed.get(pkg)
+      // A sibling context sharing this RPC host already constructed the
+      // service. Expose the cached API here too, but skip re-running the
+      // factory (which would re-register its RPC and hit DF0021). Only a
+      // re-install on the same host (it already provides it) is the noisy
+      // duplicate DF0066 warns about.
+      if (this.services.has(pkg))
+        diagnostics.DF0066({ package: pkg })
+      else
+        this.provide(pkg, api as DevframeServiceOf<string>)
+      return api
     }
 
     const definitions = entries.filter(entry => isServiceDefinition(entry.input))
@@ -211,7 +250,7 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
     debug('installing service %s@%s (scope %s)', def.package, def.version, def.scope)
     const scoped = this.context.scope(def.scope)
     const api = await def.setup(scoped, options === undefined ? {} : { options })
-    this.installed.set(def.package, api)
+    this.installed.set(pkg, api)
     this.provide(def.package, api as DevframeServiceOf<string>)
     await this.advertise(def)
     return api

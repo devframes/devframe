@@ -64,7 +64,9 @@ export interface ViteDevframeHubOptions {
    */
   auth?: InitHubOptions['auth']
   /**
-   * Expose the aggregate MCP endpoint at `<base>__mcp`.
+   * Expose the aggregate MCP endpoint at `<base>__mcp`. Defaults to `'auto'`
+   * (mount once any mounted devframe exposes an agent surface); `true`
+   * forces it on, `false` off.
    */
   mcp?: InitHubOptions['mcp']
   /** Publish this hub in the global instance registry. Default: off. */

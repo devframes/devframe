@@ -17,13 +17,13 @@ const nextBin = require.resolve('next/dist/bin/next')
 const children = [
   // RPC + WebSocket backend (devframe). Serves the prebuilt SPA too, but in
   // dev you open the Next server below for hot-reloading.
-  spawn(process.execPath, ['src/cli.ts', '--port', serverPort, '--host', host], {
+  spawn(process.execPath, ['src/node/cli.ts', '--port', serverPort, '--host', host], {
     cwd: root,
     stdio: 'inherit',
     env: process.env,
   }),
   // Next.js dev server (HMR). Points the client at the backend WebSocket.
-  spawn(process.execPath, [nextBin, 'dev', 'src/client', '--port', clientPort, '--hostname', host], {
+  spawn(process.execPath, [nextBin, 'dev', 'app', '--port', clientPort, '--hostname', host], {
     cwd: root,
     stdio: 'inherit',
     env: { ...process.env, NEXT_PUBLIC_DEVFRAME_WS: serverPort },

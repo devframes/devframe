@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-terminals",
   "type": "module",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "description": "Devframe plugin providing terminal panels for streamed output and interactive PTY shells.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
@@ -21,17 +21,17 @@
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./dist/index.mjs",
-    "./cli": "./dist/cli.mjs",
+    ".": "./dist/node/index.mjs",
+    "./cli": "./dist/node/cli.mjs",
     "./client": "./dist/client/index.mjs",
-    "./constants": "./dist/constants.mjs",
-    "./node": "./dist/node/index.mjs",
-    "./rpc": "./dist/rpc/index.mjs",
-    "./types": "./dist/types.mjs",
-    "./vite": "./dist/vite.mjs",
+    "./constants": "./dist/node/constants.mjs",
+    "./node": "./dist/node/setup.mjs",
+    "./rpc": "./dist/node/rpc/index.mjs",
+    "./types": "./dist/node/types.mjs",
+    "./vite": "./dist/node/vite.mjs",
     "./package.json": "./package.json"
   },
-  "types": "./dist/index.d.mts",
+  "types": "./dist/node/index.d.mts",
   "bin": {
     "devframe-terminals": "./bin.mjs"
   },
@@ -40,9 +40,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown && vite build --config src/client/vite.config.ts && vite build --config src/spa/vite.config.ts",
+    "build": "tsdown && vite build --config app/client/vite.config.ts && vite build --config app/vite.config.ts",
+    "build:client": "vite build --config app/client/vite.config.ts",
+    "build:app": "vite build --config app/vite.config.ts",
     "watch": "tsdown --watch",
-    "dev": "node bin.mjs",
+    "dev": "vite --config app/vite.config.ts --host",
+    "play": "pnpm run build && node playgrounds/server.mjs",
     "storybook": "storybook dev -p 6014",
     "build-storybook": "storybook build",
     "test": "vitest run",

@@ -405,7 +405,9 @@ defineRpcFunction({
 })
 ```
 
-Or register tools / resources directly on `ctx.agent.registerTool({ id, description, safety, handler })` and `ctx.agent.registerResource({ id, name, mimeType, read })`. Expose the API over MCP:
+Or register tools / resources directly on `ctx.agent.registerTool({ id, description, safety, handler })` and `ctx.agent.registerResource({ id, name, mimeType, read })`.
+
+The dev server serves this surface over HTTP automatically: the `mcp: 'auto'` default mounts the Streamable-HTTP route at `<base>__mcp` once the agent surface is non-empty (`mcp: true` forces on, `mcp: false` off). For stdio:
 
 ```ts
 import { createMcpServer } from 'devframe/adapters/mcp'
@@ -413,7 +415,7 @@ import { createMcpServer } from 'devframe/adapters/mcp'
 await createMcpServer(myDevframe, { transport: 'stdio' })
 ```
 
-`@modelcontextprotocol/server` is a peer dependency. The CLI adapter also exposes `my-tool mcp` (route node-side logs to stderr - stdout is the transport). Safety classifications (`'read' | 'action' | 'destructive'`) drive MCP hint annotations that coding agents use to prompt for confirmation. In a hub, `ctx.commands` entries opt into the same agent-facing API with an `agent` field and reach MCP through the aggregate endpoint.
+The CLI adapter also exposes `my-tool mcp` (route node-side logs to stderr - stdout is the transport). Safety classifications (`'read' | 'action' | 'destructive'`) drive MCP hint annotations that coding agents use to prompt for confirmation. In a hub, `ctx.commands` entries opt into the same agent-facing API with an `agent` field and reach MCP through the aggregate endpoint.
 
 ## Author SPA
 

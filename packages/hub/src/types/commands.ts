@@ -93,7 +93,7 @@ export interface DevframeServerCommandInput extends DevframeCommandBase {
    */
   agent?: DevframeCommandAgentOptions
   /**
-   * Static sub-commands. Two levels max (parent → children).
+   * Static sub-commands, nested arbitrarily deep.
    * Each child must have a globally unique `id`.
    */
   children?: DevframeServerCommandInput[]
@@ -118,7 +118,7 @@ export interface DevframeClientCommand extends DevframeCommandBase {
    */
   action?: (...args: any[]) => void | DevframeClientCommand[] | Promise<void | DevframeClientCommand[]>
   /**
-   * Static sub-commands. Two levels max (parent → children).
+   * Static sub-commands, nested arbitrarily deep.
    */
   children?: DevframeClientCommand[]
 }

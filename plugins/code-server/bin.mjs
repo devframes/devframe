@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import process from 'node:process'
-import { createCodeServerCli } from './dist/cli.mjs'
+import { createCodeServerCli } from './dist/node/cli.mjs'
 
 async function main() {
   const cli = createCodeServerCli()

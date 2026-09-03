@@ -28,14 +28,22 @@ client (re)joins mid-stream.
 
 ## Run it
 
+Dev mode runs the Vite app with HMR and a live node bridge:
+
 ```sh
-pnpm -C examples/streaming-chat run build
 pnpm -C examples/streaming-chat run dev
 ```
 
-Then open http://localhost:9897/ - type a prompt, watch tokens stream
-in, refresh the page mid-conversation, cancel a long answer, click
-**Clear** to wipe the log.
+Play mode builds the app, then boots the playground host that serves it
+with live WebSocket RPC:
+
+```sh
+pnpm -C examples/streaming-chat run play
+```
+
+Both serve the panel at `/__devframe-streaming-chat/` - type a prompt,
+watch tokens stream in, refresh mid-conversation, cancel a long answer,
+click **Clear** to wipe the log.
 
 ## Run the tests
 
@@ -49,7 +57,7 @@ with partial content, clear, and replay-after-finish.
 
 ## Wire it to a real LLM
 
-Replace `fakeTokens(prompt)` in `src/devframe.ts` with anything that
+Replace `fakeTokens(prompt)` in `src/node/rpc/functions/send.ts` with anything that
 yields strings - the rest of the example doesn't care. For OpenAI:
 
 ```ts

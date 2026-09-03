@@ -11,6 +11,7 @@ export { DevframeAgentHost }
 export { diagnostics }
 export { importRuntimeModule }
 export { listLiveDevframeInstances }
+export { loadAutoMcpAdapter }
 export { normalizeBasePath }
 export { normalizeHttpServerUrl }
 export { peekRpcWireFrame }

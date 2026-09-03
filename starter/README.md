@@ -19,6 +19,8 @@ pnpm run typecheck
 
 `pnpm run dev` and both playgrounds gate by default: opening the printed URL walks you through devframe's interactive OTP handshake (a 6-digit code) before the SPA can call RPC. That's intentional - see the `auth` comments in `src/devframe.ts` and `playground/*/vite.config.ts` before reaching for `auth: false`, which trusts every connection that can reach the port. For a one-off loopback-only session, pass `--no-auth` to the CLI instead (`pnpm run dev -- --no-auth`).
 
+The `get-state` RPC carries an `agent` field, so the same function serves two views: the SPA for you, and an MCP tool for your coding agent. The dev server mounts the MCP route automatically at `<base>__mcp`, and `pnpm run dev -- mcp` serves the same tools over stdio.
+
 ## File map
 
 | Path | Purpose |

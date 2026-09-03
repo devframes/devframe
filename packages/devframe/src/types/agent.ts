@@ -196,6 +196,14 @@ export interface DevframeAgentHost {
   list: () => AgentManifest
 
   /**
+   * Whether the devframe exposes anything to agents: an `agent`-flagged RPC
+   * function, a registered tool or resource, or a provider currently
+   * yielding at least one tool. The `mcp: 'auto'` default consults this to
+   * decide whether a route is worth mounting.
+   */
+  hasSurface: () => boolean
+
+  /**
    * Invoke any tool by id. Routes to the underlying RPC handler for
    * `kind === 'rpc'`, or to the registered handler for `kind === 'tool'`.
    */

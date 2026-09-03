@@ -12,9 +12,10 @@ import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vu
 import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_UI_HIDE_EVENT } from '../constants'
 import { useBranding } from './branding'
 import { createCommandsContext } from './commands'
-import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, getRegisteredGroupIds, resolveCommandIcon, resolveGroupPreferredChild } from './dock-settings'
+import { docksGroupByCategories, getGroupMembers, getRegisteredGroupIds, resolveCommandIcon, resolveGroupPreferredChild } from './dock-settings'
 import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE, sharedStateToRef, useDocksEntries, waitForInitialSharedStateSync } from './docks'
 import { createClientMessagesClient } from './messages-client'
+import { dockCommandId } from './palette'
 import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDockPopupOpen } from './popup'
 import { executeSetupScript } from './setup-script'
 
@@ -488,7 +489,7 @@ export async function createDocksContext(
     cleanupDocksCommand?.()
 
     const toCommand = (entry: DevframeDockEntry): DevframeClientCommand => ({
-      id: `devframes:docks:${entry.id}`,
+      id: dockCommandId(entry.id),
       source: 'client' as const,
       title: entry.title,
       icon: resolveCommandIcon(entry.icon),
@@ -497,31 +498,63 @@ export async function createDocksContext(
       },
     })
 
+    // Activating a group command must not guess a member. An unambiguous target
+    // (last opened, `defaultChildId`, or a lone visible member) opens directly,
+    // like an ungrouped dock. Otherwise the palette opens scoped to the group's
+    // members. The dock rail follows the same preference, opening its member
+    // popover when neither resolves.
+    const activateGroup = (
+      commandId: string,
+      directId: string | undefined,
+    ) => {
+      if (directId) {
+        toggleEntry(directId)
+        return
+      }
+      // Pressing the same shortcut again closes the palette it just opened.
+      if (commandsContext.paletteOpen && commandsContext.paletteScopeId === commandId) {
+        commandsContext.paletteOpen = false
+        return
+      }
+      commandsContext.openPalette(commandId)
+    }
+
     // Mirror the dock-bar collapse in the palette: members nest under their
     // group's command, and grouped members drop out of the top level.
     const registeredGroupIds = getRegisteredGroupIds(entries.value)
     const dockChildren: DevframeClientCommand[] = entries.value
       .filter(entry => entry.type !== '~builtin')
       .filter(entry => !(entry.groupId && registeredGroupIds.has(entry.groupId)))
-      .map((entry) => {
+      .flatMap((entry): DevframeClientCommand[] => {
         if (entry.type !== 'group')
-          return toCommand(entry)
-        // Members nest under the group, split by their in-group sub-category.
-        // A single sub-category (the common case) is flattened directly so the
-        // palette doesn't add a pointless one-item drill-down level.
-        const memberGroups = getGroupMembersGrouped(entries.value, entry.id, settings.value, { whenContext: getWhenContext() })
-        const children: DevframeClientCommand[] = memberGroups.length <= 1
-          ? (memberGroups[0]?.[1] ?? []).map(toCommand)
-          : memberGroups.map(([category, members]) => ({
-              id: `devframes:docks:${entry.id}:cat:${category}`,
-              source: 'client' as const,
-              title: getCategoryLabel(category),
-              children: members.map(toCommand),
-            }))
-        return {
+          return [toCommand(entry)]
+        // Members hang directly off their group, in the dock rail's sub-category
+        // order. The rail's sub-category *dividers* have no counterpart here: a
+        // category is not something you can run, and turning one into a command
+        // would add an inert row nothing can bind to. Ordering carries the
+        // grouping instead.
+        const visibleMembers = getGroupMembers(entries.value, entry.id, settings.value, { whenContext: getWhenContext() })
+        const preferredChildId = resolveGroupPreferredChild(
+          entries.value,
+          entry,
+          sessionStore.value.groupLastChildIds?.[entry.id],
+          getWhenContext(),
+        )?.id
+        // Same empty-group rule the dock rail applies (`DockEntries.isDockVisible`):
+        // with no visible member and no reachable preferred child there is
+        // nothing to activate, so the group gets no command at all rather than a
+        // dead row in the palette and the shortcut settings.
+        if (visibleMembers.length === 0 && !preferredChildId)
+          return []
+        const commandId = dockCommandId(entry.id)
+        return [{
           ...toCommand(entry),
-          children,
-        }
+          action: () => activateGroup(
+            commandId,
+            preferredChildId ?? (visibleMembers.length === 1 ? visibleMembers[0]!.id : undefined),
+          ),
+          children: visibleMembers.map(toCommand),
+        }]
       })
 
     if (dockChildren.length > 0) {

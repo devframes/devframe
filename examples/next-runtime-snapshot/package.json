@@ -1,19 +1,20 @@
 {
   "name": "next-runtime-snapshot-example",
   "type": "module",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "private": true,
   "description": "Devframe demo exposing the host Node runtime snapshot through a Next.js App Router SPA.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/next-runtime-snapshot",
-  "main": "src/devframe.ts",
+  "main": "src/node/index.ts",
   "bin": {
     "next-runtime-snapshot": "./bin.mjs"
   },
   "scripts": {
-    "build": "next build src/client && node scripts/build-spa.mjs",
+    "build": "next build app && node scripts/build-spa.mjs",
     "cli:build": "node bin.mjs build --out-dir dist/static",
     "dev": "node bin.mjs",
-    "next:dev": "next dev src/client",
+    "dev:client": "next dev app",
+    "play": "pnpm run build && node playgrounds/server.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

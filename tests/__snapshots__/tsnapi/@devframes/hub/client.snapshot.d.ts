@@ -10,6 +10,8 @@ export interface CommandsContext {
   getKeybindings: (_: string) => DevframeCommandKeybinding[];
   settings: SharedState<DevframeDocksUserSettings>;
   paletteOpen: boolean;
+  paletteScopeId: string | null;
+  openPalette: (_?: string) => void;
 }
 export interface CreateDockRenderersContextOptions {
   context: () => DevframeClientContext;

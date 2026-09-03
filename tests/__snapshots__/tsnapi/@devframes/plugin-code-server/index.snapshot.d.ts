@@ -76,17 +76,17 @@ export type CodeServerStatus = 'stopped' | 'starting' | 'running' | 'error';
 
 // #region Functions
 export declare function createCodeServerDevframe(_?: CodeServerOptions): DevframeDefinition;
-export declare function getCookieSessionName(_?: string): string;
-// #endregion
-
-// #region Variables
-export declare const DEFAULT_CODE_SERVER_PORT: number;
-export declare const DEFAULT_PORT: number;
-export declare const PLUGIN_ID: string;
-export declare const STATE_KEY: string;
 // #endregion
 
 // #region Default Export
 declare function _default(_?: CodeServerOptions): DevframeDefinition;
 export default _default
+// #endregion
+
+// #region Other
+export { DEFAULT_CODE_SERVER_PORT }
+export { DEFAULT_PORT }
+export { getCookieSessionName }
+export { PLUGIN_ID }
+export { STATE_KEY }
 // #endregion

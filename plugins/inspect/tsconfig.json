@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
     "lib": ["esnext", "dom", "dom.iterable"],
     "module": "esnext",
     "moduleResolution": "Bundler",
@@ -9,5 +8,5 @@
     "noEmit": true,
     "isolatedDeclarations": false
   },
-  "include": ["src", "test", "bin.mjs"]
+  "include": ["src", "app", "test", "playgrounds", "bin.mjs"]
 }

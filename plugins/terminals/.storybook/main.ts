@@ -5,7 +5,7 @@ import { mergeConfig } from 'vite'
 import { alias } from '../../../alias'
 
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(ts|tsx|svelte)'],
+  stories: ['../{src,app}/**/*.stories.@(ts)'],
   framework: {
     name: '@storybook/svelte-vite',
     options: {},

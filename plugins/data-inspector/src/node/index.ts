@@ -1,53 +1,91 @@
-import type { DevframeNodeContext } from 'devframe'
-import { createDataSourcesService, DATA_SOURCES_SERVICE_ID, getDataSource, onDataSourceDataChanged, onDataSourcesChanged, registerDataSource } from '../registry/index'
-import { serverFunctions } from '../rpc/index'
-import { createExampleDataSource, EXAMPLE_SOURCE_ID } from './example-source'
+import type { DevframeDefinition, RemoteAssets } from 'devframe'
+import { defineDevframe } from 'devframe'
+import pkg from '../../package.json' with { type: 'json' }
+import { setupDataInspector } from './setup'
 
-/** Broadcast whenever the source registry changes (register/unregister). */
-export const SOURCES_CHANGED_EVENT = 'devframes:plugin:data-inspector:sources:changed'
+/** Default devframe id, also the RPC namespace. */
+const DEFAULT_ID = 'devframes:plugin:data-inspector'
 
-/**
- * Broadcast whenever a source's DATA changes: a successful `write`, a
- * `notifyChanged()` handle call, or a source's own `subscribe` bridge.
- * Carries the source id so clients refresh only the affected view.
- */
-export const DATA_CHANGED_EVENT = 'devframes:plugin:data-inspector:data:changed'
+/** Preferred standalone CLI port. */
+const DEFAULT_PORT = 9014
 
-export interface SetupDataInspectorOptions {
-  /** Register the built-in example source (default `true`). */
+// The SPA ships in the lockstep `@devframes/plugin-data-inspector--assets` package,
+// served on demand through devframe's remote-assets back-proxy. The definition's
+// `importMetaUrl` (below) supplies the default `resolveFrom`, so a locally
+// installed copy (a workspace link here) is served with zero network.
+const remoteAssets: RemoteAssets = {
+  package: `${pkg.name}--assets`,
+  version: pkg.version,
+}
+
+export interface DataInspectorDevframeOptions {
+  /** Override the devframe id (and default mount path). */
+  id?: string
+  /** Override the display name shown in a host dock. */
+  name?: string
+  /** Override the dock icon. */
+  icon?: string
+  /**
+   * Override the mount path. Left unset, the SPA mounts at `/` standalone
+   * and `/__<id>/` when hosted (Vite/embedded).
+   */
+  basePath?: string
+  /** Preferred standalone CLI port. */
+  port?: number
+  /**
+   * Require the trust handshake on the standalone server. Enabled by
+   * default; `--open` embeds the current OTP in the opened URL, so the
+   * tab authenticates automatically without extra prompts. The in-process
+   * inject endpoint (`@devframes/plugin-data-inspector/inject`) uses its own
+   * pre-shared-token scheme and is unaffected by this option.
+   */
+  auth?: boolean
+  /**
+   * Register the built-in example source, a small live playground graph
+   * with suggested queries (default `true`). Disable once your own sources
+   * cover the first-run experience.
+   */
   exampleSource?: boolean
 }
 
 /**
- * Register the data-inspector's RPC functions on a devframe node context,
- * provide the source registry as a typed context service, and broadcast
- * registry changes so connected UIs refresh their source list live.
+ * Build a {@link DevframeDefinition} for the Data Inspector: an interactive
+ * jora query workbench over data sources registered by other plugins, hosts,
+ * files, or attached processes.
  *
- * Called from the definition's `setup(ctx)` and reusable by host adapters
- * (the CLI and the inject endpoint wire their own contexts through this).
+ * The plugin is fully headless about sources; register them via
+ * `@devframes/plugin-data-inspector/registry` (process-global, no context
+ * needed) or through the `devframes:plugin:data-inspector:sources` context
+ * service.
+ *
+ * @experimental This plugin is experimental and may change without a major
+ * version bump until it stabilizes.
  */
-export function setupDataInspector(ctx: DevframeNodeContext, options: SetupDataInspectorOptions = {}): void {
-  for (const fn of serverFunctions)
-    ctx.rpc.register(fn)
-
-  // The registry itself is process-global; the service is the typed,
-  // zero-dependency access path for other integrations on this context.
-  if (!ctx.services.has(DATA_SOURCES_SERVICE_ID))
-    ctx.services.provide(DATA_SOURCES_SERVICE_ID, createDataSourcesService())
-
-  // Always on unless opted out: the example source doubles as an
-  // environment inspector (this context, OS, live process stats).
-  if ((options.exampleSource ?? true) && !getDataSource(EXAMPLE_SOURCE_ID))
-    registerDataSource(createExampleDataSource(ctx))
-
-  onDataSourcesChanged(() => {
-    void ctx.rpc.broadcast({ method: SOURCES_CHANGED_EVENT, args: [] } as never)
-  })
-
-  onDataSourceDataChanged((sourceId) => {
-    void ctx.rpc.broadcast({ method: DATA_CHANGED_EVENT, args: [sourceId] } as never)
+export function createDataInspectorDevframe(options: DataInspectorDevframeOptions = {}): DevframeDefinition {
+  const id = options.id ?? DEFAULT_ID
+  return defineDevframe({
+    id,
+    name: options.name ?? 'Data Inspector',
+    version: pkg.version,
+    packageName: pkg.name,
+    importMetaUrl: import.meta.url,
+    homepage: pkg.homepage,
+    description: pkg.description,
+    icon: options.icon ?? 'ph:crosshair-duotone',
+    basePath: options.basePath,
+    cli: {
+      command: 'data-inspector',
+      port: options.port ?? DEFAULT_PORT,
+      distDir: remoteAssets,
+      auth: options.auth ?? true,
+    },
+    dock: { category: '~builtin' },
+    setup(ctx) {
+      setupDataInspector(ctx, { exampleSource: options.exampleSource })
+    },
   })
 }
 
-export { createExampleDataSource, EXAMPLE_SOURCE_ID }
-export { serverFunctions }
+export default createDataInspectorDevframe
+export type { DataSourceEntry, DataSourceHandle, DataSourcesService } from './registry/index'
+export { DATA_SOURCES_SERVICE_ID, registerDataSource } from './registry/index'

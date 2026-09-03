@@ -142,6 +142,22 @@ export class DevframeAgentHost implements DevframeAgentHostType {
     }
   }
 
+  hasSurface(): boolean {
+    if (this.tools.size > 0 || this.resources.size > 0)
+      return true
+    for (const [, def] of this.context.rpc.definitions) {
+      if (def.agent)
+        return true
+    }
+    // Providers are lazy and may exist with nothing to offer (the hub's
+    // commands host always registers one), so an empty yield is no surface.
+    for (const provider of this.providers) {
+      if (provider().length > 0)
+        return true
+    }
+    return false
+  }
+
   getTool(id: string): AgentTool | undefined {
     const plain = this.tools.get(id)
     if (plain)

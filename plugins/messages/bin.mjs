@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import process from 'node:process'
-import { createMessagesCli } from './dist/cli.mjs'
+import { createMessagesCli } from './dist/node/cli.mjs'
 
 async function main() {
   const cli = createMessagesCli()

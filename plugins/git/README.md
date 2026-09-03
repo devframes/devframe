@@ -90,7 +90,7 @@ The SPA connects to the backend over the WebSocket port carried in
 `dev:server`.
 
 The SPA is a standard shadcn/ui setup (Tailwind v4, `components/ui/*`). Three
-Next.js settings in `src/client/next.config.mjs` keep it portable: `output:
+Next.js settings in `app/next.config.mjs` keep it portable: `output:
 'export'` (devframe owns the server), `assetPrefix: '.'` (relative assets so the
 same bundle works at any base), and `trailingSlash: true` (composes with
 devframe's static directory-with-index resolution).

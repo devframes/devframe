@@ -1,7 +1,7 @@
 import type { Decorator, Preview } from '@storybook/vue3-vite'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
-import '../src/spa/app/assets/main.css'
+import '../app/app/assets/main.css'
 
 // Drive the shared `@antfu/design` tokens off the toolbar theme toggle: dark mode
 // is the `.dark` class on `<html>`, and the canvas takes the semantic

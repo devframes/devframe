@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import process from 'node:process'
-import { createA11yCli } from './dist/cli.mjs'
+import { createA11yCli } from './dist/node/cli.mjs'
 
 async function main() {
   const cli = createA11yCli()

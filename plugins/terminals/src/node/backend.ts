@@ -1,6 +1,6 @@
 import type { Buffer } from 'node:buffer'
 import type { IPty } from 'zigpty'
-import type { TerminalBackend } from '../types'
+import type { TerminalBackend } from './types'
 import { spawn as spawnChild } from 'node:child_process'
 import { diagnostics } from './diagnostics'
 

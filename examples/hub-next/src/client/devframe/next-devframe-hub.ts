@@ -211,13 +211,11 @@ export async function nextDevframeHub(
     cwd,
     origin,
     host: hostName,
-    /**
-     * Aggregate MCP at `/__devframes/__mcp` (agent-flagged commands, plugin
-     * tools, `devframe:state:read`). `mcp: true` uses the loopback origin gate,
-     * trusting same-machine callers; harden with `mcp: { authorization }` when
-     * the app is reachable beyond localhost.
-     */
-    mcp: true,
+    // Aggregate MCP at `/__devframes/__mcp` mounts on its own: the omitted
+    // `mcp` defaults to `'auto'` and the mounted plugins expose agent tools.
+    // Same-machine callers are trusted (loopback origin gate); harden with
+    // `mcp: { authorization }` when reachable beyond localhost, or force it
+    // off with `mcp: false`.
     /**
      * This host renders its own React UI in `app/page.tsx`, so skip the
      * default `@devframes/hub-ui` standalone/embedded slot.
@@ -252,7 +250,7 @@ export async function nextDevframeHub(
      * Record this hub in the global registry so `devframe connect` discovers
      * it - running inside the Next dev server - like any standalone devframe.
      * The instance owns the record (written once its pinned origin resolves,
-     * removed on close); the aggregate MCP path is derived from `mcp: true`.
+     * removed on close); the aggregate MCP path reflects the mounted route.
      */
     register: {
       id: 'example:next-devframe-hub',

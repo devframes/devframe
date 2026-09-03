@@ -1,6 +1,6 @@
-import type { OgFetch, OgHeadTag, OgSnapshot } from '../types'
+import type { OgFetch, OgHeadTag, OgSnapshot } from './types'
 import { parse } from 'parse5'
-import { diagnostics } from '../diagnostics'
+import { diagnostics } from './diagnostics'
 
 const MAX_HTML_BYTES = 2 * 1024 * 1024
 const URL_TAGS = new Set([

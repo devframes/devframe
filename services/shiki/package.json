@@ -1,7 +1,7 @@
 {
   "name": "@devframes/service-shiki",
   "type": "module",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "description": "Devframe wire service that renders Shiki syntax highlighting on the server, so plugins stop re-bundling highlighters.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
