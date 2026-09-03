@@ -116,8 +116,7 @@ export interface DevframeViteBridgeOptions {
    * `<base>__mcp` (on the Vite app's own origin) and advertise it in the
    * bridge's `__connection.json`. Overrides `def.cli?.mcp`, `undefined`
    * falls through to it, then to the `'auto'` default (mount once the agent
-   * surface is non-empty and the optional peer resolves); `false` disables
-   * the route regardless.
+   * surface is non-empty); `false` disables the route regardless.
    */
   mcp?: McpSetting
 }

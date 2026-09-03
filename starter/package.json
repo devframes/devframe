@@ -40,7 +40,6 @@
     "@devframes/hub": "^0.9.9",
     "@devframes/hub-ui": "^0.9.9",
     "@devframes/vite": "^0.9.9",
-    "@modelcontextprotocol/server": "^2.0.0",
     "devframe": "^0.9.9"
   },
   "devDependencies": {

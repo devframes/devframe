@@ -29,8 +29,7 @@ export interface CreateCacOptions {
    * a hosting decision made at the CLI assembly stage, so it lives here rather
    * than on the definition. When unset, falls back to the definition's
    * deprecated `cli.mcp`, then to the `'auto'` default (mount once the agent
-   * surface is non-empty and the optional peer resolves). See
-   * {@link McpSetting}.
+   * surface is non-empty). See {@link McpSetting}.
    *
    * The `--mcp` / `--no-mcp` flags override this per run.
    */

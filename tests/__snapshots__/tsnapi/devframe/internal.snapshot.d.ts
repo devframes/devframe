@@ -185,7 +185,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     readonly why: (p: {
       reason: string;
     }) => string;
-    readonly fix: "Install it next to devframe (e.g. `npm install @modelcontextprotocol/server`) and run `devframe connect` again.";
+    readonly fix: "Install it next to devframe (e.g. `npm install @modelcontextprotocol/client`) and run `devframe connect` again.";
   };
   readonly DF0047: {
     readonly why: (p: {
@@ -361,13 +361,6 @@ export declare const diagnostics: import("nostics").Diagnostics<{
       runtime: string;
     }) => string;
     readonly fix: "On Bun/Deno, serve the advertised `__ws` route from `Bun.serve` / `Deno.serve` with `attachBunWsTransport` / `attachDenoWsTransport` (see the hub-deno-minimal example), or connect over the SSE endpoint instead.";
-  };
-  readonly DF0077: {
-    readonly why: (p: {
-      id: string;
-      reason: string;
-    }) => string;
-    readonly fix: "Install @modelcontextprotocol/server next to devframe to serve the agent surface over MCP, or set `mcp: false` to keep the route off and silence this.";
   };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";

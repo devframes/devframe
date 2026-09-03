@@ -20,7 +20,7 @@ afterEach(() => {
     rmSync(directory, { recursive: true, force: true })
 })
 
-describe('optional MCP peers in consumer bundles', () => {
+describe('the MCP SDK stays out of consumer bundles', () => {
   it.each(entries)('bundles %s without resolving the MCP SDK', async (entry) => {
     const resolvedMcpImports: string[] = []
     const rejectMcpSdk: Plugin = {

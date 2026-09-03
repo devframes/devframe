@@ -93,9 +93,8 @@ export interface CreateDevServerOptions {
   /**
    * Expose a route-based MCP server on the dev server (Streamable-HTTP).
    * Overrides `def.cli?.mcp`; `undefined` falls through to it, then to the
-   * `'auto'` default (mount once the agent surface is non-empty and the
-   * optional peer resolves). `false` disables the route regardless. See
-   * {@link McpSetting}.
+   * `'auto'` default (mount once the agent surface is non-empty). `false`
+   * disables the route regardless. See {@link McpSetting}.
    */
   mcp?: McpSetting
   /**

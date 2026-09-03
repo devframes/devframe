@@ -83,7 +83,6 @@ Emitted by `devframe`: the framework-neutral host, RPC, streaming, assets, servi
 | [DF0074](/errors/DF0074) | error | JSON-Render Schema Is Asynchronous |
 | [DF0075](/errors/DF0075) | warn | No RPC Transport On This Runtime |
 | [DF0076](/errors/DF0076) | error | WebSocket Upgrade Unsupported On This Runtime |
-| [DF0077](/errors/DF0077) | warn | Agent Surface Without the MCP Peer |
 
 ## Hub: context & lifecycle (DF80xx)
 

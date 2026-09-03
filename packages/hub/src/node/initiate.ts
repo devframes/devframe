@@ -257,8 +257,7 @@ export interface InitHubOptions {
    * Streamable-HTTP server over the shared context's whole tool registry
    * (ids are already namespaced per plugin). Defaults to `'auto'`: the route
    * mounts once any mounted devframe (or an agent-flagged hub command)
-   * exposes an agent surface and the optional peer
-   * `@modelcontextprotocol/server` resolves. `true` mounts it
+   * exposes an agent surface. `true` mounts it
    * unconditionally with the loopback origin gate (trusting same-machine
    * callers), an object opts into an {@link McpRouteOptions.authorization}
    * identity check, `false` keeps it off. A mounted devframe's own `mcp`
@@ -607,13 +606,13 @@ export function initHub(options: InitHubOptions): HubInstance {
       // Aggregate MCP: one Streamable-HTTP endpoint over the shared
       // context's whole registry. The omitted `'auto'` default mounts when
       // the devframes (or an agent-flagged hub command) left a non-empty
-      // agent surface and the optional peer resolves; an empty surface loads
-      // no MCP code. Origin-only unless the config opts into a bearer/callback.
+      // agent surface; an empty surface loads no MCP code. Origin-only
+      // unless the config opts into a bearer/callback.
       const mcpSetting = options.mcp ?? 'auto'
       let mcpModule: typeof import('devframe/adapters/mcp') | undefined
       let mcpConfig: ResolvedMcpConfig | undefined
       if (mcpSetting === 'auto') {
-        mcpModule = await loadAutoMcpAdapter<typeof import('devframe/adapters/mcp')>(ctx.agent, options.name ?? 'devframes-hub')
+        mcpModule = await loadAutoMcpAdapter<typeof import('devframe/adapters/mcp')>(ctx.agent)
         if (mcpModule)
           mcpConfig = { authorization: false }
       }

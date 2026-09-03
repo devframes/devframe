@@ -1405,6 +1405,9 @@ importers:
 
   packages/devframe:
     dependencies:
+      '@modelcontextprotocol/server':
+        specifier: catalog:deps
+        version: 2.0.0
       '@standard-schema/spec':
         specifier: catalog:deps
         version: 1.1.0
@@ -1431,9 +1434,6 @@ importers:
         version: 1.6.4
     devDependencies:
       '@modelcontextprotocol/client':
-        specifier: catalog:deps
-        version: 2.0.0
-      '@modelcontextprotocol/server':
         specifier: catalog:deps
         version: 2.0.0
       cac:
@@ -2508,9 +2508,6 @@ importers:
       '@devframes/vite':
         specifier: workspace:*
         version: link:../packages/vite
-      '@modelcontextprotocol/server':
-        specifier: ^2.0.0
-        version: 2.0.0
       devframe:
         specifier: workspace:*
         version: link:../packages/devframe

@@ -88,8 +88,8 @@ export const diagnostics = defineDiagnostics({
       fix: 'Discovery tooling (`devframe connect`) will not see this instance. Check that the registry directory is writable, point `DEVFRAME_INSTANCES_DIR` at a writable directory, or set `DEVFRAME_DISABLE_INSTANCE_REGISTRY=1` to opt out of registration.',
     },
     DF0046: {
-      why: (p: { reason: string }) => `\`devframe connect\` requires the optional peer dependency @modelcontextprotocol/server: ${p.reason}`,
-      fix: 'Install it next to devframe (e.g. `npm install @modelcontextprotocol/server`) and run `devframe connect` again.',
+      why: (p: { reason: string }) => `\`devframe connect\` requires the optional peer dependency @modelcontextprotocol/client: ${p.reason}`,
+      fix: 'Install it next to devframe (e.g. `npm install @modelcontextprotocol/client`) and run `devframe connect` again.',
     },
     DF0047: {
       why: (p: { name: string, id: string, existing: string }) =>
@@ -210,11 +210,6 @@ export const diagnostics = defineDiagnostics({
       why: (p: { runtime: string }) =>
         `\`attach\` / \`handleUpgrade\` drive a raw \`node:http\` upgrade into crossws's Node adapter, which refuses to run on ${p.runtime}.`,
       fix: 'On Bun/Deno, serve the advertised `__ws` route from `Bun.serve` / `Deno.serve` with `attachBunWsTransport` / `attachDenoWsTransport` (see the hub-deno-minimal example), or connect over the SSE endpoint instead.',
-    },
-    DF0077: {
-      why: (p: { id: string, reason: string }) =>
-        `"${p.id}" exposes agent tools and MCP defaults to \`'auto'\`, but the optional peer @modelcontextprotocol/server could not be imported, so no MCP route was mounted: ${p.reason}`,
-      fix: 'Install @modelcontextprotocol/server next to devframe to serve the agent surface over MCP, or set `mcp: false` to keep the route off and silence this.',
     },
   },
 })

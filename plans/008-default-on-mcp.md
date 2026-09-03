@@ -20,12 +20,14 @@ Devframe's positioning is "one tool, two views — for the human and for the cod
 
 ## Constraints this plan must not break
 
-- **Validator neutrality**: `@modelcontextprotocol/server@2` depends on `zod@4` via `@modelcontextprotocol/core`. The SDK must stay an **optional peer** of `devframe`; it never enters runtime `dependencies`.
+- **Validator neutrality of devframe's own API**: `args`/`returns` schemas stay Standard Schema-typed; devframe never asks users to author schemas in a specific validator. `@modelcontextprotocol/server` is a regular dependency of `devframe` (operator decision, 2026-09-03: MCP is a default feature, so its engine ships with the package) - its transitive `zod@4` serves the SDK internally and never surfaces in devframe's API. `@modelcontextprotocol/client` stays an optional peer, needed only by `devframe connect`.
 - **Zero cost when off**: the `importRuntimeModule('devframe/adapters/mcp')` lazy load and the `tests/optional-mcp-bundles.test.ts` guard stay authoritative — `mcp: false` (and an empty agent surface) must load no MCP code and add no bundle weight.
 - **Plan 002's authorization contract as landed**: a mounted route is guarded by the loopback origin gate (same-machine trust, the documented default for `mcp: true`), with `authorization` available as opt-in hardening. `'auto'` mounts with exactly the same posture as `mcp: true` — the default never grants *more* reach than the explicit setting.
 - **Per-function default-deny**: the `agent` field on `defineRpcFunction` remains the only way a function reaches an agent.
 
 > **Reconciled 2026-09-03**: this plan originally required `DEVFRAME_MCP_AUTH_TOKEN` as a third `'auto'` condition, written against plan 002's *draft* contract (mandatory bearer for `mcp: true`). Plan 002 landed with origin-only as the blessed same-machine default and `authorization` as opt-in hardening, so `'auto'` follows the same landed contract.
+
+> **Reconciled 2026-09-03 (2)**: the plan originally kept `@modelcontextprotocol/server` an optional peer, with `DF0077` warning when a flagged surface had no SDK. The operator decided the SDK ships as a regular `dependency` of `devframe` - a default feature should not depend on an install choice - so `DF0077` and the missing-peer path were removed, and `DF0046` (the `devframe connect` diagnostic) now names the client peer, the only MCP package still optional.
 
 ## Current state
 
@@ -43,7 +45,7 @@ Add `'auto'` to the `mcp` option (`McpSetting`) and make it the default where `m
 1. **The agent surface is non-empty** — at least one agent-flagged RPC, `ctx.agent.registerTool()` entry, registered resource, or a provider currently yielding a tool (`DevframeAgentHost.hasSurface()`).
 2. **`@modelcontextprotocol/server` resolves** as an installed peer.
 
-The mounted route carries the same origin-only posture as `mcp: true`; `mcp: { authorization }` remains the hardening path. When condition 1 holds but 2 fails, emit **one** structured diagnostic (`DF0077`, `method: 'warn'`, deduplicated per instance id) naming the missing peer so the author discovers the agent view exists. When condition 1 fails, `'auto'` is silent and loads nothing: indistinguishable from today's off.
+The mounted route carries the same origin-only posture as `mcp: true`; `mcp: { authorization }` remains the hardening path. Condition 2 is guaranteed by `devframe`'s own `dependencies` (see the reconciliation notes), so in practice `'auto'` reduces to the surface check. When condition 1 fails, `'auto'` is silent and loads nothing: indistinguishable from today's off.
 
 Explicit values keep today's meaning: `false` never mounts and never diagnoses; `true`/object mount unconditionally (a missing peer stays the `DF0017` startup failure — the author asked for it). The `--mcp`/`--no-mcp` tri-state flag overrides the definition as it does now, with `--no-mcp` forcing off over `'auto'`.
 
@@ -71,7 +73,7 @@ The product layer makes the default tangible:
 - `packages/devframe/src/adapters/initiate.ts`, `_shared.ts`, `cac.ts`
 - `packages/devframe/src/adapters/__tests__/initiate.test.ts`
 - `packages/devframe/src/node/host-agent.ts` (surface-emptiness query, if not already exposed)
-- `packages/devframe/src/node/diagnostics.ts` + `docs/content/6.errors/DF0077.md`
+- `packages/devframe/src/node/diagnostics.ts` (`DF0046` retargeted at the client peer)
 - `packages/hub/src/node/initiate.ts` + `__tests__/initiate.test.ts`
 - `packages/vite/src/single.ts`, `packages/vite/src/hub.ts`, `packages/next/src/handler.ts`, `packages/next/src/hub.ts` (forward omitted `mcp` as `'auto'`)
 - `starter/` (SDK dependency, flagged example RPC, README)
@@ -85,7 +87,7 @@ The product layer makes the default tangible:
 
 - Vendoring or reimplementing any part of the MCP protocol.
 - Changing the authorization model (plan 002 owns it) or state exposure policy (plan 003 owns it).
-- Moving `@modelcontextprotocol/*` out of `peerDependencies`.
+- Vendoring or forking any part of the MCP SDK.
 - The stdio transport and `devframe connect` (unchanged semantics).
 
 ## Git workflow
@@ -104,7 +106,7 @@ Extend the `mcp` union with `'auto'` in `types/devframe.ts` and normalize the om
 
 ### Step 2: Implement the two-condition mount
 
-In `initiate.ts` (and the hub aggregate), resolve `'auto'`: check surface non-emptiness first (free, no import), then attempt the runtime SDK import (`loadAutoMcpAdapter` in `_shared.ts`). Mount only when both pass; emit the deduplicated `DF0077` when only the surface condition passes. `false` and `--no-mcp` short-circuit before any check.
+In `initiate.ts` (and the hub aggregate), resolve `'auto'`: check surface non-emptiness first (free, no import), then load the adapter through the runtime importer (`loadAutoMcpAdapter` in `_shared.ts`). `false` and `--no-mcp` short-circuit before any check.
 
 **Verify**: `pnpm exec vitest run packages/devframe/src/adapters/__tests__/initiate.test.ts` → all tests pass, including new cases for the matrix (empty surface / surface present / explicit `false`).
 
@@ -130,17 +132,15 @@ Rewrite the scoped docs pages with positive framing per the documentation style 
 
 - Omitted `mcp` + empty surface → no route, no import, no diagnostic.
 - Omitted `mcp` + flagged RPC → route mounts (origin-only, same as `mcp: true`).
-- Omitted `mcp` + flagged RPC, SDK missing → no route, one warn diagnostic (`DF0077`) naming the peer.
 - `mcp: false` / `--no-mcp` + flagged RPC → no route, no diagnostic.
-- Explicit `mcp: true`, SDK missing → the `DF0017` startup failure (unchanged).
-- Hub aggregate under `'auto'` → mounts only when at least one mounted devframe has a non-empty surface and the peer resolves; `DF8005` fires only under explicit `mcp: false`.
+- Hub aggregate under `'auto'` → mounts only when at least one mounted devframe has a non-empty surface; `DF8005` fires only under explicit `mcp: false`.
 - Bundle guard: `'auto'` + empty surface bundles clean and mounts nothing at runtime.
 
 ## Done criteria
 
 - [x] Omitting `mcp` serves the agent view exactly when a surface exists and the SDK resolves.
 - [x] `mcp: false` and empty-surface `'auto'` load zero MCP code, proven by the bundle guard.
-- [x] `@modelcontextprotocol/*` remain optional peers of `devframe`; no workspace package gains them as runtime dependencies.
+- [x] `@modelcontextprotocol/server` ships as a `devframe` dependency (the default feature's engine); `@modelcontextprotocol/client` remains an optional peer for `devframe connect`; devframe's authored API stays validator-neutral.
 - [x] `'auto'` mounts with exactly `mcp: true`'s posture (origin gate; `authorization` opt-in) — the default grants no extra reach.
 - [x] Starter demonstrates the flag-a-function flow out of the box; hub examples are at MCP parity.
 - [x] Docs describe the default flow positively; lookup details live on the reference pages.
@@ -150,7 +150,6 @@ Rewrite the scoped docs pages with positive framing per the documentation style 
 
 - Plan 002 or 003 has not landed (`plans/README.md` rows not DONE).
 - The `'auto'` check cannot determine surface non-emptiness without importing the MCP adapter or SDK.
-- Satisfying `'auto'` would require moving `@modelcontextprotocol/*` into runtime `dependencies` or otherwise introducing `zod` as a devframe dependency.
 - `'auto'` would need to mount with a *weaker* posture than `mcp: true` (e.g. a disabled origin gate) to be useful.
 - API snapshot changes include unrelated exports.
 

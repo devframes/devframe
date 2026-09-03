@@ -92,8 +92,7 @@ export interface InitDevframeOptions {
    * Expose a route-based MCP server (Streamable-HTTP) at `<base>__mcp` and
    * advertise it in `__connection.json`. Overrides `def.cli?.mcp`;
    * `undefined` falls through to it, then to the `'auto'` default (mount
-   * once the agent surface is non-empty and the optional peer resolves).
-   * See {@link McpSetting}.
+   * once the agent surface is non-empty). See {@link McpSetting}.
    */
   mcp?: McpSetting
   /**
@@ -346,12 +345,11 @@ export function initDevframe(
 
 /**
  * Mount the route-based MCP server at `<base>__mcp`, before the SPA static
- * catch-all so the exact route wins. The MCP SDK stays an optional peer,
- * pulled in dynamically only when the route mounts: `'auto'` mounts once
- * `setup()` left a non-empty agent surface and the peer resolves (an empty
- * surface loads no MCP code); an explicit setting mounts unconditionally,
- * with a missing peer as a startup failure (`DF0017`). The resolved config
- * is origin-only unless it opts into a bearer/callback.
+ * catch-all so the exact route wins. The MCP SDK is pulled in dynamically
+ * only when the route mounts, keeping it out of consumer bundles: `'auto'`
+ * mounts once `setup()` left a non-empty agent surface (an empty surface
+ * loads no MCP code); an explicit setting mounts unconditionally. The
+ * resolved config is origin-only unless it opts into a bearer/callback.
  */
 async function mountMcpRoute(
   app: H3,
@@ -363,7 +361,7 @@ async function mountMcpRoute(
   let module: typeof import('./mcp') | undefined
   let config: ResolvedMcpConfig | undefined
   if (setting === 'auto') {
-    module = await loadAutoMcpAdapter<typeof import('./mcp')>(context.agent, def.id)
+    module = await loadAutoMcpAdapter<typeof import('./mcp')>(context.agent)
     if (module)
       config = { authorization: false }
   }

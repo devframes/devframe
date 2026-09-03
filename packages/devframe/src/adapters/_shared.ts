@@ -4,7 +4,6 @@ import type { DevframeDefinition, DevframeDeploymentKind, McpAuthorization, McpS
 import { getPort } from 'get-port-please'
 import { cleanDoubleSlashes, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import { DEVFRAME_MCP_ROUTE } from '../constants'
-import { diagnostics } from '../node/diagnostics'
 import { importRuntimeModule } from '../node/import-runtime-module'
 
 const DEFAULT_PORT = 9999
@@ -100,16 +99,12 @@ export function resolveMcpConfig(mcp: McpSetting | undefined): ResolvedMcpConfig
   }
 }
 
-const autoMcpHinted = new Set<string>()
-
 /**
  * Resolve the `mcp: 'auto'` default at mount time: import the MCP adapter
  * when the devframe's agent surface is non-empty, or return `undefined`
  * (mount nothing) when the surface is empty - the zero-cost path, loading
- * no MCP code at all. A non-empty surface whose optional peer
- * (`@modelcontextprotocol/server`) fails to import also returns `undefined`,
- * warning `DF0077` once per instance id so the author discovers the agent
- * view exists.
+ * no MCP code at all. The adapter (and the MCP SDK behind it) loads through
+ * `importRuntimeModule`, so it never enters a consumer's bundle graph.
  *
  * Generic like `importRuntimeModule`: the caller names the module type
  * (`typeof import('devframe/adapters/mcp')`) so this shared helper carries
@@ -117,21 +112,10 @@ const autoMcpHinted = new Set<string>()
  */
 export async function loadAutoMcpAdapter<T>(
   agent: Pick<DevframeAgentHost, 'hasSurface'>,
-  id: string,
 ): Promise<T | undefined> {
   if (!agent.hasSurface())
     return undefined
-  try {
-    return await importRuntimeModule<T>('devframe/adapters/mcp')
-  }
-  catch (error) {
-    if (!autoMcpHinted.has(id)) {
-      autoMcpHinted.add(id)
-      const reason = error instanceof Error ? error.message : String(error)
-      diagnostics.DF0077({ id, reason, cause: error })
-    }
-    return undefined
-  }
+  return await importRuntimeModule<T>('devframe/adapters/mcp')
 }
 
 /**

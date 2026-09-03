@@ -51,8 +51,8 @@ export interface NextDevframeHubOptions {
   auth?: InitHubOptions['auth']
   /**
    * Expose the aggregate MCP endpoint at `<base>__mcp`. Defaults to `'auto'`
-   * (mount once any mounted devframe exposes an agent surface and the
-   * optional peer resolves); `true` mounts it unconditionally with the
+   * (mount once any mounted devframe exposes an agent surface); `true`
+   * mounts it unconditionally with the
    * loopback origin gate (trusting same-machine callers), an object opts
    * into an `authorization` identity check, `false` keeps it off.
    */
@@ -101,7 +101,7 @@ export async function createNextDevframeHub(options: NextDevframeHubOptions = {}
     // `mcp: true` is origin-only (trusting same-machine callers),
     // `mcp: { authorization }` adds an identity check. Undefined falls
     // through to `initHub`'s `'auto'` default: the aggregate route mounts
-    // once the mounted devframes expose agent tools and the peer resolves.
+    // once the mounted devframes expose agent tools.
     ...(options.mcp !== undefined ? { mcp: options.mcp } : {}),
     ...(ui ? { ui } : {}),
     ...(options.renderers ? { renderers: options.renderers } : {}),
