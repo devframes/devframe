@@ -46,6 +46,16 @@ export const NotInstalled: Story = {
   },
 }
 
+/** Short dock panel with install instructions available through scrolling. */
+export const NotInstalledShortPanel: Story = {
+  args: NotInstalled.args,
+  render: args => ({
+    components: { LauncherView },
+    setup: () => ({ args }),
+    template: '<div class="relative h-64 overflow-hidden"><LauncherView v-bind="args" /></div>',
+  }),
+}
+
 /** Installed and idle, showing the launch screen (code-server backend). */
 export const Launch: Story = {
   args: {

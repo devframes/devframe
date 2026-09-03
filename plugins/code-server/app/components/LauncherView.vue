@@ -46,8 +46,8 @@ const errorText = computed(() => (props.server.status === 'error' ? props.server
 </script>
 
 <template>
-  <div class="absolute inset-0 flex items-center justify-center p-6 bg-base color-base font-sans">
-    <div class="w-full max-w-[560px]">
+  <div class="absolute inset-0 flex of-y-auto p-6 box-border bg-base color-base font-sans">
+    <div class="m-auto w-full max-w-[560px]">
       <!-- Brand eyebrow -->
       <p class="flex items-center gap-1.5 mb-2.5 text-xs tracking-wider uppercase color-muted">
         <span class="i-ph-code-duotone text-sm" />
