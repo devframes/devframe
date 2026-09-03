@@ -130,10 +130,24 @@ const errorText = computed(() => (props.server.status === 'error' ? props.server
           >
             {{ busy ? 'Checking…' : 'Re-check' }}
           </ActionButton>
-          <ActionButton variant="text" size="sm" :href="DOCS_URL" icon="i-ph-arrow-square-out">
+          <ActionButton
+            variant="text"
+            size="sm"
+            :href="DOCS_URL"
+            target="_blank"
+            rel="noreferrer"
+            icon="i-ph-arrow-square-out"
+          >
             Installation docs
           </ActionButton>
-          <ActionButton variant="text" size="sm" :href="REPO_URL" icon="i-ph-github-logo">
+          <ActionButton
+            variant="text"
+            size="sm"
+            :href="REPO_URL"
+            target="_blank"
+            rel="noreferrer"
+            icon="i-ph-github-logo"
+          >
             GitHub
           </ActionButton>
         </div>

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import type { CodeServerDetection } from '../connect'
+import { expect, within } from 'storybook/test'
 import LauncherView from './LauncherView.vue'
 
 const localCodeServer: CodeServerDetection = {
@@ -43,6 +44,18 @@ export const NotInstalled: Story = {
     detection: { checked: true, installed: false, bin: 'code-server', backend: 'code-server', mode: 'local' },
     server: { status: 'stopped' },
     busy: false,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const docsLink = canvas.getByRole('link', { name: 'Installation docs' })
+    const repoLink = canvas.getByRole('link', { name: 'GitHub' })
+
+    await expect(docsLink).toHaveAttribute('href', 'https://coder.com/docs/code-server/latest/install')
+    await expect(docsLink).toHaveAttribute('target', '_blank')
+    await expect(docsLink).toHaveAttribute('rel', 'noreferrer')
+    await expect(repoLink).toHaveAttribute('href', 'https://github.com/coder/code-server')
+    await expect(repoLink).toHaveAttribute('target', '_blank')
+    await expect(repoLink).toHaveAttribute('rel', 'noreferrer')
   },
 }
 
