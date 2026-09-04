@@ -10,11 +10,14 @@ const props = defineProps<{
   detection: CodeServerDetection
   server: CodeServerServerInfo
   busy: boolean
+  /** Whether a hosting hub can jump to this editor's terminal session. */
+  canViewInTerminal?: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'launch'): void
   (e: 'recheck'): void
+  (e: 'viewInTerminal'): void
 }>()
 
 const DOCS_URL = 'https://coder.com/docs/code-server/latest/install'
@@ -67,6 +70,15 @@ const errorText = computed(() => (props.server.status === 'error' ? props.server
           <span class="text-sm color-muted">
             {{ detection.mode === 'tunnel' ? 'Opening the tunnel…' : 'Starting the editor…' }}
           </span>
+          <ActionButton
+            v-if="canViewInTerminal"
+            variant="text"
+            size="sm"
+            icon="i-ph-terminal-window-duotone"
+            @click="emit('viewInTerminal')"
+          >
+            View in terminal
+          </ActionButton>
         </div>
         <div
           v-if="server.login"

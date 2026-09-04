@@ -17,6 +17,15 @@ const STATUS = 'devframes:plugin:code-server:status'
 const START = 'devframes:plugin:code-server:start'
 const STOP = 'devframes:plugin:code-server:stop'
 
+// Hub integration, addressed by literal so the plugin keeps no dependency on
+// `@devframes/hub` and stays inert standalone (the keys/RPC simply never fire).
+/** Shared-state slot holding the hub's projected dock entries. */
+const DOCKS_STATE_KEY = 'devframe:docks'
+/** Terminals feed dock id (mirrors `@devframes/plugin-terminals`'s `PLUGIN_ID`). */
+const TERMINALS_DOCK_ID = 'devframes_plugin_terminals'
+/** Hub RPC that steers the host shell's focused dock. */
+const DOCKS_ACTIVATE = 'hub:docks:activate'
+
 /**
  * Live code-server state, driven off the plugin's shared state plus the
  * secret-bearing connect info fetched from the `status` RPC. Exposes the
@@ -36,6 +45,16 @@ export function useCodeServer() {
   const server = reactive<CodeServerServerInfo>({ status: 'stopped' })
   const connect = shallowRef<CodeServerConnect | undefined>(undefined)
   const busy = ref(false)
+  /** Whether a hub with the terminals plugin dock is hosting this panel. */
+  const terminalsDockAvailable = ref(false)
+
+  /**
+   * The editor's launch can be watched live in the terminals dock, but only
+   * when the process runs as a hub terminal session (`terminalSessionId`) and
+   * that dock is actually mounted.
+   */
+  const canViewInTerminal = computed(() =>
+    terminalsDockAvailable.value && !!server.terminalSessionId)
 
   const phase = computed<CodeServerPhase>(() => {
     if (server.status === 'running')
@@ -101,6 +120,18 @@ export function useCodeServer() {
     }
   }
 
+  /**
+   * Jump the host shell to this editor's session in the terminals dock. Inert
+   * unless a hub with the terminals dock is hosting the panel and the process
+   * runs as a hub terminal session.
+   */
+  async function viewInTerminal(): Promise<void> {
+    const sessionId = server.terminalSessionId
+    if (!sessionId)
+      return
+    await call(DOCKS_ACTIVATE, { dockId: TERMINALS_DOCK_ID, params: { sessionId } })
+  }
+
   async function recheck(): Promise<void> {
     if (busy.value)
       return
@@ -142,7 +173,35 @@ export function useCodeServer() {
         connect.value = undefined
     })
     onScopeDispose(() => off?.())
+
+    await watchTerminalsDock(client)
   }
 
-  return { detection, server, connect, busy, phase, launch, stop, recheck, bootstrap }
+  /**
+   * Track whether the hosting hub has the terminals plugin dock mounted, so the
+   * launcher only offers "view in terminal" when the jump can land somewhere.
+   * Reads the hub's `devframe:docks` slot; outside a hub it never resolves and
+   * the action stays hidden.
+   */
+  async function watchTerminalsDock(client: NonNullable<ReturnType<typeof useRpc>['value']>): Promise<void> {
+    interface DockEntry { id?: string }
+    const hasTerminals = (docks: readonly DockEntry[] | undefined): boolean =>
+      Array.isArray(docks) && docks.some(d => d?.id === TERMINALS_DOCK_ID)
+    try {
+      const slot = await client.sharedState.get(DOCKS_STATE_KEY, { initialValue: [] }) as {
+        value: () => readonly DockEntry[]
+        on: (event: string, cb: (v: readonly DockEntry[]) => void) => (() => void) | void
+      }
+      terminalsDockAvailable.value = hasTerminals(slot.value())
+      const off = slot.on('updated', (docks) => {
+        terminalsDockAvailable.value = hasTerminals(docks)
+      })
+      onScopeDispose(() => off?.())
+    }
+    catch {
+      // No hub or shared state; the terminals jump simply stays unavailable.
+    }
+  }
+
+  return { detection, server, connect, busy, phase, canViewInTerminal, launch, stop, recheck, viewInTerminal, bootstrap }
 }

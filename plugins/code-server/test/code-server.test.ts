@@ -71,6 +71,8 @@ describe('@devframes/plugin-code-server', () => {
     const result = await supervisor.start()
     expect(result.server.status).toBe('running')
     expect(result.server.port).toBeGreaterThan(0)
+    // No hub: the process runs directly, so there is no terminal session to jump to.
+    expect(result.server.terminalSessionId).toBeUndefined()
     expect(result.connect?.cookie?.name).toBe('code-server-session')
     expect(result.connect?.cookie?.value).toMatch(/^[a-f0-9]{64}$/)
     expect(result.connect?.path).toBe('/')
@@ -212,6 +214,8 @@ describe('@devframes/plugin-code-server', () => {
 
       const result = await supervisor.start()
       expect(result.server.status).toBe('running')
+      // The launcher jumps to this session in the terminals dock.
+      expect(result.server.terminalSessionId).toBe(PLUGIN_ID)
 
       // Launched through the hub, surfaced as exactly one session.
       expect(terminals.sessions.size).toBe(1)
@@ -243,9 +247,11 @@ describe('@devframes/plugin-code-server', () => {
       await supervisor.start()
       const first = terminals.sessions.get(PLUGIN_ID)
 
-      supervisor.stop()
+      const stopped = supervisor.stop()
       // The session stays visible, marked stopped.
       expect(terminals.sessions.get(PLUGIN_ID)?.status).toBe('stopped')
+      // With no live session, the launcher has nothing to jump to.
+      expect(stopped.server.terminalSessionId).toBeUndefined()
 
       // A fresh start replaces the stale session under the same stable id.
       await supervisor.start()

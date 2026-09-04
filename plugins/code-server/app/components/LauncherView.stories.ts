@@ -109,6 +109,21 @@ export const Starting: Story = {
   },
 }
 
+/** Starting inside a hub with the terminals dock: offer a jump to the session. */
+export const StartingViewInTerminal: Story = {
+  args: {
+    phase: 'starting',
+    detection: localCodeServer,
+    server: { status: 'starting', port: 8080, terminalSessionId: 'devframes_plugin_code-server' },
+    busy: true,
+    canViewInTerminal: true,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'View in terminal' })).toBeInTheDocument()
+  },
+}
+
 /** Tunnel mode, waiting on the interactive device-login prompt. */
 export const TunnelLogin: Story = {
   args: {

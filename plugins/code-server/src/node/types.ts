@@ -71,6 +71,14 @@ export interface CodeServerServerInfo {
   error?: string
   /** Device-login prompt while a tunnel is authenticating. */
   login?: CodeServerLogin
+  /**
+   * Id of the hub terminal session mirroring this process, present only when
+   * the editor was launched through the hub's terminals subsystem
+   * (`ctx.terminals`). The launcher uses it to jump the user to that session
+   * in the terminals dock via `hub:docks:activate`; standalone runtimes have
+   * no hub session and leave it undefined.
+   */
+  terminalSessionId?: string
 }
 
 /**

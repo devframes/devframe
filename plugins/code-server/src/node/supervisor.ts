@@ -207,9 +207,21 @@ export class CodeServerSupervisor {
   status(): CodeServerStatusResult {
     return {
       detection: { ...this.detection },
-      server: { ...this.server },
+      server: this.serverInfo(),
       connect: this.connectInfo(),
     }
+  }
+
+  /**
+   * The server info projected to clients and shared state, tagged with the
+   * live hub terminal session id when one exists so the launcher can offer a
+   * "view in terminal" jump. Standalone runtimes hold no session and leave it
+   * undefined.
+   */
+  private serverInfo(): CodeServerServerInfo {
+    return this.session
+      ? { ...this.server, terminalSessionId: this.sessionId }
+      : { ...this.server }
   }
 
   /**
@@ -669,7 +681,7 @@ export class CodeServerSupervisor {
   private publish(): void {
     this.state?.mutate((draft) => {
       draft.detection = { ...this.detection }
-      draft.server = { ...this.server }
+      draft.server = this.serverInfo()
     })
   }
 

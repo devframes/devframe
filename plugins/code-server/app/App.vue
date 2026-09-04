@@ -6,7 +6,7 @@ import LauncherView from './components/LauncherView.vue'
 import { useCodeServer } from './composables/code-server'
 import { connection, connect as connectRpc } from './composables/rpc'
 
-const { detection, server, connect, busy, phase, launch, stop, recheck, bootstrap } = useCodeServer()
+const { detection, server, connect, busy, phase, canViewInTerminal, launch, stop, recheck, viewInTerminal, bootstrap } = useCodeServer()
 
 // Keep the editor iframe mounted for as long as we hold a connect descriptor,
 // so a transient restart (running → starting → running) hides it via `v-show`
@@ -41,8 +41,10 @@ defineExpose({ stop })
       :detection="detection"
       :server="server"
       :busy="busy"
+      :can-view-in-terminal="canViewInTerminal"
       @launch="launch"
       @recheck="recheck"
+      @view-in-terminal="viewInTerminal"
     />
 
     <ConnectionOverlay :status="connection.status" :error="connection.error" />
