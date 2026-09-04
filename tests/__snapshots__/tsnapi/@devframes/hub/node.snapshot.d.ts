@@ -283,5 +283,6 @@ type PartialWithoutId<T extends {
 export { createHubContext }
 export { CreateHubContextOptions }
 export { DevframeHubContext }
+export { HubMountedFrame }
 export { InstallDevframeOptions }
 // #endregion

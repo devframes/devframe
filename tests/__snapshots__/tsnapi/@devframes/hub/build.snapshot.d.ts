@@ -6,6 +6,7 @@ export interface BuildHubOptions {
   outDir: string;
   base?: string;
   devframes?: DevframesInput;
+  context?: DevframeHubContext;
   services?: DevframeServiceInput[];
   rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations'];
   configure?: (_: DevframeHubContext) => void | Promise<void>;
@@ -16,6 +17,7 @@ export interface BuildHubOptions {
   cwd?: string;
   getStorageDir?: (_: DevframeStorageScope) => string;
   pretty?: boolean;
+  clean?: boolean;
 }
 // #endregion
 
