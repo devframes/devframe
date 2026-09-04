@@ -47,6 +47,60 @@ type ProtocolHandler<F> = F extends (...args: any[]) => any
  */
 export type InPageFunctionType = 'action' | 'event' | 'query'
 
+interface InPageFunctionDefinitionBase<NAME extends string> {
+  name: NAME
+  jsonSerializable?: boolean
+}
+
+interface InPageEventFunctionDefinition<NAME extends string, HANDLER> extends InPageFunctionDefinitionBase<NAME> {
+  type: 'event'
+  handler?: HANDLER
+}
+
+interface InPageQueryFunctionDefinition<NAME extends string, HANDLER> extends InPageFunctionDefinitionBase<NAME> {
+  type?: 'query'
+  handler: HANDLER
+}
+
+interface InPageActionFunctionDefinition<NAME extends string, HANDLER> extends InPageFunctionDefinitionBase<NAME> {
+  type: 'action'
+  handler: HANDLER
+}
+
+type InPageFunctionDefinitionForType<
+  NAME extends string,
+  TYPE extends InPageFunctionType,
+  HANDLER,
+> = TYPE extends 'event'
+  ? InPageEventFunctionDefinition<NAME, HANDLER>
+  : TYPE extends 'action'
+    ? InPageActionFunctionDefinition<NAME, HANDLER>
+    : InPageQueryFunctionDefinition<NAME, HANDLER>
+
+type InPageFunctionDefinitionSchemas<
+  AS extends RpcArgsSchema | undefined,
+  RS extends RpcReturnSchema | undefined,
+> = [AS, RS] extends [undefined, undefined]
+  ? {
+      args?: AS
+      returns?: RS
+    }
+  : {
+      /** Standard Schema array validating (and typing) the arguments. */
+      args: AS
+      /** Standard Schema typing the resolved return value. */
+      returns: RS
+    }
+
+type InPageFunctionDefinitionHandler<
+  ARGS extends any[],
+  RETURN,
+  AS extends RpcArgsSchema | undefined,
+  RS extends RpcReturnSchema | undefined,
+> = [AS, RS] extends [undefined, undefined]
+  ? (...args: ARGS) => RETURN
+  : (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>
+
 /**
  * An in-page channel function definition: the `defineRpcFunction` authoring
  * shape (`name`, `type`, Standard-Schema `args`/`returns`,
@@ -65,27 +119,11 @@ export type InPageFunctionDefinition<
   AS extends RpcArgsSchema | undefined = undefined,
   RS extends RpcReturnSchema | undefined = undefined,
 >
-  = [AS, RS] extends [undefined, undefined]
-    ? ({
-        name: NAME
-        type?: TYPE
-        args?: AS
-        returns?: RS
-        jsonSerializable?: boolean
-      } & (TYPE extends 'event'
-        ? { handler?: (...args: ARGS) => RETURN }
-        : { handler: (...args: ARGS) => RETURN }))
-    : ({
-        name: NAME
-        type?: TYPE
-        /** Standard Schema array validating (and typing) the arguments. */
-        args: AS
-        /** Standard Schema typing the resolved return value. */
-        returns: RS
-        jsonSerializable?: boolean
-      } & (TYPE extends 'event'
-        ? { handler?: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>> }
-        : { handler: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>> }))
+  = InPageFunctionDefinitionForType<
+    NAME,
+    TYPE,
+    InPageFunctionDefinitionHandler<ARGS, RETURN, AS, RS>
+  > & InPageFunctionDefinitionSchemas<AS, RS>
 
 /**
  * Loosely-typed definition used by the internal function registry.
@@ -107,15 +145,25 @@ interface InPageFunctionOptionBase {
   jsonSerializable?: boolean
 }
 
+interface InPageEventFunctionOption<F> extends InPageFunctionOptionBase {
+  type: 'event'
+  handler?: ProtocolHandler<F>
+}
+
+interface InPageQueryFunctionOption<F> extends InPageFunctionOptionBase {
+  type?: 'query'
+  handler: ProtocolHandler<F>
+}
+
+interface InPageActionFunctionOption<F> extends InPageFunctionOptionBase {
+  type: 'action'
+  handler: ProtocolHandler<F>
+}
+
 type InPageFunctionOption<F>
-  = | (InPageFunctionOptionBase & {
-    type: 'event'
-    handler?: ProtocolHandler<F>
-  })
-  | (InPageFunctionOptionBase & {
-    type?: Exclude<InPageFunctionType, 'event'>
-    handler: ProtocolHandler<F>
-  })
+  = | InPageEventFunctionOption<F>
+    | InPageQueryFunctionOption<F>
+    | InPageActionFunctionOption<F>
 
 /**
  * Functions implemented by {@link createPageScriptChannel}.

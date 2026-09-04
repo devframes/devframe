@@ -62,27 +62,7 @@ export type InPageChannelErrorCode = 'timeout' |
 'invalid-args' |
 'state-uninitialized';
 export type InPageChannelStatus = 'connecting' | 'connected' | 'closed';
-export type InPageFunctionDefinition<NAME extends string, TYPE extends InPageFunctionType = 'query', ARGS extends any[] = [], RETURN = void, AS extends RpcArgsSchema | undefined = undefined, RS extends RpcReturnSchema | undefined = undefined> = [AS, RS] extends [undefined, undefined] ? ({
-  name: NAME;
-  type?: TYPE;
-  args?: AS;
-  returns?: RS;
-  jsonSerializable?: boolean;
-} & (TYPE extends 'event' ? {
-  handler?: (...args: ARGS) => RETURN;
-} : {
-  handler: (...args: ARGS) => RETURN;
-})) : ({
-  name: NAME;
-  type?: TYPE;
-  args: AS;
-  returns: RS;
-  jsonSerializable?: boolean;
-} & (TYPE extends 'event' ? {
-  handler?: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>;
-} : {
-  handler: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>;
-}));
+export type InPageFunctionDefinition<NAME extends string, TYPE extends InPageFunctionType = 'query', ARGS extends any[] = [], RETURN = void, AS extends RpcArgsSchema | undefined = undefined, RS extends RpcReturnSchema | undefined = undefined> = InPageFunctionDefinitionForType<NAME, TYPE, InPageFunctionDefinitionHandler<ARGS, RETURN, AS, RS>> & InPageFunctionDefinitionSchemas<AS, RS>;
 // #endregion
 
 // #region Classes
@@ -98,7 +78,7 @@ export declare class InPageChannelError extends Error {
 // #region Functions
 export declare function connectPanelChannel<P extends InPageChannelProtocol>(_: ConnectPanelChannelOptions<P>): PanelChannel<P>;
 export declare function createPageScriptChannel<P extends InPageChannelProtocol>(_: CreatePageScriptChannelOptions<P>): PageScriptChannel<P>;
-export declare function defineChannelFunction<NAME extends string, TYPE extends InPageFunctionType, ARGS extends any[] = [], RETURN = void, const AS extends RpcArgsSchema | undefined = undefined, const RS extends RpcReturnSchema | undefined = undefined>(_: InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>): InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>;
+export declare function defineChannelFunction<NAME extends string, TYPE extends InPageFunctionType, ARGS extends any[], RETURN = void, const AS extends RpcArgsSchema | undefined = undefined, const RS extends RpcReturnSchema | undefined = undefined>(_: InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>): InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>;
 // #endregion
 
 // #region Referenced (internal)
@@ -117,6 +97,15 @@ interface InPageChannelCommonOptions {
   serialize?: (_: unknown) => unknown;
   deserialize?: (_: unknown) => unknown;
 }
+type InPageFunctionDefinitionForType<NAME extends string, TYPE extends InPageFunctionType, HANDLER> = TYPE extends 'event' ? InPageEventFunctionDefinition<NAME, HANDLER> : TYPE extends 'action' ? InPageActionFunctionDefinition<NAME, HANDLER> : InPageQueryFunctionDefinition<NAME, HANDLER>;
+type InPageFunctionDefinitionHandler<ARGS extends any[], RETURN, AS extends RpcArgsSchema | undefined, RS extends RpcReturnSchema | undefined> = [AS, RS] extends [undefined, undefined] ? (...args: ARGS) => RETURN : (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>;
+type InPageFunctionDefinitionSchemas<AS extends RpcArgsSchema | undefined, RS extends RpcReturnSchema | undefined> = [AS, RS] extends [undefined, undefined] ? {
+  args?: AS;
+  returns?: RS;
+} : {
+  args: AS;
+  returns: RS;
+};
 type InPageFunctionType = 'action' | 'event' | 'query';
 interface InPageSharedStateHost<P extends InPageChannelProtocol> {
   get: <K extends keyof SharedStates<P> & string>(_: K, _?: {

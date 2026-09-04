@@ -22,8 +22,11 @@ interface PageScriptOnlyProtocol {
 }
 
 describe('Channel function definitions', () => {
-  it('allows events without handlers', () => {
+  it('distinguishes event, query, and action definitions', () => {
     defineChannelFunction({ name: 'notify', type: 'event' })
+    defineChannelFunction({ name: 'load', handler: () => 'value' })
+    defineChannelFunction({ name: 'load', type: 'query', handler: () => 'value' })
+    defineChannelFunction({ name: 'save', type: 'action', handler: () => {} })
   })
 
   it('requires handlers for request/response functions', () => {
@@ -88,8 +91,8 @@ describe('In-page script channel', () => {
       createPageScriptChannel<TestProtocol>({
         name: 'devframes:test',
         functions: {
-          echo: { handler: value => value },
-          sum: { handler: (a, b) => a + b },
+          echo: { type: 'query', handler: value => value },
+          sum: { type: 'action', handler: (a, b) => a + b },
           save: { type: 'event' },
         },
       })
@@ -99,7 +102,8 @@ describe('In-page script channel', () => {
         functions: {
           // @ts-expect-error Request/response functions require a handler.
           echo: { type: 'query' },
-          sum: { handler: (a, b) => a + b },
+          // @ts-expect-error Request/response functions require a handler.
+          sum: { type: 'action' },
           save: { type: 'event' },
         },
       })

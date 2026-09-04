@@ -33,7 +33,7 @@ export type {
 export function defineChannelFunction<
   NAME extends string,
   TYPE extends InPageFunctionType,
-  ARGS extends any[] = [],
+  ARGS extends any[],
   RETURN = void,
   const AS extends RpcArgsSchema | undefined = undefined,
   const RS extends RpcReturnSchema | undefined = undefined,
