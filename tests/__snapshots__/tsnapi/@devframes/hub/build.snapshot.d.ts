@@ -5,6 +5,7 @@
 export interface BuildHubOptions {
   outDir: string;
   base?: string;
+  deployBase?: string;
   devframes?: DevframesInput;
   context?: DevframeHubContext;
   services?: DevframeServiceInput[];

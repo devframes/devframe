@@ -35,8 +35,12 @@ export const diagnostics = defineDiagnostics({
       fix: 'A hub exposes one aggregate MCP endpoint over every mounted devframe, so per-devframe `mcp` settings are ignored. Drop `mcp: false` from `initHub` (the `\'auto\'` default mounts the aggregate route once agent tools exist) to surface this devframe\'s tools, or drop `mcp` from the devframe to silence this warning.',
     },
     DF8006: {
-      why: (p: { urlBase: string, base: string }) => `A static hub build can only write mounts under its own base: "${p.urlBase}" escapes "${p.base}".`,
-      fix: 'buildHub maps each mount base to a directory under its `outDir`, so every mount must live under the hub base. Drop the `basePath` override (or the `ctx.install` base) that points outside it, or move the hub `base` up so it contains the mount.',
+      why: (p: { urlBase: string, base: string }) => `A static hub build can only write mounts under its deploy root: "${p.urlBase}" escapes "${p.base}".`,
+      fix: 'buildHub maps each mount base to a directory under its `outDir`, so every mount must live under the deploy root. Drop the `basePath` override (or the `ctx.install` base) that points outside it, or pass a wider `deployBase` (e.g. `/`) so `outDir` maps to a root that contains the mount.',
+    },
+    DF8007: {
+      why: (p: { base: string, deployBase: string }) => `The hub base "${p.base}" is outside the deploy root "${p.deployBase}", so its artifacts have no place under \`outDir\`.`,
+      fix: 'The hub base must live within `deployBase` (its artifacts write under `base` inside `outDir`). Move `base` under `deployBase`, or widen `deployBase` so it contains the hub base.',
     },
     DF8100: {
       why: (p: { id: string }) => `Dock with id "${p.id}" is already registered`,

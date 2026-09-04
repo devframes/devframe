@@ -163,6 +163,42 @@ describe('buildHub', () => {
     expect(manifest['alpha:probe']).toMatchObject({ type: 'static' })
   })
 
+  it('bakes a sibling-layout context with deployBase mapping outDir to the deploy root', async () => {
+    const outDir = mkdtempSync(join(tmpdir(), 'hub-deploy-out-'))
+    const cwd = mkdtempSync(join(tmpdir(), 'hub-deploy-cwd-'))
+
+    // Vite-DevTools shape: hub at /__devtools/, devframes at their own
+    // top-level bases (siblings of the hub base under the deploy root).
+    const host = createH3DevframeHost({ origin: 'http://localhost', appName: 'devframes', workspaceRoot: cwd, mount: () => {} })
+    const ctx = await createHubContext({ cwd, workspaceRoot: cwd, mode: 'build', host })
+    await ctx.install(makeFrame('inspect', { distDir: makeDist('<h1>inspect</h1>') }), { base: '/__inspect/' })
+
+    await buildHub({ context: ctx, outDir, base: '/__devtools/', deployBase: '/', clean: false })
+
+    // Hub artifacts land under the hub base; the sibling frame beside it.
+    expect(existsSync(join(outDir, '__devtools/__connection.json'))).toBe(true)
+    expect(existsSync(join(outDir, '__devtools/__index.json'))).toBe(true)
+    expect(existsSync(join(outDir, '__devtools/__rpc-dump/index.json'))).toBe(true)
+    expect(readFileSync(join(outDir, '__inspect/index.html'), 'utf-8')).toContain('inspect')
+
+    // The frame meta points back at the hub's own meta at the hub base.
+    const frameMeta = JSON.parse(readFileSync(join(outDir, '__inspect/__connection.json'), 'utf-8'))
+    expect(frameMeta.baseUrl).toBe('/__devtools/__connection.json')
+    const index = JSON.parse(readFileSync(join(outDir, '__devtools/__index.json'), 'utf-8'))
+    expect(index.frames.map((frame: { id: string }) => frame.id)).toEqual(['inspect'])
+  })
+
+  it('rejects a hub base outside its deployBase', async () => {
+    const outDir = join(mkdtempSync(join(tmpdir(), 'hub-build-out-')), 'hub')
+    await expect(buildHub({
+      outDir,
+      base: '/__hub/',
+      deployBase: '/elsewhere/',
+      cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
+      devframes: [makeFrame('alpha', { distDir: makeDist('<h1>alpha</h1>') })],
+    })).rejects.toThrow(/outside the deploy root/)
+  })
+
   it('rejects a mount base outside the hub base', async () => {
     const outDir = join(mkdtempSync(join(tmpdir(), 'hub-build-out-')), 'hub')
     await expect(buildHub({

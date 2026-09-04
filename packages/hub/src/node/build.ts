@@ -32,6 +32,21 @@ export interface BuildHubOptions {
    * pointers). Default: `/__devframes/`.
    */
   base?: string
+  /**
+   * The deploy-root URL that {@link BuildHubOptions.outDir} maps to, so a
+   * context whose devframe SPAs and static assets are served as **siblings**
+   * of the hub {@link BuildHubOptions.base} (not children of it) still bakes.
+   * The hub's own artifacts write under `base` within `outDir`; every other
+   * mount base resolves against `outDir` by its path below this root. Must
+   * contain `base`. Default: `base` (every mount lives under the hub base, the
+   * built-in single-subtree layout).
+   *
+   * Vite DevTools serves the hub at `/__devtools/` but its devframes at their
+   * own top-level bases (`/__<id>/`) and assets at `/__devtools-assets/`;
+   * `deployBase: '/'` maps `outDir` to the deploy root so all of them land
+   * beside the hub subtree.
+   */
+  deployBase?: string
   /** Devframes to bake as docks, same input as `initHub({ devframes })`. */
   devframes?: DevframesInput
   /**
@@ -110,6 +125,9 @@ export async function buildHub(options: BuildHubOptions): Promise<void> {
     throw diagnostics.DF8002()
 
   const base = normalizeHubBase(options.base ?? DEVFRAMES_HUB_BASE)
+  const deployBase = options.deployBase ? normalizeHubBase(options.deployBase) : base
+  if (!base.startsWith(deployBase))
+    throw diagnostics.DF8007({ base, deployBase })
   const cwd = options.cwd ?? process.cwd()
   const outDir = resolve(cwd, options.outDir)
   const rendererRegistrations = resolveRendererRegistrations(options.renderers ?? [])
@@ -119,27 +137,31 @@ export async function buildHub(options: BuildHubOptions): Promise<void> {
   await options.configure?.(ctx)
   await options.ui?.setup?.(ctx)
 
-  if (options.clean !== false && existsSync(outDir))
-    await fs.rm(outDir, { recursive: true })
-  await fs.mkdir(outDir, { recursive: true })
-
-  /** Map a hub-base-relative URL base to its on-disk location under `outDir`. */
+  /** Map a served URL base to its on-disk location below the deploy root. */
   const resolveOutPath = (urlBase: string): string => {
-    if (!urlBase.startsWith(base))
-      throw diagnostics.DF8006({ urlBase, base })
-    return resolve(outDir, urlBase.slice(base.length))
+    if (!urlBase.startsWith(deployBase))
+      throw diagnostics.DF8006({ urlBase, base: deployBase })
+    return resolve(outDir, urlBase.slice(deployBase.length))
   }
 
-  await copyBuildStatics(ctx, resolveOutPath)
-  await publishRendererManifest(ctx, rendererRegistrations, base, outDir)
-  await writeUiArtifacts(options.ui, outDir)
-  await fs.writeFile(resolve(outDir, DEVFRAME_DOCK_IMPORTS_FILENAME), renderClientImportsModule(ctx), 'utf-8')
-  await writeHubIndex(ctx, base, outDir, options)
-  await writeConnectionMetas(ctx, base, outDir, resolveOutPath)
+  // `outDir` is the deploy root; the hub's own artifacts live under `base`
+  // within it (the same directory when no `deployBase` widens the layout).
+  const hubOutDir = resolveOutPath(base)
 
-  console.log(c.cyan`[devframes-hub] writing RPC dump to ${resolve(outDir, '__rpc-dump')}`)
+  if (options.clean !== false && existsSync(outDir))
+    await fs.rm(outDir, { recursive: true })
+  await fs.mkdir(hubOutDir, { recursive: true })
+
+  await copyBuildStatics(ctx, resolveOutPath)
+  await publishRendererManifest(ctx, rendererRegistrations, base, hubOutDir)
+  await writeUiArtifacts(options.ui, hubOutDir)
+  await fs.writeFile(resolve(hubOutDir, DEVFRAME_DOCK_IMPORTS_FILENAME), renderClientImportsModule(ctx), 'utf-8')
+  await writeHubIndex(ctx, base, hubOutDir, options)
+  await writeConnectionMetas(ctx, base, hubOutDir, resolveOutPath)
+
+  console.log(c.cyan`[devframes-hub] writing RPC dump to ${resolve(hubOutDir, '__rpc-dump')}`)
   const dump = await collectStaticRpcDump(ctx.rpc.definitions.values(), ctx)
-  await writeStaticRpcDump(dump, outDir, { pretty: options.pretty })
+  await writeStaticRpcDump(dump, hubOutDir, { pretty: options.pretty })
 
   const count = ctx.frames.length
   console.log(c.green`[devframes-hub] built ${count} devframe${count === 1 ? '' : 's'} -> ${outDir}`)
@@ -211,7 +233,7 @@ async function publishRendererManifest(
   ctx: DevframeHubContext,
   registrations: readonly DockRendererRegistration[],
   base: string,
-  outDir: string,
+  hubOutDir: string,
 ): Promise<void> {
   const manifest: Record<string, ClientScriptEntry> = {}
   for (const registration of registrations) {
@@ -219,8 +241,8 @@ async function publishRendererManifest(
       importFrom: joinURL(base, '__renderers', `${registration.type}.mjs`),
       ...(registration.importName ? { importName: registration.importName } : {}),
     }
-    await fs.mkdir(resolve(outDir, '__renderers'), { recursive: true })
-    await fs.copyFile(registration.file, resolve(outDir, '__renderers', `${registration.type}.mjs`))
+    await fs.mkdir(resolve(hubOutDir, '__renderers'), { recursive: true })
+    await fs.copyFile(registration.file, resolve(hubOutDir, '__renderers', `${registration.type}.mjs`))
   }
   const manifestState = await ctx.rpc.sharedState.get<Record<string, ClientScriptEntry>>(
     DOCK_RENDERERS_STATE_KEY,
@@ -234,13 +256,13 @@ async function publishRendererManifest(
  * before the discovery documents, so those win over same-named files it
  * ships), `embedded.js` next to it, plus any produced assets.
  */
-async function writeUiArtifacts(ui: DevframeHubUi | undefined, outDir: string): Promise<void> {
+async function writeUiArtifacts(ui: DevframeHubUi | undefined, hubOutDir: string): Promise<void> {
   if (ui?.viewer)
-    await fs.cp(resolve(ui.viewer.distDir), outDir, { recursive: true })
+    await fs.cp(resolve(ui.viewer.distDir), hubOutDir, { recursive: true })
   if (ui?.embedded)
-    await fs.copyFile(resolve(ui.embedded.entry), resolve(outDir, 'embedded.js'))
+    await fs.copyFile(resolve(ui.embedded.entry), resolve(hubOutDir, 'embedded.js'))
   for (const [key, produce] of Object.entries(ui?.assets ?? {})) {
-    const target = resolve(outDir, key)
+    const target = resolve(hubOutDir, key)
     await fs.mkdir(dirname(target), { recursive: true })
     await fs.writeFile(target, produce())
   }
@@ -250,10 +272,10 @@ async function writeUiArtifacts(ui: DevframeHubUi | undefined, outDir: string): 
 async function writeHubIndex(
   ctx: DevframeHubContext,
   base: string,
-  outDir: string,
+  hubOutDir: string,
   options: BuildHubOptions,
 ): Promise<void> {
-  await fs.writeFile(resolve(outDir, '__index.json'), `${JSON.stringify({
+  await fs.writeFile(resolve(hubOutDir, '__index.json'), `${JSON.stringify({
     name: options.name,
     version: options.version,
     base,
@@ -277,7 +299,7 @@ async function writeHubIndex(
 async function writeConnectionMetas(
   ctx: DevframeHubContext,
   base: string,
-  outDir: string,
+  hubOutDir: string,
   resolveOutPath: (urlBase: string) => string,
 ): Promise<void> {
   const jsonSerializableMethods: string[] = []
@@ -290,7 +312,7 @@ async function writeConnectionMetas(
     jsonSerializableMethods,
     ...(Object.keys(ctx.staticConfig).length > 0 ? { configs: ctx.staticConfig } : {}),
   }
-  await fs.writeFile(resolve(outDir, DEVFRAME_CONNECTION_META_FILENAME), JSON.stringify(meta, null, 2), 'utf-8')
+  await fs.writeFile(resolve(hubOutDir, DEVFRAME_CONNECTION_META_FILENAME), JSON.stringify(meta, null, 2), 'utf-8')
   const frameMeta: ConnectionMeta = { ...meta, baseUrl: joinURL(base, DEVFRAME_CONNECTION_META_FILENAME) }
   // A frame served its own SPA exactly when it registered a static mount at its
   // base; only those need a per-frame meta beside the copied SPA.
