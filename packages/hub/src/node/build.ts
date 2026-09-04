@@ -185,12 +185,15 @@ async function createAndMountContext(options: BuildHubOptions, base: string, cwd
  * source by materializing every listed file. Reads the list rather than
  * relying on a live host `mountStatic`, so a context whose host copied no
  * statics at mount time (the build host, or a kit's) still gets its assets in.
+ * Each source re-resolves with the `resolveFrom` it was mounted with, so a
+ * remote source (e.g. a plugin's `--assets` package) resolves to the same
+ * locally-installed copy it would serve live.
  */
 async function copyBuildStatics(ctx: DevframeHubContext, resolveOutPath: (urlBase: string) => string): Promise<void> {
   const storageDir = ctx.host.getStorageDir('project')
-  for (const { baseUrl, source } of ctx.views.buildStaticDirs) {
+  for (const { baseUrl, source, resolveFrom } of ctx.views.buildStaticDirs) {
     const target = resolveOutPath(baseUrl)
-    const resolved = resolveStaticAssetsSource(source, storageDir)
+    const resolved = resolveStaticAssetsSource(source, storageDir, resolveFrom)
     await fs.mkdir(dirname(target), { recursive: true })
     if (typeof resolved === 'string')
       await fs.cp(resolved, target, { recursive: true })

@@ -367,6 +367,7 @@ export interface DevframeViewHost {
   buildStaticDirs: {
     baseUrl: string;
     source: StaticAssetsSource;
+    resolveFrom?: string | null;
   }[];
   hostStatic: (_: string, _: StaticAssetsSource, _?: string | null) => void;
 }
