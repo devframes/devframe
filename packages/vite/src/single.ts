@@ -1,6 +1,7 @@
 import type { DevframeDefinition, McpSetting } from 'devframe'
 import type { DevframeInstance } from 'devframe/initiate'
 import type { DevframeAuthHandler } from 'devframe/node/auth'
+import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 import process from 'node:process'
@@ -119,6 +120,16 @@ export interface DevframeViteBridgeOptions {
    * surface is non-empty); `false` disables the route regardless.
    */
   mcp?: McpSetting
+  /**
+   * Widen the WebSocket origin check beyond devframe's loopback-only
+   * default. A bridge serves the tool same-origin with the host Vite app,
+   * so reaching it from a non-loopback origin (`vite --host`, containers,
+   * Codespaces, tunnels) needs the dev server's own origin allowed. Pass
+   * extra origins, a {@link WsOriginRegistry}, or `false` to disable the
+   * check (safe when the bridge's auth gate owns the trust boundary).
+   * Forwarded verbatim to `initDevframe`.
+   */
+  allowedOrigins?: readonly string[] | WsOriginRegistry | false
 }
 
 /**
@@ -185,6 +196,7 @@ export function devframeViteBridge(d: DevframeDefinition, options: DevframeViteB
            */
           auth: options.auth,
           mcp: options.mcp,
+          allowedOrigins: options.allowedOrigins,
         })
         server.middlewares.use(created.nodeMiddleware)
         await created.ready

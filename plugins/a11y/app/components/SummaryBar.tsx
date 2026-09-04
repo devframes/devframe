@@ -38,7 +38,7 @@ const ACTION = 'inline-flex items-center gap-1.5 text-xs color-muted bg-secondar
 export function SummaryBar(props: SummaryBarProps) {
   const plural = (n: number, one: string) => `${n} ${n === 1 ? one : `${one}s`}`
   return (
-    <div class="flex flex-col gap-2 pt-3 pb-2.5 sticky top-0 z-[2] bg-base">
+    <div class="flex flex-col gap-2 pt-3 pb-2.5 sticky top-0 z-nav bg-base">
       <Summary counts={props.counts} active={props.filter} onToggle={props.onToggleFilter} onHover={props.onHoverImpact} />
 
       <div class="flex items-center gap-2 flex-wrap">

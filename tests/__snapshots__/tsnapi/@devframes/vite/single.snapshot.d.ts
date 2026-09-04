@@ -9,6 +9,7 @@ export interface DevframeViteBridgeOptions {
   flags?: Record<string, unknown>;
   auth?: boolean | DevframeAuthHandler;
   mcp?: McpSetting;
+  allowedOrigins?: readonly string[] | WsOriginRegistry | false;
 }
 export interface DevframeViteDevServerLike {
   middlewares: {

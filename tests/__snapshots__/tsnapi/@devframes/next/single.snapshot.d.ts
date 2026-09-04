@@ -8,6 +8,7 @@ export interface CreateDevframeNextHandlerOptions {
   port?: number;
   flags?: Record<string, unknown>;
   auth?: InitDevframeOptions['auth'];
+  allowedOrigins?: InitDevframeOptions['allowedOrigins'];
   resolveOrigin?: () => string;
   getStorageDir?: (_: DevframeStorageScope) => string;
   mcp?: InitDevframeOptions['mcp'];
