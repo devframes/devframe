@@ -43,12 +43,12 @@ const defaultPageScriptFunctions: NonNullable<CreatePageScriptChannelOptions<Tes
   sum: { handler: (a, b) => a + b },
   boom: { handler: () => {} },
   strict: { handler: payload => payload },
-  note: { type: 'event', handler: () => {} },
+  note: { type: 'event' },
 }
 
 const defaultPanelFunctions: NonNullable<ConnectPanelChannelOptions<TestProtocol>['functions']> = {
   'ping-panel': { handler: value => `pong:${value}` },
-  'notify': { type: 'event', handler: () => {} },
+  'notify': { type: 'event' },
 }
 
 function createLinkedPair(options?: {
@@ -196,9 +196,7 @@ describe('in-page channel over bring-your-own ports', () => {
       name: 'devframes:test',
       ...noHandshake,
       transport: a.port2,
-      functions: {
-        'ping-panel': defaultPanelFunctions['ping-panel'],
-      },
+      functions: defaultPanelFunctions,
     })
     pageScript.emit('notify', 'before-listener')
     await new Promise(resolve => setTimeout(resolve, 20))
@@ -209,6 +207,7 @@ describe('in-page channel over bring-your-own ports', () => {
       name: 'devframes:test',
       ...noHandshake,
       transport: b.port2,
+      functions: {},
     })
     try {
       expect(pageScript.panels).toHaveLength(2)

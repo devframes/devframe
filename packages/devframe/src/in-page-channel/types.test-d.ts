@@ -1,4 +1,5 @@
 import { describe, expectTypeOf, it } from 'vitest'
+import { defineChannelFunction } from './index'
 import { createPageScriptChannel } from './page-script'
 import { connectPanelChannel } from './panel'
 
@@ -19,6 +20,19 @@ interface PageScriptOnlyProtocol {
   }
   panel: Record<string, never>
 }
+
+describe('Channel function definitions', () => {
+  it('allows events without handlers', () => {
+    defineChannelFunction({ name: 'notify', type: 'event' })
+  })
+
+  it('requires handlers for request/response functions', () => {
+    // @ts-expect-error Query functions require a handler.
+    defineChannelFunction({ name: 'load', type: 'query' })
+    // @ts-expect-error Action functions require a handler.
+    defineChannelFunction({ name: 'save', type: 'action' })
+  })
+})
 
 describe('In-page script channel', () => {
   const channel = createPageScriptChannel<TestProtocol>({
@@ -57,13 +71,36 @@ describe('In-page script channel', () => {
       })
     })
 
-    it('accepts runtime-only and partial function implementations', () => {
+    it('requires every page-script function declaration', () => {
+      // @ts-expect-error `functions` is required.
       createPageScriptChannel<TestProtocol>({ name: 'devframes:test' })
 
       createPageScriptChannel<TestProtocol>({
         name: 'devframes:test',
+        // @ts-expect-error `sum` and `save` must be declared.
         functions: {
           echo: { handler: value => value },
+        },
+      })
+    })
+
+    it('allows event declarations to omit their handler', () => {
+      createPageScriptChannel<TestProtocol>({
+        name: 'devframes:test',
+        functions: {
+          echo: { handler: value => value },
+          sum: { handler: (a, b) => a + b },
+          save: { type: 'event' },
+        },
+      })
+
+      createPageScriptChannel<TestProtocol>({
+        name: 'devframes:test',
+        functions: {
+          // @ts-expect-error Request/response functions require a handler.
+          echo: { type: 'query' },
+          sum: { handler: (a, b) => a + b },
+          save: { type: 'event' },
         },
       })
     })
@@ -195,12 +232,31 @@ describe('Panel channel', () => {
       inferredChannel.close()
     })
 
-    it('accepts runtime-only and partial function implementations', () => {
+    it('requires every panel function declaration', () => {
+      // @ts-expect-error `functions` is required.
       connectPanelChannel<TestProtocol>({ name: 'devframes:test' })
 
       connectPanelChannel<TestProtocol>({
         name: 'devframes:test',
+        // @ts-expect-error `notify` must be declared.
         functions: {},
+      })
+    })
+
+    it('allows event declarations to omit their handler', () => {
+      connectPanelChannel<TestProtocol>({
+        name: 'devframes:test',
+        functions: {
+          notify: { type: 'event' },
+        },
+      })
+
+      connectPanelChannel<TestProtocol>({
+        name: 'devframes:test',
+        functions: {
+          // @ts-expect-error Request/response functions require a handler.
+          notify: { type: 'action' },
+        },
       })
     })
 

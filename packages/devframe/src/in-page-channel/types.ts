@@ -54,7 +54,8 @@ export type InPageFunctionType = 'action' | 'event' | 'query'
  * `dump`/`snapshot`/`cacheable`/`agent`. When `jsonSerializable` is `true`,
  * payloads are strictly validated at the receiving endpoint and misshapen
  * values reject the call with a descriptive `InPageChannelError` instead of
- * a cryptic `DataCloneError` in the port.
+ * a cryptic `DataCloneError` in the port. Event definitions may omit their
+ * handler when runtime listeners subscribe through `channel.on()`.
  */
 export type InPageFunctionDefinition<
   NAME extends string,
@@ -65,15 +66,16 @@ export type InPageFunctionDefinition<
   RS extends RpcReturnSchema | undefined = undefined,
 >
   = [AS, RS] extends [undefined, undefined]
-    ? {
+    ? ({
         name: NAME
         type?: TYPE
         args?: AS
         returns?: RS
         jsonSerializable?: boolean
-        handler: (...args: ARGS) => RETURN
-      }
-    : {
+      } & (TYPE extends 'event'
+        ? { handler?: (...args: ARGS) => RETURN }
+        : { handler: (...args: ARGS) => RETURN }))
+    : ({
         name: NAME
         type?: TYPE
         /** Standard Schema array validating (and typing) the arguments. */
@@ -81,8 +83,9 @@ export type InPageFunctionDefinition<
         /** Standard Schema typing the resolved return value. */
         returns: RS
         jsonSerializable?: boolean
-        handler: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>
-      }
+      } & (TYPE extends 'event'
+        ? { handler?: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>> }
+        : { handler: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>> }))
 
 /**
  * Loosely-typed definition used by the internal function registry.
@@ -96,33 +99,41 @@ export type InPageFunctionDefinitionAny = InPageFunctionDefinition<string, any, 
  *
  * @internal
  */
-interface InPageFunctionOption<F> {
-  type?: InPageFunctionType
+interface InPageFunctionOptionBase {
   /** Optional Standard Schema array validating the arguments. */
   args?: RpcArgsSchema
   /** Optional Standard Schema validating the resolved return value. */
   returns?: RpcReturnSchema
   jsonSerializable?: boolean
-  handler: ProtocolHandler<F>
 }
+
+type InPageFunctionOption<F>
+  = | (InPageFunctionOptionBase & {
+    type: 'event'
+    handler?: ProtocolHandler<F>
+  })
+  | (InPageFunctionOptionBase & {
+    type?: Exclude<InPageFunctionType, 'event'>
+    handler: ProtocolHandler<F>
+  })
 
 /**
  * Functions implemented by {@link createPageScriptChannel}.
  *
  * @internal
  */
-type CreatePageScriptChannelOptionsFunctions<P extends InPageChannelProtocol> = Partial<{
+type CreatePageScriptChannelOptionsFunctions<P extends InPageChannelProtocol> = {
   [NAME in keyof PageScriptFunctions<P> & string]: InPageFunctionOption<PageScriptFunctions<P>[NAME]>
-}>
+}
 
 /**
  * Functions implemented by {@link connectPanelChannel}.
  *
  * @internal
  */
-type ConnectPanelChannelOptionsFunctions<P extends InPageChannelProtocol> = Partial<{
+type ConnectPanelChannelOptionsFunctions<P extends InPageChannelProtocol> = {
   [NAME in keyof PanelFunctions<P> & string]: InPageFunctionOption<PanelFunctions<P>[NAME]>
-}>
+}
 
 /**
  * Connection lifecycle of a panel endpoint: `connecting` (handshake retry
@@ -173,8 +184,8 @@ interface InPageChannelCommonOptions {
 
 /** Options for {@link createPageScriptChannel}. */
 export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
-  /** Initial page-script handlers. Event listeners may also use `channel.on()`. */
-  functions?: CreatePageScriptChannelOptionsFunctions<Protocol>
+  /** Every page-script function declaration; event handlers may use `channel.on()`. */
+  functions: CreatePageScriptChannelOptionsFunctions<Protocol>
   /**
    * Window whose `message` events carry panel hellos. Defaults to the
    * global `window`; pass `false` to skip the handshake listener entirely
@@ -185,8 +196,8 @@ export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelPr
 
 /** Options for {@link connectPanelChannel}. */
 export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
-  /** Initial panel handlers. Event listeners may also use `channel.on()`. */
-  functions?: ConnectPanelChannelOptionsFunctions<Protocol>
+  /** Every panel function declaration; event handlers may use `channel.on()`. */
+  functions: ConnectPanelChannelOptionsFunctions<Protocol>
   /**
    * The panel's own window (listens for the handshake grant). Defaults to
    * the global `window`; pass `false` with `transport` to skip the handshake.

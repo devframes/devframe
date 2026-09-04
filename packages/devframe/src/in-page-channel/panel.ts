@@ -62,10 +62,8 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
 
   const events = createEventEmitter<PanelChannelEvents>()
   const registry = createLocalFunctionRegistry(codec)
-  for (const [fnName, definition] of Object.entries(options.functions ?? {})) {
-    if (definition)
-      registry.register({ ...definition, name: fnName })
-  }
+  for (const [fnName, definition] of Object.entries(options.functions))
+    registry.register({ ...definition, name: fnName })
 
   let status: InPageChannelStatus = 'connecting'
   let attached: AttachedChannelPort | undefined

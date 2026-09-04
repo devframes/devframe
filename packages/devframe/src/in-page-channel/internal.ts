@@ -199,7 +199,7 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
           assertJsonSerializable(args, 'its arguments', definition.name)
         if (definition?.args?.length)
           await validateArgs(definition.name, definition.args, args)
-        const result = await definition?.handler(...args)
+        const result = await definition?.handler?.(...args)
         for (const listener of [...(listeners.get(name) ?? [])])
           listener(...args)
         if (definition?.jsonSerializable)

@@ -3,7 +3,7 @@
  */
 // #region Interfaces
 export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
-  functions?: ConnectPanelChannelOptionsFunctions<Protocol>;
+  functions: ConnectPanelChannelOptionsFunctions<Protocol>;
   window?: Window | false;
   targets?: Window[];
   transport?: MessagePort;
@@ -12,7 +12,7 @@ export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtoc
   eventBufferLimit?: number;
 }
 export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
-  functions?: CreatePageScriptChannelOptionsFunctions<Protocol>;
+  functions: CreatePageScriptChannelOptionsFunctions<Protocol>;
   window?: Window | false;
 }
 export interface InPageChannelProtocol {
@@ -62,21 +62,27 @@ export type InPageChannelErrorCode = 'timeout' |
 'invalid-args' |
 'state-uninitialized';
 export type InPageChannelStatus = 'connecting' | 'connected' | 'closed';
-export type InPageFunctionDefinition<NAME extends string, TYPE extends InPageFunctionType = 'query', ARGS extends any[] = [], RETURN = void, AS extends RpcArgsSchema | undefined = undefined, RS extends RpcReturnSchema | undefined = undefined> = [AS, RS] extends [undefined, undefined] ? {
+export type InPageFunctionDefinition<NAME extends string, TYPE extends InPageFunctionType = 'query', ARGS extends any[] = [], RETURN = void, AS extends RpcArgsSchema | undefined = undefined, RS extends RpcReturnSchema | undefined = undefined> = [AS, RS] extends [undefined, undefined] ? ({
   name: NAME;
   type?: TYPE;
   args?: AS;
   returns?: RS;
   jsonSerializable?: boolean;
-  handler: (...args: ARGS) => RETURN;
+} & (TYPE extends 'event' ? {
+  handler?: (...args: ARGS) => RETURN;
 } : {
+  handler: (...args: ARGS) => RETURN;
+})) : ({
   name: NAME;
   type?: TYPE;
   args: AS;
   returns: RS;
   jsonSerializable?: boolean;
+} & (TYPE extends 'event' ? {
+  handler?: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>;
+} : {
   handler: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>;
-};
+}));
 // #endregion
 
 // #region Classes
@@ -92,12 +98,12 @@ export declare class InPageChannelError extends Error {
 // #region Functions
 export declare function connectPanelChannel<P extends InPageChannelProtocol>(_: ConnectPanelChannelOptions<P>): PanelChannel<P>;
 export declare function createPageScriptChannel<P extends InPageChannelProtocol>(_: CreatePageScriptChannelOptions<P>): PageScriptChannel<P>;
-export declare function defineChannelFunction<NAME extends string, TYPE extends InPageFunctionType, ARGS extends any[], RETURN = void, const AS extends RpcArgsSchema | undefined = undefined, const RS extends RpcReturnSchema | undefined = undefined>(_: InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>): InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>;
+export declare function defineChannelFunction<NAME extends string, TYPE extends InPageFunctionType, ARGS extends any[] = [], RETURN = void, const AS extends RpcArgsSchema | undefined = undefined, const RS extends RpcReturnSchema | undefined = undefined>(_: InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>): InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>;
 // #endregion
 
 // #region Referenced (internal)
-type ConnectPanelChannelOptionsFunctions<P extends InPageChannelProtocol> = Partial<{ [NAME in keyof PanelFunctions<P> & string]: InPageFunctionOption<PanelFunctions<P>[NAME]>; }>;
-type CreatePageScriptChannelOptionsFunctions<P extends InPageChannelProtocol> = Partial<{ [NAME in keyof PageScriptFunctions<P> & string]: InPageFunctionOption<PageScriptFunctions<P>[NAME]>; }>;
+type ConnectPanelChannelOptionsFunctions<P extends InPageChannelProtocol> = { [NAME in keyof PanelFunctions<P> & string]: InPageFunctionOption<PanelFunctions<P>[NAME]>; };
+type CreatePageScriptChannelOptionsFunctions<P extends InPageChannelProtocol> = { [NAME in keyof PageScriptFunctions<P> & string]: InPageFunctionOption<PageScriptFunctions<P>[NAME]>; };
 type FnArgs<F> = F extends ((...args: infer A) => any) ? A : never;
 type FnReturn<F> = F extends ((...args: any[]) => infer R) ? Awaited<R> : never;
 interface InPageChannelCommonOptions {
