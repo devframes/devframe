@@ -23,7 +23,10 @@ export interface BuildHubOptions {
    * Output directory the hub subtree is written into. It corresponds to the
    * hub {@link BuildHubOptions.base} at serve time: building with
    * `base: '/__devframes/'` into `dist/__devframes` makes the deployed app's
-   * `dist/` servable as-is by any static file server.
+   * `dist/` servable as-is by any static file server. A mount served outside
+   * the hub base (a devframe SPA or asset dir kept as a sibling of it) is
+   * written to this directory's parent (the deploy root) by its absolute path,
+   * so `dist/` still serves the whole layout.
    */
   outDir: string
   /**
@@ -123,11 +126,21 @@ export async function buildHub(options: BuildHubOptions): Promise<void> {
     await fs.rm(outDir, { recursive: true })
   await fs.mkdir(outDir, { recursive: true })
 
-  /** Map a hub-base-relative URL base to its on-disk location under `outDir`. */
+  /**
+   * Map a served URL base to its on-disk location. A base under the hub
+   * {@link base} writes into the hub subtree at `outDir` (so `outDir`
+   * corresponds to the hub base). A base outside it is a deploy-root sibling:
+   * `outDir`'s parent is the deploy root, and the base resolves under it by its
+   * absolute path. This is the layout Vite DevTools serves, where devframe SPAs
+   * and assets sit beside `/__devtools/` rather than under it.
+   */
+  const deployRoot = dirname(outDir)
   const resolveOutPath = (urlBase: string): string => {
-    if (!urlBase.startsWith(base))
+    if (urlBase.startsWith(base))
+      return resolve(outDir, urlBase.slice(base.length))
+    if (!urlBase.startsWith('/'))
       throw diagnostics.DF8006({ urlBase, base })
-    return resolve(outDir, urlBase.slice(base.length))
+    return resolve(deployRoot, urlBase.slice(1))
   }
 
   await copyBuildStatics(ctx, resolveOutPath)

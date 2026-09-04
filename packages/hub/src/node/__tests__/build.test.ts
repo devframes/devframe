@@ -163,15 +163,27 @@ describe('buildHub', () => {
     expect(manifest['alpha:probe']).toMatchObject({ type: 'static' })
   })
 
-  it('rejects a mount base outside the hub base', async () => {
-    const outDir = join(mkdtempSync(join(tmpdir(), 'hub-build-out-')), 'hub')
-    await expect(buildHub({
+  it('bakes a mount outside the hub base as a deploy-root sibling', async () => {
+    const deployRoot = mkdtempSync(join(tmpdir(), 'hub-build-out-'))
+    const outDir = join(deployRoot, '__hub')
+
+    await buildHub({
       outDir,
       base: '/__hub/',
       cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
       async configure(ctx) {
-        await ctx.install(makeFrame('gamma', { distDir: makeDist('<h1>gamma</h1>') }), { base: '/elsewhere/' })
+        await ctx.install(makeFrame('gamma', { distDir: makeDist('<h1>gamma</h1>') }), { base: '/gamma/' })
       },
-    })).rejects.toThrow(/escapes "\/__hub\/"/)
+    })
+
+    // The hub subtree lands at `outDir`, while the sibling frame resolves to
+    // the deploy root (outDir's parent) by its absolute path, beside the hub.
+    expect(existsSync(join(outDir, '__connection.json'))).toBe(true)
+    expect(readFileSync(join(deployRoot, 'gamma/index.html'), 'utf-8')).toContain('gamma')
+    // The sibling frame still gets its per-frame meta pointing back at the hub.
+    const frameMeta = JSON.parse(readFileSync(join(deployRoot, 'gamma/__connection.json'), 'utf-8'))
+    expect(frameMeta.baseUrl).toBe('/__hub/__connection.json')
+    const index = JSON.parse(readFileSync(join(outDir, '__index.json'), 'utf-8'))
+    expect(index.frames.map((frame: { id: string }) => frame.id)).toEqual(['gamma'])
   })
 })
