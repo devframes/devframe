@@ -1,6 +1,7 @@
 import type { DevframeNodeContext, DevframeRpcSharedStates, DevframeSettings, DevframeSettingsStore } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
 import { join } from 'pathe'
+import { createSettingsStore } from '../settings-store'
 import { createStorage } from './storage'
 
 // Map a settings scope to the host storage scope it persists under.
@@ -32,27 +33,7 @@ function createNodeSettingsStore<T extends Record<string, any>>(
     return statePromise
   }
 
-  return {
-    async get(key) {
-      return ((await store()).value() as T)[key]
-    },
-    async set(key, value) {
-      ;(await store()).mutate((draft) => {
-        ;(draft as T)[key] = value
-      })
-    },
-    async delete(key) {
-      ;(await store()).mutate((draft) => {
-        delete (draft as T)[key]
-      })
-    },
-    async all() {
-      return (await store()).value() as Readonly<T>
-    },
-    async onChange(fn) {
-      return (await store()).on('updated', full => fn(full as Readonly<T>))
-    },
-  }
+  return createSettingsStore<T>(store)
 }
 
 /**

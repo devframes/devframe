@@ -1,5 +1,5 @@
 import type { DevframeInspectCommandInfo } from '../../types'
-import { defineInspectRpc } from './_define'
+import { defineRpcFunction } from 'devframe'
 import { projectCommand, resolveHubCommands } from './_hub-commands'
 
 /**
@@ -11,7 +11,7 @@ import { projectCommand, resolveHubCommands } from './_hub-commands'
  * `snapshot: true` bakes the (possibly empty) list into the static dump so
  * the inspector still lists commands in `build`/`spa` mode.
  */
-export const listCommands = defineInspectRpc({
+export const listCommands = defineRpcFunction({
   name: 'devframes:plugin:inspect:list-commands',
   type: 'query',
   jsonSerializable: true,

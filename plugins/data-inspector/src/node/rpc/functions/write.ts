@@ -1,8 +1,9 @@
 import type { WriteOutcome, WriteRequest } from '../../engine/contract'
 import type { WriteApplyOptions } from '../../engine/write'
+import { defineRpcFunction } from 'devframe'
 import { applyWrite } from '../../engine/write'
 import { getDataSource, isWritableEntry, notifyDataSourceChanged, resolveSourceData } from '../../registry/index'
-import { defineDataInspectorRpc, NS } from './_define'
+import { NS } from './_define'
 
 /**
  * Mutate a writable source's live object in place. Only sources that opted
@@ -11,7 +12,7 @@ import { defineDataInspectorRpc, NS } from './_define'
  * must be threaded through so array indices line up. Broadcasts
  * `data:changed` on success so every connected client refreshes.
  */
-export const write = defineDataInspectorRpc({
+export const write = defineRpcFunction({
   name: `${NS}:write`,
   type: 'action',
   jsonSerializable: true,

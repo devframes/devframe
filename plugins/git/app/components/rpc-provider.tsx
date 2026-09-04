@@ -13,11 +13,7 @@ export interface ConnectionState {
   error: string | null
 }
 
-/**
- * Exported so tests and Storybook can supply a mock connection (e.g. a stubbed
- * shiki service) through the same context the components read.
- */
-export const RpcContext = createContext<ConnectionState>({ rpc: null, status: 'connecting', error: null })
+const RpcContext = createContext<ConnectionState>({ rpc: null, status: 'connecting', error: null })
 
 export function useRpc(): ConnectionState {
   return use(RpcContext)

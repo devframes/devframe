@@ -7,7 +7,6 @@ export const list = defineRpcFunction({
   name: 'devframes:plugin:terminals:list',
   type: 'query',
   jsonSerializable: true,
-  snapshot: true,
   args: [],
   returns: s.array(sessionInfoSchema),
   agent: {

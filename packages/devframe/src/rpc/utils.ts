@@ -1,11 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { RpcArgsSchema, RpcReturnSchema } from './types'
 
-/** Type-level assertion that two types are equal */
-export type AssertEqual<X, Y>
-  = (<T>() => T extends X ? 1 : 2) extends
-  (<T>() => T extends Y ? 1 : 2) ? true : never
-
 /** Infers a TypeScript argument tuple from a Standard Schema array */
 export type InferArgsType<S extends RpcArgsSchema | undefined>
   = S extends readonly [] ? []

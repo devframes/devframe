@@ -1,5 +1,6 @@
 import type { DevframeMessagesListDelta } from '@devframes/hub/types'
-import { defineMessagesRpc, getMessagesHost } from './_define'
+import { defineRpcFunction } from 'devframe'
+import { getMessagesHost } from './_define'
 
 /**
  * Read the message list incrementally. Pass the `version` from the previous
@@ -9,7 +10,7 @@ import { defineMessagesRpc, getMessagesHost } from './_define'
  * `snapshot: true` bakes the full list into static builds, so the panel
  * renders the last captured feed without a live server.
  */
-export const messagesList = defineMessagesRpc({
+export const messagesList = defineRpcFunction({
   name: 'devframes:plugin:messages:list',
   type: 'query',
   jsonSerializable: true,

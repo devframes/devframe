@@ -238,7 +238,6 @@ export async function createDocksContext(
       ...toRefs(docksContext) as any,
       current: dockEntryStateMap.get(entry.id)!,
       messages: messagesClient,
-      logs: messagesClient,
     })
     await executeSetupScript(entry, scriptContext)
   }

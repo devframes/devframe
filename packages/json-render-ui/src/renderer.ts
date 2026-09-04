@@ -1,6 +1,6 @@
 import type { Spec } from '@devframes/json-render'
 import type { ComponentRegistry } from '@json-render/vue'
-import type { Component, PropType } from 'vue'
+import type { PropType } from 'vue'
 import type { ActionBridgeRpc } from './action-bridge'
 import { basePropSchemas } from '@devframes/json-render'
 import { JSONUIProvider, Renderer } from '@json-render/vue'
@@ -126,26 +126,3 @@ export const JsonRenderView = defineComponent({
     }
   },
 })
-
-/** Options for {@link createRenderer}. */
-export interface CreateRendererOptions {
-  /** Component registry to render with. Defaults to the base registry. */
-  registry?: ComponentRegistry
-}
-
-/**
- * Create a configured renderer component bound to a registry. The returned
- * component is {@link JsonRenderView} with the registry defaulted, so a host
- * can `createRenderer({ registry: myRegistry })` to swap the whole registry.
- */
-export function createRenderer(options: CreateRendererOptions = {}) {
-  const registry = options.registry ?? baseRegistry
-  return defineComponent({
-    name: 'ConfiguredJsonRenderView',
-    inheritAttrs: false,
-    setup(_props, { attrs }) {
-      // Default the registry; every other prop flows through via attrs.
-      return () => h(JsonRenderView as Component, { registry, ...attrs })
-    },
-  })
-}

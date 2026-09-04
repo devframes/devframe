@@ -1,8 +1,9 @@
+import { defineRpcFunction } from 'devframe'
 import { listDataSources } from '../../registry/index'
-import { defineDataInspectorRpc, NS } from './_define'
+import { NS } from './_define'
 
 /** Every registered data source (meta only, no data). */
-export const sources = defineDataInspectorRpc({
+export const sources = defineRpcFunction({
   name: `${NS}:sources`,
   type: 'query',
   jsonSerializable: true,

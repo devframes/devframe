@@ -1,6 +1,6 @@
 import type { InvokeResult } from '../../types'
+import { defineRpcFunction } from 'devframe'
 import { diagnostics } from '../../diagnostics'
-import { defineInspectRpc } from './_define'
 
 const INVOKABLE_TYPES = new Set(['query', 'static'])
 
@@ -13,7 +13,7 @@ const INVOKABLE_TYPES = new Set(['query', 'static'])
  * (default) so arbitrary return values round-trip without the strict-JSON
  * constraints that `jsonSerializable: true` would impose.
  */
-export const invoke = defineInspectRpc({
+export const invoke = defineRpcFunction({
   name: 'devframes:plugin:inspect:invoke',
   type: 'action',
   setup: ctx => ({

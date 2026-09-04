@@ -2,8 +2,8 @@ import type { AssetsCapabilities } from '@devframes/plugin-assets/rpc'
 import type { DevframeConnectionStatus, DevframeRpcClient } from 'devframe/client'
 import type { Ref } from 'vue'
 import type { AssetInfo } from '../connect'
+import { connectDevframe } from 'devframe/client'
 import { shallowRef } from 'vue'
-import { connectAssets } from '../connect'
 
 const CHANGED_EVENT = 'devframes:plugin:assets:changed'
 
@@ -56,7 +56,7 @@ export function useAssets(): UseAssetsResult {
   }
 
   async function connect(): Promise<void> {
-    const client = await connectAssets()
+    const client = await connectDevframe()
     rpc.value = client
     isStatic.value = client.connectionMeta.backend === 'static'
     status.value = client.status

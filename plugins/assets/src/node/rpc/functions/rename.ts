@@ -1,7 +1,6 @@
-import type { DevframeNodeContext } from 'devframe'
 import type { AssetInfo } from '../../types'
 import fsp from 'node:fs/promises'
-import { createDefineWrapperWithContext } from 'devframe/rpc'
+import { defineRpcFunction } from 'devframe'
 import { s } from 'devframe/utils/simple-schema'
 import { dirname, extname } from 'pathe'
 import { getAssetsContext } from '../../context'
@@ -9,8 +8,6 @@ import { diagnostics } from '../../diagnostics'
 import { assertAssetMutationPath } from '../../paths'
 import { statToAssetInfo } from '../../scanner'
 import { assetInfoSchema } from './list'
-
-const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
 
 export interface RenameArgs {
   /** Root-relative path of the asset to rename. */
@@ -24,7 +21,7 @@ export interface RenameArgs {
   newName: string
 }
 
-export const rename = defineAssetsRpc({
+export const rename = defineRpcFunction({
   name: 'devframes:plugin:assets:rename',
   type: 'action',
   jsonSerializable: true,

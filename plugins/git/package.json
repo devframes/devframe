@@ -83,7 +83,6 @@
     "next": "catalog:frontend",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",
-    "shiki": "catalog:deps",
     "storybook": "catalog:storybook",
     "tailwind-merge": "catalog:frontend",
     "tsdown": "catalog:build",

@@ -1,4 +1,4 @@
-import { defineInspectRpc } from './_define'
+import { defineRpcFunction } from 'devframe'
 
 /**
  * Enumerate the keys of every shared-state entry published on the
@@ -7,7 +7,7 @@ import { defineInspectRpc } from './_define'
  * returns the key list. `snapshot: true` keeps it listable in static
  * `build`/`spa` mode.
  */
-export const listStateKeys = defineInspectRpc({
+export const listStateKeys = defineRpcFunction({
   name: 'devframes:plugin:inspect:list-state-keys',
   type: 'query',
   jsonSerializable: true,

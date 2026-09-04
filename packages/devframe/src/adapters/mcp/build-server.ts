@@ -428,14 +428,14 @@ function projectTool(name: string, tool: AgentTool, ctx: DevframeNodeContext): T
 
 function computeInputSchema(tool: AgentTool, ctx: DevframeNodeContext): unknown {
   if (tool.kind === 'tool')
-    return argsToJsonSchema(tool.args).schema
+    return argsToJsonSchema(tool.args)
   if (tool.kind !== 'rpc' || !tool.rpcName)
     return { type: 'object', properties: {} }
   const def = ctx.rpc.definitions.get(tool.rpcName) as RpcFunctionDefinitionAnyWithContext<DevframeNodeContext> | undefined
   if (!def)
     return { type: 'object', properties: {} }
   const args = def.args as readonly StandardSchemaV1[] | undefined
-  return argsToJsonSchema(args).schema
+  return argsToJsonSchema(args)
 }
 
 function computeOutputSchema(tool: AgentTool, ctx: DevframeNodeContext): unknown {

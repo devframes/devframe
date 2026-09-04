@@ -1,11 +1,8 @@
-import type { DevframeNodeContext } from 'devframe'
 import type { AssetInfo } from '../../types'
-import { createDefineWrapperWithContext } from 'devframe/rpc'
+import { defineRpcFunction } from 'devframe'
 import { s } from 'devframe/utils/simple-schema'
 import { getAssetsContext } from '../../context'
 import { scanAssets } from '../../scanner'
-
-const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
 
 export const assetInfoSchema = s.object({
   path: s.string(),
@@ -16,7 +13,7 @@ export const assetInfoSchema = s.object({
   fsPath: s.optional(s.string()),
 })
 
-export const list = defineAssetsRpc({
+export const list = defineRpcFunction({
   name: 'devframes:plugin:assets:list',
   type: 'query',
   snapshot: true,

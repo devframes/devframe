@@ -1,5 +1,6 @@
 import type { DevframeMessageEntry, DevframeMessageEntryInput } from '@devframes/hub/types'
-import { defineMessagesRpc, getMessagesHost } from './_define'
+import { defineRpcFunction } from 'devframe'
+import { getMessagesHost } from './_define'
 
 /**
  * Add a message entry from a browser client. The origin is force-stamped
@@ -7,7 +8,7 @@ import { defineMessagesRpc, getMessagesHost } from './_define'
  * server. Returns the stored entry (with generated id/timestamp), or `null`
  * when no messages host is attached.
  */
-export const messagesAdd = defineMessagesRpc({
+export const messagesAdd = defineRpcFunction({
   name: 'devframes:plugin:messages:add',
   type: 'action',
   jsonSerializable: true,

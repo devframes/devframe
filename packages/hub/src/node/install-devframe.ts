@@ -63,29 +63,6 @@ async function resolvePageScriptClientScript(
 }
 
 /**
- * Framework-neutral primitive backing {@link DevframeHubContext.install} -
- * installs a {@link DevframeDefinition} as a dock inside a hub-aware context:
- * serves the devframe's SPA at the resolved base path, synthesizes an iframe
- * dock entry from the definition's metadata, and runs the definition's
- * `setup(ctx)`. Reach for it through `ctx.install(devframe)` rather than
- * calling it directly.
- *
- * Framework kits wrap `ctx.install` with their own plugin/middleware
- * machinery, e.g. `@vitejs/devtools-kit`'s `createPluginFromDevframe`
- * returns a Vite `Plugin` whose `devtools.setup` ultimately delegates here.
- */
-/**
- * Phase one of an install: run the duplication guard, serve the SPA + meta,
- * register the iframe dock, and queue the definition's declarative wire
- * services, everything up to (but not including) `setup(ctx)`. Returns a
- * deferred setup thunk, or `null` when the devframe was deduplicated.
- *
- * The hub's initial batch uses this to collect every devframe's services
- * across the whole hub, `ready()` them once, and only then run the setups,
- * so services are ready before any setup, and a plugin can consume a service
- * another plugin declared regardless of mount order.
- */
-/**
  * Serve a devframe's SPA (and the hub's connection meta) under `base`, if the
  * definition ships client assets.
  */

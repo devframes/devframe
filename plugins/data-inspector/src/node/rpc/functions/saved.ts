@@ -1,8 +1,9 @@
 import type { SavedQueryScope, SaveQueryInput } from '../../engine/contract'
+import { defineRpcFunction } from 'devframe'
 import { deleteSavedQuery, listSavedQueries, saveQuery } from '../../saved-queries'
-import { defineDataInspectorRpc, NS } from './_define'
+import { NS } from './_define'
 
-export const savedList = defineDataInspectorRpc({
+export const savedList = defineRpcFunction({
   name: `${NS}:saved:list`,
   type: 'query',
   jsonSerializable: true,
@@ -11,7 +12,7 @@ export const savedList = defineDataInspectorRpc({
   }),
 })
 
-export const savedSave = defineDataInspectorRpc({
+export const savedSave = defineRpcFunction({
   name: `${NS}:saved:save`,
   type: 'action',
   jsonSerializable: true,
@@ -20,7 +21,7 @@ export const savedSave = defineDataInspectorRpc({
   }),
 })
 
-export const savedDelete = defineDataInspectorRpc({
+export const savedDelete = defineRpcFunction({
   name: `${NS}:saved:delete`,
   type: 'action',
   jsonSerializable: true,

@@ -1,7 +1,7 @@
 import type { DevframeRpcClient } from 'devframe/client'
 import type { OgSnapshot } from '../connect'
+import { connectDevframe } from 'devframe/client'
 import { computed, readonly, shallowRef } from 'vue'
-import { connectOg } from '../connect'
 
 export function useOgViewer() {
   const rpc = shallowRef<DevframeRpcClient | null>(null)
@@ -19,7 +19,7 @@ export function useOgViewer() {
     loading.value = true
     error.value = null
     try {
-      rpc.value ??= await connectOg()
+      rpc.value ??= await connectDevframe()
       await rpc.value.ensureTrusted()
       const result = await rpc.value.call('devframes:plugin:og:resolve-metadata', { url: target.value })
       snapshot.value = result

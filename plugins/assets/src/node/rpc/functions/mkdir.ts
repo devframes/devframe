@@ -1,14 +1,11 @@
-import type { DevframeNodeContext } from 'devframe'
 import fsp from 'node:fs/promises'
-import { createDefineWrapperWithContext } from 'devframe/rpc'
+import { defineRpcFunction } from 'devframe'
 import { s } from 'devframe/utils/simple-schema'
 import { getAssetsContext } from '../../context'
 import { diagnostics } from '../../diagnostics'
 import { assertAssetMutationPath } from '../../paths'
 
-const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
-
-export const mkdir = defineAssetsRpc({
+export const mkdir = defineRpcFunction({
   name: 'devframes:plugin:assets:mkdir',
   type: 'action',
   jsonSerializable: true,

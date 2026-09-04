@@ -1,6 +1,5 @@
-import type { DevframeNodeContext } from 'devframe'
 import type { OgFetch, OgSnapshot } from '../../types'
-import { createDefineWrapperWithContext } from 'devframe/rpc'
+import { defineRpcFunction } from 'devframe'
 import { s } from 'devframe/utils/simple-schema'
 import { diagnostics } from '../../diagnostics'
 import { fetchOgMetadata } from '../../metadata'
@@ -32,10 +31,8 @@ const snapshotSchema = s.object({
   tags: s.array(tagSchema),
 })
 
-const defineOgRpc = createDefineWrapperWithContext<DevframeNodeContext>()
-
 export function createResolveMetadataRpc(options: ResolveMetadataOptions = {}) {
-  return defineOgRpc({
+  return defineRpcFunction({
     name: 'devframes:plugin:og:resolve-metadata',
     type: 'query',
     jsonSerializable: true,

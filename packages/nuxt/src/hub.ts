@@ -1,7 +1,7 @@
 import type { ViteDevframeHubOptions } from '@devframes/vite/hub'
 import { DEVFRAMES_HUB_BASE, normalizeHubBase } from '@devframes/hub/constants'
 import { viteDevframeHub } from '@devframes/vite/hub'
-import { addVitePlugin, createResolver, defineNuxtModule } from '@nuxt/kit'
+import { addVitePlugin, defineNuxtModule } from '@nuxt/kit'
 
 export interface DevframeNuxtHubOptions extends Omit<ViteDevframeHubOptions, 'quiet'> {
   /**
@@ -67,8 +67,6 @@ export default defineNuxtModule<ModuleOptions>({
     // The hub is a dev-time surface; skip it entirely for production builds.
     if (!nuxt.options.dev)
       return
-
-    createResolver(import.meta.url)
 
     const base = normalizeHubBase(options.base ?? DEVFRAMES_HUB_BASE)
     const { injectEmbedded, quiet: _quiet, ...hubOptions } = options

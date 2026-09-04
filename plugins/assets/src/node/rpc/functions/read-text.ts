@@ -1,15 +1,12 @@
-import type { DevframeNodeContext } from 'devframe'
 import fsp from 'node:fs/promises'
-import { createDefineWrapperWithContext } from 'devframe/rpc'
+import { defineRpcFunction } from 'devframe'
 import { s } from 'devframe/utils/simple-schema'
 import { getAssetsContext } from '../../context'
 import { resolveAssetReadPath } from '../../paths'
 
-const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
-
 const DEFAULT_LIMIT = 5000
 
-export const readText = defineAssetsRpc({
+export const readText = defineRpcFunction({
   name: 'devframes:plugin:assets:read-text',
   type: 'query',
   jsonSerializable: true,

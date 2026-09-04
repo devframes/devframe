@@ -1,10 +1,11 @@
 import type { SuggestOutcome } from '../../engine/contract'
+import { defineRpcFunction } from 'devframe'
 import { suggest as suggestQuery } from '../../engine/query-engine'
 import { getDataSource, resolveSourceData } from '../../registry/index'
-import { defineDataInspectorRpc, NS } from './_define'
+import { NS } from './_define'
 
 /** Autocomplete: jora stat-mode suggestions at a cursor position. */
-export const suggest = defineDataInspectorRpc({
+export const suggest = defineRpcFunction({
   name: `${NS}:suggest`,
   type: 'query',
   jsonSerializable: true,

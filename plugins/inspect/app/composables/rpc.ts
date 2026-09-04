@@ -1,6 +1,6 @@
 import type { DevframeConnectionStatus, DevframeRpcClient } from '../connect'
+import { connectDevframe } from 'devframe/client'
 import { reactive, shallowRef } from 'vue'
-import { connectInspect } from '../connect'
 import { addHistoryRecord } from './history'
 
 export const connection = reactive<{
@@ -74,7 +74,7 @@ function applyStatus(client: DevframeRpcClient): void {
 
 export async function connect(): Promise<void> {
   try {
-    const client = await connectInspect()
+    const client = await connectDevframe()
     setupHistoryHooks(client)
     rpcRef.value = client
     connection.backend = client.connectionMeta.backend

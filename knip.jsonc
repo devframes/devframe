@@ -180,9 +180,8 @@
       // Published node-safe entries are `spa.ts`/`hub.ts`; the browser
       // renderer ships only as self-contained Vite bundles (the standalone
       // SPA and the prebuilt renderer module, consumed at runtime via the
-      // hub's renderer manifest). `src/index.ts` stays as the source barrel
-      // those Vite/Storybook builds resolve, so it's declared as an entry too.
-      "entry": ["src/{index,spa,hub}.ts", "src/renderer-module/index.ts"],
+      // hub's renderer manifest).
+      "entry": ["src/{spa,hub}.ts", "src/renderer-module/index.ts"],
       // The standalone SPA's own Vite config (`src/spa/vite.config.ts`)
       // mounts `unocss/vite` with no explicit config path, so UnoCSS
       // discovers this nested `uno.config.ts` by directory proximity to

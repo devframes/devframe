@@ -1,7 +1,8 @@
-import { defineMessagesRpc, getMessagesHost } from './_define'
+import { defineRpcFunction } from 'devframe'
+import { getMessagesHost } from './_define'
 
 /** Clear the whole message feed. */
-export const messagesClear = defineMessagesRpc({
+export const messagesClear = defineRpcFunction({
   name: 'devframes:plugin:messages:clear',
   type: 'action',
   jsonSerializable: true,

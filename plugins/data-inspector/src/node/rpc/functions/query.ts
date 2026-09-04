@@ -1,14 +1,15 @@
 import type { FilterOptions, QueryOutcome } from '../../engine/contract'
+import { defineRpcFunction } from 'devframe'
 import { runQuery } from '../../engine/query-engine'
 import { getDataSource, resolveSourceData } from '../../registry/index'
-import { defineDataInspectorRpc, NS } from './_define'
+import { NS } from './_define'
 
 /**
  * Execute a jora query against a registered source. Runs in-process against
  * the live object; the result is normalized to strict JSON (circulars ->
  * `$ref`, exotic types tagged, depth/entry caps) before it rides the wire.
  */
-export const query = defineDataInspectorRpc({
+export const query = defineRpcFunction({
   name: `${NS}:query`,
   type: 'query',
   jsonSerializable: true,

@@ -7,7 +7,6 @@ export const presets = defineRpcFunction({
   name: 'devframes:plugin:terminals:presets',
   type: 'query',
   jsonSerializable: true,
-  snapshot: true,
   args: [],
   returns: s.array(presetSchema),
   setup: ctx => ({

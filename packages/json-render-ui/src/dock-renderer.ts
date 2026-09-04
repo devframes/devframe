@@ -6,7 +6,7 @@ import { createApp, h, shallowRef } from 'vue'
 import { baseRegistry } from './registry'
 import { JsonRenderView } from './renderer'
 
-export type { JsonRenderDockMountOptions, JsonRenderDockRenderer } from '@devframes/json-render/hub'
+export type { JsonRenderDockRenderer } from '@devframes/json-render/hub'
 
 export interface JsonRenderDockRendererOptions {
   /** Registry to render with. Defaults to the base registry. */

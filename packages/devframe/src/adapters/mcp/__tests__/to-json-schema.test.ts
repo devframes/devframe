@@ -22,18 +22,17 @@ function withJsonSchema(json: Record<string, unknown>): StandardSchemaV1 {
 
 describe('argsToJsonSchema', () => {
   it('returns an empty object schema when no args', () => {
-    const { schema, unwrapped } = argsToJsonSchema(undefined)
-    expect(unwrapped).toBe(false)
+    const schema = argsToJsonSchema(undefined)
     expect(schema).toEqual({ type: 'object', properties: {} })
   })
 
   it('uses the schema\'s own Standard JSON Schema converter when present', () => {
-    const { schema } = argsToJsonSchema([withJsonSchema({ type: 'string' })])
+    const schema = argsToJsonSchema([withJsonSchema({ type: 'string' })])
     expect((schema as any).properties.arg0).toEqual({ type: 'string' })
   })
 
   it('falls back to a permissive object for validators without a native converter (valibot)', () => {
-    const { schema } = argsToJsonSchema([v.string(), v.number()])
+    const schema = argsToJsonSchema([v.string(), v.number()])
     expect((schema as any).properties.arg0).toEqual(PERMISSIVE)
     expect((schema as any).properties.arg1).toEqual(PERMISSIVE)
     expect(schema).toMatchObject({ type: 'object', required: ['arg0', 'arg1'], additionalProperties: false })

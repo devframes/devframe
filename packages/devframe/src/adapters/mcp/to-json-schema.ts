@@ -48,9 +48,9 @@ export function returnToJsonSchema(schema: StandardSchemaV1 | undefined): unknow
  */
 export function argsToJsonSchema(
   args: readonly StandardSchemaV1[] | undefined,
-): { schema: unknown, unwrapped: boolean } {
+): unknown {
   if (!args || args.length === 0)
-    return { schema: { type: 'object', properties: {} }, unwrapped: false }
+    return { type: 'object', properties: {} }
 
   const properties: Record<string, unknown> = {}
   const required: string[] = []
@@ -61,12 +61,9 @@ export function argsToJsonSchema(
   }
 
   return {
-    schema: {
-      type: 'object',
-      properties,
-      required,
-      additionalProperties: false,
-    },
-    unwrapped: false,
+    type: 'object',
+    properties,
+    required,
+    additionalProperties: false,
   }
 }

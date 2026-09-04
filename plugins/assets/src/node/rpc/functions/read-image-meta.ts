@@ -1,15 +1,12 @@
-import type { DevframeNodeContext } from 'devframe'
 import type { AssetImageMeta } from '../../types'
 import fsp from 'node:fs/promises'
-import { createDefineWrapperWithContext } from 'devframe/rpc'
+import { defineRpcFunction } from 'devframe'
 import { s } from 'devframe/utils/simple-schema'
 import { imageMeta } from 'image-meta'
 import { getAssetsContext } from '../../context'
 import { resolveAssetReadPath } from '../../paths'
 
-const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
-
-export const readImageMeta = defineAssetsRpc({
+export const readImageMeta = defineRpcFunction({
   name: 'devframes:plugin:assets:read-image-meta',
   type: 'query',
   jsonSerializable: true,

@@ -4,7 +4,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { initDevframe } from 'devframe/initiate'
-import { resolveClientAssets } from 'devframe/internal'
+import { normalizeBasePath, resolveBasePath, resolveClientAssets } from 'devframe/internal'
 
 export interface CreateDevframeNextHandlerOptions {
   /**
@@ -71,11 +71,6 @@ export interface DevframeNextHandler {
   close: () => Promise<void>
 }
 
-/** Ensure a mount base has a single leading and trailing slash. */
-function normalizeBase(base: string): string {
-  return `/${base}/`.replace(/\/{2,}/g, '/')
-}
-
 const REGISTRY_KEY = Symbol.for('@devframes/next:handler-registry')
 
 /**
@@ -130,7 +125,7 @@ export function createDevframeNextHandler(
     )
   }
 
-  const base = normalizeBase(options.base ?? def.basePath ?? `/__${def.id}/`)
+  const base = options.base ? normalizeBasePath(options.base) : resolveBasePath(def, 'hosted')
   const key = options.key ?? `@devframes/next:${def.id}:${base}`
   const registry = handlerRegistry()
   const memoized = registry.get(key)

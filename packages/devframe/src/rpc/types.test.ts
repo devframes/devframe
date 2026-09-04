@@ -4,10 +4,14 @@ import type {
   RpcDefinitionsToFunctions,
   RpcFunctionDefinitionToFunction,
 } from '.'
-import type { AssertEqual } from './utils'
 import * as v from 'valibot'
 import { describe, it } from 'vitest'
 import { defineRpcFunction } from '.'
+
+/** Type-level assertion that two types are equal. */
+type AssertEqual<X, Y>
+  = (<T>() => T extends X ? 1 : 2) extends
+  (<T>() => T extends Y ? 1 : 2) ? true : never
 
 /** Fake a typed Standard Schema from a non-valibot vendor. */
 function schema<Input, Output = Input>(): StandardSchemaV1<Input, Output> {

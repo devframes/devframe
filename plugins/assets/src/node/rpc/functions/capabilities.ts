@@ -1,9 +1,6 @@
-import type { DevframeNodeContext } from 'devframe'
-import { createDefineWrapperWithContext } from 'devframe/rpc'
+import { defineRpcFunction } from 'devframe'
 import { s } from 'devframe/utils/simple-schema'
 import { getAssetsContext } from '../../context'
-
-const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
 
 export interface AssetsCapabilities {
   write: boolean
@@ -16,7 +13,7 @@ export interface AssetsCapabilities {
  * instead of letting the user hit a "method not found" error, the same
  * `canWrite`-gating idea the git plugin's `GitStatus.canWrite` follows.
  */
-export const capabilities = defineAssetsRpc({
+export const capabilities = defineRpcFunction({
   name: 'devframes:plugin:assets:capabilities',
   type: 'query',
   snapshot: true,

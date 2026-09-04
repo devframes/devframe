@@ -1,13 +1,5 @@
 import type { DevframeMessagesHost } from '@devframes/hub/types'
 import type { DevframeNodeContext } from 'devframe'
-import { createDefineWrapperWithContext } from 'devframe/rpc'
-
-/**
- * `defineRpcFunction` pre-bound to the framework-neutral
- * {@link DevframeNodeContext}, so each function's `setup(ctx)` receives the
- * typed node context instead of the default `undefined` context.
- */
-export const defineMessagesRpc = createDefineWrapperWithContext<DevframeNodeContext>()
 
 /**
  * Read the hub-attached messages host off a node context, if present. The

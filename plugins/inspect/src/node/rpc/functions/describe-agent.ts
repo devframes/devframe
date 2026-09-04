@@ -1,5 +1,5 @@
 import type { AgentManifest } from 'devframe'
-import { defineInspectRpc } from './_define'
+import { defineRpcFunction } from 'devframe'
 
 /**
  * Surface the agent-exposed surface of the connection: the unified
@@ -7,7 +7,7 @@ import { defineInspectRpc } from './_define'
  * host-registered tools) and readable resources. `snapshot: true` bakes
  * the manifest into the static dump for `build`/`spa` mode.
  */
-export const describeAgent = defineInspectRpc({
+export const describeAgent = defineRpcFunction({
   name: 'devframes:plugin:inspect:describe-agent',
   type: 'query',
   jsonSerializable: true,

@@ -1,7 +1,8 @@
 import type { FilterOptions, NodePath, QueryOutcome } from '../../engine/contract'
+import { defineRpcFunction } from 'devframe'
 import { runQueryAtPath } from '../../engine/query-engine'
 import { getDataSource, resolveSourceData } from '../../registry/index'
-import { defineDataInspectorRpc, NS } from './_define'
+import { NS } from './_define'
 
 /**
  * Lazily expand a depth-truncated node. Re-runs the base jora query against
@@ -10,7 +11,7 @@ import { defineDataInspectorRpc, NS } from './_define'
  * returns just that subtree normalized with a fresh depth budget, so huge
  * graphs load a level at a time instead of all at once.
  */
-export const queryPath = defineDataInspectorRpc({
+export const queryPath = defineRpcFunction({
   name: `${NS}:queryPath`,
   type: 'query',
   jsonSerializable: true,

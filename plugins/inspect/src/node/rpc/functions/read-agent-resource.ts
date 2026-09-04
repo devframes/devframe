@@ -1,7 +1,7 @@
 import type { InvokeResult } from '../../types'
-import { defineInspectRpc } from './_define'
+import { defineRpcFunction } from 'devframe'
 
-export const readAgentResource = defineInspectRpc({
+export const readAgentResource = defineRpcFunction({
   name: 'devframes:plugin:inspect:read-agent-resource',
   type: 'action',
   setup: ctx => ({

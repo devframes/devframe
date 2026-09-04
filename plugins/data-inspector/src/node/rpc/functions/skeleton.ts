@@ -1,10 +1,11 @@
 import type { FilterOptions, SkeletonOutcome } from '../../engine/contract'
+import { defineRpcFunction } from 'devframe'
 import { skeletonOf } from '../../engine/skeleton'
 import { getDataSource, resolveSourceData } from '../../registry/index'
-import { defineDataInspectorRpc, NS } from './_define'
+import { NS } from './_define'
 
 /** The type skeleton of a source ("what data are available"), query-independent. */
-export const skeleton = defineDataInspectorRpc({
+export const skeleton = defineRpcFunction({
   name: `${NS}:skeleton`,
   type: 'query',
   jsonSerializable: true,

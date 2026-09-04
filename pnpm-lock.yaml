@@ -2150,9 +2150,6 @@ importers:
       react-dom:
         specifier: catalog:frontend
         version: 19.2.8(react@19.2.8)
-      shiki:
-        specifier: catalog:deps
-        version: 4.4.3
       storybook:
         specifier: catalog:storybook
         version: 10.5.10(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

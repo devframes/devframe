@@ -1,7 +1,7 @@
 import type { DevframeInspectInstanceInfo } from '../../types'
 import process from 'node:process'
+import { defineRpcFunction } from 'devframe'
 import { listLiveDevframeInstances } from 'devframe/internal'
-import { defineInspectRpc } from './_define'
 
 /**
  * Enumerate every devframe dev server currently running on this machine,
@@ -15,7 +15,7 @@ import { defineInspectRpc } from './_define'
  * instance discovery to agents over MCP, so exposing it here would duplicate
  * that surface).
  */
-export const listInstances = defineInspectRpc({
+export const listInstances = defineRpcFunction({
   name: 'devframes:plugin:inspect:list-instances',
   type: 'query',
   jsonSerializable: true,

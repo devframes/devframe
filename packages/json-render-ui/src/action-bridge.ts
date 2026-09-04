@@ -5,7 +5,7 @@ export interface ActionBridgeRpc {
   call: (method: string, ...args: unknown[]) => Promise<unknown>
 }
 
-export interface JsonRenderActionError {
+interface JsonRenderActionError {
   action: string
   error: unknown
 }

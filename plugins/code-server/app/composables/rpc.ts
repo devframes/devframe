@@ -1,6 +1,6 @@
 import type { ConnectionMeta, DevframeConnectionStatus, DevframeRpcClient } from '../connect'
+import { connectDevframe } from 'devframe/client'
 import { reactive, shallowRef } from 'vue'
-import { connectCodeServer } from '../connect'
 
 export const connection = reactive<{
   connected: boolean
@@ -25,7 +25,7 @@ function applyStatus(client: DevframeRpcClient): void {
 /** Establish the devframe connection and keep `connection` in sync with it. */
 export async function connect(): Promise<void> {
   try {
-    const client = await connectCodeServer()
+    const client = await connectDevframe()
     rpcRef.value = client
     connection.backend = client.connectionMeta.backend
     applyStatus(client)

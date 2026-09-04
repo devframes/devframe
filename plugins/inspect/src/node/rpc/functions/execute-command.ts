@@ -1,6 +1,6 @@
 import type { InvokeResult } from '../../types'
+import { defineRpcFunction } from 'devframe'
 import { diagnostics } from '../../diagnostics'
-import { defineInspectRpc } from './_define'
 import { resolveHubCommands } from './_hub-commands'
 
 /**
@@ -15,7 +15,7 @@ import { resolveHubCommands } from './_hub-commands'
  * group-only command with no handler, surfaces as `{ ok: false, error }`
  * from the hub's own `commands.execute()` instead of throwing.
  */
-export const executeCommand = defineInspectRpc({
+export const executeCommand = defineRpcFunction({
   name: 'devframes:plugin:inspect:execute-command',
   type: 'action',
   setup: ctx => ({

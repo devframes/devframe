@@ -1,5 +1,5 @@
 import type { RpcFunctionAgentInfo, RpcFunctionInfo } from '../../types'
-import { defineInspectRpc } from './_define'
+import { defineRpcFunction } from 'devframe'
 import { argsSchemaToJson, returnSchemaToJson } from './_schema'
 
 const INVOKABLE_TYPES = new Set(['query', 'static'])
@@ -10,7 +10,7 @@ const INVOKABLE_TYPES = new Set(['query', 'static'])
  * `snapshot: true` bakes the registry into the static dump so the
  * inspector still lists functions in `build`/`spa` mode.
  */
-export const listFunctions = defineInspectRpc({
+export const listFunctions = defineRpcFunction({
   name: 'devframes:plugin:inspect:list-functions',
   type: 'query',
   jsonSerializable: true,

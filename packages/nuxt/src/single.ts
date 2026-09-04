@@ -112,10 +112,7 @@ export default defineNuxtModule<ModuleOptions>({
     const publicConfig = nuxt.options.runtimeConfig.public as Record<string, any>
 
     // override baseURL
-    publicConfig.devframe ??= {}
-    Object.assign(publicConfig.devframe, publicConfig.devframe ?? {}, {
-      baseURL: options.baseURL,
-    })
+    publicConfig.devframe = { ...publicConfig.devframe, baseURL: options.baseURL }
 
     const runtimeDir = resolve('./runtime')
 
@@ -132,9 +129,7 @@ export default defineNuxtModule<ModuleOptions>({
     // user opts out; `apply: 'serve'` on the inner Vite plugin is a
     // second guard against accidental activation during build.
     if (options.devframe && options.devMiddleware !== false && nuxt.options.dev) {
-      const mw = options.devMiddleware === true || options.devMiddleware === undefined
-        ? {}
-        : options.devMiddleware
+      const mw = typeof options.devMiddleware === 'object' ? options.devMiddleware : {}
       const host = mw.host
         ?? (nuxt.options.devServer as any)?.host
         ?? options.devframe.cli?.host

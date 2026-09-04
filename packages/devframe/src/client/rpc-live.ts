@@ -4,7 +4,6 @@ import type { DevframeConnectionStatus } from './connection'
 import type { DevframeClientRpcHost, DevframeRpcClientMode, DevframeRpcClientOptions, RpcClientEvents } from './rpc'
 import { createRpcClient } from 'devframe/rpc/client'
 import { DEVFRAME_EVENTS } from '../events'
-import { promiseWithResolver } from '../utils/promise'
 import { DevframeConnectionError } from './connection'
 
 /** What a live transport's channel factory receives from the shared mode. */
@@ -53,7 +52,7 @@ export function createLiveRpcClientMode(
   let isTrusted = false
   let status: DevframeConnectionStatus = 'connecting'
   let connectionError: Error | null = null
-  const trustedPromise = promiseWithResolver<boolean>()
+  const trustedPromise = Promise.withResolvers<boolean>()
 
   // ── connection status ────────────────────────────────────────────────────
 

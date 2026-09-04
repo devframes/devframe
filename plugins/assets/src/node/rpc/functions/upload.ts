@@ -1,14 +1,11 @@
-import type { DevframeNodeContext } from 'devframe'
 import { createWriteStream } from 'node:fs'
 import fsp from 'node:fs/promises'
-import { createDefineWrapperWithContext } from 'devframe/rpc'
+import { defineRpcFunction } from 'devframe'
 import { s } from 'devframe/utils/simple-schema'
 import { dirname, extname } from 'pathe'
 import { getAssetsContext } from '../../context'
 import { diagnostics } from '../../diagnostics'
 import { assertAssetMutationPath } from '../../paths'
-
-const defineAssetsRpc = createDefineWrapperWithContext<DevframeNodeContext>()
 
 /** Streaming channel name, namespaced like every other RPC name in this plugin. */
 export const UPLOAD_CHANNEL = 'devframes:plugin:assets:upload'
@@ -25,7 +22,7 @@ function isExtensionAllowed(path: string, allowed: readonly string[] | '*'): boo
  * the `upload` channel opened in `setupAssets`; see the client-side
  * `useUpload` hook for the matching `rpc.streaming.upload()` call.
  */
-export const upload = defineAssetsRpc({
+export const upload = defineRpcFunction({
   name: 'devframes:plugin:assets:upload',
   type: 'action',
   jsonSerializable: true,
