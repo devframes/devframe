@@ -57,13 +57,11 @@ describe('In-page script channel', () => {
       })
     })
 
-    it('requires every in-page script function', () => {
-      // @ts-expect-error `functions` is required.
+    it('accepts runtime-only and partial function implementations', () => {
       createPageScriptChannel<TestProtocol>({ name: 'devframes:test' })
 
       createPageScriptChannel<TestProtocol>({
         name: 'devframes:test',
-        // @ts-expect-error `sum` and `save` are required.
         functions: {
           echo: { handler: value => value },
         },
@@ -100,16 +98,16 @@ describe('In-page script channel', () => {
 
   describe('Function calling', () => {
     it('types fire-and-forget calls to panel functions', () => {
-      expectTypeOf(channel.callEvent('notify', 'ready')).toEqualTypeOf<void>()
+      expectTypeOf(channel.emit('notify', 'ready')).toEqualTypeOf<void>()
 
       // @ts-expect-error In-page script functions cannot be called on panels.
-      channel.callEvent('echo', 'ready')
+      channel.emit('echo', 'ready')
       // @ts-expect-error `notify` requires a string.
-      channel.callEvent('notify', 42)
+      channel.emit('notify', 42)
       // @ts-expect-error `notify` requires one argument.
-      channel.callEvent('notify')
+      channel.emit('notify')
       // @ts-expect-error `notify` accepts one argument.
-      channel.callEvent('notify', 'ready', 'extra')
+      channel.emit('notify', 'ready', 'extra')
     })
 
     it('types calls to connected panels', () => {
@@ -133,11 +131,23 @@ describe('In-page script channel', () => {
       })
 
       // @ts-expect-error The protocol has no panel functions.
-      pageScriptOnlyChannel.callEvent('notify', 'ready')
+      pageScriptOnlyChannel.emit('notify', 'ready')
     })
   })
 
   describe('Event checking', () => {
+    it('types runtime subscriptions to page-script functions', () => {
+      const unsubscribe = channel.on('echo', (value) => {
+        expectTypeOf(value).toEqualTypeOf<string>()
+      })
+
+      expectTypeOf(unsubscribe).toEqualTypeOf<() => void>()
+      // @ts-expect-error Panel functions cannot be handled by the page script.
+      channel.on('notify', () => {})
+      // @ts-expect-error `echo` listeners receive a string.
+      channel.on('echo', (value: number) => void value)
+    })
+
     it('types panel connection events', () => {
       const unsubscribeConnected = channel.events.on('panel:connected', (panel) => {
         expectTypeOf(panel.id).toEqualTypeOf<string>()
@@ -185,13 +195,11 @@ describe('Panel channel', () => {
       inferredChannel.close()
     })
 
-    it('requires every panel function', () => {
-      // @ts-expect-error `functions` is required.
+    it('accepts runtime-only and partial function implementations', () => {
       connectPanelChannel<TestProtocol>({ name: 'devframes:test' })
 
       connectPanelChannel<TestProtocol>({
         name: 'devframes:test',
-        // @ts-expect-error `notify` is required.
         functions: {},
       })
     })
@@ -252,16 +260,16 @@ describe('Panel channel', () => {
     })
 
     it('types fire-and-forget calls to in-page script functions', () => {
-      expectTypeOf(channel.callEvent('echo', 'hello')).toEqualTypeOf<void>()
-      expectTypeOf(channel.callEvent('sum', 1, 2)).toEqualTypeOf<void>()
-      expectTypeOf(channel.callEvent('save', 'draft')).toEqualTypeOf<void>()
+      expectTypeOf(channel.emit('echo', 'hello')).toEqualTypeOf<void>()
+      expectTypeOf(channel.emit('sum', 1, 2)).toEqualTypeOf<void>()
+      expectTypeOf(channel.emit('save', 'draft')).toEqualTypeOf<void>()
 
       // @ts-expect-error Panel functions cannot be emitted to the in-page script.
-      channel.callEvent('notify', 'hello')
+      channel.emit('notify', 'hello')
       // @ts-expect-error `echo` requires a string.
-      channel.callEvent('echo', false)
+      channel.emit('echo', false)
       // @ts-expect-error `sum` requires two arguments.
-      channel.callEvent('sum', 1)
+      channel.emit('sum', 1)
     })
 
     it('types channel state', () => {
@@ -273,6 +281,18 @@ describe('Panel channel', () => {
   })
 
   describe('Event checking', () => {
+    it('types runtime subscriptions to panel functions', () => {
+      const unsubscribe = channel.on('notify', (message) => {
+        expectTypeOf(message).toEqualTypeOf<string>()
+      })
+
+      expectTypeOf(unsubscribe).toEqualTypeOf<() => void>()
+      // @ts-expect-error Page-script functions cannot be handled by the panel.
+      channel.on('echo', () => {})
+      // @ts-expect-error `notify` listeners receive a string.
+      channel.on('notify', (message: number) => void message)
+    })
+
     it('types status events', () => {
       const unsubscribe = channel.events.on('status:updated', (status) => {
         expectTypeOf(status).toEqualTypeOf<'connecting' | 'connected' | 'closed'>()

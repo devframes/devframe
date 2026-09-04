@@ -3,7 +3,7 @@
  */
 // #region Interfaces
 export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
-  functions: ConnectPanelChannelOptionsFunctions<Protocol>;
+  functions?: ConnectPanelChannelOptionsFunctions<Protocol>;
   window?: Window | false;
   targets?: Window[];
   transport?: MessagePort;
@@ -12,7 +12,7 @@ export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtoc
   eventBufferLimit?: number;
 }
 export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
-  functions: CreatePageScriptChannelOptionsFunctions<Protocol>;
+  functions?: CreatePageScriptChannelOptionsFunctions<Protocol>;
   window?: Window | false;
 }
 export interface InPageChannelProtocol {
@@ -25,7 +25,9 @@ export interface PageScriptChannel<P extends InPageChannelProtocol> {
   readonly instanceId: string;
   readonly panels: readonly PanelPeer<P>[];
   readonly events: Pick<EventEmitter<PageScriptChannelEvents<P>>, 'on' | 'once'>;
+  emit: <K extends keyof PanelFunctions<P> & string>(_: K, ..._: FnArgs<PanelFunctions<P>[K]>) => void;
   callEvent: <K extends keyof PanelFunctions<P> & string>(_: K, ..._: FnArgs<PanelFunctions<P>[K]>) => void;
+  on: <K extends keyof PageScriptFunctions<P> & string>(_: K, _: (..._: FnArgs<PageScriptFunctions<P>[K]>) => void) => () => void;
   readonly sharedState: InPageSharedStateHost<P>;
   addPanelPort: (_: MessagePort) => PanelPeer<P>;
   close: () => void;
@@ -39,7 +41,9 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
   readonly events: Pick<EventEmitter<PanelChannelEvents>, 'on' | 'once'>;
   whenConnected: (_?: number) => Promise<void>;
   call: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => Promise<FnReturn<PageScriptFunctions<P>[K]>>;
+  emit: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => void;
   callEvent: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => void;
+  on: <K extends keyof PanelFunctions<P> & string>(_: K, _: (..._: FnArgs<PanelFunctions<P>[K]>) => void) => () => void;
   readonly sharedState: InPageSharedStateHost<P>;
   close: () => void;
 }
@@ -92,8 +96,8 @@ export declare function defineChannelFunction<NAME extends string, TYPE extends 
 // #endregion
 
 // #region Referenced (internal)
-type ConnectPanelChannelOptionsFunctions<P extends InPageChannelProtocol> = { [NAME in keyof PanelFunctions<P> & string]: InPageFunctionOption<PanelFunctions<P>[NAME]>; };
-type CreatePageScriptChannelOptionsFunctions<P extends InPageChannelProtocol> = { [NAME in keyof PageScriptFunctions<P> & string]: InPageFunctionOption<PageScriptFunctions<P>[NAME]>; };
+type ConnectPanelChannelOptionsFunctions<P extends InPageChannelProtocol> = Partial<{ [NAME in keyof PanelFunctions<P> & string]: InPageFunctionOption<PanelFunctions<P>[NAME]>; }>;
+type CreatePageScriptChannelOptionsFunctions<P extends InPageChannelProtocol> = Partial<{ [NAME in keyof PageScriptFunctions<P> & string]: InPageFunctionOption<PageScriptFunctions<P>[NAME]>; }>;
 type FnArgs<F> = F extends ((...args: infer A) => any) ? A : never;
 type FnReturn<F> = F extends ((...args: any[]) => infer R) ? Awaited<R> : never;
 interface InPageChannelCommonOptions {

@@ -166,24 +166,47 @@ export function deserializeResult(codec: InPageChannelSerialization, result: unk
  */
 export function createLocalFunctionRegistry(codec: InPageChannelSerialization): {
   register: (definition: InPageFunctionDefinitionAny) => void
+  on: (name: string, listener: (...args: unknown[]) => void) => () => void
   resolve: (name: string) => ((...args: unknown[]) => unknown) | undefined
 } {
-  const wrapped = new Map<string, (...args: unknown[]) => unknown>()
+  const definitions = new Map<string, InPageFunctionDefinitionAny>()
+  const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
   return {
     register(definition) {
-      wrapped.set(definition.name, async (...rawArgs: unknown[]) => {
+      definitions.set(definition.name, definition)
+    },
+    on(name, listener) {
+      let registered = listeners.get(name)
+      if (!registered) {
+        registered = new Set()
+        listeners.set(name, registered)
+      }
+      registered.add(listener)
+      return () => {
+        registered.delete(listener)
+        if (registered.size === 0)
+          listeners.delete(name)
+      }
+    },
+    resolve(name) {
+      const definition = definitions.get(name)
+      const registered = listeners.get(name)
+      if (!definition && !registered?.size)
+        return undefined
+      return async (...rawArgs: unknown[]) => {
         const args = codec.deserialize ? rawArgs.map(codec.deserialize) : rawArgs
-        if (definition.jsonSerializable)
+        if (definition?.jsonSerializable)
           assertJsonSerializable(args, 'its arguments', definition.name)
-        if (definition.args?.length)
+        if (definition?.args?.length)
           await validateArgs(definition.name, definition.args, args)
-        const result = await definition.handler(...args)
-        if (definition.jsonSerializable)
+        const result = await definition?.handler(...args)
+        for (const listener of [...(listeners.get(name) ?? [])])
+          listener(...args)
+        if (definition?.jsonSerializable)
           assertJsonSerializable(result, 'its return value', definition.name)
         return codec.serialize && result !== undefined ? codec.serialize(result) : result
-      })
+      }
     },
-    resolve: name => wrapped.get(name),
   }
 }
 

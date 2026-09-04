@@ -62,8 +62,10 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
 
   const events = createEventEmitter<PanelChannelEvents>()
   const registry = createLocalFunctionRegistry(codec)
-  for (const [fnName, definition] of Object.entries(options.functions ?? {}))
-    registry.register({ ...definition, name: fnName })
+  for (const [fnName, definition] of Object.entries(options.functions ?? {})) {
+    if (definition)
+      registry.register({ ...definition, name: fnName })
+  }
 
   let status: InPageChannelStatus = 'connecting'
   let attached: AttachedChannelPort | undefined
@@ -284,7 +286,9 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
       })
     },
     call: (fnName, ...args) => enqueueCall(fnName, serializeArgs(codec, args)) as Promise<any>,
+    emit: (fnName, ...args) => sendEvent(fnName, serializeArgs(codec, args)),
     callEvent: (fnName, ...args) => sendEvent(fnName, serializeArgs(codec, args)),
+    on: (fnName, listener) => registry.on(fnName, listener as (...args: unknown[]) => void),
     sharedState: stateHost,
     close: () => {
       if (status === 'closed')

@@ -63,8 +63,10 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
   let heartbeatTimer: ReturnType<typeof setInterval> | undefined
 
   const registry = createLocalFunctionRegistry(codec)
-  for (const [fnName, definition] of Object.entries(options.functions ?? {}))
-    registry.register({ ...definition, name: fnName })
+  for (const [fnName, definition] of Object.entries(options.functions ?? {})) {
+    if (definition)
+      registry.register({ ...definition, name: fnName })
+  }
 
   const stateHost = createPageScriptStateHost<P>(function* () {
     for (const peer of peers.values()) {
@@ -174,6 +176,18 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
 
   win?.addEventListener('message', onWindowMessage)
 
+  const emit: PageScriptChannel<P>['emit'] = (fnName, ...args) => {
+    const wireArgs = serializeArgs(codec, args)
+    for (const peer of peers.values()) {
+      void peer.attached.rpc.$callRaw({
+        method: fnName,
+        args: wireArgs,
+        event: true,
+        optional: true,
+      }).catch(() => {})
+    }
+  }
+
   return {
     name,
     instanceId,
@@ -181,17 +195,9 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
       return [...peers.values()].map(peer => peer.peer)
     },
     events: { on: events.on, once: events.once },
-    callEvent: (fnName, ...args) => {
-      const wireArgs = serializeArgs(codec, args)
-      for (const peer of peers.values()) {
-        void peer.attached.rpc.$callRaw({
-          method: fnName,
-          args: wireArgs,
-          event: true,
-          optional: true,
-        }).catch(() => {})
-      }
-    },
+    emit,
+    callEvent: emit,
+    on: (fnName, listener) => registry.on(fnName, listener as (...args: unknown[]) => void),
     sharedState: stateHost,
     addPanelPort: port => addPeer(port, `transport:${nanoid(8)}`),
     close: () => {
