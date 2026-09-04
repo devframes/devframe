@@ -19,8 +19,8 @@ export const diagnostics = defineDiagnostics({
       fix: 'The filenames directly under the hub base (`__connection.json`, `__ws`, `__index.json`, `__client-imports.js`, `__mcp`, `embedded.js`) are reserved for the hub protocol. Rename the devframe id, or override its mount with a non-colliding `basePath`.',
     },
     DF8002: {
-      why: 'initHub received both `devframes` and `context`; the two assembly modes are mutually exclusive.',
-      fix: 'Pass `devframes` to let the instance create the hub context and mount each frame itself, or pass a pre-built `context` (your host already mounted the frames), but never both.',
+      why: '`initHub`/`buildHub` received both `devframes` and `context`; the two assembly modes are mutually exclusive.',
+      fix: 'Pass `devframes` to let it create the hub context and mount each frame itself, or pass a pre-built `context` (your host already mounted the frames), but never both.',
     },
     DF8003: {
       why: 'connectionMeta() was called before initHub finished initializing.',

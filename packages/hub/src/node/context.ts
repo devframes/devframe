@@ -123,7 +123,7 @@ export interface DevframeHubContext extends DevframeNodeContext {
    * Every devframe mounted into this context, in mount order. Populated by
    * `ctx.install` (and the batch mount `initHub`/`buildHub` run through it),
    * so a host that assembled and mounted the context itself can hand it to
-   * {@link import('./bake').bakeHubStatic} to emit the discovery documents.
+   * `buildHub({ context })` to emit the discovery documents.
    */
   readonly frames: readonly HubMountedFrame[]
   /**

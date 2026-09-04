@@ -5,7 +5,6 @@ import { join } from 'node:path'
 import { createH3DevframeHost } from 'devframe/internal'
 import { describe, expect, it } from 'vitest'
 import { HUB_EVENTS } from '../../events'
-import { bakeHubStatic } from '../bake'
 import { buildHub } from '../build'
 import { createHubContext } from '../context'
 
@@ -139,22 +138,22 @@ describe('buildHub', () => {
     expect(readFileSync(join(outDir, 'beta/index.html'), 'utf-8')).toContain('beta')
   })
 
-  it('bakes an externally-mounted context via bakeHubStatic', async () => {
-    const outDir = join(mkdtempSync(join(tmpdir(), 'hub-bake-out-')), 'hub')
-    const cwd = mkdtempSync(join(tmpdir(), 'hub-bake-cwd-'))
+  it('bakes an externally-mounted context passed as `context`', async () => {
+    const outDir = join(mkdtempSync(join(tmpdir(), 'hub-ctx-out-')), 'hub')
+    const cwd = mkdtempSync(join(tmpdir(), 'hub-ctx-cwd-'))
 
     // A host assembling the context itself: create + mount via `ctx.install`,
-    // then hand the already-mounted context to the baker.
+    // then hand the already-mounted context to `buildHub`.
     const host = createH3DevframeHost({ origin: 'http://localhost', appName: 'devframes', workspaceRoot: cwd, mount: () => {} })
     const ctx = await createHubContext({ cwd, workspaceRoot: cwd, mode: 'build', host })
     await ctx.install(makeFrame('alpha', { distDir: makeDist('<h1>alpha</h1>') }), { base: '/__hub/alpha/' })
 
     expect(ctx.frames.map(frame => frame.id)).toEqual(['alpha'])
 
-    await bakeHubStatic(ctx, { outDir, base: '/__hub/' })
+    await buildHub({ context: ctx, outDir, base: '/__hub/' })
 
-    // The baker copied the SPA from `ctx.views.buildStaticDirs`, wrote the
-    // index from `ctx.frames`, and emitted the per-frame meta + shared dump.
+    // The SPA was copied from `ctx.views.buildStaticDirs`, the index written
+    // from `ctx.frames`, and the per-frame meta + shared dump emitted.
     expect(readFileSync(join(outDir, 'alpha/index.html'), 'utf-8')).toContain('alpha')
     const index = JSON.parse(readFileSync(join(outDir, '__index.json'), 'utf-8'))
     expect(index.frames.map((frame: { id: string }) => frame.id)).toEqual(['alpha'])
