@@ -43,12 +43,12 @@ const defaultPageScriptFunctions: NonNullable<CreatePageScriptChannelOptions<Tes
   sum: { handler: (a, b) => a + b },
   boom: { handler: () => {} },
   strict: { handler: payload => payload },
-  note: { type: 'event', handler: () => {} },
+  note: { type: 'event' },
 }
 
 const defaultPanelFunctions: NonNullable<ConnectPanelChannelOptions<TestProtocol>['functions']> = {
   'ping-panel': { handler: value => `pong:${value}` },
-  'notify': { type: 'event', handler: () => {} },
+  'notify': { type: 'event' },
 }
 
 function createLinkedPair(options?: {
@@ -181,7 +181,7 @@ describe('in-page channel over bring-your-own ports', () => {
     }
   })
 
-  it('fans events out to every panel; panels without the handler ignore them', async () => {
+  it('fans events out to runtime panel listeners and supports unsubscribing', async () => {
     const a = new MessageChannel()
     const b = new MessageChannel()
     const pageScript = createPageScriptChannel<TestProtocol>({
@@ -196,14 +196,13 @@ describe('in-page channel over bring-your-own ports', () => {
       name: 'devframes:test',
       ...noHandshake,
       transport: a.port2,
-      functions: {
-        ...defaultPanelFunctions,
-        notify: { type: 'event', handler: (value) => {
-          received.push(`a:${value}`)
-        } },
-      },
+      functions: defaultPanelFunctions,
     })
-    // Panel B deliberately has no local functions in its protocol.
+    pageScript.emit('notify', 'before-listener')
+    await new Promise(resolve => setTimeout(resolve, 20))
+    expect(received).toEqual([])
+    const offNotify = panelA.on('notify', value => received.push(`a:${value}`))
+    // Panel B deliberately has no listener for this event.
     const panelB = connectPanelChannel<InPageChannelProtocol>({
       name: 'devframes:test',
       ...noHandshake,
@@ -212,8 +211,12 @@ describe('in-page channel over bring-your-own ports', () => {
     })
     try {
       expect(pageScript.panels).toHaveLength(2)
-      pageScript.callEvent('notify', 'scan')
+      pageScript.emit('notify', 'scan')
       await until(() => received.length === 1)
+      expect(received).toEqual(['a:scan'])
+      offNotify()
+      pageScript.emit('notify', 'ignored')
+      await new Promise(resolve => setTimeout(resolve, 20))
       expect(received).toEqual(['a:scan'])
     }
     finally {
@@ -518,19 +521,15 @@ describe('in-page channel handshake', () => {
       functions: defaultPanelFunctions,
     })
     const early = panel.call('echo', 'early')
-    panel.callEvent('note', 'buffered')
+    panel.emit('note', 'buffered')
 
     const pageScript = createPageScriptChannel<TestProtocol>({
       name: 'devframes:test',
       window: asWindow(hostWin),
       heartbeat: false,
-      functions: {
-        ...defaultPageScriptFunctions,
-        note: { type: 'event', handler: (value) => {
-          noted.push(value)
-        } },
-      },
+      functions: defaultPageScriptFunctions,
     })
+    pageScript.on('note', value => noted.push(value))
     try {
       await expect(early).resolves.toBe('early')
       await until(() => noted.length === 1)
