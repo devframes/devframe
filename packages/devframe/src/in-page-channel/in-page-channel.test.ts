@@ -307,6 +307,45 @@ describe('in-page channel over bring-your-own ports', () => {
 })
 
 describe('in-page channel shared state', () => {
+  it('seeds an equal snapshot and skips unchanged writes on both endpoints', async () => {
+    const { pageScript, panel, dispose } = createLinkedPair()
+    try {
+      const authority = await pageScript.sharedState.get('doc', { initialValue: { count: 1 } })
+      const mirror = await panel.sharedState.get('doc', { initialValue: { count: 1 } })
+      const initialMirror = mirror.value()
+      await until(() => mirror.value() !== initialMirror)
+      expect(mirror.value()).toEqual({ count: 1 })
+
+      const authorityUpdated = vi.fn()
+      const mirrorUpdated = vi.fn()
+      authority.on('updated', authorityUpdated)
+      mirror.on('updated', mirrorUpdated)
+      authority.mutate((draft) => {
+        draft.count = 1
+      })
+      mirror.mutate((draft) => {
+        draft.count = 1
+      })
+      await panel.call('echo', 'flushed')
+      expect(authorityUpdated).not.toHaveBeenCalled()
+      expect(mirrorUpdated).not.toHaveBeenCalled()
+
+      authority.mutate((draft) => {
+        draft.count = 2
+      })
+      await until(() => mirror.value().count === 2)
+      mirror.mutate((draft) => {
+        draft.count = 3
+      })
+      await until(() => authority.value().count === 3)
+      expect(authorityUpdated).toHaveBeenCalledTimes(2)
+      expect(mirrorUpdated).toHaveBeenCalledTimes(2)
+    }
+    finally {
+      dispose()
+    }
+  })
+
   it('replays the authority snapshot and streams patches to panels', async () => {
     const { pageScript, panel, dispose } = createLinkedPair()
     try {

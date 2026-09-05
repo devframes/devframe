@@ -3,6 +3,40 @@ import { describe, expect, it, vi } from 'vitest'
 import { createSharedState } from './shared-state'
 
 describe('shared-state', () => {
+  it.each([false, true])('skips unchanged recipes and keeps sync IDs with patches enabled: %s', (enablePatches) => {
+    const initialValue = { count: 0 }
+    const state = createSharedState({ initialValue, enablePatches })
+    const updated = vi.fn()
+    state.on('updated', updated)
+
+    state.mutate(() => {}, 'empty')
+    state.mutate((draft) => {
+      draft.count = 0
+    }, 'same-value')
+    state.mutate(() => initialValue, 'same-reference')
+    expect(state.value()).toBe(initialValue)
+    expect(updated).not.toHaveBeenCalled()
+    expect([...state.syncIds]).toEqual(['empty', 'same-value', 'same-reference'])
+
+    state.mutate((draft) => {
+      draft.count = 99
+    }, 'same-value')
+    expect(state.value().count).toBe(0)
+    state.mutate((draft) => {
+      draft.count = 1
+    }, 'changed')
+    expect(state.value().count).toBe(1)
+    expect(updated).toHaveBeenCalledTimes(1)
+
+    state.mutate(() => ({ count: 1 }), 'replacement')
+    expect(updated).toHaveBeenCalledTimes(2)
+    expect(() => state.mutate(() => {
+      throw new Error('recipe failed')
+    })).toThrow('recipe failed')
+    expect(state.value().count).toBe(1)
+    expect(updated).toHaveBeenCalledTimes(2)
+  })
+
   describe('immutability', () => {
     it('should return immutable state from get()', () => {
       const state = createSharedState({
