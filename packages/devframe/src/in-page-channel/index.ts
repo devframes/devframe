@@ -11,6 +11,7 @@ import type { InPageFunctionDefinition, InPageFunctionType } from './types'
 export { InPageChannelError, type InPageChannelErrorCode } from './internal'
 export { createPageScriptChannel } from './page-script'
 export { connectPanelChannel } from './panel'
+export { createInPageChannelRelay, type InPageChannelRelayOptions, type InPageChannelRelayTransport } from './relay'
 export type {
   ConnectPanelChannelOptions,
   CreatePageScriptChannelOptions,

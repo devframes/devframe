@@ -20,6 +20,15 @@ export interface InPageChannelProtocol {
   panel?: Record<string, (...args: any[]) => any>;
   sharedStates?: Record<string, object>;
 }
+export interface InPageChannelRelayOptions {
+  role: 'panel' | 'page';
+  window?: Window;
+  transport: InPageChannelRelayTransport;
+}
+export interface InPageChannelRelayTransport {
+  postMessage: (_: unknown) => void;
+  onMessage: (_: (_: unknown) => void) => () => void;
+}
 export interface PageScriptChannel<P extends InPageChannelProtocol> {
   readonly name: string;
   readonly instanceId: string;
@@ -87,6 +96,7 @@ export declare class InPageChannelError extends Error {
 
 // #region Functions
 export declare function connectPanelChannel<P extends InPageChannelProtocol>(_: ConnectPanelChannelOptions<P>): PanelChannel<P>;
+export declare function createInPageChannelRelay(_: InPageChannelRelayOptions): () => void;
 export declare function createPageScriptChannel<P extends InPageChannelProtocol>(_: CreatePageScriptChannelOptions<P>): PageScriptChannel<P>;
 export declare function defineChannelFunction<NAME extends string, TYPE extends InPageFunctionType, ARGS extends any[], RETURN = void, const AS extends RpcArgsSchema | undefined = undefined, const RS extends RpcReturnSchema | undefined = undefined>(_: InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>): InPageFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS>;
 // #endregion
