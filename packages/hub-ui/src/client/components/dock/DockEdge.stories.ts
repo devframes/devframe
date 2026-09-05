@@ -72,27 +72,37 @@ export const Right: Story = edgeStory('right')
 /** Toolbar only, nothing selected, so the panel body is collapsed away. */
 export const ToolbarOnly: Story = edgeStory('bottom', false)
 
+function collapsedEdgeStory(position: 'top' | 'right' | 'bottom' | 'left'): Story {
+  return {
+    render: () => ({
+      setup: () => mountWithContext(
+        {
+          entries: categorizedEntries,
+          selectedId: null,
+          panel: { mode: 'edge', position, inactiveTimeout: 0 },
+          session: { open: false },
+        },
+        ctx => [
+          h(DockEdge, { context: ctx }, { view: ({ entry }: any) => body(entry) }),
+          h(FloatingElements),
+        ],
+      ),
+    }),
+  }
+}
+
 /**
  * Idle-collapsed: the default `autoCollapseEdgeToolbar` with `inactiveTimeout:
  * 0` (the same trick `Dock.stories.ts`'s own `Minimized` story uses) shrinks
  * the toolbar down to a small corner pill immediately, with nothing selected.
  */
-export const CollapsedIdle: Story = {
-  render: () => ({
-    setup: () => mountWithContext(
-      {
-        entries: categorizedEntries,
-        selectedId: null,
-        panel: { mode: 'edge', position: 'bottom', inactiveTimeout: 0 },
-        session: { open: false },
-      },
-      ctx => [
-        h(DockEdge, { context: ctx }, { view: ({ entry }: any) => body(entry) }),
-        h(FloatingElements),
-      ],
-    ),
-  }),
-}
+export const CollapsedIdle: Story = collapsedEdgeStory('bottom')
+
+/** Left edge collapsed to its idle logo pill. */
+export const CollapsedLeft: Story = collapsedEdgeStory('left')
+
+/** Right edge collapsed to its idle logo pill. */
+export const CollapsedRight: Story = collapsedEdgeStory('right')
 
 const settingsEntry: DevframeViewBuiltin = {
   type: '~builtin',
