@@ -137,7 +137,14 @@ export function watchFrameLocation(options: WatchFrameLocationOptions): () => vo
     }
 
     detach = () => {
-      for (const off of listeners) off()
+      for (const unsubscribe of listeners) {
+        try {
+          unsubscribe()
+        }
+        catch {
+          /** Navigation can invalidate the old document's window or history; release the remaining subscriptions. */
+        }
+      }
     }
   }
 

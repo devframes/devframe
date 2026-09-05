@@ -208,6 +208,7 @@ function openExternally() {
   catch {}
 }
 
+let mountedTarget: HTMLDivElement | null = null
 let onIframeLoad: (() => void) | undefined
 let stopLocationWatch: (() => void) | undefined
 
@@ -304,7 +305,8 @@ onMounted(() => {
 
   window.addEventListener('message', onWindowMessage)
 
-  pane.mount(viewFrame.value!)
+  mountedTarget = viewFrame.value
+  pane.mount(mountedTarget!)
   isLoading.value = false
   paneReady.value = true
   nextTick(() => {
@@ -314,20 +316,15 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('message', onWindowMessage)
-  // A shared frame outlives this view, so its page is left exactly as found;
-  // the incoming view starts its own watch.
-  stopLocationWatch?.()
-  stopLocationWatch = undefined
   const pane = props.panes.get(paneKey.value)
   if (pane && onIframeLoad)
     pane.iframe?.removeEventListener('load', onIframeLoad)
-  // Only unmount if this view still owns the pane. When switching between two
-  // docks sharing a `frameId`, the incoming view may re-mount the shared pane
-  // onto its own container before this outgoing view tears down; unmounting
-  // then would wrongly hide the just-revealed iframe. Guarding on the current
-  // target makes the handoff order-independent.
-  if (pane && pane.target === viewFrame.value)
+  /** Vue clears template refs before this hook; retain the target to check ownership across shared-iframe handoffs. */
+  if (pane && pane.target === mountedTarget)
     pane.unmount()
+  mountedTarget = null
+  stopLocationWatch?.()
+  stopLocationWatch = undefined
 })
 </script>
 
