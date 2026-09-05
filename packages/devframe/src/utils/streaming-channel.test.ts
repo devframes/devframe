@@ -61,6 +61,25 @@ describe('streaming-channel sink', () => {
     expect(sink.buffer.length).toBe(0)
   })
 
+  it.each([
+    { replayWindow: 1, retained: [5] },
+    { replayWindow: 3, retained: [3, 4, 5] },
+    { replayWindow: 0.5, retained: [5] },
+    { replayWindow: 2.5, retained: [3, 4, 5] },
+    { replayWindow: Number.POSITIVE_INFINITY, retained: [1, 2, 3, 4, 5] },
+    { replayWindow: Number.NaN, retained: [] },
+  ])('preserves replay entries and buffer identity with window $replayWindow', ({ replayWindow, retained }) => {
+    const sink = createStreamSink<number>({ replayWindow })
+    const buffer = sink.buffer
+    for (let chunk = 1; chunk <= 5; chunk++)
+      sink.write(chunk)
+
+    expect(sink.buffer).toBe(buffer)
+    expect(buffer).toEqual(retained.map(chunk => ({ seq: chunk, chunk })))
+    expect(sink.lastSeq).toBe(5)
+    sink.close()
+  })
+
   it('aborts signal on close so handlers can short-circuit', () => {
     const sink = createStreamSink<string>()
     expect(sink.signal.aborted).toBe(false)

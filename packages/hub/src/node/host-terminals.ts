@@ -159,7 +159,9 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         // Mirror to the legacy session.buffer used by `terminals:read`:
         // a bounded tail kept for the snapshot endpoint.
         sessionBuffer.push(result.value)
-        if (sessionBuffer.length > TERMINAL_BUFFER_LIMIT)
+        if (sessionBuffer.length === TERMINAL_BUFFER_LIMIT + 1)
+          sessionBuffer.shift()
+        else if (sessionBuffer.length > TERMINAL_BUFFER_LIMIT)
           sessionBuffer.splice(0, sessionBuffer.length - TERMINAL_BUFFER_LIMIT)
         sink?.write(result.value)
       }

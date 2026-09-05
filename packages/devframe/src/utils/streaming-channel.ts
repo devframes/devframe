@@ -151,8 +151,12 @@ export function createStreamSink<T>(options: CreateStreamSinkOptions = {}): Stre
     lastSeq += 1
     if (replayWindow > 0) {
       buffer.push({ seq: lastSeq, chunk })
-      if (buffer.length > replayWindow)
-        buffer.splice(0, buffer.length - replayWindow)
+      if (buffer.length > replayWindow) {
+        if (buffer.length - replayWindow === 1)
+          buffer.shift()
+        else
+          buffer.splice(0, buffer.length - replayWindow)
+      }
     }
     events.emit('chunk', lastSeq, chunk)
   }
