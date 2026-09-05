@@ -7,7 +7,7 @@ import { computed, h, onMounted, ref, useTemplateRef } from 'vue'
 import { getEntryGroup } from '../../state/dock-settings'
 import { setEdgePositionDropdown, setFloatingTooltip, useDocksGroupPanel, useEdgePositionDropdown } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
-import { useIframePanes } from '../../utils/useIframePanes'
+import { getEntryPaneKey, useIframePanes } from '../../utils/useIframePanes'
 import BrandMark from '../icons/BrandMark.vue'
 import ViewEntry from '../views/ViewEntry.vue'
 import { resolveDockEdge, resolveDockLayout } from './dock-layout'
@@ -27,7 +27,7 @@ const settings = useSettings(context)
 const layout = computed(() => resolveDockLayout(props.layout))
 
 const viewsContainer = useTemplateRef<HTMLElement>('viewsContainer')
-const panes = useIframePanes(viewsContainer, context.panel)
+const panes = useIframePanes(viewsContainer, context.panel, () => getEntryPaneKey(context.docks.selected))
 
 const isVertical = computed(() => store.position === 'left' || store.position === 'right')
 
