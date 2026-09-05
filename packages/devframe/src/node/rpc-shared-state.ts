@@ -130,7 +130,8 @@ export function createRpcSharedStateServerHost(
       const state = await host.get(key, {
         initialValue: value,
       })
-      state.mutate(() => value, syncId)
+      // Publish the snapshot even when get() just created the state with this value.
+      state.patch([{ op: 'replace', path: [], value }], syncId)
     },
   })
 

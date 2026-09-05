@@ -20,6 +20,22 @@ function makeFakeRpc() {
 }
 
 describe('client shared state', () => {
+  it('does not forward unchanged writes to the RPC server', async () => {
+    const { rpc, events, setCalls } = makeFakeRpc()
+    const state = await createRpcSharedStateClientHost(rpc).get('k', { initialValue: { count: 1 } })
+    events.emit('rpc:is-trusted:updated', true)
+
+    state.mutate((draft) => {
+      draft.count = 1
+    })
+    expect(setCalls).toHaveLength(0)
+    state.mutate((draft) => {
+      draft.count = 2
+    })
+    expect(setCalls).toHaveLength(1)
+    expect(setCalls[0]?.[1]).toEqual({ count: 2 })
+  })
+
   it('registers the server-sync bridge once across repeated trust flips', async () => {
     const { rpc, events, setCalls } = makeFakeRpc()
     const host = createRpcSharedStateClientHost(rpc)
