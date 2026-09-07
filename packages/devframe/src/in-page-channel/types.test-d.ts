@@ -34,7 +34,7 @@ describe('Channel function definitions', () => {
     defineChannelFunction({ name: 'notify', type: 'event' })
     defineChannelFunction({ name: 'load', handler: () => 'value' })
     defineChannelFunction({ name: 'load', type: 'query', handler: () => 'value' })
-    defineChannelFunction({ name: 'save', type: 'action', handler: () => {} })
+    defineChannelFunction({ name: 'save', type: 'action', handler: () => { } })
   })
 
   it('requires handlers for request/response functions', () => {
@@ -51,7 +51,7 @@ describe('In-page script channel', () => {
     functions: {
       echo: { handler: value => value },
       sum: { handler: (a, b) => a + b },
-      save: { handler: () => {} },
+      save: { handler: () => { } },
     },
   })
 
@@ -82,13 +82,13 @@ describe('In-page script channel', () => {
       })
     })
 
-    it('requires every in-page-script function', () => {
+    it('requires every in-page script function', () => {
       // @ts-expect-error `functions` is required.
       createPageScriptChannel<TestProtocol>({ name: 'devframes:test' })
 
       createPageScriptChannel<TestProtocol>({
         name: 'devframes:test',
-        // @ts-expect-error `sum` and `save` are required
+        // @ts-expect-error `sum` and `save` are required.
         functions: {
           echo: { handler: value => value },
         },
@@ -123,7 +123,7 @@ describe('In-page script channel', () => {
         functions: {
           echo: { handler: value => value },
           sum: { handler: (a, b) => a + b },
-          save: { handler: () => {} },
+          save: { handler: () => { } },
           // @ts-expect-error `notify` is implemented by panels.
           notify: { handler: (message: string) => void message },
         },
@@ -139,7 +139,7 @@ describe('In-page script channel', () => {
             handler: (value: number) => value,
           },
           sum: { handler: (a, b) => a + b },
-          save: { handler: () => {} },
+          save: { handler: () => { } },
         },
       })
     })
@@ -206,9 +206,9 @@ describe('In-page script channel', () => {
 
       expectTypeOf(unsubscribe).toEqualTypeOf<() => void>()
       // @ts-expect-error Panel functions cannot be handled by the page script.
-      channel.on('notify', () => {})
+      channel.on('notify', () => { })
       // @ts-expect-error Query functions cannot be handled as events.
-      channel.on('echo', () => {})
+      channel.on('echo', () => { })
       // @ts-expect-error `save` listeners receive a string.
       channel.on('save', (value: number) => void value)
     })
@@ -229,7 +229,7 @@ describe('In-page script channel', () => {
 
     it('rejects panel channel events', () => {
       // @ts-expect-error Unknown in-page script channel lifecycle event.
-      channel.events.on('status:updated', () => {})
+      channel.events.on('status:updated', () => { })
     })
   })
 })
@@ -238,7 +238,7 @@ describe('Panel channel', () => {
   const channel = connectPanelChannel<TestProtocol>({
     name: 'devframes:test',
     functions: {
-      notify: { handler: () => {} },
+      notify: { handler: () => { } },
     },
   })
 
@@ -292,7 +292,7 @@ describe('Panel channel', () => {
       connectPanelChannel<TestProtocol>({
         name: 'devframes:test',
         functions: {
-          notify: { handler: () => {} },
+          notify: { handler: () => { } },
           // @ts-expect-error `echo` is implemented by the in-page script.
           echo: { handler: (value: string) => value },
         },
@@ -321,7 +321,7 @@ describe('Panel channel', () => {
         name: 'devframes:page-script-only',
         functions: {
           // @ts-expect-error The protocol has no panel functions.
-          notify: { handler: () => {} },
+          notify: { handler: () => { } },
         },
       })
     })
@@ -375,7 +375,7 @@ describe('Panel channel', () => {
 
       expectTypeOf(unsubscribe).toEqualTypeOf<() => void>()
       // @ts-expect-error Page-script functions cannot be handled by the panel.
-      channel.on('echo', () => {})
+      channel.on('echo', () => { })
       // @ts-expect-error `notify` listeners receive a string.
       channel.on('notify', (message: number) => void message)
     })
@@ -389,9 +389,9 @@ describe('Panel channel', () => {
         },
       })
 
-      mixedChannel.on('notify', () => {})
+      mixedChannel.on('notify', () => { })
       // @ts-expect-error Query functions cannot be handled as events.
-      mixedChannel.on('confirm', () => {})
+      mixedChannel.on('confirm', () => { })
     })
 
     it('types status events', () => {
@@ -404,7 +404,7 @@ describe('Panel channel', () => {
 
     it('rejects in-page script channel events and incompatible listeners', () => {
       // @ts-expect-error Unknown panel channel lifecycle event.
-      channel.events.on('panel:connected', () => {})
+      channel.events.on('panel:connected', () => { })
       // @ts-expect-error `status:updated` listeners receive the status.
       channel.events.on('status:updated', (status: number) => void status)
     })
