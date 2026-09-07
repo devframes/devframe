@@ -120,20 +120,19 @@ describe('in-page channel over bring-your-own ports', () => {
     }
   })
 
-  it('reports and rejects listeners for unknown functions', () => {
+  it('reports and rejects listeners for unknown functions', ({ onTestFinished }) => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const { panel, dispose } = createLinkedPair()
-    try {
-      expect(() => {
-        panel.on('missing' as any, () => {})
-      }).toThrowError(expect.objectContaining({ name: 'DF0077' }))
-      expect(warn).toHaveBeenCalledOnce()
-      expect(warn).toHaveBeenCalledWith(expect.stringContaining('[DF0077]'))
-    }
-    finally {
+    onTestFinished(() => {
       dispose()
       warn.mockRestore()
-    }
+    })
+
+    expect(() => {
+      panel.on('missing' as any, () => {})
+    }).toThrowError(expect.objectContaining({ name: 'DF0077' }))
+    expect(warn).toHaveBeenCalledOnce()
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('[DF0077]'))
   })
 
   it('enforces jsonSerializable payloads with a coded error', async () => {
