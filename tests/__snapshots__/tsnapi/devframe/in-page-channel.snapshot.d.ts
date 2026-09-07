@@ -25,8 +25,8 @@ export interface PageScriptChannel<P extends InPageChannelProtocol> {
   readonly instanceId: string;
   readonly panels: readonly PanelPeer<P>[];
   readonly events: Pick<EventEmitter<PageScriptChannelEvents<P>>, 'on' | 'once'>;
-  emit: <K extends keyof PanelFunctions<P> & string>(_: K, ..._: FnArgs<PanelFunctions<P>[K]>) => void;
-  callEvent: <K extends keyof PanelFunctions<P> & string>(_: K, ..._: FnArgs<PanelFunctions<P>[K]>) => void;
+  emit: <K extends keyof PanelFunctionsEvents<P> & string>(_: K, ..._: FnArgs<PanelFunctionsEvents<P>[K]>) => void;
+  callEvent: <K extends keyof PanelFunctionsEvents<P> & string>(_: K, ..._: FnArgs<PanelFunctionsEvents<P>[K]>) => void;
   on: <K extends keyof PageScriptFunctionsEvents<P> & string>(_: K, _: (..._: FnArgs<PageScriptFunctionsEvents<P>[K]>) => void) => () => void;
   readonly sharedState: InPageSharedStateHost<P>;
   addPanelPort: (_: MessagePort) => PanelPeer<P>;
@@ -41,8 +41,8 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
   readonly events: Pick<EventEmitter<PanelChannelEvents>, 'on' | 'once'>;
   whenConnected: (_?: number) => Promise<void>;
   call: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => Promise<FnReturn<PageScriptFunctions<P>[K]>>;
-  emit: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => void;
-  callEvent: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => void;
+  emit: <K extends keyof PageScriptFunctionsEvents<P> & string>(_: K, ..._: FnArgs<PageScriptFunctionsEvents<P>[K]>) => void;
+  callEvent: <K extends keyof PageScriptFunctionsEvents<P> & string>(_: K, ..._: FnArgs<PageScriptFunctionsEvents<P>[K]>) => void;
   on: <K extends keyof PanelFunctionsEvents<P> & string>(_: K, _: (..._: FnArgs<PanelFunctionsEvents<P>[K]>) => void) => () => void;
   readonly sharedState: InPageSharedStateHost<P>;
   close: () => void;

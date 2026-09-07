@@ -346,14 +346,14 @@ export interface PageScriptChannel<P extends InPageChannelProtocol> {
   readonly panels: readonly PanelPeer<P>[]
   readonly events: Pick<EventEmitter<PageScriptChannelEvents<P>>, 'on' | 'once'>
   /** Fan an event out to every connected panel. */
-  emit: <K extends keyof PanelFunctions<P> & string>(
+  emit: <K extends keyof PanelFunctionsEvents<P> & string>(
     name: K,
-    ...args: FnArgs<PanelFunctions<P>[K]>
+    ...args: FnArgs<PanelFunctionsEvents<P>[K]>
   ) => void
   /** @deprecated Use `emit()` instead. */
-  callEvent: <K extends keyof PanelFunctions<P> & string>(
+  callEvent: <K extends keyof PanelFunctionsEvents<P> & string>(
     name: K,
-    ...args: FnArgs<PanelFunctions<P>[K]>
+    ...args: FnArgs<PanelFunctionsEvents<P>[K]>
   ) => void
   /** Subscribe to an event emitted by a panel. Returns an unsubscribe function. */
   on: <K extends keyof PageScriptFunctionsEvents<P> & string>(
@@ -403,14 +403,14 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
    * Emit an event to the page script. While `connecting` the event is buffered
    * (up to `eventBufferLimit`) and flushed on connect.
    */
-  emit: <K extends keyof PageScriptFunctions<P> & string>(
+  emit: <K extends keyof PageScriptFunctionsEvents<P> & string>(
     name: K,
-    ...args: FnArgs<PageScriptFunctions<P>[K]>
+    ...args: FnArgs<PageScriptFunctionsEvents<P>[K]>
   ) => void
   /** @deprecated Use `emit()` instead. */
-  callEvent: <K extends keyof PageScriptFunctions<P> & string>(
+  callEvent: <K extends keyof PageScriptFunctionsEvents<P> & string>(
     name: K,
-    ...args: FnArgs<PageScriptFunctions<P>[K]>
+    ...args: FnArgs<PageScriptFunctionsEvents<P>[K]>
   ) => void
   /** Subscribe to an event emitted by the page script. Returns an unsubscribe function. */
   on: <K extends keyof PanelFunctionsEvents<P> & string>(

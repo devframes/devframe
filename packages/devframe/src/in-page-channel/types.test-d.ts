@@ -148,6 +148,7 @@ describe('In-page script channel', () => {
   describe('Function calling', () => {
     it('types fire-and-forget calls to panel functions', () => {
       expectTypeOf(channel.emit('notify', 'ready')).toEqualTypeOf<void>()
+      expectTypeOf(channel.callEvent('notify', 'ready')).toEqualTypeOf<void>()
 
       // @ts-expect-error In-page script functions cannot be called on panels.
       channel.emit('echo', 'ready')
@@ -157,6 +158,19 @@ describe('In-page script channel', () => {
       channel.emit('notify')
       // @ts-expect-error `notify` accepts one argument.
       channel.emit('notify', 'ready', 'extra')
+    })
+
+    it('rejects fire-and-forget calls to panel queries', () => {
+      const mixedChannel = createPageScriptChannel<MixedPanelProtocol>({
+        name: 'devframes:mixed-panel',
+        functions: {},
+      })
+
+      mixedChannel.emit('notify', 'ready')
+      // @ts-expect-error Queries cannot be emitted as events.
+      mixedChannel.emit('confirm', 'continue?')
+      // @ts-expect-error The deprecated alias has the same event-only contract.
+      mixedChannel.callEvent('confirm', 'continue?')
     })
 
     it('types calls to connected panels', () => {
@@ -330,16 +344,19 @@ describe('Panel channel', () => {
     })
 
     it('types fire-and-forget calls to in-page script functions', () => {
-      expectTypeOf(channel.emit('echo', 'hello')).toEqualTypeOf<void>()
-      expectTypeOf(channel.emit('sum', 1, 2)).toEqualTypeOf<void>()
       expectTypeOf(channel.emit('save', 'draft')).toEqualTypeOf<void>()
+      expectTypeOf(channel.callEvent('save', 'draft')).toEqualTypeOf<void>()
 
       // @ts-expect-error Panel functions cannot be emitted to the in-page script.
       channel.emit('notify', 'hello')
-      // @ts-expect-error `echo` requires a string.
-      channel.emit('echo', false)
-      // @ts-expect-error `sum` requires two arguments.
-      channel.emit('sum', 1)
+      // @ts-expect-error Queries cannot be emitted as events.
+      channel.emit('echo', 'hello')
+      // @ts-expect-error Queries cannot be emitted as events.
+      channel.emit('sum', 1, 2)
+      // @ts-expect-error `save` requires a string.
+      channel.emit('save', false)
+      // @ts-expect-error The deprecated alias has the same event-only contract.
+      channel.callEvent('echo', 'hello')
     })
 
     it('types channel state', () => {
