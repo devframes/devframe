@@ -82,13 +82,13 @@ describe('In-page script channel', () => {
       })
     })
 
-    it('requires every page-script function declaration', () => {
+    it('requires every in-page-script function', () => {
       // @ts-expect-error `functions` is required.
       createPageScriptChannel<TestProtocol>({ name: 'devframes:test' })
 
       createPageScriptChannel<TestProtocol>({
         name: 'devframes:test',
-        // @ts-expect-error `sum` and `save` must be declared.
+        // @ts-expect-error `sum` and `save` are required
         functions: {
           echo: { handler: value => value },
         },
