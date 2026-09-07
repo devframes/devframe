@@ -1,6 +1,6 @@
 import { defineDiagnostics } from 'devframe/utils/nostics'
 
-export const diagnostics = /*#__PURE__*/ defineDiagnostics({
+export const diagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase: 'https://devfra.me/errors',
   codes: {
     DF0077: {

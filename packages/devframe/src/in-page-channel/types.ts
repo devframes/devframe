@@ -134,12 +134,11 @@ export type InPageFunctionDefinition<
   RETURN = void,
   AS extends RpcArgsSchema | undefined = undefined,
   RS extends RpcReturnSchema | undefined = undefined,
->
-  = InPageFunctionDefinitionForType<
-    NAME,
-    TYPE,
-    InPageFunctionDefinitionHandler<ARGS, RETURN, AS, RS>
-  > & InPageFunctionDefinitionSchemas<AS, RS>
+> = InPageFunctionDefinitionForType<
+  NAME,
+  TYPE,
+  InPageFunctionDefinitionHandler<ARGS, RETURN, AS, RS>
+> & InPageFunctionDefinitionSchemas<AS, RS>
 
 /**
  * Loosely-typed definition used by the internal function registry.
