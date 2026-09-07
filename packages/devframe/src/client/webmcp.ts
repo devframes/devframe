@@ -30,17 +30,41 @@ export interface WebMcpToolDescriptor {
 }
 
 /**
+ * A tool as reported by {@link WebMcpModelContext.getTools}: the
+ * serializable descriptor fields plus the registering `origin`. The
+ * browser may attach more members (e.g. the owner `window`); pass the
+ * object through unchanged to {@link WebMcpModelContext.executeTool}.
+ */
+export interface WebMcpRegisteredTool {
+  name: string
+  description?: string
+  inputSchema?: unknown
+  origin?: string
+}
+
+/**
  * Structural subset of the experimental WebMCP model context
  * (`document.modelContext` / `navigator.modelContext`). The current draft
  * unregisters a tool by aborting the passed `AbortSignal` and returns a
  * promise; earlier drafts returned a handle with `unregister()`. Typed to
- * accept both generations.
+ * accept both generations. `getTools` / `executeTool` are the draft's
+ * discovery/execution surface for in-page agents; absent on older drafts.
  */
 export interface WebMcpModelContext {
   registerTool: (
     tool: WebMcpToolDescriptor,
     options?: { signal?: AbortSignal },
   ) => void | { unregister?: () => void } | Promise<unknown>
+  getTools?: (options?: { fromOrigins?: string[] }) => Promise<WebMcpRegisteredTool[]>
+  /**
+   * The spec draft takes the args as a dictionary; Chromium's current
+   * build takes (and returns) JSON strings instead, hence the union.
+   */
+  executeTool?: (
+    tool: WebMcpRegisteredTool,
+    args: Record<string, unknown> | string,
+    options?: { signal?: AbortSignal },
+  ) => Promise<unknown>
 }
 
 interface WebMcpModelContextCarrier {

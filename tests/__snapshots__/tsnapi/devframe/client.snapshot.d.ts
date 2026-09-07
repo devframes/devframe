@@ -135,6 +135,18 @@ export interface WebMcpModelContext {
   }) => void | {
     unregister?: () => void;
   } | Promise<unknown>;
+  getTools?: (_?: {
+    fromOrigins?: string[];
+  }) => Promise<WebMcpRegisteredTool[]>;
+  executeTool?: (_: WebMcpRegisteredTool, _: Record<string, unknown> | string, _?: {
+    signal?: AbortSignal;
+  }) => Promise<unknown>;
+}
+export interface WebMcpRegisteredTool {
+  name: string;
+  description?: string;
+  inputSchema?: unknown;
+  origin?: string;
 }
 export interface WebMcpToolDescriptor {
   name: string;
