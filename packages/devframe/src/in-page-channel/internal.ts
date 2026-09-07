@@ -4,13 +4,13 @@ import type { RpcArgsSchema } from '../rpc/types'
 import type { InPageChannelControlFrame } from './protocol'
 import type { InPageFunctionDefinitionAny } from './types'
 import { createBirpc } from 'birpc'
+import { diagnostics } from './diagnostics'
 import { isControlFrame } from './protocol'
 
 /**
- * Shared internals of the two endpoints: the coded error surface (browser
- * code, so plain coded `Error`s, since `nostics` diagnostics are node-side only),
- * the local function table with its receive pipeline, and the birpc wiring
- * of one `MessagePort`.
+ * Shared internals of the two endpoints: the coded error surface, the local
+ * function table with its receive pipeline, and the birpc wiring of one
+ * `MessagePort`.
  */
 
 export const DEFAULT_CALL_TIMEOUT_MS = 15_000
@@ -176,6 +176,8 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
       definitions.set(definition.name, definition)
     },
     on(name, listener) {
+      if (!definitions.has(name))
+        throw diagnostics.DF0077({ name })
       let registered = listeners.get(name)
       if (!registered) {
         registered = new Set()
