@@ -32,6 +32,22 @@ type FnArgs<F> = F extends (...args: infer A) => any ? A : never
 type FnReturn<F> = F extends (...args: any[]) => infer R ? Awaited<R> : never
 
 /**
+ * Page-script functions whose resolved return type marks an event.
+ * @internal
+ */
+type PageScriptFunctionsEvents<P extends InPageChannelProtocol> = {
+  [K in keyof PageScriptFunctions<P> as FnReturn<PageScriptFunctions<P>[K]> extends void ? K : never]: PageScriptFunctions<P>[K]
+}
+
+/**
+ * Panel functions whose resolved return type marks an event.
+ * @internal
+ */
+type PanelFunctionsEvents<P extends InPageChannelProtocol> = {
+  [K in keyof PanelFunctions<P> as FnReturn<PanelFunctions<P>[K]> extends void ? K : never]: PanelFunctions<P>[K]
+}
+
+/**
  * Converts a protocol function to its accepted endpoint handler.
  *
  * @internal
@@ -340,9 +356,9 @@ export interface PageScriptChannel<P extends InPageChannelProtocol> {
     ...args: FnArgs<PanelFunctions<P>[K]>
   ) => void
   /** Subscribe to an event emitted by a panel. Returns an unsubscribe function. */
-  on: <K extends keyof PageScriptFunctions<P> & string>(
+  on: <K extends keyof PageScriptFunctionsEvents<P> & string>(
     name: K,
-    listener: (...args: FnArgs<PageScriptFunctions<P>[K]>) => void,
+    listener: (...args: FnArgs<PageScriptFunctionsEvents<P>[K]>) => void,
   ) => () => void
   /** Page-script-authoritative shared states, replayed to joining panels. */
   readonly sharedState: InPageSharedStateHost<P>
@@ -397,9 +413,9 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
     ...args: FnArgs<PageScriptFunctions<P>[K]>
   ) => void
   /** Subscribe to an event emitted by the page script. Returns an unsubscribe function. */
-  on: <K extends keyof PanelFunctions<P> & string>(
+  on: <K extends keyof PanelFunctionsEvents<P> & string>(
     name: K,
-    listener: (...args: FnArgs<PanelFunctions<P>[K]>) => void,
+    listener: (...args: FnArgs<PanelFunctionsEvents<P>[K]>) => void,
   ) => () => void
   /** Shared states mirrored from the page-script authority. */
   readonly sharedState: InPageSharedStateHost<P>

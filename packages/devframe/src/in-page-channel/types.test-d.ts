@@ -21,6 +21,14 @@ interface PageScriptOnlyProtocol {
   panel: Record<string, never>
 }
 
+interface MixedPanelProtocol {
+  pageScript: Record<string, never>
+  panel: {
+    confirm: (message: string) => boolean
+    notify: (message: string) => void
+  }
+}
+
 describe('Channel function definitions', () => {
   it('distinguishes event, query, and action definitions', () => {
     defineChannelFunction({ name: 'notify', type: 'event' })
@@ -177,16 +185,18 @@ describe('In-page script channel', () => {
   })
 
   describe('Event checking', () => {
-    it('types runtime subscriptions to page-script functions', () => {
-      const unsubscribe = channel.on('echo', (value) => {
+    it('types runtime subscriptions to page-script events', () => {
+      const unsubscribe = channel.on('save', (value) => {
         expectTypeOf(value).toEqualTypeOf<string>()
       })
 
       expectTypeOf(unsubscribe).toEqualTypeOf<() => void>()
       // @ts-expect-error Panel functions cannot be handled by the page script.
       channel.on('notify', () => {})
-      // @ts-expect-error `echo` listeners receive a string.
-      channel.on('echo', (value: number) => void value)
+      // @ts-expect-error Query functions cannot be handled as events.
+      channel.on('echo', () => {})
+      // @ts-expect-error `save` listeners receive a string.
+      channel.on('save', (value: number) => void value)
     })
 
     it('types panel connection events', () => {
@@ -351,6 +361,20 @@ describe('Panel channel', () => {
       channel.on('echo', () => {})
       // @ts-expect-error `notify` listeners receive a string.
       channel.on('notify', (message: number) => void message)
+    })
+
+    it('rejects runtime subscriptions to panel queries', () => {
+      const mixedChannel = connectPanelChannel<MixedPanelProtocol>({
+        name: 'devframes:mixed-panel',
+        functions: {
+          confirm: { handler: () => true },
+          notify: { type: 'event' },
+        },
+      })
+
+      mixedChannel.on('notify', () => {})
+      // @ts-expect-error Query functions cannot be handled as events.
+      mixedChannel.on('confirm', () => {})
     })
 
     it('types status events', () => {

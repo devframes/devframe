@@ -27,7 +27,7 @@ export interface PageScriptChannel<P extends InPageChannelProtocol> {
   readonly events: Pick<EventEmitter<PageScriptChannelEvents<P>>, 'on' | 'once'>;
   emit: <K extends keyof PanelFunctions<P> & string>(_: K, ..._: FnArgs<PanelFunctions<P>[K]>) => void;
   callEvent: <K extends keyof PanelFunctions<P> & string>(_: K, ..._: FnArgs<PanelFunctions<P>[K]>) => void;
-  on: <K extends keyof PageScriptFunctions<P> & string>(_: K, _: (..._: FnArgs<PageScriptFunctions<P>[K]>) => void) => () => void;
+  on: <K extends keyof PageScriptFunctionsEvents<P> & string>(_: K, _: (..._: FnArgs<PageScriptFunctionsEvents<P>[K]>) => void) => () => void;
   readonly sharedState: InPageSharedStateHost<P>;
   addPanelPort: (_: MessagePort) => PanelPeer<P>;
   close: () => void;
@@ -43,7 +43,7 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
   call: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => Promise<FnReturn<PageScriptFunctions<P>[K]>>;
   emit: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => void;
   callEvent: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => void;
-  on: <K extends keyof PanelFunctions<P> & string>(_: K, _: (..._: FnArgs<PanelFunctions<P>[K]>) => void) => () => void;
+  on: <K extends keyof PanelFunctionsEvents<P> & string>(_: K, _: (..._: FnArgs<PanelFunctionsEvents<P>[K]>) => void) => () => void;
   readonly sharedState: InPageSharedStateHost<P>;
   close: () => void;
 }
@@ -117,8 +117,10 @@ interface PageScriptChannelEvents<P extends InPageChannelProtocol> {
   'panel:disconnected': (_: PanelPeer<P>) => void;
 }
 type PageScriptFunctions<P extends InPageChannelProtocol> = SideFunctions<NonNullable<P['pageScript']>>;
+type PageScriptFunctionsEvents<P extends InPageChannelProtocol> = { [K in keyof PageScriptFunctions<P> as FnReturn<PageScriptFunctions<P>[K]> extends void ? K : never]: PageScriptFunctions<P>[K]; };
 interface PanelChannelEvents {
   'status:updated': (_: InPageChannelStatus) => void;
 }
 type PanelFunctions<P extends InPageChannelProtocol> = SideFunctions<NonNullable<P['panel']>>;
+type PanelFunctionsEvents<P extends InPageChannelProtocol> = { [K in keyof PanelFunctions<P> as FnReturn<PanelFunctions<P>[K]> extends void ? K : never]: PanelFunctions<P>[K]; };
 // #endregion
