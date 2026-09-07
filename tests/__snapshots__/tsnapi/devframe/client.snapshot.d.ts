@@ -56,6 +56,7 @@ export interface DevframeRpcClientOptions extends SetupDevframeConnectionOptions
   sseOptions?: Partial<SseRpcChannelOptions>;
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>;
   cacheOptions?: boolean | Partial<RpcCacheOptions>;
+  webmcp?: boolean;
   callTimeout?: number;
 }
 export interface DevframeRpcContext {
@@ -106,6 +107,9 @@ export interface DevframeServicesClient {
   keys: () => string[];
   state: () => Promise<SharedState<DevframeServicesState>>;
 }
+export interface RegisterWebMcpToolsOptions {
+  modelContext?: WebMcpModelContext;
+}
 export interface RpcClientEvents {
   'rpc:is-trusted:updated': (_: boolean) => void;
   'connection:status': (_: DevframeConnectionStatus, _: DevframeConnectionStatus) => void;
@@ -124,6 +128,31 @@ export interface SetupDevframeConnectionOptions {
 }
 export interface StreamingSubscribeOptions {
   highWaterMark?: number;
+}
+export interface WebMcpModelContext {
+  registerTool: (_: WebMcpToolDescriptor, _?: {
+    signal?: AbortSignal;
+  }) => void | {
+    unregister?: () => void;
+  } | Promise<unknown>;
+}
+export interface WebMcpToolDescriptor {
+  name: string;
+  description: string;
+  inputSchema?: unknown;
+  annotations?: {
+    title?: string;
+    readOnlyHint?: boolean;
+    destructiveHint?: boolean;
+  };
+  execute: (_: Record<string, unknown>) => Promise<WebMcpToolResult>;
+}
+export interface WebMcpToolResult {
+  content: {
+    type: 'text';
+    text: string;
+  }[];
+  isError?: boolean;
 }
 export interface WsUrlLocation {
   protocol: string;
@@ -165,8 +194,10 @@ export declare function getDevframeRpcClient(_?: DevframeRpcClientOptions): Prom
 export declare function isCallableStatus(_: DevframeConnectionStatus): boolean;
 export declare function readOtpFromUrl(_?: string): string | undefined;
 export declare function registerDevframeViewerOrigin(_: DevframeConnection, _?: any): Promise<boolean>;
+export declare function registerWebMcpTools<LocalFunctions, SetupContext>(_: RpcFunctionsCollector<LocalFunctions, SetupContext>, _?: RegisterWebMcpToolsOptions): () => void;
 export declare function resolveClientTransport(_: 'auto' | 'websocket' | 'sse', _: ConnectionMeta): 'websocket' | 'sse' | 'static';
 export declare function resolveSseUrl(_: ConnectionMeta['sse'], _: string, _: WsUrlLocation): string;
+export declare function resolveWebMcpModelContext(): WebMcpModelContext | undefined;
 export declare function resolveWsUrl(_: ConnectionMeta['websocket'], _: string, _: WsUrlLocation): string;
 export declare function setupDevframeConnection(_?: SetupDevframeConnectionOptions): Promise<DevframeConnection>;
 // #endregion

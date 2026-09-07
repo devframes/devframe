@@ -21,6 +21,7 @@ import { createStaticRpcClientMode } from './rpc-static'
 import { createRpcStreamingClientHost } from './rpc-streaming'
 import { createWsRpcClientMode } from './rpc-ws'
 import { createScopedClientContext } from './scope'
+import { registerWebMcpTools } from './webmcp'
 
 export interface DevframeRpcContext {
   /**
@@ -99,6 +100,18 @@ export interface DevframeRpcClientOptions extends SetupDevframeConnectionOptions
   sseOptions?: Partial<SseRpcChannelOptions>
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>
   cacheOptions?: boolean | Partial<RpcCacheOptions>
+  /**
+   * Mirror `agent`-flagged client RPC functions (functions registered on
+   * `rpc.client` with an `agent` field) onto the page's WebMCP model
+   * context (`document.modelContext` / `navigator.modelContext`) as
+   * callable tools, so in-page and browser-integrated agents can invoke
+   * them; see `registerWebMcpTools`. Applies only when the browser
+   * provides a model context. Set `false` to keep the browser side off
+   * the WebMCP surface.
+   *
+   * @default true
+   */
+  webmcp?: boolean
   /**
    * Reject a pending `rpc.call(...)` if the server hasn't answered within this
    * many milliseconds, with a {@link DevframeConnectionError} of kind
@@ -332,6 +345,8 @@ export async function getDevframeRpcClient(
     rpc: undefined!,
   }
   const clientRpc: DevframeClientRpcHost = new RpcFunctionsCollectorBase<DevframeRpcClientFunctions, DevframeRpcContext>(context)
+  // No-op when the browser provides no WebMCP model context.
+  const disposeWebMcp = options.webmcp === false ? undefined : registerWebMcpTools(clientRpc)
 
   async function fetchJsonFromBases(path: string): Promise<any> {
     const candidates = [
@@ -470,7 +485,10 @@ export async function getDevframeRpcClient(
     streaming: undefined!,
     cacheManager,
     scope: undefined!,
-    close: () => mode.close?.(),
+    close: () => {
+      disposeWebMcp?.()
+      mode.close?.()
+    },
   }
 
   rpc.sharedState = createRpcSharedStateClientHost(rpc)
