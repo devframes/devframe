@@ -1,5 +1,4 @@
 import type { ConnectPanelChannelOptions, CreatePageScriptChannelOptions, InPageChannelProtocol, PageScriptChannel, PanelChannel } from './types'
-import { Diagnostic } from 'devframe/utils/nostics'
 import { describe, expect, it, vi } from 'vitest'
 import { InPageChannelError } from './internal'
 import { createPageScriptChannel } from './page-script'
@@ -125,15 +124,9 @@ describe('in-page channel over bring-your-own ports', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const { panel, dispose } = createLinkedPair()
     try {
-      let rejection: unknown
-      try {
+      expect(() => {
         panel.on('missing' as any, () => {})
-      }
-      catch (error) {
-        rejection = error
-      }
-      expect(rejection).toBeInstanceOf(Diagnostic)
-      expect(rejection).toMatchObject({ name: 'DF0077' })
+      }).toThrowError(expect.objectContaining({ name: 'DF0077' }))
       expect(warn).toHaveBeenCalledOnce()
       expect(warn).toHaveBeenCalledWith(expect.stringContaining('[DF0077]'))
     }
