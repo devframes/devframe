@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AgentManifest, InvokeResult } from '../connect'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
+import FeedbackTip from '@antfu/design/components/Feedback/FeedbackTip.vue'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { reactive, ref } from 'vue'
 import JsonView from './JsonView.vue'
@@ -19,6 +20,7 @@ const emit = defineEmits<{
 
 const expanded = ref<string | null>(null)
 const argsInput = reactive<Record<string, string>>({})
+const invokeErrors = reactive<Record<string, string>>({})
 
 function toggle(id: string): void {
   expanded.value = expanded.value === id ? null : id
@@ -34,10 +36,19 @@ function invokeTool(id: string) {
     parsed = raw
   }
   catch (err) {
-    // Emitting error would be cleaner, for now we will throw to stop execution
-    throw new Error(`Invalid JSON args: ${(err as Error).message}`)
+    invokeErrors[id] = `Invalid JSON arguments: ${(err as Error).message}`
+    return
   }
+  delete invokeErrors[id]
   emit('invoke', id, parsed)
+}
+
+function clearInvokeError(id: string): void {
+  delete invokeErrors[id]
+}
+
+function invokeErrorId(id: string): string {
+  return `agent-invoke-error-${toAgentToolName(id)}`
 }
 
 function readResource(id: string) {
@@ -100,7 +111,25 @@ function readResource(id: string) {
             <div class="label">
               Invoke (MCP format)
             </div>
-            <textarea v-model="argsInput[tool.id]" class="args" spellcheck="false" placeholder="{}" />
+            <textarea
+              v-model="argsInput[tool.id]"
+              class="args"
+              spellcheck="false"
+              placeholder="{}"
+              :aria-invalid="!!invokeErrors[tool.id]"
+              :aria-describedby="invokeErrors[tool.id] ? invokeErrorId(tool.id) : undefined"
+              @input="clearInvokeError(tool.id)"
+            />
+            <FeedbackTip
+              v-if="invokeErrors[tool.id]"
+              :id="invokeErrorId(tool.id)"
+              class="mt-2"
+              type="error"
+              icon="i-ph-warning-circle-duotone"
+              role="alert"
+            >
+              {{ invokeErrors[tool.id] }}
+            </FeedbackTip>
             <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
               <ActionButton
                 variant="primary"
