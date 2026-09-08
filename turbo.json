@@ -69,37 +69,37 @@
     },
     "@devframes/plugin-code-server#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@devframes/vite#build"],
+      "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-terminals#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@devframes/vite#build"],
+      "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-inspect#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@devframes/vite#build"],
+      "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-og#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@devframes/vite#build"],
+      "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-data-inspector#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@devframes/vite#build"],
+      "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-messages#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@devframes/hub#build", "@devframes/vite#build"],
+      "dependsOn": ["devframe#build", "@devframes/hub#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-assets#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@devframes/vite#build"],
+      "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "custom-hub-vite#build": {
@@ -169,7 +169,7 @@
     },
     "@devframes/plugin-a11y#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build", "@devframes/vite#build"],
+      "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "files-inspector-example#cli:build": {
