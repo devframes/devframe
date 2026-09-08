@@ -1,7 +1,7 @@
 {
   "name": "hub-next",
   "type": "module",
-  "version": "0.9.12",
+  "version": "0.9.13",
   "private": true,
   "description": "Minimal Next.js host that mounts the devframe hub on a single App Router route.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-next",
