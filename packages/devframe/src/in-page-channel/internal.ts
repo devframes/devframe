@@ -158,9 +158,9 @@ export function deserializeResult(codec: InPageChannelSerialization, result: unk
   return codec.deserialize && result !== undefined ? codec.deserialize(result) : result
 }
 
-/** Keep user functions, user events, and internal methods in separate wire namespaces. */
 export function channelMethod(kind: 'function' | 'event', name: string): string {
-  return JSON.stringify([kind, name])
+  // Keep user functions, user events, and internal methods in separate wire namespaces.
+  return `devframe:in-page:${kind}:${name}`
 }
 
 /**
