@@ -10,11 +10,9 @@ blockExoticSubdeps: false
 minimumReleaseAgeExcludePrune: true
 minimumReleaseAgeExclude:
   - iframe-pane@1.1.0
-  - tsdown@0.22.14
   - structured-clone-es@2.0.1
   - '@antfu/eslint-config@9.5.1'
   - eslint-plugin-pnpm@1.9.1
-  - eslint-plugin-slop@0.1.1
   - pnpm-workspace-yaml@1.9.1
   - '@iconify-json/logos@1.2.14'
   - '@iconify-json/octicon@1.2.33'

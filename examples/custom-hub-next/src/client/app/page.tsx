@@ -264,7 +264,10 @@ function AuthOverlay({ rpc }: { rpc: DevframeRpcClient }) {
 
   useEffect(() => {
     inputRef.current?.focus()
-  }, [])
+    // The server prints its code banner on request; ask once when this
+    // overlay first shows (an already-authorized page never mounts it).
+    void rpc.requestAuthCode().catch(() => {})
+  }, [rpc])
 
   async function submit(event: FormEvent) {
     event.preventDefault()

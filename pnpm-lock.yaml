@@ -538,7 +538,7 @@ importers:
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@antfu/eslint-config':
         specifier: catalog:tooling
         version: 9.5.1(@typescript-eslint/typescript-estree@8.69.0(supports-color@10.2.2)(typescript@6.0.3))(@typescript-eslint/utils@8.69.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(@vue/compiler-sfc@3.5.42)(eslint-plugin-slop@0.1.3(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)))(eslint-plugin-sonarjs@4.2.0(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2)))(eslint@10.10.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)(vitest@5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.0)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))
@@ -664,7 +664,7 @@ importers:
         version: 4.4.3(react@19.2.8)(shiki@4.4.3)(solid-js@1.9.15)(svelte@5.57.0(@typescript-eslint/types@8.69.0))(vue@3.5.42(typescript@6.0.3))
       comark-docs:
         specifier: catalog:docs
-        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/f97dc864b0aa702d54c600f868589b7a2c185b3a(patch_hash=5f1078be206123f957de74141ae02eaae510555cc7444404bffbfaae8d407e33)(0decd87d1c71e8f51b02c09333db031a)
+        version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/f97dc864b0aa702d54c600f868589b7a2c185b3a(patch_hash=5f1078be206123f957de74141ae02eaae510555cc7444404bffbfaae8d407e33)(8c1100af25288be37a3f8321653301ac)
       d3-shape:
         specifier: catalog:frontend
         version: 3.2.0
@@ -686,7 +686,7 @@ importers:
     dependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
@@ -717,7 +717,7 @@ importers:
     dependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
@@ -805,7 +805,7 @@ importers:
         version: 2.0.3
       unocss:
         specifier: ^66.10.0
-        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
       vitest:
         specifier: catalog:testing
         version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.0)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
@@ -817,7 +817,7 @@ importers:
     dependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
@@ -878,7 +878,7 @@ importers:
         version: 1.2.2
       unocss:
         specifier: ^66.10.0
-        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
       vite:
         specifier: catalog:build
         version: 8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
@@ -903,7 +903,7 @@ importers:
     dependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -931,7 +931,7 @@ importers:
         version: 2.0.1-rc.31(crossws@0.4.12(srvx@0.12.7))
       unocss:
         specifier: ^66.10.0
-        version: 66.10.0(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
       vite:
         specifier: catalog:build
         version: 8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
@@ -1193,7 +1193,7 @@ importers:
         version: link:../../packages/devframe
       nitro:
         specifier: catalog:deps
-        version: 3.0.260610-beta(@vercel/functions@3.9.5(ws@8.21.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.3.6)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+        version: 3.0.260610-beta(@vercel/functions@3.9.5(ws@8.21.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.3.6)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
     devDependencies:
       '@types/node':
         specifier: catalog:types
@@ -1383,7 +1383,7 @@ importers:
     dependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/next':
         specifier: workspace:*
         version: link:../../packages/next
@@ -1438,7 +1438,7 @@ importers:
     dependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
@@ -1454,7 +1454,7 @@ importers:
         version: 2.0.1-rc.31(crossws@0.4.12(srvx@0.12.7))
       unocss:
         specifier: ^66.10.0
-        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
       vite:
         specifier: catalog:build
         version: 8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
@@ -1463,7 +1463,7 @@ importers:
     dependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       cac:
         specifier: catalog:deps
         version: 7.0.0
@@ -1491,7 +1491,7 @@ importers:
         version: 2.0.1-rc.31(crossws@0.4.12(srvx@0.12.7))
       unocss:
         specifier: ^66.10.0
-        version: 66.10.0(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
       vite:
         specifier: catalog:build
         version: 8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
@@ -1634,7 +1634,7 @@ importers:
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.6.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.6.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/hub':
         specifier: workspace:*
         version: link:../hub
@@ -1688,7 +1688,7 @@ importers:
         version: 4.23.13
       unocss:
         specifier: ^66.10.0
-        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
       vite:
         specifier: catalog:build
         version: 8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
@@ -1725,7 +1725,7 @@ importers:
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/hub':
         specifier: workspace:*
         version: link:../hub
@@ -1767,7 +1767,7 @@ importers:
         version: 4.23.13
       unocss:
         specifier: ^66.10.0
-        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
       vite:
         specifier: catalog:build
         version: 8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
@@ -1885,7 +1885,7 @@ importers:
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/plugin-a11y--assets':
         specifier: workspace:*
         version: link:assets-pkg
@@ -1963,7 +1963,7 @@ importers:
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/plugin-assets--assets':
         specifier: workspace:*
         version: link:assets-pkg
@@ -2038,7 +2038,7 @@ importers:
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/plugin-code-server--assets':
         specifier: workspace:*
         version: link:assets-pkg
@@ -2098,7 +2098,7 @@ importers:
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.6.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.6.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/plugin-data-inspector--assets':
         specifier: workspace:*
         version: link:assets-pkg
@@ -2188,7 +2188,7 @@ importers:
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/plugin-git--assets':
         specifier: workspace:*
         version: link:assets-pkg
@@ -2275,7 +2275,7 @@ importers:
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
@@ -2353,7 +2353,7 @@ importers:
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/hub':
         specifier: workspace:*
         version: link:../../packages/hub
@@ -2431,7 +2431,7 @@ importers:
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/plugin-og--assets':
         specifier: workspace:*
         version: link:assets-pkg
@@ -2497,7 +2497,7 @@ importers:
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/plugin-terminals--assets':
         specifier: workspace:*
         version: link:assets-pkg
@@ -2661,7 +2661,7 @@ importers:
     dependencies:
       '@antfu/design':
         specifier: catalog:frontend
-        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
+        version: 0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))
       '@devframes/hub':
         specifier: workspace:*
         version: link:../packages/hub
@@ -2692,7 +2692,7 @@ importers:
         version: 10.6.0(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       unocss:
         specifier: ^66.10.0
-        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+        version: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
       vite:
         specifier: catalog:build
         version: 8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
@@ -6959,9 +6959,6 @@ packages:
 
   '@unocss/core@66.10.0':
     resolution: {integrity: sha512-d3IMOBqbAdkq4zWiV469o1Q4qizdKbD/wkbvLaq7W6qf1aDrZ/dqg29aWMj23Nb48NVDNhsQAPUhQre/IZ04mQ==}
-
-  '@unocss/core@66.8.1':
-    resolution: {integrity: sha512-ze/3qTloXZtFn6TXiNjL6ai1vgMvTCXIm8nqTzoU/Dt5d5MRxA86ERfUmgTX70rEBam5l6vnsaEVZO6WnHhdRA==}
 
   '@unocss/extractor-arbitrary-variants@66.10.0':
     resolution: {integrity: sha512-5yv7dC2BmY2o6GXtH5dyadoRmNFlZBAtEKItxHLE0jGPmgoFl5MUwlebRSCrlrPy4Z21bal/ve2yxP9SfLIiig==}
@@ -12768,7 +12765,7 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@antfu/design@0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))':
+  '@antfu/design@0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))':
     dependencies:
       '@vueuse/core': 14.4.0(vue@3.5.42(typescript@6.0.3))
       unocss: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
@@ -12777,7 +12774,6 @@ snapshots:
       '@antfu/utils': 9.3.0
       '@iconify-json/catppuccin': 1.2.17
       '@tanstack/vue-virtual': 3.13.36(vue@3.5.42(typescript@6.0.3))
-      '@unocss/core': 66.8.1
       colorjs.io: 0.6.1
       dompurify: 3.4.14
       floating-vue: 5.2.2(vue@3.5.42(typescript@6.0.3))
@@ -12785,24 +12781,7 @@ snapshots:
       reka-ui: 2.10.4(vue@3.5.42(typescript@6.0.3))
       splitpanes: 4.1.2(vue@3.5.42(typescript@6.0.3))
 
-  '@antfu/design@0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.6.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))':
-    dependencies:
-      '@vueuse/core': 14.4.0(vue@3.5.42(typescript@6.0.3))
-      unocss: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
-      vue: 3.5.42(typescript@6.0.3)
-    optionalDependencies:
-      '@antfu/utils': 9.3.0
-      '@iconify-json/catppuccin': 1.2.17
-      '@tanstack/vue-virtual': 3.13.36(vue@3.5.42(typescript@6.0.3))
-      '@unocss/core': 66.8.1
-      colorjs.io: 0.6.1
-      dompurify: 3.4.14
-      floating-vue: 5.2.2(vue@3.5.42(typescript@6.0.3))
-      playwright: 1.62.1
-      reka-ui: 2.10.4(vue@3.5.42(typescript@6.0.3))
-      splitpanes: 4.1.2(vue@3.5.42(typescript@6.0.3))
-
-  '@antfu/design@0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.6.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))':
+  '@antfu/design@0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.6.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))':
     dependencies:
       '@vueuse/core': 14.4.0(vue@3.5.42(typescript@6.0.3))
       unocss: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
@@ -12811,7 +12790,6 @@ snapshots:
       '@antfu/utils': 9.3.0
       '@iconify-json/catppuccin': 1.2.17
       '@tanstack/vue-virtual': 3.13.36(vue@3.5.42(typescript@6.0.3))
-      '@unocss/core': 66.8.1
       colorjs.io: 0.6.1
       dompurify: 3.4.15
       floating-vue: 5.2.2(vue@3.5.42(typescript@6.0.3))
@@ -12819,24 +12797,7 @@ snapshots:
       reka-ui: 2.10.4(vue@3.5.42(typescript@6.0.3))
       splitpanes: 4.1.2(vue@3.5.42(typescript@6.0.3))
 
-  '@antfu/design@0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.6.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))':
-    dependencies:
-      '@vueuse/core': 14.4.0(vue@3.5.42(typescript@6.0.3))
-      unocss: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
-      vue: 3.5.42(typescript@6.0.3)
-    optionalDependencies:
-      '@antfu/utils': 9.3.0
-      '@iconify-json/catppuccin': 1.2.17
-      '@tanstack/vue-virtual': 3.13.36(vue@3.5.42(typescript@6.0.3))
-      '@unocss/core': 66.8.1
-      colorjs.io: 0.6.1
-      dompurify: 3.4.15
-      floating-vue: 5.2.2(vue@3.5.42(typescript@6.0.3))
-      playwright: 1.62.1
-      reka-ui: 2.10.4(vue@3.5.42(typescript@6.0.3))
-      splitpanes: 4.1.2(vue@3.5.42(typescript@6.0.3))
-
-  '@antfu/design@0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))':
+  '@antfu/design@0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))':
     dependencies:
       '@vueuse/core': 14.4.0(vue@3.5.42(typescript@6.0.3))
       unocss: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
@@ -12845,7 +12806,6 @@ snapshots:
       '@antfu/utils': 9.3.0
       '@iconify-json/catppuccin': 1.2.17
       '@tanstack/vue-virtual': 3.13.36(vue@3.5.42(typescript@6.0.3))
-      '@unocss/core': 66.8.1
       colorjs.io: 0.7.1
       dompurify: 3.4.14
       floating-vue: 5.2.2(vue@3.5.42(typescript@6.0.3))
@@ -12853,50 +12813,15 @@ snapshots:
       reka-ui: 2.10.4(vue@3.5.42(typescript@6.0.3))
       splitpanes: 4.1.2(vue@3.5.42(typescript@6.0.3))
 
-  '@antfu/design@0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))':
+  '@antfu/design@0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(colorjs.io@0.7.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))':
     dependencies:
       '@vueuse/core': 14.4.0(vue@3.5.42(typescript@6.0.3))
-      unocss: 66.10.0(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
+      unocss: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
       vue: 3.5.42(typescript@6.0.3)
     optionalDependencies:
       '@antfu/utils': 9.3.0
       '@iconify-json/catppuccin': 1.2.17
       '@tanstack/vue-virtual': 3.13.36(vue@3.5.42(typescript@6.0.3))
-      '@unocss/core': 66.8.1
-      colorjs.io: 0.7.1
-      dompurify: 3.4.14
-      floating-vue: 5.2.2(vue@3.5.42(typescript@6.0.3))
-      playwright: 1.62.1
-      reka-ui: 2.10.4(vue@3.5.42(typescript@6.0.3))
-      splitpanes: 4.1.2(vue@3.5.42(typescript@6.0.3))
-
-  '@antfu/design@0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.14)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))':
-    dependencies:
-      '@vueuse/core': 14.4.0(vue@3.5.42(typescript@6.0.3))
-      unocss: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
-      vue: 3.5.42(typescript@6.0.3)
-    optionalDependencies:
-      '@antfu/utils': 9.3.0
-      '@iconify-json/catppuccin': 1.2.17
-      '@tanstack/vue-virtual': 3.13.36(vue@3.5.42(typescript@6.0.3))
-      '@unocss/core': 66.8.1
-      colorjs.io: 0.7.1
-      dompurify: 3.4.14
-      floating-vue: 5.2.2(vue@3.5.42(typescript@6.0.3))
-      playwright: 1.62.1
-      reka-ui: 2.10.4(vue@3.5.42(typescript@6.0.3))
-      splitpanes: 4.1.2(vue@3.5.42(typescript@6.0.3))
-
-  '@antfu/design@0.4.0(@antfu/utils@9.3.0)(@iconify-json/catppuccin@1.2.17)(@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3)))(@unocss/core@66.8.1)(colorjs.io@0.7.1)(dompurify@3.4.15)(floating-vue@5.2.2(vue@3.5.42(typescript@6.0.3)))(playwright@1.62.1)(reka-ui@2.10.4(vue@3.5.42(typescript@6.0.3)))(splitpanes@4.1.2(vue@3.5.42(typescript@6.0.3)))(unocss@66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vue@3.5.42(typescript@6.0.3))':
-    dependencies:
-      '@vueuse/core': 14.4.0(vue@3.5.42(typescript@6.0.3))
-      unocss: 66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
-      vue: 3.5.42(typescript@6.0.3)
-    optionalDependencies:
-      '@antfu/utils': 9.3.0
-      '@iconify-json/catppuccin': 1.2.17
-      '@tanstack/vue-virtual': 3.13.36(vue@3.5.42(typescript@6.0.3))
-      '@unocss/core': 66.8.1
       colorjs.io: 0.7.1
       dompurify: 3.4.15
       floating-vue: 5.2.2(vue@3.5.42(typescript@6.0.3))
@@ -15047,12 +14972,12 @@ snapshots:
       - rolldown
       - unplugin
 
-  '@nuxtjs/mcp-toolkit@0.18.1(@vue/compiler-sfc@3.5.42)(h3@2.0.1-rc.31(crossws@0.4.12(srvx@0.12.7)))(magic-string@1.2.3)(magicast@0.5.4)(oxc-parser@0.143.0)(rolldown@1.2.7)(rollup@4.60.3)(supports-color@10.2.2)(unplugin@3.3.0(@rspack/core@2.2.1(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))(vue@3.5.42(typescript@6.0.3))(zod@4.5.4)':
+  '@nuxtjs/mcp-toolkit@0.18.1(@vue/compiler-sfc@3.5.42)(h3@2.0.1-rc.31(crossws@0.4.12(srvx@0.11.22)))(magic-string@1.2.3)(magicast@0.5.4)(oxc-parser@0.143.0)(rolldown@1.2.7)(rollup@4.60.3)(supports-color@10.2.2)(unplugin@3.3.0(@rspack/core@2.2.1(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))(vue@3.5.42(typescript@6.0.3))(zod@4.5.4)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.30.0(supports-color@10.2.2)(zod@4.5.4)
       '@nuxt/kit': 4.5.2(magic-string@1.2.3)(magicast@0.5.4)(oxc-parser@0.143.0)(rolldown@1.2.7)(unplugin@3.3.0(@rspack/core@2.2.1(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))
       '@vitejs/plugin-vue': 6.0.8(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))(vue@3.5.42(typescript@6.0.3))
-      h3: 2.0.1-rc.31(crossws@0.4.12(srvx@0.12.7))
+      h3: 2.0.1-rc.31(crossws@0.4.12(srvx@0.11.22))
       tinyglobby: 0.2.17
       vite-plugin-singlefile: 2.3.3(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
       zod: 4.5.4
@@ -17247,9 +17172,6 @@ snapshots:
 
   '@unocss/core@66.10.0': {}
 
-  '@unocss/core@66.8.1':
-    optional: true
-
   '@unocss/extractor-arbitrary-variants@66.10.0':
     dependencies:
       '@unocss/core': 66.10.0
@@ -18325,7 +18247,7 @@ snapshots:
       - srvx
       - uploadthing
 
-  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/f97dc864b0aa702d54c600f868589b7a2c185b3a(patch_hash=5f1078be206123f957de74141ae02eaae510555cc7444404bffbfaae8d407e33)(0decd87d1c71e8f51b02c09333db031a):
+  comark-docs@https://codeload.github.com/comarkdown/comark-docs/tar.gz/f97dc864b0aa702d54c600f868589b7a2c185b3a(patch_hash=5f1078be206123f957de74141ae02eaae510555cc7444404bffbfaae8d407e33)(8c1100af25288be37a3f8321653301ac):
     dependencies:
       '@ai-sdk/gateway': 4.0.69(zod@4.5.4)
       '@ai-sdk/vue': 4.0.85(vue@3.5.42(typescript@6.0.3))(zod@4.5.4)
@@ -18336,7 +18258,7 @@ snapshots:
       '@iconify/vue': 5.0.1(vue@3.5.42(typescript@6.0.3))
       '@nuxt/kit': 4.5.2(magic-string@1.2.3)(magicast@0.5.4)(oxc-parser@0.143.0)(rolldown@1.2.7)(unplugin@3.3.0(@rspack/core@2.2.1(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))
       '@nuxt/ui': 4.11.0(fc872aaf87374734947650dbb5b483c5)
-      '@nuxtjs/mcp-toolkit': 0.18.1(@vue/compiler-sfc@3.5.42)(h3@2.0.1-rc.31(crossws@0.4.12(srvx@0.12.7)))(magic-string@1.2.3)(magicast@0.5.4)(oxc-parser@0.143.0)(rolldown@1.2.7)(rollup@4.60.3)(supports-color@10.2.2)(unplugin@3.3.0(@rspack/core@2.2.1(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))(vue@3.5.42(typescript@6.0.3))(zod@4.5.4)
+      '@nuxtjs/mcp-toolkit': 0.18.1(@vue/compiler-sfc@3.5.42)(h3@2.0.1-rc.31(crossws@0.4.12(srvx@0.11.22)))(magic-string@1.2.3)(magicast@0.5.4)(oxc-parser@0.143.0)(rolldown@1.2.7)(rollup@4.60.3)(supports-color@10.2.2)(unplugin@3.3.0(@rspack/core@2.2.1(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))(vue@3.5.42(typescript@6.0.3))(zod@4.5.4)
       '@nuxtjs/robots': 6.2.0(64a699f206cfca2ce936a0b31f012043)
       '@nuxtjs/sitemap': 8.5.0(64a699f206cfca2ce936a0b31f012043)
       '@octokit/webhooks-methods': 6.0.0
@@ -19770,6 +19692,13 @@ snapshots:
     optionalDependencies:
       crossws: 0.4.12(srvx@0.11.22)
 
+  h3@2.0.1-rc.31(crossws@0.4.12(srvx@0.11.22)):
+    dependencies:
+      rou3: 0.9.2
+      srvx: 1.0.3
+    optionalDependencies:
+      crossws: 0.4.12(srvx@0.11.22)
+
   h3@2.0.1-rc.31(crossws@0.4.12(srvx@0.12.7)):
     dependencies:
       rou3: 0.9.2
@@ -20912,7 +20841,7 @@ snapshots:
 
   nf3@0.3.23: {}
 
-  nitro@3.0.260610-beta(@vercel/functions@3.9.5(ws@8.21.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.3.6)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)):
+  nitro@3.0.260610-beta(@vercel/functions@3.9.5(ws@8.21.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.3.6)(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.12(srvx@0.11.22)
@@ -20932,6 +20861,7 @@ snapshots:
       dotenv: 17.4.2
       giget: 3.3.0
       jiti: 2.7.0
+      rollup: 4.60.3
       vite: 8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -21701,7 +21631,7 @@ snapshots:
     dependencies:
       citty: 0.2.2
       pathe: 2.0.3
-      tinyexec: 1.3.0
+      tinyexec: 1.3.1
 
   object-assign@4.1.1: {}
 
@@ -23674,58 +23604,6 @@ snapshots:
       '@unocss/vite': 66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
     optionalDependencies:
       '@unocss/postcss': 66.10.0(postcss@8.5.26)
-    transitivePeerDependencies:
-      - rolldown
-      - rollup
-      - vite
-
-  unocss@66.10.0(@unocss/postcss@66.10.0(postcss@8.5.26))(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)):
-    dependencies:
-      '@unocss/cli': 66.10.0
-      '@unocss/core': 66.10.0
-      '@unocss/preset-attributify': 66.10.0
-      '@unocss/preset-icons': 66.10.0
-      '@unocss/preset-mini': 66.10.0
-      '@unocss/preset-tagify': 66.10.0
-      '@unocss/preset-typography': 66.10.0
-      '@unocss/preset-uno': 66.10.0
-      '@unocss/preset-web-fonts': 66.10.0
-      '@unocss/preset-wind': 66.10.0
-      '@unocss/preset-wind3': 66.10.0
-      '@unocss/preset-wind4': 66.10.0
-      '@unocss/rollup': 66.10.0(rolldown@1.2.7)(rollup@4.60.3)
-      '@unocss/transformer-attributify-jsx': 66.10.0
-      '@unocss/transformer-compile-class': 66.10.0
-      '@unocss/transformer-directives': 66.10.0
-      '@unocss/transformer-variant-group': 66.10.0
-      '@unocss/vite': 66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
-    optionalDependencies:
-      '@unocss/postcss': 66.10.0(postcss@8.5.26)
-    transitivePeerDependencies:
-      - rolldown
-      - rollup
-      - vite
-
-  unocss@66.10.0(rollup@4.60.3)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0)):
-    dependencies:
-      '@unocss/cli': 66.10.0
-      '@unocss/core': 66.10.0
-      '@unocss/preset-attributify': 66.10.0
-      '@unocss/preset-icons': 66.10.0
-      '@unocss/preset-mini': 66.10.0
-      '@unocss/preset-tagify': 66.10.0
-      '@unocss/preset-typography': 66.10.0
-      '@unocss/preset-uno': 66.10.0
-      '@unocss/preset-web-fonts': 66.10.0
-      '@unocss/preset-wind': 66.10.0
-      '@unocss/preset-wind3': 66.10.0
-      '@unocss/preset-wind4': 66.10.0
-      '@unocss/rollup': 66.10.0(rolldown@1.2.7)(rollup@4.60.3)
-      '@unocss/transformer-attributify-jsx': 66.10.0
-      '@unocss/transformer-compile-class': 66.10.0
-      '@unocss/transformer-directives': 66.10.0
-      '@unocss/transformer-variant-group': 66.10.0
-      '@unocss/vite': 66.10.0(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
     transitivePeerDependencies:
       - rolldown
       - rollup

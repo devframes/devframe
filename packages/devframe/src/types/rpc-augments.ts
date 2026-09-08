@@ -76,6 +76,19 @@ export interface DevframeRpcServerFunctions {
    */
   'anonymous:devframe:auth:exchange': (params: { code: string, ua: string, origin: string }) => Promise<{ authToken: string | null }>
   /**
+   * Ask the server to print its auth banner (code + magic link) for this
+   * client, e.g. when an auth UI first shows; `reissue: true` rotates the code
+   * first (the manual "re-issue" action). Registered by
+   * `recipes/interactive-auth`; a repeat request for an already-printed code
+   * is a no-op.
+   *
+   * Named with the `anonymous:` prefix (see `isAnonymousRpcMethod`) so it is
+   * reachable before the connection is trusted.
+   *
+   * @internal
+   */
+  'anonymous:devframe:auth:request-code': (params: { ua: string, origin: string, reissue?: boolean }) => Promise<void>
+  /**
    * Self-revoke: the caller asks the server to revoke its own bearer token
    * (if any) and drop to untrusted. Requires an already-trusted caller, so
    * unlike the two handshake methods above it does **not** carry the

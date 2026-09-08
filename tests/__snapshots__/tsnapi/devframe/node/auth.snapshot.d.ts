@@ -3,9 +3,11 @@
  */
 // #region Other
 export { buildOtpAuthUrl }
+export { describeUA }
 export { DevframeAuthHandler }
 export { exchangeTempAuthCode }
 export { getTempAuthCode }
+export { getTempAuthCodeInfo }
 export { refreshTempAuthCode }
 export { revokeActiveConnectionsForToken }
 export { revokeAuthToken }

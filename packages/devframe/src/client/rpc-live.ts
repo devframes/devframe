@@ -235,6 +235,14 @@ export function createLiveRpcClientMode(
     return token
   }
 
+  async function requestAuthCode(options: { reissue?: boolean } = {}): Promise<void> {
+    await serverRpc.$call('anonymous:devframe:auth:request-code', {
+      ua: navigator.userAgent,
+      origin: location.origin,
+      ...(options.reissue ? { reissue: true } : {}),
+    })
+  }
+
   async function requestTrust() {
     if (isTrusted)
       return true
@@ -281,6 +289,7 @@ export function createLiveRpcClientMode(
     requestTrust,
     requestTrustWithToken,
     requestTrustWithCode,
+    requestAuthCode,
     ensureTrusted,
     call: (...args: any): any => {
       const method = String(args[0])

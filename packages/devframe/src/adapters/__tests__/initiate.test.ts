@@ -103,25 +103,29 @@ describe('adapters/handler', () => {
 
     try {
       await devtools.ready
-      // The banner waits for the public origin: unknown until a request
-      // arrives, then printed exactly once (the magic link points at the
-      // origin the handler is actually mounted on).
+      // The banner is on demand: a plain request derives the public origin
+      // but prints nothing, even for an already-authorized page.
+      await devtools.handler(new Request('http://localhost:4321/__handler-auth/__connection.json'))
       expect(spy).not.toHaveBeenCalled()
-      await devtools.handler(new Request('http://localhost:4321/__handler-auth/__connection.json'))
-      expect(spy).toHaveBeenCalledTimes(1)
-      expect(String(spy.mock.calls[0])).toContain('http://localhost:4321')
-      await devtools.handler(new Request('http://localhost:4321/__handler-auth/__connection.json'))
-      expect(spy).toHaveBeenCalledTimes(1)
 
       const client = connectWsClient(`ws://127.0.0.1:${wsPort}/__ws`)
       const handshake = await client.$call('anonymous:devframe:auth' as any, HANDSHAKE)
       expect(handshake).toEqual({ isTrusted: false })
       await expect(client.$call('test:probe' as any)).rejects.toThrow()
 
+      // An untrusted client requests the code (the auth view's mount call):
+      // printed once per code, with the magic link on the derived origin.
+      await client.$call('anonymous:devframe:auth:request-code' as any, { ua: 'test', origin: 'http://localhost' })
+      await client.$call('anonymous:devframe:auth:request-code' as any, { ua: 'test', origin: 'http://localhost' })
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(String(spy.mock.calls[0])).toContain('http://localhost:4321')
+
       const code = getTempAuthCode()
       const exchange = await client.$call('anonymous:devframe:auth:exchange' as any, { code, ua: 'test', origin: 'http://localhost' }) as { authToken: string | null }
       expect(exchange.authToken).toBeTruthy()
       await expect(client.$call('test:probe' as any)).resolves.toBe('ok')
+      // The exchange rotates the code without printing the new one.
+      expect(spy).toHaveBeenCalledTimes(1)
       client.$close()
     }
     finally {
@@ -426,22 +430,32 @@ describe('adapters/handler', () => {
   })
 
   // The auth-link origin is derived from the served request's URL (the fetch
-  // handler ignores the `Host` header; that path is `nodeMiddleware`'s), so
-  // each case just points a request at the origin under test and inspects the
-  // one-time banner (`console.log`).
+  // handler ignores the `Host` header), so each case points a request at the
+  // origin under test, then requests a banner over RPC (`reissue` rotates the
+  // code past the per-code dedupe) and inspects the printed link.
   async function withBannerSpy(
     id: string,
     extra: Partial<Parameters<typeof initDevframe>[1]>,
-    run: (devtools: ReturnType<typeof initDevframe>, spy: ReturnType<typeof vi.spyOn>) => Promise<void>,
+    run: (
+      devtools: ReturnType<typeof initDevframe>,
+      spy: ReturnType<typeof vi.spyOn>,
+      requestBanner: () => Promise<void>,
+    ) => Promise<void>,
   ): Promise<void> {
     const wsPort = await getPort({ host: '127.0.0.1' })
     const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
     const devtools = initDevframe(defineTestDef(id), { base: `/__${id}/`, host: '127.0.0.1', ws: { port: wsPort }, ...extra })
+    let client: ReturnType<typeof connectWsClient> | undefined
     try {
       await devtools.ready
-      await run(devtools, spy)
+      client = connectWsClient(`ws://127.0.0.1:${wsPort}/__ws`)
+      const requestBanner = async (): Promise<void> => {
+        await client!.$call('anonymous:devframe:auth:request-code' as any, { ua: 'test', origin: 'http://localhost', reissue: true })
+      }
+      await run(devtools, spy, requestBanner)
     }
     finally {
+      client?.$close()
       spy.mockRestore()
       await devtools.close()
     }
@@ -450,47 +464,54 @@ describe('adapters/handler', () => {
     devtools.handler(new Request(`${origin}/__connection.json`))
 
   it('a hostile first request never becomes the OTP-link origin; a later loopback one does', () =>
-    withBannerSpy('h-poison', {}, async (devtools, spy) => {
-      // A forged non-loopback origin is not adopted and prints nothing.
+    withBannerSpy('h-poison', {}, async (devtools, spy, requestBanner) => {
+      // A forged non-loopback origin is not adopted: a banner requested now
+      // falls back to the loopback default, never the forged authority.
       await hit(devtools, 'http://evil.example.com/__h-poison')
-      expect(spy).not.toHaveBeenCalled()
-      // A later loopback origin is adopted and prints exactly one OTP link
+      await requestBanner()
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(String(spy.mock.calls[0])).not.toContain('evil.example.com')
+      // A later loopback origin is adopted and the OTP link points at it
       // (the credential rides the fragment); the reject never locked it out.
       await hit(devtools, 'http://localhost:4321/__h-poison')
-      expect(spy).toHaveBeenCalledTimes(1)
-      expect(String(spy.mock.calls[0])).toContain('http://localhost:4321/#devframe_otp=')
-      expect(String(spy.mock.calls[0])).not.toContain('evil.example.com')
+      await requestBanner()
+      expect(String(spy.mock.calls[1])).toContain('http://localhost:4321/#devframe_otp=')
       // First-valid origin is pinned: a second loopback request doesn't move it.
       await hit(devtools, 'http://127.0.0.1:9999/__h-poison')
-      expect(spy).toHaveBeenCalledTimes(1)
+      await requestBanner()
+      expect(String(spy.mock.calls[2])).toContain('http://localhost:4321/#')
     }))
 
   it('adopts an exactly allow-listed non-loopback origin, but rejects a near-match', () =>
-    withBannerSpy('h-allow', { allowedOrigins: ['https://tools.example.com'] }, async (devtools, spy) => {
-      // Prefix/suffix near-matches of the allow-list entry are never adopted.
+    withBannerSpy('h-allow', { allowedOrigins: ['https://tools.example.com'] }, async (devtools, spy, requestBanner) => {
+      // Prefix/suffix near-matches of the allow-list entry are never adopted;
+      // the link stays on the loopback fallback.
       await hit(devtools, 'https://tools.example.com.evil.com/__h-allow')
       await hit(devtools, 'https://evil.tools.example.com/__h-allow')
-      expect(spy).not.toHaveBeenCalled()
+      await requestBanner()
+      expect(String(spy.mock.calls[0])).toContain('http://localhost/#')
+      expect(String(spy.mock.calls[0])).not.toContain('evil')
       // The exact allow-listed origin is.
       await hit(devtools, 'https://tools.example.com/__h-allow')
-      expect(spy).toHaveBeenCalledTimes(1)
-      expect(String(spy.mock.calls[0])).toContain('https://tools.example.com/#')
+      await requestBanner()
+      expect(String(spy.mock.calls[1])).toContain('https://tools.example.com/#')
     }))
 
   it('an explicit origin wins over any request', () =>
-    withBannerSpy('h-pinned', { origin: 'https://pinned.example.com' }, async (devtools, spy) => {
-      // Pinned: the banner points at it before any request, and a forged
-      // request can't move it.
-      expect(spy).toHaveBeenCalledTimes(1)
+    withBannerSpy('h-pinned', { origin: 'https://pinned.example.com' }, async (devtools, spy, requestBanner) => {
+      // Pinned: the banner points at it, and a forged request can't move it.
+      await requestBanner()
       expect(String(spy.mock.calls[0])).toContain('https://pinned.example.com/#')
       await hit(devtools, 'http://evil.example.com/__h-pinned')
-      expect(spy).toHaveBeenCalledTimes(1)
-      expect(String(spy.mock.calls[0])).not.toContain('evil.example.com')
+      await requestBanner()
+      expect(String(spy.mock.calls[1])).toContain('https://pinned.example.com/#')
+      expect(String(spy.mock.calls[1])).not.toContain('evil.example.com')
     }))
 
   it('canonicalizes an adopted origin, dropping the default port', () =>
-    withBannerSpy('h-canon', {}, async (devtools, spy) => {
+    withBannerSpy('h-canon', {}, async (devtools, spy, requestBanner) => {
       await hit(devtools, 'http://localhost:80/__h-canon')
+      await requestBanner()
       expect(spy).toHaveBeenCalledTimes(1)
       expect(String(spy.mock.calls[0])).toContain('http://localhost/#')
       expect(String(spy.mock.calls[0])).not.toContain('localhost:80')

@@ -16,8 +16,9 @@ import type { DevframeNodeRpcSession } from 'devframe/types'
 export interface DevframeAuthHandler {
   /**
    * `anonymous:devframe:auth` + `anonymous:devframe:auth:exchange` (the
-   * handshake) and `devframe:auth:revoke` (self-revoke); register these on
-   * the RPC host (e.g. `rpcHost.register(fn)` for each).
+   * handshake), `anonymous:devframe:auth:request-code` (client-requested
+   * banner print), and `devframe:auth:revoke` (self-revoke); register these
+   * on the RPC host (e.g. `rpcHost.register(fn)` for each).
    */
   rpcFunctions: RpcFunctionDefinitionAny[]
   /**
@@ -35,9 +36,11 @@ export interface DevframeAuthHandler {
    */
   onConnect: (connection: DevframeRpcConnection, session: DevframeNodeRpcSession) => void
   /**
-   * Print the current one-time code and its magic-link URL. Devframe stays
-   * headless, so call this yourself once the server is listening. Safe to
-   * call repeatedly; it only prints once per code.
+   * Print the current one-time code and its magic-link URL. An untrusted
+   * browser client triggers this itself over
+   * `anonymous:devframe:auth:request-code`; call it directly when the host
+   * wants the code on screen without waiting for a client. Safe to call
+   * repeatedly; it only prints once per code.
    */
   printBanner: () => void
   /**

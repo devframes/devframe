@@ -1,0 +1,3 @@
+# pnpm patch files must stay LF: a CRLF checkout (Windows autocrlf) breaks
+# pnpm's patch parser with ERR_PNPM_INVALID_PATCH.
+*.patch text eol=lf

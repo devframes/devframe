@@ -25,6 +25,8 @@ export async function createStaticRpcClientMode(
     requestTrustWithToken: async () => true,
     /** Static backends are always trusted, so there's nothing to exchange. */
     requestTrustWithCode: async () => null,
+    /** No server terminal to print a code in. */
+    requestAuthCode: async () => {},
     ensureTrusted: async () => true,
     call: (...args: any): any => staticCaller.call(
       args[0] as string,

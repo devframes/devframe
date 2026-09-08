@@ -49,7 +49,7 @@
     },
     "@devframes/json-render-ui#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["@devframes/json-render#build"],
+      "dependsOn": ["@devframes/json-render#build", "@devframes/vite#build"],
       "outputs": ["dist/**"]
     },
     "@devframes/service-git#build": {
@@ -144,7 +144,7 @@
     },
     "files-inspector-example#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build"],
+      "dependsOn": ["devframe#build", "@devframes/vite#build"],
       "outputs": ["dist/**"]
     },
     "devframe-starter#build": {
@@ -154,7 +154,7 @@
     },
     "streaming-chat-example#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["devframe#build"],
+      "dependsOn": ["devframe#build", "@devframes/vite#build"],
       "outputs": ["dist/**"]
     },
     "next-runtime-snapshot-example#build": {

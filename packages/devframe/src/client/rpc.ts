@@ -191,6 +191,14 @@ export interface DevframeRpcClient {
   requestTrustWithCode: (code: string) => Promise<boolean>
 
   /**
+   * Ask the server to print its one-time code banner in the terminal, e.g.
+   * when a custom auth UI is shown. Pass `reissue: true` to rotate the code
+   * first (a "re-issue" button), guaranteeing a freshly-valid code; without
+   * it the server prints each code at most once.
+   */
+  requestAuthCode: (options?: { reissue?: boolean }) => Promise<void>
+
+  /**
    * Call a RPC function on the server
    */
   call: DevframeRpcClientCall
@@ -276,6 +284,7 @@ export interface DevframeRpcClientMode {
    * token on success (for the caller to persist), or `null` on failure.
    */
   requestTrustWithCode: (code: string) => Promise<string | null>
+  requestAuthCode: DevframeRpcClient['requestAuthCode']
   call: DevframeRpcClient['call']
   callEvent: DevframeRpcClient['callEvent']
   callOptional: DevframeRpcClient['callOptional']
@@ -476,6 +485,7 @@ export async function getDevframeRpcClient(
       catch {}
       return true
     },
+    requestAuthCode: options => mode.requestAuthCode(options),
     call: gateOnBootstrapAuth(mode.call),
     callEvent: gateOnBootstrapAuth(mode.callEvent),
     callOptional: gateOnBootstrapAuth(mode.callOptional),
@@ -534,6 +544,9 @@ export async function getDevframeRpcClient(
       return
     if (typeof globalThis.prompt !== 'function')
       return
+    // Make sure the terminal actually shows a code before asking for it; the
+    // server only prints its banner on request.
+    await rpc.requestAuthCode().catch(() => {})
     while (!rpc.isTrusted) {
       // eslint-disable-next-line no-alert -- native prompt() is intentional: zero UI keeps devframe headless.
       const code = globalThis.prompt('devframe: enter the authentication code shown in your terminal')

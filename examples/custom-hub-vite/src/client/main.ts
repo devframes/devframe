@@ -309,6 +309,9 @@ function createAuthOverlay(
         return
       overlay.hidden = false
       setStatus('Waiting for authorization…')
+      // The server prints its code banner on request; ask once when this
+      // overlay first shows (an already-authorized page never reveals it).
+      void rpc.requestAuthCode().catch(() => {})
       input.focus()
     },
     remove: () => overlay.remove(),

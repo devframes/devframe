@@ -3,8 +3,10 @@
  */
 // #region Other
 export { buildOtpAuthUrl }
+export { describeUA }
 export { exchangeTempAuthCode }
 export { getTempAuthCode }
+export { getTempAuthCodeInfo }
 export { refreshTempAuthCode }
 export { revokeActiveConnectionsForToken }
 export { revokeAuthToken }

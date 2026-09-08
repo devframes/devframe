@@ -19,6 +19,9 @@ export interface DevframeRpcClient {
   requestTrust: () => Promise<boolean>;
   requestTrustWithToken: (_: string) => Promise<boolean>;
   requestTrustWithCode: (_: string) => Promise<boolean>;
+  requestAuthCode: (_?: {
+    reissue?: boolean;
+  }) => Promise<void>;
   call: DevframeRpcClientCall;
   callEvent: DevframeRpcClientCallEvent;
   callOptional: DevframeRpcClientCallOptional;
@@ -42,6 +45,7 @@ export interface DevframeRpcClientMode {
   requestTrust: DevframeRpcClient['requestTrust'];
   requestTrustWithToken: DevframeRpcClient['requestTrustWithToken'];
   requestTrustWithCode: (_: string) => Promise<string | null>;
+  requestAuthCode: DevframeRpcClient['requestAuthCode'];
   call: DevframeRpcClient['call'];
   callEvent: DevframeRpcClient['callEvent'];
   callOptional: DevframeRpcClient['callOptional'];
