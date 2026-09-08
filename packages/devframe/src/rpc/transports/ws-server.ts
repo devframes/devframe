@@ -22,6 +22,7 @@ export type {
   DevframeRpcConnection,
   DevframeRpcConnectionRequest,
   DevframeRpcTransportKind,
+  DevframeWsPeer,
 } from './session'
 
 export interface WsRpcTransportOptions {

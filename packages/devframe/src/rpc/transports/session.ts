@@ -1,4 +1,38 @@
-import type { Peer } from 'crossws'
+/**
+ * Structural view of the crossws `Peer` backing a WebSocket RPC connection:
+ * the transport-independent slice of its API (identity, send, pub/sub,
+ * close, backpressure), typed locally so the `devframe/types` declaration
+ * graph never imports `crossws`, whose own declarations require the DOM,
+ * Bun, and Cloudflare type libs a plain Node consumer doesn't load. Every
+ * member mirrors its crossws counterpart; for the full API (the upgrade
+ * `request`, raw `websocket`, connected `peers`), import `Peer` from
+ * `crossws` and cast, which opts your compilation into crossws's lib
+ * requirements.
+ */
+export interface DevframeWsPeer {
+  /** Unique random uuid v4 identifier for the peer. */
+  readonly id: string
+  /** IP address of the peer. */
+  readonly remoteAddress: string | undefined
+  /** All topics this peer has been subscribed to. */
+  readonly topics: Set<string>
+  /** Bytes queued for transmission but not yet flushed to the client. */
+  readonly bufferedAmount: number
+  /** Wait until the send buffer drains to `threshold` bytes (default `0`). */
+  waitForDrain: (opts?: { threshold?: number, pollInterval?: number }) => Promise<void>
+  /** Send a message to the peer. */
+  send: (data: unknown, options?: { compress?: boolean }) => number | void | undefined
+  /** Send a message to subscribers of a topic. */
+  publish: (topic: string, data: unknown, options?: { compress?: boolean }) => void
+  /** Subscribe to a topic. */
+  subscribe: (topic: string) => void
+  /** Unsubscribe from a topic. */
+  unsubscribe: (topic: string) => void
+  /** Close the connection. */
+  close: (code?: number, reason?: string) => void
+  /** Abruptly close the connection. */
+  terminate: () => void
+}
 
 /**
  * Which wire transport produced an RPC connection. Every transport speaks
@@ -44,13 +78,13 @@ export interface DevframeRpcConnection {
    * The crossws peer backing a `websocket` connection: the WS-specific
    * escape hatch (pub/sub, raw socket access). Absent on other transports.
    */
-  peer?: Peer
+  peer?: DevframeWsPeer
 }
 
 export interface DevframeNodeRpcSessionMeta {
   id: number
   /** The crossws peer backing this session's socket (WS transport only). */
-  peer?: Peer
+  peer?: DevframeWsPeer
   clientAuthToken?: string
   isTrusted?: boolean
   subscribedStates: Set<string>
