@@ -52,7 +52,7 @@ function switchEntry(id: string | undefined) {
     <div v-if="!isRpcTrusted" class="h-screen w-screen of-hidden">
       <ViewBuiltinClientAuthNotice :context="context" />
     </div>
-    <div v-else class="h-screen w-screen of-hidden grid cols-[max-content_1fr]">
+    <div v-else class="h-screen w-screen of-clip grid cols-[max-content_1fr]">
       <div class="border-r border-base flex flex-col min-h-0">
         <div class="p2 border-b border-base flex">
           <BrandMark class="w-7 h-7 ma" />
@@ -79,7 +79,7 @@ function switchEntry(id: string | undefined) {
           :group="activeGroup"
           :selected-id="context.docks.selected?.id ?? null"
         />
-        <div class="relative flex-1 min-w-0 min-h-0">
+        <div class="relative flex-1 min-w-0 min-h-0 of-clip">
           <ViewEntry
             v-if="context.docks.selected && panes"
             :key="context.docks.selected.id"
