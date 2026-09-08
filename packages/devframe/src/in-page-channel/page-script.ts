@@ -71,7 +71,7 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
       yield {
         subscribedStates: peer.subscribedStates,
         callEventRaw: (method: string, args: unknown[]) => {
-          void peer.attached.rpc.$callRaw({ method, args, event: true, optional: true }).catch(() => {})
+          void peer.attached.rpc.$callRaw({ method, args: serializeArgs(codec, args), event: true, optional: true }).catch(() => {})
         },
       }
     }
@@ -99,11 +99,14 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     internal.internalHandlers = stateHost.createPeerHandlers({
       subscribedStates: internal.subscribedStates,
       callEventRaw: (method, args) => {
-        void internal.attached.rpc.$callRaw({ method, args, event: true, optional: true }).catch(() => {})
+        void internal.attached.rpc.$callRaw({ method, args: serializeArgs(codec, args), event: true, optional: true }).catch(() => {})
       },
     })
+    const stateRegistry = createLocalFunctionRegistry(codec)
+    for (const [name, handler] of Object.entries(internal.internalHandlers))
+      stateRegistry.register({ name, handler })
     internal.attached = attachChannelPort(port, {
-      resolveLocal: fnName => internal.internalHandlers[fnName] ?? registry.resolve(fnName),
+      resolveLocal: fnName => stateRegistry.resolve(fnName) ?? registry.resolve(fnName),
       onControl: (kind) => {
         if (kind === 'ping')
           internal.attached.postControl('pong')

@@ -84,9 +84,12 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
 
   const stateHost = createPanelStateHost<P>({
     isConnected: () => status === 'connected',
-    callEvent: (method, args) => sendEvent(method, args),
-    call: (method, args) => enqueueCall(method, args),
+    callEvent: (method, args) => sendEvent(method, serializeArgs(codec, args)),
+    call: (method, args) => enqueueCall(method, serializeArgs(codec, args)),
   })
+  const stateRegistry = createLocalFunctionRegistry(codec)
+  for (const [name, handler] of Object.entries(stateHost.handlers))
+    stateRegistry.register({ name, handler })
 
   function sendEventNow(method: string, args: unknown[]): void {
     void attached?.rpc.$callRaw({ method, args, event: true, optional: true }).catch(() => {})
@@ -138,7 +141,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     // another instance the user pinned to) replaces the previous port.
     attached?.dispose({ bye: true, reason: 'the panel adopted a newer port' })
     attached = attachChannelPort(port, {
-      resolveLocal: fnName => stateHost.handlers[fnName] ?? registry.resolve(fnName),
+      resolveLocal: fnName => stateRegistry.resolve(fnName) ?? registry.resolve(fnName),
       onControl: (kind) => {
         if (kind === 'ping')
           attached?.postControl('pong')

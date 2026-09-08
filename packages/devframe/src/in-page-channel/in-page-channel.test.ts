@@ -325,6 +325,77 @@ describe('in-page channel over bring-your-own ports', () => {
 })
 
 describe('in-page channel shared state', () => {
+  it.each(['patch', 'full state'] as const)('round-trips %s updates through both endpoint codecs', async (mode) => {
+    function codec(sender: string, receiver: string) {
+      return {
+        serialize: vi.fn(value => ({ encodedBy: sender, value })),
+        deserialize: vi.fn((wire: unknown) => {
+          expect(wire).toHaveProperty('encodedBy', receiver)
+          return (wire as { value: unknown }).value
+        }),
+      }
+    }
+    const pageCodec = codec('page-script', 'panel')
+    const panelCodec = codec('panel', 'page-script')
+    const { pageScript, panel, dispose } = createLinkedPair({ pageScript: pageCodec, panel: panelCodec })
+    try {
+      const authority = await pageScript.sharedState.get('doc', { initialValue: { count: 1 } })
+      const mirror = await panel.sharedState.get('doc')
+      expect(mirror.value()).toEqual({ count: 1 })
+      expect(pageCodec.serialize).toHaveBeenCalledWith({ count: 1 })
+      expect(panelCodec.serialize.mock.calls[0]?.[0]).toBe('doc')
+
+      function update(state: typeof authority, count: number) {
+        if (mode === 'patch') {
+          state.mutate((draft) => {
+            draft.count = count
+          })
+        }
+        else {
+          state.patch([{ op: 'replace', path: ['count'], value: count }])
+        }
+      }
+
+      update(authority, 2)
+      await until(() => mirror.value().count === 2)
+      update(mirror, 3)
+      await until(() => authority.value().count === 3)
+      await panel.call('echo', 'flushed')
+      expect(authority.value()).toEqual({ count: 3 })
+      expect(mirror.value()).toEqual({ count: 3 })
+    }
+    finally {
+      dispose()
+    }
+  })
+
+  it('deserializes both subscription snapshots and subsequent notifications', async () => {
+    function restore(value: unknown): unknown {
+      if (Array.isArray(value))
+        return value.map(restore)
+      if (value && typeof value === 'object') {
+        const restored = Object.fromEntries(Object.entries(value).map(([key, item]) => [key, restore(item)]))
+        return 'count' in restored ? { ...restored, label: 'restored' } : restored
+      }
+      return value
+    }
+    const { pageScript, panel, dispose } = createLinkedPair({
+      panel: { deserialize: restore },
+    })
+    try {
+      const authority = await pageScript.sharedState.get('doc', { initialValue: { count: 1 } })
+      const mirror = await panel.sharedState.get('doc')
+      expect(mirror.value()).toEqual({ count: 1, label: 'restored' })
+
+      authority.mutate(() => ({ count: 2 }))
+      await until(() => mirror.value().count === 2)
+      expect(mirror.value()).toEqual({ count: 2, label: 'restored' })
+    }
+    finally {
+      dispose()
+    }
+  })
+
   it('seeds an equal snapshot and skips unchanged writes on both endpoints', async () => {
     const { pageScript, panel, dispose } = createLinkedPair()
     try {
