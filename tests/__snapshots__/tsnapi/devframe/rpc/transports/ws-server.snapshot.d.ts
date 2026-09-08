@@ -10,6 +10,7 @@ export { DevframeNodeRpcSessionMeta }
 export { DevframeRpcConnection }
 export { DevframeRpcConnectionRequest }
 export { DevframeRpcTransportKind }
+export { DevframeWsPeer }
 export { isAllowedOrigin }
 export { isLoopbackHostname }
 export { WsOriginRegistry }

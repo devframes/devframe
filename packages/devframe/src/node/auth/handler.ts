@@ -1,6 +1,6 @@
 import type { RpcFunctionDefinitionAny } from 'devframe/rpc'
-import type { DevframeRpcConnection } from 'devframe/rpc/transports/ws-server'
 import type { DevframeNodeRpcSession } from 'devframe/types'
+import type { DevframeRpcConnection } from '../../rpc/transports/session'
 
 /**
  * A ready-made pre-auth RPC handler, as produced by

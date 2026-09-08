@@ -203,7 +203,7 @@ export interface DevframeNodeRpcSession {
 }
 export interface DevframeNodeRpcSessionMeta {
   id: number;
-  peer?: Peer;
+  peer?: DevframeWsPeer;
   clientAuthToken?: string;
   isTrusted?: boolean;
   subscribedStates: Set<string>;
@@ -227,7 +227,7 @@ export interface DevframeRpcConnection {
   request?: DevframeRpcConnectionRequest;
   send?: (_: string) => void;
   close?: (_?: number, _?: string) => void;
-  peer?: Peer;
+  peer?: DevframeWsPeer;
 }
 export interface DevframeRpcConnectionRequest {
   url?: string;
@@ -381,6 +381,26 @@ export interface DevframeWsOptions {
   port?: number;
   sidecar?: boolean;
   url?: string;
+}
+export interface DevframeWsPeer {
+  readonly id: string;
+  readonly remoteAddress: string | undefined;
+  readonly topics: Set<string>;
+  readonly bufferedAmount: number;
+  waitForDrain: (_?: {
+    threshold?: number;
+    pollInterval?: number;
+  }) => Promise<void>;
+  send: (_: unknown, _?: {
+    compress?: boolean;
+  }) => number | void | undefined;
+  publish: (_: string, _: unknown, _?: {
+    compress?: boolean;
+  }) => void;
+  subscribe: (_: string) => void;
+  unsubscribe: (_: string) => void;
+  close: (_?: number, _?: string) => void;
+  terminate: () => void;
 }
 export interface EventEmitter<Events extends EventsMap> {
   emit: <K extends keyof Events>(_: K, ..._: Parameters<Events[K]>) => void;

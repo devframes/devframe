@@ -118,6 +118,7 @@
     "structured-clone-es": "catalog:deps",
     "tinyglobby": "catalog:deps",
     "tsdown": "catalog:build",
+    "typescript": "catalog:tooling",
     "ua-parser-modern": "catalog:inlined",
     "valibot": "catalog:deps",
     "whenexpr": "catalog:deps",
