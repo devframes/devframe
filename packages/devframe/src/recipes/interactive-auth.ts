@@ -105,11 +105,11 @@ export function createAuthBanner(options: CreateAuthBannerOptions = {}): AuthBan
     }
     const labelWidth = Math.max(...rows.map(([label]) => label.length))
     const contentWidth = Math.max(...rows.map(([, value]) => labelWidth + 2 + value.length))
-    const titleBarLength = title.length + 3
+    const titleBarLength = title.length + 2
     const lineWidth = Math.max(contentWidth, titleBarLength - 2)
 
     const top = [
-      palette.border(`╭─`),
+      palette.border(`╭`),
       palette.title(title),
       palette.border(`${'─'.repeat(Math.max(lineWidth + 2 - titleBarLength, 0))}╮`),
     ].join(' ')
