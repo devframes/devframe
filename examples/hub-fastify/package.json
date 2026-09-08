@@ -1,7 +1,7 @@
 {
   "name": "hub-fastify",
   "type": "module",
-  "version": "0.9.14",
+  "version": "0.9.15",
   "private": true,
   "description": "Minimal Fastify host that mounts the devframe hub with nodeMiddleware.",
   "scripts": {

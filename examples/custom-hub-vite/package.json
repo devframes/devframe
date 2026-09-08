@@ -1,7 +1,7 @@
 {
   "name": "custom-hub-vite",
   "type": "module",
-  "version": "0.9.14",
+  "version": "0.9.15",
   "private": true,
   "description": "Vite reference hub that exercises every devframe hub subsystem end to end.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/custom-hub-vite",
