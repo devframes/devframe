@@ -49,7 +49,7 @@
     },
     "@devframes/json-render-ui#build": {
       "outputLogs": "new-only",
-      "dependsOn": ["@devframes/json-render#build"],
+      "dependsOn": ["@devframes/json-render#build", "@devframes/vite#build"],
       "outputs": ["dist/**"]
     },
     "@devframes/service-git#build": {
