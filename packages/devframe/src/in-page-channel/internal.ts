@@ -4,13 +4,13 @@ import type { RpcArgsSchema } from '../rpc/types'
 import type { InPageChannelControlFrame } from './protocol'
 import type { InPageFunctionDefinitionAny } from './types'
 import { createBirpc } from 'birpc'
+import { diagnostics } from './diagnostics'
 import { isControlFrame } from './protocol'
 
 /**
- * Shared internals of the two endpoints: the coded error surface (browser
- * code, so plain coded `Error`s, since `nostics` diagnostics are node-side only),
- * the local function table with its receive pipeline, and the birpc wiring
- * of one `MessagePort`.
+ * Shared internals of the two endpoints: the coded error surface, the local
+ * function table with its receive pipeline, and the birpc wiring of one
+ * `MessagePort`.
  */
 
 export const DEFAULT_CALL_TIMEOUT_MS = 15_000
@@ -166,24 +166,49 @@ export function deserializeResult(codec: InPageChannelSerialization, result: unk
  */
 export function createLocalFunctionRegistry(codec: InPageChannelSerialization): {
   register: (definition: InPageFunctionDefinitionAny) => void
+  on: (name: string, listener: (...args: unknown[]) => void) => () => void
   resolve: (name: string) => ((...args: unknown[]) => unknown) | undefined
 } {
-  const wrapped = new Map<string, (...args: unknown[]) => unknown>()
+  const definitions = new Map<string, InPageFunctionDefinitionAny>()
+  const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
   return {
     register(definition) {
-      wrapped.set(definition.name, async (...rawArgs: unknown[]) => {
+      definitions.set(definition.name, definition)
+    },
+    on(name, listener) {
+      if (!definitions.has(name))
+        throw diagnostics.DF0077({ name })
+      let registered = listeners.get(name)
+      if (!registered) {
+        registered = new Set()
+        listeners.set(name, registered)
+      }
+      registered.add(listener)
+      return () => {
+        registered.delete(listener)
+        if (registered.size === 0)
+          listeners.delete(name)
+      }
+    },
+    resolve(name) {
+      const definition = definitions.get(name)
+      const registered = listeners.get(name)
+      if (!definition && !registered?.size)
+        return undefined
+      return async (...rawArgs: unknown[]) => {
         const args = codec.deserialize ? rawArgs.map(codec.deserialize) : rawArgs
-        if (definition.jsonSerializable)
+        if (definition?.jsonSerializable)
           assertJsonSerializable(args, 'its arguments', definition.name)
-        if (definition.args?.length)
+        if (definition?.args?.length)
           await validateArgs(definition.name, definition.args, args)
-        const result = await definition.handler(...args)
-        if (definition.jsonSerializable)
+        const result = await definition?.handler?.(...args)
+        for (const listener of [...(listeners.get(name) ?? [])])
+          listener(...args)
+        if (definition?.jsonSerializable)
           assertJsonSerializable(result, 'its return value', definition.name)
         return codec.serialize && result !== undefined ? codec.serialize(result) : result
-      })
+      }
     },
-    resolve: name => wrapped.get(name),
   }
 }
 
