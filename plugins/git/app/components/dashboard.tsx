@@ -181,7 +181,7 @@ function DashboardBody() {
   const showCommitDetails = pane === 'commits' && selectedCommit !== null
 
   return (
-    <div className="bg-base flex h-svh w-full flex-col overflow-hidden">
+    <div className="bg-base color-base flex h-svh w-full flex-col overflow-hidden">
       <header className={navBar()}>
         <div className={navBrand()}>
           <Icon name="i-ph-git-fork-duotone" className="text-base color-active" />
