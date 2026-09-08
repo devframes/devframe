@@ -253,6 +253,11 @@ export interface DevframeRpcServerFunctions {
   }) => Promise<{
     authToken: string | null;
   }>;
+  'anonymous:devframe:auth:request-code': (_: {
+    ua: string;
+    origin: string;
+    reissue?: boolean;
+  }) => Promise<void>;
   'devframe:auth:revoke': () => Promise<void>;
   'devframe:rpc:server-state:subscribe': (_: string) => Promise<void>;
   'devframe:rpc:server-state:get': (_: string) => Promise<any>;

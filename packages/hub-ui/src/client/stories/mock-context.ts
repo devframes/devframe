@@ -74,6 +74,7 @@ function createMockRpc(
     requestTrust: async () => trusted === true,
     requestTrustWithCode: async () => trusted === true,
     requestTrustWithToken: async () => trusted === true,
+    requestAuthCode: async () => undefined,
     call,
     callEvent: async () => undefined,
     callOptional: async () => undefined,

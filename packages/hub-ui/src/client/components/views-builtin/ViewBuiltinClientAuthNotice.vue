@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
-import { ref, useTemplateRef, watch } from 'vue'
+import { onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useBranding } from '../../state/branding'
 import OtpInput from '../display/OtpInput.vue'
 import BrandMark from '../icons/BrandMark.vue'
@@ -16,8 +16,31 @@ const CODE_LENGTH = 6
 
 const code = ref('')
 const error = ref('')
+const hint = ref('')
 const verifying = ref(false)
 const otp = useTemplateRef<InstanceType<typeof OtpInput>>('otp')
+
+// Ask the server to print its code banner the moment this view is needed;
+// the server dedupes per code, so re-opening the view doesn't spam the
+// terminal, and an already-authorized page never mounts this view at all.
+onMounted(() => {
+  props.context.rpc.requestAuthCode().catch(() => {})
+})
+
+async function reissue() {
+  if (verifying.value)
+    return
+  error.value = ''
+  hint.value = ''
+  try {
+    await props.context.rpc.requestAuthCode({ reissue: true })
+    hint.value = 'A new code was printed in your terminal.'
+    otp.value?.focus()
+  }
+  catch {
+    error.value = 'Could not request a new code. Please try again.'
+  }
+}
 
 // When a failed attempt clears the boxes we don't want that programmatic reset
 // to also wipe the error message it just set, so skip the next change once.
@@ -25,6 +48,7 @@ let skipErrorClear = false
 
 // Clear the error as soon as the user edits the code again.
 watch(code, () => {
+  hint.value = ''
   if (skipErrorClear) {
     skipErrorClear = false
     return
@@ -109,7 +133,7 @@ async function submit() {
           </ActionButton>
 
           <p
-            v-if="error || verifying"
+            v-if="error || verifying || hint"
             class="text-sm min-h-5 transition-colors"
             :class="error ? 'text-red-500' : 'op-mute'"
             role="alert"
@@ -121,8 +145,21 @@ async function submit() {
             <template v-else-if="verifying">
               Authorizing...
             </template>
+            <template v-else>
+              {{ hint }}
+            </template>
           </p>
         </form>
+
+        <ActionButton
+          type="button"
+          icon="i-ph-arrow-clockwise-duotone"
+          class="text-xs"
+          :disabled="verifying"
+          @click="reissue"
+        >
+          Re-issue one-time password
+        </ActionButton>
       </div>
 
       <p class="mt4 text-xs op-mute max-w-92 leading-relaxed">
