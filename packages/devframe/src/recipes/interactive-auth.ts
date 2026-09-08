@@ -86,22 +86,23 @@ export function createAuthBanner(options: CreateAuthBannerOptions = {}): AuthBan
   const title = options.title ?? 'Devframe'
   const palette: CreateAuthBannerColorsOptions = {
     border: colors.dim,
-    title: colors.bold,
+    title: x => colors.gray(colors.bold(x)),
     label: colors.dim,
-    code: colors.bold,
+    code: f => colors.green(colors.bold(f)),
     url: colors.cyan,
     ...options.colors,
   }
 
   return (info) => {
-    const minutesLeft = Math.max(1, Math.round((info.expireAt - Date.now()) / 60_000))
     const rows: [label: string, value: string, color: ColorFn][] = [
       ['auth code', info.code, palette.code],
       ['or open', info.url, palette.url],
-      ['expires', `in ${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}`, palette.label],
+      ['expires at', new Date(info.expireAt).toLocaleTimeString(), palette.label],
     ]
-    if (info.requester)
-      rows.push(['for', `${info.requester.ua} (${info.requester.origin})`, palette.label])
+    if (info.requester) {
+      rows.push(['ua', info.requester.ua, palette.label])
+      rows.push(['origin', info.requester.origin, palette.label])
+    }
     const labelWidth = Math.max(...rows.map(([label]) => label.length))
     const contentWidth = Math.max(...rows.map(([, value]) => labelWidth + 2 + value.length))
     const titleBarLength = title.length + 3
