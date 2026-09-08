@@ -104,8 +104,15 @@ describe('executeWebMcpTool', () => {
   it('executes through a string-based model context (Chromium wire shape)', async () => {
     const modelContext: WebMcpModelContext = {
       registerTool: () => {},
-      /** Mirrors Chromium's current build: JSON string in, JSON string out. */
-      executeTool: async (tool, args) => JSON.stringify({ tool: tool.name, args: typeof args === 'string' ? JSON.parse(args) : args }),
+      /**
+       * Mirrors Chromium's current build: JSON string in, JSON string out;
+       * a non-string argument is coerced to "[object Object]" and rejected.
+       */
+      executeTool: async (tool, args) => {
+        if (typeof args !== 'string')
+          throw new Error('Failed to parse input arguments')
+        return JSON.stringify({ tool: tool.name, args: JSON.parse(args) })
+      },
     }
     const result = await executeWebMcpTool(modelContext, { name: 'add-todo' }, { text: 'milk' })
     expect(result.ok).toBe(true)

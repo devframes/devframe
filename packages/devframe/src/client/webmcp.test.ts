@@ -1,7 +1,9 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
+import type { ConnectionMeta } from 'devframe/types'
 import type { WebMcpModelContext, WebMcpToolDescriptor } from './webmcp'
 import { RpcFunctionsCollectorBase } from 'devframe/rpc'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { getDevframeRpcClient } from './rpc'
 import { registerWebMcpTools } from './webmcp'
 
 /** A Standard Schema that also implements the Standard JSON Schema converter (like zod 4). */
@@ -147,6 +149,59 @@ describe('registerWebMcpTools', () => {
     expect(tools.size).toBe(0)
   })
 
+  it('keeps the first registration when two ids sanitize to the same wire name', () => {
+    // Chromium rejects a duplicate tool name with an InvalidStateError; the
+    // guard must skip the collision before it reaches the model context.
+    const { modelContext, tools } = createFakeModelContext()
+    const strict: WebMcpModelContext = {
+      registerTool: (tool, options) => {
+        if (tools.has(tool.name))
+          throw new Error('Duplicate tool name')
+        return modelContext.registerTool(tool, options)
+      },
+    }
+    const collector = createCollector()
+    collector.register({
+      name: 'my-plugin:greet',
+      jsonSerializable: true,
+      agent: { description: 'First.' },
+      handler: () => 'first',
+    })
+    collector.register({
+      name: 'my-plugin_greet',
+      jsonSerializable: true,
+      agent: { description: 'Second, same wire name.' },
+      handler: () => 'second',
+    })
+
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      registerWebMcpTools(collector, { modelContext: strict })
+      expect(tools.size).toBe(1)
+      expect(tools.get('my-plugin_greet')!.description).toBe('First.')
+      expect(warn).toHaveBeenCalledOnce()
+    }
+    finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('tolerates a model context that rejects registration (permissions policy)', async () => {
+    // A rejected registration must not surface as an unhandled rejection.
+    const collector = createCollector()
+    collector.register({
+      name: 'denied',
+      jsonSerializable: true,
+      agent: { description: 'Denied by the frame policy.' },
+      handler: () => 'never',
+    })
+    const dispose = registerWebMcpTools(collector, {
+      modelContext: { registerTool: () => Promise.reject(new Error('NotAllowedError')) },
+    })
+    await new Promise(resolve => setTimeout(resolve, 0))
+    dispose()
+  })
+
   it('unregisters through a legacy handle when registerTool returns one', () => {
     const unregister = vi.fn()
     const modelContext: WebMcpModelContext = {
@@ -174,5 +229,70 @@ describe('registerWebMcpTools', () => {
       handler: () => 'hi',
     })
     expect(() => registerWebMcpTools(collector)()).not.toThrow()
+  })
+})
+
+describe('getDevframeRpcClient: WebMCP wiring', () => {
+  // Minimal fake WebSocket: never opens, so the trust handshake stays
+  // pending; this suite only exercises the client-collector side.
+  class FakeWebSocket {
+    addEventListener(): void {}
+    removeEventListener(): void {}
+    send(): void {}
+    close(): void {}
+  }
+
+  beforeEach(() => {
+    vi.stubGlobal('WebSocket', FakeWebSocket)
+    vi.stubGlobal('location', {
+      protocol: 'http:',
+      host: 'localhost:5173',
+      hostname: 'localhost',
+      href: 'http://localhost:5173/__foo/index.html',
+      origin: 'http://localhost:5173',
+    })
+    const served: ConnectionMeta = { backend: 'websocket', websocket: { path: '__ws' } }
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => served,
+    })))
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  function stubModelContext() {
+    const { modelContext, tools } = createFakeModelContext()
+    vi.stubGlobal('navigator', { userAgent: 'test', modelContext })
+    return tools
+  }
+
+  it('mirrors agent-flagged client registrations onto the page model context; close() unregisters', async () => {
+    const tools = stubModelContext()
+    const rpc = await getDevframeRpcClient({ baseURL: '/__foo/', otpParam: false })
+    rpc.client.register({
+      name: 'my-plugin:get-selection',
+      jsonSerializable: true,
+      agent: { description: 'Return the selected node.' },
+      handler: () => 'node-1',
+    })
+    expect([...tools.keys()]).toEqual(['my-plugin_get-selection'])
+
+    rpc.close?.()
+    expect(tools.size).toBe(0)
+  })
+
+  it('webmcp: false keeps the browser side off the WebMCP surface', async () => {
+    const tools = stubModelContext()
+    const rpc = await getDevframeRpcClient({ baseURL: '/__foo/', otpParam: false, webmcp: false })
+    rpc.client.register({
+      name: 'my-plugin:get-selection',
+      jsonSerializable: true,
+      agent: { description: 'Return the selected node.' },
+      handler: () => 'node-1',
+    })
+    expect(tools.size).toBe(0)
   })
 })
