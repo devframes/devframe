@@ -10,10 +10,18 @@ import type { InferArgsType, InferReturnType } from '../rpc/utils'
  * channel-name constant declared next to it.
  */
 export interface InPageChannelProtocol {
-  /** Functions and events received by the page script. */
-  pageScript?: Record<string, (...args: any[]) => any>
-  /** Functions and events received by panels. */
-  panel?: Record<string, (...args: any[]) => any>
+  functions?: {
+    /** Functions implemented by the page script. */
+    pageScript?: Record<string, (...args: any[]) => any>
+    /** Functions implemented by panels. */
+    panel?: Record<string, (...args: any[]) => any>
+  }
+  events?: {
+    /** Events emitted by panels and received by the page script. */
+    pageScript?: Record<string, (...args: any[]) => void>
+    /** Events emitted by the page script and received by panels. */
+    panel?: Record<string, (...args: any[]) => void>
+  }
   /**
    * Shared-state slots. The page script is the authority: it owns the
    * canonical value; panels are seeded on connect and converge through
@@ -23,29 +31,24 @@ export interface InPageChannelProtocol {
 }
 
 type SideFunctions<S> = S extends Record<string, (...args: any[]) => any> ? S : Record<string, never>
-type PageScriptFunctions<P extends InPageChannelProtocol> = SideFunctions<NonNullable<P['pageScript']>>
-type PanelFunctions<P extends InPageChannelProtocol> = SideFunctions<NonNullable<P['panel']>>
+type SideDeclarations<P extends InPageChannelProtocol, Kind extends 'functions' | 'events', Side extends 'pageScript' | 'panel'>
+  = Kind extends keyof P
+    ? Side extends keyof NonNullable<P[Kind]>
+      ? SideFunctions<NonNullable<NonNullable<P[Kind]>[Side]>>
+      : Record<string, never>
+    : Record<string, never>
+type PageScriptFunctions<P extends InPageChannelProtocol> = SideDeclarations<P, 'functions', 'pageScript'>
+type PanelFunctions<P extends InPageChannelProtocol> = SideDeclarations<P, 'functions', 'panel'>
 type SharedStates<P extends InPageChannelProtocol>
   = P['sharedStates'] extends Record<string, object> ? P['sharedStates'] : Record<string, never>
+
+type FunctionNames<T> = { [K in keyof T]: [T[K]] extends [never] ? never : K }[keyof T] & string
 
 type FnArgs<F> = F extends (...args: infer A) => any ? A : never
 type FnReturn<F> = F extends (...args: any[]) => infer R ? Awaited<R> : never
 
-/**
- * Page-script functions whose resolved return type marks an event.
- * @internal
- */
-type PageScriptFunctionsEvents<P extends InPageChannelProtocol> = {
-  [K in keyof PageScriptFunctions<P> as FnReturn<PageScriptFunctions<P>[K]> extends void ? K : never]: PageScriptFunctions<P>[K]
-}
-
-/**
- * Panel functions whose resolved return type marks an event.
- * @internal
- */
-type PanelFunctionsEvents<P extends InPageChannelProtocol> = {
-  [K in keyof PanelFunctions<P> as FnReturn<PanelFunctions<P>[K]> extends void ? K : never]: PanelFunctions<P>[K]
-}
+type PageScriptProtocolEvents<P extends InPageChannelProtocol> = SideDeclarations<P, 'events', 'pageScript'>
+type PanelProtocolEvents<P extends InPageChannelProtocol> = SideDeclarations<P, 'events', 'panel'>
 
 /**
  * Converts a protocol function to its accepted endpoint handler.
@@ -161,9 +164,11 @@ interface InPageFunctionOptionBase {
 }
 
 interface InPageEventFunctionOption<F> extends InPageFunctionOptionBase {
-  type: 'event'
+  type?: 'event'
   handler?: ProtocolHandler<F>
 }
+
+type InPageEventOption<F> = [F] extends [never] ? never : InPageEventFunctionOption<F>
 
 interface InPageQueryFunctionOption<F> extends InPageFunctionOptionBase {
   type?: 'query'
@@ -176,8 +181,7 @@ interface InPageActionFunctionOption<F> extends InPageFunctionOptionBase {
 }
 
 type InPageFunctionOption<F>
-  = | InPageEventFunctionOption<F>
-    | InPageQueryFunctionOption<F>
+  = | InPageQueryFunctionOption<F>
     | InPageActionFunctionOption<F>
 
 /**
@@ -247,8 +251,10 @@ interface InPageChannelCommonOptions {
 
 /** Options for {@link createPageScriptChannel}. */
 export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
-  /** Every page-script function declaration; event handlers may use `channel.on()`. */
+  /** Every page-script function declaration, with a required handler. */
   functions: CreatePageScriptChannelOptionsFunctions<Protocol>
+  /** Every incoming event declaration; handlers may subscribe through `channel.on()`. */
+  events: { [NAME in keyof PageScriptProtocolEvents<Protocol> & string]: InPageEventOption<PageScriptProtocolEvents<Protocol>[NAME]> }
   /**
    * Window whose `message` events carry panel hellos. Defaults to the
    * global `window`; pass `false` to skip the handshake listener entirely
@@ -259,8 +265,10 @@ export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelPr
 
 /** Options for {@link connectPanelChannel}. */
 export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
-  /** Every panel function declaration; event handlers may use `channel.on()`. */
+  /** Every panel function declaration, with a required handler. */
   functions: ConnectPanelChannelOptionsFunctions<Protocol>
+  /** Every incoming event declaration; handlers may subscribe through `channel.on()`. */
+  events: { [NAME in keyof PanelProtocolEvents<Protocol> & string]: InPageEventOption<PanelProtocolEvents<Protocol>[NAME]> }
   /**
    * The panel's own window (listens for the handshake grant). Defaults to
    * the global `window`; pass `false` with `transport` to skip the handshake.
@@ -320,7 +328,7 @@ export interface PanelPeer<P extends InPageChannelProtocol> {
   /** Unique id of the panel endpoint (stable across its lifetime, not reloads). */
   readonly id: string
   /** Call one panel's function and await the result. */
-  call: <K extends keyof PanelFunctions<P> & string>(
+  call: <K extends FunctionNames<PanelFunctions<P>>>(
     name: K,
     ...args: FnArgs<PanelFunctions<P>[K]>
   ) => Promise<FnReturn<PanelFunctions<P>[K]>>
@@ -345,19 +353,19 @@ export interface PageScriptChannel<P extends InPageChannelProtocol> {
   readonly panels: readonly PanelPeer<P>[]
   readonly events: Pick<EventEmitter<PageScriptChannelEvents<P>>, 'on' | 'once'>
   /** Fan an event out to every connected panel. */
-  emit: <K extends keyof PanelFunctionsEvents<P> & string>(
+  emit: <K extends FunctionNames<PanelProtocolEvents<P>>>(
     name: K,
-    ...args: FnArgs<PanelFunctionsEvents<P>[K]>
+    ...args: FnArgs<PanelProtocolEvents<P>[K]>
   ) => void
   /** @deprecated Use `emit()` instead. */
-  callEvent: <K extends keyof PanelFunctionsEvents<P> & string>(
+  callEvent: <K extends FunctionNames<PanelProtocolEvents<P>>>(
     name: K,
-    ...args: FnArgs<PanelFunctionsEvents<P>[K]>
+    ...args: FnArgs<PanelProtocolEvents<P>[K]>
   ) => void
   /** Subscribe to an event emitted by a panel. Returns an unsubscribe function. */
-  on: <K extends keyof PageScriptFunctionsEvents<P> & string>(
+  on: <K extends FunctionNames<PageScriptProtocolEvents<P>>>(
     name: K,
-    listener: (...args: FnArgs<PageScriptFunctionsEvents<P>[K]>) => void,
+    listener: (...args: FnArgs<PageScriptProtocolEvents<P>[K]>) => void,
   ) => () => void
   /** Page-script-authoritative shared states, replayed to joining panels. */
   readonly sharedState: InPageSharedStateHost<P>
@@ -394,7 +402,7 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
    * the call is buffered and sent on connect; it rejects with code
    * `timeout` when `callTimeoutMs` elapses first.
    */
-  call: <K extends keyof PageScriptFunctions<P> & string>(
+  call: <K extends FunctionNames<PageScriptFunctions<P>>>(
     name: K,
     ...args: FnArgs<PageScriptFunctions<P>[K]>
   ) => Promise<FnReturn<PageScriptFunctions<P>[K]>>
@@ -402,19 +410,19 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
    * Emit an event to the page script. While `connecting` the event is buffered
    * (up to `eventBufferLimit`) and flushed on connect.
    */
-  emit: <K extends keyof PageScriptFunctionsEvents<P> & string>(
+  emit: <K extends FunctionNames<PageScriptProtocolEvents<P>>>(
     name: K,
-    ...args: FnArgs<PageScriptFunctionsEvents<P>[K]>
+    ...args: FnArgs<PageScriptProtocolEvents<P>[K]>
   ) => void
   /** @deprecated Use `emit()` instead. */
-  callEvent: <K extends keyof PageScriptFunctionsEvents<P> & string>(
+  callEvent: <K extends FunctionNames<PageScriptProtocolEvents<P>>>(
     name: K,
-    ...args: FnArgs<PageScriptFunctionsEvents<P>[K]>
+    ...args: FnArgs<PageScriptProtocolEvents<P>[K]>
   ) => void
   /** Subscribe to an event emitted by the page script. Returns an unsubscribe function. */
-  on: <K extends keyof PanelFunctionsEvents<P> & string>(
+  on: <K extends FunctionNames<PanelProtocolEvents<P>>>(
     name: K,
-    listener: (...args: FnArgs<PanelFunctionsEvents<P>[K]>) => void,
+    listener: (...args: FnArgs<PanelProtocolEvents<P>[K]>) => void,
   ) => () => void
   /** Shared states mirrored from the page-script authority. */
   readonly sharedState: InPageSharedStateHost<P>

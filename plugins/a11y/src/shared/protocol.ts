@@ -157,35 +157,36 @@ export interface PageScriptConfig {
 }
 
 /**
- * The a11y inspector's in-page channel contract: every function the page
- * script implements for its panels, and the shared {@link A11yState}
- * aggregate the page script owns. All functions are fire-and-forget events;
+ * The a11y inspector's in-page channel contract: every event the page
+ * script receives from its panels, and the shared {@link A11yState}
+ * aggregate the page script owns. Events are fire-and-forget;
  * results flow back through the shared state.
  */
 export interface A11yChannelProtocol {
-  pageScript: {
-    /**
-     * Draw the transient hover-preview ring around a node's element.
-     * `nodeId` is a {@link ViolationNode.id} (mirrored to
-     * {@link A11Y_NODE_ATTR}); `target` is the axe selector fallback.
-     */
-    'highlight': (nodeId: string, target: string[]) => void
-    /** Clear the transient hover-preview ring. */
-    'clear-highlight': () => void
-    /** Replace the pinned (numbered) highlight set, drawn in the given order. */
-    'set-pins': (pins: PinTarget[]) => void
-    /** Re-run the scan. */
-    'rescan': () => void
-    /** Forward runtime configuration (resolved from the `get-config` RPC). */
-    'set-config': (config: PageScriptConfig) => void
-    /** Toggle the interaction-driven auto-scan. */
-    'set-autoscan': (enabled: boolean) => void
-    /** Drop one route's tracked history. */
-    'clear-route': (route: string) => void
-    /** Drop the whole tracked-route history. */
-    'clear-all': () => void
+  events: {
+    pageScript: {
+      /**
+       * Draw the transient hover-preview ring around a node's element.
+       * `nodeId` is a {@link ViolationNode.id} (mirrored to
+       * {@link A11Y_NODE_ATTR}); `target` is the axe selector fallback.
+       */
+      'highlight': (nodeId: string, target: string[]) => void
+      /** Clear the transient hover-preview ring. */
+      'clear-highlight': () => void
+      /** Replace the pinned (numbered) highlight set, drawn in the given order. */
+      'set-pins': (pins: PinTarget[]) => void
+      /** Re-run the scan. */
+      'rescan': () => void
+      /** Forward runtime configuration (resolved from the `get-config` RPC). */
+      'set-config': (config: PageScriptConfig) => void
+      /** Toggle the interaction-driven auto-scan. */
+      'set-autoscan': (enabled: boolean) => void
+      /** Drop one route's tracked history. */
+      'clear-route': (route: string) => void
+      /** Drop the whole tracked-route history. */
+      'clear-all': () => void
+    }
   }
-  panel: Record<string, never>
   sharedStates: {
     /** The authoritative route → report aggregate the page script owns. */
     state: A11yState

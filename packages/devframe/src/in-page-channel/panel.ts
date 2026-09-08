@@ -10,6 +10,7 @@ import { createEventEmitter } from 'devframe/utils/events'
 import { nanoid } from 'devframe/utils/nanoid'
 import {
   attachChannelPort,
+  channelMethod,
   createLocalFunctionRegistry,
   DEFAULT_CALL_TIMEOUT_MS,
   deserializeResult,
@@ -64,6 +65,8 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
   const registry = createLocalFunctionRegistry(codec)
   for (const [fnName, definition] of Object.entries(options.functions))
     registry.register({ ...definition, name: fnName })
+  for (const [eventName, definition] of Object.entries(options.events))
+    registry.register({ ...definition, name: eventName, type: 'event' })
 
   let status: InPageChannelStatus = 'connecting'
   let attached: AttachedChannelPort | undefined
@@ -283,9 +286,9 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
         }
       })
     },
-    call: (fnName, ...args) => enqueueCall(fnName, serializeArgs(codec, args)) as Promise<any>,
-    emit: (fnName, ...args) => sendEvent(fnName, serializeArgs(codec, args)),
-    callEvent: (fnName, ...args) => sendEvent(fnName, serializeArgs(codec, args)),
+    call: (fnName, ...args) => enqueueCall(channelMethod('function', fnName), serializeArgs(codec, args)) as Promise<any>,
+    emit: (fnName, ...args) => sendEvent(channelMethod('event', fnName), serializeArgs(codec, args)),
+    callEvent: (fnName, ...args) => sendEvent(channelMethod('event', fnName), serializeArgs(codec, args)),
     on: (fnName, listener) => registry.on(fnName, listener as (...args: unknown[]) => void),
     sharedState: stateHost,
     close: () => {

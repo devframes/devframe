@@ -158,6 +158,11 @@ export function deserializeResult(codec: InPageChannelSerialization, result: unk
   return codec.deserialize && result !== undefined ? codec.deserialize(result) : result
 }
 
+/** Keep user functions, user events, and internal methods in separate wire namespaces. */
+export function channelMethod(kind: 'function' | 'event', name: string): string {
+  return JSON.stringify([kind, name])
+}
+
 /**
  * An endpoint's local function table, resolved by name when the remote side
  * calls in. Each handler is wrapped with the receive pipeline: deserialize
@@ -173,21 +178,22 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
   const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
   return {
     register(definition) {
-      definitions.set(definition.name, definition)
+      definitions.set(channelMethod(definition.type === 'event' ? 'event' : 'function', definition.name), definition)
     },
     on(name, listener) {
-      if (!definitions.has(name))
+      const key = channelMethod('event', name)
+      if (!definitions.has(key))
         throw diagnostics.DF0077({ name })
-      let registered = listeners.get(name)
+      let registered = listeners.get(key)
       if (!registered) {
         registered = new Set()
-        listeners.set(name, registered)
+        listeners.set(key, registered)
       }
       registered.add(listener)
       return () => {
         registered.delete(listener)
         if (registered.size === 0)
-          listeners.delete(name)
+          listeners.delete(key)
       }
     },
     resolve(name) {
@@ -204,7 +210,9 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
         const result = await definition?.handler?.(...args)
         for (const listener of [...(listeners.get(name) ?? [])])
           listener(...args)
-        if (definition?.jsonSerializable)
+        if (definition?.type === 'event')
+          return undefined
+        if (definition?.jsonSerializable && result !== undefined)
           assertJsonSerializable(result, 'its return value', definition.name)
         return codec.serialize && result !== undefined ? codec.serialize(result) : result
       }

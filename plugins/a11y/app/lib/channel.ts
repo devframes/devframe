@@ -52,6 +52,7 @@ export function createA11yChannel(): A11yChannel {
   const channel = connectPanelChannel<A11yChannelProtocol>({
     name: A11Y_CHANNEL,
     functions: {},
+    events: {},
   })
   channel.events.on('status:updated', status => setPageScriptReady(status === 'connected'))
 

@@ -10,6 +10,7 @@ import { createEventEmitter } from 'devframe/utils/events'
 import { nanoid } from 'devframe/utils/nanoid'
 import {
   attachChannelPort,
+  channelMethod,
   createLocalFunctionRegistry,
   DEFAULT_CALL_TIMEOUT_MS,
   deserializeResult,
@@ -65,6 +66,8 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
   const registry = createLocalFunctionRegistry(codec)
   for (const [fnName, definition] of Object.entries(options.functions))
     registry.register({ ...definition, name: fnName })
+  for (const [eventName, definition] of Object.entries(options.events))
+    registry.register({ ...definition, name: eventName, type: 'event' })
 
   const stateHost = createPageScriptStateHost<P>(function* () {
     for (const peer of peers.values()) {
@@ -113,7 +116,7 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     internal.peer = {
       id,
       call: (fnName, ...args) => withCallDeadline(
-        internal.attached.rpc.$call(fnName, ...serializeArgs(codec, args)).then(result => deserializeResult(codec, result)) as Promise<any>,
+        internal.attached.rpc.$call(channelMethod('function', fnName), ...serializeArgs(codec, args)).then(result => deserializeResult(codec, result)) as Promise<any>,
         callTimeoutMs,
         () => `in-page channel "${name}": call "${fnName}" to panel "${id}" timed out after ${callTimeoutMs}ms`,
       ),
@@ -178,7 +181,7 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     const wireArgs = serializeArgs(codec, args)
     for (const peer of peers.values()) {
       void peer.attached.rpc.$callRaw({
-        method: fnName,
+        method: channelMethod('event', fnName),
         args: wireArgs,
         event: true,
         optional: true,

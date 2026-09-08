@@ -13,7 +13,7 @@ import { DEVFRAME_EVENTS } from '../events'
 export const IN_PAGE_CHANNEL_TAG = DEVFRAME_EVENTS.postMessage.inPageChannel
 
 /** Envelope version; bump on breaking wire changes. */
-export const IN_PAGE_CHANNEL_VERSION = 1
+export const IN_PAGE_CHANNEL_VERSION = 2
 
 /**
  * The handshake envelope. A panel posts a `hello` ("grant me a port for

@@ -1,21 +1,25 @@
 import type { ConnectPanelChannelOptions, CreatePageScriptChannelOptions, InPageChannelProtocol, PageScriptChannel, PanelChannel } from './types'
 import { describe, expect, it, vi } from 'vitest'
-import { InPageChannelError } from './internal'
+import { channelMethod, createLocalFunctionRegistry, InPageChannelError } from './internal'
 import { createPageScriptChannel } from './page-script'
 import { connectPanelChannel } from './panel'
 import { IN_PAGE_CHANNEL_TAG, IN_PAGE_CHANNEL_VERSION } from './protocol'
 
 interface TestProtocol extends InPageChannelProtocol {
-  pageScript: {
-    echo: (value: string) => string
-    sum: (a: number, b: number) => number
-    boom: () => void
-    strict: (payload: unknown) => unknown
-    note: (value: string) => void
+  functions: {
+    pageScript: {
+      echo: (value: string) => string
+      sum: (a: number, b: number) => number
+      boom: () => void
+      strict: (payload: unknown) => unknown
+    }
+    panel: {
+      'ping-panel': (value: string) => string
+    }
   }
-  panel: {
-    'ping-panel': (value: string) => string
-    'notify': (value: string) => void
+  events: {
+    pageScript: { note: (value: string) => void }
+    panel: { notify: (value: string) => void }
   }
   sharedStates: {
     doc: { count: number, label?: string }
@@ -43,12 +47,10 @@ const defaultPageScriptFunctions: NonNullable<CreatePageScriptChannelOptions<Tes
   sum: { handler: (a, b) => a + b },
   boom: { handler: () => {} },
   strict: { handler: payload => payload },
-  note: { type: 'event' },
 }
 
 const defaultPanelFunctions: NonNullable<ConnectPanelChannelOptions<TestProtocol>['functions']> = {
   'ping-panel': { handler: value => `pong:${value}` },
-  'notify': { type: 'event' },
 }
 
 function createLinkedPair(options?: {
@@ -57,6 +59,7 @@ function createLinkedPair(options?: {
 }): { pageScript: PageScriptChannel<TestProtocol>, panel: PanelChannel<TestProtocol>, dispose: () => void } {
   const { port1, port2 } = new MessageChannel()
   const pageScript = createPageScriptChannel<TestProtocol>({
+    events: { note: {} },
     name: 'devframes:test',
     ...noHandshake,
     functions: {
@@ -70,6 +73,7 @@ function createLinkedPair(options?: {
   })
   pageScript.addPanelPort(port1)
   const panel = connectPanelChannel<TestProtocol>({
+    events: { notify: {} },
     name: 'devframes:test',
     ...noHandshake,
     transport: port2,
@@ -87,6 +91,129 @@ function createLinkedPair(options?: {
 }
 
 describe('in-page channel over bring-your-own ports', () => {
+  it('validates and deserializes events before invoking handlers and listeners', async () => {
+    const { s } = await import('devframe/utils/simple-schema')
+    const registry = createLocalFunctionRegistry({
+      deserialize: value => typeof value === 'string' ? value.toUpperCase() : value,
+    })
+    const handler = vi.fn(() => new Map())
+    const listener = vi.fn()
+    registry.register({ name: 'note', type: 'event', args: [s.string()], returns: undefined, jsonSerializable: true, handler })
+    registry.on('note', listener)
+    const receive = registry.resolve(channelMethod('event', 'note'))!
+    await expect(receive(42)).rejects.toMatchObject({ code: 'invalid-args' })
+    await expect(receive(new Map())).rejects.toMatchObject({ code: 'not-serializable' })
+    expect(handler).not.toHaveBeenCalled()
+    expect(listener).not.toHaveBeenCalled()
+    await expect(receive('hello')).resolves.toBeUndefined()
+    expect(handler).toHaveBeenCalledWith('HELLO')
+    expect(listener).toHaveBeenCalledWith('HELLO')
+  })
+
+  it('awaits void actions, propagates their errors, and times them out', async ({ onTestFinished }) => {
+    interface Protocol {
+      functions: { pageScript: { save: () => void, reset: () => Promise<void>, fail: () => Promise<void>, hang: () => Promise<void> } }
+    }
+    let completed = false
+    const pageScript = createPageScriptChannel<Protocol>({
+      name: 'test',
+      ...noHandshake,
+      events: {},
+      functions: {
+        save: { type: 'action', jsonSerializable: true, handler: () => {} },
+        reset: { type: 'action', handler: async () => {
+          await new Promise(resolve => setTimeout(resolve, 10))
+          completed = true
+        } },
+        fail: { type: 'action', handler: async () => { throw new Error('save failed') } },
+        hang: { type: 'action', handler: () => new Promise(() => {}) },
+      },
+    })
+    const { port1, port2 } = new MessageChannel()
+    pageScript.addPanelPort(port1)
+    const panel = connectPanelChannel<Protocol>({
+      name: 'test',
+      ...noHandshake,
+      functions: {},
+      events: {},
+      transport: port2,
+      callTimeoutMs: 100,
+    })
+    onTestFinished(() => {
+      panel.close()
+      pageScript.close()
+    })
+    await expect(panel.call('save')).resolves.toBeUndefined()
+    await expect(panel.call('reset')).resolves.toBeUndefined()
+    expect(completed).toBe(true)
+    await expect(panel.call('fail')).rejects.toThrow('save failed')
+    await expect(panel.call('hang')).rejects.toMatchObject({ code: 'timeout' })
+  })
+
+  it('keeps same-named functions and events independent in both directions', async ({ onTestFinished }) => {
+    interface Protocol {
+      functions: { pageScript: { save: () => void }, panel: { save: () => void } }
+      events: { pageScript: { save: (value: string) => void }, panel: { save: (value: string) => void } }
+    }
+    const pageAction = vi.fn()
+    const panelAction = vi.fn()
+    const pageEvent = vi.fn()
+    const panelEvent = vi.fn()
+    const pageListener = vi.fn()
+    const panelListener = vi.fn()
+    const pageScript = createPageScriptChannel<Protocol>({
+      name: 'test',
+      ...noHandshake,
+      functions: { save: { type: 'action', handler: pageAction } },
+      events: { save: { handler: pageEvent } },
+    })
+    const { port1, port2 } = new MessageChannel()
+    const peer = pageScript.addPanelPort(port1)
+    const panel = connectPanelChannel<Protocol>({
+      name: 'test',
+      ...noHandshake,
+      transport: port2,
+      functions: { save: { type: 'action', handler: panelAction } },
+      events: { save: { handler: panelEvent } },
+    })
+    onTestFinished(() => {
+      panel.close()
+      pageScript.close()
+    })
+    const offPage = pageScript.on('save', pageListener)
+    const offPanel = panel.on('save', panelListener)
+    await panel.call('save')
+    await peer.call('save')
+    expect(pageEvent).not.toHaveBeenCalled()
+    expect(panelEvent).not.toHaveBeenCalled()
+    expect(pageListener).not.toHaveBeenCalled()
+    expect(panelListener).not.toHaveBeenCalled()
+    panel.emit('save', 'draft')
+    pageScript.callEvent('save', 'saved')
+    await until(() => pageListener.mock.calls.length === 1 && panelListener.mock.calls.length === 1)
+    expect(pageEvent).toHaveBeenCalledWith('draft')
+    expect(panelEvent).toHaveBeenCalledWith('saved')
+    offPage()
+    offPanel()
+    panel.callEvent('save', 'again')
+    pageScript.emit('save', 'again')
+    await until(() => pageEvent.mock.calls.length === 2 && panelEvent.mock.calls.length === 2)
+    expect(pageListener).toHaveBeenCalledOnce()
+    expect(panelListener).toHaveBeenCalledOnce()
+    expect(pageAction).toHaveBeenCalledOnce()
+    expect(panelAction).toHaveBeenCalledOnce()
+  })
+
+  it('rejects subscriptions to functions even when they return void', ({ onTestFinished }) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const { pageScript, dispose } = createLinkedPair()
+    onTestFinished(() => {
+      dispose()
+      warn.mockRestore()
+    })
+    expect(() => pageScript.on('boom' as any, () => {})).toThrowError(expect.objectContaining({ name: 'DF0077' }))
+  })
+
   it('round-trips calls, arguments, and results', async () => {
     const { pageScript, panel, dispose } = createLinkedPair()
     try {
@@ -120,7 +247,7 @@ describe('in-page channel over bring-your-own ports', () => {
     }
   })
 
-  it('reports and rejects listeners for unknown functions', ({ onTestFinished }) => {
+  it('reports and rejects listeners for undeclared events', ({ onTestFinished }) => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const { panel, dispose } = createLinkedPair()
     onTestFinished(() => {
@@ -167,27 +294,29 @@ describe('in-page channel over bring-your-own ports', () => {
     const { s } = await import('devframe/utils/simple-schema')
     const { port1, port2 } = new MessageChannel()
     const pageScript = createPageScriptChannel<TestProtocol>({
+      events: { note: {} },
       name: 'devframes:test',
       ...noHandshake,
       functions: {
         ...defaultPageScriptFunctions,
-        note: {
+        echo: {
           args: [s.string()] as const,
-          returns: s.void(),
-          handler: () => {},
+          returns: s.string(),
+          handler: value => value,
         },
       },
     })
     pageScript.addPanelPort(port1)
     const panel = connectPanelChannel<TestProtocol>({
+      events: { notify: {} },
       name: 'devframes:test',
       ...noHandshake,
       transport: port2,
       functions: defaultPanelFunctions,
     })
     try {
-      await expect(panel.call('note', 'fine')).resolves.toBeUndefined()
-      const rejection = await panel.call('note', 42 as any).catch(error => error)
+      await expect(panel.call('echo', 'fine')).resolves.toBe('fine')
+      const rejection = await panel.call('echo', 42 as any).catch(error => error)
       expect(rejection.message).toContain('rejected argument 0')
     }
     finally {
@@ -200,6 +329,7 @@ describe('in-page channel over bring-your-own ports', () => {
     const a = new MessageChannel()
     const b = new MessageChannel()
     const pageScript = createPageScriptChannel<TestProtocol>({
+      events: { note: {} },
       name: 'devframes:test',
       ...noHandshake,
       functions: defaultPageScriptFunctions,
@@ -208,6 +338,7 @@ describe('in-page channel over bring-your-own ports', () => {
     pageScript.addPanelPort(b.port1)
     const received: string[] = []
     const panelA = connectPanelChannel<TestProtocol>({
+      events: { notify: {} },
       name: 'devframes:test',
       ...noHandshake,
       transport: a.port2,
@@ -219,6 +350,7 @@ describe('in-page channel over bring-your-own ports', () => {
     const offNotify = panelA.on('notify', value => received.push(`a:${value}`))
     // Panel B deliberately has no listener for this event.
     const panelB = connectPanelChannel<InPageChannelProtocol>({
+      events: {},
       name: 'devframes:test',
       ...noHandshake,
       transport: b.port2,
@@ -244,12 +376,14 @@ describe('in-page channel over bring-your-own ports', () => {
   it('lets the page script call one panel through its peer handle', async () => {
     const { port1, port2 } = new MessageChannel()
     const pageScript = createPageScriptChannel<TestProtocol>({
+      events: { note: {} },
       name: 'devframes:test',
       ...noHandshake,
       functions: defaultPageScriptFunctions,
     })
     pageScript.addPanelPort(port1)
     const panel = connectPanelChannel<TestProtocol>({
+      events: { notify: {} },
       name: 'devframes:test',
       ...noHandshake,
       transport: port2,
@@ -268,12 +402,14 @@ describe('in-page channel over bring-your-own ports', () => {
   it('applies serialize/deserialize hooks to arguments and results', async () => {
     const { port1, port2 } = new MessageChannel()
     const pageScript = createPageScriptChannel<TestProtocol>({
+      events: { note: {} },
       name: 'devframes:test',
       ...noHandshake,
       functions: defaultPageScriptFunctions,
     })
     pageScript.addPanelPort(port1)
     const panel = connectPanelChannel<TestProtocol>({
+      events: { notify: {} },
       name: 'devframes:test',
       ...noHandshake,
       transport: port2,
@@ -296,6 +432,7 @@ describe('in-page channel over bring-your-own ports', () => {
   it('notifies the page script of panel lifecycle', async () => {
     const { port1, port2 } = new MessageChannel()
     const pageScript = createPageScriptChannel<TestProtocol>({
+      events: { note: {} },
       name: 'devframes:test',
       ...noHandshake,
       functions: defaultPageScriptFunctions,
@@ -306,6 +443,7 @@ describe('in-page channel over bring-your-own ports', () => {
     pageScript.events.on('panel:disconnected', peer => disconnected.push(peer.id))
     pageScript.addPanelPort(port1)
     const panel = connectPanelChannel<TestProtocol>({
+      events: { notify: {} },
       name: 'devframes:test',
       ...noHandshake,
       transport: port2,
@@ -387,14 +525,15 @@ describe('in-page channel shared state', () => {
     const a = new MessageChannel()
     const b = new MessageChannel()
     const pageScript = createPageScriptChannel<TestProtocol>({
+      events: { note: {} },
       name: 'devframes:test',
       ...noHandshake,
       functions: defaultPageScriptFunctions,
     })
     pageScript.addPanelPort(a.port1)
     pageScript.addPanelPort(b.port1)
-    const panelA = connectPanelChannel<TestProtocol>({ name: 'devframes:test', ...noHandshake, transport: a.port2, functions: defaultPanelFunctions })
-    const panelB = connectPanelChannel<TestProtocol>({ name: 'devframes:test', ...noHandshake, transport: b.port2, functions: defaultPanelFunctions })
+    const panelA = connectPanelChannel<TestProtocol>({ events: { notify: {} }, name: 'devframes:test', ...noHandshake, transport: a.port2, functions: defaultPanelFunctions })
+    const panelB = connectPanelChannel<TestProtocol>({ events: { notify: {} }, name: 'devframes:test', ...noHandshake, transport: b.port2, functions: defaultPanelFunctions })
     try {
       const authority = await pageScript.sharedState.get('doc', { initialValue: { count: 0 } })
       const mirrorA = await panelA.sharedState.get('doc')
@@ -415,7 +554,7 @@ describe('in-page channel shared state', () => {
 
   it('seeds a late-joining panel with the current value', async () => {
     const { port1, port2 } = new MessageChannel()
-    const pageScript = createPageScriptChannel<TestProtocol>({ name: 'devframes:test', ...noHandshake, functions: defaultPageScriptFunctions })
+    const pageScript = createPageScriptChannel<TestProtocol>({ events: { note: {} }, name: 'devframes:test', ...noHandshake, functions: defaultPageScriptFunctions })
     const authority = await pageScript.sharedState.get('doc', { initialValue: { count: 0 } })
     authority.mutate((draft) => {
       draft.count = 41
@@ -425,7 +564,7 @@ describe('in-page channel shared state', () => {
     })
 
     pageScript.addPanelPort(port1)
-    const panel = connectPanelChannel<TestProtocol>({ name: 'devframes:test', ...noHandshake, transport: port2, functions: defaultPanelFunctions })
+    const panel = connectPanelChannel<TestProtocol>({ events: { notify: {} }, name: 'devframes:test', ...noHandshake, transport: port2, functions: defaultPanelFunctions })
     try {
       const mirror = await panel.sharedState.get('doc')
       expect(mirror.value()).toEqual({ count: 42 })
@@ -519,12 +658,14 @@ describe('in-page channel handshake', () => {
   it('connects a panel to the page script and survives page-script restarts', async () => {
     const { hostWin, panelWin } = createWindowPair()
     const pageScript = createPageScriptChannel<TestProtocol>({
+      events: { note: {} },
       name: 'devframes:test',
       window: asWindow(hostWin),
       heartbeat: false,
       functions: defaultPageScriptFunctions,
     })
     const panel = connectPanelChannel<TestProtocol>({
+      events: { notify: {} },
       name: 'devframes:test',
       window: asWindow(panelWin),
       targets: [asWindow(hostWin)],
@@ -542,6 +683,7 @@ describe('in-page channel handshake', () => {
 
       // … and a fresh one boots in the same window: the panel re-handshakes.
       const revived = createPageScriptChannel<TestProtocol>({
+        events: { note: {} },
         name: 'devframes:test',
         window: asWindow(hostWin),
         heartbeat: false,
@@ -568,6 +710,7 @@ describe('in-page channel handshake', () => {
     const { hostWin, panelWin } = createWindowPair()
     const noted: string[] = []
     const panel = connectPanelChannel<TestProtocol>({
+      events: { notify: {} },
       name: 'devframes:test',
       window: asWindow(panelWin),
       targets: [asWindow(hostWin)],
@@ -578,6 +721,7 @@ describe('in-page channel handshake', () => {
     panel.emit('note', 'buffered')
 
     const pageScript = createPageScriptChannel<TestProtocol>({
+      events: { note: {} },
       name: 'devframes:test',
       window: asWindow(hostWin),
       heartbeat: false,
@@ -599,6 +743,7 @@ describe('in-page channel handshake', () => {
     const { hostWin, panelWin } = createWindowPair()
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const pageScript = createPageScriptChannel<TestProtocol>({
+      events: { note: {} },
       name: 'devframes:test-origin',
       window: asWindow(hostWin),
       heartbeat: false,
@@ -630,6 +775,7 @@ describe('in-page channel handshake', () => {
     const { hostWin, panelWin } = createWindowPair()
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const pageScript = createPageScriptChannel<TestProtocol>({
+      events: { note: {} },
       name: 'devframes:test-version',
       window: asWindow(hostWin),
       heartbeat: false,
@@ -660,12 +806,14 @@ describe('in-page channel handshake', () => {
   it('honors an instance pin', async () => {
     const { hostWin, panelWin } = createWindowPair()
     const pageScript = createPageScriptChannel<TestProtocol>({
+      events: { note: {} },
       name: 'devframes:test',
       window: asWindow(hostWin),
       heartbeat: false,
       functions: defaultPageScriptFunctions,
     })
     const pinnedElsewhere = connectPanelChannel<TestProtocol>({
+      events: { notify: {} },
       name: 'devframes:test',
       window: asWindow(panelWin),
       targets: [asWindow(hostWin)],
@@ -677,6 +825,7 @@ describe('in-page channel handshake', () => {
       await expect(pinnedElsewhere.whenConnected(100)).rejects.toMatchObject({ code: 'timeout' })
 
       const pinnedHere = connectPanelChannel<TestProtocol>({
+        events: { notify: {} },
         name: 'devframes:test',
         window: asWindow(panelWin),
         targets: [asWindow(hostWin)],
@@ -700,6 +849,7 @@ describe('in-page channel handshake', () => {
   it('stays connecting and warns when the panel has nowhere to handshake', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const lonely = connectPanelChannel<TestProtocol>({
+      events: { notify: {} },
       name: `devframes:test-lonely-${Math.random()}`,
       window: false,
       heartbeat: false,
@@ -718,6 +868,7 @@ describe('in-page channel handshake', () => {
 
   it('rejects buffered calls with a status-aware timeout', async () => {
     const lonely = connectPanelChannel<TestProtocol>({
+      events: { notify: {} },
       name: `devframes:test-lonely-${Math.random()}`,
       window: false,
       heartbeat: false,
@@ -737,6 +888,7 @@ describe('in-page channel handshake', () => {
 
   it('rejects pending work when the channel closes', async () => {
     const lonely = connectPanelChannel<TestProtocol>({
+      events: { notify: {} },
       name: `devframes:test-lonely-${Math.random()}`,
       window: false,
       heartbeat: false,
