@@ -29,10 +29,16 @@ const isRpcTrusted = useIsRpcTrusted(context, (isTrusted) => {
   }
 })
 
+/** Select from the visible dock rail through normal activation, including client scripts and group routing. */
 watch(
-  () => context.docks.entries,
-  () => {
-    context.docks.selectedId ||= context.docks.entries[0]?.id ?? null
+  [() => context.docks.groupedEntries, isRpcTrusted],
+  ([groups, trusted]) => {
+    if (!trusted || context.docks.selectedId)
+      return
+    const entry = groups.flatMap(([, entries]) => entries)
+      .find(entry => entry.type !== 'action' && entry.type !== '~builtin')
+    if (entry)
+      void context.docks.switchEntry(entry.id)
   },
   { immediate: true },
 )
