@@ -45,8 +45,8 @@ type SharedStates<P extends InPageChannelProtocol>
 type FnArgs<F> = F extends (...args: infer A) => any ? A : never
 type FnReturn<F> = F extends (...args: any[]) => infer R ? Awaited<R> : never
 
-type PageScriptProtocolEvents<P extends InPageChannelProtocol> = SideDeclarations<P, 'events', 'pageScript'>
-type PanelProtocolEvents<P extends InPageChannelProtocol> = SideDeclarations<P, 'events', 'panel'>
+type PageScriptEvents<P extends InPageChannelProtocol> = SideDeclarations<P, 'events', 'pageScript'>
+type PanelEvents<P extends InPageChannelProtocol> = SideDeclarations<P, 'events', 'panel'>
 
 /**
  * Converts a protocol function to its accepted endpoint handler.
@@ -252,7 +252,7 @@ export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelPr
   /** Every page-script function declaration, with a required handler. */
   functions: CreatePageScriptChannelOptionsFunctions<Protocol>
   /** Optional metadata or handlers for incoming events. Listeners may instead subscribe through `channel.on()`. */
-  events?: { [NAME in keyof PageScriptProtocolEvents<Protocol> & string]?: InPageEventOption<PageScriptProtocolEvents<Protocol>[NAME]> }
+  events?: { [NAME in keyof PageScriptEvents<Protocol> & string]?: InPageEventOption<PageScriptEvents<Protocol>[NAME]> }
   /**
    * Window whose `message` events carry panel hellos. Defaults to the
    * global `window`; pass `false` to skip the handshake listener entirely
@@ -266,7 +266,7 @@ export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtoc
   /** Every panel function declaration, with a required handler. */
   functions: ConnectPanelChannelOptionsFunctions<Protocol>
   /** Optional metadata or handlers for incoming events. Listeners may instead subscribe through `channel.on()`. */
-  events?: { [NAME in keyof PanelProtocolEvents<Protocol> & string]?: InPageEventOption<PanelProtocolEvents<Protocol>[NAME]> }
+  events?: { [NAME in keyof PanelEvents<Protocol> & string]?: InPageEventOption<PanelEvents<Protocol>[NAME]> }
   /**
    * The panel's own window (listens for the handshake grant). Defaults to
    * the global `window`; pass `false` with `transport` to skip the handshake.
@@ -351,19 +351,19 @@ export interface PageScriptChannel<P extends InPageChannelProtocol> {
   readonly panels: readonly PanelPeer<P>[]
   readonly events: Pick<EventEmitter<PageScriptChannelEvents<P>>, 'on' | 'once'>
   /** Fan an event out to every connected panel. */
-  emit: <K extends keyof PanelProtocolEvents<P> & string>(
+  emit: <K extends keyof PanelEvents<P> & string>(
     name: K,
-    ...args: FnArgs<PanelProtocolEvents<P>[K]>
+    ...args: FnArgs<PanelEvents<P>[K]>
   ) => void
   /** @deprecated Use `emit()` instead. */
-  callEvent: <K extends keyof PanelProtocolEvents<P> & string>(
+  callEvent: <K extends keyof PanelEvents<P> & string>(
     name: K,
-    ...args: FnArgs<PanelProtocolEvents<P>[K]>
+    ...args: FnArgs<PanelEvents<P>[K]>
   ) => void
   /** Subscribe to an event emitted by a panel. Returns an unsubscribe function. */
-  on: <K extends keyof PageScriptProtocolEvents<P> & string>(
+  on: <K extends keyof PageScriptEvents<P> & string>(
     name: K,
-    listener: (...args: FnArgs<PageScriptProtocolEvents<P>[K]>) => void,
+    listener: (...args: FnArgs<PageScriptEvents<P>[K]>) => void,
   ) => () => void
   /** Page-script-authoritative shared states, replayed to joining panels. */
   readonly sharedState: InPageSharedStateHost<P>
@@ -408,19 +408,19 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
    * Emit an event to the page script. While `connecting` the event is buffered
    * (up to `eventBufferLimit`) and flushed on connect.
    */
-  emit: <K extends keyof PageScriptProtocolEvents<P> & string>(
+  emit: <K extends keyof PageScriptEvents<P> & string>(
     name: K,
-    ...args: FnArgs<PageScriptProtocolEvents<P>[K]>
+    ...args: FnArgs<PageScriptEvents<P>[K]>
   ) => void
   /** @deprecated Use `emit()` instead. */
-  callEvent: <K extends keyof PageScriptProtocolEvents<P> & string>(
+  callEvent: <K extends keyof PageScriptEvents<P> & string>(
     name: K,
-    ...args: FnArgs<PageScriptProtocolEvents<P>[K]>
+    ...args: FnArgs<PageScriptEvents<P>[K]>
   ) => void
   /** Subscribe to an event emitted by the page script. Returns an unsubscribe function. */
-  on: <K extends keyof PanelProtocolEvents<P> & string>(
+  on: <K extends keyof PanelEvents<P> & string>(
     name: K,
-    listener: (...args: FnArgs<PanelProtocolEvents<P>[K]>) => void,
+    listener: (...args: FnArgs<PanelEvents<P>[K]>) => void,
   ) => () => void
   /** Shared states mirrored from the page-script authority. */
   readonly sharedState: InPageSharedStateHost<P>

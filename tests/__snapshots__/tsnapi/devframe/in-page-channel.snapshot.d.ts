@@ -4,7 +4,7 @@
 // #region Interfaces
 export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
   functions: ConnectPanelChannelOptionsFunctions<Protocol>;
-  events?: { [NAME in keyof PanelProtocolEvents<Protocol> & string]?: InPageEventOption<PanelProtocolEvents<Protocol>[NAME]>; };
+  events?: { [NAME in keyof PanelEvents<Protocol> & string]?: InPageEventOption<PanelEvents<Protocol>[NAME]>; };
   window?: Window | false;
   targets?: Window[];
   transport?: MessagePort;
@@ -14,7 +14,7 @@ export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtoc
 }
 export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
   functions: CreatePageScriptChannelOptionsFunctions<Protocol>;
-  events?: { [NAME in keyof PageScriptProtocolEvents<Protocol> & string]?: InPageEventOption<PageScriptProtocolEvents<Protocol>[NAME]>; };
+  events?: { [NAME in keyof PageScriptEvents<Protocol> & string]?: InPageEventOption<PageScriptEvents<Protocol>[NAME]>; };
   window?: Window | false;
 }
 export interface InPageChannelProtocol {
@@ -33,9 +33,9 @@ export interface PageScriptChannel<P extends InPageChannelProtocol> {
   readonly instanceId: string;
   readonly panels: readonly PanelPeer<P>[];
   readonly events: Pick<EventEmitter<PageScriptChannelEvents<P>>, 'on' | 'once'>;
-  emit: <K extends keyof PanelProtocolEvents<P> & string>(_: K, ..._: FnArgs<PanelProtocolEvents<P>[K]>) => void;
-  callEvent: <K extends keyof PanelProtocolEvents<P> & string>(_: K, ..._: FnArgs<PanelProtocolEvents<P>[K]>) => void;
-  on: <K extends keyof PageScriptProtocolEvents<P> & string>(_: K, _: (..._: FnArgs<PageScriptProtocolEvents<P>[K]>) => void) => () => void;
+  emit: <K extends keyof PanelEvents<P> & string>(_: K, ..._: FnArgs<PanelEvents<P>[K]>) => void;
+  callEvent: <K extends keyof PanelEvents<P> & string>(_: K, ..._: FnArgs<PanelEvents<P>[K]>) => void;
+  on: <K extends keyof PageScriptEvents<P> & string>(_: K, _: (..._: FnArgs<PageScriptEvents<P>[K]>) => void) => () => void;
   readonly sharedState: InPageSharedStateHost<P>;
   addPanelPort: (_: MessagePort) => PanelPeer<P>;
   close: () => void;
@@ -49,9 +49,9 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
   readonly events: Pick<EventEmitter<PanelChannelEvents>, 'on' | 'once'>;
   whenConnected: (_?: number) => Promise<void>;
   call: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => Promise<FnReturn<PageScriptFunctions<P>[K]>>;
-  emit: <K extends keyof PageScriptProtocolEvents<P> & string>(_: K, ..._: FnArgs<PageScriptProtocolEvents<P>[K]>) => void;
-  callEvent: <K extends keyof PageScriptProtocolEvents<P> & string>(_: K, ..._: FnArgs<PageScriptProtocolEvents<P>[K]>) => void;
-  on: <K extends keyof PanelProtocolEvents<P> & string>(_: K, _: (..._: FnArgs<PanelProtocolEvents<P>[K]>) => void) => () => void;
+  emit: <K extends keyof PageScriptEvents<P> & string>(_: K, ..._: FnArgs<PageScriptEvents<P>[K]>) => void;
+  callEvent: <K extends keyof PageScriptEvents<P> & string>(_: K, ..._: FnArgs<PageScriptEvents<P>[K]>) => void;
+  on: <K extends keyof PanelEvents<P> & string>(_: K, _: (..._: FnArgs<PanelEvents<P>[K]>) => void) => () => void;
   readonly sharedState: InPageSharedStateHost<P>;
   close: () => void;
 }
@@ -125,11 +125,11 @@ interface PageScriptChannelEvents<P extends InPageChannelProtocol> {
   'panel:connected': (_: PanelPeer<P>) => void;
   'panel:disconnected': (_: PanelPeer<P>) => void;
 }
+type PageScriptEvents<P extends InPageChannelProtocol> = SideDeclarations<P, 'events', 'pageScript'>;
 type PageScriptFunctions<P extends InPageChannelProtocol> = SideDeclarations<P, 'functions', 'pageScript'>;
-type PageScriptProtocolEvents<P extends InPageChannelProtocol> = SideDeclarations<P, 'events', 'pageScript'>;
 interface PanelChannelEvents {
   'status:updated': (_: InPageChannelStatus) => void;
 }
+type PanelEvents<P extends InPageChannelProtocol> = SideDeclarations<P, 'events', 'panel'>;
 type PanelFunctions<P extends InPageChannelProtocol> = SideDeclarations<P, 'functions', 'panel'>;
-type PanelProtocolEvents<P extends InPageChannelProtocol> = SideDeclarations<P, 'events', 'panel'>;
 // #endregion
