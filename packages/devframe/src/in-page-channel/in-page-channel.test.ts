@@ -346,6 +346,7 @@ describe('in-page channel shared state', () => {
       expect(panelCodec.serialize.mock.calls[0]?.[0]).toBe('doc')
 
       function update(state: typeof authority, count: number) {
+        // With enablePatches=true, mutate() emits patch arrays, while patch() emits an update with patches=undefined (full-state path).
         if (mode === 'patch') {
           state.mutate((draft) => {
             draft.count = count
