@@ -2,7 +2,7 @@ import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { BirpcReturn } from 'birpc'
 import type { RpcArgsSchema } from '../rpc/types'
 import type { InPageChannelControlFrame } from './protocol'
-import type { InPageFunctionDefinitionAny } from './types'
+import type { InPageFunctionDefinitionAny, InPageFunctionType } from './types'
 import { createBirpc } from 'birpc'
 import { diagnostics } from './diagnostics'
 import { isControlFrame } from './protocol'
@@ -158,8 +158,9 @@ export function deserializeResult(codec: InPageChannelSerialization, result: unk
   return codec.deserialize && result !== undefined ? codec.deserialize(result) : result
 }
 
-export function channelMethod(kind: 'function' | 'event', name: string): string {
+export function channelMethod(type: InPageFunctionType | 'function' | undefined, name: string): string {
   // Keep user functions, user events, and internal methods in separate wire namespaces.
+  const kind = type === 'event' ? 'event' : 'function'
   return `devframe:in-page:${kind}:${name}`
 }
 
@@ -180,7 +181,7 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
   const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
   return {
     register(definition) {
-      definitions.set(channelMethod(definition.type === 'event' ? 'event' : 'function', definition.name), definition)
+      definitions.set(channelMethod(definition.type, definition.name), definition)
     },
     on(name, listener) {
       const key = channelMethod('event', name)

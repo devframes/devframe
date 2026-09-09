@@ -252,7 +252,6 @@ describe('In-page script channel', () => {
 
 describe('Panel channel', () => {
   const channel = connectPanelChannel<TestProtocol>({
-    events: { notify: {} },
     name: 'devframes:test',
     functions: {
       notify: { handler: () => { } },
@@ -263,7 +262,6 @@ describe('Panel channel', () => {
     it('infers handlers from the protocol', () => {
       const { port1 } = new MessageChannel()
       const inferredChannel = connectPanelChannel<TestProtocol>({
-        events: { notify: {} },
         name: 'devframes:test',
         window: false,
         transport: port1,
@@ -283,7 +281,6 @@ describe('Panel channel', () => {
       connectPanelChannel<TestProtocol>({ name: 'devframes:test' })
 
       connectPanelChannel<TestProtocol>({
-        events: { notify: {} },
         name: 'devframes:test',
         // @ts-expect-error `notify` must be declared.
         functions: {},
@@ -292,7 +289,6 @@ describe('Panel channel', () => {
 
     it('allows event declarations to omit their handler', () => {
       connectPanelChannel<TestProtocol>({
-        events: { notify: {} },
         name: 'devframes:test',
         functions: {
           notify: { handler: () => {} },
@@ -300,7 +296,6 @@ describe('Panel channel', () => {
       })
 
       connectPanelChannel<TestProtocol>({
-        events: { notify: {} },
         name: 'devframes:test',
         functions: {
           // @ts-expect-error Request/response functions require a handler.
@@ -311,7 +306,6 @@ describe('Panel channel', () => {
 
     it('rejects in-page script functions', () => {
       connectPanelChannel<TestProtocol>({
-        events: { notify: {} },
         name: 'devframes:test',
         functions: {
           notify: { handler: () => { } },
@@ -323,7 +317,6 @@ describe('Panel channel', () => {
 
     it('rejects incompatible handlers', () => {
       connectPanelChannel<TestProtocol>({
-        events: { notify: {} },
         name: 'devframes:test',
         functions: {
           notify: {
@@ -405,7 +398,6 @@ describe('Panel channel', () => {
 
     it('rejects runtime subscriptions to panel queries', () => {
       const mixedChannel = connectPanelChannel<MixedPanelProtocol>({
-        events: { notify: {} },
         name: 'devframes:mixed-panel',
         functions: {
           confirm: { handler: () => true },
