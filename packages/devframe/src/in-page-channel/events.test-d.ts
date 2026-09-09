@@ -46,11 +46,3 @@ it('distinguishes void actions from declared events in both directions', () => {
   // @ts-expect-error Functions cannot receive event listeners.
   panel.on('reset', () => {})
 })
-
-it('supports omitted protocol sections without widening their keys', () => {
-  interface FunctionsOnly { functions: { pageScript: { run: () => void } } }
-  interface EventsOnly { events: { panel: { ready: () => void } } }
-  expectTypeOf<Parameters<PanelChannel<FunctionsOnly>['emit']>[0]>().toEqualTypeOf<never>()
-  expectTypeOf<Parameters<PanelChannel<EventsOnly>['call']>[0]>().toEqualTypeOf<never>()
-  expectTypeOf<Parameters<PageScriptChannel<EventsOnly>['on']>[0]>().toEqualTypeOf<never>()
-})

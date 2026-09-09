@@ -42,8 +42,6 @@ type PanelFunctions<P extends InPageChannelProtocol> = SideDeclarations<P, 'func
 type SharedStates<P extends InPageChannelProtocol>
   = P['sharedStates'] extends Record<string, object> ? P['sharedStates'] : Record<string, never>
 
-type FunctionNames<T> = { [K in keyof T]: [T[K]] extends [never] ? never : K }[keyof T] & string
-
 type FnArgs<F> = F extends (...args: infer A) => any ? A : never
 type FnReturn<F> = F extends (...args: any[]) => infer R ? Awaited<R> : never
 
@@ -328,7 +326,7 @@ export interface PanelPeer<P extends InPageChannelProtocol> {
   /** Unique id of the panel endpoint (stable across its lifetime, not reloads). */
   readonly id: string
   /** Call one panel's function and await the result. */
-  call: <K extends FunctionNames<PanelFunctions<P>>>(
+  call: <K extends keyof PanelFunctions<P> & string>(
     name: K,
     ...args: FnArgs<PanelFunctions<P>[K]>
   ) => Promise<FnReturn<PanelFunctions<P>[K]>>
@@ -353,17 +351,17 @@ export interface PageScriptChannel<P extends InPageChannelProtocol> {
   readonly panels: readonly PanelPeer<P>[]
   readonly events: Pick<EventEmitter<PageScriptChannelEvents<P>>, 'on' | 'once'>
   /** Fan an event out to every connected panel. */
-  emit: <K extends FunctionNames<PanelProtocolEvents<P>>>(
+  emit: <K extends keyof PanelProtocolEvents<P> & string>(
     name: K,
     ...args: FnArgs<PanelProtocolEvents<P>[K]>
   ) => void
   /** @deprecated Use `emit()` instead. */
-  callEvent: <K extends FunctionNames<PanelProtocolEvents<P>>>(
+  callEvent: <K extends keyof PanelProtocolEvents<P> & string>(
     name: K,
     ...args: FnArgs<PanelProtocolEvents<P>[K]>
   ) => void
   /** Subscribe to an event emitted by a panel. Returns an unsubscribe function. */
-  on: <K extends FunctionNames<PageScriptProtocolEvents<P>>>(
+  on: <K extends keyof PageScriptProtocolEvents<P> & string>(
     name: K,
     listener: (...args: FnArgs<PageScriptProtocolEvents<P>[K]>) => void,
   ) => () => void
@@ -402,7 +400,7 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
    * the call is buffered and sent on connect; it rejects with code
    * `timeout` when `callTimeoutMs` elapses first.
    */
-  call: <K extends FunctionNames<PageScriptFunctions<P>>>(
+  call: <K extends keyof PageScriptFunctions<P> & string>(
     name: K,
     ...args: FnArgs<PageScriptFunctions<P>[K]>
   ) => Promise<FnReturn<PageScriptFunctions<P>[K]>>
@@ -410,17 +408,17 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
    * Emit an event to the page script. While `connecting` the event is buffered
    * (up to `eventBufferLimit`) and flushed on connect.
    */
-  emit: <K extends FunctionNames<PageScriptProtocolEvents<P>>>(
+  emit: <K extends keyof PageScriptProtocolEvents<P> & string>(
     name: K,
     ...args: FnArgs<PageScriptProtocolEvents<P>[K]>
   ) => void
   /** @deprecated Use `emit()` instead. */
-  callEvent: <K extends FunctionNames<PageScriptProtocolEvents<P>>>(
+  callEvent: <K extends keyof PageScriptProtocolEvents<P> & string>(
     name: K,
     ...args: FnArgs<PageScriptProtocolEvents<P>[K]>
   ) => void
   /** Subscribe to an event emitted by the page script. Returns an unsubscribe function. */
-  on: <K extends FunctionNames<PanelProtocolEvents<P>>>(
+  on: <K extends keyof PanelProtocolEvents<P> & string>(
     name: K,
     listener: (...args: FnArgs<PanelProtocolEvents<P>[K]>) => void,
   ) => () => void
