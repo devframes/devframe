@@ -1,21 +1,25 @@
 import type { ConnectPanelChannelOptions, CreatePageScriptChannelOptions, InPageChannelProtocol, PageScriptChannel, PanelChannel } from './types'
 import { describe, expect, it, vi } from 'vitest'
-import { InPageChannelError } from './internal'
+import { channelMethod, createLocalFunctionRegistry, InPageChannelError } from './internal'
 import { createPageScriptChannel } from './page-script'
 import { connectPanelChannel } from './panel'
 import { IN_PAGE_CHANNEL_TAG, IN_PAGE_CHANNEL_VERSION } from './protocol'
 
 interface TestProtocol extends InPageChannelProtocol {
-  pageScript: {
-    echo: (value: string) => string
-    sum: (a: number, b: number) => number
-    boom: () => void
-    strict: (payload: unknown) => unknown
-    note: (value: string) => void
+  functions: {
+    pageScript: {
+      echo: (value: string) => string
+      sum: (a: number, b: number) => number
+      boom: () => void
+      strict: (payload: unknown) => unknown
+    }
+    panel: {
+      'ping-panel': (value: string) => string
+    }
   }
-  panel: {
-    'ping-panel': (value: string) => string
-    'notify': (value: string) => void
+  events: {
+    pageScript: { note: (value: string) => void }
+    panel: { notify: (value: string) => void }
   }
   sharedStates: {
     doc: { count: number, label?: string }
@@ -43,12 +47,10 @@ const defaultPageScriptFunctions: NonNullable<CreatePageScriptChannelOptions<Tes
   sum: { handler: (a, b) => a + b },
   boom: { handler: () => {} },
   strict: { handler: payload => payload },
-  note: { type: 'event' },
 }
 
 const defaultPanelFunctions: NonNullable<ConnectPanelChannelOptions<TestProtocol>['functions']> = {
   'ping-panel': { handler: value => `pong:${value}` },
-  'notify': { type: 'event' },
 }
 
 function createLinkedPair(options?: {
@@ -87,6 +89,97 @@ function createLinkedPair(options?: {
 }
 
 describe('in-page channel over bring-your-own ports', () => {
+  it('validates and deserializes events before invoking handlers and listeners', async () => {
+    const { s } = await import('devframe/utils/simple-schema')
+    const registry = createLocalFunctionRegistry({
+      deserialize: value => typeof value === 'string' ? value.toUpperCase() : value,
+    })
+    const handler = vi.fn(() => new Map())
+    const listener = vi.fn()
+    registry.register({ name: 'note', type: 'event', args: [s.string()], returns: undefined, jsonSerializable: true, handler })
+    registry.on('note', listener)
+    const receive = registry.resolve(channelMethod('event', 'note'))!
+    await expect(receive(42)).rejects.toMatchObject({ code: 'invalid-args' })
+    await expect(receive(new Map())).rejects.toMatchObject({ code: 'not-serializable' })
+    expect(handler).not.toHaveBeenCalled()
+    expect(listener).not.toHaveBeenCalled()
+    await expect(receive('hello')).resolves.toBeUndefined()
+    expect(handler).toHaveBeenCalledWith('HELLO')
+    expect(listener).toHaveBeenCalledWith('HELLO')
+  })
+
+  it('awaits void actions, propagates their errors, and times them out', async ({ onTestFinished }) => {
+    interface Protocol {
+      functions: { pageScript: { save: () => void, reset: () => Promise<void>, fail: () => Promise<void>, hang: () => Promise<void> } }
+    }
+    let completed = false
+    const pageScript = createPageScriptChannel<Protocol>({
+      name: 'test',
+      ...noHandshake,
+      functions: {
+        save: { type: 'action', jsonSerializable: true, handler: () => {} },
+        reset: { type: 'action', handler: async () => {
+          await new Promise(resolve => setTimeout(resolve, 10))
+          completed = true
+        } },
+        fail: { type: 'action', handler: async () => { throw new Error('save failed') } },
+        hang: { type: 'action', handler: () => new Promise(() => {}) },
+      },
+    })
+    const { port1, port2 } = new MessageChannel()
+    pageScript.addPanelPort(port1)
+    const panel = connectPanelChannel<Protocol>({
+      name: 'test',
+      ...noHandshake,
+      functions: {},
+      transport: port2,
+      callTimeoutMs: 100,
+    })
+    onTestFinished(() => {
+      panel.close()
+      pageScript.close()
+    })
+    await expect(panel.call('save')).resolves.toBeUndefined()
+    await expect(panel.call('reset')).resolves.toBeUndefined()
+    expect(completed).toBe(true)
+    await expect(panel.call('fail')).rejects.toThrow('save failed')
+    await expect(panel.call('hang')).rejects.toMatchObject({ code: 'timeout' })
+  })
+
+  it('keeps same-named functions and events independent', async ({ onTestFinished }) => {
+    interface Protocol {
+      functions: { pageScript: { save: () => void } }
+      events: { pageScript: { save: (value: string) => void } }
+    }
+    const pageAction = vi.fn()
+    const pageListener = vi.fn()
+    const pageScript = createPageScriptChannel<Protocol>({
+      name: 'test',
+      ...noHandshake,
+      functions: { save: { type: 'action', handler: pageAction } },
+    })
+    const { port1, port2 } = new MessageChannel()
+    pageScript.addPanelPort(port1)
+    const panel = connectPanelChannel<Protocol>({
+      name: 'test',
+      ...noHandshake,
+      transport: port2,
+      functions: {},
+    })
+    onTestFinished(() => {
+      panel.close()
+      pageScript.close()
+    })
+    const offPage = pageScript.on('save', pageListener)
+    await panel.call('save')
+    expect(pageListener).not.toHaveBeenCalled()
+    panel.emit('save', 'draft')
+    await until(() => pageListener.mock.calls.length === 1)
+    expect(pageListener).toHaveBeenCalledWith('draft')
+    offPage()
+    expect(pageAction).toHaveBeenCalledOnce()
+  })
+
   it('round-trips calls, arguments, and results', async () => {
     const { pageScript, panel, dispose } = createLinkedPair()
     try {
@@ -110,29 +203,23 @@ describe('in-page channel over bring-your-own ports', () => {
     }
   })
 
-  it('rejects calls to unknown functions', async () => {
+  it('rejects calls to unknown functions with a coded diagnostic', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const { panel, dispose } = createLinkedPair()
     try {
-      await expect(panel.call('missing' as any)).rejects.toThrow(/not found/)
+      await expect(panel.call('missing' as any)).rejects.toThrow('In-page channel function "missing" is not registered')
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('[DF0077]'))
     }
     finally {
       dispose()
+      warn.mockRestore()
     }
   })
 
-  it('reports and rejects listeners for unknown functions', ({ onTestFinished }) => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  it('accepts listeners without runtime event declarations', ({ onTestFinished }) => {
     const { panel, dispose } = createLinkedPair()
-    onTestFinished(() => {
-      dispose()
-      warn.mockRestore()
-    })
-
-    expect(() => {
-      panel.on('missing' as any, () => {})
-    }).toThrowError(expect.objectContaining({ name: 'DF0077' }))
-    expect(warn).toHaveBeenCalledOnce()
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('[DF0077]'))
+    onTestFinished(dispose)
+    expect(() => panel.on('missing' as any, () => {})).not.toThrow()
   })
 
   it('enforces jsonSerializable payloads with a coded error', async () => {
@@ -171,10 +258,10 @@ describe('in-page channel over bring-your-own ports', () => {
       ...noHandshake,
       functions: {
         ...defaultPageScriptFunctions,
-        note: {
+        echo: {
           args: [s.string()] as const,
-          returns: s.void(),
-          handler: () => {},
+          returns: s.string(),
+          handler: value => value,
         },
       },
     })
@@ -186,8 +273,8 @@ describe('in-page channel over bring-your-own ports', () => {
       functions: defaultPanelFunctions,
     })
     try {
-      await expect(panel.call('note', 'fine')).resolves.toBeUndefined()
-      const rejection = await panel.call('note', 42 as any).catch(error => error)
+      await expect(panel.call('echo', 'fine')).resolves.toBe('fine')
+      const rejection = await panel.call('echo', 42 as any).catch(error => error)
       expect(rejection.message).toContain('rejected argument 0')
     }
     finally {

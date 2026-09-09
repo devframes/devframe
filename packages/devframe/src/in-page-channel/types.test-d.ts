@@ -4,29 +4,38 @@ import { createPageScriptChannel } from './page-script'
 import { connectPanelChannel } from './panel'
 
 interface TestProtocol {
-  pageScript: {
-    echo: (value: string) => string
-    sum: (a: number, b: number) => number
-    save: (value: string) => Promise<void>
+  functions: {
+    pageScript: {
+      echo: (value: string) => string
+      sum: (a: number, b: number) => number
+      save: (value: string) => Promise<void>
+    }
+    panel: {
+      notify: (message: string) => void
+    }
   }
-  panel: {
-    notify: (message: string) => void
-  }
+  events: { pageScript: { save: (value: string) => void }, panel: { notify: (message: string) => void } }
 }
 
 interface PageScriptOnlyProtocol {
-  pageScript: {
-    echo: (value: string) => string
+  functions: {
+    pageScript: {
+      echo: (value: string) => string
+    }
+    panel: Record<string, never>
   }
-  panel: Record<string, never>
+  events: Record<string, never>
 }
 
 interface MixedPanelProtocol {
-  pageScript: Record<string, never>
-  panel: {
-    confirm: (message: string) => boolean
-    notify: (message: string) => void
+  functions: {
+    pageScript: Record<string, never>
+    panel: {
+      confirm: (message: string) => boolean
+      notify: (message: string) => void
+    }
   }
+  events: { panel: { notify: (message: string) => void } }
 }
 
 describe('Channel function definitions', () => {
@@ -47,6 +56,7 @@ describe('Channel function definitions', () => {
 
 describe('In-page script channel', () => {
   const channel = createPageScriptChannel<TestProtocol>({
+    events: { save: {} },
     name: 'devframes:test',
     functions: {
       echo: { handler: value => value },
@@ -58,6 +68,7 @@ describe('In-page script channel', () => {
   describe('Function definitions', () => {
     it('infers handlers from the protocol', () => {
       createPageScriptChannel<TestProtocol>({
+        events: { save: {} },
         name: 'devframes:test',
         functions: {
           echo: {
@@ -87,6 +98,7 @@ describe('In-page script channel', () => {
       createPageScriptChannel<TestProtocol>({ name: 'devframes:test' })
 
       createPageScriptChannel<TestProtocol>({
+        events: { save: {} },
         name: 'devframes:test',
         // @ts-expect-error `sum` and `save` are required.
         functions: {
@@ -97,28 +109,31 @@ describe('In-page script channel', () => {
 
     it('allows event declarations to omit their handler', () => {
       createPageScriptChannel<TestProtocol>({
+        events: { save: {} },
         name: 'devframes:test',
         functions: {
           echo: { type: 'query', handler: value => value },
           sum: { type: 'action', handler: (a, b) => a + b },
-          save: { type: 'event' },
+          save: { type: 'action', handler: () => {} },
         },
       })
 
       createPageScriptChannel<TestProtocol>({
+        events: { save: {} },
         name: 'devframes:test',
         functions: {
           // @ts-expect-error Request/response functions require a handler.
           echo: { type: 'query' },
           // @ts-expect-error Request/response functions require a handler.
           sum: { type: 'action' },
-          save: { type: 'event' },
+          save: { type: 'action', handler: () => {} },
         },
       })
     })
 
     it('rejects panel functions', () => {
       createPageScriptChannel<TestProtocol>({
+        events: { save: {} },
         name: 'devframes:test',
         functions: {
           echo: { handler: value => value },
@@ -132,6 +147,7 @@ describe('In-page script channel', () => {
 
     it('rejects incompatible handlers', () => {
       createPageScriptChannel<TestProtocol>({
+        events: { save: {} },
         name: 'devframes:test',
         functions: {
           echo: {
@@ -275,7 +291,7 @@ describe('Panel channel', () => {
       connectPanelChannel<TestProtocol>({
         name: 'devframes:test',
         functions: {
-          notify: { type: 'event' },
+          notify: { handler: () => {} },
         },
       })
 
@@ -385,7 +401,7 @@ describe('Panel channel', () => {
         name: 'devframes:mixed-panel',
         functions: {
           confirm: { handler: () => true },
-          notify: { type: 'event' },
+          notify: { handler: () => {} },
         },
       })
 

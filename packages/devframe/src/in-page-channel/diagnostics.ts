@@ -5,7 +5,7 @@ export const diagnostics = /* #__PURE__ */ defineDiagnostics({
   codes: {
     DF0077: {
       why: (p: { name: string }) => `In-page channel function "${p.name}" is not registered on this endpoint.`,
-      fix: 'Declare the function in this endpoint\'s `functions` option before subscribing with `on()`.',
+      fix: 'Declare the function in this endpoint\'s `functions` option.',
     },
   },
 })

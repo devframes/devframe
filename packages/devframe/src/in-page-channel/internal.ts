@@ -2,7 +2,7 @@ import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { BirpcReturn } from 'birpc'
 import type { RpcArgsSchema } from '../rpc/types'
 import type { InPageChannelControlFrame } from './protocol'
-import type { InPageFunctionDefinitionAny } from './types'
+import type { InPageFunctionDefinitionAny, InPageFunctionType } from './types'
 import { createBirpc } from 'birpc'
 import { diagnostics } from './diagnostics'
 import { isControlFrame } from './protocol'
@@ -158,6 +158,14 @@ export function deserializeResult(codec: InPageChannelSerialization, result: unk
   return codec.deserialize && result !== undefined ? codec.deserialize(result) : result
 }
 
+export function channelMethod(type: InPageFunctionType | 'function' | undefined, name: string): string {
+  // Keep user functions, user events, and internal methods in separate wire namespaces.
+  const kind = type === 'event' ? 'event' : 'function'
+  return `devframe:in-page:${kind}:${name}`
+}
+
+const FUNCTION_METHOD_PREFIX = channelMethod('function', '')
+
 /**
  * An endpoint's local function table, resolved by name when the remote side
  * calls in. Each handler is wrapped with the receive pipeline: deserialize
@@ -173,28 +181,33 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
   const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
   return {
     register(definition) {
-      definitions.set(definition.name, definition)
+      definitions.set(channelMethod(definition.type, definition.name), definition)
     },
     on(name, listener) {
-      if (!definitions.has(name))
-        throw diagnostics.DF0077({ name })
-      let registered = listeners.get(name)
+      const key = channelMethod('event', name)
+      let registered = listeners.get(key)
       if (!registered) {
         registered = new Set()
-        listeners.set(name, registered)
+        listeners.set(key, registered)
       }
       registered.add(listener)
       return () => {
         registered.delete(listener)
         if (registered.size === 0)
-          listeners.delete(name)
+          listeners.delete(key)
       }
     },
     resolve(name) {
       const definition = definitions.get(name)
       const registered = listeners.get(name)
-      if (!definition && !registered?.size)
+      if (!definition && !registered?.size) {
+        if (name.startsWith(FUNCTION_METHOD_PREFIX)) {
+          return () => {
+            throw diagnostics.DF0077({ name: name.slice(FUNCTION_METHOD_PREFIX.length) })
+          }
+        }
         return undefined
+      }
       return async (...rawArgs: unknown[]) => {
         const args = codec.deserialize ? rawArgs.map(codec.deserialize) : rawArgs
         if (definition?.jsonSerializable)
@@ -204,7 +217,9 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
         const result = await definition?.handler?.(...args)
         for (const listener of [...(listeners.get(name) ?? [])])
           listener(...args)
-        if (definition?.jsonSerializable)
+        if (definition?.type === 'event')
+          return undefined
+        if (definition?.jsonSerializable && result !== undefined)
           assertJsonSerializable(result, 'its return value', definition.name)
         return codec.serialize && result !== undefined ? codec.serialize(result) : result
       }

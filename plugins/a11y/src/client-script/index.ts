@@ -96,9 +96,9 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
 
   const channel = createPageScriptChannel<A11yChannelProtocol>({
     name: A11Y_CHANNEL,
-    functions: {
+    functions: {},
+    events: {
       'highlight': {
-        type: 'event',
         jsonSerializable: true,
         handler: (nodeId: string, target: string[]) => {
           const el = document.querySelector(`[${A11Y_NODE_ATTR}="${CSS.escape(nodeId)}"]`)
@@ -115,11 +115,9 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
         },
       },
       'clear-highlight': {
-        type: 'event',
         handler: () => overlay.clearPreview(),
       },
       'set-pins': {
-        type: 'event',
         jsonSerializable: true,
         handler: (pins: PinTarget[]) => {
           const infos: PinInfo[] = []
@@ -132,15 +130,12 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
         },
       },
       'rescan': {
-        type: 'event',
         handler: () => void runScan(),
       },
       'set-config': {
-        type: 'event',
         handler: (next: PageScriptConfig) => applyConfig(next),
       },
       'set-autoscan': {
-        type: 'event',
         jsonSerializable: true,
         handler: (enabled: boolean) => {
           config.autoScan = enabled
@@ -151,7 +146,6 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
         },
       },
       'clear-route': {
-        type: 'event',
         jsonSerializable: true,
         handler: (route: string) => {
           routes.delete(route)
@@ -161,7 +155,6 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
         },
       },
       'clear-all': {
-        type: 'event',
         handler: () => {
           routes.clear()
           loggedRules.clear()
