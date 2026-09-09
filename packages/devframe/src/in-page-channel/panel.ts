@@ -16,6 +16,7 @@ import {
   deserializeResult,
   InPageChannelError,
   resolveHeartbeat,
+  resolveLocalHandler,
   serializeArgs,
   warnOnce,
   withCallDeadline,
@@ -91,8 +92,8 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     call: (method, args) => enqueueCall(method, serializeArgs(codec, args)),
   })
   const stateRegistry = createLocalFunctionRegistry(codec)
-  for (const [name, handler] of Object.entries(stateHost.handlers))
-    stateRegistry.register({ name, handler })
+  for (const [method, handler] of Object.entries(stateHost.handlers))
+    stateRegistry.registerInternal(method, handler)
 
   function sendEventNow(method: string, args: unknown[]): void {
     void attached?.rpc.$callRaw({ method, args, event: true, optional: true }).catch(() => {})
@@ -144,7 +145,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     // another instance the user pinned to) replaces the previous port.
     attached?.dispose({ bye: true, reason: 'the panel adopted a newer port' })
     attached = attachChannelPort(port, {
-      resolveLocal: fnName => stateRegistry.resolve(fnName) ?? registry.resolve(fnName),
+      resolveLocal: fnName => resolveLocalHandler(fnName, [stateRegistry.resolve, registry.resolve]),
       onControl: (kind) => {
         if (kind === 'ping')
           attached?.postControl('pong')
