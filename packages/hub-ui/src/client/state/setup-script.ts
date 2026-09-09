@@ -62,7 +62,14 @@ export function executeSetupScript(
   if (entry.type !== 'action' && _setupPromises.has(entry.id))
     return _setupPromises.get(entry.id)!
   const promise = _executeSetupScript(entry, context)
-  if (entry.type !== 'action')
+  if (entry.type !== 'action') {
     _setupPromises.set(entry.id, promise)
+    promise.catch(() => {
+      // A failed setup must not poison this entry permanently. The caller still
+      // receives the rejection, while a later activation or update may retry.
+      if (_setupPromises.get(entry.id) === promise)
+        _setupPromises.delete(entry.id)
+    })
+  }
   return promise
 }
