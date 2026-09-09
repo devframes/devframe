@@ -4,6 +4,9 @@ import type { RpcArgsSchema } from '../rpc/types'
 import type { InPageChannelControlFrame } from './protocol'
 import type { InPageFunctionDefinitionAny, InPageFunctionType } from './types'
 import { createBirpc } from 'birpc'
+import { argsToJsonSchema } from '../adapters/mcp/to-json-schema'
+import { registerBrowserAgentTool, resolveBrowserAgentSafety } from '../client/browser-agent'
+import { coerceAgentPositionalArgs } from '../node/agent-args'
 import { diagnostics } from './diagnostics'
 import { isControlFrame } from './protocol'
 
@@ -172,16 +175,22 @@ const FUNCTION_METHOD_PREFIX = channelMethod('function', '')
  * hook, `jsonSerializable` enforcement, Standard-Schema argument validation,
  * then serialize hook + `jsonSerializable` enforcement on the result.
  */
-export function createLocalFunctionRegistry(codec: InPageChannelSerialization): {
+export interface InPageLocalFunctionRegistry {
+  readonly definitions: ReadonlyMap<string, InPageFunctionDefinitionAny>
   register: (definition: InPageFunctionDefinitionAny) => void
   registerInternal: (method: string, handler: (...args: unknown[]) => unknown) => void
   on: (name: string, listener: (...args: unknown[]) => void) => () => void
   resolve: (name: string) => ((...args: unknown[]) => unknown) | undefined
-} {
+}
+
+export function createLocalFunctionRegistry(codec: InPageChannelSerialization): InPageLocalFunctionRegistry {
   const definitions = new Map<string, InPageFunctionDefinitionAny>()
   const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
   return {
+    definitions,
     register(definition) {
+      if ('agent' in definition && definition.agent && definition.jsonSerializable !== true)
+        throw diagnostics.DF0078({ name: definition.name })
       definitions.set(channelMethod(definition.type, definition.name), definition)
     },
     // The shared-state layer keys its handlers by their own fully-qualified
@@ -251,6 +260,36 @@ export function resolveLocalHandler(
     }
   }
   return undefined
+}
+
+/** Register an endpoint's local agent functions for browser-backed transports. */
+export function registerInPageAgentTools(
+  channelName: string,
+  registry: InPageLocalFunctionRegistry,
+): () => void {
+  const disposals: (() => void)[] = []
+  for (const definition of registry.definitions.values()) {
+    if (definition.type === 'event' || !('agent' in definition) || !definition.agent)
+      continue
+    const agent = definition.agent
+    disposals.push(registerBrowserAgentTool({
+      id: `${channelName}:${definition.name}`,
+      title: agent.title ?? definition.name,
+      description: agent.description,
+      safety: resolveBrowserAgentSafety(definition.type, agent),
+      tags: agent.tags,
+      inputSchema: argsToJsonSchema(definition.args),
+      invoke: (args) => {
+        const positional = coerceAgentPositionalArgs(
+          args,
+          definition.args as readonly unknown[] | undefined,
+          'wrap',
+        )
+        return registry.resolve(channelMethod(definition.type, definition.name))!(...positional)
+      },
+    }))
+  }
+  return () => disposals.forEach(dispose => dispose())
 }
 
 type RemoteFunctions = Record<string, (...args: any[]) => any>

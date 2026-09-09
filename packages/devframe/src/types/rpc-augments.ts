@@ -2,6 +2,8 @@
  * To be extended
  */
 export interface DevframeRpcClientFunctions {
+  /** Invoke a tool registered in this browser document. @internal */
+  'devframe:agent:invoke-client-tool': (id: string, args: Record<string, unknown>) => Promise<unknown>
   /**
    * Server→client notification that this connection's auth token has been
    * revoked. The client drops to untrusted on receipt. Broadcast by
@@ -51,6 +53,8 @@ export interface DevframeRpcClientFunctions {
  * To be extended
  */
 export interface DevframeRpcServerFunctions {
+  /** Replace this connection's browser-agent tool manifest. @internal */
+  'devframe:agent:sync-client-tools': (tools: import('../client/browser-agent').BrowserAgentToolManifest[]) => Promise<void>
   /**
    * Authenticate a connection with a previously-issued bearer token; resolves
    * whether the connection is now trusted. The interactive handler is provided
