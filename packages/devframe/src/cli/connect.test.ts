@@ -4,7 +4,7 @@ import type { DevframeDefinition } from '../types/devframe'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createDevServer } from '../adapters/dev'
-import { buildInstanceRequestHeaders, resolveAuthToken } from './connect'
+import { buildInstanceRequestHeaders, resolveAuthToken, selectInstanceRecord, toIndexedTool } from './connect'
 
 const TOKEN = 'a-high-entropy-connect-test-token'
 
@@ -57,6 +57,39 @@ describe('buildInstanceRequestHeaders', () => {
     expect(url).not.toContain(TOKEN)
     // …nor does a registry record carry any credential field to leak.
     expect(JSON.stringify(makeRecord())).not.toContain(TOKEN)
+  })
+})
+
+describe('selectInstanceRecord', () => {
+  it('prefers an MCP-capable base when several instances share a port', () => {
+    const withoutMcp = makeRecord({ id: 'ui-only', mcp: null })
+    const withMcp = makeRecord({ id: 'vite-devtools', basePath: '/__devtools/' })
+
+    expect(selectInstanceRecord([withoutMcp, withMcp], 9999)).toBe(withMcp)
+  })
+})
+
+describe('connector discovery metadata', () => {
+  it('keeps downstream tool schemas available to gateway agents', () => {
+    expect(toIndexedTool({
+      name: 'refetch',
+      description: 'Refetch queries.',
+      inputSchema: {
+        type: 'object',
+        properties: { arg0: { type: 'object' } },
+        required: ['arg0'],
+      },
+      annotations: { readOnlyHint: false },
+    })).toEqual({
+      name: 'refetch',
+      description: 'Refetch queries.',
+      inputSchema: {
+        type: 'object',
+        properties: { arg0: { type: 'object' } },
+        required: ['arg0'],
+      },
+      annotations: { readOnlyHint: false },
+    })
   })
 })
 
