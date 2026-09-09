@@ -66,7 +66,7 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
   const registry = createLocalFunctionRegistry(codec)
   for (const [fnName, definition] of Object.entries(options.functions))
     registry.register({ ...definition, name: fnName })
-  for (const [eventName, definition] of Object.entries(options.events))
+  for (const [eventName, definition] of Object.entries(options.events ?? {}))
     registry.register({ ...definition, name: eventName, type: 'event' })
 
   const stateHost = createPageScriptStateHost<P>(function* () {

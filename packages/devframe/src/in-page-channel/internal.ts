@@ -4,7 +4,6 @@ import type { RpcArgsSchema } from '../rpc/types'
 import type { InPageChannelControlFrame } from './protocol'
 import type { InPageFunctionDefinitionAny } from './types'
 import { createBirpc } from 'birpc'
-import { diagnostics } from './diagnostics'
 import { isControlFrame } from './protocol'
 
 /**
@@ -182,8 +181,6 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
     },
     on(name, listener) {
       const key = channelMethod('event', name)
-      if (!definitions.has(key))
-        throw diagnostics.DF0077({ name })
       let registered = listeners.get(key)
       if (!registered) {
         registered = new Set()

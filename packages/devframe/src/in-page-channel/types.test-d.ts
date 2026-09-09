@@ -178,7 +178,6 @@ describe('In-page script channel', () => {
 
     it('rejects fire-and-forget calls to panel queries', () => {
       const mixedChannel = createPageScriptChannel<MixedPanelProtocol>({
-        events: {},
         name: 'devframes:mixed-panel',
         functions: {},
       })
@@ -204,7 +203,6 @@ describe('In-page script channel', () => {
 
     it('rejects calls when the protocol declares no panel functions', () => {
       const pageScriptOnlyChannel = createPageScriptChannel<PageScriptOnlyProtocol>({
-        events: {},
         name: 'devframes:page-script-only',
         functions: {
           echo: { handler: value => value },
@@ -338,13 +336,11 @@ describe('Panel channel', () => {
 
     it('accepts an explicitly empty panel function map', () => {
       connectPanelChannel<PageScriptOnlyProtocol>({
-        events: {},
         name: 'devframes:page-script-only',
         functions: {},
       })
 
       connectPanelChannel<PageScriptOnlyProtocol>({
-        events: {},
         name: 'devframes:page-script-only',
         functions: {
           // @ts-expect-error The protocol has no panel functions.

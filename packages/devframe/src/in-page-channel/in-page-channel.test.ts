@@ -59,7 +59,6 @@ function createLinkedPair(options?: {
 }): { pageScript: PageScriptChannel<TestProtocol>, panel: PanelChannel<TestProtocol>, dispose: () => void } {
   const { port1, port2 } = new MessageChannel()
   const pageScript = createPageScriptChannel<TestProtocol>({
-    events: { note: {} },
     name: 'devframes:test',
     ...noHandshake,
     functions: {
@@ -73,7 +72,6 @@ function createLinkedPair(options?: {
   })
   pageScript.addPanelPort(port1)
   const panel = connectPanelChannel<TestProtocol>({
-    events: { notify: {} },
     name: 'devframes:test',
     ...noHandshake,
     transport: port2,
@@ -118,7 +116,6 @@ describe('in-page channel over bring-your-own ports', () => {
     const pageScript = createPageScriptChannel<Protocol>({
       name: 'test',
       ...noHandshake,
-      events: {},
       functions: {
         save: { type: 'action', jsonSerializable: true, handler: () => {} },
         reset: { type: 'action', handler: async () => {
@@ -135,7 +132,6 @@ describe('in-page channel over bring-your-own ports', () => {
       name: 'test',
       ...noHandshake,
       functions: {},
-      events: {},
       transport: port2,
       callTimeoutMs: 100,
     })
@@ -204,14 +200,10 @@ describe('in-page channel over bring-your-own ports', () => {
     expect(panelAction).toHaveBeenCalledOnce()
   })
 
-  it('rejects subscriptions to functions even when they return void', ({ onTestFinished }) => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  it('keeps untyped runtime subscriptions isolated from functions', ({ onTestFinished }) => {
     const { pageScript, dispose } = createLinkedPair()
-    onTestFinished(() => {
-      dispose()
-      warn.mockRestore()
-    })
-    expect(() => pageScript.on('boom' as any, () => {})).toThrowError(expect.objectContaining({ name: 'DF0077' }))
+    onTestFinished(dispose)
+    expect(() => pageScript.on('boom' as any, () => {})).not.toThrow()
   })
 
   it('round-trips calls, arguments, and results', async () => {
@@ -247,19 +239,10 @@ describe('in-page channel over bring-your-own ports', () => {
     }
   })
 
-  it('reports and rejects listeners for undeclared events', ({ onTestFinished }) => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  it('accepts listeners without runtime event declarations', ({ onTestFinished }) => {
     const { panel, dispose } = createLinkedPair()
-    onTestFinished(() => {
-      dispose()
-      warn.mockRestore()
-    })
-
-    expect(() => {
-      panel.on('missing' as any, () => {})
-    }).toThrowError(expect.objectContaining({ name: 'DF0077' }))
-    expect(warn).toHaveBeenCalledOnce()
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('[DF0077]'))
+    onTestFinished(dispose)
+    expect(() => panel.on('missing' as any, () => {})).not.toThrow()
   })
 
   it('enforces jsonSerializable payloads with a coded error', async () => {
@@ -350,7 +333,6 @@ describe('in-page channel over bring-your-own ports', () => {
     const offNotify = panelA.on('notify', value => received.push(`a:${value}`))
     // Panel B deliberately has no listener for this event.
     const panelB = connectPanelChannel<InPageChannelProtocol>({
-      events: {},
       name: 'devframes:test',
       ...noHandshake,
       transport: b.port2,

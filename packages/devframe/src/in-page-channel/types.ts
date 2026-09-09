@@ -253,8 +253,8 @@ interface InPageChannelCommonOptions {
 export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
   /** Every page-script function declaration, with a required handler. */
   functions: CreatePageScriptChannelOptionsFunctions<Protocol>
-  /** Every incoming event declaration; handlers may subscribe through `channel.on()`. */
-  events: { [NAME in keyof PageScriptProtocolEvents<Protocol> & string]: InPageEventOption<PageScriptProtocolEvents<Protocol>[NAME]> }
+  /** Optional metadata or handlers for incoming events. Listeners may instead subscribe through `channel.on()`. */
+  events?: { [NAME in keyof PageScriptProtocolEvents<Protocol> & string]?: InPageEventOption<PageScriptProtocolEvents<Protocol>[NAME]> }
   /**
    * Window whose `message` events carry panel hellos. Defaults to the
    * global `window`; pass `false` to skip the handshake listener entirely
@@ -267,8 +267,8 @@ export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelPr
 export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
   /** Every panel function declaration, with a required handler. */
   functions: ConnectPanelChannelOptionsFunctions<Protocol>
-  /** Every incoming event declaration; handlers may subscribe through `channel.on()`. */
-  events: { [NAME in keyof PanelProtocolEvents<Protocol> & string]: InPageEventOption<PanelProtocolEvents<Protocol>[NAME]> }
+  /** Optional metadata or handlers for incoming events. Listeners may instead subscribe through `channel.on()`. */
+  events?: { [NAME in keyof PanelProtocolEvents<Protocol> & string]?: InPageEventOption<PanelProtocolEvents<Protocol>[NAME]> }
   /**
    * The panel's own window (listens for the handshake grant). Defaults to
    * the global `window`; pass `false` with `transport` to skip the handshake.
