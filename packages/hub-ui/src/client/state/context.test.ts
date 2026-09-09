@@ -76,6 +76,45 @@ async function flushRestore(): Promise<void> {
 }
 
 describe('createDocksContext', () => {
+  it('runs eager iframe client scripts before activation', async () => {
+    const { rpc, sharedStates } = createStubRpc()
+    const executeSetupScriptMock = vi.mocked(executeSetupScript)
+    executeSetupScriptMock.mockClear()
+    const context = await createDocksContext('embedded', rpc)
+    const eagerEntry = {
+      id: 'eager',
+      type: 'iframe',
+      title: 'Eager',
+      icon: 'ph:play',
+      url: '/eager',
+      clientScript: { importFrom: '/eager-client.js', eager: true },
+    } satisfies DevframeDockEntry
+    const activationEntry = {
+      id: 'activation',
+      type: 'iframe',
+      title: 'Activation',
+      icon: 'ph:play',
+      url: '/activation',
+      clientScript: { importFrom: '/activation-client.js' },
+    } satisfies DevframeDockEntry
+
+    sharedStates.get('devframe:docks')!.push([eagerEntry, activationEntry])
+    await flushRestore()
+
+    expect(executeSetupScriptMock).toHaveBeenCalledOnce()
+    expect(executeSetupScriptMock).toHaveBeenLastCalledWith(
+      eagerEntry,
+      expect.objectContaining({ current: expect.objectContaining({ entryMeta: eagerEntry }) }),
+    )
+
+    await context.docks.switchEntry('activation')
+    expect(executeSetupScriptMock).toHaveBeenCalledTimes(2)
+    expect(executeSetupScriptMock).toHaveBeenLastCalledWith(
+      activationEntry,
+      expect.objectContaining({ current: expect.objectContaining({ entryMeta: activationEntry }) }),
+    )
+  })
+
   it('exposes restored panel state and emits selected, hidden, and closed changes', async () => {
     expect.assertions(9)
 

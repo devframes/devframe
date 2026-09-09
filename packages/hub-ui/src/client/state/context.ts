@@ -641,6 +641,25 @@ export async function createDocksContext(
     clientType,
   })
 
+  // Hub UI normally loads an iframe client script on first activation. Some
+  // page integrations need to observe the host app sooner, so start explicitly
+  // eager scripts once the entry and complete client context are available.
+  // executeSetupScript caches non-action scripts, preventing activation from
+  // executing the same script again.
+  watch(
+    entries,
+    (list) => {
+      for (const entry of list) {
+        if (entry.type !== 'iframe' || !entry.clientScript?.eager)
+          continue
+        runDockSetupScript(entry).catch(() => {
+          // executeSetupScript already reports import and execution failures.
+        })
+      }
+    },
+    { immediate: true, flush: 'post' },
+  )
+
   registerMainFrameDockActionHandler(clientType, async (id) => {
     const entry = entries.value.find(e => e.id === id)
     if (!entry || entry.type !== 'action')
