@@ -229,13 +229,16 @@ describe('in-page channel over bring-your-own ports', () => {
     }
   })
 
-  it('rejects calls to unknown functions', async () => {
+  it('rejects calls to unknown functions with a coded diagnostic', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const { panel, dispose } = createLinkedPair()
     try {
-      await expect(panel.call('missing' as any)).rejects.toThrow(/not found/)
+      await expect(panel.call('missing' as any)).rejects.toThrow('In-page channel function "missing" is not registered')
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('[DF0077]'))
     }
     finally {
       dispose()
+      warn.mockRestore()
     }
   })
 

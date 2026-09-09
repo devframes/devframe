@@ -4,6 +4,7 @@ import type { RpcArgsSchema } from '../rpc/types'
 import type { InPageChannelControlFrame } from './protocol'
 import type { InPageFunctionDefinitionAny } from './types'
 import { createBirpc } from 'birpc'
+import { diagnostics } from './diagnostics'
 import { isControlFrame } from './protocol'
 
 /**
@@ -162,6 +163,8 @@ export function channelMethod(kind: 'function' | 'event', name: string): string 
   return `devframe:in-page:${kind}:${name}`
 }
 
+const FUNCTION_METHOD_PREFIX = channelMethod('function', '')
+
 /**
  * An endpoint's local function table, resolved by name when the remote side
  * calls in. Each handler is wrapped with the receive pipeline: deserialize
@@ -196,8 +199,14 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
     resolve(name) {
       const definition = definitions.get(name)
       const registered = listeners.get(name)
-      if (!definition && !registered?.size)
+      if (!definition && !registered?.size) {
+        if (name.startsWith(FUNCTION_METHOD_PREFIX)) {
+          return () => {
+            throw diagnostics.DF0077({ name: name.slice(FUNCTION_METHOD_PREFIX.length) })
+          }
+        }
         return undefined
+      }
       return async (...rawArgs: unknown[]) => {
         const args = codec.deserialize ? rawArgs.map(codec.deserialize) : rawArgs
         if (definition?.jsonSerializable)
