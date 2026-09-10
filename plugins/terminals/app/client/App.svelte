@@ -351,6 +351,21 @@
 
 <svelte:window onkeydown={onGlobalKey} />
 
+{#snippet terminalIcon(icon: string, className = '')}
+  {#if icon.startsWith('mask:')}
+    {@const maskUrl = icon.slice(5).trim()}
+    <div
+      class="shrink-0 w-1em h-1em {className}"
+      aria-hidden="true"
+      style:background-color={maskUrl ? 'currentColor' : 'transparent'}
+      style:mask={maskUrl ? `url(${JSON.stringify(maskUrl)}) center / contain no-repeat` : 'none'}
+      style:mask-mode="alpha"
+    ></div>
+  {:else}
+    <div class="{icon} shrink-0 {className}" aria-hidden="true"></div>
+  {/if}
+{/snippet}
+
 {#if connCopy}
   <div class={connectionPanel('absolute inset-0 color-base font-sans')}>
     <div class="{connCopy.icon} {connectionGlyph(connCopy.spin)}"></div>
@@ -399,7 +414,7 @@
           >
             <span class={dot(statusDot(s.status))}></span>
             {#if s.icon}
-              <div class="{s.icon} shrink-0"></div>
+              {@render terminalIcon(s.icon)}
             {/if}
             <span class="truncate">{displayName(s)}</span>
             <span
@@ -462,7 +477,7 @@
                 class="flex items-center gap-2 px2 py1.5 rounded text-sm text-left op-fade hover:(op100 bg-active) transition-colors"
                 onclick={() => runPreset(p.id)}
               >
-                <div class="{p.icon || 'i-ph-terminal-duotone'} shrink-0 op-fade"></div>
+                {@render terminalIcon(p.icon || 'i-ph-terminal-duotone', 'op-fade')}
                 <span class="truncate flex-1">{p.title}</span>
                 <span class="font-mono text-xs op-mute">{p.mode === 'interactive' ? 'tty' : 'log'}</span>
               </button>
@@ -482,7 +497,7 @@
       </span>
       <span class="font-mono truncate op-fade flex items-center gap-1.5" title={`${s.command} ${s.args.join(' ')}`}>
         {#if s.icon}
-          <div class="{s.icon} shrink-0 text-base"></div>
+          {@render terminalIcon(s.icon, 'text-base')}
         {/if}
         {s.command}{s.args.length ? ` ${s.args.join(' ')}` : ''}
       </span>

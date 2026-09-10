@@ -338,6 +338,7 @@ describe('@devframes/plugin-terminals', () => {
 
   describe('hub aggregation', () => {
     it('surfaces sessions contributed by other devframes as read-only entries', async () => {
+      expect.assertions(9)
       await server.close()
       const hub = createFakeHubTerminals()
       server = await startTerminalsServer({}, { hub })
@@ -363,6 +364,11 @@ describe('@devframes/plugin-terminals', () => {
       expect(cs?.status).toBe('running')
       // Its output is read from the hub's streaming channel, not the plugin's.
       expect(cs?.channel).toBe('devframe:terminals')
+
+      const mask = 'mask:data:image/svg+xml,%3Csvg%2F%3E'
+      hub.update({ id: 'devframes_plugin_code-server', icon: mask })
+      const masked = await call<TerminalSessionInfo[]>(client, 'devframes:plugin:terminals:list')
+      expect(masked.find(session => session.id === 'devframes_plugin_code-server')?.icon).toBe(mask)
 
       // A stopped hub session maps onto the plugin's 'exited' status.
       hub.update({ id: 'devframes_plugin_code-server', status: 'stopped' })
