@@ -29,6 +29,16 @@ describe('dock resource resolution', () => {
     expect(resolveDockIcon('data:image/svg+xml;base64,abc', connection)).toBe('data:image/svg+xml;base64,abc')
   })
 
+  it('resolves mask URLs and preserves mask data through JSON transport', () => {
+    expect.assertions(4)
+    const data = 'mask:data:image/svg+xml,%3Csvg%2F%3E'
+    const icon = JSON.parse(JSON.stringify({ light: data, dark: 'mask:./dark.svg' }))
+    expect(resolveDockIcon('mask:/icons/local.svg', connection)).toBe('mask:http://localhost:5173/icons/local.svg')
+    expect(resolveDockIcon('mask:icon', connection)).toBe('mask:http://localhost:5173/__devtools/icon')
+    expect(resolveDockIcon('mask:https://example.com/icon.svg', connection)).toBe('mask:https://example.com/icon.svg')
+    expect(resolveDockIcon(icon, connection)).toEqual({ light: data, dark: 'mask:http://localhost:5173/__devtools/dark.svg' })
+  })
+
   it('resolves light and dark icon variants independently', () => {
     expect(resolveDockIcon({
       light: './icons/light.svg',

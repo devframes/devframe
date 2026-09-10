@@ -94,17 +94,12 @@ const HUB_STATUS: Record<TerminalStatus, HubTerminalEntry['status']> = {
   error: 'error',
 }
 
-/**
- * Normalize a hub dock icon (`ph:code-duotone`, or a light/dark pair) to the
- * UnoCSS `preset-icons` class the client renders (`i-ph-code-duotone`). The
- * client can only render icons the SPA's UnoCSS build statically emitted (see
- * the safelist in `uno.config.ts`), so unknown icons resolve to `undefined`.
- */
+/** Preserve explicit masks; normalize other hub icons to the terminal SPA's UnoCSS classes. */
 function toIconClass(icon?: HubTerminalEntry['icon']): string | undefined {
   const raw = typeof icon === 'string' ? icon : icon?.light
   if (!raw)
     return undefined
-  return raw.startsWith('i-') ? raw : `i-${raw.replace(':', '-')}`
+  return raw.startsWith('mask:') || raw.startsWith('i-') ? raw : `i-${raw.replace(':', '-')}`
 }
 
 function defaultShell(): string {
