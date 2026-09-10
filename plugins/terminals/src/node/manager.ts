@@ -94,7 +94,12 @@ const HUB_STATUS: Record<TerminalStatus, HubTerminalEntry['status']> = {
   error: 'error',
 }
 
-/** Preserve explicit masks; normalize other hub icons to the terminal SPA's UnoCSS classes. */
+/**
+ * Preserve explicit masks; normalize other hub icons (`ph:code-duotone`) to
+ * UnoCSS classes (`i-ph-code-duotone`), choosing the light variant of theme pairs.
+ * Class icons render only if the terminal SPA's UnoCSS build includes them
+ * (see the safelist in `uno.config.ts`); masks load their image URL directly.
+ */
 function toIconClass(icon?: HubTerminalEntry['icon']): string | undefined {
   const raw = typeof icon === 'string' ? icon : icon?.light
   if (!raw)
