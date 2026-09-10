@@ -5,6 +5,7 @@ describe('tool input positional arguments', () => {
   it('passes arrays through and maps argN keys using the declared count', () => {
     expect(toolInputToRpcArgs([1, 2], 2)).toEqual([1, 2])
     expect(toolInputToRpcArgs({ arg0: 'a', arg1: 'b' }, 2)).toEqual(['a', 'b'])
+    expect(toolInputToRpcArgs({ arg0: 'a' }, 0)).toEqual([])
   })
 
   it('collects contiguous argN keys without a declared count', () => {

@@ -13,7 +13,7 @@ function collectPositionalArgs(input: unknown, argumentCount: number | undefined
     return undefined
 
   const record = input as Record<string, unknown>
-  if (argumentCount)
+  if (argumentCount != null)
     return Array.from({ length: argumentCount }, (_, index) => record[`arg${index}`])
   if ('arg0' in record) {
     const positional: unknown[] = []
