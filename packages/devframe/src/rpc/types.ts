@@ -224,7 +224,8 @@ export interface RpcDumpStore<T = any> {
   _functions?: T
 }
 
-interface RpcFunctionDefinitionWithoutSchemas<
+/** RPC function definition whose handler supplies its argument and return types. */
+export interface RpcFunctionDefinitionWithoutSchemas<
   NAME extends string,
   TYPE extends RpcFunctionType,
   ARGS extends any[],
@@ -239,7 +240,8 @@ interface RpcFunctionDefinitionWithoutSchemas<
   returns?: RS
 }
 
-interface RpcFunctionDefinitionWithSchemas<
+/** RPC function definition whose argument and return types come from schemas. */
+export interface RpcFunctionDefinitionWithSchemas<
   NAME extends string,
   TYPE extends RpcFunctionType,
   AS extends RpcArgsSchema | undefined,
