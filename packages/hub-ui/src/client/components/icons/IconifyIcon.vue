@@ -54,6 +54,8 @@ watchEffect(async (onCleanup) => {
   />
   <img
     v-else :src="icon"
+    alt=""
+    aria-hidden="true"
     class="w-full h-full m-auto"
     draggable="false"
   >
