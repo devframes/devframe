@@ -39,20 +39,20 @@ export class RpcFunctionsCollectorBase<
     }) as LocalFunctions
   }
 
-  register(fn: RpcFunctionDefinition<string, any, any, any, any, any, SetupContext>, force = false): void {
-    if (this.definitions.has(fn.name) && !force) {
-      throw diagnostics.DF0021({ name: fn.name })
+  register(fnDef: RpcFunctionDefinition<string, any, any, any, any, any, SetupContext>, force = false): void {
+    if (this.definitions.has(fnDef.name) && !force) {
+      throw diagnostics.DF0021({ name: fnDef.name })
     }
-    fn = normalizeAgentJsonSerializable(fn)
-    this.definitions.set(fn.name, fn)
-    this._onChanged.forEach(cb => cb(fn.name))
+    ensureAgentJsonSerializable(fnDef)
+    this.definitions.set(fnDef.name, fnDef)
+    this._onChanged.forEach(cb => cb(fnDef.name))
   }
 
   update(fn: RpcFunctionDefinition<string, any, any, any, any, any, SetupContext>, force = false): void {
     if (!this.definitions.has(fn.name) && !force) {
       throw diagnostics.DF0022({ name: fn.name })
     }
-    fn = normalizeAgentJsonSerializable(fn)
+    ensureAgentJsonSerializable(fn)
     this.definitions.set(fn.name, fn)
     this._onChanged.forEach(cb => cb(fn.name))
   }
@@ -94,12 +94,18 @@ export class RpcFunctionsCollectorBase<
   }
 }
 
-function normalizeAgentJsonSerializable<T extends RpcFunctionDefinition<string, any, any, any, any, any, any>>(
-  fn: T,
-): T {
-  if (fn.agent && fn.jsonSerializable === false)
-    throw diagnostics.DF0019({ name: fn.name })
-  if (fn.agent && fn.jsonSerializable === undefined)
-    return { ...fn, jsonSerializable: true }
-  return fn
+/**
+ * Prevents registering an agent function that is explicitly marked as
+ * non-serializable, and ensures that agent functions are marked as
+ * serializable by default.
+ *
+ * @internal
+ */
+function ensureAgentJsonSerializable(
+  fnDef: RpcFunctionDefinition<string, any, any, any, any, any, any>,
+): void {
+  if (fnDef.agent && fnDef.jsonSerializable === false)
+    throw diagnostics.DF0019({ name: fnDef.name })
+  if (fnDef.agent && !fnDef.jsonSerializable)
+    fnDef.jsonSerializable = true
 }
