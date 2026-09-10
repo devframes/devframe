@@ -1,4 +1,5 @@
 import type { RpcArgsSchema, RpcFunctionDefinition, RpcFunctionsCollector, RpcReturnSchema } from './types'
+import { ensureAgentJsonSerializable } from './agent-json-serialization'
 import { diagnostics } from './diagnostics'
 import { getRpcHandler } from './handler'
 
@@ -92,20 +93,4 @@ export class RpcFunctionsCollectorBase<
   list(): string[] {
     return Array.from(this.definitions.keys())
   }
-}
-
-/**
- * Prevents registering an agent function that is explicitly marked as
- * non-serializable, and ensures that agent functions are marked as
- * serializable by default.
- *
- * @internal
- */
-function ensureAgentJsonSerializable(
-  fnDef: RpcFunctionDefinition<string, any, any, any, any, any, any>,
-): void {
-  if (fnDef.agent && fnDef.jsonSerializable === false)
-    throw diagnostics.DF0019({ name: fnDef.name })
-  if (fnDef.agent && !fnDef.jsonSerializable)
-    fnDef.jsonSerializable = true
 }
