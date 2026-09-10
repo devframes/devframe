@@ -36,6 +36,7 @@ watchEffect(async (onCleanup) => {
       iconifyLoaded.value = svg
   }
   catch {
+    /** Keep fetch failures local to the icon so the surrounding panel remains usable. */
     if (active)
       failed.value = true
   }

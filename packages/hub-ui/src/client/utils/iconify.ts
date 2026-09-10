@@ -24,6 +24,7 @@ export async function getIconifySvg(collection: string, icon: string) {
 
   async function _get() {
     const url = `https://api.iconify.design/${collection}/${icon}.svg?color=currentColor&width=100%`
+    /** Bound stalled requests so the caller can display its failure glyph. */
     const response = await fetch(url, { signal: AbortSignal.timeout(10_000) })
     if (!response.ok)
       throw new Error(`Iconify request failed: ${response.status}`)
