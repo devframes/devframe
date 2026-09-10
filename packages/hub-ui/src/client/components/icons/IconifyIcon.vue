@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CSSProperties } from 'vue'
 import { computed, ref, watchEffect } from 'vue'
 import { getIconifySvg } from '../../utils/iconify'
 
@@ -7,6 +8,15 @@ const props = defineProps<{
 }>()
 
 const maskUrl = computed(() => props.icon.startsWith('mask:') ? props.icon.slice(5).trim() : undefined)
+const maskStyle = computed<CSSProperties | undefined>(() => {
+  if (!maskUrl.value)
+    return undefined
+  return {
+    backgroundColor: 'currentColor',
+    mask: `url(${JSON.stringify(maskUrl.value)}) center / contain no-repeat`,
+    maskMode: 'alpha',
+  }
+})
 const isUrlIcon = computed(() => maskUrl.value !== undefined || props.icon.includes('/') || props.icon.startsWith('data:') || props.icon.startsWith('builtin:'))
 const iconifyParsed = computed(() => {
   if (isUrlIcon.value)
@@ -42,7 +52,7 @@ watchEffect(async () => {
     v-if="maskUrl !== undefined"
     aria-hidden="true"
     class="w-full h-full"
-    :style="{ backgroundColor: maskUrl ? 'currentColor' : 'transparent', mask: maskUrl ? `url(${JSON.stringify(maskUrl)}) center / contain no-repeat` : 'none', maskMode: 'alpha' }"
+    :style="maskStyle"
   />
   <div
     v-else-if="iconifyParsed"
