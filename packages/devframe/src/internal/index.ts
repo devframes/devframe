@@ -9,8 +9,8 @@
 //   session/auth wiring the instance shell's own binding uses.
 // - `DevframeAgentHost`: the agent host implementation the hub composes into
 //   its own commands host.
-// - `coerceAgentPositionalArgs`: positional-arg coercion the hub applies when
-//   invoking agent tools as commands.
+// - `toolInputToCommandArgs`: positional-argument conversion the hub applies
+//   when invoking tool-backed commands.
 // - `registerDevframeInstance` / `listLiveDevframeInstances`: the instance
 //   registry: a custom host advertises itself; a devtool (the inspect plugin's
 //   Instances tab, the connector) enumerates what's running.
@@ -40,8 +40,6 @@
 export { loadAutoMcpAdapter, normalizeBasePath, resolveBasePath, resolveMcpConfig } from '../adapters/_shared'
 export type { ResolvedMcpConfig } from '../adapters/_shared'
 export { resolveClientAssets } from '../client-assets'
-export { coerceAgentPositionalArgs } from '../node/agent-args'
-export type { AgentArgsFallback } from '../node/agent-args'
 export { diagnostics } from '../node/diagnostics'
 export { DevframeAgentHost } from '../node/host-agent'
 export * from '../node/host-h3'
@@ -64,3 +62,5 @@ export type { ContextRpcServer, CreateContextRpcServerOptions } from '../node/rp
 export { normalizeHttpServerUrl } from '../node/utils'
 export { createRpcWireCodec, peekRpcWireFrame } from '../rpc/wire-codec'
 export type { RpcWireCodec } from '../rpc/wire-codec'
+export { coerceAgentPositionalArgs, toolInputToCommandArgs } from '../tool-input'
+export type { AgentArgsFallback } from '../tool-input'
