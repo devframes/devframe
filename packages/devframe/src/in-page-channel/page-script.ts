@@ -15,6 +15,7 @@ import {
   DEFAULT_CALL_TIMEOUT_MS,
   deserializeResult,
   resolveHeartbeat,
+  resolveLocalHandler,
   serializeArgs,
   warnOnce,
   withCallDeadline,
@@ -106,10 +107,10 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
       },
     })
     const stateRegistry = createLocalFunctionRegistry(codec)
-    for (const [name, handler] of Object.entries(internal.internalHandlers))
-      stateRegistry.register({ name, handler })
+    for (const [method, handler] of Object.entries(internal.internalHandlers))
+      stateRegistry.registerInternal(method, handler)
     internal.attached = attachChannelPort(port, {
-      resolveLocal: fnName => stateRegistry.resolve(fnName) ?? registry.resolve(fnName),
+      resolveLocal: fnName => resolveLocalHandler(fnName, [stateRegistry.resolve, registry.resolve]),
       onControl: (kind) => {
         if (kind === 'ping')
           internal.attached.postControl('pong')

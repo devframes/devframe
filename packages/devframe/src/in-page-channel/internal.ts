@@ -174,6 +174,7 @@ const FUNCTION_METHOD_PREFIX = channelMethod('function', '')
  */
 export function createLocalFunctionRegistry(codec: InPageChannelSerialization): {
   register: (definition: InPageFunctionDefinitionAny) => void
+  registerInternal: (method: string, handler: (...args: unknown[]) => unknown) => void
   on: (name: string, listener: (...args: unknown[]) => void) => () => void
   resolve: (name: string) => ((...args: unknown[]) => unknown) | undefined
 } {
@@ -182,6 +183,12 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
   return {
     register(definition) {
       definitions.set(channelMethod(definition.type, definition.name), definition)
+    },
+    // The shared-state layer keys its handlers by their own fully-qualified
+    // wire methods (`devframe:in-page:page-state:*`, the panel-state events),
+    // so they register verbatim rather than through `channelMethod`.
+    registerInternal(method, handler) {
+      definitions.set(method, { name: method, handler })
     },
     on(name, listener) {
       const key = channelMethod('event', name)
@@ -200,14 +207,8 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
     resolve(name) {
       const definition = definitions.get(name)
       const registered = listeners.get(name)
-      if (!definition && !registered?.size) {
-        if (name.startsWith(FUNCTION_METHOD_PREFIX)) {
-          return () => {
-            throw diagnostics.DF0077({ name: name.slice(FUNCTION_METHOD_PREFIX.length) })
-          }
-        }
+      if (!definition && !registered?.size)
         return undefined
-      }
       return async (...rawArgs: unknown[]) => {
         const args = codec.deserialize ? rawArgs.map(codec.deserialize) : rawArgs
         if (definition?.jsonSerializable)
@@ -225,6 +226,31 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
       }
     },
   }
+}
+
+type LocalHandler = (...args: unknown[]) => unknown
+
+/**
+ * Consult each registry in order and, only once none owns the name, fall back
+ * to the coded "not registered" error for a `function:` call (events stay
+ * silent). The fallback lives here, after every registry, so chaining a
+ * state registry ahead of the user registry never masks a real handler.
+ */
+export function resolveLocalHandler(
+  name: string,
+  registries: ((name: string) => LocalHandler | undefined)[],
+): LocalHandler | undefined {
+  for (const registry of registries) {
+    const handler = registry(name)
+    if (handler)
+      return handler
+  }
+  if (name.startsWith(FUNCTION_METHOD_PREFIX)) {
+    return () => {
+      throw diagnostics.DF0077({ name: name.slice(FUNCTION_METHOD_PREFIX.length) })
+    }
+  }
+  return undefined
 }
 
 type RemoteFunctions = Record<string, (...args: any[]) => any>
