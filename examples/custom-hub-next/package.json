@@ -1,7 +1,7 @@
 {
   "name": "custom-hub-next",
   "type": "module",
-  "version": "0.9.17",
+  "version": "0.9.18",
   "private": true,
   "description": "Next.js reference hub that exercises every devframe hub subsystem end to end.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/custom-hub-next",

@@ -1,7 +1,7 @@
 {
   "name": "hub-vite",
   "type": "module",
-  "version": "0.9.17",
+  "version": "0.9.18",
   "private": true,
   "description": "Minimal Vite host that mounts the devframe hub as dev middleware.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-vite",
