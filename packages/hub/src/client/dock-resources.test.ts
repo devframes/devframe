@@ -39,6 +39,14 @@ describe('dock resource resolution', () => {
     expect(resolveDockIcon(icon, connection)).toEqual({ light: data, dark: 'mask:http://localhost:5173/__devtools/dark.svg' })
   })
 
+  it('trims mask URLs and preserves empty masks without resolving the metadata URL', () => {
+    expect.assertions(4)
+    expect(resolveDockIcon('mask: ./icon.svg ', connection)).toBe('mask:http://localhost:5173/__devtools/icon.svg')
+    expect(resolveDockIcon('mask: data:image/svg+xml,%3Csvg%2F%3E ', connection)).toBe('mask:data:image/svg+xml,%3Csvg%2F%3E')
+    expect(resolveDockIcon('mask:', connection)).toBe('mask:')
+    expect(resolveDockIcon('mask:   ', connection)).toBe('mask:')
+  })
+
   it('resolves light and dark icon variants independently', () => {
     expect(resolveDockIcon({
       light: './icons/light.svg',

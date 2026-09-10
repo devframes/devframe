@@ -6,7 +6,7 @@ const props = defineProps<{
   icon: string
 }>()
 
-const maskUrl = computed(() => props.icon.startsWith('mask:') ? props.icon.slice(5) : undefined)
+const maskUrl = computed(() => props.icon.startsWith('mask:') ? props.icon.slice(5).trim() : undefined)
 const isUrlIcon = computed(() => maskUrl.value !== undefined || props.icon.includes('/') || props.icon.startsWith('data:') || props.icon.startsWith('builtin:'))
 const iconifyParsed = computed(() => {
   if (isUrlIcon.value)

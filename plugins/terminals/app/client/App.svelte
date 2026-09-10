@@ -357,7 +357,7 @@
       class="shrink-0 w-1em h-1em {className}"
       aria-hidden="true"
       style:background-color="currentColor"
-      style:mask={`url(${JSON.stringify(icon.slice(5))}) center / contain no-repeat`}
+      style:mask={`url(${JSON.stringify(icon.slice(5).trim())}) center / contain no-repeat`}
       style:mask-mode="alpha"
     ></div>
   {:else}

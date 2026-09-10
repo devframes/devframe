@@ -22,8 +22,11 @@ function resolveResourceUrl(value: string, connection: DevframeConnection): stri
 function resolveIconUrl(value: string, connection: DevframeConnection): string {
   const url = value.trim()
   if (url.startsWith('mask:')) {
+    const maskUrl = url.slice(5).trim()
+    if (!maskUrl)
+      return 'mask:'
     try {
-      return `mask:${new URL(url.slice(5), connection.metaBaseUrl).href}`
+      return `mask:${new URL(maskUrl, connection.metaBaseUrl).href}`
     }
     catch {
       return url
