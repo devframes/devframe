@@ -179,8 +179,8 @@ export interface RpcFunctionDefinitionBase<
   /**
    * Selects the serialization format for arguments and return values.
    *
-   * - `true`: uses strict JSON encoding. Inferred for agent-exposed functions.
-   * - `false` (default): uses structured-clone encoding and supports values
+   * - `true`: uses strict JSON encoding (default when `agent` is set).
+   * - `false` (default otherwise): uses structured-clone encoding and supports values
    *   such as `Map`, `Set`, `Date`, and cycles. Functions using this mode
    *   cannot be agent-exposed.
    */
