@@ -66,19 +66,12 @@ export interface ConnectServerHandle {
 }
 
 /** One discovered instance in the `list-instances` payload: the registry record plus its probed MCP surface. */
-interface IndexedTool {
-  name: string
-  title?: string
-  description?: string
-  inputSchema: unknown
-  outputSchema?: unknown
-  annotations?: unknown
-}
+interface IndexedInstanceTools extends Pick<Tool, 'name' | 'title' | 'description' | 'inputSchema' | 'outputSchema' | 'annotations'> {}
 
 interface IndexedInstance extends Omit<DevframeInstanceRecord, 'mcp'> {
   mcp: {
     url: string
-    tools?: IndexedTool[]
+    tools?: IndexedInstanceTools[]
     error?: string
   } | null
   hint?: string
@@ -252,23 +245,8 @@ async function probePort(port: number, timeoutMs?: number): Promise<DevframeInst
   }
 }
 
-async function listInstanceTools(sdk: ConnectSdk, url: string, token: string | undefined): Promise<IndexedTool[]> {
-  return withInstanceClient(sdk, url, token, async (client) => {
-    const listed = await client.listTools()
-    return listed.tools.map(toIndexedTool)
-  })
-}
-
-/** Preserve downstream tool metadata needed by an agent before invocation. */
-export function toIndexedTool(tool: IndexedTool): IndexedTool {
-  return {
-    name: tool.name,
-    ...(tool.title ? { title: tool.title } : {}),
-    ...(tool.description ? { description: tool.description } : {}),
-    inputSchema: tool.inputSchema,
-    ...(tool.outputSchema ? { outputSchema: tool.outputSchema } : {}),
-    ...(tool.annotations ? { annotations: tool.annotations } : {}),
-  }
+async function listInstanceTools(sdk: ConnectSdk, url: string, token: string | undefined): Promise<IndexedInstanceTools[]> {
+  return withInstanceClient(sdk, url, token, async client => (await client.listTools()).tools)
 }
 
 async function call(
@@ -283,7 +261,7 @@ async function call(
     instancesDir: options.instancesDir,
     timeoutMs: options.timeoutMs,
   })
-  const record = selectInstanceRecord(live, args.port)
+  const record = live.find(record => record.port === args.port && record.mcp)
     ?? await probePort(args.port, options.timeoutMs)
   if (!record)
     throw diagnostics.DF0050({ port: args.port })
@@ -301,15 +279,6 @@ async function call(
       ...(result.structuredContent ? { structuredContent: result.structuredContent } : {}),
     }
   })
-}
-
-/** Select the agent-capable instance when several bases share one port. */
-export function selectInstanceRecord(
-  records: readonly DevframeInstanceRecord[],
-  port: number,
-): DevframeInstanceRecord | undefined {
-  const matching = records.filter(record => record.port === port)
-  return matching.find(record => record.mcp) ?? matching[0]
 }
 
 async function withInstanceClient<T>(
