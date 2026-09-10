@@ -42,7 +42,7 @@ watchEffect(async () => {
     v-if="maskUrl !== undefined"
     aria-hidden="true"
     class="w-full h-full"
-    :style="{ backgroundColor: 'currentColor', mask: `url(${JSON.stringify(maskUrl)}) center / contain no-repeat`, maskMode: 'alpha' }"
+    :style="{ backgroundColor: maskUrl ? 'currentColor' : 'transparent', mask: maskUrl ? `url(${JSON.stringify(maskUrl)}) center / contain no-repeat` : 'none', maskMode: 'alpha' }"
   />
   <div
     v-else-if="iconifyParsed"

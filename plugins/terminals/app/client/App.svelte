@@ -353,11 +353,12 @@
 
 {#snippet terminalIcon(icon: string, className = '')}
   {#if icon.startsWith('mask:')}
+    {@const maskUrl = icon.slice(5).trim()}
     <div
       class="shrink-0 w-1em h-1em {className}"
       aria-hidden="true"
-      style:background-color="currentColor"
-      style:mask={`url(${JSON.stringify(icon.slice(5).trim())}) center / contain no-repeat`}
+      style:background-color={maskUrl ? 'currentColor' : 'transparent'}
+      style:mask={maskUrl ? `url(${JSON.stringify(maskUrl)}) center / contain no-repeat` : 'none'}
       style:mask-mode="alpha"
     ></div>
   {:else}
