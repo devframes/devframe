@@ -28,13 +28,6 @@ export async function getIconifySvg(collection: string, icon: string) {
     const response = await fetch(url, { signal: AbortSignal.timeout(10_000) })
     if (!response.ok)
       throw new Error(`Iconify request failed: ${response.status}`)
-    const svg = purify.sanitize(await response.text())
-    const svgDocument = new DOMParser().parseFromString(svg, 'image/svg+xml')
-    if (svgDocument.documentElement.localName !== 'svg'
-      || svgDocument.querySelector('parsererror')
-      || !svgDocument.querySelector('path, circle, ellipse, rect, line, polyline, polygon, text, use, image')) {
-      throw new Error('Iconify returned an invalid SVG')
-    }
-    return svg
+    return purify.sanitize(await response.text())
   }
 }
