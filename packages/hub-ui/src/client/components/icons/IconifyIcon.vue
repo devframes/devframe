@@ -49,6 +49,7 @@ watchEffect(async (onCleanup) => {
   </svg>
   <div
     v-else-if="iconifyParsed"
+    aria-hidden="true"
     v-html="iconifyLoaded"
   />
   <img

@@ -28,10 +28,10 @@ export async function getIconifySvg(collection: string, icon: string) {
     if (!response.ok)
       throw new Error(`Iconify request failed: ${response.status}`)
     const svg = purify.sanitize(await response.text())
-    const document = new DOMParser().parseFromString(svg, 'image/svg+xml')
-    if (document.documentElement.localName !== 'svg'
-      || document.querySelector('parsererror')
-      || !document.querySelector('path, circle, ellipse, rect, line, polyline, polygon, text, use, image')) {
+    const svgDocument = new DOMParser().parseFromString(svg, 'image/svg+xml')
+    if (svgDocument.documentElement.localName !== 'svg'
+      || svgDocument.querySelector('parsererror')
+      || !svgDocument.querySelector('path, circle, ellipse, rect, line, polyline, polygon, text, use, image')) {
       throw new Error('Iconify returned an invalid SVG')
     }
     return svg
