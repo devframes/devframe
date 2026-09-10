@@ -43,7 +43,7 @@ export class RpcFunctionsCollectorBase<
     if (this.definitions.has(fn.name) && !force) {
       throw diagnostics.DF0021({ name: fn.name })
     }
-    assertAgentJsonSerializable(fn)
+    fn = normalizeAgentJsonSerializable(fn)
     this.definitions.set(fn.name, fn)
     this._onChanged.forEach(cb => cb(fn.name))
   }
@@ -52,7 +52,7 @@ export class RpcFunctionsCollectorBase<
     if (!this.definitions.has(fn.name) && !force) {
       throw diagnostics.DF0022({ name: fn.name })
     }
-    assertAgentJsonSerializable(fn)
+    fn = normalizeAgentJsonSerializable(fn)
     this.definitions.set(fn.name, fn)
     this._onChanged.forEach(cb => cb(fn.name))
   }
@@ -94,9 +94,12 @@ export class RpcFunctionsCollectorBase<
   }
 }
 
-function assertAgentJsonSerializable(
-  fn: RpcFunctionDefinition<string, any, any, any, any, any, any>,
-): void {
-  if (fn.agent && fn.jsonSerializable !== true)
+function normalizeAgentJsonSerializable<T extends RpcFunctionDefinition<string, any, any, any, any, any, any>>(
+  fn: T,
+): T {
+  if (fn.agent && fn.jsonSerializable === false)
     throw diagnostics.DF0019({ name: fn.name })
+  if (fn.agent && fn.jsonSerializable === undefined)
+    return { ...fn, jsonSerializable: true }
+  return fn
 }

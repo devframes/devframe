@@ -178,7 +178,7 @@ export interface RpcFunctionDefinitionBase {
    * - `true`: args and return are encoded with strict `JSON.stringify`
    *   on the wire and on disk. Misshapen values throw `DF0019` at the
    *   sender, surfacing the bug *during the offending call* rather than
-   *   silently coercing to `{}` later. Required for `agent` exposure.
+   *   silently coercing to `{}` later. Inferred for `agent` exposure.
    * - `false` (default): payloads use `structured-clone-es`, which
    *   round-trips Maps/Sets/cycles. Functions in this mode cannot be
    *   exposed via the `agent` field; registration throws `DF0018`.
@@ -249,7 +249,7 @@ export type RpcFunctionDefinition<
          * (no Map/Set/Date/BigInt/cycles/class instances/undefined/Symbol/Function).
          *
          * - `true`: wire and dump use strict `JSON.stringify`; misshapen
-         *   values throw `DF0019` at the call site. Required for `agent`.
+         *   values throw `DF0019` at the call site. Inferred for `agent`.
          * - `false` (default): `structured-clone-es` round-trips fancy
          *   types. Cannot be `agent`-exposed (registration throws `DF0018`).
          */
@@ -295,7 +295,7 @@ export type RpcFunctionDefinition<
          * (no Map/Set/Date/BigInt/cycles/class instances/undefined/Symbol/Function).
          *
          * - `true`: wire and dump use strict `JSON.stringify`; misshapen
-         *   values throw `DF0019` at the call site. Required for `agent`.
+         *   values throw `DF0019` at the call site. Inferred for `agent`.
          * - `false` (default): `structured-clone-es` round-trips fancy
          *   types. Cannot be `agent`-exposed (registration throws `DF0018`).
          */
