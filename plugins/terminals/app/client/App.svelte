@@ -362,7 +362,7 @@
       style:mask-mode="alpha"
     ></div>
   {:else}
-    <div class="{icon} shrink-0 {className}"></div>
+    <div class="{icon} shrink-0 {className}" aria-hidden="true"></div>
   {/if}
 {/snippet}
 
