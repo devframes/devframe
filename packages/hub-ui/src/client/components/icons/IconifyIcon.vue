@@ -20,25 +20,35 @@ const iconifyParsed = computed(() => {
 })
 
 const iconifyLoaded = ref<string | undefined>(undefined)
-watchEffect(async () => {
-  if (!iconifyParsed.value) {
-    iconifyLoaded.value = undefined
+const failed = ref(false)
+watchEffect(async (onCleanup) => {
+  let active = true
+  onCleanup(() => {
+    active = false
+  })
+  iconifyLoaded.value = undefined
+  failed.value = false
+  if (!iconifyParsed.value)
     return
-  }
   try {
-    iconifyLoaded.value = await getIconifySvg(iconifyParsed.value.collection, iconifyParsed.value.icon)
+    const svg = await getIconifySvg(iconifyParsed.value.collection, iconifyParsed.value.icon)
+    if (active)
+      iconifyLoaded.value = svg
   }
   catch {
-    // A failed icon fetch (offline / flaky CDN) should degrade to a blank icon,
-    // not throw out of the async effect and crash the surrounding panel.
-    iconifyLoaded.value = undefined
+    if (active)
+      failed.value = true
   }
 })
 </script>
 
 <template>
+  <svg v-if="failed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" class="w-full h-full">
+    <rect x="3" y="3" width="18" height="18" rx="3" />
+    <path d="M12 7v6m0 3v1" />
+  </svg>
   <div
-    v-if="iconifyParsed"
+    v-else-if="iconifyParsed"
     v-html="iconifyLoaded"
   />
   <img
