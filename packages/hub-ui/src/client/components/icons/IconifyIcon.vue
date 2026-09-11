@@ -44,10 +44,7 @@ watchEffect(async (onCleanup) => {
 </script>
 
 <template>
-  <svg v-if="failed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" class="w-full h-full">
-    <rect x="3" y="3" width="18" height="18" rx="3" />
-    <path d="M12 7v6m0 3v1" />
-  </svg>
+  <div v-if="failed" class="i-ph:warning-duotone w-full h-full" aria-hidden="true" />
   <div
     v-else-if="iconifyParsed"
     aria-hidden="true"
