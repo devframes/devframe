@@ -21,4 +21,5 @@ export { resolveClientAssets }
 export { resolveInstanceRegister }
 export { resolveMcpConfig }
 export { samePath }
+export { toolInputToCommandArgs }
 // #endregion

@@ -6,7 +6,7 @@ import type {
   DevframeServerCommandInput,
 } from '../types/commands'
 import type { DevframeHubContext } from './context'
-import { coerceAgentPositionalArgs } from 'devframe/internal'
+import { toolInputToCommandArgs } from 'devframe/internal'
 import { createEventEmitter } from 'devframe/utils/events'
 import { HUB_EVENTS } from '../events'
 import { diagnostics } from './diagnostics'
@@ -193,7 +193,7 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
            * declared `agent.args` schemas; undeclared payload is dropped.
            */
           handler: async (args: unknown) =>
-            this.execute(command.id, ...coerceAgentPositionalArgs(args, agent.args, 'drop')),
+            this.execute(command.id, ...toolInputToCommandArgs(args, agent.args?.length)),
         })
       }
       for (const child of command.children ?? [])
