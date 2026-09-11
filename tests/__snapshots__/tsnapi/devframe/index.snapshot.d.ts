@@ -173,6 +173,7 @@ export interface DevframeDockDefaults {
   clientScript?: {
     importFrom: string;
     importName?: string;
+    eager?: boolean;
   };
 }
 export interface DevframeHost {

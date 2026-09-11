@@ -66,10 +66,12 @@ export interface ConnectServerHandle {
 }
 
 /** One discovered instance in the `list-instances` payload: the registry record plus its probed MCP surface. */
+interface IndexedInstanceTools extends Pick<Tool, 'name' | 'title' | 'description' | 'inputSchema' | 'outputSchema' | 'annotations'> {}
+
 interface IndexedInstance extends Omit<DevframeInstanceRecord, 'mcp'> {
   mcp: {
     url: string
-    tools?: { name: string, description?: string }[]
+    tools?: IndexedInstanceTools[]
     error?: string
   } | null
   hint?: string
@@ -243,14 +245,8 @@ async function probePort(port: number, timeoutMs?: number): Promise<DevframeInst
   }
 }
 
-async function listInstanceTools(sdk: ConnectSdk, url: string, token: string | undefined): Promise<{ name: string, description?: string }[]> {
-  return withInstanceClient(sdk, url, token, async (client) => {
-    const listed = await client.listTools()
-    return listed.tools.map((tool: { name: string, description?: string }) => ({
-      name: tool.name,
-      description: tool.description,
-    }))
-  })
+async function listInstanceTools(sdk: ConnectSdk, url: string, token: string | undefined): Promise<IndexedInstanceTools[]> {
+  return withInstanceClient(sdk, url, token, async client => (await client.listTools()).tools)
 }
 
 async function call(
@@ -265,7 +261,8 @@ async function call(
     instancesDir: options.instancesDir,
     timeoutMs: options.timeoutMs,
   })
-  const record = live.find(r => r.port === args.port) ?? await probePort(args.port, options.timeoutMs)
+  const record = live.find(record => record.port === args.port && record.mcp)
+    ?? await probePort(args.port, options.timeoutMs)
   if (!record)
     throw diagnostics.DF0050({ port: args.port })
   if (!record.mcp)

@@ -5,6 +5,7 @@
 export interface ClientScriptEntry {
   importFrom: string;
   importName?: string;
+  eager?: boolean;
 }
 export interface CreateHubContextOptions extends CreateHostContextOptions {}
 export interface DevframeChildProcessExecuteOptions {

@@ -2,6 +2,7 @@ import { agentInvokeTool } from './agent-invoke-tool'
 import { agentListResources } from './agent-list-resources'
 import { agentListTools } from './agent-list-tools'
 import { agentReadResource } from './agent-read-resource'
+import { agentSyncClientTools } from './agent-sync-client-tools'
 
 /**
  * Built-in agent introspection RPC functions. Registered automatically
@@ -13,6 +14,7 @@ export const BUILTIN_AGENT_RPC = [
   agentInvokeTool,
   agentListResources,
   agentReadResource,
+  agentSyncClientTools,
 ] as const
 
 declare module 'devframe/types' {
@@ -21,5 +23,6 @@ declare module 'devframe/types' {
     'devframe:agent:invoke-tool': (id: string, args: unknown) => Promise<unknown>
     'devframe:agent:list-resources': () => Promise<readonly import('devframe/types').AgentResource[]>
     'devframe:agent:read-resource': (id: string) => Promise<import('devframe/types').AgentResourceContent>
+    'devframe:agent:sync-client-tools': (tools: import('../../client/browser-agent').BrowserAgentToolManifest[]) => Promise<void>
   }
 }

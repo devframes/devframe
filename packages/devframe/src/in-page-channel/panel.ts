@@ -15,6 +15,7 @@ import {
   DEFAULT_CALL_TIMEOUT_MS,
   deserializeResult,
   InPageChannelError,
+  registerInPageAgentTools,
   resolveHeartbeat,
   resolveLocalHandler,
   serializeArgs,
@@ -68,6 +69,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     registry.register({ ...definition, name: fnName })
   for (const [eventName, definition] of Object.entries(options.events ?? {}))
     registry.register({ ...definition, name: eventName, type: 'event' })
+  const disposeAgentTools = registerInPageAgentTools(name, registry)
 
   let status: InPageChannelStatus = 'connecting'
   let attached: AttachedChannelPort | undefined
@@ -299,6 +301,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
       if (status === 'closed')
         return
       setStatus('closed')
+      disposeAgentTools()
       stopTimers()
       win?.removeEventListener('message', onWindowMessage)
       attached?.dispose({ bye: true, reason: 'the panel closed the channel' })

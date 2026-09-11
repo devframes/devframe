@@ -188,6 +188,13 @@ export interface ClientScriptEntry {
    * @default 'default'
    */
   importName?: string
+  /**
+   * Import and execute this script as soon as the client context and dock entry
+   * are available, without waiting for the dock to be activated.
+   *
+   * When omitted, the client runtime keeps its normal loading policy.
+   */
+  eager?: boolean
 }
 
 declare module 'devframe/types' {
