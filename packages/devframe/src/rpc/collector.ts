@@ -1,4 +1,5 @@
 import type { RpcArgsSchema, RpcFunctionDefinition, RpcFunctionsCollector, RpcReturnSchema } from './types'
+import { ensureAgentJsonSerializable } from './agent-json-serialization'
 import { diagnostics } from './diagnostics'
 import { getRpcHandler } from './handler'
 
@@ -39,20 +40,20 @@ export class RpcFunctionsCollectorBase<
     }) as LocalFunctions
   }
 
-  register(fn: RpcFunctionDefinition<string, any, any, any, any, any, SetupContext>, force = false): void {
-    if (this.definitions.has(fn.name) && !force) {
-      throw diagnostics.DF0021({ name: fn.name })
+  register(fnDef: RpcFunctionDefinition<string, any, any, any, any, any, SetupContext>, force = false): void {
+    if (this.definitions.has(fnDef.name) && !force) {
+      throw diagnostics.DF0021({ name: fnDef.name })
     }
-    assertAgentJsonSerializable(fn)
-    this.definitions.set(fn.name, fn)
-    this._onChanged.forEach(cb => cb(fn.name))
+    ensureAgentJsonSerializable(fnDef)
+    this.definitions.set(fnDef.name, fnDef)
+    this._onChanged.forEach(cb => cb(fnDef.name))
   }
 
   update(fn: RpcFunctionDefinition<string, any, any, any, any, any, SetupContext>, force = false): void {
     if (!this.definitions.has(fn.name) && !force) {
       throw diagnostics.DF0022({ name: fn.name })
     }
-    assertAgentJsonSerializable(fn)
+    ensureAgentJsonSerializable(fn)
     this.definitions.set(fn.name, fn)
     this._onChanged.forEach(cb => cb(fn.name))
   }
@@ -92,11 +93,4 @@ export class RpcFunctionsCollectorBase<
   list(): string[] {
     return Array.from(this.definitions.keys())
   }
-}
-
-function assertAgentJsonSerializable(
-  fn: RpcFunctionDefinition<string, any, any, any, any, any, any>,
-): void {
-  if (fn.agent && fn.jsonSerializable !== true)
-    throw diagnostics.DF0019({ name: fn.name })
 }

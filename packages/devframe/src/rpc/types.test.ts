@@ -25,6 +25,20 @@ function schema<Input, Output = Input>(): StandardSchemaV1<Input, Output> {
 }
 
 describe('rpcFunctionDefinitionToFunction', () => {
+  it('requires args and returns schemas together', () => {
+    // @ts-expect-error args and returns schemas must be provided together
+    defineRpcFunction({
+      name: 'missingReturns',
+      args: [v.string()],
+    })
+
+    // @ts-expect-error args and returns schemas must be provided together
+    defineRpcFunction({
+      name: 'missingArgs',
+      returns: v.string(),
+    })
+  })
+
   it('should infer types from generic parameters when no schemas', () => {
     const fn = defineRpcFunction({
       name: 'noSchema',
